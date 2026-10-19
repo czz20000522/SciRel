@@ -109,14 +109,13 @@
     "partial_results": "输入状态拒绝在创建目标文件前发生；IO失败不保证原子覆盖。"
   },
   "provenance": {
-    "lineage_summary": "原BRB/WHAM notebook将真空psi误接至终态writer/P；已接受修正要求使用terminal psi。此组合保留已修正原几何writer，明确区别旧raw五个零profile和本后继的SI压力字段，不改旧冻结格式或伪称标准协议。",
+    "lineage_summary": "SciRel pressure-equilibrium EQDSK writer combining the accepted terminal-pressure wiring correction with the maintained Pleiades extended format. Current source and regression tests define the relation; no corresponding upstream public license grant is asserted in licenses/.",
     "source_kinds": [
-      "Frozen D0 workflow",
-      "Accepted terminal-wiring correction",
-      "Independent polynomial pressure relation"
+      "SciRel implementation",
+      "scientific regression tests"
     ],
     "public_references": [],
-    "license_status": "来源许可依据保留；内部开发，未人工批准或发行。"
+    "license_status": "No public upstream license grant is asserted in licenses/ for this internal development relation; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -145,9 +144,9 @@
     ]
   },
   "example": {
-    "description": "精确多项式压力的收敛零Green终态写读；完整非零Green任务证据另列。",
+    "description": "Write a converged zero-Green pressure equilibrium with explicit SI pressure semantics, read it back, and compare the pressure profile to the analytic polynomial.",
     "code": "import tempfile\nfrom pathlib import Path\nimport numpy as np\nfrom scirel.equilibrium import compute_equilibrium\nfrom scirel.io import write_pressure_equilibrium_eqdsk, read_pleiades_eqdsk\nR,Z=np.meshgrid(np.linspace(0,1.5,13),np.linspace(-1,1,11))\nP=lambda r: (1-r*r)**2 if r<1 else 0.\nresult=compute_equilibrium(R,Z,P,R*R/2,np.zeros((R.size,R.size)))\nwith tempfile.TemporaryDirectory() as d:\n    path=Path(d)/'pressure.eqdsk'\n    axis=write_pressure_equilibrium_eqdsk(R,Z,result,path,'pressure')\n    data=read_pleiades_eqdsk(path)\n    np.testing.assert_allclose(data['p_flux'],(1-2*axis)**2,rtol=2e-8,atol=1e-12)",
-    "expected": "显式压力profile与解析P(psi)一致；零Green例不代表完整物理平衡验证。"
+    "expected": "Readback p_flux matches (1-2*axis)**2 within the declared tolerance; this fixture does not validate a nonzero-Green physical equilibrium."
   },
   "verification": {
     "scope": [

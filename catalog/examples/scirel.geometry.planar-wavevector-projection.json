@@ -137,14 +137,13 @@
     "partial_results": "None; the result dictionary is returned only after validation and calculation complete."
   },
   "provenance": {
-    "lineage_summary": "Provisional development integration from the PDRF planar projection and a bounded comparison with the overlapping PDRK scan relation. PDRF and PDRK have not completed a qualified whole-source D1 handoff (bound source, skill, bundle, strict full_freeze and independent review receipts), so this asset records the comparison as provisional source evidence only. Relative to the first intake implementation, this version corrects one declared-contract defect: boolean pseudo-numbers inside mixed containers such as [1, True] were silently accepted through NumPy dtype coercion and are now rejected before conversion.",
+    "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
     "source_kinds": [
-      "saved L1 operator documents and implementations",
-      "saved direct tests",
-      "cross-source development comparison"
+      "SciRel implementation",
+      "scientific regression tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -160,9 +159,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Measure a 3-4-5 Cartesian wavevector after caller-side SI conversion.",
+    "description": "Compute the magnitude of a caller-supplied 3-4 Cartesian wavevector in inverse metres.",
     "code": "from scirel.geometry import project_planar_wavevector\nresult = project_planar_wavevector(kx_grid=[3.0], kz_grid=[4.0])\nassert result['k'][0] == 5.0",
-    "expected": "kx=[3], kz=[4], k=[5] in 1/m, with theta_rad=None."
+    "expected": "The result keeps kx=[3], kz=[4] and computes k=[5] with theta_rad unset."
   },
   "verification": {
     "scope": [

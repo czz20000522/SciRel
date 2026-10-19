@@ -123,13 +123,13 @@
     "partial_results": "No output file is committed until contour data validates."
   },
   "provenance": {
-    "lineage_summary": "Recovered source io.py raw write_eqdsk route after source failures on vertical/ellipse/negative cases. Parametric arclength replaces invalid single-valued R(Z) spline while preserving source level, component, hint and count choices.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "Frozen D0 source raw writer",
-      "Independent contour geometry/lexical oracle"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "MIT source retained; human and release approval pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -145,9 +145,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Write a representable analytic flux grid.",
+    "description": "Write a representable analytic flux grid through the legacy raw contour writer.",
     "code": "import numpy as np\nfrom tempfile import TemporaryDirectory\nfrom pathlib import Path\nfrom scirel.io.eqdsk import write_pleiades_eqdsk_legacy_raw\nR,Z=np.meshgrid(np.linspace(0,2,21),np.linspace(-1,1,21))\npsi=(R-1)**2+Z**2\nwith TemporaryDirectory() as td: write_pleiades_eqdsk_legacy_raw(R,Z,psi,np.ones_like(R),Path(td)/\"x.eqdsk\",\"demo\")",
-    "expected": "A parseable extended EQDSK with source-selected contour records."
+    "expected": "The temporary output is a parseable extended EQDSK containing the writer-selected contour records."
   },
   "verification": {
     "scope": [

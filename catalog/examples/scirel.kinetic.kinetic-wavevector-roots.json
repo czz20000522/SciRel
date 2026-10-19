@@ -293,14 +293,14 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "lineage_summary": "Self-contained SciRel implementation of the finite fluidBW kinetic relation and its bounded numerical checks; the retained source and attribution obligations are recorded in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. No external approval or source parity is claimed.",
     "source_kinds": [
-      "frozen source operator contract",
-      "frozen source numerical oracle",
-      "SciRel direct contract tests"
+      "SciRel implementation",
+      "historical fluidBW relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Private technical development candidate; fluidBW source redistribution permission remains NOT_ESTABLISHED and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -320,21 +320,24 @@
     ]
   },
   "example": {
-    "description": "Evaluate one bounded source-method case.",
+    "description": "Evaluate one bounded source-method case. Python preflight ran locally; fluidBW/Octave parity remains NOT_RUN on this macOS host.",
     "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1",
-    "expected": "The asserted result follows the declared output contract."
+    "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. Source fluidBW/Octave parity is NOT_RUN on this macOS host."
   },
   "verification": {
     "scope": [
-      "Declared source-method numerical case and relevant failure boundaries."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "Python preflight ran, but source fluidBW/Octave parity is NOT_RUN on this macOS host."
     ],
     "tests": [
       "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
     ],
-    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
-      "Public distribution license and expert review remain pending."
+      "Public distribution license and expert review remain pending.",
+      "Source fluidBW/Octave parity is NOT_RUN on this host."
     ]
   }
 }

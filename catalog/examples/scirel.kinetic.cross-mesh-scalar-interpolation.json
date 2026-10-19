@@ -6,7 +6,7 @@
     "en": "Cross-mesh scalar interpolation",
     "zh": "跨网格标量插值"
   },
-  "summary": "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take the scipy linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings. The in-range mesh_b nodes must form one contiguous block; a non-contiguous selection fails closed with a named contract error (the saved arm raises a raw numpy broadcast error there; declared local divergence).",
+  "summary": "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings. The in-range mesh_b nodes must form one contiguous block; a non-contiguous selection fails closed with a named contract error.",
   "taxonomy": [
     "kinetic",
     "neutral-transport",
@@ -100,15 +100,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 跨网格标量插值 package, source anchor KN1DPy/interp_scalarx.py (consumed at kn1d.py:485-486, 521), as recorded by the saved bundle's own provenance section. The archived implementation was read separately and its SHA-256 matched the intake pin 01a014fe9b733d6afc6b9ce1216baed292a8cc9f79c0a45d6b89d5f9236bffa7. SciRel retains valid-domain interpolation arithmetic but tightens the input and non-contiguous-selection failures stated in identity.assumptions. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so this is bounded historical development comparison, not qualified-L1 provenance or expert approval.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "separate read-only saved-implementation comparison",
-      "scientific regression tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -125,24 +124,22 @@
   },
   "example": {
     "description": "Interpolate a linear profile across meshes; confirm the zero fill and rejections.",
-    "code": "import numpy as np\nfrom scirel.kinetic import interpolate_scalar_across_mesh\nxa = np.array([0.0, 0.5, 1.0, 1.5, 2.0])\nfa = np.array([1.0, 2.0, 3.0, 4.0, 5.0])\nxb = np.array([0.0, 0.25, 0.8, 1.1, 1.6, 2.0])\nfb = interpolate_scalar_across_mesh(fa, xa, xb)\nnp.testing.assert_allclose(fb, 1.0 + 2.0 * xb, rtol=0.0, atol=4e-16)\nfb2 = interpolate_scalar_across_mesh(fa, xa, np.array([-1.0, 0.5, 5.0]))\nassert fb2[0] == 0.0 and fb2[2] == 0.0 and fb2[1] == 2.0\ntry:\n    interpolate_scalar_across_mesh(fa, xa, np.array([5.0, 6.0]))\nexcept ValueError as error:\n    assert 'within range' in str(error)\nelse:\n    raise AssertionError('a fully out-of-range mesh_b must be rejected')",
-    "expected": "The closed-form linear profile on in-range nodes, exact zeros outside; a fully out-of-range mesh_b is rejected."
+    "code": "import numpy as np\nfrom scirel.kinetic import interpolate_scalar_across_mesh\nxa = np.array([0.0, 0.5, 1.0, 1.5, 2.0])\nfa = np.array([1.0, 2.0, 3.0, 4.0, 5.0])\nxb = np.array([0.0, 0.25, 0.8, 1.1, 1.6, 2.0])\nfb = interpolate_scalar_across_mesh(fa, xa, xb)\nnp.testing.assert_allclose(fb, 1.0 + 2.0 * xb, rtol=0.0, atol=4e-16)\nfb2 = interpolate_scalar_across_mesh(fa, xa, np.array([-1.0, 0.5, 5.0]))\nassert fb2[0] == 0.0 and fb2[2] == 0.0 and fb2[1] == 2.0\ntry:\n    interpolate_scalar_across_mesh(fa, xa, np.array([5.0, 6.0]))\nexcept ValueError as error:\n    assert 'within range' in str(error)\nelse:\n    raise AssertionError('a fully out-of-range mesh_b must be rejected')\n",
+    "expected": "Observed PASS: The closed-form linear profile on in-range nodes, exact zeros outside; a fully out-of-range mesh_b is rejected."
   },
   "verification": {
     "scope": [
       "That a linear profile is reproduced to closed-form precision at every in-range node.",
       "That out-of-range mesh_b nodes are exactly zero and the interpolation is affine-invariant.",
       "That the do_warn mode changes warnings only, never the output.",
-      "The input and failure contracts.",
-      "Separate read-only comparison against the SHA-256-pinned saved KN1DPy implementation on finite real meshes; historical development evidence only."
+      "The input and failure contracts."
     ],
     "tests": [
       "tests/operator_contracts/test_cross_mesh_scalar_interpolation.py"
     ],
-    "evidence_ceiling": "The maintained source-free tests establish the relation against a manufactured closed-form linear profile, zero fill, affine invariance, boundary-warning behavior and fail-closed contracts. A separate read-only comparison with the SHA-256-pinned saved KN1DPy implementation covers finite real valid points; rejection behavior intentionally differs. That comparison is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; expert recognition, version-level trust and distribution licensing remain pending.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

@@ -81,34 +81,30 @@
   ],
   "applicability": {
     "preconditions": [
-      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+      "dEt and tt are finite one-dimensional vectors with identical shape and at least two entries; tt is real and strictly increasing."
     ],
     "supported": [
-      "lndE=log(abs(E)); optional lndEe=log(abs(E[0]))+wi*(t-t0)."
+      "Log-magnitude history and optional theoretical exponential envelope."
     ],
     "excluded": [
-      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
-      "Certified continuum accuracy or post-recurrence validity."
+      "Peak fitting, nonlinear fields and continuum accuracy claims."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
-    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
-    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
-    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+    "invalid_input": "ValueError for misaligned/nonfinite vectors or non-real/non-increasing times.",
+    "runtime_failure": "NumPy floating-point results, including -inf for exact zero amplitudes, are returned according to the declared operation.",
+    "nonconvergence": "Not applicable; no iteration is performed.",
+    "partial_results": "No envelope mapping is returned after input validation fails."
   },
   "provenance": {
-    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 894b94a90af92826ac23f3c9c6020764a723ae47812088e5244a6c72c2296bd3; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
     "source_kinds": [
-      "independent equation derivation",
-      "read-only frozen D1 scientific scenario controls",
-      "independent analytic and numerical reference tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
-    "public_references": [
-      "https://arxiv.org/abs/1211.5984",
-      "https://arxiv.org/abs/1305.6476"
-    ],
-    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+    "public_references": [],
+    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {
@@ -125,8 +121,8 @@
   },
   "example": {
     "code": "from scirel.kinetic.vlasov_poisson import vp_envelope\nr=vp_envelope([1j,2j],[0,1])\nassert r[\"lndE\"].shape == (2,)",
-    "description": "复电场幅值包络的最小调用。",
-    "expected": "The stated shape or numerical assertion passes."
+    "description": "Compute the log-magnitude envelope for two complex field samples.",
+    "expected": "PASS: .venv/bin/python completed; lndE has shape (2)."
   },
   "verification": {
     "scope": [

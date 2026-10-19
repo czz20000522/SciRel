@@ -15,7 +15,7 @@
   "example": {
     "code": "from scirel.kinetic import evaluate_maxwellian_electrostatic\nr=evaluate_maxwellian_electrostatic(1.2+0.3j,0.4)\nassert abs(r[\"D\"])>0",
     "description": "Evaluate a residual.",
-    "expected": "Finite epsilon, D and phase argument."
+    "expected": "The call returned epsilon=0.41279817+0.5976356j, D=0.06604770770539457+0.09562169612338128j, z=2.1213203435596424+0.5303300858899106j, and epsilon_error about 9.36e-14."
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs.",
@@ -96,17 +96,16 @@
     }
   ],
   "provenance": {
-    "license_status": "Uses NumPy and SciPy; their applicable license texts are carried with the selected distribution.",
-    "lineage_summary": "Independent SciRel implementation of the normalized Maxwellian dielectric from its stated Faddeeva relation.",
-    "public_references": [
-      "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)",
-      "SciPy scipy.special.wofz defining identity and Steven G. Johnson Faddeeva implementation reference"
-    ],
+    "lineage_summary": "Self-contained SciRel Maxwellian electrostatic response and bounded solver; NumPy/SciPy obligations are retained through the notices in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt. Upstream GPDF redistribution is not asserted.",
     "source_kinds": [
-      "independent equation derivation",
       "SciRel implementation",
-      "independent numerical regression and invariant tests"
-    ]
+      "equation-based derivation",
+      "direct contract tests"
+    ],
+    "public_references": [
+      "Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas 20 (2013), 092125."
+    ],
+    "license_status": "Upstream GPDF source redistribution grant is NOT_ESTABLISHED; NumPy and SciPy notices remain applicable."
   },
   "public_api": {
     "python": {
@@ -129,14 +128,15 @@
     "zh": "Maxwellian 静电响应"
   },
   "verification": {
-    "evidence_ceiling": "Independent high-precision Faddeeva, Gaussian moments and seeded root calculations support the stated finite real/complex positive-k response and numerical error gate on the tested regimes; estimates are not certified enclosures.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "epsilon_error is an estimate rather than a rigorous enclosure.",
-      "Finite inputs can have unrepresentable complex response; no root is inferred from an evaluation."
+      "Finite inputs can have unrepresentable complex response; no root is inferred from an evaluation.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ],
     "scope": [
-      "Independent high-precision Faddeeva and Gaussian-moment references across real and complex positive-k domains.",
-      "Small-k omega=2 limit, finite representability, and shape/error reporting."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_gpdf_d2.py",

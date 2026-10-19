@@ -19,7 +19,7 @@
     "direction": "Declared inputs to Ascending power evaluators",
     "definition": "Compute minimum-norm ascending-power coefficients with absolute singular cutoff1e-10",
     "model": "Explicit source SVD pseudoinverse",
-    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "geometry": "one-dimensional sample coordinates and ordinates",
     "coordinates": "Generic x,y sample units; coefficients y/x**power",
     "boundary": "No boundary model; over/underdetermined systems use same cutoff",
     "assumptions": [
@@ -83,7 +83,7 @@
       "Integer order>=0 for supported fit"
     ],
     "supported": [
-      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
     ],
     "excluded": [
       "Absolute source cutoff is not a scale-invariant statistical rank policy",
@@ -91,19 +91,19 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
-    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
-    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
-    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
   },
   "provenance": {
-    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived scientific implementation",
-      "independent analytic or numerical oracle"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -119,18 +119,20 @@
     "dependencies": []
   },
   "example": {
-    "description": "Bounded executable example for Ascending-power SVD polynomial fit",
-    "code": "import numpy as np\nfrom scirel.geometry.sampling import poly_fit\nf,c=poly_fit(np.array([-1.,0.,1.]),np.array([2.,1.,0.]),order=1)\nassert np.allclose(c,[1,-1])",
-    "expected": "Declared result shape and bounded numerical behavior are asserted."
+    "description": "Fit a first-order ascending-power polynomial to three samples.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import poly_fit\n\n_, coefficients = poly_fit(np.array([-1.0, 0.0, 1.0]), np.array([2.0, 1.0, 0.0]), order=1)\nnp.testing.assert_allclose(coefficients, [1.0, -1.0])",
+    "expected": "The fitted ascending-power coefficients are [1.0, -1.0]."
   },
   "verification": {
     "scope": [
-      "Only the explicitly stated finite input domain and direct-test fixtures"
+      "Public callable signature and documented finite-input behavior",
+      "The direct regression fixtures listed in verification.tests",
+      "The executable example stored in this contract"
     ],
     "tests": [
       "tests/pleiades/equilibrium/test_analysis_families.py"
     ],
-    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
     "known_limitations": [
       "Absolute source cutoff is not a scale-invariant statistical rank policy",
       "No uncertainty/confidence or ill-conditioning guarantee"

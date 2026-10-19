@@ -114,15 +114,15 @@
     "partial_results": "No partial output returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Derived from Apache-2.0 TORAX CellVariable. The final internal Neumann face derivative is corrected by a unique quadratic fit to two adjacent point values and the prescribed boundary derivative; this corrects an inherited nonuniform-grid boundary reconstruction defect. The derivation does not change face-value interpolation or conservative two-point flux assembly.",
+    "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
     "source_kinds": [
-      "TORAX Python scientific implementation",
-      "Independent analytic/discrete numerical derivation"
+      "TORAX-derived implementation",
+      "SciRel regression tests"
     ],
     "public_references": [
       "https://github.com/google-deepmind/torax"
     ],
-    "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
+    "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -138,9 +138,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Minimal analytic/invariant check",
+    "description": "Construct a two-cell variable with unit Neumann gradients and verify face reconstruction.",
     "code": "import numpy as np\nfrom scirel.fvm import CellVariable\nv=CellVariable([.5,1.5],[0.,1.,2.],left_face_grad_constraint=1.,right_face_grad_constraint=1.)\nnp.testing.assert_allclose(v.face_value(),[0.,1.,2.])\nnp.testing.assert_allclose(v.face_grad(),1.)",
-    "expected": "Assertions complete without error."
+    "expected": "The face values are [0, 1, 2] and the reconstructed face gradient is one everywhere."
   },
   "verification": {
     "scope": [

@@ -1,172 +1,172 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.physics.thermal-energy",
-  "kind": "operator",
-  "title": {
-    "en": "Stored thermal energy from pressure profiles",
-    "zh": "压强剖面的储存热能"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.physics.thermal-energy",
+ "kind": "operator",
+ "title": {
+  "en": "Stored thermal energy from pressure profiles",
+  "zh": "压强剖面的储存热能"
+ },
+ "summary": "Integrate electron, ion and total scalar pressure profiles independently with the TORAX 3/2 factor",
+ "taxonomy": [
+  "physics",
+  "energy",
+  "profiles"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "W = 3/2 integral(p dV) for each supplied pressure profile",
+  "direction": "(p_el,p_ion,p_tot,vpr,drho_norm) -> (W_el,W_ion,W_tot)",
+  "definition": "Return (1.5*sum(p_el*vpr*drho_norm),1.5*sum(p_ion*vpr*drho_norm),1.5*sum(p_tot*vpr*drho_norm)). Inputs are first converted to binary64, then exact rational products and accumulation retain signed cancellation and round only the final result to float64.",
+  "model": "Nonrelativistic isotropic-gas internal energy density u=3p/2; signed finite inputs retained as algebraic compatibility",
+  "geometry": "Normalized radial cell grid with explicit volume metric and quadrature weights",
+  "coordinates": "rho_norm is dimensionless normalized radius",
+  "boundary": "Discrete cell-volume sum; no extrapolation or hidden endpoint reconstruction",
+  "assumptions": [
+   "Pressure and grid vectors are finite, nonempty, one-dimensional and equal-length.",
+   "Physical stored thermal energy requires nonnegative scalar thermal pressures; signed finite arrays remain accepted for algebraic compatibility. Total pressure is supplied independently and not forced to equal electron plus ion pressure.",
+   "Cell volume weights are vpr*drho_norm."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "p_el",
+   "description": "Electron pressure profile.",
+   "units": "Pa",
+   "shape": "nonempty one-dimensional vector",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite signed real values; same shape as vpr and drho_norm."
   },
-  "summary": "Integrate electron, ion and total scalar pressure profiles independently with the TORAX 3/2 factor",
-  "taxonomy": [
-    "physics",
-    "energy",
-    "profiles"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "W = 3/2 integral(p dV) for each supplied pressure profile",
-    "direction": "(p_el,p_ion,p_tot,vpr,drho_norm) -> (W_el,W_ion,W_tot)",
-    "definition": "Return (1.5*sum(p_el*vpr*drho_norm),1.5*sum(p_ion*vpr*drho_norm),1.5*sum(p_tot*vpr*drho_norm)). Inputs are first converted to binary64, then exact rational products and accumulation retain signed cancellation and round only the final result to float64.",
-    "model": "Nonrelativistic isotropic-gas internal energy density u=3p/2; signed finite inputs retained as algebraic compatibility",
-    "geometry": "Normalized radial cell grid with explicit volume metric and quadrature weights",
-    "coordinates": "rho_norm is dimensionless normalized radius",
-    "boundary": "Discrete cell-volume sum; no extrapolation or hidden endpoint reconstruction",
-    "assumptions": [
-      "Pressure and grid vectors are finite, nonempty, one-dimensional and equal-length.",
-      "Physical stored thermal energy requires nonnegative scalar thermal pressures; signed finite arrays remain accepted for algebraic compatibility. Total pressure is supplied independently and not forced to equal electron plus ion pressure.",
-      "Cell volume weights are vpr*drho_norm."
-    ]
+  {
+   "name": "p_ion",
+   "description": "Ion pressure profile.",
+   "units": "Pa",
+   "shape": "nonempty one-dimensional vector",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite signed real values; same shape as vpr and drho_norm."
   },
-  "inputs": [
-    {
-      "name": "p_el",
-      "description": "Electron pressure profile.",
-      "units": "Pa",
-      "shape": "nonempty one-dimensional vector",
-      "dtype": "real numeric convertible to float64",
-      "required": true,
-      "constraints": "Finite signed real values; same shape as vpr and drho_norm."
-    },
-    {
-      "name": "p_ion",
-      "description": "Ion pressure profile.",
-      "units": "Pa",
-      "shape": "nonempty one-dimensional vector",
-      "dtype": "real numeric convertible to float64",
-      "required": true,
-      "constraints": "Finite signed real values; same shape as vpr and drho_norm."
-    },
-    {
-      "name": "p_tot",
-      "description": "Total pressure profile.",
-      "units": "Pa",
-      "shape": "nonempty one-dimensional vector",
-      "dtype": "real numeric convertible to float64",
-      "required": true,
-      "constraints": "Finite signed real values; same shape as vpr and drho_norm."
-    },
-    {
-      "name": "vpr",
-      "description": "Volume metric per normalized-radius unit.",
-      "units": "m^3",
-      "shape": "nonempty one-dimensional vector",
-      "dtype": "real numeric convertible to float64",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    },
-    {
-      "name": "drho_norm",
-      "description": "Cell quadrature widths.",
-      "units": "dimensionless",
-      "shape": "nonempty one-dimensional vector",
-      "dtype": "real numeric convertible to float64",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "W_el",
-      "description": "W_el integrated thermal energy.",
-      "units": "J",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Finite signed scalar on successful return."
-    },
-    {
-      "name": "W_ion",
-      "description": "W_ion integrated thermal energy.",
-      "units": "J",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Finite signed scalar on successful return."
-    },
-    {
-      "name": "W_tot",
-      "description": "W_tot integrated thermal energy.",
-      "units": "J",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Finite signed scalar on successful return."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Pressure and grid vectors are finite, nonempty, one-dimensional and equal-length.",
-      "Physical stored thermal energy requires nonnegative scalar thermal pressures; signed finite arrays remain accepted for algebraic compatibility. Total pressure is supplied independently and not forced to equal electron plus ion pressure.",
-      "Cell volume weights are vpr*drho_norm."
-    ],
-    "supported": [
-      "Independent Decimal/longdouble conservation and overflow/underflow checks, component independence and malformed inputs."
-    ],
-    "excluded": [
-      "No equation-of-state conversion from temperature or density.",
-      "No physical closure or plasma calibration claim."
-    ]
+  {
+   "name": "p_tot",
+   "description": "Total pressure profile.",
+   "units": "Pa",
+   "shape": "nonempty one-dimensional vector",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite signed real values; same shape as vpr and drho_norm."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for malformed, nonfinite, mismatched pressure/grid inputs or nonpositive weights.",
-    "runtime_failure": "Raises FloatingPointError for unrepresentable finite float64 results.",
-    "nonconvergence": "Not applicable; direct finite relation.",
-    "partial_results": "No partial tuple is returned."
+  {
+   "name": "vpr",
+   "description": "Volume metric per normalized-radius unit.",
+   "units": "m^3",
+   "shape": "nonempty one-dimensional vector",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   },
-  "provenance": {
-    "lineage_summary": "Derived from TORAX mathematical source-profile and stored-energy relations. The numerical formulation retains the repaired integer-width and tiny-width source behavior and explicit cell-volume integration; SciRel independently validates the declared arrays and scalar shapes.",
-    "source_kinds": [
-      "TORAX Python scientific implementation",
-      "SciRel numerical implementation and independent validation"
-    ],
-    "public_references": [
-      "https://github.com/google-deepmind/torax"
-    ],
-    "license_status": "TORAX-derived relations retain Apache-2.0 attribution and the full source license in the selected distribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.physics.thermal_energy",
-      "symbol": "calculate_stored_thermal_energy",
-      "signature": "calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm)",
-      "canonical_module": "scirel.physics",
-      "canonical_symbol": "calculate_stored_thermal_energy"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Run one declared finite-domain case.",
-    "code": "import numpy as np\nfrom scirel.physics import calculate_stored_thermal_energy\nv=np.array([2.,3.]); d=np.array([.4,.6])\nr=calculate_stored_thermal_energy([2,2],[3,3],[5,5],v,d)\nassert np.allclose(r,(7.8,11.7,19.5))",
-    "expected": "(7.8, 11.7, 19.5), to floating roundoff"
-  },
-  "verification": {
-    "scope": [
-      "Independent Decimal/longdouble conservation and overflow/underflow checks, component independence and malformed inputs.",
-      "Signed cancellation across permutations and intermediate product overflow/underflow regression; exact binary64 products and a single final rounding."
-    ],
-    "tests": [
-      "tests/test_profile_energy.py",
-      "tests/test_thermal_cancellation.py"
-    ],
-    "evidence_ceiling": "Independent numerical probes establish the named mathematical relation, discrete conservation, boundary and shape/failure behavior. They do not establish general plasma calibration or complete edge-model validity.",
-    "known_limitations": [
-      "No equation-of-state conversion from temperature or density.",
-      "No physical closure or plasma calibration claim.",
-      "Signed inputs are an algebraic compatibility extension; they do not describe positive stored physical energy.",
-      "Exact intermediate arithmetic preserves the discrete relation for the converted binary64 inputs; it does not recover precision lost in input conversion or validate the quadrature grid."
-    ]
+  {
+   "name": "drho_norm",
+   "description": "Cell quadrature widths.",
+   "units": "dimensionless",
+   "shape": "nonempty one-dimensional vector",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   }
+ ],
+ "outputs": [
+  {
+   "name": "W_el",
+   "description": "W_el integrated thermal energy.",
+   "units": "J",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite signed scalar on successful return."
+  },
+  {
+   "name": "W_ion",
+   "description": "W_ion integrated thermal energy.",
+   "units": "J",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite signed scalar on successful return."
+  },
+  {
+   "name": "W_tot",
+   "description": "W_tot integrated thermal energy.",
+   "units": "J",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite signed scalar on successful return."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Pressure and grid vectors are finite, nonempty, one-dimensional and equal-length.",
+   "Physical stored thermal energy requires nonnegative scalar thermal pressures; signed finite arrays remain accepted for algebraic compatibility. Total pressure is supplied independently and not forced to equal electron plus ion pressure.",
+   "Cell volume weights are vpr*drho_norm."
+  ],
+  "supported": [
+   "Independent Decimal/longdouble conservation and overflow/underflow checks, component independence and malformed inputs."
+  ],
+  "excluded": [
+   "No equation-of-state conversion from temperature or density.",
+   "No physical closure or plasma calibration claim."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for malformed, nonfinite, mismatched pressure/grid inputs or nonpositive weights.",
+  "runtime_failure": "Raises FloatingPointError for unrepresentable finite float64 results.",
+  "nonconvergence": "Not applicable; direct finite relation.",
+  "partial_results": "No partial tuple is returned."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of W = 3/2 integral(p dV) for each supplied pressure profile. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [
+   "https://github.com/google-deepmind/torax"
+  ],
+  "license_status": "TORAX-derived relations retain Apache-2.0 attribution and the full source license in the selected distribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.physics.thermal_energy",
+   "symbol": "calculate_stored_thermal_energy",
+   "signature": "calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm)",
+   "canonical_module": "scirel.physics",
+   "canonical_symbol": "calculate_stored_thermal_energy"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run one declared finite-domain case.",
+  "code": "import numpy as np\nfrom scirel.physics import calculate_stored_thermal_energy\nv=np.array([2.,3.]); d=np.array([.4,.6])\nr=calculate_stored_thermal_energy([2,2],[3,3],[5,5],v,d)\nassert np.allclose(r,(7.8,11.7,19.5))",
+  "expected": "(7.8, 11.7, 19.5), to floating roundoff"
+ },
+ "verification": {
+  "scope": [
+   "Independent Decimal/longdouble conservation and overflow/underflow checks, component independence and malformed inputs.",
+   "Signed cancellation across permutations and intermediate product overflow/underflow regression; exact binary64 products and a single final rounding."
+  ],
+  "tests": [
+   "tests/test_profile_energy.py",
+   "tests/test_thermal_cancellation.py"
+  ],
+  "evidence_ceiling": "Independent numerical probes establish the named mathematical relation, discrete conservation, boundary and shape/failure behavior. They do not establish general plasma calibration or complete edge-model validity.",
+  "known_limitations": [
+   "No equation-of-state conversion from temperature or density.",
+   "No physical closure or plasma calibration claim.",
+   "Signed inputs are an algebraic compatibility extension; they do not describe positive stored physical energy.",
+   "Exact intermediate arithmetic preserves the discrete relation for the converted binary64 inputs; it does not recover precision lost in input conversion or validate the quadrature grid."
+  ]
+ }
 }

@@ -254,14 +254,14 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "frozen source operator contract",
-      "frozen source numerical oracle",
-      "SciRel direct contract tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -277,9 +277,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Evaluate one bounded source-method case.",
-    "code": "from scirel.kinetic import evaluate_kinetic_dielectric_tensor\nr=evaluate_kinetic_dielectric_tensor(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],f=1e10,kz=1,kx=1e4); assert r['K'].shape==(3,3)",
-    "expected": "The asserted result follows the declared output contract."
+    "description": "Evaluate a bounded one-species dielectric-tensor case and check the tensor shape.",
+    "code": "from scirel.kinetic import evaluate_kinetic_dielectric_tensor\nr=evaluate_kinetic_dielectric_tensor(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],f=1e10,kz=1,kx=1e4); assert r['K'].shape==(3,3)\n",
+    "expected": "Observed PASS: the bounded one-species case returns finite 3x3 K and D tensors, a finite determinant, and the declared intermediate scales with lmx=15."
   },
   "verification": {
     "scope": [
@@ -288,10 +288,11 @@
     "tests": [
       "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
     ],
-    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "default lmx=15; unlike the conventional sum, no near-zero kz clamp is applied",
-      "Public distribution license and expert review remain pending."
+      "Public distribution license and expert review remain pending.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

@@ -81,14 +81,14 @@
     "partial_results": "No partial array is returned on a raised exception. A successful call returns only the envelope array."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The historical descriptor requires increasing reference flux, while the maintained callable and tests also support reverse orientation.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -105,8 +105,8 @@
   },
   "example": {
     "description": "Apply a quadratic envelope on a grid with values both inside and outside the chosen flux interval.",
-    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(psi, {'psi_axis': 0.0, 'psi_edge': 1.0, 'alpha': 2.0})\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape",
-    "expected": "The clipped quadratic envelope is [[1, 1, 0.25], [0, 0, 0]] and retains the input grid shape."
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(psi, {'psi_axis': 0.0, 'psi_edge': 1.0, 'alpha': 2.0})\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape\n",
+    "expected": "Observed PASS: The clipped quadratic envelope is [[1, 1, 0.25], [0, 0, 0]] and retains the input grid shape."
   },
   "verification": {
     "scope": [
@@ -117,12 +117,12 @@
       "tests/operator_contracts/test_frank_egedal_radial_envelope.py",
       "tests/operator_contracts/test_frank_egedal_radial_envelope_admitted.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests establish selected algebraic values, affine relabeling, reverse orientation, defaults, nonmutation and explicit invalid cases. A parent-graph test demonstrates one Wb/rad closure-to-free-boundary coupling, not a physical pressure envelope, universal floating-point finiteness, arbitrary field compatibility, current qualified source parity, expert recognition or public release.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "Reference flux levels and flux convention are supplied or inferred from grid extrema, not physically identified by this function.",
       "The historical Wb label and other SciRel Wb/rad flux conventions have no automatic conversion; the tested coupling requires axis/edge references to share the current psi coordinate.",
       "A zero exponent yields one even at the clipped edge; finite extrema can still trigger extreme arithmetic without a post-computation check.",
-      "Current-version scientific expert recognition and public distribution licensing remain pending."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

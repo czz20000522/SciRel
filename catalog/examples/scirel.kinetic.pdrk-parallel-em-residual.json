@@ -105,17 +105,16 @@
     "partial_results": "No partial result is returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Derived from PDRK beammode EM1D, generalized beyond four species; causal negative-k denominators corrected by independent Gaussian-integral derivation. Canonical maintained plasma dispersion is reused.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://github.com/hsxie/pdrk",
-      "https://dlmf.nist.gov/7.7.E2"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -135,20 +134,21 @@
   "example": {
     "description": "Evaluate one signed-k response.",
     "code": "from scirel.kinetic.pdrk.parallel import em1d_parallel_residual\nstate = dict(wps2=[1.0], vds=[0.0], vtzs=[0.3], wcs=[-0.4], c2=1.0)\nf, scale = em1d_parallel_residual(state, 1.2+0.1j, -0.2, pm=-1)\nassert scale > 0",
-    "expected": "Finite complex residual and positive normalization scale; this example does not assert a root."
+    "expected": "The signed-k call returned residual 0.6385029198690467+0.22449072454736385j and positive scale 2.241657102055461."
   },
   "verification": {
     "scope": [
-      "Independent Gaussian velocity-integral signed-k witness and contour holdout.",
-      "Positive-domain preservation, drift reflection and both polarization signs."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_parallel.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Near-cancellation scale is a residual normalization, not a root-condition estimate.",
-      "Lower-half-plane unrepresentable special-function values are rejected."
+      "Lower-half-plane unrepresentable special-function values are rejected.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

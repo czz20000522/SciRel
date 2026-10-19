@@ -89,14 +89,14 @@
     "partial_results": "Never returned."
   },
   "provenance": {
-    "lineage_summary": "Development relation compared with saved KN1DPy 终态分子总能量守恒诊断, source anchor kinetic_h2.py:2063-2070 as recorded by the saved package. Saved implementation SHA-256 258ef36f7d265f5a7cc08f021cbf91fbd83ad9ce6876a1c56d1064655d4c2af3. Strict D1 qualification is withdrawn; this is bounded historical development comparison. Finite real arithmetic retains source order; non-real coercion rejection is a maintained repair. The saved operator document's scalar/profile, input/output-unit and single-node example statements contradict its callable and are not adopted.",
+    "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent interval residual tests",
-      "SHA-gated historical replay"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {

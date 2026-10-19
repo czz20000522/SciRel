@@ -107,15 +107,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy neutral generation stopping package, source anchor KN1DPy/kinetic_h.py:1278-1305, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 dd110cbdc804c0ee3c4fcadbe7fb5da5254ae0a829de40ffc65c901ad9c89cc3. The saved arithmetic and branch order match bounded finite replays; SciRel tightens input and derived-result failures. KN1DPy's strict D1 qualification has been withdrawn, so this is historical development comparison, not qualified-L1 provenance or expert approval.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "separate read-only SHA-256-pinned archived replay",
-      "scientific regression tests"
+      "SciRel implementation",
+      "KN1D-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -133,20 +132,21 @@
   "example": {
     "description": "Evaluate the stopping criterion with a known ratio.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_neutral_generation_stopping\ndelta, done, reason = evaluate_neutral_generation_stopping(\n    np.array([10.0, 20.0]), np.array([100.0, 200.0]), truncate=0.05)\nassert delta == 0.1\nassert done is False\nassert reason == 'continue'\ndelta2, done2, reason2 = evaluate_neutral_generation_stopping(\n    np.array([0.001, 0.001]), np.array([100.0, 200.0]), truncate=0.1)\nassert done2 is True\nassert reason2 == 'truncate'",
-    "expected": "delta = max(gen)/max(acc); done=True with reason='truncate' when delta < truncate; done=False with reason='continue' otherwise."
+    "expected": "The first case returned delta=0.1, done=False, reason=\"continue\"; the second returned delta=5e-06, done=True, reason=\"truncate\"."
   },
   "verification": {
     "scope": [
-      "Bit-identical agreement with the saved KN1DPy implementation.",
-      "Input and failure contracts."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_convergence_accumulation.py"
     ],
-    "evidence_ceiling": "Source-free direct tests cover ratio-of-max, strict stop branches, control parameters and overflow failures. Separate SHA-256-pinned read-only replay matches bounded valid saved results and selected rejections. This is historical development evidence, not qualified-L1 provenance or an external physics oracle.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Public distribution licensing remains pending a human decision.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

@@ -68,14 +68,13 @@
     "partial_results": "No output is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "Derived from retained Apache-2.0 TORAX source commit 8cd1184007c82ff379d118b2ad22753358820fe5, tree 1a77b880c34fb333aa1910350967b107f41521c8. geometry/geometry.py:face_to_cell, SHA-256 cae147cb1cb4cdb59e0f8a5756592ec768751099d62771008095aa53617faa90. The source relation is retained; explicit failure boundaries and stable float64 arithmetic are SciRel successor behavior.",
+    "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
     "source_kinds": [
-      "retained TORAX source implementation",
-      "independent algebra and boundary checks",
-      "SciRel implementation and regression tests"
+      "TORAX-derived implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "TORAX-derived implementation: Apache-2.0; license text and attribution are included in the selected distribution."
+    "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -91,9 +90,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Run the relation on a finite declared-domain case.",
+    "description": "Convert four face coordinates to the three adjacent cell-center coordinates.",
     "code": "import numpy as np\nfrom scirel.geometry import face_to_cell\nnp.testing.assert_array_equal(face_to_cell([0.,2.,8.,10.]), [1.,5.,9.])",
-    "expected": "[1.0, 5.0, 9.0]"
+    "expected": "The returned float64 cell centers are [1.0, 5.0, 9.0]."
   },
   "verification": {
     "scope": [

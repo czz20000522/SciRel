@@ -16,9 +16,9 @@
   },
   "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
   "example": {
-    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_cauchy_transform\nmesh=np.linspace(-10,10,81)\nr=evaluate_cauchy_transform(0.4+0.7j,lambda v: np.exp(-v*v)/np.sqrt(np.pi),integration_mesh=mesh)\nassert np.isfinite(r[\"G\"])",
-    "description": "Integrate a normalized Gaussian.",
-    "expected": "A finite complex transform and two component error estimates."
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_cauchy_transform\nmesh=np.linspace(-10,10,81)\nr=evaluate_cauchy_transform(0.4+0.7j,lambda v: np.exp(-v*v)/np.sqrt(np.pi),integration_mesh=mesh)\nassert np.isfinite(r[\"G\"])\n",
+    "description": "Integrate a normalized Gaussian with an explicit finite feature mesh.",
+    "expected": "Observed PASS: the explicit 81-point mesh gives a finite complex G and two component quadrature-error estimates."
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs, including epsabs/epsrel=None or non-scalar values and callback-only whole-line integration without integration_mesh.",
@@ -142,17 +142,16 @@
     }
   ],
   "provenance": {
-    "license_status": "Uses NumPy and SciPy; their applicable license texts are carried with the selected distribution.",
-    "lineage_summary": "Independent SciRel implementation of the Cauchy kernel from the defining relation.",
-    "public_references": [
-      "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)",
-      "SciPy scipy.integrate.quad documentation: QUADPACK real-contour integration and conditional error estimates"
-    ],
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "independent equation derivation",
-      "SciRel implementation",
-      "independent numerical regression and invariant tests"
-    ]
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "public scientific literature for the stated numerical relation"
+    ],
+    "public_references": [
+      "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+    ],
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -175,11 +174,12 @@
     "zh": "自适应 Cauchy 变换"
   },
   "verification": {
-    "evidence_ceiling": "Independent constant/affine finite-support logarithmic antiderivatives cover both half-planes, pole heights from1 to1e-300, endpoint/interior/exterior cases and multi-point shape; Gaussian special-function and Lorentzian residue identities cover whole-line tails. These numerical regressions support the kernel transformation, not arbitrary callback feature discovery or a certified global error bound.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "A finite interval truncates any tail not represented by caller bounds; whole-line mode requires caller-supplied mesh/support resolution and assumes integrable tails.",
       "Component indicators include quadrature and floating accumulation estimates but exclude callback, analytic-extension and finite-domain truncation errors; they are not global certificates.",
-      "Analytic continuation requires an explicit analytic callback matching the density."
+      "Analytic continuation requires an explicit analytic callback matching the density.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ],
     "scope": [
       "Independent analytic finite-interval identities and component error reporting.",

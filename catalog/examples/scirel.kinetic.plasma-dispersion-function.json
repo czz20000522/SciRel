@@ -82,15 +82,14 @@
     "partial_results": "None; output is returned only after all elements pass validation."
   },
   "provenance": {
-    "lineage_summary": "SciRel evaluates the analytic identity Z(z)=i*sqrt(pi)*w(z) through SciPy scipy.special.wofz. Historical rational approximations with fixed truncation orders have different numerical contracts and are not implementation dependencies.",
+    "lineage_summary": "SciRel evaluates the analytic identity Z(z)=i*sqrt(pi)*wofz(z) through the declared SciPy callable; direct tests cover scalar, array, continuation and fail-closed cases.",
     "source_kinds": [
-      "independent analytic special-function identity",
-      "SciRel wrapper of SciPy scipy.special.wofz"
+      "SciRel implementation",
+      "analytic identity",
+      "SciPy runtime dependency"
     ],
-    "public_references": [
-      "SciPy scipy.special.wofz defining identity and Steven G. Johnson Faddeeva implementation reference"
-    ],
-    "license_status": "Uses NumPy and SciPy; their applicable license texts are carried with the selected distribution."
+    "public_references": [],
+    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {

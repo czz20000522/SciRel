@@ -164,15 +164,14 @@
     "partial_results": "Never returned."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 分子氢碰撞频率收缩 package, source anchor KN1DPy/kinetic_h2.py:1136-1226, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 bbf1f1edc4c82ddda57ac7cb32730d4bfb5749670151f73ff2de370313366915. The saved formal implementation itself carries the minimal reshape repair of the registered kinetic_h2.py:1204 Alpha_CX source defect, and this port reproduces the repaired saved implementation bit for bit on the declared legal domain; the original defect stays registered verbatim in the immutable source. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is provisional bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "environment-gated historical replay test",
-      "scientific regression tests"
+      "SciRel implementation",
+      "KN1D-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -190,23 +189,24 @@
   "example": {
     "description": "With identity SIG matrices each Alpha family equals its carrier scaled by the matching density, and the ni_correct branch shifts the Alpha_H2_P carrier to max(n - nHP, 0).",
     "code": "import numpy as np\nfrom scirel.kinetic import contract_molecular_hydrogen_alpha_frequencies\nnvr, nvx, nx = 2, 3, 2\nN = nvr * nvx\nfH = np.ones((nvr, nvx, nx))\nfHp_hat = np.ones((nvr, nvx, nx))\nfi_hat = np.ones((nvr, nvx, nx))\nn = np.full(nx, 1e18)\nnHP = np.full(nx, 4e17)\nresult = contract_molecular_hydrogen_alpha_frequencies(\n    np.eye(N), np.eye(N), np.eye(N), fH, fHp_hat, fi_hat, n, nHP,\n)\nassert set(result) == {\"Alpha_CX\", \"Alpha_H2_H\", \"Alpha_H2_P\"}\nnp.testing.assert_array_equal(result[\"Alpha_CX\"], fHp_hat * 4e17)\nnp.testing.assert_array_equal(result[\"Alpha_H2_P\"], fi_hat * 1e18)\ncorrected = contract_molecular_hydrogen_alpha_frequencies(\n    np.eye(N), np.eye(N), np.eye(N), fH, fHp_hat, fi_hat, n, nHP, ni_correct=True,\n)\nnp.testing.assert_array_equal(corrected[\"Alpha_H2_P\"], fi_hat * 6e17)",
-    "expected": "Alpha_CX carries fHp_hat scaled by nHP, Alpha_H2_P carries fi_hat scaled by n, and the ni_correct branch rescales it to fi_hat scaled by max(n - nHP, 0)."
+    "expected": "Identity matrices produced Alpha_CX=fHp_hat*nHP, Alpha_H2_H=fH, and Alpha_H2_P=fi_hat*n; ni_correct=True changed the last factor to max(n-nHP,0)."
   },
   "verification": {
     "scope": [
-      "Bit-identical agreement with the saved KN1DPy implementation.",
-      "Input and failure contracts."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_alpha_contraction.py",
       "tests/operator_contracts/test_alpha_contraction_l1.py"
     ],
-    "evidence_ceiling": "The maintained direct tests establish output keys and shapes, finite real and alignment failures, exact small diagonal-matrix witnesses for all three family/carrier bindings, and both ni_correct branches including clipping at zero. The environment-gated replay test can establish bit-identical agreement with the SHA-256-pinned saved KN1DPy implementation on its finite samples after the registered Alpha_CX reshape repair. That replay is provisional historical development evidence, not qualified-L1 provenance. No test establishes the relation against an external atomic-physics reference; the saved package records that residual as validation_oracle_gap.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
       "The Alpha_CX reshape repair relative to the raw kinetic_h2.py source is registered, not silently absorbed; its scientific framing remains an expert-review item.",
       "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
-      "Public distribution licensing remains pending a human decision."
+      "Public distribution licensing remains pending a human decision.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

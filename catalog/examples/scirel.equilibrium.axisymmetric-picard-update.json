@@ -1,230 +1,229 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
-  "kind": "operator",
-  "title": {
-    "en": "Axisymmetric Picard Green flux update",
-    "zh": "轴对称 Picard 磁通 Green 更新"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
+ "kind": "operator",
+ "title": {
+  "en": "Axisymmetric Picard Green flux update",
+  "zh": "轴对称 Picard 磁通 Green 更新"
+ },
+ "summary": "Convert toroidal current density to cell currents, apply a dense cell-current-to-flux Green matrix, relax the resulting flux against the previous state, and report relative flux/current changes.",
+ "taxonomy": [
+  "equilibrium",
+  "picard",
+  "axisymmetric",
+  "green-response"
+ ],
+ "aliases": [
+  "flux-relaxed axisymmetric Picard step"
+ ],
+ "identity": {
+  "relation": "toroidal current-density grid and dense Green response to one relaxed axisymmetric flux update",
+  "direction": "R-Z grid, J_phi, previous/vacuum flux, Green matrix and relax -> psi_next, cell currents and relative changes",
+  "definition": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current. Form candidate=psi_vac+G_psi@I and psi_next=relax*psi_state+(1-relax)*candidate. Return relaxed step change, raw-current change, and unrelaxed fixed-point residual.",
+  "model": "one axisymmetric dense-Green Picard step with flux relaxation, not current relaxation",
+  "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
+  "coordinates": "[Z,R] arrays; Green rows and columns follow C-order field-point and cell-current flattening",
+  "boundary": "Quadrature uses the declared input node domain or explicit cell boundaries; no implicit exterior support is invented.",
+  "assumptions": [
+   "relax is the weight of the previous flux, not a mixer for current values.",
+   "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "psi与Green磁通响应均使用RAphi的Wb/rad约定；实际圆环方程未含2π，真空场/叠加链旧Wb标签已纠正，不修改数值。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Cylindrical radius mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Nonnegative, rectilinear and strictly increasing radial axis; at least three columns."
   },
-  "summary": "Convert toroidal current density to cell currents, apply a dense cell-current-to-flux Green matrix, relax the resulting flux against the previous state, and report relative flux/current changes.",
-  "taxonomy": [
-    "equilibrium",
-    "picard",
-    "axisymmetric",
-    "green-response"
-  ],
-  "aliases": [
-    "flux-relaxed axisymmetric Picard step"
-  ],
-  "identity": {
-    "relation": "toroidal current-density grid and dense Green response to one relaxed axisymmetric flux update",
-    "direction": "R-Z grid, J_phi, previous/vacuum flux, Green matrix and relax -> psi_next, cell currents and relative changes",
-    "definition": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current. Form candidate=psi_vac+G_psi@I and psi_next=relax*psi_state+(1-relax)*candidate. Return relaxed step change, raw-current change, and unrelaxed fixed-point residual.",
-    "model": "one axisymmetric dense-Green Picard step with flux relaxation, not current relaxation",
-    "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
-    "coordinates": "[Z,R] arrays; Green rows and columns follow C-order field-point and cell-current flattening",
-    "boundary": "Quadrature uses the declared input node domain or explicit cell boundaries; no implicit exterior support is invented.",
-    "assumptions": [
-      "relax is the weight of the previous flux, not a mixer for current values.",
-      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "psi与Green磁通响应均使用RAphi的Wb/rad约定；实际圆环方程未含2π，真空场/叠加链旧Wb标签已纠正，不修改数值。"
-    ]
+  {
+   "name": "z_grid",
+   "description": "Axial coordinate mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Rectilinear and strictly increasing axial axis; at least three rows and same shape as r_grid."
   },
-  "inputs": [
-    {
-      "name": "r_grid",
-      "description": "Cylindrical radius mesh.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Nonnegative, rectilinear and strictly increasing radial axis; at least three columns."
-    },
-    {
-      "name": "z_grid",
-      "description": "Axial coordinate mesh.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Rectilinear and strictly increasing axial axis; at least three rows and same shape as r_grid."
-    },
-    {
-      "name": "j_phi",
-      "description": "Caller-selected toroidal current density at each grid cell.",
-      "units": "A/m^2",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same shape as the grid; this Operator does not apply a plasma mask."
-    },
-    {
-      "name": "psi_state",
-      "description": "Previous total psi=R A_phi state.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same shape as the grid; used for flux relaxation and relative change."
-    },
-    {
-      "name": "psi_vac",
-      "description": "Vacuum or external psi=R A_phi contribution.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same shape as the grid and aligned with Green response rows."
-    },
-    {
-      "name": "g_psi",
-      "description": "Dense cell-current-to-psi response matrix.",
-      "units": "Wb/rad/A",
-      "shape": "[N_Z*N_R,N_Z*N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Finite square matrix with field-point rows and source-current columns in [Z,R] C order."
-    },
-    {
-      "name": "relax",
-      "description": "Weight retained from psi_state.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real scalar convertible to float",
-      "required": true,
-      "constraints": "Finite and 0 <= relax < 1; one is rejected."
-    },
-    {
-      "name": "previous_cell_currents",
-      "description": "Previous raw cell-current array used only for the current-change diagnostic.",
-      "units": "A",
-      "shape": "[N_Z,N_R] or null",
-      "dtype": "finite real array-like or None",
-      "required": false,
-      "default": null,
-      "constraints": "If omitted or null, compare against zeros; otherwise exactly match the grid shape."
-    },
-    {
-      "name": "cell_edges",
-      "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "units": "m",
-      "shape": "(N_R+1, N_Z+1) arrays or None",
-      "dtype": "pair of finite arrays or None",
-      "required": false,
-      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "psi_next",
-      "description": "Flux-relaxed next total psi=R A_phi state.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "relax*psi_state+(1-relax)*(psi_vac+G_psi @ raw_currents)."
-    },
-    {
-      "name": "plasma_cell_currents",
-      "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
-      "units": "A",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
-    },
-    {
-      "name": "relative_psi_change",
-      "description": "L2 norm of psi_next-psi_state divided by max(||psi_next||,||psi_vac||,tiny).",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Uses the returned psi_next and the previous psi_state."
-    },
-    {
-      "name": "relative_current_change",
-      "description": "L2 norm of raw currents minus prior currents divided by max(||raw currents||,1).",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Previous currents affect this diagnostic only, not the flux update."
-    },
-    {
-      "name": "fixed_point_residual",
-      "description": "Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax.",
-      "units": "1",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller supplies a physically meaningful J_phi and a Green matrix in the stated cell-current/field-point convention.",
-      "All grid fields are same-shape finite arrays and g_psi has the exact dense square shape."
-    ],
-    "supported": [
-      "One finite R-Z axisymmetric flux-feedback step with caller-selected current, external flux and flux-relaxation weight."
-    ],
-    "excluded": [
-      "A complete converged equilibrium or automatic selection of iteration count.",
-      "Current relaxation, automatic active-cell masking, or automatic conversion to complete linked flux 2*pi*psi.",
-      "Non-axisymmetric geometry, sparse-Green optimization, or a guarantee of finite arithmetic for all extreme finite inputs."
-    ]
+  {
+   "name": "j_phi",
+   "description": "Caller-selected toroidal current density at each grid cell.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same shape as the grid; this Operator does not apply a plasma mask."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for wrong-rank, mismatched or nonfinite grid fields; negative/nonincreasing/nonrectilinear or too-small grids; invalid Green matrix; relax outside [0,1); or invalid previous currents.",
-    "runtime_failure": "Unexpected NumPy arithmetic failures propagate. Intermediate overflow in matrix multiplication or norm evaluation is not separately trapped by a finite-output guard.",
-    "nonconvergence": "Not applicable to one step; the caller controls and checks the iteration loop.",
-    "partial_results": "No partial mapping is returned after an exception."
+  {
+   "name": "psi_state",
+   "description": "Previous total psi=R A_phi state.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same shape as the grid; used for flux relaxation and relative change."
   },
-  "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping, pending intake candidate and the 2026-09-25 flux-convention audit. SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; 实际圆环与平衡反馈均用RAphi，旧真空Wb标签纠正为Wb/rad而不改数值。 This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
-    "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation, direct tests and development flux-convention audit"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "psi_vac",
+   "description": "Vacuum or external psi=R A_phi contribution.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same shape as the grid and aligned with Green response rows."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.equilibrium.axisymmetric_picard_update",
-      "symbol": "update_axisymmetric_picard_flux",
-      "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None, *, cell_edges=None)",
-      "canonical_module": "scirel.equilibrium",
-      "canonical_symbol": "update_axisymmetric_picard_flux"
-    }
+  {
+   "name": "g_psi",
+   "description": "Dense cell-current-to-psi response matrix.",
+   "units": "Wb/rad/A",
+   "shape": "[N_Z*N_R,N_Z*N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Finite square matrix with field-point rows and source-current columns in [Z,R] C order."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
+  {
+   "name": "relax",
+   "description": "Weight retained from psi_state.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar convertible to float",
+   "required": true,
+   "constraints": "Finite and 0 <= relax < 1; one is rejected."
   },
-  "example": {
-    "description": "A nonuniform node-domain integral has exact linear current total.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr,z=np.meshgrid([1.,1.2,2.],[-.4,-.1,.4])\nout=update_axisymmetric_picard_flux(r,z,r,r*0,r*0,np.zeros((9,9)),0.)\nnp.testing.assert_allclose(out['plasma_cell_currents'].sum(),1.2,rtol=1e-14,atol=1e-14)",
-    "expected": "1.2 A over exactly the supplied node domain."
+  {
+   "name": "previous_cell_currents",
+   "description": "Previous raw cell-current array used only for the current-change diagnostic.",
+   "units": "A",
+   "shape": "[N_Z,N_R] or null",
+   "dtype": "finite real array-like or None",
+   "required": false,
+   "default": null,
+   "constraints": "If omitted or null, compare against zeros; otherwise exactly match the grid shape."
   },
-  "verification": {
-    "scope": [
-      "Linear J=R integrates to 1.2 A on a nonuniform [1,2] by [-0.4,0.4] node domain.",
-      "Compact polynomial current converges to 8/225 A on nonuniform grids.",
-      "Explicit uniform cell edges reproduce the full-area center convention."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_axisymmetric_picard_update.py",
-      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
-    ],
-    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
-    "known_limitations": [
-      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
-      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-      "No expert scientific endorsement or public release follows from this numerical successor."
-    ]
+  {
+   "name": "cell_edges",
+   "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "units": "m",
+   "shape": "(N_R+1, N_Z+1) arrays or None",
+   "dtype": "pair of finite arrays or None",
+   "required": false,
+   "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "psi_next",
+   "description": "Flux-relaxed next total psi=R A_phi state.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "relax*psi_state+(1-relax)*(psi_vac+G_psi @ raw_currents)."
+  },
+  {
+   "name": "plasma_cell_currents",
+   "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
+   "units": "A",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
+  },
+  {
+   "name": "relative_psi_change",
+   "description": "L2 norm of psi_next-psi_state divided by max(||psi_next||,||psi_vac||,tiny).",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Uses the returned psi_next and the previous psi_state."
+  },
+  {
+   "name": "relative_current_change",
+   "description": "L2 norm of raw currents minus prior currents divided by max(||raw currents||,1).",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Previous currents affect this diagnostic only, not the flux update."
+  },
+  {
+   "name": "fixed_point_residual",
+   "description": "Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax.",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Norm(candidate-psi_state)/max(norm(candidate),norm(psi_vac),tiny); independent of relax."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller supplies a physically meaningful J_phi and a Green matrix in the stated cell-current/field-point convention.",
+   "All grid fields are same-shape finite arrays and g_psi has the exact dense square shape."
+  ],
+  "supported": [
+   "One finite R-Z axisymmetric flux-feedback step with caller-selected current, external flux and flux-relaxation weight."
+  ],
+  "excluded": [
+   "A complete converged equilibrium or automatic selection of iteration count.",
+   "Current relaxation, automatic active-cell masking, or automatic conversion to complete linked flux 2*pi*psi.",
+   "Non-axisymmetric geometry, sparse-Green optimization, or a guarantee of finite arithmetic for all extreme finite inputs."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for wrong-rank, mismatched or nonfinite grid fields; negative/nonincreasing/nonrectilinear or too-small grids; invalid Green matrix; relax outside [0,1); or invalid previous currents.",
+  "runtime_failure": "Unexpected NumPy arithmetic failures propagate. Intermediate overflow in matrix multiplication or norm evaluation is not separately trapped by a finite-output guard.",
+  "nonconvergence": "Not applicable to one step; the caller controls and checks the iteration loop.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of toroidal current-density grid and dense Green response to one relaxed axisymmetric flux update. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium.axisymmetric_picard_update",
+   "symbol": "update_axisymmetric_picard_flux",
+   "signature": "update_axisymmetric_picard_flux(r_grid, z_grid, j_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents=None, *, cell_edges=None)",
+   "canonical_module": "scirel.equilibrium",
+   "canonical_symbol": "update_axisymmetric_picard_flux"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "A nonuniform node-domain integral has exact linear current total.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import update_axisymmetric_picard_flux\nr,z=np.meshgrid([1.,1.2,2.],[-.4,-.1,.4])\nout=update_axisymmetric_picard_flux(r,z,r,r*0,r*0,np.zeros((9,9)),0.)\nnp.testing.assert_allclose(out['plasma_cell_currents'].sum(),1.2,rtol=1e-14,atol=1e-14)",
+  "expected": "1.2 A over exactly the supplied node domain."
+ },
+ "verification": {
+  "scope": [
+   "Linear J=R integrates to 1.2 A on a nonuniform [1,2] by [-0.4,0.4] node domain.",
+   "Compact polynomial current converges to 8/225 A on nonuniform grids.",
+   "Explicit uniform cell edges reproduce the full-area center convention."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_axisymmetric_picard_update.py",
+   "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "known_limitations": [
+   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+   "No expert scientific endorsement or public release follows from this numerical successor."
+  ]
+ }
 }

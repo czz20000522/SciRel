@@ -158,15 +158,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 中性代际空间传播 package, source anchor KN1DPy/kinetic_h.py:1260-1275; kinetic_h2.py:1385-1415, as recorded by the saved bundle's own provenance section. Saved implementation file SHA-256 9d24a06959b37deaa142857bf75bb545c1bedcdbd9ec54f721c62387698c1a13. The recurrence order is retained and compared on bounded finite cases; SciRel tightens input coercion and non-finite output handling. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so this is historical development comparison, not qualified-L1 provenance or expert approval.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "separate read-only SHA-256-pinned archived replay",
-      "scientific regression tests"
+      "SciRel implementation",
+      "KN1D-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -184,22 +183,21 @@
   "example": {
     "description": "Propagate a first-flight generation from a uniform boundary.",
     "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_upwind_transport_coefficients, propagate_neutral_generation\nx = np.linspace(0, 1, 3)\nvx = np.array([-1.0, 1.0])\nalpha = np.ones((2, 2, 3))\nsource = np.ones((2, 2, 3))\nr = assemble_neutral_upwind_transport_coefficients(x, vx, alpha, source)\nboundary = np.ones((2, 2))\ngen = propagate_neutral_generation(vx, r['Ak'], r['Bk'], r['Fk'], r['Ck'], r['Dk'], r['Gk'], generation_kind='first_flight', incoming_boundary=boundary)\nassert gen.shape == (2, 2, 3)\nassert np.all(np.isfinite(gen))",
-    "expected": "A finite generation distribution with the expected shape."
+    "expected": "The first-flight example returned a finite generation array of shape (2, 2, 3); the positive and negative velocity branches were propagated separately."
   },
   "verification": {
     "scope": [
-      "That first_flight forward propagation matches the saved coefficient recurrence.",
-      "That scattered backward propagation matches the saved coefficient recurrence.",
-      "The generation_kind and source/boundary exclusivity failure contracts.",
-      "Exact bit-level replay against the saved KN1DPy implementation, pinned by SHA-256, on both generation kinds."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_transport_step.py"
     ],
-    "evidence_ceiling": "Source-free direct tests cover both recurrence branches, the right-boundary convention, input and overflow contracts. A separate read-only SHA-256-pinned replay compares bounded valid outputs bit for bit with the saved implementation. The archived comparison is historical development evidence, not qualified-L1 provenance or an external transport-model oracle.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Public distribution licensing remains pending a human decision.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

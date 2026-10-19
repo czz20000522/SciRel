@@ -97,13 +97,13 @@
     "partial_results": "No partial tuple on invalid input."
   },
   "provenance": {
-    "lineage_summary": "Recovered Pleiades analysis/helpers.py meridional transform. D2 corrects forward angle sign against the source inverse and independently derived orthonormal basis. Original projection/roundtrip tolerance3e-15 retained.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "Frozen D0 source implementation",
-      "Independent orthogonal basis derivation"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "MIT source retained; final human decision pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -119,9 +119,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Project a vector at a positive-Z axis point.",
-    "code": "from scirel.geometry.sampling import transform_to_rhoz\nrho,z,urho,uz=transform_to_rhoz(2.,0.,4.,3.)\nassert rho==0 and z==2 and urho==3 and uz==4",
-    "expected": "Original meridional position/vector components."
+    "description": "Transform r=2, theta=0 and polar vector components back to cylindrical meridional coordinates.",
+    "code": "from scirel.geometry.sampling import transform_to_rhoz\n\nrho, z, radial, axial = transform_to_rhoz(2.0, 0.0, 4.0, 3.0)\nassert (rho, z, radial, axial) == (0.0, 2.0, 3.0, 4.0)",
+    "expected": "The inverse transform returns rho=0, Z=2, rho-component=3, and Z-component=4."
   },
   "verification": {
     "scope": [

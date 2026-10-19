@@ -19,7 +19,7 @@
     "direction": "Declared inputs to Tuple reflected Rho,Z and scalar fields",
     "definition": "Reflect R across zero and duplicate Z and even scalar quantities without duplicate zero column",
     "model": "Source hstack convention with named quantities alternative",
-    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "geometry": "planar R-Z grid with scalar radial symmetry",
     "coordinates": "Rho,Z planar grids with radial column order",
     "boundary": "First radial column zero; remaining columns reflected in reverse order",
     "assumptions": [
@@ -74,26 +74,26 @@
       "First radial column is zero; supplied fields are even under radial reflection"
     ],
     "supported": [
-      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
     ],
     "excluded": [
       "No vector-component parity or signed-radius physical field interpretation"
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
-    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
-    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
-    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
   },
   "provenance": {
-    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived scientific implementation",
-      "independent analytic or numerical oracle"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -109,18 +109,20 @@
     "dependencies": []
   },
   "example": {
-    "description": "Bounded executable example for Scalar half-plane reflection",
-    "code": "import numpy as np\nfrom scirel.geometry.sampling import reflect_and_hstack\nr,z=np.meshgrid([0.,.5,1.],[-.2,.2])\na=reflect_and_hstack(r,z,quantities=[r*r])\nassert a[0].shape==(2,5)",
-    "expected": "Declared result shape and bounded numerical behavior are asserted."
+    "description": "Reflect a scalar radial grid about R=0 without duplicating the zero column.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import reflect_and_hstack\n\nrho, z = np.meshgrid([0.0, 0.5, 1.0], [-0.2, 0.2])\nreflected = reflect_and_hstack(rho, z, quantities=[rho * rho])\nassert reflected[0].shape == (2, 5)\nassert reflected[1].shape == (2, 5)\nassert reflected[2].shape == (2, 5)",
+    "expected": "The reflected coordinate and scalar arrays each have shape (2, 5)."
   },
   "verification": {
     "scope": [
-      "Only the explicitly stated finite input domain and direct-test fixtures"
+      "Public callable signature and documented finite-input behavior",
+      "The direct regression fixtures listed in verification.tests",
+      "The executable example stored in this contract"
     ],
     "tests": [
       "tests/pleiades/equilibrium/test_analysis_families.py"
     ],
-    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
     "known_limitations": [
       "No vector-component parity or signed-radius physical field interpretation"
     ]

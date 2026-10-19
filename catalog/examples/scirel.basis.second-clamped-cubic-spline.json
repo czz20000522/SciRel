@@ -6,7 +6,7 @@
     "en": "Origin-natural cylindrical spline",
     "zh": "零原点自然边界柱坐标样条"
   },
-  "summary": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
+  "summary": "Callable piecewise-cubic Hermite interpolation with the retained origin row and cylindrical right boundary equation.",
   "taxonomy": [
     "analysis",
     "basis"
@@ -19,7 +19,7 @@
     "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
     "definition": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
     "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
-    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "geometry": "one-dimensional scalar abscissa and ordinate samples",
     "coordinates": "Knots in arbitrary coherent coordinate units",
     "boundary": "Source origin row and right fdd+fd/x-m²f/x²=0",
     "assumptions": [
@@ -76,7 +76,7 @@
       "x_data[0]=y_data[0]=0 and x_data[-1]>0"
     ],
     "supported": [
-      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+      "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
     ],
     "excluded": [
       "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
@@ -86,19 +86,19 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
-    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
-    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
-    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+    "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
+    "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
+    "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
+    "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
   },
   "provenance": {
-    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived scientific implementation",
-      "independent analytic or numerical oracle"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -114,19 +114,21 @@
     "dependencies": []
   },
   "example": {
-    "description": "Bounded executable example for Origin-natural cylindrical spline",
-    "code": "import numpy as np\nfrom scirel.geometry.basis import SecondClampedCubicSpline\nf=SecondClampedCubicSpline(np.array([0.,.3,1.]),np.array([0.,.2,1.]))\nassert f(np.array([.3])).shape==(1,)",
-    "expected": "Declared result shape and bounded numerical behavior are asserted."
+    "description": "Construct the origin-natural cylindrical spline with its default right-boundary parameter.",
+    "code": "import numpy as np\nfrom scirel.geometry.basis import SecondClampedCubicSpline\n\nspline = SecondClampedCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))\nnp.testing.assert_allclose(spline(np.array([0.3])), [0.2])",
+    "expected": "The callable returns 0.2 at the interior knot and preserves the one-element query shape."
   },
   "verification": {
     "scope": [
-      "Only the explicitly stated finite input domain and direct-test fixtures"
+      "Public callable signature and documented finite-input behavior",
+      "The direct regression fixtures listed in verification.tests",
+      "The executable example stored in this contract"
     ],
     "tests": [
       "tests/pleiades/equilibrium/test_analysis_families.py",
       "tests/pleiades/equilibrium/test_analysis_corrections.py"
     ],
-    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
     "known_limitations": [
       "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
       "Duplicate, unsorted or nonfinite knots are outside numerical qualification",

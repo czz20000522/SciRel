@@ -79,16 +79,16 @@
     "partial_results": "No partial scientific result is returned after failure."
   },
   "provenance": {
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "GPDF frozen D1 scientific capability",
-      "independent equation derivation",
-      "SciRel implementation"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "public scientific literature for the stated numerical relation"
     ],
-    "lineage_summary": "Reimplements the defining scientific relations exposed by frozen GPDF D1; D2 corrections and failure history are documented in gpdf-generalized-core evaluation. Dev9 successor of exact document SHA256 cdf717984d47c638cb10f9719aa74c37a2ab1860181d91513ac4cfbca8e5323a; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
-    "license_status": "Independent equation implementation uses NumPy and SciPy; their licenses are carried with the selected distribution.",
     "public_references": [
       "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
-    ]
+    ],
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "verification": {
     "tests": [
@@ -100,14 +100,15 @@
     ],
     "known_limitations": [
       "This parser does not prove integrability, positivity, normalization or analytic continuation validity.",
-      "Arithmetic exceptions and nonfinite expression evaluations are not converted into symbolic diagnoses."
+      "Arithmetic exceptions and nonfinite expression evaluations are not converted into symbolic diagnoses.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ],
-    "evidence_ceiling": "Independent analytic derivative identities and unsupported-syntax regressions; no general computer-algebra equivalence or arbitrary-expression proof."
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
   },
   "example": {
-    "description": "Lorentzian density and its derivative without a symbolic runtime.",
-    "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import DensityExpression\nf=DensityExpression('1./(1+v.^2)/pi')\nv=.7\nassert abs(f(v)-1/(1+v*v)/np.pi)<1e-14\nassert abs(f.derivative(v)+2*v/(1+v*v)**2/np.pi)<1e-14",
-    "expected": "Analytic Lorentzian value and derivative match the closed formulas."
+    "description": "Compile a Lorentzian expression and compare its value and derivative with closed forms.",
+    "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import DensityExpression\nf=DensityExpression('1./(1+v.^2)/pi')\nv=.7\nassert abs(f(v)-1/(1+v*v)/np.pi)<1e-14\nassert abs(f.derivative(v)+2*v/(1+v*v)**2/np.pi)<1e-14\n",
+    "expected": "Observed PASS: the compiled Lorentzian value and analytic derivative agree with their closed forms at v=0.7."
   },
   "version": {
     "implementation_version": "0.1.0.dev11",

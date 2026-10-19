@@ -1,353 +1,352 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-  "kind": "operator",
-  "title": {
-    "en": "Bounded anisotropic trial parameter optimization",
-    "zh": "有界各向异性试探参数优化"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.inference.anisotropic-parameter-optimization",
+ "kind": "operator",
+ "title": {
+  "en": "Bounded anisotropic trial parameter optimization",
+  "zh": "有界各向异性试探参数优化"
+ },
+ "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，返回实际终点的重新验证状态。",
+ "taxonomy": [
+  "inference",
+  "anisotropic-equilibrium",
+  "bounded-optimization"
+ ],
+ "aliases": [
+  "direct anisotropic residual fitting"
+ ],
+ "identity": {
+  "relation": "有界参数和固定维数 trial 到经新调用验证的局部拟合记录",
+  "direction": "initial_params、bounds、method、trial_evaluator 和预算 → 参数、残差、前向/优化状态及日志",
+  "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，只取有效样本作起点。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
+  "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
+  "geometry": "由 trial_evaluator 定义",
+  "coordinates": "fit_keys 顺序或 bounds 插入顺序构成优化向量；非拟合参数保留",
+  "boundary": "所有 bounds 均须有限严格递增，初值在边界内。错误方法、错误 LHS 或非法控制直接拒绝，不补做越界 fallback。",
+  "assumptions": [
+   "trial 返回固定 N 维有限残差、相符 chi2、前向状态及失败原因。",
+   "有效 trial 必须有真实 converged=True 前向状态，无 failure_reason，且 valid 不为 False。",
+   "罚值只用于数值控制，不能作为物理解或可辨识性信息。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "initial_params",
+   "description": "完整初值；非拟合参数原样深复制。",
+   "units": "按参数合同",
+   "shape": "mapping",
+   "dtype": "映射",
+   "required": true,
+   "constraints": "所有拟合值有限且位于对应边界内。"
   },
-  "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，返回实际终点的重新验证状态。",
-  "taxonomy": [
-    "inference",
-    "anisotropic-equilibrium",
-    "bounded-optimization"
-  ],
-  "aliases": [
-    "direct anisotropic residual fitting"
-  ],
-  "identity": {
-    "relation": "有界参数和固定维数 trial 到经新调用验证的局部拟合记录",
-    "direction": "initial_params、bounds、method、trial_evaluator 和预算 → 参数、残差、前向/优化状态及日志",
-    "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，只取有效样本作起点。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
-    "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
-    "geometry": "由 trial_evaluator 定义",
-    "coordinates": "fit_keys 顺序或 bounds 插入顺序构成优化向量；非拟合参数保留",
-    "boundary": "所有 bounds 均须有限严格递增，初值在边界内。错误方法、错误 LHS 或非法控制直接拒绝，不补做越界 fallback。",
-    "assumptions": [
-      "trial 返回固定 N 维有限残差、相符 chi2、前向状态及失败原因。",
-      "有效 trial 必须有真实 converged=True 前向状态，无 failure_reason，且 valid 不为 False。",
-      "罚值只用于数值控制，不能作为物理解或可辨识性信息。"
-    ]
+  {
+   "name": "bounds",
+   "description": "参数上下界及默认顺序。",
+   "units": "与参数相同",
+   "shape": "mapping[key → (low,high)]",
+   "dtype": "有限实数对映射",
+   "required": true,
+   "constraints": "所有提供区间均有限且 low<high。"
   },
-  "inputs": [
-    {
-      "name": "initial_params",
-      "description": "完整初值；非拟合参数原样深复制。",
-      "units": "按参数合同",
-      "shape": "mapping",
-      "dtype": "映射",
-      "required": true,
-      "constraints": "所有拟合值有限且位于对应边界内。"
-    },
-    {
-      "name": "bounds",
-      "description": "参数上下界及默认顺序。",
-      "units": "与参数相同",
-      "shape": "mapping[key → (low,high)]",
-      "dtype": "有限实数对映射",
-      "required": true,
-      "constraints": "所有提供区间均有限且 low<high。"
-    },
-    {
-      "name": "method",
-      "description": "局部优化方法。",
-      "units": "identifier",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "仅 least_squares 或 minimize；后者明确采用 L-BFGS-B。"
-    },
-    {
-      "name": "trial_evaluator",
-      "description": "单次物理评估端口。",
-      "units": "残差无量纲；状态按科学合同",
-      "shape": "callable(*,params) → mapping",
-      "dtype": "可调用对象",
-      "required": true,
-      "constraints": "必须提供 residuals、chi2、equilibrium、failure_reason；valid 如存在必须为布尔。"
-    },
-    {
-      "name": "fit_keys",
-      "description": "拟合参数有序子集。",
-      "units": "identifier",
-      "shape": "sequence or None",
-      "dtype": "字符串序列或 None",
-      "required": false,
-      "constraints": "非空且不重复，必须同时存在于 initial_params 与 bounds；默认 bounds 键。",
-      "default": null
-    },
-    {
-      "name": "lhs_sampler",
-      "description": "可选 Latin-hypercube 设计端口。",
-      "units": "参数单位",
-      "shape": "callable or None",
-      "dtype": "可调用对象或 None",
-      "required": false,
-      "constraints": "启用 n_initial_samples 时必须可调用；全部样本须恰含拟合键、有限且在边界内。",
-      "default": null
-    },
-    {
-      "name": "n_initial_samples",
-      "description": "优化前 LHS 样本数。",
-      "units": "count",
-      "shape": "integer or None",
-      "dtype": "整数或 None",
-      "required": false,
-      "constraints": "1 至 max_evaluations-3，拒绝布尔及非整数；None 时不调用 LHS。",
-      "default": null
-    },
-    {
-      "name": "seed",
-      "description": "传给 LHS 的随机种子。",
-      "units": "dimensionless",
-      "shape": "sampler-defined or None",
-      "dtype": "采样器支持的种子或 None",
-      "required": false,
-      "constraints": "未启用 LHS 时无效；相同已验证采样器及种子产生相同设计。",
-      "default": null
-    },
-    {
-      "name": "residual_size",
-      "description": "预声明残差维数。",
-      "units": "count",
-      "shape": "integer or None",
-      "dtype": "正整数或 None",
-      "required": false,
-      "constraints": "未提供时由第一次 trial 的非空一维向量取得，此后不变；图入口总是先由观测计算。",
-      "default": null
-    },
-    {
-      "name": "failure_penalty",
-      "description": "无效 trial 对优化器提供的每分量罚值。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": false,
-      "constraints": "有限正数且 N*penalty² 有限；默认 1e12。",
-      "default": 1000000000000.0
-    },
-    {
-      "name": "max_evaluations",
-      "description": "所有实际科学 trial 调用的共同上限。",
-      "units": "count",
-      "shape": "integer",
-      "dtype": "整数",
-      "required": false,
-      "constraints": "至少 3；包含 LHS、差分及新终点验证；不能与 SciPy nfev 混同。",
-      "default": 200
-    }
-  ],
-  "outputs": [
-    {
-      "name": "best_parameters",
-      "description": "实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
-      "units": "参数单位",
-      "shape": "mapping or None",
-      "dtype": "dict 或 None",
-      "required": true,
-      "constraints": "无有效候选则 None。正常终点与 optimizer_summary.parameters 一致；不声称始终是所有日志最小值。"
-    },
-    {
-      "name": "chi2",
-      "description": "所返回状态的归一化平方和；无有效解时为 N*penalty²。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "有限非负；失败 penalty 必须配合状态解读。"
-    },
-    {
-      "name": "residual_vector",
-      "description": "所返回同一 trial 的固定维数残差。",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "float64 数组",
-      "required": true,
-      "constraints": "参数、状态与残差同属最后验证的试探；无有效解为罚值。"
-    },
-    {
-      "name": "converged",
-      "description": "优化器成功且其实际终点的最新前向评估有效。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "fallback、耗尽预算或终点无效时 False；不表示残差小、全局最优或可辨识。"
-    },
-    {
-      "name": "forward_converged",
-      "description": "当前返回的状态已实际通过前向与 trial 验证。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "可在优化器未收敛时 True，表示可用部分结果。"
-    },
-    {
-      "name": "optimizer_converged",
-      "description": "SciPy success 原始布尔投影。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "常量失败罚值也可导致优化器停止，不能单独当作物理成功。"
-    },
-    {
-      "name": "equilibrium",
-      "description": "与 best_parameters 及 residual_vector 同次验证的前向状态。",
-      "units": "混合",
-      "shape": "mapping or None",
-      "dtype": "映射或 None",
-      "required": true,
-      "constraints": "无有效返回候选时 None。"
-    },
-    {
-      "name": "evaluation_log",
-      "description": "所有实际评估的参数、chi2、valid、failure_reason 与 source。",
-      "units": "混合",
-      "shape": "list[N_eval]",
-      "dtype": "记录列表",
-      "required": true,
-      "constraints": "source 为 latin_hypercube、optimizer、terminal、best_valid_recheck。"
-    },
-    {
-      "name": "failure_reason",
-      "description": "预算、数值故障、终点失败或优化停止原因。",
-      "units": "identifier",
-      "shape": "string or None",
-      "dtype": "字符串或 None",
-      "required": true,
-      "constraints": "仅同时成功时为 None；合同错误抛出。"
-    },
-    {
-      "name": "optimizer_summary",
-      "description": "方法、success、status、message、nfev 与实际 result.x 的 parameters。",
-      "units": "混合状态与计数",
-      "shape": "mapping or None",
-      "dtype": "dict 或 None",
-      "required": true,
-      "constraints": "SciPy nfev 不等于全部科学调用次数；预算中断时可能为 None。"
-    },
-    {
-      "name": "best_valid_trial",
-      "description": "所有历史有效试探中最低 chi2 的完整记录。",
-      "units": "混合",
-      "shape": "mapping or None",
-      "dtype": "dict 或 None",
-      "required": true,
-      "constraints": "仅作观察记录；与返回终点分开，不给其套用另一点的收敛状态。"
-    },
-    {
-      "name": "scientific_evaluations",
-      "description": "实际 trial 调用总数。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "不超过 max_evaluations；含数值差分与终点验证。"
-    },
-    {
-      "name": "max_evaluations",
-      "description": "本次已验证的科学调用上限。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "valid_trial_count",
-      "description": "评估日志中有效 trial 数量。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "失败试探不计入。"
-    },
-    {
-      "name": "residual_size",
-      "description": "本次固定残差维数。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "所有向量维数相同。"
-    },
-    {
-      "name": "identifiability",
-      "description": "通用可辨识性状态。",
-      "units": "identifier",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "固定为 not_established；局部停止不等于可辨识性证明。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "参数域、有限边界、trial 物理意义和残差合同明确。"
-    ],
-    "supported": [
-      "局部 least_squares/L-BFGS-B、可选确定性 LHS、失败 trial 隔离、终点绑定与有限预算。"
-    ],
-    "excluded": [
-      "全局最优、置信区间、多模态探索或通用参数可辨识性证明。",
-      "将失败零残差或旧最优态包装成当前优化器收敛。"
-    ]
+  {
+   "name": "method",
+   "description": "局部优化方法。",
+   "units": "identifier",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "仅 least_squares 或 minimize；后者明确采用 L-BFGS-B。"
   },
-  "failure_semantics": {
-    "invalid_input": "方法、边界、初值、键、样本或预算不合法时在科学调用前抛 ValueError；trial 合同错误传播。",
-    "runtime_failure": "带显式 residual_size 的自定义 trial 数值异常记录为固定维失败，并消耗实际调用预算；未建立 N 时传播异常，不伪造维数。优化器自身数值异常和预算停止单独报告；合同 ValueError/TypeError/KeyError 不吞掉。",
-    "nonconvergence": "优化停止和前向有效性分开返回；fallback 从不称 converged。",
-    "partial_results": "best_valid_trial 保存历史有效最小值；best_parameters 只来自新的终点或 fallback 验证；全失败时两者均 None。"
+  {
+   "name": "trial_evaluator",
+   "description": "单次物理评估端口。",
+   "units": "残差无量纲；状态按科学合同",
+   "shape": "callable(*,params) → mapping",
+   "dtype": "可调用对象",
+   "required": true,
+   "constraints": "必须提供 residuals、chi2、equilibrium、failure_reason；valid 如存在必须为布尔。"
   },
-  "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 本后继针对已证实的观测约定、漏通道、失败维数和无效最优试探问题修正；保留前驱字节与失败证据，未继承错误 fallback。物理组合复用已资格化各向异性 Picard、场恢复及 Green 能力；不把旧候选来源或本作者测试解释为根接收、人工认可或再分发许可。",
-    "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "fit_keys",
+   "description": "拟合参数有序子集。",
+   "units": "identifier",
+   "shape": "sequence or None",
+   "dtype": "字符串序列或 None",
+   "required": false,
+   "constraints": "非空且不重复，必须同时存在于 initial_params 与 bounds；默认 bounds 键。",
+   "default": null
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.inference.anisotropic_parameter_optimization",
-      "symbol": "optimize_anisotropic_parameters",
-      "signature": "optimize_anisotropic_parameters(*, initial_params, bounds, method, trial_evaluator, fit_keys=None, lhs_sampler=None, n_initial_samples=None, seed=None, residual_size=None, failure_penalty=1000000000000.0, max_evaluations=200)",
-      "canonical_module": "scirel.inference",
-      "canonical_symbol": "optimize_anisotropic_parameters"
-    }
+  {
+   "name": "lhs_sampler",
+   "description": "可选 Latin-hypercube 设计端口。",
+   "units": "参数单位",
+   "shape": "callable or None",
+   "dtype": "可调用对象或 None",
+   "required": false,
+   "constraints": "启用 n_initial_samples 时必须可调用；全部样本须恰含拟合键、有限且在边界内。",
+   "default": null
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.inference.anisotropic-trial-evaluation"
-      }
-    ]
+  {
+   "name": "n_initial_samples",
+   "description": "优化前 LHS 样本数。",
+   "units": "count",
+   "shape": "integer or None",
+   "dtype": "整数或 None",
+   "required": false,
+   "constraints": "1 至 max_evaluations-3，拒绝布尔及非整数；None 时不调用 LHS。",
+   "default": null
   },
-  "example": {
-    "description": "仅说明优化控制的标量例子；物理闭环见 direct-anisotropic-inversion。",
-    "code": "import numpy as np\nfrom scirel.inference import optimize_anisotropic_parameters\ndef trial(*, params):\n    residuals = np.array([params['x'] - 3.0])\n    return {'chi2': float(residuals @ residuals), 'residuals': residuals, 'equilibrium': {'converged': True}, 'failure_reason': None}\nr = optimize_anisotropic_parameters(initial_params={'x': 0.0, 'fixed': 7.0}, bounds={'x': (-5.0, 5.0)}, fit_keys=['x'], method='least_squares', trial_evaluator=trial)\nassert abs(r['best_parameters']['x'] - 3.0) < 1e-6\nassert r['best_parameters']['fixed'] == 7.0 and r['converged']\nassert r['chi2'] == min(e['chi2'] for e in r['evaluation_log'])",
-    "expected": "恢复 x≈3，保留 fixed=7，终点实际前向有效；非法方法直接抛错。"
+  {
+   "name": "seed",
+   "description": "传给 LHS 的随机种子。",
+   "units": "dimensionless",
+   "shape": "sampler-defined or None",
+   "dtype": "采样器支持的种子或 None",
+   "required": false,
+   "constraints": "未启用 LHS 时无效；相同已验证采样器及种子产生相同设计。",
+   "default": null
   },
-  "verification": {
-    "scope": [
-      "原有效标量恢复、LHS 起点与残差数值断言保留。",
-      "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
-      "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。"
-    ],
-    "tests": [
-      "tests/operator_contracts/test_inference_physical_closure.py",
-      "tests/operator_contracts/test_anisotropic_inference_independent.py"
-    ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
-    "known_limitations": [
-      "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
-      "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
-      "完整试探状态保存在 best_valid_trial，内存开销随前向状态而变。"
-    ]
+  {
+   "name": "residual_size",
+   "description": "预声明残差维数。",
+   "units": "count",
+   "shape": "integer or None",
+   "dtype": "正整数或 None",
+   "required": false,
+   "constraints": "未提供时由第一次 trial 的非空一维向量取得，此后不变；图入口总是先由观测计算。",
+   "default": null
+  },
+  {
+   "name": "failure_penalty",
+   "description": "无效 trial 对优化器提供的每分量罚值。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "constraints": "有限正数且 N*penalty² 有限；默认 1e12。",
+   "default": 1000000000000.0
+  },
+  {
+   "name": "max_evaluations",
+   "description": "所有实际科学 trial 调用的共同上限。",
+   "units": "count",
+   "shape": "integer",
+   "dtype": "整数",
+   "required": false,
+   "constraints": "至少 3；包含 LHS、差分及新终点验证；不能与 SciPy nfev 混同。",
+   "default": 200
   }
+ ],
+ "outputs": [
+  {
+   "name": "best_parameters",
+   "description": "实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
+   "units": "参数单位",
+   "shape": "mapping or None",
+   "dtype": "dict 或 None",
+   "required": true,
+   "constraints": "无有效候选则 None。正常终点与 optimizer_summary.parameters 一致；不声称始终是所有日志最小值。"
+  },
+  {
+   "name": "chi2",
+   "description": "所返回状态的归一化平方和；无有效解时为 N*penalty²。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "有限非负；失败 penalty 必须配合状态解读。"
+  },
+  {
+   "name": "residual_vector",
+   "description": "所返回同一 trial 的固定维数残差。",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64 数组",
+   "required": true,
+   "constraints": "参数、状态与残差同属最后验证的试探；无有效解为罚值。"
+  },
+  {
+   "name": "converged",
+   "description": "优化器成功且其实际终点的最新前向评估有效。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "fallback、耗尽预算或终点无效时 False；不表示残差小、全局最优或可辨识。"
+  },
+  {
+   "name": "forward_converged",
+   "description": "当前返回的状态已实际通过前向与 trial 验证。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "可在优化器未收敛时 True，表示可用部分结果。"
+  },
+  {
+   "name": "optimizer_converged",
+   "description": "SciPy success 原始布尔投影。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "常量失败罚值也可导致优化器停止，不能单独当作物理成功。"
+  },
+  {
+   "name": "equilibrium",
+   "description": "与 best_parameters 及 residual_vector 同次验证的前向状态。",
+   "units": "混合",
+   "shape": "mapping or None",
+   "dtype": "映射或 None",
+   "required": true,
+   "constraints": "无有效返回候选时 None。"
+  },
+  {
+   "name": "evaluation_log",
+   "description": "所有实际评估的参数、chi2、valid、failure_reason 与 source。",
+   "units": "混合",
+   "shape": "list[N_eval]",
+   "dtype": "记录列表",
+   "required": true,
+   "constraints": "source 为 latin_hypercube、optimizer、terminal、best_valid_recheck。"
+  },
+  {
+   "name": "failure_reason",
+   "description": "预算、数值故障、终点失败或优化停止原因。",
+   "units": "identifier",
+   "shape": "string or None",
+   "dtype": "字符串或 None",
+   "required": true,
+   "constraints": "仅同时成功时为 None；合同错误抛出。"
+  },
+  {
+   "name": "optimizer_summary",
+   "description": "方法、success、status、message、nfev 与实际 result.x 的 parameters。",
+   "units": "混合状态与计数",
+   "shape": "mapping or None",
+   "dtype": "dict 或 None",
+   "required": true,
+   "constraints": "SciPy nfev 不等于全部科学调用次数；预算中断时可能为 None。"
+  },
+  {
+   "name": "best_valid_trial",
+   "description": "所有历史有效试探中最低 chi2 的完整记录。",
+   "units": "混合",
+   "shape": "mapping or None",
+   "dtype": "dict 或 None",
+   "required": true,
+   "constraints": "仅作观察记录；与返回终点分开，不给其套用另一点的收敛状态。"
+  },
+  {
+   "name": "scientific_evaluations",
+   "description": "实际 trial 调用总数。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "不超过 max_evaluations；含数值差分与终点验证。"
+  },
+  {
+   "name": "max_evaluations",
+   "description": "本次已验证的科学调用上限。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "valid_trial_count",
+   "description": "评估日志中有效 trial 数量。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "失败试探不计入。"
+  },
+  {
+   "name": "residual_size",
+   "description": "本次固定残差维数。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "所有向量维数相同。"
+  },
+  {
+   "name": "identifiability",
+   "description": "通用可辨识性状态。",
+   "units": "identifier",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "固定为 not_established；局部停止不等于可辨识性证明。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "参数域、有限边界、trial 物理意义和残差合同明确。"
+  ],
+  "supported": [
+   "局部 least_squares/L-BFGS-B、可选确定性 LHS、失败 trial 隔离、终点绑定与有限预算。"
+  ],
+  "excluded": [
+   "全局最优、置信区间、多模态探索或通用参数可辨识性证明。",
+   "将失败零残差或旧最优态包装成当前优化器收敛。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "方法、边界、初值、键、样本或预算不合法时在科学调用前抛 ValueError；trial 合同错误传播。",
+  "runtime_failure": "带显式 residual_size 的自定义 trial 数值异常记录为固定维失败，并消耗实际调用预算；未建立 N 时传播异常，不伪造维数。优化器自身数值异常和预算停止单独报告；合同 ValueError/TypeError/KeyError 不吞掉。",
+  "nonconvergence": "优化停止和前向有效性分开返回；fallback 从不称 converged。",
+  "partial_results": "best_valid_trial 保存历史有效最小值；best_parameters 只来自新的终点或 fallback 验证；全失败时两者均 None。"
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of 有界参数和固定维数 trial 到经新调用验证的局部拟合记录. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.inference.anisotropic_parameter_optimization",
+   "symbol": "optimize_anisotropic_parameters",
+   "signature": "optimize_anisotropic_parameters(*, initial_params, bounds, method, trial_evaluator, fit_keys=None, lhs_sampler=None, n_initial_samples=None, seed=None, residual_size=None, failure_penalty=1000000000000.0, max_evaluations=200)",
+   "canonical_module": "scirel.inference",
+   "canonical_symbol": "optimize_anisotropic_parameters"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.inference.anisotropic-trial-evaluation"
+   }
+  ]
+ },
+ "example": {
+  "description": "仅说明优化控制的标量例子；物理闭环见 direct-anisotropic-inversion。",
+  "code": "import numpy as np\nfrom scirel.inference import optimize_anisotropic_parameters\ndef trial(*, params):\n    residuals = np.array([params['x'] - 3.0])\n    return {'chi2': float(residuals @ residuals), 'residuals': residuals, 'equilibrium': {'converged': True}, 'failure_reason': None}\nr = optimize_anisotropic_parameters(initial_params={'x': 0.0, 'fixed': 7.0}, bounds={'x': (-5.0, 5.0)}, fit_keys=['x'], method='least_squares', trial_evaluator=trial)\nassert abs(r['best_parameters']['x'] - 3.0) < 1e-6\nassert r['best_parameters']['fixed'] == 7.0 and r['converged']\nassert r['chi2'] == min(e['chi2'] for e in r['evaluation_log'])",
+  "expected": "恢复 x≈3，保留 fixed=7，终点实际前向有效；非法方法直接抛错。"
+ },
+ "verification": {
+  "scope": [
+   "原有效标量恢复、LHS 起点与残差数值断言保留。",
+   "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
+   "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。"
+  ],
+  "tests": [
+   "tests/operator_contracts/test_inference_physical_closure.py",
+   "tests/operator_contracts/test_anisotropic_inference_independent.py"
+  ],
+  "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+  "known_limitations": [
+   "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
+   "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
+   "完整试探状态保存在 best_valid_trial，内存开销随前向状态而变。"
+  ]
+ }
 }

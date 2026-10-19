@@ -85,15 +85,15 @@
     "partial_results": "Class wrapper preserves previous mapping when a read fails."
   },
   "provenance": {
-    "lineage_summary": "D2 bounded structural successor from retained Pleiades io.py and D0 lexical EQDSK successor; source parser behavior and known raw-writer failures remain recorded. Predecessor silently ignored attached solver axes and shifted their geometry on readback. This successor rejects unrepresentable attached axes without assigning meanings to opaque header slots.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived IO implementation",
-      "source-bound lexical EQDSK fixtures"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [
       "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
     ],
-    "license_status": "Source/license evidence retained; scientific and release approval pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -109,9 +109,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Serialize caller supplied records to fixed-width text.",
+    "description": "Serialize a minimal caller-supplied Pleiades EQDSK mapping and inspect its fixed-width header.",
     "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nimport numpy as np\nfrom scirel.io.eqdsk import write_pleiades_eqdsk\nmapping = dict(title='EXAMPLE', cursign=1, nnr=2, nnz=2, nnv=2, rbox=1., zbox=2., psi_lim=1., Ip=0., psi=np.zeros((2,2)), nlim_pairs=0, nves_pairs=0, lim_pairs=np.empty((0,2)), ves_pairs=np.empty((0,2)))\nfor key in ('tor_flux','p_flux','rbphi_flux','pprime_flux','q_flux'):\n    mapping[key] = np.zeros(2)\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    write_pleiades_eqdsk(mapping, path)\n    assert path.read_text().splitlines()[0] == 'EXAMPLE'.ljust(48)+'   1   2   2   2' ",
-    "expected": "A text file with four declared header integers and valid fixed-width arrays."
+    "expected": "The first line contains the title and the four declared header integers; the remaining fixed-width arrays are written."
   },
   "verification": {
     "scope": [

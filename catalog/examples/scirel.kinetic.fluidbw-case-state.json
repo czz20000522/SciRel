@@ -18,14 +18,14 @@
   "asset_id": "scirel.kinetic.fluidbw-case-state",
   "example": {
     "code": "from scirel.kinetic.fluidbw import derive_fluidbw_case\ns=derive_fluidbw_case('bonk',3)\n",
-    "description": "fluidBW complete SI case state minimal execution",
-    "expected": "Three species with signed gyrofrequency, finite positive normalization scales."
+    "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
+    "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
   },
   "failure_semantics": {
     "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
     "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
     "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
-    "runtime_failure": "RuntimeError for unsupported/missing native runtime or abnormal native exit; subprocess timeout is explicit."
+    "runtime_failure": "Raises RuntimeError before numerical evaluation unless the pinned Linux amd64 and GNU Octave 7.3.0 runtime is available; native errors propagate and no fallback is selected."
   },
   "identity": {
     "assumptions": [
@@ -75,17 +75,16 @@
     }
   ],
   "provenance": {
-    "license_status": "NOT_ESTABLISHED. WHAMP/Faddeeva permissions unresolved. Private technical development only; no scientific human or release approval.",
-    "lineage_summary": "fluidBW upstream79829170 → retained D0 7fd667f4 → faithful D1 1a6704a7 → corrected D2. Source issues, intended divergences and scientific derivations are explained in the corrected full retained increment review narrative.",
-    "public_references": [
-      "H. S. Xie, Phys. Plasmas 32, 082110 (2025).",
-      "docs/evaluations/2026-10-13-fluidbw-full-retained-d2.md"
-    ],
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "MATLAB implementation",
-      "source case definitions",
-      "derived scientific and numerical correction"
-    ]
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
+    ],
+    "public_references": [
+      "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+    ],
+    "license_status": "retained fluidBW notices under licenses/; source redistribution permission not established; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -108,11 +107,13 @@
     "zh": "fluidBW 完整 SI 案例状态"
   },
   "verification": {
-    "evidence_ceiling": "Bounded analytic, independent constitutive, root and state tests in the pinned runtime support the declared numerical model. Neither an all-input-universe accuracy proof nor expert scientific approval.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "Source permissions remain NOT_ESTABLISHED; no public release.",
       "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-      "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual."
+      "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+      "Example execution requires Linux amd64 with GNU Octave 7.3.0; it was not run on this macOS host."
     ],
     "scope": [
       "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."

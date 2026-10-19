@@ -1,1520 +1,1518 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-  "kind": "task_graph",
-  "title": {
-    "en": "Kinetic mirror reduced-Hall equilibrium",
-    "zh": "动理学镜约化 Hall 平衡"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+ "kind": "task_graph",
+ "title": {
+  "en": "Kinetic mirror reduced-Hall equilibrium",
+  "zh": "动理学镜约化 Hall 平衡"
+ },
+ "summary": "Bind the grid mirror kinetic closure to the pressure port of the reduced-Hall anisotropic Picard graph, so each Hall field and flux state is evaluated by the kinetic graph before the next magnetic update.",
+ "taxonomy": [
+  "equilibrium",
+  "kinetic-mirror",
+  "hall",
+  "axisymmetric",
+  "picard"
+ ],
+ "aliases": [
+  "kinetic mirror Hall composition"
+ ],
+ "identity": {
+  "relation": "grid mirror kinetic pressure state to reduced-Hall magnetic-flux feedback",
+  "direction": "R-Z mesh, vacuum flux, Green response, ion properties and kinetic configuration -> terminal Hall equilibrium mapping",
+  "definition": "Copy kinetic_config, then bind a pressure_closure(B,psi) which calls the grid mirror kinetic TaskGraph with the current Hall B and psi and with the outer r_grid/z_grid overriding any same-named kinetic_config entries. Remove kinetic_config from the Hall payload, replace any supplied pressure_closure with the bound closure, and return the reduced-Hall TaskGraph result unchanged. The outer wrapper performs no magnetic update itself; the nested Hall graph owns its bounded Picard and optional Hall-inertia iterations and reevaluates the kinetic closure at its terminal state.",
+  "model": "axisymmetric grid mirror end-loss/quasineutral kinetic closure coupled to reduced-Hall anisotropic Picard feedback",
+  "geometry": "rectilinear cylindrical R-Z grid accepted by both nested graphs; the bound Hall graph requires at least three nodes on each axis",
+  "coordinates": "fields use [Z,R] array indexing; nested Hall supplies psi=R A_phi in Wb/rad and the dense Green matrix follows its C-order cell-current convention. The outer binding passes that psi without conversion to the kinetic flux-profile coordinate.",
+  "boundary": "Caller supplies vacuum flux, dense Green response, plug-plane positions and kinetic reference data; the composition adds no free-boundary response or coordinate conversion.",
+  "assumptions": [
+   "The kinetic_config supplies all remaining required kinetic graph ports and is scientifically compatible with the outer Hall ion properties; every psi-dependent kinetic profile interprets psi=R A_phi in Wb/rad.",
+   "The two nested graphs interpret magnetic field, flux and pressure using compatible conventions; the wrapper does not verify this beyond their existing contracts.",
+   "Dependency-injection hooks can replace the bound nested callables for testing, but such overrides are not evidence for the canonical scientific composition."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Cylindrical radius grid passed to both child graphs.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Rectilinear, nonnegative R axis, strictly increasing with at least three columns; same shape as z_grid and psi_vac."
   },
-  "summary": "Bind the grid mirror kinetic closure to the pressure port of the reduced-Hall anisotropic Picard graph, so each Hall field and flux state is evaluated by the kinetic graph before the next magnetic update.",
-  "taxonomy": [
-    "equilibrium",
-    "kinetic-mirror",
-    "hall",
-    "axisymmetric",
-    "picard"
-  ],
-  "aliases": [
-    "kinetic mirror Hall composition"
-  ],
-  "identity": {
-    "relation": "grid mirror kinetic pressure state to reduced-Hall magnetic-flux feedback",
-    "direction": "R-Z mesh, vacuum flux, Green response, ion properties and kinetic configuration -> terminal Hall equilibrium mapping",
-    "definition": "Copy kinetic_config, then bind a pressure_closure(B,psi) which calls the grid mirror kinetic TaskGraph with the current Hall B and psi and with the outer r_grid/z_grid overriding any same-named kinetic_config entries. Remove kinetic_config from the Hall payload, replace any supplied pressure_closure with the bound closure, and return the reduced-Hall TaskGraph result unchanged. The outer wrapper performs no magnetic update itself; the nested Hall graph owns its bounded Picard and optional Hall-inertia iterations and reevaluates the kinetic closure at its terminal state.",
-    "model": "axisymmetric grid mirror end-loss/quasineutral kinetic closure coupled to reduced-Hall anisotropic Picard feedback",
-    "geometry": "rectilinear cylindrical R-Z grid accepted by both nested graphs; the bound Hall graph requires at least three nodes on each axis",
-    "coordinates": "fields use [Z,R] array indexing; nested Hall supplies psi=R A_phi in Wb/rad and the dense Green matrix follows its C-order cell-current convention. The outer binding passes that psi without conversion to the kinetic flux-profile coordinate.",
-    "boundary": "Caller supplies vacuum flux, dense Green response, plug-plane positions and kinetic reference data; the composition adds no free-boundary response or coordinate conversion.",
-    "assumptions": [
-      "The kinetic_config supplies all remaining required kinetic graph ports and is scientifically compatible with the outer Hall ion properties; every psi-dependent kinetic profile interprets psi=R A_phi in Wb/rad.",
-      "The two nested graphs interpret magnetic field, flux and pressure using compatible conventions; the wrapper does not verify this beyond their existing contracts.",
-      "Dependency-injection hooks can replace the bound nested callables for testing, but such overrides are not evidence for the canonical scientific composition."
-    ]
+  {
+   "name": "z_grid",
+   "description": "Axial grid passed to both child graphs.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Rectilinear, strictly increasing Z axis with at least three rows; same shape as r_grid and psi_vac."
   },
-  "inputs": [
-    {
-      "name": "r_grid",
-      "description": "Cylindrical radius grid passed to both child graphs.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Rectilinear, nonnegative R axis, strictly increasing with at least three columns; same shape as z_grid and psi_vac."
-    },
-    {
-      "name": "z_grid",
-      "description": "Axial grid passed to both child graphs.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Rectilinear, strictly increasing Z axis with at least three rows; same shape as r_grid and psi_vac."
-    },
-    {
-      "name": "psi_vac",
-      "description": "Vacuum psi=R A_phi and initial Hall Picard state.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same grid shape; copied by the Hall graph and passed unconverted as the kinetic flux-profile coordinate."
-    },
-    {
-      "name": "g_psi",
-      "description": "Dense cell-current-to-psi response for the Hall graph.",
-      "units": "Wb/rad/A",
-      "shape": "[N_Z*N_R,N_Z*N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Exact finite square shape and Hall Picard C-order cell-current mapping, with no embedded 2*pi or cell-area factor."
-    },
-    {
-      "name": "ion_mass_kg",
-      "description": "Ion mass passed to Hall drift.",
-      "units": "kg",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": true,
-      "constraints": "Strictly positive in the Hall leaf; independently provide the corresponding kinetic_config.mass_kg."
-    },
-    {
-      "name": "ion_charge_c",
-      "description": "Positive ion charge passed to Hall drift.",
-      "units": "C",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": true,
-      "constraints": "Strictly positive in the Hall leaf; independently provide the corresponding kinetic_config.charge_c."
-    },
-    {
-      "name": "kinetic_config",
-      "description": "Fixed inputs for each evaluation of the nested grid mirror kinetic closure.",
-      "units": "mixed SI; psi-dependent profiles use Wb/rad",
-      "shape": "mapping",
-      "dtype": "Python dict",
-      "required": true,
-      "constraints": "Must be a dict. The bound graph requires mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, electron_temperature_j, reference_z, plug_left_z and plug_right_z. Optional kinetic controls, their defaults and validation are defined by scirel.kinetic.grid-mirror-kinetic-closure; r_grid, z_grid, b_t and psi are supplied from the current Hall call and override matching entries. Psi-dependent profiles must interpret the Hall psi=R A_phi in Wb/rad. The wrapper does not reconcile kinetic mass/charge with the Hall mass/charge."
-    },
-    {
-      "name": "tol",
-      "description": "Outer Hall relative flux-change stopping threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1e-08,
-      "constraints": "The Hall graph checks finiteness, not positivity; choose a positive value for intended stopping."
-    },
-    {
-      "name": "maxiter",
-      "description": "Hall Picard update bound.",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "integer scalar",
-      "required": false,
-      "default": 200,
-      "constraints": "Integer >= 1; outer nonconvergence returns converged=false if terminal checks pass."
-    },
-    {
-      "name": "relax",
-      "description": "Previous-flux weight in Hall Green update.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.5,
-      "constraints": "0 <= value < 1."
-    },
-    {
-      "name": "minimum_field",
-      "description": "Hall update field floor.",
-      "units": "T",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1e-08,
-      "constraints": "Strictly positive; checked during updates, not repeated at terminal reevaluation."
-    },
-    {
-      "name": "minimum_firehose_margin",
-      "description": "Terminal active-cell firehose threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.0,
-      "constraints": "Negative disables the terminal threshold; nonnegative values reject active cells at or below it."
-    },
-    {
-      "name": "plasma_mask",
-      "description": "Fixed or state-dependent Hall active-cell policy.",
-      "units": "boolean",
-      "shape": "[N_Z,N_R], callable(B,psi)->[N_Z,N_R], or null",
-      "dtype": "boolean array-like, callable or None",
-      "required": false,
-      "default": null,
-      "constraints": "Null selects all cells; fixed and callable masks must match the grid."
-    },
-    {
-      "name": "hall_multiplier",
-      "description": "Hall drift multiplier.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1.0,
-      "constraints": "Nonnegative."
-    },
-    {
-      "name": "include_toroidal_inertia",
-      "description": "Enable the Hall leaf's bounded local inertia correction.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": false,
-      "default": true,
-      "constraints": "Actual boolean scalar; not numeric 0/1."
-    },
-    {
-      "name": "hall_density_floor_fraction",
-      "description": "Relative density floor for Hall-active drift support.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.1,
-      "constraints": "0 <= value < 1."
-    },
-    {
-      "name": "maximum_inertial_mach",
-      "description": "Ion-drift Mach cap in Hall leaf.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.5,
-      "constraints": "Strictly positive."
-    },
-    {
-      "name": "inertia_relax",
-      "description": "Previous-current weight in Hall local inertia iteration.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.5,
-      "constraints": "0 <= value < 1."
-    },
-    {
-      "name": "inertia_tolerance",
-      "description": "Hall local inertia stopping threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1e-10,
-      "constraints": "Strictly positive."
-    },
-    {
-      "name": "inertia_max_iterations",
-      "description": "Hall local inertia iteration bound.",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "integer scalar",
-      "required": false,
-      "default": 80,
-      "constraints": "Integer >= 1; local nonconvergence raises."
-    },
-    {
-      "name": "compatibility_tol",
-      "description": "Terminal parallel-momentum error threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.05,
-      "constraints": "Nonnegative; exceedance raises only with strict_compatibility=true."
-    },
-    {
-      "name": "ohm_tolerance",
-      "description": "Terminal normalized generalized-Ohm error threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.05,
-      "constraints": "Strictly positive; exceedance raises only with strict_compatibility=true."
-    },
-    {
-      "name": "strict_compatibility",
-      "description": "Reject Hall terminal compatibility threshold exceedance.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": false,
-      "default": true,
-      "constraints": "Actual boolean scalar; the separate firehose check remains active."
-    },
-    {
-      "name": "kinetic_graph",
-      "description": "Optional explicit substitute for the bound kinetic TaskGraph.",
-      "units": "callable",
-      "shape": "callable(mapping)->mapping or null",
-      "dtype": "Python callable or None",
-      "required": false,
-      "default": null,
-      "constraints": "Dependency-injection hook, selected by Python truthiness; an override changes the scientific composition and is not the canonical asset."
-    },
-    {
-      "name": "hall_graph",
-      "description": "Optional explicit substitute for the bound Hall TaskGraph.",
-      "units": "callable",
-      "shape": "callable(mapping)->mapping or null",
-      "dtype": "Python callable or None",
-      "required": false,
-      "default": null,
-      "constraints": "Dependency-injection hook, selected by Python truthiness; an override changes the returned mapping and is not the canonical asset."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "psi",
-      "description": "Terminal Hall psi=R A_phi state.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Returned unchanged from the Hall graph after one or more updates."
-    },
-    {
-      "name": "plasma_cell_currents",
-      "description": "Terminal Hall cell-current grid.",
-      "units": "A",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Recomputed by the Hall graph at terminal psi."
-    },
-    {
-      "name": "J_phi",
-      "description": "Terminal reduced-Hall toroidal current density.",
-      "units": "A/m^2",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Hall active-cell mask applies."
-    },
-    {
-      "name": "B_R",
-      "description": "Terminal radial poloidal field.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Derived from terminal psi."
-    },
-    {
-      "name": "B_Z",
-      "description": "Terminal axial poloidal field.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Derived from terminal psi."
-    },
-    {
-      "name": "B",
-      "description": "Terminal poloidal-field magnitude passed into the last kinetic evaluation.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "The Hall graph does not repeat minimum_field at this terminal evaluation."
-    },
-    {
-      "name": "p_parallel",
-      "description": "Terminal kinetic parallel pressure after Hall scalar broadcast.",
-      "units": "Pa",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Taken from the terminal kinetic closure and shape-coerced by Hall."
-    },
-    {
-      "name": "p_perpendicular",
-      "description": "Terminal kinetic perpendicular pressure after Hall scalar broadcast.",
-      "units": "Pa",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Taken from the terminal kinetic closure and shape-coerced by Hall."
-    },
-    {
-      "name": "parallel_force",
-      "description": "Terminal Hall force along magnetic field.",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Hall diagnostic, not an independent physical validation."
-    },
-    {
-      "name": "force_R",
-      "description": "Terminal radial Hall target force.",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "May include centrifugal correction."
-    },
-    {
-      "name": "force_Z",
-      "description": "Terminal axial Hall target force.",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Returned from Hall state."
-    },
-    {
-      "name": "ion_toroidal_velocity",
-      "description": "Terminal Hall ion toroidal drift.",
-      "units": "m/s",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Zero outside Hall-active cells."
-    },
-    {
-      "name": "electron_toroidal_velocity",
-      "description": "Terminal Hall electron toroidal drift.",
-      "units": "m/s",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Zero outside Hall-active cells."
-    },
-    {
-      "name": "electric_field_R",
-      "description": "Terminal radial electrostatic field.",
-      "units": "V/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "From kinetic electrostatic_potential through the Hall leaf."
-    },
-    {
-      "name": "electric_field_Z",
-      "description": "Terminal axial electrostatic field.",
-      "units": "V/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "From kinetic electrostatic_potential through the Hall leaf."
-    },
-    {
-      "name": "hall_state",
-      "description": "Complete terminal reduced-Hall leaf result.",
-      "units": "mixed SI",
-      "shape": "mapping",
-      "dtype": "Python mapping",
-      "required": true,
-      "constraints": "Returned by the child graph without outer modification."
-    },
-    {
-      "name": "converged",
-      "description": "Hall outer Picard convergence flag.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "False at maxiter is returned if terminal gates pass."
-    },
-    {
-      "name": "iterations",
-      "description": "Executed Hall outer updates.",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "Between one and maxiter inclusive."
-    },
-    {
-      "name": "relative_psi_change",
-      "description": "Last Hall relative flux change.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Uses the bound Hall graph's norm convention."
-    },
-    {
-      "name": "parallel_force_error",
-      "description": "Terminal Hall parallel-momentum error fraction.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Compared with compatibility_tol."
-    },
-    {
-      "name": "generalized_ohm_error",
-      "description": "Terminal normalized generalized-Ohm residual.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Compared with ohm_tolerance."
-    },
-    {
-      "name": "closure_state",
-      "description": "Unmodified mapping from the last grid mirror kinetic call.",
-      "units": "mixed SI",
-      "shape": "mapping",
-      "dtype": "Python mapping",
-      "required": true,
-      "constraints": "Includes the kinetic graph's density, pressure, potential and diagnostic fields; may not match Hall-broadcast primary pressure shapes if a custom kinetic override is used."
-    },
-    {
-      "name": "firehose_margin",
-      "description": "Terminal Hall firehose/tension margin.",
-      "units": "dimensionless",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Checked on active cells when minimum_firehose_margin >= 0."
-    },
-    {
-      "name": "compatibility_messages",
-      "description": "Hall terminal compatibility exceedance messages.",
-      "units": "text",
-      "shape": "list[string]",
-      "dtype": "Python list of strings",
-      "required": true,
-      "constraints": "Can be nonempty on successful return only when strict_compatibility=false."
-    },
-    {
-      "name": "iteration_history",
-      "description": "Hall per-update flux/current and Ohm diagnostics.",
-      "units": "mixed dimensionless diagnostics",
-      "shape": "[iterations] list[mapping]",
-      "dtype": "Python list of mappings",
-      "required": true,
-      "constraints": "Each item records iteration, relative_psi_change, relative_current_change and generalized_ohm_error."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The outer and kinetic mass/charge entries, flux and field conventions, pressure model and grid geometry are physically compatible; the wrapper does not reconcile them.",
-      "The kinetic configuration can evaluate the current Hall field and flux at every outer update and terminal reevaluation.",
-      "The caller Green response and plug-plane/reference inputs follow the two bound child contracts."
-    ],
-    "supported": [
-      "Binding the saved grid mirror end-loss/quasineutral pressure closure into an axisymmetric reduced-Hall Picard equilibrium with explicit nested dependencies."
-    ],
-    "excluded": [
-      "A demonstrated real end-to-end physical parity with the source project or general proof of compatibility between the two child graphs.",
-      "Automatic flux-unit conversion, free-boundary reconstruction, non-axisymmetric dynamics or correction of inconsistent kinetic and Hall species parameters.",
-      "Guarantee of outer Picard or nested kinetic/ambipolar convergence for arbitrary inputs."
-    ]
+  {
+   "name": "psi_vac",
+   "description": "Vacuum psi=R A_phi and initial Hall Picard state.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same grid shape; copied by the Hall graph and passed unconverted as the kinetic flux-profile coordinate."
   },
-  "failure_semantics": {
-    "invalid_input": "The outer wrapper rejects missing/non-dict kinetic_config or missing required outer keys with ValueError. Nonmapping positional inputs raise TypeError in compose. Nested graph validation then rejects malformed grids, Green response, species data, kinetic controls and pressure state; errors propagate without wrapper repair.",
-    "runtime_failure": "Any kinetic, Hall, field, end-loss, quadrature, local-inertia or compatibility exception propagates; no alternate pressure model or partial equilibrium is returned.",
-    "nonconvergence": "The Hall outer graph can return converged=false at maxiter after successful terminal checks. A nested ambipolar/end-loss or Hall local-inertia failure may raise instead; the outer wrapper does not retry.",
-    "partial_results": "No partial mapping is returned after an exception. A successful Hall result is passed through unchanged, including converged=false when applicable."
+  {
+   "name": "g_psi",
+   "description": "Dense cell-current-to-psi response for the Hall graph.",
+   "units": "Wb/rad/A",
+   "shape": "[N_Z*N_R,N_Z*N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact finite square shape and Hall Picard C-order cell-current mapping, with no embedded 2*pi or cell-area factor."
   },
-  "provenance": {
-    "lineage_summary": "The SciRel-maintained wrapper and nested TaskGraph bindings were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched. Historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this implementation is not asserted byte-identical to the saved source.",
-    "source_kinds": [
-      "historical Pleiades development descriptor and dependency mapping",
-      "pending intake development candidate",
-      "current SciRel public wrapper, direct composition and nested-graph regressions"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "ion_mass_kg",
+   "description": "Ion mass passed to Hall drift.",
+   "units": "kg",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "Strictly positive in the Hall leaf; independently provide the corresponding kinetic_config.mass_kg."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.equilibrium.kinetic_mirror_hall_equilibrium",
-      "symbol": "solve_kinetic_mirror_hall_equilibrium",
-      "signature": "solve_kinetic_mirror_hall_equilibrium(inputs=None, *, kinetic_graph=None, hall_graph=None, **kwargs)",
-      "canonical_module": "scirel.equilibrium",
-      "canonical_symbol": "solve_kinetic_mirror_hall_equilibrium"
-    }
+  {
+   "name": "ion_charge_c",
+   "description": "Positive ion charge passed to Hall drift.",
+   "units": "C",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "Strictly positive in the Hall leaf; independently provide the corresponding kinetic_config.charge_c."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure"
-      },
-      {
-        "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard"
-      }
-    ]
+  {
+   "name": "kinetic_config",
+   "description": "Fixed inputs for each evaluation of the nested grid mirror kinetic closure.",
+   "units": "mixed SI; psi-dependent profiles use Wb/rad",
+   "shape": "mapping",
+   "dtype": "Python dict",
+   "required": true,
+   "constraints": "Must be a dict. The bound graph requires mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, electron_temperature_j, reference_z, plug_left_z and plug_right_z. Optional kinetic controls, their defaults and validation are defined by scirel.kinetic.grid-mirror-kinetic-closure; r_grid, z_grid, b_t and psi are supplied from the current Hall call and override matching entries. Psi-dependent profiles must interpret the Hall psi=R A_phi in Wb/rad. The wrapper does not reconcile kinetic mass/charge with the Hall mass/charge."
   },
-  "example": {
-    "description": "Exercise the public binding contract with explicit test substitutes; this does not verify the canonical scientific coupling.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import solve_kinetic_mirror_hall_equilibrium\nseen = {}\ndef kinetic_graph(payload):\n    seen['kinetic'] = payload\n    return {'p_parallel': np.array([[2.0]]), 'p_perpendicular': np.array([[3.0]])}\ndef hall_graph(payload):\n    state = payload['pressure_closure'](np.array([[1.5]]), np.array([[0.25]]))\n    return {'converged': True, 'closure_state': state}\nresult = solve_kinetic_mirror_hall_equilibrium({'r_grid': np.array([[0.1]]), 'z_grid': np.array([[0.0]]), 'psi_vac': np.array([[0.2]]), 'g_psi': np.zeros((1, 1)), 'ion_mass_kg': 1.0, 'ion_charge_c': 1.0, 'kinetic_config': {'mass_kg': 1.0}}, kinetic_graph=kinetic_graph, hall_graph=hall_graph)\nassert result['converged'] and result['closure_state']['p_parallel'][0, 0] == 2.0\nassert seen['kinetic']['b_t'][0, 0] == 1.5 and seen['kinetic']['psi'][0, 0] == 0.25\nassert np.array_equal(seen['kinetic']['r_grid'], np.array([[0.1]]))",
-    "expected": "The mock Hall graph calls the bound pressure closure, which receives the current B and psi plus the outer grid; the mock result passes through unchanged."
+  {
+   "name": "tol",
+   "description": "Outer Hall relative flux-change stopping threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-08,
+   "constraints": "The Hall graph checks finiteness, not positivity; choose a positive value for intended stopping."
   },
-  "verification": {
-    "scope": [
-      "Direct public-wrapper and historical composition tests show that current B/psi and the outer grid are injected into the kinetic payload without conversion and that its state is returned through the Hall pressure port.",
-      "A manufactured vacuum psi=0.5*R^2 yields B_Z=1 T at interior radii; its radial density profile, prescribed plug potentials, matched ion properties and synthetic nonzero diagonal Green response exercise both default nested graphs together. The outer Picard converges with strict compatibility enabled; the test checks a nonzero flux update, current, pressure gradient and local charge residual.",
-      "A separate manufactured 17x17 case uses two circular-filament vacuum sources and the mirror-plasma flux Green response with one active plasma cell. Both default nested graphs run with nonzero Hall drift and strict compatibility enabled. At one off-source point, terminal plasma flux and finite-grid B_R/B_Z increments match a separately evaluated plasma filament flux and field; the field increments have a 10% finite-grid derivative tolerance. Disabling Hall removes the Hall-specific radial electric-field contribution.",
-      "The nested grid kinetic graph's fixed-profile case is invariant under consistent 2*pi rescaling of its psi interpolation coordinate; this does not cover unadjusted psi-dependent callbacks. Child graph tests separately exercise selected end-state mapping, confinement, profile validation and reduced-Hall controls."
-    ],
-    "tests": [
-      "tests/test_incremental_admissions.py",
-      "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py"
-    ],
-    "evidence_ceiling": "Two manufactured per-radian cases demonstrate actual nested numerical execution and bounded Picard convergence, including one circular-filament/mirror-Green coupling with one active cell and nonzero Hall drift. One off-source point also checks plasma-only field increments within 10% of direct filament fields; this is not a grid-convergence study. The tests do not establish same-input source parity, real-device physical validation, arbitrary psi-dependent profile interoperability, full parameter-domain convergence, expert approval or release.",
-    "known_limitations": [
-      "The wrapper never checks that Hall ion_mass_kg/ion_charge_c agree with kinetic_config.mass_kg/charge_c.",
-      "The historical saved kinetic graph labels flux as Wb; this maintained composition passes Hall psi=R A_phi in Wb/rad without conversion. Every psi-dependent kinetic profile needs a matching coordinate definition, and the wrapper does not verify one.",
-      "Near-zero force and electric-field cases can make normalized compatibility errors sensitive to floating-point cancellation; the historical probe does not establish a general tolerance policy.",
-      "The wrapper accepts alternate injected graph callables and unknown Hall payload keys; exact canonical behavior applies only to the default bindings.",
-      "Source license and expert approval of the current implementation remain pending."
-    ]
+  {
+   "name": "maxiter",
+   "description": "Hall Picard update bound.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "default": 200,
+   "constraints": "Integer >= 1; outer nonconvergence returns converged=false if terminal checks pass."
   },
-  "graph": {
-    "nodes": [
-      {
-        "id": "kinetic_binding",
-        "kind": "task_graph",
-        "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
-        "description": "Bind the nested kinetic callable; it is invoked later by Hall through pressure_closure for each current B and psi.",
-        "inputs": [
-          "kinetic_graph"
-        ],
-        "outputs": [
-          "kinetic_callable"
-        ]
-      },
-      {
-        "id": "pressure_binding",
-        "kind": "controlled_glue",
-        "description": "Copy kinetic_config and bind current Hall B/psi plus outer r_grid/z_grid into the kinetic callable; no scientific calculation is added.",
-        "inputs": [
-          "kinetic_callable",
-          "kinetic_config",
-          "r_grid",
-          "z_grid"
-        ],
-        "outputs": [
-          "pressure_closure"
-        ]
-      },
-      {
-        "id": "hall",
-        "kind": "task_graph",
-        "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-        "description": "Call the bound Hall graph once with its known inputs and the kinetic pressure callback; its own execution owns all feedback and terminal checks.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "psi_vac",
-          "g_psi",
-          "ion_mass_kg",
-          "ion_charge_c",
-          "pressure_closure",
-          "tol",
-          "maxiter",
-          "relax",
-          "minimum_field",
-          "minimum_firehose_margin",
-          "plasma_mask",
-          "hall_multiplier",
-          "include_toroidal_inertia",
-          "hall_density_floor_fraction",
-          "maximum_inertial_mach",
-          "inertia_relax",
-          "inertia_tolerance",
-          "inertia_max_iterations",
-          "compatibility_tol",
-          "ohm_tolerance",
-          "strict_compatibility",
-          "hall_graph"
-        ],
-        "outputs": [
-          "result"
-        ]
-      },
-      {
-        "id": "return_result",
-        "kind": "controlled_glue",
-        "description": "Return the Hall mapping without alteration; listed output keys are the canonical bound Hall graph's return contract.",
-        "inputs": [
-          "result"
-        ],
-        "outputs": [
-          "psi",
-          "plasma_cell_currents",
-          "J_phi",
-          "B_R",
-          "B_Z",
-          "B",
-          "p_parallel",
-          "p_perpendicular",
-          "parallel_force",
-          "force_R",
-          "force_Z",
-          "ion_toroidal_velocity",
-          "electron_toroidal_velocity",
-          "electric_field_R",
-          "electric_field_Z",
-          "hall_state",
-          "converged",
-          "iterations",
-          "relative_psi_change",
-          "parallel_force_error",
-          "generalized_ohm_error",
-          "closure_state",
-          "firehose_margin",
-          "compatibility_messages",
-          "iteration_history"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "kinetic_graph"
-        },
-        "to": {
-          "node": "kinetic_binding",
-          "port": "kinetic_graph"
-        },
-        "description": "Optional test substitute for kinetic graph.",
-        "condition": "When supplied; otherwise bind the default child.",
-        "transform": "Select truthy override or default callable.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "kinetic_binding",
-          "port": "kinetic_callable"
-        },
-        "to": {
-          "node": "pressure_binding",
-          "port": "kinetic_callable"
-        },
-        "description": "Callable invoked on each Hall pressure request.",
-        "condition": "Always.",
-        "transform": "Bind without executing it now.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "kinetic_config"
-        },
-        "to": {
-          "node": "pressure_binding",
-          "port": "kinetic_config"
-        },
-        "description": "Fixed kinetic parameters.",
-        "condition": "Always.",
-        "transform": "Shallow copy before callback binding.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "r_grid"
-        },
-        "to": {
-          "node": "pressure_binding",
-          "port": "r_grid"
-        },
-        "description": "Outer radius grid overwrites kinetic_config.r_grid.",
-        "condition": "Each kinetic evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "pressure_binding",
-          "port": "z_grid"
-        },
-        "description": "Outer axial grid overwrites kinetic_config.z_grid.",
-        "condition": "Each kinetic evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pressure_binding",
-          "port": "pressure_closure"
-        },
-        "to": {
-          "node": "hall",
-          "port": "pressure_closure"
-        },
-        "description": "Current-state kinetic pressure callback replaces any caller pressure_closure key.",
-        "condition": "Always.",
-        "transform": "Pass callable(B,psi)->kinetic mapping.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "hall",
-          "port": "result"
-        },
-        "to": {
-          "node": "return_result",
-          "port": "result"
-        },
-        "description": "Complete terminal Hall result.",
-        "condition": "After child success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "r_grid"
-        },
-        "to": {
-          "node": "hall",
-          "port": "r_grid"
-        },
-        "description": "Hall grid.",
-        "condition": "Always.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "hall",
-          "port": "z_grid"
-        },
-        "description": "Hall grid.",
-        "condition": "Always.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "psi_vac"
-        },
-        "to": {
-          "node": "hall",
-          "port": "psi_vac"
-        },
-        "description": "Hall initial flux.",
-        "condition": "Always.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "g_psi"
-        },
-        "to": {
-          "node": "hall",
-          "port": "g_psi"
-        },
-        "description": "Hall Green response.",
-        "condition": "Always.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ion_mass_kg"
-        },
-        "to": {
-          "node": "hall",
-          "port": "ion_mass_kg"
-        },
-        "description": "Hall ion mass.",
-        "condition": "Always.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ion_charge_c"
-        },
-        "to": {
-          "node": "hall",
-          "port": "ion_charge_c"
-        },
-        "description": "Hall ion charge.",
-        "condition": "Always.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "hall_graph"
-        },
-        "to": {
-          "node": "hall",
-          "port": "hall_graph"
-        },
-        "description": "Optional test substitute for Hall graph.",
-        "condition": "When supplied; otherwise bind the default child.",
-        "transform": "Select truthy override or default callable.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "tol"
-        },
-        "to": {
-          "node": "hall",
-          "port": "tol"
-        },
-        "description": "Hall stop threshold.",
-        "condition": "When supplied; default 1e-8.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "maxiter"
-        },
-        "to": {
-          "node": "hall",
-          "port": "maxiter"
-        },
-        "description": "Hall update bound.",
-        "condition": "When supplied; default 200.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "relax"
-        },
-        "to": {
-          "node": "hall",
-          "port": "relax"
-        },
-        "description": "Hall flux relaxation.",
-        "condition": "When supplied; default 0.5.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "minimum_field"
-        },
-        "to": {
-          "node": "hall",
-          "port": "minimum_field"
-        },
-        "description": "Hall step field floor.",
-        "condition": "When supplied; default 1e-8.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "minimum_firehose_margin"
-        },
-        "to": {
-          "node": "hall",
-          "port": "minimum_firehose_margin"
-        },
-        "description": "Hall terminal firehose threshold.",
-        "condition": "When supplied; default zero.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "plasma_mask"
-        },
-        "to": {
-          "node": "hall",
-          "port": "plasma_mask"
-        },
-        "description": "Hall active-cell policy.",
-        "condition": "When supplied; otherwise all cells.",
-        "transform": "Identity or default.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "hall_multiplier"
-        },
-        "to": {
-          "node": "hall",
-          "port": "hall_multiplier"
-        },
-        "description": "Hall drift multiplier.",
-        "condition": "When supplied; default 1.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "include_toroidal_inertia"
-        },
-        "to": {
-          "node": "hall",
-          "port": "include_toroidal_inertia"
-        },
-        "description": "Hall local inertia switch.",
-        "condition": "When supplied; default true.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "hall_density_floor_fraction"
-        },
-        "to": {
-          "node": "hall",
-          "port": "hall_density_floor_fraction"
-        },
-        "description": "Hall density floor.",
-        "condition": "When supplied; default 0.1.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "maximum_inertial_mach"
-        },
-        "to": {
-          "node": "hall",
-          "port": "maximum_inertial_mach"
-        },
-        "description": "Hall Mach cap.",
-        "condition": "When supplied; default 0.5.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "inertia_relax"
-        },
-        "to": {
-          "node": "hall",
-          "port": "inertia_relax"
-        },
-        "description": "Hall inner-loop relaxation.",
-        "condition": "When supplied; default 0.5.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "inertia_tolerance"
-        },
-        "to": {
-          "node": "hall",
-          "port": "inertia_tolerance"
-        },
-        "description": "Hall inner-loop stop threshold.",
-        "condition": "When supplied; default 1e-10.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "inertia_max_iterations"
-        },
-        "to": {
-          "node": "hall",
-          "port": "inertia_max_iterations"
-        },
-        "description": "Hall inner-loop bound.",
-        "condition": "When supplied; default 80.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "compatibility_tol"
-        },
-        "to": {
-          "node": "hall",
-          "port": "compatibility_tol"
-        },
-        "description": "Hall momentum threshold.",
-        "condition": "When supplied; default 0.05.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ohm_tolerance"
-        },
-        "to": {
-          "node": "hall",
-          "port": "ohm_tolerance"
-        },
-        "description": "Hall Ohm threshold.",
-        "condition": "When supplied; default 0.05.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "strict_compatibility"
-        },
-        "to": {
-          "node": "hall",
-          "port": "strict_compatibility"
-        },
-        "description": "Hall compatibility rejection policy.",
-        "condition": "When supplied; default true.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "psi"
-        },
-        "to": {
-          "node": "$output",
-          "port": "psi"
-        },
-        "description": "Terminal flux.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "plasma_cell_currents"
-        },
-        "to": {
-          "node": "$output",
-          "port": "plasma_cell_currents"
-        },
-        "description": "Terminal cell currents.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "J_phi"
-        },
-        "to": {
-          "node": "$output",
-          "port": "J_phi"
-        },
-        "description": "Terminal Hall current.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "B_R"
-        },
-        "to": {
-          "node": "$output",
-          "port": "B_R"
-        },
-        "description": "Terminal radial field.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "B_Z"
-        },
-        "to": {
-          "node": "$output",
-          "port": "B_Z"
-        },
-        "description": "Terminal axial field.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "B"
-        },
-        "to": {
-          "node": "$output",
-          "port": "B"
-        },
-        "description": "Terminal field magnitude.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "p_parallel"
-        },
-        "to": {
-          "node": "$output",
-          "port": "p_parallel"
-        },
-        "description": "Terminal parallel pressure.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "p_perpendicular"
-        },
-        "to": {
-          "node": "$output",
-          "port": "p_perpendicular"
-        },
-        "description": "Terminal perpendicular pressure.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "parallel_force"
-        },
-        "to": {
-          "node": "$output",
-          "port": "parallel_force"
-        },
-        "description": "Terminal parallel force.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "force_R"
-        },
-        "to": {
-          "node": "$output",
-          "port": "force_R"
-        },
-        "description": "Terminal radial force.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "force_Z"
-        },
-        "to": {
-          "node": "$output",
-          "port": "force_Z"
-        },
-        "description": "Terminal axial force.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "ion_toroidal_velocity"
-        },
-        "to": {
-          "node": "$output",
-          "port": "ion_toroidal_velocity"
-        },
-        "description": "Terminal ion drift.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "electron_toroidal_velocity"
-        },
-        "to": {
-          "node": "$output",
-          "port": "electron_toroidal_velocity"
-        },
-        "description": "Terminal electron drift.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "electric_field_R"
-        },
-        "to": {
-          "node": "$output",
-          "port": "electric_field_R"
-        },
-        "description": "Terminal radial electric field.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "electric_field_Z"
-        },
-        "to": {
-          "node": "$output",
-          "port": "electric_field_Z"
-        },
-        "description": "Terminal axial electric field.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "hall_state"
-        },
-        "to": {
-          "node": "$output",
-          "port": "hall_state"
-        },
-        "description": "Terminal Hall state.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "converged"
-        },
-        "to": {
-          "node": "$output",
-          "port": "converged"
-        },
-        "description": "Hall convergence flag.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "iterations"
-        },
-        "to": {
-          "node": "$output",
-          "port": "iterations"
-        },
-        "description": "Hall update count.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "relative_psi_change"
-        },
-        "to": {
-          "node": "$output",
-          "port": "relative_psi_change"
-        },
-        "description": "Last flux change.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "parallel_force_error"
-        },
-        "to": {
-          "node": "$output",
-          "port": "parallel_force_error"
-        },
-        "description": "Momentum diagnostic.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "generalized_ohm_error"
-        },
-        "to": {
-          "node": "$output",
-          "port": "generalized_ohm_error"
-        },
-        "description": "Ohm diagnostic.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "closure_state"
-        },
-        "to": {
-          "node": "$output",
-          "port": "closure_state"
-        },
-        "description": "Terminal kinetic state.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "firehose_margin"
-        },
-        "to": {
-          "node": "$output",
-          "port": "firehose_margin"
-        },
-        "description": "Firehose diagnostic.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "compatibility_messages"
-        },
-        "to": {
-          "node": "$output",
-          "port": "compatibility_messages"
-        },
-        "description": "Compatibility messages.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "return_result",
-          "port": "iteration_history"
-        },
-        "to": {
-          "node": "$output",
-          "port": "iteration_history"
-        },
-        "description": "Per-update diagnostics.",
-        "condition": "On success.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      }
-    ],
-    "execution": {
-      "mode": "acyclic_nested_graph_binding_with_child_feedback",
-      "ordering": "Validate outer required keys and dict kinetic_config; bind the kinetic callable and a pressure_closure that merges fixed config with outer grid and current Hall B/psi; invoke the Hall graph with that callback; return its mapping unchanged. The Hall child invokes the kinetic callback on each Picard step and terminal reevaluation.",
-      "branches": [
-        "Optional callable hooks replace the canonical child bindings for testing; their behavior is outside this asset's scientific evidence.",
-        "Nested kinetic plug-potential and confinement branches follow its own exact contract; Hall mask, local inertia, compatibility and stopping branches follow the Hall exact contract."
-      ],
-      "state_ownership": "The wrapper owns only a shallow kinetic_config copy and callback binding. The nested Hall graph owns evolving psi, previous cell currents and iteration history; each kinetic call computes from its passed field/flux and fixed configuration.",
-      "failure_propagation": "Child exceptions propagate directly; there is no fallback closure or partial outer result.",
-      "feedback": []
-    }
+  {
+   "name": "relax",
+   "description": "Previous-flux weight in Hall Green update.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.5,
+   "constraints": "0 <= value < 1."
+  },
+  {
+   "name": "minimum_field",
+   "description": "Hall update field floor.",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-08,
+   "constraints": "Strictly positive; checked during updates, not repeated at terminal reevaluation."
+  },
+  {
+   "name": "minimum_firehose_margin",
+   "description": "Terminal active-cell firehose threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.0,
+   "constraints": "Negative disables the terminal threshold; nonnegative values reject active cells at or below it."
+  },
+  {
+   "name": "plasma_mask",
+   "description": "Fixed or state-dependent Hall active-cell policy.",
+   "units": "boolean",
+   "shape": "[N_Z,N_R], callable(B,psi)->[N_Z,N_R], or null",
+   "dtype": "boolean array-like, callable or None",
+   "required": false,
+   "default": null,
+   "constraints": "Null selects all cells; fixed and callable masks must match the grid."
+  },
+  {
+   "name": "hall_multiplier",
+   "description": "Hall drift multiplier.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1.0,
+   "constraints": "Nonnegative."
+  },
+  {
+   "name": "include_toroidal_inertia",
+   "description": "Enable the Hall leaf's bounded local inertia correction.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "default": true,
+   "constraints": "Actual boolean scalar; not numeric 0/1."
+  },
+  {
+   "name": "hall_density_floor_fraction",
+   "description": "Relative density floor for Hall-active drift support.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.1,
+   "constraints": "0 <= value < 1."
+  },
+  {
+   "name": "maximum_inertial_mach",
+   "description": "Ion-drift Mach cap in Hall leaf.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.5,
+   "constraints": "Strictly positive."
+  },
+  {
+   "name": "inertia_relax",
+   "description": "Previous-current weight in Hall local inertia iteration.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.5,
+   "constraints": "0 <= value < 1."
+  },
+  {
+   "name": "inertia_tolerance",
+   "description": "Hall local inertia stopping threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-10,
+   "constraints": "Strictly positive."
+  },
+  {
+   "name": "inertia_max_iterations",
+   "description": "Hall local inertia iteration bound.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "default": 80,
+   "constraints": "Integer >= 1; local nonconvergence raises."
+  },
+  {
+   "name": "compatibility_tol",
+   "description": "Terminal parallel-momentum error threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.05,
+   "constraints": "Nonnegative; exceedance raises only with strict_compatibility=true."
+  },
+  {
+   "name": "ohm_tolerance",
+   "description": "Terminal normalized generalized-Ohm error threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.05,
+   "constraints": "Strictly positive; exceedance raises only with strict_compatibility=true."
+  },
+  {
+   "name": "strict_compatibility",
+   "description": "Reject Hall terminal compatibility threshold exceedance.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "default": true,
+   "constraints": "Actual boolean scalar; the separate firehose check remains active."
+  },
+  {
+   "name": "kinetic_graph",
+   "description": "Optional explicit substitute for the bound kinetic TaskGraph.",
+   "units": "callable",
+   "shape": "callable(mapping)->mapping or null",
+   "dtype": "Python callable or None",
+   "required": false,
+   "default": null,
+   "constraints": "Dependency-injection hook, selected by Python truthiness; an override changes the scientific composition and is not the canonical asset."
+  },
+  {
+   "name": "hall_graph",
+   "description": "Optional explicit substitute for the bound Hall TaskGraph.",
+   "units": "callable",
+   "shape": "callable(mapping)->mapping or null",
+   "dtype": "Python callable or None",
+   "required": false,
+   "default": null,
+   "constraints": "Dependency-injection hook, selected by Python truthiness; an override changes the returned mapping and is not the canonical asset."
   }
+ ],
+ "outputs": [
+  {
+   "name": "psi",
+   "description": "Terminal Hall psi=R A_phi state.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Returned unchanged from the Hall graph after one or more updates."
+  },
+  {
+   "name": "plasma_cell_currents",
+   "description": "Terminal Hall cell-current grid.",
+   "units": "A",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Recomputed by the Hall graph at terminal psi."
+  },
+  {
+   "name": "J_phi",
+   "description": "Terminal reduced-Hall toroidal current density.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Hall active-cell mask applies."
+  },
+  {
+   "name": "B_R",
+   "description": "Terminal radial poloidal field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Derived from terminal psi."
+  },
+  {
+   "name": "B_Z",
+   "description": "Terminal axial poloidal field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Derived from terminal psi."
+  },
+  {
+   "name": "B",
+   "description": "Terminal poloidal-field magnitude passed into the last kinetic evaluation.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "The Hall graph does not repeat minimum_field at this terminal evaluation."
+  },
+  {
+   "name": "p_parallel",
+   "description": "Terminal kinetic parallel pressure after Hall scalar broadcast.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Taken from the terminal kinetic closure and shape-coerced by Hall."
+  },
+  {
+   "name": "p_perpendicular",
+   "description": "Terminal kinetic perpendicular pressure after Hall scalar broadcast.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Taken from the terminal kinetic closure and shape-coerced by Hall."
+  },
+  {
+   "name": "parallel_force",
+   "description": "Terminal Hall force along magnetic field.",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Hall diagnostic, not an independent physical validation."
+  },
+  {
+   "name": "force_R",
+   "description": "Terminal radial Hall target force.",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "May include centrifugal correction."
+  },
+  {
+   "name": "force_Z",
+   "description": "Terminal axial Hall target force.",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Returned from Hall state."
+  },
+  {
+   "name": "ion_toroidal_velocity",
+   "description": "Terminal Hall ion toroidal drift.",
+   "units": "m/s",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero outside Hall-active cells."
+  },
+  {
+   "name": "electron_toroidal_velocity",
+   "description": "Terminal Hall electron toroidal drift.",
+   "units": "m/s",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero outside Hall-active cells."
+  },
+  {
+   "name": "electric_field_R",
+   "description": "Terminal radial electrostatic field.",
+   "units": "V/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "From kinetic electrostatic_potential through the Hall leaf."
+  },
+  {
+   "name": "electric_field_Z",
+   "description": "Terminal axial electrostatic field.",
+   "units": "V/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "From kinetic electrostatic_potential through the Hall leaf."
+  },
+  {
+   "name": "hall_state",
+   "description": "Complete terminal reduced-Hall leaf result.",
+   "units": "mixed SI",
+   "shape": "mapping",
+   "dtype": "Python mapping",
+   "required": true,
+   "constraints": "Returned by the child graph without outer modification."
+  },
+  {
+   "name": "converged",
+   "description": "Hall outer Picard convergence flag.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "False at maxiter is returned if terminal gates pass."
+  },
+  {
+   "name": "iterations",
+   "description": "Executed Hall outer updates.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Between one and maxiter inclusive."
+  },
+  {
+   "name": "relative_psi_change",
+   "description": "Last Hall relative flux change.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Uses the bound Hall graph's norm convention."
+  },
+  {
+   "name": "parallel_force_error",
+   "description": "Terminal Hall parallel-momentum error fraction.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Compared with compatibility_tol."
+  },
+  {
+   "name": "generalized_ohm_error",
+   "description": "Terminal normalized generalized-Ohm residual.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Compared with ohm_tolerance."
+  },
+  {
+   "name": "closure_state",
+   "description": "Unmodified mapping from the last grid mirror kinetic call.",
+   "units": "mixed SI",
+   "shape": "mapping",
+   "dtype": "Python mapping",
+   "required": true,
+   "constraints": "Includes the kinetic graph's density, pressure, potential and diagnostic fields; may not match Hall-broadcast primary pressure shapes if a custom kinetic override is used."
+  },
+  {
+   "name": "firehose_margin",
+   "description": "Terminal Hall firehose/tension margin.",
+   "units": "dimensionless",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Checked on active cells when minimum_firehose_margin >= 0."
+  },
+  {
+   "name": "compatibility_messages",
+   "description": "Hall terminal compatibility exceedance messages.",
+   "units": "text",
+   "shape": "list[string]",
+   "dtype": "Python list of strings",
+   "required": true,
+   "constraints": "Can be nonempty on successful return only when strict_compatibility=false."
+  },
+  {
+   "name": "iteration_history",
+   "description": "Hall per-update flux/current and Ohm diagnostics.",
+   "units": "mixed dimensionless diagnostics",
+   "shape": "[iterations] list[mapping]",
+   "dtype": "Python list of mappings",
+   "required": true,
+   "constraints": "Each item records iteration, relative_psi_change, relative_current_change and generalized_ohm_error."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The outer and kinetic mass/charge entries, flux and field conventions, pressure model and grid geometry are physically compatible; the wrapper does not reconcile them.",
+   "The kinetic configuration can evaluate the current Hall field and flux at every outer update and terminal reevaluation.",
+   "The caller Green response and plug-plane/reference inputs follow the two bound child contracts."
+  ],
+  "supported": [
+   "Binding the saved grid mirror end-loss/quasineutral pressure closure into an axisymmetric reduced-Hall Picard equilibrium with explicit nested dependencies."
+  ],
+  "excluded": [
+   "A demonstrated real end-to-end physical parity with the source project or general proof of compatibility between the two child graphs.",
+   "Automatic flux-unit conversion, free-boundary reconstruction, non-axisymmetric dynamics or correction of inconsistent kinetic and Hall species parameters.",
+   "Guarantee of outer Picard or nested kinetic/ambipolar convergence for arbitrary inputs."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "The outer wrapper rejects missing/non-dict kinetic_config or missing required outer keys with ValueError. Nonmapping positional inputs raise TypeError in compose. Nested graph validation then rejects malformed grids, Green response, species data, kinetic controls and pressure state; errors propagate without wrapper repair.",
+  "runtime_failure": "Any kinetic, Hall, field, end-loss, quadrature, local-inertia or compatibility exception propagates; no alternate pressure model or partial equilibrium is returned.",
+  "nonconvergence": "The Hall outer graph can return converged=false at maxiter after successful terminal checks. A nested ambipolar/end-loss or Hall local-inertia failure may raise instead; the outer wrapper does not retry.",
+  "partial_results": "No partial mapping is returned after an exception. A successful Hall result is passed through unchanged, including converged=false when applicable."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of grid mirror kinetic pressure state to reduced-Hall magnetic-flux feedback. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium.kinetic_mirror_hall_equilibrium",
+   "symbol": "solve_kinetic_mirror_hall_equilibrium",
+   "signature": "solve_kinetic_mirror_hall_equilibrium(inputs=None, *, kinetic_graph=None, hall_graph=None, **kwargs)",
+   "canonical_module": "scirel.equilibrium",
+   "canonical_symbol": "solve_kinetic_mirror_hall_equilibrium"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure"
+   },
+   {
+    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard"
+   }
+  ]
+ },
+ "example": {
+  "description": "Exercise the public binding contract with explicit test substitutes; this does not verify the canonical scientific coupling.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import solve_kinetic_mirror_hall_equilibrium\nseen = {}\ndef kinetic_graph(payload):\n    seen['kinetic'] = payload\n    return {'p_parallel': np.array([[2.0]]), 'p_perpendicular': np.array([[3.0]])}\ndef hall_graph(payload):\n    state = payload['pressure_closure'](np.array([[1.5]]), np.array([[0.25]]))\n    return {'converged': True, 'closure_state': state}\nresult = solve_kinetic_mirror_hall_equilibrium({'r_grid': np.array([[0.1]]), 'z_grid': np.array([[0.0]]), 'psi_vac': np.array([[0.2]]), 'g_psi': np.zeros((1, 1)), 'ion_mass_kg': 1.0, 'ion_charge_c': 1.0, 'kinetic_config': {'mass_kg': 1.0}}, kinetic_graph=kinetic_graph, hall_graph=hall_graph)\nassert result['converged'] and result['closure_state']['p_parallel'][0, 0] == 2.0\nassert seen['kinetic']['b_t'][0, 0] == 1.5 and seen['kinetic']['psi'][0, 0] == 0.25\nassert np.array_equal(seen['kinetic']['r_grid'], np.array([[0.1]]))",
+  "expected": "The mock Hall graph calls the bound pressure closure, which receives the current B and psi plus the outer grid; the mock result passes through unchanged."
+ },
+ "verification": {
+  "scope": [
+   "Direct public-wrapper and historical composition tests show that current B/psi and the outer grid are injected into the kinetic payload without conversion and that its state is returned through the Hall pressure port.",
+   "A manufactured vacuum psi=0.5*R^2 yields B_Z=1 T at interior radii; its radial density profile, prescribed plug potentials, matched ion properties and synthetic nonzero diagonal Green response exercise both default nested graphs together. The outer Picard converges with strict compatibility enabled; the test checks a nonzero flux update, current, pressure gradient and local charge residual.",
+   "A separate manufactured 17x17 case uses two circular-filament vacuum sources and the mirror-plasma flux Green response with one active plasma cell. Both default nested graphs run with nonzero Hall drift and strict compatibility enabled. At one off-source point, terminal plasma flux and finite-grid B_R/B_Z increments match a separately evaluated plasma filament flux and field; the field increments have a 10% finite-grid derivative tolerance. Disabling Hall removes the Hall-specific radial electric-field contribution.",
+   "The nested grid kinetic graph's fixed-profile case is invariant under consistent 2*pi rescaling of its psi interpolation coordinate; this does not cover unadjusted psi-dependent callbacks. Child graph tests separately exercise selected end-state mapping, confinement, profile validation and reduced-Hall controls."
+  ],
+  "tests": [
+   "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py"
+  ],
+  "evidence_ceiling": "Two manufactured per-radian cases demonstrate actual nested numerical execution and bounded Picard convergence, including one circular-filament/mirror-Green coupling with one active cell and nonzero Hall drift. One off-source point also checks plasma-only field increments within 10% of direct filament fields; this is not a grid-convergence study. The tests do not establish same-input source parity, real-device physical validation, arbitrary psi-dependent profile interoperability, full parameter-domain convergence, expert approval or release.",
+  "known_limitations": [
+   "The wrapper never checks that Hall ion_mass_kg/ion_charge_c agree with kinetic_config.mass_kg/charge_c.",
+   "The historical saved kinetic graph labels flux as Wb; this maintained composition passes Hall psi=R A_phi in Wb/rad without conversion. Every psi-dependent kinetic profile needs a matching coordinate definition, and the wrapper does not verify one.",
+   "Near-zero force and electric-field cases can make normalized compatibility errors sensitive to floating-point cancellation; the historical probe does not establish a general tolerance policy.",
+   "The wrapper accepts alternate injected graph callables and unknown Hall payload keys; exact canonical behavior applies only to the default bindings.",
+   "Source license and expert approval of the current implementation remain pending."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "kinetic_binding",
+    "kind": "task_graph",
+    "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
+    "description": "Bind the nested kinetic callable; it is invoked later by Hall through pressure_closure for each current B and psi.",
+    "inputs": [
+     "kinetic_graph"
+    ],
+    "outputs": [
+     "kinetic_callable"
+    ]
+   },
+   {
+    "id": "pressure_binding",
+    "kind": "controlled_glue",
+    "description": "Copy kinetic_config and bind current Hall B/psi plus outer r_grid/z_grid into the kinetic callable; no scientific calculation is added.",
+    "inputs": [
+     "kinetic_callable",
+     "kinetic_config",
+     "r_grid",
+     "z_grid"
+    ],
+    "outputs": [
+     "pressure_closure"
+    ]
+   },
+   {
+    "id": "hall",
+    "kind": "task_graph",
+    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
+    "description": "Call the bound Hall graph once with its known inputs and the kinetic pressure callback; its own execution owns all feedback and terminal checks.",
+    "inputs": [
+     "r_grid",
+     "z_grid",
+     "psi_vac",
+     "g_psi",
+     "ion_mass_kg",
+     "ion_charge_c",
+     "pressure_closure",
+     "tol",
+     "maxiter",
+     "relax",
+     "minimum_field",
+     "minimum_firehose_margin",
+     "plasma_mask",
+     "hall_multiplier",
+     "include_toroidal_inertia",
+     "hall_density_floor_fraction",
+     "maximum_inertial_mach",
+     "inertia_relax",
+     "inertia_tolerance",
+     "inertia_max_iterations",
+     "compatibility_tol",
+     "ohm_tolerance",
+     "strict_compatibility",
+     "hall_graph"
+    ],
+    "outputs": [
+     "result"
+    ]
+   },
+   {
+    "id": "return_result",
+    "kind": "controlled_glue",
+    "description": "Return the Hall mapping without alteration; listed output keys are the canonical bound Hall graph's return contract.",
+    "inputs": [
+     "result"
+    ],
+    "outputs": [
+     "psi",
+     "plasma_cell_currents",
+     "J_phi",
+     "B_R",
+     "B_Z",
+     "B",
+     "p_parallel",
+     "p_perpendicular",
+     "parallel_force",
+     "force_R",
+     "force_Z",
+     "ion_toroidal_velocity",
+     "electron_toroidal_velocity",
+     "electric_field_R",
+     "electric_field_Z",
+     "hall_state",
+     "converged",
+     "iterations",
+     "relative_psi_change",
+     "parallel_force_error",
+     "generalized_ohm_error",
+     "closure_state",
+     "firehose_margin",
+     "compatibility_messages",
+     "iteration_history"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "kinetic_graph"
+    },
+    "to": {
+     "node": "kinetic_binding",
+     "port": "kinetic_graph"
+    },
+    "description": "Optional test substitute for kinetic graph.",
+    "condition": "When supplied; otherwise bind the default child.",
+    "transform": "Select truthy override or default callable.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "kinetic_binding",
+     "port": "kinetic_callable"
+    },
+    "to": {
+     "node": "pressure_binding",
+     "port": "kinetic_callable"
+    },
+    "description": "Callable invoked on each Hall pressure request.",
+    "condition": "Always.",
+    "transform": "Bind without executing it now.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "kinetic_config"
+    },
+    "to": {
+     "node": "pressure_binding",
+     "port": "kinetic_config"
+    },
+    "description": "Fixed kinetic parameters.",
+    "condition": "Always.",
+    "transform": "Shallow copy before callback binding.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "pressure_binding",
+     "port": "r_grid"
+    },
+    "description": "Outer radius grid overwrites kinetic_config.r_grid.",
+    "condition": "Each kinetic evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "pressure_binding",
+     "port": "z_grid"
+    },
+    "description": "Outer axial grid overwrites kinetic_config.z_grid.",
+    "condition": "Each kinetic evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "pressure_binding",
+     "port": "pressure_closure"
+    },
+    "to": {
+     "node": "hall",
+     "port": "pressure_closure"
+    },
+    "description": "Current-state kinetic pressure callback replaces any caller pressure_closure key.",
+    "condition": "Always.",
+    "transform": "Pass callable(B,psi)->kinetic mapping.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "hall",
+     "port": "result"
+    },
+    "to": {
+     "node": "return_result",
+     "port": "result"
+    },
+    "description": "Complete terminal Hall result.",
+    "condition": "After child success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "hall",
+     "port": "r_grid"
+    },
+    "description": "Hall grid.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "hall",
+     "port": "z_grid"
+    },
+    "description": "Hall grid.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "psi_vac"
+    },
+    "to": {
+     "node": "hall",
+     "port": "psi_vac"
+    },
+    "description": "Hall initial flux.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "g_psi"
+    },
+    "to": {
+     "node": "hall",
+     "port": "g_psi"
+    },
+    "description": "Hall Green response.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ion_mass_kg"
+    },
+    "to": {
+     "node": "hall",
+     "port": "ion_mass_kg"
+    },
+    "description": "Hall ion mass.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ion_charge_c"
+    },
+    "to": {
+     "node": "hall",
+     "port": "ion_charge_c"
+    },
+    "description": "Hall ion charge.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "hall_graph"
+    },
+    "to": {
+     "node": "hall",
+     "port": "hall_graph"
+    },
+    "description": "Optional test substitute for Hall graph.",
+    "condition": "When supplied; otherwise bind the default child.",
+    "transform": "Select truthy override or default callable.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "tol"
+    },
+    "to": {
+     "node": "hall",
+     "port": "tol"
+    },
+    "description": "Hall stop threshold.",
+    "condition": "When supplied; default 1e-8.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "maxiter"
+    },
+    "to": {
+     "node": "hall",
+     "port": "maxiter"
+    },
+    "description": "Hall update bound.",
+    "condition": "When supplied; default 200.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "relax"
+    },
+    "to": {
+     "node": "hall",
+     "port": "relax"
+    },
+    "description": "Hall flux relaxation.",
+    "condition": "When supplied; default 0.5.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "minimum_field"
+    },
+    "to": {
+     "node": "hall",
+     "port": "minimum_field"
+    },
+    "description": "Hall step field floor.",
+    "condition": "When supplied; default 1e-8.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "minimum_firehose_margin"
+    },
+    "to": {
+     "node": "hall",
+     "port": "minimum_firehose_margin"
+    },
+    "description": "Hall terminal firehose threshold.",
+    "condition": "When supplied; default zero.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "plasma_mask"
+    },
+    "to": {
+     "node": "hall",
+     "port": "plasma_mask"
+    },
+    "description": "Hall active-cell policy.",
+    "condition": "When supplied; otherwise all cells.",
+    "transform": "Identity or default.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "hall_multiplier"
+    },
+    "to": {
+     "node": "hall",
+     "port": "hall_multiplier"
+    },
+    "description": "Hall drift multiplier.",
+    "condition": "When supplied; default 1.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "include_toroidal_inertia"
+    },
+    "to": {
+     "node": "hall",
+     "port": "include_toroidal_inertia"
+    },
+    "description": "Hall local inertia switch.",
+    "condition": "When supplied; default true.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "hall_density_floor_fraction"
+    },
+    "to": {
+     "node": "hall",
+     "port": "hall_density_floor_fraction"
+    },
+    "description": "Hall density floor.",
+    "condition": "When supplied; default 0.1.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "maximum_inertial_mach"
+    },
+    "to": {
+     "node": "hall",
+     "port": "maximum_inertial_mach"
+    },
+    "description": "Hall Mach cap.",
+    "condition": "When supplied; default 0.5.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "inertia_relax"
+    },
+    "to": {
+     "node": "hall",
+     "port": "inertia_relax"
+    },
+    "description": "Hall inner-loop relaxation.",
+    "condition": "When supplied; default 0.5.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "inertia_tolerance"
+    },
+    "to": {
+     "node": "hall",
+     "port": "inertia_tolerance"
+    },
+    "description": "Hall inner-loop stop threshold.",
+    "condition": "When supplied; default 1e-10.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "inertia_max_iterations"
+    },
+    "to": {
+     "node": "hall",
+     "port": "inertia_max_iterations"
+    },
+    "description": "Hall inner-loop bound.",
+    "condition": "When supplied; default 80.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "compatibility_tol"
+    },
+    "to": {
+     "node": "hall",
+     "port": "compatibility_tol"
+    },
+    "description": "Hall momentum threshold.",
+    "condition": "When supplied; default 0.05.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ohm_tolerance"
+    },
+    "to": {
+     "node": "hall",
+     "port": "ohm_tolerance"
+    },
+    "description": "Hall Ohm threshold.",
+    "condition": "When supplied; default 0.05.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "strict_compatibility"
+    },
+    "to": {
+     "node": "hall",
+     "port": "strict_compatibility"
+    },
+    "description": "Hall compatibility rejection policy.",
+    "condition": "When supplied; default true.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "psi"
+    },
+    "to": {
+     "node": "$output",
+     "port": "psi"
+    },
+    "description": "Terminal flux.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "plasma_cell_currents"
+    },
+    "to": {
+     "node": "$output",
+     "port": "plasma_cell_currents"
+    },
+    "description": "Terminal cell currents.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "J_phi"
+    },
+    "to": {
+     "node": "$output",
+     "port": "J_phi"
+    },
+    "description": "Terminal Hall current.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "B_R"
+    },
+    "to": {
+     "node": "$output",
+     "port": "B_R"
+    },
+    "description": "Terminal radial field.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "B_Z"
+    },
+    "to": {
+     "node": "$output",
+     "port": "B_Z"
+    },
+    "description": "Terminal axial field.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "B"
+    },
+    "to": {
+     "node": "$output",
+     "port": "B"
+    },
+    "description": "Terminal field magnitude.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "p_parallel"
+    },
+    "to": {
+     "node": "$output",
+     "port": "p_parallel"
+    },
+    "description": "Terminal parallel pressure.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "p_perpendicular"
+    },
+    "to": {
+     "node": "$output",
+     "port": "p_perpendicular"
+    },
+    "description": "Terminal perpendicular pressure.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "parallel_force"
+    },
+    "to": {
+     "node": "$output",
+     "port": "parallel_force"
+    },
+    "description": "Terminal parallel force.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "force_R"
+    },
+    "to": {
+     "node": "$output",
+     "port": "force_R"
+    },
+    "description": "Terminal radial force.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "force_Z"
+    },
+    "to": {
+     "node": "$output",
+     "port": "force_Z"
+    },
+    "description": "Terminal axial force.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "ion_toroidal_velocity"
+    },
+    "to": {
+     "node": "$output",
+     "port": "ion_toroidal_velocity"
+    },
+    "description": "Terminal ion drift.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "electron_toroidal_velocity"
+    },
+    "to": {
+     "node": "$output",
+     "port": "electron_toroidal_velocity"
+    },
+    "description": "Terminal electron drift.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "electric_field_R"
+    },
+    "to": {
+     "node": "$output",
+     "port": "electric_field_R"
+    },
+    "description": "Terminal radial electric field.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "electric_field_Z"
+    },
+    "to": {
+     "node": "$output",
+     "port": "electric_field_Z"
+    },
+    "description": "Terminal axial electric field.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "hall_state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "hall_state"
+    },
+    "description": "Terminal Hall state.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "converged"
+    },
+    "description": "Hall convergence flag.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "iterations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "iterations"
+    },
+    "description": "Hall update count.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "relative_psi_change"
+    },
+    "to": {
+     "node": "$output",
+     "port": "relative_psi_change"
+    },
+    "description": "Last flux change.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "parallel_force_error"
+    },
+    "to": {
+     "node": "$output",
+     "port": "parallel_force_error"
+    },
+    "description": "Momentum diagnostic.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "generalized_ohm_error"
+    },
+    "to": {
+     "node": "$output",
+     "port": "generalized_ohm_error"
+    },
+    "description": "Ohm diagnostic.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "closure_state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "closure_state"
+    },
+    "description": "Terminal kinetic state.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "firehose_margin"
+    },
+    "to": {
+     "node": "$output",
+     "port": "firehose_margin"
+    },
+    "description": "Firehose diagnostic.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "compatibility_messages"
+    },
+    "to": {
+     "node": "$output",
+     "port": "compatibility_messages"
+    },
+    "description": "Compatibility messages.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "return_result",
+     "port": "iteration_history"
+    },
+    "to": {
+     "node": "$output",
+     "port": "iteration_history"
+    },
+    "description": "Per-update diagnostics.",
+    "condition": "On success.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "acyclic_nested_graph_binding_with_child_feedback",
+   "ordering": "Validate outer required keys and dict kinetic_config; bind the kinetic callable and a pressure_closure that merges fixed config with outer grid and current Hall B/psi; invoke the Hall graph with that callback; return its mapping unchanged. The Hall child invokes the kinetic callback on each Picard step and terminal reevaluation.",
+   "branches": [
+    "Optional callable hooks replace the canonical child bindings for testing; their behavior is outside this asset's scientific evidence.",
+    "Nested kinetic plug-potential and confinement branches follow its own exact contract; Hall mask, local inertia, compatibility and stopping branches follow the Hall exact contract."
+   ],
+   "state_ownership": "The wrapper owns only a shallow kinetic_config copy and callback binding. The nested Hall graph owns evolving psi, previous cell currents and iteration history; each kinetic call computes from its passed field/flux and fixed configuration.",
+   "failure_propagation": "Child exceptions propagate directly; there is no fallback closure or partial outer result.",
+   "feedback": []
+  }
+ }
 }

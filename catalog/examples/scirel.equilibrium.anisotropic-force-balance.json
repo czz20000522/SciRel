@@ -1,294 +1,293 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.equilibrium.anisotropic-force-balance",
-  "kind": "operator",
-  "title": {
-    "en": "Axisymmetric gyrotropic pressure force balance",
-    "zh": "轴对称各向异性压强张量力平衡"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.anisotropic-force-balance",
+ "kind": "operator",
+ "title": {
+  "en": "Axisymmetric gyrotropic pressure force balance",
+  "zh": "轴对称各向异性压强张量力平衡"
+ },
+ "summary": "Evaluate cylindrical divergence of a gyrotropic pressure tensor, its perpendicular toroidal-current projection, parallel-force diagnostic and firehose margin on a supplied R-Z field grid.",
+ "taxonomy": [
+  "equilibrium",
+  "anisotropic-pressure",
+  "force-balance",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "gyrotropic div(P) current closure"
+ ],
+ "identity": {
+  "relation": "R-Z poloidal magnetic field and parallel/perpendicular pressure to cylindrical pressure force and toroidal current density",
+  "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular -> force_R, force_Z, parallel_force, J_phi and diagnostics",
+  "definition": "P=p_perpendicular I+(p_parallel-p_perpendicular)bb. Evaluate the cylindrical tensor divergence using difference-form quadratic stencils. At R=0, smooth odd P_RZ contributes a second d_R P_RZ term to force_Z; regular force_R=J_phi=0. Off axis, J_phi=(B_Z force_R-B_R force_Z)/B².",
+  "model": "axisymmetric gyrotropic pressure tensor and perpendicular force-balance current projection",
+  "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
+  "coordinates": "all arrays indexed [Z,R]; R is nonnegative and both axes strictly increase",
+  "boundary": "Second-order one-sided differences; smooth regular-axis limit force_Z=2*d_R P_RZ+d_Z P_ZZ, force_R=J_phi=0. At zero/tiny B, direction and current retain documented numerical zero conventions and have no gyrotropic physical qualification.",
+  "assumptions": [
+   "The supplied B_R and B_Z are components of the same poloidal field as the pressure arrays.",
+   "Both pressure components are nonnegative Pa values at grid nodes.",
+   "The optional active_mask selects cells for the parallel-force error metric only; this Operator does not zero J_phi outside it.",
+   "For an axis-containing mesh the physical field and tensor must have smooth axisymmetric parity: BR and PRZ odd, BZ and diagonal pressures even."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Cylindrical radius mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Rectilinear, nonnegative R, strictly increasing radial axis, at least three columns; same shape as other arrays."
   },
-  "summary": "Evaluate cylindrical divergence of a gyrotropic pressure tensor, its perpendicular toroidal-current projection, parallel-force diagnostic and firehose margin on a supplied R-Z field grid.",
-  "taxonomy": [
-    "equilibrium",
-    "anisotropic-pressure",
-    "force-balance",
-    "axisymmetric"
-  ],
-  "aliases": [
-    "gyrotropic div(P) current closure"
-  ],
-  "identity": {
-    "relation": "R-Z poloidal magnetic field and parallel/perpendicular pressure to cylindrical pressure force and toroidal current density",
-    "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular -> force_R, force_Z, parallel_force, J_phi and diagnostics",
-    "definition": "P=p_perpendicular I+(p_parallel-p_perpendicular)bb. Evaluate the cylindrical tensor divergence using difference-form quadratic stencils. At R=0, smooth odd P_RZ contributes a second d_R P_RZ term to force_Z; regular force_R=J_phi=0. Off axis, J_phi=(B_Z force_R-B_R force_Z)/B².",
-    "model": "axisymmetric gyrotropic pressure tensor and perpendicular force-balance current projection",
-    "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
-    "coordinates": "all arrays indexed [Z,R]; R is nonnegative and both axes strictly increase",
-    "boundary": "Second-order one-sided differences; smooth regular-axis limit force_Z=2*d_R P_RZ+d_Z P_ZZ, force_R=J_phi=0. At zero/tiny B, direction and current retain documented numerical zero conventions and have no gyrotropic physical qualification.",
-    "assumptions": [
-      "The supplied B_R and B_Z are components of the same poloidal field as the pressure arrays.",
-      "Both pressure components are nonnegative Pa values at grid nodes.",
-      "The optional active_mask selects cells for the parallel-force error metric only; this Operator does not zero J_phi outside it.",
-      "For an axis-containing mesh the physical field and tensor must have smooth axisymmetric parity: BR and PRZ odd, BZ and diagonal pressures even."
-    ]
+  {
+   "name": "z_grid",
+   "description": "Axial coordinate mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Rectilinear, strictly increasing axial axis, at least three rows; same shape as other arrays."
   },
-  "inputs": [
-    {
-      "name": "r_grid",
-      "description": "Cylindrical radius mesh.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Rectilinear, nonnegative R, strictly increasing radial axis, at least three columns; same shape as other arrays."
-    },
-    {
-      "name": "z_grid",
-      "description": "Axial coordinate mesh.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Rectilinear, strictly increasing axial axis, at least three rows; same shape as other arrays."
-    },
-    {
-      "name": "b_r",
-      "description": "Radial component of the poloidal magnetic field.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same grid shape; no nonzero-field precondition is enforced by this Operator."
-    },
-    {
-      "name": "b_z",
-      "description": "Axial component of the poloidal magnetic field.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same grid shape; combined with b_r for field magnitude and direction."
-    },
-    {
-      "name": "p_parallel",
-      "description": "Pressure parallel to the local poloidal magnetic field.",
-      "units": "Pa",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."
-    },
-    {
-      "name": "p_perpendicular",
-      "description": "Pressure perpendicular to the local poloidal magnetic field.",
-      "units": "Pa",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."
-    },
-    {
-      "name": "active_mask",
-      "description": "Cells included in the RMS parallel-force compatibility metric.",
-      "units": "boolean",
-      "shape": "[N_Z,N_R] or null",
-      "dtype": "boolean array-like or None",
-      "required": false,
-      "default": null,
-      "constraints": "If omitted, all cells are active; same shape when supplied. It does not suppress the returned force or current arrays."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "force_R",
-      "description": "Radial component of cylindrical div(P).",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Axis column is set to zero when the first radius is exactly zero."
-    },
-    {
-      "name": "force_Z",
-      "description": "Axial component of cylindrical div(P).",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Includes the off-axis P_RZ/R term."
-    },
-    {
-      "name": "parallel_force",
-      "description": "Pressure force projected along the poloidal field.",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Observational compatibility residual, not subtracted from the current relation."
-    },
-    {
-      "name": "J_phi",
-      "description": "Toroidal current-density projection of pressure force.",
-      "units": "A/m^2",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Zero at the axis and where |B|^2 is at or below the numeric tiny threshold; active_mask does not zero it."
-    },
-    {
-      "name": "B",
-      "description": "Magnitude of the supplied poloidal field.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Computed from B_R and B_Z using the maintained source-compatible hypot path."
-    },
-    {
-      "name": "parallel_force_error",
-      "description": "Resolved RMS parallel-force after subtracting its dimensioned floating-point evaluation envelope, normalized by the larger of total-force RMS and envelope.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Denominator also floored at numeric tiny; raw absolute, raw relative and envelope diagnostics remain available; returns 0.0 when no cell is active."
-    },
-    {
-      "name": "firehose_margin",
-      "description": "Local 1 - mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).",
-      "units": "dimensionless",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Diagnostic only; this Operator does not reject nonpositive margin."
-    },
-    {
-      "name": "force_roundoff_R",
-      "description": "Local floating-point evaluation envelope, not a truncation error.",
-      "units": "N/m^3",
-      "shape": "[N_Z,N_R]",
-      "dtype": "real array",
-      "required": true,
-      "constraints": "Local floating-point evaluation envelope, not a truncation error."
-    },
-    {
-      "name": "force_roundoff_Z",
-      "description": "Local floating-point evaluation envelope, not a truncation error.",
-      "units": "N/m^3",
-      "shape": "[N_Z,N_R]",
-      "dtype": "real array",
-      "required": true,
-      "constraints": "Local floating-point evaluation envelope, not a truncation error."
-    },
-    {
-      "name": "parallel_force_roundoff",
-      "description": "Local floating-point evaluation envelope, not a truncation error.",
-      "units": "N/m^3",
-      "shape": "[N_Z,N_R]",
-      "dtype": "real array",
-      "required": true,
-      "constraints": "Local floating-point evaluation envelope, not a truncation error."
-    },
-    {
-      "name": "parallel_force_absolute",
-      "description": "Active-mask RMS raw force or its rounding envelope.",
-      "units": "N/m^3",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Active-mask RMS raw force or its rounding envelope."
-    },
-    {
-      "name": "parallel_force_roundoff_rms",
-      "description": "Active-mask RMS raw force or its rounding envelope.",
-      "units": "N/m^3",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Active-mask RMS raw force or its rounding envelope."
-    },
-    {
-      "name": "parallel_force_error_raw",
-      "description": "Unmodified RMS parallel force divided by RMS total force.",
-      "units": "1",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Unmodified RMS parallel force divided by RMS total force."
-    },
-    {
-      "name": "parallel_force_roundoff_consistent",
-      "description": "Whether raw RMS parallel force is no larger than its rounding envelope.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "Whether raw RMS parallel force is no larger than its rounding envelope."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "All six field/grid arrays are finite and exactly same-shape 2-D arrays on the declared rectilinear grid.",
-      "The supplied magnetic and pressure fields have a meaningful gyrotropic interpretation in cylindrical R-Z geometry."
-    ],
-    "supported": [
-      "SI cylindrical tensor divergence and perpendicular projection with the regular-axis limit; exact curl-free anisotropic manufactured equilibrium and nonzero off-axis polynomial forces.",
-      "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero."
-    ],
-    "excluded": [
-      "A complete equilibrium solver or a guarantee of parallel force compatibility.",
-      "Automatic field-floor or firehose failure enforcement; the calling TaskGraph makes those decisions.",
-      "Non-axisymmetric geometry, scalar pressure broadcasting, or a field contribution from B_phi."
-    ]
+  {
+   "name": "b_r",
+   "description": "Radial component of the poloidal magnetic field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same grid shape; no nonzero-field precondition is enforced by this Operator."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite, wrong-rank or mismatched arrays; nonrectilinear, negative-radius, nonincreasing or too-small grids; negative pressure; or wrong-shaped active_mask.",
-    "runtime_failure": "Unexpected arithmetic failures propagate. The implementation uses numeric zero/floor branches for small magnetic denominators and does not separately guarantee finite outputs for every finite but extreme input.",
-    "nonconvergence": "Not applicable; this Operator performs no iteration.",
-    "partial_results": "No partial mapping is returned after an exception."
+  {
+   "name": "b_z",
+   "description": "Axial component of the poloidal magnetic field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same grid shape; combined with b_r for field magnitude and direction."
   },
-  "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
-    "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct scientific regression tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "p_parallel",
+   "description": "Pressure parallel to the local poloidal magnetic field.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.equilibrium.anisotropic_force_balance",
-      "symbol": "compute_anisotropic_force_balance",
-      "signature": "compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, active_mask=None)",
-      "canonical_module": "scirel.equilibrium",
-      "canonical_symbol": "compute_anisotropic_force_balance"
-    }
+  {
+   "name": "p_perpendicular",
+   "description": "Pressure perpendicular to the local poloidal magnetic field.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same grid shape and nonnegative; scalar broadcasting is not performed here."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "A constant isotropic pressure in a uniform axial field produces no pressure force or current.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import compute_anisotropic_force_balance\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.3, 0.3, 5))\nresult = compute_anisotropic_force_balance(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), np.full_like(r_grid, 2.0), np.full_like(r_grid, 2.0))\nnp.testing.assert_allclose(result['force_R'], 0.0, atol=1e-12)\nnp.testing.assert_allclose(result['J_phi'], 0.0, atol=1e-12)\nnp.testing.assert_allclose(result['firehose_margin'], 1.0)",
-    "expected": "Zero pressure force and toroidal current to the stated tolerance, with unit firehose margin."
-  },
-  "verification": {
-    "scope": [
-      "Exact anisotropic vacuum tensor equilibrium on three refinements including R=0.",
-      "Sixteen constant-pressure grids retain zero force without false compatibility rejection.",
-      "Resolved parallel-force imbalance remains rejected."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_anisotropic_force_balance.py",
-      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
-    ],
-    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
-    "known_limitations": [
-      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
-      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-      "No expert scientific endorsement or public release follows from this numerical successor."
-    ]
+  {
+   "name": "active_mask",
+   "description": "Cells included in the RMS parallel-force compatibility metric.",
+   "units": "boolean",
+   "shape": "[N_Z,N_R] or null",
+   "dtype": "boolean array-like or None",
+   "required": false,
+   "default": null,
+   "constraints": "If omitted, all cells are active; same shape when supplied. It does not suppress the returned force or current arrays."
   }
+ ],
+ "outputs": [
+  {
+   "name": "force_R",
+   "description": "Radial component of cylindrical div(P).",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Axis column is set to zero when the first radius is exactly zero."
+  },
+  {
+   "name": "force_Z",
+   "description": "Axial component of cylindrical div(P).",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Includes the off-axis P_RZ/R term."
+  },
+  {
+   "name": "parallel_force",
+   "description": "Pressure force projected along the poloidal field.",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Observational compatibility residual, not subtracted from the current relation."
+  },
+  {
+   "name": "J_phi",
+   "description": "Toroidal current-density projection of pressure force.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero at the axis and where |B|^2 is at or below the numeric tiny threshold; active_mask does not zero it."
+  },
+  {
+   "name": "B",
+   "description": "Magnitude of the supplied poloidal field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Computed from B_R and B_Z using the maintained source-compatible hypot path."
+  },
+  {
+   "name": "parallel_force_error",
+   "description": "Resolved RMS parallel-force after subtracting its dimensioned floating-point evaluation envelope, normalized by the larger of total-force RMS and envelope.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Denominator also floored at numeric tiny; raw absolute, raw relative and envelope diagnostics remain available; returns 0.0 when no cell is active."
+  },
+  {
+   "name": "firehose_margin",
+   "description": "Local 1 - mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).",
+   "units": "dimensionless",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Diagnostic only; this Operator does not reject nonpositive margin."
+  },
+  {
+   "name": "force_roundoff_R",
+   "description": "Local floating-point evaluation envelope, not a truncation error.",
+   "units": "N/m^3",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Local floating-point evaluation envelope, not a truncation error."
+  },
+  {
+   "name": "force_roundoff_Z",
+   "description": "Local floating-point evaluation envelope, not a truncation error.",
+   "units": "N/m^3",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Local floating-point evaluation envelope, not a truncation error."
+  },
+  {
+   "name": "parallel_force_roundoff",
+   "description": "Local floating-point evaluation envelope, not a truncation error.",
+   "units": "N/m^3",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Local floating-point evaluation envelope, not a truncation error."
+  },
+  {
+   "name": "parallel_force_absolute",
+   "description": "Active-mask RMS raw force or its rounding envelope.",
+   "units": "N/m^3",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Active-mask RMS raw force or its rounding envelope."
+  },
+  {
+   "name": "parallel_force_roundoff_rms",
+   "description": "Active-mask RMS raw force or its rounding envelope.",
+   "units": "N/m^3",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Active-mask RMS raw force or its rounding envelope."
+  },
+  {
+   "name": "parallel_force_error_raw",
+   "description": "Unmodified RMS parallel force divided by RMS total force.",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Unmodified RMS parallel force divided by RMS total force."
+  },
+  {
+   "name": "parallel_force_roundoff_consistent",
+   "description": "Whether raw RMS parallel force is no larger than its rounding envelope.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Whether raw RMS parallel force is no larger than its rounding envelope."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "All six field/grid arrays are finite and exactly same-shape 2-D arrays on the declared rectilinear grid.",
+   "The supplied magnetic and pressure fields have a meaningful gyrotropic interpretation in cylindrical R-Z geometry."
+  ],
+  "supported": [
+   "SI cylindrical tensor divergence and perpendicular projection with the regular-axis limit; exact curl-free anisotropic manufactured equilibrium and nonzero off-axis polynomial forces.",
+   "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero."
+  ],
+  "excluded": [
+   "A complete equilibrium solver or a guarantee of parallel force compatibility.",
+   "Automatic field-floor or firehose failure enforcement; the calling TaskGraph makes those decisions.",
+   "Non-axisymmetric geometry, scalar pressure broadcasting, or a field contribution from B_phi."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite, wrong-rank or mismatched arrays; nonrectilinear, negative-radius, nonincreasing or too-small grids; negative pressure; or wrong-shaped active_mask.",
+  "runtime_failure": "Unexpected arithmetic failures propagate. The implementation uses numeric zero/floor branches for small magnetic denominators and does not separately guarantee finite outputs for every finite but extreme input.",
+  "nonconvergence": "Not applicable; this Operator performs no iteration.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of R-Z poloidal magnetic field and parallel/perpendicular pressure to cylindrical pressure force and toroidal current density. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium.anisotropic_force_balance",
+   "symbol": "compute_anisotropic_force_balance",
+   "signature": "compute_anisotropic_force_balance(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular, active_mask=None)",
+   "canonical_module": "scirel.equilibrium",
+   "canonical_symbol": "compute_anisotropic_force_balance"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "A constant isotropic pressure in a uniform axial field produces no pressure force or current.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import compute_anisotropic_force_balance\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.3, 0.3, 5))\nresult = compute_anisotropic_force_balance(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), np.full_like(r_grid, 2.0), np.full_like(r_grid, 2.0))\nnp.testing.assert_allclose(result['force_R'], 0.0, atol=1e-12)\nnp.testing.assert_allclose(result['J_phi'], 0.0, atol=1e-12)\nnp.testing.assert_allclose(result['firehose_margin'], 1.0)",
+  "expected": "Zero pressure force and toroidal current to the stated tolerance, with unit firehose margin."
+ },
+ "verification": {
+  "scope": [
+   "Exact anisotropic vacuum tensor equilibrium on three refinements including R=0.",
+   "Sixteen constant-pressure grids retain zero force without false compatibility rejection.",
+   "Resolved parallel-force imbalance remains rejected."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_anisotropic_force_balance.py",
+   "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "known_limitations": [
+   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+   "No expert scientific endorsement or public release follows from this numerical successor."
+  ]
+ }
 }

@@ -173,15 +173,15 @@
     "partial_results": "No partial output returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Derived from Apache-2.0 TORAX source commit4d338d0bd3f5fd38f1a9ebb36252dcb86c33412f. SciRel combines the retained conservative diffusion/convection operators with an explicit theta update and banded linear solve. Face-to-cell is reused from the maintained scientific library.",
+    "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
     "source_kinds": [
-      "TORAX Python scientific implementation",
-      "Independent analytic/discrete numerical derivation"
+      "TORAX-derived implementation",
+      "SciRel regression tests"
     ],
     "public_references": [
       "https://github.com/google-deepmind/torax"
     ],
-    "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
+    "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -204,9 +204,9 @@
     ]
   },
   "example": {
-    "description": "Minimal analytic/invariant check",
+    "description": "Advance a zero state by a half-weighted theta step with a unit constant source.",
     "code": "import numpy as np\nfrom scirel.fvm import CellVariable,theta_step\nv=CellVariable([0.,0.],[0.,1.,2.])\nx=theta_step(v,v,.2,source_old=[1.,1.],source_new=[1.,1.],theta=.5)\nnp.testing.assert_allclose(x.value,.2)",
-    "expected": "Assertions complete without error."
+    "expected": "The two cell values advance to [0.2, 0.2]."
   },
   "verification": {
     "scope": [

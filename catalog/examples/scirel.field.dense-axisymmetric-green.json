@@ -1,152 +1,149 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.field.dense-axisymmetric-green",
-  "kind": "operator",
-  "title": {
-    "en": "Dense axisymmetric circular-filament Green matrices",
-    "zh": "轴对称圆电流丝稠密 Green 矩阵"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.dense-axisymmetric-green",
+ "kind": "operator",
+ "title": {
+  "en": "Dense axisymmetric circular-filament Green matrices",
+  "zh": "轴对称圆电流丝稠密 Green 矩阵"
+ },
+ "summary": "Build dense target-row/source-column circular-filament response matrices for psi, BR, and BZ.",
+ "taxonomy": [
+  "field",
+  "green-function",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "dense three-component filament Green response"
+ ],
+ "identity": {
+  "relation": "Dense axisymmetric Green matrices",
+  "direction": "target points and weighted source rows to response matrices",
+  "definition": "Evaluate the circular-filament response for each source column in caller order.",
+  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight, and exact self conventions.",
+  "geometry": "Independent finite target and source point tables.",
+  "coordinates": "R,Z in metres; source weight dimensionless; outputs Wb/rad/A and T/A.",
+  "boundary": "Exact source-target entries are zeroed; zero-radius sources contribute zero; positive radii must be nonnegative.",
+  "assumptions": [
+   "Targets and sources are finite real two-column/three-column tables.",
+   "An empty source list is represented by zero-column matrices.",
+   "No 2pi factor or finite-conductor model is added."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rz_pts",
+   "description": "Target rows [R_m,Z_m].",
+   "units": "m,m",
+   "shape": "[N_target,2]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite with nonnegative target radii; an empty target list must retain the two-column shape."
   },
-  "summary": "生成目标行、源列的理想圆电流丝实际坐标Green响应，保留每列符号与权重以及明确的精确零自项。",
-  "taxonomy": [
-    "field",
-    "green-function",
-    "axisymmetric"
-  ],
-  "aliases": [
-    "dense three-component filament Green response"
-  ],
-  "identity": {
-    "relation": "weighted circular filaments to per-source axisymmetric flux and poloidal-field response matrices",
-    "direction": "target [R,Z] rows and source [R,Z,weight] rows -> gpsi, gBR, gBZ matrices",
-    "definition": "使用实际源目标坐标的已验证圆环矩阵构造，分别保留每列而不求和；源第三列是无量纲权重，不是电流或面积。小椭圆参数改用等价超几何表达保持精度。",
-    "model": "vacuum axisymmetric ideal circular-filament Green relation",
-    "geometry": "point targets and circular source filaments in a cylindrical R-Z plane",
-    "coordinates": "SI cylindrical R-Z coordinates",
-    "boundary": "精确零半径源与精确自点贡献为零，任何正半径仍计算；轴上目标保留解析非零BZ。非零距离的非法算术或不可表示输出拒绝，不填零。",
-    "assumptions": [
-      "The flux kernel is psi=R A_phi, not the complete linked flux 2*pi*psi.",
-      "Source weights are dimensionless multipliers, not currents or cell-area factors.",
-      "The caller performs any subsequent source-current contraction."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "rz_pts",
-      "description": "Target rows [R_m,Z_m].",
-      "units": "m,m",
-      "shape": "[N_target,2]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite with nonnegative target radii; an empty target list must retain the two-column shape."
-    },
-    {
-      "name": "source_rzw",
-      "description": "Source rows [R0_m,Z0_m,dimensionless weight].",
-      "units": "m,m,dimensionless",
-      "shape": "[N_source,3]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite with nonnegative source radii; [] is accepted as an empty-source shorthand."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "gpsi",
-      "description": "Weighted psi=R A_phi response for each target and source pair.",
-      "units": "Wb/rad/A",
-      "shape": "[N_target,N_source]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Nonfinite formula values become zero; axis-source columns are zero; no 2*pi factor is applied."
-    },
-    {
-      "name": "gBR",
-      "description": "Weighted radial-field response for each target and source pair.",
-      "units": "T/A",
-      "shape": "[N_target,N_source]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Nonfinite formula values become zero; axis-source columns are zero."
-    },
-    {
-      "name": "gBZ",
-      "description": "Weighted axial-field response for each target and source pair.",
-      "units": "T/A",
-      "shape": "[N_target,N_source]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Nonfinite formula values become zero; axis targets may retain the analytic finite limit."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite SI cylindrical coordinates with nonnegative target and source radii.",
-      "Weights represent dimensionless per-source linear multipliers."
-    ],
-    "supported": [
-      "Independent Green response columns for ideal circular sources and arbitrary finite target lists."
-    ],
-    "excluded": [
-      "Automatic contraction with source currents.",
-      "Resolved self-field singularities.",
-      "Finite-conductor and non-axisymmetric material effects."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for wrong target/source row shape, nonfinite coordinates or weights, or negative cylindrical radii.",
-    "runtime_failure": "核的不可表示输出、上溢、除零和非法运算抛FloatingPointError；不吞为零。",
-    "nonconvergence": "Not applicable; this operator has no solver iteration.",
-    "partial_results": "失败不返回部分矩阵。仅精确自点离散约定为零，非有限数值无此豁免。"
-  },
-  "provenance": {
-    "lineage_summary": "The maintained SciRel implementation and direct tests were compared with the frozen historical Pleiades development mapping and pending intake candidate. SciRel and intake implementation text matched; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 本后继保留冻结前行为为证据，修正近轴剔除、非有限静默填零或人工场核偏移/截断；psi统一明确为RAphi，单位标签Wb/rad，不乘2π也不改存储数值。",
-    "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct scientific regressions"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.field.dense_axisymmetric_green",
-      "symbol": "dense_axisymmetric_green_response",
-      "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)",
-      "canonical_module": "scirel.field",
-      "canonical_symbol": "dense_axisymmetric_green_response"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.electromagnetism.green-response-matrices"
-      }
-    ]
-  },
-  "example": {
-    "description": "Compare one source response with a changed weight and an empty source list.",
-    "code": "import numpy as np\nfrom scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nunit = dense_axisymmetric_green_response(targets, [[0.35, -0.1, 1.0]])\nweighted = dense_axisymmetric_green_response(targets, [[0.35, -0.1, -2.5]])\nempty = dense_axisymmetric_green_response(targets, [])\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert unit[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * unit[name])\n    assert empty[name].shape == (2, 0)",
-    "expected": "Three two-by-one weighted Green response matrices and zero-column matrices for the empty source set."
-  },
-  "verification": {
-    "scope": [
-      "Source-weight scaling and empty-source shape.",
-      "Axis-source zero-column convention.",
-      "Circular-filament analytic axial-field limit.",
-      "Columnwise equality with the separately maintained circular-filament flux and field kernel.",
-      "Invalid radius and source-shape rejection.",
-      "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
-    ],
-    "tests": [
-      "tests/operator_contracts/test_dense_axisymmetric_green.py",
-      "tests/operator_contracts/test_pleiades_field_green_correction.py"
-    ],
-    "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete source-project closure or expert approval.",
-    "known_limitations": [
-      "The result preserves separate source columns and does not sum them.",
-      "Public distribution licensing remains pending a human decision."
-    ]
+  {
+   "name": "source_rzw",
+   "description": "Source rows [R0_m,Z0_m,dimensionless weight].",
+   "units": "m,m,dimensionless",
+   "shape": "[N_source,3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite with nonnegative source radii; [] is accepted as an empty-source shorthand."
   }
+ ],
+ "outputs": [
+  {
+   "name": "gpsi",
+   "description": "Weighted psi=R A_phi response for each target and source pair.",
+   "units": "Wb/rad/A",
+   "shape": "[N_target,N_source]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "axis-source columns are zero; no 2*pi factor is applied."
+  },
+  {
+   "name": "gBR",
+   "description": "Weighted radial-field response for each target and source pair.",
+   "units": "T/A",
+   "shape": "[N_target,N_source]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "axis-source columns are zero."
+  },
+  {
+   "name": "gBZ",
+   "description": "Weighted axial-field response for each target and source pair.",
+   "units": "T/A",
+   "shape": "[N_target,N_source]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "axis targets may retain the analytic finite limit."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Targets and sources are finite real two-column/three-column tables.",
+   "An empty source list is represented by zero-column matrices."
+  ],
+  "supported": [
+   "Weighted columns, empty sources, axis limits, source-column order, and direct kernel agreement."
+  ],
+  "excluded": [
+   "Finite-wire self-fields, arbitrary extreme-scale accuracy, and physical equilibrium claims."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, or negative-radius target/source arrays.",
+  "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
+  "nonconvergence": "Not applicable; matrix entries are evaluated directly.",
+  "partial_results": "No response mapping is returned after validation or kernel failure."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel retains the documented scientific relation and tested implementation; this operator has no separate upstream approval or redistribution claim in the current development record.",
+  "source_kinds": [
+   "SciRel implementation",
+   "repository regression tests"
+  ],
+  "public_references": [],
+  "license_status": "No separate source license for this operator is declared in licenses/; retained upstream obligations remain unresolved and no public redistribution permission is asserted."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.dense_axisymmetric_green",
+   "symbol": "dense_axisymmetric_green_response",
+   "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "dense_axisymmetric_green_response"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.electromagnetism.green-response-matrices"
+   }
+  ]
+ },
+ "example": {
+  "description": "Compare one source with a changed weight and an empty source set.",
+  "code": "import numpy as np\nfrom scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nunit = dense_axisymmetric_green_response(targets, [[0.35, -0.1, 1.0]])\nweighted = dense_axisymmetric_green_response(targets, [[0.35, -0.1, -2.5]])\nempty = dense_axisymmetric_green_response(targets, [])\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert unit[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * unit[name])\n    assert empty[name].shape == (2, 0)",
+  "expected": "Each nonempty response has shape (2,1), scaling by -2.5 is exact within the assertion, and the empty source result has shape (2,0)."
+ },
+ "verification": {
+  "scope": [
+   "Source-weight scaling and empty-source shape.",
+   "Axis-source zero-column convention.",
+   "Circular-filament analytic axial-field limit.",
+   "Columnwise equality with the separately maintained circular-filament flux and field kernel.",
+   "Invalid radius and source-shape rejection.",
+   "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
+  ],
+  "tests": [
+   "tests/operator_contracts/test_dense_axisymmetric_green.py",
+   "tests/operator_contracts/test_pleiades_field_green_correction.py"
+  ],
+  "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete source-project closure or expert approval.",
+  "known_limitations": [
+   "The result preserves separate source columns and does not sum them.",
+   "Public distribution licensing remains pending a human decision."
+  ]
+ }
 }

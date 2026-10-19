@@ -242,15 +242,14 @@
     "partial_results": "Never returned; a rejected call produces no fields."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy make_dvr_dvx slice, package 圆柱速度空间积分权重, source anchor KN1DPy/make_dvr_dvx.py:20-123 (implementation file pinned by SHA-256 0a52064747e92b223bdc1c6f78ccdd8bc63a696edc64a7b9c903a6b0515fa0a6). The saved bundle carries an ACCEPT_OPERATOR ledger entry with a hand-checkable source-free oracle (annular measure/volume max_abs=0.0, ghost-shell zero, sign indices) and evidence-only independent audits (N62/N81/N82 in the bundle's extraction ledger). A separately executed intake replay reproduces every output field on two meshes; the maintained tests re-derive the oracle by hand on a different mesh. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval. Documented input repairs reject non-finite meshes, boolean and string coercion, and complex values with a parameter-named ValueError. The saved single-node consumer graphs that feed this quadrature into the Maxwellian chain are not republished; the composition is covered by direct tests on the consumer assets.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "saved extraction ledger and package-test evidence",
-      "separately executed environment-gated intake replay",
-      "scientific regression tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -267,8 +266,8 @@
   },
   "example": {
     "description": "Build the quadrature of a small normalized mesh, check the hand-derived annular measure and ghost shells, and feed the volume into the Maxwellian relative-speed rate average.",
-    "code": "import numpy as np\nfrom scirel.kinetic import make_cylindrical_velocity_quadrature\nfrom scirel.collisions import average_cross_section_over_maxwellian\n\nvr = np.array([0.5, 1.5])\nvx = np.array([-1.5, -0.5, 0.5, 1.5])\nresult = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)\nnp.testing.assert_allclose(result['radial_measure'], [np.pi, 3.0 * np.pi], rtol=0, atol=0)\nnp.testing.assert_allclose(result['vx_left'], [-2.0, -1.0, 0.0, 1.0], rtol=0, atol=0)\nassert np.all(result['inv_dvx_ghost'][0, :] == 0.0)\nassert np.all(result['inv_dvx_ghost'][1:-1, 1:-1] == 1.0)\nassert result['positive_vx_first_index'] == 2\nrate = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=result['volume'],\n    cross_section_m2=lambda energy: np.full_like(energy, 3.0e-20),\n)\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\ntry:\n    make_cylindrical_velocity_quadrature(vr=vr, vx=np.array([1.0, np.nan, 2.0]))\nexcept ValueError as error:\n    assert 'vx' in str(error)\nelse:\n    raise AssertionError('a non-finite mesh must be rejected')",
-    "expected": "radial_measure is exactly [pi, 3*pi] for the ghost faces [0, 1], [1, 2]; the axial ghost faces extend by half a cell on both ends; the ghosted coefficient arrays are zero on their boundary shell and 1/dvx in the interior; the strictly positive axial indices start at 2; the volume feeds the Maxwellian rate average to finite positive rates; and a NaN mesh point raises ValueError naming vx."
+    "code": "import numpy as np\nfrom scirel.kinetic import make_cylindrical_velocity_quadrature\nfrom scirel.collisions import average_cross_section_over_maxwellian\n\nvr = np.array([0.5, 1.5])\nvx = np.array([-1.5, -0.5, 0.5, 1.5])\nresult = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)\nnp.testing.assert_allclose(result['radial_measure'], [np.pi, 3.0 * np.pi], rtol=0, atol=0)\nnp.testing.assert_allclose(result['vx_left'], [-2.0, -1.0, 0.0, 1.0], rtol=0, atol=0)\nassert np.all(result['inv_dvx_ghost'][0, :] == 0.0)\nassert np.all(result['inv_dvx_ghost'][1:-1, 1:-1] == 1.0)\nassert result['positive_vx_first_index'] == 2\nrate = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=result['volume'],\n    cross_section_m2=lambda energy: np.full_like(energy, 3.0e-20),\n)\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\ntry:\n    make_cylindrical_velocity_quadrature(vr=vr, vx=np.array([1.0, np.nan, 2.0]))\nexcept ValueError as error:\n    assert 'vx' in str(error)\nelse:\n    raise AssertionError('a non-finite mesh must be rejected')\n",
+    "expected": "Observed PASS: radial_measure is exactly [pi, 3*pi] for the ghost faces [0, 1], [1, 2]; the axial ghost faces extend by half a cell on both ends; the ghosted coefficient arrays are zero on their boundary shell and 1/dvx in the interior; the strictly positive axial indices start at 2; the volume feeds the Maxwellian rate average to finite positive rates; and a NaN mesh point raises ValueError naming vx."
   },
   "verification": {
     "scope": [
@@ -278,21 +277,18 @@
       "Nonuniform radial meshes: the annular measure stays exact for the ghost-face construction, including the mirrored outer face.",
       "The ghosted coefficient arrays are exactly zero on the boundary shell and carry 1/dvx, vx/dvx and vr/dvr in the interior.",
       "The composition contract: the volume feeds the Maxwellian relative-speed rate average to finite positive rates.",
-      "The input contract: finite strictly increasing nonnegative meshes of length at least two, both axial signs required; NaN and infinite meshes are rejected by parameter name, and a negative radial node (which would make the annular measure negative) is rejected. Non-finite input rejection is a documented repair; the saved implementation propagated NaN silently.",
-      "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes, and meshes whose squared faces underflow to zero (radial 0 and 1e-200) are rejected instead of returning zero measures. Ordinary positive meshes produce unchanged numbers.",
-      "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, reproducing every field on two meshes at rtol 1e-15 plus the repair differential witness. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+      "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes, and meshes whose squared faces underflow to zero (radial 0 and 1e-200) are rejected instead of returning zero measures. Ordinary positive meshes produce unchanged numbers."
     ],
     "tests": [
       "tests/operator_contracts/test_cylindrical_velocity_quadrature.py"
     ],
-    "evidence_ceiling": "The maintained tests establish the construction against hand-derived values, the partition closure, the ghost-shell contract, the composition with the Maxwellian rate average, and the input contract including the documented repairs. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared meshes only. No test establishes that the ghost-face convention is the right discretization for any downstream scheme beyond the consumers documented here, that any caller mesh is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "The outer faces use the saved source's half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
       "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
       "Non-finite and non-real mesh rejection are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the saved implementation accepted with negative or non-finite measures is rejected here.",
       "The nonnegative radial domain makes the saved source's positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

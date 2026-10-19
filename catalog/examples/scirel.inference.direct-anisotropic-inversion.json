@@ -1,1381 +1,1380 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.inference.direct-anisotropic-inversion",
-  "kind": "task_graph",
-  "title": {
-    "en": "Direct anisotropic parameter inversion",
-    "zh": "直接各向异性参数反演"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.inference.direct-anisotropic-inversion",
+ "kind": "task_graph",
+ "title": {
+  "en": "Direct anisotropic parameter inversion",
+  "zh": "直接各向异性参数反演"
+ },
+ "summary": "将真实各向异性前向求解、显式单位诊断和有界优化连接为单一调用入口，持续保持固定观测维数与有效终点。",
+ "taxonomy": [
+  "inference",
+  "anisotropic-equilibrium",
+  "task-graph",
+  "parameter-fitting"
+ ],
+ "aliases": [
+  "anisotropic equilibrium diagnostic fit"
+ ],
+ "identity": {
+  "relation": "参数化前向平衡与观测到经实际终点验证的各向异性拟合",
+  "direction": "initial_params、bounds、observations、solver_config、前向/诊断端口与控制 → 拟合结果和分离状态",
+  "definition": "先按标准观测冻结 N，再将 trial、严格残差和有界优化器组合。前向 solver_config 深复制并加入 params；未收敛先短路，失败 trial 不参与有效最优。可选 LHS 与总预算在优化器统一执行，最终参数、残差和状态绑定同一新评估。当前验证同时包含解析制造非零 Green 反馈和独立 Biot–Savart/张量散度参考的曲场恢复。",
+  "model": "调用者指定物理闭合的直接反演组合，复用已资格化前向关系，不另造各向异性平衡方程",
+  "geometry": "由前向端口确定；已验证案例为轴对称纯极向 R–Z 平衡",
+  "coordinates": "网格 [Z,R]；观测位置 [R,Z]；优化向量按 fit_keys 或 bounds 顺序",
+  "boundary": "前向端口仍负责物理状态、压强闭合、边界与收敛；图负责单位相容的观测连接、固定残差协议和合法参数控制。",
+  "assumptions": [
+   "equilibrium_solver、diagnostic_evaluator 的物理合同与观测相容。",
+   "绑定当前 Picard 时显式说明 psi 单位 Wb/rad，再按磁通观测约定转换为 Wb；不默认转换任意 psi。",
+   "罚值不是物理解；优化器停止、前向固定点、残差拟合与可辨识性分别判断。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "initial_params",
+   "description": "完整初值；非拟合参数原样深复制。",
+   "units": "按参数合同",
+   "shape": "mapping",
+   "dtype": "映射",
+   "required": true,
+   "constraints": "所有拟合值有限且位于对应边界内。"
   },
-  "summary": "将真实各向异性前向求解、显式单位诊断和有界优化连接为单一调用入口，持续保持固定观测维数与有效终点。",
-  "taxonomy": [
-    "inference",
-    "anisotropic-equilibrium",
-    "task-graph",
-    "parameter-fitting"
-  ],
-  "aliases": [
-    "anisotropic equilibrium diagnostic fit"
-  ],
-  "identity": {
-    "relation": "参数化前向平衡与观测到经实际终点验证的各向异性拟合",
-    "direction": "initial_params、bounds、observations、solver_config、前向/诊断端口与控制 → 拟合结果和分离状态",
-    "definition": "先按标准观测冻结 N，再将 trial、严格残差和有界优化器组合。前向 solver_config 深复制并加入 params；未收敛先短路，失败 trial 不参与有效最优。可选 LHS 与总预算在优化器统一执行，最终参数、残差和状态绑定同一新评估。当前验证同时包含解析制造非零 Green 反馈和独立 Biot–Savart/张量散度参考的曲场恢复。",
-    "model": "调用者指定物理闭合的直接反演组合，复用已资格化前向关系，不另造各向异性平衡方程",
-    "geometry": "由前向端口确定；已验证案例为轴对称纯极向 R–Z 平衡",
-    "coordinates": "网格 [Z,R]；观测位置 [R,Z]；优化向量按 fit_keys 或 bounds 顺序",
-    "boundary": "前向端口仍负责物理状态、压强闭合、边界与收敛；图负责单位相容的观测连接、固定残差协议和合法参数控制。",
-    "assumptions": [
-      "equilibrium_solver、diagnostic_evaluator 的物理合同与观测相容。",
-      "绑定当前 Picard 时显式说明 psi 单位 Wb/rad，再按磁通观测约定转换为 Wb；不默认转换任意 psi。",
-      "罚值不是物理解；优化器停止、前向固定点、残差拟合与可辨识性分别判断。"
-    ]
+  {
+   "name": "bounds",
+   "description": "参数上下界及默认顺序。",
+   "units": "与参数相同",
+   "shape": "mapping[key → (low,high)]",
+   "dtype": "有限实数对映射",
+   "required": true,
+   "constraints": "所有提供区间均有限且 low<high。"
   },
-  "inputs": [
-    {
-      "name": "initial_params",
-      "description": "完整初值；非拟合参数原样深复制。",
-      "units": "按参数合同",
-      "shape": "mapping",
-      "dtype": "映射",
-      "required": true,
-      "constraints": "所有拟合值有限且位于对应边界内。"
-    },
-    {
-      "name": "bounds",
-      "description": "参数上下界及默认顺序。",
-      "units": "与参数相同",
-      "shape": "mapping[key → (low,high)]",
-      "dtype": "有限实数对映射",
-      "required": true,
-      "constraints": "所有提供区间均有限且 low<high。"
-    },
-    {
-      "name": "method",
-      "description": "局部优化方法。",
-      "units": "identifier",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "仅 least_squares 或 minimize；后者明确采用 L-BFGS-B。"
-    },
-    {
-      "name": "observations",
-      "description": "标准 flux_loops 与/或 thomson 多通道观测，进入优化前验证并确定 N。",
-      "units": "按通道单位",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "values 非空有限、sigma 正；所有请求通道必须保留。使用合成诊断时包含 points、quantity/unit 及 profile 单位。"
-    },
-    {
-      "name": "solver_config",
-      "description": "前向固定参数及 r_grid/z_grid。",
-      "units": "R/Z m；psi Wb/rad、B T、g_psi Wb/rad/A（当前 Picard 绑定）",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "需满足实际前向合同，不隐含安装原来源环境。"
-    },
-    {
-      "name": "equilibrium_solver",
-      "description": "实际物理前向端口。",
-      "units": "按前向合同",
-      "shape": "callable(payload)",
-      "dtype": "可调用对象",
-      "required": true,
-      "constraints": "必须返回布尔 converged；若未收敛且未填原因，补通用原因；失败后不执行诊断。"
-    },
-    {
-      "name": "diagnostic_evaluator",
-      "description": "收敛平衡的诊断端口。",
-      "units": "与观测相同",
-      "shape": "callable({equilibrium,R,Z,observations})",
-      "dtype": "可调用对象",
-      "required": true,
-      "constraints": "不能漏请求通道；显式 unit 必须附匹配预测 units；不在图内假设 Thomson 仪器。"
-    },
-    {
-      "name": "fit_keys",
-      "description": "拟合参数有序子集。",
-      "units": "identifier",
-      "shape": "sequence or None",
-      "dtype": "字符串序列或 None",
-      "required": false,
-      "constraints": "非空且不重复，必须同时存在于 initial_params 与 bounds；默认 bounds 键。",
-      "default": null
-    },
-    {
-      "name": "n_initial_samples",
-      "description": "优化前 LHS 样本数。",
-      "units": "count",
-      "shape": "integer or None",
-      "dtype": "整数或 None",
-      "required": false,
-      "constraints": "1 至 max_evaluations-3，拒绝布尔及非整数；None 时不调用 LHS。",
-      "default": null
-    },
-    {
-      "name": "seed",
-      "description": "传给 LHS 的随机种子。",
-      "units": "dimensionless",
-      "shape": "sampler-defined or None",
-      "dtype": "采样器支持的种子或 None",
-      "required": false,
-      "constraints": "未启用 LHS 时无效；相同已验证采样器及种子产生相同设计。",
-      "default": null
-    },
-    {
-      "name": "failure_penalty",
-      "description": "无效 trial 对优化器提供的每分量罚值。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": false,
-      "constraints": "有限正数且 N*penalty² 有限；默认 1e12。",
-      "default": 1000000000000.0
-    },
-    {
-      "name": "max_evaluations",
-      "description": "所有实际科学 trial 调用的共同上限。",
-      "units": "count",
-      "shape": "integer",
-      "dtype": "整数",
-      "required": false,
-      "constraints": "至少 3；包含 LHS、差分及新终点验证；不能与 SciPy nfev 混同。",
-      "default": 200
-    }
-  ],
-  "outputs": [
-    {
-      "name": "best_parameters",
-      "description": "实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
-      "units": "参数单位",
-      "shape": "mapping or None",
-      "dtype": "dict 或 None",
-      "required": true,
-      "constraints": "无有效候选则 None。正常终点与 optimizer_summary.parameters 一致；不声称始终是所有日志最小值。"
-    },
-    {
-      "name": "chi2",
-      "description": "所返回状态的归一化平方和；无有效解时为 N*penalty²。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "有限非负；失败 penalty 必须配合状态解读。"
-    },
-    {
-      "name": "residual_vector",
-      "description": "所返回同一 trial 的固定维数残差。",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "float64 数组",
-      "required": true,
-      "constraints": "参数、状态与残差同属最后验证的试探；无有效解为罚值。"
-    },
-    {
-      "name": "converged",
-      "description": "优化器成功且其实际终点的最新前向评估有效。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "fallback、耗尽预算或终点无效时 False；不表示残差小、全局最优或可辨识。"
-    },
-    {
-      "name": "forward_converged",
-      "description": "当前返回的状态已实际通过前向与 trial 验证。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "可在优化器未收敛时 True，表示可用部分结果。"
-    },
-    {
-      "name": "optimizer_converged",
-      "description": "SciPy success 原始布尔投影。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "常量失败罚值也可导致优化器停止，不能单独当作物理成功。"
-    },
-    {
-      "name": "equilibrium",
-      "description": "与 best_parameters 及 residual_vector 同次验证的前向状态。",
-      "units": "混合",
-      "shape": "mapping or None",
-      "dtype": "映射或 None",
-      "required": true,
-      "constraints": "无有效返回候选时 None。"
-    },
-    {
-      "name": "evaluation_log",
-      "description": "所有实际评估的参数、chi2、valid、failure_reason 与 source。",
-      "units": "混合",
-      "shape": "list[N_eval]",
-      "dtype": "记录列表",
-      "required": true,
-      "constraints": "source 为 latin_hypercube、optimizer、terminal、best_valid_recheck。"
-    },
-    {
-      "name": "failure_reason",
-      "description": "预算、数值故障、终点失败或优化停止原因。",
-      "units": "identifier",
-      "shape": "string or None",
-      "dtype": "字符串或 None",
-      "required": true,
-      "constraints": "仅同时成功时为 None；合同错误抛出。"
-    },
-    {
-      "name": "optimizer_summary",
-      "description": "方法、success、status、message、nfev 与实际 result.x 的 parameters。",
-      "units": "混合状态与计数",
-      "shape": "mapping or None",
-      "dtype": "dict 或 None",
-      "required": true,
-      "constraints": "SciPy nfev 不等于全部科学调用次数；预算中断时可能为 None。"
-    },
-    {
-      "name": "best_valid_trial",
-      "description": "所有历史有效试探中最低 chi2 的完整记录。",
-      "units": "混合",
-      "shape": "mapping or None",
-      "dtype": "dict 或 None",
-      "required": true,
-      "constraints": "仅作观察记录；与返回终点分开，不给其套用另一点的收敛状态。"
-    },
-    {
-      "name": "scientific_evaluations",
-      "description": "实际 trial 调用总数。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "不超过 max_evaluations；含数值差分与终点验证。"
-    },
-    {
-      "name": "max_evaluations",
-      "description": "本次已验证的科学调用上限。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "valid_trial_count",
-      "description": "评估日志中有效 trial 数量。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "失败试探不计入。"
-    },
-    {
-      "name": "residual_size",
-      "description": "本次固定残差维数。",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "所有向量维数相同。"
-    },
-    {
-      "name": "identifiability",
-      "description": "通用可辨识性状态。",
-      "units": "identifier",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "固定为 not_established；局部停止不等于可辨识性证明。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "声明相容的前向关系、压强闭合、观测位置/单位、参数边界和固定预算。"
-    ],
-    "supported": [
-      "真实各向异性 Picard→单位明确点诊断→固定维残差→有界优化的组合。",
-      "非零 Green 反馈的两参数解析制造案例，及独立离散张量/真实环 Green 的曲场案例。"
-    ],
-    "excluded": [
-      "任意实验装置的完备重建、未知闭合选择、仪器校准或自动参数可辨识性。",
-      "以零 Green 或单个 lambda 输出代替本组合的物理资格。"
-    ]
+  {
+   "name": "method",
+   "description": "局部优化方法。",
+   "units": "identifier",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "仅 least_squares 或 minimize；后者明确采用 L-BFGS-B。"
   },
-  "failure_semantics": {
-    "invalid_input": "无效观测布局、端口、方法、边界或预算先拒绝；科学合同错误传播，不重试错误初值。",
-    "runtime_failure": "数值异常由 trial 状态表示；优化预算和运行故障由优化器单独报告。",
-    "nonconvergence": "converged 同时要求优化器成功且其新终点评估有效，另给 optimizer_converged 与 forward_converged。",
-    "partial_results": "允许返回新验证的部分有效候选及日志，不将其算作完成拟合；全失败返回 None 候选。"
+  {
+   "name": "observations",
+   "description": "标准 flux_loops 与/或 thomson 多通道观测，进入优化前验证并确定 N。",
+   "units": "按通道单位",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "values 非空有限、sigma 正；所有请求通道必须保留。使用合成诊断时包含 points、quantity/unit 及 profile 单位。"
   },
-  "provenance": {
-    "lineage_summary": "Maintained SciRel composition mapped to a saved Pleiades L1 direct-inversion TaskGraph and direct graph tests. Historical candidate/admission labels are development provenance, not expert recognition of this version. 本后继针对已证实的观测约定、漏通道、失败维数和无效最优试探问题修正；保留前驱字节与失败证据，未继承错误 fallback。物理组合复用已资格化各向异性 Picard、场恢复及 Green 能力；不把旧候选来源或本作者测试解释为根接收、人工认可或再分发许可。",
-    "source_kinds": [
-      "saved L1 TaskGraph contract and implementation",
-      "saved direct graph tests",
-      "maintained SciRel public graph regression tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "solver_config",
+   "description": "前向固定参数及 r_grid/z_grid。",
+   "units": "R/Z m；psi Wb/rad、B T、g_psi Wb/rad/A（当前 Picard 绑定）",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "需满足实际前向合同，不隐含安装原来源环境。"
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.inference.direct_anisotropic_inversion",
-      "symbol": "solve_direct_anisotropic_inversion",
-      "signature": "solve_direct_anisotropic_inversion(inputs=None, **kwargs)",
-      "canonical_module": "scirel.inference",
-      "canonical_symbol": "solve_direct_anisotropic_inversion"
-    }
+  {
+   "name": "equilibrium_solver",
+   "description": "实际物理前向端口。",
+   "units": "按前向合同",
+   "shape": "callable(payload)",
+   "dtype": "可调用对象",
+   "required": true,
+   "constraints": "必须返回布尔 converged；若未收敛且未填原因，补通用原因；失败后不执行诊断。"
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.diagnostics.observation-residuals"
-      },
-      {
-        "asset_id": "scirel.inference.anisotropic-trial-evaluation"
-      },
-      {
-        "asset_id": "scirel.inference.anisotropic-parameter-optimization"
-      },
-      {
-        "asset_id": "scirel.inference.latin-hypercube-sampling"
-      }
-    ]
+  {
+   "name": "diagnostic_evaluator",
+   "description": "收敛平衡的诊断端口。",
+   "units": "与观测相同",
+   "shape": "callable({equilibrium,R,Z,observations})",
+   "dtype": "可调用对象",
+   "required": true,
+   "constraints": "不能漏请求通道；显式 unit 必须附匹配预测 units；不在图内假设 Thomson 仪器。"
   },
-  "example": {
-    "description": "真实各向异性 Picard 在显式 rank-one 非零 Green 制造模型上恢复径向压强梯度与各向异性比；观测来自独立解析公式。该 Green 是测试响应，不是具体装置校准。",
-    "code": "\"\"\"中文物理示范：独立解析观测驱动的两参数各向异性平衡恢复。\n\n测试模型采用显式制造的非零 rank-one Green 响应，产生均匀轴向磁场。\n它验证力平衡、Green 反馈、磁通单位和推断的连接，不冒充具体线圈装置。\n无需原来源源码、网络或捕获答案；观测由独立解析方程生成。\n\"\"\"\nimport json\nimport numpy as np\nfrom scirel.equilibrium import solve_axisymmetric_anisotropic_picard\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nfrom scirel.inference import solve_direct_anisotropic_inversion\n\n\ndef case(n=7, true_gradient=1.7, true_ratio=1.6, with_failed_trials=True):\n    R,Z=np.meshgrid(np.linspace(.2,.6,n),np.linspace(-.2,.2,n))\n    B0,gain=1.,.6\n    # Trapezoidal integration is exact for Jphi=a*R/B: C=integral R dR dZ.\n    C=(.6**2-.2**2)/2*.4\n    B=(B0+np.sqrt(B0**2+4*gain*true_gradient*C))/2\n    points=np.array([[R[2,2],Z[2,2]],[R[-2,-2],Z[-2,-2]]])\n    psi=B*points[:,0]**2/2\n    pperp=5+true_gradient*points[:,0]**2/2\n    observations={'flux_loops':{'points':points,'quantity':'magnetic_flux','unit':'Wb',\n        'values':2*np.pi*psi,'sigma':1.e-3},\n        'thomson':{'points':points,'p_parallel':{'values':true_ratio*pperp,'sigma':.02,'unit':'Pa'},\n                   'p_perp':{'values':pperp,'sigma':.02,'unit':'Pa'}}}\n    config={'r_grid':R,'z_grid':Z,'psi_vac':B0*R**2/2,\n        'g_psi':gain*(R**2/2).ravel()[:,None]*np.ones((1,R.size)),\n        'tol':1.e-12,'maxiter':150,'relax':.2}\n    calls=[]\n    def forward(payload):\n        params=payload['params'];a,ratio=params['gradient'],params['ratio']\n        p=5+a*R**2/2\n        kwargs={k:v for k,v in payload.items() if k!='params'}\n        if with_failed_trials and a>2.5:\n            kwargs['maxiter']=1  # Deliberately insufficient iteration budget, not a physical bound.\n        state=solve_axisymmetric_anisotropic_picard(**kwargs,\n            pressure_closure=lambda _b,_psi:{'p_parallel':ratio*p,'p_perpendicular':p})\n        calls.append({'gradient':a,'ratio':ratio,'converged':state['converged'],\n                      'fixed_point_residual':state['fixed_point_residual'],'iterations':state['iterations']})\n        return {**state,'psi_unit':'Wb/rad',\n            'profiles':{'p_parallel':state['p_parallel'],'p_perp':state['p_perpendicular']},\n            'profile_units':{'p_parallel':'Pa','p_perp':'Pa'}}\n    result=solve_direct_anisotropic_inversion(initial_params={'gradient':1.,'ratio':1.2},\n        bounds={'gradient':(.2,3.),'ratio':(1.1,2.5)},method='least_squares',\n        n_initial_samples=8,seed=3,max_evaluations=140,\n        observations=observations,solver_config=config,\n        equilibrium_solver=forward,diagnostic_evaluator=synthesize_equilibrium_diagnostics)\n    expected={'gradient':true_gradient,'ratio':true_ratio,'B':B,'psi':B*R**2/2,\n              'J_phi':true_gradient*R/B,'C':C}\n    return result,expected,config,calls\n\n\ndef run():\n    result,expected,config,calls=case()\n    assert result['converged'] and result['forward_converged']\n    for key in ('gradient','ratio'):\n        np.testing.assert_allclose(result['best_parameters'][key],expected[key],rtol=1.e-6,atol=0.)\n    np.testing.assert_allclose(result['equilibrium']['psi'],expected['psi'],rtol=1.e-10,atol=1.e-12)\n    np.testing.assert_allclose(result['equilibrium']['J_phi'],expected['J_phi'],rtol=1.e-10,atol=1.e-12)\n    assert result['residual_vector'].shape==(6,)\n    assert result['chi2']<1.e-12\n    assert any(not x['converged'] for x in calls)\n    assert result['best_valid_trial']['valid']\n    assert np.max(np.abs(result['equilibrium']['psi']-config['psi_vac']))>1.e-3\n    return {'recovered':result['best_parameters'],'truth':{k:expected[k] for k in ('gradient','ratio','B')},\n            'chi2':result['chi2'],'residual_count':result['residual_size'],\n            'forward_fixed_point_residual':result['equilibrium']['fixed_point_residual'],\n            'scientific_evaluations':result['scientific_evaluations'],\n            'failed_trials':sum(not x['converged'] for x in calls),\n            'maximum_plasma_flux_increment':float(np.max(abs(result['equilibrium']['psi']-config['psi_vac']))),\n            'identifiability':'two-parameter manufactured case only; no general inference guarantee',\n            'green_model':'declared rank-one uniform-field response; not a calibrated device'}\n\nif __name__=='__main__':\n    print(json.dumps(run(),indent=2,ensure_ascii=False))\n\nexample_result = run()\nassert example_result['residual_count'] == 6\n",
-    "expected": "恢复 gradient≈1.7 Pa/m²、ratio≈1.6；6 个残差、非零磁通反馈、实际失败 trial 与有效最优状态。对应结果与调用预算由实际执行记录给出，不主张任意装置适用性。"
+  {
+   "name": "fit_keys",
+   "description": "拟合参数有序子集。",
+   "units": "identifier",
+   "shape": "sequence or None",
+   "dtype": "字符串序列或 None",
+   "required": false,
+   "constraints": "非空且不重复，必须同时存在于 initial_params 与 bounds；默认 bounds 键。",
+   "default": null
   },
-  "verification": {
-    "scope": [
-      "6 残差的解析制造双参数恢复，实际限迭代失败 trial 不得变成 best。",
-      "9 观测的独立 Biot–Savart 环积分、独立圆柱张量散度和 root 离散解，恢复 gradient=4800、anisotropy=1100，且各向异性实际改变电流。",
-      "精选安装包的无来源/无开发 checkout、断网、plain venv 用户调用。"
-    ],
-    "tests": [
-      "tests/operator_contracts/test_inference_physical_closure.py",
-      "tests/operator_contracts/test_anisotropic_inference_independent.py"
-    ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
-    "known_limitations": [
-      "独立曲场参考验证当前有限网格的离散方程，不是连续极限误差证明；Green 的同点零自作用约定保留，非有限线径自场。",
-      "制造模型只在所列参数范围内可辨识；通用输出仍为 not_established。",
-      "优化停止不等于满足实验残差阈值，用户必须根据观测噪声及问题本身判读。",
-      "许可与人工科学认可继续独立待决。"
-    ]
+  {
+   "name": "n_initial_samples",
+   "description": "优化前 LHS 样本数。",
+   "units": "count",
+   "shape": "integer or None",
+   "dtype": "整数或 None",
+   "required": false,
+   "constraints": "1 至 max_evaluations-3，拒绝布尔及非整数；None 时不调用 LHS。",
+   "default": null
   },
-  "graph": {
-    "nodes": [
-      {
-        "id": "observation_layout",
-        "kind": "controlled_glue",
-        "description": "在科学调用前验证标准观测，冻结所有 values 的总元素数 N。",
-        "inputs": [
-          "observations"
-        ],
-        "outputs": [
-          "residual_size"
-        ]
-      },
-      {
-        "id": "equilibrium_port",
-        "kind": "caller_port",
-        "description": "验证实际前向端口；仅给缺少原因的未收敛态补说明。",
-        "inputs": [
-          "equilibrium_solver"
-        ],
-        "outputs": [
-          "equilibrium_solver"
-        ]
-      },
-      {
-        "id": "diagnostic_port",
-        "kind": "caller_port",
-        "description": "验证实际诊断端口，保留单位匹配职责。",
-        "inputs": [
-          "diagnostic_evaluator"
-        ],
-        "outputs": [
-          "diagnostic_evaluator"
-        ]
-      },
-      {
-        "id": "residual_relation",
-        "kind": "operator",
-        "asset_id": "scirel.diagnostics.observation-residuals",
-        "description": "绑定固定布局、不漏通道的归一化残差算子。",
-        "inputs": [],
-        "outputs": [
-          "residual_reducer"
-        ]
-      },
-      {
-        "id": "trial_relation",
-        "kind": "operator",
-        "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-        "description": "绑定观测、固定 N、固定配置与端口；由优化器按试探执行，未收敛时短路诊断。",
-        "inputs": [
-          "observations",
-          "solver_config",
-          "equilibrium_solver",
-          "diagnostic_evaluator",
-          "residual_reducer",
-          "residual_size",
-          "failure_penalty"
-        ],
-        "outputs": [
-          "trial_evaluator"
-        ]
-      },
-      {
-        "id": "lhs_sampler",
-        "kind": "operator",
-        "asset_id": "scirel.inference.latin-hypercube-sampling",
-        "description": "启用样本数时绑定既有 LHS；优化器先核完整设计。",
-        "inputs": [
-          "n_initial_samples"
-        ],
-        "outputs": [
-          "lhs_sampler"
-        ]
-      },
-      {
-        "id": "direct_optimizer",
-        "kind": "operator",
-        "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-        "description": "验证有限边界与预算，只排序有效 trial；重新评估实际终点并分离停止与物理状态。",
-        "inputs": [
-          "initial_params",
-          "bounds",
-          "method",
-          "trial_evaluator",
-          "fit_keys",
-          "lhs_sampler",
-          "n_initial_samples",
-          "seed",
-          "residual_size",
-          "failure_penalty",
-          "max_evaluations",
-          "search_state"
-        ],
-        "outputs": [
-          "best_parameters",
-          "chi2",
-          "residual_vector",
-          "converged",
-          "forward_converged",
-          "optimizer_converged",
-          "equilibrium",
-          "evaluation_log",
-          "failure_reason",
-          "optimizer_summary",
-          "best_valid_trial",
-          "scientific_evaluations",
-          "max_evaluations",
-          "valid_trial_count",
-          "residual_size",
-          "identifiability",
-          "search_state"
-        ]
-      },
-      {
-        "id": "status_annotation",
-        "kind": "controlled_glue",
-        "description": "保留完整分离状态，只给无原因的失败结果补充说明。",
-        "inputs": [
-          "best_parameters",
-          "chi2",
-          "residual_vector",
-          "converged",
-          "forward_converged",
-          "optimizer_converged",
-          "equilibrium",
-          "evaluation_log",
-          "failure_reason",
-          "optimizer_summary",
-          "best_valid_trial",
-          "scientific_evaluations",
-          "max_evaluations",
-          "valid_trial_count",
-          "residual_size",
-          "identifiability"
-        ],
-        "outputs": [
-          "best_parameters",
-          "chi2",
-          "residual_vector",
-          "converged",
-          "forward_converged",
-          "optimizer_converged",
-          "equilibrium",
-          "evaluation_log",
-          "failure_reason",
-          "optimizer_summary",
-          "best_valid_trial",
-          "scientific_evaluations",
-          "max_evaluations",
-          "valid_trial_count",
-          "residual_size",
-          "identifiability"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "equilibrium_solver"
-        },
-        "to": {
-          "node": "equilibrium_port",
-          "port": "equilibrium_solver"
-        },
-        "description": "将 equilibrium_solver 绑定到 equilibrium_port 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "diagnostic_evaluator"
-        },
-        "to": {
-          "node": "diagnostic_port",
-          "port": "diagnostic_evaluator"
-        },
-        "description": "将 diagnostic_evaluator 绑定到 diagnostic_port 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "observations"
-        },
-        "to": {
-          "node": "trial_relation",
-          "port": "observations"
-        },
-        "description": "将 observations 绑定到 trial_relation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "solver_config"
-        },
-        "to": {
-          "node": "trial_relation",
-          "port": "solver_config"
-        },
-        "description": "将 solver_config 绑定到 trial_relation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "equilibrium_port",
-          "port": "equilibrium_solver"
-        },
-        "to": {
-          "node": "trial_relation",
-          "port": "equilibrium_solver"
-        },
-        "description": "将 equilibrium_solver 绑定到 trial_relation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "diagnostic_port",
-          "port": "diagnostic_evaluator"
-        },
-        "to": {
-          "node": "trial_relation",
-          "port": "diagnostic_evaluator"
-        },
-        "description": "将 diagnostic_evaluator 绑定到 trial_relation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "residual_relation",
-          "port": "residual_reducer"
-        },
-        "to": {
-          "node": "trial_relation",
-          "port": "residual_reducer"
-        },
-        "description": "将 residual_reducer 绑定到 trial_relation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "trial_relation",
-          "port": "trial_evaluator"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "trial_evaluator"
-        },
-        "description": "将 trial_evaluator 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "n_initial_samples"
-        },
-        "to": {
-          "node": "lhs_sampler",
-          "port": "n_initial_samples"
-        },
-        "description": "将 n_initial_samples 绑定到 lhs_sampler 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "lhs_sampler",
-          "port": "lhs_sampler"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "lhs_sampler"
-        },
-        "description": "将 lhs_sampler 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "initial_params"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "initial_params"
-        },
-        "description": "将 initial_params 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "bounds"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "bounds"
-        },
-        "description": "将 bounds 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "method"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "method"
-        },
-        "description": "将 method 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "control",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "fit_keys"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "fit_keys"
-        },
-        "description": "将 fit_keys 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "n_initial_samples"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "n_initial_samples"
-        },
-        "description": "将 n_initial_samples 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "seed"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "seed"
-        },
-        "description": "将 seed 绑定到 direct_optimizer 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "best_parameters"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "best_parameters"
-        },
-        "description": "将 best_parameters 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "chi2"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "chi2"
-        },
-        "description": "将 chi2 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "residual_vector"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "residual_vector"
-        },
-        "description": "将 residual_vector 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "converged"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "converged"
-        },
-        "description": "将 converged 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "equilibrium"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "equilibrium"
-        },
-        "description": "将 equilibrium 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "evaluation_log"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "evaluation_log"
-        },
-        "description": "将 evaluation_log 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "failure_reason"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "failure_reason"
-        },
-        "description": "将 failure_reason 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "optimizer_summary"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "optimizer_summary"
-        },
-        "description": "将 optimizer_summary 绑定到 status_annotation 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "best_parameters"
-        },
-        "to": {
-          "node": "$output",
-          "port": "best_parameters"
-        },
-        "description": "将 best_parameters 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "chi2"
-        },
-        "to": {
-          "node": "$output",
-          "port": "chi2"
-        },
-        "description": "将 chi2 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "residual_vector"
-        },
-        "to": {
-          "node": "$output",
-          "port": "residual_vector"
-        },
-        "description": "将 residual_vector 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "converged"
-        },
-        "to": {
-          "node": "$output",
-          "port": "converged"
-        },
-        "description": "将 converged 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "equilibrium"
-        },
-        "to": {
-          "node": "$output",
-          "port": "equilibrium"
-        },
-        "description": "将 equilibrium 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "evaluation_log"
-        },
-        "to": {
-          "node": "$output",
-          "port": "evaluation_log"
-        },
-        "description": "将 evaluation_log 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "failure_reason"
-        },
-        "to": {
-          "node": "$output",
-          "port": "failure_reason"
-        },
-        "description": "将 failure_reason 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "optimizer_summary"
-        },
-        "to": {
-          "node": "$output",
-          "port": "optimizer_summary"
-        },
-        "description": "将 optimizer_summary 绑定到 $output 的对应端口。",
-        "condition": "按该节点声明的执行顺序与可选分支。",
-        "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "residual_size"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "residual_size"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "residual_size"
-        },
-        "to": {
-          "node": "$output",
-          "port": "residual_size"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "scientific_evaluations"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "scientific_evaluations"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "scientific_evaluations"
-        },
-        "to": {
-          "node": "$output",
-          "port": "scientific_evaluations"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "forward_converged"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "forward_converged"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "forward_converged"
-        },
-        "to": {
-          "node": "$output",
-          "port": "forward_converged"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "identifiability"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "identifiability"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "identifiability"
-        },
-        "to": {
-          "node": "$output",
-          "port": "identifiability"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "valid_trial_count"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "valid_trial_count"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "valid_trial_count"
-        },
-        "to": {
-          "node": "$output",
-          "port": "valid_trial_count"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "best_valid_trial"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "best_valid_trial"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "best_valid_trial"
-        },
-        "to": {
-          "node": "$output",
-          "port": "best_valid_trial"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "max_evaluations"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "max_evaluations"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "max_evaluations"
-        },
-        "to": {
-          "node": "$output",
-          "port": "max_evaluations"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "optimizer_converged"
-        },
-        "to": {
-          "node": "status_annotation",
-          "port": "optimizer_converged"
-        },
-        "description": "保留对应优化结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "status_annotation",
-          "port": "optimizer_converged"
-        },
-        "to": {
-          "node": "$output",
-          "port": "optimizer_converged"
-        },
-        "description": "返回同一结果字段。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "observations"
-        },
-        "to": {
-          "node": "observation_layout",
-          "port": "observations"
-        },
-        "description": "读取完整观测。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "observation_layout",
-          "port": "residual_size"
-        },
-        "to": {
-          "node": "trial_relation",
-          "port": "residual_size"
-        },
-        "description": "绑定固定残差维数。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "failure_penalty"
-        },
-        "to": {
-          "node": "trial_relation",
-          "port": "failure_penalty"
-        },
-        "description": "绑定有限正罚值。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "observation_layout",
-          "port": "residual_size"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "residual_size"
-        },
-        "description": "绑定固定残差维数。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "failure_penalty"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "failure_penalty"
-        },
-        "description": "绑定有限正罚值。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "max_evaluations"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "max_evaluations"
-        },
-        "description": "总科学调用上限。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "direct_optimizer",
-          "port": "search_state"
-        },
-        "to": {
-          "node": "direct_optimizer",
-          "port": "search_state"
-        },
-        "description": "优化器内部的有界延迟 trial 循环状态，不新增公共参数。",
-        "condition": "仍需试探且预留终点后仍有科学调用预算。",
-        "transform": "根据本次有效性、残差和优化算法推进参数/日志/预算状态。",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "bounded_parameter_search"
-      }
-    ],
-    "execution": {
-      "mode": "ordered_dag_with_deferred_operator_calls",
-      "ordering": "先固定观测布局并验证端口，绑定 reducer/trial；可选绑定 LHS；优化器验证控制与完整样本设计后执行试探和新终点验证，再返回状态。",
-      "branches": [
-        "未启用 LHS 时不绑定采样器。",
-        "LHS 只使用有效候选作起点；没有有效 LHS 时使用已验证初值。",
-        "前向不收敛短路诊断；数值失败罚值保持 N；合同错误传播。",
-        "优化器实际终点无效时只可返回新验证的有效历史候选，并保持 converged=False。"
-      ],
-      "state_ownership": "trial 深复制调用输入；优化器持有日志、预算与历史有效记录。每次调用有独立状态，不复用失败平衡。",
-      "failure_propagation": "静态控制错误先拒绝；固定维数数值失败带状态返回；预算耗尽和优化停止与前向成功分开。",
-      "feedback": [
-        {
-          "id": "bounded_parameter_search",
-          "state": "参数向量、固定 N、日志、有效 best 与实际科学调用计数。",
-          "initialization": "输入初值与边界先验证；日志为空，best 未定，科学调用数为零。",
-          "update_order": "可选 LHS；局部优化试探与数值差分；新终点验证；仅必要时新验证有效历史候选。",
-          "continue_when": "优化器需要新 trial 且预留终点后仍有预算。",
-          "stop_when": "优化器停止、数值异常或预算耗尽；只把实际新终点验证合格的优化成功标为 converged。",
-          "iteration_bound": "max_evaluations 为全部实际科学调用上限，默认 200；至少 3。",
-          "nonconvergence": "返回新验证的部分有效解及分离状态；全失败返回 None 候选与 N 维罚值；不重试无效配置。"
-        }
-      ]
-    }
+  {
+   "name": "seed",
+   "description": "传给 LHS 的随机种子。",
+   "units": "dimensionless",
+   "shape": "sampler-defined or None",
+   "dtype": "采样器支持的种子或 None",
+   "required": false,
+   "constraints": "未启用 LHS 时无效；相同已验证采样器及种子产生相同设计。",
+   "default": null
+  },
+  {
+   "name": "failure_penalty",
+   "description": "无效 trial 对优化器提供的每分量罚值。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "constraints": "有限正数且 N*penalty² 有限；默认 1e12。",
+   "default": 1000000000000.0
+  },
+  {
+   "name": "max_evaluations",
+   "description": "所有实际科学 trial 调用的共同上限。",
+   "units": "count",
+   "shape": "integer",
+   "dtype": "整数",
+   "required": false,
+   "constraints": "至少 3；包含 LHS、差分及新终点验证；不能与 SciPy nfev 混同。",
+   "default": 200
   }
+ ],
+ "outputs": [
+  {
+   "name": "best_parameters",
+   "description": "实际重新验证的优化器终点；失败时可为重新验证的历史有效候选。",
+   "units": "参数单位",
+   "shape": "mapping or None",
+   "dtype": "dict 或 None",
+   "required": true,
+   "constraints": "无有效候选则 None。正常终点与 optimizer_summary.parameters 一致；不声称始终是所有日志最小值。"
+  },
+  {
+   "name": "chi2",
+   "description": "所返回状态的归一化平方和；无有效解时为 N*penalty²。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "有限非负；失败 penalty 必须配合状态解读。"
+  },
+  {
+   "name": "residual_vector",
+   "description": "所返回同一 trial 的固定维数残差。",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64 数组",
+   "required": true,
+   "constraints": "参数、状态与残差同属最后验证的试探；无有效解为罚值。"
+  },
+  {
+   "name": "converged",
+   "description": "优化器成功且其实际终点的最新前向评估有效。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "fallback、耗尽预算或终点无效时 False；不表示残差小、全局最优或可辨识。"
+  },
+  {
+   "name": "forward_converged",
+   "description": "当前返回的状态已实际通过前向与 trial 验证。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "可在优化器未收敛时 True，表示可用部分结果。"
+  },
+  {
+   "name": "optimizer_converged",
+   "description": "SciPy success 原始布尔投影。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "常量失败罚值也可导致优化器停止，不能单独当作物理成功。"
+  },
+  {
+   "name": "equilibrium",
+   "description": "与 best_parameters 及 residual_vector 同次验证的前向状态。",
+   "units": "混合",
+   "shape": "mapping or None",
+   "dtype": "映射或 None",
+   "required": true,
+   "constraints": "无有效返回候选时 None。"
+  },
+  {
+   "name": "evaluation_log",
+   "description": "所有实际评估的参数、chi2、valid、failure_reason 与 source。",
+   "units": "混合",
+   "shape": "list[N_eval]",
+   "dtype": "记录列表",
+   "required": true,
+   "constraints": "source 为 latin_hypercube、optimizer、terminal、best_valid_recheck。"
+  },
+  {
+   "name": "failure_reason",
+   "description": "预算、数值故障、终点失败或优化停止原因。",
+   "units": "identifier",
+   "shape": "string or None",
+   "dtype": "字符串或 None",
+   "required": true,
+   "constraints": "仅同时成功时为 None；合同错误抛出。"
+  },
+  {
+   "name": "optimizer_summary",
+   "description": "方法、success、status、message、nfev 与实际 result.x 的 parameters。",
+   "units": "混合状态与计数",
+   "shape": "mapping or None",
+   "dtype": "dict 或 None",
+   "required": true,
+   "constraints": "SciPy nfev 不等于全部科学调用次数；预算中断时可能为 None。"
+  },
+  {
+   "name": "best_valid_trial",
+   "description": "所有历史有效试探中最低 chi2 的完整记录。",
+   "units": "混合",
+   "shape": "mapping or None",
+   "dtype": "dict 或 None",
+   "required": true,
+   "constraints": "仅作观察记录；与返回终点分开，不给其套用另一点的收敛状态。"
+  },
+  {
+   "name": "scientific_evaluations",
+   "description": "实际 trial 调用总数。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "不超过 max_evaluations；含数值差分与终点验证。"
+  },
+  {
+   "name": "max_evaluations",
+   "description": "本次已验证的科学调用上限。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "valid_trial_count",
+   "description": "评估日志中有效 trial 数量。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "失败试探不计入。"
+  },
+  {
+   "name": "residual_size",
+   "description": "本次固定残差维数。",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "所有向量维数相同。"
+  },
+  {
+   "name": "identifiability",
+   "description": "通用可辨识性状态。",
+   "units": "identifier",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "固定为 not_established；局部停止不等于可辨识性证明。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "声明相容的前向关系、压强闭合、观测位置/单位、参数边界和固定预算。"
+  ],
+  "supported": [
+   "真实各向异性 Picard→单位明确点诊断→固定维残差→有界优化的组合。",
+   "非零 Green 反馈的两参数解析制造案例，及独立离散张量/真实环 Green 的曲场案例。"
+  ],
+  "excluded": [
+   "任意实验装置的完备重建、未知闭合选择、仪器校准或自动参数可辨识性。",
+   "以零 Green 或单个 lambda 输出代替本组合的物理资格。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "无效观测布局、端口、方法、边界或预算先拒绝；科学合同错误传播，不重试错误初值。",
+  "runtime_failure": "数值异常由 trial 状态表示；优化预算和运行故障由优化器单独报告。",
+  "nonconvergence": "converged 同时要求优化器成功且其新终点评估有效，另给 optimizer_converged 与 forward_converged。",
+  "partial_results": "允许返回新验证的部分有效候选及日志，不将其算作完成拟合；全失败返回 None 候选。"
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of 参数化前向平衡与观测到经实际终点验证的各向异性拟合. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.inference.direct_anisotropic_inversion",
+   "symbol": "solve_direct_anisotropic_inversion",
+   "signature": "solve_direct_anisotropic_inversion(inputs=None, **kwargs)",
+   "canonical_module": "scirel.inference",
+   "canonical_symbol": "solve_direct_anisotropic_inversion"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.diagnostics.observation-residuals"
+   },
+   {
+    "asset_id": "scirel.inference.anisotropic-trial-evaluation"
+   },
+   {
+    "asset_id": "scirel.inference.anisotropic-parameter-optimization"
+   },
+   {
+    "asset_id": "scirel.inference.latin-hypercube-sampling"
+   }
+  ]
+ },
+ "example": {
+  "description": "真实各向异性 Picard 在显式 rank-one 非零 Green 制造模型上恢复径向压强梯度与各向异性比；观测来自独立解析公式。该 Green 是测试响应，不是具体装置校准。",
+  "code": "\"\"\"中文物理示范：独立解析观测驱动的两参数各向异性平衡恢复。\n\n测试模型采用显式制造的非零 rank-one Green 响应，产生均匀轴向磁场。\n它验证力平衡、Green 反馈、磁通单位和推断的连接，不冒充具体线圈装置。\n无需原来源源码、网络或捕获答案；观测由独立解析方程生成。\n\"\"\"\nimport json\nimport numpy as np\nfrom scirel.equilibrium import solve_axisymmetric_anisotropic_picard\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nfrom scirel.inference import solve_direct_anisotropic_inversion\n\n\ndef case(n=7, true_gradient=1.7, true_ratio=1.6, with_failed_trials=True):\n    R,Z=np.meshgrid(np.linspace(.2,.6,n),np.linspace(-.2,.2,n))\n    B0,gain=1.,.6\n    # Trapezoidal integration is exact for Jphi=a*R/B: C=integral R dR dZ.\n    C=(.6**2-.2**2)/2*.4\n    B=(B0+np.sqrt(B0**2+4*gain*true_gradient*C))/2\n    points=np.array([[R[2,2],Z[2,2]],[R[-2,-2],Z[-2,-2]]])\n    psi=B*points[:,0]**2/2\n    pperp=5+true_gradient*points[:,0]**2/2\n    observations={'flux_loops':{'points':points,'quantity':'magnetic_flux','unit':'Wb',\n        'values':2*np.pi*psi,'sigma':1.e-3},\n        'thomson':{'points':points,'p_parallel':{'values':true_ratio*pperp,'sigma':.02,'unit':'Pa'},\n                   'p_perp':{'values':pperp,'sigma':.02,'unit':'Pa'}}}\n    config={'r_grid':R,'z_grid':Z,'psi_vac':B0*R**2/2,\n        'g_psi':gain*(R**2/2).ravel()[:,None]*np.ones((1,R.size)),\n        'tol':1.e-12,'maxiter':150,'relax':.2}\n    calls=[]\n    def forward(payload):\n        params=payload['params'];a,ratio=params['gradient'],params['ratio']\n        p=5+a*R**2/2\n        kwargs={k:v for k,v in payload.items() if k!='params'}\n        if with_failed_trials and a>2.5:\n            kwargs['maxiter']=1  # Deliberately insufficient iteration budget, not a physical bound.\n        state=solve_axisymmetric_anisotropic_picard(**kwargs,\n            pressure_closure=lambda _b,_psi:{'p_parallel':ratio*p,'p_perpendicular':p})\n        calls.append({'gradient':a,'ratio':ratio,'converged':state['converged'],\n                      'fixed_point_residual':state['fixed_point_residual'],'iterations':state['iterations']})\n        return {**state,'psi_unit':'Wb/rad',\n            'profiles':{'p_parallel':state['p_parallel'],'p_perp':state['p_perpendicular']},\n            'profile_units':{'p_parallel':'Pa','p_perp':'Pa'}}\n    result=solve_direct_anisotropic_inversion(initial_params={'gradient':1.,'ratio':1.2},\n        bounds={'gradient':(.2,3.),'ratio':(1.1,2.5)},method='least_squares',\n        n_initial_samples=8,seed=3,max_evaluations=140,\n        observations=observations,solver_config=config,\n        equilibrium_solver=forward,diagnostic_evaluator=synthesize_equilibrium_diagnostics)\n    expected={'gradient':true_gradient,'ratio':true_ratio,'B':B,'psi':B*R**2/2,\n              'J_phi':true_gradient*R/B,'C':C}\n    return result,expected,config,calls\n\n\ndef run():\n    result,expected,config,calls=case()\n    assert result['converged'] and result['forward_converged']\n    for key in ('gradient','ratio'):\n        np.testing.assert_allclose(result['best_parameters'][key],expected[key],rtol=1.e-6,atol=0.)\n    np.testing.assert_allclose(result['equilibrium']['psi'],expected['psi'],rtol=1.e-10,atol=1.e-12)\n    np.testing.assert_allclose(result['equilibrium']['J_phi'],expected['J_phi'],rtol=1.e-10,atol=1.e-12)\n    assert result['residual_vector'].shape==(6,)\n    assert result['chi2']<1.e-12\n    assert any(not x['converged'] for x in calls)\n    assert result['best_valid_trial']['valid']\n    assert np.max(np.abs(result['equilibrium']['psi']-config['psi_vac']))>1.e-3\n    return {'recovered':result['best_parameters'],'truth':{k:expected[k] for k in ('gradient','ratio','B')},\n            'chi2':result['chi2'],'residual_count':result['residual_size'],\n            'forward_fixed_point_residual':result['equilibrium']['fixed_point_residual'],\n            'scientific_evaluations':result['scientific_evaluations'],\n            'failed_trials':sum(not x['converged'] for x in calls),\n            'maximum_plasma_flux_increment':float(np.max(abs(result['equilibrium']['psi']-config['psi_vac']))),\n            'identifiability':'two-parameter manufactured case only; no general inference guarantee',\n            'green_model':'declared rank-one uniform-field response; not a calibrated device'}\n\nif __name__=='__main__':\n    print(json.dumps(run(),indent=2,ensure_ascii=False))\n\nexample_result = run()\nassert example_result['residual_count'] == 6\n",
+  "expected": "恢复 gradient≈1.7 Pa/m²、ratio≈1.6；6 个残差、非零磁通反馈、实际失败 trial 与有效最优状态。对应结果与调用预算由实际执行记录给出，不主张任意装置适用性。"
+ },
+ "verification": {
+  "scope": [
+   "6 残差的解析制造双参数恢复，实际限迭代失败 trial 不得变成 best。",
+   "9 观测的独立 Biot–Savart 环积分、独立圆柱张量散度和 root 离散解，恢复 gradient=4800、anisotropy=1100，且各向异性实际改变电流。",
+   "精选安装包的无来源/无开发 checkout、断网、plain venv 用户调用。"
+  ],
+  "tests": [
+   "tests/operator_contracts/test_inference_physical_closure.py",
+   "tests/operator_contracts/test_anisotropic_inference_independent.py"
+  ],
+  "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+  "known_limitations": [
+   "独立曲场参考验证当前有限网格的离散方程，不是连续极限误差证明；Green 的同点零自作用约定保留，非有限线径自场。",
+   "制造模型只在所列参数范围内可辨识；通用输出仍为 not_established。",
+   "优化停止不等于满足实验残差阈值，用户必须根据观测噪声及问题本身判读。",
+   "许可与人工科学认可继续独立待决。"
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "observation_layout",
+    "kind": "controlled_glue",
+    "description": "在科学调用前验证标准观测，冻结所有 values 的总元素数 N。",
+    "inputs": [
+     "observations"
+    ],
+    "outputs": [
+     "residual_size"
+    ]
+   },
+   {
+    "id": "equilibrium_port",
+    "kind": "caller_port",
+    "description": "验证实际前向端口；仅给缺少原因的未收敛态补说明。",
+    "inputs": [
+     "equilibrium_solver"
+    ],
+    "outputs": [
+     "equilibrium_solver"
+    ]
+   },
+   {
+    "id": "diagnostic_port",
+    "kind": "caller_port",
+    "description": "验证实际诊断端口，保留单位匹配职责。",
+    "inputs": [
+     "diagnostic_evaluator"
+    ],
+    "outputs": [
+     "diagnostic_evaluator"
+    ]
+   },
+   {
+    "id": "residual_relation",
+    "kind": "operator",
+    "asset_id": "scirel.diagnostics.observation-residuals",
+    "description": "绑定固定布局、不漏通道的归一化残差算子。",
+    "inputs": [],
+    "outputs": [
+     "residual_reducer"
+    ]
+   },
+   {
+    "id": "trial_relation",
+    "kind": "operator",
+    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
+    "description": "绑定观测、固定 N、固定配置与端口；由优化器按试探执行，未收敛时短路诊断。",
+    "inputs": [
+     "observations",
+     "solver_config",
+     "equilibrium_solver",
+     "diagnostic_evaluator",
+     "residual_reducer",
+     "residual_size",
+     "failure_penalty"
+    ],
+    "outputs": [
+     "trial_evaluator"
+    ]
+   },
+   {
+    "id": "lhs_sampler",
+    "kind": "operator",
+    "asset_id": "scirel.inference.latin-hypercube-sampling",
+    "description": "启用样本数时绑定既有 LHS；优化器先核完整设计。",
+    "inputs": [
+     "n_initial_samples"
+    ],
+    "outputs": [
+     "lhs_sampler"
+    ]
+   },
+   {
+    "id": "direct_optimizer",
+    "kind": "operator",
+    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
+    "description": "验证有限边界与预算，只排序有效 trial；重新评估实际终点并分离停止与物理状态。",
+    "inputs": [
+     "initial_params",
+     "bounds",
+     "method",
+     "trial_evaluator",
+     "fit_keys",
+     "lhs_sampler",
+     "n_initial_samples",
+     "seed",
+     "residual_size",
+     "failure_penalty",
+     "max_evaluations",
+     "search_state"
+    ],
+    "outputs": [
+     "best_parameters",
+     "chi2",
+     "residual_vector",
+     "converged",
+     "forward_converged",
+     "optimizer_converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "optimizer_summary",
+     "best_valid_trial",
+     "scientific_evaluations",
+     "max_evaluations",
+     "valid_trial_count",
+     "residual_size",
+     "identifiability",
+     "search_state"
+    ]
+   },
+   {
+    "id": "status_annotation",
+    "kind": "controlled_glue",
+    "description": "保留完整分离状态，只给无原因的失败结果补充说明。",
+    "inputs": [
+     "best_parameters",
+     "chi2",
+     "residual_vector",
+     "converged",
+     "forward_converged",
+     "optimizer_converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "optimizer_summary",
+     "best_valid_trial",
+     "scientific_evaluations",
+     "max_evaluations",
+     "valid_trial_count",
+     "residual_size",
+     "identifiability"
+    ],
+    "outputs": [
+     "best_parameters",
+     "chi2",
+     "residual_vector",
+     "converged",
+     "forward_converged",
+     "optimizer_converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "optimizer_summary",
+     "best_valid_trial",
+     "scientific_evaluations",
+     "max_evaluations",
+     "valid_trial_count",
+     "residual_size",
+     "identifiability"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "equilibrium_solver"
+    },
+    "to": {
+     "node": "equilibrium_port",
+     "port": "equilibrium_solver"
+    },
+    "description": "将 equilibrium_solver 绑定到 equilibrium_port 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "diagnostic_evaluator"
+    },
+    "to": {
+     "node": "diagnostic_port",
+     "port": "diagnostic_evaluator"
+    },
+    "description": "将 diagnostic_evaluator 绑定到 diagnostic_port 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "observations"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "observations"
+    },
+    "description": "将 observations 绑定到 trial_relation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "solver_config"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "solver_config"
+    },
+    "description": "将 solver_config 绑定到 trial_relation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_port",
+     "port": "equilibrium_solver"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "equilibrium_solver"
+    },
+    "description": "将 equilibrium_solver 绑定到 trial_relation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "diagnostic_port",
+     "port": "diagnostic_evaluator"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "diagnostic_evaluator"
+    },
+    "description": "将 diagnostic_evaluator 绑定到 trial_relation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "residual_relation",
+     "port": "residual_reducer"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "residual_reducer"
+    },
+    "description": "将 residual_reducer 绑定到 trial_relation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "trial_relation",
+     "port": "trial_evaluator"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "trial_evaluator"
+    },
+    "description": "将 trial_evaluator 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "n_initial_samples"
+    },
+    "to": {
+     "node": "lhs_sampler",
+     "port": "n_initial_samples"
+    },
+    "description": "将 n_initial_samples 绑定到 lhs_sampler 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "lhs_sampler",
+     "port": "lhs_sampler"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "lhs_sampler"
+    },
+    "description": "将 lhs_sampler 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "initial_params"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "initial_params"
+    },
+    "description": "将 initial_params 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "bounds"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "bounds"
+    },
+    "description": "将 bounds 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "method"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "method"
+    },
+    "description": "将 method 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "control",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "fit_keys"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "fit_keys"
+    },
+    "description": "将 fit_keys 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "n_initial_samples"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "n_initial_samples"
+    },
+    "description": "将 n_initial_samples 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "seed"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "seed"
+    },
+    "description": "将 seed 绑定到 direct_optimizer 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "best_parameters"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "best_parameters"
+    },
+    "description": "将 best_parameters 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "chi2"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "chi2"
+    },
+    "description": "将 chi2 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "residual_vector"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "residual_vector"
+    },
+    "description": "将 residual_vector 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "converged"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "converged"
+    },
+    "description": "将 converged 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "equilibrium"
+    },
+    "description": "将 equilibrium 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "evaluation_log"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "evaluation_log"
+    },
+    "description": "将 evaluation_log 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "failure_reason"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "failure_reason"
+    },
+    "description": "将 failure_reason 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "optimizer_summary"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "optimizer_summary"
+    },
+    "description": "将 optimizer_summary 绑定到 status_annotation 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "best_parameters"
+    },
+    "to": {
+     "node": "$output",
+     "port": "best_parameters"
+    },
+    "description": "将 best_parameters 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "chi2"
+    },
+    "to": {
+     "node": "$output",
+     "port": "chi2"
+    },
+    "description": "将 chi2 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "residual_vector"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual_vector"
+    },
+    "description": "将 residual_vector 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "converged"
+    },
+    "description": "将 converged 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "$output",
+     "port": "equilibrium"
+    },
+    "description": "将 equilibrium 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "evaluation_log"
+    },
+    "to": {
+     "node": "$output",
+     "port": "evaluation_log"
+    },
+    "description": "将 evaluation_log 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "failure_reason"
+    },
+    "to": {
+     "node": "$output",
+     "port": "failure_reason"
+    },
+    "description": "将 failure_reason 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "optimizer_summary"
+    },
+    "to": {
+     "node": "$output",
+     "port": "optimizer_summary"
+    },
+    "description": "将 optimizer_summary 绑定到 $output 的对应端口。",
+    "condition": "按该节点声明的执行顺序与可选分支。",
+    "transform": "保留端口内容；需要时只做已声明的映射复制、可调用绑定或状态原因补充。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "residual_size"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual_size"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "scientific_evaluations"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "scientific_evaluations"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "scientific_evaluations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "scientific_evaluations"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "forward_converged"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "forward_converged"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "forward_converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "forward_converged"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "identifiability"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "identifiability"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "identifiability"
+    },
+    "to": {
+     "node": "$output",
+     "port": "identifiability"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "valid_trial_count"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "valid_trial_count"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "valid_trial_count"
+    },
+    "to": {
+     "node": "$output",
+     "port": "valid_trial_count"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "best_valid_trial"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "best_valid_trial"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "best_valid_trial"
+    },
+    "to": {
+     "node": "$output",
+     "port": "best_valid_trial"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "max_evaluations"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "max_evaluations"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "max_evaluations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "max_evaluations"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "optimizer_converged"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "optimizer_converged"
+    },
+    "description": "保留对应优化结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "optimizer_converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "optimizer_converged"
+    },
+    "description": "返回同一结果字段。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "observations"
+    },
+    "to": {
+     "node": "observation_layout",
+     "port": "observations"
+    },
+    "description": "读取完整观测。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "observation_layout",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "residual_size"
+    },
+    "description": "绑定固定残差维数。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "failure_penalty"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "failure_penalty"
+    },
+    "description": "绑定有限正罚值。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "observation_layout",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "residual_size"
+    },
+    "description": "绑定固定残差维数。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "failure_penalty"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "failure_penalty"
+    },
+    "description": "绑定有限正罚值。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "max_evaluations"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "max_evaluations"
+    },
+    "description": "总科学调用上限。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "search_state"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "search_state"
+    },
+    "description": "优化器内部的有界延迟 trial 循环状态，不新增公共参数。",
+    "condition": "仍需试探且预留终点后仍有科学调用预算。",
+    "transform": "根据本次有效性、残差和优化算法推进参数/日志/预算状态。",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "bounded_parameter_search"
+   }
+  ],
+  "execution": {
+   "mode": "ordered_dag_with_deferred_operator_calls",
+   "ordering": "先固定观测布局并验证端口，绑定 reducer/trial；可选绑定 LHS；优化器验证控制与完整样本设计后执行试探和新终点验证，再返回状态。",
+   "branches": [
+    "未启用 LHS 时不绑定采样器。",
+    "LHS 只使用有效候选作起点；没有有效 LHS 时使用已验证初值。",
+    "前向不收敛短路诊断；数值失败罚值保持 N；合同错误传播。",
+    "优化器实际终点无效时只可返回新验证的有效历史候选，并保持 converged=False。"
+   ],
+   "state_ownership": "trial 深复制调用输入；优化器持有日志、预算与历史有效记录。每次调用有独立状态，不复用失败平衡。",
+   "failure_propagation": "静态控制错误先拒绝；固定维数数值失败带状态返回；预算耗尽和优化停止与前向成功分开。",
+   "feedback": [
+    {
+     "id": "bounded_parameter_search",
+     "state": "参数向量、固定 N、日志、有效 best 与实际科学调用计数。",
+     "initialization": "输入初值与边界先验证；日志为空，best 未定，科学调用数为零。",
+     "update_order": "可选 LHS；局部优化试探与数值差分；新终点验证；仅必要时新验证有效历史候选。",
+     "continue_when": "优化器需要新 trial 且预留终点后仍有预算。",
+     "stop_when": "优化器停止、数值异常或预算耗尽；只把实际新终点验证合格的优化成功标为 converged。",
+     "iteration_bound": "max_evaluations 为全部实际科学调用上限，默认 200；至少 3。",
+     "nonconvergence": "返回新验证的部分有效解及分离状态；全失败返回 None 候选与 N 维罚值；不重试无效配置。"
+    }
+   ]
+  }
+ }
 }

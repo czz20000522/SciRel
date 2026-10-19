@@ -19,7 +19,7 @@
     "direction": "Declared inputs to Mutated/copy patch list or None",
     "definition": "Scale patch data transforms in place while applying intrinsic geometry exactly once",
     "model": "Matplotlib affine transform composition using get_data_transform",
-    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "geometry": "two-dimensional matplotlib patch coordinate transforms",
     "coordinates": "Patch display/data coordinates, not physical vector coordinates",
     "boundary": "Source mutation/shallow-copy/None-return convention",
     "assumptions": [
@@ -62,7 +62,7 @@
       "Finite affine parameters and Matplotlib patch transform contract"
     ],
     "supported": [
-      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+      "Finite matplotlib Patch collections and affine transforms"
     ],
     "excluded": [
       "No physical vector/coordinate field transformation claim",
@@ -70,19 +70,19 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
-    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
-    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
-    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+    "invalid_input": "Raises TypeError, ValueError, or the underlying Matplotlib error for a non-iterable patch collection or invalid transform arguments.",
+    "runtime_failure": "Optional Matplotlib transform and patch-method failures propagate.",
+    "nonconvergence": "Not applicable; the transforms are direct affine operations.",
+    "partial_results": "A failed transform call does not promise a partially transformed collection; transpose_patches returns None after mutating supplied patches."
   },
   "provenance": {
-    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived scientific implementation",
-      "independent analytic or numerical oracle"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -98,18 +98,20 @@
     "dependencies": []
   },
   "example": {
-    "description": "Bounded executable example for Affine patch scale-patches",
-    "code": "from matplotlib.patches import Rectangle\nfrom scirel.geometry.plotting import scale_patches\np=Rectangle((.3,.4),.2,.1)\nr=scale_patches([p],2)\nassert len(r)==1",
-    "expected": "Declared result shape and bounded numerical behavior are asserted."
+    "description": "Apply a scale transform to one matplotlib rectangle in place.",
+    "code": "from matplotlib.patches import Rectangle\nfrom scirel.geometry.plotting import scale_patches\n\npatch = Rectangle((0.3, 0.4), 0.2, 0.1)\nresult = scale_patches([patch], 2.0)\nassert result == [patch]",
+    "expected": "The same one-element list is returned after the patch receives the scale transform."
   },
   "verification": {
     "scope": [
-      "Only the explicitly stated finite input domain and direct-test fixtures"
+      "Public callable signature and documented finite-input behavior",
+      "The direct regression fixtures listed in verification.tests",
+      "The executable example stored in this contract"
     ],
     "tests": [
       "tests/pleiades/equilibrium/test_analysis_families.py"
     ],
-    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
     "known_limitations": [
       "No physical vector/coordinate field transformation claim",
       "Artist ownership and arbitrary custom Patch subclasses are unqualified"

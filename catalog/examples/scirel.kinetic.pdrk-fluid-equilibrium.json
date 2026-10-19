@@ -121,16 +121,16 @@
     "partial_results": "No partial result is returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Derived from the PDRK cold-plasma/PDRF example, with explicit D2 scientific corrections and state ownership.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://doi.org/10.1016/j.cpc.2013.10.012"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -150,20 +150,21 @@
   "example": {
     "description": "Initialize the packaged SI deck with zero collisions.",
     "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si\ns = fluid_equilibrium_si()\nassert s[\"velocity_collision\"].shape == (2, 2)\nassert (s[\"velocity_collision\"] == 0).all()",
-    "expected": "Two-species equilibrium with an exactly zero velocity collision generator."
+    "expected": "The packaged SI equilibrium returned a (2,2) velocity_collision matrix whose entries were all zero."
   },
   "verification": {
     "scope": [
-      "SI pressure and gyro/plasma-frequency normalization.",
-      "Momentum, common-velocity and dissipative-energy identities; physical SI holdout."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_multifluid.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Fixed-axis and field-following pressure are distinct physical models.",
-      "No global equilibrium force-balance proof is supplied."
+      "No global equilibrium force-balance proof is supplied.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

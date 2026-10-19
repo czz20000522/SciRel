@@ -97,17 +97,16 @@
     "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
   },
   "provenance": {
-    "lineage_summary": "PDRK upstream, frozen 2018-fixed legacy D0, faithfully packaged D1, then explicit D2 finite-Harris scaling, signed-wavevector causality, exact-axis Maxwell and high-precision J12 corrections. Original source aliases and plots remain attributable evidence.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "MATLAB/Octave source",
-      "Independent velocity-integral/analytic relations",
-      "High-precision numerical derivation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology18 (2016).",
-      "PDRK source documentation and2018 correction notes."
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "Original-source redistribution license remains unverified; this scientific record does not grant permission."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -121,26 +120,26 @@
     "dependencies": []
   },
   "example": {
-    "description": "Explicit SI EM convention, not the current m/mp deck.",
+    "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
     "code": "from scirel.kinetic.pdrk.rational import equilibrium\nr = equilibrium('em', [[-1, 1, 1e6, 100, 100, 0], [1, 1836, 1e6, 100, 100, 0]], B0=1e-7)\nassert r['state']['S'].item() == 2",
-    "expected": "Two species; source c2,epsilon0,mu0,kB and second-species reference scales returned explicitly."
+    "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
   },
   "verification": {
     "scope": [
-      "Source-absent installed own scientific package; exact package/resource closure.",
-      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks.",
-      "Flattened scientific input ports documented independently of the thin wrapper(inputs) calling convention."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_rational.py"
     ],
-    "evidence_ceiling": "Bounded actual Octave8.4/Python3.14 scientific qualification of the frozen derived component. Public integration/D3 and human admission remain separate; no universal approximation or rigorous interval claim.",
+    "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
     "known_limitations": [
       "Original license unverified; MATLAB execution NOT_RUN.",
       "Finite-J/finite-N physics must be qualified for a new requested regime.",
       "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending."
+      "Human scientific and plot approval pending.",
+      "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
     ]
   }
 }

@@ -1,136 +1,135 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.plasma.fast-ion-heating",
-  "kind": "operator",
-  "title": {
-    "en": "Fast ion heating partition",
-    "zh": "快离子加热分配"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.plasma.fast-ion-heating",
+ "kind": "operator",
+ "title": {
+  "en": "Fast ion heating partition",
+  "zh": "快离子加热分配"
+ },
+ "summary": "Evaluate the specified local Mikkelsen mathematical heating-partition approximation, including its finite zero-energy limit.",
+ "taxonomy": [
+  "plasma",
+  "heating",
+  "collisions"
+ ],
+ "aliases": [
+  "fast_ion_fractional_heating"
+ ],
+ "identity": {
+  "relation": "f_i(x)=2/x² integral from 0 to x of t/(1+t³) dt, x²=E_birth/(10 m_fast T_e)",
+  "direction": "birth energy, electron temperature and fast ion mass -> ion heating fraction",
+  "definition": "The dimensionless Mikkelsen partition is evaluated by a convergent small-x series and its closed form away from zero; f_i(0)=1 is the continuous limit.",
+  "model": "Specified local Mikkelsen approximation with fixed x²=E_birth/(10 m_fast T_e) scaling",
+  "geometry": "local homogeneous plasma; no spatial geometry input",
+  "coordinates": "scalar or broadcast array values",
+  "boundary": "E_birth >= 0, T_e > 0, fast-ion mass > 0; all finite",
+  "assumptions": [
+   "T_e is in keV and fast-ion mass is in atomic mass units.",
+   "The relation is a local partition and does not model slowing-down trajectories.",
+   "The fixed scaling defines the evaluated approximation; suitability for a specific plasma composition or collisional regime is not established by numerical agreement with this relation."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "birth_energy",
+   "description": "Fast-ion birth energy",
+   "units": "keV",
+   "shape": "scalar or broadcast array",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and nonnegative."
   },
-  "summary": "Evaluate the specified local Mikkelsen mathematical heating-partition approximation, including its finite zero-energy limit.",
-  "taxonomy": [
-    "plasma",
-    "heating",
-    "collisions"
-  ],
-  "aliases": [
-    "fast_ion_fractional_heating"
-  ],
-  "identity": {
-    "relation": "f_i(x)=2/x² integral from 0 to x of t/(1+t³) dt, x²=E_birth/(10 m_fast T_e)",
-    "direction": "birth energy, electron temperature and fast ion mass -> ion heating fraction",
-    "definition": "The dimensionless Mikkelsen partition is evaluated by a convergent small-x series and its closed form away from zero; f_i(0)=1 is the continuous limit.",
-    "model": "Specified local Mikkelsen approximation with fixed x²=E_birth/(10 m_fast T_e) scaling",
-    "geometry": "local homogeneous plasma; no spatial geometry input",
-    "coordinates": "scalar or broadcast array values",
-    "boundary": "E_birth >= 0, T_e > 0, fast-ion mass > 0; all finite",
-    "assumptions": [
-      "T_e is in keV and fast-ion mass is in atomic mass units.",
-      "The relation is a local partition and does not model slowing-down trajectories.",
-      "The fixed scaling defines the evaluated approximation; suitability for a specific plasma composition or collisional regime is not established by numerical agreement with this relation."
-    ]
+  {
+   "name": "T_e",
+   "description": "Electron temperature",
+   "units": "keV",
+   "shape": "scalar or broadcast array",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   },
-  "inputs": [
-    {
-      "name": "birth_energy",
-      "description": "Fast-ion birth energy",
-      "units": "keV",
-      "shape": "scalar or broadcast array",
-      "dtype": "real",
-      "required": true,
-      "constraints": "Finite and nonnegative."
-    },
-    {
-      "name": "T_e",
-      "description": "Electron temperature",
-      "units": "keV",
-      "shape": "scalar or broadcast array",
-      "dtype": "real",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    },
-    {
-      "name": "fast_ion_mass",
-      "description": "Fast-ion mass",
-      "units": "amu",
-      "shape": "scalar or broadcast array",
-      "dtype": "real",
-      "required": true,
-      "constraints": "Finite and strictly positive; broadcast-compatible with the other inputs."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "ion_fraction",
-      "description": "Fraction of fast-ion heating deposited into ions",
-      "units": "dimensionless",
-      "shape": "broadcast input shape",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "All declared inputs satisfy the finite domain and broadcast compatibility."
-    ],
-    "supported": [
-      "Numerical evaluation of the exact dimensionless integral and fixed energy/temperature/mass scaling stated in this document."
-    ],
-    "excluded": [
-      "Negative birth energy, nonpositive temperature or mass, nonfinite values, and full transport or trajectory evolution.",
-      "Claims of experimental calibration or suitability for arbitrary plasma compositions and collisional regimes."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite, out-of-domain or broadcast-incompatible inputs; raises FloatingPointError when the computed dimensionless ratio or result is nonfinite, including ratio overflow from finite dimensional inputs.",
-    "runtime_failure": "Propagates numerical failures; no fallback or clipping is applied.",
-    "nonconvergence": "Not applicable; the small-x series has fixed 12-term order.",
-    "partial_results": "Never returned."
-  },
-  "provenance": {
-    "lineage_summary": "D2 scientifically corrected successor of TORAX D1 physics.fast_ion_heating. The D1 antiderivative returns -inf at E_birth=0 and large finite errors at tiny positive energy due to cancellation. Independent quadrature of the governing integral establishes f_i(0)=1; the successor uses a convergent small-x series and retains the D1 source observation in the D2 handoff.",
-    "source_kinds": [
-      "frozen D1 TORAX source implementation",
-      "independent analytic integral and boundary-limit computation",
-      "scientific regression tests"
-    ],
-    "public_references": [
-      "Mikkelsen, Nucl. Technol. Fusion 237 (1983), equations 5 and 26"
-    ],
-    "license_status": "Source license retained with the exact development selection; see the source license text."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.plasma.fast_ion_heating",
-      "symbol": "fast_ion_fractional_heating",
-      "signature": "fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass)",
-      "canonical_module": "scirel.plasma",
-      "canonical_symbol": "fast_ion_fractional_heating"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Evaluate the zero-energy boundary and a finite energy case.",
-    "code": "from scirel.plasma.fast_ion_heating import fast_ion_fractional_heating\nassert fast_ion_fractional_heating(0.0, 10.0, 2.0) == 1.0\nvalue = fast_ion_fractional_heating(20.0, 4.0, 2.0)\nassert 0.0 < value < 1.0",
-    "expected": "The zero-energy limit is exactly 1 and the finite case returns a finite dimensionless fraction."
-  },
-  "verification": {
-    "scope": [
-      "Independent integral quadrature and continuous zero-energy limit.",
-      "Closed-form agreement at a held-out finite energy.",
-      "Finite and out-of-domain input behavior."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_fast_ion_heating.py"
-    ],
-    "evidence_ceiling": "Independent quadrature, analytic boundary limits and regression tests support numerical evaluation of the stated mathematical relation under the declared failure behavior. They do not establish experimental calibration or wider physical applicability.",
-    "known_limitations": [
-      "Numerical verification establishes evaluation of the specified mathematical approximation, not experimental calibration or applicability to a particular plasma composition or collisional regime.",
-      "Finite input values can produce a nonfinite dimensionless ratio and then raise FloatingPointError.",
-      "Full slowing-down trajectories, spatial transport evolution and coupling to other plasma models are outside this operator."
-    ]
+  {
+   "name": "fast_ion_mass",
+   "description": "Fast-ion mass",
+   "units": "amu",
+   "shape": "scalar or broadcast array",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive; broadcast-compatible with the other inputs."
   }
+ ],
+ "outputs": [
+  {
+   "name": "ion_fraction",
+   "description": "Fraction of fast-ion heating deposited into ions",
+   "units": "dimensionless",
+   "shape": "broadcast input shape",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "All declared inputs satisfy the finite domain and broadcast compatibility."
+  ],
+  "supported": [
+   "Numerical evaluation of the exact dimensionless integral and fixed energy/temperature/mass scaling stated in this document."
+  ],
+  "excluded": [
+   "Negative birth energy, nonpositive temperature or mass, nonfinite values, and full transport or trajectory evolution.",
+   "Claims of experimental calibration or suitability for arbitrary plasma compositions and collisional regimes."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite, out-of-domain or broadcast-incompatible inputs; raises FloatingPointError when the computed dimensionless ratio or result is nonfinite, including ratio overflow from finite dimensional inputs.",
+  "runtime_failure": "Propagates numerical failures; no fallback or clipping is applied.",
+  "nonconvergence": "Not applicable; the small-x series has fixed 12-term order.",
+  "partial_results": "Never returned."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of f_i(x)=2/x² integral from 0 to x of t/(1+t³) dt, x²=E_birth/(10 m_fast T_e). Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [
+   "Mikkelsen, Nucl. Technol. Fusion 237 (1983), equations 5 and 26"
+  ],
+  "license_status": "Source license retained with the exact development selection; see the source license text."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.plasma.fast_ion_heating",
+   "symbol": "fast_ion_fractional_heating",
+   "signature": "fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass)",
+   "canonical_module": "scirel.plasma",
+   "canonical_symbol": "fast_ion_fractional_heating"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the zero-energy boundary and a finite energy case.",
+  "code": "from scirel.plasma.fast_ion_heating import fast_ion_fractional_heating\nassert fast_ion_fractional_heating(0.0, 10.0, 2.0) == 1.0\nvalue = fast_ion_fractional_heating(20.0, 4.0, 2.0)\nassert 0.0 < value < 1.0",
+  "expected": "The zero-energy limit is exactly 1 and the finite case returns a finite dimensionless fraction."
+ },
+ "verification": {
+  "scope": [
+   "Independent integral quadrature and continuous zero-energy limit.",
+   "Closed-form agreement at a held-out finite energy.",
+   "Finite and out-of-domain input behavior."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fast_ion_heating.py"
+  ],
+  "evidence_ceiling": "Independent quadrature, analytic boundary limits and regression tests support numerical evaluation of the stated mathematical relation under the declared failure behavior. They do not establish experimental calibration or wider physical applicability.",
+  "known_limitations": [
+   "Numerical verification establishes evaluation of the specified mathematical approximation, not experimental calibration or applicability to a particular plasma composition or collisional regime.",
+   "Finite input values can produce a nonfinite dimensionless ratio and then raise FloatingPointError.",
+   "Full slowing-down trajectories, spatial transport evolution and coupling to other plasma models are outside this operator."
+  ]
+ }
 }

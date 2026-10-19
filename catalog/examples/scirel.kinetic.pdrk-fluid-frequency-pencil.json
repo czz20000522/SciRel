@@ -97,16 +97,16 @@
     "partial_results": "No partial result is returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Derived from the PDRK cold-plasma/PDRF example, with explicit D2 scientific corrections and state ownership.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://doi.org/10.1016/j.cpc.2013.10.012"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -126,20 +126,21 @@
   "example": {
     "description": "Assemble a perpendicular/parallel physical pencil.",
     "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si, fluid_frequency_pencil\np = fluid_frequency_pencil(fluid_equilibrium_si(), 1e-5, 2e-5)\nassert p[\"M\"].shape == p[\"A\"].shape == (14, 14)",
-    "expected": "A 14 by 14 generalized time-generator pencil."
+    "expected": "The SI point produced finite generalized-pencil matrices M and A, each of shape (14,14)."
   },
   "verification": {
     "scope": [
-      "Independent equation-block contracts, zero-collision unaffected matrix comparisons.",
-      "Complex spatial wavevector and relativistic momentum derivative."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_multifluid.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Gyrotropic pressure closure is a declared local fluid model.",
-      "Assembly does not select a physical branch or remove constraint modes."
+      "Assembly does not select a physical branch or remove constraint modes.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

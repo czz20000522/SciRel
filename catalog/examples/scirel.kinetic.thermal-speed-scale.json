@@ -78,15 +78,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development relation from the saved KN1DPy thermal-speed-scale package. Its bundle cites KN1DPy/kinetic_h2.py:1360-1371; the raw source tree was not re-read. The archived formal implementation SHA-256 is 9867b3fbc30317e519d0b1ed62d885c8550d00337d889542b5653c267b82fda8. Historical replay matched three ordinary finite positive scalar points exactly. The earlier SciRel version additionally rejected underflowed mass conversion; that rejection is superseded by the current D2 range correction. Current SciRel retains the frozen hydrogen-mass convention, constants and ordinary operation order, rejects non-real or otherwise invalid inputs, and evaluates dangerous intermediate underflow/overflow with 100-digit Decimal using exact binary64 inputs and constants. A representable finite positive final speed is retained; a nonrepresentable or nonpositive final speed is rejected. The range correction has separate independent high-precision and exact-rational validation. KN1DPy strict D1 qualification remains withdrawn: historical development comparison and current bounded scientific correction do not establish qualified-L1 provenance, all-input source parity or expert approval. Historical intake details remain in docs/evaluations/2026-09-28-neutral-scale-density-integration.md.",
+    "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "read-only digest-bound archived-source replay during integration",
-      "scientific regression tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {

@@ -1,123 +1,121 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
-  "kind": "operator",
-  "title": {
-    "en": "H+-on-H elastic momentum-transfer cross section",
-    "zh": "原子氢质子弹性动量转移截面"
-  },
-  "summary": "计算静止原子氢靶上的质子弹性动量传递截面；10 eV 使用低能多项式，修复 Python 翻译中的零洞。保留能域端点裁剪和领先单例输出轴。",
-  "taxonomy": [
-    "collisions",
-    "cross-section",
-    "elastic",
-    "momentum-transfer",
-    "hydrogen",
-    "proton",
-    "tabulated-fit"
-  ],
-  "aliases": [
-    "sigma_el_p_h",
-    "H+ -H elastic momentum-transfer cross section",
-    "proton-hydrogen elastic fit"
-  ],
-  "identity": {
-    "relation": "the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint",
-    "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
-    "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E≤10 时使用七系数低能 log 多项式，E>10 时使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；输出增加一个领先单例轴。",
-    "model": "KN1D 原始 IDL sigma_el_p_h 的 H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
-    "geometry": "none; a scalar material function of collision energy",
-    "coordinates": "collision energy in eV; output cross section in m^2",
-    "boundary": "输入有限非负实数；能域外取端点值，恰好 10 eV 使用低能分支。",
-    "assumptions": [
-      "低/高能拟合系数沿用冻结值；只修复原始 IDL le 10 被错误翻译为 <10 的断点空洞。",
-      "端点裁剪不代表域外实验精度；低高段可能有有限跳变，不进行无依据平滑。",
-      "输出保留一个领先单例轴；负能量、布尔、复数和字符串拒绝。"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "energy_ev",
-      "description": "质子弹丸在静止氢靶参考系的实验室能量。",
-      "units": "eV",
-      "shape": "any (scalar or array)",
-      "dtype": "实数标量或数组",
-      "required": true,
-      "constraints": "有限非负；范围外取拟合端点。"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "cross_section_m2",
-      "description": "H+-H 弹性动量传递截面。",
-      "units": "m^2",
-      "shape": "input shape with one extra leading axis of size 1",
-      "dtype": "float64 数组",
-      "required": true,
-      "constraints": "有限且正；形状比输入多一个领先单例轴。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "使用声明的实验室弹丸能量和端点裁剪约定。"
-    ],
-    "supported": [
-      "标量或数组 H+-H 动量传递截面，包括恰好 10 eV。"
-    ],
-    "excluded": [
-      "域外实验外推、完整碰撞频率或 Maxwell 平均；本函数只求截面。"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "非实数、非有限或负能量抛 ValueError。",
-    "runtime_failure": "合法截断区间求值返回有限正数。",
-    "nonconvergence": "不适用，无迭代。",
-    "partial_results": "不返回部分结果。"
-  },
-  "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy sigma_el_p_h slice, package 原子氢质子弹性动量转移截面, source anchor KN1DPy/sigma/sigma_el_p_h.py:1-42 with caller evidence KN1DPy/kinetic_h.py:996-1016 (saved implementation file SHA-256 b92dbb2af1596fa9aa505cb478b3be1cdc4ca92c1bf40321d2b52472c64c6daf). One documented repair relative to the saved implementation, whose own document declares the contract: negative energies are rejected instead of being silently clipped into the fit domain. The piecewise arithmetic, the strict-branch breakpoint zero and the leading output axis are preserved bit for bit. The saved document's boilerplate output-shape sentence contradicts the implementation's documented wrapper; the discrepancy is declared here and left for expert adjudication rather than silently resolved. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval. 原始 IDL sigma_el_p_h.pro 明确 le 10 / gt 10；新修复将 10 eV 归入低能段，原 Python 零洞反例和旧冻结保留。",
-    "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent reevaluation of the saved formulas",
-      "environment-gated historical replay test",
-      "scientific regression tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.collisions.hydrogen_proton_elastic_cross_section",
-      "symbol": "evaluate_hydrogen_proton_elastic_cross_section",
-      "signature": "evaluate_hydrogen_proton_elastic_cross_section(energy_ev)",
-      "canonical_module": "scirel.collisions",
-      "canonical_symbol": "evaluate_hydrogen_proton_elastic_cross_section"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "检查 10 eV 断点与两侧的有限正截面。",
-    "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))\nassert y.shape == (1, 3)\nassert np.isfinite(y).all() and (y > 0).all()\nnp.testing.assert_allclose(y[0, 0], y[0, 1], rtol=1e-14)\n",
-    "expected": "三个截面均有限正数；断点属于低能段，右侧可保留经验拟合的有限跳变。"
-  },
-  "verification": {
-    "scope": [
-      "先实跑 10 eV 返回零的反例，再依据原始 IDL 修复。",
-      "保留非断点拟合、输出轴、输入拒绝和端点裁剪的已有数值断言与容差。",
-      "后继原子碰撞矩阵与独立角积分使用修正后的分段定义。"
-    ],
-    "tests": [
-      "tests/operator_contracts/test_hydrogen_proton_elastic_cross_section.py",
-      "tests/operator_contracts/test_atomic_hydrogen_collision_matrices.py",
-      "tests/operator_contracts/test_collision_physical_closure.py"
-    ],
-    "evidence_ceiling": "证明声明分段拟合与原始断点定义一致，未建立新的实验截面普适精度；根接收、人认可及许可另记。",
-    "known_limitations": [
-      "拟合端点裁剪和低高段不连续继承；不擅自平滑。",
-      "原来源资格撤回和许可待决仍保留；后继纠正不改写历史。"
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+ "kind": "operator",
+ "title": {
+  "en": "H+-on-H elastic momentum-transfer cross section",
+  "zh": "原子氢质子弹性动量转移截面"
+ },
+ "summary": "计算静止原子氢靶上的质子弹性动量传递截面；10 eV 使用低能多项式，修复 Python 翻译中的零洞。保留能域端点裁剪和领先单例输出轴。",
+ "taxonomy": [
+  "collisions",
+  "cross-section",
+  "elastic",
+  "momentum-transfer",
+  "hydrogen",
+  "proton",
+  "tabulated-fit"
+ ],
+ "aliases": [
+  "sigma_el_p_h",
+  "H+ -H elastic momentum-transfer cross section",
+  "proton-hydrogen elastic fit"
+ ],
+ "identity": {
+  "relation": "the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint",
+  "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
+  "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E≤10 时使用七系数低能 log 多项式，E>10 时使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；输出增加一个领先单例轴。",
+  "model": "KN1D 原始 IDL sigma_el_p_h 的 H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
+  "geometry": "none; a scalar material function of collision energy",
+  "coordinates": "collision energy in eV; output cross section in m^2",
+  "boundary": "输入有限非负实数；能域外取端点值，恰好 10 eV 使用低能分支。",
+  "assumptions": [
+   "低/高能拟合系数沿用冻结值；只修复原始 IDL le 10 被错误翻译为 <10 的断点空洞。",
+   "端点裁剪不代表域外实验精度；低高段可能有有限跳变，不进行无依据平滑。",
+   "输出保留一个领先单例轴；负能量、布尔、复数和字符串拒绝。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "energy_ev",
+   "description": "质子弹丸在静止氢靶参考系的实验室能量。",
+   "units": "eV",
+   "shape": "any (scalar or array)",
+   "dtype": "实数标量或数组",
+   "required": true,
+   "constraints": "有限非负；范围外取拟合端点。"
   }
+ ],
+ "outputs": [
+  {
+   "name": "cross_section_m2",
+   "description": "H+-H 弹性动量传递截面。",
+   "units": "m^2",
+   "shape": "input shape with one extra leading axis of size 1",
+   "dtype": "float64 数组",
+   "required": true,
+   "constraints": "有限且正；形状比输入多一个领先单例轴。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "使用声明的实验室弹丸能量和端点裁剪约定。"
+  ],
+  "supported": [
+   "标量或数组 H+-H 动量传递截面，包括恰好 10 eV。"
+  ],
+  "excluded": [
+   "域外实验外推、完整碰撞频率或 Maxwell 平均；本函数只求截面。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "非实数、非有限或负能量抛 ValueError。",
+  "runtime_failure": "合法截断区间求值返回有限正数。",
+  "nonconvergence": "不适用，无迭代。",
+  "partial_results": "不返回部分结果。"
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.hydrogen_proton_elastic_cross_section",
+   "symbol": "evaluate_hydrogen_proton_elastic_cross_section",
+   "signature": "evaluate_hydrogen_proton_elastic_cross_section(energy_ev)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "evaluate_hydrogen_proton_elastic_cross_section"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "检查 10 eV 断点与两侧的有限正截面。",
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))\nassert y.shape == (1, 3)\nassert np.isfinite(y).all() and (y > 0).all()\nnp.testing.assert_allclose(y[0, 0], y[0, 1], rtol=1e-14)\n",
+  "expected": "三个截面均有限正数；断点属于低能段，右侧可保留经验拟合的有限跳变。"
+ },
+ "verification": {
+  "scope": [
+   "先实跑 10 eV 返回零的反例，再依据原始 IDL 修复。",
+   "保留非断点拟合、输出轴、输入拒绝和端点裁剪的已有数值断言与容差。",
+   "后继原子碰撞矩阵与独立角积分使用修正后的分段定义。"
+  ],
+  "tests": [
+   "tests/operator_contracts/test_hydrogen_proton_elastic_cross_section.py",
+   "tests/operator_contracts/test_atomic_hydrogen_collision_matrices.py",
+   "tests/operator_contracts/test_collision_physical_closure.py"
+  ],
+  "evidence_ceiling": "证明声明分段拟合与原始断点定义一致，未建立新的实验截面普适精度；根接收、人认可及许可另记。",
+  "known_limitations": [
+   "拟合端点裁剪和低高段不连续继承；不擅自平滑。",
+   "原来源资格撤回和许可待决仍保留；后继纠正不改写历史。"
+  ]
+ }
 }

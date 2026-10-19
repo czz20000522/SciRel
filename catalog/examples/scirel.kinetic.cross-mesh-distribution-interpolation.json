@@ -187,18 +187,17 @@
     "partial_results": "Never returned; any rejected spatial slice aborts the call without a partial distribution or input mutation."
   },
   "provenance": {
-    "lineage_summary": "Scientific successor to the saved KN1DPy interp_fvrvxx seam (historical anchor KN1DPy/interp_fvrvxx.py, consumed at kn1d.py:439,475-476; saved implementation SHA-256 c93f491369b36e237c35c10528a82af9f33de2db730f9a3a8054dace6dca5a43). The original positive-input witness produced 37/140 negative cells with minimum about -740.8; its first two target mean energies also exceed the original finite-grid maximum, proving that forcing a positive conserved result on that grid is impossible. The successor replaces AN/BN correction and the default conditional density rescale with a convex-hull-checked nonnegative entropy projection, and corrects spatial targets to interpolate extensive moments. Original failures and old successful numerical assertions are preserved separately; new corrected output is not claimed bit-identical to saved source. Strict KN1DPy D1 qualification remains withdrawn and no whole-source or human/release qualification follows.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-POSITIVE-REMAP-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "SHA-bound saved implementation and original positive-input failure witness",
-      "finite-grid convex-hull feasibility derivation and relative-entropy constrained optimization",
-      "independent scalar-quadrature moment computations and scientific regression tests",
-      "selected-wheel isolated installation and source-free runtime checks"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [
       "https://user.eng.umd.edu/~andre/ahot12.pdf",
       "https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.logsumexp.html"
     ],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -219,8 +218,8 @@
   },
   "example": {
     "description": "Transfer a drifting distribution with spatially varying density; check nonnegativity and all three independently assembled discrete moments.",
-    "code": "import numpy as np\nfrom scirel.kinetic import interp_distribution_across_mesh\n\ndef moments(f, r, v, T):\n    re = np.r_[0.0, (r[:-1] + r[1:]) / 2, r[-1] + (r[-1] - r[-2]) / 2]\n    ve = np.r_[v[0] - (v[1] - v[0]) / 2, (v[:-1] + v[1:]) / 2, v[-1] + (v[-1] - v[-2]) / 2]\n    mass = f * (np.pi * np.diff(re**2)[:, None] * np.diff(ve)[None, :])[:, :, None]\n    return np.array([mass.sum(axis=(0, 1)),\n                     (mass * (np.sqrt(T) * v)[None, :, None]).sum(axis=(0, 1)),\n                     (mass * (T * (r[:, None]**2 + v[None, :]**2))[:, :, None]).sum(axis=(0, 1))])\n\nra, va, xa = np.linspace(0.5, 2.0, 4), np.linspace(-1.5, 1.5, 6), np.linspace(0, 1, 5)\nrb, vb, xb = np.linspace(0.1, 2.8, 8), np.linspace(-2.7, 2.7, 11), np.linspace(0.1, 0.9, 4)\nfa = np.exp(-ra[:, None, None]**2 - (va[None, :, None] - 0.3)**2) * (1 + 2 * xa)[None, None, :]\nfb = interp_distribution_across_mesh(fa, ra, va, xa, 2.0, rb, vb, xb, 1.5)\nsource = moments(fa, ra, va, 2.0)\nexpected = np.array([np.interp(xb, xa, row) for row in source])\nactual = moments(fb, rb, vb, 1.5)\nassert fb.shape == (8, 11, 4) and np.isfinite(fb).all() and np.all(fb >= 0)\nnp.testing.assert_allclose(actual, expected, rtol=1e-11, atol=1e-13)\nprint(actual)",
-    "expected": "A finite nonnegative array of shape (8,11,4). Independently assembled density, axial momentum density and squared-speed energy density match the spatially interpolated source profiles at rtol=1e-11, atol=1e-13. This is a discrete remap example, not an atomic-physics validation."
+    "code": "import numpy as np\nfrom scirel.kinetic import interp_distribution_across_mesh\n\ndef moments(f, r, v, T):\n    re = np.r_[0.0, (r[:-1] + r[1:]) / 2, r[-1] + (r[-1] - r[-2]) / 2]\n    ve = np.r_[v[0] - (v[1] - v[0]) / 2, (v[:-1] + v[1:]) / 2, v[-1] + (v[-1] - v[-2]) / 2]\n    mass = f * (np.pi * np.diff(re**2)[:, None] * np.diff(ve)[None, :])[:, :, None]\n    return np.array([mass.sum(axis=(0, 1)),\n                     (mass * (np.sqrt(T) * v)[None, :, None]).sum(axis=(0, 1)),\n                     (mass * (T * (r[:, None]**2 + v[None, :]**2))[:, :, None]).sum(axis=(0, 1))])\n\nra, va, xa = np.linspace(0.5, 2.0, 4), np.linspace(-1.5, 1.5, 6), np.linspace(0, 1, 5)\nrb, vb, xb = np.linspace(0.1, 2.8, 8), np.linspace(-2.7, 2.7, 11), np.linspace(0.1, 0.9, 4)\nfa = np.exp(-ra[:, None, None]**2 - (va[None, :, None] - 0.3)**2) * (1 + 2 * xa)[None, None, :]\nfb = interp_distribution_across_mesh(fa, ra, va, xa, 2.0, rb, vb, xb, 1.5)\nsource = moments(fa, ra, va, 2.0)\nexpected = np.array([np.interp(xb, xa, row) for row in source])\nactual = moments(fb, rb, vb, 1.5)\nassert fb.shape == (8, 11, 4) and np.isfinite(fb).all() and np.all(fb >= 0)\nnp.testing.assert_allclose(actual, expected, rtol=1e-11, atol=1e-13)\nprint(actual)\n",
+    "expected": "Observed PASS: A finite nonnegative array of shape (8,11,4). Independently assembled density, axial momentum density and squared-speed energy density match the spatially interpolated source profiles at rtol=1e-11, atol=1e-13. This is a discrete remap example, not an atomic-physics validation."
   },
   "verification": {
     "scope": [
@@ -229,22 +228,20 @@
       "Independent scalar cylindrical quadrature checks nonuniform grids, nonzero drift, unequal temperatures and interpolation of extensive moments when spatial density varies.",
       "Exact zero-density and equal-grid identity/convex spatial interpolation are checked, including outside-source spatial zero fill.",
       "Lower/upper convex-hull edges, a vertex and a near-face interior target are checked without clipping or relaxing targets.",
-      "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and retained correct=0/warning behavior are checked.",
-      "The retained numerical assertions and new scientific regressions run with the quadrature dependencies; selected-wheel runtime is independently checked without source, pytest, reference answers or network."
+      "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and retained correct=0/warning behavior are checked."
     ],
     "tests": [
       "tests/operator_contracts/test_cross_mesh_distribution.py",
       "tests/operator_contracts/test_positive_conservative_remap.py",
       "tests/operator_contracts/test_cylindrical_velocity_quadrature.py"
     ],
-    "evidence_ceiling": "Author candidate evidence establishes a finite-grid nonnegative three-moment remap and explicit unrealizability/iteration failures in the tested domain, including a source-free selected-wheel runtime. Independent root acceptance, human scientific endorsement and release licensing remain separate. It does not rehabilitate withdrawn KN1DPy D1 provenance, reproduce corrected source arrays, establish all continuous-distribution moments, or validate atomic physics.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
-      "The historical KN1DPy strict D1 qualification remains withdrawn; this mathematical successor is not full source-project replacement.",
       "Finite destination nodes can make requested moments unrealizable; the caller must provide a feasible grid or handle InfeasibleMomentsError.",
       "The entropy prior includes a 1e-12 cell-volume mixture and may populate zero-overlap cells. Higher moments and fine distribution shape are not conserved by the three-moment constraints.",
       "Binary64 conditioning, very near hull faces and unrepresentable intermediates can cause explicit numerical failure; the iteration budget is not a universal convergence guarantee.",
       "correct=0 is retained algebraic compatibility only and does not carry the default branch physical guarantees.",
-      "Public distribution licensing and human scientific endorsement remain pending."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

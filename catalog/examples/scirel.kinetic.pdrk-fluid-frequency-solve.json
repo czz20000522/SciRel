@@ -3,7 +3,7 @@
   "asset_id": "scirel.kinetic.pdrk-fluid-frequency-solve",
   "kind": "operator",
   "title": {
-    "en": "Certified multifluid frequency solve",
+    "en": "Bounded multifluid frequency solve",
     "zh": "带残差验证的多流体频率求解"
   },
   "summary": "Compute full fluid spectra in physical coordinates with componentwise pencil residual checks and explicit defective-zero metadata; numerical conditioning does not change the scientific pencil.",
@@ -16,7 +16,7 @@
   "identity": {
     "relation": "Generalized Maxwell-fluid pencil to frequencies and right eigenvectors",
     "direction": "generalized spectral solve",
-    "definition": "Solve support-decomposed QZ in scaled coordinates, certify zero multiplicities by exact rational rank powers of stored binary coefficients, refine nonzero pairs when needed, and check every pair against the assembled original M,A.",
+    "definition": "Solve support-decomposed QZ in scaled coordinates, verify zero multiplicities by exact rational rank powers of stored binary coefficients, refine nonzero pairs when needed, and check every pair against the assembled original M,A.",
     "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
     "geometry": "k=(kx,0,kz), B0 along z.",
     "coordinates": "Cartesian fields; species density and velocity blocks followed by E and B.",
@@ -89,7 +89,7 @@
   "outputs": [
     {
       "name": "solution",
-      "description": "Pencil and sorted spectra/eigenvectors with full-original-unit backward-error and certified zero-structure metadata.",
+      "description": "Pencil and sorted spectra/eigenvectors with full-original-unit backward-error and checked zero-structure metadata.",
       "units": "omega rad/s; eigenvectors mixed state units",
       "shape": "M,A:(d,d); w1,w2:(d,); X1,X2:(d,d); errors:(d,d)",
       "dtype": "dict[str, numeric arrays or structured metadata]",
@@ -114,19 +114,19 @@
     "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
     "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
     "nonconvergence": "ArithmeticError when finite bounded refinement cannot satisfy the unchanged original-pencil tolerance.",
-    "partial_results": "No successful solution mapping is returned if any eigenpair fails certification."
+    "partial_results": "No successful solution mapping is returned if any eigenpair fails validation."
   },
   "provenance": {
-    "lineage_summary": "Derived from the PDRK cold-plasma/PDRF example, with explicit D2 scientific corrections and state ownership.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://doi.org/10.1016/j.cpc.2013.10.012"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -146,20 +146,21 @@
   "example": {
     "description": "Solve one physical SI point.",
     "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si, fluid_solve_state\ns = fluid_solve_state(fluid_equilibrium_si(), 1e-5, 2e-5)\nassert s[\"w1\"].shape == (14,)\nassert s[\"componentwise_backward_errors\"].max() <= 1e-10",
-    "expected": "Fourteen finite frequencies, with every returned eigenpair passing the original-pencil bound."
+    "expected": "The SI point returned 14 frequencies; the observed maximum componentwise backward error was 3.13e-12, below the example bound 1e-10."
   },
   "verification": {
     "scope": [
-      "Full original M/A eigenpencil residual, cold analytic roots, collision energy/momentum and holdout.",
-      "Literal support decomposition, defective zeros and refined physical SI states."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_multifluid.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Residual qualification is backward accuracy, not forward conditioning of a near-multiple root.",
-      "No sparse selected-spectrum or branch-continuation semantics."
+      "No sparse selected-spectrum or branch-continuation semantics.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

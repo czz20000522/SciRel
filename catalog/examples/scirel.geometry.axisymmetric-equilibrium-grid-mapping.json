@@ -145,15 +145,13 @@
     "partial_results": "Never returned; a rejected call produces no mapping."
   },
   "provenance": {
-    "lineage_summary": "SciRel-owned split of the first of the two scientific relations that the retained coarse-CAD full-wave entry performed inside one operator. The retained operator also owned the closed-flux and magnetic-axis material-support classification and read the separatrix flux, the PML frame, and the PEC mask; this relation reads none of those, so the two are independent scientific identities and are proposed as separately reviewable assets. The retained docstring claimed that the two-stage interpolation ordering was part of the relation; the review measured that claim on a deliberately non-separable map and found that both orders produce the tensor-product bilinear interpolant to within float association, so the ordering is an implementation invariant rather than a discriminating choice, and the declared relation is the tensor-product form itself. The clamping is preserved exactly, including the retained asymmetry that only radii above the outer map radius are counted. The observation snapshot and the batch inventory are private review artifacts and are not part of the public contract. This asset is a sibling of the frozen real R-Z sampler scirel.geometry.sample_rectilinear_field, not a duplicate and not a successor of it: the frozen sampler takes a pair of 2-D coordinate meshes and returns a flat vector of real scalars at caller-chosen points, raising for a point outside its grid, whereas this relation takes an equilibrium mapping of named arrays with 1-D axes, returns the whole Cartesian solver grid including the cylindrical split and the poloidal flux, and clamps out-of-domain points onto the closed map box instead of failing closed. The candidate module deliberately does not import, shadow, or re-export the frozen sampler.",
+    "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
     "source_kinds": [
-      "reviewed scientific implementation",
-      "reviewed relation-split finding",
-      "reviewed interpolation-ordering finding",
+      "SciRel implementation",
       "scientific regression tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -169,9 +167,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Reconstruct a synthetic equilibrium onto a 9x9x7 solver grid and check the shapes, the coverage count, and the on-axis transverse split.",
+    "description": "Reconstruct a synthetic axisymmetric equilibrium on a 9x9x7 Cartesian grid and verify field shapes, coverage, clamping counts, and the cylindrical-axis split.",
     "code": "import numpy as np\nfrom scirel.geometry import map_axisymmetric_equilibrium_to_cartesian_grid\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n}\nresult = map_axisymmetric_equilibrium_to_cartesian_grid(\n    equilibrium,\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.4, 0.4, 7),\n)\nmagnetic = result['magnetic_flux_density_t']\nassert magnetic.shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert np.isfinite(magnetic).all()\nassert magnetic[4, 4, 3, 0] == 0.0 and magnetic[4, 4, 3, 1] == 0.0\nassert magnetic[4, 4, 3, 2] != 0.0",
-    "expected": "A finite [9,9,7,3] static field and a [9,9,7] poloidal flux, 560 covered grid points, no clamping, and an exactly zero transverse field on the grid axis."
+    "expected": "The output contains finite field and flux arrays with shapes (9, 9, 7, 3) and (9, 9, 7), 560 covered points, zero clamp counts, and zero transverse field on axis."
   },
   "verification": {
     "scope": [

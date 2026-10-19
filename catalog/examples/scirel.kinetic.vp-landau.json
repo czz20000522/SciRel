@@ -113,34 +113,30 @@
   ],
   "applicability": {
     "preconditions": [
-      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+      "Fn, kappa, nv, dt, nt, k and vmax satisfy vp_init domains."
     ],
     "supported": [
-      "Initialize Poisson-closed df,E; run nt ordered RK4 steps; compute full field magnitude envelope and peak diagnostic."
+      "Initialization, finite RK4 evolution, log envelope, and optional peak diagnostic in one mapping."
     ],
     "excluded": [
-      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
-      "Certified continuum accuracy or post-recurrence validity."
+      "Nonlinear or multidimensional Vlasov-Poisson and post-recurrence continuum claims."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
-    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
-    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
-    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+    "invalid_input": "ValueError from initialization, state validation or Poisson closure is propagated.",
+    "runtime_failure": "FloatingPointError from a nonfinite derivative, field or RK4 state is propagated.",
+    "nonconvergence": "The diagnostic is optional: insufficient peaks are captured as diagnostic=None with diagnostic_status while the evolved state is retained.",
+    "partial_results": "If evolution fails no result mapping is returned; if only the diagnostic is unavailable, the valid state and envelope are returned."
   },
   "provenance": {
-    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 82827029d70a926bc4111b5c4abfefac4c47cc7154fda2573c2c4187cae05826; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
     "source_kinds": [
-      "independent equation derivation",
-      "read-only frozen D1 scientific scenario controls",
-      "independent analytic and numerical reference tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
-    "public_references": [
-      "https://arxiv.org/abs/1211.5984",
-      "https://arxiv.org/abs/1305.6476"
-    ],
-    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+    "public_references": [],
+    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {
@@ -170,8 +166,8 @@
   },
   "example": {
     "code": "from scirel.kinetic.vlasov_poisson import solve_vlasov_poisson\nr=solve_vlasov_poisson(nv=32,nt=5)\nassert r[\"state\"][\"dEt\"].shape == (6,)",
-    "description": "Vlasov–Poisson 初值组合的最小调用。",
-    "expected": "The stated shape or numerical assertion passes."
+    "description": "Run the composed Vlasov-Poisson initialization, evolution and diagnostics for five steps.",
+    "expected": "PASS: .venv/bin/python completed; state.dEt has shape (6,); the optional peak diagnostic may be unavailable for this short trace."
   },
   "verification": {
     "scope": [

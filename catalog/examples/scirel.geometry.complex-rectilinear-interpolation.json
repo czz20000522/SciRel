@@ -102,14 +102,13 @@
     "partial_results": "Never returned; a rejected call produces no output mapping."
   },
   "provenance": {
-    "lineage_summary": "SciRel-owned successor of an axisymmetric-free complex Cartesian grid interpolation relation observed in a retained RF full-wave code base; the observation snapshot, the batch inventory, and the reviewer-visible ledger are private review artifacts and are not part of the public contract. This asset is a sibling of the frozen real R-Z sampler scirel.geometry.sample_rectilinear_field, not a duplicate of it: the frozen sampler is two-dimensional, real-valued, indexed [z, r], and fails closed for a point outside its grid, whereas this relation is three-dimensional, complex-valued, indexed [x, y, z], and returns a per-point geometric validity mask with nan+nanj outside the tolerance-expanded box. The candidate module deliberately does not import, shadow, or re-export the frozen sampler.",
+    "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
     "source_kinds": [
-      "reviewed scientific implementation",
-      "reviewed defect evidence",
+      "SciRel implementation",
       "scientific regression tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -125,9 +124,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Sample a complex field inside the box, inside the tolerance shell, and outside the expanded box, showing that valid_mask is geometric and that a finite source yields finite values on every masked point.",
+    "description": "Interpolate a complex field at two geometrically valid points and one point outside the tolerance-expanded box.",
     "code": "import numpy as np\nfrom scirel.geometry import interpolate_complex_rectilinear_field\naxes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}\nvalues = np.zeros((3, 3, 3), dtype=complex)\nvalues[1, 1, 1] = 4.0 + 2.0j\npoints = np.array([[1.0, 1.0, 1.0], [1.0 + 1.0e-15, 1.0, 1.0], [1.0, 1.0, 3.0]])\nresult = interpolate_complex_rectilinear_field(axes, values, points)\nassert result['valid_mask'].tolist() == [True, True, False]\nassert np.isfinite(result['interpolated_values'][:2]).all()\nassert np.isnan(result['interpolated_values'][2].real) and np.isnan(result['interpolated_values'][2].imag)",
-    "expected": "A mapping with a (3,) complex value vector whose first two entries are finite and a boolean mask [True, True, False]."
+    "expected": "The complex value array has length three; the first two entries are finite and valid_mask is [True, True, False], with nan+nanj for the invalid point."
   },
   "verification": {
     "scope": [

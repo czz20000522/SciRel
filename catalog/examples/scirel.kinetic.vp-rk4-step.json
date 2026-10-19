@@ -106,34 +106,31 @@
   ],
   "applicability": {
     "preconditions": [
-      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+      "df, vv and df0dv are finite aligned one-dimensional vectors.",
+      "dE satisfies discrete Poisson closure; k and dv are finite with k nonzero and dv positive; dt is positive."
     ],
     "supported": [
-      "f_new=P4(dt*A)f; A=-ik diag(v)+(i dv/k)g 1^T. Closure at all stages."
+      "One classical RK4 step with Poisson closure recomputed at every stage."
     ],
     "excluded": [
-      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
-      "Certified continuum accuracy or post-recurrence validity."
+      "Nonlinear evolution, multidimensional modes and unconstrained incoming fields."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
-    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
-    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
-    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+    "invalid_input": "ValueError for invalid arrays/scalars or an incoming dE outside the declared Poisson tolerance.",
+    "runtime_failure": "FloatingPointError when an intermediate or updated state/field is nonfinite.",
+    "nonconvergence": "Not applicable; exactly one prescribed step is evaluated.",
+    "partial_results": "No updated tuple is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 0f70eee9abf7c99924a8b7fe7a5fa32dc5367daaa111ad7d0f4c8787849d2f3e; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
     "source_kinds": [
-      "independent equation derivation",
-      "read-only frozen D1 scientific scenario controls",
-      "independent analytic and numerical reference tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
-    "public_references": [
-      "https://arxiv.org/abs/1211.5984",
-      "https://arxiv.org/abs/1305.6476"
-    ],
-    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+    "public_references": [],
+    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {
@@ -150,8 +147,8 @@
   },
   "example": {
     "code": "from scirel.kinetic.vlasov_poisson import vp_init,vp_rk4_step\ns=vp_init(nv=32)\nf,E=vp_rk4_step(*(s[n] for n in (\"df\",\"dE\",\"vv\",\"df0dv\",\"k\",\"dv\",\"dt\")))\nassert f.shape == (33,)",
-    "description": "Poisson 闭合 RK4 单步的最小调用。",
-    "expected": "The stated shape or numerical assertion passes."
+    "description": "Advance one Poisson-closed RK4 step from a 32-interval initial state.",
+    "expected": "PASS: .venv/bin/python completed; the updated distribution has shape (33,)."
   },
   "verification": {
     "scope": [

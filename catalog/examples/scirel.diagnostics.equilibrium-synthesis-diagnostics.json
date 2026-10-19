@@ -1,395 +1,394 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-  "kind": "task_graph",
-  "title": {
-    "en": "Equilibrium synthetic point diagnostics",
-    "zh": "平衡合成诊断"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+ "kind": "task_graph",
+ "title": {
+  "en": "Equilibrium synthetic point diagnostics",
+  "zh": "平衡合成诊断"
+ },
+ "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。",
+ "taxonomy": [
+  "diagnostics",
+  "equilibrium",
+  "task-graph",
+  "point-sampling"
+ ],
+ "aliases": [
+  "equilibrium flux-loop and Thomson-like sampling"
+ ],
+ "identity": {
+  "relation": "平衡场和显式观测约定到指定位置的物理量样本",
+  "direction": "equilibrium、R、Z、observations → flux_loops / thomson 与 units",
+  "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。",
+  "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
+  "geometry": "柱坐标 R–Z 矩形网格",
+  "coordinates": "场采用 [Z,R] 排列，采样点逐项为 [R,Z]，坐标单位 m",
+  "boundary": "闭网格边界内的双线性采样，无外推。空或未知请求、空点集、遗漏字段、单位冲突均拒绝；不隐含线圈匝数、参考环差分或仪器响应。",
+  "assumptions": [
+   "输入场来自同一物理状态与同一网格。",
+   "psi 的单位与规范由调用者明确声明；当前已验证 Pleiades 约定为 psi=R A_phi，单位 Wb/rad。",
+   "压强使用 Pa，密度使用 m^-3；电子温度显式使用 K、eV 或 J，且与 profile_units 完全一致，不在此换算。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "equilibrium",
+   "description": "要采样的平衡态；磁通使用 psi 与 psi_unit，profile 使用 profiles 与 profile_units。",
+   "units": "各字段声明的物理单位",
+   "shape": "mapping；场 [N_Z,N_R]",
+   "dtype": "映射与实数数组",
+   "required": true,
+   "constraints": "只访问请求字段；各字段有限并与网格同形。"
   },
-  "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。",
-  "taxonomy": [
-    "diagnostics",
-    "equilibrium",
-    "task-graph",
-    "point-sampling"
-  ],
-  "aliases": [
-    "equilibrium flux-loop and Thomson-like sampling"
-  ],
-  "identity": {
-    "relation": "平衡场和显式观测约定到指定位置的物理量样本",
-    "direction": "equilibrium、R、Z、observations → flux_loops / thomson 与 units",
-    "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。",
-    "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
-    "geometry": "柱坐标 R–Z 矩形网格",
-    "coordinates": "场采用 [Z,R] 排列，采样点逐项为 [R,Z]，坐标单位 m",
-    "boundary": "闭网格边界内的双线性采样，无外推。空或未知请求、空点集、遗漏字段、单位冲突均拒绝；不隐含线圈匝数、参考环差分或仪器响应。",
-    "assumptions": [
-      "输入场来自同一物理状态与同一网格。",
-      "psi 的单位与规范由调用者明确声明；当前已验证 Pleiades 约定为 psi=R A_phi，单位 Wb/rad。",
-      "压强使用 Pa，密度使用 m^-3；电子温度显式使用 K、eV 或 J，且与 profile_units 完全一致，不在此换算。"
-    ]
+  {
+   "name": "R",
+   "description": "径向坐标网格。",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "实数数组",
+   "required": true,
+   "constraints": "有限、矩形网格、径向严格递增且至少两列。"
   },
-  "inputs": [
-    {
-      "name": "equilibrium",
-      "description": "要采样的平衡态；磁通使用 psi 与 psi_unit，profile 使用 profiles 与 profile_units。",
-      "units": "各字段声明的物理单位",
-      "shape": "mapping；场 [N_Z,N_R]",
-      "dtype": "映射与实数数组",
-      "required": true,
-      "constraints": "只访问请求字段；各字段有限并与网格同形。"
-    },
-    {
-      "name": "R",
-      "description": "径向坐标网格。",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "实数数组",
-      "required": true,
-      "constraints": "有限、矩形网格、径向严格递增且至少两列。"
-    },
-    {
-      "name": "Z",
-      "description": "轴向坐标网格。",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "实数数组",
-      "required": true,
-      "constraints": "有限、与 R 同形、轴向严格递增且至少两行。"
-    },
-    {
-      "name": "observations",
-      "description": "磁通请求包含 points、quantity 与 unit；profile 请求在 thomson 下包含 points 和逐通道 {unit}，亦可包含反演所用 values/sigma。",
-      "units": "points 为 m；各通道单位显式声明",
-      "shape": "非空 mapping",
-      "dtype": "映射",
-      "required": true,
-      "constraints": "只允许 flux_loops、thomson；磁通 quantity 必为 raw_psi 或 magnetic_flux；profile 键仅 density、electron_temperature、p_parallel、p_perp。所有请求必须实际有值，不忽略未知 kind/channel/flux 字段。"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "flux_loops",
-      "description": "按点顺序返回原始 psi 样本或单匝完整圆环磁通。",
-      "units": "raw_psi：原单位；magnetic_flux：Wb",
-      "shape": "[N_flux]",
-      "dtype": "float64 数组",
-      "required": false,
-      "constraints": "仅在请求时出现；raw_psi 不乘 2π，磁通转换不可产生非有限值。",
-      "default": "absent"
-    },
-    {
-      "name": "thomson",
-      "description": "按明确请求返回 profiles 的采样；不从压强猜测温度或密度。",
-      "units": "压强 Pa；密度 m^-3；电子温度按声明",
-      "shape": "mapping[channel → [N_point]]",
-      "dtype": "映射与 float64 数组",
-      "required": false,
-      "constraints": "只返回请求的通道，缺少任一请求字段即失败。",
-      "default": "absent"
-    },
-    {
-      "name": "units",
-      "description": "与实际输出一一对应的单位元数据。",
-      "units": "identifier",
-      "shape": "mapping",
-      "dtype": "字符串映射",
-      "required": true,
-      "constraints": "residual reducer 使用此元数据与显式观测单位匹配。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "源场、网格、观测点和单位明确且彼此一致。"
-    ],
-    "supported": [
-      "原始 psi 样本与 Wb 圆环磁通的显式区分。",
-      "所提供压强、密度及电子温度的点采样。"
-    ],
-    "excluded": [
-      "Thomson 光谱响应、校准、空间卷积、温度反演或未提供的电子分布。",
-      "自动推断磁通规范、匝数、参考环差分或全部 raw psi 的 2π 转换。"
-    ]
+  {
+   "name": "Z",
+   "description": "轴向坐标网格。",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "实数数组",
+   "required": true,
+   "constraints": "有限、与 R 同形、轴向严格递增且至少两行。"
   },
-  "failure_semantics": {
-    "invalid_input": "缺字段、空/未知请求、错误点集、单位不匹配或越界点抛 ValueError。",
-    "runtime_failure": "采样器异常传播；磁通换算为非有限时抛 FloatingPointError。",
-    "nonconvergence": "本函数不求平衡；反演 trial 必须在进入此函数之前核对前向收敛。",
-    "partial_results": "出现错误时不返回部分成功结果；不修改调用方平衡态。"
-  },
-  "provenance": {
-    "lineage_summary": "Maintained SciRel composition mapped to a saved Pleiades L1 diagnostic TaskGraph and direct graph tests. Historical candidate and admission records are development provenance, not expert recognition of this version. 本后继针对已证实的观测约定、漏通道、失败维数和无效最优试探问题修正；保留前驱字节与失败证据，未继承错误 fallback。物理组合复用已资格化各向异性 Picard、场恢复及 Green 能力；不把旧候选来源或本作者测试解释为根接收、人工认可或再分发许可。",
-    "source_kinds": [
-      "saved L1 TaskGraph contract and implementation",
-      "saved direct graph tests",
-      "maintained SciRel graph and sampler regression tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.diagnostics.equilibrium_synthesis_diagnostics",
-      "symbol": "synthesize_equilibrium_diagnostics",
-      "signature": "synthesize_equilibrium_diagnostics(inputs=None, **kwargs)",
-      "canonical_module": "scirel.diagnostics",
-      "canonical_symbol": "synthesize_equilibrium_diagnostics"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.geometry.bilinear-grid-sampling"
-      }
-    ]
-  },
-  "example": {
-    "description": "Bz=2 T 的均匀轴向场有 psi=R² Wb/rad；R=1 m 处单匝磁通应为 2π Wb。",
-    "code": "import numpy as np\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
-    "expected": "得到 [2π] Wb，与独立解析圆面积乘 Bz 一致；raw_psi 请求则得到 [1] Wb/rad。"
-  },
-  "verification": {
-    "scope": [
-      "均匀 Bz 的 psi→完整磁通解析关系。",
-      "线性制造 profile 的内部点/边界采样、单位与非修改性。",
-      "漏通道/未知请求/不支持的匝数与参考环字段拒绝；真实 Picard 反演消费者。"
-    ],
-    "tests": [
-      "tests/operator_contracts/test_inference_physical_closure.py",
-      "tests/operator_contracts/test_anisotropic_inference_independent.py"
-    ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
-    "known_limitations": [
-      "双线性插值存在离散插值误差；节点位置可直接验证解析值。",
-      "单位标签无法证明调用者的实际数据已正确标度。",
-      "历史许可状态仍待最终判断。"
-    ]
-  },
-  "graph": {
-    "nodes": [
-      {
-        "id": "requests",
-        "kind": "controlled_glue",
-        "description": "验证所有观测类型、单位和源字段；形成逐通道采样请求及显式转换约定。",
-        "inputs": [
-          "observations",
-          "equilibrium"
-        ],
-        "outputs": [
-          "quantities",
-          "points",
-          "conventions"
-        ]
-      },
-      {
-        "id": "sampling",
-        "kind": "operator",
-        "asset_id": "scirel.geometry.bilinear-grid-sampling",
-        "description": "对每个明确请求字段调用同一双线性算子；请求未满足则失败。",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "quantity",
-          "points"
-        ],
-        "outputs": [
-          "samples"
-        ]
-      },
-      {
-        "id": "pack",
-        "kind": "controlled_glue",
-        "description": "只对明确 Wb/rad→Wb 磁通作 2π 转换，按原始字段装配采样与单位。",
-        "inputs": [
-          "samples",
-          "conventions"
-        ],
-        "outputs": [
-          "flux_loops",
-          "thomson",
-          "units"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "observations"
-        },
-        "to": {
-          "node": "requests",
-          "port": "observations"
-        },
-        "description": "读取全部请求。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "equilibrium"
-        },
-        "to": {
-          "node": "requests",
-          "port": "equilibrium"
-        },
-        "description": "读取匹配字段和单位。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "requests",
-          "port": "quantities"
-        },
-        "to": {
-          "node": "sampling",
-          "port": "quantity"
-        },
-        "description": "逐请求取得场。",
-        "condition": "正常执行。",
-        "transform": "逐项投影；不发明缺失 profile。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "requests",
-          "port": "points"
-        },
-        "to": {
-          "node": "sampling",
-          "port": "points"
-        },
-        "description": "逐请求取得坐标。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "R"
-        },
-        "to": {
-          "node": "sampling",
-          "port": "r_grid"
-        },
-        "description": "共用径向网格。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "Z"
-        },
-        "to": {
-          "node": "sampling",
-          "port": "z_grid"
-        },
-        "description": "共用轴向网格。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "sampling",
-          "port": "samples"
-        },
-        "to": {
-          "node": "pack",
-          "port": "samples"
-        },
-        "description": "收集实际样本。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "requests",
-          "port": "conventions"
-        },
-        "to": {
-          "node": "pack",
-          "port": "conventions"
-        },
-        "description": "提供明确单位与磁通约定。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pack",
-          "port": "flux_loops"
-        },
-        "to": {
-          "node": "$output",
-          "port": "flux_loops"
-        },
-        "description": "磁通或原始 psi 输出。",
-        "condition": "请求 flux_loops 时。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "pack",
-          "port": "thomson"
-        },
-        "to": {
-          "node": "$output",
-          "port": "thomson"
-        },
-        "description": "profile 输出。",
-        "condition": "请求 thomson 时。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "pack",
-          "port": "units"
-        },
-        "to": {
-          "node": "$output",
-          "port": "units"
-        },
-        "description": "与输出匹配的单位。",
-        "condition": "正常执行。",
-        "transform": "保持该端口值。",
-        "kind": "data",
-        "required": true
-      }
-    ],
-    "execution": {
-      "mode": "ordered_dag",
-      "ordering": "先请求与单位验证，再按 flux_loops、各请求 profile 执行双线性采样，最后转换并装配。",
-      "branches": [
-        "只执行明确请求的分支。",
-        "quantity=magnetic_flux 且 psi_unit=Wb/rad 时乘 2π；raw_psi 或 Wb 源不套用该转换。"
-      ],
-      "state_ownership": "读取调用方场，不修改数组；输出样本由本次调用持有。",
-      "failure_propagation": "任一请求错误或转换溢出终止整次调用，不返回删通道的成功。",
-      "feedback": []
-    }
+  {
+   "name": "observations",
+   "description": "磁通请求包含 points、quantity 与 unit；profile 请求在 thomson 下包含 points 和逐通道 {unit}，亦可包含反演所用 values/sigma。",
+   "units": "points 为 m；各通道单位显式声明",
+   "shape": "非空 mapping",
+   "dtype": "映射",
+   "required": true,
+   "constraints": "只允许 flux_loops、thomson；磁通 quantity 必为 raw_psi 或 magnetic_flux；profile 键仅 density、electron_temperature、p_parallel、p_perp。所有请求必须实际有值，不忽略未知 kind/channel/flux 字段。"
   }
+ ],
+ "outputs": [
+  {
+   "name": "flux_loops",
+   "description": "按点顺序返回原始 psi 样本或单匝完整圆环磁通。",
+   "units": "raw_psi：原单位；magnetic_flux：Wb",
+   "shape": "[N_flux]",
+   "dtype": "float64 数组",
+   "required": false,
+   "constraints": "仅在请求时出现；raw_psi 不乘 2π，磁通转换不可产生非有限值。",
+   "default": "absent"
+  },
+  {
+   "name": "thomson",
+   "description": "按明确请求返回 profiles 的采样；不从压强猜测温度或密度。",
+   "units": "压强 Pa；密度 m^-3；电子温度按声明",
+   "shape": "mapping[channel → [N_point]]",
+   "dtype": "映射与 float64 数组",
+   "required": false,
+   "constraints": "只返回请求的通道，缺少任一请求字段即失败。",
+   "default": "absent"
+  },
+  {
+   "name": "units",
+   "description": "与实际输出一一对应的单位元数据。",
+   "units": "identifier",
+   "shape": "mapping",
+   "dtype": "字符串映射",
+   "required": true,
+   "constraints": "residual reducer 使用此元数据与显式观测单位匹配。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "源场、网格、观测点和单位明确且彼此一致。"
+  ],
+  "supported": [
+   "原始 psi 样本与 Wb 圆环磁通的显式区分。",
+   "所提供压强、密度及电子温度的点采样。"
+  ],
+  "excluded": [
+   "Thomson 光谱响应、校准、空间卷积、温度反演或未提供的电子分布。",
+   "自动推断磁通规范、匝数、参考环差分或全部 raw psi 的 2π 转换。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "缺字段、空/未知请求、错误点集、单位不匹配或越界点抛 ValueError。",
+  "runtime_failure": "采样器异常传播；磁通换算为非有限时抛 FloatingPointError。",
+  "nonconvergence": "本函数不求平衡；反演 trial 必须在进入此函数之前核对前向收敛。",
+  "partial_results": "出现错误时不返回部分成功结果；不修改调用方平衡态。"
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of 平衡场和显式观测约定到指定位置的物理量样本. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.diagnostics.equilibrium_synthesis_diagnostics",
+   "symbol": "synthesize_equilibrium_diagnostics",
+   "signature": "synthesize_equilibrium_diagnostics(inputs=None, **kwargs)",
+   "canonical_module": "scirel.diagnostics",
+   "canonical_symbol": "synthesize_equilibrium_diagnostics"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.geometry.bilinear-grid-sampling"
+   }
+  ]
+ },
+ "example": {
+  "description": "Bz=2 T 的均匀轴向场有 psi=R² Wb/rad；R=1 m 处单匝磁通应为 2π Wb。",
+  "code": "import numpy as np\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
+  "expected": "得到 [2π] Wb，与独立解析圆面积乘 Bz 一致；raw_psi 请求则得到 [1] Wb/rad。"
+ },
+ "verification": {
+  "scope": [
+   "均匀 Bz 的 psi→完整磁通解析关系。",
+   "线性制造 profile 的内部点/边界采样、单位与非修改性。",
+   "漏通道/未知请求/不支持的匝数与参考环字段拒绝；真实 Picard 反演消费者。"
+  ],
+  "tests": [
+   "tests/operator_contracts/test_inference_physical_closure.py",
+   "tests/operator_contracts/test_anisotropic_inference_independent.py"
+  ],
+  "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+  "known_limitations": [
+   "双线性插值存在离散插值误差；节点位置可直接验证解析值。",
+   "单位标签无法证明调用者的实际数据已正确标度。",
+   "历史许可状态仍待最终判断。"
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "requests",
+    "kind": "controlled_glue",
+    "description": "验证所有观测类型、单位和源字段；形成逐通道采样请求及显式转换约定。",
+    "inputs": [
+     "observations",
+     "equilibrium"
+    ],
+    "outputs": [
+     "quantities",
+     "points",
+     "conventions"
+    ]
+   },
+   {
+    "id": "sampling",
+    "kind": "operator",
+    "asset_id": "scirel.geometry.bilinear-grid-sampling",
+    "description": "对每个明确请求字段调用同一双线性算子；请求未满足则失败。",
+    "inputs": [
+     "r_grid",
+     "z_grid",
+     "quantity",
+     "points"
+    ],
+    "outputs": [
+     "samples"
+    ]
+   },
+   {
+    "id": "pack",
+    "kind": "controlled_glue",
+    "description": "只对明确 Wb/rad→Wb 磁通作 2π 转换，按原始字段装配采样与单位。",
+    "inputs": [
+     "samples",
+     "conventions"
+    ],
+    "outputs": [
+     "flux_loops",
+     "thomson",
+     "units"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "observations"
+    },
+    "to": {
+     "node": "requests",
+     "port": "observations"
+    },
+    "description": "读取全部请求。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "requests",
+     "port": "equilibrium"
+    },
+    "description": "读取匹配字段和单位。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "requests",
+     "port": "quantities"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "quantity"
+    },
+    "description": "逐请求取得场。",
+    "condition": "正常执行。",
+    "transform": "逐项投影；不发明缺失 profile。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "requests",
+     "port": "points"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "points"
+    },
+    "description": "逐请求取得坐标。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "R"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "r_grid"
+    },
+    "description": "共用径向网格。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "Z"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "z_grid"
+    },
+    "description": "共用轴向网格。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "sampling",
+     "port": "samples"
+    },
+    "to": {
+     "node": "pack",
+     "port": "samples"
+    },
+    "description": "收集实际样本。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "requests",
+     "port": "conventions"
+    },
+    "to": {
+     "node": "pack",
+     "port": "conventions"
+    },
+    "description": "提供明确单位与磁通约定。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "pack",
+     "port": "flux_loops"
+    },
+    "to": {
+     "node": "$output",
+     "port": "flux_loops"
+    },
+    "description": "磁通或原始 psi 输出。",
+    "condition": "请求 flux_loops 时。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "pack",
+     "port": "thomson"
+    },
+    "to": {
+     "node": "$output",
+     "port": "thomson"
+    },
+    "description": "profile 输出。",
+    "condition": "请求 thomson 时。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "pack",
+     "port": "units"
+    },
+    "to": {
+     "node": "$output",
+     "port": "units"
+    },
+    "description": "与输出匹配的单位。",
+    "condition": "正常执行。",
+    "transform": "保持该端口值。",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "ordered_dag",
+   "ordering": "先请求与单位验证，再按 flux_loops、各请求 profile 执行双线性采样，最后转换并装配。",
+   "branches": [
+    "只执行明确请求的分支。",
+    "quantity=magnetic_flux 且 psi_unit=Wb/rad 时乘 2π；raw_psi 或 Wb 源不套用该转换。"
+   ],
+   "state_ownership": "读取调用方场，不修改数组；输出样本由本次调用持有。",
+   "failure_propagation": "任一请求错误或转换溢出终止整次调用，不返回删通道的成功。",
+   "feedback": []
+  }
+ }
 }

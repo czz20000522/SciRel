@@ -119,16 +119,16 @@
     "partial_results": "No partial scientific result is returned after failure."
   },
   "provenance": {
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "GPDF frozen D1 scientific capability",
-      "independent equation derivation",
-      "SciRel implementation"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "public scientific literature for the stated numerical relation"
     ],
-    "lineage_summary": "Reimplements the defining scientific relations exposed by frozen GPDF D1; D2 corrections and failure history are documented in gpdf-generalized-core evaluation. Dev9 successor of exact document SHA256 a1eba9d647c9e48c831384defed3c8e89b640d284e2a0a764b03d89ba4316a43; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
-    "license_status": "Independent equation implementation uses NumPy and SciPy; their licenses are carried with the selected distribution.",
     "public_references": [
       "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
-    ]
+    ],
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "verification": {
     "tests": [
@@ -142,14 +142,15 @@
     ],
     "known_limitations": [
       "Real-axis local removable-point evaluation of the derivative integrand uses a symmetric second-derivative estimate; no global error certificate is returned.",
-      "Restricted parser supports finite real constants, pi, v, arithmetic, exp/log/sqrt/sin/cos/sinh/cosh/tanh."
+      "Restricted parser supports finite real constants, pi, v, arithmetic, exp/log/sqrt/sin/cos/sinh/cosh/tanh.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ],
-    "evidence_ceiling": "Independent defining integrals, analytic residues, distributional jumps, all four complete default scans and 50-digit independent root equations are source-level numerical evidence. Actual installed-wheel evidence is recorded separately in the frozen delivery receipts."
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
   },
   "example": {
-    "description": "解析分布的 Hilbert 与 Cauchy 变换的可执行例子",
-    "code": "from scirel.kinetic.generalized_dispersion import evaluate_generalized_hilbert\nz=.4-.7j\nr=evaluate_generalized_hilbert(z,'1/(1+v**2)/pi',integration_mesh=[-20,-2,-1,0,1,2,20])\nassert abs(r['Z']+1/(z+1j))<2e-9",
-    "expected": "Assertions verify the stated output property."
+    "description": "Evaluate the analytic Lorentzian Hilbert/Cauchy transform on an explicit feature mesh.",
+    "code": "from scirel.kinetic.generalized_dispersion import evaluate_generalized_hilbert\nz=.4-.7j\nr=evaluate_generalized_hilbert(z,'1/(1+v**2)/pi',integration_mesh=[-20,-2,-1,0,1,2,20])\nassert abs(r['Z']+1/(z+1j))<2e-9\n",
+    "expected": "Observed PASS: the explicit integration mesh returns a finite transform matching -1/(z+i) within 2e-9."
   },
   "version": {
     "implementation_version": "0.1.0.dev11",

@@ -245,14 +245,14 @@
     "partial_results": "None; tensors and determinant are returned together only after the final finite check."
   },
   "provenance": {
-    "lineage_summary": "Standardized as a development relation from the saved fluidBW kinetic_dispersion_sum_n candidate and finite source-oracle cases, now archived pending first-stage re-review. The saved implementation SHA-256 is 06c1cb9c6c3c61288afe3438ccea90c48d31fb72c6591af1b71f31a8580f075e. SciRel reuses its analytic plasma-dispersion function and scaled Bessel-Gamma callable, so it does not claim bitwise identity to fluidBW's Weideman Z approximation. The old D1 label is neither current qualified delivery nor expert approval; see docs/evaluations/2026-09-28-kinetic-dispersion-sum-integration.md.",
+    "lineage_summary": "Self-contained SciRel implementation of the finite fluidBW kinetic relation and its bounded numerical checks; the retained source and attribution obligations are recorded in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. No external approval or source parity is claimed.",
     "source_kinds": [
-      "saved historical fluidBW L1 kinetic harmonic-sum contract and implementation",
-      "saved finite fD determinant and tensor source-oracle cases",
-      "SciRel tensor-identity, bounded source-value and invalid-input tests"
+      "SciRel implementation",
+      "historical fluidBW relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Private technical development candidate; fluidBW source redistribution permission remains NOT_ESTABLISHED and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -275,26 +275,27 @@
     ]
   },
   "example": {
-    "description": "Assemble one single-electron tensor at a saved fluidBW case point.",
+    "description": "Assemble one single-electron tensor at a saved fluidBW case point. Python preflight ran locally; fluidBW/Octave parity remains NOT_RUN on this macOS host.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_kinetic_dispersion_sum\nr = evaluate_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0 * 1.6022e-19 / 1.38064852e-23], f=175881684853.009 / (2*np.pi), kz=1326.1942478795652, kx=13261.94247879565)\nassert r['K'].shape == (3, 3) and r['D'].shape == (3, 3)\nassert abs(r['determinant'] - (1184249.3244493124 + 4322451.2861608062j)) < 1e-6",
-    "expected": "Finite 3x3 complex tensors and a determinant within 1e-6 absolute of the saved single-electron source value at this point."
+    "expected": "Python preflight returned finite 3x3 complex K and D tensors; the determinant was 1184249.3244493138 + 4322451.286160805j. Source fluidBW/Octave parity is NOT_RUN on this macOS host."
   },
   "verification": {
     "scope": [
-      "Two saved one-/two-species determinant points at lmx=5 and a saved nine-component dielectric tensor point at lmx=15.",
-      "Tensor antisymmetries, Maxwell curl-term assembly, finite input restrictions, strictly positive derived plasma-frequency square and strict lmx validation.",
-      "Analytic SciRel Z and scaled Bessel-Gamma dependencies are exercised through the public callable."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "Python preflight ran, but source fluidBW/Octave parity is NOT_RUN on this macOS host."
     ],
     "tests": [
       "tests/operator_contracts/test_kinetic_dispersion_sum_n.py"
     ],
-    "evidence_ceiling": "SciRel direct tests compare listed saved fluidBW source-oracle points at bounded tolerance, check local tensor identities and pin an underflow rejection. Read-only digest-bound archived-source comparisons cover three finite points only. They do not prove all-point parity with fluidBW's Weideman approximation, harmonic convergence, root accuracy, physical model choice, qualified D1 or expert approval.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
       "No near-zero kz clamping is inherited from the source path.",
       "The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
       "Saved fluidBW r6 did not close the source fDtensor.m terminal matrix outputs through its TaskGraph and independent replay; this relation's local tensor tests do not restore that project-level freeze.",
-      "Distribution license and expert recognition remain open."
+      "Distribution license and expert recognition remain open.",
+      "Source fluidBW/Octave parity is NOT_RUN on this host."
     ]
   }
 }

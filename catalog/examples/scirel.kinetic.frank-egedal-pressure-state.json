@@ -145,14 +145,14 @@
     "partial_results": "No partial result mapping is returned when validation or assembly fails. A successful result always has four keys; density and electron_temperature can be None."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -169,8 +169,8 @@
   },
   "example": {
     "description": "Assemble two grid cells with gas, hot-ion and electron contributions and compare both pressure components.",
-    "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure\npsi = np.zeros((1, 2))\nradial = np.array([[1.0, 0.5]])\nr = assemble_frank_egedal_pressure(psi, radial, np.full((1, 2), 2.0), np.full((1, 2), 3.0), np.full((1, 2), 4.0), {'hot_pressure_scale': 5.0, 'gas_dynamic_pressure': 7.0, 'gas_dynamic_density': 11.0, 'hot_density_scale': 13.0, 'electron_temperature': 17.0})\nnp.testing.assert_allclose(r['density'], 63.0 * radial)\nnp.testing.assert_allclose(r['p_parallel'], 1088.0 * radial)\nnp.testing.assert_allclose(r['p_perp'], 1093.0 * radial)\nnp.testing.assert_allclose(r['electron_temperature'], 17.0)",
-    "expected": "Density is 63 times the radial envelope; parallel and perpendicular pressures are 1088 and 1093 times that envelope in Pa, and electron energy is 17 J at both cells."
+    "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure\npsi = np.zeros((1, 2))\nradial = np.array([[1.0, 0.5]])\nr = assemble_frank_egedal_pressure(psi, radial, np.full((1, 2), 2.0), np.full((1, 2), 3.0), np.full((1, 2), 4.0), {'hot_pressure_scale': 5.0, 'gas_dynamic_pressure': 7.0, 'gas_dynamic_density': 11.0, 'hot_density_scale': 13.0, 'electron_temperature': 17.0})\nnp.testing.assert_allclose(r['density'], 63.0 * radial)\nnp.testing.assert_allclose(r['p_parallel'], 1088.0 * radial)\nnp.testing.assert_allclose(r['p_perp'], 1093.0 * radial)\nnp.testing.assert_allclose(r['electron_temperature'], 17.0)\n",
+    "expected": "Observed PASS: Density is 63 times the radial envelope; parallel and perpendicular pressures are 1088 and 1093 times that envelope in Pa, and electron energy is 17 J at both cells."
   },
   "verification": {
     "scope": [
@@ -181,12 +181,12 @@
     "tests": [
       "tests/operator_contracts/test_frank_egedal_pressure_state.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests establish selected pressure and density arithmetic plus two invalid-input cases. They do not exhaustively test key-precedence edge cases, all overflow paths, flux conventions, physical electron response, current qualified-source parity, expert recognition or public release.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "psi values are validated but not used; the historical Wb label is not a checked connector to other SciRel Wb/rad flux assets.",
       "A configured electron temperature without either density scale returns an electron-energy grid but zero electron pressure and density=None.",
       "The function accepts nonnegative shape fields and scales but does not establish their scientific consistency or source-mode provenance.",
-      "Public distribution licensing and current-version expert recognition remain pending."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

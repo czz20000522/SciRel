@@ -1,133 +1,131 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
-  "kind": "operator",
-  "title": {
-    "en": "Janev electron-impact ionization rate for H and H2",
-    "zh": "Janev原子氢与分子氢电子碰撞电离率"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
+ "kind": "operator",
+ "title": {
+  "en": "Janev electron-impact ionization rate for H and H2",
+  "zh": "Janev原子氢与分子氢电子碰撞电离率"
+ },
+ "summary": "Evaluate separate saved H and H2 Maxwellian electron-impact ionization-rate fits from electron temperature in eV.",
+ "taxonomy": [
+  "collisions",
+  "rate-coefficient",
+  "ionization",
+  "electron-impact",
+  "hydrogen",
+  "tabulated-fit"
+ ],
+ "aliases": [
+  "sigmav_ion_h0",
+  "sigmav_ion_hh",
+  "Janev H/H2 ionization rate"
+ ],
+ "identity": {
+  "relation": "H or H2 electron-impact Maxwellian ionization rate coefficient from a species-specific logarithmic polynomial",
+  "direction": "electron temperature in eV and target species H or H2 -> ionization rate coefficient in m^3/s",
+  "definition": "Clip strictly positive electron temperature to [0.1, 2.01e4] eV, then evaluate exp(polyval(log(T), a_species))*1e-6 m^3/s with the saved ascending-power nine-coefficient Janev table for the selected H or H2 branch. Preserve the input shape and NumPy polynomial evaluation order.",
+  "model": "saved KN1DPy Janev H and H2 Maxwellian ionization-rate fits; not a runtime cross-section integral",
+  "geometry": "none; pointwise scalar or array temperature samples",
+  "coordinates": "electron temperature in eV, with no spatial axis inferred",
+  "boundary": "finite real numeric temperature strictly positive; target species exactly H or H2; endpoint clipping; finite positive represented output",
+  "assumptions": [
+   "The two coefficient tables, 1e-6 unit conversion and source polynomial evaluation order are retained for exact historical replay on finite positive real temperatures.",
+   "H and H2 are distinct target species; the caller selects a branch explicitly. The rate coefficient alone does not construct a density-scaled source or sink.",
+   "The saved implementation clips zero and negative temperatures and coerces boolean and numeric-string inputs. The maintained callable rejects them under the declared positive real input contract."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "electron_temperature_ev",
+   "description": "Electron temperature for the selected Maxwellian ionization fit.",
+   "units": "eV",
+   "shape": "scalar or array",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and strictly positive; positive values outside [0.1, 2.01e4] eV are clipped to the nearest endpoint."
   },
-  "summary": "Evaluate separate saved H and H2 Maxwellian electron-impact ionization-rate fits from electron temperature in eV.",
-  "taxonomy": [
-    "collisions",
-    "rate-coefficient",
-    "ionization",
-    "electron-impact",
-    "hydrogen",
-    "tabulated-fit"
-  ],
-  "aliases": [
-    "sigmav_ion_h0",
-    "sigmav_ion_hh",
-    "Janev H/H2 ionization rate"
-  ],
-  "identity": {
-    "relation": "H or H2 electron-impact Maxwellian ionization rate coefficient from a species-specific logarithmic polynomial",
-    "direction": "electron temperature in eV and target species H or H2 -> ionization rate coefficient in m^3/s",
-    "definition": "Clip strictly positive electron temperature to [0.1, 2.01e4] eV, then evaluate exp(polyval(log(T), a_species))*1e-6 m^3/s with the saved ascending-power nine-coefficient Janev table for the selected H or H2 branch. Preserve the input shape and NumPy polynomial evaluation order.",
-    "model": "saved KN1DPy Janev H and H2 Maxwellian ionization-rate fits; not a runtime cross-section integral",
-    "geometry": "none; pointwise scalar or array temperature samples",
-    "coordinates": "electron temperature in eV, with no spatial axis inferred",
-    "boundary": "finite real numeric temperature strictly positive; target species exactly H or H2; endpoint clipping; finite positive represented output",
-    "assumptions": [
-      "The two coefficient tables, 1e-6 unit conversion and source polynomial evaluation order are retained for exact historical replay on finite positive real temperatures.",
-      "H and H2 are distinct target species; the caller selects a branch explicitly. The rate coefficient alone does not construct a density-scaled source or sink.",
-      "The saved implementation clips zero and negative temperatures and coerces boolean and numeric-string inputs. The maintained callable rejects them under the declared positive real input contract."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "electron_temperature_ev",
-      "description": "Electron temperature for the selected Maxwellian ionization fit.",
-      "units": "eV",
-      "shape": "scalar or array",
-      "dtype": "real numeric array-like",
-      "required": true,
-      "constraints": "Finite and strictly positive; positive values outside [0.1, 2.01e4] eV are clipped to the nearest endpoint."
-    },
-    {
-      "name": "target_species",
-      "description": "Select the saved atomic-H or molecular-H2 ionization fit.",
-      "units": "dimensionless enumeration",
-      "shape": "scalar",
-      "dtype": "string",
-      "required": true,
-      "constraints": "Exactly H or H2; no fallback branch."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "rate_m3_s",
-      "description": "Selected electron-impact ionization Maxwellian rate coefficient.",
-      "units": "m^3/s",
-      "shape": "same as electron_temperature_ev",
-      "dtype": "float64 array or scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive on accepted inputs; no external physical accuracy is asserted."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller supplies electron temperature in eV, chooses H or H2 explicitly, and accepts saved endpoint clipping."
-    ],
-    "supported": [
-      "Scalar and array pointwise evaluation of the saved H and H2 Janev ionization fits on or clipped to their declared temperature interval."
-    ],
-    "excluded": [
-      "Other target species, density-scaled source or sink assembly, collisional-radiative state coupling, and direct velocity-mesh averaging of a cross section.",
-      "Physical accuracy claims outside the compared saved fit or without an external atomic-physics reference."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for non-real numeric or non-finite temperature, nonpositive temperature, or target species other than the scalar strings H and H2. Boolean, complex and numeric-string temperature coercions are rejected.",
-    "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned.",
-    "nonconvergence": "Not applicable; no iteration.",
-    "partial_results": "Never returned."
-  },
-  "provenance": {
-    "lineage_summary": "Development relation compared with the saved KN1DPy Janev电子碰撞电离率 package, whose operator document records source anchors sigma/sigmav_ion_h0.py:1-22, sigma/sigmav_ion_hh.py:1-27 and poly.py:1-10. Saved implementation SHA-256 ff9b5f5cf854870608ce9e7e7ec8effe8718dbf5ddfa16b1bc90f42df908e3d1. Strict D1 qualification is withdrawn; this is bounded historical development comparison, not qualified-L1 provenance or expert approval. On accepted finite positive temperatures, the two coefficient tables, clipping and polynomial order are retained. Rejection of nonpositive temperatures and non-real coercion is a documented maintained repair relative to the saved implementation.",
-    "source_kinds": [
-      "saved L1 operator document and implementation",
-      "saved package tests",
-      "fixed reference values",
-      "SHA-gated historical replay"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.collisions.janev_electron_impact_ionization_rate",
-      "symbol": "evaluate_janev_electron_impact_ionization_rate",
-      "signature": "evaluate_janev_electron_impact_ionization_rate(electron_temperature_ev, target_species)",
-      "canonical_module": "scirel.collisions",
-      "canonical_symbol": "evaluate_janev_electron_impact_ionization_rate"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Evaluate both target branches and their clipped endpoints.",
-    "code": "import numpy as np\nfrom scirel.collisions import evaluate_janev_electron_impact_ionization_rate\nt = np.array([0.01, 10.0, 50000.0])\nh = evaluate_janev_electron_impact_ionization_rate(t, 'H')\nh2 = evaluate_janev_electron_impact_ionization_rate(t, 'H2')\nedge = evaluate_janev_electron_impact_ionization_rate(np.array([0.1, 10.0, 20100.0]), 'H')\nassert h.shape == (3,) and np.all(np.isfinite(h)) and np.all(h > 0.0)\nassert np.array_equal(h, edge)\nassert not np.allclose(h, h2, rtol=1e-12, atol=0.0)",
-    "expected": "Three positive H rates, exactly clipped at both endpoints and numerically distinct from H2 rates."
-  },
-  "verification": {
-    "scope": [
-      "Fixed saved reference values verify both species-specific coefficient tables at six temperatures, including both fit endpoints.",
-      "Direct tests cover branch distinction, clipping, scalar shape, invalid target species, invalid temperature and non-real coercion rejection.",
-      "Five optional SHA-gated historical replays compare finite two-dimensional carriers exactly for both branches and document three rejection differences."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py",
-      "tests/operator_contracts/test_janev_electron_impact_ionization_rate_l1.py"
-    ],
-    "evidence_ceiling": "Maintained tests establish the discrete two-branch fit, clipping and failure contract on tested samples. SHA-gated replay establishes historical arithmetic agreement on compared grids only. No external atomic-physics oracle validates either fit; whole-source D1 qualification, expert approval and distribution licensing are absent.",
-    "known_limitations": [
-      "The saved package records an external physical-reference validation_oracle_gap.",
-      "Out-of-fit-range positive temperatures silently repeat endpoint rates rather than extrapolating or failing.",
-      "A rate coefficient is not a complete source or sink without caller-supplied density and state contracts.",
-      "The saved bundle's strict D1 qualification is withdrawn, and public distribution licensing remains pending."
-    ]
+  {
+   "name": "target_species",
+   "description": "Select the saved atomic-H or molecular-H2 ionization fit.",
+   "units": "dimensionless enumeration",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "Exactly H or H2; no fallback branch."
   }
+ ],
+ "outputs": [
+  {
+   "name": "rate_m3_s",
+   "description": "Selected electron-impact ionization Maxwellian rate coefficient.",
+   "units": "m^3/s",
+   "shape": "same as electron_temperature_ev",
+   "dtype": "float64 array or scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive on accepted inputs; no external physical accuracy is asserted."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller supplies electron temperature in eV, chooses H or H2 explicitly, and accepts saved endpoint clipping."
+  ],
+  "supported": [
+   "Scalar and array pointwise evaluation of the saved H and H2 Janev ionization fits on or clipped to their declared temperature interval."
+  ],
+  "excluded": [
+   "Other target species, density-scaled source or sink assembly, collisional-radiative state coupling, and direct velocity-mesh averaging of a cross section.",
+   "Physical accuracy claims outside the compared saved fit or without an external atomic-physics reference."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real numeric or non-finite temperature, nonpositive temperature, or target species other than the scalar strings H and H2. Boolean, complex and numeric-string temperature coercions are rejected.",
+  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned.",
+  "nonconvergence": "Not applicable; no iteration.",
+  "partial_results": "Never returned."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of H or H2 electron-impact Maxwellian ionization rate coefficient from a species-specific logarithmic polynomial. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.janev_electron_impact_ionization_rate",
+   "symbol": "evaluate_janev_electron_impact_ionization_rate",
+   "signature": "evaluate_janev_electron_impact_ionization_rate(electron_temperature_ev, target_species)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "evaluate_janev_electron_impact_ionization_rate"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate both target branches and their clipped endpoints.",
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_janev_electron_impact_ionization_rate\nt = np.array([0.01, 10.0, 50000.0])\nh = evaluate_janev_electron_impact_ionization_rate(t, 'H')\nh2 = evaluate_janev_electron_impact_ionization_rate(t, 'H2')\nedge = evaluate_janev_electron_impact_ionization_rate(np.array([0.1, 10.0, 20100.0]), 'H')\nassert h.shape == (3,) and np.all(np.isfinite(h)) and np.all(h > 0.0)\nassert np.array_equal(h, edge)\nassert not np.allclose(h, h2, rtol=1e-12, atol=0.0)",
+  "expected": "Three positive H rates, exactly clipped at both endpoints and numerically distinct from H2 rates."
+ },
+ "verification": {
+  "scope": [
+   "Fixed saved reference values verify both species-specific coefficient tables at six temperatures, including both fit endpoints.",
+   "Direct tests cover branch distinction, clipping, scalar shape, invalid target species, invalid temperature and non-real coercion rejection.",
+   "Five optional SHA-gated historical replays compare finite two-dimensional carriers exactly for both branches and document three rejection differences."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py",
+   "tests/operator_contracts/test_janev_electron_impact_ionization_rate_l1.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish the discrete two-branch fit, clipping and failure contract on tested samples. SHA-gated replay establishes historical arithmetic agreement on compared grids only. No external atomic-physics oracle validates either fit; whole-source D1 qualification, expert approval and distribution licensing are absent.",
+  "known_limitations": [
+   "The saved package records an external physical-reference validation_oracle_gap.",
+   "Out-of-fit-range positive temperatures silently repeat endpoint rates rather than extrapolating or failing.",
+   "A rate coefficient is not a complete source or sink without caller-supplied density and state contracts.",
+   "The saved bundle's strict D1 qualification is withdrawn, and public distribution licensing remains pending."
+  ]
+ }
 }

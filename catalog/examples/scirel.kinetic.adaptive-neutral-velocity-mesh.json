@@ -103,15 +103,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 自适应中性粒子速度网格 package, source anchor KN1DPy/create_vr_vx_mesh.py:16-56 (create_vr_vx_mesh), as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 38fcde8ba437ce5ee72f6465968ea3fd8ade9a4ff24b5a6692823a20207f2842. Valid finite real-valued meshes retain the saved formula and index lifecycle; input coercions and duplicate-node outputs are tightened as stated in identity.assumptions. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "separate read-only saved-implementation comparison",
-      "scientific regression tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -128,24 +127,22 @@
   },
   "example": {
     "description": "Build the uniform and stretched meshes and confirm symmetry and the cap.",
-    "code": "import numpy as np\nfrom scirel.kinetic import create_adaptive_neutral_velocity_mesh\nvx, vr, tnorm, ix, ir = create_adaptive_neutral_velocity_mesh(4, (1.0, 1.05))\nassert np.array_equal(vr, (0.875, 1.75, 2.625, 3.5))\nassert np.array_equal(vx, -vx[::-1])\nassert tnorm == 1.025\nvx2, vr2, tnorm2, ix2, ir2 = create_adaptive_neutral_velocity_mesh(4, (1.0, 9.0), temperature_cap_ev=4.0)\nassert tnorm2 == 1.0\ntry:\n    create_adaptive_neutral_velocity_mesh(0, (1.0,))\nexcept ValueError as error:\n    assert 'nv must be a positive integer' in str(error)\nelse:\n    raise AssertionError('nv=0 must be rejected')",
-    "expected": "The uniform 3.5 mesh for a near-uniform population, symmetric vx; the cap truncates to the uniform branch; nv=0 is rejected."
+    "code": "import numpy as np\nfrom scirel.kinetic import create_adaptive_neutral_velocity_mesh\nvx, vr, tnorm, ix, ir = create_adaptive_neutral_velocity_mesh(4, (1.0, 1.05))\nassert np.array_equal(vr, (0.875, 1.75, 2.625, 3.5))\nassert np.array_equal(vx, -vx[::-1])\nassert tnorm == 1.025\nvx2, vr2, tnorm2, ix2, ir2 = create_adaptive_neutral_velocity_mesh(4, (1.0, 9.0), temperature_cap_ev=4.0)\nassert tnorm2 == 1.0\ntry:\n    create_adaptive_neutral_velocity_mesh(0, (1.0,))\nexcept ValueError as error:\n    assert 'nv must be a positive integer' in str(error)\nelse:\n    raise AssertionError('nv=0 must be rejected')\n",
+    "expected": "Observed PASS: The uniform 3.5 mesh for a near-uniform population, symmetric vx; the cap truncates to the uniform branch; nv=0 is rejected."
   },
   "verification": {
     "scope": [
       "That the uniform and stretched branches match the saved source formula exactly.",
       "That requested positive energies are inserted as exact nodes with axial symmetry preserved.",
       "That the cap truncates the selected population and the tnorm follows.",
-      "The input and failure contracts.",
-      "Separate read-only comparison against the SHA-256-pinned saved KN1DPy implementation over six valid uniform, stretched, inserted-energy, capped and multi-temperature cases; historical development evidence only."
+      "The input and failure contracts."
     ],
     "tests": [
       "tests/operator_contracts/test_adaptive_neutral_velocity_mesh.py"
     ],
-    "evidence_ceiling": "The maintained source-free tests establish the uniform and stretched formulas, requested-energy and cap behavior, input/failure contracts, and composition with cylindrical quadrature, shifted seed and moment reduction. A separate read-only replay matched five output fields on six valid saved points; rejection behavior intentionally differs. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

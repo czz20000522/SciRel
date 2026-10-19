@@ -106,15 +106,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 简化电荷交换散射源 package, source anchor KN1DPy/kinetic_h.py:1297-1317; kinetic_h2.py:1444-1461 (the Simple_CX construction), as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 b4962366c43c308aa0ca8e047d00fb34ce2756f1db025e14a77339b1de50770f. Finite real valid inputs retain the saved arithmetic order and signed-value behavior. SciRel additionally rejects implicit real conversion and non-finite derived results; source error-message parity is not claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "read-only historical replay",
-      "scientific regression tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {

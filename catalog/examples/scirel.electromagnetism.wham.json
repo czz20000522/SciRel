@@ -1,119 +1,115 @@
 {
-  "schema": "scirel.asset-document",
-  "kind": "operator",
-  "provenance": {
-    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
-    "source_kinds": [
-      "D0-derived scientific implementation",
-      "bounded D2 regression evidence"
-    ],
-    "public_references": [],
-    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.electromagnetism.device"
-      },
-      {
-        "asset_id": "scirel.electromagnetism.rectangular-coil"
-      }
-    ]
-  },
-  "verification": {
-    "scope": [
-      "Bounded rigid-geometry and coordinate invariants",
-      "Ordered current projection and source lifecycle",
-      "Full retained BRB/WHAM configuration composition at finite targets"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_native_geometry_qualification.py",
-      "tests/pleiades/geometry/test_native_lifecycle.py"
-    ],
-    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
-    "known_limitations": [
-      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
-      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
-      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
-      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
-      "All scientific, human and release approvals remain false."
-    ]
-  },
-  "asset_id": "scirel.electromagnetism.wham",
-  "title": {
-    "en": "WHAM filament geometry",
-    "zh": "WHAM 圆丝设备"
-  },
-  "summary": "Ordered four-coil geometry with 32,32,10,10 filaments; all common currents retain constructor default 1 A.",
-  "taxonomy": [
-    "electromagnetism",
-    "sources",
-    "configurations"
+ "schema": "scirel.asset-document",
+ "kind": "operator",
+ "provenance": {
+  "lineage_summary": "SciRel retains the documented scientific relation and implementation; applicable source-license obligations are recorded in licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "SciRel implementation",
+   "repository regression tests"
   ],
-  "aliases": [
-    "WHAM"
+  "public_references": [],
+  "license_status": "Pleiades-derived source portions retain the MIT notice in licenses/Pleiades-MIT.txt; SciRel has no separate distribution-license declaration."
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.electromagnetism.device"
+   },
+   {
+    "asset_id": "scirel.electromagnetism.rectangular-coil"
+   }
+  ]
+ },
+ "verification": {
+  "scope": [
+   "Bounded rigid-geometry and coordinate invariants",
+   "Ordered current projection and source lifecycle",
+   "Full retained BRB/WHAM configuration composition at finite targets"
   ],
-  "identity": {
-    "relation": "Parameterized source geometry and weighted circular-filament composition",
-    "direction": "constructor parameters to source/device object",
-    "definition": "Ordered four-coil geometry with 32,32,10,10 filaments; all common currents retain constructor default 1 A.",
-    "model": "Source-defined WHAM geometry",
-    "geometry": "Axisymmetric circular filaments representing the retained source geometry",
-    "coordinates": "Cylindrical R,Z in metres; rotation degrees clockwise in the R,Z plane",
-    "boundary": "No experimental device calibration or material constitutive law is established.",
-    "assumptions": [
-      "Source geometry constants and their source conventions are retained",
-      "Vacuum ideal circular-filament response; finite-wire and permeability physics excluded"
-    ]
-  },
-  "inputs": [],
-  "outputs": [
-    {
-      "name": "source",
-      "description": "Constructed WHAM object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods.",
-      "units": "geometry m; current A; weights dimensionless",
-      "shape": "one object",
-      "dtype": "WHAM",
-      "required": true,
-      "constraints": "Bounded source geometry and field-response methods"
-    }
+  "tests": [
+   "tests/pleiades/geometry/test_native_geometry_qualification.py",
+   "tests/pleiades/geometry/test_native_lifecycle.py"
   ],
-  "applicability": {
-    "preconditions": [
-      "Finite geometry inputs where parameters are exposed"
-    ],
-    "supported": [
-      "Retained source geometry constants",
-      "Ordered current-set composition",
-      "Finite source fields at nonsingular targets"
-    ],
-    "excluded": [
-      "Experimental apparatus calibration",
-      "Electrode additions",
-      "Persistent sweep",
-      "PCX comments-only source",
-      "Nonlinear magnetization, finite wire or permeability models"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
-    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state.",
-    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
-    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.configurations",
-      "symbol": "WHAM",
-      "signature": "WHAM()",
-      "canonical_module": "scirel.configurations",
-      "canonical_symbol": "WHAM"
-    }
-  },
-  "example": {
-    "description": "Construct the bounded source geometry.",
-    "code": "from scirel.configurations import WHAM\nd=WHAM()\nassert [c.npts for c in d.current_sets]==[32,32,10,10]",
-    "expected": "The exact source geometry count is returned."
+  "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+  "known_limitations": [
+   "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+   "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+   "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+   "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+   "All scientific, human and release approvals remain false."
+  ]
+ },
+ "asset_id": "scirel.electromagnetism.wham",
+ "title": {
+  "en": "WHAM filament geometry",
+  "zh": "WHAM 圆丝设备"
+ },
+ "summary": "Construct the ordered WHAM device with four rectangular coils containing 32, 32, 10, and 10 filaments.",
+ "taxonomy": [
+  "electromagnetism",
+  "sources",
+  "configurations"
+ ],
+ "aliases": [
+  "WHAM"
+ ],
+ "identity": {
+  "relation": "Fixed WHAM source composition",
+  "direction": "configuration constructor to ordered child sources",
+  "definition": "WHAM registers hts1, hts2, cc1, and cc2 rectangular coil children in that order.",
+  "model": "Axisymmetric ideal circular-filament geometry.",
+  "geometry": "Four rectangular source lattices in cylindrical R,Z coordinates.",
+  "coordinates": "R,Z in metres; currents in amperes; weights dimensionless.",
+  "boundary": "The object represents fixed geometry and does not calibrate the experimental device.",
+  "assumptions": [
+   "The constructor uses the constants in the implementation.",
+   "Field evaluation requires a target mesh and nonsingular target points.",
+   "Child order is preserved by Device."
+  ]
+ },
+ "inputs": [],
+ "outputs": [
+  {
+   "name": "source",
+   "description": "Constructed WHAM object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods.",
+   "units": "geometry m; current A; weights dimensionless",
+   "shape": "one object",
+   "dtype": "WHAM",
+   "required": true,
+   "constraints": "Bounded source geometry and field-response methods"
   }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The constructor uses the constants in the implementation.",
+   "Field evaluation requires a target mesh and nonsingular target points."
+  ],
+  "supported": [
+   "Child counts, reflection geometry, mesh propagation, current projection, and finite field evaluation."
+  ],
+  "excluded": [
+   "Experimental calibration, finite-wire or permeability physics, and persistent sweeps."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Child source ValueError and active-filament singularity failures propagate from construction or field evaluation.",
+  "runtime_failure": "Child Green-kernel FloatingPointError propagates.",
+  "nonconvergence": "Not applicable; construction is a direct ordered composition.",
+  "partial_results": "A failed constructor returns no usable device object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.configurations",
+   "symbol": "WHAM",
+   "signature": "WHAM()",
+   "canonical_module": "scirel.configurations",
+   "canonical_symbol": "WHAM"
+  }
+ },
+ "example": {
+  "description": "Construct the fixed WHAM device and inspect child point counts.",
+  "code": "from scirel.configurations import WHAM\nd=WHAM()\nassert [c.npts for c in d.current_sets]==[32,32,10,10]",
+  "expected": "The four current sets contain [32, 32, 10, 10] points in order."
+ }
 }

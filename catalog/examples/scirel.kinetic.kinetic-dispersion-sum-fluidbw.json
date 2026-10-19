@@ -220,13 +220,15 @@
   ],
   "applicability": {
     "preconditions": [
-      "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions"
+      "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
+      "The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain."
     ],
     "supported": [
       "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the source's positive near-zero kz clamp."
     ],
     "excluded": [
-      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+      "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+      "Inputs that violate the numerical domain or require a different tensor convention."
     ]
   },
   "failure_semantics": {
@@ -236,14 +238,14 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "frozen source operator contract",
-      "frozen source numerical oracle",
-      "SciRel direct contract tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -259,9 +261,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Evaluate one bounded source-method case.",
-    "code": "from scirel.kinetic import evaluate_fluidbw_kinetic_dispersion_sum\nr=evaluate_fluidbw_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], f=1e10, kz=1.0, kx=1.0); assert r['D'].shape==(3,3)",
-    "expected": "The asserted result follows the declared output contract."
+    "description": "Evaluate the finite-harmonic Maxwellian tensor at one bounded wavepoint.",
+    "code": "from scirel.kinetic import evaluate_fluidbw_kinetic_dispersion_sum\nr=evaluate_fluidbw_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], f=1e10, kz=1.0, kx=1.0); assert r['D'].shape==(3,3)\n",
+    "expected": "Observed PASS: the finite-harmonic case returns finite 3x3 K and D tensors, determinant, species scales, and lmx=5."
   },
   "verification": {
     "scope": [
@@ -270,10 +272,11 @@
     "tests": [
       "tests/operator_contracts/test_fluidbw_r43_variants.py"
     ],
-    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
-      "Public distribution license and expert review remain pending."
+      "Public distribution license and expert review remain pending.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

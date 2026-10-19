@@ -100,14 +100,16 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "SciRel D2 retained this distinct fluidBW r43 numerical relation after comparison with maintained kinetic entries; the source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "lineage_summary": "SciRel contains the declared finite numerical relation and its direct contract tests; source-scope limits remain explicit and no external approval is inferred.",
     "source_kinds": [
-      "frozen source operator contract",
-      "frozen source numerical oracle",
-      "SciRel direct contract tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+    "public_references": [
+      "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+    ],
+    "license_status": "Source redistribution permission is NOT_ESTABLISHED; source obligations and the no-public-release boundary follow licenses/fluidbw-D1-source-NOTICE.md and licenses/fluidbw-D2-NOTICE.md."
   },
   "public_api": {
     "python": {
@@ -134,10 +136,10 @@
     "tests": [
       "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
     ],
-    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
     "known_limitations": [
       "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
-      "Public distribution license and expert review remain pending."
+      "Full source/runtime qualification that uses GNU Octave on Linux amd64 is NOT_RUN in this macOS checkout."
     ]
   }
 }

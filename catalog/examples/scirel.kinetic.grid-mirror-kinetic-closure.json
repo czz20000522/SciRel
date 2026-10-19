@@ -648,14 +648,14 @@
     "partial_results": "No mapping is returned on any upstream failure. A successful mapping includes full-grid nested and endpoint diagnostics even when selected top-level fields are confined."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel-maintained graph, direct tests and historical Pleiades mapping were compared with the pending intake candidate. The SciRel and intake implementation text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery; this exact document records current SciRel behavior only. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "historical Pleiades development TaskGraph and migration mapping",
-      "pending intake development candidate",
-      "current SciRel graph implementation, direct tests and composition regressions"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -682,8 +682,8 @@
   },
   "example": {
     "description": "Evaluate two end potentials and a quasineutral pressure state on a small rectilinear mirror grid.",
-    "code": "import numpy as np\nfrom scirel.kinetic import solve_grid_mirror_kinetic_closure\ne = 1.602176634e-19\nr, z = np.linspace(0.0, 0.2, 5), np.linspace(-1.0, 1.0, 7)\nR, Z = np.meshgrid(r, z)\nstate = solve_grid_mirror_kinetic_closure({'r_grid': R, 'z_grid': Z, 'b_t': 1.0 + 3.0*np.abs(Z), 'psi': 0.5*R**2, 'mass_kg': 1.67262192595e-27, 'charge_c': e, 'density_ref_m3': 1.0e18, 'temperature_parallel_j': 1000.0*e, 'temperature_perpendicular_ref_j': 2000.0*e, 'electron_temperature_j': 500.0*e, 'reference_z': 0.0, 'plug_left_z': -1.0, 'plug_right_z': 1.0, 'loss_cone_refill': 0.05, 'quadrature_order': 24, 'plug_potential_mode': 'ambipolar_end_loss'})\nassert state['p_parallel'].shape == R.shape\nassert np.all(state['end_left_potential_v'] < 0.0)\nassert np.max(np.abs(state['relative_charge_residual'])) < 1e-9\nassert state['end_left_current_balance_solved'] and state['end_right_current_balance_solved']",
-    "expected": "A [7,5] pressure field, negative mapped left end potential and small relative local charge residual for the selected test state."
+    "code": "import numpy as np\nfrom scirel.kinetic import solve_grid_mirror_kinetic_closure\ne = 1.602176634e-19\nr, z = np.linspace(0.0, 0.2, 5), np.linspace(-1.0, 1.0, 7)\nR, Z = np.meshgrid(r, z)\nstate = solve_grid_mirror_kinetic_closure({'r_grid': R, 'z_grid': Z, 'b_t': 1.0 + 3.0*np.abs(Z), 'psi': 0.5*R**2, 'mass_kg': 1.67262192595e-27, 'charge_c': e, 'density_ref_m3': 1.0e18, 'temperature_parallel_j': 1000.0*e, 'temperature_perpendicular_ref_j': 2000.0*e, 'electron_temperature_j': 500.0*e, 'reference_z': 0.0, 'plug_left_z': -1.0, 'plug_right_z': 1.0, 'loss_cone_refill': 0.05, 'quadrature_order': 24, 'plug_potential_mode': 'ambipolar_end_loss'})\nassert state['p_parallel'].shape == R.shape\nassert np.all(state['end_left_potential_v'] < 0.0)\nassert np.max(np.abs(state['relative_charge_residual'])) < 1e-9\nassert state['end_left_current_balance_solved'] and state['end_right_current_balance_solved']\n",
+    "expected": "Observed PASS: A [7,5] pressure field, negative mapped left end potential and small relative local charge residual for the selected test state."
   },
   "verification": {
     "scope": [
@@ -698,12 +698,13 @@
       "tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py",
       "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
     ],
-    "evidence_ceiling": "Direct SciRel graph tests support the selected [7,5] grid cases, prescribed-endpoint imbalance, endpoint and nested residual assertions, fixed-profile psi-coordinate rescaling and one unadjusted-callback counterexample, chosen masking behavior, upstream failure propagation and input rejects. They do not establish all profile domains, end-current balance over all states, physical correctness of the mirror model, full-grid array-profile support, automatic conversion or arbitrary psi-dependent callback equivalence, current expert approval or public release.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "Input YAML describes fixed full-grid reference profiles more broadly than the actual endpoint-plus-nested call chain supports; the shared profile must work on both one-dimensional and two-dimensional psi.",
       "Confinement masks only selected top-level fields; the nested kinetic mapping, original moment-named values, temperatures, potentials, pitch integrals and endpoint diagnostics stay full-grid.",
       "Nearest-plane selection can differ from the requested physical coordinate and the flux-profile operator uses source-defined sorting, deduplication and constant endpoint extension.",
-      "Independent endpoint and nested nonlinear solves expose no combined convergence certificate; source licensing and current-version expert recognition remain pending."
+      "Independent endpoint and nested nonlinear solves expose no combined convergence certificate; source licensing and current-version expert recognition remain pending.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   },
   "graph": {

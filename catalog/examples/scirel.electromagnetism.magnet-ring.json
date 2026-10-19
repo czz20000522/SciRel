@@ -1,195 +1,196 @@
 {
-  "schema": "scirel.asset-document",
-  "kind": "operator",
-  "provenance": {
-    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
-    "source_kinds": [
-      "D0-derived scientific implementation",
-      "bounded D2 regression evidence"
-    ],
-    "public_references": [],
-    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.electromagnetism.circular-filament-green"
-      },
-      {
-        "asset_id": "scirel.geometry.rotate"
-      }
-    ]
-  },
-  "verification": {
-    "scope": [
-      "Bounded rigid-geometry and coordinate invariants",
-      "Ordered current projection and source lifecycle",
-      "Full retained BRB/WHAM configuration composition at finite targets"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_native_geometry_qualification.py",
-      "tests/pleiades/geometry/test_native_lifecycle.py"
-    ],
-    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
-    "known_limitations": [
-      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
-      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
-      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
-      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
-      "All scientific, human and release approvals remain false."
-    ]
-  },
-  "asset_id": "scirel.electromagnetism.magnet-ring",
-  "title": {
-    "en": "Magnet ring filament approximation",
-    "zh": "磁环圆丝近似"
-  },
-  "summary": "Finite signed filament approximation for an oriented rectangular magnet cross-section.",
-  "taxonomy": [
-    "electromagnetism",
-    "sources",
-    "magnetics"
+ "schema": "scirel.asset-document",
+ "kind": "operator",
+ "provenance": {
+  "lineage_summary": "SciRel retains the documented scientific relation and implementation; applicable source-license obligations are recorded in licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "SciRel implementation",
+   "repository regression tests"
   ],
-  "aliases": [
-    "MagnetRing"
+  "public_references": [],
+  "license_status": "Pleiades-derived source portions retain the MIT notice in licenses/Pleiades-MIT.txt; SciRel has no separate distribution-license declaration."
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.electromagnetism.circular-filament-green"
+   },
+   {
+    "asset_id": "scirel.geometry.rotate"
+   }
+  ]
+ },
+ "verification": {
+  "scope": [
+   "Bounded rigid-geometry and coordinate invariants",
+   "Ordered current projection and source lifecycle",
+   "Full retained BRB/WHAM configuration composition at finite targets"
   ],
-  "identity": {
-    "relation": "Magnetization proxy relation",
-    "direction": "ring geometry and signed weights to filament response",
-    "definition": "Two radial faces with signed axial samples",
-    "model": "Axisymmetric idealized ring",
-    "geometry": "Axisymmetric idealized ring",
-    "coordinates": "Cylindrical R,Z; orientation angle degrees",
-    "boundary": "Coincident active filament remains singular",
-    "assumptions": [
-      "Finite positive width/height"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "r0",
-      "description": "Center radius",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "R >= 0",
-      "default": 1.0
-    },
-    {
-      "name": "z0",
-      "description": "Center height",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Finite",
-      "default": 0.0
-    },
-    {
-      "name": "width",
-      "description": "Radial width",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Positive",
-      "default": 0.01
-    },
-    {
-      "name": "height",
-      "description": "Axial height",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Positive",
-      "default": 0.01
-    },
-    {
-      "name": "mu_hat",
-      "description": "Orientation angle",
-      "units": "degree",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Finite degrees",
-      "default": 0.0
-    },
-    {
-      "name": "current",
-      "description": "Common current",
-      "units": "A",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Finite scalar",
-      "default": 1.0
-    },
-    {
-      "name": "weights",
-      "description": "Signed weights",
-      "units": "dimensionless",
-      "shape": "(N,)",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Even positive finite vector",
-      "default": null
-    },
-    {
-      "name": "mesh",
-      "description": "Target mesh",
-      "units": "m",
-      "shape": "mesh-dependent",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Mesh accepted by conversion",
-      "default": null
-    }
+  "tests": [
+   "tests/pleiades/geometry/test_native_geometry_qualification.py",
+   "tests/pleiades/geometry/test_native_lifecycle.py"
   ],
-  "outputs": [
-    {
-      "name": "source",
-      "description": "Constructed MagnetRing object. Available properties/methods: rz_pts: Filament centers [m], (N,2); total_current: Weighted current [A], scalar",
-      "units": "Object; property units as described",
-      "shape": "one object",
-      "dtype": "MagnetRing",
-      "required": true,
-      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
-    ],
-    "supported": [
-      "Signed ring geometry and transforms"
-    ],
-    "excluded": [
-      "Zero-sum total-current setter",
-      "Electrodes",
-      "Finite-wire magnetics"
-    ]
+  "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+  "known_limitations": [
+   "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
+   "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
+   "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
+   "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
+   "All scientific, human and release approvals remain false."
+  ]
+ },
+ "asset_id": "scirel.electromagnetism.magnet-ring",
+ "title": {
+  "en": "Magnet ring filament approximation",
+  "zh": "磁环圆丝近似"
+ },
+ "summary": "Construct a signed two-face, sixteen-filament approximation of a rectangular permanent-ring cross-section.",
+ "taxonomy": [
+  "electromagnetism",
+  "sources",
+  "magnetics"
+ ],
+ "aliases": [
+  "MagnetRing"
+ ],
+ "identity": {
+  "relation": "Signed magnet-ring filament approximation",
+  "direction": "ring geometry parameters to a weighted source object",
+  "definition": "Two radial faces each receive eight axial filament points and opposite default weights.",
+  "model": "Axisymmetric ideal circular filaments used as a geometry approximation.",
+  "geometry": "Rectangular cross-section in cylindrical R,Z coordinates with optional centroid rotation.",
+  "coordinates": "R,Z in metres; orientation in degrees; weights dimensionless; current in amperes.",
+  "boundary": "Resulting filament radii must remain nonnegative; active source/target coincidence remains singular.",
+  "assumptions": [
+   "Width and height are finite and positive.",
+   "Default weights are eight -1 values followed by eight +1 values.",
+   "This object is not a material magnetization model."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r0",
+   "description": "Center radius",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "R >= 0",
+   "default": 1.0
   },
-  "failure_semantics": {
-    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
-    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state.",
-    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
-    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
+  {
+   "name": "z0",
+   "description": "Center height",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Finite",
+   "default": 0.0
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.electromagnetism.sources",
-      "symbol": "MagnetRing",
-      "signature": "MagnetRing(r0=1.0, z0=0.0, width=0.01, height=0.01, mu_hat=0.0, **kwargs)",
-      "canonical_module": "scirel.electromagnetism",
-      "canonical_symbol": "MagnetRing"
-    }
+  {
+   "name": "width",
+   "description": "Radial width",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Positive",
+   "default": 0.01
   },
-  "example": {
-    "description": "Construct a default ring",
-    "code": "from scirel.electromagnetism import MagnetRing\nr=MagnetRing()\nassert r.npts == 16",
-    "expected": "Signed filament geometry with default 16 samples."
+  {
+   "name": "height",
+   "description": "Axial height",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Positive",
+   "default": 0.01
+  },
+  {
+   "name": "mu_hat",
+   "description": "Orientation angle",
+   "units": "degree",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Finite degrees",
+   "default": 0.0
+  },
+  {
+   "name": "current",
+   "description": "Common current",
+   "units": "A",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Finite scalar",
+   "default": 1.0
+  },
+  {
+   "name": "weights",
+   "description": "Signed weights",
+   "units": "dimensionless",
+   "shape": "(N,)",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Even positive finite vector",
+   "default": null
+  },
+  {
+   "name": "mesh",
+   "description": "Target mesh",
+   "units": "m",
+   "shape": "mesh-dependent",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Mesh accepted by conversion",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "source",
+   "description": "Constructed MagnetRing object. Available properties/methods: rz_pts: Filament centers [m], (N,2); total_current: Weighted current [A], scalar",
+   "units": "Object; property units as described",
+   "shape": "one object",
+   "dtype": "MagnetRing",
+   "required": true,
+   "constraints": "Field methods require a configured or supplied target mesh; geometry and lifecycle properties follow the source class."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Width and height are finite and positive.",
+   "Default weights are eight -1 values followed by eight +1 values."
+  ],
+  "supported": [
+   "Signed geometry, transforms, current/weight mutation, mesh propagation, and lifecycle behavior."
+  ],
+  "excluded": [
+   "Finite-wire magnetics, permeability/material response, electrodes, and unsupported simplify operations."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for invalid geometry, current, weights, mesh, or active-filament coincidence; simplify raises NotImplementedError.",
+  "runtime_failure": "FloatingPointError from a nonrepresentable child Green response propagates; failed parameterized updates restore prior geometry.",
+  "nonconvergence": "Not applicable; construction and field evaluation are direct.",
+  "partial_results": "A failed constructor returns no source; atomic updates preserve the prior state."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.electromagnetism.sources",
+   "symbol": "MagnetRing",
+   "signature": "MagnetRing(r0=1.0, z0=0.0, width=0.01, height=0.01, mu_hat=0.0, **kwargs)",
+   "canonical_module": "scirel.electromagnetism",
+   "canonical_symbol": "MagnetRing"
+  }
+ },
+ "example": {
+  "description": "Construct a default signed magnet-ring source.",
+  "code": "from scirel.electromagnetism import MagnetRing\nr=MagnetRing()\nassert r.npts == 16",
+  "expected": "The source contains 16 filament points with the default signed two-face geometry."
+ }
 }

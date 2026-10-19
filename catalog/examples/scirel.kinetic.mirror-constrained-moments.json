@@ -287,14 +287,14 @@
     "partial_results": "No partial mapping is returned on an exception; all nine fields are assembled together after computation."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel-maintained implementation and direct analytic and quadrature regressions were independently compared with the historical Pleiades descriptor, migration mapping and pending intake development candidate. Historical admission labels and intake r81-v1 do not establish current expert approval or a qualified D1 delivery. This record documents current SciRel behavior without asserting source-byte identity or general flux-convention compatibility. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
     "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct scientific tests"
+      "SciRel implementation",
+      "mathematical derivation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -312,30 +312,26 @@
   "example": {
     "description": "Check the analytic untruncated bi-Maxwellian limit at two magnetic-field values.",
     "code": "import numpy as np\nfrom scirel.kinetic import evaluate_mirror_constrained_moments\ne = 1.602176634e-19\nb = np.array([1.0, 2.0])\nr = evaluate_mirror_constrained_moments(b, np.zeros(2), 0.0, 1.67262192595e-27, e, 2.0e18, 1200.0*e, 2400.0*e, 1.0)\nt_perp = b / ((b-1.0)/(1200.0*e) + 1.0/(2400.0*e))\nn = 2.0e18*t_perp/(2400.0*e)\nnp.testing.assert_allclose(r['density_m3'], n)\nnp.testing.assert_allclose(r['p_parallel_pa'], n*1200.0*e)\nnp.testing.assert_allclose(r['p_perpendicular_pa'], n*t_perp)\nnp.testing.assert_allclose(r['density_pitch_integral'], 1.0)",
-    "expected": "At B=1 and 2 T, density and both pressures match the stated untruncated analytic relations and the density pitch factor is one."
+    "expected": "The untruncated example returned density [2.0e18, 1.3333333333333333e18] m^-3, parallel pressure [384.52239216, 256.34826144] Pa, and perpendicular pressure [769.04478432, 341.79768192] Pa."
   },
   "verification": {
     "scope": [
-      "Untruncated density and gyrotropic pressures against closed-form expressions over three B samples.",
-      "Two-plug loss-cone reductions and independent adaptive integration of three pitch factors at two field values for one selected barrier case.",
-      "Source-default empty loss cone, refill-one recovery, one-sided plug rejection, vectorized psi profile equivalence and selected nonfinite control rejection.",
-      "Direct regressions assert signed negative charge support, inactive quadrature-control rejection, refill-one plug-profile bypass, and fractional quadrature-order truncation on the active plug branch.",
-      "Analytic isotropic trapped fractions for mirror ratios 1.000001 through 1e8 at work controls 8,32,64.",
-      "Four asymmetric/electrostatic barrier cases compared to independent reversed-order parallel-velocity integration; refill and refinement checks.",
-      "Signed charges +/-1e-308 and a represented 1e308 minus -1e308 potential pair retain the analytic finite normalized density; no exponent clipping or domain narrowing is used."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_mirror_constrained_moments.py",
       "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
       "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
     ],
-    "evidence_ceiling": "Analytic limits, independent reversed-order integrals, refinement and failure tests support the declared numerical integral. Error control is on dimensionless fractions, not a universal relative error guarantee for vanishing populations; no physical orbit or collision model is newly validated.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "The x>40 fraction tail is bounded as stated. Adaptive error estimates are not a formal proof for every floating-point parameter combination; fractions near zero have an absolute error target.",
       "Loss-cone refill is prescribed phenomenology. Plug profiles are not evaluated when refill is exactly one. Underflow may round an unrepresentable small result to zero.",
       "Mass is validated but not used in these moments; downstream closures may require positive-ion charge despite this callable accepting either sign.",
       "The historical psi unit is Wb, whereas other SciRel field assets may use Wb/rad; no connector equivalence is established.",
-      "Public distribution licensing and current-version expert recognition remain pending."
+      "Public distribution licensing and current-version expert recognition remain pending.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

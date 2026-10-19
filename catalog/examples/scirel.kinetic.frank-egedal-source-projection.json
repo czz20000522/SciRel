@@ -135,16 +135,16 @@
     "partial_results": "Only the established inactive-cone branch returns empty arrays; failed active projections return no partial coefficients."
   },
   "provenance": {
-    "lineage_summary": "Scientific correction of the local SciRel Pleiades-extension candidate. The retrieved historical extension does not establish an exact original-source mapping for this asset. The changed mathematical definitions are stated here; numerical agreement with an earlier candidate is not a correctness argument.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "local SciRel implementation",
-      "explicit mathematical derivation",
-      "primary scientific references"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [
       "https://arxiv.org/html/2509.17288v4"
     ],
-    "license_status": "Original-source mapping and applicable distribution licensing must be retained with the selected distribution; no article text or reference implementation is bundled by this document."
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -161,8 +161,8 @@
   },
   "example": {
     "description": "Project a regular integer mode and compare its analytic normalization.",
-    "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes({'mirror_ratio':1.5,'legendre_degrees':[2.],'nbi_pitch_angle_deg':60.})\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)",
-    "expected": "Integer degree 2 is evaluated regularly and its projected coefficient matches the polynomial integral."
+    "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes\nr=project_frank_egedal_source_modes({'mirror_ratio':1.5,'legendre_degrees':[2.],'nbi_pitch_angle_deg':60.})\na=1/np.sqrt(3); norm=a-2*a**3+9*a**5/5\nnp.testing.assert_allclose(r['source_coefficients'],[.25/(4*np.pi*norm)],rtol=2e-10)\n",
+    "expected": "Observed PASS: Integer degree 2 is evaluated regularly and its projected coefficient matches the polynomial integral."
   },
   "verification": {
     "scope": [
@@ -172,10 +172,11 @@
     "tests": [
       "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
     ],
-    "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "Clipping the point-source pitch into the cone is the retained projection convention, not a finite-width injection model.",
-      "Caller-supplied degrees need an independent eigenvalue justification if used as loss-cone modes."
+      "Caller-supplied degrees need an independent eigenvalue justification if used as loss-cone modes.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

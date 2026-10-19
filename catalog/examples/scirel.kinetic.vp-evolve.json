@@ -52,34 +52,30 @@
   ],
   "applicability": {
     "preconditions": [
-      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+      "state contains a finite Poisson-consistent vp_init mapping and integer nt>=0."
     ],
     "supported": [
-      "Exactly nt RK4 steps with ordered stage-wise field feedback; O(nv+nt) memory."
+      "Exactly nt ordered RK4 steps with copied state and dEt/tt histories."
     ],
     "excluded": [
-      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
-      "Certified continuum accuracy or post-recurrence validity."
+      "Nonlinear evolution, multidimensional modes and adaptive time stepping."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
-    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
-    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
-    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+    "invalid_input": "ValueError for missing/invalid state controls or an initial Poisson inconsistency.",
+    "runtime_failure": "FloatingPointError propagated from a nonfinite RK4 state or field.",
+    "nonconvergence": "Not applicable; the step count is prescribed and no convergence test is run.",
+    "partial_results": "No evolved state is returned; the caller-supplied mapping is copied before stepping and is not mutated."
   },
   "provenance": {
-    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 3e1938d288108f302255f0ed4f04ab16f714e741806c9c2a4daae27b372d27e4; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
     "source_kinds": [
-      "independent equation derivation",
-      "read-only frozen D1 scientific scenario controls",
-      "independent analytic and numerical reference tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
-    "public_references": [
-      "https://arxiv.org/abs/1211.5984",
-      "https://arxiv.org/abs/1305.6476"
-    ],
-    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+    "public_references": [],
+    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {
@@ -96,8 +92,8 @@
   },
   "example": {
     "code": "from scirel.kinetic.vlasov_poisson import vp_init,vp_evolve\ns=vp_evolve(vp_init(nv=32,nt=5))\nassert s[\"dEt\"].shape == (6,)",
-    "description": "有限步线性反馈演化的最小调用。",
-    "expected": "The stated shape or numerical assertion passes."
+    "description": "Initialize and evolve five finite RK4 steps on a 32-interval grid.",
+    "expected": "PASS: .venv/bin/python completed; dEt has shape (6,)."
   },
   "verification": {
     "scope": [

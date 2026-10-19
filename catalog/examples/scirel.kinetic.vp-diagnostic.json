@@ -81,34 +81,30 @@
   ],
   "applicability": {
     "preconditions": [
-      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+      "dEt and tt are finite one-dimensional vectors with identical shape and at least two entries; tt is real and strictly increasing."
     ],
     "supported": [
-      "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes."
+      "Peak-spacing frequency and least-squares logarithmic damping when at least two isolated nonzero peaks are in the selected window."
     ],
     "excluded": [
-      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
-      "Certified continuum accuracy or post-recurrence validity."
+      "Signals without two qualifying peaks and non-oscillatory/nonlinear diagnostics."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
-    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
-    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
-    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+    "invalid_input": "ValueError for misaligned/nonfinite vectors, non-real/non-increasing times, or fewer than two isolated nonzero peaks.",
+    "runtime_failure": "Arithmetic/type errors from NumPy operations propagate; no native process is launched.",
+    "nonconvergence": "The peak count is a data sufficiency condition, not an iterative convergence test.",
+    "partial_results": "No diagnostic mapping is returned when the peak condition fails."
   },
   "provenance": {
-    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 c8dcfc3345d960fb3e46da59788610e83ba2102b59fb0f2437c22c3fb0a32391; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
     "source_kinds": [
-      "independent equation derivation",
-      "read-only frozen D1 scientific scenario controls",
-      "independent analytic and numerical reference tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
-    "public_references": [
-      "https://arxiv.org/abs/1211.5984",
-      "https://arxiv.org/abs/1305.6476"
-    ],
-    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+    "public_references": [],
+    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {
@@ -125,8 +121,8 @@
   },
   "example": {
     "code": "import numpy as np\nfrom scirel.kinetic.vlasov_poisson import vp_diagnostic\nt=np.linspace(0,30,3001)\nr=vp_diagnostic(np.exp(-.1*t)*np.cos(t),t)\nassert abs(r[\"gamma\"]+.1) < 1e-4",
-    "description": "振荡峰阻尼诊断的最小调用。",
-    "expected": "The stated shape or numerical assertion passes."
+    "description": "Use a damped cosine to estimate its damping rate.",
+    "expected": "PASS: .venv/bin/python completed; the fitted gamma is within 1e-4 of -0.1."
   },
   "verification": {
     "scope": [

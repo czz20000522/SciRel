@@ -87,16 +87,16 @@
     "partial_results": "No partial result is returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Explicit finite-order numerical variant of the PDRK beammode Faddeeva implementation; corrected imaginary-axis overflow is independently checked against the maintained canonical relation.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://doi.org/10.1137/0731077"
+      "Weideman, Comput. Phys. 95 (1994), 1-4."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -114,22 +114,24 @@
     ]
   },
   "example": {
-    "description": "Evaluate a finite-order two by two array.",
+    "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
     "code": "import numpy as np\nfrom scirel.kinetic.pdrk.special import evaluate_faddeeva_finite_order\nr = evaluate_faddeeva_finite_order(np.array([[0, 1j], [-1j, 1+2j]]), N=32)\nassert r.state[\"w\"].shape == (2, 2)",
-    "expected": "Finite complex response with the declared native two-dimensional shape."
+    "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
   },
   "verification": {
     "scope": [
-      "Independent canonical comparison, large imaginary argument and mixed 2x2/order cases.",
-      "Original-source finite-order fidelity and source-double typed input ABI."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_examples_support.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
     "known_limitations": [
       "Bounded mixed-domain qualification gave N16 error within 1e-6 and N64 within 2e-13; these are not universal bounds.",
-      "Requires an external compatible Octave runtime, unlike the canonical SciPy-backed relation."
+      "Requires an external compatible Octave runtime, unlike the canonical SciPy-backed relation.",
+      "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
     ]
   }
 }

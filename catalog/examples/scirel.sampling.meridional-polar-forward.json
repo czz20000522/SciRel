@@ -97,13 +97,13 @@
     "partial_results": "No partial tuple on invalid input."
   },
   "provenance": {
-    "lineage_summary": "Recovered Pleiades analysis/helpers.py meridional transform. D2 corrects forward angle sign against the source inverse and independently derived orthonormal basis. Original projection/roundtrip tolerance3e-15 retained.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "Frozen D0 source implementation",
-      "Independent orthogonal basis derivation"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "MIT source retained; final human decision pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -119,9 +119,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Project a vector at a positive-Z axis point.",
-    "code": "from scirel.geometry.sampling import transform_to_rtheta\nr,t,ur,ut=transform_to_rtheta(0.,2.,3.,4.)\nassert r==2 and t==0 and ur==4 and ut==3",
-    "expected": "theta0, radial component4 and angular component3."
+    "description": "Transform a positive-Z cylindrical meridional position and vector into r,theta components.",
+    "code": "from scirel.geometry.sampling import transform_to_rtheta\n\nr, theta, radial, angular = transform_to_rtheta(0.0, 2.0, 3.0, 4.0)\nassert (r, theta, radial, angular) == (2.0, 0.0, 4.0, 3.0)",
+    "expected": "At (rho,Z)=(0,2), the transform returns r=2, theta=0, radial=4, and angular=3."
   },
   "verification": {
     "scope": [

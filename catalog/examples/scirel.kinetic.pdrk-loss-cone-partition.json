@@ -77,17 +77,16 @@
     "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
   },
   "provenance": {
-    "lineage_summary": "Derived from Hua-sheng Xie PDRK current implementation through fixed preprocessing and source-fidelity preservation, followed by explicit scientific corrections to field gauge, eigenpair state, signed-kz causality, perpendicular moments and J12 table precision.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
     "source_kinds": [
-      "upstream scientific implementation",
-      "supplied loss-cone derivation",
-      "independent velocity-integral and analytic qualification"
+      "SciRel implementation",
+      "mathematical derivation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://github.com/hsxie/pdrk",
-      "https://github.com/hsxie/pdrk/blob/master/doc/pdrk_loss_cone_doc_181027.pdf"
+      "Frank and Egedal, arXiv:2509.17288 (2025)."
     ],
-    "license_status": "Explicit upstream redistribution grant remains unresolved; local technical validation is not human publication approval."
+    "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -101,23 +100,25 @@
     "dependencies": []
   },
   "example": {
-    "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+    "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
     "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\nr=m.loss_cone_partition([.5,1.],[.4,.7])\nassert np.allclose(np.sum(r.state['rsab'],axis=0),1)\n",
-    "expected": "Assertions succeed for a compatible installation with Octave. This demonstrates the declared operation, not global scientific or visual acceptance."
+    "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
   },
   "verification": {
     "scope": [
-      "Independent algebraic two-Gaussian weights, sum-to-one relation and explicit alpha==1 bypass are checked.",
-      "No continuity claim is made across alpha==1 for arbitrary Delta."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_magnetized.py"
     ],
-    "evidence_ceiling": "Bounded scientific qualification; final exact public signature and canonical example validation are required before catalog exposure.",
+    "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
     "known_limitations": [
       "Local technical development; human scientific endorsement and publication clearance remain pending.",
       "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
-      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance."
+      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+      "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
     ]
   }
 }

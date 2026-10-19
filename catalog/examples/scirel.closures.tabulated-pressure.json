@@ -1,213 +1,212 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.closures.tabulated-pressure",
-  "kind": "operator",
-  "title": {
-    "en": "Tabulated magnetic-field and flux pressure interpolation",
-    "zh": "磁场与磁通表格压强插值"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.closures.tabulated-pressure",
+ "kind": "operator",
+ "title": {
+  "en": "Tabulated magnetic-field and flux pressure interpolation",
+  "zh": "磁场与磁通表格压强插值"
+ },
+ "summary": "Interpolate supplied parallel and perpendicular pressure tables at broadcast magnetic-field and flux queries. A one-dimensional flux table returns one isotropic pressure; a two-dimensional (B, psi) table returns two separately interpolated components.",
+ "taxonomy": [
+  "closures",
+  "pressure",
+  "interpolation"
+ ],
+ "aliases": [
+  "tabulated pressure closure",
+  "B-psi pressure lookup"
+ ],
+ "identity": {
+  "relation": "Caller-supplied pressure tables and magnetic-field/flux query values to interpolated gyrotropic pressure components",
+  "direction": "(magnetic_field, psi, psi_grid, p_parallel_table, optional p_perpendicular_table, optional b_grid) -> p_parallel, p_perpendicular, is_isotropic, table_dimension",
+  "definition": "Broadcast finite magnetic_field and psi queries. Without b_grid, require finite nonnegative one-dimensional tables matching a strictly increasing psi_grid; a supplied perpendicular table must equal the parallel table exactly after float64 conversion. Use linear interp1d and return the same pressure components, is_isotropic=True and table_dimension=1. With b_grid, separately bilinearly interpolate finite nonnegative parallel/perpendicular tables on the increasing (B,psi) axes; absent perpendicular data reuse the parallel table. Set is_isotropic to exact equality of the complete supplied component tables and table_dimension=2. Reject negative or nonfinite evaluated pressure. Equal table components describe this prescribed relation, not a thermodynamic proof.",
+  "model": "Prescribed tabulated isotropic or gyrotropic pressure law with linear one-dimensional or bilinear two-dimensional interpolation; this operator does not derive a pressure law or solve force balance.",
+  "geometry": "No spatial geometry is reconstructed; magnetic_field and psi query arrays are NumPy-broadcast, with no spatial-axis names or grid topology checked.",
+  "coordinates": "The first axis of each two-dimensional table is b_grid and the second is psi_grid. The psi axis and queries must use the same caller-supplied flux convention; historical source labels psi in Wb, but this implementation neither checks units nor converts Wb to Wb/rad.",
+  "boundary": "By default, a query outside either supplied interpolation axis raises. With bounds_error=False, a finite nonnegative fill_value supplies out-of-domain pressure; fill_value=None requests extrapolation, whose result is still checked for finiteness and nonnegativity.",
+  "assumptions": [
+   "Table entries already represent physically appropriate pressures in Pa for the intended plasma and magnetic-field/flux convention.",
+   "The caller supplies query values and table axes in matching units and aligned sample order; successful interpolation does not establish equilibrium or thermodynamic consistency."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "magnetic_field",
+   "description": "Magnetic-field query, used as the first interpolation coordinate only when b_grid is supplied; otherwise used only for broadcasting with psi.",
+   "units": "T by caller convention",
+   "shape": "scalar or array broadcast-compatible with psi",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "All broadcast values must be finite. Positivity and physical field magnitude are not validated."
   },
-  "summary": "Interpolate supplied parallel and perpendicular pressure tables at broadcast magnetic-field and flux queries. A one-dimensional flux table returns one isotropic pressure; a two-dimensional (B, psi) table returns two separately interpolated components.",
-  "taxonomy": [
-    "closures",
-    "pressure",
-    "interpolation"
-  ],
-  "aliases": [
-    "tabulated pressure closure",
-    "B-psi pressure lookup"
-  ],
-  "identity": {
-    "relation": "Caller-supplied pressure tables and magnetic-field/flux query values to interpolated gyrotropic pressure components",
-    "direction": "(magnetic_field, psi, psi_grid, p_parallel_table, optional p_perpendicular_table, optional b_grid) -> p_parallel, p_perpendicular, is_isotropic, table_dimension",
-    "definition": "Broadcast finite magnetic_field and psi queries. Without b_grid, require finite nonnegative one-dimensional tables matching a strictly increasing psi_grid; a supplied perpendicular table must equal the parallel table exactly after float64 conversion. Use linear interp1d and return the same pressure components, is_isotropic=True and table_dimension=1. With b_grid, separately bilinearly interpolate finite nonnegative parallel/perpendicular tables on the increasing (B,psi) axes; absent perpendicular data reuse the parallel table. Set is_isotropic to exact equality of the complete supplied component tables and table_dimension=2. Reject negative or nonfinite evaluated pressure. Equal table components describe this prescribed relation, not a thermodynamic proof.",
-    "model": "Prescribed tabulated isotropic or gyrotropic pressure law with linear one-dimensional or bilinear two-dimensional interpolation; this operator does not derive a pressure law or solve force balance.",
-    "geometry": "No spatial geometry is reconstructed; magnetic_field and psi query arrays are NumPy-broadcast, with no spatial-axis names or grid topology checked.",
-    "coordinates": "The first axis of each two-dimensional table is b_grid and the second is psi_grid. The psi axis and queries must use the same caller-supplied flux convention; historical source labels psi in Wb, but this implementation neither checks units nor converts Wb to Wb/rad.",
-    "boundary": "By default, a query outside either supplied interpolation axis raises. With bounds_error=False, a finite nonnegative fill_value supplies out-of-domain pressure; fill_value=None requests extrapolation, whose result is still checked for finiteness and nonnegativity.",
-    "assumptions": [
-      "Table entries already represent physically appropriate pressures in Pa for the intended plasma and magnetic-field/flux convention.",
-      "The caller supplies query values and table axes in matching units and aligned sample order; successful interpolation does not establish equilibrium or thermodynamic consistency."
-    ]
+  {
+   "name": "psi",
+   "description": "Flux query at the same broadcast samples as magnetic_field.",
+   "units": "same flux unit as psi_grid; historical label Wb",
+   "shape": "scalar or array broadcast-compatible with magnetic_field",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "All broadcast values must be finite; coordinate and unit consistency are caller obligations."
   },
-  "inputs": [
-    {
-      "name": "magnetic_field",
-      "description": "Magnetic-field query, used as the first interpolation coordinate only when b_grid is supplied; otherwise used only for broadcasting with psi.",
-      "units": "T by caller convention",
-      "shape": "scalar or array broadcast-compatible with psi",
-      "dtype": "real array-like converted to float64",
-      "required": true,
-      "constraints": "All broadcast values must be finite. Positivity and physical field magnitude are not validated."
-    },
-    {
-      "name": "psi",
-      "description": "Flux query at the same broadcast samples as magnetic_field.",
-      "units": "same flux unit as psi_grid; historical label Wb",
-      "shape": "scalar or array broadcast-compatible with magnetic_field",
-      "dtype": "real array-like converted to float64",
-      "required": true,
-      "constraints": "All broadcast values must be finite; coordinate and unit consistency are caller obligations."
-    },
-    {
-      "name": "psi_grid",
-      "description": "Flux interpolation axis shared by both pressure tables.",
-      "units": "same caller flux unit as psi",
-      "shape": "one-dimensional [N_psi], N_psi>=2",
-      "dtype": "real array-like converted to float64",
-      "required": true,
-      "constraints": "Every value must be finite and the axis strictly increasing."
-    },
-    {
-      "name": "p_parallel_table",
-      "description": "Parallel pressure samples on psi_grid or the (b_grid, psi_grid) tensor grid.",
-      "units": "Pa by caller convention",
-      "shape": "[N_psi] when b_grid is None; otherwise [N_B,N_psi]",
-      "dtype": "real array-like converted to float64",
-      "required": true,
-      "constraints": "Must have the branch-specific exact shape and contain only finite nonnegative entries."
-    },
-    {
-      "name": "p_perpendicular_table",
-      "description": "Optional perpendicular pressure samples; the two-dimensional branch reuses the parallel table when absent.",
-      "units": "Pa by caller convention",
-      "shape": "None or same shape as p_parallel_table",
-      "dtype": "real array-like converted to float64 or None",
-      "required": false,
-      "default": null,
-      "constraints": "Finite nonnegative shape-matched values. Without b_grid, must exactly equal p_parallel_table after float64 conversion; near-equal distinct tables raise instead of being discarded."
-    },
-    {
-      "name": "b_grid",
-      "description": "Optional magnetic-field interpolation axis; its presence selects the two-dimensional branch.",
-      "units": "same field unit as magnetic_field, historically T",
-      "shape": "None or one-dimensional [N_B], N_B>=2",
-      "dtype": "real array-like converted to float64 or None",
-      "required": false,
-      "default": null,
-      "constraints": "When present, every value must be finite and strictly increasing. Positive field magnitude is not enforced."
-    },
-    {
-      "name": "bounds_error",
-      "description": "Whether any query outside the selected interpolation axis or axes raises.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "Python bool or NumPy bool",
-      "required": false,
-      "default": true,
-      "constraints": "Must be boolean; default rejects out-of-domain queries."
-    },
-    {
-      "name": "fill_value",
-      "description": "Constant out-of-domain pressure when bounds_error=False; None requests extrapolation in that mode.",
-      "units": "Pa when not None",
-      "shape": "scalar or None",
-      "dtype": "real scalar convertible to float or None",
-      "required": false,
-      "default": null,
-      "constraints": "When supplied, must be finite and nonnegative. With bounds_error=True, out-of-domain queries still raise."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "p_parallel",
-      "description": "Interpolated parallel pressure at broadcast queries.",
-      "units": "Pa by caller table convention",
-      "shape": "broadcast shape of magnetic_field and psi, including zero-dimensional scalar result",
-      "dtype": "NumPy float64 array",
-      "required": true,
-      "constraints": "Finite and nonnegative on successful return."
-    },
-    {
-      "name": "p_perpendicular",
-      "description": "Interpolated perpendicular pressure, or a copy of parallel pressure in the one-dimensional branch.",
-      "units": "Pa by caller table convention",
-      "shape": "same broadcast shape as p_parallel",
-      "dtype": "NumPy float64 array",
-      "required": true,
-      "constraints": "Finite and nonnegative on successful return."
-    },
-    {
-      "name": "is_isotropic",
-      "description": "Whether the complete supplied component tables are exactly equal after float64 conversion.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "Python bool",
-      "required": true,
-      "constraints": "True for the one-dimensional isotropic path and for equal two-dimensional component tables; unrelated to the interpolation dimension."
-    },
-    {
-      "name": "table_dimension",
-      "description": "Number of table interpolation coordinates.",
-      "shape": "scalar",
-      "dtype": "int",
-      "constraints": "1 without b_grid; 2 with b_grid.",
-      "units": "dimensionless",
-      "required": true
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite, strictly increasing interpolation axes and finite nonnegative tabulated pressures with the branch-specific shapes.",
-      "Broadcast-compatible finite query values with units and flux conventions matching the table axes."
-    ],
-    "supported": [
-      "Linear one-dimensional pressure interpolation in psi with identical returned pressure components.",
-      "Bilinear two-dimensional interpolation of supplied parallel and perpendicular pressure on a rectangular (B, psi) table, with bounded fill or extrapolation options."
-    ],
-    "excluded": [
-      "Inferring pressure tables from measurements, finding magnetic surfaces or solving magnetic force balance.",
-      "Unit conversion between historical Wb and other flux conventions, verifying spatial alignment, or proving an interpolated/extrapolated pressure law physically valid."
-    ]
+  {
+   "name": "psi_grid",
+   "description": "Flux interpolation axis shared by both pressure tables.",
+   "units": "same caller flux unit as psi",
+   "shape": "one-dimensional [N_psi], N_psi>=2",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Every value must be finite and the axis strictly increasing."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for invalid axis rank, length, ordering or finiteness; table shape, finiteness or negativity errors; nonboolean bounds_error; invalid fill_value; nonfinite queries; nonbroadcastable queries; or nonfinite/negative interpolated pressure. NumPy/SciPy conversion and interpolation errors may also propagate.",
-    "runtime_failure": "Out-of-domain queries raise with bounds_error=True. With extrapolation, a nonfinite or negative result is rejected after interpolation; there is no physical fallback or clipping. SciPy/NumPy errors propagate.",
-    "nonconvergence": "Not applicable; no iterative root or equilibrium solve is performed.",
-    "partial_results": "No partial mapping after an exception. Successful calls return both pressure arrays, exact component-equality metadata and table dimension."
+  {
+   "name": "p_parallel_table",
+   "description": "Parallel pressure samples on psi_grid or the (b_grid, psi_grid) tensor grid.",
+   "units": "Pa by caller convention",
+   "shape": "[N_psi] when b_grid is None; otherwise [N_B,N_psi]",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Must have the branch-specific exact shape and contain only finite nonnegative entries."
   },
-  "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This interpolation contract does not resolve the Wb versus Wb/rad convention used by callers. The bounded legacy-six successor repairs independently reproduced defects or absorbs an equivalent maintained implementation. Original frozen failures and provenance remain available; technical checks do not constitute human or redistribution approval.",
-    "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "p_perpendicular_table",
+   "description": "Optional perpendicular pressure samples; the two-dimensional branch reuses the parallel table when absent.",
+   "units": "Pa by caller convention",
+   "shape": "None or same shape as p_parallel_table",
+   "dtype": "real array-like converted to float64 or None",
+   "required": false,
+   "default": null,
+   "constraints": "Finite nonnegative shape-matched values. Without b_grid, must exactly equal p_parallel_table after float64 conversion; near-equal distinct tables raise instead of being discarded."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.closures.tabulated_pressure_closure",
-      "symbol": "evaluate_tabulated_pressure",
-      "signature": "evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table, p_perpendicular_table=None, b_grid=None, bounds_error=True, fill_value=None)",
-      "canonical_module": "scirel.closures",
-      "canonical_symbol": "evaluate_tabulated_pressure"
-    }
+  {
+   "name": "b_grid",
+   "description": "Optional magnetic-field interpolation axis; its presence selects the two-dimensional branch.",
+   "units": "same field unit as magnetic_field, historically T",
+   "shape": "None or one-dimensional [N_B], N_B>=2",
+   "dtype": "real array-like converted to float64 or None",
+   "required": false,
+   "default": null,
+   "constraints": "When present, every value must be finite and strictly increasing. Positive field magnitude is not enforced."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
+  {
+   "name": "bounds_error",
+   "description": "Whether any query outside the selected interpolation axis or axes raises.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "Python bool or NumPy bool",
+   "required": false,
+   "default": true,
+   "constraints": "Must be boolean; default rejects out-of-domain queries."
   },
-  "example": {
-    "description": "Interpolate a two-dimensional affine pressure pair and a separate one-dimensional isotropic table.",
-    "code": "import numpy as np\nfrom scirel.closures import evaluate_tabulated_pressure\nb_axis = np.array([1.0, 2.0])\npsi_axis = np.array([0.0, 1.0])\nparallel = np.array([[2.0, 4.0], [4.0, 6.0]])\nperpendicular = np.array([[3.0, 5.0], [5.0, 7.0]])\na = evaluate_tabulated_pressure(1.5, 0.25, psi_axis, parallel, perpendicular, b_axis)\nnp.testing.assert_allclose(a['p_parallel'], 3.5)\nnp.testing.assert_allclose(a['p_perpendicular'], 4.5)\nassert a['is_isotropic'] is False\nb = evaluate_tabulated_pressure(10.0, 0.5, psi_axis, [2.0, 6.0])\nnp.testing.assert_allclose(b['p_parallel'], 4.0)\nnp.testing.assert_allclose(b['p_perpendicular'], 4.0)\nassert b['is_isotropic'] is True\nassert a['table_dimension']==2 and b['table_dimension']==1",
-    "expected": "The two-dimensional lookup returns 3.5 and 4.5 Pa, is_isotropic=False and table_dimension=2; the one-dimensional lookup returns 4 Pa in both components with is_isotropic=True and table_dimension=1."
-  },
-  "verification": {
-    "scope": [
-      "A direct test checks selected two-dimensional bilinear values against supplied pressure tables.",
-      "Direct tests check a one-dimensional isotropic limit, the reviewed two-dimensional affine example, and selected invalid fill/extrapolation cases.",
-      "Near-equal one-dimensional anisotropy rejection and exact equal-table metadata independent of two-dimensional sampling."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_tabulated_pressure_closure.py",
-      "tests/operator_contracts/test_legacy_six_absorption.py"
-    ],
-    "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
-    "known_limitations": [
-      "No positive-B or coordinate-alignment check is performed, and the historical psi unit label must not be used to infer a Wb-to-Wb/rad conversion.",
-      "Finite nonnegative tabulated values do not ensure nonnegative extrapolation; failing extrapolations raise instead of returning a physical pressure.",
-      "Exact component-table equality does not establish thermodynamic consistency or the validity of extrapolation."
-    ]
+  {
+   "name": "fill_value",
+   "description": "Constant out-of-domain pressure when bounds_error=False; None requests extrapolation in that mode.",
+   "units": "Pa when not None",
+   "shape": "scalar or None",
+   "dtype": "real scalar convertible to float or None",
+   "required": false,
+   "default": null,
+   "constraints": "When supplied, must be finite and nonnegative. With bounds_error=True, out-of-domain queries still raise."
   }
+ ],
+ "outputs": [
+  {
+   "name": "p_parallel",
+   "description": "Interpolated parallel pressure at broadcast queries.",
+   "units": "Pa by caller table convention",
+   "shape": "broadcast shape of magnetic_field and psi, including zero-dimensional scalar result",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative on successful return."
+  },
+  {
+   "name": "p_perpendicular",
+   "description": "Interpolated perpendicular pressure, or a copy of parallel pressure in the one-dimensional branch.",
+   "units": "Pa by caller table convention",
+   "shape": "same broadcast shape as p_parallel",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative on successful return."
+  },
+  {
+   "name": "is_isotropic",
+   "description": "Whether the complete supplied component tables are exactly equal after float64 conversion.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "Python bool",
+   "required": true,
+   "constraints": "True for the one-dimensional isotropic path and for equal two-dimensional component tables; unrelated to the interpolation dimension."
+  },
+  {
+   "name": "table_dimension",
+   "description": "Number of table interpolation coordinates.",
+   "shape": "scalar",
+   "dtype": "int",
+   "constraints": "1 without b_grid; 2 with b_grid.",
+   "units": "dimensionless",
+   "required": true
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite, strictly increasing interpolation axes and finite nonnegative tabulated pressures with the branch-specific shapes.",
+   "Broadcast-compatible finite query values with units and flux conventions matching the table axes."
+  ],
+  "supported": [
+   "Linear one-dimensional pressure interpolation in psi with identical returned pressure components.",
+   "Bilinear two-dimensional interpolation of supplied parallel and perpendicular pressure on a rectangular (B, psi) table, with bounded fill or extrapolation options."
+  ],
+  "excluded": [
+   "Inferring pressure tables from measurements, finding magnetic surfaces or solving magnetic force balance.",
+   "Unit conversion between historical Wb and other flux conventions, verifying spatial alignment, or proving an interpolated/extrapolated pressure law physically valid."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for invalid axis rank, length, ordering or finiteness; table shape, finiteness or negativity errors; nonboolean bounds_error; invalid fill_value; nonfinite queries; nonbroadcastable queries; or nonfinite/negative interpolated pressure. NumPy/SciPy conversion and interpolation errors may also propagate.",
+  "runtime_failure": "Out-of-domain queries raise with bounds_error=True. With extrapolation, a nonfinite or negative result is rejected after interpolation; there is no physical fallback or clipping. SciPy/NumPy errors propagate.",
+  "nonconvergence": "Not applicable; no iterative root or equilibrium solve is performed.",
+  "partial_results": "No partial mapping after an exception. Successful calls return both pressure arrays, exact component-equality metadata and table dimension."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of Caller-supplied pressure tables and magnetic-field/flux query values to interpolated gyrotropic pressure components. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.closures.tabulated_pressure_closure",
+   "symbol": "evaluate_tabulated_pressure",
+   "signature": "evaluate_tabulated_pressure(magnetic_field, psi, psi_grid, p_parallel_table, p_perpendicular_table=None, b_grid=None, bounds_error=True, fill_value=None)",
+   "canonical_module": "scirel.closures",
+   "canonical_symbol": "evaluate_tabulated_pressure"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Interpolate a two-dimensional affine pressure pair and a separate one-dimensional isotropic table.",
+  "code": "import numpy as np\nfrom scirel.closures import evaluate_tabulated_pressure\nb_axis = np.array([1.0, 2.0])\npsi_axis = np.array([0.0, 1.0])\nparallel = np.array([[2.0, 4.0], [4.0, 6.0]])\nperpendicular = np.array([[3.0, 5.0], [5.0, 7.0]])\na = evaluate_tabulated_pressure(1.5, 0.25, psi_axis, parallel, perpendicular, b_axis)\nnp.testing.assert_allclose(a['p_parallel'], 3.5)\nnp.testing.assert_allclose(a['p_perpendicular'], 4.5)\nassert a['is_isotropic'] is False\nb = evaluate_tabulated_pressure(10.0, 0.5, psi_axis, [2.0, 6.0])\nnp.testing.assert_allclose(b['p_parallel'], 4.0)\nnp.testing.assert_allclose(b['p_perpendicular'], 4.0)\nassert b['is_isotropic'] is True\nassert a['table_dimension']==2 and b['table_dimension']==1",
+  "expected": "The two-dimensional lookup returns 3.5 and 4.5 Pa, is_isotropic=False and table_dimension=2; the one-dimensional lookup returns 4 Pa in both components with is_isotropic=True and table_dimension=1."
+ },
+ "verification": {
+  "scope": [
+   "A direct test checks selected two-dimensional bilinear values against supplied pressure tables.",
+   "Direct tests check a one-dimensional isotropic limit, the reviewed two-dimensional affine example, and selected invalid fill/extrapolation cases.",
+   "Near-equal one-dimensional anisotropy rejection and exact equal-table metadata independent of two-dimensional sampling."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_tabulated_pressure_closure.py",
+   "tests/operator_contracts/test_legacy_six_absorption.py"
+  ],
+  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
+  "known_limitations": [
+   "No positive-B or coordinate-alignment check is performed, and the historical psi unit label must not be used to infer a Wb-to-Wb/rad conversion.",
+   "Finite nonnegative tabulated values do not ensure nonnegative extrapolation; failing extrapolations raise instead of returning a physical pressure.",
+   "Exact component-table equality does not establish thermodynamic consistency or the validity of extrapolation."
+  ]
+ }
 }

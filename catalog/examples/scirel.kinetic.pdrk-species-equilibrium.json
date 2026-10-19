@@ -126,17 +126,16 @@
     "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
   },
   "provenance": {
-    "lineage_summary": "Derived from Hua-sheng Xie PDRK current implementation through fixed preprocessing and source-fidelity preservation, followed by explicit scientific corrections to field gauge, eigenpair state, signed-kz causality, perpendicular moments and J12 table precision.",
+    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
     "source_kinds": [
-      "upstream scientific implementation",
-      "supplied loss-cone derivation",
-      "independent velocity-integral and analytic qualification"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "bundled native relation"
     ],
     "public_references": [
-      "https://github.com/hsxie/pdrk",
-      "https://github.com/hsxie/pdrk/blob/master/doc/pdrk_loss_cone_doc_181027.pdf"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "Explicit upstream redistribution grant remains unresolved; local technical validation is not human publication approval."
+    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
   },
   "public_api": {
     "python": {
@@ -152,7 +151,7 @@
   "example": {
     "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
     "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nassert int(eq.state['S'].item())==2\n",
-    "expected": "Assertions succeed for a compatible installation with Octave. This demonstrates the declared operation, not global scientific or visual acceptance."
+    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
   },
   "verification": {
     "scope": [
@@ -162,11 +161,12 @@
     "tests": [
       "tests/operator_contracts/test_pdrk_magnetized.py"
     ],
-    "evidence_ceiling": "Bounded scientific qualification; final exact public signature and canonical example validation are required before catalog exposure.",
+    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
     "known_limitations": [
       "Local technical development; human scientific endorsement and publication clearance remain pending.",
       "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
-      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance."
+      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
     ]
   }
 }

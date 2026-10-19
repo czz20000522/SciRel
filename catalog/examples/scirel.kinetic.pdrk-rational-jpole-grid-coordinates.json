@@ -67,17 +67,16 @@
     "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
   },
   "provenance": {
-    "lineage_summary": "PDRK upstream, frozen 2018-fixed legacy D0, faithfully packaged D1, then explicit D2 finite-Harris scaling, signed-wavevector causality, exact-axis Maxwell and high-precision J12 corrections. Original source aliases and plots remain attributable evidence.",
+    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
     "source_kinds": [
-      "MATLAB/Octave source",
-      "Independent velocity-integral/analytic relations",
-      "High-precision numerical derivation"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "bundled native relation"
     ],
     "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology18 (2016).",
-      "PDRK source documentation and2018 correction notes."
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "Original-source redistribution license remains unverified; this scientific record does not grant permission."
+    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
   },
   "public_api": {
     "python": {
@@ -91,9 +90,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Bounded executable use of the actual declared scientific ports.",
+    "description": "Run the declared PDRK relation with its native-backed scientific ports.",
     "code": "from scirel.kinetic.pdrk.rational import jpole_grid_coordinates\nr = jpole_grid_coordinates()['state']\nassert r['z'].shape == (101, 101)",
-    "expected": "Full retained diagnostic ndgrid orientation, without an approximation-validity certificate."
+    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
   },
   "verification": {
     "scope": [
@@ -104,12 +103,13 @@
     "tests": [
       "tests/operator_contracts/test_pdrk_rational.py"
     ],
-    "evidence_ceiling": "Bounded actual Octave8.4/Python3.14 scientific qualification of the frozen derived component. Public integration/D3 and human admission remain separate; no universal approximation or rigorous interval claim.",
+    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
     "known_limitations": [
-      "Original license unverified; MATLAB execution NOT_RUN.",
+      "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
       "Finite-J/finite-N physics must be qualified for a new requested regime.",
       "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending."
+      "Human scientific and plot approval pending.",
+      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
     ]
   }
 }

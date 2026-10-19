@@ -88,34 +88,31 @@
   ],
   "applicability": {
     "preconditions": [
-      "Aligned finite arrays and stated scalar controls; velocity grid resolves distribution and evolution."
+      "df, vv and df0dv are finite one-dimensional vectors with identical shape and at least two entries.",
+      "dE and k are finite scalars and k is nonzero."
     ],
     "supported": [
-      "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE."
+      "Linear one-dimensional Vlasov RHS with one shared electric field."
     ],
     "excluded": [
-      "Nonlinear Vlasov evolution, mobile-ion dynamics, multidimensional modes.",
-      "Certified continuum accuracy or post-recurrence validity."
+      "Nonlinear evolution, multidimensional modes and implicit Poisson correction."
     ]
   },
   "failure_semantics": {
-    "invalid_input": "ValueError for explicitly checked shape, finiteness, scalar domain or Poisson inconsistency; unsupported Python types may propagate TypeError.",
-    "runtime_failure": "FloatingPointError for nonrepresentable distribution derivative, Poisson field, Vlasov RHS or RK4 state; other arithmetic/type failures propagate.",
-    "nonconvergence": "Finite prescribed integration only; no convergence iteration. Peak diagnostic raises ValueError below two isolated maxima; composed solver reports unavailable diagnostic.",
-    "partial_results": "No partial integration after numerical failure; composed solver retains valid evolution when only peak diagnostic is unavailable."
+    "invalid_input": "ValueError for misaligned/nonfinite vectors, non-scalar dE, or nonfinite/zero k.",
+    "runtime_failure": "FloatingPointError when the RHS contains a nonfinite value.",
+    "nonconvergence": "Not applicable; no iteration is performed.",
+    "partial_results": "No RHS vector is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "Independent equation-based Python implementation; selected scenarios/defaults bound to frozen GPDF D1 vp_* operators. See docs/evaluations/gpdf-vp-core.md for source hashes and D2 deltas. Dev9 successor of exact document SHA256 c85be6cfa695b1b68399faf4c128ae334fca1d1242da29ecf35bb1ce079921ba; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
+    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
     "source_kinds": [
-      "independent equation derivation",
-      "read-only frozen D1 scientific scenario controls",
-      "independent analytic and numerical reference tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
-    "public_references": [
-      "https://arxiv.org/abs/1211.5984",
-      "https://arxiv.org/abs/1305.6476"
-    ],
-    "license_status": "Independently authored SciRel implementation; project redistribution decision remains separate."
+    "public_references": [],
+    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {
@@ -132,8 +129,8 @@
   },
   "example": {
     "code": "from scirel.kinetic.vlasov_poisson import vp_rhs\nr=vp_rhs([1,2],1j,[-1,1],[.1,-.1],.5)\nassert r.shape == (2,)",
-    "description": "线性 Vlasov 右端的最小调用。",
-    "expected": "The stated shape or numerical assertion passes."
+    "description": "Evaluate the linear Vlasov RHS on two velocity nodes.",
+    "expected": "PASS: .venv/bin/python completed; the returned complex vector has shape (2,)."
   },
   "verification": {
     "scope": [

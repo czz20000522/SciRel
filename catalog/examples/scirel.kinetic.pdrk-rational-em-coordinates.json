@@ -114,17 +114,16 @@
     "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
   },
   "provenance": {
-    "lineage_summary": "PDRK upstream, frozen 2018-fixed legacy D0, faithfully packaged D1, then explicit D2 finite-Harris scaling, signed-wavevector causality, exact-axis Maxwell and high-precision J12 corrections. Original source aliases and plots remain attributable evidence.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "MATLAB/Octave source",
-      "Independent velocity-integral/analytic relations",
-      "High-precision numerical derivation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology18 (2016).",
-      "PDRK source documentation and2018 correction notes."
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "Original-source redistribution license remains unverified; this scientific record does not grant permission."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -140,23 +139,23 @@
   "example": {
     "description": "Bounded executable use of the actual declared scientific ports.",
     "code": "import numpy as np\nfrom scirel.kinetic.pdrk.rational import em_coordinates\nr = em_coordinates(0.1, 2.0, theta_degrees=71)\nassert np.isclose(np.hypot(r['kx'], r['kz']), 0.05)",
-    "expected": "Wavevector magnitude0.05 inverse metres from the explicit reference length2metres."
+    "expected": "For kj=0.1, cwp=2 m and theta=71 degrees, k=0.05 m^-1, kx=0.04727592877996584 m^-1, kz=0.016278407722857838 m^-1, and theta=1.239183768915974 rad."
   },
   "verification": {
     "scope": [
-      "Source-absent installed own scientific package; exact package/resource closure.",
-      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_rational.py"
     ],
-    "evidence_ceiling": "Bounded actual Octave8.4/Python3.14 scientific qualification of the frozen derived component. Public integration/D3 and human admission remain separate; no universal approximation or rigorous interval claim.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Original license unverified; MATLAB execution NOT_RUN.",
       "Finite-J/finite-N physics must be qualified for a new requested regime.",
       "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending."
+      "Human scientific and plot approval pending.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

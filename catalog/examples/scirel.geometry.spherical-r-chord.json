@@ -2,13 +2,13 @@
   "schema": "scirel.asset-document",
   "kind": "operator",
   "provenance": {
-    "lineage_summary": "Derived from the retained Pleiades D0 geometry/current source and stabilized SciRel D2 successor behavior.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived scientific implementation",
-      "bounded D2 regression evidence"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "Source lineage and MIT license evidence are retained; human release approval remains pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "version": {
     "implementation_version": "0.1.0.dev11",
@@ -16,21 +16,16 @@
   },
   "verification": {
     "scope": [
-      "Bounded rigid-geometry and coordinate invariants",
-      "Ordered current projection and source lifecycle",
-      "Full retained BRB/WHAM configuration composition at finite targets"
+      "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+      "The executable constructor example stored in this contract"
     ],
     "tests": [
       "tests/pleiades/geometry/test_native_geometry_qualification.py",
       "tests/pleiades/geometry/test_native_lifecycle.py"
     ],
-    "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
+    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
     "known_limitations": [
-      "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
-      "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
-      "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
-      "Plotting/patch, simplify/clone, multiprocessing, electrodes and persistent sweeps are excluded or unresolved.",
-      "All scientific, human and release approvals remain false."
+      "Mesh objects do not by themselves validate a physical field model or device geometry."
     ]
   },
   "asset_id": "scirel.geometry.spherical-r-chord",
@@ -103,10 +98,10 @@
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Constructor or geometry setters raise ValueError for invalid supported inputs; unavailable source additions raise NotImplementedError. Source field methods reject a missing target mesh, nonfinite currents and active-filament coincidence.",
-    "runtime_failure": "Field evaluation propagates FloatingPointError on nonrepresentable kernel results. Failed parameterized geometry setters preserve the preceding valid state.",
-    "nonconvergence": "Not applicable; direct geometry construction, transforms and static response.",
-    "partial_results": "No partial object is returned by a failed constructor. Atomic parameterized geometry setters preserve valid previous state."
+    "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+    "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
+    "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
+    "partial_results": "A failed constructor returns no mesh object."
   },
   "public_api": {
     "python": {
@@ -118,8 +113,8 @@
     }
   },
   "example": {
-    "description": "Construct a 90-degree radial chord",
-    "code": "from scirel.geometry import SphericalRChord\nm=SphericalRChord([1.0],90.)\nassert abs(m.Z[0]) < 1e-15",
-    "expected": "Cylindrical coordinates are generated with degree angle."
+    "description": "Convert a unit spherical radial point at polar angle 90 degrees to cylindrical R,Z.",
+    "code": "import numpy as np\nfrom scirel.geometry import SphericalRChord\n\nmesh = SphericalRChord([1.0], 90.0)\nnp.testing.assert_allclose(mesh.R, [1.0])\nnp.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)",
+    "expected": "The generated cylindrical coordinates are R=[1.0] m and Z=[0.0] m."
   }
 }

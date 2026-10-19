@@ -76,15 +76,15 @@
     "partial_results": "Class wrapper preserves previous mapping when a read fails."
   },
   "provenance": {
-    "lineage_summary": "D2 bounded structural successor from retained Pleiades io.py and D0 lexical EQDSK successor; source parser behavior and known raw-writer failures remain recorded. Predecessor silently ignored attached solver axes and shifted their geometry on readback. This successor rejects unrepresentable attached axes without assigning meanings to opaque header slots.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived IO implementation",
-      "source-bound lexical EQDSK fixtures"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [
       "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
     ],
-    "license_status": "Source/license evidence retained; scientific and release approval pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -100,9 +100,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Construct an empty wrapper for caller-supplied dictionary state.",
-    "code": "from scirel.io.eqdsk import EQDSK\nassert EQDSK() == {}",
-    "expected": "An empty mutable EQDSK dictionary."
+    "description": "Construct the empty mutable EQDSK mapping wrapper used for caller-supplied records.",
+    "code": "from scirel.io.eqdsk import EQDSK\n\nstate = EQDSK()\nassert state == {}\nstate[\"title\"] = \"EXAMPLE\"\nassert state[\"title\"] == \"EXAMPLE\"",
+    "expected": "EQDSK() returns an empty mutable mapping; caller fields can then be assigned."
   },
   "verification": {
     "scope": [

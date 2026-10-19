@@ -195,16 +195,16 @@
     "partial_results": "No spectrum mapping or positional result returned after failure; no file or plotting side effects."
   },
   "provenance": {
-    "lineage_summary": "Newly authored Python D2 successor of the retained PDRF 1.1 model, with independently justified scientific and interface corrections. This is not a clean-room license determination. Upstream code and prior source-fidelity evidence stay frozen; this document defines the corrected effective relation only.",
+    "lineage_summary": "Self-contained SciRel PDRF effective fluid implementation with explicit state, matrix, spectrum and scan contracts; PDRK attribution and bundled notices are recorded in licenses/pdrk/NOTICE. The effective model and tests do not claim upstream approval.",
     "source_kinds": [
-      "retained PDRF 1.1 equations and implementations",
-      "independent vector-calculus derivation and numerical validation",
-      "D2 corrected successor"
+      "SciRel implementation",
+      "published PDRF relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "H. S. Xie, Computer Physics Communications 185 (2014) 670–675, DOI:10.1016/j.cpc.2013.10.012; accompanying erratum"
+      "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
     ],
-    "license_status": "Source and paper redistribution NOT_ESTABLISHED; local authorized D2 candidate only; public distribution blocked."
+    "license_status": "PDRK/PDRF source redistribution permission remains unresolved; this is a private technical development record."
   },
   "public_api": {
     "python": {
@@ -222,22 +222,23 @@
   "example": {
     "description": "Analytic diagonal eigenspectrum.",
     "code": "import numpy as np\nfrom scirel.kinetic import solve_pdrf_spectrum\nr = solve_pdrf_spectrum(np.diag([-1j, 2j]), np.eye(2), vectors=True)\nnp.testing.assert_allclose(r['w1'], [1, -2])",
-    "expected": "Frequencies 1 and -2, with matching eigenvectors."
+    "expected": "For M=diag(-i,2i) and A=I, both returned frequency orderings were [1+0j, -2+0j] with zero residuals."
   },
   "verification": {
     "scope": [
-      "Independent analytic cold/warm temporal limits and low-frequency SI modes using separately constructed matrices.",
-      "Corresponding vector residuals, numerical method/arity coherence, stable sorting, finite matrices and precision refinement on rounded inputs."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrf_d2.py"
     ],
-    "evidence_ceiling": "Evidence supports this effective local algebraic model and its stated numerical contract in the tested Linux-amd64 Python runtime. D1 fidelity does not establish physical truth. Independent exact-revision validation and before/after observations are separately bound in the development delivery. No universal continuous-input, experimental, MATLAB, cross-platform or human approval claim.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
       "No branch tracking or unique phase/degenerate basis.",
       "No source/physical species model is inferred from arbitrary matrix inputs.",
-      "Local authorized D2 only; source/paper redistribution NOT_ESTABLISHED."
+      "Local authorized D2 only; source/paper redistribution NOT_ESTABLISHED.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

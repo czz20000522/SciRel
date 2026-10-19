@@ -123,15 +123,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development relation from the saved KN1DPy 入射中性边界通量归一化 package. Its bundle cites KN1DPy/kinetic_h.py:600-616 and kinetic_h2.py:715-731; the raw source tree was not re-read. The archived formal implementation SHA-256 is 7251bb29eca994683134966abac0a7f731baf557202db1d19fc798f70474768e. Three finite valid target cases match it exactly. SciRel enforces real finite inputs, nonnegative volume and finite derived outputs that the saved implementation did not fully check. KN1DPy's strict D1 qualification has been withdrawn; this is bounded historical development evidence, not qualified-L1 provenance or expert approval. See docs/evaluations/2026-09-28-neutral-normalization-integration.md.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "read-only digest-bound archived-source replay during integration",
-      "scientific regression tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -148,24 +147,22 @@
   },
   "example": {
     "description": "Normalize one boundary shape to a requested flux and confirm the positive-half semantics and rejections.",
-    "code": "import numpy as np\nfrom scirel.kinetic import normalize_incoming_neutral_boundary\nshape = np.ones((2, 3))\nvolume = np.ones((2, 3))\nvx = np.array([-1.0, 0.5, 1.0])\nresult, scale, initial = normalize_incoming_neutral_boundary(shape, vx, volume, 2.0, -12.0)\nassert initial == 6.0 and scale == 2.0\nassert np.all(result[:, 0] == 0.0)\ntry:\n    normalize_incoming_neutral_boundary(shape, np.array([-1.0, -0.5, 0.0]), volume, 2.0, 12.0)\nexcept ValueError as error:\n    assert 'positive incoming half' in str(error)\nelse:\n    raise AssertionError('a mesh without a positive-vx node must be rejected')",
-    "expected": "The positive half scaled to the requested flux (sign-independent scale), the negative half exactly zero; a mesh without an incoming half is rejected."
+    "code": "import numpy as np\nfrom scirel.kinetic import normalize_incoming_neutral_boundary\nshape = np.ones((2, 3))\nvolume = np.ones((2, 3))\nvx = np.array([-1.0, 0.5, 1.0])\nresult, scale, initial = normalize_incoming_neutral_boundary(shape, vx, volume, 2.0, -12.0)\nassert initial == 6.0 and scale == 2.0\nassert np.all(result[:, 0] == 0.0)\ntry:\n    normalize_incoming_neutral_boundary(shape, np.array([-1.0, -0.5, 0.0]), volume, 2.0, 12.0)\nexcept ValueError as error:\n    assert 'positive incoming half' in str(error)\nelse:\n    raise AssertionError('a mesh without a positive-vx node must be rejected')\n",
+    "expected": "Observed PASS: The positive half scaled to the requested flux (sign-independent scale), the negative half exactly zero; a mesh without an incoming half is rejected."
   },
   "verification": {
     "scope": [
       "That the returned positive-half flux integral after scaling equals the absolute value of the requested target on finite valid inputs.",
       "That the negative half is exactly zero and the scale matches the saved abs(target)/flux form.",
-      "The fail-closed contracts, including real finite inputs, nonnegative volume and finite derived outputs; zero target remains a valid zero boundary.",
-      "Read-only digest-bound archived-source replay on positive, negative and zero targets during integration."
+      "The fail-closed contracts, including real finite inputs, nonnegative volume and finite derived outputs; zero target remains a valid zero boundary."
     ],
     "tests": [
       "tests/operator_contracts/test_neutral_normalizations.py"
     ],
-    "evidence_ceiling": "Maintained tests establish the positive-half integral, scale, zero target and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement on three finite valid target cases; input and non-finite-output behavior differ as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
       "The historical function accepts some coercible non-real inputs and does not fully enforce finite quadrature or derived outputs; SciRel rejects them. A zero target is valid and produces zero scale, contrary to the intake document's positive-scale wording.",
-      "Public distribution licensing remains pending a human decision."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

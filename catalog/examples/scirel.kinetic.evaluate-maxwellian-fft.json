@@ -12,16 +12,17 @@
     "dependencies": []
   },
   "provenance": {
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "independent equation implementation",
-      "frozen private numerical data"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "public scientific literature for the stated numerical relation"
     ],
-    "lineage_summary": "GPDF frozen D0/D1 variant contracts retained; independent Python rational algorithm with explicit numerical corrections. Dev9 successor of exact document SHA256 7c2a46ab3798594c68ef089b0212435ebff990ec6675de8a61808931ea6ca141; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
-    "license_status": "Private development only; source numerical data redistribution grant NOT_ESTABLISHED; NumPy and SciPy notices retained.",
     "public_references": [
       "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
       "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476"
-    ]
+    ],
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "failure_semantics": {
     "invalid_input": "ValueError for nonfinite/empty phase points, invalid integer order or unsupported pole count.",
@@ -40,10 +41,11 @@
       "tests/operator_contracts/test_gpdf_faddeeva_independent.py",
       "tests/operator_contracts/test_gpdf_fft_scaling_correction.py"
     ],
-    "evidence_ceiling": "Validated finite grid and identities, not a uniform error certificate across the complex plane.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "Lower-plane exponential may exceed float64.",
-      "Fixed truncation error depends on phase point and order."
+      "Fixed truncation error depends on phase point and order.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   },
   "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
@@ -51,7 +53,7 @@
     "zh": "Maxwellian FFT 色散函数",
     "en": "evaluate maxwellian fft"
   },
-  "summary": "Maxwellian FFT 色散函数；保留独立默认值、截断及失败合同。",
+  "summary": "Evaluate the FFT Maxwellian dispersion approximation with its default order and declared failure contract.",
   "identity": {
     "model": "One-dimensional Maxwellian plasma response",
     "relation": "Z(z)=i sqrt(pi) w(z)",
@@ -129,7 +131,7 @@
   },
   "example": {
     "description": "Evaluate a finite upper-plane response.",
-    "code": "from scirel.kinetic import evaluate_maxwellian_fft\nimport numpy as np\nr=evaluate_maxwellian_fft(0.2+0.7j)\nassert np.isfinite(r[\"Z\"])",
-    "expected": "Finite complex response with the retained effective order."
+    "code": "from scirel.kinetic import evaluate_maxwellian_fft\nimport numpy as np\nr=evaluate_maxwellian_fft(0.2+0.7j)\nassert np.isfinite(r[\"Z\"])\n",
+    "expected": "Observed PASS: Finite complex response with the retained effective order."
   }
 }

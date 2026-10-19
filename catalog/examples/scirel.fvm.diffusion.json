@@ -83,15 +83,15 @@
     "partial_results": "No partial output returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Derived from Apache-2.0 TORAX source commit4d338d0bd3f5fd38f1a9ebb36252dcb86c33412f. SciRel preserves the conservative two-point flux relation with explicit finite-value checks. Face-to-cell is reused from the maintained scientific library.",
+    "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
     "source_kinds": [
-      "TORAX Python scientific implementation",
-      "Independent analytic/discrete numerical derivation"
+      "TORAX-derived implementation",
+      "SciRel regression tests"
     ],
     "public_references": [
       "https://github.com/google-deepmind/torax"
     ],
-    "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
+    "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -111,9 +111,9 @@
     ]
   },
   "example": {
-    "description": "Minimal analytic/invariant check",
+    "description": "Assemble diffusion terms for a unit coefficient and verify the linear profile satisfies the discrete balance.",
     "code": "import numpy as np\nfrom scirel.fvm import CellVariable,make_diffusion_terms\nv=CellVariable([.5,1.5],[0.,1.,2.],left_face_grad_constraint=1.,right_face_grad_constraint=1.)\nm,b=make_diffusion_terms([1.,1.,1.],v)\nnp.testing.assert_allclose(m.matvec(v.value)+b,0.)",
-    "expected": "Assertions complete without error."
+    "expected": "The tridiagonal operator and forcing cancel for the unit-gradient profile, giving a zero residual vector."
   },
   "verification": {
     "scope": [

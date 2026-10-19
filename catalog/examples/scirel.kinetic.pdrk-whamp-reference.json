@@ -66,16 +66,14 @@
     "partial_results": "No partial result is returned on failure."
   },
   "provenance": {
-    "lineage_summary": "PDRK loss_cone_mirror whamp_dat stored table; data retained with attribution and without inventing missing physical metadata.",
+    "lineage_summary": "SciRel provides a package-local PDRK reference-table or plotting relation; the callable preserves the stored table/adapter behavior and does not infer missing physical metadata.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "bundled reference data",
+      "direct contract tests"
     ],
-    "public_references": [
-      "https://github.com/hsxie/pdrk"
-    ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "public_references": [],
+    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
   },
   "public_api": {
     "python": {
@@ -91,7 +89,7 @@
   "example": {
     "description": "Read the stored table without assigning unstated units.",
     "code": "from scirel.kinetic.pdrk.reference import whamp_reference\nr = whamp_reference()\nassert r.state[\"whpdat\"].shape == (40, 4)",
-    "expected": "The exact attributed 40 by 4 source table."
+    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
   },
   "verification": {
     "scope": [
@@ -100,9 +98,10 @@
     "tests": [
       "tests/operator_contracts/test_pdrk_examples_support.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
     "known_limitations": [
-      "Source units, complete equilibrium and run metadata are unspecified."
+      "Source units, complete equilibrium and run metadata are unspecified.",
+      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
     ]
   }
 }

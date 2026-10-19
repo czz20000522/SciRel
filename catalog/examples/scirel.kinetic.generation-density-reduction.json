@@ -6,7 +6,7 @@
     "en": "Neutral generation-density reduction",
     "zh": "中性代际分布密度归约"
   },
-  "summary": "Reduce a (nvr, nvx, nx) neutral generation distribution to per-spatial-cell densities by the cylindrical quadrature sum of weight * distribution * dvx over both velocity axes, with the saved one-dimensional radial-weight projection path and the saved uniform-column routing.",
+  "summary": "Reduce a (nvr, nvx, nx) neutral generation distribution to per-spatial-cell densities by the cylindrical quadrature sum of weight * distribution * dvx over both velocity axes, with the one-dimensional radial-weight projection path and uniform-column routing.",
   "taxonomy": [
     "kinetic",
     "neutral-transport",
@@ -88,15 +88,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development relation from the saved KN1DPy 中性分布密度归约 package. Its bundle cites KN1DPy/kinetic_h.py:1410-1424 and kinetic_h2.py:1548-1573; the raw source tree was not re-read. The archived formal implementation SHA-256 is d11b3ece9c168f6e19df37a14aec5e46adf279f379f6bf835b0e26271cb8776c. Three finite valid weight paths match it exactly. SciRel rejects boolean, string and complex array coercions and non-finite outputs that the archived implementation accepted or returned. KN1DPy's strict D1 qualification has been withdrawn; this is bounded historical development evidence, not qualified-L1 provenance or expert approval. See docs/evaluations/2026-09-28-neutral-scale-density-integration.md.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "read-only digest-bound archived-source replay during integration",
-      "scientific regression tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -113,25 +112,23 @@
   },
   "example": {
     "description": "Reduce one random generation distribution with both saved weight forms and confirm the routing identity.",
-    "code": "import numpy as np\nfrom scirel.kinetic import reduce_generation_density\nf = np.ones((2, 2, 2))\nw2 = np.full((2, 2), 0.5)\ndx = np.array([0.5, 1.0])\nresult = reduce_generation_density(f, w2, dx)\nnp.testing.assert_allclose(result, [1.5, 1.5])\nradial = np.array([0.25, 0.75])\nuniform = np.repeat(radial[:, None], 2, axis=1)\nnp.testing.assert_array_equal(reduce_generation_density(f, uniform, dx), reduce_generation_density(f, radial, dx))\ntry:\n    reduce_generation_density(f, np.ones((2, 2)), np.array([0.5, -1.0]))\nexcept ValueError as error:\n    assert 'aligned' in str(error)\nelse:\n    raise AssertionError('a negative dvx must be rejected')",
-    "expected": "Per-cell densities matching the quadrature sum; the uniform-column routing identity holds; a negative dvx is rejected."
+    "code": "import numpy as np\nfrom scirel.kinetic import reduce_generation_density\nf = np.ones((2, 2, 2))\nw2 = np.full((2, 2), 0.5)\ndx = np.array([0.5, 1.0])\nresult = reduce_generation_density(f, w2, dx)\nnp.testing.assert_allclose(result, [1.5, 1.5])\nradial = np.array([0.25, 0.75])\nuniform = np.repeat(radial[:, None], 2, axis=1)\nnp.testing.assert_array_equal(reduce_generation_density(f, uniform, dx), reduce_generation_density(f, radial, dx))\ntry:\n    reduce_generation_density(f, np.ones((2, 2)), np.array([0.5, -1.0]))\nexcept ValueError as error:\n    assert 'aligned' in str(error)\nelse:\n    raise AssertionError('a negative dvx must be rejected')\n",
+    "expected": "Observed PASS: Per-cell densities matching the quadrature sum; the uniform-column routing identity holds; a negative dvx is rejected."
   },
   "verification": {
     "scope": [
       "That the two-dimensional-weight result equals the independent per-cell quadrature sum with the saved operation order.",
       "That the one-dimensional radial weight reproduces the saved moveaxis projection path.",
       "That the saved uniform-column routing identity holds (two paths agree on column-uniform weights).",
-      "The alignment, real-input, nonnegativity and finite-output failure contracts.",
-      "Read-only digest-bound archived-source replay at nonuniform two-dimensional, radial one-dimensional and uniform-column two-dimensional weight paths during integration."
+      "The alignment, real-input, nonnegativity and finite-output failure contracts."
     ],
     "tests": [
       "tests/operator_contracts/test_thermal_speed_and_density_reduction.py"
     ],
-    "evidence_ceiling": "Maintained tests establish the three reduction paths and declared failure behavior. Read-only digest-bound archived-source replay found exact agreement on one finite case per weight path; input coercion and overflow behavior differ as declared. This does not prove all-input source parity, qualified D1, global applicability, expert approval or release.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
       "Real-input rejection and finite-output enforcement differ from the archived implementation's coercion and overflow behavior.",
-      "Public distribution licensing remains pending a human decision."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

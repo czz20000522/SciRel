@@ -119,14 +119,13 @@
     "partial_results": "No partial result mapping is returned after a failed call; omission of the optional average when quantity is None is normal behavior."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
     "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
+      "SciRel implementation",
+      "scientific regression tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -142,9 +141,9 @@
     "dependencies": []
   },
   "example": {
-    "description": "Use constant B and quantity on a three-point polyline to check the path measure and weighted mean.",
+    "description": "Integrate dl/B and compute the B-weighted mean of a constant quantity along a three-point polyline.",
     "code": "import numpy as np\nfrom scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-1.0, 1.0, 5))\nline = np.array([[0.2, -0.5], [0.4, 0.0], [0.6, 0.5]])\nresult = compute_flux_surface_inverse_field_average(r_grid, z_grid, np.full_like(r_grid, 2.0), line, np.full_like(r_grid, 3.0))\nlength = np.linalg.norm(np.diff(line, axis=0), axis=1).sum()\nnp.testing.assert_allclose(result['dl_B'], length / 2.0)\nnp.testing.assert_allclose(result['flux_surface_average'], 3.0)",
-    "expected": "The inverse-field path measure equals polyline length divided by 2 T and the weighted mean equals the constant quantity 3."
+    "expected": "The inverse-field path measure is polyline length divided by 2 T and the weighted mean is 3.0."
   },
   "verification": {
     "scope": [

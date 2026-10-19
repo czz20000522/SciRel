@@ -118,17 +118,16 @@
     "partial_results": "Failure exposes accepted_prefix diagnostically; it is not a successful complete continuation."
   },
   "provenance": {
-    "lineage_summary": "PDRK EM1D ordered continuation with explicit state, SciPy hybr callback, generalized species, signed-k causal correction and stricter nonconvergence semantics.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://github.com/hsxie/pdrk",
-      "https://dlmf.nist.gov/7.7.E2"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -148,20 +147,21 @@
   "example": {
     "description": "Continue a small zero-density vacuum branch.",
     "code": "from scirel.kinetic.pdrk.parallel import continue_em1d\ns = dict(wps2=[0.0], vds=[0.0], vtzs=[1.0], wcs=[0.0], c2=1.0)\nr = continue_em1d(dict(state=s, k_grid=[0.2, 0.21], initial_guess=0.2+0j))\nassert len(r[\"omega\"]) == 2",
-    "expected": "Two accepted positive vacuum frequencies near the supplied wavevector magnitudes."
+    "expected": "The vacuum continuation returned k=[0.2,0.21], omega=[0.2+0j,0.21+0j], and zero scaled residuals for both accepted points."
   },
   "verification": {
     "scope": [
-      "Actual signed-grid continuation and independent Gaussian-contour root residuals.",
-      "Finite maxfev failure and false-success rejection."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_parallel.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "A continued root is seed-dependent; no uniqueness or largest-growth claim.",
-      "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1."
+      "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   },
   "graph": {

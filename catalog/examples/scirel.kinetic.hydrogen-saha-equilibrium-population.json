@@ -6,7 +6,7 @@
     "en": "Atomic-hydrogen Saha equilibrium population density",
     "zh": "原子氢Saha平衡人口密度"
   },
-  "summary": "Evaluate the saved atomic-hydrogen Saha level population from paired electron density and temperature using frozen constants.",
+  "summary": "Evaluate the declared atomic-hydrogen Saha level population from paired electron density and temperature using the implementation constants.",
   "taxonomy": [
     "kinetic",
     "population",
@@ -95,14 +95,14 @@
     "partial_results": "Never returned."
   },
   "provenance": {
-    "lineage_summary": "Development integration of intake asset scirel.kinetic.hydrogen-saha-equilibrium-population at SciRel-intake-20260925 commit 647d5dbd36404bc5e76d934a875984787e789644. The saved KN1DPy nh_saha package cites jh_related/nh_saha.py:25-46; its formal implementation SHA-256 is 38fa28ac6728cf4aaa3e98ec638b1c39435200901ba8415a444a4df8d1dee89c. Constants, scientific branch and operation order are retained on compared ordinary levels. The n_e squared formula is explicitly restricted to n_H+ = n_e, a model assumption not implied by Saha equilibrium. SciRel rejects boolean and numeric-string coercions that the intake implementation accepted, preserves integer levels above 2^53 and accepts representable Python integer levels beyond NumPy's inferred integer dtypes. KN1DPy's strict D1 qualification is withdrawn; this is bounded historical development comparison, not a qualified source freeze, expert approval or public release.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "intake development candidate and tests",
-      "independent frozen-constant formula regression"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -119,8 +119,8 @@
   },
   "example": {
     "description": "Evaluate level 2 on paired density and temperature samples.",
-    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_h_saha_equilibrium_population\ndensity = np.array([1.0e18, 1.0e19])\ntemperature = np.array([1.0, 2.0])\nactual = evaluate_h_saha_equilibrium_population(density, temperature, 2)\nexpected = density * (3.310e-28 * density) * 4.0 * np.exp(13.6057 / (4.0 * temperature)) / temperature**1.5\nnp.testing.assert_allclose(actual, expected, rtol=1e-15, atol=0.0)\nassert actual.shape == density.shape and np.all(np.isfinite(actual)) and np.all(actual > 0.0)",
-    "expected": "Two finite positive level-2 population densities in m^-3 matching the frozen Saha expression."
+    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_h_saha_equilibrium_population\ndensity = np.array([1.0e18, 1.0e19])\ntemperature = np.array([1.0, 2.0])\nactual = evaluate_h_saha_equilibrium_population(density, temperature, 2)\nexpected = density * (3.310e-28 * density) * 4.0 * np.exp(13.6057 / (4.0 * temperature)) / temperature**1.5\nnp.testing.assert_allclose(actual, expected, rtol=1e-15, atol=0.0)\nassert actual.shape == density.shape and np.all(np.isfinite(actual)) and np.all(actual > 0.0)\n",
+    "expected": "Observed PASS: Two finite positive level-2 population densities in m^-3 matching the frozen Saha expression."
   },
   "verification": {
     "scope": [
@@ -130,11 +130,12 @@
     "tests": [
       "tests/operator_contracts/test_hydrogen_saha_equilibrium_population.py"
     ],
-    "evidence_ceiling": "Maintained tests establish the coded relation and failure contract on tested samples. Historical source comparisons are bounded development evidence; no external atomic-physics oracle, qualified whole-source D1 result, expert approval or distribution license is established.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.",
       "The saved document's scalar/profile wording conflicts with its formal implementation's one-dimensional restriction; this contract follows the implementation.",
-      "Physical-reference validation_oracle_gap and pending public-distribution licensing remain."
+      "Physical-reference validation_oracle_gap and pending public-distribution licensing remain.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

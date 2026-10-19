@@ -134,15 +134,14 @@
     "partial_results": "Never returned."
   },
   "provenance": {
-    "lineage_summary": "Development variant compared with saved KN1DPy 终态分子随机与总热通量归约, kinetic_h2.py:1610-1644, 1778-1788, 1852-1853 and 2754-2755 as recorded by the saved bundle. Saved implementation SHA-256 46e9c00fb9cce1f2d6e82efa83a176a91500ea06c00de4f224aa2a337bdf7aeb. The saved bundle's strict D1 qualification is withdrawn. Finite real arithmetic retains source order; non-real coercions are a documented maintained repair. The saved operator document's generic scalar/profile, output-area-unit and example-shape statements do not describe this callable.",
+    "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent raw energy-flux oracle",
-      "existing nine-moment overlap comparison",
-      "SHA-gated historical replay"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {

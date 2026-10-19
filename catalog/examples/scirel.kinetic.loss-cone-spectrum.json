@@ -19,7 +19,7 @@
   "identity": {
     "relation": "Loss-cone pitch-cosine boundary and requested mode count to fractional Legendre angular eigenpairs",
     "direction": "(xi_tp, mode_count, grid_points, backend) -> xi, degrees, eigenvalues, eigenfunctions, backend",
-    "definition": "Solve -[(1-xi^2)u′]′=lambda*u, u(0)=1, u′(0)=0, u(xi_tp)=0. Order roots through the continuous Sturm phase theta′=sqrt(lambda)[cos(theta)^2/(1-xi^2)+sin(theta)^2], theta(0)=pi/2, targeting theta(xi_tp)=(j+1)pi. Rayleigh bounds from p(xi)<=1 bracket each root. Evaluate u through an independent scaled linear initial-value equation; it is the regular even 2F1(-nu/2,(nu+1)/2;1/2;xi^2), lambda=nu(nu+1). Integer degrees are retained. There is no finite polynomial truncation.",
+    "definition": "Solve -[(1-xi^2)u′]′=lambda*u, u(0)=1, u′(0)=0, u(xi_tp)=0. Order roots through the continuous Sturm phase theta′=sqrt(lambda)[cos(theta)^2/(1-xi^2)+sin(theta)^2], theta(0)=pi/2, targeting theta(xi_tp)=(j+1)pi. Rayleigh bounds from p(xi)<=1 bracket each root. Evaluate u through an independent scaled linear initial-value equation; it is the regular even 2F1(-nu/2,(nu+1)/2;1/2;xi^2), lambda=nu(nu+1). Degrees are fractional in general; integer degrees are retained when a root coincides with one. There is no finite polynomial truncation.",
     "model": "Regular self-adjoint Neumann/Dirichlet angular Sturm-Liouville problem; no distribution or kinetic evolution is solved.",
     "geometry": "One-dimensional pitch-cosine interval from the symmetry endpoint xi=0 toward a loss-cone boundary at xi_tp",
     "coordinates": "Dimensionless pitch cosine xi; eigenfunctions are columns in increasing eigenvalue order.",
@@ -139,7 +139,7 @@
       "Finite interior xi_tp and valid integer counts."
     ],
     "supported": [
-      "The lowest ordered angular modes, including integer degrees and small loss-cone intervals."
+      "The lowest ordered angular modes, including integer-root cases and small loss-cone intervals."
     ],
     "excluded": [
       "Physical population validation, transport, global equilibrium or an arbitrarily large mode-count performance guarantee."
@@ -152,16 +152,16 @@
     "partial_results": "None."
   },
   "provenance": {
-    "lineage_summary": "Scientific correction of the local SciRel Pleiades-extension candidate. The retrieved historical extension does not establish an exact original-source mapping for this asset. The changed mathematical definitions are stated here; numerical agreement with an earlier candidate is not a correctness argument.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
     "source_kinds": [
-      "local SciRel implementation",
-      "explicit mathematical derivation",
-      "primary scientific references"
+      "SciRel implementation",
+      "mathematical derivation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://arxiv.org/html/2509.17288v4"
+      "Frank and Egedal, arXiv:2509.17288 (2025)."
     ],
-    "license_status": "Original-source mapping and applicable distribution licensing must be retained with the selected distribution; no article text or reference implementation is bundled by this document."
+    "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -179,21 +179,21 @@
   "example": {
     "description": "Recover the exact lowest integer mode at xi_tp=1/sqrt(3).",
     "code": "import numpy as np\nfrom scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum\nr=solve_loss_cone_spectrum(1/np.sqrt(3),2,grid_points=40)\nnp.testing.assert_allclose(r['eigenvalues'][0],6.,rtol=1e-10)\nnp.testing.assert_allclose(r['eigenfunctions'][:,0],1-3*r['xi']**2,atol=2e-10)\nassert np.max(np.abs(r['boundary_residuals']))<2e-8",
-    "expected": "The lowest eigenvalue is 6 with normalized eigenfunction 1-3*xi^2; no integer-root omission."
+    "expected": "At xi_tp=1/sqrt(3), the first two eigenvalues were 6.0 and 58.08747396, with endpoint residuals below 8e-14; the first eigenfunction matches 1-3*xi^2 within the example tolerance."
   },
   "verification": {
     "scope": [
-      "Integer-mode failure regression for both legacy backend names.",
-      "Independent linear shooting and 60-digit hypergeometric endpoint checks across xi_tp=1e-4 to 0.9999, up to fourteen modes.",
-      "Normalized orthogonality and independent finite-volume mesh refinement."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
     ],
-    "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Numerical residual checks are finite precision; the endpoint xi_tp=1 is excluded by the singular differential operator.",
-      "The legacy backend names no longer request a truncated approximation."
+      "The legacy backend names no longer request a truncated approximation.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

@@ -1,2250 +1,2249 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-  "kind": "task_graph",
-  "title": {
-    "en": "Reduced Hall anisotropic Picard equilibrium",
-    "zh": "约化 Hall 各向异性 Picard 平衡"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
+ "kind": "task_graph",
+ "title": {
+  "en": "Reduced Hall anisotropic Picard equilibrium",
+  "zh": "约化 Hall 各向异性 Picard 平衡"
+ },
+ "summary": "Iterate an axisymmetric flux through a caller-owned pressure closure, reduced Hall drift/current relation and dense Green update; reevaluate the terminal state and return bounded convergence and compatibility diagnostics.",
+ "taxonomy": [
+  "equilibrium",
+  "anisotropic-pressure",
+  "hall",
+  "axisymmetric",
+  "picard"
+ ],
+ "aliases": [
+  "reduced Hall magnetic feedback"
+ ],
+ "identity": {
+  "relation": "caller-supplied pressure state and reduced Hall current to axisymmetric Green-feedback magnetic flux",
+  "direction": "R-Z grid, vacuum flux, dense Green response, pressure_closure and ion properties -> terminal flux, Hall state, field, pressure and diagnostics",
+  "definition": "Starting from a copy of psi_vac and zero prior cell currents, each outer step derives B from the current psi, checks the step field floor, calls pressure_closure(B,psi), validates and broadcasts the primary pressures, selects active cells, computes reduced-Hall J_phi and drifts, then applies a flux-relaxed Green update. The outer loop stops at relative_psi_change <= tol or maxiter. On the returned psi it repeats field, closure, pressure shape coercion, Hall and cell-current evaluation, then applies active-cell firehose and optional strict parallel-force/generalized-Ohm compatibility checks. The terminal path does not repeat the step field-floor or graph-level pressure nonnegativity gate; the Hall leaf still checks pressure finiteness and its optional ion-pressure state. The Hall Operator may run its own bounded local inertia iteration inside each evaluation.",
+  "model": "axisymmetric reduced Hall and gyrotropic-pressure Picard feedback with caller-bound closure",
+  "geometry": "rectilinear cylindrical R-Z mesh, at least three nodes on each axis",
+  "coordinates": "arrays indexed [Z,R]; dense Green response follows the bound Picard update's C-order cell-current convention",
+  "boundary": "The field Operator applies its axis and one-sided grid-derivative rules. The graph performs no free-boundary reconstruction; vacuum flux and Green response are caller supplied.",
+  "assumptions": [
+   "The caller pressure_closure(B,psi) interprets psi=R A_phi in Wb/rad and supplies a physically compatible state, including ion_density, electron_pressure and electrostatic_potential needed by the Hall leaf.",
+   "The dense Green matrix maps cell currents in A to psi=R A_phi in Wb/rad on the same grid; no 2*pi conversion occurs inside the graph.",
+   "A pressure closure, mask callable and control values must remain meaningful on each iterated and terminal state; this graph does not independently certify their physical model.",
+   "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Cylindrical radius mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same two-dimensional rectilinear shape as z_grid and psi_vac; strictly increasing radial axis, at least three columns. The bound field/Hall leaves additionally require nonnegative R."
   },
-  "summary": "Iterate an axisymmetric flux through a caller-owned pressure closure, reduced Hall drift/current relation and dense Green update; reevaluate the terminal state and return bounded convergence and compatibility diagnostics.",
-  "taxonomy": [
-    "equilibrium",
-    "anisotropic-pressure",
-    "hall",
-    "axisymmetric",
-    "picard"
-  ],
-  "aliases": [
-    "reduced Hall magnetic feedback"
-  ],
-  "identity": {
-    "relation": "caller-supplied pressure state and reduced Hall current to axisymmetric Green-feedback magnetic flux",
-    "direction": "R-Z grid, vacuum flux, dense Green response, pressure_closure and ion properties -> terminal flux, Hall state, field, pressure and diagnostics",
-    "definition": "Starting from a copy of psi_vac and zero prior cell currents, each outer step derives B from the current psi, checks the step field floor, calls pressure_closure(B,psi), validates and broadcasts the primary pressures, selects active cells, computes reduced-Hall J_phi and drifts, then applies a flux-relaxed Green update. The outer loop stops at relative_psi_change <= tol or maxiter. On the returned psi it repeats field, closure, pressure shape coercion, Hall and cell-current evaluation, then applies active-cell firehose and optional strict parallel-force/generalized-Ohm compatibility checks. The terminal path does not repeat the step field-floor or graph-level pressure nonnegativity gate; the Hall leaf still checks pressure finiteness and its optional ion-pressure state. The Hall Operator may run its own bounded local inertia iteration inside each evaluation.",
-    "model": "axisymmetric reduced Hall and gyrotropic-pressure Picard feedback with caller-bound closure",
-    "geometry": "rectilinear cylindrical R-Z mesh, at least three nodes on each axis",
-    "coordinates": "arrays indexed [Z,R]; dense Green response follows the bound Picard update's C-order cell-current convention",
-    "boundary": "The field Operator applies its axis and one-sided grid-derivative rules. The graph performs no free-boundary reconstruction; vacuum flux and Green response are caller supplied.",
-    "assumptions": [
-      "The caller pressure_closure(B,psi) interprets psi=R A_phi in Wb/rad and supplies a physically compatible state, including ion_density, electron_pressure and electrostatic_potential needed by the Hall leaf.",
-      "The dense Green matrix maps cell currents in A to psi=R A_phi in Wb/rad on the same grid; no 2*pi conversion occurs inside the graph.",
-      "A pressure closure, mask callable and control values must remain meaningful on each iterated and terminal state; this graph does not independently certify their physical model.",
-      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
-    ]
+  {
+   "name": "z_grid",
+   "description": "Axial coordinate mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Strictly increasing rectilinear axial axis, at least three rows; same shape as r_grid and psi_vac."
   },
-  "inputs": [
-    {
-      "name": "r_grid",
-      "description": "Cylindrical radius mesh.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same two-dimensional rectilinear shape as z_grid and psi_vac; strictly increasing radial axis, at least three columns. The bound field/Hall leaves additionally require nonnegative R."
-    },
-    {
-      "name": "z_grid",
-      "description": "Axial coordinate mesh.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Strictly increasing rectilinear axial axis, at least three rows; same shape as r_grid and psi_vac."
-    },
-    {
-      "name": "psi_vac",
-      "description": "Vacuum psi=R A_phi and initial evolving state.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same shape as the grid; copied before iteration. Full linked flux requires an explicit 2*pi conversion outside this graph."
-    },
-    {
-      "name": "g_psi",
-      "description": "Dense cell-current-to-psi Green response.",
-      "units": "Wb/rad/A",
-      "shape": "[N_Z*N_R,N_Z*N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Finite exact square shape, with the Picard leaf's C-order grid mapping and no embedded 2*pi or cell-area factor."
-    },
-    {
-      "name": "pressure_closure",
-      "description": "Caller-owned callable returning pressure and Hall species state for each B and psi=R A_phi.",
-      "units": "output pressure Pa; input B T and psi Wb/rad",
-      "shape": "callable(B,psi) -> mapping",
-      "dtype": "Python callable",
-      "required": true,
-      "constraints": "Must interpret psi in Wb/rad and return p_parallel and p_perpendicular, scalar or exact-grid nonnegative finite Pa values, plus required Hall leaf keys ion_density (m^-3), electron_pressure (Pa) and electrostatic_potential (V); optional species pressures follow the Hall leaf contract."
-    },
-    {
-      "name": "ion_mass_kg",
-      "description": "Positive ion mass passed to the Hall leaf.",
-      "units": "kg",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": true,
-      "constraints": "Strictly positive in the bound Hall leaf."
-    },
-    {
-      "name": "ion_charge_c",
-      "description": "Positive ion charge magnitude passed to the Hall leaf.",
-      "units": "C",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": true,
-      "constraints": "Strictly positive in the bound Hall leaf."
-    },
-    {
-      "name": "tol",
-      "description": "Outer relative flux-change stopping threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1e-08,
-      "constraints": "The graph checks finiteness but not positivity; choose a positive value for the intended stopping criterion."
-    },
-    {
-      "name": "maxiter",
-      "description": "Maximum outer Picard updates.",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "integer scalar",
-      "required": false,
-      "default": 200,
-      "constraints": "Integer >= 1; no automatic retry beyond this bound."
-    },
-    {
-      "name": "relax",
-      "description": "Previous-flux retention weight in the Green step.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.5,
-      "constraints": "0 <= value < 1; applied to flux, not raw cell currents."
-    },
-    {
-      "name": "minimum_field",
-      "description": "Minimum acceptable poloidal field magnitude during outer updates.",
-      "units": "T",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1e-08,
-      "constraints": "Strictly positive; each iteration checks B before invoking the pressure closure. The terminal reevaluation does not repeat this gate."
-    },
-    {
-      "name": "minimum_firehose_margin",
-      "description": "Terminal active-cell firehose/tension threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.0,
-      "constraints": "If nonnegative, terminal active cells with margin <= this threshold cause FloatingPointError; a negative value disables this check."
-    },
-    {
-      "name": "plasma_mask",
-      "description": "Fixed active cells or caller policy evaluated at each B,psi.",
-      "units": "boolean",
-      "shape": "[N_Z,N_R], callable(B,psi)->[N_Z,N_R], or null",
-      "dtype": "boolean array-like, Python callable or None",
-      "required": false,
-      "default": null,
-      "constraints": "Null selects all cells; fixed/callable masks must match the grid shape. Hall drift further excludes axis, low-density and unresolved-field cells."
-    },
-    {
-      "name": "hall_multiplier",
-      "description": "Multiplier passed to the reduced Hall leaf.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1.0,
-      "constraints": "Nonnegative."
-    },
-    {
-      "name": "include_toroidal_inertia",
-      "description": "Enable the Hall leaf's local toroidal-inertia correction.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": false,
-      "default": true,
-      "constraints": "Actual boolean scalar, not numeric 0/1."
-    },
-    {
-      "name": "hall_density_floor_fraction",
-      "description": "Peak active-density fraction defining Hall drift support.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.1,
-      "constraints": "0 <= value < 1."
-    },
-    {
-      "name": "maximum_inertial_mach",
-      "description": "Local ion-drift Mach cap.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.5,
-      "constraints": "Strictly positive."
-    },
-    {
-      "name": "inertia_relax",
-      "description": "Previous-current weight inside the Hall leaf's local iteration.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.5,
-      "constraints": "0 <= value < 1."
-    },
-    {
-      "name": "inertia_tolerance",
-      "description": "Local inertia current-change tolerance.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 1e-10,
-      "constraints": "Strictly positive."
-    },
-    {
-      "name": "inertia_max_iterations",
-      "description": "Local inertia iteration bound per Hall call.",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "integer scalar",
-      "required": false,
-      "default": 80,
-      "constraints": "Integer >= 1; local nonconvergence raises rather than returning the outer graph state."
-    },
-    {
-      "name": "compatibility_tol",
-      "description": "Terminal parallel-momentum error threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.05,
-      "constraints": "Nonnegative; exceedance adds a message and raises only if strict_compatibility is true."
-    },
-    {
-      "name": "ohm_tolerance",
-      "description": "Terminal normalized generalized-Ohm error threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": false,
-      "default": 0.05,
-      "constraints": "Strictly positive; exceedance adds a message and raises only if strict_compatibility is true."
-    },
-    {
-      "name": "strict_compatibility",
-      "description": "Reject terminal compatibility exceedance instead of returning messages.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": false,
-      "default": true,
-      "constraints": "Actual boolean scalar, not numeric 0/1; does not disable the separate firehose check."
-    },
-    {
-      "name": "cell_edges",
-      "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "units": "m",
-      "shape": "(N_R+1, N_Z+1) arrays or None",
-      "dtype": "pair of finite arrays or None",
-      "required": false,
-      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "psi",
-      "description": "Last psi=R A_phi state after one or more bounded Picard updates.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Terminal field, closure and Hall state are recomputed at this psi."
-    },
-    {
-      "name": "plasma_cell_currents",
-      "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
-      "units": "A",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
-    },
-    {
-      "name": "J_phi",
-      "description": "Terminal reduced-Hall toroidal current density.",
-      "units": "A/m^2",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Hall leaf zeros cells outside plasma_mask."
-    },
-    {
-      "name": "B_R",
-      "description": "Terminal radial poloidal magnetic field.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Derived from returned psi."
-    },
-    {
-      "name": "B_Z",
-      "description": "Terminal axial poloidal magnetic field.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Derived from returned psi."
-    },
-    {
-      "name": "B",
-      "description": "Terminal poloidal-field magnitude.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Terminal recomputation does not independently check minimum_field."
-    },
-    {
-      "name": "p_parallel",
-      "description": "Terminal caller-closure parallel pressure after scalar broadcast.",
-      "units": "Pa",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Grid-shaped and checked finite by the Hall leaf; the graph-level nonnegative pressure gate is not repeated at terminal evaluation."
-    },
-    {
-      "name": "p_perpendicular",
-      "description": "Terminal caller-closure perpendicular pressure after scalar broadcast.",
-      "units": "Pa",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Grid-shaped and checked finite by the Hall leaf; the graph-level nonnegative pressure gate is not repeated at terminal evaluation."
-    },
-    {
-      "name": "parallel_force",
-      "description": "Terminal Hall target force projected along the field.",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Diagnostic from hall_state."
-    },
-    {
-      "name": "force_R",
-      "description": "Terminal radial target force including any centrifugal correction.",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "From hall_state, not necessarily the uncorrected pressure force."
-    },
-    {
-      "name": "force_Z",
-      "description": "Terminal axial target force.",
-      "units": "Pa/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "From hall_state."
-    },
-    {
-      "name": "ion_toroidal_velocity",
-      "description": "Terminal Hall ion toroidal drift.",
-      "units": "m/s",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Zero outside Hall-active cells."
-    },
-    {
-      "name": "electron_toroidal_velocity",
-      "description": "Terminal Hall electron toroidal drift.",
-      "units": "m/s",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Zero outside Hall-active cells."
-    },
-    {
-      "name": "electric_field_R",
-      "description": "Terminal radial electrostatic field from the Hall leaf.",
-      "units": "V/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Negative radial gradient of caller potential."
-    },
-    {
-      "name": "electric_field_Z",
-      "description": "Terminal axial electrostatic field from the Hall leaf.",
-      "units": "V/m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Negative axial gradient of caller potential."
-    },
-    {
-      "name": "hall_state",
-      "description": "Complete terminal reduced-Hall Operator result including local masks and diagnostics.",
-      "units": "mixed SI",
-      "shape": "mapping",
-      "dtype": "Python mapping",
-      "required": true,
-      "constraints": "Not a separate published asset; follows the bound Hall leaf's output contract."
-    },
-    {
-      "name": "converged",
-      "description": "True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes).",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "Relaxed stagnation alone does not establish convergence."
-    },
-    {
-      "name": "iterations",
-      "description": "Executed outer Picard update count.",
-      "units": "count",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "Between one and maxiter inclusive."
-    },
-    {
-      "name": "relative_psi_change",
-      "description": "Last outer update's relative flux change.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Uses the bound Picard leaf's norm convention."
-    },
-    {
-      "name": "parallel_force_error",
-      "description": "Terminal Hall parallel-force error fraction.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Compared to compatibility_tol for optional strict rejection."
-    },
-    {
-      "name": "generalized_ohm_error",
-      "description": "Terminal normalized generalized-Ohm residual.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Compared to ohm_tolerance for optional strict rejection."
-    },
-    {
-      "name": "closure_state",
-      "description": "Unmodified mapping returned by the terminal caller closure.",
-      "units": "mixed SI",
-      "shape": "mapping",
-      "dtype": "Python mapping",
-      "required": true,
-      "constraints": "Primary scalar pressures may remain scalar here even though p_parallel and p_perpendicular output fields were broadcast."
-    },
-    {
-      "name": "firehose_margin",
-      "description": "Terminal Hall firehose/tension margin.",
-      "units": "dimensionless",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Checked on terminal active cells only when minimum_firehose_margin >= 0."
-    },
-    {
-      "name": "compatibility_messages",
-      "description": "Messages for parallel-momentum or generalized-Ohm threshold exceedance.",
-      "units": "text",
-      "shape": "list[string]",
-      "dtype": "Python list of strings",
-      "required": true,
-      "constraints": "Can be nonempty on a successful result only when strict_compatibility is false."
-    },
-    {
-      "name": "iteration_history",
-      "description": "Per-update flux/current changes and generalized-Ohm error.",
-      "units": "mixed dimensionless diagnostics",
-      "shape": "[iterations] list[mapping]",
-      "dtype": "Python list of mappings",
-      "required": true,
-      "constraints": "Each item has iteration, relative_psi_change, relative_current_change and generalized_ohm_error."
-    },
-    {
-      "name": "fixed_point_residual",
-      "description": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol.",
-      "units": "1",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "A compatible caller pressure_closure supplies both primary pressures and Hall species-state fields at each iterated and terminal field.",
-      "The caller Green response matches the grid and cell-current convention of the Picard leaf.",
-      "Iteration and returned terminal fields must remain at or above minimum_field; the numerical threshold does not by itself establish physical validity of the field or Hall diagnostics."
-    ],
-    "supported": [
-      "Bounded axisymmetric reduced-Hall magnetic feedback with selected gyrotropic pressure and an explicit caller-controlled closure and mask policy.",
-      "After terminal field, pressure closure, Hall drift and flux-map reevaluation, reject a terminal field below minimum_field before returning; earlier callback or dependency failures still propagate."
-    ],
-    "excluded": [
-      "A built-in kinetic pressure model, density evolution, free-boundary response or non-axisymmetric equilibrium.",
-      "A guarantee of outer convergence, local inertia convergence, compatibility or physical correctness for arbitrary caller closures."
-    ]
+  {
+   "name": "psi_vac",
+   "description": "Vacuum psi=R A_phi and initial evolving state.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same shape as the grid; copied before iteration. Full linked flux requires an explicit 2*pi conversion outside this graph."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError/TypeError for missing ports, malformed/nonfinite grid or Green response, noncallable closure, invalid controls, wrong-shaped mask or bad iteration pressure/state; bound leaf and callback exceptions propagate. The terminal path coerces pressure shape without repeating the graph-level nonnegative check, but the Hall leaf still rejects nonfinite primary pressure and invalid optional ion pressure. The graph's own grid check does not reject negative R, but the bound field/Hall leaves do.",
-    "runtime_failure": "An iteration field below minimum_field raises FloatingPointError before its closure call. Terminal active firehose margin at/below a nonnegative minimum_firehose_margin raises FloatingPointError. Strict terminal parallel-force or generalized-Ohm threshold exceedance raises ValueError. A Hall local inertia nonconvergence raises RuntimeError; other callback/dependency failures propagate. The terminal field is also checked against minimum_field.",
-    "nonconvergence": "At maxiter without meeting the outer flux threshold, reevaluate and gate the terminal state, then return converged=false with last psi and history. Local Hall inertia nonconvergence instead raises RuntimeError.",
-    "partial_results": "No mapping is returned after an exception. Outer bounded nonconvergence is a complete last-state mapping if terminal evaluation and gates succeed."
+  {
+   "name": "g_psi",
+   "description": "Dense cell-current-to-psi Green response.",
+   "units": "Wb/rad/A",
+   "shape": "[N_Z*N_R,N_Z*N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Finite exact square shape, with the Picard leaf's C-order grid mapping and no embedded 2*pi or cell-area factor."
   },
-  "provenance": {
-    "lineage_summary": "The maintained SciRel TaskGraph and direct regressions were compared with the frozen historical Pleiades development mapping and pending intake candidate. The implementation text matches intake; historical labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
-    "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel graph and leaf regressions"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "pressure_closure",
+   "description": "Caller-owned callable returning pressure and Hall species state for each B and psi=R A_phi.",
+   "units": "output pressure Pa; input B T and psi Wb/rad",
+   "shape": "callable(B,psi) -> mapping",
+   "dtype": "Python callable",
+   "required": true,
+   "constraints": "Must interpret psi in Wb/rad and return p_parallel and p_perpendicular, scalar or exact-grid nonnegative finite Pa values, plus required Hall leaf keys ion_density (m^-3), electron_pressure (Pa) and electrostatic_potential (V); optional species pressures follow the Hall leaf contract."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.equilibrium.reduced_hall_anisotropic_picard",
-      "symbol": "solve_reduced_hall_anisotropic_picard",
-      "signature": "solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs)",
-      "canonical_module": "scirel.equilibrium",
-      "canonical_symbol": "solve_reduced_hall_anisotropic_picard"
-    }
+  {
+   "name": "ion_mass_kg",
+   "description": "Positive ion mass passed to the Hall leaf.",
+   "units": "kg",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "Strictly positive in the bound Hall leaf."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.field.poloidal-field-from-flux"
-      },
-      {
-        "asset_id": "scirel.closures.reduced-hall-drift"
-      },
-      {
-        "asset_id": "scirel.equilibrium.axisymmetric-picard-update"
-      }
-    ]
+  {
+   "name": "ion_charge_c",
+   "description": "Positive ion charge magnitude passed to the Hall leaf.",
+   "units": "C",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "Strictly positive in the bound Hall leaf."
   },
-  "example": {
-    "description": "A uniform axial vacuum field, constant isotropic species state and zero Green response converge in one outer update.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import solve_reduced_hall_anisotropic_picard\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.2, 0.2, 5))\npsi_vac = r_grid**2\ndef pressure_closure(_b, psi):\n    zeros = np.zeros_like(psi)\n    return {'p_parallel': 0.0, 'p_perpendicular': 0.0, 'ion_density': np.full_like(psi, 1e18), 'electron_pressure': zeros, 'electrostatic_potential': zeros}\nresult = solve_reduced_hall_anisotropic_picard(r_grid=r_grid, z_grid=z_grid, psi_vac=psi_vac, g_psi=np.zeros((25,25)), ion_mass_kg=1.67262192595e-27, ion_charge_c=1.602176634e-19, pressure_closure=pressure_closure, maxiter=2)\nnp.testing.assert_allclose(result['psi'], psi_vac)\nnp.testing.assert_allclose(result['J_phi'], 0.0)\nassert result['converged'] and result['iterations'] == 1",
-    "expected": "Unchanged vacuum flux, zero terminal Hall current and one converged outer update."
+  {
+   "name": "tol",
+   "description": "Outer relative flux-change stopping threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-08,
+   "constraints": "The graph checks finiteness but not positivity; choose a positive value for the intended stopping criterion."
   },
-  "verification": {
-    "scope": [
-      "Hall-disabled isotropic current and vacuum-flux regression.",
-      "A Hall-disabled manufactured graph input joins a circular-filament vacuum psi, mirror-plasma Green matrix and one active current cell; it checks the nonzero flux increment against direct filament response and the returned off-source field against direct filament fields.",
-      "Nonzero Green response and previous-state feedback over a bounded two-step run.",
-      "Scalar-pressure broadcast, wrong-shape rejection, nonfinite/invalid controls and disabled firehose threshold."
-    ],
-    "tests": [
-      "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
-      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
-    ],
-    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
-    "known_limitations": [
-      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
-      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-      "No expert scientific endorsement or public release follows from this numerical successor."
-    ]
+  {
+   "name": "maxiter",
+   "description": "Maximum outer Picard updates.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "default": 200,
+   "constraints": "Integer >= 1; no automatic retry beyond this bound."
   },
-  "graph": {
-    "nodes": [
-      {
-        "id": "loop_state",
-        "kind": "controlled_glue",
-        "description": "Copy vacuum flux, initialize previous raw cell currents, count outer updates and retain bounded flux feedback.",
-        "inputs": [
-          "psi_vac",
-          "tol",
-          "maxiter",
-          "psi_next",
-          "cell_currents",
-          "relative_psi_change",
-          "relative_current_change",
-          "generalized_ohm_error",
-          "fixed_point_residual"
-        ],
-        "outputs": [
-          "psi_state",
-          "previous_currents",
-          "iterations",
-          "relative_psi_change",
-          "converged",
-          "iteration_history"
-        ]
-      },
-      {
-        "id": "field",
-        "kind": "operator",
-        "asset_id": "scirel.field.poloidal-field-from-flux",
-        "description": "Derive B_R, B_Z and |B| from each current or terminal flux state.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "psi_state"
-        ],
-        "outputs": [
-          "magnetic"
-        ]
-      },
-      {
-        "id": "field_gate",
-        "kind": "controlled_glue",
-        "description": "Reject a sub-minimum field before each iteration closure; terminal reevaluation bypasses this comparison.",
-        "inputs": [
-          "magnetic",
-          "minimum_field"
-        ],
-        "outputs": [
-          "step_magnetic"
-        ]
-      },
-      {
-        "id": "pressure_closure",
-        "kind": "caller_port",
-        "description": "Call the caller-owned pressure_closure(B,psi) on each step and terminal state.",
-        "inputs": [
-          "pressure_closure",
-          "magnetic",
-          "psi_state"
-        ],
-        "outputs": [
-          "closure_state"
-        ]
-      },
-      {
-        "id": "normalize",
-        "kind": "controlled_glue",
-        "description": "Broadcast scalar pressures or require exact-grid pressure shapes and evaluate fixed/dynamic active mask; graph-level finite/nonnegative primary pressure checks occur during iterations, while the terminal Hall leaf still checks finiteness.",
-        "inputs": [
-          "closure_state",
-          "plasma_mask",
-          "magnetic",
-          "psi_state"
-        ],
-        "outputs": [
-          "p_parallel",
-          "p_perpendicular",
-          "active_mask",
-          "closure_state"
-        ]
-      },
-      {
-        "id": "hall",
-        "kind": "operator",
-        "asset_id": "scirel.closures.reduced-hall-drift",
-        "description": "Compute reduced-Hall current, local optional inertia and diagnostics on the active domain.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "magnetic",
-          "p_parallel",
-          "p_perpendicular",
-          "closure_state",
-          "active_mask",
-          "ion_mass_kg",
-          "ion_charge_c",
-          "hall_multiplier",
-          "include_toroidal_inertia",
-          "hall_density_floor_fraction",
-          "maximum_inertial_mach",
-          "inertia_relax",
-          "inertia_tolerance",
-          "inertia_max_iterations"
-        ],
-        "outputs": [
-          "hall_state",
-          "J_phi",
-          "generalized_ohm_error"
-        ]
-      },
-      {
-        "id": "flux_update",
-        "kind": "operator",
-        "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
-        "description": "Apply dense Green response and flux relaxation during each update and recompute terminal raw cell currents.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "J_phi",
-          "psi_state",
-          "psi_vac",
-          "g_psi",
-          "relax",
-          "previous_currents",
-          "cell_edges"
-        ],
-        "outputs": [
-          "psi_next",
-          "cell_currents",
-          "relative_psi_change",
-          "relative_current_change",
-          "fixed_point_residual"
-        ]
-      },
-      {
-        "id": "terminal",
-        "kind": "controlled_glue",
-        "description": "Use terminal reevaluation of field, closure, Hall and raw currents; apply active firehose and optional strict compatibility checks, then expose the exact returned mapping.",
-        "inputs": [
-          "psi_state",
-          "magnetic",
-          "closure_state",
-          "p_parallel",
-          "p_perpendicular",
-          "hall_state",
-          "cell_currents",
-          "converged",
-          "iterations",
-          "relative_psi_change",
-          "iteration_history",
-          "active_mask",
-          "minimum_firehose_margin",
-          "compatibility_tol",
-          "ohm_tolerance",
-          "strict_compatibility",
-          "cell_edges",
-          "psi_vac",
-          "g_psi",
-          "tol",
-          "r_grid",
-          "z_grid",
-          "minimum_field"
-        ],
-        "outputs": [
-          "psi",
-          "plasma_cell_currents",
-          "J_phi",
-          "B_R",
-          "B_Z",
-          "B",
-          "p_parallel",
-          "p_perpendicular",
-          "parallel_force",
-          "force_R",
-          "force_Z",
-          "ion_toroidal_velocity",
-          "electron_toroidal_velocity",
-          "electric_field_R",
-          "electric_field_Z",
-          "hall_state",
-          "converged",
-          "iterations",
-          "relative_psi_change",
-          "parallel_force_error",
-          "generalized_ohm_error",
-          "closure_state",
-          "firehose_margin",
-          "compatibility_messages",
-          "iteration_history",
-          "fixed_point_residual"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "psi_vac"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "psi_vac"
-        },
-        "description": "Initial flux copy.",
-        "condition": "Initialization.",
-        "transform": "Copy.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "tol"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "tol"
-        },
-        "description": "Outer stopping threshold.",
-        "condition": "Each update; default 1e-8.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "maxiter"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "maxiter"
-        },
-        "description": "Outer iteration bound.",
-        "condition": "Each update; default 200.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "psi_state"
-        },
-        "to": {
-          "node": "field",
-          "port": "psi_state"
-        },
-        "description": "Current flux for field reconstruction.",
-        "condition": "Each step and terminal reevaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "r_grid"
-        },
-        "to": {
-          "node": "field",
-          "port": "r_grid"
-        },
-        "description": "Radius grid for field.",
-        "condition": "Every evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "field",
-          "port": "z_grid"
-        },
-        "description": "Axial grid for field.",
-        "condition": "Every evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "field",
-          "port": "magnetic"
-        },
-        "to": {
-          "node": "field_gate",
-          "port": "magnetic"
-        },
-        "description": "Step field magnitude for minimum gate.",
-        "condition": "Outer iteration only.",
-        "transform": "Inspect B.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "minimum_field"
-        },
-        "to": {
-          "node": "field_gate",
-          "port": "minimum_field"
-        },
-        "description": "Step field floor.",
-        "condition": "Outer iteration; default 1e-8 T.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "field_gate",
-          "port": "step_magnetic"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "magnetic"
-        },
-        "description": "Gated B for step closure; terminal field bypasses this gate.",
-        "condition": "Each step, with ungated terminal reevaluation.",
-        "transform": "Extract B magnitude.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "field",
-          "port": "magnetic"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "magnetic"
-        },
-        "description": "Ungated terminal B for the final closure call.",
-        "condition": "Terminal reevaluation only.",
-        "transform": "Extract B magnitude.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "pressure_closure"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "pressure_closure"
-        },
-        "description": "Caller-owned physical closure.",
-        "condition": "Each evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "psi_state"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "psi_state"
-        },
-        "description": "Current flux for closure.",
-        "condition": "Each step and terminal reevaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pressure_closure",
-          "port": "closure_state"
-        },
-        "to": {
-          "node": "normalize",
-          "port": "closure_state"
-        },
-        "description": "Caller pressure and Hall species fields.",
-        "condition": "Every evaluation.",
-        "transform": "Preserve caller mapping.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "plasma_mask"
-        },
-        "to": {
-          "node": "normalize",
-          "port": "plasma_mask"
-        },
-        "description": "Active-cell policy.",
-        "condition": "If supplied; otherwise all active.",
-        "transform": "Call on B,psi or convert fixed mask.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "field",
-          "port": "magnetic"
-        },
-        "to": {
-          "node": "normalize",
-          "port": "magnetic"
-        },
-        "description": "Current B for dynamic mask.",
-        "condition": "Every evaluation.",
-        "transform": "Extract B magnitude.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "psi_state"
-        },
-        "to": {
-          "node": "normalize",
-          "port": "psi_state"
-        },
-        "description": "Current psi for dynamic mask and shape.",
-        "condition": "Every evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "r_grid"
-        },
-        "to": {
-          "node": "hall",
-          "port": "r_grid"
-        },
-        "description": "Radius geometry.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "hall",
-          "port": "z_grid"
-        },
-        "description": "Axial geometry.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "field",
-          "port": "magnetic"
-        },
-        "to": {
-          "node": "hall",
-          "port": "magnetic"
-        },
-        "description": "Poloidal B_R and B_Z.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Extract named components.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "normalize",
-          "port": "p_parallel"
-        },
-        "to": {
-          "node": "hall",
-          "port": "p_parallel"
-        },
-        "description": "Grid-shaped parallel pressure.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "normalize",
-          "port": "p_perpendicular"
-        },
-        "to": {
-          "node": "hall",
-          "port": "p_perpendicular"
-        },
-        "description": "Grid-shaped perpendicular pressure.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "normalize",
-          "port": "closure_state"
-        },
-        "to": {
-          "node": "hall",
-          "port": "closure_state"
-        },
-        "description": "Caller ion/electron state and potential.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "normalize",
-          "port": "active_mask"
-        },
-        "to": {
-          "node": "hall",
-          "port": "active_mask"
-        },
-        "description": "Plasma support for Hall current.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Pass as plasma_mask.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ion_mass_kg"
-        },
-        "to": {
-          "node": "hall",
-          "port": "ion_mass_kg"
-        },
-        "description": "Ion mass.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ion_charge_c"
-        },
-        "to": {
-          "node": "hall",
-          "port": "ion_charge_c"
-        },
-        "description": "Ion charge.",
-        "condition": "Every Hall evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "hall_multiplier"
-        },
-        "to": {
-          "node": "hall",
-          "port": "hall_multiplier"
-        },
-        "description": "Hall multiplier.",
-        "condition": "Every Hall evaluation; default 1.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "include_toroidal_inertia"
-        },
-        "to": {
-          "node": "hall",
-          "port": "include_toroidal_inertia"
-        },
-        "description": "Local inertia switch.",
-        "condition": "Every Hall evaluation; default true.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "hall_density_floor_fraction"
-        },
-        "to": {
-          "node": "hall",
-          "port": "hall_density_floor_fraction"
-        },
-        "description": "Density floor fraction.",
-        "condition": "Every Hall evaluation; default 0.1.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "maximum_inertial_mach"
-        },
-        "to": {
-          "node": "hall",
-          "port": "maximum_inertial_mach"
-        },
-        "description": "Local drift cap.",
-        "condition": "Every Hall evaluation; default 0.5.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "inertia_relax"
-        },
-        "to": {
-          "node": "hall",
-          "port": "inertia_relax"
-        },
-        "description": "Local previous-current weight.",
-        "condition": "Every Hall evaluation; default 0.5.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "inertia_tolerance"
-        },
-        "to": {
-          "node": "hall",
-          "port": "inertia_tolerance"
-        },
-        "description": "Local stop threshold.",
-        "condition": "Every Hall evaluation; default 1e-10.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "inertia_max_iterations"
-        },
-        "to": {
-          "node": "hall",
-          "port": "inertia_max_iterations"
-        },
-        "description": "Local loop bound.",
-        "condition": "Every Hall evaluation; default 80.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "r_grid"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "r_grid"
-        },
-        "description": "Current cell radial spacing.",
-        "condition": "Every update and terminal current recomputation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "z_grid"
-        },
-        "description": "Current cell axial spacing.",
-        "condition": "Every update and terminal current recomputation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "hall",
-          "port": "J_phi"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "J_phi"
-        },
-        "description": "Masked Hall current-density field.",
-        "condition": "Every update and terminal current recomputation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "psi_state"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "psi_state"
-        },
-        "description": "Current flux for relaxed update.",
-        "condition": "Every update and terminal current recomputation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "psi_vac"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "psi_vac"
-        },
-        "description": "Vacuum contribution.",
-        "condition": "Every update and terminal current recomputation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "g_psi"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "g_psi"
-        },
-        "description": "Dense response matrix.",
-        "condition": "Every update and terminal current recomputation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "relax"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "relax"
-        },
-        "description": "Previous-flux weight.",
-        "condition": "Every update; default 0.5.",
-        "transform": "Identity or default.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "previous_currents"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "previous_currents"
-        },
-        "description": "Prior raw currents for diagnostic comparison.",
-        "condition": "Every update and terminal current recomputation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "flux_update",
-          "port": "psi_next"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "psi_next"
-        },
-        "description": "Next outer flux state.",
-        "condition": "After each Picard update.",
-        "transform": "Assign next state.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "hall_picard"
-      },
-      {
-        "from": {
-          "node": "flux_update",
-          "port": "cell_currents"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "cell_currents"
-        },
-        "description": "Raw currents retained for the next comparison.",
-        "condition": "After each Picard update.",
-        "transform": "Assign next state.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "hall_picard"
-      },
-      {
-        "from": {
-          "node": "flux_update",
-          "port": "relative_psi_change"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "relative_psi_change"
-        },
-        "description": "Flux stop diagnostic.",
-        "condition": "After each Picard update.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "hall_picard"
-      },
-      {
-        "from": {
-          "node": "flux_update",
-          "port": "relative_current_change"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "relative_current_change"
-        },
-        "description": "History current diagnostic.",
-        "condition": "After each Picard update.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "hall_picard"
-      },
-      {
-        "from": {
-          "node": "hall",
-          "port": "generalized_ohm_error"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "generalized_ohm_error"
-        },
-        "description": "History Hall diagnostic.",
-        "condition": "After each Picard update.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "hall_picard"
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "psi_state"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "psi_state"
-        },
-        "description": "Returned flux.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "field",
-          "port": "magnetic"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "magnetic"
-        },
-        "description": "Reevaluated terminal field.",
-        "condition": "After bounded stopping.",
-        "transform": "Pack named field components.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pressure_closure",
-          "port": "closure_state"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "closure_state"
-        },
-        "description": "Terminal caller state.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity; primary scalars remain scalars here.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "normalize",
-          "port": "p_parallel"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "p_parallel"
-        },
-        "description": "Broadcast terminal parallel pressure.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "normalize",
-          "port": "p_perpendicular"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "p_perpendicular"
-        },
-        "description": "Broadcast terminal perpendicular pressure.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "hall",
-          "port": "hall_state"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "hall_state"
-        },
-        "description": "Terminal Hall current, drift and errors.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "flux_update",
-          "port": "cell_currents"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "cell_currents"
-        },
-        "description": "Recomputed terminal raw currents.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "converged"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "converged"
-        },
-        "description": "Outer convergence status.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "iterations"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "iterations"
-        },
-        "description": "Executed outer update count.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "relative_psi_change"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "relative_psi_change"
-        },
-        "description": "Last outer flux change.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_state",
-          "port": "iteration_history"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "iteration_history"
-        },
-        "description": "Per-update diagnostics.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "normalize",
-          "port": "active_mask"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "active_mask"
-        },
-        "description": "Cells for terminal firehose check.",
-        "condition": "After bounded stopping.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "minimum_firehose_margin"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "minimum_firehose_margin"
-        },
-        "description": "Terminal firehose threshold.",
-        "condition": "If nonnegative; default 0.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "compatibility_tol"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "compatibility_tol"
-        },
-        "description": "Terminal momentum threshold.",
-        "condition": "Terminal check; default 0.05.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ohm_tolerance"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "ohm_tolerance"
-        },
-        "description": "Terminal Ohm threshold.",
-        "condition": "Terminal check; default 0.05.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "strict_compatibility"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "strict_compatibility"
-        },
-        "description": "Terminal compatibility rejection switch.",
-        "condition": "Terminal check; default true.",
-        "transform": "Identity or default.",
-        "kind": "control",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "psi"
-        },
-        "to": {
-          "node": "$output",
-          "port": "psi"
-        },
-        "description": "Returned flux.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "plasma_cell_currents"
-        },
-        "to": {
-          "node": "$output",
-          "port": "plasma_cell_currents"
-        },
-        "description": "Terminal cell currents.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "J_phi"
-        },
-        "to": {
-          "node": "$output",
-          "port": "J_phi"
-        },
-        "description": "Terminal Hall current.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "B_R"
-        },
-        "to": {
-          "node": "$output",
-          "port": "B_R"
-        },
-        "description": "Terminal radial field.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "B_Z"
-        },
-        "to": {
-          "node": "$output",
-          "port": "B_Z"
-        },
-        "description": "Terminal axial field.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "B"
-        },
-        "to": {
-          "node": "$output",
-          "port": "B"
-        },
-        "description": "Terminal field magnitude.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "p_parallel"
-        },
-        "to": {
-          "node": "$output",
-          "port": "p_parallel"
-        },
-        "description": "Terminal parallel pressure.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "p_perpendicular"
-        },
-        "to": {
-          "node": "$output",
-          "port": "p_perpendicular"
-        },
-        "description": "Terminal perpendicular pressure.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "parallel_force"
-        },
-        "to": {
-          "node": "$output",
-          "port": "parallel_force"
-        },
-        "description": "Terminal parallel force.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "force_R"
-        },
-        "to": {
-          "node": "$output",
-          "port": "force_R"
-        },
-        "description": "Terminal radial target force.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "force_Z"
-        },
-        "to": {
-          "node": "$output",
-          "port": "force_Z"
-        },
-        "description": "Terminal axial target force.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "ion_toroidal_velocity"
-        },
-        "to": {
-          "node": "$output",
-          "port": "ion_toroidal_velocity"
-        },
-        "description": "Terminal ion toroidal drift.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "electron_toroidal_velocity"
-        },
-        "to": {
-          "node": "$output",
-          "port": "electron_toroidal_velocity"
-        },
-        "description": "Terminal electron toroidal drift.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "electric_field_R"
-        },
-        "to": {
-          "node": "$output",
-          "port": "electric_field_R"
-        },
-        "description": "Terminal radial electric field.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "electric_field_Z"
-        },
-        "to": {
-          "node": "$output",
-          "port": "electric_field_Z"
-        },
-        "description": "Terminal axial electric field.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "hall_state"
-        },
-        "to": {
-          "node": "$output",
-          "port": "hall_state"
-        },
-        "description": "Complete terminal Hall mapping.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "converged"
-        },
-        "to": {
-          "node": "$output",
-          "port": "converged"
-        },
-        "description": "Outer convergence status.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "iterations"
-        },
-        "to": {
-          "node": "$output",
-          "port": "iterations"
-        },
-        "description": "Outer update count.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "relative_psi_change"
-        },
-        "to": {
-          "node": "$output",
-          "port": "relative_psi_change"
-        },
-        "description": "Last outer flux change.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "parallel_force_error"
-        },
-        "to": {
-          "node": "$output",
-          "port": "parallel_force_error"
-        },
-        "description": "Parallel-force diagnostic.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "generalized_ohm_error"
-        },
-        "to": {
-          "node": "$output",
-          "port": "generalized_ohm_error"
-        },
-        "description": "Generalized-Ohm diagnostic.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "closure_state"
-        },
-        "to": {
-          "node": "$output",
-          "port": "closure_state"
-        },
-        "description": "Terminal caller closure mapping.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "firehose_margin"
-        },
-        "to": {
-          "node": "$output",
-          "port": "firehose_margin"
-        },
-        "description": "Terminal tension margin.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "compatibility_messages"
-        },
-        "to": {
-          "node": "$output",
-          "port": "compatibility_messages"
-        },
-        "description": "Threshold exceedance messages.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "iteration_history"
-        },
-        "to": {
-          "node": "$output",
-          "port": "iteration_history"
-        },
-        "description": "Per-update history.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "cell_edges"
-        },
-        "to": {
-          "node": "flux_update",
-          "port": "cell_edges"
-        },
-        "description": "Explicit cell_edges binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "cell_edges"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "cell_edges"
-        },
-        "description": "Explicit cell_edges binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "fixed_point_residual"
-        },
-        "to": {
-          "node": "$output",
-          "port": "fixed_point_residual"
-        },
-        "description": "Return the terminal fixed_point_residual.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "flux_update",
-          "port": "fixed_point_residual"
-        },
-        "to": {
-          "node": "loop_state",
-          "port": "fixed_point_residual"
-        },
-        "description": "Unrelaxed fixed-point stopping metric.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "hall_picard"
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "psi_vac"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "psi_vac"
-        },
-        "description": "Explicit psi_vac binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "g_psi"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "g_psi"
-        },
-        "description": "Explicit g_psi binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "tol"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "tol"
-        },
-        "description": "Explicit tol binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "r_grid"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "r_grid"
-        },
-        "description": "Explicit r_grid binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "z_grid"
-        },
-        "description": "Explicit z_grid binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "minimum_field"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "minimum_field"
-        },
-        "description": "Explicit minimum_field binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      }
-    ],
-    "execution": {
-      "mode": "bounded_picard_feedback_with_nested_bounded_hall_inertia",
-      "ordering": "Validate geometry and controls; per step derive field, reject sub-minimum B, invoke/normalize caller closure, select active cells, compute reduced-Hall state, apply Green flux update and record diagnostics. After stopping, derive field, invoke closure, compute Hall state and raw cell currents again, then check active firehose and optional strict compatibility. A terminal minimum-field comparison is also required. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
-      "branches": [
-        "plasma_mask is a fixed grid, callable(B,psi), or all-active default.",
-        "A negative minimum_firehose_margin disables its terminal gate.",
-        "At maxiter without flux convergence, return converged=false if terminal evaluation succeeds.",
-        "strict_compatibility=false returns compatibility_messages instead of raising for parallel-force/Ohm threshold exceedance."
-      ],
-      "state_ownership": "The graph owns a copy of evolving psi, previous raw cell currents, outer count and history. The Hall leaf owns each bounded local inertia fixed point. The caller owns pressure_closure, Green response, original inputs and optional mask policy.",
-      "failure_propagation": "Invalid graph, callback or leaf inputs abort. Iteration field floor, terminal firehose, optional strict compatibility and Hall local nonconvergence follow their documented exception paths; outer nonconvergence alone returns last state.",
-      "feedback": [
-        {
-          "id": "hall_picard",
-          "state": "psi, previous raw cell currents, last relative flux/current changes, last generalized-Ohm error, iteration count and history",
-          "initialization": "psi is a copy of psi_vac, previous currents are zeros, relative flux change is infinite, count is zero and history is empty.",
-          "update_order": "For current psi compute field, pressure closure and Hall current; use the Green leaf to form psi_next and raw cell currents; append diagnostics and replace psi/prior currents, then compare unrelaxed fixed_point_residual with tol.",
-          "continue_when": "Unrelaxed step fixed_point_residual > tol and executed count < maxiter.",
-          "stop_when": "Unrelaxed step fixed_point_residual <= tol or maxiter reached; terminal reevaluation independently determines the returned convergence flag.",
-          "iteration_bound": "Validated runtime integer maxiter >= 1; each Hall evaluation also has inertia_max_iterations >= 1",
-          "nonconvergence": "Return the reevaluated last outer state with converged=false if terminal checks succeed. A nonconverged Hall local inertia iteration raises RuntimeError instead."
-        }
-      ]
-    }
+  {
+   "name": "relax",
+   "description": "Previous-flux retention weight in the Green step.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.5,
+   "constraints": "0 <= value < 1; applied to flux, not raw cell currents."
+  },
+  {
+   "name": "minimum_field",
+   "description": "Minimum acceptable poloidal field magnitude during outer updates.",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-08,
+   "constraints": "Strictly positive; each iteration checks B before invoking the pressure closure. The terminal reevaluation does not repeat this gate."
+  },
+  {
+   "name": "minimum_firehose_margin",
+   "description": "Terminal active-cell firehose/tension threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.0,
+   "constraints": "If nonnegative, terminal active cells with margin <= this threshold cause FloatingPointError; a negative value disables this check."
+  },
+  {
+   "name": "plasma_mask",
+   "description": "Fixed active cells or caller policy evaluated at each B,psi.",
+   "units": "boolean",
+   "shape": "[N_Z,N_R], callable(B,psi)->[N_Z,N_R], or null",
+   "dtype": "boolean array-like, Python callable or None",
+   "required": false,
+   "default": null,
+   "constraints": "Null selects all cells; fixed/callable masks must match the grid shape. Hall drift further excludes axis, low-density and unresolved-field cells."
+  },
+  {
+   "name": "hall_multiplier",
+   "description": "Multiplier passed to the reduced Hall leaf.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1.0,
+   "constraints": "Nonnegative."
+  },
+  {
+   "name": "include_toroidal_inertia",
+   "description": "Enable the Hall leaf's local toroidal-inertia correction.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "default": true,
+   "constraints": "Actual boolean scalar, not numeric 0/1."
+  },
+  {
+   "name": "hall_density_floor_fraction",
+   "description": "Peak active-density fraction defining Hall drift support.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.1,
+   "constraints": "0 <= value < 1."
+  },
+  {
+   "name": "maximum_inertial_mach",
+   "description": "Local ion-drift Mach cap.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.5,
+   "constraints": "Strictly positive."
+  },
+  {
+   "name": "inertia_relax",
+   "description": "Previous-current weight inside the Hall leaf's local iteration.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.5,
+   "constraints": "0 <= value < 1."
+  },
+  {
+   "name": "inertia_tolerance",
+   "description": "Local inertia current-change tolerance.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-10,
+   "constraints": "Strictly positive."
+  },
+  {
+   "name": "inertia_max_iterations",
+   "description": "Local inertia iteration bound per Hall call.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "default": 80,
+   "constraints": "Integer >= 1; local nonconvergence raises rather than returning the outer graph state."
+  },
+  {
+   "name": "compatibility_tol",
+   "description": "Terminal parallel-momentum error threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.05,
+   "constraints": "Nonnegative; exceedance adds a message and raises only if strict_compatibility is true."
+  },
+  {
+   "name": "ohm_tolerance",
+   "description": "Terminal normalized generalized-Ohm error threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 0.05,
+   "constraints": "Strictly positive; exceedance adds a message and raises only if strict_compatibility is true."
+  },
+  {
+   "name": "strict_compatibility",
+   "description": "Reject terminal compatibility exceedance instead of returning messages.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "default": true,
+   "constraints": "Actual boolean scalar, not numeric 0/1; does not disable the separate firehose check."
+  },
+  {
+   "name": "cell_edges",
+   "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "units": "m",
+   "shape": "(N_R+1, N_Z+1) arrays or None",
+   "dtype": "pair of finite arrays or None",
+   "required": false,
+   "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "psi",
+   "description": "Last psi=R A_phi state after one or more bounded Picard updates.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Terminal field, closure and Hall state are recomputed at this psi."
+  },
+  {
+   "name": "plasma_cell_currents",
+   "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
+   "units": "A",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
+  },
+  {
+   "name": "J_phi",
+   "description": "Terminal reduced-Hall toroidal current density.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Hall leaf zeros cells outside plasma_mask."
+  },
+  {
+   "name": "B_R",
+   "description": "Terminal radial poloidal magnetic field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Derived from returned psi."
+  },
+  {
+   "name": "B_Z",
+   "description": "Terminal axial poloidal magnetic field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Derived from returned psi."
+  },
+  {
+   "name": "B",
+   "description": "Terminal poloidal-field magnitude.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Terminal recomputation does not independently check minimum_field."
+  },
+  {
+   "name": "p_parallel",
+   "description": "Terminal caller-closure parallel pressure after scalar broadcast.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Grid-shaped and checked finite by the Hall leaf; the graph-level nonnegative pressure gate is not repeated at terminal evaluation."
+  },
+  {
+   "name": "p_perpendicular",
+   "description": "Terminal caller-closure perpendicular pressure after scalar broadcast.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Grid-shaped and checked finite by the Hall leaf; the graph-level nonnegative pressure gate is not repeated at terminal evaluation."
+  },
+  {
+   "name": "parallel_force",
+   "description": "Terminal Hall target force projected along the field.",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Diagnostic from hall_state."
+  },
+  {
+   "name": "force_R",
+   "description": "Terminal radial target force including any centrifugal correction.",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "From hall_state, not necessarily the uncorrected pressure force."
+  },
+  {
+   "name": "force_Z",
+   "description": "Terminal axial target force.",
+   "units": "Pa/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "From hall_state."
+  },
+  {
+   "name": "ion_toroidal_velocity",
+   "description": "Terminal Hall ion toroidal drift.",
+   "units": "m/s",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero outside Hall-active cells."
+  },
+  {
+   "name": "electron_toroidal_velocity",
+   "description": "Terminal Hall electron toroidal drift.",
+   "units": "m/s",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero outside Hall-active cells."
+  },
+  {
+   "name": "electric_field_R",
+   "description": "Terminal radial electrostatic field from the Hall leaf.",
+   "units": "V/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Negative radial gradient of caller potential."
+  },
+  {
+   "name": "electric_field_Z",
+   "description": "Terminal axial electrostatic field from the Hall leaf.",
+   "units": "V/m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Negative axial gradient of caller potential."
+  },
+  {
+   "name": "hall_state",
+   "description": "Complete terminal reduced-Hall Operator result including local masks and diagnostics.",
+   "units": "mixed SI",
+   "shape": "mapping",
+   "dtype": "Python mapping",
+   "required": true,
+   "constraints": "Not a separate published asset; follows the bound Hall leaf's output contract."
+  },
+  {
+   "name": "converged",
+   "description": "True only when the terminal unrelaxed fixed-point residual passes tol (and free-boundary force compatibility passes).",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Relaxed stagnation alone does not establish convergence."
+  },
+  {
+   "name": "iterations",
+   "description": "Executed outer Picard update count.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Between one and maxiter inclusive."
+  },
+  {
+   "name": "relative_psi_change",
+   "description": "Last outer update's relative flux change.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Uses the bound Picard leaf's norm convention."
+  },
+  {
+   "name": "parallel_force_error",
+   "description": "Terminal Hall parallel-force error fraction.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Compared to compatibility_tol for optional strict rejection."
+  },
+  {
+   "name": "generalized_ohm_error",
+   "description": "Terminal normalized generalized-Ohm residual.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Compared to ohm_tolerance for optional strict rejection."
+  },
+  {
+   "name": "closure_state",
+   "description": "Unmodified mapping returned by the terminal caller closure.",
+   "units": "mixed SI",
+   "shape": "mapping",
+   "dtype": "Python mapping",
+   "required": true,
+   "constraints": "Primary scalar pressures may remain scalar here even though p_parallel and p_perpendicular output fields were broadcast."
+  },
+  {
+   "name": "firehose_margin",
+   "description": "Terminal Hall firehose/tension margin.",
+   "units": "dimensionless",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Checked on terminal active cells only when minimum_firehose_margin >= 0."
+  },
+  {
+   "name": "compatibility_messages",
+   "description": "Messages for parallel-momentum or generalized-Ohm threshold exceedance.",
+   "units": "text",
+   "shape": "list[string]",
+   "dtype": "Python list of strings",
+   "required": true,
+   "constraints": "Can be nonempty on a successful result only when strict_compatibility is false."
+  },
+  {
+   "name": "iteration_history",
+   "description": "Per-update flux/current changes and generalized-Ohm error.",
+   "units": "mixed dimensionless diagnostics",
+   "shape": "[iterations] list[mapping]",
+   "dtype": "Python list of mappings",
+   "required": true,
+   "constraints": "Each item has iteration, relative_psi_change, relative_current_change and generalized_ohm_error."
+  },
+  {
+   "name": "fixed_point_residual",
+   "description": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol.",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Unrelaxed flux-map residual recomputed at the returned terminal closure/current state; convergence requires <=tol."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "A compatible caller pressure_closure supplies both primary pressures and Hall species-state fields at each iterated and terminal field.",
+   "The caller Green response matches the grid and cell-current convention of the Picard leaf.",
+   "Iteration and returned terminal fields must remain at or above minimum_field; the numerical threshold does not by itself establish physical validity of the field or Hall diagnostics."
+  ],
+  "supported": [
+   "Bounded axisymmetric reduced-Hall magnetic feedback with selected gyrotropic pressure and an explicit caller-controlled closure and mask policy.",
+   "After terminal field, pressure closure, Hall drift and flux-map reevaluation, reject a terminal field below minimum_field before returning; earlier callback or dependency failures still propagate."
+  ],
+  "excluded": [
+   "A built-in kinetic pressure model, density evolution, free-boundary response or non-axisymmetric equilibrium.",
+   "A guarantee of outer convergence, local inertia convergence, compatibility or physical correctness for arbitrary caller closures."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError/TypeError for missing ports, malformed/nonfinite grid or Green response, noncallable closure, invalid controls, wrong-shaped mask or bad iteration pressure/state; bound leaf and callback exceptions propagate. The terminal path coerces pressure shape without repeating the graph-level nonnegative check, but the Hall leaf still rejects nonfinite primary pressure and invalid optional ion pressure. The graph's own grid check does not reject negative R, but the bound field/Hall leaves do.",
+  "runtime_failure": "An iteration field below minimum_field raises FloatingPointError before its closure call. Terminal active firehose margin at/below a nonnegative minimum_firehose_margin raises FloatingPointError. Strict terminal parallel-force or generalized-Ohm threshold exceedance raises ValueError. A Hall local inertia nonconvergence raises RuntimeError; other callback/dependency failures propagate. The terminal field is also checked against minimum_field.",
+  "nonconvergence": "At maxiter without meeting the outer flux threshold, reevaluate and gate the terminal state, then return converged=false with last psi and history. Local Hall inertia nonconvergence instead raises RuntimeError.",
+  "partial_results": "No mapping is returned after an exception. Outer bounded nonconvergence is a complete last-state mapping if terminal evaluation and gates succeed."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of caller-supplied pressure state and reduced Hall current to axisymmetric Green-feedback magnetic flux. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium.reduced_hall_anisotropic_picard",
+   "symbol": "solve_reduced_hall_anisotropic_picard",
+   "signature": "solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs)",
+   "canonical_module": "scirel.equilibrium",
+   "canonical_symbol": "solve_reduced_hall_anisotropic_picard"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.field.poloidal-field-from-flux"
+   },
+   {
+    "asset_id": "scirel.closures.reduced-hall-drift"
+   },
+   {
+    "asset_id": "scirel.equilibrium.axisymmetric-picard-update"
+   }
+  ]
+ },
+ "example": {
+  "description": "A uniform axial vacuum field, constant isotropic species state and zero Green response converge in one outer update.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import solve_reduced_hall_anisotropic_picard\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.2, 0.2, 5))\npsi_vac = r_grid**2\ndef pressure_closure(_b, psi):\n    zeros = np.zeros_like(psi)\n    return {'p_parallel': 0.0, 'p_perpendicular': 0.0, 'ion_density': np.full_like(psi, 1e18), 'electron_pressure': zeros, 'electrostatic_potential': zeros}\nresult = solve_reduced_hall_anisotropic_picard(r_grid=r_grid, z_grid=z_grid, psi_vac=psi_vac, g_psi=np.zeros((25,25)), ion_mass_kg=1.67262192595e-27, ion_charge_c=1.602176634e-19, pressure_closure=pressure_closure, maxiter=2)\nnp.testing.assert_allclose(result['psi'], psi_vac)\nnp.testing.assert_allclose(result['J_phi'], 0.0)\nassert result['converged'] and result['iterations'] == 1",
+  "expected": "Unchanged vacuum flux, zero terminal Hall current and one converged outer update."
+ },
+ "verification": {
+  "scope": [
+   "Hall-disabled isotropic current and vacuum-flux regression.",
+   "A Hall-disabled manufactured graph input joins a circular-filament vacuum psi, mirror-plasma Green matrix and one active current cell; it checks the nonzero flux increment against direct filament response and the returned off-source field against direct filament fields.",
+   "Nonzero Green response and previous-state feedback over a bounded two-step run.",
+   "Scalar-pressure broadcast, wrong-shape rejection, nonfinite/invalid controls and disabled firehose threshold."
+  ],
+  "tests": [
+   "tests/graph_contracts/reduced_hall_anisotropic_picard/test_graph_reduced_hall_anisotropic_picard.py",
+   "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "known_limitations": [
+   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+   "No expert scientific endorsement or public release follows from this numerical successor."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "loop_state",
+    "kind": "controlled_glue",
+    "description": "Copy vacuum flux, initialize previous raw cell currents, count outer updates and retain bounded flux feedback.",
+    "inputs": [
+     "psi_vac",
+     "tol",
+     "maxiter",
+     "psi_next",
+     "cell_currents",
+     "relative_psi_change",
+     "relative_current_change",
+     "generalized_ohm_error",
+     "fixed_point_residual"
+    ],
+    "outputs": [
+     "psi_state",
+     "previous_currents",
+     "iterations",
+     "relative_psi_change",
+     "converged",
+     "iteration_history"
+    ]
+   },
+   {
+    "id": "field",
+    "kind": "operator",
+    "asset_id": "scirel.field.poloidal-field-from-flux",
+    "description": "Derive B_R, B_Z and |B| from each current or terminal flux state.",
+    "inputs": [
+     "r_grid",
+     "z_grid",
+     "psi_state"
+    ],
+    "outputs": [
+     "magnetic"
+    ]
+   },
+   {
+    "id": "field_gate",
+    "kind": "controlled_glue",
+    "description": "Reject a sub-minimum field before each iteration closure; terminal reevaluation bypasses this comparison.",
+    "inputs": [
+     "magnetic",
+     "minimum_field"
+    ],
+    "outputs": [
+     "step_magnetic"
+    ]
+   },
+   {
+    "id": "pressure_closure",
+    "kind": "caller_port",
+    "description": "Call the caller-owned pressure_closure(B,psi) on each step and terminal state.",
+    "inputs": [
+     "pressure_closure",
+     "magnetic",
+     "psi_state"
+    ],
+    "outputs": [
+     "closure_state"
+    ]
+   },
+   {
+    "id": "normalize",
+    "kind": "controlled_glue",
+    "description": "Broadcast scalar pressures or require exact-grid pressure shapes and evaluate fixed/dynamic active mask; graph-level finite/nonnegative primary pressure checks occur during iterations, while the terminal Hall leaf still checks finiteness.",
+    "inputs": [
+     "closure_state",
+     "plasma_mask",
+     "magnetic",
+     "psi_state"
+    ],
+    "outputs": [
+     "p_parallel",
+     "p_perpendicular",
+     "active_mask",
+     "closure_state"
+    ]
+   },
+   {
+    "id": "hall",
+    "kind": "operator",
+    "asset_id": "scirel.closures.reduced-hall-drift",
+    "description": "Compute reduced-Hall current, local optional inertia and diagnostics on the active domain.",
+    "inputs": [
+     "r_grid",
+     "z_grid",
+     "magnetic",
+     "p_parallel",
+     "p_perpendicular",
+     "closure_state",
+     "active_mask",
+     "ion_mass_kg",
+     "ion_charge_c",
+     "hall_multiplier",
+     "include_toroidal_inertia",
+     "hall_density_floor_fraction",
+     "maximum_inertial_mach",
+     "inertia_relax",
+     "inertia_tolerance",
+     "inertia_max_iterations"
+    ],
+    "outputs": [
+     "hall_state",
+     "J_phi",
+     "generalized_ohm_error"
+    ]
+   },
+   {
+    "id": "flux_update",
+    "kind": "operator",
+    "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
+    "description": "Apply dense Green response and flux relaxation during each update and recompute terminal raw cell currents.",
+    "inputs": [
+     "r_grid",
+     "z_grid",
+     "J_phi",
+     "psi_state",
+     "psi_vac",
+     "g_psi",
+     "relax",
+     "previous_currents",
+     "cell_edges"
+    ],
+    "outputs": [
+     "psi_next",
+     "cell_currents",
+     "relative_psi_change",
+     "relative_current_change",
+     "fixed_point_residual"
+    ]
+   },
+   {
+    "id": "terminal",
+    "kind": "controlled_glue",
+    "description": "Use terminal reevaluation of field, closure, Hall and raw currents; apply active firehose and optional strict compatibility checks, then expose the exact returned mapping.",
+    "inputs": [
+     "psi_state",
+     "magnetic",
+     "closure_state",
+     "p_parallel",
+     "p_perpendicular",
+     "hall_state",
+     "cell_currents",
+     "converged",
+     "iterations",
+     "relative_psi_change",
+     "iteration_history",
+     "active_mask",
+     "minimum_firehose_margin",
+     "compatibility_tol",
+     "ohm_tolerance",
+     "strict_compatibility",
+     "cell_edges",
+     "psi_vac",
+     "g_psi",
+     "tol",
+     "r_grid",
+     "z_grid",
+     "minimum_field"
+    ],
+    "outputs": [
+     "psi",
+     "plasma_cell_currents",
+     "J_phi",
+     "B_R",
+     "B_Z",
+     "B",
+     "p_parallel",
+     "p_perpendicular",
+     "parallel_force",
+     "force_R",
+     "force_Z",
+     "ion_toroidal_velocity",
+     "electron_toroidal_velocity",
+     "electric_field_R",
+     "electric_field_Z",
+     "hall_state",
+     "converged",
+     "iterations",
+     "relative_psi_change",
+     "parallel_force_error",
+     "generalized_ohm_error",
+     "closure_state",
+     "firehose_margin",
+     "compatibility_messages",
+     "iteration_history",
+     "fixed_point_residual"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "psi_vac"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "psi_vac"
+    },
+    "description": "Initial flux copy.",
+    "condition": "Initialization.",
+    "transform": "Copy.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "tol"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "tol"
+    },
+    "description": "Outer stopping threshold.",
+    "condition": "Each update; default 1e-8.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "maxiter"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "maxiter"
+    },
+    "description": "Outer iteration bound.",
+    "condition": "Each update; default 200.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "psi_state"
+    },
+    "to": {
+     "node": "field",
+     "port": "psi_state"
+    },
+    "description": "Current flux for field reconstruction.",
+    "condition": "Each step and terminal reevaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "field",
+     "port": "r_grid"
+    },
+    "description": "Radius grid for field.",
+    "condition": "Every evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "field",
+     "port": "z_grid"
+    },
+    "description": "Axial grid for field.",
+    "condition": "Every evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "field",
+     "port": "magnetic"
+    },
+    "to": {
+     "node": "field_gate",
+     "port": "magnetic"
+    },
+    "description": "Step field magnitude for minimum gate.",
+    "condition": "Outer iteration only.",
+    "transform": "Inspect B.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "minimum_field"
+    },
+    "to": {
+     "node": "field_gate",
+     "port": "minimum_field"
+    },
+    "description": "Step field floor.",
+    "condition": "Outer iteration; default 1e-8 T.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "field_gate",
+     "port": "step_magnetic"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "magnetic"
+    },
+    "description": "Gated B for step closure; terminal field bypasses this gate.",
+    "condition": "Each step, with ungated terminal reevaluation.",
+    "transform": "Extract B magnitude.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "field",
+     "port": "magnetic"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "magnetic"
+    },
+    "description": "Ungated terminal B for the final closure call.",
+    "condition": "Terminal reevaluation only.",
+    "transform": "Extract B magnitude.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "pressure_closure"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "pressure_closure"
+    },
+    "description": "Caller-owned physical closure.",
+    "condition": "Each evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "psi_state"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "psi_state"
+    },
+    "description": "Current flux for closure.",
+    "condition": "Each step and terminal reevaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "pressure_closure",
+     "port": "closure_state"
+    },
+    "to": {
+     "node": "normalize",
+     "port": "closure_state"
+    },
+    "description": "Caller pressure and Hall species fields.",
+    "condition": "Every evaluation.",
+    "transform": "Preserve caller mapping.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "plasma_mask"
+    },
+    "to": {
+     "node": "normalize",
+     "port": "plasma_mask"
+    },
+    "description": "Active-cell policy.",
+    "condition": "If supplied; otherwise all active.",
+    "transform": "Call on B,psi or convert fixed mask.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "field",
+     "port": "magnetic"
+    },
+    "to": {
+     "node": "normalize",
+     "port": "magnetic"
+    },
+    "description": "Current B for dynamic mask.",
+    "condition": "Every evaluation.",
+    "transform": "Extract B magnitude.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "psi_state"
+    },
+    "to": {
+     "node": "normalize",
+     "port": "psi_state"
+    },
+    "description": "Current psi for dynamic mask and shape.",
+    "condition": "Every evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "hall",
+     "port": "r_grid"
+    },
+    "description": "Radius geometry.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "hall",
+     "port": "z_grid"
+    },
+    "description": "Axial geometry.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "field",
+     "port": "magnetic"
+    },
+    "to": {
+     "node": "hall",
+     "port": "magnetic"
+    },
+    "description": "Poloidal B_R and B_Z.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Extract named components.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "normalize",
+     "port": "p_parallel"
+    },
+    "to": {
+     "node": "hall",
+     "port": "p_parallel"
+    },
+    "description": "Grid-shaped parallel pressure.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "normalize",
+     "port": "p_perpendicular"
+    },
+    "to": {
+     "node": "hall",
+     "port": "p_perpendicular"
+    },
+    "description": "Grid-shaped perpendicular pressure.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "normalize",
+     "port": "closure_state"
+    },
+    "to": {
+     "node": "hall",
+     "port": "closure_state"
+    },
+    "description": "Caller ion/electron state and potential.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "normalize",
+     "port": "active_mask"
+    },
+    "to": {
+     "node": "hall",
+     "port": "active_mask"
+    },
+    "description": "Plasma support for Hall current.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Pass as plasma_mask.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ion_mass_kg"
+    },
+    "to": {
+     "node": "hall",
+     "port": "ion_mass_kg"
+    },
+    "description": "Ion mass.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ion_charge_c"
+    },
+    "to": {
+     "node": "hall",
+     "port": "ion_charge_c"
+    },
+    "description": "Ion charge.",
+    "condition": "Every Hall evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "hall_multiplier"
+    },
+    "to": {
+     "node": "hall",
+     "port": "hall_multiplier"
+    },
+    "description": "Hall multiplier.",
+    "condition": "Every Hall evaluation; default 1.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "include_toroidal_inertia"
+    },
+    "to": {
+     "node": "hall",
+     "port": "include_toroidal_inertia"
+    },
+    "description": "Local inertia switch.",
+    "condition": "Every Hall evaluation; default true.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "hall_density_floor_fraction"
+    },
+    "to": {
+     "node": "hall",
+     "port": "hall_density_floor_fraction"
+    },
+    "description": "Density floor fraction.",
+    "condition": "Every Hall evaluation; default 0.1.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "maximum_inertial_mach"
+    },
+    "to": {
+     "node": "hall",
+     "port": "maximum_inertial_mach"
+    },
+    "description": "Local drift cap.",
+    "condition": "Every Hall evaluation; default 0.5.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "inertia_relax"
+    },
+    "to": {
+     "node": "hall",
+     "port": "inertia_relax"
+    },
+    "description": "Local previous-current weight.",
+    "condition": "Every Hall evaluation; default 0.5.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "inertia_tolerance"
+    },
+    "to": {
+     "node": "hall",
+     "port": "inertia_tolerance"
+    },
+    "description": "Local stop threshold.",
+    "condition": "Every Hall evaluation; default 1e-10.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "inertia_max_iterations"
+    },
+    "to": {
+     "node": "hall",
+     "port": "inertia_max_iterations"
+    },
+    "description": "Local loop bound.",
+    "condition": "Every Hall evaluation; default 80.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "r_grid"
+    },
+    "description": "Current cell radial spacing.",
+    "condition": "Every update and terminal current recomputation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "z_grid"
+    },
+    "description": "Current cell axial spacing.",
+    "condition": "Every update and terminal current recomputation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "hall",
+     "port": "J_phi"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "J_phi"
+    },
+    "description": "Masked Hall current-density field.",
+    "condition": "Every update and terminal current recomputation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "psi_state"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "psi_state"
+    },
+    "description": "Current flux for relaxed update.",
+    "condition": "Every update and terminal current recomputation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "psi_vac"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "psi_vac"
+    },
+    "description": "Vacuum contribution.",
+    "condition": "Every update and terminal current recomputation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "g_psi"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "g_psi"
+    },
+    "description": "Dense response matrix.",
+    "condition": "Every update and terminal current recomputation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "relax"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "relax"
+    },
+    "description": "Previous-flux weight.",
+    "condition": "Every update; default 0.5.",
+    "transform": "Identity or default.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "previous_currents"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "previous_currents"
+    },
+    "description": "Prior raw currents for diagnostic comparison.",
+    "condition": "Every update and terminal current recomputation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "flux_update",
+     "port": "psi_next"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "psi_next"
+    },
+    "description": "Next outer flux state.",
+    "condition": "After each Picard update.",
+    "transform": "Assign next state.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "hall_picard"
+   },
+   {
+    "from": {
+     "node": "flux_update",
+     "port": "cell_currents"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "cell_currents"
+    },
+    "description": "Raw currents retained for the next comparison.",
+    "condition": "After each Picard update.",
+    "transform": "Assign next state.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "hall_picard"
+   },
+   {
+    "from": {
+     "node": "flux_update",
+     "port": "relative_psi_change"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "relative_psi_change"
+    },
+    "description": "Flux stop diagnostic.",
+    "condition": "After each Picard update.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "hall_picard"
+   },
+   {
+    "from": {
+     "node": "flux_update",
+     "port": "relative_current_change"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "relative_current_change"
+    },
+    "description": "History current diagnostic.",
+    "condition": "After each Picard update.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "hall_picard"
+   },
+   {
+    "from": {
+     "node": "hall",
+     "port": "generalized_ohm_error"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "generalized_ohm_error"
+    },
+    "description": "History Hall diagnostic.",
+    "condition": "After each Picard update.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "hall_picard"
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "psi_state"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "psi_state"
+    },
+    "description": "Returned flux.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "field",
+     "port": "magnetic"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "magnetic"
+    },
+    "description": "Reevaluated terminal field.",
+    "condition": "After bounded stopping.",
+    "transform": "Pack named field components.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "pressure_closure",
+     "port": "closure_state"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "closure_state"
+    },
+    "description": "Terminal caller state.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity; primary scalars remain scalars here.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "normalize",
+     "port": "p_parallel"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "p_parallel"
+    },
+    "description": "Broadcast terminal parallel pressure.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "normalize",
+     "port": "p_perpendicular"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "p_perpendicular"
+    },
+    "description": "Broadcast terminal perpendicular pressure.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "hall",
+     "port": "hall_state"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "hall_state"
+    },
+    "description": "Terminal Hall current, drift and errors.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "flux_update",
+     "port": "cell_currents"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "cell_currents"
+    },
+    "description": "Recomputed terminal raw currents.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "converged"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "converged"
+    },
+    "description": "Outer convergence status.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "iterations"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "iterations"
+    },
+    "description": "Executed outer update count.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "relative_psi_change"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "relative_psi_change"
+    },
+    "description": "Last outer flux change.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_state",
+     "port": "iteration_history"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "iteration_history"
+    },
+    "description": "Per-update diagnostics.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "normalize",
+     "port": "active_mask"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "active_mask"
+    },
+    "description": "Cells for terminal firehose check.",
+    "condition": "After bounded stopping.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "minimum_firehose_margin"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "minimum_firehose_margin"
+    },
+    "description": "Terminal firehose threshold.",
+    "condition": "If nonnegative; default 0.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "compatibility_tol"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "compatibility_tol"
+    },
+    "description": "Terminal momentum threshold.",
+    "condition": "Terminal check; default 0.05.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ohm_tolerance"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "ohm_tolerance"
+    },
+    "description": "Terminal Ohm threshold.",
+    "condition": "Terminal check; default 0.05.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "strict_compatibility"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "strict_compatibility"
+    },
+    "description": "Terminal compatibility rejection switch.",
+    "condition": "Terminal check; default true.",
+    "transform": "Identity or default.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "psi"
+    },
+    "to": {
+     "node": "$output",
+     "port": "psi"
+    },
+    "description": "Returned flux.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "plasma_cell_currents"
+    },
+    "to": {
+     "node": "$output",
+     "port": "plasma_cell_currents"
+    },
+    "description": "Terminal cell currents.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "J_phi"
+    },
+    "to": {
+     "node": "$output",
+     "port": "J_phi"
+    },
+    "description": "Terminal Hall current.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "B_R"
+    },
+    "to": {
+     "node": "$output",
+     "port": "B_R"
+    },
+    "description": "Terminal radial field.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "B_Z"
+    },
+    "to": {
+     "node": "$output",
+     "port": "B_Z"
+    },
+    "description": "Terminal axial field.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "B"
+    },
+    "to": {
+     "node": "$output",
+     "port": "B"
+    },
+    "description": "Terminal field magnitude.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "p_parallel"
+    },
+    "to": {
+     "node": "$output",
+     "port": "p_parallel"
+    },
+    "description": "Terminal parallel pressure.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "p_perpendicular"
+    },
+    "to": {
+     "node": "$output",
+     "port": "p_perpendicular"
+    },
+    "description": "Terminal perpendicular pressure.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "parallel_force"
+    },
+    "to": {
+     "node": "$output",
+     "port": "parallel_force"
+    },
+    "description": "Terminal parallel force.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "force_R"
+    },
+    "to": {
+     "node": "$output",
+     "port": "force_R"
+    },
+    "description": "Terminal radial target force.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "force_Z"
+    },
+    "to": {
+     "node": "$output",
+     "port": "force_Z"
+    },
+    "description": "Terminal axial target force.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "ion_toroidal_velocity"
+    },
+    "to": {
+     "node": "$output",
+     "port": "ion_toroidal_velocity"
+    },
+    "description": "Terminal ion toroidal drift.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "electron_toroidal_velocity"
+    },
+    "to": {
+     "node": "$output",
+     "port": "electron_toroidal_velocity"
+    },
+    "description": "Terminal electron toroidal drift.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "electric_field_R"
+    },
+    "to": {
+     "node": "$output",
+     "port": "electric_field_R"
+    },
+    "description": "Terminal radial electric field.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "electric_field_Z"
+    },
+    "to": {
+     "node": "$output",
+     "port": "electric_field_Z"
+    },
+    "description": "Terminal axial electric field.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "hall_state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "hall_state"
+    },
+    "description": "Complete terminal Hall mapping.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "converged"
+    },
+    "description": "Outer convergence status.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "iterations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "iterations"
+    },
+    "description": "Outer update count.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "relative_psi_change"
+    },
+    "to": {
+     "node": "$output",
+     "port": "relative_psi_change"
+    },
+    "description": "Last outer flux change.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "parallel_force_error"
+    },
+    "to": {
+     "node": "$output",
+     "port": "parallel_force_error"
+    },
+    "description": "Parallel-force diagnostic.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "generalized_ohm_error"
+    },
+    "to": {
+     "node": "$output",
+     "port": "generalized_ohm_error"
+    },
+    "description": "Generalized-Ohm diagnostic.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "closure_state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "closure_state"
+    },
+    "description": "Terminal caller closure mapping.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "firehose_margin"
+    },
+    "to": {
+     "node": "$output",
+     "port": "firehose_margin"
+    },
+    "description": "Terminal tension margin.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "compatibility_messages"
+    },
+    "to": {
+     "node": "$output",
+     "port": "compatibility_messages"
+    },
+    "description": "Threshold exceedance messages.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "iteration_history"
+    },
+    "to": {
+     "node": "$output",
+     "port": "iteration_history"
+    },
+    "description": "Per-update history.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "cell_edges"
+    },
+    "to": {
+     "node": "flux_update",
+     "port": "cell_edges"
+    },
+    "description": "Explicit cell_edges binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "cell_edges"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "cell_edges"
+    },
+    "description": "Explicit cell_edges binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "fixed_point_residual"
+    },
+    "to": {
+     "node": "$output",
+     "port": "fixed_point_residual"
+    },
+    "description": "Return the terminal fixed_point_residual.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "flux_update",
+     "port": "fixed_point_residual"
+    },
+    "to": {
+     "node": "loop_state",
+     "port": "fixed_point_residual"
+    },
+    "description": "Unrelaxed fixed-point stopping metric.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "hall_picard"
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "psi_vac"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "psi_vac"
+    },
+    "description": "Explicit psi_vac binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "g_psi"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "g_psi"
+    },
+    "description": "Explicit g_psi binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "tol"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "tol"
+    },
+    "description": "Explicit tol binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "r_grid"
+    },
+    "description": "Explicit r_grid binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "z_grid"
+    },
+    "description": "Explicit z_grid binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "minimum_field"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "minimum_field"
+    },
+    "description": "Explicit minimum_field binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   }
+  ],
+  "execution": {
+   "mode": "bounded_picard_feedback_with_nested_bounded_hall_inertia",
+   "ordering": "Validate geometry and controls; per step derive field, reject sub-minimum B, invoke/normalize caller closure, select active cells, compute reduced-Hall state, apply Green flux update and record diagnostics. After stopping, derive field, invoke closure, compute Hall state and raw cell currents again, then check active firehose and optional strict compatibility. A terminal minimum-field comparison is also required. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
+   "branches": [
+    "plasma_mask is a fixed grid, callable(B,psi), or all-active default.",
+    "A negative minimum_firehose_margin disables its terminal gate.",
+    "At maxiter without flux convergence, return converged=false if terminal evaluation succeeds.",
+    "strict_compatibility=false returns compatibility_messages instead of raising for parallel-force/Ohm threshold exceedance."
+   ],
+   "state_ownership": "The graph owns a copy of evolving psi, previous raw cell currents, outer count and history. The Hall leaf owns each bounded local inertia fixed point. The caller owns pressure_closure, Green response, original inputs and optional mask policy.",
+   "failure_propagation": "Invalid graph, callback or leaf inputs abort. Iteration field floor, terminal firehose, optional strict compatibility and Hall local nonconvergence follow their documented exception paths; outer nonconvergence alone returns last state.",
+   "feedback": [
+    {
+     "id": "hall_picard",
+     "state": "psi, previous raw cell currents, last relative flux/current changes, last generalized-Ohm error, iteration count and history",
+     "initialization": "psi is a copy of psi_vac, previous currents are zeros, relative flux change is infinite, count is zero and history is empty.",
+     "update_order": "For current psi compute field, pressure closure and Hall current; use the Green leaf to form psi_next and raw cell currents; append diagnostics and replace psi/prior currents, then compare unrelaxed fixed_point_residual with tol.",
+     "continue_when": "Unrelaxed step fixed_point_residual > tol and executed count < maxiter.",
+     "stop_when": "Unrelaxed step fixed_point_residual <= tol or maxiter reached; terminal reevaluation independently determines the returned convergence flag.",
+     "iteration_bound": "Validated runtime integer maxiter >= 1; each Hall evaluation also has inertia_max_iterations >= 1",
+     "nonconvergence": "Return the reevaluated last outer state with converged=false if terminal checks succeed. A nonconverged Hall local inertia iteration raises RuntimeError instead."
+    }
+   ]
+  }
+ }
 }

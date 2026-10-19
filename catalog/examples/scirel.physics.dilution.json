@@ -1,131 +1,130 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.physics.dilution",
-  "kind": "operator",
-  "title": {
-    "en": "Main-ion dilution factor",
-    "zh": "主离子稀释因子"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.physics.dilution",
+ "kind": "operator",
+ "title": {
+  "en": "Main-ion dilution factor",
+  "zh": "主离子稀释因子"
+ },
+ "summary": "Main-ion dilution fraction for one main and one impurity charge state.",
+ "taxonomy": [
+  "physics",
+  "plasma",
+  "composition"
+ ],
+ "aliases": [
+  "calculate_main_ion_dilution_factor"
+ ],
+ "identity": {
+  "relation": "d=(Z_impurity-Z_eff)/(Z_i*(Z_impurity-Z_i))",
+  "direction": "charge states -> dimensionless main-ion density fraction",
+  "definition": "One-main/one-impurity quasineutrality algebra; denominator is evaluated in stages to avoid avoidable overflow.",
+  "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
+  "geometry": "charge-state composition",
+  "coordinates": "broadcast impurity and effective-charge arrays; main charge scalar",
+  "boundary": "positive finite Zi and Zimp, distinct Zi/Zimp, and Zeff between charge states",
+  "assumptions": [
+   "Zeff endpoints describe pure-species limits.",
+   "This relation does not infer arbitrary multi-ion composition."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "Z_i",
+   "description": "Main-ion charge state",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real integer/float numeric scalar or zero-dimensional numeric array; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
   },
-  "summary": "Main-ion dilution fraction for one main and one impurity charge state.",
-  "taxonomy": [
-    "physics",
-    "plasma",
-    "composition"
-  ],
-  "aliases": [
-    "calculate_main_ion_dilution_factor"
-  ],
-  "identity": {
-    "relation": "d=(Z_impurity-Z_eff)/(Z_i*(Z_impurity-Z_i))",
-    "direction": "charge states -> dimensionless main-ion density fraction",
-    "definition": "One-main/one-impurity quasineutrality algebra; denominator is evaluated in stages to avoid avoidable overflow.",
-    "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
-    "geometry": "charge-state composition",
-    "coordinates": "broadcast impurity and effective-charge arrays; main charge scalar",
-    "boundary": "positive finite Zi and Zimp, distinct Zi/Zimp, and Zeff between charge states",
-    "assumptions": [
-      "Zeff endpoints describe pure-species limits.",
-      "This relation does not infer arbitrary multi-ion composition."
-    ]
+  {
+   "name": "Z_impurity",
+   "description": "Impurity charge state",
+   "units": "dimensionless",
+   "shape": "broadcast with Z_eff",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
   },
-  "inputs": [
-    {
-      "name": "Z_i",
-      "description": "Main-ion charge state",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real integer/float numeric scalar or zero-dimensional numeric array; converted to float64",
-      "required": true,
-      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
-    },
-    {
-      "name": "Z_impurity",
-      "description": "Impurity charge state",
-      "units": "dimensionless",
-      "shape": "broadcast with Z_eff",
-      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-      "required": true,
-      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
-    },
-    {
-      "name": "Z_eff",
-      "description": "Effective charge",
-      "units": "dimensionless",
-      "shape": "broadcast with Z_impurity",
-      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-      "required": true,
-      "constraints": "finite and between Zi and Zimp; nonempty, boolean/string/complex/masked values rejected"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "Main-ion dilution n_i/n_e",
-      "units": "dimensionless",
-      "shape": "broadcast shape",
-      "dtype": "float64 scalar or array",
-      "required": true,
-      "constraints": "finite and in the algebraic physical range"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "positive finite Zi and Zimp, distinct Zi/Zimp, and Zeff between charge states"
-    ],
-    "supported": [
-      "Finite NumPy evaluation of the declared relation and broadcast shape."
-    ],
-    "excluded": [
-      "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-    "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
-    "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
-    "partial_results": "No output is returned after an exception."
-  },
-  "provenance": {
-    "lineage_summary": "Derived from retained Apache-2.0 TORAX source commit 8cd1184007c82ff379d118b2ad22753358820fe5, tree 1a77b880c34fb333aa1910350967b107f41521c8. physics/formulas.py:calculate_main_ion_dilution_factor, SHA-256 825c3730c8d7d057b82de2ac716b0d8588fb1098c14e995470c039c098ded10d. The source relation is retained; explicit failure boundaries and stable float64 arithmetic are SciRel successor behavior.",
-    "source_kinds": [
-      "retained TORAX source implementation",
-      "independent algebra and boundary checks",
-      "SciRel implementation and regression tests"
-    ],
-    "public_references": [],
-    "license_status": "TORAX-derived implementation: Apache-2.0; license text and attribution are included in the selected distribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.physics.dilution",
-      "symbol": "calculate_main_ion_dilution_factor",
-      "signature": "calculate_main_ion_dilution_factor(Z_i, Z_impurity, Z_eff)",
-      "canonical_module": "scirel.physics",
-      "canonical_symbol": "calculate_main_ion_dilution_factor"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Run the relation on a finite declared-domain case.",
-    "code": "import numpy as np\nfrom scirel.physics import calculate_main_ion_dilution_factor\nr=calculate_main_ion_dilution_factor(1., 6., 2.5)\nassert np.isclose(r, .7)",
-    "expected": "0.7"
-  },
-  "verification": {
-    "scope": [
-      "Independent species charge-balance construction, endpoints, singular boundaries and large-charge representability.",
-      "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-      "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_torax_algebra_grid.py"
-    ],
-    "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
-    "known_limitations": [
-      "The one-impurity model is not a general ion mixture solver.",
-      "Charge-state physical interpretation is caller-owned beyond the declared ordering."
-    ]
+  {
+   "name": "Z_eff",
+   "description": "Effective charge",
+   "units": "dimensionless",
+   "shape": "broadcast with Z_impurity",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and between Zi and Zimp; nonempty, boolean/string/complex/masked values rejected"
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Main-ion dilution n_i/n_e",
+   "units": "dimensionless",
+   "shape": "broadcast shape",
+   "dtype": "float64 scalar or array",
+   "required": true,
+   "constraints": "finite and in the algebraic physical range"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "positive finite Zi and Zimp, distinct Zi/Zimp, and Zeff between charge states"
+  ],
+  "supported": [
+   "Finite NumPy evaluation of the declared relation and broadcast shape."
+  ],
+  "excluded": [
+   "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
+  "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
+  "partial_results": "No output is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of d=(Z_impurity-Z_eff)/(Z_i*(Z_impurity-Z_i)). Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "TORAX-derived implementation: Apache-2.0; license text and attribution are included in the selected distribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.physics.dilution",
+   "symbol": "calculate_main_ion_dilution_factor",
+   "signature": "calculate_main_ion_dilution_factor(Z_i, Z_impurity, Z_eff)",
+   "canonical_module": "scirel.physics",
+   "canonical_symbol": "calculate_main_ion_dilution_factor"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run the relation on a finite declared-domain case.",
+  "code": "import numpy as np\nfrom scirel.physics import calculate_main_ion_dilution_factor\nr=calculate_main_ion_dilution_factor(1., 6., 2.5)\nassert np.isclose(r, .7)",
+  "expected": "0.7"
+ },
+ "verification": {
+  "scope": [
+   "Independent species charge-balance construction, endpoints, singular boundaries and large-charge representability.",
+   "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
+   "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_torax_algebra_grid.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+  "known_limitations": [
+   "The one-impurity model is not a general ion mixture solver.",
+   "Charge-state physical interpretation is caller-owned beyond the declared ordering."
+  ]
+ }
 }

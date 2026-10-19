@@ -15,7 +15,7 @@
   "example": {
     "code": "from scirel.kinetic import solve_maxwellian_electrostatic_mode\nr=solve_maxwellian_electrostatic_mode(0.4,1.45-0.1j)\nassert r[\"normalized_residual\"]+r[\"normalized_residual_error\"]<=1e-9\nassert r[\"normalized_residual_error\"]<=2.5e-10",
     "description": "Solve one seeded mode.",
-    "expected": "A complex mode with a checked residual."
+    "expected": "The seeded solve returned omega=1.2850569696537468-0.066127958690749j after 15 evaluations; normalized_residual was 1.11e-15 and normalized_residual_error was 2.96e-13."
   },
   "failure_semantics": {
     "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs.",
@@ -144,17 +144,16 @@
     }
   ],
   "provenance": {
-    "license_status": "Uses NumPy and SciPy; their applicable license texts are carried with the selected distribution.",
-    "lineage_summary": "Independent SciRel seeded solver built from the normalized Maxwellian dielectric and an error-aware residual gate.",
-    "public_references": [
-      "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)",
-      "SciPy scipy.optimize.root documentation: hybr MINPACK method; normalized residual gate derived from the stated dielectric balance"
-    ],
+    "lineage_summary": "Self-contained SciRel Maxwellian electrostatic response and bounded solver; NumPy/SciPy obligations are retained through the notices in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt. Upstream GPDF redistribution is not asserted.",
     "source_kinds": [
-      "independent equation derivation",
       "SciRel implementation",
-      "independent numerical regression and invariant tests"
-    ]
+      "equation-based derivation",
+      "direct contract tests"
+    ],
+    "public_references": [
+      "Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas 20 (2013), 092125."
+    ],
+    "license_status": "Upstream GPDF source redistribution grant is NOT_ESTABLISHED; NumPy and SciPy notices remain applicable."
   },
   "public_api": {
     "python": {
@@ -177,14 +176,15 @@
     "zh": "种子 Maxwellian 静电模态"
   },
   "verification": {
-    "evidence_ceiling": "Independent high-precision Faddeeva, Gaussian moments and seeded root calculations support the stated finite real/complex positive-k response and numerical error gate on the tested regimes; estimates are not certified enclosures.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "The estimated error is not a rigorous enclosure.",
-      "No uniqueness, least-damped branch or global root selection claim; supplied seeds select branches."
+      "No uniqueness, least-damped branch or global root selection claim; supplied seeds select branches.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ],
     "scope": [
-      "Independent high-precision roots and normalized residual/error gates across declared positive-k real/complex cases.",
-      "Small-k false-seed cases, successful seeded roots, and explicit nonconvergence behavior."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_gpdf_d2.py",

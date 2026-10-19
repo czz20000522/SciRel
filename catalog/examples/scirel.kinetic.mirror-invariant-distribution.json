@@ -250,14 +250,14 @@
     "partial_results": "No mapping is returned when validation or arithmetic raises; all four fields are assembled at return."
   },
   "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. The scientific successor retains the declared mathematical model and repairs independently reproduced numerical failures; historical failing behavior is preserved as evidence and is not a current scientific qualification.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
     "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
+      "SciRel implementation",
+      "mathematical derivation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -275,27 +275,25 @@
   "example": {
     "description": "At an unplugged reference field, verify the analytic bi-Maxwellian normalization and invariant energy/moment.",
     "code": "import math\nimport numpy as np\nfrom scirel.kinetic import evaluate_mirror_invariant_distribution\ne = 1.602176634e-19\nm = 1.67262192595e-27\nt_parallel, t_perp = 1200.0*e, 2400.0*e\nr = evaluate_mirror_invariant_distribution(0.0, 0.0, 1.0, 0.0, 0.0, m, e, 2.0e18, t_parallel, t_perp, 1.0)\nexpected = 2.0e18*(m/(2.0*math.pi))**1.5/(t_perp*math.sqrt(t_parallel))\nnp.testing.assert_allclose(r['f0_s3_m6'], expected)\nnp.testing.assert_allclose(r['energy_j'], 0.0)\nnp.testing.assert_allclose(r['magnetic_moment_j_t'], 0.0)\nassert r['occupation'] == 1.0",
-    "expected": "At zero velocity and zero reference potential the distribution equals the reference normalization, both invariants vanish and unplugged occupation is one."
+    "expected": "At zero velocity and reference potential, f0_s3_m6 was 1.6292563266109574, energy_j and magnetic_moment_j_t were zero, and occupation was 1.0."
   },
   "verification": {
     "scope": [
-      "Distribution equality at two local states constructed to share energy and magnetic moment, with rtol=2e-14.",
-      "Direct plugged occupation/refill and default empty-loss-cone checks on selected scalar states.",
-      "Psi-profile versus explicit-array equivalence and selected mass/charge invalid-input cases.",
-      "Nonfinite local velocity, B, psi and potential regression rejection, without exponent clipping.",
-      "Constant positive and negative potential shifts through 1e100 retain the distribution and strict plug occupation; physical elementary-charge cases retain representable thermal contributions even when absolute energy_j cannot resolve them."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_mirror_invariant_distribution.py",
       "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
       "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
     ],
-    "evidence_ceiling": "The direct SciRel tests support selected invariant, loss-cone, profile and input-validation cases, including one explicit scalar normalization comparison. They do not establish universal physical validity of the prescribed distribution, all scalar/array domains, source-byte parity, expert approval or public release.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "An unrepresentable required invariant or output raises FloatingPointError. Finite binary64 output is not an all-domain physical validity certificate.",
       "The strict barrier comparison and zero-refill default are source-defined conventions; no trapped-orbit trajectory is computed.",
       "Historical psi labeling is Wb but does not establish compatibility with Wb/rad assets.",
-      "Public distribution licensing and current-version expert recognition remain pending."
+      "Public distribution licensing and current-version expert recognition remain pending.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

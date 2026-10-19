@@ -195,16 +195,13 @@
     "partial_results": "No partial result is returned after a node failure."
   },
   "provenance": {
-    "lineage_summary": "SciRel-owned composition replacing the single retained coarse-CAD operator with its two independent scientific identities plus an explicit ordered DAG. The retained entry owned the cylindrical-to-Cartesian reconstruction and the material-support classification inside one callable; the review found that the two share no scientific input, so they are proposed as separately reviewable assets and this graph is the composition that reproduces the retained call shape, the retained output names and shapes, and the retained results exactly. The graph adds the closed-flux and innermost-radius masks as diagnostics so that an expert can attribute a surprising support mask, and it takes the retained zero-thickness PML defect's explicit precondition from the classification relation rather than re-deriving it. The observation snapshot and the batch inventory are private review artifacts and are not part of the public contract.",
+    "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
     "source_kinds": [
-      "reviewed TaskGraph contract",
-      "reviewed scientific implementations",
-      "reviewed defect finding",
-      "reviewed relation-split finding",
+      "SciRel implementation",
       "scientific regression tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -227,9 +224,9 @@
     ]
   },
   "example": {
-    "description": "Compose both relations on a synthetic equilibrium and a 9x9x7 solver grid, and check that the six retained outputs are present with their retained shapes.",
+    "description": "Compose equilibrium mapping and material-support classification on a synthetic 9x9x7 solver grid, checking every retained output mask and count.",
     "code": "import numpy as np\nfrom scirel.geometry import solve_axisymmetric_equilibrium_grid_mapping\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n    'separatrix_flux_wb_per_rad': 0.4,\n    'closed_flux_side': 'less_than',\n}\nresult = solve_axisymmetric_equilibrium_grid_mapping(inputs={\n    'equilibrium': equilibrium,\n    'x_m': np.linspace(-0.5, 0.5, 9),\n    'y_m': np.linspace(-0.5, 0.5, 9),\n    'z_m': np.linspace(-0.4, 0.4, 7),\n    'xpoint_half_length_m': 0.2,\n    'pml_cells': 1,\n    'pec_mask': np.zeros((9, 9, 7), dtype=bool),\n})\nassert result['magnetic_flux_density_t'].shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['material_support_mask'].sum() > 0\nassert result['closed_flux_mask'].sum() >= result['material_support_mask'].sum()\nassert result['axis_segment_mask'].sum() == 0\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert not result['material_support_mask'][0, :, :].any()\nassert not result['material_support_mask'][:, :, -1].any()",
-    "expected": "A finite static field and poloidal flux on the 9x9x7 grid, 560 covered points, a non-empty support mask with nothing on the solver-box faces, and an empty innermost-radius segment."
+    "expected": "The finite field and flux have the declared shapes, 560 points are covered, support excludes solver-box faces, and the innermost-radius segment is empty."
   },
   "verification": {
     "scope": [

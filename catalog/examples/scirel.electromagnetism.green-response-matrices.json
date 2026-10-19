@@ -1,148 +1,144 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.electromagnetism.green-response-matrices",
-  "kind": "operator",
-  "title": {
-    "en": "Ordered per-filament magnetic response matrices",
-    "zh": "有序逐电流丝磁响应矩阵"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.electromagnetism.green-response-matrices",
+ "kind": "operator",
+ "title": {
+  "en": "Ordered per-filament magnetic response matrices",
+  "zh": "有序逐电流丝磁响应矩阵"
+ },
+ "summary": "Build target-row/source-column matrices for ordered circular-filament psi, BR, and BZ responses.",
+ "taxonomy": [
+  "electromagnetism",
+  "axisymmetric-fields",
+  "discrete-response"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "Ordered per-source Green response matrices",
+  "direction": "target points and optional source rows to response matrices",
+  "definition": "Each source column is evaluated at every target in caller order; source weights are applied once.",
+  "model": "Axisymmetric ideal circular-filament response with explicit zero-self entries.",
+  "geometry": "Targets and sources may be different finite cylindrical point tables.",
+  "coordinates": "R,Z in metres; source weights dimensionless; psi Wb/rad/A and fields T/A.",
+  "boundary": "Exact source-target coincidence is zeroed for each matrix entry; zero-radius or zero-weight sources contribute zero.",
+  "assumptions": [
+   "Inputs are finite real arrays with nonnegative radii.",
+   "Omitting rzw makes targets the unit-weight source set.",
+   "Explicit source rows may repeat because columns remain independent."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rz_pts",
+   "description": "按调用者顺序给出的目标R,Z。",
+   "units": "m",
+   "shape": "(Ntarget,2)",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "半径非负；拒绝复数。"
   },
-  "summary": "按实际源和目标坐标生成磁通、径向场与轴向场的逐源响应，保持目标行、源列和有符号权重。",
-  "taxonomy": [
-    "electromagnetism",
-    "axisymmetric-fields",
-    "discrete-response"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "For d(phi)^2=R_i^2+a_j^2-2R_i a_j cos(phi)+(Z_i-z_j)^2, Gpsi_ij=1e-7 w_j R_i a_j integral cos(phi)/d dphi, GBR_ij=1e-7 w_j a_j (Z_i-z_j) integral cos(phi)/d^3 dphi, GBZ_ij=1e-7 w_j integral (a_j^2-a_j R_i cos(phi))/d^3 dphi; integration over [0,2pi].",
-    "direction": "有序目标与源坐标、源权重到三个响应矩阵；矩阵乘有序电流向量得到场。",
-    "definition": "每列调用已验证的实际坐标圆环核；不排序、不反射。源第三列为无量纲有符号权重csign，乘一次。源电流以A为单位，由调用者通过矩阵乘向量提供。省略源时，目标坐标依原顺序成为单位权重源。",
-    "model": "真空理想圆电流丝；mu0=4pi*1e-7 H/m。",
-    "geometry": "柱坐标R,Z，R非负；可不规则、非对称，源数与目标数可不同。",
-    "coordinates": "坐标m；psi=R A_phi，响应单位Wb/rad/A；BR、BZ响应单位T/A。",
-    "boundary": "精确源目标重合时三响应按显式离散兼容规则置零，非有限导体自场。任何非零距离仍计算，无近场截止。零半径源无贡献；轴上目标保留非零解析BZ。",
-    "assumptions": [
-      "有限实数坐标与权重。",
-      "默认隐式源网格的正半径节点不可重复。",
-      "显式源可重复，各列代表独立权重。",
-      "不推断设备电流、导体半径或物理自感。"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "rz_pts",
-      "description": "按调用者顺序给出的目标R,Z。",
-      "units": "m",
-      "shape": "(Ntarget,2)",
-      "dtype": "finite real",
-      "required": true,
-      "constraints": "半径非负；拒绝复数。"
-    },
-    {
-      "name": "rzw",
-      "description": "有序源R,Z和可选有符号权重；None使用目标为单位权重源。",
-      "units": "m,m,dimensionless",
-      "shape": "(Nsource,2) or (Nsource,3) or None",
-      "dtype": "finite real or None",
-      "required": false,
-      "default": null,
-      "constraints": "源半径非负，省略第三列时权重1。"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "psi",
-      "description": "目标行、源列的磁通响应。",
-      "units": "Wb/rad/A",
-      "shape": "(Ntarget,Nsource)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "有限；精确重合离散置零。"
-    },
-    {
-      "name": "BR",
-      "description": "目标行、源列的径向场响应。",
-      "units": "T/A",
-      "shape": "(Ntarget,Nsource)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "保留有符号权重和实际高度差。"
-    },
-    {
-      "name": "BZ",
-      "description": "目标行、源列的轴向场响应。",
-      "units": "T/A",
-      "shape": "(Ntarget,Nsource)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "轴上目标使用解析极限。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "有限实数坐标；源权重有限。"
-    ],
-    "supported": [
-      "逐源矩阵与电流向量组合。",
-      "源与目标独立换序。",
-      "默认单位源、轴上目标和显式零自项。"
-    ],
-    "excluded": [
-      "有限导体自场或自感。",
-      "极端尺度精度保证。",
-      "单凭矩阵计算宣称物理平衡。"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "畸形、复数、非有限、负半径或默认重复正半径源抛ValueError。",
-    "runtime_failure": "核的不可表示有限输出抛FloatingPointError，不吞为零。",
-    "nonconvergence": "直接计算，不适用。",
-    "partial_results": "失败不返回部分矩阵。"
-  },
-  "provenance": {
-    "lineage_summary": "接续Pleiades analysis/math.py的get_greens和compute_greens逐源合同，用已接受实际坐标修正核吸收其矩阵构造。队列与多进程仅为执行方式；保留csign、单位源与目标行源列。旧非有限清零仅保留为明确的精确重合离散规则，其余算术失败拒绝。",
-    "source_kinds": [
-      "Frozen D0 source implementation",
-      "Independent azimuthal line-current integration"
-    ],
-    "public_references": [],
-    "license_status": "Pleiades MIT来源依据保留；人审及发行未批准。"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.electromagnetism",
-      "symbol": "green_response_matrices",
-      "signature": "green_response_matrices(rz_pts, rzw=None)",
-      "canonical_module": "scirel.electromagnetism",
-      "canonical_symbol": "green_response_matrices"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.electromagnetism.circular-filament-green"
-      }
-    ]
-  },
-  "example": {
-    "description": "两个目标、三个有符号源与独立电流向量。",
-    "code": "import numpy as np\nfrom scirel.electromagnetism import green_response_matrices\ntargets=np.array([[0.,.2],[.8,-.3]])\nsources=np.array([[.4,.1,1.],[1.2,-.7,-2.],[.6,.9,.5]])\ngpsi,gbr,gbz=green_response_matrices(targets,sources)\nassert gpsi.shape==(2,3) and np.all(gpsi[0]==0.)\nfield_bz=gbz@np.array([3.,-4.,2.])\nassert np.all(np.isfinite(field_bz))",
-    "expected": "轴上磁通为零，轴向场有限；独立电流只在矩阵消费时施加。"
-  },
-  "verification": {
-    "scope": [
-      "非对称坐标的独立方位角积分。",
-      "混合符号、非单位电流、独立源目标换序。",
-      "默认单位源、轴上解析极限、精确自项和非法输入。"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_green_response_matrices.py"
-    ],
-    "evidence_ceiling": "具名域的独立数值关系与组合验证，非实验或有限导体资格。",
-    "known_limitations": [
-      "dense O(Ntarget*Nsource)工作和存储。",
-      "离散零自项不描述导体自场。"
-    ]
+  {
+   "name": "rzw",
+   "description": "有序源R,Z和可选有符号权重；None使用目标为单位权重源。",
+   "units": "m,m,dimensionless",
+   "shape": "(Nsource,2) or (Nsource,3) or None",
+   "dtype": "finite real or None",
+   "required": false,
+   "default": null,
+   "constraints": "源半径非负，省略第三列时权重1。"
   }
+ ],
+ "outputs": [
+  {
+   "name": "psi",
+   "description": "目标行、源列的磁通响应。",
+   "units": "Wb/rad/A",
+   "shape": "(Ntarget,Nsource)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "有限；精确重合离散置零。"
+  },
+  {
+   "name": "BR",
+   "description": "目标行、源列的径向场响应。",
+   "units": "T/A",
+   "shape": "(Ntarget,Nsource)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "保留有符号权重和实际高度差。"
+  },
+  {
+   "name": "BZ",
+   "description": "目标行、源列的轴向场响应。",
+   "units": "T/A",
+   "shape": "(Ntarget,Nsource)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "轴上目标使用解析极限。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs are finite real arrays with nonnegative radii.",
+   "Omitting rzw makes targets the unit-weight source set."
+  ],
+  "supported": [
+   "Irregular ordering, signed weights, implicit unit sources, axis limits, and matrix current contraction."
+  ],
+  "excluded": [
+   "Finite-conductor self-fields, extreme-scale guarantees, and physical-equilibrium claims."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, negative-radius, or duplicate positive-radius implicit sources.",
+  "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
+  "nonconvergence": "Not applicable; each matrix entry is evaluated directly.",
+  "partial_results": "No partial matrix is returned after a failed source evaluation."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel retains the documented scientific relation and implementation; applicable source-license obligations are recorded in licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "SciRel implementation",
+   "repository regression tests"
+  ],
+  "public_references": [],
+  "license_status": "Pleiades-derived source portions retain the MIT notice in licenses/Pleiades-MIT.txt; SciRel has no separate distribution-license declaration."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.electromagnetism",
+   "symbol": "green_response_matrices",
+   "signature": "green_response_matrices(rz_pts, rzw=None)",
+   "canonical_module": "scirel.electromagnetism",
+   "canonical_symbol": "green_response_matrices"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.electromagnetism.circular-filament-green"
+   }
+  ]
+ },
+ "example": {
+  "description": "Build two-target, three-source response matrices and apply a separate current vector.",
+  "code": "import numpy as np\nfrom scirel.electromagnetism import green_response_matrices\ntargets=np.array([[0.,.2],[.8,-.3]])\nsources=np.array([[.4,.1,1.],[1.2,-.7,-2.],[.6,.9,.5]])\ngpsi,gbr,gbz=green_response_matrices(targets,sources)\nassert gpsi.shape==(2,3) and np.all(gpsi[0]==0.)\nfield_bz=gbz@np.array([3.,-4.,2.])\nassert np.all(np.isfinite(field_bz))",
+  "expected": "Each matrix has shape (2,3); the first target is on the axis so psi is zero there, and the contracted BZ is finite."
+ },
+ "verification": {
+  "scope": [
+   "非对称坐标的独立方位角积分。",
+   "混合符号、非单位电流、独立源目标换序。",
+   "默认单位源、轴上解析极限、精确自项和非法输入。"
+  ],
+  "tests": [
+   "tests/pleiades/geometry/test_green_response_matrices.py"
+  ],
+  "evidence_ceiling": "具名域的独立数值关系与组合验证，非实验或有限导体资格。",
+  "known_limitations": [
+   "dense O(Ntarget*Nsource)工作和存储。",
+   "离散零自项不描述导体自场。"
+  ]
+ }
 }

@@ -86,15 +86,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development relation from the saved KN1DPy 空间源形状归一化 package. Its bundle cites KN1DPy/kn1d.py:520-577; the raw source tree was not re-read. The archived formal implementation SHA-256 is 83b2d7b9e860d8ee57cef6b5332b97fe31a6269a861c6e2a6df42506bfd18629. Three finite valid profiles match it exactly; SciRel rejects non-real coercions that the archived implementation accepted or raised inconsistently. KN1DPy's strict D1 qualification has been withdrawn; this is bounded historical development evidence, not qualified-L1 provenance or expert approval. See docs/evaluations/2026-09-28-neutral-normalization-integration.md.",
+    "lineage_summary": "SciRel implements trapezoidal normalization of a finite nonnegative spatial source profile and returns both the normalized shape and original integral; direct tests cover valid and rejected profiles.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "read-only digest-bound archived-source replay during integration",
-      "scientific regression tests"
+      "SciRel implementation",
+      "discrete quadrature relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {

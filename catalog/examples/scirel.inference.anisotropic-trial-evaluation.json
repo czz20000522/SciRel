@@ -1,258 +1,257 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-  "kind": "operator",
-  "title": {
-    "en": "One anisotropic inversion trial",
-    "zh": "单次各向异性反演试探"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.inference.anisotropic-trial-evaluation",
+ "kind": "operator",
+ "title": {
+  "en": "One anisotropic inversion trial",
+  "zh": "单次各向异性反演试探"
+ },
+ "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
+ "taxonomy": [
+  "inference",
+  "anisotropic-equilibrium",
+  "trial-evaluation"
+ ],
+ "aliases": [
+  "parameter-to-diagnostic-residual trial"
+ ],
+ "identity": {
+  "relation": "参数和相容物理端口到固定维数的有效性记录",
+  "direction": "params、observations、solver_config、三端口 → residuals、chi2、equilibrium、valid/status",
+  "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
+  "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
+  "geometry": "由 solver_config 和科学端口定义",
+  "coordinates": "r_grid/z_grid 原样深复制为诊断 R/Z；不做单位转换",
+  "boundary": "失败罚值是优化接口值，不是可接受的物理观测或可行性证明。参数范围由外层优化器与物理端口共同约束。",
+  "assumptions": [
+   "三个端口具有明确且相容的物理单位、网格和返回协议。",
+   "equilibrium.converged 必为布尔值；成功态不能同时给出 failure_reason。",
+   "自定义布局的 residual_size 由调用者在第一次试探前声明，不能按成功/失败改变。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "params",
+   "description": "本次完整参数映射；深复制后交给前向端口。",
+   "units": "按参数合同",
+   "shape": "mapping",
+   "dtype": "映射",
+   "required": true,
+   "constraints": "参数科学范围由前向关系及外层边界约束。"
   },
-  "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
-  "taxonomy": [
-    "inference",
-    "anisotropic-equilibrium",
-    "trial-evaluation"
-  ],
-  "aliases": [
-    "parameter-to-diagnostic-residual trial"
-  ],
-  "identity": {
-    "relation": "参数和相容物理端口到固定维数的有效性记录",
-    "direction": "params、observations、solver_config、三端口 → residuals、chi2、equilibrium、valid/status",
-    "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
-    "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
-    "geometry": "由 solver_config 和科学端口定义",
-    "coordinates": "r_grid/z_grid 原样深复制为诊断 R/Z；不做单位转换",
-    "boundary": "失败罚值是优化接口值，不是可接受的物理观测或可行性证明。参数范围由外层优化器与物理端口共同约束。",
-    "assumptions": [
-      "三个端口具有明确且相容的物理单位、网格和返回协议。",
-      "equilibrium.converged 必为布尔值；成功态不能同时给出 failure_reason。",
-      "自定义布局的 residual_size 由调用者在第一次试探前声明，不能按成功/失败改变。"
-    ]
+  {
+   "name": "observations",
+   "description": "诊断请求、观测值与不确定度。",
+   "units": "按通道合同",
+   "shape": "mapping",
+   "dtype": "映射",
+   "required": true,
+   "constraints": "未给 residual_size 时必须为已知非空标准布局；N 是所有请求 values 的总元素数。"
   },
-  "inputs": [
-    {
-      "name": "params",
-      "description": "本次完整参数映射；深复制后交给前向端口。",
-      "units": "按参数合同",
-      "shape": "mapping",
-      "dtype": "映射",
-      "required": true,
-      "constraints": "参数科学范围由前向关系及外层边界约束。"
-    },
-    {
-      "name": "observations",
-      "description": "诊断请求、观测值与不确定度。",
-      "units": "按通道合同",
-      "shape": "mapping",
-      "dtype": "映射",
-      "required": true,
-      "constraints": "未给 residual_size 时必须为已知非空标准布局；N 是所有请求 values 的总元素数。"
-    },
-    {
-      "name": "solver_config",
-      "description": "固定前向配置，必须含 r_grid/z_grid；其中 params 在副本中替换。",
-      "units": "混合物理单位",
-      "shape": "mapping",
-      "dtype": "映射",
-      "required": true,
-      "constraints": "输入深复制；不修改调用方嵌套映射或数组。"
-    },
-    {
-      "name": "equilibrium_solver",
-      "description": "单参数映射入口的前向科学求解器。",
-      "units": "按前向合同",
-      "shape": "callable(payload) → mapping",
-      "dtype": "可调用对象",
-      "required": true,
-      "constraints": "返回布尔 converged；False 立即短路诊断并记录原因。"
-    },
-    {
-      "name": "diagnostic_evaluator",
-      "description": "只在前向收敛后调用的诊断端口。",
-      "units": "与观测相同",
-      "shape": "callable({equilibrium,R,Z,observations})",
-      "dtype": "可调用对象",
-      "required": true,
-      "constraints": "必须提供所有请求的预测，必要时附单位。"
-    },
-    {
-      "name": "residual_reducer",
-      "description": "输出 residual_vector 与 chi2 的归一化关系。",
-      "units": "dimensionless",
-      "shape": "callable(*, predicted, observations)",
-      "dtype": "可调用对象",
-      "required": true,
-      "constraints": "向量必须为 (N,) 且有限；chi2 有限非负，与内积的 rtol=1e-12、atol=0 一致。"
-    },
-    {
-      "name": "residual_size",
-      "description": "自定义观测端口的预声明维数；标准布局通常自动取得。",
-      "units": "count",
-      "shape": "positive integer or None",
-      "dtype": "整数或 None",
-      "required": false,
-      "constraints": "拒绝布尔、零和负值；本次调用维数不可变化。",
-      "default": null
-    },
-    {
-      "name": "failure_penalty",
-      "description": "数值失败或前向不收敛时每个残差分量的正罚值。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": false,
-      "constraints": "默认 1e12；有限正数且 N*penalty² 必须可表示。",
-      "default": 1000000000000.0
-    }
-  ],
-  "outputs": [
-    {
-      "name": "params",
-      "description": "提交参数的深副本。",
-      "units": "按参数合同",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "不会被端口对副本的写入改变。"
-    },
-    {
-      "name": "chi2",
-      "description": "成功向量的重新计算内积；失败时 N*penalty²。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "有限非负，不将失败 chi2 当作有效物理拟合。"
-    },
-    {
-      "name": "residuals",
-      "description": "成功残差或同维罚值向量。",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "float64 数组",
-      "required": true,
-      "constraints": "每条成功/失败路径均保持 N。"
-    },
-    {
-      "name": "equilibrium",
-      "description": "已取得的前向状态；数值异常前未取得时为 None。",
-      "units": "混合",
-      "shape": "mapping or None",
-      "dtype": "映射或 None",
-      "required": true,
-      "constraints": "失败记录可能保留未收敛状态，仅供诊断，不是合格解。"
-    },
-    {
-      "name": "failure_reason",
-      "description": "明确的前向不收敛或数值异常原因；有效时为 None。",
-      "units": "identifier",
-      "shape": "string or None",
-      "dtype": "字符串或 None",
-      "required": true,
-      "constraints": "未收敛但无原因时补充通用说明。"
-    },
-    {
-      "name": "valid",
-      "description": "前向与残差合同全部满足。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "只有 True 才可供优化器进行有效最优排序。"
-    },
-    {
-      "name": "status",
-      "description": "试探类别。",
-      "units": "identifier",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "valid、forward_nonconvergence 或 numerical_failure。"
-    },
-    {
-      "name": "failed_port",
-      "description": "失败发生的端口。",
-      "units": "identifier",
-      "shape": "string or None",
-      "dtype": "字符串或 None",
-      "required": true,
-      "constraints": "equilibrium_solver、diagnostic_evaluator、residual_reducer；有效时 None。"
-    },
-    {
-      "name": "exception_type",
-      "description": "数值异常的实际类名。",
-      "units": "identifier",
-      "shape": "string or None",
-      "dtype": "字符串或 None",
-      "required": true,
-      "constraints": "无异常的不收敛记录为 None。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "在第一次调用前明确 N、各端口合同和有限正罚值。"
-    ],
-    "supported": [
-      "深复制输入，收敛后才诊断，成功→失败→成功维数恒定。",
-      "数值失败与前向不收敛的带状态记录；残差内积一致性。"
-    ],
-    "excluded": [
-      "将编程或合同异常隐藏为物理不可行。",
-      "以内置罚值证明模型有效或恢复未提供的物理闭合。"
-    ]
+  {
+   "name": "solver_config",
+   "description": "固定前向配置，必须含 r_grid/z_grid；其中 params 在副本中替换。",
+   "units": "混合物理单位",
+   "shape": "mapping",
+   "dtype": "映射",
+   "required": true,
+   "constraints": "输入深复制；不修改调用方嵌套映射或数组。"
   },
-  "failure_semantics": {
-    "invalid_input": "静态输入、端口、维数和罚值不合法时抛 ValueError；嵌套 ValueError/TypeError/KeyError 传播。",
-    "runtime_failure": "嵌套 ArithmeticError（含 FloatingPointError）或 RuntimeError 返回同 N 的 numerical_failure，保留失败端口和异常类。进程级异常不捕获。",
-    "nonconvergence": "前向 False 直接返回 forward_nonconvergence；绝不执行该状态的诊断。",
-    "partial_results": "保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
+  {
+   "name": "equilibrium_solver",
+   "description": "单参数映射入口的前向科学求解器。",
+   "units": "按前向合同",
+   "shape": "callable(payload) → mapping",
+   "dtype": "可调用对象",
+   "required": true,
+   "constraints": "返回布尔 converged；False 立即短路诊断并记录原因。"
   },
-  "provenance": {
-    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. 本后继针对已证实的观测约定、漏通道、失败维数和无效最优试探问题修正；保留前驱字节与失败证据，未继承错误 fallback。物理组合复用已资格化各向异性 Picard、场恢复及 Green 能力；不把旧候选来源或本作者测试解释为根接收、人工认可或再分发许可。",
-    "source_kinds": [
-      "historical Pleiades development descriptor and migration mapping",
-      "pending intake development candidate",
-      "current SciRel implementation and direct tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "diagnostic_evaluator",
+   "description": "只在前向收敛后调用的诊断端口。",
+   "units": "与观测相同",
+   "shape": "callable({equilibrium,R,Z,observations})",
+   "dtype": "可调用对象",
+   "required": true,
+   "constraints": "必须提供所有请求的预测，必要时附单位。"
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.inference.anisotropic_trial_evaluation",
-      "symbol": "evaluate_anisotropic_trial",
-      "signature": "evaluate_anisotropic_trial(*, params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer, residual_size=None, failure_penalty=1000000000000.0)",
-      "canonical_module": "scirel.inference",
-      "canonical_symbol": "evaluate_anisotropic_trial"
-    }
+  {
+   "name": "residual_reducer",
+   "description": "输出 residual_vector 与 chi2 的归一化关系。",
+   "units": "dimensionless",
+   "shape": "callable(*, predicted, observations)",
+   "dtype": "可调用对象",
+   "required": true,
+   "constraints": "向量必须为 (N,) 且有限；chi2 有限非负，与内积的 rtol=1e-12、atol=0 一致。"
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.diagnostics.observation-residuals"
-      }
-    ]
+  {
+   "name": "residual_size",
+   "description": "自定义观测端口的预声明维数；标准布局通常自动取得。",
+   "units": "count",
+   "shape": "positive integer or None",
+   "dtype": "整数或 None",
+   "required": false,
+   "constraints": "拒绝布尔、零和负值；本次调用维数不可变化。",
+   "default": null
   },
-  "example": {
-    "description": "两个观测的前向求解未收敛时，诊断不会调用，返回两个罚值。",
-    "code": "import numpy as np\nfrom scirel.inference import evaluate_anisotropic_trial\nfrom scirel.diagnostics import reduce_observation_residuals\ncalls=[]\nr=evaluate_anisotropic_trial(params={'p':1.}, observations={'flux_loops':{'values':[1.,2.]}}, solver_config={'r_grid':[0.],'z_grid':[0.]}, equilibrium_solver=lambda _: {'converged':False,'failure_reason':'iteration limit'}, diagnostic_evaluator=lambda _:calls.append('unexpected'), residual_reducer=reduce_observation_residuals)\nassert not calls and not r['valid']\nnp.testing.assert_array_equal(r['residuals'],[1e12,1e12])\nassert r['chi2']==2e24 and r['status']=='forward_nonconvergence'",
-    "expected": "N=2 不变，chi2=2e24，状态明确不收敛；没有诊断调用。"
-  },
-  "verification": {
-    "scope": [
-      "成功/数值失败/再次成功的固定维数与端口记录。",
-      "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
-      "独立解析及曲场前向反演消费者。"
-    ],
-    "tests": [
-      "tests/operator_contracts/test_inference_physical_closure.py",
-      "tests/operator_contracts/test_anisotropic_inference_independent.py"
-    ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
-    "known_limitations": [
-      "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
-      "单次 trial 不判断参数可辨识性或最优性。"
-    ]
+  {
+   "name": "failure_penalty",
+   "description": "数值失败或前向不收敛时每个残差分量的正罚值。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "constraints": "默认 1e12；有限正数且 N*penalty² 必须可表示。",
+   "default": 1000000000000.0
   }
+ ],
+ "outputs": [
+  {
+   "name": "params",
+   "description": "提交参数的深副本。",
+   "units": "按参数合同",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "不会被端口对副本的写入改变。"
+  },
+  {
+   "name": "chi2",
+   "description": "成功向量的重新计算内积；失败时 N*penalty²。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "有限非负，不将失败 chi2 当作有效物理拟合。"
+  },
+  {
+   "name": "residuals",
+   "description": "成功残差或同维罚值向量。",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64 数组",
+   "required": true,
+   "constraints": "每条成功/失败路径均保持 N。"
+  },
+  {
+   "name": "equilibrium",
+   "description": "已取得的前向状态；数值异常前未取得时为 None。",
+   "units": "混合",
+   "shape": "mapping or None",
+   "dtype": "映射或 None",
+   "required": true,
+   "constraints": "失败记录可能保留未收敛状态，仅供诊断，不是合格解。"
+  },
+  {
+   "name": "failure_reason",
+   "description": "明确的前向不收敛或数值异常原因；有效时为 None。",
+   "units": "identifier",
+   "shape": "string or None",
+   "dtype": "字符串或 None",
+   "required": true,
+   "constraints": "未收敛但无原因时补充通用说明。"
+  },
+  {
+   "name": "valid",
+   "description": "前向与残差合同全部满足。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "只有 True 才可供优化器进行有效最优排序。"
+  },
+  {
+   "name": "status",
+   "description": "试探类别。",
+   "units": "identifier",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "valid、forward_nonconvergence 或 numerical_failure。"
+  },
+  {
+   "name": "failed_port",
+   "description": "失败发生的端口。",
+   "units": "identifier",
+   "shape": "string or None",
+   "dtype": "字符串或 None",
+   "required": true,
+   "constraints": "equilibrium_solver、diagnostic_evaluator、residual_reducer；有效时 None。"
+  },
+  {
+   "name": "exception_type",
+   "description": "数值异常的实际类名。",
+   "units": "identifier",
+   "shape": "string or None",
+   "dtype": "字符串或 None",
+   "required": true,
+   "constraints": "无异常的不收敛记录为 None。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "在第一次调用前明确 N、各端口合同和有限正罚值。"
+  ],
+  "supported": [
+   "深复制输入，收敛后才诊断，成功→失败→成功维数恒定。",
+   "数值失败与前向不收敛的带状态记录；残差内积一致性。"
+  ],
+  "excluded": [
+   "将编程或合同异常隐藏为物理不可行。",
+   "以内置罚值证明模型有效或恢复未提供的物理闭合。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "静态输入、端口、维数和罚值不合法时抛 ValueError；嵌套 ValueError/TypeError/KeyError 传播。",
+  "runtime_failure": "嵌套 ArithmeticError（含 FloatingPointError）或 RuntimeError 返回同 N 的 numerical_failure，保留失败端口和异常类。进程级异常不捕获。",
+  "nonconvergence": "前向 False 直接返回 forward_nonconvergence；绝不执行该状态的诊断。",
+  "partial_results": "保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of 参数和相容物理端口到固定维数的有效性记录. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.inference.anisotropic_trial_evaluation",
+   "symbol": "evaluate_anisotropic_trial",
+   "signature": "evaluate_anisotropic_trial(*, params, observations, solver_config, equilibrium_solver, diagnostic_evaluator, residual_reducer, residual_size=None, failure_penalty=1000000000000.0)",
+   "canonical_module": "scirel.inference",
+   "canonical_symbol": "evaluate_anisotropic_trial"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.diagnostics.observation-residuals"
+   }
+  ]
+ },
+ "example": {
+  "description": "两个观测的前向求解未收敛时，诊断不会调用，返回两个罚值。",
+  "code": "import numpy as np\nfrom scirel.inference import evaluate_anisotropic_trial\nfrom scirel.diagnostics import reduce_observation_residuals\ncalls=[]\nr=evaluate_anisotropic_trial(params={'p':1.}, observations={'flux_loops':{'values':[1.,2.]}}, solver_config={'r_grid':[0.],'z_grid':[0.]}, equilibrium_solver=lambda _: {'converged':False,'failure_reason':'iteration limit'}, diagnostic_evaluator=lambda _:calls.append('unexpected'), residual_reducer=reduce_observation_residuals)\nassert not calls and not r['valid']\nnp.testing.assert_array_equal(r['residuals'],[1e12,1e12])\nassert r['chi2']==2e24 and r['status']=='forward_nonconvergence'",
+  "expected": "N=2 不变，chi2=2e24，状态明确不收敛；没有诊断调用。"
+ },
+ "verification": {
+  "scope": [
+   "成功/数值失败/再次成功的固定维数与端口记录。",
+   "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
+   "独立解析及曲场前向反演消费者。"
+  ],
+  "tests": [
+   "tests/operator_contracts/test_inference_physical_closure.py",
+   "tests/operator_contracts/test_anisotropic_inference_independent.py"
+  ],
+  "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+  "known_limitations": [
+   "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
+   "单次 trial 不判断参数可辨识性或最优性。"
+  ]
+ }
 }

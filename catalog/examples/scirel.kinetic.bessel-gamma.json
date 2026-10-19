@@ -90,15 +90,14 @@
     "partial_results": "None; both outputs are returned only after all broadcast elements pass validation."
   },
   "provenance": {
-    "lineage_summary": "The development relation originated from the archived fluidBW bessel_gamma_functions implementation (SHA-256 2aa8a7079c0d248b25832dc15a09e5c2e019244afd62a721581c9e032c1e080c). The later bounded fluidBW r43 handoff (SHA-256 3c514298bd46be501a097e53766868285928c9e3cdb5f66c06a291289ec26f9a) was independently accepted for read-only D2 intake. D2 found the same scaled Bessel-Gamma relation and retained SciRel's stricter validation. This source lineage does not establish arbitrary complex-argument parity, expert approval or distribution rights.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved historical fluidBW Gamman/Gammapn operator contract and implementation",
-      "saved finite 98-point source oracle and digest-bound comparison",
-      "bounded fluidBW r43 source handoff and independent D1 review",
-      "independent local modified-Bessel definition tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -115,23 +114,23 @@
   },
   "example": {
     "description": "Evaluate the zero-order term and derivative at the origin.",
-    "code": "from scirel.kinetic import evaluate_bessel_gamma\nr = evaluate_bessel_gamma(0, 0.0)\nassert r['Gamma_n'] == 1 and r['Gamma_prime_n'] == -1",
-    "expected": "Gamma_0(0)=1 and Gamma_prime_0(0)=-1, each in a zero-dimensional complex128 array."
+    "code": "from scirel.kinetic import evaluate_bessel_gamma\nr = evaluate_bessel_gamma(0, 0.0)\nassert r['Gamma_n'] == 1 and r['Gamma_prime_n'] == -1\n",
+    "expected": "Observed PASS: Gamma_0(0)=1 and Gamma_prime_0(0)=-1, each in a zero-dimensional complex128 array."
   },
   "verification": {
     "scope": [
       "Finite-grid comparison to the modified-Bessel definition, origin identities and complex broadcast behavior.",
-      "Read-only comparison with the saved fluidBW 98-point real-argument oracle and digest-bound implementation.",
       "Invalid-order, invalid-argument and unrepresentable-output rejection."
     ],
     "tests": [
       "tests/operator_contracts/test_bessel_gamma.py"
     ],
-    "evidence_ceiling": "Direct SciRel tests establish listed identities and failure behavior. The read-only archived-source comparison covers only a finite 98-point real-argument grid with stated absolute and relative tolerances. The independently reviewed r43 handoff supports read-only D2 intake for its declared source scope; neither layer establishes arbitrary complex-plane SciRel parity, a physical choice of x or expert approval.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.",
       "The source implementation accepted some noninteger orders implicitly; SciRel intentionally restricts n to exactly representable integers.",
-      "Public distribution license and expert scientific recognition remain open."
+      "Public distribution license and expert scientific recognition remain open.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

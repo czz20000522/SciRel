@@ -105,16 +105,16 @@
     "partial_results": "No partial result is returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Unchanged attributed PDRK EM1D plotting suffix, invoked through a derived explicit-state adapter.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://github.com/hsxie/pdrk"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -132,21 +132,24 @@
     ]
   },
   "example": {
-    "description": "Render an explicit already accepted vacuum branch.",
+    "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
     "code": "import numpy as np\nfrom scirel.kinetic.pdrk.plotting import em1d_plot\nr = em1d_plot(dict(k=np.array([0.2, 0.3]), omega=np.array([0.2+0j, 0.3+0j])), dict(cwp=1.0, wcs1=1.0))\nassert r.state[\"figure_native\"].size > 0",
-    "expected": "A native figure with explicit normalized real and imaginary frequency curves."
+    "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
   },
   "verification": {
     "scope": [
-      "Native artifact data, axes, styles and sequential predecessor lineage."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_examples_support.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
     "known_limitations": [
       "Octave graphics and native figure compatibility are runtime requirements.",
-      "Human visual acceptance is separate from typed plot-data/style qualification."
+      "Human visual acceptance is separate from typed plot-data/style qualification.",
+      "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
     ]
   }
 }

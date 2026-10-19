@@ -126,15 +126,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 中性总损失碰撞频率组装 package, source anchor KN1DPy/kinetic_h.py:1089-1095; kinetic_h2.py:1151-1157, as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 69c25bd24033e3d7cdbaf2cdbc3becadd35e09a6149f8a1bfea4534c9e35bcbd. Finite real valid inputs retain the saved assembly order, zero-diameter behavior and CX branch. SciRel additionally rejects implicit real conversion, non-boolean branch selectors and non-finite totals; source error-message parity is not claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so this is bounded historical development comparison, not qualified-L1 provenance or expert approval.",
+    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "read-only historical replay",
-      "scientific regression tests"
+      "SciRel implementation",
+      "KN1D-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
   },
   "public_api": {
     "python": {
@@ -152,22 +151,21 @@
   "example": {
     "description": "Assemble the total loss with wall and CX terms, confirm the zero-diameter wall semantics and the enabled-CX fail-closed rule.",
     "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_total_collision_frequency\nresult = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], np.ones((2, 2, 2)))\nnp.testing.assert_allclose(result[:, :, 0], [[10.0, 10.0], [11.0, 11.0]])\nnp.testing.assert_allclose(result[:, :, 1], [[11.0, 11.0], [11.0, 11.0]])\ndisabled = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], charge_exchange_enabled=False)\nnp.testing.assert_allclose(disabled[:, :, 0], [[9.0, 9.0], [10.0, 10.0]])\ntry:\n    assemble_neutral_total_collision_frequency([1.0], [1.0], [1.0], [1.0], [0.0])\nexcept ValueError as error:\n    assert 'charge exchange' in str(error)\nelse:\n    raise AssertionError('enabled CX without a field must fail closed')",
-    "expected": "The assembled totals with the saved wall-loss broadcast and the zero-diameter semantics; enabled CX without a field is rejected."
+    "expected": "The enabled-CX example returned the declared (2,2,2) totals, including wall loss only for positive diameters; enabled CX without a field raised ValueError."
   },
   "verification": {
     "scope": [
-      "That the assembly equals an independent recomputation of the wall broadcast and the saved term order.",
-      "That the zero-diameter cells carry zero wall loss and enabled-CX-without-field fails closed.",
-      "The alignment and nonnegativity failure contracts.",
-      "Read-only valid-input replay against the SHA-256-pinned saved KN1DPy implementation; historical development evidence only."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_neutral_frequency_assembly.py"
     ],
-    "evidence_ceiling": "The maintained source-free tests establish the wall/CX assembly and fail-closed contracts. A separate read-only replay on bounded finite real inputs can compare with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Public distribution licensing remains pending a human decision.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

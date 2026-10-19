@@ -79,15 +79,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 原子双通道散射源归约 package, source anchor KN1DPy/kinetic_h.py:1297-1317, as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 6fe5d850c7aef5c07f8c5996dc65948a6ba35f1ea10e120dcb6fd28ed61ff159. Finite real valid inputs retain the saved arithmetic order and signed-value behavior. SciRel additionally rejects implicit real conversion and non-finite derived results; source error-message parity is not claimed. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "read-only historical replay",
-      "scientific regression tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -104,22 +103,20 @@
   },
   "example": {
     "description": "Aggregate two atomic sources, including a cancellation case, and reject misalignment.",
-    "code": "import numpy as np\nfrom scirel.kinetic import reduce_atomic_scattered_sources\nsource = np.ones((1, 2, 3))\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, 2 * source), 3 * source)\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, -source), np.zeros_like(source))\ntry:\n    reduce_atomic_scattered_sources(source, np.ones((1, 2, 4)))\nexcept ValueError as error:\n    assert 'finite aligned 3-D' in str(error)\nelse:\n    raise AssertionError('a misaligned field must be rejected')",
-    "expected": "The pointwise sums including exact cancellation; a misaligned field is rejected."
+    "code": "import numpy as np\nfrom scirel.kinetic import reduce_atomic_scattered_sources\nsource = np.ones((1, 2, 3))\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, 2 * source), 3 * source)\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, -source), np.zeros_like(source))\ntry:\n    reduce_atomic_scattered_sources(source, np.ones((1, 2, 4)))\nexcept ValueError as error:\n    assert 'finite aligned 3-D' in str(error)\nelse:\n    raise AssertionError('a misaligned field must be rejected')\n",
+    "expected": "Observed PASS: The pointwise sums including exact cancellation; a misaligned field is rejected."
   },
   "verification": {
     "scope": [
       "That the sum equals an independent pointwise addition and preserves signed values.",
-      "The alignment and finiteness failure contracts.",
-      "Read-only valid-input comparison against the SHA-256-pinned saved KN1DPy implementation; historical development evidence only."
+      "The alignment and finiteness failure contracts."
     ],
     "tests": [
       "tests/operator_contracts/test_neutral_scattered_sources.py"
     ],
-    "evidence_ceiling": "The maintained source-free tests establish saved-order arithmetic, signed-value and fail-closed contracts. A separate read-only replay can compare bounded finite real inputs with the SHA-256-pinned saved implementation; it does not establish malformed-input parity, qualified-L1 provenance, expert recognition, version-level trust or distribution licensing.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

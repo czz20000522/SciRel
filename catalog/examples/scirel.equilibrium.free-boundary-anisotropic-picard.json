@@ -1,2348 +1,2347 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-  "kind": "task_graph",
-  "title": {
-    "en": "Anisotropic free-boundary Picard equilibrium",
-    "zh": "各向异性自由边界 Picard 平衡"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
+ "kind": "task_graph",
+ "title": {
+  "en": "Anisotropic free-boundary Picard equilibrium",
+  "zh": "各向异性自由边界 Picard 平衡"
+ },
+ "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通与其磁场导数共同更新，所有反馈状态的未松弛残差及平行力相容性决定收敛。",
+ "taxonomy": [
+  "equilibrium",
+  "anisotropic-pressure",
+  "free-boundary",
+  "picard",
+  "task-graph"
+ ],
+ "aliases": [
+  "anisotropic N4-N6-N7 Picard composition"
+ ],
+ "identity": {
+  "relation": "vacuum flux and field, dense cell-current Green responses and caller pressure closure to a bounded anisotropic R-Z equilibrium state",
+  "direction": "R-Z grid, vacuum state, Green matrices, pressure closure and controls -> final flux/field/pressure/current state and iteration diagnostics",
+  "definition": "在当前 psi、BR、BZ 上重算确定性压力闭合和环向电流，以节点梯形权重或显式单元边界积分电流；按 relax 混合旧电流再投影 Green 场。缺少成对场 Green 时从新增等离子体磁通导出磁场。墙分支同时加入墙磁通及其离散磁场导数。判停前从当前压力电流构造未松弛目标，要求 psi、BR、BZ 和电流全部闭合。返回态重算闭合、电流及平行力相容性；maxiter=0 不执行更新且不声称收敛。",
+  "model": "axisymmetric gyrotropic-pressure Picard composition with caller-owned N4 pressure closure and optional linear ideal-conductor wall correction",
+  "geometry": "Finite, strictly increasing, nonnegative-R rectilinear tensor grid with at least three nodes per axis; nonuniform axes are supported.",
+  "coordinates": "fields indexed [Z,R]; Green source and field axes use C-order flattened grid points",
+  "boundary": "Wall flux corrections carry their same discrete poloidal-field derivative. Caller matrices must describe compatible boundary sampling and response; the operator does not validate the physical conductor geometry or eliminate a truncated-SVD residual.",
+  "assumptions": [
+   "The pressure_closure callback returns scientifically justified nonnegative co-located pressure arrays and optional density/temperature arrays for each state, interpreting psi as R A_phi in Wb/rad.",
+   "All flux and field Green matrices share the declared current basis and appropriate Wb/rad/A or T/A units.",
+   "No supplied pressure-closure parameter is interpreted by the graph except inserting B0 when absent; the caller owns its physical model.",
+   "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "pressure_closure 是给定 {psi,B,params} 的确定性科学关系，不修改输入数组或依赖调用次数；图在判停及终态重求此关系。所有闭合与电流计算前要求 B>=minimum_field。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Cylindrical radius tensor grid.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "At least three samples per axis; strictly increasing, strictly monotone tensor axis; same shape as z_grid."
   },
-  "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通与其磁场导数共同更新，所有反馈状态的未松弛残差及平行力相容性决定收敛。",
-  "taxonomy": [
-    "equilibrium",
-    "anisotropic-pressure",
-    "free-boundary",
-    "picard",
-    "task-graph"
-  ],
-  "aliases": [
-    "anisotropic N4-N6-N7 Picard composition"
-  ],
-  "identity": {
-    "relation": "vacuum flux and field, dense cell-current Green responses and caller pressure closure to a bounded anisotropic R-Z equilibrium state",
-    "direction": "R-Z grid, vacuum state, Green matrices, pressure closure and controls -> final flux/field/pressure/current state and iteration diagnostics",
-    "definition": "在当前 psi、BR、BZ 上重算确定性压力闭合和环向电流，以节点梯形权重或显式单元边界积分电流；按 relax 混合旧电流再投影 Green 场。缺少成对场 Green 时从新增等离子体磁通导出磁场。墙分支同时加入墙磁通及其离散磁场导数。判停前从当前压力电流构造未松弛目标，要求 psi、BR、BZ 和电流全部闭合。返回态重算闭合、电流及平行力相容性；maxiter=0 不执行更新且不声称收敛。",
-    "model": "axisymmetric gyrotropic-pressure Picard composition with caller-owned N4 pressure closure and optional linear ideal-conductor wall correction",
-    "geometry": "Finite, strictly increasing, nonnegative-R rectilinear tensor grid with at least three nodes per axis; nonuniform axes are supported.",
-    "coordinates": "fields indexed [Z,R]; Green source and field axes use C-order flattened grid points",
-    "boundary": "Wall flux corrections carry their same discrete poloidal-field derivative. Caller matrices must describe compatible boundary sampling and response; the operator does not validate the physical conductor geometry or eliminate a truncated-SVD residual.",
-    "assumptions": [
-      "The pressure_closure callback returns scientifically justified nonnegative co-located pressure arrays and optional density/temperature arrays for each state, interpreting psi as R A_phi in Wb/rad.",
-      "All flux and field Green matrices share the declared current basis and appropriate Wb/rad/A or T/A units.",
-      "No supplied pressure-closure parameter is interpreted by the graph except inserting B0 when absent; the caller owns its physical model.",
-      "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "pressure_closure 是给定 {psi,B,params} 的确定性科学关系，不修改输入数组或依赖调用次数；图在判停及终态重求此关系。所有闭合与电流计算前要求 B>=minimum_field。"
-    ]
+  {
+   "name": "z_grid",
+   "description": "Axial coordinate tensor grid.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Same shape as r_grid; strictly increasing, strictly monotone axial axis."
   },
-  "inputs": [
-    {
-      "name": "r_grid",
-      "description": "Cylindrical radius tensor grid.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "At least three samples per axis; strictly increasing, strictly monotone tensor axis; same shape as z_grid."
-    },
-    {
-      "name": "z_grid",
-      "description": "Axial coordinate tensor grid.",
-      "units": "m",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Same shape as r_grid; strictly increasing, strictly monotone axial axis."
-    },
-    {
-      "name": "psi_vac",
-      "description": "Vacuum/external psi=R A_phi and initial Picard flux state.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Exact grid shape; validated by the feedback dependency during iteration or the zero-step terminal branch."
-    },
-    {
-      "name": "br_vac",
-      "description": "Vacuum radial poloidal field and initial BR.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Exact grid shape; field-magnitude dependency validates finiteness before closure."
-    },
-    {
-      "name": "bz_vac",
-      "description": "Vacuum axial poloidal field and initial BZ.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Exact grid shape and co-located with br_vac."
-    },
-    {
-      "name": "g_psi",
-      "description": "Dense source-cell-current to psi=R A_phi Green matrix.",
-      "units": "Wb/rad/A",
-      "shape": "[N_Z*N_R,N_Z*N_R]",
-      "dtype": "finite real array-like",
-      "required": true,
-      "constraints": "Exact square grid-point size, with C-order source columns and field rows."
-    },
-    {
-      "name": "g_br",
-      "description": "Optional source-current to radial-field Green matrix.",
-      "units": "T/A",
-      "shape": "[N_Z*N_R,N_Z*N_R] or null",
-      "dtype": "finite real array-like or None",
-      "required": false,
-      "default": null,
-      "constraints": "必须与 g_bz 成对给定；两者均缺省时由新增等离子体 psi 的 -∂Z psi/R 导出 BR 增量，再加入 br_vac 与可选墙增量。"
-    },
-    {
-      "name": "g_bz",
-      "description": "Optional source-current to axial-field Green matrix.",
-      "units": "T/A",
-      "shape": "[N_Z*N_R,N_Z*N_R] or null",
-      "dtype": "finite real array-like or None",
-      "required": false,
-      "default": null,
-      "constraints": "必须与 g_br 成对给定；两者均缺省时由新增等离子体 psi 的 ∂R psi/R 导出 BZ 增量（轴上取规则极限），再加入 bz_vac 与可选墙增量。"
-    },
-    {
-      "name": "params",
-      "description": "Caller-owned pressure-closure parameter mapping.",
-      "units": "mixed",
-      "shape": "mapping",
-      "dtype": "Python mapping",
-      "required": true,
-      "constraints": "Shallow-copied before use; if B0 is absent, the graph inserts positive b0 or the initial field-magnitude median. Other keys are passed through without physical validation by this graph."
-    },
-    {
-      "name": "pressure_closure",
-      "description": "Caller-provided pressure closure evaluated at current state.",
-      "units": "psi Wb/rad, B T; pressure output Pa",
-      "shape": "callable({psi,B,params})->mapping",
-      "dtype": "Python callable",
-      "required": true,
-      "constraints": "Returns p_parallel, p_perp, density and electron_temperature; pressures must be finite nonnegative exact-grid arrays; latter two may be None or finite nonnegative exact-grid arrays. 给定状态的关系须确定且不改写输入，允许多次求值；场低于 minimum_field 时在回调前拒绝。"
-    },
-    {
-      "name": "tol",
-      "description": "全部反馈状态的未松弛相对残差上限。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": true,
-      "constraints": "有限严格正数；比较 max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual)，不用松弛后的磁通步幅代替。"
-    },
-    {
-      "name": "maxiter",
-      "description": "Maximum number of Picard updates.",
-      "units": "iteration",
-      "shape": "scalar",
-      "dtype": "integer scalar, not bool",
-      "required": true,
-      "constraints": "Nonnegative; zero skips the update loop but still runs terminal closure/current evaluation."
-    },
-    {
-      "name": "relax",
-      "description": "Retention weight of previous relaxed cell currents.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "finite real scalar",
-      "required": true,
-      "constraints": "0 <= relax <= 1; this is current-state, not flux-state, relaxation."
-    },
-    {
-      "name": "b0",
-      "description": "Positive reference field inserted into params.B0 only if that key is absent.",
-      "units": "T",
-      "shape": "scalar or null",
-      "dtype": "finite real scalar or None",
-      "required": false,
-      "default": null,
-      "constraints": "When needed, None uses the median initial field magnitude; an explicit value must be positive. An existing params.B0 is not replaced."
-    },
-    {
-      "name": "plasma_mask",
-      "description": "Active-cell selector for feedback and terminal current.",
-      "units": "boolean",
-      "shape": "[N_Z,N_R] or null",
-      "dtype": "boolean array or None",
-      "required": false,
-      "default": null,
-      "constraints": "Exact grid shape and bool dtype when supplied; False cells are zeroed for feedback and terminal current."
-    },
-    {
-      "name": "boundary_correction",
-      "description": "Optional ideal-conductor wall-flux correction configuration.",
-      "units": "mixed",
-      "shape": "mapping or null",
-      "dtype": "Python mapping or None",
-      "required": false,
-      "default": null,
-      "constraints": "When supplied, requires dimensionless boundary_sample_matrix [N_b,N_f] and Wb/rad/A green_boundary_to_boundary [N_b,N_w] and green_boundary_to_field [N_f,N_w]; optional rcond defaults to 1e-10. Matrix validation belongs to the wall Operator."
-    },
-    {
-      "name": "cell_edges",
-      "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "units": "m",
-      "shape": "(N_R+1, N_Z+1) arrays or None",
-      "dtype": "pair of finite arrays or None",
-      "required": false,
-      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-      "default": null
-    },
-    {
-      "name": "compatibility_tol",
-      "description": "Maximum resolved parallel-force fraction.",
-      "units": "1",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": false,
-      "constraints": "Maximum resolved parallel-force fraction.",
-      "default": 0.05
-    },
-    {
-      "name": "minimum_field",
-      "description": "Positive terminal field floor in T.",
-      "units": "T",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": false,
-      "constraints": "有限严格正数；在每次压力闭合/电流计算前，包括初态、反馈中间态和返回态，要求所有 B>=minimum_field。",
-      "default": 1e-08
-    },
-    {
-      "name": "strict_compatibility",
-      "description": "Raise on incompatible parallel pressure force; false retains explicit failed compatibility.",
-      "units": "1",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": false,
-      "constraints": "Raise on incompatible parallel pressure force; false retains explicit failed compatibility.",
-      "default": true
-    }
-  ],
-  "outputs": [
-    {
-      "name": "psi",
-      "description": "Last wall-corrected or directly projected psi=R A_phi state.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "At maxiter=0 equals psi_vac after terminal evaluation; optional wall correction changes psi and adds its consistent discrete magnetic-field increment."
-    },
-    {
-      "name": "BR",
-      "description": "Last radial field state including plasma and optional wall-flux increments.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "The supplied br_vac plus the g_br plasma response when field Green matrices are supplied, or the discrete radial field from the plasma flux increment otherwise; a completed wall correction adds its discrete radial field increment."
-    },
-    {
-      "name": "BZ",
-      "description": "Last axial field state including plasma and optional wall-flux increments.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "The supplied bz_vac plus the g_bz plasma response when field Green matrices are supplied, or the discrete axial field from the plasma flux increment otherwise; a completed wall correction adds its discrete axial field increment."
-    },
-    {
-      "name": "B",
-      "description": "Terminal poloidal magnitude from returned BR/BZ.",
-      "units": "T",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Reevaluated from the returned BR/BZ after bounded iteration, including the discrete wall-flux field increment when present. Coherence of the supplied vacuum and Green responses remains a caller precondition."
-    },
-    {
-      "name": "profiles",
-      "description": "Terminal pressure closure fields.",
-      "units": "p_parallel/p_perp Pa; density m^-3 or caller units; electron_temperature caller units",
-      "shape": "mapping",
-      "dtype": "Python mapping",
-      "required": true,
-      "constraints": "Contains exactly p_parallel, p_perp, density and electron_temperature from the terminal callback, after array validation."
-    },
-    {
-      "name": "j_phi",
-      "description": "Terminal toroidal current density after optional mask.",
-      "units": "A/m^2",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Reevaluated at final psi and B; zero outside plasma_mask."
-    },
-    {
-      "name": "plasma_currents",
-      "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
-      "units": "A",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
-    },
-    {
-      "name": "picard_current_state",
-      "description": "Last relaxed flattened cell-current feedback state.",
-      "units": "A",
-      "shape": "[N_Z*N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "At maxiter=0, the dependency's zero initial state is returned."
-    },
-    {
-      "name": "gradp_term",
-      "description": "Terminal isotropic-comparison current contribution.",
-      "units": "A/m^2",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "From unmasked terminal current decomposition; may be nonzero outside plasma_mask."
-    },
-    {
-      "name": "anisotropy_curvature_term",
-      "description": "Terminal current remainder after isotropic comparison.",
-      "units": "A/m^2",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "From unmasked current decomposition; may be nonzero outside plasma_mask."
-    },
-    {
-      "name": "converged",
-      "description": "全部未松弛状态闭合且平行压力力相容，并已执行至少一轮时为真。",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "fixed_point_residual<=tol 且 equilibrium_compatible 且 iterations>0；松弛造成的小磁通步幅不足以证明收敛。"
-    },
-    {
-      "name": "iterations",
-      "description": "Number of performed feedback updates.",
-      "units": "iteration",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "0 <= iterations <= maxiter."
-    },
-    {
-      "name": "residual",
-      "description": "Last relative flux-state change.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Initially infinity for maxiter=0; finite after a successful update."
-    },
-    {
-      "name": "residual_history",
-      "description": "Relative flux change after each completed update.",
-      "units": "dimensionless",
-      "shape": "[iterations]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Empty when maxiter=0; otherwise one value per update."
-    },
-    {
-      "name": "parameters",
-      "description": "Shallow-copied input parameters with inserted B0 if absent.",
-      "units": "mixed",
-      "shape": "mapping",
-      "dtype": "Python dict",
-      "required": true,
-      "constraints": "Other caller keys are not normalized by the graph."
-    },
-    {
-      "name": "boundary_currents",
-      "description": "Last ideal-conductor source-current coefficients.",
-      "units": "A",
-      "shape": "[N_wall] or null",
-      "dtype": "float64 array or None",
-      "required": true,
-      "constraints": "None without a completed wall correction; from the last update if enabled."
-    },
-    {
-      "name": "boundary_flux_correction",
-      "description": "Last wall response at field flux points.",
-      "units": "Wb/rad",
-      "shape": "[N_Z,N_R] or null",
-      "dtype": "float64 array or None",
-      "required": true,
-      "constraints": "None without a completed wall correction; its discrete flux derivatives are added to BR and BZ during that update."
-    },
-    {
-      "name": "boundary_residual_norm",
-      "description": "Last sampled boundary-flux residual norm.",
-      "units": "Wb/rad",
-      "shape": "scalar or null",
-      "dtype": "float or None",
-      "required": true,
-      "constraints": "None without a completed wall correction; a nonzero value is allowed."
-    },
-    {
-      "name": "failure_reason",
-      "description": "Explicit bounded nonconvergence marker.",
-      "units": "dimensionless",
-      "shape": "string or null",
-      "dtype": "str or None",
-      "required": true,
-      "constraints": "相容性不满足且 strict_compatibility=false 时为 parallel_force_incompatible；否则已执行更新且完整固定点通过时为 None，未通过或零步时为 maxiter_reached。"
-    },
-    {
-      "name": "fixed_point_residual",
-      "description": "返回态的完整未松弛固定点残差。",
-      "units": "1",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual)；所有候选使用相同等离子体/墙投影，收敛要求此值<=tol。"
-    },
-    {
-      "name": "force_diagnostics",
-      "description": "Full terminal force mapping.",
-      "units": "mixed SI",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "Full terminal force mapping."
-    },
-    {
-      "name": "parallel_force_diagnostics",
-      "description": "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero.",
-      "units": "mixed SI",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero."
-    },
-    {
-      "name": "flux_converged",
-      "description": "Whether the last relaxed flux step stagnated within tol.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "Whether the last relaxed flux step stagnated within tol."
-    },
-    {
-      "name": "equilibrium_compatible",
-      "description": "Whether the resolved parallel-force compatibility gate passes.",
-      "units": "boolean",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "Whether the resolved parallel-force compatibility gate passes."
-    },
-    {
-      "name": "flux_fixed_point_residual",
-      "description": "psi 的未松弛目标与当前态 L2 差；分母=max(||psi_target||,||psi_state||,||psi_vac||)，三者均零时残差为零。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
-    },
-    {
-      "name": "field_fixed_point_residual",
-      "description": "BR、BZ 各自相对 L2 差的最大值；每分量分母=max(||B_target||,||B_state||,||B_vac||)，三者均零时该分量为零。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
-    },
-    {
-      "name": "current_fixed_point_residual",
-      "description": "当前已松弛电流与返回态压力电流的未松弛目标 L2 差；分母=max(||I_target||,||I_state||)，均零时残差为零。",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller supplies a physically justified pressure closure and coherent vacuum/Green response on the exact same ordered grid.",
-      "The optional boundary matrices sample and correct the same flux basis; shape validation alone cannot prove physical consistency.",
-      "All bound dependencies accept the data encountered both during iteration and terminal reevaluation."
-    ],
-    "supported": [
-      "Bounded anisotropic composition with declared-domain current quadrature, consistent flux/field corrections and terminal fixed-point/parallel-force diagnostics."
-    ],
-    "excluded": [
-      "A built-in Frank-Egedal closure or independent validation of caller params and pressure physics.",
-      "Independent physical qualification of caller-supplied vacuum, Green or wall responses; consistent discrete wall-flux field increments alone do not establish a physical boundary model.",
-      "A general free-boundary equilibrium guarantee, automatic Green construction, or guaranteed Picard convergence."
-    ]
+  {
+   "name": "psi_vac",
+   "description": "Vacuum/external psi=R A_phi and initial Picard flux state.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact grid shape; validated by the feedback dependency during iteration or the zero-step terminal branch."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for missing required ports, invalid grid, mask, controls, params mapping, closure output or incomplete wall config; dependency validation errors propagate. The maintained implementation validates grid and mask before required ports, unlike the pending intake source. Non-mapping positional inputs are rejected by the composition layer with TypeError.",
-    "runtime_failure": "压力闭合回调及依赖错误传播。每次闭合/电流求值前 B<minimum_field 均抛出 FloatingPointError；strict_compatibility=true 的返回态平行力不相容抛出 ValueError。Green/墙矩阵的物理一致性需调用方独立论证。",
-    "nonconvergence": "在最多maxiter次更新后，若返回态完整固定点残差或力相容性不通过，则返回converged=false及明确失败原因。最后允许更新恰好通过仍可converged=true。maxiter=0跳过更新，终态评估后返回residual=inf、空历史且不声称收敛。",
-    "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state mapping, not an exception."
+  {
+   "name": "br_vac",
+   "description": "Vacuum radial poloidal field and initial BR.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact grid shape; field-magnitude dependency validates finiteness before closure."
   },
-  "provenance": {
-    "lineage_summary": "The current SciRel TaskGraph, historical Pleiades development mapping, YAML, direct graph tests and pending intake candidate were compared. SciRel and intake source differ only in whether grid/mask or required-port validation runs first. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. Wb versus Wb/rad graph wiring remains unresolved. This successor corrects independently manufactured cylindrical-axis, quadrature-domain, floating-point zero-force and terminal-state defects where applicable; predecessor behavior is not treated as physical authority.",
-    "source_kinds": [
-      "historical Pleiades development TaskGraph mapping and YAML",
-      "pending intake development candidate",
-      "current SciRel implementation, graph and leaf regressions, and flux-convention audit"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "bz_vac",
+   "description": "Vacuum axial poloidal field and initial BZ.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact grid shape and co-located with br_vac."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.equilibrium.free_boundary_anisotropic_picard",
-      "symbol": "solve_free_boundary_anisotropic_picard",
-      "signature": "solve_free_boundary_anisotropic_picard(inputs=None, **kwargs)",
-      "canonical_module": "scirel.equilibrium",
-      "canonical_symbol": "solve_free_boundary_anisotropic_picard"
-    }
+  {
+   "name": "g_psi",
+   "description": "Dense source-cell-current to psi=R A_phi Green matrix.",
+   "units": "Wb/rad/A",
+   "shape": "[N_Z*N_R,N_Z*N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact square grid-point size, with C-order source columns and field rows."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.field.poloidal-field-magnitude"
-      },
-      {
-        "asset_id": "scirel.equilibrium.anisotropic-toroidal-current"
-      },
-      {
-        "asset_id": "scirel.equilibrium.anisotropic-picard-feedback"
-      },
-      {
-        "asset_id": "scirel.field.ideal-conductor-boundary"
-      },
-      {
-        "asset_id": "scirel.diagnostics.picard-flux-residual"
-      }
-    ]
+  {
+   "name": "g_br",
+   "description": "Optional source-current to radial-field Green matrix.",
+   "units": "T/A",
+   "shape": "[N_Z*N_R,N_Z*N_R] or null",
+   "dtype": "finite real array-like or None",
+   "required": false,
+   "default": null,
+   "constraints": "必须与 g_bz 成对给定；两者均缺省时由新增等离子体 psi 的 -∂Z psi/R 导出 BR 增量，再加入 br_vac 与可选墙增量。"
   },
-  "example": {
-    "description": "A constant isotropic pressure and zero Green response complete one step without changing vacuum flux or field.",
-    "code": "import numpy as np\nfrom scirel.equilibrium import solve_free_boundary_anisotropic_picard\nr, z = np.meshgrid([0.2, 0.4, 0.6], [-0.1, 0.0, 0.1])\nshape, size = r.shape, r.size\ndef closure(state):\n    p = np.full(shape, 2.0)\n    return {'p_parallel': p, 'p_perp': p, 'density': None, 'electron_temperature': None}\nresult = solve_free_boundary_anisotropic_picard(r_grid=r, z_grid=z, psi_vac=r**2/2, br_vac=np.zeros(shape), bz_vac=np.ones(shape), g_psi=np.zeros((size, size)), params={}, pressure_closure=closure, tol=1e-12, maxiter=1, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r**2/2)\nnp.testing.assert_allclose(result['j_phi'], 0.0, atol=1e-12)\nassert result['converged'] and result['iterations'] == 1 and result['failure_reason'] is None",
-    "expected": "One converged update retains vacuum flux and zero toroidal current; no wall correction is applied."
+  {
+   "name": "g_bz",
+   "description": "Optional source-current to axial-field Green matrix.",
+   "units": "T/A",
+   "shape": "[N_Z*N_R,N_Z*N_R] or null",
+   "dtype": "finite real array-like or None",
+   "required": false,
+   "default": null,
+   "constraints": "必须与 g_br 成对给定；两者均缺省时由新增等离子体 psi 的 ∂R psi/R 导出 BZ 增量（轴上取规则极限），再加入 bz_vac 与可选墙增量。"
   },
-  "verification": {
-    "scope": [
-      "A manufactured polynomial wall response gives matching returned flux and magnetic field.",
-      "True parallel-pressure imbalance cannot be reported as equilibrium convergence.",
-      "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence.",
-      "解析秩一 Green 反馈检查两步状态传递及 I²+I-K=0 终态；近完全保留的松弛不能因小步幅提前退出。",
-      "磁通保持不变但场和电流仍变化时不宣称收敛；空磁场在压力回调前失败关闭。"
-    ],
-    "tests": [
-      "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py",
-      "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
-    ],
-    "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
-    "known_limitations": [
-      "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
-      "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-      "No expert scientific endorsement or public release follows from this numerical successor."
-    ]
+  {
+   "name": "params",
+   "description": "Caller-owned pressure-closure parameter mapping.",
+   "units": "mixed",
+   "shape": "mapping",
+   "dtype": "Python mapping",
+   "required": true,
+   "constraints": "Shallow-copied before use; if B0 is absent, the graph inserts positive b0 or the initial field-magnitude median. Other keys are passed through without physical validation by this graph."
   },
-  "graph": {
-    "nodes": [
-      {
-        "id": "initial_state",
-        "kind": "controlled_glue",
-        "description": "Validate and pack geometry, retain configuration and initialize evolving vacuum psi/BR/BZ, current state and loop counters; initial B0 insertion and Picard-control validation follow the first field evaluation.",
-        "inputs": [
-          "r_grid",
-          "z_grid",
-          "psi_vac",
-          "br_vac",
-          "bz_vac",
-          "g_psi",
-          "g_br",
-          "g_bz",
-          "params",
-          "tol",
-          "maxiter",
-          "relax",
-          "b0",
-          "plasma_mask",
-          "boundary_correction",
-          "cell_edges",
-          "compatibility_tol",
-          "minimum_field",
-          "strict_compatibility"
-        ],
-        "outputs": [
-          "geometry",
-          "vacuum",
-          "green",
-          "config",
-          "evolving",
-          "currents_old"
-        ]
-      },
-      {
-        "id": "field",
-        "kind": "operator",
-        "asset_id": "scirel.field.poloidal-field-magnitude",
-        "description": "从当前 BR/BZ 求场强，在每次压力/电流求值前检查 minimum_field；初态另外求参考场中位数。",
-        "inputs": [
-          "evolving"
-        ],
-        "outputs": [
-          "magnetic"
-        ]
-      },
-      {
-        "id": "pressure_closure",
-        "kind": "caller_port",
-        "description": "Invoke caller pressure_closure({psi,B,params}) and validate the four declared profile values.",
-        "inputs": [
-          "pressure_closure",
-          "evolving",
-          "magnetic",
-          "config"
-        ],
-        "outputs": [
-          "profiles"
-        ]
-      },
-      {
-        "id": "current_source",
-        "kind": "operator",
-        "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
-        "description": "Compute full, isotropic-comparison and difference current terms on the current field/pressure state.",
-        "inputs": [
-          "geometry",
-          "evolving",
-          "profiles"
-        ],
-        "outputs": [
-          "current_parts"
-        ]
-      },
-      {
-        "id": "current_feedback",
-        "kind": "operator",
-        "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
-        "description": "Clip current with the fixed mask, form and relax cell currents and project psi/BR/BZ through Green matrices.",
-        "inputs": [
-          "geometry",
-          "vacuum",
-          "green",
-          "config",
-          "current_parts",
-          "currents_old"
-        ],
-        "outputs": [
-          "projection",
-          "currents_next"
-        ]
-      },
-      {
-        "id": "wall_correction",
-        "kind": "operator",
-        "asset_id": "scirel.field.ideal-conductor-boundary",
-        "description": "When configured, solve the ideal-conductor linear boundary response for projected flux, then derive and add the field increment from that correction.",
-        "inputs": [
-          "projection",
-          "config"
-        ],
-        "outputs": [
-          "wall_result"
-        ]
-      },
-      {
-        "id": "select_flux",
-        "kind": "controlled_glue",
-        "description": "Select corrected flux and add the magnetic derivative of that same wall increment to the projected field.",
-        "inputs": [
-          "projection",
-          "wall_result",
-          "config",
-          "geometry"
-        ],
-        "outputs": [
-          "psi_next",
-          "boundary_state",
-          "projection"
-        ]
-      },
-      {
-        "id": "residual",
-        "kind": "operator",
-        "asset_id": "scirel.diagnostics.picard-flux-residual",
-        "description": "Measure relative psi change after optional wall correction.",
-        "inputs": [
-          "evolving",
-          "psi_next"
-        ],
-        "outputs": [
-          "residual"
-        ]
-      },
-      {
-        "id": "loop_control",
-        "kind": "controlled_glue",
-        "description": "至少一轮后完整未松弛状态残差<=tol时判停，否则继续至maxiter；松弛磁通步幅仅追加诊断历史。零步保持零电流和无穷步幅残差。",
-        "inputs": [
-          "psi_next",
-          "projection",
-          "currents_next",
-          "residual",
-          "config",
-          "boundary_state",
-          "fixed_point_residual"
-        ],
-        "outputs": [
-          "evolving",
-          "currents_old",
-          "loop_state",
-          "boundary_state"
-        ]
-      },
-      {
-        "id": "terminal_state",
-        "kind": "controlled_glue",
-        "description": "在返回psi/BR/BZ重算场、确定性压力闭合、电流、节点/单元权重及完整未松弛目标，验证minimum_field和平行力相容性，输出所有状态残差、迭代及墙诊断。零步返回初始零电流且不声称收敛。",
-        "inputs": [
-          "evolving",
-          "magnetic",
-          "profiles",
-          "current_parts",
-          "geometry",
-          "config",
-          "currents_old",
-          "loop_state",
-          "boundary_state",
-          "cell_edges",
-          "compatibility_tol",
-          "minimum_field",
-          "strict_compatibility",
-          "vacuum",
-          "green"
-        ],
-        "outputs": [
-          "psi",
-          "BR",
-          "BZ",
-          "B",
-          "profiles",
-          "j_phi",
-          "plasma_currents",
-          "picard_current_state",
-          "gradp_term",
-          "anisotropy_curvature_term",
-          "converged",
-          "iterations",
-          "residual",
-          "residual_history",
-          "parameters",
-          "boundary_currents",
-          "boundary_flux_correction",
-          "boundary_residual_norm",
-          "failure_reason",
-          "fixed_point_residual",
-          "force_diagnostics",
-          "parallel_force_diagnostics",
-          "flux_converged",
-          "equilibrium_compatible",
-          "flux_fixed_point_residual",
-          "field_fixed_point_residual",
-          "current_fixed_point_residual"
-        ]
-      },
-      {
-        "id": "fixed_point_target",
-        "kind": "controlled_glue",
-        "description": "使用当前压力/电流构造未松弛 Green 目标，施加相同墙磁通和磁场增量，独立报告 psi/BR/BZ/电流残差及其最大值。",
-        "inputs": [
-          "geometry",
-          "vacuum",
-          "green",
-          "config",
-          "evolving",
-          "current_parts",
-          "currents_old"
-        ],
-        "outputs": [
-          "fixed_point_residual",
-          "flux_fixed_point_residual",
-          "field_fixed_point_residual",
-          "current_fixed_point_residual"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "r_grid"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "r_grid"
-        },
-        "description": "Radius grid.",
-        "condition": "Always.",
-        "transform": "Validate tensor grid and retain.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "z_grid"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "z_grid"
-        },
-        "description": "Axial grid.",
-        "condition": "Always.",
-        "transform": "Validate matching tensor grid.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "psi_vac"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "psi_vac"
-        },
-        "description": "Initial/vacuum flux.",
-        "condition": "Always.",
-        "transform": "Initialize psi state and preserve offset.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "br_vac"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "br_vac"
-        },
-        "description": "Initial radial field.",
-        "condition": "Always.",
-        "transform": "Initialize BR state and preserve offset.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "bz_vac"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "bz_vac"
-        },
-        "description": "Initial axial field.",
-        "condition": "Always.",
-        "transform": "Initialize BZ state and preserve offset.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "g_psi"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "g_psi"
-        },
-        "description": "Flux Green response.",
-        "condition": "Always.",
-        "transform": "Retain in Green bundle.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "g_br"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "g_br"
-        },
-        "description": "Optional radial-field Green response.",
-        "condition": "If supplied.",
-        "transform": "Retain in Green bundle.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "g_bz"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "g_bz"
-        },
-        "description": "Optional axial-field Green response.",
-        "condition": "If supplied.",
-        "transform": "Retain in Green bundle.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "params"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "params"
-        },
-        "description": "Caller closure parameters.",
-        "condition": "Always.",
-        "transform": "Shallow copy; defer missing-B0 insertion until after initial field magnitude.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "pressure_closure"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "pressure_closure"
-        },
-        "description": "Caller-owned pressure relation.",
-        "condition": "Each iteration and terminal reevaluation.",
-        "transform": "Call with {psi,B,params}.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "tol"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "tol"
-        },
-        "description": "Residual threshold.",
-        "condition": "Always.",
-        "transform": "Retain for validation after initial field evaluation.",
-        "kind": "control",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "maxiter"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "maxiter"
-        },
-        "description": "Finite update bound.",
-        "condition": "Always.",
-        "transform": "Retain for validation after initial field evaluation.",
-        "kind": "control",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "relax"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "relax"
-        },
-        "description": "Old-current retention weight.",
-        "condition": "Always.",
-        "transform": "Retain for validation after initial field evaluation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "b0"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "b0"
-        },
-        "description": "Optional B0 override.",
-        "condition": "Only if params lacks B0.",
-        "transform": "Retain explicit value pending initial field median.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "plasma_mask"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "plasma_mask"
-        },
-        "description": "Optional fixed active cells.",
-        "condition": "If supplied.",
-        "transform": "Retain exact boolean selector.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "boundary_correction"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "boundary_correction"
-        },
-        "description": "Optional wall configuration.",
-        "condition": "If supplied.",
-        "transform": "Retain declared matrices and rcond.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "field",
-          "port": "evolving"
-        },
-        "description": "Initial BR/BZ field.",
-        "condition": "Before first update.",
-        "transform": "Extract BR/BZ.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "evolving"
-        },
-        "description": "Initial psi.",
-        "condition": "Before first update or zero-step terminal evaluation.",
-        "transform": "Extract psi.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "field",
-          "port": "magnetic"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "magnetic"
-        },
-        "description": "Current field magnitude.",
-        "condition": "Each evaluation.",
-        "transform": "Pass B field.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "config"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "config"
-        },
-        "description": "Closure parameter map.",
-        "condition": "Each evaluation.",
-        "transform": "After first field magnitude, insert positive B0 if absent and validate tol/maxiter/relax; pass copied params.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "geometry"
-        },
-        "to": {
-          "node": "current_source",
-          "port": "geometry"
-        },
-        "description": "R-Z grid.",
-        "condition": "Each current evaluation.",
-        "transform": "Unpack r_grid/z_grid.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "current_source",
-          "port": "evolving"
-        },
-        "description": "Initial BR/BZ.",
-        "condition": "Before first update or zero-step terminal evaluation.",
-        "transform": "Unpack field components.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pressure_closure",
-          "port": "profiles"
-        },
-        "to": {
-          "node": "current_source",
-          "port": "profiles"
-        },
-        "description": "Validated parallel and perpendicular pressures.",
-        "condition": "Each current evaluation.",
-        "transform": "Extract p_parallel and p_perp.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "geometry"
-        },
-        "to": {
-          "node": "current_feedback",
-          "port": "geometry"
-        },
-        "description": "Cell-area grid.",
-        "condition": "Each update or zero-step initialization.",
-        "transform": "Unpack R-Z grid.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "vacuum"
-        },
-        "to": {
-          "node": "current_feedback",
-          "port": "vacuum"
-        },
-        "description": "Vacuum offsets.",
-        "condition": "Each update or zero-step initialization.",
-        "transform": "Unpack psi/BR/BZ offsets.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "green"
-        },
-        "to": {
-          "node": "current_feedback",
-          "port": "green"
-        },
-        "description": "Dense Green responses.",
-        "condition": "Each update or zero-step initialization.",
-        "transform": "Unpack g_psi and paired field matrices.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "config"
-        },
-        "to": {
-          "node": "current_feedback",
-          "port": "config"
-        },
-        "description": "Mask and relaxation controls.",
-        "condition": "Each update or zero-step initialization.",
-        "transform": "Extract plasma_mask and relax.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "current_source",
-          "port": "current_parts"
-        },
-        "to": {
-          "node": "current_feedback",
-          "port": "current_parts"
-        },
-        "description": "Current source.",
-        "condition": "Each update or zero-step initialization.",
-        "transform": "Extract j_phi.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "currents_old"
-        },
-        "to": {
-          "node": "current_feedback",
-          "port": "currents_old"
-        },
-        "description": "Initial unpopulated previous-current state.",
-        "condition": "First update.",
-        "transform": "Pass None for zero initialization.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "current_feedback",
-          "port": "projection"
-        },
-        "to": {
-          "node": "wall_correction",
-          "port": "projection"
-        },
-        "description": "Uncorrected projected flux.",
-        "condition": "Only when wall correction is configured and an update executes.",
-        "transform": "Flatten psi in C order for boundary Operator.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "config"
-        },
-        "to": {
-          "node": "wall_correction",
-          "port": "config"
-        },
-        "description": "Wall sampling and Green matrices.",
-        "condition": "Only when wall correction is configured.",
-        "transform": "Unpack boundary matrices and optional rcond.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "current_feedback",
-          "port": "projection"
-        },
-        "to": {
-          "node": "select_flux",
-          "port": "projection"
-        },
-        "description": "Projected psi/BR/BZ.",
-        "condition": "Each update.",
-        "transform": "Add the magnetic-field increment of wall-corrected minus uncorrected flux to BR/BZ.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "wall_correction",
-          "port": "wall_result"
-        },
-        "to": {
-          "node": "select_flux",
-          "port": "wall_result"
-        },
-        "description": "Optional corrected field flux and diagnostics.",
-        "condition": "Only when wall correction is configured.",
-        "transform": "Reshape corrected flux and field correction to grid.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "config"
-        },
-        "to": {
-          "node": "select_flux",
-          "port": "config"
-        },
-        "description": "Wall branch selection.",
-        "condition": "Each update.",
-        "transform": "Select corrected psi if enabled.",
-        "kind": "control",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "residual",
-          "port": "evolving"
-        },
-        "description": "Initial previous psi.",
-        "condition": "First update.",
-        "transform": "Extract psi before step.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "select_flux",
-          "port": "psi_next"
-        },
-        "to": {
-          "node": "residual",
-          "port": "psi_next"
-        },
-        "description": "Flux after optional wall correction.",
-        "condition": "Each update.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "select_flux",
-          "port": "psi_next"
-        },
-        "to": {
-          "node": "loop_control",
-          "port": "psi_next"
-        },
-        "description": "Next flux state.",
-        "condition": "Each update.",
-        "transform": "Assign evolving psi.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "select_flux",
-          "port": "projection"
-        },
-        "to": {
-          "node": "loop_control",
-          "port": "projection"
-        },
-        "description": "Wall-consistent projected magnetic components.",
-        "condition": "Each update.",
-        "transform": "Assign the projected components, including the discrete magnetic-field increment of the wall flux correction when enabled.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "current_feedback",
-          "port": "currents_next"
-        },
-        "to": {
-          "node": "loop_control",
-          "port": "currents_next"
-        },
-        "description": "Relaxed current state.",
-        "condition": "Each update.",
-        "transform": "Retain for next update.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "residual",
-          "port": "residual"
-        },
-        "to": {
-          "node": "loop_control",
-          "port": "residual"
-        },
-        "description": "Step relative flux change.",
-        "condition": "Each update.",
-        "transform": "Append to history and compare with tol.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "config"
-        },
-        "to": {
-          "node": "loop_control",
-          "port": "config"
-        },
-        "description": "Finite stopping rule.",
-        "condition": "Each stop decision.",
-        "transform": "Read tol and maxiter.",
-        "kind": "control",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "select_flux",
-          "port": "boundary_state"
-        },
-        "to": {
-          "node": "loop_control",
-          "port": "boundary_state"
-        },
-        "description": "Last wall diagnostics or absent state.",
-        "condition": "Each update.",
-        "transform": "Retain last completed branch.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "field",
-          "port": "evolving"
-        },
-        "description": "Updated BR/BZ field.",
-        "condition": "Next iteration or terminal reevaluation.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "free_boundary_picard"
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "pressure_closure",
-          "port": "evolving"
-        },
-        "description": "Updated psi.",
-        "condition": "Next iteration or terminal reevaluation.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "free_boundary_picard"
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "current_source",
-          "port": "evolving"
-        },
-        "description": "Updated BR/BZ.",
-        "condition": "Next iteration or terminal reevaluation.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "free_boundary_picard"
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "currents_old"
-        },
-        "to": {
-          "node": "current_feedback",
-          "port": "currents_old"
-        },
-        "description": "Previous relaxed cell currents.",
-        "condition": "Only when another update is due.",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "free_boundary_picard"
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "residual",
-          "port": "evolving"
-        },
-        "description": "Previous flux of next step.",
-        "condition": "Only when another update is due.",
-        "transform": "Extract psi before next step.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "free_boundary_picard"
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "evolving"
-        },
-        "description": "Returned state.",
-        "condition": "After stop or zero-step branch.",
-        "transform": "Unpack psi/BR/BZ.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "field",
-          "port": "magnetic"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "magnetic"
-        },
-        "description": "Terminal B.",
-        "condition": "Terminal reevaluation.",
-        "transform": "Extract B.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "pressure_closure",
-          "port": "profiles"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "profiles"
-        },
-        "description": "Terminal profile mapping.",
-        "condition": "Terminal reevaluation.",
-        "transform": "Keep four declared fields.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "current_source",
-          "port": "current_parts"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "current_parts"
-        },
-        "description": "Terminal current decomposition.",
-        "condition": "Terminal reevaluation.",
-        "transform": "Mask j_phi only; retain unmasked decomposition terms.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "geometry"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "geometry"
-        },
-        "description": "Node-domain composite-trapezoid area, or physical area from explicit cell_edges.",
-        "condition": "Terminal assembly.",
-        "transform": "Use abs(dR*dZ).",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "config"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "config"
-        },
-        "description": "Mask and parameter settings.",
-        "condition": "Terminal assembly.",
-        "transform": "Apply mask to terminal j_phi.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "currents_old"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "currents_old"
-        },
-        "description": "Last relaxed current state.",
-        "condition": "Terminal assembly.",
-        "transform": "Use zero dependency state when no update ran.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "loop_state"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "loop_state"
-        },
-        "description": "Iteration count, residual, history and failure marker.",
-        "condition": "Terminal assembly.",
-        "transform": "Preserve values without retry.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "boundary_state"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "boundary_state"
-        },
-        "description": "Last wall response or null fields.",
-        "condition": "Terminal assembly.",
-        "transform": "Preserve optional diagnostics.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "psi"
-        },
-        "to": {
-          "node": "$output",
-          "port": "psi"
-        },
-        "description": "Final flux.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "BR"
-        },
-        "to": {
-          "node": "$output",
-          "port": "BR"
-        },
-        "description": "Final radial field.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "BZ"
-        },
-        "to": {
-          "node": "$output",
-          "port": "BZ"
-        },
-        "description": "Final axial field.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "B"
-        },
-        "to": {
-          "node": "$output",
-          "port": "B"
-        },
-        "description": "Final field magnitude.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "profiles"
-        },
-        "to": {
-          "node": "$output",
-          "port": "profiles"
-        },
-        "description": "Final pressure profiles.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "j_phi"
-        },
-        "to": {
-          "node": "$output",
-          "port": "j_phi"
-        },
-        "description": "Masked terminal current density.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "plasma_currents"
-        },
-        "to": {
-          "node": "$output",
-          "port": "plasma_currents"
-        },
-        "description": "Terminal raw cell currents.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "picard_current_state"
-        },
-        "to": {
-          "node": "$output",
-          "port": "picard_current_state"
-        },
-        "description": "Last relaxed current state.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "gradp_term"
-        },
-        "to": {
-          "node": "$output",
-          "port": "gradp_term"
-        },
-        "description": "Terminal isotropic comparison.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "anisotropy_curvature_term"
-        },
-        "to": {
-          "node": "$output",
-          "port": "anisotropy_curvature_term"
-        },
-        "description": "Terminal anisotropic difference.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "converged"
-        },
-        "to": {
-          "node": "$output",
-          "port": "converged"
-        },
-        "description": "Stop flag.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "iterations"
-        },
-        "to": {
-          "node": "$output",
-          "port": "iterations"
-        },
-        "description": "Executed update count.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "residual"
-        },
-        "to": {
-          "node": "$output",
-          "port": "residual"
-        },
-        "description": "Last relative flux change.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "residual_history"
-        },
-        "to": {
-          "node": "$output",
-          "port": "residual_history"
-        },
-        "description": "Per-step residuals.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "parameters"
-        },
-        "to": {
-          "node": "$output",
-          "port": "parameters"
-        },
-        "description": "Used closure parameters.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "boundary_currents"
-        },
-        "to": {
-          "node": "$output",
-          "port": "boundary_currents"
-        },
-        "description": "Wall currents or None.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "boundary_flux_correction"
-        },
-        "to": {
-          "node": "$output",
-          "port": "boundary_flux_correction"
-        },
-        "description": "Wall field-flux correction or None.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "boundary_residual_norm"
-        },
-        "to": {
-          "node": "$output",
-          "port": "boundary_residual_norm"
-        },
-        "description": "Wall residual norm or None.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "failure_reason"
-        },
-        "to": {
-          "node": "$output",
-          "port": "failure_reason"
-        },
-        "description": "Bounded nonconvergence marker.",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "cell_edges"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "cell_edges"
-        },
-        "description": "Explicit cell_edges binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "cell_edges"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "cell_edges"
-        },
-        "description": "Explicit cell_edges binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "fixed_point_residual"
-        },
-        "to": {
-          "node": "$output",
-          "port": "fixed_point_residual"
-        },
-        "description": "Return the terminal fixed_point_residual.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "compatibility_tol"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "compatibility_tol"
-        },
-        "description": "Explicit compatibility_tol binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "compatibility_tol"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "compatibility_tol"
-        },
-        "description": "Explicit compatibility_tol binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "minimum_field"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "minimum_field"
-        },
-        "description": "Explicit minimum_field binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "minimum_field"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "minimum_field"
-        },
-        "description": "Explicit minimum_field binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "strict_compatibility"
-        },
-        "to": {
-          "node": "initial_state",
-          "port": "strict_compatibility"
-        },
-        "description": "Explicit strict_compatibility binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "strict_compatibility"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "strict_compatibility"
-        },
-        "description": "Explicit strict_compatibility binding.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "force_diagnostics"
-        },
-        "to": {
-          "node": "$output",
-          "port": "force_diagnostics"
-        },
-        "description": "Return the terminal force_diagnostics.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "parallel_force_diagnostics"
-        },
-        "to": {
-          "node": "$output",
-          "port": "parallel_force_diagnostics"
-        },
-        "description": "Return the terminal parallel_force_diagnostics.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "flux_converged"
-        },
-        "to": {
-          "node": "$output",
-          "port": "flux_converged"
-        },
-        "description": "Return the terminal flux_converged.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "equilibrium_compatible"
-        },
-        "to": {
-          "node": "$output",
-          "port": "equilibrium_compatible"
-        },
-        "description": "Return the terminal equilibrium_compatible.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "geometry"
-        },
-        "to": {
-          "node": "select_flux",
-          "port": "geometry"
-        },
-        "description": "Geometry for differentiating the wall flux increment.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "vacuum"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "vacuum"
-        },
-        "description": "Terminal unrelaxed map input.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "green"
-        },
-        "to": {
-          "node": "terminal_state",
-          "port": "green"
-        },
-        "description": "Terminal unrelaxed map input.",
-        "condition": "When the bound stage executes.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "flux_fixed_point_residual"
-        },
-        "to": {
-          "node": "$output",
-          "port": "flux_fixed_point_residual"
-        },
-        "description": "输出返回态相应未松弛固定点残差。",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "field_fixed_point_residual"
-        },
-        "to": {
-          "node": "$output",
-          "port": "field_fixed_point_residual"
-        },
-        "description": "输出返回态相应未松弛固定点残差。",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal_state",
-          "port": "current_fixed_point_residual"
-        },
-        "to": {
-          "node": "$output",
-          "port": "current_fixed_point_residual"
-        },
-        "description": "输出返回态相应未松弛固定点残差。",
-        "condition": "Successful return.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "geometry"
-        },
-        "to": {
-          "node": "fixed_point_target",
-          "port": "geometry"
-        },
-        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
-        "condition": "Every iteration and terminal evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "vacuum"
-        },
-        "to": {
-          "node": "fixed_point_target",
-          "port": "vacuum"
-        },
-        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
-        "condition": "Every iteration and terminal evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "green"
-        },
-        "to": {
-          "node": "fixed_point_target",
-          "port": "green"
-        },
-        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
-        "condition": "Every iteration and terminal evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initial_state",
-          "port": "config"
-        },
-        "to": {
-          "node": "fixed_point_target",
-          "port": "config"
-        },
-        "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
-        "condition": "Every iteration and terminal evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "evolving"
-        },
-        "to": {
-          "node": "fixed_point_target",
-          "port": "evolving"
-        },
-        "description": "在当前反馈场及压力电流上计算完整目标残差。",
-        "condition": "当前迭代初态或返回态评估；消费上一轮完整反馈状态。",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "free_boundary_picard"
-      },
-      {
-        "from": {
-          "node": "current_source",
-          "port": "current_parts"
-        },
-        "to": {
-          "node": "fixed_point_target",
-          "port": "current_parts"
-        },
-        "description": "在当前反馈场及压力电流上计算完整目标残差。",
-        "condition": "Every iteration and terminal evaluation.",
-        "transform": "Identity.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "loop_control",
-          "port": "currents_old"
-        },
-        "to": {
-          "node": "fixed_point_target",
-          "port": "currents_old"
-        },
-        "description": "在当前反馈场及压力电流上计算完整目标残差。",
-        "condition": "当前迭代初态或返回态评估；消费上一轮完整反馈状态。",
-        "transform": "Identity.",
-        "kind": "feedback",
-        "required": true,
-        "feedback_id": "free_boundary_picard"
-      },
-      {
-        "from": {
-          "node": "fixed_point_target",
-          "port": "fixed_point_residual"
-        },
-        "to": {
-          "node": "loop_control",
-          "port": "fixed_point_residual"
-        },
-        "description": "完整未松弛固定点残差决定停止或继续。",
-        "condition": "After at least one completed update.",
-        "transform": "Compare with tol.",
-        "kind": "data",
-        "required": true
-      }
-    ],
-    "execution": {
-      "mode": "bounded_sequential_picard_with_optional_wall_flux_correction",
-      "ordering": "验证几何和显式端口，初始化真空场并插入缺省B0，验证控制。每轮先检查minimum_field，再在当前场重算确定性压力和电流，构造完整未松弛Green/墙目标；已有至少一轮且完整残差通过时判停，否则松弛电流并更新Green场和墙磁通/磁场，记录磁通步幅，继续至maxiter。终态重算全部压力、电流、固定点与力相容性。",
-      "branches": [
-        "Without a wall, use projected flux and its field response.",
-        "With a wall, use projected flux plus wall correction and the derivative-consistent magnetic increment.",
-        "maxiter=0 evaluates terminal diagnostics but does not claim convergence.",
-        "Incompatible parallel force raises by default; strict_compatibility=false returns converged=false and explicit diagnostics."
-      ],
-      "state_ownership": "The graph owns evolving psi/BR/BZ, prior relaxed cell currents, residual and history; the caller owns vacuum state, Green matrices, fixed mask, parameter mapping and pressure_closure.",
-      "failure_propagation": "Invalid inputs, closure outputs and dependency failures abort without partial mapping. Only bounded nonconvergence yields a last-state mapping with failure_reason.",
-      "feedback": [
-        {
-          "id": "free_boundary_picard",
-          "state": "psi, BR, BZ, prior relaxed cell currents, residual history and update count",
-          "initialization": "psi/BR/BZ start from vacuum inputs, prior currents are None, residual is infinity, history empty and count zero.",
-          "update_order": "当前场下界检查→确定性压力→电流→完整未松弛目标判停→松弛电流→Green磁通/场→墙磁通及导数场→诊断历史→下一态。",
-          "continue_when": "完整未松弛状态残差>tol 且 executed updates<maxiter；初态必须先执行一轮。",
-          "stop_when": "至少一轮后完整未松弛状态残差<=tol，或执行次数达到maxiter（含零步上限）。",
-          "iteration_bound": "Validated runtime integer maxiter >= 0",
-          "nonconvergence": "Return final reevaluated state with converged=false and failure_reason='maxiter_reached'; no hidden retry."
-        }
-      ]
-    }
+  {
+   "name": "pressure_closure",
+   "description": "Caller-provided pressure closure evaluated at current state.",
+   "units": "psi Wb/rad, B T; pressure output Pa",
+   "shape": "callable({psi,B,params})->mapping",
+   "dtype": "Python callable",
+   "required": true,
+   "constraints": "Returns p_parallel, p_perp, density and electron_temperature; pressures must be finite nonnegative exact-grid arrays; latter two may be None or finite nonnegative exact-grid arrays. 给定状态的关系须确定且不改写输入，允许多次求值；场低于 minimum_field 时在回调前拒绝。"
+  },
+  {
+   "name": "tol",
+   "description": "全部反馈状态的未松弛相对残差上限。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "有限严格正数；比较 max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual)，不用松弛后的磁通步幅代替。"
+  },
+  {
+   "name": "maxiter",
+   "description": "Maximum number of Picard updates.",
+   "units": "iteration",
+   "shape": "scalar",
+   "dtype": "integer scalar, not bool",
+   "required": true,
+   "constraints": "Nonnegative; zero skips the update loop but still runs terminal closure/current evaluation."
+  },
+  {
+   "name": "relax",
+   "description": "Retention weight of previous relaxed cell currents.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "0 <= relax <= 1; this is current-state, not flux-state, relaxation."
+  },
+  {
+   "name": "b0",
+   "description": "Positive reference field inserted into params.B0 only if that key is absent.",
+   "units": "T",
+   "shape": "scalar or null",
+   "dtype": "finite real scalar or None",
+   "required": false,
+   "default": null,
+   "constraints": "When needed, None uses the median initial field magnitude; an explicit value must be positive. An existing params.B0 is not replaced."
+  },
+  {
+   "name": "plasma_mask",
+   "description": "Active-cell selector for feedback and terminal current.",
+   "units": "boolean",
+   "shape": "[N_Z,N_R] or null",
+   "dtype": "boolean array or None",
+   "required": false,
+   "default": null,
+   "constraints": "Exact grid shape and bool dtype when supplied; False cells are zeroed for feedback and terminal current."
+  },
+  {
+   "name": "boundary_correction",
+   "description": "Optional ideal-conductor wall-flux correction configuration.",
+   "units": "mixed",
+   "shape": "mapping or null",
+   "dtype": "Python mapping or None",
+   "required": false,
+   "default": null,
+   "constraints": "When supplied, requires dimensionless boundary_sample_matrix [N_b,N_f] and Wb/rad/A green_boundary_to_boundary [N_b,N_w] and green_boundary_to_field [N_f,N_w]; optional rcond defaults to 1e-10. Matrix validation belongs to the wall Operator."
+  },
+  {
+   "name": "cell_edges",
+   "description": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "units": "m",
+   "shape": "(N_R+1, N_Z+1) arrays or None",
+   "dtype": "pair of finite arrays or None",
+   "required": false,
+   "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
+   "default": null
+  },
+  {
+   "name": "compatibility_tol",
+   "description": "Maximum resolved parallel-force fraction.",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "constraints": "Maximum resolved parallel-force fraction.",
+   "default": 0.05
+  },
+  {
+   "name": "minimum_field",
+   "description": "Positive terminal field floor in T.",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "constraints": "有限严格正数；在每次压力闭合/电流计算前，包括初态、反馈中间态和返回态，要求所有 B>=minimum_field。",
+   "default": 1e-08
+  },
+  {
+   "name": "strict_compatibility",
+   "description": "Raise on incompatible parallel pressure force; false retains explicit failed compatibility.",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "Raise on incompatible parallel pressure force; false retains explicit failed compatibility.",
+   "default": true
   }
+ ],
+ "outputs": [
+  {
+   "name": "psi",
+   "description": "Last wall-corrected or directly projected psi=R A_phi state.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "At maxiter=0 equals psi_vac after terminal evaluation; optional wall correction changes psi and adds its consistent discrete magnetic-field increment."
+  },
+  {
+   "name": "BR",
+   "description": "Last radial field state including plasma and optional wall-flux increments.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "The supplied br_vac plus the g_br plasma response when field Green matrices are supplied, or the discrete radial field from the plasma flux increment otherwise; a completed wall correction adds its discrete radial field increment."
+  },
+  {
+   "name": "BZ",
+   "description": "Last axial field state including plasma and optional wall-flux increments.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "The supplied bz_vac plus the g_bz plasma response when field Green matrices are supplied, or the discrete axial field from the plasma flux increment otherwise; a completed wall correction adds its discrete axial field increment."
+  },
+  {
+   "name": "B",
+   "description": "Terminal poloidal magnitude from returned BR/BZ.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Reevaluated from the returned BR/BZ after bounded iteration, including the discrete wall-flux field increment when present. Coherence of the supplied vacuum and Green responses remains a caller precondition."
+  },
+  {
+   "name": "profiles",
+   "description": "Terminal pressure closure fields.",
+   "units": "p_parallel/p_perp Pa; density m^-3 or caller units; electron_temperature caller units",
+   "shape": "mapping",
+   "dtype": "Python mapping",
+   "required": true,
+   "constraints": "Contains exactly p_parallel, p_perp, density and electron_temperature from the terminal callback, after array validation."
+  },
+  {
+   "name": "j_phi",
+   "description": "Terminal toroidal current density after optional mask.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Reevaluated at final psi and B; zero outside plasma_mask."
+  },
+  {
+   "name": "plasma_currents",
+   "description": "Terminal or step current density integrated with the explicitly declared node/cell-domain weights.",
+   "units": "A",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current."
+  },
+  {
+   "name": "picard_current_state",
+   "description": "Last relaxed flattened cell-current feedback state.",
+   "units": "A",
+   "shape": "[N_Z*N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "At maxiter=0, the dependency's zero initial state is returned."
+  },
+  {
+   "name": "gradp_term",
+   "description": "Terminal isotropic-comparison current contribution.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "From unmasked terminal current decomposition; may be nonzero outside plasma_mask."
+  },
+  {
+   "name": "anisotropy_curvature_term",
+   "description": "Terminal current remainder after isotropic comparison.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "From unmasked current decomposition; may be nonzero outside plasma_mask."
+  },
+  {
+   "name": "converged",
+   "description": "全部未松弛状态闭合且平行压力力相容，并已执行至少一轮时为真。",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "fixed_point_residual<=tol 且 equilibrium_compatible 且 iterations>0；松弛造成的小磁通步幅不足以证明收敛。"
+  },
+  {
+   "name": "iterations",
+   "description": "Number of performed feedback updates.",
+   "units": "iteration",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "0 <= iterations <= maxiter."
+  },
+  {
+   "name": "residual",
+   "description": "Last relative flux-state change.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Initially infinity for maxiter=0; finite after a successful update."
+  },
+  {
+   "name": "residual_history",
+   "description": "Relative flux change after each completed update.",
+   "units": "dimensionless",
+   "shape": "[iterations]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Empty when maxiter=0; otherwise one value per update."
+  },
+  {
+   "name": "parameters",
+   "description": "Shallow-copied input parameters with inserted B0 if absent.",
+   "units": "mixed",
+   "shape": "mapping",
+   "dtype": "Python dict",
+   "required": true,
+   "constraints": "Other caller keys are not normalized by the graph."
+  },
+  {
+   "name": "boundary_currents",
+   "description": "Last ideal-conductor source-current coefficients.",
+   "units": "A",
+   "shape": "[N_wall] or null",
+   "dtype": "float64 array or None",
+   "required": true,
+   "constraints": "None without a completed wall correction; from the last update if enabled."
+  },
+  {
+   "name": "boundary_flux_correction",
+   "description": "Last wall response at field flux points.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R] or null",
+   "dtype": "float64 array or None",
+   "required": true,
+   "constraints": "None without a completed wall correction; its discrete flux derivatives are added to BR and BZ during that update."
+  },
+  {
+   "name": "boundary_residual_norm",
+   "description": "Last sampled boundary-flux residual norm.",
+   "units": "Wb/rad",
+   "shape": "scalar or null",
+   "dtype": "float or None",
+   "required": true,
+   "constraints": "None without a completed wall correction; a nonzero value is allowed."
+  },
+  {
+   "name": "failure_reason",
+   "description": "Explicit bounded nonconvergence marker.",
+   "units": "dimensionless",
+   "shape": "string or null",
+   "dtype": "str or None",
+   "required": true,
+   "constraints": "相容性不满足且 strict_compatibility=false 时为 parallel_force_incompatible；否则已执行更新且完整固定点通过时为 None，未通过或零步时为 maxiter_reached。"
+  },
+  {
+   "name": "fixed_point_residual",
+   "description": "返回态的完整未松弛固定点残差。",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual)；所有候选使用相同等离子体/墙投影，收敛要求此值<=tol。"
+  },
+  {
+   "name": "force_diagnostics",
+   "description": "Full terminal force mapping.",
+   "units": "mixed SI",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Full terminal force mapping."
+  },
+  {
+   "name": "parallel_force_diagnostics",
+   "description": "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero.",
+   "units": "mixed SI",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Compatibility reports the residual above a dimensioned 64-epsilon tensor/stencil rounding envelope, retaining raw absolute and relative residuals and the envelope. This is a floating-point resolution diagnostic, not a truncation-error bound or evidence that a sub-resolution physical force is exactly zero."
+  },
+  {
+   "name": "flux_converged",
+   "description": "Whether the last relaxed flux step stagnated within tol.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Whether the last relaxed flux step stagnated within tol."
+  },
+  {
+   "name": "equilibrium_compatible",
+   "description": "Whether the resolved parallel-force compatibility gate passes.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Whether the resolved parallel-force compatibility gate passes."
+  },
+  {
+   "name": "flux_fixed_point_residual",
+   "description": "psi 的未松弛目标与当前态 L2 差；分母=max(||psi_target||,||psi_state||,||psi_vac||)，三者均零时残差为零。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
+  },
+  {
+   "name": "field_fixed_point_residual",
+   "description": "BR、BZ 各自相对 L2 差的最大值；每分量分母=max(||B_target||,||B_state||,||B_vac||)，三者均零时该分量为零。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
+  },
+  {
+   "name": "current_fixed_point_residual",
+   "description": "当前已松弛电流与返回态压力电流的未松弛目标 L2 差；分母=max(||I_target||,||I_state||)，均零时残差为零。",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "非负无量纲观测值；二进制浮点缩放运算避免有限状态的范数溢出。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller supplies a physically justified pressure closure and coherent vacuum/Green response on the exact same ordered grid.",
+   "The optional boundary matrices sample and correct the same flux basis; shape validation alone cannot prove physical consistency.",
+   "All bound dependencies accept the data encountered both during iteration and terminal reevaluation."
+  ],
+  "supported": [
+   "Bounded anisotropic composition with declared-domain current quadrature, consistent flux/field corrections and terminal fixed-point/parallel-force diagnostics."
+  ],
+  "excluded": [
+   "A built-in Frank-Egedal closure or independent validation of caller params and pressure physics.",
+   "Independent physical qualification of caller-supplied vacuum, Green or wall responses; consistent discrete wall-flux field increments alone do not establish a physical boundary model.",
+   "A general free-boundary equilibrium guarantee, automatic Green construction, or guaranteed Picard convergence."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for missing required ports, invalid grid, mask, controls, params mapping, closure output or incomplete wall config; dependency validation errors propagate. The maintained implementation validates grid and mask before required ports, unlike the pending intake source. Non-mapping positional inputs are rejected by the composition layer with TypeError.",
+  "runtime_failure": "压力闭合回调及依赖错误传播。每次闭合/电流求值前 B<minimum_field 均抛出 FloatingPointError；strict_compatibility=true 的返回态平行力不相容抛出 ValueError。Green/墙矩阵的物理一致性需调用方独立论证。",
+  "nonconvergence": "在最多maxiter次更新后，若返回态完整固定点残差或力相容性不通过，则返回converged=false及明确失败原因。最后允许更新恰好通过仍可converged=true。maxiter=0跳过更新，终态评估后返回residual=inf、空历史且不声称收敛。",
+  "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state mapping, not an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of vacuum flux and field, dense cell-current Green responses and caller pressure closure to a bounded anisotropic R-Z equilibrium state. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium.free_boundary_anisotropic_picard",
+   "symbol": "solve_free_boundary_anisotropic_picard",
+   "signature": "solve_free_boundary_anisotropic_picard(inputs=None, **kwargs)",
+   "canonical_module": "scirel.equilibrium",
+   "canonical_symbol": "solve_free_boundary_anisotropic_picard"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.field.poloidal-field-magnitude"
+   },
+   {
+    "asset_id": "scirel.equilibrium.anisotropic-toroidal-current"
+   },
+   {
+    "asset_id": "scirel.equilibrium.anisotropic-picard-feedback"
+   },
+   {
+    "asset_id": "scirel.field.ideal-conductor-boundary"
+   },
+   {
+    "asset_id": "scirel.diagnostics.picard-flux-residual"
+   }
+  ]
+ },
+ "example": {
+  "description": "A constant isotropic pressure and zero Green response complete one step without changing vacuum flux or field.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import solve_free_boundary_anisotropic_picard\nr, z = np.meshgrid([0.2, 0.4, 0.6], [-0.1, 0.0, 0.1])\nshape, size = r.shape, r.size\ndef closure(state):\n    p = np.full(shape, 2.0)\n    return {'p_parallel': p, 'p_perp': p, 'density': None, 'electron_temperature': None}\nresult = solve_free_boundary_anisotropic_picard(r_grid=r, z_grid=z, psi_vac=r**2/2, br_vac=np.zeros(shape), bz_vac=np.ones(shape), g_psi=np.zeros((size, size)), params={}, pressure_closure=closure, tol=1e-12, maxiter=1, relax=0.0)\nnp.testing.assert_allclose(result['psi'], r**2/2)\nnp.testing.assert_allclose(result['j_phi'], 0.0, atol=1e-12)\nassert result['converged'] and result['iterations'] == 1 and result['failure_reason'] is None",
+  "expected": "One converged update retains vacuum flux and zero toroidal current; no wall correction is applied."
+ },
+ "verification": {
+  "scope": [
+   "A manufactured polynomial wall response gives matching returned flux and magnetic field.",
+   "True parallel-pressure imbalance cannot be reported as equilibrium convergence.",
+   "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence.",
+   "解析秩一 Green 反馈检查两步状态传递及 I²+I-K=0 终态；近完全保留的松弛不能因小步幅提前退出。",
+   "磁通保持不变但场和电流仍变化时不宣称收敛；空磁场在压力回调前失败关闭。"
+  ],
+  "tests": [
+   "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py",
+   "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "known_limitations": [
+   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+   "No expert scientific endorsement or public release follows from this numerical successor."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "initial_state",
+    "kind": "controlled_glue",
+    "description": "Validate and pack geometry, retain configuration and initialize evolving vacuum psi/BR/BZ, current state and loop counters; initial B0 insertion and Picard-control validation follow the first field evaluation.",
+    "inputs": [
+     "r_grid",
+     "z_grid",
+     "psi_vac",
+     "br_vac",
+     "bz_vac",
+     "g_psi",
+     "g_br",
+     "g_bz",
+     "params",
+     "tol",
+     "maxiter",
+     "relax",
+     "b0",
+     "plasma_mask",
+     "boundary_correction",
+     "cell_edges",
+     "compatibility_tol",
+     "minimum_field",
+     "strict_compatibility"
+    ],
+    "outputs": [
+     "geometry",
+     "vacuum",
+     "green",
+     "config",
+     "evolving",
+     "currents_old"
+    ]
+   },
+   {
+    "id": "field",
+    "kind": "operator",
+    "asset_id": "scirel.field.poloidal-field-magnitude",
+    "description": "从当前 BR/BZ 求场强，在每次压力/电流求值前检查 minimum_field；初态另外求参考场中位数。",
+    "inputs": [
+     "evolving"
+    ],
+    "outputs": [
+     "magnetic"
+    ]
+   },
+   {
+    "id": "pressure_closure",
+    "kind": "caller_port",
+    "description": "Invoke caller pressure_closure({psi,B,params}) and validate the four declared profile values.",
+    "inputs": [
+     "pressure_closure",
+     "evolving",
+     "magnetic",
+     "config"
+    ],
+    "outputs": [
+     "profiles"
+    ]
+   },
+   {
+    "id": "current_source",
+    "kind": "operator",
+    "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
+    "description": "Compute full, isotropic-comparison and difference current terms on the current field/pressure state.",
+    "inputs": [
+     "geometry",
+     "evolving",
+     "profiles"
+    ],
+    "outputs": [
+     "current_parts"
+    ]
+   },
+   {
+    "id": "current_feedback",
+    "kind": "operator",
+    "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
+    "description": "Clip current with the fixed mask, form and relax cell currents and project psi/BR/BZ through Green matrices.",
+    "inputs": [
+     "geometry",
+     "vacuum",
+     "green",
+     "config",
+     "current_parts",
+     "currents_old"
+    ],
+    "outputs": [
+     "projection",
+     "currents_next"
+    ]
+   },
+   {
+    "id": "wall_correction",
+    "kind": "operator",
+    "asset_id": "scirel.field.ideal-conductor-boundary",
+    "description": "When configured, solve the ideal-conductor linear boundary response for projected flux, then derive and add the field increment from that correction.",
+    "inputs": [
+     "projection",
+     "config"
+    ],
+    "outputs": [
+     "wall_result"
+    ]
+   },
+   {
+    "id": "select_flux",
+    "kind": "controlled_glue",
+    "description": "Select corrected flux and add the magnetic derivative of that same wall increment to the projected field.",
+    "inputs": [
+     "projection",
+     "wall_result",
+     "config",
+     "geometry"
+    ],
+    "outputs": [
+     "psi_next",
+     "boundary_state",
+     "projection"
+    ]
+   },
+   {
+    "id": "residual",
+    "kind": "operator",
+    "asset_id": "scirel.diagnostics.picard-flux-residual",
+    "description": "Measure relative psi change after optional wall correction.",
+    "inputs": [
+     "evolving",
+     "psi_next"
+    ],
+    "outputs": [
+     "residual"
+    ]
+   },
+   {
+    "id": "loop_control",
+    "kind": "controlled_glue",
+    "description": "至少一轮后完整未松弛状态残差<=tol时判停，否则继续至maxiter；松弛磁通步幅仅追加诊断历史。零步保持零电流和无穷步幅残差。",
+    "inputs": [
+     "psi_next",
+     "projection",
+     "currents_next",
+     "residual",
+     "config",
+     "boundary_state",
+     "fixed_point_residual"
+    ],
+    "outputs": [
+     "evolving",
+     "currents_old",
+     "loop_state",
+     "boundary_state"
+    ]
+   },
+   {
+    "id": "terminal_state",
+    "kind": "controlled_glue",
+    "description": "在返回psi/BR/BZ重算场、确定性压力闭合、电流、节点/单元权重及完整未松弛目标，验证minimum_field和平行力相容性，输出所有状态残差、迭代及墙诊断。零步返回初始零电流且不声称收敛。",
+    "inputs": [
+     "evolving",
+     "magnetic",
+     "profiles",
+     "current_parts",
+     "geometry",
+     "config",
+     "currents_old",
+     "loop_state",
+     "boundary_state",
+     "cell_edges",
+     "compatibility_tol",
+     "minimum_field",
+     "strict_compatibility",
+     "vacuum",
+     "green"
+    ],
+    "outputs": [
+     "psi",
+     "BR",
+     "BZ",
+     "B",
+     "profiles",
+     "j_phi",
+     "plasma_currents",
+     "picard_current_state",
+     "gradp_term",
+     "anisotropy_curvature_term",
+     "converged",
+     "iterations",
+     "residual",
+     "residual_history",
+     "parameters",
+     "boundary_currents",
+     "boundary_flux_correction",
+     "boundary_residual_norm",
+     "failure_reason",
+     "fixed_point_residual",
+     "force_diagnostics",
+     "parallel_force_diagnostics",
+     "flux_converged",
+     "equilibrium_compatible",
+     "flux_fixed_point_residual",
+     "field_fixed_point_residual",
+     "current_fixed_point_residual"
+    ]
+   },
+   {
+    "id": "fixed_point_target",
+    "kind": "controlled_glue",
+    "description": "使用当前压力/电流构造未松弛 Green 目标，施加相同墙磁通和磁场增量，独立报告 psi/BR/BZ/电流残差及其最大值。",
+    "inputs": [
+     "geometry",
+     "vacuum",
+     "green",
+     "config",
+     "evolving",
+     "current_parts",
+     "currents_old"
+    ],
+    "outputs": [
+     "fixed_point_residual",
+     "flux_fixed_point_residual",
+     "field_fixed_point_residual",
+     "current_fixed_point_residual"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "r_grid"
+    },
+    "description": "Radius grid.",
+    "condition": "Always.",
+    "transform": "Validate tensor grid and retain.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "z_grid"
+    },
+    "description": "Axial grid.",
+    "condition": "Always.",
+    "transform": "Validate matching tensor grid.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "psi_vac"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "psi_vac"
+    },
+    "description": "Initial/vacuum flux.",
+    "condition": "Always.",
+    "transform": "Initialize psi state and preserve offset.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "br_vac"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "br_vac"
+    },
+    "description": "Initial radial field.",
+    "condition": "Always.",
+    "transform": "Initialize BR state and preserve offset.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "bz_vac"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "bz_vac"
+    },
+    "description": "Initial axial field.",
+    "condition": "Always.",
+    "transform": "Initialize BZ state and preserve offset.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "g_psi"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "g_psi"
+    },
+    "description": "Flux Green response.",
+    "condition": "Always.",
+    "transform": "Retain in Green bundle.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "g_br"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "g_br"
+    },
+    "description": "Optional radial-field Green response.",
+    "condition": "If supplied.",
+    "transform": "Retain in Green bundle.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "g_bz"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "g_bz"
+    },
+    "description": "Optional axial-field Green response.",
+    "condition": "If supplied.",
+    "transform": "Retain in Green bundle.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "params"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "params"
+    },
+    "description": "Caller closure parameters.",
+    "condition": "Always.",
+    "transform": "Shallow copy; defer missing-B0 insertion until after initial field magnitude.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "pressure_closure"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "pressure_closure"
+    },
+    "description": "Caller-owned pressure relation.",
+    "condition": "Each iteration and terminal reevaluation.",
+    "transform": "Call with {psi,B,params}.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "tol"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "tol"
+    },
+    "description": "Residual threshold.",
+    "condition": "Always.",
+    "transform": "Retain for validation after initial field evaluation.",
+    "kind": "control",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "maxiter"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "maxiter"
+    },
+    "description": "Finite update bound.",
+    "condition": "Always.",
+    "transform": "Retain for validation after initial field evaluation.",
+    "kind": "control",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "relax"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "relax"
+    },
+    "description": "Old-current retention weight.",
+    "condition": "Always.",
+    "transform": "Retain for validation after initial field evaluation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "b0"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "b0"
+    },
+    "description": "Optional B0 override.",
+    "condition": "Only if params lacks B0.",
+    "transform": "Retain explicit value pending initial field median.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "plasma_mask"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "plasma_mask"
+    },
+    "description": "Optional fixed active cells.",
+    "condition": "If supplied.",
+    "transform": "Retain exact boolean selector.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "boundary_correction"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "boundary_correction"
+    },
+    "description": "Optional wall configuration.",
+    "condition": "If supplied.",
+    "transform": "Retain declared matrices and rcond.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "field",
+     "port": "evolving"
+    },
+    "description": "Initial BR/BZ field.",
+    "condition": "Before first update.",
+    "transform": "Extract BR/BZ.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "evolving"
+    },
+    "description": "Initial psi.",
+    "condition": "Before first update or zero-step terminal evaluation.",
+    "transform": "Extract psi.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "field",
+     "port": "magnetic"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "magnetic"
+    },
+    "description": "Current field magnitude.",
+    "condition": "Each evaluation.",
+    "transform": "Pass B field.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "config"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "config"
+    },
+    "description": "Closure parameter map.",
+    "condition": "Each evaluation.",
+    "transform": "After first field magnitude, insert positive B0 if absent and validate tol/maxiter/relax; pass copied params.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "geometry"
+    },
+    "to": {
+     "node": "current_source",
+     "port": "geometry"
+    },
+    "description": "R-Z grid.",
+    "condition": "Each current evaluation.",
+    "transform": "Unpack r_grid/z_grid.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "current_source",
+     "port": "evolving"
+    },
+    "description": "Initial BR/BZ.",
+    "condition": "Before first update or zero-step terminal evaluation.",
+    "transform": "Unpack field components.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "pressure_closure",
+     "port": "profiles"
+    },
+    "to": {
+     "node": "current_source",
+     "port": "profiles"
+    },
+    "description": "Validated parallel and perpendicular pressures.",
+    "condition": "Each current evaluation.",
+    "transform": "Extract p_parallel and p_perp.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "geometry"
+    },
+    "to": {
+     "node": "current_feedback",
+     "port": "geometry"
+    },
+    "description": "Cell-area grid.",
+    "condition": "Each update or zero-step initialization.",
+    "transform": "Unpack R-Z grid.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "vacuum"
+    },
+    "to": {
+     "node": "current_feedback",
+     "port": "vacuum"
+    },
+    "description": "Vacuum offsets.",
+    "condition": "Each update or zero-step initialization.",
+    "transform": "Unpack psi/BR/BZ offsets.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "green"
+    },
+    "to": {
+     "node": "current_feedback",
+     "port": "green"
+    },
+    "description": "Dense Green responses.",
+    "condition": "Each update or zero-step initialization.",
+    "transform": "Unpack g_psi and paired field matrices.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "config"
+    },
+    "to": {
+     "node": "current_feedback",
+     "port": "config"
+    },
+    "description": "Mask and relaxation controls.",
+    "condition": "Each update or zero-step initialization.",
+    "transform": "Extract plasma_mask and relax.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "current_source",
+     "port": "current_parts"
+    },
+    "to": {
+     "node": "current_feedback",
+     "port": "current_parts"
+    },
+    "description": "Current source.",
+    "condition": "Each update or zero-step initialization.",
+    "transform": "Extract j_phi.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "currents_old"
+    },
+    "to": {
+     "node": "current_feedback",
+     "port": "currents_old"
+    },
+    "description": "Initial unpopulated previous-current state.",
+    "condition": "First update.",
+    "transform": "Pass None for zero initialization.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "current_feedback",
+     "port": "projection"
+    },
+    "to": {
+     "node": "wall_correction",
+     "port": "projection"
+    },
+    "description": "Uncorrected projected flux.",
+    "condition": "Only when wall correction is configured and an update executes.",
+    "transform": "Flatten psi in C order for boundary Operator.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "config"
+    },
+    "to": {
+     "node": "wall_correction",
+     "port": "config"
+    },
+    "description": "Wall sampling and Green matrices.",
+    "condition": "Only when wall correction is configured.",
+    "transform": "Unpack boundary matrices and optional rcond.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "current_feedback",
+     "port": "projection"
+    },
+    "to": {
+     "node": "select_flux",
+     "port": "projection"
+    },
+    "description": "Projected psi/BR/BZ.",
+    "condition": "Each update.",
+    "transform": "Add the magnetic-field increment of wall-corrected minus uncorrected flux to BR/BZ.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "wall_correction",
+     "port": "wall_result"
+    },
+    "to": {
+     "node": "select_flux",
+     "port": "wall_result"
+    },
+    "description": "Optional corrected field flux and diagnostics.",
+    "condition": "Only when wall correction is configured.",
+    "transform": "Reshape corrected flux and field correction to grid.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "config"
+    },
+    "to": {
+     "node": "select_flux",
+     "port": "config"
+    },
+    "description": "Wall branch selection.",
+    "condition": "Each update.",
+    "transform": "Select corrected psi if enabled.",
+    "kind": "control",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "residual",
+     "port": "evolving"
+    },
+    "description": "Initial previous psi.",
+    "condition": "First update.",
+    "transform": "Extract psi before step.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "select_flux",
+     "port": "psi_next"
+    },
+    "to": {
+     "node": "residual",
+     "port": "psi_next"
+    },
+    "description": "Flux after optional wall correction.",
+    "condition": "Each update.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "select_flux",
+     "port": "psi_next"
+    },
+    "to": {
+     "node": "loop_control",
+     "port": "psi_next"
+    },
+    "description": "Next flux state.",
+    "condition": "Each update.",
+    "transform": "Assign evolving psi.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "select_flux",
+     "port": "projection"
+    },
+    "to": {
+     "node": "loop_control",
+     "port": "projection"
+    },
+    "description": "Wall-consistent projected magnetic components.",
+    "condition": "Each update.",
+    "transform": "Assign the projected components, including the discrete magnetic-field increment of the wall flux correction when enabled.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "current_feedback",
+     "port": "currents_next"
+    },
+    "to": {
+     "node": "loop_control",
+     "port": "currents_next"
+    },
+    "description": "Relaxed current state.",
+    "condition": "Each update.",
+    "transform": "Retain for next update.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "residual",
+     "port": "residual"
+    },
+    "to": {
+     "node": "loop_control",
+     "port": "residual"
+    },
+    "description": "Step relative flux change.",
+    "condition": "Each update.",
+    "transform": "Append to history and compare with tol.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "config"
+    },
+    "to": {
+     "node": "loop_control",
+     "port": "config"
+    },
+    "description": "Finite stopping rule.",
+    "condition": "Each stop decision.",
+    "transform": "Read tol and maxiter.",
+    "kind": "control",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "select_flux",
+     "port": "boundary_state"
+    },
+    "to": {
+     "node": "loop_control",
+     "port": "boundary_state"
+    },
+    "description": "Last wall diagnostics or absent state.",
+    "condition": "Each update.",
+    "transform": "Retain last completed branch.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "field",
+     "port": "evolving"
+    },
+    "description": "Updated BR/BZ field.",
+    "condition": "Next iteration or terminal reevaluation.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "free_boundary_picard"
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "pressure_closure",
+     "port": "evolving"
+    },
+    "description": "Updated psi.",
+    "condition": "Next iteration or terminal reevaluation.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "free_boundary_picard"
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "current_source",
+     "port": "evolving"
+    },
+    "description": "Updated BR/BZ.",
+    "condition": "Next iteration or terminal reevaluation.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "free_boundary_picard"
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "currents_old"
+    },
+    "to": {
+     "node": "current_feedback",
+     "port": "currents_old"
+    },
+    "description": "Previous relaxed cell currents.",
+    "condition": "Only when another update is due.",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "free_boundary_picard"
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "residual",
+     "port": "evolving"
+    },
+    "description": "Previous flux of next step.",
+    "condition": "Only when another update is due.",
+    "transform": "Extract psi before next step.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "free_boundary_picard"
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "evolving"
+    },
+    "description": "Returned state.",
+    "condition": "After stop or zero-step branch.",
+    "transform": "Unpack psi/BR/BZ.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "field",
+     "port": "magnetic"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "magnetic"
+    },
+    "description": "Terminal B.",
+    "condition": "Terminal reevaluation.",
+    "transform": "Extract B.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "pressure_closure",
+     "port": "profiles"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "profiles"
+    },
+    "description": "Terminal profile mapping.",
+    "condition": "Terminal reevaluation.",
+    "transform": "Keep four declared fields.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "current_source",
+     "port": "current_parts"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "current_parts"
+    },
+    "description": "Terminal current decomposition.",
+    "condition": "Terminal reevaluation.",
+    "transform": "Mask j_phi only; retain unmasked decomposition terms.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "geometry"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "geometry"
+    },
+    "description": "Node-domain composite-trapezoid area, or physical area from explicit cell_edges.",
+    "condition": "Terminal assembly.",
+    "transform": "Use abs(dR*dZ).",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "config"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "config"
+    },
+    "description": "Mask and parameter settings.",
+    "condition": "Terminal assembly.",
+    "transform": "Apply mask to terminal j_phi.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "currents_old"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "currents_old"
+    },
+    "description": "Last relaxed current state.",
+    "condition": "Terminal assembly.",
+    "transform": "Use zero dependency state when no update ran.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "loop_state"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "loop_state"
+    },
+    "description": "Iteration count, residual, history and failure marker.",
+    "condition": "Terminal assembly.",
+    "transform": "Preserve values without retry.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "boundary_state"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "boundary_state"
+    },
+    "description": "Last wall response or null fields.",
+    "condition": "Terminal assembly.",
+    "transform": "Preserve optional diagnostics.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "psi"
+    },
+    "to": {
+     "node": "$output",
+     "port": "psi"
+    },
+    "description": "Final flux.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "BR"
+    },
+    "to": {
+     "node": "$output",
+     "port": "BR"
+    },
+    "description": "Final radial field.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "BZ"
+    },
+    "to": {
+     "node": "$output",
+     "port": "BZ"
+    },
+    "description": "Final axial field.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "B"
+    },
+    "to": {
+     "node": "$output",
+     "port": "B"
+    },
+    "description": "Final field magnitude.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "profiles"
+    },
+    "to": {
+     "node": "$output",
+     "port": "profiles"
+    },
+    "description": "Final pressure profiles.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "j_phi"
+    },
+    "to": {
+     "node": "$output",
+     "port": "j_phi"
+    },
+    "description": "Masked terminal current density.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "plasma_currents"
+    },
+    "to": {
+     "node": "$output",
+     "port": "plasma_currents"
+    },
+    "description": "Terminal raw cell currents.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "picard_current_state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "picard_current_state"
+    },
+    "description": "Last relaxed current state.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "gradp_term"
+    },
+    "to": {
+     "node": "$output",
+     "port": "gradp_term"
+    },
+    "description": "Terminal isotropic comparison.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "anisotropy_curvature_term"
+    },
+    "to": {
+     "node": "$output",
+     "port": "anisotropy_curvature_term"
+    },
+    "description": "Terminal anisotropic difference.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "converged"
+    },
+    "description": "Stop flag.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "iterations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "iterations"
+    },
+    "description": "Executed update count.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "residual"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual"
+    },
+    "description": "Last relative flux change.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "residual_history"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual_history"
+    },
+    "description": "Per-step residuals.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "parameters"
+    },
+    "to": {
+     "node": "$output",
+     "port": "parameters"
+    },
+    "description": "Used closure parameters.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "boundary_currents"
+    },
+    "to": {
+     "node": "$output",
+     "port": "boundary_currents"
+    },
+    "description": "Wall currents or None.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "boundary_flux_correction"
+    },
+    "to": {
+     "node": "$output",
+     "port": "boundary_flux_correction"
+    },
+    "description": "Wall field-flux correction or None.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "boundary_residual_norm"
+    },
+    "to": {
+     "node": "$output",
+     "port": "boundary_residual_norm"
+    },
+    "description": "Wall residual norm or None.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "failure_reason"
+    },
+    "to": {
+     "node": "$output",
+     "port": "failure_reason"
+    },
+    "description": "Bounded nonconvergence marker.",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "cell_edges"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "cell_edges"
+    },
+    "description": "Explicit cell_edges binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "cell_edges"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "cell_edges"
+    },
+    "description": "Explicit cell_edges binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "fixed_point_residual"
+    },
+    "to": {
+     "node": "$output",
+     "port": "fixed_point_residual"
+    },
+    "description": "Return the terminal fixed_point_residual.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "compatibility_tol"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "compatibility_tol"
+    },
+    "description": "Explicit compatibility_tol binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "compatibility_tol"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "compatibility_tol"
+    },
+    "description": "Explicit compatibility_tol binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "minimum_field"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "minimum_field"
+    },
+    "description": "Explicit minimum_field binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "minimum_field"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "minimum_field"
+    },
+    "description": "Explicit minimum_field binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "strict_compatibility"
+    },
+    "to": {
+     "node": "initial_state",
+     "port": "strict_compatibility"
+    },
+    "description": "Explicit strict_compatibility binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "strict_compatibility"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "strict_compatibility"
+    },
+    "description": "Explicit strict_compatibility binding.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "force_diagnostics"
+    },
+    "to": {
+     "node": "$output",
+     "port": "force_diagnostics"
+    },
+    "description": "Return the terminal force_diagnostics.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "parallel_force_diagnostics"
+    },
+    "to": {
+     "node": "$output",
+     "port": "parallel_force_diagnostics"
+    },
+    "description": "Return the terminal parallel_force_diagnostics.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "flux_converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "flux_converged"
+    },
+    "description": "Return the terminal flux_converged.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "equilibrium_compatible"
+    },
+    "to": {
+     "node": "$output",
+     "port": "equilibrium_compatible"
+    },
+    "description": "Return the terminal equilibrium_compatible.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "geometry"
+    },
+    "to": {
+     "node": "select_flux",
+     "port": "geometry"
+    },
+    "description": "Geometry for differentiating the wall flux increment.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "vacuum"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "vacuum"
+    },
+    "description": "Terminal unrelaxed map input.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "green"
+    },
+    "to": {
+     "node": "terminal_state",
+     "port": "green"
+    },
+    "description": "Terminal unrelaxed map input.",
+    "condition": "When the bound stage executes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "flux_fixed_point_residual"
+    },
+    "to": {
+     "node": "$output",
+     "port": "flux_fixed_point_residual"
+    },
+    "description": "输出返回态相应未松弛固定点残差。",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "field_fixed_point_residual"
+    },
+    "to": {
+     "node": "$output",
+     "port": "field_fixed_point_residual"
+    },
+    "description": "输出返回态相应未松弛固定点残差。",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal_state",
+     "port": "current_fixed_point_residual"
+    },
+    "to": {
+     "node": "$output",
+     "port": "current_fixed_point_residual"
+    },
+    "description": "输出返回态相应未松弛固定点残差。",
+    "condition": "Successful return.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "geometry"
+    },
+    "to": {
+     "node": "fixed_point_target",
+     "port": "geometry"
+    },
+    "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+    "condition": "Every iteration and terminal evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "vacuum"
+    },
+    "to": {
+     "node": "fixed_point_target",
+     "port": "vacuum"
+    },
+    "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+    "condition": "Every iteration and terminal evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "green"
+    },
+    "to": {
+     "node": "fixed_point_target",
+     "port": "green"
+    },
+    "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+    "condition": "Every iteration and terminal evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initial_state",
+     "port": "config"
+    },
+    "to": {
+     "node": "fixed_point_target",
+     "port": "config"
+    },
+    "description": "未松弛目标使用同一几何、真空、Green与闭合/墙配置。",
+    "condition": "Every iteration and terminal evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "evolving"
+    },
+    "to": {
+     "node": "fixed_point_target",
+     "port": "evolving"
+    },
+    "description": "在当前反馈场及压力电流上计算完整目标残差。",
+    "condition": "当前迭代初态或返回态评估；消费上一轮完整反馈状态。",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "free_boundary_picard"
+   },
+   {
+    "from": {
+     "node": "current_source",
+     "port": "current_parts"
+    },
+    "to": {
+     "node": "fixed_point_target",
+     "port": "current_parts"
+    },
+    "description": "在当前反馈场及压力电流上计算完整目标残差。",
+    "condition": "Every iteration and terminal evaluation.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "loop_control",
+     "port": "currents_old"
+    },
+    "to": {
+     "node": "fixed_point_target",
+     "port": "currents_old"
+    },
+    "description": "在当前反馈场及压力电流上计算完整目标残差。",
+    "condition": "当前迭代初态或返回态评估；消费上一轮完整反馈状态。",
+    "transform": "Identity.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "free_boundary_picard"
+   },
+   {
+    "from": {
+     "node": "fixed_point_target",
+     "port": "fixed_point_residual"
+    },
+    "to": {
+     "node": "loop_control",
+     "port": "fixed_point_residual"
+    },
+    "description": "完整未松弛固定点残差决定停止或继续。",
+    "condition": "After at least one completed update.",
+    "transform": "Compare with tol.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "bounded_sequential_picard_with_optional_wall_flux_correction",
+   "ordering": "验证几何和显式端口，初始化真空场并插入缺省B0，验证控制。每轮先检查minimum_field，再在当前场重算确定性压力和电流，构造完整未松弛Green/墙目标；已有至少一轮且完整残差通过时判停，否则松弛电流并更新Green场和墙磁通/磁场，记录磁通步幅，继续至maxiter。终态重算全部压力、电流、固定点与力相容性。",
+   "branches": [
+    "Without a wall, use projected flux and its field response.",
+    "With a wall, use projected flux plus wall correction and the derivative-consistent magnetic increment.",
+    "maxiter=0 evaluates terminal diagnostics but does not claim convergence.",
+    "Incompatible parallel force raises by default; strict_compatibility=false returns converged=false and explicit diagnostics."
+   ],
+   "state_ownership": "The graph owns evolving psi/BR/BZ, prior relaxed cell currents, residual and history; the caller owns vacuum state, Green matrices, fixed mask, parameter mapping and pressure_closure.",
+   "failure_propagation": "Invalid inputs, closure outputs and dependency failures abort without partial mapping. Only bounded nonconvergence yields a last-state mapping with failure_reason.",
+   "feedback": [
+    {
+     "id": "free_boundary_picard",
+     "state": "psi, BR, BZ, prior relaxed cell currents, residual history and update count",
+     "initialization": "psi/BR/BZ start from vacuum inputs, prior currents are None, residual is infinity, history empty and count zero.",
+     "update_order": "当前场下界检查→确定性压力→电流→完整未松弛目标判停→松弛电流→Green磁通/场→墙磁通及导数场→诊断历史→下一态。",
+     "continue_when": "完整未松弛状态残差>tol 且 executed updates<maxiter；初态必须先执行一轮。",
+     "stop_when": "至少一轮后完整未松弛状态残差<=tol，或执行次数达到maxiter（含零步上限）。",
+     "iteration_bound": "Validated runtime integer maxiter >= 0",
+     "nonconvergence": "Return final reevaluated state with converged=false and failure_reason='maxiter_reached'; no hidden retry."
+    }
+   ]
+  }
+ }
 }

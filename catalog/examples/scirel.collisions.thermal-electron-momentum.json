@@ -1,141 +1,139 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.collisions.thermal-electron-momentum",
-  "kind": "operator",
-  "title": {
-    "en": "Thermal electron normalized momentum",
-    "zh": "热电子归一化动量"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.thermal-electron-momentum",
+ "kind": "operator",
+ "title": {
+  "en": "Thermal electron normalized momentum",
+  "zh": "热电子归一化动量"
+ },
+ "summary": "计算非相对论热电子归一化动量 p_Te=sqrt(2T/mc²)。它是无量纲速度比 v/c，不是 cm/s 速度，不能直接作为 normalized-momentum 的 vnorm。 V6 区分中间溢出与最终不可表示性，避免可表示结果被错误拒绝或因中间下溢丢失。",
+ "taxonomy": [
+  "collisions",
+  "momentum-scales",
+  "normalized-momentum",
+  "thermal-electron"
+ ],
+ "aliases": [
+  "p_Te",
+  "thermal electron momentum scale",
+  "sqrt(2T/mc2)"
+ ],
+ "identity": {
+  "relation": "the thermal-electron normalized momentum p_Te as a function of the electron temperature and the electron rest energy",
+  "direction": "temperature_kev, restmkev -> p_Te",
+  "definition": "返回 sqrt(2×temperature_kev/restmkev) 的无量纲非相对论热速度比。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
+  "model": "独立闭式定义，不是拟合；常规 binary64 运算与危险中间量的高精度求值后继，不包含单位自动转换。",
+  "geometry": "not applicable; a scalar algebraic evaluation",
+  "coordinates": "not applicable",
+  "boundary": "正温度/静能的比值可能在开平方前下溢，后备求值保留可表示的正根；只有最终值超出 binary64 范围时拒绝。",
+  "assumptions": [
+   "两输入为同单位能量；所给 keV 数值不会被转换。非相对论关系不提供相对论修正。",
+   "两个叶入口独立。热速度比不能直接作为 vnorm；直接组合 divides by c twice，调用者需要先显式乘以光速换回速度。",
+   "常规区保留原浮点操作顺序，不承诺危险极值处与错误的旧操作逐位一致。",
+   "先检查形状与有限输入；可转换非实数值的既有 float() 行为保持，不新增物理含义。"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "temperature_kev",
+   "description": "Electron temperature, in keV.",
+   "units": "keV",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive, and scalar-shaped: a list, a tuple or an array with one or more dimensions is rejected by parameter name rather than converted. No upper bound is imposed; a finite value so large that the closed form is not representable is accepted by this constraint and rejected by the runtime representability check."
   },
-  "summary": "计算非相对论热电子归一化动量 p_Te=sqrt(2T/mc²)。它是无量纲速度比 v/c，不是 cm/s 速度，不能直接作为 normalized-momentum 的 vnorm。 V6 区分中间溢出与最终不可表示性，避免可表示结果被错误拒绝或因中间下溢丢失。",
-  "taxonomy": [
-    "collisions",
-    "momentum-scales",
-    "normalized-momentum",
-    "thermal-electron"
-  ],
-  "aliases": [
-    "p_Te",
-    "thermal electron momentum scale",
-    "sqrt(2T/mc2)"
-  ],
-  "identity": {
-    "relation": "the thermal-electron normalized momentum p_Te as a function of the electron temperature and the electron rest energy",
-    "direction": "temperature_kev, restmkev -> p_Te",
-    "definition": "返回 sqrt(2×temperature_kev/restmkev) 的无量纲非相对论热速度比。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
-    "model": "独立闭式定义，不是拟合；常规 binary64 运算与危险中间量的高精度求值后继，不包含单位自动转换。",
-    "geometry": "not applicable; a scalar algebraic evaluation",
-    "coordinates": "not applicable",
-    "boundary": "正温度/静能的比值可能在开平方前下溢，后备求值保留可表示的正根；只有最终值超出 binary64 范围时拒绝。",
-    "assumptions": [
-      "两输入为同单位能量；所给 keV 数值不会被转换。非相对论关系不提供相对论修正。",
-      "两个叶入口独立。热速度比不能直接作为 vnorm；直接组合 divides by c twice，调用者需要先显式乘以光速换回速度。",
-      "常规区保留原浮点操作顺序，不承诺危险极值处与错误的旧操作逐位一致。",
-      "先检查形状与有限输入；可转换非实数值的既有 float() 行为保持，不新增物理含义。"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "temperature_kev",
-      "description": "Electron temperature, in keV.",
-      "units": "keV",
-      "shape": "scalar",
-      "dtype": "real",
-      "required": true,
-      "constraints": "Finite and strictly positive, and scalar-shaped: a list, a tuple or an array with one or more dimensions is rejected by parameter name rather than converted. No upper bound is imposed; a finite value so large that the closed form is not representable is accepted by this constraint and rejected by the runtime representability check."
-    },
-    {
-      "name": "restmkev",
-      "description": "Electron rest energy, in keV; 511.0 for an electron.",
-      "units": "keV",
-      "shape": "scalar",
-      "dtype": "real",
-      "required": true,
-      "constraints": "Finite and strictly positive, and scalar-shaped. The value is the caller's: this asset states no rest energy of its own and performs no unit conversion."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "p_te",
-      "description": "The thermal-electron normalized momentum sqrt(2*T/mc^2), dimensionless, a speed in units of c.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float",
-      "required": true,
-      "constraints": "Python float，最终有限且为正；不是 cm/s 速度。不能将中间浮点溢出误判为最终闭式不可表示。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller wants the non-relativistic thermal speed ratio sqrt(2T/mc^2) of an electron, or of a species whose rest energy the caller supplies in keV.",
-      "Both arguments are energies in the same unit, so the result is dimensionless."
-    ],
-    "supported": [
-      "常规输入保留原科学关系及双精度运算顺序。",
-      "危险中间量使用精确输入 float 的 Decimal 后备求值；不缩小输入域、不放宽验证容差。",
-      "按参数名拒绝不合形状或不满足有限/符号合同的输入；最终溢出拒绝，不返回部分结果。"
-    ],
-    "excluded": [
-      "Composition with scirel.collisions.normalized-momentum. V3 listed it as supported; the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is removed rather than described.",
-      "Any relativistic correction to the thermal speed ratio.",
-      "Any statement of the electron rest energy, of the speed of light, or of any other physical constant; every constant is the caller's.",
-      "Any unit conversion, including the conversion of the returned ratio to a velocity.",
-      "The four Coulomb-log mappings the retained route also exposes: they are different relations and are not published with these two leaves.",
-      "最终结果超出 binary64 可表示范围时拒绝；中间结果溢出本身不在排除范围。"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, with a message naming the parameter, or when either is not finite and strictly positive, with the retained route's message. Both checks are the retained route's numeric guard plus an explicit shape check; the conversion and the domain checks themselves are unchanged.",
-    "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
-    "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
-    "partial_results": "Never returned; a rejected call produces no value."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel-owned formalisation of the retained CQL3D L1 route 库仑对数能量因子, which the bundle anchors on cfpgamma.f. The retained route exposes six mappings behind a string dispatcher scientific_operator(operation, **kwargs); this asset publishes the thermal-electron normalized momentum leaf alone. It is derived from the V3 review unit V3-CQL3D-MOMENTUM, which published this leaf and the grid-to-momentum map together and documented and tested a direct composition between them, and from the V2 review unit V2-CQL3D-COULOMB-ALGEBRA, which additionally kept all six mappings in one module named coulomb_log_scales. V4 published the two momentum leaves under the name momentum_scales, held the other four mappings out because they are a different relation, did not reproduce the dispatcher, checked that a scalar input is scalar-shaped before converting it, and removed the composition claim from this document and from the grid-to-momentum document because the composition is dimensionally invalid. V5 adds the representability check on the computed result, so that the finite-output contract the document advertises is true: the V4 candidate returned positive infinity for the finite pair temperature_kev = 1.0e308, restmkev = 511.0. The arithmetic of the leaf itself is unchanged from the retained route, bit for bit, on every input that is representable. The retained bundle cites no reference for the relation and states no licence. V6 is a new scientific correction: seven pre-fix counterexamples distinguish intermediate overflow/underflow from final representability. Ordinary evaluation is unchanged; original V5 bytes and false rejection assertion are retained in the correction evidence. No new source parity or redistribution permission is inferred.",
-    "source_kinds": [
-      "reviewed scientific implementation",
-      "reviewed source-free L1 extraction bundle",
-      "scientific regression tests",
-      "reviewed finite-extreme-value counterexample"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.collisions.momentum_scales",
-      "symbol": "thermal_electron_momentum",
-      "signature": "thermal_electron_momentum(*, temperature_kev, restmkev)",
-      "canonical_module": "scirel.collisions",
-      "canonical_symbol": "thermal_electron_momentum"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "同时演示保留普通关系与修正中间量极值后的最终结果。",
-    "code": "from scirel.collisions import thermal_electron_momentum\nimport math\np = thermal_electron_momentum(temperature_kev=250., restmkev=511.)\nassert p == 0.9891782353111633\nlarge = thermal_electron_momentum(temperature_kev=1e308, restmkev=511.)\nassert math.isfinite(large) and large > 1e152\ntiny = thermal_electron_momentum(temperature_kev=1e-300, restmkev=1e300)\nassert tiny > 0\nprint(p, large, tiny)",
-    "expected": "普通值 0.9891782353111633；危险大值约 6.256112470898544e152，微小值约 1.414213562373095e-300，均有限。"
-  },
-  "verification": {
-    "scope": [
-      "保持普通区原数值断言、有效容差、输入形状和错误消息；常规结果逐位不变。",
-      "修复前 13 个新增极值检查有 7 个实际失败；它们包含有限大值误拒绝、中间下溢归零和符号保持。",
-      "200 位 Decimal 独立求值及真实非有限终值拒绝检验覆盖新行为；原热输入 1e308/511 的拒绝断言被实证纠正，原件保留。",
-      "旧来源/V2—V5 的历史外部比较不在本次重放；本次只重新绑定两个定义及其独立科学合同。"
-    ],
-    "tests": [
-      "tests/operator_contracts/test_momentum_scales.py",
-      "tests/operator_contracts/test_momentum_intermediate_extremes.py"
-    ],
-    "evidence_ceiling": "有限独立极值与普通闭式测试支持两个定义及其形状/表示性合同；不证明任意碰撞模型、调用者常数/单位、相对论适用性或完整来源项目。危险区采用 100 位 Decimal，输出仍为 binary64，不宣称任意精度结果。",
-    "known_limitations": [
-      "没有单位自动检查或换算；热速比直接作为速度会重复除以光速。",
-      "物理适用域仍由调用者确认，非相对论比例在极高温下只是定义而非相对论速度。",
-      "最终 binary64 舍入和极小网格结果下溢为零保持浮点意义，不表示物理量精确为零。",
-      "许可原件未给出来源整体再分发许可；当前仅内部授权技术整合，非人工科学认可或公开发行。",
-      "旧外部比较并未重放，也不由本次安装测试替代。"
-    ]
+  {
+   "name": "restmkev",
+   "description": "Electron rest energy, in keV; 511.0 for an electron.",
+   "units": "keV",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive, and scalar-shaped. The value is the caller's: this asset states no rest energy of its own and performs no unit conversion."
   }
+ ],
+ "outputs": [
+  {
+   "name": "p_te",
+   "description": "The thermal-electron normalized momentum sqrt(2*T/mc^2), dimensionless, a speed in units of c.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Python float，最终有限且为正；不是 cm/s 速度。不能将中间浮点溢出误判为最终闭式不可表示。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller wants the non-relativistic thermal speed ratio sqrt(2T/mc^2) of an electron, or of a species whose rest energy the caller supplies in keV.",
+   "Both arguments are energies in the same unit, so the result is dimensionless."
+  ],
+  "supported": [
+   "常规输入保留原科学关系及双精度运算顺序。",
+   "危险中间量使用精确输入 float 的 Decimal 后备求值；不缩小输入域、不放宽验证容差。",
+   "按参数名拒绝不合形状或不满足有限/符号合同的输入；最终溢出拒绝，不返回部分结果。"
+  ],
+  "excluded": [
+   "Composition with scirel.collisions.normalized-momentum. V3 listed it as supported; the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is removed rather than described.",
+   "Any relativistic correction to the thermal speed ratio.",
+   "Any statement of the electron rest energy, of the speed of light, or of any other physical constant; every constant is the caller's.",
+   "Any unit conversion, including the conversion of the returned ratio to a velocity.",
+   "The four Coulomb-log mappings the retained route also exposes: they are different relations and are not published with these two leaves.",
+   "最终结果超出 binary64 可表示范围时拒绝；中间结果溢出本身不在排除范围。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, with a message naming the parameter, or when either is not finite and strictly positive, with the retained route's message. Both checks are the retained route's numeric guard plus an explicit shape check; the conversion and the domain checks themselves are unchanged.",
+  "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
+  "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no value."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the thermal-electron normalized momentum p_Te as a function of the electron temperature and the electron rest energy. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.momentum_scales",
+   "symbol": "thermal_electron_momentum",
+   "signature": "thermal_electron_momentum(*, temperature_kev, restmkev)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "thermal_electron_momentum"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "同时演示保留普通关系与修正中间量极值后的最终结果。",
+  "code": "from scirel.collisions import thermal_electron_momentum\nimport math\np = thermal_electron_momentum(temperature_kev=250., restmkev=511.)\nassert p == 0.9891782353111633\nlarge = thermal_electron_momentum(temperature_kev=1e308, restmkev=511.)\nassert math.isfinite(large) and large > 1e152\ntiny = thermal_electron_momentum(temperature_kev=1e-300, restmkev=1e300)\nassert tiny > 0\nprint(p, large, tiny)",
+  "expected": "普通值 0.9891782353111633；危险大值约 6.256112470898544e152，微小值约 1.414213562373095e-300，均有限。"
+ },
+ "verification": {
+  "scope": [
+   "保持普通区原数值断言、有效容差、输入形状和错误消息；常规结果逐位不变。",
+   "修复前 13 个新增极值检查有 7 个实际失败；它们包含有限大值误拒绝、中间下溢归零和符号保持。",
+   "200 位 Decimal 独立求值及真实非有限终值拒绝检验覆盖新行为；原热输入 1e308/511 的拒绝断言被实证纠正，原件保留。",
+   "旧来源/V2—V5 的历史外部比较不在本次重放；本次只重新绑定两个定义及其独立科学合同。"
+  ],
+  "tests": [
+   "tests/operator_contracts/test_momentum_scales.py",
+   "tests/operator_contracts/test_momentum_intermediate_extremes.py"
+  ],
+  "evidence_ceiling": "有限独立极值与普通闭式测试支持两个定义及其形状/表示性合同；不证明任意碰撞模型、调用者常数/单位、相对论适用性或完整来源项目。危险区采用 100 位 Decimal，输出仍为 binary64，不宣称任意精度结果。",
+  "known_limitations": [
+   "没有单位自动检查或换算；热速比直接作为速度会重复除以光速。",
+   "物理适用域仍由调用者确认，非相对论比例在极高温下只是定义而非相对论速度。",
+   "最终 binary64 舍入和极小网格结果下溢为零保持浮点意义，不表示物理量精确为零。",
+   "许可原件未给出来源整体再分发许可；当前仅内部授权技术整合，非人工科学认可或公开发行。",
+   "旧外部比较并未重放，也不由本次安装测试替代。"
+  ]
+ }
 }

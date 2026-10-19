@@ -447,16 +447,16 @@
     "partial_results": "No state mapping returned on failure; no external state mutation or file side effect."
   },
   "provenance": {
-    "lineage_summary": "Newly authored Python D2 successor of the retained PDRF 1.1 model, with independently justified scientific and interface corrections. This is not a clean-room license determination. Upstream code and prior source-fidelity evidence stay frozen; this document defines the corrected effective relation only.",
+    "lineage_summary": "Self-contained SciRel PDRF effective fluid implementation with explicit state, matrix, spectrum and scan contracts; PDRK attribution and bundled notices are recorded in licenses/pdrk/NOTICE. The effective model and tests do not claim upstream approval.",
     "source_kinds": [
-      "retained PDRF 1.1 equations and implementations",
-      "independent vector-calculus derivation and numerical validation",
-      "D2 corrected successor"
+      "SciRel implementation",
+      "published PDRF relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "H. S. Xie, Computer Physics Communications 185 (2014) 670–675, DOI:10.1016/j.cpc.2013.10.012; accompanying erratum"
+      "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
     ],
-    "license_status": "Source and paper redistribution NOT_ESTABLISHED; local authorized D2 candidate only; public distribution blocked."
+    "license_status": "PDRK/PDRF source redistribution permission remains unresolved; this is a private technical development record."
   },
   "public_api": {
     "python": {
@@ -474,23 +474,24 @@
   "example": {
     "description": "Fresh normalized example.",
     "code": "from scirel.kinetic import initialize_pdrf_plasma\ns = initialize_pdrf_plasma()\nassert s['s'] == 2 and s['Q0'] == 0",
-    "expected": "Two independent fluids and zero background charge."
+    "expected": "The default normalized state contained s=2 independent fluids and Q0=0.0."
   },
   "verification": {
     "scope": [
-      "Independent normalized/SI diagnostics, collision momentum/dissipation and species permutation.",
-      "Finite-domain, explicit/legacy weighted-flux guards, repeated-state and zero-field boundaries."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrf_d2.py"
     ],
-    "evidence_ceiling": "Evidence supports this effective local algebraic model and its stated numerical contract in the tested Linux-amd64 Python runtime. D1 fidelity does not establish physical truth. Independent exact-revision validation and before/after observations are separately bound in the development delivery. No universal continuous-input, experimental, MATLAB, cross-platform or human approval claim.",
+    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
     "known_limitations": [
       "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
       "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
       "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
       "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
-      "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval."
+      "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval.",
+      "Example output is a bounded runtime observation, not a universal scientific claim."
     ]
   }
 }

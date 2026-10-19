@@ -1,125 +1,126 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.field.complete-elliptic-integrals-approx",
-  "kind": "operator",
-  "title": {
-    "en": "GSEQ complete elliptic integrals K(m), E(m) approximation",
-    "zh": "完全椭圆积分近似"
-  },
-  "summary": "Evaluate the polynomial-logarithmic approximations to K(m) and E(m), with elementwise mathematical endpoint limits K(1)=+Inf and E(1)=1.",
-  "taxonomy": [
-    "field",
-    "special-functions",
-    "elliptic-integrals"
-  ],
-  "aliases": [
-    "evaluate_complete_elliptic_integrals"
-  ],
-  "identity": {
-    "relation": "K(m), E(m) from nested polynomial-logarithmic evaluation: K = a_k(p) - b_k(p)*log(p), E = a_e(p) - b_e(p)*log(p) with p = 1 - m and the source's hardcoded polynomial coefficients.",
-    "direction": "squared modulus m in [0, 1] -> complete elliptic integrals K(m) and E(m)",
-    "definition": "For 0 <= m < 1, retain the source polynomial-log arithmetic. At m=1 set K=+Inf and E=1 for each element, independent of other array entries. This D2 repair replaces the false finite whole-array K sentinel and mixed-array E NaN.",
-    "model": "source polynomial-log approximation on the interior with corrected mathematical endpoint limits",
-    "geometry": "pointwise on any-shape arrays",
-    "coordinates": "dimensionless m = k^2 in [0, 1]",
-    "boundary": "Finite inputs in [0,1]; K(1) is a divergent integral represented by +Inf, while E(1)=1. The downstream filament field rejects coincident geometry.",
-    "assumptions": [
-      "The interior approximation preserves the source polynomial-log arithmetic for traceability; corrected endpoint limits deliberately differ from the historical whole-array guard. It is not the most accurate K/E evaluation available.",
-      "No external physics reference is bound: accuracy is quantified against scipy's ellipk/ellipe as sampled evidence."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "modulus_squared",
-      "description": "Squared elliptic modulus m = k^2.",
-      "units": "dimensionless",
-      "shape": "any numeric shape",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite; every entry in [0, 1]."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "complete_k",
-      "description": "First-kind complete elliptic integral K(m), source approximation.",
-      "units": "dimensionless",
-      "shape": "same as modulus_squared",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite approximation for m<1; +Inf at every m=1 element, representing the divergent integral."
-    },
-    {
-      "name": "complete_e",
-      "description": "Second-kind complete elliptic integral E(m), source approximation.",
-      "units": "dimensionless",
-      "shape": "same as modulus_squared",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite approximation for m<1; exactly 1 at every m=1 element."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Squared moduli from a caller (e.g. the coil Green geometry operator) in [0, 1]."
-    ],
-    "supported": [
-      "Polynomial-log K(m), E(m) approximation with mathematically correct singular endpoint values."
-    ],
-    "excluded": [
-      "High-precision K/E evaluation (use a scientific library), modulus generation, coil geometry, and the Green field responses."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError when any entry is non-finite or outside [0, 1].",
-    "runtime_failure": "No iterative failure. K(1)=+Inf is the mathematical divergence, not a finite-field result; no NaN or finite K sentinel is emitted at this endpoint.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned."
-  },
-  "provenance": {
-    "lineage_summary": "Development integration from the saved GSEQ operator package and its original MATLAB fun_ellipEK apx==1 source anchor. The earlier SciRel implementation followed the MATLAB whole-array guard, producing a finite K sentinel for all-endpoint arrays and E=NaN for mixed arrays at m=1. The current D2 successor preserves the interior polynomial-log arithmetic but replaces that guard with elementwise mathematical limits K(1)=+Inf and E(1)=1. The saved L1 Python operator also used elementwise endpoint substitution; its package tests alone did not establish boundary equivalence. The current correction is supported separately by analytic endpoint identities, mixed-array regressions and sampled SciPy comparison. The saved package remains bounded historical comparison only; no qualified D1 provenance or expert approval is claimed.",
-    "source_kinds": [
-      "saved L1 operator document and implementation",
-      "scientific regression tests",
-      "sampled cross-implementation accuracy comparison"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.field.complete_elliptic_integrals_approx",
-      "symbol": "evaluate_complete_elliptic_integrals",
-      "signature": "evaluate_complete_elliptic_integrals(modulus_squared)",
-      "canonical_module": "scirel.field",
-      "canonical_symbol": "evaluate_complete_elliptic_integrals"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Evaluate interior approximations and mathematical endpoint limits in whole and mixed arrays.",
-    "code": "import numpy as np\nfrom scirel.field import evaluate_complete_elliptic_integrals\nk, e = evaluate_complete_elliptic_integrals(np.array([0.5, 0.9]))\nassert np.all(np.isfinite(k)) and np.all(np.isfinite(e))\nk1, e1 = evaluate_complete_elliptic_integrals(np.array([1.0]))\nassert np.isposinf(k1[0]) and e1[0] == 1.0\nkm, em = evaluate_complete_elliptic_integrals(np.array([0.5, 1.0]))\nassert np.isposinf(km[1]) and em[1] == 1.0",
-    "expected": "Interior K/E remain finite; every m=1 entry gives K=+Inf and E=1."
-  },
-  "verification": {
-    "scope": [
-      "Source polynomial-log evaluation against an independent recomputation.",
-      "Elementwise analytic endpoint limits and unchanged invalid-input rejection.",
-      "Sampled accuracy against scipy's ellipk/ellipe."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_filament_coil_green_gseq.py",
-      "tests/operator_contracts/test_legacy_admission_regressions.py"
-    ],
-    "evidence_ceiling": "Maintained tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. Analytic endpoint identities K(1)=+Inf and E(1)=1 hold independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. The current endpoint correction supersedes the earlier SciRel whole-array guard; historical source and L1 package observations remain separate evidence. This is not all-input source parity or a continuous approximation-error bound.",
-    "known_limitations": [
-      "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
-      "The approximation is less accurate than library special functions (~1e-8 relative sampled); consumers needing higher accuracy should use the baseline scipy-elliptic filament relation instead.",
-      "The endpoint correction intentionally differs from the historical source guard; K(1) must not be treated as a finite magnetic field.",
-      "Public distribution licensing remains pending a human decision."
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.complete-elliptic-integrals-approx",
+ "kind": "operator",
+ "title": {
+  "en": "GSEQ complete elliptic integrals K(m), E(m) approximation",
+  "zh": "完全椭圆积分近似"
+ },
+ "summary": "Evaluate the polynomial-logarithmic approximations to complete K(m) and E(m) on arrays with 0<=m<=1.",
+ "taxonomy": [
+  "field",
+  "special-functions",
+  "elliptic-integrals"
+ ],
+ "aliases": [
+  "evaluate_complete_elliptic_integrals"
+ ],
+ "identity": {
+  "relation": "Complete elliptic-integral approximation",
+  "direction": "modulus squared to K and E arrays",
+  "definition": "Evaluate the fixed polynomial-logarithmic approximation elementwise and assign K(1)=+Inf, E(1)=1.",
+  "model": "Piecewise numerical approximation in the elliptic parameter m.",
+  "geometry": "Elementwise over any NumPy-compatible numeric shape.",
+  "coordinates": "m dimensionless; K and E dimensionless.",
+  "boundary": "Only finite m in [0,1] is accepted; m=1 uses the mathematical endpoint limits.",
+  "assumptions": [
+   "Input is real and finite after float conversion.",
+   "Each entry is evaluated independently.",
+   "The approximation is not a general symbolic elliptic-integral solver."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "modulus_squared",
+   "description": "Squared elliptic modulus m = k^2.",
+   "units": "dimensionless",
+   "shape": "any numeric shape",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite; every entry in [0, 1]."
   }
+ ],
+ "outputs": [
+  {
+   "name": "complete_k",
+   "description": "First-kind complete elliptic integral K(m), source approximation.",
+   "units": "dimensionless",
+   "shape": "same as modulus_squared",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite approximation for m<1; +Inf at every m=1 element, representing the divergent integral."
+  },
+  {
+   "name": "complete_e",
+   "description": "Second-kind complete elliptic integral E(m), source approximation.",
+   "units": "dimensionless",
+   "shape": "same as modulus_squared",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite approximation for m<1; exactly 1 at every m=1 element."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Input is real and finite after float conversion.",
+   "Each entry is evaluated independently."
+  ],
+  "supported": [
+   "Interior values, mixed arrays, and endpoint limits covered by direct tests."
+  ],
+  "excluded": [
+   "m outside [0,1], complex values, and an error guarantee outside the tested approximation domain."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised when any entry is nonfinite or outside [0,1].",
+  "runtime_failure": "NumPy arithmetic failures propagate if an accepted calculation is not representable.",
+  "nonconvergence": "Not applicable; the approximation is direct and elementwise.",
+  "partial_results": "No tuple is returned for an invalid array."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel retains the documented scientific relation and tested implementation; this operator has no separate upstream approval or redistribution claim in the current development record.",
+  "source_kinds": [
+   "SciRel implementation",
+   "repository regression tests"
+  ],
+  "public_references": [],
+  "license_status": "No separate source license for this operator is declared in licenses/; retained upstream obligations remain unresolved and no public redistribution permission is asserted."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.complete_elliptic_integrals_approx",
+   "symbol": "evaluate_complete_elliptic_integrals",
+   "signature": "evaluate_complete_elliptic_integrals(modulus_squared)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "evaluate_complete_elliptic_integrals"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate interior and endpoint values in separate and mixed arrays.",
+  "code": "import numpy as np\nfrom scirel.field import evaluate_complete_elliptic_integrals\nk, e = evaluate_complete_elliptic_integrals(np.array([0.5, 0.9]))\nassert np.all(np.isfinite(k)) and np.all(np.isfinite(e))\nk1, e1 = evaluate_complete_elliptic_integrals(np.array([1.0]))\nassert np.isposinf(k1[0]) and e1[0] == 1.0\nkm, em = evaluate_complete_elliptic_integrals(np.array([0.5, 1.0]))\nassert np.isposinf(km[1]) and em[1] == 1.0",
+  "expected": "Interior K and E values are finite; every m=1 entry returns K=+Inf and E=1."
+ },
+ "verification": {
+  "scope": [
+   "Source polynomial-log evaluation against an independent recomputation.",
+   "Elementwise analytic endpoint limits and unchanged invalid-input rejection.",
+   "Sampled accuracy against scipy's ellipk/ellipe."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_filament_coil_green_gseq.py",
+   "tests/operator_contracts/test_legacy_admission_regressions.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. Analytic endpoint identities K(1)=+Inf and E(1)=1 hold independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. The current endpoint correction supersedes the earlier SciRel whole-array guard; historical source and L1 package observations remain separate evidence. This is not all-input source parity or a continuous approximation-error bound.",
+  "known_limitations": [
+   "The saved GSEQ bundle supports bounded historical development comparison only; qualified-L1 delivery root is empty.",
+   "The approximation is less accurate than library special functions (~1e-8 relative sampled); consumers needing higher accuracy should use the baseline scipy-elliptic filament relation instead.",
+   "The endpoint correction intentionally differs from the historical source guard; K(1) must not be treated as a finite magnetic field.",
+   "Public distribution licensing remains pending a human decision."
+  ]
+ }
 }

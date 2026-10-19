@@ -14,7 +14,7 @@
   ],
   "aliases": [],
   "identity": {
-    "relation": "Certified fluid scan to native plot artifacts",
+    "relation": "Bounded fluid scan to native plot artifacts",
     "direction": "artifact rendering",
     "definition": "Method2 plots k*length_scale and omega/frequency_scale; omitted scales retain SI. Method3 uses theta in radians; method4 transposes canonical (kx,kz,root) state into the source surface orientation.",
     "model": "Visualization of full local fluid spectra.",
@@ -124,16 +124,16 @@
     "partial_results": "No partial result is returned on failure."
   },
   "provenance": {
-    "lineage_summary": "Derived from the PDRK cold-plasma/PDRF example, with explicit D2 scientific corrections and state ownership.",
+    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
     "source_kinds": [
-      "upstream-scientific-source",
-      "derived-implementation",
-      "independent-scientific-validation"
+      "SciRel implementation",
+      "PDRK-derived mathematical relation",
+      "direct contract tests"
     ],
     "public_references": [
-      "https://doi.org/10.1016/j.cpc.2013.10.012"
+      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
     ],
-    "license_status": "pending-human-decision: source attribution is retained; redistribution permission and human scientific endorsement are unresolved."
+    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
   },
   "public_api": {
     "python": {
@@ -151,21 +151,24 @@
     ]
   },
   "example": {
-    "description": "Render a two-point physical scan.",
+    "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
     "code": "from scirel.kinetic.pdrk.multifluid import fluid_equilibrium_si, scan_fluid_corrected\nfrom scirel.kinetic.pdrk.plotting import fluid_plot_scan\ns = fluid_equilibrium_si()\ng = scan_fluid_corrected(dict(state=s, grid_controls=dict(scan_k=[1e-5, 2e-5])))\nr = fluid_plot_scan(g, s)\nassert r.state[\"png_bytes\"].size > 0",
-    "expected": "PNG bytes and native line/surface counts for the explicit physical scan."
+    "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
   },
   "verification": {
     "scope": [
-      "Actual small method1/3/4 renderers, zero-field undefined-beta preservation and coordinate mapping."
+      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+      "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
     ],
     "tests": [
       "tests/operator_contracts/test_pdrk_examples_support.py"
     ],
-    "evidence_ceiling": "Bounded derived scientific qualification exists. Integrated public signatures, executable examples, and final installed-candidate acceptance require separate verification.",
+    "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
     "known_limitations": [
       "Sorted roots are not tracked physical branches.",
-      "The support renderer requires external Octave graphics."
+      "The support renderer requires external Octave graphics.",
+      "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
     ]
   }
 }

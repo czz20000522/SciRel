@@ -160,15 +160,14 @@
     "partial_results": "Never returned; a rejected call produces no outputs."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy create_shifted_maxwellian seed leaf, package 平移Maxwellian离散初值, source anchor KN1DPy/create_shifted_maxwellian_include.py:58-76 (implementation file pinned by SHA-256 c495a86822c02dbb4bd84fe11f5cffb6093a85906be3dae66773d2e334641051). The saved bundle carries an ACCEPT_OPERATOR-style package test (volume normalization, positive-shift moment, strict-interior clamp oracle, fail-closed temperature) plus evidence-only independent seed-equation and limit audits (N62/N81/N82 in the bundle's extraction ledger). A separately executed intake replay compares the distribution, exponent and thermal speed for single- and double-molecule holdouts; the maintained tests compare against an in-file loop-per-shift formulation. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval. The saved implementation checked array finiteness, but accepted boolean and numeric-string coercion, non-integer molecule factors such as 1.0, and an empty shift list; SciRel rejects these under its declared input contract and reports invalid scalar inputs with ValueError.",
+    "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "saved extraction ledger and package-test evidence",
-      "separately executed environment-gated intake replay",
-      "scientific regression tests"
+      "SciRel implementation",
+      "equation-based numerical relation",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
   },
   "public_api": {
     "python": {

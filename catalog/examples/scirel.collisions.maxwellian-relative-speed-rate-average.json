@@ -1,219 +1,216 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
-  "kind": "operator",
-  "title": {
-    "en": "Maxwellian relative-speed rate average",
-    "zh": "Maxwellian相对速度速率平均"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
+ "kind": "operator",
+ "title": {
+  "en": "Maxwellian relative-speed rate average",
+  "zh": "Maxwellian相对速度速率平均"
+ },
+ "summary": "Energy-resolved rate coefficient <sigma v>: a monoenergetic particle directed along the axial velocity axis is averaged, through a caller-supplied cross section, against a discretized Maxwellian target on a cylindrical (vr, vx) velocity mesh with caller-supplied cell volumes. The collision energy is formed with the particle mass, the saved KN1DPy make_sigmav convention, not the reduced mass. Non-finite inputs and a non-representable rate are rejected, which the saved implementation did not check.",
+ "taxonomy": [
+  "collisions",
+  "rate-coefficient",
+  "maxwellian-average",
+  "velocity-mesh"
+ ],
+ "aliases": [
+  "make_sigmav",
+  "Maxwellian-averaged cross section",
+  "relative-speed rate average",
+  "<sigma v>"
+ ],
+ "identity": {
+  "relation": "the energy-resolved rate coefficient obtained by averaging a caller-supplied cross section over the relative speed between a monoenergetic axial particle and a discretized Maxwellian target",
+  "direction": "particle energies and mass, target temperature and mass, normalization temperature, cylindrical velocity mesh and volume weights, cross-section callable -> one rate coefficient per particle energy",
+  "definition": "With m_H = 1.6726231e-27 kg, vth = sqrt(2 e T_norm / (m_target m_H)) is the target thermal speed at the normalization temperature. The target Maxwellian on the mesh is exp(-(vr^2 + vx^2) T_norm / T_target), normalized by the supplied cell volumes. The particle speed is sqrt(2 e E / (m_particle m_H)) / vth along the vx axis, the relative speed is sqrt(vr^2 + (vx - v_px)^2), the collision energy is 0.5 m_particle m_H vth^2 v_rel^2 / e in eV, and the rate is vth * sum(volume * sigma(E_rel) * v_rel * f) over the mesh.",
+  "model": "discretized Maxwellian target on a cylindrical velocity mesh with caller-supplied cell volumes; monoenergetic particle directed along the axial axis; the cross-section law is entirely the caller's callable",
+  "geometry": "velocity space, cylindrical: radial speed vr and axial velocity vx; the azimuthal measure is carried by the volume weights",
+  "coordinates": "vr and vx in units of the target thermal speed sqrt(2 e T_norm / (m_target m_H)), where m_H is the saved hydrogen mass 1.6726231e-27 kg; the particle speed lies on the vx axis",
+  "boundary": "a zero particle energy is a particle at rest and is accepted; temperatures and masses must be positive; the cross-section values sampled on the mesh must be finite and nonnegative; a computed rate that is not representable in double precision is rejected rather than returned",
+  "assumptions": [
+   "The collision energy is formed with the particle mass, the saved KN1DPy make_sigmav convention. A reduced-mass collision energy is a different relation and is not provided.",
+   "The cell-volume weights need only be proportional to the cylindrical velocity-space measure: the target distribution is normalized by the supplied weights, so a constant rescaling of the weights leaves the rate unchanged. Only their relative sizes enter.",
+   "The cross-section law is the caller's. This asset evaluates no physical cross-section model, interpolates no table and performs no unit conversion.",
+   "The module constant AMU_KG = 1.6726231e-27 kg is the saved hydrogen mass, not the standard atomic mass unit; its historical name is retained for compatibility. ELEMENTARY_CHARGE_C = 1.602177e-19 C is also frozen from the saved source. Neither constant is a current CODATA estimate.",
+   "The mesh and its volumes are caller inputs. The asset does not generate them and does not enforce the source's N1 convention that vr is a nonnegative radial speed axis; only shapes, finiteness and positivity of the weights are checked."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "particle_energy_ev",
+   "description": "Particle energies at which the rate coefficient is evaluated.",
+   "units": "eV",
+   "shape": "[ne]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A nonempty, finite, one-dimensional array with nonnegative entries; zero is a particle at rest."
   },
-  "summary": "Energy-resolved rate coefficient <sigma v>: a monoenergetic particle directed along the axial velocity axis is averaged, through a caller-supplied cross section, against a discretized Maxwellian target on a cylindrical (vr, vx) velocity mesh with caller-supplied cell volumes. The collision energy is formed with the particle mass, the saved KN1DPy make_sigmav convention, not the reduced mass. Non-finite inputs and a non-representable rate are rejected, which the saved implementation did not check.",
-  "taxonomy": [
-    "collisions",
-    "rate-coefficient",
-    "maxwellian-average",
-    "velocity-mesh"
-  ],
-  "aliases": [
-    "make_sigmav",
-    "Maxwellian-averaged cross section",
-    "relative-speed rate average",
-    "<sigma v>"
-  ],
-  "identity": {
-    "relation": "the energy-resolved rate coefficient obtained by averaging a caller-supplied cross section over the relative speed between a monoenergetic axial particle and a discretized Maxwellian target",
-    "direction": "particle energies and mass, target temperature and mass, normalization temperature, cylindrical velocity mesh and volume weights, cross-section callable -> one rate coefficient per particle energy",
-    "definition": "With m_H = 1.6726231e-27 kg, vth = sqrt(2 e T_norm / (m_target m_H)) is the target thermal speed at the normalization temperature. The target Maxwellian on the mesh is exp(-(vr^2 + vx^2) T_norm / T_target), normalized by the supplied cell volumes. The particle speed is sqrt(2 e E / (m_particle m_H)) / vth along the vx axis, the relative speed is sqrt(vr^2 + (vx - v_px)^2), the collision energy is 0.5 m_particle m_H vth^2 v_rel^2 / e in eV, and the rate is vth * sum(volume * sigma(E_rel) * v_rel * f) over the mesh.",
-    "model": "discretized Maxwellian target on a cylindrical velocity mesh with caller-supplied cell volumes; monoenergetic particle directed along the axial axis; the cross-section law is entirely the caller's callable",
-    "geometry": "velocity space, cylindrical: radial speed vr and axial velocity vx; the azimuthal measure is carried by the volume weights",
-    "coordinates": "vr and vx in units of the target thermal speed sqrt(2 e T_norm / (m_target m_H)), where m_H is the saved hydrogen mass 1.6726231e-27 kg; the particle speed lies on the vx axis",
-    "boundary": "a zero particle energy is a particle at rest and is accepted; temperatures and masses must be positive; the cross-section values sampled on the mesh must be finite and nonnegative; a computed rate that is not representable in double precision is rejected rather than returned",
-    "assumptions": [
-      "The collision energy is formed with the particle mass, the saved KN1DPy make_sigmav convention. A reduced-mass collision energy is a different relation and is not provided.",
-      "The cell-volume weights need only be proportional to the cylindrical velocity-space measure: the target distribution is normalized by the supplied weights, so a constant rescaling of the weights leaves the rate unchanged. Only their relative sizes enter.",
-      "The cross-section law is the caller's. This asset evaluates no physical cross-section model, interpolates no table and performs no unit conversion.",
-      "The module constant AMU_KG = 1.6726231e-27 kg is the saved hydrogen mass, not the standard atomic mass unit; its historical name is retained for compatibility. ELEMENTARY_CHARGE_C = 1.602177e-19 C is also frozen from the saved source. Neither constant is a current CODATA estimate.",
-      "The mesh and its volumes are caller inputs. The asset does not generate them and does not enforce the source's N1 convention that vr is a nonnegative radial speed axis; only shapes, finiteness and positivity of the weights are checked."
-    ]
+  {
+   "name": "particle_mass_amu",
+   "description": "Mass of the projectile species; also the mass used to form the collision energy.",
+   "units": "multiples of 1.6726231e-27 kg",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   },
-  "inputs": [
-    {
-      "name": "particle_energy_ev",
-      "description": "Particle energies at which the rate coefficient is evaluated.",
-      "units": "eV",
-      "shape": "[ne]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A nonempty, finite, one-dimensional array with nonnegative entries; zero is a particle at rest."
-    },
-    {
-      "name": "particle_mass_amu",
-      "description": "Mass of the projectile species; also the mass used to form the collision energy.",
-      "units": "multiples of 1.6726231e-27 kg",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    },
-    {
-      "name": "target_temperature_ev",
-      "description": "Temperature of the Maxwellian target.",
-      "units": "eV",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    },
-    {
-      "name": "target_mass_amu",
-      "description": "Mass of the target species; fixes the thermal speed that normalizes the mesh.",
-      "units": "multiples of 1.6726231e-27 kg",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    },
-    {
-      "name": "vx",
-      "description": "Axial velocity axis of the target mesh; the particle is directed along this axis.",
-      "units": "v/vth (dimensionless, target thermal speed at tnorm_ev)",
-      "shape": "[nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite one-dimensional array; no monotonicity or sign convention is enforced."
-    },
-    {
-      "name": "vr",
-      "description": "Radial speed axis of the target mesh.",
-      "units": "v/vth (dimensionless, target thermal speed at tnorm_ev)",
-      "shape": "[nvr]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite one-dimensional array; no monotonicity or sign convention is enforced."
-    },
-    {
-      "name": "tnorm_ev",
-      "description": "Normalization temperature that defines the thermal speed scaling the mesh.",
-      "units": "eV",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    },
-    {
-      "name": "cylindrical_volume",
-      "description": "Cell volumes of the cylindrical velocity mesh, rows matched to vr and columns to vx.",
-      "units": "normalized velocity-space measure",
-      "shape": "[nvr, nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, strictly positive, shape (vr.size, vx.size). Only relative sizes enter: the target distribution is normalized by these weights, so a constant rescaling leaves the rate unchanged."
-    },
-    {
-      "name": "cross_section_m2",
-      "description": "Cross-section law evaluated at the sampled collision energies.",
-      "units": "m^2",
-      "shape": "callable mapping [ne, nvr, nvx] -> [ne, nvr, nvx]",
-      "dtype": "callable",
-      "required": true,
-      "constraints": "A callable returning a finite nonnegative real array with the collision-energy array's shape; the collision energies are in eV. Exceptions raised by the callable propagate."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "rate_m3_s",
-      "description": "The Maxwellian relative-speed averaged rate coefficient, one value per particle energy.",
-      "units": "m^3/s",
-      "shape": "[ne]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and nonnegative for accepted input; a non-representable rate is rejected rather than returned."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller supplies a consistent velocity mesh and cell-volume measure, in the source's N1 convention a vr-weighted cylindrical measure in units of the target thermal speed at tnorm_ev.",
-      "The cross-section callable accepts the sampled collision-energy array, shape (ne, nvr, nvx) in eV, and returns cross sections in m^2 of the same shape.",
-      "The caller accepts the source's convention that the collision energy is formed with the particle mass rather than the reduced mass."
-    ],
-    "supported": [
-      "Energy-resolved beam-in-Maxwellian-target rate coefficients on an explicit velocity mesh, for any positive temperatures and masses and any caller-supplied cross-section law.",
-      "A particle at rest (zero energy), where the relative speed reduces to the target speed and the rate approaches sigma times the mean target speed.",
-      "A cold target (T_target much smaller than T_norm), where the rate approaches sigma(E_beam) times the beam speed.",
-      "Any cross-section shape the caller's callable expresses, including constants and energy-dependent laws.",
-      "Rejecting non-finite inputs by parameter name and rejecting a computed rate that is not representable in double precision."
-    ],
-    "excluded": [
-      "Temperature-only analytic reactivity parameterizations, such as closed-form fusion <sigma v>(T) fits: a different model with different inputs, not a variant of this relation.",
-      "A reduced-mass collision energy; the saved source's particle-mass convention is kept and a reduced-mass model would be a scientific change requiring its own evidence.",
-      "An isotropic or distributed projectile: the particle is monoenergetic and directed along the axial axis.",
-      "Cross-section evaluation, interpolation or tabulation: the callable is the caller's.",
-      "Velocity-mesh or volume generation: the mesh, its normalization temperature and its volumes are caller inputs.",
-      "Meshes whose quadrature does not resolve the Maxwellian tail or the beam resonance; the asset performs no convergence check at runtime."
-    ]
+  {
+   "name": "target_temperature_ev",
+   "description": "Temperature of the Maxwellian target.",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError with a message naming the parameter when particle_energy_ev is not a nonempty real numeric finite one-dimensional nonnegative array, when a mass or temperature is not a real numeric finite positive scalar, when vx or vr is not a real numeric finite one-dimensional array, when cylindrical_volume does not have shape (vr.size, vx.size) or is not real numeric finite and strictly positive, or when cross_section_m2 is not callable. Boolean, string and complex arrays are not coerced.",
-    "runtime_failure": "Raises ValueError when the sampled collision energies are not representable in double precision for finite inputs that satisfy the stated domain -- checked before the cross-section callable is invoked, so the callable never observes a non-finite collision-energy array -- when the callable returns an array whose shape differs from the collision-energy array or contains non-finite or negative values, and when the computed rate is not representable in double precision. Exceptions raised by the callable itself propagate unchanged. There is no iteration and no branch.",
-    "nonconvergence": "Not applicable; this operator has no iteration or feedback. Quadrature accuracy is the mesh's, which is a caller input.",
-    "partial_results": "Never returned; a rejected call produces no rate."
+  {
+   "name": "target_mass_amu",
+   "description": "Mass of the target species; fixes the thermal speed that normalizes the mesh.",
+   "units": "multiples of 1.6726231e-27 kg",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   },
-  "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy make_sigmav slice, package Maxwellian相对速度速率平均, source anchor KN1DPy/make_sigmav.py:13-57. The saved extraction report records a two-arm source-free replay (constant-sigma extraction and linear-sigma holdout, maximum relative errors 7.8e-17 and 2.4e-16 against the source implementation). The maintained independent loop-per-energy formulation checks the same discrete relation; a separately executed intake replay pins the saved implementation file by SHA-256 and reproduces constant- and linear-sigma cases. KN1DPy's strict D1 qualification has since been withdrawn and the bundle now sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval. Documented repairs reject non-finite inputs, non-real or coerced inputs, a non-representable rate, and a non-representable sampled collision-energy array before the caller's cross-section callable is invoked. The saved implementation propagated non-finite values silently and handed the extreme collision-energy array to the callback before any check. Error messages name the quantity instead of two generic strings. The accepted real-valued shapes, signs and positivity conditions are preserved. The saved single-node consumer graph 粒子靶Maxwellian速率系数图 is an identity composition whose added content is the N1-snapshot port and state policy; that contract is documented here and protected by a composition test instead of a separate SciRel TaskGraph asset.",
-    "source_kinds": [
-      "saved L1 operator document and implementation",
-      "saved extraction report replay evidence",
-      "independent discrete reimplementation probe",
-      "separately executed environment-gated intake replay",
-      "scientific regression tests"
-    ],
-    "public_references": [],
-    "license_status": "pending-human-decision"
+  {
+   "name": "vx",
+   "description": "Axial velocity axis of the target mesh; the particle is directed along this axis.",
+   "units": "v/vth (dimensionless, target thermal speed at tnorm_ev)",
+   "shape": "[nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite one-dimensional array; no monotonicity or sign convention is enforced."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.collisions.maxwellian_relative_speed_rate_average",
-      "symbol": "average_cross_section_over_maxwellian",
-      "signature": "average_cross_section_over_maxwellian(*, particle_energy_ev, particle_mass_amu, target_temperature_ev, target_mass_amu, vx, vr, tnorm_ev, cylindrical_volume, cross_section_m2)",
-      "canonical_module": "scirel.collisions",
-      "canonical_symbol": "average_cross_section_over_maxwellian"
-    }
+  {
+   "name": "vr",
+   "description": "Radial speed axis of the target mesh.",
+   "units": "v/vth (dimensionless, target thermal speed at tnorm_ev)",
+   "shape": "[nvr]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite one-dimensional array; no monotonicity or sign convention is enforced."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
+  {
+   "name": "tnorm_ev",
+   "description": "Normalization temperature that defines the thermal speed scaling the mesh.",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   },
-  "example": {
-    "description": "Average a constant cross section for a hydrogen projectile in a molecular-hydrogen target on a small midpoint mesh, confirm the volume-scale invariance, and confirm that a NaN mesh point and a non-representable rate are rejected.",
-    "code": "import numpy as np\nfrom scirel.collisions import average_cross_section_over_maxwellian\n\ndvr = 3.5 / 24\ndvx = 7.0 / 36\nvr = (np.arange(24) + 0.5) * dvr\nvx = (np.arange(36) + 0.5) * dvx - 3.5\nvth = np.sqrt(2.0 * 1.602177e-19 * 20.0 / (2.0 * 1.6726231e-27))\nvolume = np.outer(vr * dvr, np.full(36, dvx)) * vth ** 3\nsigma_const = lambda energy: np.full_like(energy, 3.0e-20)\nrate = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0, 100.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=volume,\n    cross_section_m2=sigma_const,\n)\nassert rate.shape == (3,) and rate.dtype == np.float64\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\nscaled = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0, 100.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=volume * 7.5,\n    cross_section_m2=sigma_const,\n)\nassert np.allclose(scaled, rate, rtol=1e-14)\nbad_vx = vx.copy()\nbad_vx[3] = np.nan\ntry:\n    average_cross_section_over_maxwellian(\n        particle_energy_ev=np.array([10.0]),\n        particle_mass_amu=1.0,\n        target_temperature_ev=10.0,\n        target_mass_amu=2.0,\n        vx=bad_vx,\n        vr=vr,\n        tnorm_ev=20.0,\n        cylindrical_volume=volume,\n        cross_section_m2=sigma_const,\n    )\nexcept ValueError as error:\n    assert 'vx' in str(error)\nelse:\n    raise AssertionError('a non-finite mesh point must be rejected')\ntry:\n    average_cross_section_over_maxwellian(\n        particle_energy_ev=np.array([10.0]),\n        particle_mass_amu=1.0,\n        target_temperature_ev=10.0,\n        target_mass_amu=2.0,\n        vx=vx,\n        vr=vr,\n        tnorm_ev=20.0,\n        cylindrical_volume=volume,\n        cross_section_m2=lambda energy: np.full_like(energy, 1.0e305),\n    )\nexcept ValueError as error:\n    assert 'not representable' in str(error)\nelse:\n    raise AssertionError('a non-representable rate must be rejected')",
-    "expected": "Three finite positive rate coefficients in m^3/s as a float64 array; a 7.5-fold constant rescaling of the volume weights leaves them unchanged to 1e-14; a NaN mesh point raises ValueError naming vx; and a finite 1e305-scale cross section whose product overflows the rate raises ValueError naming the non-representable average rather than returning an infinite rate."
+  {
+   "name": "cylindrical_volume",
+   "description": "Cell volumes of the cylindrical velocity mesh, rows matched to vr and columns to vx.",
+   "units": "normalized velocity-space measure",
+   "shape": "[nvr, nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, strictly positive, shape (vr.size, vx.size). Only relative sizes enter: the target distribution is normalized by these weights, so a constant rescaling leaves the rate unchanged."
   },
-  "verification": {
-    "scope": [
-      "That the public callable implements exactly the discrete relation stated in identity.definition, checked against an independent loop-per-energy formulation of the same relation (weights normalized first, one beam energy reduced at a time) to a relative tolerance of 1e-14 over constant and energy-dependent cross sections.",
-      "That the collision energy is formed with the particle mass: the independent formulation forms 0.5 m_particle vth^2 v_rel^2 / e the same way, and the agreement above is that convention's agreement.",
-      "The rest-beam limit: at zero particle energy with T_target = T_norm the rate approaches sigma times the mean target speed vth * 2/sqrt(pi), with the discretization error decreasing monotonically under mesh refinement to below 5e-4.",
-      "The cold-target limit: for T_target far below T_norm the rate approaches sigma(E_beam) times the beam speed sqrt(2 e E / (m m_H)) to a relative error below 5e-3 on a 200x300 mesh, with m_H the saved hydrogen mass.",
-      "The volume-scale invariance: a constant rescaling of cylindrical_volume leaves the rate unchanged, because the target distribution is normalized by the supplied weights.",
-      "The input contract: one-dimensional nonempty finite nonnegative energies, finite positive scalar masses and temperatures, finite one-dimensional axes, strictly positive finite (nvr, nvx) volumes, and a callable cross section; every out-of-domain value is rejected with a message naming the parameter. Non-finite inputs are rejected; the saved implementation propagated them silently.",
-      "The cross-section contract: wrong shape, non-finite values and negative values are rejected; exceptions raised by the callable propagate.",
-      "The finite-output contract: a finite 1e305-scale cross section whose product overflows the rate is rejected rather than returned as an infinity.",
-      "The callback-order contract: an extreme-but-finite particle energy (1e308 eV overflows the collision-energy arithmetic) is rejected with a ValueError before the cross-section callable is invoked; a recording callable observes nothing. Ordinary finite inputs produce unchanged numbers.",
-      "The composition contract of the saved single-node consumer graph: a caller-side mesh snapshot feeds the operator by port name, is consumed unmodified, and the returned rate lands in a caller-side energy-resolved table without reshaping.",
-      "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, for constant and linear cross sections at rtol 1e-14, plus the documented repair witness that the saved implementation returns a non-finite rate for a NaN mesh point while this asset rejects it. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance.",
-      "The module constants AMU_KG and ELEMENTARY_CHARGE_C equal the saved source's frozen values bit for bit."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_maxwellian_relative_speed_rate_average.py"
-    ],
-    "evidence_ceiling": "The maintained tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts including the documented repairs, and the composition contract of the saved consumer graph. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
-    "known_limitations": [
-      "The collision energy uses the particle mass, the saved source's convention; a reduced-mass model is a different relation and is not provided.",
-      "No cross-section model is included. A caller whose callable is wrong gets a wrong rate with no warning; the asset checks only shape, finiteness and nonnegativity of the returned values.",
-      "The asset does not enforce that vr is a nonnegative radial axis or that the volume weights follow the vr-weighted cylindrical measure; a mismatched measure silently misweights the quadrature. Only proportionality of the measure is required and a constant factor is irrelevant.",
-      "Quadrature accuracy is entirely the mesh's. Coarse meshes misresolve the Maxwellian tail and the beam resonance; no convergence check runs at runtime, and the analytic limits above hold only in the mesh-refined regime.",
-      "Non-finite and non-real input rejection, finite-output rejection and the collision-energy representability gate are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw either coercion, an unrelated TypeError, a silent non-finite rate or a callback invoked with values the asset never declared.",
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
-    ]
+  {
+   "name": "cross_section_m2",
+   "description": "Cross-section law evaluated at the sampled collision energies.",
+   "units": "m^2",
+   "shape": "callable mapping [ne, nvr, nvx] -> [ne, nvr, nvx]",
+   "dtype": "callable",
+   "required": true,
+   "constraints": "A callable returning a finite nonnegative real array with the collision-energy array's shape; the collision energies are in eV. Exceptions raised by the callable propagate."
   }
+ ],
+ "outputs": [
+  {
+   "name": "rate_m3_s",
+   "description": "The Maxwellian relative-speed averaged rate coefficient, one value per particle energy.",
+   "units": "m^3/s",
+   "shape": "[ne]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative for accepted input; a non-representable rate is rejected rather than returned."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller supplies a consistent velocity mesh and cell-volume measure, in the source's N1 convention a vr-weighted cylindrical measure in units of the target thermal speed at tnorm_ev.",
+   "The cross-section callable accepts the sampled collision-energy array, shape (ne, nvr, nvx) in eV, and returns cross sections in m^2 of the same shape.",
+   "The caller accepts the source's convention that the collision energy is formed with the particle mass rather than the reduced mass."
+  ],
+  "supported": [
+   "Energy-resolved beam-in-Maxwellian-target rate coefficients on an explicit velocity mesh, for any positive temperatures and masses and any caller-supplied cross-section law.",
+   "A particle at rest (zero energy), where the relative speed reduces to the target speed and the rate approaches sigma times the mean target speed.",
+   "A cold target (T_target much smaller than T_norm), where the rate approaches sigma(E_beam) times the beam speed.",
+   "Any cross-section shape the caller's callable expresses, including constants and energy-dependent laws.",
+   "Rejecting non-finite inputs by parameter name and rejecting a computed rate that is not representable in double precision."
+  ],
+  "excluded": [
+   "Temperature-only analytic reactivity parameterizations, such as closed-form fusion <sigma v>(T) fits: a different model with different inputs, not a variant of this relation.",
+   "A reduced-mass collision energy; the saved source's particle-mass convention is kept and a reduced-mass model would be a scientific change requiring its own evidence.",
+   "An isotropic or distributed projectile: the particle is monoenergetic and directed along the axial axis.",
+   "Cross-section evaluation, interpolation or tabulation: the callable is the caller's.",
+   "Velocity-mesh or volume generation: the mesh, its normalization temperature and its volumes are caller inputs.",
+   "Meshes whose quadrature does not resolve the Maxwellian tail or the beam resonance; the asset performs no convergence check at runtime."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError with a message naming the parameter when particle_energy_ev is not a nonempty real numeric finite one-dimensional nonnegative array, when a mass or temperature is not a real numeric finite positive scalar, when vx or vr is not a real numeric finite one-dimensional array, when cylindrical_volume does not have shape (vr.size, vx.size) or is not real numeric finite and strictly positive, or when cross_section_m2 is not callable. Boolean, string and complex arrays are not coerced.",
+  "runtime_failure": "Raises ValueError when the sampled collision energies are not representable in double precision for finite inputs that satisfy the stated domain -- checked before the cross-section callable is invoked, so the callable never observes a non-finite collision-energy array -- when the callable returns an array whose shape differs from the collision-energy array or contains non-finite or negative values, and when the computed rate is not representable in double precision. Exceptions raised by the callable itself propagate unchanged. There is no iteration and no branch.",
+  "nonconvergence": "Not applicable; this operator has no iteration or feedback. Quadrature accuracy is the mesh's, which is a caller input.",
+  "partial_results": "Never returned; a rejected call produces no rate."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the energy-resolved rate coefficient obtained by averaging a caller-supplied cross section over the relative speed between a monoenergetic axial particle and a discretized Maxwellian target. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "pending-human-decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.maxwellian_relative_speed_rate_average",
+   "symbol": "average_cross_section_over_maxwellian",
+   "signature": "average_cross_section_over_maxwellian(*, particle_energy_ev, particle_mass_amu, target_temperature_ev, target_mass_amu, vx, vr, tnorm_ev, cylindrical_volume, cross_section_m2)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "average_cross_section_over_maxwellian"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Average a constant cross section for a hydrogen projectile in a molecular-hydrogen target on a small midpoint mesh, confirm the volume-scale invariance, and confirm that a NaN mesh point and a non-representable rate are rejected.",
+  "code": "import numpy as np\nfrom scirel.collisions import average_cross_section_over_maxwellian\n\ndvr = 3.5 / 24\ndvx = 7.0 / 36\nvr = (np.arange(24) + 0.5) * dvr\nvx = (np.arange(36) + 0.5) * dvx - 3.5\nvth = np.sqrt(2.0 * 1.602177e-19 * 20.0 / (2.0 * 1.6726231e-27))\nvolume = np.outer(vr * dvr, np.full(36, dvx)) * vth ** 3\nsigma_const = lambda energy: np.full_like(energy, 3.0e-20)\nrate = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0, 100.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=volume,\n    cross_section_m2=sigma_const,\n)\nassert rate.shape == (3,) and rate.dtype == np.float64\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\nscaled = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0, 100.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=volume * 7.5,\n    cross_section_m2=sigma_const,\n)\nassert np.allclose(scaled, rate, rtol=1e-14)\nbad_vx = vx.copy()\nbad_vx[3] = np.nan\ntry:\n    average_cross_section_over_maxwellian(\n        particle_energy_ev=np.array([10.0]),\n        particle_mass_amu=1.0,\n        target_temperature_ev=10.0,\n        target_mass_amu=2.0,\n        vx=bad_vx,\n        vr=vr,\n        tnorm_ev=20.0,\n        cylindrical_volume=volume,\n        cross_section_m2=sigma_const,\n    )\nexcept ValueError as error:\n    assert 'vx' in str(error)\nelse:\n    raise AssertionError('a non-finite mesh point must be rejected')\ntry:\n    average_cross_section_over_maxwellian(\n        particle_energy_ev=np.array([10.0]),\n        particle_mass_amu=1.0,\n        target_temperature_ev=10.0,\n        target_mass_amu=2.0,\n        vx=vx,\n        vr=vr,\n        tnorm_ev=20.0,\n        cylindrical_volume=volume,\n        cross_section_m2=lambda energy: np.full_like(energy, 1.0e305),\n    )\nexcept ValueError as error:\n    assert 'not representable' in str(error)\nelse:\n    raise AssertionError('a non-representable rate must be rejected')",
+  "expected": "Three finite positive rate coefficients in m^3/s as a float64 array; a 7.5-fold constant rescaling of the volume weights leaves them unchanged to 1e-14; a NaN mesh point raises ValueError naming vx; and a finite 1e305-scale cross section whose product overflows the rate raises ValueError naming the non-representable average rather than returning an infinite rate."
+ },
+ "verification": {
+  "scope": [
+   "That the public callable implements exactly the discrete relation stated in identity.definition, checked against an independent loop-per-energy formulation of the same relation (weights normalized first, one beam energy reduced at a time) to a relative tolerance of 1e-14 over constant and energy-dependent cross sections.",
+   "That the collision energy is formed with the particle mass: the independent formulation forms 0.5 m_particle vth^2 v_rel^2 / e the same way, and the agreement above is that convention's agreement.",
+   "The rest-beam limit: at zero particle energy with T_target = T_norm the rate approaches sigma times the mean target speed vth * 2/sqrt(pi), with the discretization error decreasing monotonically under mesh refinement to below 5e-4.",
+   "The cold-target limit: for T_target far below T_norm the rate approaches sigma(E_beam) times the beam speed sqrt(2 e E / (m m_H)) to a relative error below 5e-3 on a 200x300 mesh, with m_H the saved hydrogen mass.",
+   "The volume-scale invariance: a constant rescaling of cylindrical_volume leaves the rate unchanged, because the target distribution is normalized by the supplied weights.",
+   "The input contract: one-dimensional nonempty finite nonnegative energies, finite positive scalar masses and temperatures, finite one-dimensional axes, strictly positive finite (nvr, nvx) volumes, and a callable cross section; every out-of-domain value is rejected with a message naming the parameter. Non-finite inputs are rejected; the saved implementation propagated them silently.",
+   "The cross-section contract: wrong shape, non-finite values and negative values are rejected; exceptions raised by the callable propagate.",
+   "The finite-output contract: a finite 1e305-scale cross section whose product overflows the rate is rejected rather than returned as an infinity.",
+   "The callback-order contract: an extreme-but-finite particle energy (1e308 eV overflows the collision-energy arithmetic) is rejected with a ValueError before the cross-section callable is invoked; a recording callable observes nothing. Ordinary finite inputs produce unchanged numbers.",
+   "The composition contract of the saved single-node consumer graph: a caller-side mesh snapshot feeds the operator by port name, is consumed unmodified, and the returned rate lands in a caller-side energy-resolved table without reshaping.",
+   "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, for constant and linear cross sections at rtol 1e-14, plus the documented repair witness that the saved implementation returns a non-finite rate for a NaN mesh point while this asset rejects it. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance.",
+   "The module constants AMU_KG and ELEMENTARY_CHARGE_C equal the saved source's frozen values bit for bit."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_maxwellian_relative_speed_rate_average.py"
+  ],
+  "evidence_ceiling": "The maintained tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts including the documented repairs, and the composition contract of the saved consumer graph. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+  "known_limitations": [
+   "The collision energy uses the particle mass, the saved source's convention; a reduced-mass model is a different relation and is not provided.",
+   "No cross-section model is included. A caller whose callable is wrong gets a wrong rate with no warning; the asset checks only shape, finiteness and nonnegativity of the returned values.",
+   "The asset does not enforce that vr is a nonnegative radial axis or that the volume weights follow the vr-weighted cylindrical measure; a mismatched measure silently misweights the quadrature. Only proportionality of the measure is required and a constant factor is irrelevant.",
+   "Quadrature accuracy is entirely the mesh's. Coarse meshes misresolve the Maxwellian tail and the beam resonance; no convergence check runs at runtime, and the analytic limits above hold only in the mesh-refined regime.",
+   "Non-finite and non-real input rejection, finite-output rejection and the collision-energy representability gate are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw either coercion, an unrelated TypeError, a silent non-finite rate or a callback invoked with values the asset never declared.",
+   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Public distribution licensing remains pending a human decision."
+  ]
+ }
 }

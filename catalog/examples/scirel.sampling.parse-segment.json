@@ -19,7 +19,7 @@
     "direction": "Declared inputs to Ordered selected vertices",
     "definition": "Roll to nearest start, orient by signed polygon test, and retain selected terminal vertex",
     "model": "Source contour parsing with corrected inclusive endpoint",
-    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
+    "geometry": "planar contour vertices",
     "coordinates": "Planar coordinates in length units",
     "boundary": "Default retains all vertices; explicit nearest end inclusive",
     "assumptions": [
@@ -83,26 +83,26 @@
       "Finite planar segment with meaningful polygon orientation"
     ],
     "supported": [
-      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
+      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
     ],
     "excluded": [
       "Open-curve closure, repeated endpoints and topology policies are not generalized"
     ]
   },
   "failure_semantics": {
-    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
-    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
-    "nonconvergence": "Direct computation; inherited optimizer methods have no reliable crossing/convergence guarantee.",
-    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
+    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
   },
   "provenance": {
-    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
+    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
     "source_kinds": [
-      "D0-derived scientific implementation",
-      "independent analytic or numerical oracle"
+      "Pleiades-derived SciRel implementation",
+      "SciRel regression tests"
     ],
     "public_references": [],
-    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
+    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
   },
   "public_api": {
     "python": {
@@ -118,19 +118,21 @@
     "dependencies": []
   },
   "example": {
-    "description": "Bounded executable example for Contour segment orientation and endpoints",
-    "code": "import numpy as np\nfrom scirel.geometry.sampling import parse_segment\np=np.array([[0.,0.],[0.,1.],[1.,1.],[1.,0.]])\nassert np.array_equal(parse_segment(p),p)",
-    "expected": "Declared result shape and bounded numerical behavior are asserted."
+    "description": "Parse a four-vertex contour segment while retaining its clockwise vertex order.",
+    "code": "import numpy as np\nfrom scirel.geometry.sampling import parse_segment\n\nsegment = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])\nnp.testing.assert_array_equal(parse_segment(segment), segment)",
+    "expected": "The four input vertices are returned in the same (4, 2) order."
   },
   "verification": {
     "scope": [
-      "Only the explicitly stated finite input domain and direct-test fixtures"
+      "Public callable signature and documented finite-input behavior",
+      "The direct regression fixtures listed in verification.tests",
+      "The executable example stored in this contract"
     ],
     "tests": [
       "tests/pleiades/equilibrium/test_analysis_families.py",
       "tests/pleiades/equilibrium/test_analysis_corrections.py"
     ],
-    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
     "known_limitations": [
       "Open-curve closure, repeated endpoints and topology policies are not generalized"
     ]

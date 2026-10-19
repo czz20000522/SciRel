@@ -1,121 +1,116 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.fieldline.helper-contour-points",
-  "kind": "operator",
-  "title": {
-    "en": "Contour field-line collection helper_contour_points",
-    "zh": "辅助等值场线集合"
-  },
-  "summary": "Construct per-level lists of HelperFieldLine from contour segments",
-  "taxonomy": [
-    "analysis",
-    "fieldline"
-  ],
-  "aliases": [
-    "helper_contour_points"
-  ],
-  "identity": {
-    "relation": "Contour field-line collection helper_contour_points",
-    "direction": "Declared inputs to Per-level lists of target line objects",
-    "definition": "Construct per-level lists of HelperFieldLine from contour segments",
-    "model": "Source collection mapping; no extra field reconstruction",
-    "geometry": "One-dimensional or planar sampled geometry as explicitly stated",
-    "coordinates": "Contour planar vertices and levels",
-    "boundary": "Constructed line inherits corrected open ordering, bounded crossing and null-field rejection from its explicit dependency.",
-    "assumptions": [
-      "Finite contour vertices sufficient for SciPy splprep",
-      "Corrected d_ds requires N>=3 and distinct adjacent vertices",
-      "Curvature requires finite nonzero tangent-aligned B at line points",
-      "Grid interpolation queries lie inside finite input support"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "contourset",
-      "description": "Object exposing levels and allsegs",
-      "units": "levels in caller flux-label units; vertices length",
-      "shape": "contour object",
-      "dtype": "contour-like object",
-      "required": true,
-      "constraints": "Each allsegs entry contains finite planar segments"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "collection",
-      "description": "Per-level lists of target line objects",
-      "units": "same as target line",
-      "shape": "dict or FieldLineSet object",
-      "dtype": "Python object",
-      "required": true,
-      "constraints": "FieldLineSet stores mapping in flset"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite contour vertices sufficient for SciPy splprep",
-      "Corrected d_ds requires N>=3 and distinct adjacent vertices",
-      "Curvature requires finite nonzero tangent-aligned B at line points",
-      "Grid interpolation queries lie inside finite input support"
-    ],
-    "supported": [
-      "Named analytic, manufactured, invariant or reference fixtures in the direct tests"
-    ],
-    "excluded": [
-      "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
-      "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
-      "HelperFieldLine has no flux-gradient curvature entry; this collection inherits only its field-based curvature method"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Unsupported source input shape/domain may raise array, assertion, linear-algebra or SciPy errors; no missing-value or knot repair is inferred.",
-    "runtime_failure": "Underlying numerical or interpolation exceptions propagate.",
-    "nonconvergence": "Collection construction is direct; later crossing calls inherit the bounded numerical search and explicit failure of the line dependency.",
-    "partial_results": "No guarantee of valid partially out-of-support results; class constructor exceptions do not return an object."
-  },
-  "provenance": {
-    "lineage_summary": "Derived from the frozen Pleiades D0 scientific family received through composite D1; D2 corrections and preserved source conventions remain independently evidenced.",
-    "source_kinds": [
-      "D0-derived scientific implementation",
-      "independent analytic or numerical oracle"
-    ],
-    "public_references": [],
-    "license_status": "Retained MIT source license and lineage are preserved; scientific, human and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.fieldline",
-      "symbol": "helper_contour_points",
-      "signature": "helper_contour_points(contourset)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "helper_contour_points"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.fieldline.helper-fieldline"
-      }
-    ]
-  },
-  "example": {
-    "description": "Bounded executable example for Contour field-line collection helper_contour_points",
-    "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.fieldline import helper_contour_points\nc=SimpleNamespace(levels=[.2],allsegs=[[np.array([[.2,0.],[.6,0.],[1.,0.]])]])\nr=helper_contour_points(c)\nassert len(r[.2])==1",
-    "expected": "Declared result shape and bounded numerical behavior are asserted."
-  },
-  "verification": {
-    "scope": [
-      "Only the explicitly stated finite input domain and direct-test fixtures"
-    ],
-    "tests": [
-      "tests/pleiades/equilibrium/test_analysis_families.py"
-    ],
-    "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
-    "known_limitations": [
-      "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
-      "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
-      "HelperFieldLine has no flux-gradient curvature entry; this collection inherits only its field-based curvature method"
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.fieldline.helper-contour-points",
+ "kind": "operator",
+ "title": {
+  "en": "Contour field-line collection helper_contour_points",
+  "zh": "辅助等值场线集合"
+ },
+ "summary": "Map each contour level to a list of fitted HelperFieldLine objects.",
+ "taxonomy": [
+  "analysis",
+  "fieldline"
+ ],
+ "aliases": [
+  "helper_contour_points"
+ ],
+ "identity": {
+  "relation": "Contour segment to HelperFieldLine collection",
+  "direction": "contour levels and segments to a level-keyed helper dictionary",
+  "definition": "For each contour level, construct one HelperFieldLine per segment in allsegs.",
+  "model": "Direct collection construction without field reconstruction.",
+  "geometry": "Planar contour segments and level labels.",
+  "coordinates": "Segment vertices in caller length units; levels in caller flux-label units.",
+  "boundary": "Each segment must be accepted by the HelperFieldLine spline constructor.",
+  "assumptions": [
+   "The contour object exposes levels and allsegs.",
+   "Segment and level order is preserved.",
+   "HelperFieldLine diagnostics are evaluated later by the caller."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "contourset",
+   "description": "Object exposing levels and allsegs",
+   "units": "levels in caller flux-label units; vertices length",
+   "shape": "contour object",
+   "dtype": "contour-like object",
+   "required": true,
+   "constraints": "Each allsegs entry contains finite planar segments"
   }
+ ],
+ "outputs": [
+  {
+   "name": "collection",
+   "description": "Per-level lists of target line objects",
+   "units": "same as target line",
+   "shape": "dict[level, list[line]]",
+   "dtype": "Python object",
+   "required": true,
+   "constraints": "Keys and segment lists follow contourset.levels/allsegs; each value is a constructed line list."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The contour object exposes levels and allsegs.",
+   "Segment and level order is preserved."
+  ],
+  "supported": [
+   "Finite contour collections and named helper-line construction cases."
+  ],
+  "excluded": [
+   "Contour topology repair, flux reconstruction, and physical field-line qualification."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Array or SciPy spline errors from malformed contour segments propagate.",
+  "runtime_failure": "Member HelperFieldLine construction or later diagnostic exceptions propagate.",
+  "nonconvergence": "Not applicable; collection construction is direct.",
+  "partial_results": "The function returns no collection when a segment constructor fails."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel retains the documented scientific relation and implementation; applicable source-license obligations are recorded in licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "SciRel implementation",
+   "repository regression tests"
+  ],
+  "public_references": [],
+  "license_status": "Pleiades-derived source portions retain the MIT notice in licenses/Pleiades-MIT.txt; SciRel has no separate distribution-license declaration."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.fieldline",
+   "symbol": "helper_contour_points",
+   "signature": "helper_contour_points(contourset)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "helper_contour_points"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.fieldline.helper-fieldline"
+   }
+  ]
+ },
+ "example": {
+  "description": "Build a HelperFieldLine collection from one contour level and one segment.",
+  "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.fieldline import helper_contour_points\nc=SimpleNamespace(levels=[.2],allsegs=[[np.array([[.2,0.],[.6,0.],[1.,0.]])]])\nr=helper_contour_points(c)\nassert len(r[.2])==1",
+  "expected": "The returned dict has key 0.2 and contains one HelperFieldLine with 1000 fitted vertices."
+ },
+ "verification": {
+  "scope": [
+   "Only the explicitly stated finite input domain and direct-test fixtures"
+  ],
+  "tests": [
+   "tests/pleiades/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Author numerical evidence for named fixtures, not arbitrary-input correctness, experimental physical validation, D2 completion, human approval or release.",
+  "known_limitations": [
+   "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
+   "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
+   "HelperFieldLine has no flux-gradient curvature entry; this collection inherits only its field-based curvature method"
+  ]
+ }
 }

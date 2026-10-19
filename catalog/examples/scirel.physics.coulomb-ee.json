@@ -1,123 +1,122 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.physics.coulomb-ee",
-  "kind": "operator",
-  "title": {
-    "en": "Electron-electron Coulomb logarithm",
-    "zh": "电子-电子库仑对数"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.physics.coulomb-ee",
+ "kind": "operator",
+ "title": {
+  "en": "Electron-electron Coulomb logarithm",
+  "zh": "电子-电子库仑对数"
+ },
+ "summary": "Wesson Coulomb logarithm estimate for the declared collision pair.",
+ "taxonomy": [
+  "physics",
+  "collisions",
+  "coulomb-log"
+ ],
+ "aliases": [
+  "calculate_log_lambda_ee"
+ ],
+ "identity": {
+  "relation": "lnΛ=31.0-0.5 ln(n_e)+ln(1000*T_e)",
+  "direction": "temperature and density -> dimensionless logarithm",
+  "definition": "31.0-0.5*ln(n_e)+ln(1000*T_e); keV is converted to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
+  "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
+  "geometry": "homogeneous plasma point",
+  "coordinates": "broadcast T_e and n_e arrays",
+  "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
+  "assumptions": [
+   "This is a mathematical weak-coupling estimate.",
+   "The caller decides whether a positive/adequate Coulomb logarithm is physically applicable."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "T_e",
+   "description": "Electron temperature",
+   "units": "keV",
+   "shape": "broadcast",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
   },
-  "summary": "Wesson Coulomb logarithm estimate for the declared collision pair.",
-  "taxonomy": [
-    "physics",
-    "collisions",
-    "coulomb-log"
-  ],
-  "aliases": [
-    "calculate_log_lambda_ee"
-  ],
-  "identity": {
-    "relation": "lnΛ=31.0-0.5 ln(n_e)+ln(1000*T_e)",
-    "direction": "temperature and density -> dimensionless logarithm",
-    "definition": "31.0-0.5*ln(n_e)+ln(1000*T_e); keV is converted to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
-    "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
-    "geometry": "homogeneous plasma point",
-    "coordinates": "broadcast T_e and n_e arrays",
-    "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
-    "assumptions": [
-      "This is a mathematical weak-coupling estimate.",
-      "The caller decides whether a positive/adequate Coulomb logarithm is physically applicable."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "T_e",
-      "description": "Electron temperature",
-      "units": "keV",
-      "shape": "broadcast",
-      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-      "required": true,
-      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
-    },
-    {
-      "name": "n_e",
-      "description": "Electron density",
-      "units": "m^-3",
-      "shape": "broadcast",
-      "dtype": "real integer/float numeric scalar or array-like; converted to float64",
-      "required": true,
-      "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "Coulomb logarithm",
-      "units": "dimensionless",
-      "shape": "broadcast shape",
-      "dtype": "float64 scalar or array",
-      "required": true,
-      "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "strictly positive finite T_e in keV and n_e in m^-3"
-    ],
-    "supported": [
-      "Finite NumPy evaluation of the declared relation and broadcast shape."
-    ],
-    "excluded": [
-      "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction.",
-      "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-    "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
-    "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
-    "partial_results": "No output is returned after an exception."
-  },
-  "provenance": {
-    "lineage_summary": "Derived from retained Apache-2.0 TORAX source commit 8cd1184007c82ff379d118b2ad22753358820fe5, tree 1a77b880c34fb333aa1910350967b107f41521c8. physics/collisions.py:calculate_log_lambda_ee, SHA-256 2c85c1dca99fd140f1ecc29df6129c6f5a837212f51bf3a1e1f6e1cf6fd20980. The source relation is retained; explicit failure boundaries and stable float64 arithmetic are SciRel successor behavior.",
-    "source_kinds": [
-      "retained TORAX source implementation",
-      "independent algebra and boundary checks",
-      "SciRel implementation and regression tests"
-    ],
-    "public_references": [],
-    "license_status": "TORAX-derived implementation: Apache-2.0; license text and attribution are included in the selected distribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.physics.coulomb_logs",
-      "symbol": "calculate_log_lambda_ee",
-      "signature": "calculate_log_lambda_ee(T_e, n_e)",
-      "canonical_module": "scirel.physics",
-      "canonical_symbol": "calculate_log_lambda_ee"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Run the relation on a finite declared-domain case.",
-    "code": "import numpy as np\nfrom scirel.physics import calculate_log_lambda_ee\nr=calculate_log_lambda_ee(2., 1e19)\nassert np.isfinite(r)",
-    "expected": "A finite dimensionless logarithm"
-  },
-  "verification": {
-    "scope": [
-      "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
-      "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-      "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_torax_algebra_grid.py"
-    ],
-    "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
-    "known_limitations": [
-      "No external calibration or collision-frequency composition is claimed.",
-      "Only the Wesson algebra and declared numerical boundaries are covered."
-    ]
+  {
+   "name": "n_e",
+   "description": "Electron density",
+   "units": "m^-3",
+   "shape": "broadcast",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Coulomb logarithm",
+   "units": "dimensionless",
+   "shape": "broadcast shape",
+   "dtype": "float64 scalar or array",
+   "required": true,
+   "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "strictly positive finite T_e in keV and n_e in m^-3"
+  ],
+  "supported": [
+   "Finite NumPy evaluation of the declared relation and broadcast shape."
+  ],
+  "excluded": [
+   "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction.",
+   "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
+  "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
+  "partial_results": "No output is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of lnΛ=31.0-0.5 ln(n_e)+ln(1000*T_e). Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
+  "source_kinds": [
+   "SciRel local implementation",
+   "direct regression tests"
+  ],
+  "public_references": [],
+  "license_status": "TORAX-derived implementation: Apache-2.0; license text and attribution are included in the selected distribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.physics.coulomb_logs",
+   "symbol": "calculate_log_lambda_ee",
+   "signature": "calculate_log_lambda_ee(T_e, n_e)",
+   "canonical_module": "scirel.physics",
+   "canonical_symbol": "calculate_log_lambda_ee"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run the relation on a finite declared-domain case.",
+  "code": "import numpy as np\nfrom scirel.physics import calculate_log_lambda_ee\nr=calculate_log_lambda_ee(2., 1e19)\nassert np.isfinite(r)",
+  "expected": "A finite dimensionless logarithm"
+ },
+ "verification": {
+  "scope": [
+   "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
+   "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
+   "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_torax_algebra_grid.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+  "known_limitations": [
+   "No external calibration or collision-frequency composition is claimed.",
+   "Only the Wesson algebra and declared numerical boundaries are covered."
+  ]
+ }
 }

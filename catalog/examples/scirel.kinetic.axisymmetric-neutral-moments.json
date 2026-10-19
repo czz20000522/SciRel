@@ -6,7 +6,7 @@
     "en": "Axisymmetric neutral velocity-space moment reduction",
     "zh": "轴对称中性分布矩归约"
   },
-  "summary": "Recover the density, axial flux and flow speed, pressure, temperature, diagonal stresses and random heat flux of an H or H2 one-dimensional-space, two-dimensional-axisymmetric velocity distribution, with the saved frozen constants and the saved sigma_zz = sigma_yy identification and empty-slice policies preserved exactly.",
+  "summary": "Recover the density, axial flux and flow speed, pressure, temperature, diagonal stresses and random heat flux of an H or H2 one-dimensional-space, two-dimensional-axisymmetric velocity distribution, with the declared constants, cylindrical sigma_zz = sigma_yy identification, and empty-slice policies.",
   "taxonomy": [
     "kinetic",
     "neutral-transport",
@@ -158,15 +158,14 @@
     "partial_results": "Never returned; a rejected call produces no result."
   },
   "provenance": {
-    "lineage_summary": "Development integration from the saved KN1DPy 轴对称中性分布矩归约 package, source anchor KN1DPy/kinetic_h.py:1443-1605; kinetic_h2.py:1612-1801, as recorded by the saved bundle's own provenance section (the raw source tree was not re-read; the anchor is the saved candidate's). Saved implementation file SHA-256 02b58e9447e632d071877b15da871e07a5032654d6d79db8e2945dc8e3f9987e. Valid finite real-valued arithmetic and its operation order are retained; input coercions and derived-scale failures are tightened as stated in identity.assumptions. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "saved L1 operator document and implementation",
-      "independent recomputation witness",
-      "separate read-only saved-implementation comparison",
-      "scientific regression tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notices"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -183,8 +182,8 @@
   },
   "example": {
     "description": "Reduce one random distribution, confirm the sigma_zz alias and the empty-slice divergence, and witness flow and temperature recovery on a shifted-Maxwellian-like distribution.",
-    "code": "import numpy as np\nfrom scirel.kinetic import compute_thermal_speed_m_s, reduce_axisymmetric_neutral_moments\nvr = (np.arange(160) + 0.5) * (4.0 / 160)\nvx = -4.0 + (np.arange(200) + 0.5) * (10.0 / 200)\nvolume = np.outer(vr * (4.0 / 160), np.full(200, 10.0 / 200))\nvth = compute_thermal_speed_m_s(2.0, 1.0)['thermal_speed_m_s']\nvr_grid, vx_grid = np.meshgrid(vr, vx, indexing='ij')\nshift = 3.0e3 / vth\nf = np.exp(-(vr_grid[:, :, None] ** 2 + (vx_grid[:, :, None] - shift) ** 2))\nf = np.broadcast_to(f, (160, 200, 1)).copy()\nresult = reduce_axisymmetric_neutral_moments(f, vx, vr, volume, normalization_temperature_ev=2.0, isotope_mass_amu=1.0, molecularity=1)\nassert abs(result['axial_velocity_m_s'][0] - 3.0e3) < 0.02 * 3.0e3\nassert abs(result['temperature_ev'][0] - 2.0) < 0.05 * 2.0\nassert np.array_equal(result['stress_zz_ev_m3'], result['stress_yy_ev_m3'])\nzero = np.zeros_like(f)\ntry:\n    reduce_axisymmetric_neutral_moments(zero, vx, vr, volume, normalization_temperature_ev=2.0, isotope_mass_amu=1.0, molecularity=1)\nexcept ValueError as error:\n    assert 'positive density' in str(error)\nelse:\n    raise AssertionError('a zero-density slice must be rejected under the default policy')",
-    "expected": "Nine finite moment profiles; the shifted-Maxwellian witness recovers flow and temperature within quadrature accuracy; sigma_zz aliases sigma_yy; a zero-density slice fails closed under the default policy."
+    "code": "import numpy as np\nfrom scirel.kinetic import compute_thermal_speed_m_s, reduce_axisymmetric_neutral_moments\nvr = (np.arange(160) + 0.5) * (4.0 / 160)\nvx = -4.0 + (np.arange(200) + 0.5) * (10.0 / 200)\nvolume = np.outer(vr * (4.0 / 160), np.full(200, 10.0 / 200))\nvth = compute_thermal_speed_m_s(2.0, 1.0)['thermal_speed_m_s']\nvr_grid, vx_grid = np.meshgrid(vr, vx, indexing='ij')\nshift = 3.0e3 / vth\nf = np.exp(-(vr_grid[:, :, None] ** 2 + (vx_grid[:, :, None] - shift) ** 2))\nf = np.broadcast_to(f, (160, 200, 1)).copy()\nresult = reduce_axisymmetric_neutral_moments(f, vx, vr, volume, normalization_temperature_ev=2.0, isotope_mass_amu=1.0, molecularity=1)\nassert abs(result['axial_velocity_m_s'][0] - 3.0e3) < 0.02 * 3.0e3\nassert abs(result['temperature_ev'][0] - 2.0) < 0.05 * 2.0\nassert np.array_equal(result['stress_zz_ev_m3'], result['stress_yy_ev_m3'])\nzero = np.zeros_like(f)\ntry:\n    reduce_axisymmetric_neutral_moments(zero, vx, vr, volume, normalization_temperature_ev=2.0, isotope_mass_amu=1.0, molecularity=1)\nexcept ValueError as error:\n    assert 'positive density' in str(error)\nelse:\n    raise AssertionError('a zero-density slice must be rejected under the default policy')\n",
+    "expected": "Observed PASS: Nine finite moment profiles; the shifted-Maxwellian witness recovers flow and temperature within quadrature accuracy; sigma_zz aliases sigma_yy; a zero-density slice fails closed under the default policy."
   },
   "verification": {
     "scope": [
@@ -192,18 +191,16 @@
       "That the explicit-quadrature density follows the saved per-slice summation order and fails closed on a volume mismatch.",
       "That a shifted-Maxwellian-like distribution recovers its flow speed and temperature within quadrature accuracy (independent physical witness).",
       "That sigma_zz aliases sigma_yy as an independent copy, and that the two empty-slice policies diverge exactly as saved.",
-      "Bounded read-only replay against the SHA-256-pinned saved KN1DPy implementation on valid default, explicit-quadrature and source_default paths; historical development evidence only.",
       "That non-finite velocity axes and non-real coercions fail closed under the declared input contract."
     ],
     "tests": [
       "tests/operator_contracts/test_axisymmetric_neutral_moments.py"
     ],
-    "evidence_ceiling": "The maintained source-free tests establish the relation against an independent Maxwellian-moment witness, the documented fail-closed contracts and the quadrature/seed composition. A separate read-only replay compares valid saved points against the SHA-256-pinned KN1DPy implementation; invalid-input behavior intentionally differs. That replay is historical development evidence, not qualified-L1 provenance. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "The sigma_zz = sigma_yy identification is the saved source's; an independent zz stress is not provided. Whether that identification is the intended published contract is carried over as an open expert question.",
       "Under 'source_default', zero-density slices report the saved neutral values (flow 0 m/s, temperature 1 eV), which are not physical measurements.",
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision."
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   }
 }

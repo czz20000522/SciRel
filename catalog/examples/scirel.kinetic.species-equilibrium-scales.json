@@ -287,15 +287,14 @@
     "partial_results": "None; returns the complete scale dictionary only after validation."
   },
   "provenance": {
-    "lineage_summary": "The development relation originated from the archived fluidBW species_equilibrium_scales implementation (SHA-256 17d06f1520d5d703a30d2493ae85086ecd6a271b1d9fe56dc16b58f8dc4b5397). The later bounded fluidBW r43 handoff (SHA-256 3c514298bd46be501a097e53766868285928c9e3cdb5f66c06a291289ec26f9a) was independently accepted for read-only D2 intake. D2 found the same SI species axes, constants, signed gyroradius, thermal speed and outputs, and retained SciRel's stricter invalid-input handling. This source lineage does not confer expert approval or distribution rights.",
+    "lineage_summary": "SciRel computes the declared SI species equilibrium scales from caller-owned arrays and constants; direct tests cover signed axes, array ownership and invalid inputs.",
     "source_kinds": [
-      "saved historical fluidBW L1 operator contract and implementation",
-      "saved direct source-oracle cases and read-only digest-bound archived-source replay",
-      "bounded fluidBW r43 source handoff and independent D1 review",
-      "SciRel scientific contract tests"
+      "SciRel implementation",
+      "SI scale relations",
+      "direct contract tests"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "Source redistribution permission is NOT_ESTABLISHED; source obligations and the no-public-release boundary follow licenses/fluidbw-D1-source-NOTICE.md and licenses/fluidbw-D2-NOTICE.md."
   },
   "public_api": {
     "python": {

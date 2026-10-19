@@ -121,16 +121,16 @@
     "partial_results": "No partial scientific result is returned after failure."
   },
   "provenance": {
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "GPDF frozen D1 scientific capability",
-      "independent equation derivation",
-      "SciRel implementation"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "public scientific literature for the stated numerical relation"
     ],
-    "lineage_summary": "Reimplements the defining scientific relations exposed by frozen GPDF D1; D2 corrections and failure history are documented in gpdf-generalized-core evaluation. Dev9 successor of exact document SHA256 77ec7f6dc98a03e99bb1b463cd1a734e3b7dcf23e1c4a3ebcecaf0902a82150f; unchanged contracts are reused, changed numerical methods and failure closure follow GPDF-R1/R2/R3.",
-    "license_status": "Independent equation implementation uses NumPy and SciPy; their licenses are carried with the selected distribution.",
     "public_references": [
       "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
-    ]
+    ],
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "verification": {
     "tests": [
@@ -146,14 +146,15 @@
     "known_limitations": [
       "Selector 5 retains incomplete mass; selector 6 retains upstream finite-cutoff normalization.",
       "Piecewise lower-plane response is the real-contour transform, not an inferred analytic continuation.",
-      "Named fixed selectors retain original physical parameters; this API does not add arbitrary shape parameters."
+      "Named fixed selectors retain original physical parameters; this API does not add arbitrary shape parameters.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ],
-    "evidence_ceiling": "Independent defining integrals, analytic residues, distributional jumps, all four complete default scans and 50-digit independent root equations are source-level numerical evidence. Actual installed-wheel evidence is recorded separately in the frozen delivery receipts."
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
   },
   "example": {
-    "description": "广义等离子体色散函数七类分布的可执行例子",
-    "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import evaluate_generalized_dispersion\nr=evaluate_generalized_dispersion(1j,2)\nassert r['Z'].imag>0\nassert np.isfinite(r['Zp'])",
-    "expected": "Assertions verify the stated output property."
+    "description": "Evaluate one generalized dispersion selector at an upper-half-plane point.",
+    "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import evaluate_generalized_dispersion\nr=evaluate_generalized_dispersion(1j,2)\nassert r['Z'].imag>0\nassert np.isfinite(r['Zp'])\n",
+    "expected": "Observed PASS: selector 2 at z=i returns a finite Z and Zp with positive imaginary part for Z."
   },
   "version": {
     "implementation_version": "0.1.0.dev11",

@@ -273,14 +273,14 @@
     "partial_results": "No partial mapping is returned after an exception."
   },
   "provenance": {
-    "lineage_summary": "SciRel D2 retained this fluidBW r43 composition after comparing each source node with maintained kinetic entries. D1 source-scope freeze and finite oracles are development evidence, not expert approval.",
+    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
     "source_kinds": [
-      "frozen source TaskGraph ports and edges",
-      "frozen source numerical oracle",
-      "SciRel composition tests"
+      "current SciRel implementation",
+      "direct scientific regression tests",
+      "retained project notice and public scientific reference where listed"
     ],
     "public_references": [],
-    "license_status": "pending-human-decision"
+    "license_status": "retained project notices under licenses/; redistribution pending human decision"
   },
   "public_api": {
     "python": {
@@ -312,9 +312,9 @@
     ]
   },
   "example": {
-    "description": "Evaluate one bounded source-method graph case.",
-    "code": "from scirel.kinetic import scan_fluid_wavevectors\nr=scan_fluid_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_scale=0.5,omega_step=0.05,omega_stop=0.5,kz_scale=0.1,max_harmonic=0,j_order=8); assert r['count']==1",
-    "expected": "The graph returns its declared terminal mapping."
+    "description": "Run a one-point normalized fluid scan and check its terminal mapping.",
+    "code": "from scirel.kinetic import scan_fluid_wavevectors\nr=scan_fluid_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_scale=0.5,omega_step=0.05,omega_stop=0.5,kz_scale=0.1,max_harmonic=0,j_order=8); assert r['count']==1\n",
+    "expected": "Observed PASS: the bounded scan produces one frequency sample, one spectrum entry, and the declared seven-node graph order."
   },
   "verification": {
     "scope": [
@@ -323,10 +323,11 @@
     "tests": [
       "tests/graph_contracts/test_fluidbw_r43_graphs.py"
     ],
-    "evidence_ceiling": "Finite D1 source oracles and direct SciRel tests establish only the listed cases and tolerances; they do not establish arbitrary-parameter parity, expert recognition or release approval.",
+    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
     "known_limitations": [
       "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero",
-      "Public distribution license and expert review remain pending."
+      "Public distribution license and expert review remain pending.",
+      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
     ]
   },
   "graph": {
