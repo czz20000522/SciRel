@@ -1,580 +1,468 @@
-"""Parametric Pleiades field lines with corrected curvature and bounded crossings.
-
-Selective recovery from accepted D2 FieldLine/HelperFieldLine after maintained
-exclusion. The Mac D2 successor resolves cubic physical-component interpolation
-on complete rectilinear grids with tensor splines and on scattered support with
-a tightly converged Clough-Tocher gradient estimate. Curvature differentiates
-geometry and normalized B in one common local curve parameter, then applies
-sign(p_prime dot bhat) b_prime / abs(p_prime). This avoids the polygonal chord
-metric bias while retaining public d_ds_arclength's three-point contract.
-Curvature requires actual smooth magnetic field lines; a nonzero tangent
-projection alone cannot certify tangency. Reversing B preserves kappa.
-Open vertices keep supplied order, preventing cyclic rolls from creating an
-artificial internal jump. Closed periodic FITPACK interpolation is retained.
-Intersections use bounded distance solves and reject numerical noncrossings or
-multiple found crossings; this is not a complete topology/tangency certificate.
-Field nulls, out-of-support queries and nonfinite field interpolation reject.
-get_kappa_n_2 remains a uniform-grid, nonzero-flux-gradient method, not an axis
-limit. No physical stability claim is supplied.
-"""
-
+"""Parametric field-line geometry and bounded diagnostic operations."""
+from __future__ import annotations
 
 import numpy as np
 
+__all__ = [
+    "d_ds_arclength", "FieldLineSet", "FieldLine", "HelperFieldLine",
+    "Boundary", "contour_points", "helper_contour_points",
+]
+
 
 def d_ds_arclength(vertices, values):
-    """Differentiate values along vertices using their actual cumulative arc length.
-
-    Supports finite 1-D values sampled at finite 2-D vertices with strictly
-    positive adjacent segment lengths.  Endpoint formulas are second-order
-    one-sided finite differences on the nonuniform coordinate; interior values
-    use the three-point quadratic derivative.
-    """
-    p = np.asarray(vertices, dtype=float)
-    q = np.asarray(values, dtype=float)
-    if p.ndim != 2 or p.shape[1] != 2 or q.ndim != 1 or q.size != p.shape[0] or q.size < 3:
+    """Differentiate values with respect to cumulative polyline arclength."""
+    points = np.asarray(vertices, dtype=float)
+    values = np.asarray(values, dtype=float)
+    if points.ndim != 2 or points.shape[1] != 2 or values.ndim != 1:
         raise ValueError("vertices must be (N,2), values must be (N,), N >= 3")
-    if not (np.all(np.isfinite(p)) and np.all(np.isfinite(q))):
+    if points.shape[0] != values.size or values.size < 3:
+        raise ValueError("vertices must be (N,2), values must be (N,), N >= 3")
+    if not np.isfinite(points).all() or not np.isfinite(values).all():
         raise ValueError("vertices and values must be finite")
-    ds = np.linalg.norm(np.diff(p, axis=0), axis=1)
-    if np.any(ds <= 0.0):
+    step = np.linalg.norm(np.diff(points, axis=0), axis=1)
+    if np.any(step <= 0.0):
         raise ValueError("adjacent vertices must be distinct")
-    s = np.r_[0.0, np.cumsum(ds)]
-    out = np.empty_like(q, dtype=float)
-    # Interior: derivative of the quadratic through each local triplet.
-    h0, h1 = s[1:-1] - s[:-2], s[2:] - s[1:-1]
-    out[1:-1] = (h0 * (q[2:] - q[1:-1]) / h1 + h1 * (q[1:-1] - q[:-2]) / h0) / (h0 + h1)
-    # One-sided quadratic derivatives at the endpoints.
-    h0, h1 = s[1] - s[0], s[2] - s[1]
-    out[0] = -(2.0 * h0 + h1) / (h0 * (h0 + h1)) * q[0] + (h0 + h1) / (h0 * h1) * q[1] - h0 / (h1 * (h0 + h1)) * q[2]
-    h0, h1 = s[-1] - s[-2], s[-2] - s[-3]
-    out[-1] = (2.0 * h0 + h1) / (h0 * (h0 + h1)) * q[-1] - (h0 + h1) / (h0 * h1) * q[-2] + h0 / (h1 * (h0 + h1)) * q[-3]
-    return out
+    coordinate = np.r_[0.0, np.cumsum(step)]
+    left = coordinate[1:-1] - coordinate[:-2]
+    right = coordinate[2:] - coordinate[1:-1]
+    derivative = np.empty_like(values)
+    derivative[1:-1] = (
+        left * (values[2:] - values[1:-1]) / right
+        + right * (values[1:-1] - values[:-2]) / left
+    ) / (left + right)
+    h0, h1 = coordinate[1] - coordinate[0], coordinate[2] - coordinate[1]
+    derivative[0] = (
+        -(2.0 * h0 + h1) / (h0 * (h0 + h1)) * values[0]
+        + (h0 + h1) / (h0 * h1) * values[1]
+        - h0 / (h1 * (h0 + h1)) * values[2]
+    )
+    h0, h1 = coordinate[-1] - coordinate[-2], coordinate[-2] - coordinate[-3]
+    derivative[-1] = (
+        (2.0 * h0 + h1) / (h0 * (h0 + h1)) * values[-1]
+        - (h0 + h1) / (h0 * h1) * values[-2]
+        + h0 / (h1 * (h0 + h1)) * values[-3]
+    )
+    return derivative
 
 
 def _sample_fieldline(vertices, R, Z, Q, method, filter_nonfinite):
-    """Interpolate physical samples without degrading a complete tensor grid.
-
-    Cubic rectangular data use an interpolating tensor-product spline, with
-    explicit support masking (FITPACK itself would extrapolate). Scattered or
-    incomplete data retain Clough-Tocher, with gradient estimation resolved to
-    1e-12 rather than griddata's default 1e-6. Linear/nearest remain griddata.
-    The two public classes retain their distinct finite-Q filtering behavior.
-    """
+    """Evaluate a field on line vertices using the requested SciPy method."""
     from scipy.interpolate import CloughTocher2DInterpolator, RectBivariateSpline, griddata
 
-    R, Z, Q = (np.asarray(v) for v in (R, Z, Q))
-    if (method == "cubic" and not np.iscomplexobj(Q) and R.ndim == 2 and
-            min(R.shape) >= 4 and Z.shape == R.shape == Q.shape and
-            all(np.all(np.isfinite(v)) for v in (R, Z, Q)) and
-            np.array_equal(R, np.broadcast_to(R[0], R.shape)) and
-            np.array_equal(Z, np.broadcast_to(Z[:, 0, None], Z.shape))):
-        x, y, q = R[0].copy(), Z[:, 0].copy(), Q.copy()
-        if np.all(np.diff(x) < 0):
-            x, q = x[::-1], q[:, ::-1]
-        if np.all(np.diff(y) < 0):
-            y, q = y[::-1], q[::-1, :]
-        if np.all(np.diff(x) > 0) and np.all(np.diff(y) > 0):
-            vr, vz = vertices[:, 0], vertices[:, 1]
-            inside = (np.isfinite(vr) & np.isfinite(vz) &
-                      (vr >= x[0]) & (vr <= x[-1]) &
-                      (vz >= y[0]) & (vz <= y[-1]))
-            result = np.full(len(vertices), np.nan)
-            spline = RectBivariateSpline(y, x, q, kx=3, ky=3, s=0)
-            result[inside] = spline.ev(vz[inside], vr[inside])
-            # Enforce the exact interpolation constraint at supplied nodes,
-            # including field nulls; no absolute magnetic-field cutoff.
-            ix = np.clip(np.searchsorted(x, vr), 0, len(x)-1)
-            iy = np.clip(np.searchsorted(y, vz), 0, len(y)-1)
-            nodes = inside & (vr == x[ix]) & (vz == y[iy])
-            result[nodes] = q[iy[nodes], ix[nodes]]
+    points = np.asarray(vertices, dtype=float)
+    r_grid, z_grid, quantity = (np.asarray(value) for value in (R, Z, Q))
+    rectangular = (
+        method == "cubic" and not np.iscomplexobj(quantity)
+        and r_grid.ndim == 2 and min(r_grid.shape) >= 4
+        and r_grid.shape == z_grid.shape == quantity.shape
+        and all(np.isfinite(value).all() for value in (r_grid, z_grid, quantity))
+        and np.array_equal(r_grid, np.broadcast_to(r_grid[0], r_grid.shape))
+        and np.array_equal(z_grid, np.broadcast_to(z_grid[:, 0, None], z_grid.shape))
+    )
+    if rectangular:
+        r_axis, z_axis, values = r_grid[0].copy(), z_grid[:, 0].copy(), quantity.copy()
+        if np.all(np.diff(r_axis) < 0.0):
+            r_axis, values = r_axis[::-1], values[:, ::-1]
+        if np.all(np.diff(z_axis) < 0.0):
+            z_axis, values = z_axis[::-1], values[::-1, :]
+        if np.all(np.diff(r_axis) > 0.0) and np.all(np.diff(z_axis) > 0.0):
+            query_r, query_z = points[:, 0], points[:, 1]
+            inside = (
+                np.isfinite(query_r) & np.isfinite(query_z)
+                & (query_r >= r_axis[0]) & (query_r <= r_axis[-1])
+                & (query_z >= z_axis[0]) & (query_z <= z_axis[-1])
+            )
+            result = np.full(points.shape[0], np.nan)
+            spline = RectBivariateSpline(z_axis, r_axis, values, kx=3, ky=3, s=0)
+            result[inside] = spline.ev(query_z[inside], query_r[inside])
+            # FITPACK interpolation should reproduce supplied nodes exactly,
+            # including a zero value at a node.
+            r_index = np.clip(np.searchsorted(r_axis, query_r), 0, r_axis.size - 1)
+            z_index = np.clip(np.searchsorted(z_axis, query_z), 0, z_axis.size - 1)
+            at_node = inside & (query_r == r_axis[r_index]) & (query_z == z_axis[z_index])
+            result[at_node] = values[z_index[at_node], r_index[at_node]]
             return result
-    idx = np.isfinite(Q.ravel()) if filter_nonfinite else np.ones(Q.size, dtype=bool)
-    points = np.column_stack((R.ravel()[idx], Z.ravel()[idx]))
-    values = Q.ravel()[idx]
-    query = (vertices[:, 0], vertices[:, 1])
+
+    mask = np.isfinite(quantity.ravel()) if filter_nonfinite else np.ones(quantity.size, dtype=bool)
+    source_points = np.column_stack((r_grid.ravel()[mask], z_grid.ravel()[mask]))
+    source_values = quantity.ravel()[mask]
+    query = (points[:, 0], points[:, 1])
     if method == "cubic":
-        return CloughTocher2DInterpolator(points, values, tol=1e-12)(*query)
-    return griddata(points, values, xi=query, method=method)
+        return CloughTocher2DInterpolator(source_points, source_values, tol=1e-12)(*query)
+    return griddata(source_points, source_values, xi=query, method=method)
 
 
 def _curve_curvature(vertices, br, bz):
-    """Differentiate direction and geometry in the same local curve parameter.
-
-    For a genuine smooth field line p(t), kappa=sign(p' dot b)*b'/|p'|.
-    Common polynomial derivative weights cancel the leading chord-coordinate
-    scale error. Five local points give quartic derivatives; N=3/4 uses the
-    available quadratic/cubic stencil. Public polygonal d_ds stays unchanged.
-    """
-    p = np.asarray(vertices, dtype=float)
+    """Differentiate normalized field direction along a local curve parameter."""
+    points = np.asarray(vertices, dtype=float)
     field = np.column_stack((br, bz))
-    if (p.ndim != 2 or p.shape[1] != 2 or len(p) < 3 or
-            field.shape != p.shape or not np.all(np.isfinite(p))):
+    if points.ndim != 2 or points.shape[1] != 2 or points.shape[0] < 3 or field.shape != points.shape:
+        raise ValueError("curvature requires finite vertices (N,2), N >= 3")
+    if not np.isfinite(points).all():
         raise ValueError("curvature requires finite vertices (N,2), N >= 3")
     magnitude = np.hypot(field[:, 0], field[:, 1])
-    if not (np.all(np.isfinite(magnitude)) and np.all(magnitude > 0)):
+    if not np.isfinite(magnitude).all() or np.any(magnitude <= 0.0):
         raise ValueError("curvature requires finite nonzero field inside interpolation support")
-    ds = np.linalg.norm(np.diff(p, axis=0), axis=1)
-    if np.any(ds <= 0):
+    segment = np.linalg.norm(np.diff(points, axis=0), axis=1)
+    if np.any(segment <= 0.0):
         raise ValueError("adjacent vertices must be distinct")
-    t = np.r_[0., np.cumsum(ds)]
-    b = field / magnitude[:, None]
-    values = np.column_stack((p, b))
-    width = min(5, len(p))
-    # The stencil has only a handful of points, but constructing and solving
-    # one system per vertex dominates long field lines.  Solve independent
-    # stencils in batches while retaining the exact endpoint/window rule above.
-    # A bounded batch keeps temporary arrays reasonable for very long lines.
-    derivative = np.empty_like(values)
-    batch_size = 4096
+    coordinate = np.r_[0.0, np.cumsum(segment)]
+    direction = field / magnitude[:, None]
+    samples = np.column_stack((points, direction))
+    width = min(5, points.shape[0])
     offsets = np.arange(width)
-    moments = np.zeros(width)
-    moments[1] = 1.
-    starts = np.minimum(np.maximum(np.arange(len(p)) - width // 2, 0), len(p) - width)
-    for begin in range(0, len(p), batch_size):
-        end = min(begin + batch_size, len(p))
+    target_moment = np.zeros(width)
+    target_moment[1] = 1.0
+    starts = np.minimum(np.maximum(np.arange(points.shape[0]) - width // 2, 0), points.shape[0] - width)
+    derivative = np.empty_like(samples)
+    for begin in range(0, points.shape[0], 4096):
+        end = min(begin + 4096, points.shape[0])
         rows = np.arange(begin, end)
         indices = starts[rows, None] + offsets
-        local = t[indices] - t[rows, None]
+        local = coordinate[indices] - coordinate[rows, None]
         scale = np.max(np.abs(local), axis=1)
-        x = local / scale[:, None]
-        # np.vander accepts only one-dimensional input, so form the same
-        # increasing-power matrix explicitly for the batched solve.
-        vandermonde = x[:, :, None] ** offsets[None, None, :]
-        rhs = np.broadcast_to(moments, (end - begin, width))[..., None]
-        weights = np.linalg.solve(vandermonde.transpose(0, 2, 1), rhs)[..., 0]
-        weights /= scale[:, None]
-        # Subtract the central value to avoid cancellation under translation.
-        derivative[rows] = np.einsum(
-            "ij,ijk->ik", weights, values[indices] - values[rows, None]
-        )
-    tangent, db = derivative[:, :2], derivative[:, 2:]
+        normalized = local / scale[:, None]
+        vandermonde = normalized[:, :, None] ** offsets[None, None, :]
+        rhs = np.broadcast_to(target_moment, (rows.size, width))[..., None]
+        weights = np.linalg.solve(vandermonde.transpose(0, 2, 1), rhs)[..., 0] / scale[:, None]
+        derivative[rows] = np.einsum("ij,ijk->ik", weights, samples[indices] - samples[rows, None])
+    tangent, direction_derivative = derivative[:, :2], derivative[:, 2:]
     speed = np.linalg.norm(tangent, axis=1)
-    direction = np.sign(np.sum(tangent*b, axis=1))
-    if not (np.all(np.isfinite(speed)) and np.all(speed > 0) and
-            np.all(np.isfinite(direction)) and np.all(direction != 0)):
+    sign = np.sign(np.sum(tangent * direction, axis=1))
+    if not np.isfinite(speed).all() or np.any(speed <= 0.0) or not np.isfinite(sign).all() or np.any(sign == 0.0):
         raise ValueError("curvature requires finite nonzero tangent-aligned field")
-    return direction[:, None]*db/speed[:, None]
+    return sign[:, None] * direction_derivative / speed[:, None]
 
 
-def _bounded_intersection(line,boundary):
+def _bounded_intersection(line, boundary):
     from scipy.optimize import least_squares
 
-    lower = np.array([float(line.u.min()),float(boundary.u.min())])
-    upper = np.array([float(line.u.max()),float(boundary.u.max())])
-    geometry = np.vstack((line.verts,boundary.verts))
-    tolerance = 1e-9*max(1.,float(np.max(np.ptp(geometry,axis=0))))
-    def separation(uv):
-        return np.asarray(line.interpolate(uv[0]))-np.asarray(boundary.interpolate(uv[1]))
-    roots=[]
-    for u in np.linspace(lower[0],upper[0],7):
-        for v in np.linspace(lower[1],upper[1],7):
-            result=least_squares(separation,[u,v],bounds=(lower,upper),
-                                 xtol=1e-13,ftol=1e-13,gtol=1e-13)
+    lower = np.array([float(line.u.min()), float(boundary.u.min())])
+    upper = np.array([float(line.u.max()), float(boundary.u.max())])
+    geometry = np.vstack((line.verts, boundary.verts))
+    tolerance = 1e-9 * max(1.0, float(np.max(np.ptp(geometry, axis=0))))
+
+    def separation(parameter):
+        return np.asarray(line.interpolate(parameter[0])) - np.asarray(boundary.interpolate(parameter[1]))
+
+    roots = []
+    for start_line in np.linspace(lower[0], upper[0], 7):
+        for start_boundary in np.linspace(lower[1], upper[1], 7):
+            result = least_squares(
+                separation, [start_line, start_boundary], bounds=(lower, upper),
+                xtol=1e-13, ftol=1e-13, gtol=1e-13,
+            )
             if result.success and np.linalg.norm(separation(result.x)) <= tolerance:
-                if not any(np.linalg.norm(result.x-root) < 1e-6 for root in roots):
+                if not any(np.linalg.norm(result.x - root) < 1e-6 for root in roots):
                     roots.append(result.x)
     if not roots:
         raise ValueError("no intersection found within fitted parameter intervals")
-    if len(roots)>1:
+    if len(roots) > 1:
         raise ValueError("multiple intersections found; crossing selection is undefined")
     return float(roots[0][0])
 
 
-class FieldLineSet(object):
-    """Construct per-level :class:`FieldLine` objects from contour segments.
+def _fit_parametric_curve(vertices, u=None, s=0.0, k=2, npts=1000, periodic=False):
+    from scipy.interpolate import splev, splprep
+    tck, fitted_u = splprep(np.asarray(vertices).T, u=u, k=k, s=s, per=int(periodic))
+    sample_u = np.linspace(fitted_u.min(), fitted_u.max(), npts)
+    fitted = np.column_stack(splev(sample_u, tck, der=0))
+    return tck, sample_u, fitted
+
+
+class FieldLineSet:
+    """Map contour levels to fitted :class:`FieldLine` instances.
 
     Parameters
     ----------
     contourset : object
-        Contour-like object exposing ``levels`` and matching ``allsegs``
-        sequences of finite planar segments.
+        Object exposing ``levels`` and matching ``allsegs`` sequences.
     **kwargs
-        Keyword arguments forwarded to each :class:`FieldLine`, including
-        optional spline parameters such as ``u``, ``s``, ``k`` and ``npts``.
+        Spline options forwarded to each line.
 
     Attributes
     ----------
     flset : dict
-        Mapping from each contour level to its list of ``FieldLine`` objects.
+        Contour level to list of fitted lines.
 
     Raises
     ------
     Exception
-        Exceptions raised while constructing a member ``FieldLine`` or while
-        reading the contour-like input propagate unchanged.
+        Construction errors from a member line or contour object.
     """
 
-    def __init__(self,contourset,**kwargs):
-        self.flset = {}
-        for ilev,lev in enumerate(contourset.levels):
-            fllist = [FieldLine(lev,seg,**kwargs) for seg in contourset.allsegs[ilev]]
-            self.flset[lev] = fllist 
+    def __init__(self, contourset, **kwargs):
+        self.flset = {
+            level: [FieldLine(level, segment, **kwargs) for segment in contourset.allsegs[index]]
+            for index, level in enumerate(contourset.levels)
+        }
 
-class FieldLine(object):
-    """Represent one parametric contour and its field-line diagnostics.
+
+class FieldLine:
+    """Fitted contour with field interpolation, curvature, and diagnostics.
 
     Parameters
     ----------
     psi : scalar
-        Contour level label in caller-defined flux-label units.  It is kept as
-        a label and is not reconstructed into a flux field.
-    verts : array_like, shape (M, 2)
-        Ordered finite ``(R, Z)`` contour vertices with sufficient distinct
-        points for the spline fit.  Closed paths use a periodic spline;
-        open paths retain their supplied order.
-    u : array_like, optional
-        Optional spline parameter values forwarded to SciPy ``splprep``.
-    s : float, default=0.0
-        Smoothing factor forwarded to ``splprep``.
-    k : int, default=2
-        Spline degree forwarded to ``splprep``.
-    npts : int, default=1000
-        Number of fitted samples stored in ``verts``.
+        Contour level label.
+    verts : array_like, shape (N, 2)
+        Ordered planar contour vertices.
+    **kwargs
+        Spline parameters accepted by the interpolation helper.
 
     Attributes
     ----------
-    psi : scalar
-        Original contour level label.
-    verts : ndarray, shape (npts, 2)
-        Fitted planar samples.
-    tck : tuple
-        SciPy parametric spline representation used by ``interpolate``.
-    u : ndarray
-        Stored fitted parameter samples.
+    verts, u, tck
+        Fitted samples, sample parameters, and spline representation.
 
     Raises
     ------
     ValueError
-        Diagnostic methods raise this for invalid curvature support, duplicate
-        adjacent vertices, undefined field values or rejected crossings.
+        Invalid diagnostic support, duplicate vertices, or rejected crossings.
     Exception
-        SciPy spline, interpolation and optimization exceptions propagate from
-        the underlying operation.
+        Underlying SciPy spline and interpolation failures.
     """
 
-    def __init__(self,psi,verts,**kwargs):
+    def __init__(self, psi, verts, **kwargs):
         self.psi = psi
         self._verts = verts
         self._interpolate_verts(**kwargs)
         self.reorder_verts()
 
     def is_closed(self):
-        return np.all(self._verts[0,:] == self._verts[-1,:])
+        return np.all(self._verts[0, :] == self._verts[-1, :])
 
-    def _interpolate_verts(self,u=None,s=0.0,k=2,npts=1000):
-        from scipy.interpolate import splev, splprep
+    def _interpolate_verts(self, u=None, s=0.0, k=2, npts=1000):
+        self.tck, self.u, self.verts = _fit_parametric_curve(
+            self._verts, u=u, s=s, k=k, npts=npts, periodic=self.is_closed()
+        )
 
-        if self.is_closed():
-            per = 1
-        else:
-            per = 0
-        tck,u = splprep(self._verts.T,u=u,k=k,s=s,per=per)
-        u_new = np.linspace(u.min(),u.max(),npts)
-        self.tck = tck
-        self.u = u_new
-        r_new,z_new = splev(u_new,tck,der=0)
-        self.verts = np.vstack((r_new,z_new)).T
-
-    def interpolate(self,u):
+    def interpolate(self, u):
         from scipy.interpolate import splev
+        return splev(u, self.tck, der=0)
 
-        return splev(u,self.tck,der=0)
-
-    def reorder_verts(self,steptol=0.1):
-        """Retain ordered spline samples; open paths cannot be cyclically rolled."""
+    def reorder_verts(self, steptol=0.1):
         return None
 
     def get_svec(self):
-        s = np.zeros(self.verts.shape[0])
-        r,z = self.verts[:,0], self.verts[:,1]
-        s[1:] = np.cumsum(np.sqrt((r[1:]-r[0:-1])**2+(z[1:]-z[0:-1])**2))
-        return s
+        distance = np.zeros(self.verts.shape[0])
+        distance[1:] = np.cumsum(np.linalg.norm(np.diff(self.verts, axis=0), axis=1))
+        return distance
 
     def get_length(self):
         return self.get_svec()[-1]
 
     def get_ds(self):
-        r,z = self.verts[:,0], self.verts[:,1]
-        return np.sqrt((r[1]-r[0])**2+(z[1]-z[0])**2)
+        return np.linalg.norm(self.verts[1] - self.verts[0])
 
-    def interpolate_onto(self,R,Z,Q,method="cubic"):
+    def interpolate_onto(self, R, Z, Q, method="cubic"):
         return _sample_fieldline(self.verts, R, Z, Q, method, filter_nonfinite=True)
 
-    def get_kappa_n(self,R,Z,BR,BZ,method="cubic"):
-        # Normalize the interpolated physical vector, not its grid-node direction.
-        br = self.interpolate_onto(R,Z,BR,method=method)
-        bz = self.interpolate_onto(R,Z,BZ,method=method)
-        return _curve_curvature(self.verts, br, bz)
+    def get_kappa_n(self, R, Z, BR, BZ, method="cubic"):
+        return _curve_curvature(self.verts, self.interpolate_onto(R, Z, BR, method), self.interpolate_onto(R, Z, BZ, method))
 
-    def get_kappa_n_2(self,R,Z,psi,method="cubic"):
-        # The inherited stencil is defined only on a finite uniform xy grid.
-        if any(np.iscomplexobj(v) for v in (R,Z,psi)):
+    def get_kappa_n_2(self, R, Z, psi, method="cubic"):
+        if any(np.iscomplexobj(value) for value in (R, Z, psi)):
             raise ValueError("flux curvature requires real grid and flux")
-        R,Z,psi=(np.asarray(v,dtype=float) for v in (R,Z,psi))
-        if (R.ndim!=2 or min(R.shape)<3 or Z.shape!=R.shape or psi.shape!=R.shape or
-                not all(np.all(np.isfinite(v)) for v in (R,Z,psi))):
+        R, Z, psi = (np.asarray(value, dtype=float) for value in (R, Z, psi))
+        if (R.ndim != 2 or min(R.shape) < 3 or Z.shape != R.shape or psi.shape != R.shape
+                or not all(np.isfinite(value).all() for value in (R, Z, psi))):
             raise ValueError("finite matching 2-D grid and flux, at least three nodes per axis required")
-        if not (np.array_equal(R,np.broadcast_to(R[0,:],R.shape)) and
-                np.array_equal(Z,np.broadcast_to(Z[:,0,None],Z.shape))):
+        if not (np.array_equal(R, np.broadcast_to(R[0, :], R.shape)) and np.array_equal(Z, np.broadcast_to(Z[:, 0, None], Z.shape))):
             raise ValueError("flux curvature requires separable uniform xy grid")
-        dx,dz=R[0,1]-R[0,0],Z[1,0]-Z[0,0]
-        eps=np.finfo(float).eps
-        rtol=16*eps*max(np.max(np.abs(R)),np.ptp(R))
-        ztol=16*eps*max(np.max(np.abs(Z)),np.ptp(Z))
-        if (dx==0 or dz==0 or not np.allclose(np.diff(R[0]),dx,rtol=0,atol=rtol) or
-                not np.allclose(np.diff(Z[:,0]),dz,rtol=0,atol=ztol)):
+        dx, dz = R[0, 1] - R[0, 0], Z[1, 0] - Z[0, 0]
+        tolerance = np.finfo(float).eps
+        rtol = 16 * tolerance * max(np.max(np.abs(R)), np.ptp(R))
+        ztol = 16 * tolerance * max(np.max(np.abs(Z)), np.ptp(Z))
+        if (dx == 0.0 or dz == 0.0 or not np.allclose(np.diff(R[0]), dx, rtol=0, atol=rtol)
+                or not np.allclose(np.diff(Z[:, 0]), dz, rtol=0, atol=ztol)):
             raise ValueError("flux curvature requires nondegenerate uniform xy grid")
-        dpsidz, dpsidr = np.gradient(psi,dz,dx)
-        modgpsi = np.hypot(dpsidr,dpsidz)
-        if not (np.all(np.isfinite(modgpsi)) and np.all(modgpsi>0)):
+        dpsi_dz, dpsi_dr = np.gradient(psi, dz, dx)
+        gradient_magnitude = np.hypot(dpsi_dr, dpsi_dz)
+        if not np.isfinite(gradient_magnitude).all() or np.any(gradient_magnitude <= 0.0):
             raise ValueError("flux curvature is undefined on zero or nonfinite gradient support")
-        gz1, gr1 = np.gradient(-1.0/modgpsi*dpsidz,dz,dx)
-        gz2, gr2 = np.gradient(1.0/modgpsi*dpsidr,dz,dx)
-        kap_r = 1.0/modgpsi*(dpsidr*gz1 - dpsidz*gr1)
-        kap_z = 1.0/modgpsi*(dpsidr*gz2 - dpsidz*gr2)
-        kapr_terp = self.interpolate_onto(R,Z,kap_r,method=method)
-        kapz_terp = self.interpolate_onto(R,Z,kap_z,method=method)
-        if not (np.all(np.isfinite(kapr_terp)) and np.all(np.isfinite(kapz_terp))):
+        z1, r1 = np.gradient(-dpsi_dz / gradient_magnitude, dz, dx)
+        z2, r2 = np.gradient(dpsi_dr / gradient_magnitude, dz, dx)
+        kappa_r = (dpsi_dr * z1 - dpsi_dz * r1) / gradient_magnitude
+        kappa_z = (dpsi_dr * z2 - dpsi_dz * r2) / gradient_magnitude
+        interpolated_r = self.interpolate_onto(R, Z, kappa_r, method)
+        interpolated_z = self.interpolate_onto(R, Z, kappa_z, method)
+        if not np.isfinite(interpolated_r).all() or not np.isfinite(interpolated_z).all():
             raise ValueError("flux curvature queries must be inside finite interpolation support")
-        return np.vstack((kapr_terp,kapz_terp)).T
+        return np.column_stack((interpolated_r, interpolated_z))
 
-    def d_ds(self,Q):
+    def d_ds(self, Q):
         return d_ds_arclength(self.verts, Q)
 
-    def get_gradpsi(self,R,Z,BR,BZ,method="cubic"):
-        gradpsi_r = self.interpolate_onto(R,Z,R*BZ,method=method)
-        gradpsi_z = -self.interpolate_onto(R,Z,R*BR,method=method)
-        return gradpsi_r,gradpsi_z
+    def get_gradpsi(self, R, Z, BR, BZ, method="cubic"):
+        return self.interpolate_onto(R, Z, R * BZ, method), -self.interpolate_onto(R, Z, R * BR, method)
 
-    def intersection(self,boundary):
-        """Locate one numerical crossing in the finite fitted parameter intervals.
+    def intersection(self, boundary):
+        return _bounded_intersection(self, boundary)
 
-        Raises ValueError for no accepted crossing or multiple located crossings.
-        A finite multistart search cannot certify all tangencies or spline roots.
-        """
-        return _bounded_intersection(self,boundary)
+    def apply_boundary(self, b1, b2):
+        first, second = self.intersection(b1), self.intersection(b2)
+        self.ubound0, self.ubound1 = first, second
 
-    def apply_boundary(self,b1,b2):
-        # Commit terminal bounds only after both crossing solves succeed.
-        u0, u1 = self.intersection(b1), self.intersection(b2)
-        self.ubound0, self.ubound1 = u0, u1
+    def get_bounded_fl(self, npts=1000):
+        return self.interpolate(np.linspace(self.ubound0, self.ubound1, npts))
 
-    def get_bounded_fl(self,npts=1000):
-        return self.interpolate(np.linspace(self.ubound0,self.ubound1,npts))
-    
+
 def contour_points(contourset):
-    """Build one :class:`FieldLine` list for every contour level.
+    """Build a :class:`FieldLine` list for each contour level.
 
     Parameters
     ----------
     contourset : object
-        Contour-like object exposing ``levels`` and a matching ``allsegs``
-        sequence of finite planar segments.
+        Object exposing ``levels`` and matching ``allsegs`` sequences.
 
     Returns
     -------
     dict
-        Mapping from each contour level to the constructed list of
-        :class:`FieldLine` objects.  Each line retains its contour level and
-        fitted spline representation.
+        Mapping from contour levels to fitted lines.
 
     Raises
     ------
-    ValueError, TypeError
-        If a segment cannot be fitted or the contour object does not provide
-        a supported finite segment representation; underlying SciPy spline
-        errors may propagate.
+    Exception
+        Construction errors from the spline fit.
     """
-    condict = {}
-    for ilev, lev in enumerate(contourset.levels):
-        condict[lev] = [FieldLine(lev,seg) for seg in contourset.allsegs[ilev]]
-    return condict
+    return {
+        level: [FieldLine(level, segment) for segment in contourset.allsegs[index]]
+        for index, level in enumerate(contourset.levels)
+    }
 
 
-class Boundary(object):
-    """Fit a nonperiodic parametric spline to ordered planar boundary points.
+class Boundary:
+    """Fitted nonperiodic spline used as a crossing boundary.
 
     Parameters
     ----------
     vertices : array_like, shape (N, 2)
-        Ordered finite boundary vertices in caller-defined length units.
-        The cubic ``splprep`` fit requires an appropriate finite point set.
+        Ordered boundary vertices.
 
     Attributes
     ----------
-    verts : ndarray, shape (200, 2)
-        Stored fitted boundary samples.
-    tck : tuple
-        SciPy parametric spline representation used by ``interpolate``.
-    u : ndarray
-        Stored fitted parameter samples.
+    verts, u, tck
+        Fitted samples, parameters, and spline representation used by
+        :meth:`interpolate`.
 
     Raises
     ------
     Exception
-        Input-shape, linear-algebra and SciPy interpolation exceptions
-        propagate; no missing-value or knot repair is inferred.
+        Errors from the SciPy spline fit.
     """
 
-    def __init__(self,vertices):
+    def __init__(self, vertices):
         self._interpolate_verts(vertices)
 
-    def _interpolate_verts(self,vertices,u=None,s=0.0,npts=200):
-        from scipy.interpolate import splev, splprep
+    def _interpolate_verts(self, vertices, u=None, s=0.0, npts=200):
+        self.tck, self.u, self.verts = _fit_parametric_curve(vertices, u=u, s=s, npts=npts, periodic=False)
 
-        tck,u = splprep(vertices.T,u=u,s=s)
-        u_new = np.linspace(u.min(),u.max(),npts)
-        self.tck = tck
-        self.u = u_new
-        r_new,z_new = splev(u_new,tck,der=0)
-        self.verts = np.vstack((r_new,z_new)).T
-
-    def interpolate(self,u):
+    def interpolate(self, u):
         from scipy.interpolate import splev
+        return splev(u, self.tck, der=0)
 
-        return splev(u,self.tck,der=0)
 
-
-class HelperFieldLine(object):
-    """Represent a helper contour with field-based diagnostics.
+class HelperFieldLine:
+    """Field-line helper retaining the historical tuple curvature diagnostics.
 
     Parameters
     ----------
     psi : scalar
-        Contour level label in caller-defined flux-label units.  It is kept as
-        a label and is not reconstructed into a flux field.
-    verts : array_like, shape (M, 2)
-        Ordered finite ``(R, Z)`` contour vertices with sufficient distinct
-        points for the spline fit.  Closed paths use a periodic spline;
-        open paths retain their supplied order.
+        Contour level label.
+    verts : array_like, shape (N, 2)
+        Ordered planar contour vertices.
 
     Attributes
     ----------
-    psi : scalar
-        Original contour level label.
-    verts : ndarray, shape (1000, 2)
-        Fitted planar samples.
-    tck : tuple
-        SciPy parametric spline representation used by ``interpolate``.
-    u : ndarray
-        Stored fitted parameter samples.
+    verts, u, tck
+        Fitted samples, parameters, and spline representation.
 
     Raises
     ------
     ValueError
-        Diagnostic methods raise this for invalid curvature support, duplicate
-        adjacent vertices, undefined field values or rejected crossings.
+        Invalid diagnostic support, duplicate vertices, or rejected crossings.
     Exception
-        SciPy spline, interpolation and optimization exceptions propagate from
-        the underlying operation.
+        Underlying SciPy spline and interpolation failures.
     """
 
-    def __init__(self,psi,verts):
+    def __init__(self, psi, verts):
         self.psi = psi
         self._verts = verts
         self._interpolate_verts()
         self.reorder_verts()
 
     def is_closed(self):
-        return np.all(self._verts[0,:] == self._verts[-1,:])
+        return np.all(self._verts[0, :] == self._verts[-1, :])
 
-    def _interpolate_verts(self,u=None,s=0.0,k=2,npts=1000):
-        from scipy.interpolate import splev, splprep
+    def _interpolate_verts(self, u=None, s=0.0, k=2, npts=1000):
+        self.tck, self.u, self.verts = _fit_parametric_curve(
+            self._verts, u=u, s=s, k=k, npts=npts, periodic=self.is_closed()
+        )
 
-        if self.is_closed():
-            per = 1
-        else:
-            per = 0
-        tck,u = splprep(self._verts.T,u=u,k=k,s=s,per=per)
-        u_new = np.linspace(u.min(),u.max(),npts)
-        self.tck = tck
-        self.u = u_new
-        r_new,z_new = splev(u_new,tck,der=0)
-        self.verts = np.vstack((r_new,z_new)).T
-
-    def interpolate(self,u):
+    def interpolate(self, u):
         from scipy.interpolate import splev
+        return splev(u, self.tck, der=0)
 
-        return splev(u,self.tck,der=0)
-
-    def reorder_verts(self,steptol=0.1):
-        """Retain ordered spline samples; open paths cannot be cyclically rolled."""
+    def reorder_verts(self, steptol=0.1):
         return None
 
     def get_svec(self):
-        s = np.zeros(self.verts.shape[0])
-        r,z = self.verts[:,0], self.verts[:,1]
-        s[1:] = np.cumsum(np.sqrt((r[1:]-r[0:-1])**2+(z[1:]-z[0:-1])**2))
-        return s
+        distance = np.zeros(self.verts.shape[0])
+        distance[1:] = np.cumsum(np.linalg.norm(np.diff(self.verts, axis=0), axis=1))
+        return distance
 
     def get_length(self):
         return self.get_svec()[-1]
 
     def get_ds(self):
-        r,z = self.verts[:,0], self.verts[:,1]
-        return np.sqrt((r[1]-r[0])**2+(z[1]-z[0])**2)
+        return np.linalg.norm(self.verts[1] - self.verts[0])
 
-    def interpolate_onto(self,R,Z,Q,method="cubic"):
+    def interpolate_onto(self, R, Z, Q, method="cubic"):
         return _sample_fieldline(self.verts, R, Z, Q, method, filter_nonfinite=False)
 
-    def get_kappa_n(self,R,Z,BR,BZ,method="cubic"):
-        # Normalize the interpolated physical vector, not its grid-node direction.
-        br = self.interpolate_onto(R,Z,BR,method=method)
-        bz = self.interpolate_onto(R,Z,BZ,method=method)
-        value = _curve_curvature(self.verts, br, bz)
-        return value[:, 0], value[:, 1]
+    def get_kappa_n(self, R, Z, BR, BZ, method="cubic"):
+        curvature = _curve_curvature(
+            self.verts, self.interpolate_onto(R, Z, BR, method),
+            self.interpolate_onto(R, Z, BZ, method),
+        )
+        return curvature[:, 0], curvature[:, 1]
 
-    def d_ds(self,Q):
+    def d_ds(self, Q):
         return d_ds_arclength(self.verts, Q)
 
-    def get_gradpsi(self,R,Z,BR,BZ,method="cubic"):
-        gradpsi_r = self.interpolate_onto(R,Z,R*BZ,method=method)
-        gradpsi_z = -self.interpolate_onto(R,Z,R*BR,method=method)
-        return gradpsi_r,gradpsi_z
+    def get_gradpsi(self, R, Z, BR, BZ, method="cubic"):
+        return self.interpolate_onto(R, Z, R * BZ, method), -self.interpolate_onto(R, Z, R * BR, method)
 
-    def intersection(self,boundary):
-        """Locate one numerical crossing in the finite fitted parameter intervals.
+    def intersection(self, boundary):
+        return _bounded_intersection(self, boundary)
 
-        Raises ValueError for no accepted crossing or multiple located crossings.
-        A finite multistart search cannot certify all tangencies or spline roots.
-        """
-        return _bounded_intersection(self,boundary)
+    def apply_boundary(self, b1, b2):
+        first, second = self.intersection(b1), self.intersection(b2)
+        self.ubound0, self.ubound1 = first, second
 
-    def apply_boundary(self,b1,b2):
-        # Commit terminal bounds only after both crossing solves succeed.
-        u0, u1 = self.intersection(b1), self.intersection(b2)
-        self.ubound0, self.ubound1 = u0, u1
-
-    def get_bounded_fl(self,npts=1000):
-        return self.interpolate(np.linspace(self.ubound0,self.ubound1,npts))
+    def get_bounded_fl(self, npts=1000):
+        return self.interpolate(np.linspace(self.ubound0, self.ubound1, npts))
 
 def helper_contour_points(contourset):
-    """Build one :class:`HelperFieldLine` list for every contour level.
+    """Build a :class:`HelperFieldLine` list for each contour level.
 
     Parameters
     ----------
     contourset : object
-        Contour-like object exposing ``levels`` and a matching ``allsegs``
-        sequence of finite planar segments.
+        Object exposing ``levels`` and matching ``allsegs`` sequences.
 
     Returns
     -------
     dict
-        Mapping from each contour level to the constructed list of
-        :class:`HelperFieldLine` objects.
+        Mapping from contour levels to ``HelperFieldLine`` objects.
 
     Raises
     ------
     Exception
-        Exceptions raised while constructing a helper line or reading the
-        contour-like input propagate unchanged.
+        Construction errors from the spline fit.
     """
-
-    condict = {}
-    for ilev, lev in enumerate(contourset.levels):
-        condict[lev] = [HelperFieldLine(lev,seg) for seg in contourset.allsegs[ilev]]
-    return condict
-
-
-__all__ = ['d_ds_arclength', 'FieldLineSet', 'FieldLine', 'HelperFieldLine', 'Boundary', 'contour_points', 'helper_contour_points']
+    return {
+        level: [HelperFieldLine(level, segment) for segment in contourset.allsegs[index]]
+        for index, level in enumerate(contourset.levels)
+    }

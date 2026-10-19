@@ -1,71 +1,47 @@
-"""Pleiades affine plotting support, with source in-place/copy contracts.
+"""Optional affine helpers for geometry patches."""
+from __future__ import annotations
 
-Source: helpers.py:15-48, frozen D0 be412aa14b77. scale_patches and
-transpose_patches mutate transforms; transpose_patches returns None.
-get_mirror_patches shallow-copies patches. These are visual support utilities,
-not transformations of physical field coordinates or vector components.
-D2 composes only the data transform before calling set_transform; including
-get_transform would apply intrinsic patch geometry twice. This correction
-is witnessed on a Rectangle by independent affine coordinate expectations.
-"""
 import copy
+
 import numpy as np
 
 from scirel._optional import import_optional_module
 
+__all__ = ["scale_patches", "get_mirror_patches", "transpose_patches"]
+
 
 def _affine2d(*, matrix=None):
-    """Load Matplotlib only when a plotting transform is requested.
-
-    Geometry and numerical helpers remain usable without the optional plotting
-    dependency.  Keep the failure at the plotting boundary so callers receive
-    an actionable message instead of an import-time failure from
-    ``scirel.geometry``.
-    """
     transforms = import_optional_module(
-        "matplotlib.transforms",
-        extra="plot",
-        feature="scirel.geometry plotting helpers",
+        "matplotlib.transforms", extra="plot", feature="scirel.geometry plotting helpers"
     )
-    if matrix is None:
-        return transforms.Affine2D()
-    return transforms.Affine2D(matrix=matrix)
+    return transforms.Affine2D() if matrix is None else transforms.Affine2D(matrix=matrix)
 
-def scale_patches(patches,scale):
-    """scale patches by desired factor."""
-    t = _affine2d().scale(scale)
-    for p in patches:
-        p.set_transform(p.get_data_transform()+t)
+
+def scale_patches(patches, scale):
+    """Apply a data-coordinate scale to each patch in place and return it."""
+    transform = _affine2d().scale(scale)
+    for patch in patches:
+        patch.set_transform(patch.get_data_transform() + transform)
     return patches
 
-def get_mirror_patches(patches,axis=0,scale=1):
-    """Get mirror image patches across desired axis.
-    axis = 0 means reflect across x axis, axis = 1
-    means reflect across y axis. Optional scale
-    argument can be used as well."""
-    x_ref = np.array([[1,0,0],[0,-1,0],[0,0,1]])
-    y_ref = np.array([[-1,0,0],[0,1,0],[0,0,1]])
-    if axis == 0:
-        matrix = x_ref
-    else:
-        matrix = y_ref
-    t = _affine2d(matrix=matrix).scale(scale)
-    mirror_patches = []
-    for p in patches:
-        m_patch = copy.copy(p)
-        m_patch.set_transform(m_patch.get_data_transform()+t)
-        mirror_patches.append(m_patch)
-    return mirror_patches
+
+def get_mirror_patches(patches, axis=0, scale=1):
+    """Return shallow copies reflected across the selected coordinate axis."""
+    reflection = np.array([[1, 0, 0], [0, -1, 0], [0, 0, 1]]) if axis == 0 else np.array(
+        [[-1, 0, 0], [0, 1, 0], [0, 0, 1]]
+    )
+    transform = _affine2d(matrix=reflection).scale(scale)
+    mirrored = []
+    for patch in patches:
+        clone = copy.copy(patch)
+        clone.set_transform(clone.get_data_transform() + transform)
+        mirrored.append(clone)
+    return mirrored
+
 
 def transpose_patches(patches):
-    """Transpose patches (reflect across line y=x)."""
-    transpose = np.array([[0,1,0],[1,0,0],[0,0,1]])
-    t = _affine2d(matrix=transpose)
-    mirror_patches = []
-    for p in patches:
-        p.set_transform(p.get_data_transform()+t)
-    #return patches
-
-
-
-__all__ = ['scale_patches', 'get_mirror_patches', 'transpose_patches']
+    """Transpose each patch across the line ``Z = R`` in place."""
+    transform = _affine2d(matrix=np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]))
+    for patch in patches:
+        patch.set_transform(patch.get_data_transform() + transform)
+    # Historical API intentionally returns None.
