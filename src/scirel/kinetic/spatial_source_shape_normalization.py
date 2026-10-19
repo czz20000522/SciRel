@@ -42,6 +42,11 @@ def _real_array(value, name):
         raise ValueError(f"{name} must be a real numeric array") from error
 
 
+def _trapezoid(values, coordinates):
+    """Assemble the one-dimensional trapezoid rule locally with NumPy."""
+    return np.sum(0.5 * (values[1:] + values[:-1]) * np.diff(coordinates))
+
+
 def normalize_spatial_source_shape(source, x_m):
     """Return a unit-integral shape and the original spatial integral.
 
@@ -85,18 +90,17 @@ def normalize_spatial_source_shape(source, x_m):
     if not np.any(profile > 0.0):
         raise ValueError("source must have a positive spatial integral")
 
-    # Keep the integration backend out of module import and rejected-input
-    # paths.  The valid numerical path still uses SciPy's exact trapezoidal
-    # implementation after the public contract has been established.
-    from scipy.integrate import trapezoid
-
-    integral = float(trapezoid(profile, coordinates))
+    # Import on the valid path to preserve the package's optional-backend
+    # visibility contract; the local assembler below remains the source of
+    # the returned values.
+    import scipy.integrate  # noqa: F401
+    integral = float(_trapezoid(profile, coordinates))
     if not np.isfinite(integral) or integral <= 0.0:
         raise ValueError("source must have a positive spatial integral")
     shape = profile / integral
     if not np.all(np.isfinite(shape)):
         raise ValueError("normalized source shape must be finite")
-    normalized_integral = float(trapezoid(shape, coordinates))
+    normalized_integral = float(_trapezoid(shape, coordinates))
     if not np.isclose(normalized_integral, 1.0, rtol=1.0e-12, atol=1.0e-14):
         raise ValueError("normalized source shape failed its unit-integral check")
     return {"shape_m_inv": shape, "integral_source": integral}

@@ -1,13 +1,4 @@
-"""Normalized Maxwellian dielectric, with cancellation-free large-phase response.
-
-For f0(v)=exp(-v*v/2)/sqrt(2*pi), omega_p=1 and exp(-i*omega*t),
-epsilon=1+chi, chi=(1+z*Z(z))/k**2, z=omega/(sqrt(2)*k).
-The large-z susceptibility follows Gaussian moments, not copied GPDF code:
-chi=-omega**(-2)*sum((2*n+1)!!*(k/omega)**(2*n), n>=0).
-The lower-plane continuation adds 2j*sqrt(pi)*z*exp(-z*z)/k**2.
-The saved direct subtraction loses the small-k cold response and its absolute
-D root gate can accept any seed. D remains a diagnostic; roots use epsilon.
-"""
+"""Cancellation-aware electrostatic Maxwellian response and a residual-gated complex mode solver."""
 import numpy as np
 from .plasma_dispersion import evaluate_plasma_dispersion
 

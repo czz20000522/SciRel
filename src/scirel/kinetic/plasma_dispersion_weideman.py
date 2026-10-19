@@ -1,13 +1,4 @@
-"""fluidBW's fixed N=64 Weideman plasma-dispersion variant.
-
-Faithful port of the Weideman/Faddeeva rational (FFT) expansion of
-Z(z) = i*sqrt(pi)*w(z), w(z) = exp(-z^2)*erfc(-i*z), as used by the fluidBW
-kinetic family. The source science is reproduced as-is: no repair, no
-normalization, no convergence improvement.
-
-Reference: bonk/zfun.m:1-46 in the frozen fluidBW source tree.
-"""
-
+"""A fixed-order rational approximation for the dimensionless plasma dispersion function with an analytic imaginary-axis path."""
 import numpy as _np
 
 __all__ = ["evaluate_plasma_dispersion_weideman"]

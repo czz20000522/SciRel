@@ -58,6 +58,19 @@ def _real_scalar(name, value):
     return float(raw)
 
 
+def _insert_energy_nodes(base, requested, normalization):
+    """Insert positive requested energies in caller order, preserving nodes."""
+    mesh = base
+    last = 0.0
+    for energy in requested:
+        if energy <= 0.0:
+            continue
+        last = np.sqrt(energy / normalization)
+        insertion = np.searchsorted(mesh, last, side="right")
+        mesh = np.insert(mesh, insertion, last)
+    return mesh, last
+
+
 def create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_energy_ev=None, temperature_cap_ev=0.0):
     """Return the source-equivalent ``vx``/``vr`` mesh, ``Tnorm`` and indices.
 
@@ -124,13 +137,7 @@ def create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_ener
         g = 2.0 * nv * ratio / (1.0 - ratio)
         b = vmax / (nv * (nv + g))
         v = g * b * np.arange(nv + 1) + b * np.arange(nv + 1) ** 2
-    v0 = 0.0
-    for energy in requested:
-        if energy > 0.0:
-            target = np.sqrt(energy / tnorm)
-            v0 = target
-            index = np.flatnonzero(v > target)
-            v = np.concatenate((v[:index[0]], (target,), v[index[0]:])) if index.size else np.concatenate((v, (target,)))
+    v, v0 = _insert_energy_nodes(v, requested, tnorm)
     if not np.all(np.isfinite(v)) or np.any(np.diff(v) <= 0.0):
         raise ValueError("final radial mesh must be finite and strictly increasing")
     vr = v[1:]

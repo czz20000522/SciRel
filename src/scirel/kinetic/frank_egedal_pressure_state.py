@@ -1,5 +1,4 @@
-"""Final gas, electron and hot-ion pressure assembly."""
-
+"""Assemble finite gas, electron, and hot-ion pressure fields."""
 import numpy as np
 
 

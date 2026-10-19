@@ -79,7 +79,8 @@ def reduce_terminal_molecular_ion_state(
             "terminal molecular-ion inputs must be finite, shape-compatible, and physically nonnegative"
         )
 
-    dissociation_frequency = neutral_density * np.sum(reaction_rates[:, 7:11], axis=1)
+    dissociation_channels = reaction_rates[:, 7:11]
+    dissociation_frequency = neutral_density * np.sum(dissociation_channels, axis=1)
     energy_exchange_frequency = (
         7.7e-7 * neutral_density * 1.0e-6
     ) / (np.sqrt(float(mass)) * (ion_temperature**1.5))

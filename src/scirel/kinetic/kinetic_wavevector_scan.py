@@ -1,5 +1,4 @@
-"""Compose the bounded fluidBW kinetic perpendicular-wavenumber scan."""
-
+"""Build a deterministic normalized frequency grid and evaluate kinetic wavevector roots over it."""
 from __future__ import annotations
 
 import math

@@ -1,4 +1,4 @@
-"""Grid-aware mirror closure composed from end-loss and ambipolar assets."""
+"""Compose the mirror kinetic closure on a shared grid while preserving explicit dependency and shape contracts."""
 from __future__ import annotations
 import hashlib
 from pathlib import Path

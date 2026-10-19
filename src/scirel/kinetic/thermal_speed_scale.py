@@ -53,6 +53,16 @@ def _real_scalar(value, name):
         raise ValueError(f"{name} must be a real numeric scalar") from error
 
 
+def _thermal_speed_ratio(temperature, mass):
+    """Build the SI second-moment ratio from the frozen SciRel constants."""
+    denominator = mass * _HYDROGEN_MASS_KG
+    return (
+        (2.0 * _ELECTRON_VOLT_J * temperature) / denominator
+        if denominator
+        else math.inf
+    )
+
+
 def compute_thermal_speed_m_s(temperature_ev, mass_amu):
     """Return ``{'thermal_speed_m_s': v}`` with ``v = sqrt(2 e T / m)``.
 
@@ -83,7 +93,7 @@ def compute_thermal_speed_m_s(temperature_ev, mass_amu):
         raise ValueError("mass_amu must be finite and positive")
     mass_kg = mass * _HYDROGEN_MASS_KG
     numerator = 2.0 * _ELECTRON_VOLT_J * temperature
-    ratio = numerator / mass_kg if mass_kg else math.inf
+    ratio = _thermal_speed_ratio(temperature, mass)
     if (not math.isfinite(ratio) or min(mass_kg, numerator, ratio) < sys.float_info.min):
         with localcontext() as context:
             context.prec = 100

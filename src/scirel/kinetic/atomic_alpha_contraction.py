@@ -41,7 +41,8 @@ def _batched_matrix_vectors(matrix, field):
 
     Each column remains an ``N x 1`` matrix-vector product, preserving the
     reduction path of the source loop while moving only the spatial axis into
-    a batch dimension.
+    a batch dimension.  The matrix and field are owned by this call, so the
+    contraction cannot leak mutable state between species.
     """
     n_cells = field.shape[2]
     flat = field.reshape((matrix.shape[0], n_cells), order="F")

@@ -50,7 +50,11 @@ def _real_array(value, name):
 
 
 def _batched_matrix_vectors(matrix, field):
-    """Apply one square matrix to every Fortran-order spatial column."""
+    """Apply one square matrix to every Fortran-order spatial column.
+
+    The singleton batch dimensions keep this local contraction independent of
+    any external collision-table object or global workspace.
+    """
     n_cells = field.shape[2]
     flat = field.reshape((matrix.shape[0], n_cells), order="F")
     values = np.matmul(matrix[None, :, :], flat.T[:, :, None]).squeeze(2).T

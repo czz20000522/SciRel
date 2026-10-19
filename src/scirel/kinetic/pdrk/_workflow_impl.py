@@ -1,28 +1,33 @@
-"""Source-shaped composition of declared D1 mappings; no independent science."""
-from . import magnetized as current
+"""Small Python compositions over the public magnetized PDRK operators."""
 
-def selected_fields(scan_state,seeds,*,rng_seed=None):
-    """Scan carrier + normalized source seeds -> original near-mode EM fields.
+from . import magnetized as _magnetized
 
-    `scan_state` is the genuine current.scan_spectrum predecessor, including its
-    final d. No plotting or extra output reconstruction is inserted here.
-    """
-    selected=current.select_modes(scan_state,seeds)
-    return current.reconstruct_polarization(selected,rng_seed=rng_seed)
 
-def rendered_output(scan_state,seeds,*,scales=(1.,1.,1.),runtime=0.,rng_seed=None):
-    """Scan -> all-root presentation -> selection -> selected plot -> writer.
+def selected_fields(scan_state, seeds, *, rng_seed=None):
+    """Select seeded modes and reconstruct their normalized fields."""
 
-    The original writer owns its one reconstruction. SourceOutputError retains
-    partial native artifacts and observable state when the source stage fails.
-    """
-    all_roots=current.render_spectrum(scan_state,runtime=runtime)
-    selected=current.select_modes(all_roots,seeds)
-    plotted=current.render_selected_modes(selected,scales=scales,runtime=runtime)
-    return current.source_output(plotted,runtime=runtime,rng_seed=rng_seed)
+    selected = _magnetized.select_modes(scan_state, seeds)
+    return _magnetized.reconstruct_polarization(selected, rng_seed=rng_seed)
 
-def preset_output(scan_state,*,scenario='default',runtime=0.,rng_seed=None):
-    """Source all-root plot -> stored source seed/scaling script -> writer."""
-    all_roots=current.render_spectrum(scan_state,runtime=runtime)
-    selected=current.select_preset(all_roots,scenario=scenario,runtime=runtime)
-    return current.source_output(selected,runtime=runtime,rng_seed=rng_seed)
+
+def rendered_output(
+    scan_state, seeds, *, scales=(1.0, 1.0, 1.0), runtime=0.0, rng_seed=None
+):
+    """Render all roots, select requested modes, and persist their fields."""
+
+    all_roots = _magnetized.render_spectrum(scan_state, runtime=runtime)
+    selected = _magnetized.select_modes(all_roots, seeds)
+    plotted = _magnetized.render_selected_modes(
+        selected, scales=scales, runtime=runtime
+    )
+    return _magnetized.source_output(plotted, runtime=runtime, rng_seed=rng_seed)
+
+
+def preset_output(scan_state, *, scenario="default", runtime=0.0, rng_seed=None):
+    """Render a named stored scenario through the native writer."""
+
+    all_roots = _magnetized.render_spectrum(scan_state, runtime=runtime)
+    selected = _magnetized.select_preset(
+        all_roots, scenario=scenario, runtime=runtime
+    )
+    return _magnetized.source_output(selected, runtime=runtime, rng_seed=rng_seed)

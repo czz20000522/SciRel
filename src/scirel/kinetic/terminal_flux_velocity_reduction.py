@@ -28,6 +28,11 @@ def _real_numeric(name, value):
         raise ValueError(f"{name} must contain real numeric values") from exc
 
 
+def _contract_profile(slices, radial_weight, axial_weight):
+    """Return one radial contraction for every spatial slice."""
+    return np.sum(np.matmul(slices, axial_weight) * radial_weight[None, :], axis=1)
+
+
 def reduce_terminal_molecular_flux_velocity(
     vx,
     thermal_speed_m_s,
@@ -69,10 +74,8 @@ def reduce_terminal_molecular_flux_velocity(
     # sum, rather than a three-axis reduction with a different accumulation
     # order.
     slices = distribution.transpose(2, 0, 1)
-    density = np.sum(np.matmul(slices, widths) * weight[None, :], axis=1)
-    flux = float(thermal_speed) * np.sum(
-        np.matmul(slices, velocity * widths) * weight[None, :], axis=1
-    )
+    density = _contract_profile(slices, weight, widths)
+    flux = float(thermal_speed) * _contract_profile(slices, weight, velocity * widths)
     if not np.all(np.isfinite(density)) or np.any(density <= 0.0):
         raise ValueError("terminal flux reduction requires strictly positive density")
     if not np.all(np.isfinite(flux)):

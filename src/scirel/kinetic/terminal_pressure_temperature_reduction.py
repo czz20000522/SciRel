@@ -81,13 +81,11 @@ def reduce_terminal_molecular_pressure_temperature(
         )
 
     nx = distribution.shape[2]
-    density = np.zeros(nx, dtype=float)
-    flux = np.zeros(nx, dtype=float)
-    for k in range(nx):
-        density[k] = np.sum(weight * (distribution[:, :, k] @ widths))
-        flux[k] = float(thermal_speed) * np.sum(
-            weight * (distribution[:, :, k] @ (velocity * widths))
-        )
+    slices = distribution.transpose(2, 0, 1)
+    density = np.sum(np.matmul(slices, widths) * weight[None, :], axis=1)
+    flux = float(thermal_speed) * np.sum(
+        np.matmul(slices, velocity * widths) * weight[None, :], axis=1
+    )
     if not np.all(np.isfinite(density)) or np.any(density <= 0.0):
         raise ValueError("terminal pressure reduction requires strictly positive density")
 
@@ -99,18 +97,17 @@ def reduce_terminal_molecular_pressure_temperature(
         velocity[None, :, None] - normalized_mean_velocity[None, None, :]
     ) ** 2
 
-    pressure = np.zeros(nx, dtype=float)
     thermal_speed_squared = float(thermal_speed) * float(thermal_speed)
-    for k in range(nx):
-        pressure[k] = (
-            (2.0 * float(mass) * H_MASS_KG)
-            * thermal_speed_squared
-            * np.sum(
-                weight
-                * ((random_velocity_squared[:, :, k] * distribution[:, :, k]) @ widths)
-            )
-            / (3.0 * Q_COULOMB)
-        )
+    random_slices = random_velocity_squared.transpose(2, 0, 1) * slices
+    weighted_random_second = np.sum(
+        np.matmul(random_slices, widths) * weight[None, :], axis=1
+    )
+    pressure = (
+        (2.0 * float(mass) * H_MASS_KG)
+        * thermal_speed_squared
+        * weighted_random_second
+        / (3.0 * Q_COULOMB)
+    )
     if not np.all(np.isfinite(pressure)) or np.any(pressure < 0.0):
         raise ValueError("terminal pressure reduction produced an invalid pressure profile")
     temperature = pressure / density

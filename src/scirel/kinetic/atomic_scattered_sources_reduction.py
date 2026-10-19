@@ -23,6 +23,11 @@ def _real_array(value, name):
     return result
 
 
+def _sum_source_channels(charge_exchange, elastic):
+    """Add the two signed source channels in their declared order."""
+    return charge_exchange + elastic
+
+
 def reduce_atomic_scattered_sources(
     charge_exchange_source_distribution, elastic_source_distribution
 ):
@@ -34,7 +39,7 @@ def reduce_atomic_scattered_sources(
     if charge_exchange.ndim != 3 or elastic.shape != charge_exchange.shape:
         raise ValueError("charge-exchange and elastic sources must be finite aligned 3-D fields")
     with np.errstate(over="ignore", invalid="ignore"):
-        total = charge_exchange + elastic
+        total = _sum_source_channels(charge_exchange, elastic)
     if not np.all(np.isfinite(total)):
         raise ValueError("the aggregated scattered source must be finite")
     return total

@@ -41,13 +41,19 @@ def _decode(value):
     return value
 
 
-def _run(function, args, *, nout=1, output_directory=None):
-    """One process owns all native globals and figures; arguments travel as MAT data."""
+def _require_runtime():
+    """Resolve the pinned native backend once at the numerical boundary."""
     if platform.system() != "Linux" or platform.machine() not in {"x86_64", "amd64"}:
         raise RuntimeError("fluidBW requires the pinned Linux amd64 runtime")
     octave = shutil.which("octave")
     if octave is None:
         raise RuntimeError("GNU Octave 7.3.0 is required")
+    return octave
+
+
+def _run(function, args, *, nout=1, output_directory=None):
+    """One process owns all native globals and figures; arguments travel as MAT data."""
+    octave = _require_runtime()
     # MAT transport is only needed once a native Octave call is requested.
     # Keeping this import here lets direct module discovery avoid scipy.io and
     # preserves the existing load/save behavior inside the native boundary.

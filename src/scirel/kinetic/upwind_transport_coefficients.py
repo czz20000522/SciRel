@@ -45,17 +45,31 @@ def assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_
     d = np.zeros_like(alpha)
     g = np.zeros_like(alpha)
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        for k, dx in enumerate(spacings):
-            denominator = 2.0 * axial[positive][None, :] + dx * alpha[:, positive, k + 1]
-            a[:, positive, k] = (2.0 * axial[positive][None, :] - dx * alpha[:, positive, k]) / denominator
-            b[:, positive, k] = dx / denominator
-            f[:, positive, k] = dx * (source[:, positive, k + 1] + source[:, positive, k]) / denominator
-        for k in range(1, x.size):
-            dx = spacings[k - 1]
-            denominator = -2.0 * axial[negative][None, :] + dx * alpha[:, negative, k - 1]
-            c[:, negative, k] = (-2.0 * axial[negative][None, :] - dx * alpha[:, negative, k]) / denominator
-            d[:, negative, k] = dx / denominator
-            g[:, negative, k] = dx * (source[:, negative, k] + source[:, negative, k - 1]) / denominator
+        # The spatial stencil is local, so all cells can be assembled in one
+        # broadcasted operation.  The boundary column remains the exact zero
+        # initialized above.
+        dx = spacings[None, None, :]
+        positive_v = axial[positive][None, :, None]
+        positive_alpha = alpha[:, positive, :]
+        positive_denominator = 2.0 * positive_v + dx * positive_alpha[:, :, 1:]
+        a[:, positive, :-1] = (
+            2.0 * positive_v - dx * positive_alpha[:, :, :-1]
+        ) / positive_denominator
+        b[:, positive, :-1] = dx / positive_denominator
+        f[:, positive, :-1] = dx * (
+            source[:, positive, 1:] + source[:, positive, :-1]
+        ) / positive_denominator
+
+        negative_v = axial[negative][None, :, None]
+        negative_alpha = alpha[:, negative, :]
+        negative_denominator = -2.0 * negative_v + dx * negative_alpha[:, :, :-1]
+        c[:, negative, 1:] = (
+            -2.0 * negative_v - dx * negative_alpha[:, :, 1:]
+        ) / negative_denominator
+        d[:, negative, 1:] = dx / negative_denominator
+        g[:, negative, 1:] = dx * (
+            source[:, negative, 1:] + source[:, negative, :-1]
+        ) / negative_denominator
     if not all(np.all(np.isfinite(field)) for field in (a, b, f, c, d, g)):
         raise ValueError("transport coefficients must be finite")
     return {"Ak": a, "Bk": b, "Fk": f, "Ck": c, "Dk": d, "Gk": g, "positive_vx_indices": positive, "negative_vx_indices": negative}

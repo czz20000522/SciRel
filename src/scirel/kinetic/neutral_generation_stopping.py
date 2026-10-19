@@ -23,6 +23,12 @@ def _finite_real(value, name, *, scalar=False):
     return float(result) if scalar else result
 
 
+def _relative_generation_change(generation, accumulated):
+    """Return the source-defined max-norm generation ratio."""
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+        return float(np.max(generation) / np.max(accumulated))
+
+
 def evaluate_neutral_generation_stopping(generation_density_m3, accumulated_density_m3, truncate, seed_iteration_enabled=False, seed_error=None):
     """Return source Delta_n and whether the next collision generation is unnecessary."""
     generation = _finite_real(generation_density_m3, "generation_density_m3")
@@ -43,8 +49,7 @@ def evaluate_neutral_generation_stopping(generation_density_m3, accumulated_dens
     maximum = float(np.max(accumulated))
     if maximum <= 0.0:
         raise ValueError("accumulated_density_m3 must contain a positive value")
-    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
-        delta = float(np.max(generation) / maximum)
+    delta = _relative_generation_change(generation, accumulated)
     if not np.isfinite(delta):
         raise ValueError("delta must be finite")
     if delta < truncate:

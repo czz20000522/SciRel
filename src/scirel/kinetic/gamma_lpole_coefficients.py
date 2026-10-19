@@ -1,5 +1,4 @@
-"""L-pole rational coefficients for the fluid model Gamma_n Bessel terms."""
-
+"""Private gamma and derivative pole tables used by the local fluid dispersion assembly."""
 from __future__ import annotations
 
 import operator

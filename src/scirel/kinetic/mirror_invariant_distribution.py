@@ -1,4 +1,4 @@
-"""Invariant guiding-centre bi-Maxwellian phase-space distribution."""
+"""Evaluate a trapped or refilled invariant bi-Maxwellian directly on broadcast velocity and flux coordinates."""
 import math
 import numpy as np
 from ._mirror_numerics import _scaled_difference

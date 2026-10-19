@@ -23,6 +23,12 @@ def _finite_real(value, name, *, scalar=False):
     return float(result) if scalar else result
 
 
+def _profile_error(previous, current):
+    """Compute the max-norm relative change used by the seed controller."""
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        return float(np.max(np.abs(previous - current)) / np.max(current))
+
+
 def evaluate_neutral_outer_seed_convergence(
     previous_density_m3,
     current_density_m3,
@@ -52,9 +58,8 @@ def evaluate_neutral_outer_seed_convergence(
             "and current density must be positive"
         )
 
-    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        seed_error = float(np.max(np.abs(previous - current)) / np.max(current))
-        threshold = float(10.0 * truncate)
+    seed_error = _profile_error(previous, current)
+    threshold = float(10.0 * truncate)
     if not np.isfinite(seed_error):
         raise ValueError("seed_error must be finite")
     if not np.isfinite(threshold):

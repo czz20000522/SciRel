@@ -34,7 +34,9 @@ def sum_elastic_frequency_channels(frequency_profiles):
     if any(array.shape != shape for array in arrays):
         raise ValueError("frequency channels must have identical shapes")
     with np.errstate(over="ignore"):
-        total = arrays[0] + arrays[1] + arrays[2]
+        # Parenthesize the three-channel reduction so its accumulation order
+        # is deterministic across NumPy backends.
+        total = (arrays[0] + arrays[1]) + arrays[2]
     if not np.all(np.isfinite(total)):
         raise ValueError("the summed elastic frequency is not finite")
     return {"elastic_frequency_s_inv": total}

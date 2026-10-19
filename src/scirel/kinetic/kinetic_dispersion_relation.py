@@ -1,5 +1,4 @@
-"""Compose the bounded kinetic dispersion-relation slice from its operators."""
-
+"""Small composition operators for normalized kinetic dispersion probes. Each helper validates its scalar contract before assembling a shared equilibrium query."""
 from __future__ import annotations
 
 import numpy as np

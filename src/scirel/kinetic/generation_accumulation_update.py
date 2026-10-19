@@ -52,12 +52,7 @@ def _validated_state(state, distribution_shape):
         or int(index) != count - 1
     ):
         raise ValueError("state has inconsistent shapes, densities or generation index")
-    expected_distribution = distributions[0].copy()
-    expected_density = densities[0].copy()
-    with np.errstate(over="ignore", invalid="ignore"):
-        for generation, generation_density in zip(distributions[1:], densities[1:]):
-            expected_distribution += generation
-            expected_density += generation_density
+    expected_distribution, expected_density = _ordered_totals(distributions, densities)
     if (
         not np.all(np.isfinite(expected_distribution))
         or not np.all(np.isfinite(expected_density))
@@ -66,6 +61,17 @@ def _validated_state(state, distribution_shape):
     ):
         raise ValueError("state totals must match the ordered generation stacks")
     return distributions, densities, total_distribution, total_density
+
+
+def _ordered_totals(distributions, densities):
+    """Accumulate generation stacks in source order for reproducible sums."""
+    total_distribution = distributions[0].copy()
+    total_density = densities[0].copy()
+    with np.errstate(over="ignore", invalid="ignore"):
+        for generation, generation_density in zip(distributions[1:], densities[1:]):
+            total_distribution += generation
+            total_density += generation_density
+    return total_distribution, total_density
 
 
 def update_neutral_generation_accumulation(state, generation_distribution, generation_density_m3):

@@ -1,5 +1,4 @@
-"""Radial envelope used by the Frank--Egedal pressure closure."""
-
+"""Evaluate a clipped radial envelope for the Frank--Egedal pressure state."""
 import numpy as np
 
 

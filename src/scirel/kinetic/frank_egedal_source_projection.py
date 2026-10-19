@@ -1,4 +1,4 @@
-"""Fractional-Legendre source-mode projection for Frank--Egedal closure."""
+"""Project a loss-cone source onto the retained Frank--Egedal angular modes."""
 import math
 import numpy as np
 

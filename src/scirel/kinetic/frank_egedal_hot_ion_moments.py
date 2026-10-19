@@ -1,4 +1,4 @@
-"""Velocity--pitch hot-ion moments for Frank--Egedal closure."""
+"""Compute Frank--Egedal hot-ion density and pressure moments using vectorized quadrature."""
 import math
 import numpy as np
 

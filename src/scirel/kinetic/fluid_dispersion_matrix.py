@@ -1,5 +1,4 @@
-"""Assemble the fluidBW linear fluid plasma dispersion matrix for fixed (omega, kz)."""
-
+"""Local assembly of the fluid wavevector matrix from species scales, pole residues, and harmonic response terms."""
 from __future__ import annotations
 
 import operator

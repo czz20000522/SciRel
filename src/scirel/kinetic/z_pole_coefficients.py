@@ -1,5 +1,4 @@
-"""Frozen J-pole tables for the Z-function resonance sum of the fluidBW fluid model."""
-
+"""Private Z-function pole tables used by the local fluid dispersion assembly."""
 from __future__ import annotations
 
 import operator

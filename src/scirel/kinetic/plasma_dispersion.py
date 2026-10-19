@@ -1,41 +1,40 @@
-"""Analytic plasma dispersion function for dimensionless complex arguments."""
+"""Validated vector evaluation of the dimensionless plasma dispersion function."""
+from __future__ import annotations
 
 import numpy as np
 
+__all__ = ["evaluate_plasma_dispersion"]
 
-def evaluate_plasma_dispersion(z):
-    """Return the Faddeeva function ``w(z)`` and ``Z(z) = i*sqrt(pi)*w(z)``.
 
-    Input shape is preserved. The caller supplies the dimensionless argument;
-    velocity, frequency and wave-number conventions belong to the caller.
-    """
+def _complex_input(value):
+    """Validate and promote a scalar or array of finite numeric arguments."""
     try:
-        raw = np.asarray(z, dtype=object)
-        values = np.asarray(z)
+        objects = np.asarray(value, dtype=object)
+        raw = np.asarray(value)
     except (TypeError, ValueError) as error:
         raise ValueError("z must contain finite numeric values") from error
     if (
-        raw.size == 0
-        or any(isinstance(value, (bool, np.bool_)) for value in raw.flat)
-        or values.dtype.kind not in "iufc"
+        objects.size == 0
+        or any(isinstance(item, (bool, np.bool_)) for item in objects.flat)
+        or raw.dtype.kind not in "iufc"
     ):
         raise ValueError("z must contain finite numeric values")
-    values = np.asarray(values, dtype=np.complex128)
-    if not np.all(np.isfinite(values)):
+    result = np.asarray(value, dtype=np.complex128)
+    if not np.all(np.isfinite(result)):
         raise ValueError("z must contain finite numeric values")
+    return result
 
-    # Keep the analytic backend out of import-time and rejected-input paths.
-    # SciPy remains a declared core runtime dependency; loading it only after
-    # the input contract is established keeps the public namespace cheap while
-    # preserving the exact backend and numerical behavior for valid calls.
+
+def evaluate_plasma_dispersion(z):
+    """Return Faddeeva ``w(z)`` and ``Z(z)=i*sqrt(pi)*w(z)``."""
+    values = _complex_input(z)
+    # SciPy is loaded only after validation so namespace discovery and rejected
+    # calls remain independent of the optional numerical backend import path.
     from scipy.special import wofz
 
     with np.errstate(over="ignore", invalid="ignore", under="ignore"):
-        w = np.asarray(wofz(values), dtype=np.complex128)
-        dispersion = np.asarray(1j * np.sqrt(np.pi) * w, dtype=np.complex128)
-    if not np.all(np.isfinite(w)) or not np.all(np.isfinite(dispersion)):
+        w_value = np.asarray(wofz(values), dtype=np.complex128)
+        dispersion = np.asarray(1j * np.sqrt(np.pi) * w_value, dtype=np.complex128)
+    if not np.all(np.isfinite(w_value)) or not np.all(np.isfinite(dispersion)):
         raise ValueError("plasma dispersion value is not representable")
-    return {"w": w, "Z": dispersion}
-
-
-__all__ = ["evaluate_plasma_dispersion"]
+    return {"w": w_value, "Z": dispersion}

@@ -35,7 +35,7 @@ def aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distrib
         raise ValueError("frequency and regenerated-distribution channel keys must match")
     if not frequencies_s_inv:
         raise ValueError("at least one elastic channel is required")
-    result = None
+    terms = []
     common_shape = None
     with np.errstate(over="ignore", invalid="ignore"):
         for key in frequencies_s_inv:
@@ -55,8 +55,12 @@ def aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distrib
                 common_shape = distribution.shape
             elif distribution.shape != common_shape:
                 raise ValueError("regenerated distributions must share one velocity mesh")
-            term = distribution * omega[None, None, :]
-            result = term if result is None else result + term
+            terms.append(distribution * omega[None, None, :])
+    result = terms[0].copy()
+    for term in terms[1:]:
+        # Keep channel insertion order explicit: floating-point accumulation
+        # is part of the reproducible source contract.
+        result += term
     if not np.all(np.isfinite(result)):
         raise ValueError("the aggregated regeneration source must be finite")
     return result

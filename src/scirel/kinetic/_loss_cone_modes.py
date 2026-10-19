@@ -1,4 +1,4 @@
-"""Regular even solutions of -((1-x²)y')' = nu(nu+1)y, y(0)=1,y'(0)=0."""
+"""Stable regular even angular modes for mirror loss-cone calculations."""
 import numpy as np
 
 

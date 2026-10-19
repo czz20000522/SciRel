@@ -1,5 +1,4 @@
-"""SI equilibrium scales for a magnetized Maxwellian species mixture."""
-
+"""Derive validated SI equilibrium scales for a species mixture in one vectorized assembly."""
 from __future__ import annotations
 
 import numpy as np

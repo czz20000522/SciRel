@@ -30,6 +30,12 @@ def _finite_real(value, name, *, scalar=False):
     return float(result) if scalar else result
 
 
+def _profile_error(previous, current):
+    """Compute the top-level outer-pass max-norm relative change."""
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        return float(np.max(np.abs(current - previous)) / np.max(current))
+
+
 def evaluate_kn1d_outer_convergence(
     previous_density_m3,
     current_density_m3,
@@ -54,8 +60,7 @@ def evaluate_kn1d_outer_convergence(
             "aligned, and current density must be positive"
         )
 
-    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        seed_error = float(np.max(np.abs(current - previous)) / np.max(current))
+    seed_error = _profile_error(previous, current)
     if not np.isfinite(seed_error):
         raise ValueError("seed_error must be finite")
     threshold = float(truncate)

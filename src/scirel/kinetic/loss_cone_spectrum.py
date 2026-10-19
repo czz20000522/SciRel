@@ -1,4 +1,4 @@
-"""Ordered even loss-cone eigenpairs, with an integer-regular angular basis."""
+"""Compute ordered even loss-cone eigenmodes with a local Sturm phase and boundary check."""
 from functools import lru_cache
 import numpy as np
 from ._loss_cone_modes import regular_even_mode

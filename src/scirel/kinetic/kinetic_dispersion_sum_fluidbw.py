@@ -1,5 +1,4 @@
-"""fluidBW's Weideman finite-harmonic tensor with its near-zero kz clamp."""
-
+"""Evaluate the finite-harmonic fluidBW-style kinetic dielectric tensor using local special-function terms."""
 from __future__ import annotations
 
 import operator

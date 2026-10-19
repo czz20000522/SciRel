@@ -1,9 +1,4 @@
-"""Bounded exponential integrals for invariant mirror distributions.
-
-This successor replaces exponent clipping, a cancelling barrier formula and
-fixed loss-cone quadrature. It does not change the guiding-centre distribution
-or add a collisional refill model.
-"""
+"""Numerically stable scalar and vector helpers for mirror invariant moments."""
 import math
 import numpy as np
 from scirel._mirror_numerics import _barrier_log_integral, _mirror_flux

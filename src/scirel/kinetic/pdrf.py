@@ -82,6 +82,29 @@ def _vector(value, size, name, positive=False, nonnegative=False):
     return arr
 
 
+def _assemble_legacy_collision_rates(rho, light, legacy):
+    """Build the reciprocal pair-rate matrix from one canonical pair table."""
+    count = rho.size
+    rates = np.zeros((count, count), dtype=float)
+    for i in range(count - 1):
+        for j in range(i + 1, count):
+            same_class = light[i] == light[j]
+            if same_class:
+                pair_rate = legacy["nuee"] if light[i] else legacy["nuii"]
+                receiver, other = (i, j) if rho[i] <= rho[j] else (j, i)
+            else:
+                receiver, other, pair_rate = (
+                    (i, j, legacy["nuei"])
+                    if light[i]
+                    else (j, i, legacy["nuei"])
+                )
+            rates[receiver, other] = pair_rate
+            rates[other, receiver] = pair_rate * (rho[receiver] / rho[other])
+            if pair_rate > 0 and rates[other, receiver] == 0:
+                raise ValueError("reciprocal collision rate exceeds finite numeric domain")
+    return rates
+
+
 def _species_data(species, unit):
     if species is None:
         # Scientific example inputs, not captured answers or source runtime files.
@@ -175,17 +198,7 @@ def initialize_pdrf_plasma(species=None, *, unit="normalized", prior=None, cfg=N
         if rates.shape != (s, s) or np.any(rates < 0) or np.any(np.diag(rates) != 0):
             raise ValueError("collision_rates needs nonnegative (s,s) with zero diagonal")
     else:
-        for i in range(s):
-            for j in range(i+1, s):
-                if light[i] == light[j]:
-                    rate = legacy["nuee"] if light[i] else legacy["nuii"]
-                    receiver, other = (i, j) if rho[i] <= rho[j] else (j, i)
-                else:
-                    receiver, other, rate = (i, j, legacy["nuei"]) if light[i] else (j, i, legacy["nuei"])
-                rates[receiver, other] = rate
-                rates[other, receiver] = rate*(rho[receiver]/rho[other])
-                if rate > 0 and rates[other, receiver] == 0:
-                    raise ValueError("reciprocal collision rate exceeds finite numeric domain")
+        rates = _assemble_legacy_collision_rates(rho, light, legacy)
     # Both interfaces must meet the same physical and representability contract.
     # Positive rates with zero weighted flux cannot prove momentum reciprocity.
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):

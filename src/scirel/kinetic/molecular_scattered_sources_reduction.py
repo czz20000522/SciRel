@@ -36,7 +36,7 @@ def reduce_molecular_scattered_sources(
     if sources[0].ndim != 3 or any(source.shape != sources[0].shape for source in sources):
         raise ValueError("wall, charge-exchange, and elastic sources must be finite aligned 3-D fields")
     with np.errstate(over="ignore", invalid="ignore"):
-        total = sources[0] + sources[1] + sources[2]
+        total = (sources[0] + sources[1]) + sources[2]
     if not np.all(np.isfinite(total)):
         raise ValueError("the aggregated scattered source must be finite")
     return total

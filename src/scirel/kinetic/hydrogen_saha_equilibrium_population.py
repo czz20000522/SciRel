@@ -28,6 +28,16 @@ def _real_vector(value, name):
         raise ValueError(f"{name} must contain real numeric values") from exc
 
 
+def _saha_population(density, temperature, level_squared):
+    """Evaluate the vectorized level population with the canonical ordering."""
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
+        return (
+            density * (3.310e-28 * density) * level_squared
+            * np.exp(13.6057 / (level_squared * temperature))
+            / temperature**1.5
+        )
+
+
 def evaluate_h_saha_equilibrium_population(
     electron_density_m3, electron_temperature_ev, principal_level,
 ):
@@ -81,11 +91,7 @@ def evaluate_h_saha_equilibrium_population(
     except OverflowError as exc:
         raise ValueError("principal_level is outside the representable domain") from exc
     with np.errstate(all="ignore"):
-        population = (
-            density * (3.310e-28 * density) * level_squared
-            * np.exp(13.6057 / (level_squared * temperature))
-            / temperature**1.5
-        )
+        population = _saha_population(density, temperature, level_squared)
     if not np.all(np.isfinite(population)) or np.any(population <= 0.0):
         raise ValueError("Saha population is not finite and positive for the supplied inputs")
     return population

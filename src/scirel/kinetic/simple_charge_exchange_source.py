@@ -49,10 +49,10 @@ def assemble_simple_charge_exchange_source(
     if np.any(alpha < 0) or np.any(weight < 0) or np.any(axial_width < 0):
         raise ValueError("Simple_CX fields must be finite and aligned; rates and quadrature must be nonnegative")
     with np.errstate(over="ignore", invalid="ignore"):
-        rate = np.sum(
-            weight[:, :, None] * alpha * previous * axial_width[None, :, None],
-            axis=(0, 1),
-        )
+        # Contract the predecessor once in velocity space; the target field
+        # is then scaled independently at every spatial node.
+        weighted_previous = weight[:, :, None] * previous * axial_width[None, :, None]
+        rate = np.sum(alpha * weighted_previous, axis=(0, 1))
         result = target * rate[None, None, :]
     if not np.all(np.isfinite(result)):
         raise ValueError("the assembled scattered source must be finite")

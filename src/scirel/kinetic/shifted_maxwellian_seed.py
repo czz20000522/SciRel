@@ -1,42 +1,4 @@
-"""Discrete shifted-Maxwellian seed on an explicit cylindrical velocity mesh.
-
-One leaf recovered from the saved KN1DPy ``create_shifted_maxwellian`` slice
-(source anchor ``KN1DPy/create_shifted_maxwellian_include.py:58-76``),
-integrated as :func:`build_shifted_maxwellian_seed`: the normalized
-exponential distribution on a cylindrical ``(vr, vx)`` mesh **before any
-moment compensation**, with one temperature per axial shift, the
-molecule-count factor in the exponent, the saved source's strict-interior
-``-80`` clamp, and normalization by the caller-supplied cell volumes.
-
-**The construction, exactly as the saved source defines it.**  With ``vth =
-sqrt(2 e T_norm / (m m_H))``, where ``m_H = 1.6726231e-27 kg`` is the saved
-hydrogen mass rather than standard amu, the raw exponent is
-``-(vr^2 + (vx - shift/vth)^2) * molecule_count * T_norm / T_shift`` per shift,
-so a shift given in m/s is divided by the thermal speed into mesh units.  The
-raw seed is ``exp(argument)`` where ``-80 < argument < 0`` and ``exp(-80)``
-everywhere else -- a strict interior clamp: a mesh node that lands exactly on
-the shifted peak (``argument == 0``) is floored like the far tail, while the
-returned ``exponent`` still reports the raw value.  The distribution is then
-normalized per shift by the supplied cell volumes.  ``molecule_count`` is 1
-for atomic and 2 for molecular hydrogen, scaling the exponent.
-
-**The cell volumes are the caller's.**  The N1 cylindrical quadrature
-(``scirel.kinetic.make_cylindrical_velocity_quadrature``) produces exactly the
-volume measure this normalization consumes; the composition is covered by
-direct tests, together with the downstream Maxwellian rate average.
-
-Evidence ceiling: the maintained tests compare the distribution and exponent
-against an in-file loop-per-shift formulation, assert per-shift volume
-normalization, the positive-shift axial moment, the uniform-distribution limit
-when every exponent sits below the floor, the exact strict-interior clamp
-witness, the molecule-count exponent scaling, and the full input contract
-including the composition chain. A separately executed intake replay pins the
-saved implementation by SHA-256; the saved bundle sits in the re-review archive
-(strict D1 qualification withdrawn), so the replay is bounded historical
-development evidence only.  This leaf deliberately excludes the saved source's
-downstream moment-compensation loop -- the returned distribution is the seed
-before compensation, not a converged distribution.
-"""
+"""Build a normalized shifted-Maxwellian seed on an explicit cylindrical velocity mesh."""
 from __future__ import annotations
 
 import numpy as np

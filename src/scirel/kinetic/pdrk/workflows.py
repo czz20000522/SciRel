@@ -1,11 +1,8 @@
-"""Declared PDRK TaskGraphs, called with one explicit scientific port mapping.
+"""Explicit task-graph entry points for PDRK scientific operations."""
 
-Each wrapper only unpacks ports. Numerical relations remain in their named
-operators; failures propagate with the underlying stage's partial-result rule.
-"""
-from . import magnetized as _m
-from . import _workflow_impl as _w
-
+from . import _workflow_impl as _compositions
+from . import magnetized as _magnetized
+from . import rational as _rational
 
 __all__ = [
     "solve_dispersion",
@@ -20,44 +17,62 @@ __all__ = [
     "reassemble_rational_program",
 ]
 
+
 def solve_dispersion(inputs):
-    """Species initialization then an ordered spectral scan."""
-    return _m.solve_dispersion(**inputs)
+    """Initialize an equilibrium and perform the ordered spectral scan."""
+
+    return _magnetized.solve_dispersion(**inputs)
+
 
 def scan_spectrum(inputs):
-    """Ordered finite coordinate scan with explicit carried frequency guess."""
-    return _m.scan_spectrum(**inputs)
+    """Scan a finite coordinate grid with the carried frequency guess."""
+
+    return _magnetized.scan_spectrum(**inputs)
+
 
 def reconstruct_polarization(inputs):
-    """Selected modes to newly solved, normalized electric/magnetic fields."""
-    return _m.reconstruct_polarization(**inputs)
+    """Reconstruct normalized electric and magnetic fields for selected modes."""
+
+    return _magnetized.reconstruct_polarization(**inputs)
+
 
 def original_program(inputs):
-    """Packaged full stored program and writer with noninteractive choices."""
-    return _m.original_program(**inputs)
+    """Run the packaged full program with explicit noninteractive inputs."""
+
+    return _magnetized.original_program(**inputs)
+
 
 def selected_fields(inputs):
-    """Select normalized seed modes then reconstruct their fields."""
-    return _w.selected_fields(**inputs)
+    """Select seeded modes and reconstruct their fields."""
+
+    return _compositions.selected_fields(**inputs)
+
 
 def rendered_output(inputs):
-    """Spectrum presentation, explicit selection, selected presentation, writer."""
-    return _w.rendered_output(**inputs)
+    """Render, select, and write a chosen mode set."""
+
+    return _compositions.rendered_output(**inputs)
+
 
 def preset_output(inputs):
-    """Stored scenario selection and scaling followed by the native writer."""
-    return _w.preset_output(**inputs)
+    """Render a named preset and pass it to the native writer."""
 
-from . import rational as _r
+    return _compositions.preset_output(**inputs)
+
 
 def ordered_rational_spectrum(inputs):
-    """Ordered model-specific scan with explicit root and pole classification."""
-    return _r.ordered_spectrum(**inputs)
+    """Evaluate the rational model's ordered spectrum."""
+
+    return _rational.ordered_spectrum(**inputs)
+
 
 def regenerate_jpole(inputs):
-    """Declared precision Padé generation with its linear residual proof."""
-    return _r.jpole_generator(**inputs)
+    """Construct Padé coefficients and retain their precision diagnostics."""
+
+    return _rational.jpole_generator(**inputs)
+
 
 def reassemble_rational_program(inputs):
-    """Native-family reconstruction with independent numeric/plot artifacts."""
-    return _r.reassemble_original_program(**inputs)
+    """Write the rational program's numeric and presentation artifacts."""
+
+    return _rational.reassemble_original_program(**inputs)

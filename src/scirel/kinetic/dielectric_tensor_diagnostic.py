@@ -1,14 +1,4 @@
-"""动力学介电张量诊断：fDtensor.m 的传统 sum_n 截断方法（仅 Maxwellian）。
-
-本模块是 bonk/fDtensor.m 的逐行移植：对每种成分按 l=-lmx..lmx 求和截断的
-Bessel 谐波，累加 3x3 动力学介电张量 K_ij，再叠加 Maxwell 旋度项得到色散张量
-D_ij 及其六项展开行列式 det(D)。所有公式、常数、截断与符号（含 21-11-12 的
-Dxz/Dzx 符号修正）均按冻结源码照抄，不做任何"修正"或归一化。
-
-模块只依赖 numpy 与 scipy；不读取、不导入冻结源码树或任何同级算子包。
-公开 API 是 evaluate_kinetic_dielectric_tensor。
-"""
-
+"""Evaluate the finite-harmonic kinetic dielectric tensor and determinant with local special-function backends."""
 import operator as _operator
 
 import numpy as _np

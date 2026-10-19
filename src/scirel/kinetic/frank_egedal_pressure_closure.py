@@ -1,4 +1,4 @@
-"""Resolver for the YAML-declared Frank--Egedal closure assets."""
+"""Compose the Frank--Egedal pressure closure from its explicit SciRel graph dependencies."""
 from __future__ import annotations
 import hashlib
 from pathlib import Path

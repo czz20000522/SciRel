@@ -1,16 +1,4 @@
-"""Solve the Maxwellian kinetic dispersion relation for the perpendicular wavenumber.
-
-This is the frozen source's own primary workflow: ``bonk/main_tst.m:87-110`` sweeps an
-angular-frequency grid and calls ``fsolve(@fDR, x01)`` to solve ``fDR(k_perp) = 0`` in the
-COMPLEX ``k_perp`` plane at fixed ``k_parallel`` and ``omega``. The seed ``x01`` is assigned
-once, to ``(0.6 + 0.0i)*kn``, before the sweep; the ``x01 = kx1`` continuation line in the
-source is commented out, so every frequency starts from the SAME seed. The emitted callable
-reproduces that drive with a faithful port of Octave 7.3.0's ``fsolve`` (forward-difference
-Jacobian plus double-dogleg trust region) so that root selection matches the source, and it
-reports the exit flag, the iteration trace, and the determinant residual so the caller can
-audit every root it accepts.
-"""
-
+"""Complex wavevector root solving for the kinetic dielectric determinant, with explicit residual and convergence diagnostics."""
 from __future__ import annotations
 
 import operator

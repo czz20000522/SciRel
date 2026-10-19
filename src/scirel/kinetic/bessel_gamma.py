@@ -1,21 +1,16 @@
-"""Exponentially scaled Bessel-Gamma terms for cyclotron harmonic sums."""
-
+"""Vectorized exponentially scaled modified-Bessel factors and their derivatives for harmonic sums."""
 from __future__ import annotations
 
 import numpy as np
 
 
 def _numeric_array(value, name):
+    """Promote a numeric input without accepting object or boolean arrays."""
     try:
-        raw = np.asarray(value, dtype=object)
         values = np.asarray(value)
     except (TypeError, ValueError) as error:
         raise ValueError(f"{name} must contain finite numeric values") from error
-    if (
-        raw.size == 0
-        or any(isinstance(item, (bool, np.bool_)) for item in raw.flat)
-        or values.dtype.kind not in "iufc"
-    ):
+    if values.size == 0 or values.dtype.kind not in "iufc":
         raise ValueError(f"{name} must contain finite numeric values")
     return values
 
@@ -31,10 +26,6 @@ def evaluate_bessel_gamma(n, x):
     arguments = _numeric_array(x, "x")
     if orders.dtype.kind == "c":
         raise ValueError("n must contain integer orders")
-    if orders.dtype.kind in "iu" and any(
-        abs(int(item)) > 2**53 for item in np.asarray(orders, dtype=object).flat
-    ):
-        raise ValueError("n must contain exactly representable integer orders")
     try:
         orders = np.asarray(orders, dtype=np.float64)
         arguments = np.asarray(arguments, dtype=np.complex128)

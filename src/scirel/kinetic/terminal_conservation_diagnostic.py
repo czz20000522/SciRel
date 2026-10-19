@@ -22,6 +22,16 @@ def _real_numeric(name, value):
         raise ValueError(f"{name} must contain real numeric values") from exc
 
 
+def _terminal_balance_terms(heat_flux, transfer, position):
+    """Assemble the left and right finite-volume terms on interval faces."""
+    spacing = np.diff(position)
+    left = np.zeros_like(position)
+    right = np.zeros_like(position)
+    left[:-1] = np.diff(heat_flux) / spacing
+    right[:-1] = 0.5 * (transfer[1:] + transfer[:-1])
+    return left, right
+
+
 def reduce_qh2_total_conservation_diagnostic(
     axial_position_m,
     total_heat_flux_profile_w_m2,
@@ -52,10 +62,9 @@ def reduce_qh2_total_conservation_diagnostic(
             "QH2_total diagnostic requires finite one-dimensional profiles and nonzero axial spacing"
         )
 
-    q1 = np.zeros_like(position)
-    q2 = np.zeros_like(position)
-    q1[:-1] = np.diff(total_heat_flux) / np.diff(position)
-    q2[:-1] = 0.5 * (total_energy_transfer[1:] + total_energy_transfer[:-1])
+    q1, q2 = _terminal_balance_terms(
+        total_heat_flux, total_energy_transfer, position
+    )
     normalization = np.max(np.abs(np.asarray([q1, q2])))
     if not np.isfinite(normalization):
         raise ValueError("QH2_total diagnostic produced a non-finite normalization")

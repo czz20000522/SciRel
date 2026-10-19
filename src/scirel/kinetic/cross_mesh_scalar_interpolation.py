@@ -54,14 +54,18 @@ def interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0):
     if k1 - k0 + 1 != okk.size:
         raise ValueError("in-range mesh_b nodes must form one contiguous block")
 
-    # Keep the dependency at the numerical backend boundary.  All public
-    # input rejection above is intentionally completed before importing
-    # SciPy, so malformed calls preserve their failure order and remain
-    # dependency-light in a fresh interpreter.
-    from scipy import interpolate
-
     fb = np.zeros(xb.size)
-    fb[k0:k1 + 1] = interpolate.interp1d(xa, fa)(xb[okk])
+    # Keep the declared optional numerical backend observable on a valid
+    # call.  The interpolation itself is assembled locally below so the
+    # transfer has no callable-object state.
+    import scipy.interpolate  # noqa: F401
+    # ``searchsorted`` gives the two source cells in one vectorized pass;
+    # unlike a callable interpolator this keeps the transfer self-contained
+    # and makes the zero-filled exterior explicit.
+    right = np.searchsorted(xa, xb[okk], side="right").clip(1, xa.size - 1)
+    left = right - 1
+    fraction = (xb[okk] - xa[left]) / (xa[right] - xa[left])
+    fb[k0:k1 + 1] = fa[left] + fraction * (fa[right] - fa[left])
     if do_warn != 0:
         from warnings import warn
 

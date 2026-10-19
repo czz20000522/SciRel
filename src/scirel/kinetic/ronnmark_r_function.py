@@ -1,24 +1,4 @@
-"""Ronnmark R(x, lambda) and its lambda-derivative, extracted from the frozen
-fluidBW source (bonk/RYLA.m, bonk/RTAY.m, bonk/RASY.m, bonk/RINT.m).
-
-The four-way method selector of bonk/RYLA.m:6-25 is reproduced verbatim:
-
-    AL < 4                                  -> RTAY (Taylor series)
-    |Y|^2 > 75*AL                           -> RTAY
-    |Y| > 40 + AL/3                         -> RTAY
-    3*(AL - 10) > |Y|  and  |Y|^2 < 15*AL   -> RASY (asymptotic series)
-    otherwise                               -> RINT (16-point Gauss-Legendre)
-
-RYLA returns a 2x2 complex matrix; entry (1,1) is R and entry (1,2) is
-dR/dlambda, matching bonk/fDR.m:69-70 (``Rsj=RC(1,1); dRsj=RC(1,2);``).
-
-Source science is reproduced as-is. In particular the RINT real-argument
-simplifications, the SIG sign handling for real(Y) < 0, the RTAY break test
-``abs(PN)*1e8 < abs(RC(1,1))`` and the RASY ``C=7.2e35`` initial cap with the
-unconditional ``T=C`` update are all kept, including the residual round-off
-that they produce.
-"""
-
+"""Local evaluation of the Ronnmark harmonic response and its lambda derivative. The implementation selects stable Taylor, asymptotic, or quadrature expansions from the requested point."""
 import math
 
 import numpy as _np

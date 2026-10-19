@@ -1,5 +1,4 @@
-"""Finite-harmonic Maxwellian kinetic dispersion tensor in the x-z wave plane."""
-
+"""Assemble the finite-harmonic Maxwellian kinetic dielectric tensor with NumPy species and harmonic arrays."""
 import numpy as np
 
 from .bessel_gamma import evaluate_bessel_gamma

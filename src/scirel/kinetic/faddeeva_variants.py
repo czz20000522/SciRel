@@ -1,13 +1,4 @@
-"""Order-selectable complex-error and Maxwellian rational approximations.
-
-Independently written from Weideman (1994), doi:10.1137/0731077, and the
-partial-fraction definition Z_J(z)=sum b_j/(z-c_j). GPDF's two Faddeeva
-namespaces select orders 32 and 16 respectively; FFT Z defaults to 32.
-The positive imaginary axis uses erfcx to avoid a spurious inf*0.
-Finite input whose exact continuation exceeds float64 raises explicitly.
-J-pole tabulated data are private source-bound numerical input, not a claim
-of redistribution permission. Fixed pole approximations are not exact Z.
-"""
+"""Vectorized rational approximations for the Faddeeva and Maxwellian response functions. Coefficients are private numerical data and the public functions own validation, continuation, and shape preservation."""
 from functools import lru_cache
 import operator
 import numpy as np

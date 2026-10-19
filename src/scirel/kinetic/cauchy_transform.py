@@ -1,11 +1,4 @@
-"""Cauchy transform with explicit finite support/feature resolution.
-
-The callback-only whole-line contract was unsound: adaptive QUADPACK can sample
-zero outside a narrow shifted feature and report zero error. This successor
-requires finite bounds, or an explicit increasing ``integration_mesh`` whose
-panels resolve callback features. With no bounds the two infinite tails are
-also integrated. For a general callback automatic support discovery is impossible.
-"""
+"""Finite and whole-line Cauchy transforms with explicit quadrature validation and continuation rules."""
 import warnings
 import math
 import numpy as np

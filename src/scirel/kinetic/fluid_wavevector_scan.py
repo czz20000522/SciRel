@@ -1,16 +1,4 @@
-"""Compose the bounded fluidBW perpendicular-wavenumber scan from its operators.
-
-The frozen source ``em3d_Lpole.m:78-83,145-148`` derives ``wn=wcn`` and builds its own
-frequency axis ``xx=(0.05:0.05:3.95)*wn`` inside the driver, then scans ``w=xx(jx)`` and
-saves ``kxx``, ``xx``, ``kn``, ``wn``, ``kz`` and ``N`` as terminal state. This graph
-therefore derives the axis internally from the caller's raw controls (the written colon
-bounds scale/step/stop plus the equilibrium-derived ``wn``), including its own length,
-instead of accepting a pre-computed frequency array; the axis is returned as a terminal
-output so it is compared, not injected. The saved physical normalisation scales ``kn``
-and ``wn`` are likewise returned as first-class terminals (mirroring the source's
-``save(...,'kn','wn',...)``) rather than only buried in the ``scales`` mapping.
-"""
-
+"""Construct a normalized fluid frequency scan and assemble per-frequency wavevector spectra."""
 from __future__ import annotations
 
 import math

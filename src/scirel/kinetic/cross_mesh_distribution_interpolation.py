@@ -446,20 +446,28 @@ def interp_distribution_across_mesh(
 
     #   Weight matrix (deterministic function of the meshes; the original
     #   source cache only memoises this and cannot change the result)
-    _weight = np.zeros((nvrb, nvxb, nvra, nvxa))
+    source_r_left = vraL[None, None, :, None]
+    source_r_right = vraR[None, None, :, None]
+    destination_r_left = (fV * vrbL)[:, None, None, None]
+    destination_r_right = (fV * vrbR)[:, None, None, None]
+    source_x_left = vxaL[None, None, None, :]
+    source_x_right = vxaR[None, None, None, :]
+    destination_x_left = (fV * vxbL)[None, :, None, None]
+    destination_x_right = (fV * vxbR)[None, :, None, None]
+    radial_left = np.maximum(destination_r_left, source_r_left)
+    radial_right = np.minimum(destination_r_right, source_r_right)
+    axial_left = np.maximum(destination_x_left, source_x_left)
+    axial_right = np.minimum(destination_x_right, source_x_right)
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        overlap = (
+            2.0 * np.pi * np.maximum(radial_right**2 - radial_left**2, 0.0)
+            * np.maximum(axial_right - axial_left, 0.0)
+            / (Vr2pidVrb[:, None, None, None] * dVxb[None, :, None, None])
+        )
+    _weight = np.where(
+        (radial_right > radial_left) & (axial_right > axial_left), overlap, 0.0
+    )
     weight = np.zeros((nvrb * nvxb, nvra * nvxa))
-    for ib in range(nvrb):
-        for jb in range(nvxb):
-            for ia in range(nvra):
-                vraMin = max([fV * vrbL[ib], vraL[ia]])
-                vraMax = min([fV * vrbR[ib], vraR[ia]])
-                for ja in range(nvxa):
-                    vxaMin = max([fV * vxbL[jb], vxaL[ja]])
-                    vxaMax = min([fV * vxbR[jb], vxaR[ja]])
-                    if vraMax > vraMin and vxaMax > vxaMin:
-                        _weight[ib, jb, ia, ja] = (2 * np.pi * (vraMax**2 - vraMin**2)
-                                                   * (vxaMax - vxaMin)
-                                                   / (Vr2pidVrb[ib] * dVxb[jb]))
     weight = np.reshape(_weight, weight.shape, order='F')
 
     #   Transfer onto mesh_b velocity space, evaluated on the mesh_a x grid

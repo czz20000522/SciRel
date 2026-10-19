@@ -185,9 +185,10 @@ def reduce_axisymmetric_neutral_moments(
     if (axial_quadrature is None) != (radial_quadrature is None):
         raise ValueError("axial_quadrature and radial_quadrature must be provided together")
     if axial_quadrature is None:
-        density = np.sum(volume[:, :, None] * f, axis=(0, 1))
+        weighted_distribution = volume[:, :, None] * f
+        density = np.sum(weighted_distribution, axis=(0, 1))
         axial_flux = thermal_speed * np.sum(
-            volume[:, :, None] * axial[None, :, None] * f, axis=(0, 1)
+            axial[None, :, None] * weighted_distribution, axis=(0, 1)
         )
     else:
         axial_weight = _real_array("axial_quadrature", axial_quadrature)

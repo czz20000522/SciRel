@@ -1,5 +1,4 @@
-"""Solve the fluidBW perpendicular-wavenumber eigenproblem and select physical roots."""
-
+"""Solve the assembled fluid wavevector eigenproblem and retain deterministic mode diagnostics."""
 from __future__ import annotations
 
 import operator

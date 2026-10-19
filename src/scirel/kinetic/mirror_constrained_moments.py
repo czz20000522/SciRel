@@ -1,4 +1,4 @@
-"""Gyrotropic bi-Maxwellian mirror moments with optional end-loss cones."""
+"""Integrate density and gyrotropic pressures of an invariant mirror distribution."""
 import numpy as np
 from ._mirror_numerics import _trapped_fractions, _density_exponential, _positive_product, _scaled_difference
 def _field(value, psi, name):

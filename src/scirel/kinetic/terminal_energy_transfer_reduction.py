@@ -87,13 +87,11 @@ def reduce_terminal_molecular_energy_transfer(
     nx = distribution.shape[2]
     thermal = float(thermal_speed)
     molecule_mass = 2.0 * float(mass) * H_MASS_KG
-    density = np.zeros(nx, dtype=float)
-    particle_flux = np.zeros(nx, dtype=float)
-    for k in range(nx):
-        density[k] = np.sum(weight * (distribution[:, :, k] @ widths))
-        particle_flux[k] = thermal * np.sum(
-            weight * (distribution[:, :, k] @ (axial_velocity * widths))
-        )
+    slices = distribution.transpose(2, 0, 1)
+    density = np.sum(np.matmul(slices, widths) * weight[None, :], axis=1)
+    particle_flux = thermal * np.sum(
+        np.matmul(slices, axial_velocity * widths) * weight[None, :], axis=1
+    )
     if not np.all(np.isfinite(density)) or np.any(density <= 0.0):
         raise ValueError("terminal energy-transfer reduction requires strictly positive density")
 
@@ -109,19 +107,17 @@ def reduce_terminal_molecular_energy_transfer(
     ) ** 2
 
     thermal_squared = thermal * thermal
-    thermal_energy_transfer = np.zeros(nx, dtype=float)
-    momentum_transfer = np.zeros(nx, dtype=float)
-    loss_rate = np.zeros(nx, dtype=float)
-    for k in range(nx):
-        rhs_slice = rhs[:, :, k]
-        thermal_energy_transfer[k] = 0.5 * molecule_mass * thermal_squared * np.sum(
-            weight * ((random_velocity_squared[:, :, k] * rhs_slice) @ widths)
-        )
-        momentum_transfer[k] = molecule_mass * thermal * np.sum(
-            weight
-            * (rhs_slice @ (widths * (axial_velocity - normalized_mean_velocity[k])))
-        )
-        loss_rate[k] = -np.sum(weight * (rhs_slice @ widths)) + external_source[k]
+    rhs_slices = rhs.transpose(2, 0, 1)
+    random_rhs = random_velocity_squared.transpose(2, 0, 1) * rhs_slices
+    thermal_energy_transfer = 0.5 * molecule_mass * thermal_squared * np.sum(
+        np.matmul(random_rhs, widths) * weight[None, :], axis=1
+    )
+    centered_axial = axial_velocity[None, :] - normalized_mean_velocity[:, None]
+    momentum_transfer = molecule_mass * thermal * np.sum(
+        np.matmul(rhs_slices, (centered_axial * widths[None, :])[..., None]).squeeze(-1)
+        * weight[None, :], axis=1,
+    )
+    loss_rate = -np.sum(np.matmul(rhs_slices, widths) * weight[None, :], axis=1) + external_source
 
     total_energy_transfer = (
         thermal_energy_transfer

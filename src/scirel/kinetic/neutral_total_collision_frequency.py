@@ -55,21 +55,20 @@ def assemble_neutral_total_collision_frequency(
     ):
         raise ValueError("velocity axes and base/elastic/pipe profiles are invalid")
     shape = (radial.size, axial.size, base.size)
-    wall = np.zeros(shape, dtype=float)
     positive_diameter = diameter > 0.0
-    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
-        wall[:, :, positive_diameter] = (
-            2.0 * radial[:, None, None] / diameter[None, None, positive_diameter]
+    if charge_exchange_enabled:
+        if charge_exchange_frequency_s_inv is None:
+            raise ValueError("enabled charge exchange needs its explicit frequency field")
+        charge_exchange = _real_array(
+            charge_exchange_frequency_s_inv, "charge_exchange_frequency_s_inv"
         )
+        if charge_exchange.shape != shape or np.any(charge_exchange < 0.0):
+            raise ValueError("charge-exchange frequency must be nonnegative and (nvr,nvx,nx)")
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+        wall = np.zeros(shape, dtype=float)
+        wall[:, :, positive_diameter] = 2.0 * radial[:, None, None] / diameter[None, None, positive_diameter]
         total = base[None, None, :] + elastic[None, None, :] + wall
         if charge_exchange_enabled:
-            if charge_exchange_frequency_s_inv is None:
-                raise ValueError("enabled charge exchange needs its explicit frequency field")
-            charge_exchange = _real_array(
-                charge_exchange_frequency_s_inv, "charge_exchange_frequency_s_inv"
-            )
-            if charge_exchange.shape != shape or np.any(charge_exchange < 0.0):
-                raise ValueError("charge-exchange frequency must be nonnegative and (nvr,nvx,nx)")
             total = total + charge_exchange
     if not np.all(np.isfinite(total)):
         raise ValueError("the assembled total loss frequency is not finite")

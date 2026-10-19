@@ -155,7 +155,7 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
         raise ValueError("vx must contain both negative and positive velocities")
     return {
         "radial_measure": radial_measure,
-        "radial_four_pi_measure": 4.0 / 3.0 * np.pi * (radial_right**3 - radial_left**3),
+        "radial_four_pi_measure": radial_four_pi_measure,
         "dvx": dvx,
         "vr_left": radial_left,
         "vr_right": radial_right,

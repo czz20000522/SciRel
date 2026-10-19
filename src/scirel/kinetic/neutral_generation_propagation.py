@@ -23,6 +23,22 @@ def _finite_real_array(value, name):
     return result
 
 
+def _propagate_branch(generation, coefficient, source_term, indices, forward):
+    """Apply one first-order upwind recurrence along a velocity branch."""
+    if forward:
+        for k in range(generation.shape[2] - 1):
+            generation[:, indices, k + 1] = (
+                generation[:, indices, k] * coefficient[:, indices, k]
+                + source_term[:, indices, k]
+            )
+    else:
+        for k in range(generation.shape[2] - 1, 0, -1):
+            generation[:, indices, k - 1] = (
+                generation[:, indices, k] * coefficient[:, indices, k]
+                + source_term[:, indices, k]
+            )
+
+
 def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, incoming_boundary=None, scattered_source_distribution=None):
     """Return one source-style neutral generation for `first_flight` or `scattered`."""
     axial = _finite_real_array(vx, "vx")
@@ -47,10 +63,8 @@ def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, in
             raise ValueError("first_flight needs exactly one finite incoming_boundary")
         generation[:, positive, 0] = boundary[:, positive]
         with np.errstate(over="ignore", invalid="ignore"):
-            for k in range(a.shape[2] - 1):
-                generation[:, positive, k + 1] = generation[:, positive, k] * a[:, positive, k] + f[:, positive, k]
-            for k in range(a.shape[2] - 1, 0, -1):
-                generation[:, negative, k - 1] = generation[:, negative, k] * c[:, negative, k] + g[:, negative, k]
+            _propagate_branch(generation, a, f, positive, True)
+            _propagate_branch(generation, c, g, negative, False)
     else:
         if scattered_source_distribution is None or incoming_boundary is not None:
             raise ValueError("scattered needs exactly one finite scattered_source_distribution")
@@ -58,10 +72,16 @@ def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, in
         if source.shape != a.shape:
             raise ValueError("scattered needs exactly one finite scattered_source_distribution")
         with np.errstate(over="ignore", invalid="ignore"):
-            for k in range(a.shape[2] - 1):
-                generation[:, positive, k + 1] = generation[:, positive, k] * a[:, positive, k] + b[:, positive, k] * (source[:, positive, k + 1] + source[:, positive, k])
-            for k in range(a.shape[2] - 1, 0, -1):
-                generation[:, negative, k - 1] = generation[:, negative, k] * c[:, negative, k] + d[:, negative, k] * (source[:, negative, k - 1] + source[:, negative, k])
+            positive_source = np.zeros_like(b)
+            negative_source = np.zeros_like(d)
+            positive_source[:, :, :-1] = b[:, :, :-1] * (
+                source[:, :, 1:] + source[:, :, :-1]
+            )
+            negative_source[:, :, 1:] = d[:, :, 1:] * (
+                source[:, :, 1:] + source[:, :, :-1]
+            )
+            _propagate_branch(generation, a, positive_source, positive, True)
+            _propagate_branch(generation, c, negative_source, negative, False)
     if not np.all(np.isfinite(generation)):
         raise ValueError("generation must be finite")
     return generation

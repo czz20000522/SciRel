@@ -23,6 +23,17 @@ def _finite_real_array(value, name):
     return result
 
 
+def _assemble_collision_balance(arrays):
+    """Form the signed local source balance before applying the speed scale."""
+    return (
+        arrays["coefficient_source_distribution"]
+        + arrays["charge_exchange_source_sum"]
+        - arrays["collision_frequency_s_inv"] * arrays["total_distribution"]
+        + arrays["elastic_source_sum"]
+        + arrays["wall_source_sum"]
+    )
+
+
 def assemble_neutral_boltzmann_rhs(
     thermal_speed_m_s,
     coefficient_source_distribution,
@@ -55,13 +66,7 @@ def assemble_neutral_boltzmann_rhs(
     if len(reference_shape) != 3 or any(array.shape != reference_shape for array in arrays.values()):
         raise ValueError("all RHS fields must be finite three-dimensional arrays with one shape")
     with np.errstate(over="ignore", invalid="ignore"):
-        rhs = vth * (
-            arrays["coefficient_source_distribution"]
-            + arrays["charge_exchange_source_sum"]
-            - arrays["collision_frequency_s_inv"] * arrays["total_distribution"]
-            + arrays["elastic_source_sum"]
-            + arrays["wall_source_sum"]
-        )
+        rhs = vth * _assemble_collision_balance(arrays)
     if not np.all(np.isfinite(rhs)):
         raise ValueError("rhs must be finite")
     return {"rhs": rhs}

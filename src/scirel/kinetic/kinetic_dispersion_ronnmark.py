@@ -1,5 +1,4 @@
-"""Ronnmark fast kinetic dispersion determinant of the fluidBW kinetic family."""
-
+"""Assemble the Ronnmark kinetic dielectric tensor from validated species arrays and local harmonic response terms."""
 from __future__ import annotations
 
 import math

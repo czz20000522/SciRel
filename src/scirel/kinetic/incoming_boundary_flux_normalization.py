@@ -57,6 +57,12 @@ def _real_scalar(value, name):
         raise ValueError(f"{name} must be a real numeric scalar") from error
 
 
+def _incoming_flux(shape, axial, volume, speed):
+    """Contract the positive axial half-space without mutating the shape."""
+    positive = axial > 0.0
+    return speed * np.sum(volume[:, positive] * shape[:, positive] * axial[None, positive])
+
+
 def normalize_incoming_neutral_boundary(
     boundary_shape, vx, cylindrical_volume, thermal_speed_m_s, target_flux_m2_s
 ):
@@ -116,9 +122,7 @@ def normalize_incoming_neutral_boundary(
     if not np.any(positive):
         raise ValueError("vx must contain a positive incoming half")
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        incoming_flux = speed * np.sum(
-            volume[:, positive] * shape[:, positive] * axial[None, positive]
-        )
+        incoming_flux = _incoming_flux(shape, axial, volume, speed)
     if not np.isfinite(incoming_flux):
         raise ValueError("incoming flux must be finite")
     if incoming_flux <= 0.0:

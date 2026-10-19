@@ -1,5 +1,4 @@
-"""Assemble the terminal ion/electron state for the ambipolar mirror graph."""
-
+"""Combine ion and electron pressures into one finite mirror state with charge residual diagnostics."""
 from __future__ import annotations
 
 import numpy as np

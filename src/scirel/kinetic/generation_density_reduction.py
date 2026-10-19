@@ -83,12 +83,14 @@ def reduce_generation_density(distribution, cylindrical_weight, dvx):
     if w.ndim == 1:
         if w.shape != (f.shape[0],):
             raise ValueError("radial quadrature must align with distribution")
-        result = np.sum(w[:, None] * (np.moveaxis(f, 2, 1) @ dx), axis=0)
+        projected = np.moveaxis(f, 2, 1) @ dx
+        result = np.sum(w[:, None] * projected, axis=0)
     else:
         if w.shape != f.shape[:2]:
             raise ValueError("cylindrical weight must align with distribution")
         if np.all(w == w[:, :1]):
-            result = np.sum(w[:, :1] * (np.moveaxis(f, 2, 1) @ dx), axis=0)
+            projected = np.moveaxis(f, 2, 1) @ dx
+            result = np.sum(w[:, :1] * projected, axis=0)
         else:
             result = np.sum(f * w[:, :, None] * dx[None, :, None], axis=(0, 1))
     # Declared r60 pre-review tightening: the saved arm does not gate the sum;

@@ -84,13 +84,14 @@ def reduce_terminal_molecular_heat_flux(
     nx = distribution.shape[2]
     thermal = float(thermal_speed)
     molecule_mass = 2.0 * float(mass) * H_MASS_KG
-    density = np.zeros(nx, dtype=float)
-    particle_flux = np.zeros(nx, dtype=float)
-    for k in range(nx):
-        density[k] = np.sum(weight * (distribution[:, :, k] @ widths))
-        particle_flux[k] = thermal * np.sum(
-            weight * (distribution[:, :, k] @ (axial_velocity * widths))
-        )
+    # Put the spatial axis first.  ``matmul`` still performs the source
+    # matrix-vector contraction for every slice, while the outer reduction is
+    # expressed once for the whole profile.
+    slices = distribution.transpose(2, 0, 1)
+    density = np.sum(np.matmul(slices, widths) * weight[None, :], axis=1)
+    particle_flux = thermal * np.sum(
+        np.matmul(slices, axial_velocity * widths) * weight[None, :], axis=1
+    )
     if not np.all(np.isfinite(density)) or np.any(density <= 0.0):
         raise ValueError("terminal heat-flux reduction requires strictly positive density")
 
@@ -102,36 +103,24 @@ def reduce_terminal_molecular_heat_flux(
         axial_velocity[None, :, None] - normalized_mean_velocity[None, None, :]
     ) ** 2
 
+    thermal_squared = thermal * thermal
+    thermal_cubed = thermal_squared * thermal
     pressure = np.zeros(nx, dtype=float)
     longitudinal_stress = np.zeros(nx, dtype=float)
     random_heat_flux = np.zeros(nx, dtype=float)
-    thermal_squared = thermal * thermal
-    thermal_cubed = thermal_squared * thermal
+    # The three terminal moments are assembled slice by slice deliberately:
+    # this retains the source's reduction order and therefore bitwise
+    # invariance when a caller partitions the spatial axis.
     for k in range(nx):
-        distribution_slice = distribution[:, :, k]
+        distribution_slice = slices[k]
         random_slice = random_velocity_squared[:, :, k] * distribution_slice
         centered_axial = axial_velocity - normalized_mean_velocity[k]
-        weighted_random_second = np.sum(
-            weight * (random_slice @ widths)
-        )
-        pressure[k] = molecule_mass * thermal_squared * weighted_random_second / (
-            3.0 * Q_COULOMB
-        )
-        weighted_axial_second = np.sum(
-            weight
-            * (
-                distribution_slice
-                @ (widths * centered_axial**2)
-            )
-        )
-        longitudinal_stress[k] = (
-            molecule_mass * thermal_squared * weighted_axial_second / Q_COULOMB
-        ) - pressure[k]
+        weighted_random_second = np.sum(weight * (random_slice @ widths))
+        pressure[k] = molecule_mass * thermal_squared * weighted_random_second / (3.0 * Q_COULOMB)
+        weighted_axial_second = np.sum(weight * (distribution_slice @ (widths * centered_axial**2)))
+        longitudinal_stress[k] = molecule_mass * thermal_squared * weighted_axial_second / Q_COULOMB - pressure[k]
         random_heat_flux[k] = 0.5 * molecule_mass * thermal_cubed * np.sum(
-            weight
-            * (
-                random_slice @ (widths * centered_axial)
-            )
+            weight * (random_slice @ (widths * centered_axial))
         )
 
     total_heat_flux = (
