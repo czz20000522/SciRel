@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.compute-equilibrium",
-   "source_sha256": "8cab50c06ede4eafb2c4f9c8551a42962402a866801a39c2304037664b59f93f",
+   "source_sha256": "3865c96fb3dffbc0e6e6031770517d4e33c12d73cf97ca265fd7f6f42cbf8de8",
    "summary": "在给定真空磁通和 Green 矩阵下执行有界轴对称压力电流反馈，并返回显式终态。",
    "definition": "压力闭合为 j_phi=R dP/dpsi；每轮按给定松弛系数更新电流、磁通、压力拟合和两个残差，只有两个残差同时满足 tol 才报告 converged。",
    "model": "基于给定压力—半径函数、真空磁通和 Green 矩阵的来源约束反馈实现。",

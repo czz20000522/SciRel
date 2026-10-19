@@ -91,7 +91,7 @@
      "units": "Q；导数 Q/X"
     }
    ],
-   "source_sha256": "5457235d4fee876afd505231551efaeda2f41216368299b3108ac1ae2ea26466",
+   "source_sha256": "f21606f33f365aceb4ddade51cf3e1e8ca809b79ae8e15f244f1b724cf1360c1",
    "summary": "由显式面网格、单元点值和边界数据构造不可变变量。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -198,7 +198,7 @@
      "units": "Q/time"
     }
    ],
-   "source_sha256": "cc76fd62473aac5a1519d7806cc03cb38b544da6c1ac202beab9471313aed59d",
+   "source_sha256": "b756a8874b195402f4daef2e7825d905ac1851aca01663fd33357d344cf8e488",
    "summary": "使用幂律面权重组装守恒对流算子及指定边界通量。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -280,7 +280,7 @@
      "units": "Q/time"
     }
    ],
-   "source_sha256": "5ff0d609e400b3e10f64c026e48cdd4f0e7e9373ca305330200d22f7d5dfc68f",
+   "source_sha256": "65bb6b78843f5b5d6730cfc8e566a6f39276cf81c45fee4329749047cab6bf76",
    "summary": "将扩散通量散度组装为三对角算子与边界强迫。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -434,7 +434,7 @@
      "units": "Q"
     }
    ],
-   "source_sha256": "126cb73309cf1c39bfcfead81aa87d6e29b27127cd2cf97bb7b5f131e601d8d0",
+   "source_sha256": "5dc6203d53936c9f91d611cebef6642435d289a40174d5b75a48145c672a18aa",
    "summary": "用分别给出的旧、新线性算子推进单个通道一步。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -500,7 +500,7 @@
      "units": "与输入相同"
     }
    ],
-   "source_sha256": "3042b322fa2906861794e3d54e5f58243392117d3e19b9b4ef70aed1b7e2449e",
+   "source_sha256": "5a84269c1941831d2ad402e71c596a8a45ba358302186bb7a5fa717ece6abb90",
    "summary": "将一维网格上相邻的面值转换为单元中点值。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -681,7 +681,7 @@
      "units": "A/m^2"
     }
    ],
-   "source_sha256": "e679202f29fe4b3d7f049eacfe9ed482e26b914c9dd9749776f978c3dd69b231",
+   "source_sha256": "d7b95369306e74087551f274b2916f028994e7496bfb5c0de7fca3f7daf2d76d",
    "summary": "由压强、对数梯度及拟合系数组装平行自举电流。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -772,7 +772,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "e907dbb339e4768fd582033773f2592c1293a4f30110c121c0760e926cc4ecdc",
+   "source_sha256": "37bbfa15812aa14b7edbaee809d6571be3bb4ad1b7fc5e8759f64da2c4d9a8d5",
    "summary": "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -862,7 +862,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "7253f430dae6917cfa748a929d0b40fe4d86c0c20f5f6d6f24d2bdaa4be5a9d8",
+   "source_sha256": "06856c61272a2e3fdac1d5428a0ffbd8e7a801182f663e2e630e61565c2ce3c9",
    "summary": "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -937,7 +937,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "688c4a12641d923491db453201788ac0b462ccb37e36ef706d07662629430616",
+   "source_sha256": "bf2a74af5013bc492e049da9902fabcaaf5024aaa2ddb9f6b7eea7e4ef26a66d",
    "summary": "电子-电子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1014,7 +1014,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "b507fe4eaef1b5e657326e79b54caa5748c1a015f516bbeaa7bf9ead28a95036",
+   "source_sha256": "68cb0bb8955b6ae7b8f0dec309e5938f25eb099f59b0c50793ebf4fea6c21ca2",
    "summary": "电子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1099,7 +1099,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "33663479abf6ad6e7c1bb0bb84c452f665a299bdbd6e5503d389e041b2f6601b",
+   "source_sha256": "b4d39ff2ccaa1c2276e9ef4e4af91105a4b1f718c7c17e9797390eb2b62dcf91",
    "summary": "离子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1183,7 +1183,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "47443d6f492339ee8aae0656fdc11ca7189dc2445ec3c45a549181faaa6f94a3",
+   "source_sha256": "9a417a3eecada924a06026eaa43765a420f5f48f52fd526a94485b7c03b2b0a1",
    "summary": "由单一主离子与单一杂质电荷计算主离子稀释份额。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1303,7 +1303,7 @@
      "units": "J"
     }
    ],
-   "source_sha256": "f335917423b92199c665353fd0acc663f6357b559abe9f21edff9d7159b09a74",
+   "source_sha256": "1f55131f18180aa611556d882319c96a550ecb464c7fe63e7c97da0da24c0384",
    "summary": "分别积分电子、离子及总标量压强，得到储存热能。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1417,7 +1417,7 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "f64e639c6dc7cd549de3af34a0c3b011ae470e5ff63b3d9ffb8c7e9e43adb055",
+   "source_sha256": "e615daa3ca2db5a38ff9d4f184bc0dcb1b0ec9580934bba7c7cfbfce33370d36",
    "summary": "在非均匀归一化半径网格上生成体积归一化指数源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1529,7 +1529,7 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "dc7bfad375bd9e71f76e857dcc92e40ce479a0fe3dd6b2b15768d903039d5696",
+   "source_sha256": "83c11cce8a66f6f88071e1addce418e1cab468ed38da336285f70727a9d79a65",
    "summary": "在非均匀归一化半径网格上生成体积归一化高斯源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
