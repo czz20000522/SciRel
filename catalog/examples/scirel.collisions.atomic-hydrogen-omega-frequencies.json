@@ -19,7 +19,7 @@
   "relation": "atomic H elastic Omega_H_P, Omega_H_H2 and Omega_H_H frequency aggregation",
   "direction": "物理分布、密度、两路带符号 Alpha、自碰撞 SIG、速度积分权重与显式单元状态 → 碰撞矩、频率及状态",
   "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
-  "model": "KN1D 动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
+  "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
   "geometry": "cylindrical (vr,vx) velocity carrier per spatial cell x, with N=nvr*nvx Fortran-order matrix indexing",
   "coordinates": "vr and vx are normalized by Vth; Vth, vxi and vxH2 share physical velocity units; no implicit conversion",
   "boundary": "有限非负分布，正密度与积分权重，严格递增轴、正半径和 Vth；密度必须等于积分。target 状态按单元验证守恒。启用通道零分母不是输入异常，而是明确的未定义频率。",

@@ -499,9 +499,9 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
                     errors.append(f"wheel contains a development asset: {name}")
                 is_native_resource = name.startswith(
                     (
-                        "scirel/kinetic/_fluidbw_native/",
+                        "scirel/kinetic/_fluid_native/",
                         "scirel/kinetic/_native/",
-                        "scirel/kinetic/pdrk/_native/",
+                        "scirel/kinetic/dispersion/_native/",
                     )
                 )
                 if is_native_resource:

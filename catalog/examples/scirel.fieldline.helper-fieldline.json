@@ -105,14 +105,14 @@
    "A held-out ellipse on 71x83 unequal-spacing grids and 257 line points, including coherent descending coordinates, B reversal and vertex reversal, has maximum component error 1.329318e-7 or less in recorded cases. Boundary cases reject outside support, duplicate vertices, nonfinite fields and actual field nulls. Field-scale tests at signed 1e-180 and 1e180, with a translated geometry, pass unchanged finite-fixture criteria; no arbitrary-dynamic-range guarantee follows."
   ],
   "tests": [
-   "tests/pleiades/equilibrium/test_analysis_families.py",
-   "tests/pleiades/equilibrium/test_analysis_corrections.py",
-   "tests/pleiades/equilibrium/test_curvature_consumer.py",
-   "tests/pleiades/equilibrium/test_fieldline_geometry_repair.py",
-   "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_t7_default_cubic_affine_gradient",
-   "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_t7_field_curvature_spatial_refinement",
-   "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_curvature_constant_field_scale_does_not_create_a_null",
-   "tests/pleiades/equilibrium/test_fieldline_t7_precision.py::test_helper_gradient_honors_linear_method"
+   "tests/domain_contracts/equilibrium/test_analysis_families.py",
+   "tests/domain_contracts/equilibrium/test_analysis_corrections.py",
+   "tests/domain_contracts/equilibrium/test_curvature_consumer.py",
+   "tests/domain_contracts/equilibrium/test_fieldline_geometry_repair.py",
+   "tests/domain_contracts/equilibrium/test_fieldline_t7_precision.py::test_t7_default_cubic_affine_gradient",
+   "tests/domain_contracts/equilibrium/test_fieldline_t7_precision.py::test_t7_field_curvature_spatial_refinement",
+   "tests/domain_contracts/equilibrium/test_fieldline_t7_precision.py::test_curvature_constant_field_scale_does_not_create_a_null",
+   "tests/domain_contracts/equilibrium/test_fieldline_t7_precision.py::test_helper_gradient_honors_linear_method"
   ],
   "evidence_ceiling": "Named-fixture technical evidence for this repository's own tests. It does not establish arbitrary-input correctness, experimental validation or human endorsement.",
   "known_limitations": [

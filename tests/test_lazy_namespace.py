@@ -141,14 +141,14 @@ assert not any(
 )
 assert "evaluate_gpdf_small_k" in kinetic.__all__
 assert "evaluate_gpdf_small_k" in dir(kinetic)
-assert {"fluidbw", "generalized_dispersion", "pdrk"} <= set(dir(kinetic))
+assert {"fluid_spectrum", "generalized_dispersion", "dispersion"} <= set(dir(kinetic))
 assert not any(
     name.startswith("numpy") or name.startswith("scipy")
     for name in sys.modules
 )
-assert kinetic.fluidbw.__name__ == "scirel.kinetic.fluidbw"
+assert kinetic.fluid_spectrum.__name__ == "scirel.kinetic.fluid_spectrum"
 assert kinetic.generalized_dispersion.__name__ == "scirel.kinetic.generalized_dispersion"
-assert kinetic.pdrk.__name__ == "scirel.kinetic.pdrk"
+assert kinetic.dispersion.__name__ == "scirel.kinetic.dispersion"
 
 from scirel.kinetic import evaluate_gpdf_small_k
 from scirel.kinetic.generalized_dispersion import evaluate_gpdf_small_k as direct
@@ -228,7 +228,7 @@ assert not any(
     for name in (
         "scirel.kinetic.kinetic_dispersion_ronnmark",
         "scirel.kinetic.ronnmark_r_function",
-        "scirel.kinetic.kinetic_dispersion_sum_fluidbw",
+        "scirel.kinetic.kinetic_dispersion_sum_fluid",
         "scirel.kinetic.species_equilibrium_scales",
     )
 )
@@ -393,8 +393,8 @@ assert not any(
 )
 
 from scirel.equilibrium import compute_equilibrium
-from scirel.equilibrium.pleiades_feedback import compute_equilibrium as direct
-from scirel.equilibrium import pleiades_feedback as child
+from scirel.equilibrium.equilibrium_state import compute_equilibrium as direct
+from scirel.equilibrium import equilibrium_state as child
 from scirel.equilibrium import isotropic_pressure_flux as graph
 from scirel.equilibrium.isotropic_pressure_flux import (
     solve_isotropic_pressure_flux as direct_graph,
@@ -402,14 +402,14 @@ from scirel.equilibrium.isotropic_pressure_flux import (
 
 assert compute_equilibrium is direct
 assert equilibrium.compute_equilibrium is direct
-assert child is sys.modules["scirel.equilibrium.pleiades_feedback"]
+assert child is sys.modules["scirel.equilibrium.equilibrium_state"]
 assert graph is sys.modules["scirel.equilibrium.isotropic_pressure_flux"]
 assert equilibrium.solve_isotropic_pressure_flux is direct_graph
 
 namespace = {}
 exec("from scirel.equilibrium import *", namespace)
 assert all(namespace[name] is getattr(equilibrium, name) for name in equilibrium.__all__)
-assert "pleiades_feedback" not in namespace
+assert "equilibrium_state" not in namespace
 ''', str(ROOT / 'src')], capture_output=True, text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr

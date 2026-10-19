@@ -2,8 +2,8 @@
   "schema": "scirel.mapping-interface-bindings",
   "records": [
     {
-      "asset_id": "scirel.kinetic.pdrk-fluid-scan",
-      "callable": "scirel.kinetic.pdrk.multifluid.scan_fluid_corrected",
+      "asset_id": "scirel.kinetic.multifluid-scan",
+      "callable": "scirel.kinetic.dispersion.multifluid.scan_fluid_corrected",
       "ports": [
         {
           "name": "state",
@@ -31,14 +31,14 @@
         }
       ],
       "modules": {
-        "scirel.kinetic.pdrk.multifluid": "ca4551d29fda0d413dfa7e5882d011f03ab4e62c6f028605d3c9beb9a00bb7c4",
-        "scirel.kinetic.pdrk._fluid_parallel": "3070c396a8ed38b56d97a799b2a3e6c7bf4f5eaa67a96019e1c25b986dfb05fc"
+        "scirel.kinetic.dispersion.multifluid": "ca4551d29fda0d413dfa7e5882d011f03ab4e62c6f028605d3c9beb9a00bb7c4",
+        "scirel.kinetic.dispersion._fluid_parallel": "3070c396a8ed38b56d97a799b2a3e6c7bf4f5eaa67a96019e1c25b986dfb05fc"
       },
       "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
     },
     {
-      "asset_id": "scirel.kinetic.pdrk-rational-reassemble-original-program",
-      "callable": "scirel.kinetic.pdrk.workflows.reassemble_rational_program",
+      "asset_id": "scirel.kinetic.rational-reassemble-original-program",
+      "callable": "scirel.kinetic.dispersion.workflows.reassemble_rational_program",
       "ports": [
         {
           "name": "model",
@@ -105,9 +105,9 @@
         }
       ],
       "modules": {
-        "scirel.kinetic.pdrk.workflows": "ae6ef945a846e9c038f99650ffd83efd6b27249f6235aa3cca0d818e5d0be8d8",
-        "scirel.kinetic.pdrk.rational": "b38eb40290c508e5b361b2c6d6b52165dcc470961e717a6c9531dd6a12e56a10",
-        "scirel.kinetic.pdrk._presentation": "6812d5de723816d6cb18920b1adb16faaf58633c073e41495f29bdd827e021fb"
+        "scirel.kinetic.dispersion.workflows": "ae6ef945a846e9c038f99650ffd83efd6b27249f6235aa3cca0d818e5d0be8d8",
+        "scirel.kinetic.dispersion.rational": "b38eb40290c508e5b361b2c6d6b52165dcc470961e717a6c9531dd6a12e56a10",
+        "scirel.kinetic.dispersion._presentation": "6812d5de723816d6cb18920b1adb16faaf58633c073e41495f29bdd827e021fb"
       },
       "review_basis": "Transparent wrapper delegates to rational.reassemble_original_program, which routes generator controls to jpole_generator(J=12,I=16,precision=80), otherwise ordered_spectrum(J=8,opt=None,N=None,B0=None,points=None,sp=0,wg0=1.5). model/output_dir required; I/precision apply only generator, other model-specific controls retain documented failures. The J dictionary is a documented per-model default, not a Python parameter default."
     },
@@ -1047,7 +1047,7 @@
         "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
         "scirel.equilibrium.isotropic_pressure_flux": "bd82bb7e7a5e8635aa6ffbd04870939e37f4ecabc6fd576fa886492bb8812f17",
         "scirel.equilibrium.pressure_flux_state": "04e9a4d3b3d0191dabd002b6f3d6e419c3fca6df7ba8313e3aa0b0c74d6007d8",
-        "scirel.equilibrium.pleiades_feedback": "eda95c6632cda07f7f2dbe8490dc95795754a70a93178ea9b024aeeda7b37380",
+        "scirel.equilibrium.equilibrium_state": "eda95c6632cda07f7f2dbe8490dc95795754a70a93178ea9b024aeeda7b37380",
         "scirel.equilibrium._pressure_current": "f8d3aa51b8da07a0f555031b27d21789db33ab44473df3c75f68f2b365749212"
       },
       "review_basis": "Port identity only: explicit mapping requires grids, pressure callable, vacuum flux, Green matrix and tol/maxiter/relax; optional boolean plasma_mask defaults to None. Named calls to the qualified shared solver and exact terminal serializer are source-bound. Feedback has one owner; no second adapter loop. Scientific qualification requires the separate exact successor receipt."

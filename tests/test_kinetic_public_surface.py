@@ -37,11 +37,11 @@ CASES = (
         {"evaluate_kinetic_dispersion_ronnmark"},
     ),
     (
-        "scirel.kinetic.kinetic-dispersion-sum-fluidbw.json",
-        {"evaluate_fluidbw_kinetic_dispersion_sum"},
+        "scirel.kinetic.kinetic-dispersion-sum-fluid.json",
+        {"evaluate_fluid_kinetic_dispersion_sum"},
     ),
     ("scirel.kinetic.kinetic-wavevector-scan.json", {"scan_kinetic_wavevectors"}),
-    ("scirel.kinetic.kn1d-outer-convergence.json", {"evaluate_kn1d_outer_convergence"}),
+    ("scirel.kinetic.outer-convergence.json", {"evaluate_outer_convergence"}),
     (
         "scirel.kinetic.molecular-alpha-contraction.json",
         {"contract_molecular_hydrogen_alpha_frequencies"},

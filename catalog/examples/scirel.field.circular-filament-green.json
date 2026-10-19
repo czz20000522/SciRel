@@ -126,7 +126,7 @@
   ],
   "tests": [
    "tests/operator_contracts/test_circular_filament_green.py",
-   "tests/operator_contracts/test_pleiades_field_green_correction.py"
+   "tests/operator_contracts/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Verified for the maintained axisymmetric circular-filament relation and tested finite points; not an independent validation of arbitrary coil geometries or singular self-fields.",
   "known_limitations": [

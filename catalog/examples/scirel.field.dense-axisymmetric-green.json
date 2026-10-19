@@ -128,7 +128,7 @@
   ],
   "tests": [
    "tests/operator_contracts/test_dense_axisymmetric_green.py",
-   "tests/operator_contracts/test_pleiades_field_green_correction.py"
+   "tests/operator_contracts/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete source-project closure or expert approval.",
   "known_limitations": [

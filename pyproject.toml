@@ -58,8 +58,8 @@ exclude = [
 ]
 
 [tool.setuptools.package-data]
-"scirel.kinetic" = ["_fluidbw_native/*.m"]
-"scirel.kinetic.pdrk" = [
+"scirel.kinetic" = ["_fluid_native/*.m"]
+"scirel.kinetic.dispersion" = [
     "_native/scirel_prepare_plot.m",
     "_native/current/**/*",
     "_native/examples/*",

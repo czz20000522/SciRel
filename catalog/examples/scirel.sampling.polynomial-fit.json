@@ -120,7 +120,7 @@
    "The executable example stored in this contract"
   ],
   "tests": [
-   "tests/pleiades/equilibrium/test_analysis_families.py"
+   "tests/domain_contracts/equilibrium/test_analysis_families.py"
   ],
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [

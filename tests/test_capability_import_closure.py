@@ -63,10 +63,10 @@ def test_mirror_ambipolar_closure_does_not_load_kinetic_private_helpers() -> Non
 
 
 def test_direct_pdrk_capability_reports_implementation_path() -> None:
-    result = measure(ROOT, asset_id="scirel.kinetic.pdrk-rational-jpole-coefficients")
+    result = measure(ROOT, asset_id="scirel.kinetic.rational-jpole-coefficients")
 
     assert result["status"] == "PASS"
-    assert result["target"]["module"] == "scirel.kinetic.pdrk.rational"
+    assert result["target"]["module"] == "scirel.kinetic.dispersion.rational"
     assert result["target"]["symbol"] == "jpole_coefficients"
     assert "numpy" in result["external_import_roots"]
     assert "mpmath" not in result["external_import_roots"]
@@ -120,7 +120,7 @@ def test_probe_mode_records_call_time_scientific_dependency(tmp_path: Path) -> N
 def test_probe_mode_records_high_precision_mpmath_dependency(tmp_path: Path) -> None:
     probe = tmp_path / "probe.py"
     probe.write_text(
-        "from scirel.kinetic.pdrk.rational import jpole_coefficients\n"
+        "from scirel.kinetic.dispersion.rational import jpole_coefficients\n"
         "jpole_coefficients(J=2, I=2, precision=32)\n",
         encoding="utf-8",
     )

@@ -32,10 +32,10 @@ def snapshot(tmp_path, built_snapshot):
 
 def test_queries_are_bounded_and_exact_records_unchanged(snapshot):
     docs = Documentation(snapshot)
-    p = docs.search('Pleiades', limit=2)
+    p = docs.search('equilibrium', limit=2)
     assert p['total'] > 2 and len(p['items']) == 2 and p['next_offset'] == 2
     assert not any('search_text' in x for x in p['items'])
-    assert docs.search('pleiades')['total'] == p['total']
+    assert docs.search('kinetic')['total'] > 0
     assert docs.search('unfindable-xyz')['items'] == []
     asset = p['items'][0]['asset_id']
     original = json.loads(example_document_sources()[asset].read_text())
@@ -74,7 +74,7 @@ def test_document_builder_rejects_an_empty_editorial_version(tmp_path):
 
 def test_document_responses_expose_the_documentation_revision(snapshot):
     docs = Documentation(snapshot)
-    result = docs.search('Pleiades', limit=1)
+    result = docs.search('equilibrium', limit=1)
     manifest = json.loads((snapshot / 'manifest.json').read_text(encoding='utf-8'))
     assert result['documentation_version'] == manifest['documentation_version']
 
@@ -109,8 +109,8 @@ def test_http_matches_cli_core_and_does_not_serve_source(snapshot):
     thread.start()
     base = f'http://127.0.0.1:{http.server_port}'
     try:
-        with urlopen(base + '/api/search?q=Pleiades&limit=2') as r:
-            assert json.load(r) == docs.search('Pleiades', limit=2)
+        with urlopen(base + '/api/search?q=equilibrium&limit=2') as r:
+            assert json.load(r) == docs.search('equilibrium', limit=2)
         with urlopen(base + '/') as r:
             assert 'SciRel 中文文档' in r.read().decode()
         with pytest.raises(HTTPError) as e:

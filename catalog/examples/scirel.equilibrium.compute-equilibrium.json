@@ -188,10 +188,10 @@
    "Ascending/descending paired nonzero-G pressure feedback and independent derivative/current closure."
   ],
   "tests": [
-   "tests/pleiades/equilibrium/test_equilibrium_proposals.py",
-   "tests/pleiades/equilibrium/test_equilibrium_boundaries.py",
-   "tests/pleiades/equilibrium/test_equilibrium_governing_residual.py",
-   "tests/pleiades/equilibrium/test_descending_pressure_equilibrium.py",
+   "tests/domain_contracts/equilibrium/test_equilibrium_proposals.py",
+   "tests/domain_contracts/equilibrium/test_equilibrium_boundaries.py",
+   "tests/domain_contracts/equilibrium/test_equilibrium_governing_residual.py",
+   "tests/domain_contracts/equilibrium/test_descending_pressure_equilibrium.py",
    "tests/operator_contracts/test_legacy_six_absorption.py"
   ],
   "evidence_ceiling": "Bounded numerical contract only; no scientific approval.",

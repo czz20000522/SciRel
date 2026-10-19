@@ -121,7 +121,7 @@
    "Declared source-method numerical case and relevant failure boundaries."
   ],
   "tests": [
-   "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+   "tests/operator_contracts/test_fluid_spectrum_r43_kinetic.py"
   ],
   "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
   "known_limitations": [

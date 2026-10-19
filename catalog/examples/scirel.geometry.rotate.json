@@ -10,8 +10,8 @@
    "The executable constructor example stored in this contract"
   ],
   "tests": [
-   "tests/pleiades/geometry/test_native_geometry_qualification.py",
-   "tests/pleiades/geometry/test_native_lifecycle.py"
+   "tests/domain_contracts/geometry/test_native_geometry_qualification.py",
+   "tests/domain_contracts/geometry/test_native_lifecycle.py"
   ],
   "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
   "known_limitations": [

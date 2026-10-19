@@ -1,0 +1,119 @@
+{
+ "aliases": [
+  "derive_fluid_case"
+ ],
+ "applicability": {
+  "excluded": [
+   "No arbitrary species model construction through case controls.",
+   "Global charge-neutral or self-consistent background equilibrium proof for electron-only case2."
+  ],
+  "preconditions": [
+   "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 GNU Octave 7.3.0 remains required."
+  ],
+  "supported": [
+   "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
+  ]
+ },
+ "asset_id": "scirel.kinetic.fluid-case-state",
+ "example": {
+  "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case\ns=derive_fluid_case('bonk',3)\n",
+  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
+  "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
+  "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
+  "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
+  "runtime_failure": "Raises RuntimeError before numerical evaluation unless the pinned Linux amd64 and GNU Octave 7.3.0 runtime is available; native errors propagate and no fallback is selected."
+ },
+ "identity": {
+  "assumptions": [
+   "No flow or temperature anisotropy.",
+   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+  ],
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+  "definition": "vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); temperatures are converted from eV to K with 1.6022e-19/kB.",
+  "direction": "forward",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "relation": "listed-species scales and normalization for the selected BONK or EM case"
+ },
+ "inputs": [
+  {
+   "constraints": "bonk or em.",
+   "description": "Source case family.",
+   "dtype": "string",
+   "name": "family",
+   "required": true,
+   "shape": "string",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "BONK1/2/3; EM1/2; None selects BONK1 or EM2.",
+   "default": null,
+   "description": "Source case selector.",
+   "dtype": "integer or None",
+   "name": "jcase",
+   "required": false,
+   "shape": "scalar or None",
+   "units": "dimensionless"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+   "description": "Complete species scales and source material metadata; EM sets kz=0.1kn.",
+   "dtype": "mapping",
+   "name": "result",
+   "required": true,
+   "shape": "mapping of MATLAB-shape arrays",
+   "units": "mixed SI and dimensionless as described"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_spectrum",
+   "signature": "derive_fluid_case(family, jcase=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "derive_fluid_case",
+   "symbol": "derive_fluid_case"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Derive the complete BONK or EM species, normalization and material state.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-waves",
+  "fluidbw"
+ ],
+ "title": {
+  "en": "Complete SI fluid case state",
+  "zh": "完整 SI 流体案例状态"
+ },
+ "verification": {
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "Example execution requires Linux amd64 with GNU Octave 7.3.0; it was not run on this macOS host."
+  ],
+  "scope": [
+   "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fluid_spectrum_full.py"
+  ]
+ },
+ "version": {
+  "dependencies": [],
+  "implementation_version": "0.1.0.dev11"
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
+}

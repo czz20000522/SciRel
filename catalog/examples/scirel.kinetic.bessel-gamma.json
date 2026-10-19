@@ -24,7 +24,7 @@
   "coordinates": "NumPy-broadcast axes have caller-defined meaning; no physical axis is inferred",
   "boundary": "Arguments and outputs must be finite and representable as complex128; orders must be exactly representable integers of magnitude at most 2^53.",
   "assumptions": [
-   "The caller has already formed dimensionless x, such as b=(k_perp*rho_c)^2 for the fluidBW dispersion relation.",
+   "The caller has already formed dimensionless x, such as b=(k_perp*rho_c)^2 for the fluid dispersion relation.",
    "The computation uses the exponentially scaled Bessel backend; this callable does not select a harmonic truncation."
   ]
  },

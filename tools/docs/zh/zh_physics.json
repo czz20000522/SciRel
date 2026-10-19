@@ -349,7 +349,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-   "source_sha256": "c354aa0506a941cbb681d95304a4a4f149005975e7209c2908e62b3231b8aced",
+   "source_sha256": "840744c4398c5454c46525b59a7a6757cbf03f37e05d1f39f9f2a872d95309c8",
    "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。",
    "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。",
    "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
@@ -501,7 +501,7 @@
      "样本标志和残差只是局部模型诊断，不证明全局平衡或动力学稳定性。"
     ],
     "tests": [
-     "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
+     "tests/operator_contracts/test_spectral_scientific_correction.py"
     ]
    },
    "source_conflicts": [
@@ -510,7 +510,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
-   "source_sha256": "0d148a84ac7cfdc120eec4306dd442d6c33ba2564dbe985679c209971dc073e2",
+   "source_sha256": "c9d962695c4e8868684b877ddc1f9fdd90ebc0c5019529feabb75afe57941b38",
    "summary": "求解一般复数流体本征矩阵，筛选实部为正且按衰减大小排序的 kx 分支。",
    "definition": "用通用复数 LAPACK zgeev 求解 kx X=M X；保留 Re(kx)>real_floor_scale*kn 的值，再按 |Im(kx)| 作稳定排序。",
    "model": "线性化流体极点色散本征问题",
@@ -626,7 +626,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_fluid.py"
     ]
    }
   },
@@ -1051,7 +1051,7 @@
   },
   {
    "asset_id": "scirel.field.circular-filament-green",
-   "source_sha256": "91a4cb311b35526e2733b63a0cd5f6aec74d7c78ecc084399f6ce683b1f5a54a",
+   "source_sha256": "55e397ace94575a73cbe3677160955404553d8f6f791460759c6c7ec0403d09d",
    "summary": "在柱坐标目标点累加有序加权圆电流丝响应。",
    "definition": "按源顺序将每个源行的权重乘以圆电流丝 Green 响应并求和。",
    "model": "含零半径、零权重和精确自作用约定的轴对称理想圆电流丝核。",
@@ -1134,7 +1134,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-wavevector-scan",
-   "source_sha256": "72cd64d980a17304307230ac38a475793056001990f26e494e9a44a42786ad91",
+   "source_sha256": "f8d60f830469b8c86cf36eb117df6184dca4fd0629f0a83ae33ea0ba952c4939",
    "summary": "从平衡状态导出频率阶梯，逐频点组装 L/J 极点矩阵并筛选流体 kx 分支。",
    "definition": "任务图由同一组分平衡导出 kn 和 wn，构造 (omega_scale:omega_step:omega_stop)*wn 与 kz_scale*kn，并在每个频点独立求解 kx X=M(omega,kz)X。",
    "model": "均匀磁化多组分 Maxwellian 流体极点模型",
@@ -1328,13 +1328,13 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/graph_contracts/test_fluidbw_r43_graphs.py"
+     "tests/graph_contracts/test_fluid_spectrum_r43_graphs.py"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
-   "source_sha256": "6e909c10457e88982cae99cfaf0fbb180ee2d130a5d2f109930a55c799cdef2b",
+   "source_sha256": "cf38409b18330910077ca65d4a48c170ffeb44ba3460fb473df876f16d077bf2",
    "summary": "计算 Weideman 方法的 N=64 有理 Faddeeva 近似，并返回逐点分支标记。",
    "definition": "Z(z)=i*sqrt(pi)*w(z)；采用 N=64 Weideman FFT 系数，以及纯虚自变量 erfc 分支和下半平面反射分支。",
    "model": "均匀 Maxwell 等离子体色散特殊函数。",
@@ -1407,13 +1407,13 @@
      "公开分发许可与专家审查仍待完成。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_variants.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_variants.py"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
-   "source_sha256": "3f64a0e4d1b598ca2e26dcaf151d42492d753712bdc9ccfd31758083ebfab6b9",
+   "source_sha256": "5d59408f3b0086afd72b01b61c393d5d8876744b3edd5add29f1e0cd6b662f5b",
    "summary": "给定角频率和平行波数，组装稠密的一阶流体本征矩阵。",
    "definition": "按 [vx_snl,vy_snl,vz_snl,Ey,Ez,By,Bz] 的状态顺序组装 kx X=M X 中的 M；维数为 3*S*sum(L)+4。",
    "model": "均匀磁化多组分 Maxwellian 流体极点展开",
@@ -1602,7 +1602,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_fluid.py"
     ]
    }
   },
@@ -2736,7 +2736,7 @@
   },
   {
    "asset_id": "scirel.kinetic.ronnmark-r-function",
-   "source_sha256": "61035b1aa5737d9ec3d899e7ba5e81bd8643cfafb011d2530ee1754471ef5dc0",
+   "source_sha256": "1371643566007069c7a60eba1a1102637ecc1d9bc9f50187b29698353b3daafb",
    "summary": "计算 Taylor、渐近或积分 R 函数分支及 2×2 伴随矩阵。",
    "definition": "RYLA 按顺序检查三个 Taylor 条件，再检查渐近条件，否则回退到 16 点 Gauss-Legendre 积分；RC[0,1]=d(lambda*R)/d lambda。",
    "model": "磁化 Maxwell 色散的 Ronnmark 有理响应。",
@@ -2815,7 +2815,7 @@
      "公开分发许可与专家审查仍待完成。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_kinetic.py"
     ]
    }
   },
@@ -3142,7 +3142,7 @@
   },
   {
    "asset_id": "scirel.field.coil-green-geometry",
-   "source_sha256": "1541a16cf66630c85ebb3bd3155addd336ad25f73f69ffe12f8131b811555277",
+   "source_sha256": "f33d806d081b2caca210bf759f40680e53b97b396e16ad5105d1713c89192e8f",
    "summary": "计算线圈电流丝 Green 表达式所需的观测半径偏移、椭圆模平方和距离。",
    "definition": "应用固定的 1e-8 m 观测半径偏移，并逐元素计算模平方 m 与距离分母。",
    "model": "对齐圆线圈的标量观测几何。",
@@ -3239,7 +3239,7 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "53c69d39179d675f34b46e0e7ed4a13592d311c78cd6f5df3cf181e5989fda3d",
+   "source_sha256": "5b920e9b26c748334d1a3246dc35a99c9e004e11b5d980b34eec5b217980aafe",
    "summary": "按默认 15 阶谐波截断计算介电张量和色散张量的全部九个分量。",
    "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项由 K 形成 D，并用显式六项展开式计算其行列式。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3421,7 +3421,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_kinetic.py"
     ]
    }
   },
@@ -3735,7 +3735,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-   "source_sha256": "51b33b2203e2399385e831a0007d2bfedd07a3edca3500e7a29b4d97407672af",
+   "source_sha256": "37cc62092fba2d5359cd17fda2445f136b9769a6be114aff4c221b7ad5dfa66e",
    "summary": "对输入的每个角频率，均从同一个固定初值求解 Ronnmark 行列式的复数 kx 零点。",
    "definition": "每个频点独立从 kx_start 开始，用复数信赖域 dogleg 算法求解 det(D)=0，并限制迭代和函数求值次数。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3943,7 +3943,7 @@
      "Octave 对照在本机未运行（未运行）。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_kinetic.py"
     ]
    },
    "source_conflicts": [
@@ -4464,7 +4464,7 @@
   },
   {
    "asset_id": "scirel.field.filament-coil-green-field",
-   "source_sha256": "c41b6bd658198c88a1352d9ff11236e1b64c1efb91f5f31ff6b0a8e3859ca42a",
+   "source_sha256": "c65647afd752d0000fcc2bda9983da9631d42adccfc75598554a40ce6c81e069",
    "summary": "根据调用者提供的椭圆积分值，计算对齐圆线圈的闭式 psi、BR 和 BZ 响应。",
    "definition": "对对齐线圈数组应用标量闭式 Green 表达式，并累加每个线圈项。",
    "model": "使用给定 K(m)、E(m) 的闭式轴对称圆线圈响应。",
@@ -4893,7 +4893,7 @@
   },
   {
    "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
-   "source_sha256": "74a8a9461d8edf1dde3c2afe56daae69651179d2c11ffd997272d532c9c0dade",
+   "source_sha256": "0d521bf2b5e7659928ad1629890a86198fe8daba2a21b2df4c919a8c8036accc",
    "summary": "按 Bessel 阶数 |n|+1 索引返回固定有理留数和极点表。",
    "definition": "固定 L 极点留数/位置以有理极点和近似 Bessel-Gamma 项，表键为 |n|+1。",
    "model": "Maxwell 有限回旋半径项的有理近似。",
@@ -4973,7 +4973,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_fluid.py"
     ]
    }
   },
@@ -5376,8 +5376,8 @@
    }
   },
   {
-   "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
-   "source_sha256": "05c94366f45d85449c6e2966d1c2e7f50f9856d0f993586906e2bbc9f548c8d8",
+   "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
+   "source_sha256": "32255e82438fca361b660f1ed2d0acc4dc848e01ca667e9d42a75cb23c16f67e",
    "summary": "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。",
    "definition": "使用缩放 Bessel Gamma 项和 N=64 Weideman Z，对 -lmx 至 lmx 的谐波求和；在 K 中加入 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
@@ -5549,7 +5549,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_variants.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_variants.py"
     ]
    }
   },
@@ -6493,7 +6493,7 @@
   },
   {
    "asset_id": "scirel.field.dense-axisymmetric-green",
-   "source_sha256": "d312703f25bc1d63e17e344f2f4888930ff74a366dcef8bf7cab3f797923f8df",
+   "source_sha256": "ea0cb640af2044a66e099a80d3336cd170f0a7dd98e9f3e6ddc135138f9f9264",
    "summary": "为 psi、BR 和 BZ 构建稠密的目标行/源列圆电流丝响应矩阵。",
    "definition": "按调用者顺序对每个源列计算圆电流丝响应。",
    "model": "含零半径、零权重和精确自作用约定的轴对称理想圆电流丝核。",
@@ -6577,7 +6577,7 @@
   },
   {
    "asset_id": "scirel.field.mirror-plasma-green",
-   "source_sha256": "be6d0efd8b4ff3cf66b72ceb566d82b8ab5b18cecb31e662607d5c1486f61a3c",
+   "source_sha256": "05af8010e1eedbb6e3dd13edabca74b226ded162ef64fbe88737c9c47e581b23",
    "summary": "为均匀间距且关于 Z 反射对称的柱坐标网格构建稠密磁通响应矩阵。",
    "definition": "在给定网格的实际坐标上计算圆电流丝磁通项，并保留 C 顺序展平。",
    "model": "带对称网格校验的轴对称理想圆电流丝磁通。",
@@ -6783,7 +6783,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "d1b417a109e81c16d4a9d15c95b9e56110cd1cbf0548c704d041272ba0d098f5",
+   "source_sha256": "4b994ffac66b19ffac751ff2ad7c6e52b932b2f6f35666858fcdf696efc5453d",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7009,7 +7009,7 @@
      "Octave 对照在本机未运行（未运行）。"
     ],
     "tests": [
-     "tests/graph_contracts/test_fluidbw_r43_graphs.py"
+     "tests/graph_contracts/test_fluid_spectrum_r43_graphs.py"
     ]
    },
    "source_conflicts": [
@@ -7281,7 +7281,7 @@
   },
   {
    "asset_id": "scirel.kinetic.bessel-gamma",
-   "source_sha256": "ca1316eead5bbb56e9610e95eafebcc3f410141efc173e08d582a83f9441910f",
+   "source_sha256": "8f0afbb5fa1c3f8d4f6faf1d4023f7a35051aa24b031947fcd9c7173d527c0f7",
    "summary": "以可广播整数阶数和实/复自变量计算无量纲 Bessel-Gamma 谐波项及相邻阶组合导数。",
    "definition": "Gamma_n=ive(n,x)*exp(-x+abs(Re(x)))；Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x)))。ive 是指数缩放修正 Bessel I；可表示域内分别等于 exp(-x)*I_n(x) 及其对 x 的导数。",
    "model": "有限 Maxwell 回旋谐波求和使用的整数阶修正 Bessel 项。",
@@ -7361,7 +7361,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
-   "source_sha256": "6a7adb3f95c6491c91d03fd16ca166b52791a430ffb94ef9d931a9f29c8647bd",
+   "source_sha256": "fcec360358e2155d6c5c8326d35e5ca67230101a8ab301a5bc3676f679a184dc",
    "summary": "计算 J=8 有理极点形式的 3×3 动力学张量和色散行列式，允许复数 kx 与零 kz。",
    "definition": "用 J=8 共振极点和 Ronnmark R 函数替代 Z 与谐波响应，加入 Maxwell 旋度项后计算 det(D)。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7557,7 +7557,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_kinetic.py"
     ]
    },
    "source_conflicts": [
@@ -7566,7 +7566,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-   "source_sha256": "54667ec86c37592044097eb9097e9827e218ff55ae1bd21acf1e0b82c1806559",
+   "source_sha256": "134e0ef7abb0fa58b01568baef6c8a8c43a9a7d6cab1de047797af71347c79cd",
    "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。",
    "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
    "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
@@ -7733,7 +7733,7 @@
      "已记录 Frank Eq6 的字面符号冲突；实现采用所述总压强导数及双 Maxwell 准则，不宣称作者勘误。"
     ],
     "tests": [
-     "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py",
+     "tests/operator_contracts/test_spectral_scientific_correction.py",
      "tests/operator_contracts/test_legacy_six_absorption.py",
      "tests/operator_contracts/test_pressure_margin_cancellation.py"
     ]
@@ -7742,7 +7742,7 @@
   },
   {
    "asset_id": "scirel.field.filament-vacuum-field",
-   "source_sha256": "2114153e365080252ad03361187e3ae0d0bfcfe4a9238188872811977976770e",
+   "source_sha256": "63f35b9770f5d048dd081482f263080f0a76f9b8d932bf80f3f35015ddb303a7",
    "summary": "在均匀直角 R-Z 网格上计算理想圆电流丝场，并从第一个径向节点积分径向磁通。",
    "definition": "在网格点计算 Green 核，并用径向梯形递推积分 R*BZ。",
    "model": "不带近轴截断的理想圆电流丝真空场。",
@@ -8396,7 +8396,7 @@
   },
   {
    "asset_id": "scirel.field.complete-elliptic-integrals-approx",
-   "source_sha256": "7bd89afd0f6246edb902108825ac500b0b2b7f2a4a99cce97b9d44cc429f580b",
+   "source_sha256": "d945e5ac425aa3293fce37929ef4efb2f7972bbfd423d62373c8d418bd7f929e",
    "summary": "在 0<=m<=1 的数组上计算完全椭圆积分 K(m) 和 E(m) 的多项式-对数近似。",
    "definition": "逐元素计算固定的多项式-对数近似，并赋予 K(1)=+Inf、E(1)=1。",
    "model": "椭圆参数 m 上的分段数值近似。",
@@ -8467,7 +8467,7 @@
   },
   {
    "asset_id": "scirel.kinetic.z-pole-coefficients",
-   "source_sha256": "ea204a16840a49665d4f20e5502b39ab5aa9fb1e63689d4187c22f24aedb55f9",
+   "source_sha256": "2985c21826d3ef67b5aefb878309395bcd12737098fd9c4f559d2c46aecdcc49",
    "summary": "返回固定 J=8 或 J=12 复留数与极点表，并完成共轭补齐。",
    "definition": "Z(zeta) 近似为 sum_j bzj[j]/(zeta-czj[j])；存储前半表，留数后半取共轭，极点后半取负共轭。",
    "model": "Maxwell 等离子体色散函数的有理近似。",
@@ -8558,13 +8558,13 @@
      "公开分发许可与专家审查仍待完成。"
     ],
     "tests": [
-     "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+     "tests/operator_contracts/test_fluid_spectrum_r43_fluid.py"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
-   "source_sha256": "317267013d7b4ab884e0d036acb0b3065799836f60cc4f5df3368a15dbc103db",
+   "source_sha256": "916f044d2a02f67fc0333f6bc439ca347018a3fae075cfe3789bbbbab706f7d2",
    "summary": "把同一粒子群的显式热离子矩与径向包络和预设压强/密度尺度组合成闭合。",
    "definition": "径向算子计算 r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha。源算子使用给定 Legendre 阶数，或由损失锥谱算子求阶数，再选取或投影源系数。热离子算子在 b=B/B0 处积分，平行和垂直压强都以 b=1 的平行矩归一化，密度以其自身 b=1 矩归一化。压强算子加入气体项、可选 n*T_e 和相应热压强；图另附 closure_state。密度和两个热压强分量共同使用 velocity_lower（历史别名 perp_velocity_lower），默认 0；可达轨道、统一速度域和原始矩收敛遵循热离子算子。这修正了旧版只截断垂直项的做法，不宣称论文作者确认过勘误。",
    "model": "预设有限模态非负参考粒子群，加气体及可选电子压强；不求动力学演化，也不确证它是精确的物理 Frank-Egedal 分布。",
@@ -8660,7 +8660,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
+     "tests/operator_contracts/test_spectral_scientific_correction.py"
     ]
    }
   },
@@ -8932,7 +8932,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
-   "source_sha256": "823d5a648647d8ab039144979b48717bfc06b1ef03be78528cf1e18ba8a08c5e",
+   "source_sha256": "b689d68ed65df08d59f975564724ed3dde2449c2be6665f28125ebb4d5531923",
    "summary": "在同一个由平衡状态导出的波点，分别计算常规有限谐波求和与 Ronnmark 色散行列式。",
    "definition": "任务图导出 omega=omega_frac*wn、kx=kx_frac*kn 和 f=omega/(2*pi)，随后用同一 SI 组分状态计算 Weideman 求和路径与 Ronnmark 路径。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -9116,7 +9116,7 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/graph_contracts/test_fluidbw_r43_graphs.py"
+     "tests/graph_contracts/test_fluid_spectrum_r43_graphs.py"
     ]
    }
   },

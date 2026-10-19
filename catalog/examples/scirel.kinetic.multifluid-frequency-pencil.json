@@ -1,0 +1,136 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.multifluid-frequency-pencil",
+ "title": {
+  "en": "Multifluid frequency pencil",
+  "zh": "多流体频率矩阵束"
+ },
+ "summary": "Assemble the corrected Maxwell-fluid generalized pencil, retaining physical SI coordinates and signed complex spatial wavevectors.",
+ "taxonomy": [
+  "kinetic",
+  "pdrk",
+  "examples"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "Fluid equilibrium and wavevector to a generalized time-generator pencil",
+  "direction": "forward assembly",
+  "definition": "M X=lambda A X; omega=i lambda. Continuity, Lorentz, gyrotropic pressure, declared velocity collisions and Maxwell equations are assembled in original SI state coordinates.",
+  "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
+  "geometry": "k=(kx,0,kz), B0 along z.",
+  "coordinates": "Cartesian fields; species density and velocity blocks followed by E and B.",
+  "boundary": "Local Fourier modes exp(i k.r-i omega t).",
+  "assumptions": [
+   "The rotating-pressure Bx contribution uses the direct divergence of the declared pressure tensor.",
+   "Relativistic inertia gamma I+gamma^3 vv^T/c^2 excludes the nonrelativistic collision generator.",
+   "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; packaged defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "Explicit equilibrium mapping; no global state is read. Fluid fields are produced by fluid_equilibrium_si or fluid_equilibrium_relative_rates.",
+   "units": "field-specific SI",
+   "shape": "mapping with S species",
+   "dtype": "mapping[str, numeric array or scalar]",
+   "required": true,
+   "constraints": "Required fluid fields q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,velocity_collision; retain nullable beta fields for rendering."
+  },
+  {
+   "name": "kx",
+   "description": "Signed x wavevector component.",
+   "units": "m^-1",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; complex spatial wavevector is supported by the fluid pencil."
+  },
+  {
+   "name": "kz",
+   "description": "Signed z wavevector component.",
+   "units": "m^-1",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; complex spatial wavevector is supported by the fluid pencil."
+  },
+  {
+   "name": "relativistic",
+   "description": "Use the derivative of relativistic momentum in each species velocity block.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "If true, all species speeds must be below c and velocity_collision must vanish.",
+   "default": false
+  }
+ ],
+ "outputs": [
+  {
+   "name": "pencil",
+   "description": "Time-generator generalized pencil M X=lambda A X with lambda=-i omega, plus signed wcs and nonnegative wps.",
+   "units": "mixed SI; lambda s^-1; wcs,wps rad/s",
+   "shape": "M,A:(d,d), d=4*S+6; wcs,wps:(S,)",
+   "dtype": "dict[str,complex128 or float64 arrays]",
+   "required": true,
+   "constraints": "X=(dn,dvx,dvy,dvz) for each species, then Ex,Ey,Ez,Bx,By,Bz. M_ab has units (unit X_a)/(s*unit X_b), A_ab has units (unit X_a)/(unit X_b). Matrices retain original physical state units."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite inputs satisfying the declared units and shapes."
+  ],
+  "supported": [
+   "Nonrelativistic conservative collisions and explicit bath drag.",
+   "Collision-free relativistic inertia and complex kx,kz."
+  ],
+  "excluded": [
+   "Relativistic friction four-forces.",
+   "Universal kinetic, mirror/firehose or global equilibrium accuracy claims."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+  "nonconvergence": "No iterative solve is performed.",
+  "partial_results": "No partial result is returned on failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.multifluid",
+   "symbol": "fluid_frequency_pencil",
+   "signature": "fluid_frequency_pencil(state, kx, kz, *, relativistic=False)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.multifluid-equilibrium"
+   }
+  ]
+ },
+ "example": {
+  "description": "Assemble a perpendicular/parallel physical pencil.",
+  "code": "from scirel.kinetic.dispersion.multifluid import fluid_equilibrium_si, fluid_frequency_pencil\np = fluid_frequency_pencil(fluid_equilibrium_si(), 1e-5, 2e-5)\nassert p[\"M\"].shape == p[\"A\"].shape == (14, 14)",
+  "expected": "The SI point produced finite generalized-pencil matrices M and A, each of shape (14,14)."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_dispersion_multifluid.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "Gyrotropic pressure closure is a declared local fluid model.",
+   "Assembly does not select a physical branch or remove constraint modes.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
+}

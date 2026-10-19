@@ -148,24 +148,24 @@ def test_pdrf_state_and_matrix_paths_defer_linalg_until_spectrum_solve() -> None
         """
 import sys
 from scirel.kinetic import (
-    initialize_pdrf_plasma,
-    assemble_pdrf_matrix,
-    solve_pdrf_spectrum,
+    initialize_plasma_state,
+    assemble_spectral_matrix,
+    solve_temporal_spectrum,
 )
 
 assert "scipy" not in sys.modules
-state = initialize_pdrf_plasma()
+state = initialize_plasma_state()
 assert "scipy" not in sys.modules
-matrix = assemble_pdrf_matrix(state, 0.1, 0.2)
+matrix = assemble_spectral_matrix(state, 0.1, 0.2)
 assert "scipy" not in sys.modules
 try:
-    solve_pdrf_spectrum(matrix["M"], matrix["A"], oldmethod=3)
+    solve_temporal_spectrum(matrix["M"], matrix["A"], oldmethod=3)
 except ValueError as error:
     assert str(error) == "oldmethod must be 1 or 2"
 else:
     raise AssertionError("invalid PDRF spectrum method unexpectedly succeeded")
 assert "scipy" not in sys.modules
-output = solve_pdrf_spectrum(matrix["M"], matrix["A"])
+output = solve_temporal_spectrum(matrix["M"], matrix["A"])
 assert output["w1"].shape == (14,)
 assert "scipy" in sys.modules
 """
@@ -518,7 +518,7 @@ def check_namespace(package):
 for domain_name in scirel.__all__:
     check_namespace(importlib.import_module(f"scirel.{domain_name}"))
 
-check_namespace(importlib.import_module("scirel.kinetic.pdrk"))
+check_namespace(importlib.import_module("scirel.kinetic.dispersion"))
 """
     )
     assert result.returncode == 0, result.stdout + result.stderr

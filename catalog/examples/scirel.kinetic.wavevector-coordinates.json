@@ -1,0 +1,160 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.wavevector-coordinates",
+ "title": {
+  "en": "Scan wavevector coordinates",
+  "zh": "扫描波矢坐标"
+ },
+ "summary": "Update one pair of source scan indices and return physical Cartesian k and angle with explicit log selectors.",
+ "taxonomy": [
+  "kinetic",
+  "magnetized-plasma",
+  "pdrk"
+ ],
+ "aliases": [
+  "PDRK wavevector_coordinates"
+ ],
+ "identity": {
+  "relation": "Scan wavevector coordinates",
+  "direction": "state,row,column -> updated par,kx,kz,k,theta",
+  "definition": "Assign pa[row] or10^pa[row] into par[ipa]; if ipa!=ipb independently assign pb[column] or10^pb[column]. For selectors3/4 use independent Cartesian entries divided by cwp; otherwise use abs(par1)/cwp and theta in degrees. Return k=hypot(kx,kz),theta=arg(kz+i kx)*180/pi.",
+  "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "assumptions": [
+   "Linear small-amplitude response.",
+   "Caller retains the explicit truncation, state provenance and normalization."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually 1x1 native arrays; native stored dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+   "units": "mixed; physical dimensions recorded by state fields",
+   "shape": "mapping or NativeResult",
+   "dtype": "state carrier",
+   "required": true,
+   "constraints": "Must contain the complete compatible predecessor state; handcrafted inconsistent fields are outside the qualified composition."
+  },
+  {
+   "name": "row",
+   "description": "One-based first-axis scan index.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer numeric",
+   "required": false,
+   "constraints": "1<=row<=npa; source native indexing errors remain observable.",
+   "default": 1
+  },
+  {
+   "name": "column",
+   "description": "One-based second-axis scan index.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer numeric",
+   "required": false,
+   "constraints": "1<=column<=npb; source native indexing errors remain observable.",
+   "default": 1
+  }
+ ],
+ "outputs": [
+  {
+   "name": "par",
+   "description": "Updated independent six-entry coordinate carrier; one-dimensional Python input is serialized as a row, and native coordinate assignments preserve its orientation.",
+   "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
+   "shape": "(6,1) or (1,6), preserving supplied/native orientation",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "kx",
+   "description": "Signed perpendicular wave number.",
+   "units": "m^-1",
+   "shape": "(1,1)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "kz",
+   "description": "Signed parallel wave number.",
+   "units": "m^-1",
+   "shape": "(1,1)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "k",
+   "description": "Magnitude.",
+   "units": "m^-1",
+   "shape": "(1,1)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "theta",
+   "description": "atan/complex-phase angle.",
+   "units": "degree",
+   "shape": "(1,1)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Supported selector pair and in-range1based indices; asymmetric logarithmic axes are independent."
+  ],
+  "supported": [
+   "Supported selector pair and in-range1based indices; asymmetric logarithmic axes are independent."
+  ],
+  "excluded": [
+   "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError carrying the result and receipt computed so far when its caught scientific terminal fails.",
+  "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+  "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.magnetized",
+   "symbol": "wavevector_coordinates",
+   "signature": "wavevector_coordinates(state, *, row=1, column=1)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "A self-contained example that uses the packaged native resources and raw Octave; no network access is required.",
+  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nr=m.wavevector_coordinates(eq,row=1,column=1)\nassert np.isfinite(r.state['kx']).all()\n",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Source full-grid and separate installed comparisons cover four asymmetric linear/log combinations with selectors(1,2)/(3,4), all ordered points and final par.",
+   "Physical kx,kz,k,theta masks and values retain1e-12 bounds; this coordinate evidence does not accept incidental source eigenvalues."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_dispersion_magnetized.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+   "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
+  ]
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
+}

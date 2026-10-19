@@ -140,7 +140,7 @@ nodes:
 - id: closure_aware_equilibrium
   name: 压力电流闭合与磁通双门禁求解
   kind: scientific_operator
-  callable: scirel.equilibrium.pleiades_feedback::compute_equilibrium
+  callable: scirel.equilibrium.equilibrium_state::compute_equilibrium
   asset_ref: scirel.equilibrium.compute-equilibrium
   inputs: [r_grid, z_grid, pressure_of_radius, psi_vac, g_psi, tol, maxiter, relax, plasma_mask]
   outputs: [psi, plasma_currents, iterations, residual, closure_residual, residual_history, closure_residual_history, status]

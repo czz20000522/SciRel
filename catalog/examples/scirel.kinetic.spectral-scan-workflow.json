@@ -1,0 +1,565 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.spectral-scan-workflow",
+ "title": {
+  "en": "Ordered spectral scan workflow",
+  "zh": "有序频谱扫描流程"
+ },
+ "summary": "Finite ordered coordinate scan with explicit matrix assembly, frequency solve and row continuation.",
+ "taxonomy": [
+  "kinetic",
+  "magnetized-plasma",
+  "pdrk"
+ ],
+ "aliases": [
+  "PDRK scan_spectrum"
+ ],
+ "identity": {
+  "relation": "Ordered spectral scan workflow",
+  "direction": "Declared scientific input ports in one mapping -> completed scientific state and declared artifacts",
+  "definition": "Finite ordered coordinate scan with explicit matrix assembly, frequency solve and row continuation. inputs mapping: state required, rng_seed=None. state must be initialized equilibrium. All scan controls are inherited, with npa*npb fixed before execution. Scientific graph nodes reuse the declared native numerical relations; a fused native implementation may execute them in one process. Controlled glue only schedules, carries state and projects results. The public Python wrapper accepts one inputs mapping; each listed scientific port is an entry of that mapping, with required/default status from the actual underlying callable.",
+  "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "assumptions": [
+   "All nodes consume compatible scientific predecessor state.",
+   "Ordinary dependencies are acyclic; feedback, when present, has the stated finite schedule.",
+   "Mode selection is an explicitly defined algorithm; physical uniqueness is not asserted."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "Complete initialized magnetized equilibrium NativeResult or its state mapping, including source scan controls. Setup wg0 is normalized omega/wcs1; initialized sparse wg=wg0*wcs1 is dimensional rad/s, while initialized dense wg is empty. During a completed scan the carried wg/wg0 become dimensional solved guesses.",
+   "units": "mixed; physical dimensions recorded by state fields",
+   "shape": "mapping or NativeResult",
+   "dtype": "state carrier",
+   "required": true,
+   "constraints": "Contains EQUILIBRIUM_FIELDS from initialize_equilibrium; npa/npb and coordinate grids fixed before the finite scan. No previous scan required."
+  },
+  {
+   "name": "rng_seed",
+   "description": "Optional startup rand/randn seed for controlled comparisons.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer numeric or None",
+   "required": false,
+   "constraints": "None retains native startup RNG. Applied once at action entry; no reset within a scientific kernel loop. Public examples use2718.",
+   "default": null
+  }
+ ],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "Completed NativeResult.state with compatible native scientific carrier and typed artifacts.",
+   "units": "mixed explicit scientific state",
+   "shape": "mapping",
+   "dtype": "NativeResult.state mapping",
+   "required": true,
+   "constraints": "Typed scientific value compatible with the native representation; native dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "ww",
+   "description": "Computed dimensional frequencies ordered by descending imaginary part at each point.",
+   "units": "rad s^-1",
+   "shape": "(npa,npb,nw) for nw>1; (npa,npb) for nw=1; conceptual axes are scan a, scan b, frequency",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Typed scientific value compatible with the native representation; native dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "kxx",
+   "description": "Stored actual Cartesian wave-number grid.",
+   "units": "m^-1",
+   "shape": "(npa,npb)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Typed scientific value compatible with the native representation; native dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "kzz",
+   "description": "Stored actual Cartesian wave-number grid.",
+   "units": "m^-1",
+   "shape": "(npa,npb)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Typed scientific value compatible with the native representation; native dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "par",
+   "description": "Updated independent six-entry coordinate carrier; one-dimensional Python input is serialized as a row, and native coordinate assignments preserve its orientation.",
+   "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
+   "shape": "(6,1) or (1,6), preserving supplied/native orientation",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "wg",
+   "description": "Final source guess restored according to row continuation, not necessarily the last eigenfrequency.",
+   "units": "rad s^-1",
+   "shape": "(1,1)",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Typed scientific value compatible with the native representation; native dimensions are preserved; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "inputs mapping: state required, rng_seed=None. state must be initialized equilibrium. All scan controls are inherited, with npa*npb fixed before execution."
+  ],
+  "supported": [
+   "Explicit DAG composition with bounded native feedback where declared."
+  ],
+  "excluded": [
+   "Physical branch uniqueness, arbitrary changes to source state, visual acceptance and unbounded root searches."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+  "runtime_failure": "NativeExecutionError records unavailable, failed or timed-out Octave execution. source_output additionally raises SourceOutputError carrying its result and receipt when its caught scientific terminal fails.",
+  "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+  "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.workflows",
+   "symbol": "scan_spectrum",
+   "signature": "scan_spectrum(inputs)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.wavevector-coordinates"
+   },
+   {
+    "asset_id": "scirel.kinetic.electromagnetic-eigenmatrix"
+   },
+   {
+    "asset_id": "scirel.kinetic.electrostatic-eigenmatrix"
+   },
+   {
+    "asset_id": "scirel.kinetic.frequency-eigensolve"
+   }
+  ]
+ },
+ "example": {
+  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nscan=w.scan_spectrum({'state':eq,'rng_seed':2718})\nassert np.isfinite(scan.state['ww']).all()\n",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Bounded canonical and fresh-holdout graph-state checks: actual grid, newly computed d/D, normalized fields, energy, phase and nondegenerate Maxwell-row residual.",
+   "Graph data and artifacts preserve declared scientific state; final installed signature/example validation is required."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_dispersion_graphs.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native Octave execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "Human scientific endorsement and publication clearance remain pending.",
+   "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+   "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+   "The native example and full native-path qualification require GNU Octave on Linux amd64; the run on this macOS host is NOT_RUN."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "unpack",
+    "kind": "controlled_glue",
+    "description": "Unpack the one public inputs mapping into these explicitly documented scientific ports, applying only the actual underlying callable defaults. No numerical relation is performed in glue.",
+    "inputs": [
+     "state",
+     "rng_seed"
+    ],
+    "outputs": [
+     "state"
+    ]
+   },
+   {
+    "id": "schedule",
+    "kind": "controlled_glue",
+    "description": "Advance source indices, carry par and guess, preserve first-column row guess and reset only at the specified row boundary.",
+    "inputs": [
+     "initial",
+     "updated"
+    ],
+    "outputs": [
+     "state",
+     "indices",
+     "guess"
+    ]
+   },
+   {
+    "id": "coordinates",
+    "kind": "operator",
+    "description": "Apply the exact supported linear/log coordinate relation.",
+    "inputs": [
+     "state",
+     "indices"
+    ],
+    "outputs": [
+     "state"
+    ],
+    "asset_id": "scirel.kinetic.wavevector-coordinates"
+   },
+   {
+    "id": "EM",
+    "kind": "operator",
+    "description": "Assemble EM M using corrected signed-kz and perpendicular relations.",
+    "inputs": [
+     "state"
+    ],
+    "outputs": [
+     "matrix"
+    ],
+    "asset_id": "scirel.kinetic.electromagnetic-eigenmatrix"
+   },
+   {
+    "id": "ES",
+    "kind": "operator",
+    "description": "Assemble ES M for the selected nonzero-k electrostatic family.",
+    "inputs": [
+     "state"
+    ],
+    "outputs": [
+     "matrix"
+    ],
+    "asset_id": "scirel.kinetic.electrostatic-eigenmatrix"
+   },
+   {
+    "id": "solve",
+    "kind": "operator",
+    "description": "Dense full spectrum or sparse near-target spectrum, growth ordering and next guess. The actual fused native scan executes this same point relation in-process.",
+    "inputs": [
+     "matrix",
+     "guess"
+    ],
+    "outputs": [
+     "updated"
+    ],
+    "asset_id": "scirel.kinetic.frequency-eigensolve"
+   },
+   {
+    "id": "collect",
+    "kind": "controlled_glue",
+    "description": "Copy each completed point into source-shaped output arrays and retain the last point state. No eigenvalue or field is reconstructed by glue.",
+    "inputs": [
+     "updated"
+    ],
+    "outputs": [
+     "state",
+     "ww",
+     "kxx",
+     "kzz",
+     "par",
+     "wg"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "rng_seed"
+    },
+    "to": {
+     "node": "unpack",
+     "port": "rng_seed"
+    },
+    "description": "Read the declared scientific mapping entry and its exact default.",
+    "condition": "Entry present or documented default applied",
+    "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "state"
+    },
+    "to": {
+     "node": "unpack",
+     "port": "state"
+    },
+    "description": "Read the declared scientific mapping entry and its exact default.",
+    "condition": "Required entry present",
+    "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "unpack",
+     "port": "state"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "initial"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "state"
+    },
+    "to": {
+     "node": "coordinates",
+     "port": "state"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "indices"
+    },
+    "to": {
+     "node": "coordinates",
+     "port": "indices"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coordinates",
+     "port": "state"
+    },
+    "to": {
+     "node": "EM",
+     "port": "state"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "iem=1",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coordinates",
+     "port": "state"
+    },
+    "to": {
+     "node": "ES",
+     "port": "state"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "iem=0",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "EM",
+     "port": "matrix"
+    },
+    "to": {
+     "node": "solve",
+     "port": "matrix"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "iem=1",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "ES",
+     "port": "matrix"
+    },
+    "to": {
+     "node": "solve",
+     "port": "matrix"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "iem=0",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "guess"
+    },
+    "to": {
+     "node": "solve",
+     "port": "guess"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "solve",
+     "port": "updated"
+    },
+    "to": {
+     "node": "collect",
+     "port": "updated"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "solve",
+     "port": "updated"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "updated"
+    },
+    "description": "Controlled continuation state for the next finite index.",
+    "condition": "Unvisited scheduled point remains",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "spectral_schedule"
+   },
+   {
+    "from": {
+     "node": "collect",
+     "port": "state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "state"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "collect",
+     "port": "ww"
+    },
+    "to": {
+     "node": "$output",
+     "port": "ww"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "collect",
+     "port": "kxx"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kxx"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "collect",
+     "port": "kzz"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kzz"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "collect",
+     "port": "par"
+    },
+    "to": {
+     "node": "$output",
+     "port": "par"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "collect",
+     "port": "wg"
+    },
+    "to": {
+     "node": "$output",
+     "port": "wg"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "Sequential scientific composition; fused native point relations preserve the same order.",
+   "ordering": "Listed DAG order; bounded source index feedback is explicit for scan and polarization.",
+   "branches": [
+    "iem selects electromagnetic or electrostatic matrix.",
+    "sp selects dense full spectrum or sparse targeted eigenvalues.",
+    "iout2 EM owns field reconstruction; iout1 retains frequency-only output."
+   ],
+   "state_ownership": "Caller owns input mapping; each native invocation owns isolated scratch state. Return immutable NativeResult with completed state; no source checkout or hidden mutable global scientific state.",
+   "failure_propagation": "Python/native/domain/timeout failures propagate. source_output raises SourceOutputError retaining partial terminal artifacts. original_program returns program_completed/program_error separately from transport status; a false completion flag is never scientific success.",
+   "feedback": [
+    {
+     "id": "spectral_schedule",
+     "state": "par, row/column indices, dimensional wg/wg0 and output prefix; selected mode index and fixed wws targets additionally for polarization.",
+     "initialization": "Initialize from genuine predecessor. Seed rand/randn once only if supplied; first target comes from wg or the fixed selected wws.",
+     "update_order": "jpl outer for polarization, then jpa first scan axis outer and jpb second axis inner. At a row first point save wg0, carry the current point wg across the row, and restore its saved first-point guess before the next row. Polarization target is always selected wws*wcs1, not inferred from a previous result.",
+     "continue_when": "Another point remains in the predeclared finite source schedule and the preceding native operation completed.",
+     "stop_when": "All scheduled points complete or an explicit native/domain/timeout failure occurs.",
+     "iteration_bound": "npa*npb*npl point solves for polarization; npa*npb for spectral scan. All counts are fixed by initialized source grids, not open-ended convergence.",
+     "nonconvergence": "Propagate native eigensolve/domain failure; do not accept a failed point or fabricate unvisited output. No global physical-mode uniqueness claim."
+    }
+   ]
+  }
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
+}

@@ -1,4 +1,4 @@
-"""Independent counterexamples discovered during the Pleiades semantic review."""
+"""Independent counterexamples discovered during the equilibrium semantic review."""
 import numpy as np
 import pytest
 

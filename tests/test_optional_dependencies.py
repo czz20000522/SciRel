@@ -43,12 +43,12 @@ sys.meta_path.insert(0, BlockMatplotlib())
     "operation",
     (
         """
-from scirel.io.eqdsk import write_pleiades_eqdsk_legacy_raw
+from scirel.io.eqdsk import write_eqdsk_legacy_raw
 import numpy as np
 
 R, Z = np.meshgrid(np.linspace(0.0, 1.0, 2), np.linspace(-0.5, 0.5, 2))
 try:
-    write_pleiades_eqdsk_legacy_raw(R, Z, np.ones_like(R), np.zeros_like(R),
+    write_eqdsk_legacy_raw(R, Z, np.ones_like(R), np.zeros_like(R),
                                     "/tmp/scirel-optional-eqdsk", "test")
 except ModuleNotFoundError as error:
     assert error.name == "matplotlib"
@@ -57,7 +57,7 @@ else:
     raise AssertionError("the legacy writer unexpectedly ran without Matplotlib")
 """,
         """
-from scirel.kinetic.pdrf import _plot
+from scirel.kinetic.spectral_evolution import _plot
 import numpy as np
 
 try:
@@ -74,7 +74,7 @@ else:
     raise AssertionError("PDRF plotting unexpectedly ran without Matplotlib")
 """,
         """
-from scirel.kinetic.pdrk._presentation import save_program
+from scirel.kinetic.dispersion._presentation import save_program
 import numpy as np
 
 try:

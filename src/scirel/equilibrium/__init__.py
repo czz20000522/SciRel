@@ -77,8 +77,8 @@ _LAZY_EXPORTS = {
         "kinetic_mirror_hall_equilibrium",
         "solve_kinetic_mirror_hall_equilibrium",
     ),
-    "EquilibriumResult": ("pleiades_feedback", "EquilibriumResult"),
-    "compute_equilibrium": ("pleiades_feedback", "compute_equilibrium"),
+    "EquilibriumResult": ("equilibrium_state", "EquilibriumResult"),
+    "compute_equilibrium": ("equilibrium_state", "compute_equilibrium"),
 }
 
 

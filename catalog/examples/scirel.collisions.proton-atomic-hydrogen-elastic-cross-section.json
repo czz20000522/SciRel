@@ -24,7 +24,7 @@
   "relation": "the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint",
   "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
   "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E≤10 时使用七系数低能 log 多项式，E>10 时使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；输出增加一个领先单例轴。",
-  "model": "KN1D 原始 IDL sigma_el_p_h 的 H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
+  "model": "H+-on-H 动量传递的经验拟合；能量为静止靶参考系的弹丸能量。",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
   "boundary": "输入有限非负实数；能域外取端点值，恰好 10 eV 使用低能分支。",

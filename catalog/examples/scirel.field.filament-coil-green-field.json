@@ -2,8 +2,8 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.field.filament-coil-green-field",
  "title": {
-  "en": "GSEQ filament-coil Green field response",
-  "zh": "环形线圈Green场响应"
+  "en": "Filament-coil Green field response",
+  "zh": "环形线圈 Green 场响应"
  },
  "summary": "Evaluate the closed-form psi, BR, and BZ response of aligned circular coils from caller-supplied elliptic values.",
  "taxonomy": [
@@ -190,7 +190,7 @@
    "Singular-geometry rejection and input failure contracts."
   ],
   "tests": [
-   "tests/operator_contracts/test_filament_coil_green_gseq.py"
+   "tests/operator_contracts/test_filament_coil_green.py"
   ],
   "evidence_ceiling": "The direct tests establish the three responses against an independent closed-form recomputation (exact float equality), linear superposition in current, midplane B_r cancellation of a mirrored pair, and the fail-closed input contracts including the singular-geometry rejection. With identical scipy-evaluated K and E the closed form agrees with the baseline scirel.field.circular-filament-green response to rtol 1e-12 on probed geometries (same physics, different arrangement); feeding the polynomial-log approximation instead shifts responses by up to ~1e-5 relative on the probed set, consistent with the approximation's documented ~1e-8 K/E error amplified by the closed form -- sampled evidence over probed geometries, not a continuous bound. No test establishes the responses against an external physics reference beyond the shared closed form.",
   "known_limitations": [

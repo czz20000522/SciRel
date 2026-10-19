@@ -1,0 +1,321 @@
+{
+ "aliases": [
+  "solve_fluid_bonk"
+ ],
+ "applicability": {
+  "excluded": [
+   "No branch tracking, complete physical-mode enumeration or unconditional convergence."
+  ],
+  "preconditions": [
+   "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 GNU Octave 7.3.0 remains required."
+  ],
+  "supported": [
+   "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
+   "Original solver tolerances; explicit bounded attempts and root verification."
+  ]
+ },
+ "asset_id": "scirel.kinetic.fluid-bonk-search",
+ "example": {
+  "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_bonk\ns=derive_fluid_case('bonk',2)\nr=solve_fluid_bonk(2,[.63*s['wn'].item()])\n",
+  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
+  "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
+  "nonconvergence": "Bounded scientific precision/search failures are explicit. BONK returns every attempt and an unverified row when no verified root is found; a raw solver flag alone is not a scientific root.",
+  "partial_results": "Operator errors return no result. A completed BONK axis may contain unverified candidates with root_valid false. No hidden partial output is represented as a complete result.",
+  "runtime_failure": "Raises RuntimeError before numerical evaluation unless the pinned Linux amd64 and GNU Octave 7.3.0 runtime is available; native errors propagate and no fallback is selected."
+ },
+ "graph": {
+  "edges": [
+   {
+    "condition": "always within valid controls",
+    "description": "Explicit source BONK case.",
+    "from": {
+     "node": "$input",
+     "port": "jcase"
+    },
+    "kind": "data",
+    "required": true,
+    "to": {
+     "node": "case",
+     "port": "jcase"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   },
+   {
+    "condition": "always within valid controls",
+    "description": "Axis input or source ladder.",
+    "from": {
+     "node": "$input",
+     "port": "omegas"
+    },
+    "kind": "data",
+    "required": true,
+    "to": {
+     "node": "search",
+     "port": "omegas"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   },
+   {
+    "condition": "always within valid controls",
+    "description": "Complete SI source state.",
+    "from": {
+     "node": "case",
+     "port": "state"
+    },
+    "kind": "data",
+    "required": true,
+    "to": {
+     "node": "search",
+     "port": "state"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   },
+   {
+    "condition": "always within valid controls",
+    "description": "Solver-owned case state with w=xx[jx] set for the current frequency; no metadata overwrite.",
+    "from": {
+     "node": "search",
+     "port": "response_state"
+    },
+    "kind": "data",
+    "required": true,
+    "to": {
+     "node": "response",
+     "port": "state"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   },
+   {
+    "condition": "always within valid controls",
+    "description": "Convert dimensionless q to kx=q kn.",
+    "from": {
+     "node": "search",
+     "port": "kx"
+    },
+    "kind": "data",
+    "required": true,
+    "to": {
+     "node": "response",
+     "port": "kx"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   },
+   {
+    "condition": "always within valid controls",
+    "description": "Current determinant response to bounded solver update.",
+    "feedback_id": "bonk_search",
+    "from": {
+     "node": "response",
+     "port": "response"
+    },
+    "kind": "feedback",
+    "required": true,
+    "to": {
+     "node": "search",
+     "port": "response"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   },
+   {
+    "condition": "always within valid controls",
+    "description": "Local bounded solver and attempt state.",
+    "feedback_id": "bonk_search",
+    "from": {
+     "node": "search",
+     "port": "iteration_state"
+    },
+    "kind": "feedback",
+    "required": true,
+    "to": {
+     "node": "search",
+     "port": "iteration_state"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   },
+   {
+    "condition": "always within valid controls",
+    "description": "Complete collected numerical and source material state.",
+    "from": {
+     "node": "search",
+     "port": "result"
+    },
+    "kind": "data",
+    "required": true,
+    "to": {
+     "node": "$output",
+     "port": "result"
+    },
+    "transform": "explicit scientific port mapping; no unit conversion unless declared"
+   }
+  ],
+  "execution": {
+   "branches": [
+    "jcase1/2/3",
+    "five fixed seed attempts, early stop on dual root verification",
+    "unsolved rows remain explicit candidates with root_valid false"
+   ],
+   "failure_propagation": "invalid inputs/precision errors throw; bounded solver termination retained with candidate verification",
+   "feedback": [
+    {
+     "continue_when": "fsolve has budget and has not terminated; after an unverified attempt advance to next fixed seed",
+     "id": "bonk_search",
+     "initialization": "per omega fixed seeds0.6,0.6+0.1i,0.6−0.1i,1,2 in q=kx/kn",
+     "iteration_bound": "five attempts per omega; each MaxIter400,MaxFunEvals100; TolFun/TolX1e-16",
+     "nonconvergence": "return all attempts and best candidate with root_valid false; no invented root",
+     "state": "q real/imaginary coordinates and fsolve trust region; local candidate/attempt diagnostics",
+     "stop_when": "both normalized determinant and sigma_min(D)/max(1,sigma_max(D))<=1e-8, or all five attempts terminate",
+     "update_order": "evaluate real/imag determinant using fixed attempt reference, fsolve step, retain raw status, independently verify dimensionless D"
+    }
+   ],
+   "mode": "DAG with declared bounded numerical feedback inside each independent frequency search",
+   "ordering": "derive case, visit axis in source order, try fixed seeds in order, update local fsolve state, verify D, stop at first verified root, collect terminal fields",
+   "state_ownership": "one subprocess owns globals; per-attempt q, residual, trust-region state and diagnostics; no caller global state or frequency continuation"
+  },
+  "nodes": [
+   {
+    "asset_id": "scirel.kinetic.fluid-case-state",
+    "description": "Complete BONK SI state.",
+    "id": "case",
+    "inputs": [
+     "jcase"
+    ],
+    "kind": "operator",
+    "outputs": [
+     "state"
+    ]
+   },
+   {
+    "description": "Independent per-frequency real/imaginary dimensionless fsolve and dual physical root gate.",
+    "id": "search",
+    "inputs": [
+     "state",
+     "omegas",
+     "iteration_state",
+     "response"
+    ],
+    "kind": "controlled_glue",
+    "outputs": [
+     "result",
+     "iteration_state",
+     "kx",
+     "response_state"
+    ]
+   },
+   {
+    "asset_id": "scirel.kinetic.fluid-dispersion-response",
+    "description": "Corrected native fDR relation evaluated by the solver callback.",
+    "id": "response",
+    "inputs": [
+     "kx",
+     "state"
+    ],
+    "kind": "operator",
+    "outputs": [
+     "response"
+    ]
+   }
+  ]
+ },
+ "identity": {
+  "assumptions": [
+   "No flow or temperature anisotropy.",
+   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+  ],
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+  "definition": "Fixed bounded dimensionless real/imaginary search at every angular frequency; root_valid requires independent determinant and normwise Maxwell null residual gates.",
+  "direction": "inverse: angular frequency to candidate wavevector",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "relation": "BONK wavevector root search"
+ },
+ "inputs": [
+  {
+   "constraints": "Exactly BONK case1,2 or3.",
+   "default": 1,
+   "description": "Source-defined case number.",
+   "dtype": "integer",
+   "name": "jcase",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite real nonzero elements in the caller's order.",
+   "default": null,
+   "description": "Angular frequency axis; None selects the source frequency ladder.",
+   "dtype": "real array or None",
+   "name": "omegas",
+   "required": false,
+   "shape": "nonempty vector or None",
+   "units": "rad/s"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+   "description": "nf[m^-1], ordered xx[rad/s], root_valid, dual residuals, raw solver flags, iterations/evaluations, all attempts and complete source material state.",
+   "dtype": "mapping",
+   "name": "result",
+   "required": true,
+   "shape": "mapping of MATLAB-shape arrays",
+   "units": "mixed SI and dimensionless as described"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_spectrum",
+   "signature": "solve_fluid_bonk(jcase=1, omegas=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_fluid_bonk",
+   "symbol": "solve_fluid_bonk"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Compose complete BONK cases and ordered root searches with explicit verified-root and terminal-state diagnostics.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-waves",
+  "fluidbw"
+ ],
+ "title": {
+  "en": "Corrected BONK bounded root search",
+  "zh": "修正的 BONK 有界根搜索"
+ },
+ "verification": {
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "Example execution requires Linux amd64 with GNU Octave 7.3.0; it was not run on this macOS host."
+  ],
+  "scope": [
+   "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
+   "Original solver tolerances; explicit bounded attempts and root verification."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fluid_spectrum_full.py"
+  ]
+ },
+ "version": {
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.fluid-case-state"
+   },
+   {
+    "asset_id": "scirel.kinetic.fluid-dispersion-response"
+   }
+  ],
+  "implementation_version": "0.1.0.dev11"
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
+}

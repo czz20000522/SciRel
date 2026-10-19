@@ -271,7 +271,7 @@
     "asset_id": "scirel.kinetic.species-equilibrium-scales"
    },
    {
-    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw"
+    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid"
    },
    {
     "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark"
@@ -288,7 +288,7 @@
    "Direct graph composition and bounded source numerical cases."
   ],
   "tests": [
-   "tests/graph_contracts/test_fluidbw_r43_graphs.py"
+   "tests/graph_contracts/test_fluid_spectrum_r43_graphs.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [
@@ -389,7 +389,7 @@
      "lmx",
      "tensor_convention"
     ],
-    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw"
+    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid"
    },
    {
     "id": "kinetic_dispersion_ronnmark",

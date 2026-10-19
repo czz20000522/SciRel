@@ -1,6 +1,6 @@
 """Direct contract tests for the r64 convergence/accumulation family:
 ``evaluate_neutral_generation_stopping``, ``update_neutral_generation_accumulation``,
-``evaluate_neutral_outer_seed_convergence``, ``evaluate_kn1d_outer_convergence``.
+``evaluate_neutral_outer_seed_convergence``, ``evaluate_outer_convergence``.
 
 The saved KN1DPy arithmetic is retained on bounded finite inputs. SciRel
 also validates control types, derived finiteness and caller-owned state.
@@ -14,7 +14,7 @@ from scirel.kinetic import (
     evaluate_neutral_generation_stopping,
     update_neutral_generation_accumulation,
     evaluate_neutral_outer_seed_convergence,
-    evaluate_kn1d_outer_convergence,
+    evaluate_outer_convergence,
 )
 
 
@@ -102,15 +102,15 @@ def test_outer_seed_convergence_returns_dict_with_reentry_flag():
     assert result4["should_reiterate"] is True
 
 
-def test_kn1d_outer_convergence_returns_dict_with_reentry_flag():
+def test_outer_convergence_returns_dict_with_reentry_flag():
     prev = np.array([100.0])
     curr = np.array([100.05])
-    result = evaluate_kn1d_outer_convergence(prev, curr, truncate=0.1)
+    result = evaluate_outer_convergence(prev, curr, truncate=0.1)
     assert set(result) == {"seed_error", "reentry_threshold", "should_reiterate", "reason"}
     assert result["should_reiterate"] is False
     assert result["reentry_threshold"] == 0.1
     curr2 = np.array([120.0])
-    result2 = evaluate_kn1d_outer_convergence(prev, curr2, truncate=0.1)
+    result2 = evaluate_outer_convergence(prev, curr2, truncate=0.1)
     assert result2["should_reiterate"] is True
 
 def test_outer_seed_uses_ratio_of_max_not_per_node():
@@ -201,7 +201,7 @@ def test_accumulation_rejects_coercion_and_nonfinite_total():
 
 
 @pytest.mark.parametrize(
-    "relation", [evaluate_neutral_outer_seed_convergence, evaluate_kn1d_outer_convergence],
+    "relation", [evaluate_neutral_outer_seed_convergence, evaluate_outer_convergence],
 )
 def test_outer_relations_reject_coercion_and_nonfinite_ratio(relation):
     with pytest.raises(ValueError, match="truncate"):

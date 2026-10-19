@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.compute-equilibrium",
-   "source_sha256": "cbd4f22566894f8b4a79576a41a253c63e310ee90d28ca63686dddd8d4204f61",
+   "source_sha256": "2379ad598382c4096e74f537f256f25d46b9a8d5e43dcdc7db9cc045a6633f07",
    "summary": "在给定真空磁通与 Green 矩阵下执行有界轴对称压力—电流反馈，并返回显式终态。",
    "definition": "压力闭合为 j_phi=R dP/dpsi，其中 psi=R A_phi。更新残差为 ||psi_new-psi_old||_2/abs(edge_new)。闭合残差为 ||I_new-I_target(psi_new,新拟合)||_2/||I_target||_2：目标为零且误差为零时取零；目标为零但电流非零时残差为无穷，并给出非有限终态。只有两个残差同时不超过 tol 才算收敛。状态只在本次调用内有效；依次更新拟合导数、裁剪、松弛后的电流、Green 收缩、新磁通、边界/拟合及两个残差，并在收敛、状态无效或达到 maxiter 时停止。",
    "model": "基于压力—半径反馈，使用 InterpolatedUnivariateSpline 和调用者提供的 Green 矩阵。",
@@ -146,10 +146,10 @@
      "升序/降序成对非零 G 压力反馈，以及独立的导数/电流闭合。"
     ],
     "tests": [
-     "tests/pleiades/equilibrium/test_equilibrium_proposals.py",
-     "tests/pleiades/equilibrium/test_equilibrium_boundaries.py",
-     "tests/pleiades/equilibrium/test_equilibrium_governing_residual.py",
-     "tests/pleiades/equilibrium/test_descending_pressure_equilibrium.py",
+     "tests/domain_contracts/equilibrium/test_equilibrium_proposals.py",
+     "tests/domain_contracts/equilibrium/test_equilibrium_boundaries.py",
+     "tests/domain_contracts/equilibrium/test_equilibrium_governing_residual.py",
+     "tests/domain_contracts/equilibrium/test_descending_pressure_equilibrium.py",
      "tests/operator_contracts/test_legacy_six_absorption.py"
     ],
     "evidence_ceiling": "仅限有界数值合同；不构成科学批准。",

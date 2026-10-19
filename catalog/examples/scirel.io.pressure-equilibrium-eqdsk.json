@@ -2,8 +2,8 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.io.pressure-equilibrium-eqdsk",
  "title": {
-  "en": "Converged pressure equilibrium exchange",
-  "zh": "收敛压力平衡状态的交换文件"
+  "en": "EQDSK mutable wrapper",
+  "zh": "EQDSK 可变映射封装"
  },
  "summary": "将真实收敛的压力反馈终态写入明确赋予SI压力语义的扩展EQDSK格式，拒绝未收敛结果。",
  "taxonomy": [
@@ -123,19 +123,19 @@
     "asset_id": "scirel.equilibrium.compute-equilibrium"
    },
    {
-    "asset_id": "scirel.io.write-pleiades-eqdsk-legacy-raw"
+    "asset_id": "scirel.io.write-eqdsk-legacy-raw"
    },
    {
-    "asset_id": "scirel.io.write-pleiades-eqdsk"
+    "asset_id": "scirel.io.write-eqdsk"
    },
    {
-    "asset_id": "scirel.io.read-pleiades-eqdsk"
+    "asset_id": "scirel.io.read-eqdsk"
    }
   ]
  },
  "example": {
   "description": "Write a converged zero-Green pressure equilibrium with explicit SI pressure semantics, read it back, and compare the pressure profile to the analytic polynomial.",
-  "code": "import tempfile\nfrom pathlib import Path\nimport numpy as np\nfrom scirel.equilibrium import compute_equilibrium\nfrom scirel.io import write_pressure_equilibrium_eqdsk, read_pleiades_eqdsk\nR,Z=np.meshgrid(np.linspace(0,1.5,13),np.linspace(-1,1,11))\nP=lambda r: (1-r*r)**2 if r<1 else 0.\nresult=compute_equilibrium(R,Z,P,R*R/2,np.zeros((R.size,R.size)))\nwith tempfile.TemporaryDirectory() as d:\n    path=Path(d)/'pressure.eqdsk'\n    axis=write_pressure_equilibrium_eqdsk(R,Z,result,path,'pressure')\n    data=read_pleiades_eqdsk(path)\n    np.testing.assert_allclose(data['p_flux'],(1-2*axis)**2,rtol=2e-8,atol=1e-12)",
+  "code": "import tempfile\nfrom pathlib import Path\nimport numpy as np\nfrom scirel.equilibrium import compute_equilibrium\nfrom scirel.io import write_pressure_equilibrium_eqdsk, read_eqdsk\nR,Z=np.meshgrid(np.linspace(0,1.5,13),np.linspace(-1,1,11))\nP=lambda r: (1-r*r)**2 if r<1 else 0.\nresult=compute_equilibrium(R,Z,P,R*R/2,np.zeros((R.size,R.size)))\nwith tempfile.TemporaryDirectory() as d:\n    path=Path(d)/'pressure.eqdsk'\n    axis=write_pressure_equilibrium_eqdsk(R,Z,result,path,'pressure')\n    data=read_eqdsk(path)\n    np.testing.assert_allclose(data['p_flux'],(1-2*axis)**2,rtol=2e-8,atol=1e-12)",
   "expected": "Readback p_flux matches (1-2*axis)**2 within the declared tolerance; this fixture does not validate a nonzero-Green physical equilibrium."
  },
  "verification": {
@@ -145,7 +145,7 @@
    "完整原网格BRB/WHAM非零Green终态及安装消费按精确对照值校验。"
   ],
   "tests": [
-   "tests/pleiades/test_pressure_eqdsk.py"
+   "tests/domain_contracts/test_pressure_eqdsk.py"
   ],
   "evidence_ceiling": "具名离散终态和格式组合，不给连续力平衡、实验或标准协议等价资格。",
   "known_limitations": [

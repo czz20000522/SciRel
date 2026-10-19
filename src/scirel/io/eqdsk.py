@@ -1,6 +1,6 @@
-"""Read and write the Pleiades extended EQDSK exchange dialect.
+"""Read and write the extended extended EQDSK exchange dialect.
 
-This module intentionally names the retained Pleiades dialect rather than
+This module intentionally names the retained extended dialect rather than
 calling it standard GEQDSK.  The dialect has a 48-character title,
 four integer header fields (``cursign, nnr, nnz, nnv``), five profiles of
 length ``nnv``, a C-order ``(nnz, nnr)`` psi grid, and one combined limiter /
@@ -20,7 +20,7 @@ import numpy as np
 
 from scirel._optional import import_optional_module
 
-DIALECT = "pleiades-legacy-extended"
+DIALECT = "extended-legacy"
 
 # Keep the implementation module's public surface explicit so the catalog's
 # ``public_api.python`` records can be checked without relying on the package
@@ -30,10 +30,9 @@ __all__ = [
     "EQDSK",
     "EQDSKFormatError",
     "read_eqdsk",
-    "read_pleiades_eqdsk",
-    "write_eqdsk_fromdict",
-    "write_pleiades_eqdsk",
-    "write_pleiades_eqdsk_legacy_raw",
+    "read_eqdsk",
+        "write_eqdsk",
+    "write_eqdsk_legacy_raw",
     "write_pressure_equilibrium_eqdsk",
     "write_eqdsk",
 ]
@@ -47,7 +46,7 @@ _PROFILE_KEYS = ("tor_flux", "p_flux", "rbphi_flux", "pprime_flux", "q_flux")
 
 
 class EQDSKFormatError(ValueError):
-    """Raised when a Pleiades extended-dialect file violates its structure."""
+    """Raised when a extended-dialect file violates its structure."""
 
 
 def _float_fields(line: str, *, fixed: bool = False) -> list[float]:
@@ -137,8 +136,8 @@ def _scalar_records(lines: list[str]) -> tuple[np.ndarray, int]:
     return np.asarray(records, dtype=float).reshape(4, 5), 5
 
 
-def read_pleiades_eqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
-    """Read the Pleiades legacy extended EQDSK dialect.
+def read_eqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
+    """Read the extended legacy extended EQDSK dialect.
 
     ``strict=True`` rejects records after the declared coordinate section.
     ``strict=False`` permits such trailing records for compatibility; it still
@@ -263,7 +262,7 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
     title = title_value.ljust(48)
     result = dict(data)
     result.update(nnr=nnr, nnz=nnz, nnv=nnv, title=title)
-    # The retained Pleiades record stores only radial/span extents (rbox,
+    # The retained extended record stores only radial/span extents (rbox,
     # zbox).  Its reader therefore reconstructs R=linspace(0,rbox,nnr) and
     # Z=linspace(-zbox/2,zbox/2,nnz); an arbitrary radial origin cannot be
     # represented by this dialect.  Reject an attached solver grid that would
@@ -285,15 +284,15 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
                 not np.all(np.isfinite(R)) or not np.all(np.isfinite(Z)) or
                 not np.array_equal(R, expected_R) or not np.array_equal(Z, expected_Z)):
             raise EQDSKFormatError(
-                "R/Z grid is not representable: Pleiades dialect fixes R origin at 0 and Z at +/-zbox/2"
+                "R/Z grid is not representable: extended dialect fixes R origin at 0 and Z at +/-zbox/2"
             )
     # Also reject explicit origin metadata rather than silently discarding it.
     # These keys are accepted only as a caller-side guard; they are not added
     # to the legacy record because no origin field exists in the dialect.
     if "r_origin" in data and _finite_float(data["r_origin"], "r_origin") != 0.0:
-        raise EQDSKFormatError("r_origin is not representable: Pleiades dialect fixes R origin at 0")
+        raise EQDSKFormatError("r_origin is not representable: extended dialect fixes R origin at 0")
     if "z_origin" in data and _finite_float(data["z_origin"], "z_origin") != 0.0:
-        raise EQDSKFormatError("z_origin is not representable: Pleiades dialect centers Z at 0")
+        raise EQDSKFormatError("z_origin is not representable: extended dialect centers Z at 0")
     for key in _PROFILE_KEYS:
         result[key] = _as_vector(data[key], key, nnv)
         if not np.issubdtype(result[key].dtype, np.number) or not np.all(np.isfinite(result[key])):
@@ -347,8 +346,8 @@ def _format_values(values: Any, key: str = "values") -> str:
     return "\n".join(rows)
 
 
-def write_pleiades_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
-    """Write a structurally validated Pleiades extended-dialect dictionary."""
+def write_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
+    """Write a structurally validated extended-dialect dictionary."""
     d = _validated(data)  # validate before opening/truncating the destination
     header = d["header_scalars"]
     lines = [d["title"] + "".join(f"{int(d[key]):4d}" for key in ("cursign", "nnr", "nnz", "nnv"))]
@@ -407,15 +406,15 @@ def _resample_contour(segment: np.ndarray, count: int, start: tuple[float, float
     return np.column_stack([np.interp(sample_s, cumulative, points[:, axis]) for axis in (0, 1)])
 
 
-def write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents,
+def write_eqdsk_legacy_raw(R, Z, psi, plas_currents,
                                     filename: str | Path, title: str) -> None:
-    """Write the contour-based raw Pleiades representation.
+    """Write the contour-based raw legacy representation.
 
     This explicit ``legacy_raw`` entry point selects the nearest ``(0.6, 0)``
     flux level, a 2% vessel offset, the longest contour and
     100-point limiter/vessel records.  It uses parametric arclength contour
     points so vertical/open and closed boundaries remain representable.  It
-    intentionally preserves the Pleiades grid-origin convention (R starts at
+    intentionally preserves the EQDSK grid-origin convention (R starts at
     zero and Z is centred at zero); callers needing another origin must choose
     a dialect that stores that field.
     """
@@ -438,7 +437,7 @@ def write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents,
         np.linspace(-data["zbox"] / 2.0, data["zbox"] / 2.0, R.shape[0]),
     )
     if not np.array_equal(R, expected_R) or not np.array_equal(Z, expected_Z):
-        raise EQDSKFormatError("R/Z grid is not representable: raw Pleiades dialect fixes R origin at 0 and Z at +/-zbox/2")
+        raise EQDSKFormatError("R/Z grid is not representable: raw extended dialect fixes R origin at 0 and Z at +/-zbox/2")
     nearest_r = int(np.argmin(np.abs(raxis - 0.6)))
     nearest_z = int(np.argmin(np.abs(zaxis - 0.0)))
     psi_lim = float(psi[nearest_z, nearest_r])
@@ -448,7 +447,7 @@ def write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents,
     plt = import_optional_module(
         "matplotlib.pyplot",
         extra="plot",
-        feature="the Pleiades legacy EQDSK writer",
+        feature="the extended legacy EQDSK writer",
     )
     fig, ax = plt.subplots()
     try:
@@ -486,12 +485,12 @@ def write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents,
     }
     for key in _PROFILE_KEYS:
         mapping[key] = np.zeros(nnv)
-    write_pleiades_eqdsk(mapping, filename)
+    write_eqdsk(mapping, filename)
 
 
 def write_pressure_equilibrium_eqdsk(R, Z, result, filename: str | Path,
                                      title: str) -> np.ndarray:
-    """Write a converged SI pressure-only result in the Pleiades dialect.
+    """Write a converged SI pressure-only result in the extended dialect.
 
     This successor explicitly assigns ``p_flux`` to pressure in Pa and
     ``pprime_flux`` to dP/dpsi in Pa/(Wb/rad); psi=R*A_phi and Ip is in A.
@@ -508,7 +507,7 @@ def write_pressure_equilibrium_eqdsk(R, Z, result, filename: str | Path,
     Nonconverged/partial results are refused before creating the destination.
     """
     from tempfile import TemporaryDirectory
-    from scirel.equilibrium.pleiades_feedback import EquilibriumResult
+    from scirel.equilibrium.equilibrium_state import EquilibriumResult
     if not isinstance(result, EquilibriumResult) or result.status != 'converged':
         raise ValueError('a converged EquilibriumResult is required')
     if (result.p_psifit is None or
@@ -522,9 +521,9 @@ def write_pressure_equilibrium_eqdsk(R, Z, result, filename: str | Path,
         raise ValueError('pressure exchange requires an exact Z=0 midplane')
     with TemporaryDirectory(prefix='scirel-pressure-eqdsk-') as temporary:
         raw = Path(temporary) / 'contours.eqdsk'
-        write_pleiades_eqdsk_legacy_raw(R, Z, result.psi,
+        write_eqdsk_legacy_raw(R, Z, result.psi,
                                         result.plas_currents, raw, title)
-        mapping = read_pleiades_eqdsk(raw)
+        mapping = read_eqdsk(raw)
     # Use unrounded terminal psi to construct the producer's profile; grid
     # origins were checked above by the retained dialect writer.
     midplane = int(np.flatnonzero(np.asarray(Z)[:, 0] == 0.)[0])
@@ -537,21 +536,16 @@ def write_pressure_equilibrium_eqdsk(R, Z, result, filename: str | Path,
     mapping['psi_lim'] = limiter_psi
     mapping['p_flux'] = result.p_psifit(profile_psi)
     mapping['pprime_flux'] = result.p_psifit.derivative()(profile_psi)
-    write_pleiades_eqdsk(mapping, filename)
+    write_eqdsk(mapping, filename)
     return profile_psi
 
 
-# Keep the historical short spelling as an explicit file-format entry point.
-write_eqdsk = write_pleiades_eqdsk_legacy_raw
 
 
-# The aliases preserve the established file-format vocabulary.
-read_eqdsk = read_pleiades_eqdsk
-write_eqdsk_fromdict = write_pleiades_eqdsk
 
 
 class EQDSK(dict):
-    """Mutable dictionary wrapper for the Pleiades extended EQDSK dialect."""
+    """Mutable dictionary wrapper for the extended extended EQDSK dialect."""
 
     dialect = DIALECT
 
@@ -561,9 +555,9 @@ class EQDSK(dict):
             self.read_eqdsk(fname)
 
     def write_eqdsk(self, fname: str | Path) -> None:
-        write_pleiades_eqdsk(self, fname)
+        write_eqdsk(self, fname)
 
     def read_eqdsk(self, fname: str | Path) -> None:
-        parsed = read_pleiades_eqdsk(fname)
+        parsed = read_eqdsk(fname)
         self.clear()
         self.update(parsed)

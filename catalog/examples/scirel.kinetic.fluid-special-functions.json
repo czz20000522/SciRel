@@ -1,0 +1,133 @@
+{
+ "aliases": [
+  "evaluate_fluid_special"
+ ],
+ "applicability": {
+  "excluded": [
+   "No execution or fidelity claim for the Taylor/asymptotic/integral selector.",
+   "No certified entire-complex-plane precision claim."
+  ],
+  "preconditions": [
+   "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 GNU Octave 7.3.0 remains required.",
+   "Finite integer harmonic orders for Gamma; parameter is required for Gamma and R, ignored for Z."
+  ],
+  "supported": [
+   "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
+   "Z(z) Weideman64, with erfcx on the imaginary axis; explicit overflow failure.",
+   "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
+  ]
+ },
+ "asset_id": "scirel.kinetic.fluid-special-functions",
+ "example": {
+  "code": "from scirel.kinetic.fluid_spectrum import evaluate_fluid_special\nvalue=evaluate_fluid_special('RTAY',2,0)\n",
+  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native runtime boundary and is reported as NOT_RUN on macOS.",
+  "expected": "NOT_RUN on this macOS host: the call reaches the native runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
+  "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
+  "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
+  "runtime_failure": "Raises RuntimeError before numerical evaluation unless the pinned Linux amd64 and GNU Octave 7.3.0 runtime is available; native errors propagate and no fallback is selected."
+ },
+ "identity": {
+  "assumptions": [
+   "No flow or temperature anisotropy.",
+   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+  ],
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+  "definition": "RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]. R=2Y/b sum_n>=1 n² Gamma_n/(Y²−n²); true poles fail.",
+  "direction": "forward",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "relation": "scaled Bessel Gamma, plasma Z and R response"
+ },
+ "inputs": [
+  {
+   "constraints": "Gamman, Gammapn, zfun, RTAY, RASY, RINT or RYLA.",
+   "description": "Scientific method selector.",
+   "dtype": "string",
+   "name": "method",
+   "required": true,
+   "shape": "string",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Integer real Gamma order; finite other arguments.",
+   "description": "Integer Bessel order, Z argument or R argument Y.",
+   "dtype": "real/complex",
+   "name": "x",
+   "required": true,
+   "shape": "array for Gamma/Z; scalar for R",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Required for Gamma/R; finite.",
+   "default": null,
+   "description": "Bessel b or R b; unused for Z.",
+   "dtype": "real/complex or None",
+   "name": "parameter",
+   "required": false,
+   "shape": "array for Gamma; scalar for R; None for Z",
+   "units": "dimensionless"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "Finite or explicit precision/pole failure.",
+   "description": "Gamma/Gamma derivative or Z array, or full R response matrix.",
+   "dtype": "complex numeric array",
+   "name": "value",
+   "required": true,
+   "shape": "broadcast input shape or 2x2",
+   "units": "dimensionless"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_spectrum",
+   "signature": "evaluate_fluid_special(method, x, parameter=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_fluid_special",
+   "symbol": "evaluate_fluid_special"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Evaluate the complete Gamma, Z and full R response contracts; four historical R method names share the corrected harmonic evaluator.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-waves",
+  "fluidbw"
+ ],
+ "title": {
+  "en": "Special-function responses",
+  "zh": "特殊函数响应"
+ },
+ "verification": {
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "Example execution requires Linux amd64 with GNU Octave 7.3.0; it was not run on this macOS host."
+  ],
+  "scope": [
+   "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
+   "Z(z) Weideman64, with erfcx on the imaginary axis; explicit overflow failure.",
+   "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fluid_spectrum_full.py"
+  ]
+ },
+ "version": {
+  "dependencies": [],
+  "implementation_version": "0.1.0.dev11"
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
+}

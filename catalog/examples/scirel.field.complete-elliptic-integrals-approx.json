@@ -2,7 +2,7 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.field.complete-elliptic-integrals-approx",
  "title": {
-  "en": "GSEQ complete elliptic integrals K(m), E(m) approximation",
+  "en": "Complete elliptic integrals K(m), E(m) approximation",
   "zh": "完全椭圆积分近似"
  },
  "summary": "Evaluate the polynomial-logarithmic approximations to complete K(m) and E(m) on arrays with 0<=m<=1.",
@@ -102,7 +102,7 @@
    "Sampled accuracy against scipy's ellipk/ellipe."
   ],
   "tests": [
-   "tests/operator_contracts/test_filament_coil_green_gseq.py",
+   "tests/operator_contracts/test_filament_coil_green.py",
    "tests/operator_contracts/test_legacy_admission_regressions.py"
   ],
   "evidence_ceiling": "The tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. The analytic endpoint identities K(1)=+Inf and E(1)=1 hold elementwise, independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. The endpoint limit is applied per element, so a mixed array does not inherit a batch-level sentinel. This is not all-input parity or a continuous approximation-error bound.",

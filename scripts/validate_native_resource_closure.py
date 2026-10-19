@@ -52,10 +52,10 @@ def _matches(pattern: str, relative: str) -> bool:
 def _source_resources(root: Path) -> set[str]:
     kinetic = root / "src/scirel/kinetic"
     resources: set[str] = set()
-    for path in (kinetic / "_fluidbw_native").rglob("*"):
+    for path in (kinetic / "_fluid_native").rglob("*"):
         if path.is_file() and path.suffix == ".m":
             resources.add(path.relative_to(kinetic).as_posix())
-    for path in (kinetic / "pdrk/_native").rglob("*"):
+    for path in (kinetic / "dispersion/_native").rglob("*"):
         if path.is_file():
             resources.add(path.relative_to(kinetic).as_posix())
     return resources
@@ -133,7 +133,7 @@ def _validate_bindings(manifest: dict[str, Any], by_group: dict[str, set[str]]) 
         if package_parts[:2] != ["scirel", "kinetic"]:
             raise ValueError(f"native closure package-data binding {index} has an invalid package")
         # The manifest paths are relative to ``src/scirel/kinetic``.  Thus
-        # ``scirel.kinetic`` has an empty prefix and ``scirel.kinetic.pdrk``
+        # ``scirel.kinetic`` has an empty prefix and ``scirel.kinetic.dispersion``
         # has the single prefix ``pdrk``.
         source_prefix = "/".join(package_parts[2:])
         for group_id in group_ids:
@@ -218,8 +218,8 @@ def _validate_wheel(
     actual_members = {
         name
         for name in names
-        if name.startswith("scirel/kinetic/_fluidbw_native/")
-        or name.startswith("scirel/kinetic/pdrk/_native/")
+        if name.startswith("scirel/kinetic/_fluid_native/")
+        or name.startswith("scirel/kinetic/dispersion/_native/")
     }
     if actual_members != expected_members:
         missing = sorted(expected_members - actual_members)

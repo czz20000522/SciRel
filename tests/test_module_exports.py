@@ -43,9 +43,9 @@ def test_eqdsk_catalog_callables_are_explicit_module_exports() -> None:
 
     assert expected == {
         "EQDSK",
-        "read_pleiades_eqdsk",
-        "write_pleiades_eqdsk",
-        "write_pleiades_eqdsk_legacy_raw",
+        "read_eqdsk",
+        "write_eqdsk",
+        "write_eqdsk_legacy_raw",
     }
     assert expected <= set(module.__all__)
     namespace: dict[str, object] = {}
@@ -55,7 +55,7 @@ def test_eqdsk_catalog_callables_are_explicit_module_exports() -> None:
 
 def test_public_operator_modules_do_not_leak_support_names() -> None:
     expected = {
-        "scirel.equilibrium.pleiades_feedback": {"EquilibriumResult", "compute_equilibrium"},
+        "scirel.equilibrium.equilibrium_state": {"EquilibriumResult", "compute_equilibrium"},
         "scirel.physics.thermal_energy": {"calculate_stored_thermal_energy"},
         "scirel.source.gaussian": {"gaussian_profile"},
         "scirel.source.exponential": {"exponential_profile"},

@@ -6,7 +6,7 @@ from collections.abc import Mapping
 import numpy as np
 
 from scirel._validation import finite_scalar, integer_scalar
-from .pleiades_feedback import compute_equilibrium
+from .equilibrium_state import compute_equilibrium
 from .pressure_flux_state import build_pressure_flux_state
 
 __all__ = ["solve_isotropic_pressure_flux"]

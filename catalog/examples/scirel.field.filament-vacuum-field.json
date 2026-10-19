@@ -137,7 +137,7 @@
   ],
   "tests": [
    "tests/operator_contracts/test_filament_vacuum_field.py",
-   "tests/operator_contracts/test_pleiades_field_green_correction.py"
+   "tests/operator_contracts/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Direct regressions cover selected ideal-filament superposition, axial field, radial quadrature and a fine-grid comparison with the circular-filament psi kernel after subtracting the first-radius reference. They do not establish arbitrary-grid quadrature accuracy, complete source-project closure or expert approval.",
   "known_limitations": [

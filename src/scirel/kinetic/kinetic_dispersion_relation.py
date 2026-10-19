@@ -84,14 +84,14 @@ def evaluate_kinetic_dispersion_relation(
     # These are graph dependencies, not namespace dependencies.  Load them only at the
     # public call boundary after the shared equilibrium and scalar checks have succeeded.
     from .kinetic_dispersion_ronnmark import evaluate_kinetic_dispersion_ronnmark
-    from .kinetic_dispersion_sum_fluidbw import evaluate_fluidbw_kinetic_dispersion_sum
+    from .kinetic_dispersion_sum_fluid import evaluate_fluid_kinetic_dispersion_sum
 
     omega = probe_frequency(omega_frac=omega_frac, wn=scales["wn"])["omega"]
     kx = probe_wavenumber(kx_frac=kx_frac, kn=scales["kn"])["kx"]
     f = omega_to_frequency(omega=omega)["f"]
     shared = dict(B0=B0, qs=qs, ms=ms, ns0=scales["ns0"], Ts0=scales["Ts0"],
                   f=f, kz=kz, kx=kx)
-    summed = evaluate_fluidbw_kinetic_dispersion_sum(**shared, lmx=lmx)
+    summed = evaluate_fluid_kinetic_dispersion_sum(**shared, lmx=lmx)
     ronnmark = evaluate_kinetic_dispersion_ronnmark(**shared)
     return {
         "scales": scales,

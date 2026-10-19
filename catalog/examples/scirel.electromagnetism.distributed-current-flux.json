@@ -116,7 +116,7 @@
    "真实netCDF4输入，独立生成两层A/cm²电流、转置命名维度及单位拒绝；真实离散磁通消费以独立角积分比较，不用预存答案。"
   ],
   "tests": [
-   "tests/pleiades/equilibrium/test_distributed_current.py"
+   "tests/domain_contracts/equilibrium/test_distributed_current.py"
   ],
   "evidence_ceiling": "Author validation of named discrete fixtures and declared failure boundaries, without scientific or human approval.",
   "known_limitations": [

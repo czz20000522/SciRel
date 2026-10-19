@@ -14,8 +14,8 @@ SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
 FAST_ION_ASSET_ID = "scirel.plasma.fast-ion-heating"
 PDRF_ASSET_IDS = {
-    "scirel.kinetic.pdrf-plasma-state", "scirel.kinetic.pdrf-temporal-matrix",
-    "scirel.kinetic.pdrf-temporal-spectrum", "scirel.kinetic.pdrf-dispersion-scan",
+    "scirel.kinetic.spectral-plasma-state", "scirel.kinetic.spectral-temporal-matrix",
+    "scirel.kinetic.spectral-temporal-spectrum", "scirel.kinetic.spectral-dispersion-scan",
 }
 sys.path.insert(0, str(SCRIPTS))
 

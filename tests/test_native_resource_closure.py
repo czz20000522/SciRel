@@ -22,19 +22,19 @@ def test_native_resource_closure_covers_source_and_declared_package_data() -> No
     result = validate(ROOT)
     assert result["resource_count"] == 117
     assert result["groups"] == {
-        "fluidbw-octave": 36,
-        "pdrk-current-core": 37,
-        "pdrk-current-fixtures": 18,
-        "pdrk-rational-legacy": 15,
-        "pdrk-examples": 8,
-        "pdrk-finiteN": 2,
-        "pdrk-shared-plot-helper": 1,
+        "fluid-spectrum-octave": 36,
+        "dispersion-current-core": 37,
+        "dispersion-current-fixtures": 18,
+        "dispersion-rational-legacy": 15,
+        "dispersion-examples": 8,
+        "dispersion-finiteN": 2,
+        "dispersion-shared-plot-helper": 1,
     }
     manifest = json.loads((ROOT / "tools/wheel/native-resource-closure.json").read_text())
     pdrk_binding = next(
         binding
         for binding in manifest["package_data_bindings"]
-        if binding["package"] == "scirel.kinetic.pdrk"
+        if binding["package"] == "scirel.kinetic.dispersion"
     )
     assert pdrk_binding["patterns"] == [
         "_native/scirel_prepare_plot.m",
@@ -71,7 +71,7 @@ def test_native_resource_closure_checks_exact_wheel_members(tmp_path: Path) -> N
     assert validate(ROOT, wheel=wheel)["wheel_checked"] is True
 
     with zipfile.ZipFile(wheel, "a") as archive:
-        archive.writestr("scirel/kinetic/pdrk/_native/extra.m", b"unexpected")
+        archive.writestr("scirel/kinetic/dispersion/_native/extra.m", b"unexpected")
     with pytest.raises(ValueError, match="wheel native resource members differ"):
         validate(ROOT, wheel=wheel)
 
@@ -90,8 +90,8 @@ def test_native_resource_closure_rejects_package_data_drift(tmp_path: Path) -> N
     manifest = json.loads((ROOT / "tools/wheel/native-resource-closure.json").read_text())
     (tmp_path / "pyproject.toml").write_text(
         """[tool.setuptools.package-data]\n"""
-        """\"scirel.kinetic\" = [\"_fluidbw_native/*.m\"]\n"""
-        """\"scirel.kinetic.pdrk\" = [\"_native/incorrect/**/*\"]\n""",
+        """\"scirel.kinetic\" = [\"_fluid_native/*.m\"]\n"""
+        """\"scirel.kinetic.dispersion\" = [\"_native/incorrect/**/*\"]\n""",
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="package-data differs"):

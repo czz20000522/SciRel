@@ -1,0 +1,121 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.io.read-eqdsk",
+ "title": {
+  "en": "Read extended EQDSK",
+  "zh": "读取扩展 EQDSK"
+ },
+ "summary": "Parse one validated extended EQDSK text file.",
+ "taxonomy": [
+  "io",
+  "eqdsk",
+  "serialization"
+ ],
+ "aliases": [
+  "read_eqdsk"
+ ],
+ "identity": {
+  "relation": "Deterministic text serialization/deserialization of extended EQDSK records",
+  "direction": "extended EQDSK text and validated dictionary/class state",
+  "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs",
+  "model": "Extended EQDSK text dialect with fixed-width record blocks and the declared grid-origin convention.",
+  "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2)",
+  "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
+  "boundary": "Unlike official EFIT G-EQDSK: this dialect has 48-character title + four ints, nnr/nnz/nnv, and no magnetic-axis scalar contract.",
+  "assumptions": [
+   "Exactly declared record dimensions",
+   "Finite real values and fixed-width coordinate fields",
+   "This is not standard EFIT gEQDSK"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "filename",
+   "description": "EQDSK path",
+   "units": "n/a",
+   "shape": "path",
+   "dtype": "filesystem path",
+   "required": true,
+   "constraints": "Readable text file"
+  },
+  {
+   "name": "strict",
+   "description": "Reject trailing records after declared section",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "False allows trailing only, not missing fields",
+   "default": true
+  }
+ ],
+ "outputs": [
+  {
+   "name": "mapping",
+   "description": "Parsed mapping including R,Z",
+   "units": "source-defined",
+   "shape": "dict",
+   "dtype": "dict[str,Any]",
+   "required": true,
+   "constraints": "Finite validated records"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Extended EQDSK dialect records"
+  ],
+  "supported": [
+   "Roundtrip of finite validated dictionaries",
+   "Packed negative fixed-width coordinates",
+   "Strict/non-strict trailing record policy",
+   "Class read/write wrapper"
+  ],
+  "excluded": [
+   "Standard EFIT gEQDSK semantics",
+   "Units or COCOS assignment",
+   "Raw contour or spline writing",
+   "Arbitrary malformed truncation recovery"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
+  "runtime_failure": "Filesystem errors propagate; parse errors are EQDSKFormatError.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Class wrapper preserves previous mapping when a read fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.io.eqdsk",
+   "symbol": "read_eqdsk",
+   "signature": "read_eqdsk(filename: 'str | Path', *, strict: 'bool' = True) -> 'dict[str, Any]'",
+   "canonical_module": "scirel.io",
+   "canonical_symbol": "read_eqdsk"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Build a minimal fixed-width extended EQDSK text file and read its 2-by-2 psi records.",
+  "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.io.eqdsk import read_eqdsk\nlines = ['MANUAL EXAMPLE'.ljust(48) + '   1   2   2   2']\nfor values in [[1., 2., 0., 0., 0.]] + [[0.]*5]*3 + [[1., 2.]]*4 + [[1., 2., 3., 4.], [0., 0.]]:\n    lines.append(''.join('%16.9E' % value for value in values))\nlines.append('    0    0')\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    path.write_text('\\n'.join(lines)+'\\n')\n    parsed = read_eqdsk(path)\n    assert parsed['psi'].tolist() == [[1., 2.], [3., 4.]]",
+  "expected": "The parser returns psi=[[1.0, 2.0], [3.0, 4.0]] in declared order."
+ },
+ "verification": {
+  "scope": [
+   "Roundtrip, lexical fixed-width, malformed input and class-state tests"
+  ],
+  "tests": [
+   "tests/domain_contracts/test_eqdsk.py"
+  ],
+  "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
+  "known_limitations": [
+   "This reader does not select raw contours or write them; that writer is a separate contract.",
+   "Not standard EFIT gEQDSK",
+   "No units/COCOS"
+  ]
+ },
+ "references": [
+  "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
+ ]
+}

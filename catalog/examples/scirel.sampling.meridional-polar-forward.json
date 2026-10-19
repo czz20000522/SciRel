@@ -119,7 +119,7 @@
    "Origin/nonfinite rejection"
   ],
   "tests": [
-   "tests/pleiades/geometry/test_polar_projection_repair.py"
+   "tests/domain_contracts/geometry/test_polar_projection_repair.py"
   ],
   "evidence_ceiling": "Coordinate/vector identity; not physical field qualification.",
   "known_limitations": [

@@ -106,7 +106,7 @@
    "Axis/singularity/complex failure semantics"
   ],
   "tests": [
-   "tests/pleiades/geometry/test_green_reflection_repair.py"
+   "tests/domain_contracts/geometry/test_green_reflection_repair.py"
   ],
   "evidence_ceiling": "Independent numerical relation/invariants in named cases; no general extreme-scale or conductor model qualification.",
   "known_limitations": [

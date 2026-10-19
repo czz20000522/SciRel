@@ -300,7 +300,7 @@
    "Declared source-method numerical case and relevant failure boundaries."
   ],
   "tests": [
-   "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+   "tests/operator_contracts/test_fluid_spectrum_r43_kinetic.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

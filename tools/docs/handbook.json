@@ -285,7 +285,7 @@
           "introduction": "对均匀磁化 Maxwellian 物种组装张量或比较两个色散计算路径。各入口对复波数、零波数、近零替换和谐波数的支持不同；有限和计算不包含自动截断收敛验证。",
           "assets": [
             "scirel.kinetic.kinetic-dispersion-sum",
-            "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
+            "scirel.kinetic.kinetic-dispersion-sum-fluid",
             "scirel.kinetic.kinetic-dispersion-ronnmark",
             "scirel.kinetic.dielectric-tensor-diagnostic",
             "scirel.kinetic.kinetic-dispersion-relation"
@@ -315,10 +315,10 @@
           "title": "构造多流体时间色散与扫描任务图",
           "introduction": "先由物种和单位建立有效多流体等离子体状态，再构造局部 Maxwell 时间矩阵与条件化本征谱，最后按有界网格执行扫描。相对论惯性、碰撞、各向异性镜修正、残差门禁和扫描顺序均属于冻结合同；扫描成功不替代外部物理验证。",
           "assets": [
-            "scirel.kinetic.pdrf-plasma-state",
-            "scirel.kinetic.pdrf-temporal-matrix",
-            "scirel.kinetic.pdrf-temporal-spectrum",
-            "scirel.kinetic.pdrf-dispersion-scan"
+            "scirel.kinetic.spectral-plasma-state",
+            "scirel.kinetic.spectral-temporal-matrix",
+            "scirel.kinetic.spectral-temporal-spectrum",
+            "scirel.kinetic.spectral-dispersion-scan"
           ]
         },
         {
@@ -329,7 +329,7 @@
             "scirel.kinetic.gpdf-cauchy-transform",
             "scirel.kinetic.maxwellian-electrostatic-mode",
             "scirel.kinetic.maxwellian-electrostatic-solver",
-            "scirel.kinetic.pdrk-faddeeva-finite-order"
+            "scirel.kinetic.faddeeva-finite-order"
           ]
         },
         {
@@ -386,9 +386,9 @@
           "title": "磁化组分与扫描坐标",
           "introduction": "物种表与控制参数定义量纲、质量与场；损失锥分解和有符号波矢不应被隐式变换。",
           "assets": [
-            "scirel.kinetic.pdrk-species-equilibrium",
-            "scirel.kinetic.pdrk-wavevector-coordinates",
-            "scirel.kinetic.pdrk-loss-cone-partition"
+            "scirel.kinetic.species-equilibrium",
+            "scirel.kinetic.wavevector-coordinates",
+            "scirel.kinetic.loss-cone-partition"
           ]
         },
         {
@@ -396,11 +396,11 @@
           "title": "电磁、静电本征关系与频谱",
           "introduction": "在给定谐波和极点阶数下组装矩阵、求频率并排序；有序扫描与完整流程入口共享显式科学端口。",
           "assets": [
-            "scirel.kinetic.pdrk-electromagnetic-eigenmatrix",
-            "scirel.kinetic.pdrk-electrostatic-eigenmatrix",
-            "scirel.kinetic.pdrk-frequency-eigensolve",
-            "scirel.kinetic.pdrk-spectral-scan-workflow",
-            "scirel.kinetic.pdrk-dispersion-workflow"
+            "scirel.kinetic.electromagnetic-eigenmatrix",
+            "scirel.kinetic.electrostatic-eigenmatrix",
+            "scirel.kinetic.frequency-eigensolve",
+            "scirel.kinetic.spectral-scan-workflow",
+            "scirel.kinetic.dispersion-workflow"
           ]
         },
         {
@@ -408,8 +408,8 @@
           "title": "平行传播的因果残差与根延续",
           "introduction": "因果色散残差用于给定分布和偏振；根延续保留种子、步进和失败状态。",
           "assets": [
-            "scirel.kinetic.pdrk-parallel-em-residual",
-            "scirel.kinetic.pdrk-parallel-em-continuation"
+            "scirel.kinetic.parallel-em-residual",
+            "scirel.kinetic.parallel-em-continuation"
           ]
         },
         {
@@ -417,12 +417,12 @@
           "title": "模态选择、极化与电磁场",
           "introduction": "明确选根规则，再重新求解和归一化模态场；增长率排序本身不能证明跨点同一物理分支。",
           "assets": [
-            "scirel.kinetic.pdrk-magnetized-mode-fields",
-            "scirel.kinetic.pdrk-polarization-workflow",
-            "scirel.kinetic.pdrk-selected-fields-workflow",
-            "scirel.kinetic.pdrk-seed-mode-selection",
-            "scirel.kinetic.pdrk-selected-dispersion-interpolation",
-            "scirel.kinetic.pdrk-preset-mode-selection"
+            "scirel.kinetic.magnetized-mode-fields",
+            "scirel.kinetic.polarization-workflow",
+            "scirel.kinetic.selected-fields-workflow",
+            "scirel.kinetic.seed-mode-selection",
+            "scirel.kinetic.selected-dispersion-interpolation",
+            "scirel.kinetic.preset-mode-selection"
           ]
         },
         {
@@ -430,12 +430,12 @@
           "title": "有理近似、极点与 Padé 构造",
           "introduction": "固定极点表与高精度生成是不同入口；系数、诊断网格和残差共同约束有限阶近似。",
           "assets": [
-            "scirel.kinetic.pdrk-rational-z-poles",
-            "scirel.kinetic.pdrk-rational-pole-table",
-            "scirel.kinetic.pdrk-rational-jpole-coefficients",
-            "scirel.kinetic.pdrk-rational-jpole-evaluate",
-            "scirel.kinetic.pdrk-rational-jpole-grid-coordinates",
-            "scirel.kinetic.pdrk-rational-jpole-generator"
+            "scirel.kinetic.rational-z-poles",
+            "scirel.kinetic.rational-pole-table",
+            "scirel.kinetic.rational-jpole-coefficients",
+            "scirel.kinetic.rational-jpole-evaluate",
+            "scirel.kinetic.rational-jpole-grid-coordinates",
+            "scirel.kinetic.rational-jpole-generator"
           ]
         },
         {
@@ -443,12 +443,12 @@
           "title": "有理动理学频率与有序扫描",
           "introduction": "从声明物种表恢复平衡尺度，构造模型专用矩阵，再执行带明确根/极点分类的有序频谱。",
           "assets": [
-            "scirel.kinetic.pdrk-rational-default-deck",
-            "scirel.kinetic.pdrk-rational-equilibrium",
-            "scirel.kinetic.pdrk-rational-em-coordinates",
-            "scirel.kinetic.pdrk-rational-point-matrix",
-            "scirel.kinetic.pdrk-rational-solve-matrix",
-            "scirel.kinetic.pdrk-rational-ordered-spectrum"
+            "scirel.kinetic.rational-default-deck",
+            "scirel.kinetic.rational-equilibrium",
+            "scirel.kinetic.rational-em-coordinates",
+            "scirel.kinetic.rational-point-matrix",
+            "scirel.kinetic.rational-solve-matrix",
+            "scirel.kinetic.rational-ordered-spectrum"
           ]
         },
         {
@@ -456,9 +456,9 @@
           "title": "物种输入、流体状态与阻尼约定",
           "introduction": "读取双组分输入或显式传入物种状态；零磁场各向异性必须有物理定义，不能任意补方向。",
           "assets": [
-            "scirel.kinetic.pdrk-fluid-deck",
-            "scirel.kinetic.pdrk-fluid-equilibrium",
-            "scirel.kinetic.pdrk-fluid-relative-rate-equilibrium"
+            "scirel.kinetic.multifluid-deck",
+            "scirel.kinetic.multifluid-equilibrium",
+            "scirel.kinetic.multifluid-relative-rate-equilibrium"
           ]
         },
         {
@@ -466,9 +466,9 @@
           "title": "广义本征频率与物理扫描",
           "introduction": "构造非恒等惯性矩阵的频率束，检查实际广义残差与分支，不以标准特征值替代广义问题。",
           "assets": [
-            "scirel.kinetic.pdrk-fluid-frequency-pencil",
-            "scirel.kinetic.pdrk-fluid-frequency-solve",
-            "scirel.kinetic.pdrk-fluid-scan"
+            "scirel.kinetic.multifluid-frequency-pencil",
+            "scirel.kinetic.multifluid-frequency-solve",
+            "scirel.kinetic.multifluid-scan"
           ]
         },
         {
@@ -476,13 +476,13 @@
           "title": "各向同性磁化等离子体的空间色散",
           "introduction": "从明确的组分状态和 SI 归一化出发，构造 Maxwell 响应、执行有界波矢搜索，或计算有限有理模型的完整矩阵谱。候选根须独立核验；有限谱和启发式候选不等于全部物理模态。原语言运行时与近似阶数分别限定计算范围。",
           "assets": [
-            "scirel.kinetic.fluidbw-case-state",
-            "scirel.kinetic.fluidbw-special-functions",
-            "scirel.kinetic.fluidbw-dispersion-response",
-            "scirel.kinetic.fluidbw-em-matrix",
-            "scirel.kinetic.fluidbw-bonk-search",
-            "scirel.kinetic.fluidbw-em-spectrum",
-            "scirel.kinetic.fluidbw-materials"
+            "scirel.kinetic.fluid-case-state",
+            "scirel.kinetic.fluid-special-functions",
+            "scirel.kinetic.fluid-dispersion-response",
+            "scirel.kinetic.fluid-em-matrix",
+            "scirel.kinetic.fluid-bonk-search",
+            "scirel.kinetic.fluid-em-spectrum",
+            "scirel.kinetic.fluid-materials"
           ]
         }
       ]
@@ -638,7 +638,7 @@
             "scirel.kinetic.generation-accumulation-update",
             "scirel.kinetic.neutral-generation-stopping",
             "scirel.kinetic.outer-seed-convergence",
-            "scirel.kinetic.kn1d-outer-convergence"
+            "scirel.kinetic.outer-convergence"
           ]
         },
         {
@@ -871,15 +871,15 @@
         "科学计算",
         "科学数据与可视化"
       ],
-      "introduction": "将计算状态与外部文本交换，并单独提供有限绘图片变换。Pleiades 扩展 EQDSK 有明确字段、单位和方言约定，不表示 EFIT／COCOS／GENRAY 兼容；绘图辅助属于非核心支持，不替代物理计算。",
+      "introduction": "将计算状态与外部文本交换，并单独提供有限绘图片变换。equilibrium 扩展 EQDSK 有明确字段、单位和方言约定，不表示 EFIT／COCOS／GENRAY 兼容；绘图辅助属于非核心支持，不替代物理计算。",
       "topics": [
         {
           "id": "eqdsk-mapping-and-text",
           "title": "读写扩展 EQDSK 映射",
           "introduction": "读取、写入及可变映射对象保留同一扩展方言的字段次序、尺寸和失败状态；写前校验与读失败保留旧映射必须分别核对。",
           "assets": [
-            "scirel.io.read-pleiades-eqdsk",
-            "scirel.io.write-pleiades-eqdsk",
+            "scirel.io.read-eqdsk",
+            "scirel.io.write-eqdsk",
             "scirel.io.eqdsk-class"
           ]
         },
@@ -888,7 +888,7 @@
           "title": "从实际磁通与压力终态导出交换文件",
           "introduction": "旧 raw 入口从网格、磁通和电流恢复轮廓写出约定；压力后继只接受真实收敛状态并写入明确压力剖面。文件不存二维 Jφ／P，也不重建未知 F 或 q。",
           "assets": [
-            "scirel.io.write-pleiades-eqdsk-legacy-raw",
+            "scirel.io.write-eqdsk-legacy-raw",
             "scirel.io.pressure-equilibrium-eqdsk"
           ]
         },
@@ -907,9 +907,9 @@
           "title": "频谱与选定模态的数据产物",
           "introduction": "从实际计算状态写出可消费数据；文件存在不代表物理分支正确。",
           "assets": [
-            "scirel.kinetic.pdrk-spectrum-artifacts",
-            "scirel.kinetic.pdrk-selection-artifacts",
-            "scirel.kinetic.pdrk-selected-mode-artifacts"
+            "scirel.kinetic.spectrum-artifacts",
+            "scirel.kinetic.selection-artifacts",
+            "scirel.kinetic.selected-mode-artifacts"
           ]
         },
         {
@@ -917,14 +917,14 @@
           "title": "波谱绘图与预设呈现",
           "introduction": "绘图和存储场景是可选非核心辅助；WHAMP 存储表单列出处与未决再分发条件，不作为独立科学答案。",
           "assets": [
-            "scirel.kinetic.pdrk-fluid-plot",
-            "scirel.kinetic.pdrk-parallel-em-plot",
-            "scirel.kinetic.pdrk-whamp-reference",
-            "scirel.kinetic.pdrk-whamp-overlay",
-            "scirel.kinetic.pdrk-rendered-output-workflow",
-            "scirel.kinetic.pdrk-preset-output-workflow",
-            "scirel.kinetic.pdrk-stored-program-workflow",
-            "scirel.kinetic.pdrk-rational-reassemble-original-program"
+            "scirel.kinetic.multifluid-plot",
+            "scirel.kinetic.parallel-em-plot",
+            "scirel.kinetic.reference-table",
+            "scirel.kinetic.reference-overlay",
+            "scirel.kinetic.rendered-output-workflow",
+            "scirel.kinetic.preset-output-workflow",
+            "scirel.kinetic.stored-program-workflow",
+            "scirel.kinetic.rational-reassemble-original-program"
           ]
         }
       ]

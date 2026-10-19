@@ -256,7 +256,7 @@
    "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel."
   ],
   "tests": [
-   "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py",
+   "tests/operator_contracts/test_spectral_scientific_correction.py",
    "tests/operator_contracts/test_legacy_six_absorption.py",
    "tests/operator_contracts/test_pressure_margin_cancellation.py"
   ],

@@ -31,8 +31,8 @@
     "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
-   "asset_id": "scirel.kinetic.fluidbw-case-state",
-   "source_sha256": "a916e832e7550853afaa39b2ef2e3c72f62e46c3b6f914da9d3a897508feed77",
+   "asset_id": "scirel.kinetic.fluid-case-state",
+   "source_sha256": "a95711e5de5156fa2f04352cebbefb78e44ed88fc54ab1aecc6f74048213a80d",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -108,8 +108,8 @@
     "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生运行时边界，在 macOS 上记为 NOT_RUN。",
     "expected": "本 macOS 主机上为 NOT_RUN：调用触发原生运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
-   "asset_id": "scirel.kinetic.fluidbw-special-functions",
-   "source_sha256": "7bc9863d39de3ca96d8a527df9a3f2c1d3df419a08976bfdb4256d9252685632",
+   "asset_id": "scirel.kinetic.fluid-special-functions",
+   "source_sha256": "063ea38a8603a02ada64c59d9dcd45543bf9a41120a94133eb3680838c96635a",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -190,8 +190,8 @@
     "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生运行时边界，在 macOS 上记为 NOT_RUN。",
     "expected": "本 macOS 主机上为 NOT_RUN：调用触发原生运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
-   "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
-   "source_sha256": "9693c38e9344f3edf3cdbb270a115dec64dc924b0965ea01c362f307496b8f76",
+   "asset_id": "scirel.kinetic.fluid-dispersion-response",
+   "source_sha256": "7137d9311444783ecf4a3d635a5f22f93f0be1884527787df6b933b6d118b657",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -274,8 +274,8 @@
     "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
-   "asset_id": "scirel.kinetic.fluidbw-em-matrix",
-   "source_sha256": "f5afc1fc02a82f9ef447a9dcf309949ed12ffd9342fded43f7f2bf6c7008861d",
+   "asset_id": "scirel.kinetic.fluid-em-matrix",
+   "source_sha256": "b0d875cff505f815e9a67ec4152db6bc3f8efacd4e87df4dec2645f2d911be0f",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -346,8 +346,8 @@
     "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
-   "asset_id": "scirel.kinetic.fluidbw-bonk-search",
-   "source_sha256": "11bb0ac3715de411bd8518cc3cd7393b3bc5623b68456028a3935e30d7bae545",
+   "asset_id": "scirel.kinetic.fluid-bonk-search",
+   "source_sha256": "86077e0189b80c4f6704dc00383df2c80cac359e196e0377fd91a931590b5eb0",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -430,8 +430,8 @@
     "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
-   "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
-   "source_sha256": "ca73c09cb3a4cb404d64e3eb37a164683b235dcdcc1b8bad870e7069f9d1e1eb",
+   "asset_id": "scirel.kinetic.fluid-em-spectrum",
+   "source_sha256": "1cbad0627304a31b3cbf1f44268df06f7c9f72102d79e38d23aca79da1afc994",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -514,8 +514,8 @@
     "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
     "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
-   "asset_id": "scirel.kinetic.fluidbw-materials",
-   "source_sha256": "34ca2801cf4e6431552fd1872ead95de0a417ddd07e4dba6516123bdf2618134",
+   "asset_id": "scirel.kinetic.fluid-materials",
+   "source_sha256": "81d15b00adb55aef6261777ac84b1716c5149477e171b66b3347d5baffb67e3d",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [

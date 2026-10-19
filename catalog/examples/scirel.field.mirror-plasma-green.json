@@ -109,7 +109,7 @@
   ],
   "tests": [
    "tests/operator_contracts/test_mirror_plasma_green.py",
-   "tests/operator_contracts/test_pleiades_field_green_correction.py"
+   "tests/operator_contracts/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Direct SciRel tests establish selected source-plane formula values, whole-matrix agreement with the maintained dense filament response on one symmetric grid, indexing invariants and one invalid-grid case. They do not prove resolved self-fields, arbitrary-grid validity, whole-project reassembly or expert recognition of this development record.",
   "known_limitations": [
