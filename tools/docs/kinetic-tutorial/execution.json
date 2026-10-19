@@ -1,7 +1,7 @@
 {
  "schema": "scirel.executed-tutorial",
  "tutorial": "kinetic-initial-value",
- "source_revision": "a65683108aa3c44e90f5ade8a55bcb591ae4cde7",
+ "source_revision": "47bfcf1069d8750d4e8ed3f94c366b4985f01813",
  "wheel_version": "0.1.0.dev11",
  "wheel_sha256": null,
  "results": {
@@ -22,8 +22,8 @@
   "src/scirel/kinetic/vlasov_poisson.py": "87a6bbe77e9dff5994f1d03b8aad85d8935fe8524e3c180b22eddc550d27fe5b"
  },
  "document_files": {
-  "catalog/examples/scirel.kinetic.generalized-root-scans.json": "1ff01cfce9fc10dd2b40072e0af21e744dcb1323a571ed3367d1968b51066869",
-  "catalog/examples/scirel.kinetic.vp-landau.json": "87ab7a5fd7c1503ae4c598a5deba6b2bd17774a108f41ee6f73a992a5a1887f8"
+  "catalog/examples/scirel.kinetic.generalized-root-scans.json": "9aa8456f6aab019f17f9c3b746ab961b2502a3f5b3c5f5fc43b215592d244db8",
+  "catalog/examples/scirel.kinetic.vp-landau.json": "758872603c2f161a2536bd089b8582aacdbcdcfc1c866ec17f701e272638eb19"
  },
  "tutorial_rst_sha256": "c530762eebd036b6c082b9b828f03f237a449e9e6e926eff2de73f5210788eea",
  "environment": {
@@ -32,15 +32,15 @@
   "scipy": "1.18.1",
   "matplotlib": null,
   "platform": "macOS arm64",
-  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies",
+  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; tutorial code blocks rerun from source",
   "network": "none during tutorial execution",
   "source_or_saved_answers": false,
   "exit_code": 0,
   "system_site_packages": false,
-  "developer_tools": "SciRel functions resolved from current source checkout; 148 focused generalized-dispersion/Vlasov-Poisson regressions passed",
+  "developer_tools": "SciRel functions resolved from current source checkout; tutorial code blocks executed in one namespace and reproduced the recorded outputs exactly",
   "source_checkout_mounted": true
  },
  "human_approval": false,
  "release_approval": false,
- "previous_execution_sha256": "4c0a6ca798ebc58dde666579b2fb12fe49b13d5295f8619fbcb9cbc553f0f2b4"
+ "previous_execution_sha256": "168edcf5f4ff6e9aa647fed9c8769e0fe50cf0aaa7ef2cf0b0dd92ef3e448bad"
 }
