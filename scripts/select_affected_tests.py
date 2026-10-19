@@ -104,6 +104,12 @@ ENGINEERING_TESTS = {
     "contracts/capability-runtime-closure.schema.json": (
         "tests/test_capability_import_closure.py",
     ),
+    "scripts/audit_public_export_documents.py": (
+        "tests/test_public_export_document_census.py",
+    ),
+    "tests/test_public_export_document_census.py": (
+        "tests/test_public_export_document_census.py",
+    ),
     "skills/development/usage/scirel-solving/scripts/delivery.py": ("tests/test_scientific_delivery.py",),
     "skills/development/usage/scirel-solving/references/delivery-tool.md": ("tests/test_scientific_delivery.py",),
     "skills/development/usage/scientific-asset-navigation/scripts/query.py": ("tests/test_scirel_navigation_query.py",),
@@ -760,7 +766,13 @@ def select(
         elif path.startswith("contracts/") or path.startswith(
             ("catalog/examples/",)
         ):
-            path_tests.add("tests/test_asset_documentation.py")
+            path_tests.update(
+                (
+                    "tests/test_asset_documentation.py",
+                    "tests/test_public_export_document_census.py",
+                    "tests/test_canonical_binding_census.py",
+                )
+            )
             reason = "asset_document_contract"
         elif path in NO_TEST_FILES or path.startswith(NO_TEST_PREFIXES):
             reason = "documentation_only"
@@ -829,6 +841,7 @@ def select(
                     "tests/test_asset_documentation.py",
                     "tests/test_public_surface.py",
                     "tests/test_lazy_namespace.py",
+                    "tests/test_public_export_document_census.py",
                 )
             )
             if path == "src/scirel/collisions/__init__.py":

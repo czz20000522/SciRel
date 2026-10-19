@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-08T13:26:13Z",
-  "updated_at": "2026-10-18T23:28:49Z",
+  "updated_at": "2026-10-19T02:58:49Z",
   "files": {
     ".agents/state/notion-work-management/outbox/20261012-legacy-operator-absorption.json": {
       "role": "index",
@@ -83,9 +83,9 @@
     },
     "AGENTS.md": {
       "role": "index",
-      "sha256": "d499136fd7993e337caed39a5937c67347595e439bebedf219623cb0d7b0f89f",
-      "size": 30171,
-      "normalized_sha256": "d499136fd7993e337caed39a5937c67347595e439bebedf219623cb0d7b0f89f"
+      "sha256": "09e3391df327d4bd581f674a2b2f6c2da9d44ea144de80d47b784e2f22338b51",
+      "size": 22721,
+      "normalized_sha256": "09e3391df327d4bd581f674a2b2f6c2da9d44ea144de80d47b784e2f22338b51"
     },
     "CONTRIBUTING.md": {
       "role": "index",
@@ -101,9 +101,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "96d0edc814fe3f7c398d83446140513d940f9c395cc4ba05269f843ec153bcac",
-      "size": 644921,
-      "normalized_sha256": "96d0edc814fe3f7c398d83446140513d940f9c395cc4ba05269f843ec153bcac"
+      "sha256": "b3f052d717ef264b2172c0034de18013ad2e5ebb2cb44d29bd7d13b18807220a",
+      "size": 650503,
+      "normalized_sha256": "b3f052d717ef264b2172c0034de18013ad2e5ebb2cb44d29bd7d13b18807220a"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -633,6 +633,30 @@
       "size": 26136,
       "normalized_sha256": "f003d03236191e11ee148840f42ad4aded3a176a7787a5597f9e75ae1d84b7df"
     },
+    "catalog/examples/scirel.fvm.cell-variable.json": {
+      "role": "index",
+      "sha256": "90f1a74fd71b914745b997c88dacd06685848b3a1a860ffa147378baafd08da8",
+      "size": 8185,
+      "normalized_sha256": "90f1a74fd71b914745b997c88dacd06685848b3a1a860ffa147378baafd08da8"
+    },
+    "catalog/examples/scirel.fvm.convection.json": {
+      "role": "index",
+      "sha256": "d8644cfb9e21431c4ba4fc5dd44cefa18db7ae9c04427ee92873f4c849dbb4d8",
+      "size": 6977,
+      "normalized_sha256": "d8644cfb9e21431c4ba4fc5dd44cefa18db7ae9c04427ee92873f4c849dbb4d8"
+    },
+    "catalog/examples/scirel.fvm.diffusion.json": {
+      "role": "index",
+      "sha256": "e7e8a31543e42aa96e7f9bdc760252fafd807caf9a681f310b65d267340f2147",
+      "size": 5958,
+      "normalized_sha256": "e7e8a31543e42aa96e7f9bdc760252fafd807caf9a681f310b65d267340f2147"
+    },
+    "catalog/examples/scirel.fvm.theta-step.json": {
+      "role": "index",
+      "sha256": "ba70e630aeab8a1e70e3894b96789aef57dd3148ff1efa8b19d44b0b144c26db",
+      "size": 9067,
+      "normalized_sha256": "ba70e630aeab8a1e70e3894b96789aef57dd3148ff1efa8b19d44b0b144c26db"
+    },
     "catalog/examples/scirel.geometry.axisymmetric-equilibrium-grid-mapping.json": {
       "role": "index",
       "sha256": "f8a678f3308e15e07313a75f3f6fb43a3fe29c032ffc03f0833200180b005417",
@@ -656,6 +680,12 @@
       "sha256": "8b39b968e6d08b08e8bad462c7bf1e5cd0650b664fe5c93f363ebcb2bc1903e5",
       "size": 10081,
       "normalized_sha256": "8b39b968e6d08b08e8bad462c7bf1e5cd0650b664fe5c93f363ebcb2bc1903e5"
+    },
+    "catalog/examples/scirel.geometry.face-to-cell.json": {
+      "role": "index",
+      "sha256": "8094fba5f2c6e39807f7bd62517bc47e83a89125cf6da51fa13fb2afb2b145a9",
+      "size": 4964,
+      "normalized_sha256": "8094fba5f2c6e39807f7bd62517bc47e83a89125cf6da51fa13fb2afb2b145a9"
     },
     "catalog/examples/scirel.geometry.flux-surface-inverse-field-average.json": {
       "role": "index",
@@ -1605,11 +1635,59 @@
       "size": 6319,
       "normalized_sha256": "944df41059a3b3774291c443223aa02d6bb458d061d0d19b0ab59cebd72f1963"
     },
+    "catalog/examples/scirel.neoclassical.bootstrap-current.json": {
+      "role": "index",
+      "sha256": "e26a62e79d1201085e8d70dd3ead59dc1b9dab785b53071a2d2aaf92a7289489",
+      "size": 10326,
+      "normalized_sha256": "e26a62e79d1201085e8d70dd3ead59dc1b9dab785b53071a2d2aaf92a7289489"
+    },
+    "catalog/examples/scirel.neoclassical.redl-bootstrap-coefficients.json": {
+      "role": "index",
+      "sha256": "51a3209a7493defdb8fe50384c96005c27730d43f9eee38de3ac5fc6e3ce5a07",
+      "size": 6433,
+      "normalized_sha256": "51a3209a7493defdb8fe50384c96005c27730d43f9eee38de3ac5fc6e3ce5a07"
+    },
+    "catalog/examples/scirel.neoclassical.sauter-bootstrap-coefficients.json": {
+      "role": "index",
+      "sha256": "807a9671ec025128fbc9c3a963ba5c2189bbaff472ed85327d4a07d8685ba267",
+      "size": 6409,
+      "normalized_sha256": "807a9671ec025128fbc9c3a963ba5c2189bbaff472ed85327d4a07d8685ba267"
+    },
     "catalog/examples/scirel.numerics.nonuniform-derivatives.json": {
       "role": "index",
       "sha256": "4f535bf06733b7935357ec2e4de9000f02c952382d3031561f752a7513486863",
       "size": 4672,
       "normalized_sha256": "4f535bf06733b7935357ec2e4de9000f02c952382d3031561f752a7513486863"
+    },
+    "catalog/examples/scirel.physics.coulomb-ee.json": {
+      "role": "index",
+      "sha256": "5cae3f495b26e519d3313e2846df733ca7d46cc880d71274aea02a3d2a8e2b83",
+      "size": 5571,
+      "normalized_sha256": "5cae3f495b26e519d3313e2846df733ca7d46cc880d71274aea02a3d2a8e2b83"
+    },
+    "catalog/examples/scirel.physics.coulomb-ei.json": {
+      "role": "index",
+      "sha256": "7e35d6d46ea1d51b77d45664650c9e601ecda3be729f85dba7b10dc141a6a426",
+      "size": 5566,
+      "normalized_sha256": "7e35d6d46ea1d51b77d45664650c9e601ecda3be729f85dba7b10dc141a6a426"
+    },
+    "catalog/examples/scirel.physics.coulomb-ii.json": {
+      "role": "index",
+      "sha256": "41ec8e505da730aa47bd499bf217296ed4e1be07e369b417950d3d082c812350",
+      "size": 5941,
+      "normalized_sha256": "41ec8e505da730aa47bd499bf217296ed4e1be07e369b417950d3d082c812350"
+    },
+    "catalog/examples/scirel.physics.dilution.json": {
+      "role": "index",
+      "sha256": "99efb3635befa20691b6921bc28cae123b7fcca0ca132f7e2de37170f57cf717",
+      "size": 5838,
+      "normalized_sha256": "99efb3635befa20691b6921bc28cae123b7fcca0ca132f7e2de37170f57cf717"
+    },
+    "catalog/examples/scirel.physics.thermal-energy.json": {
+      "role": "index",
+      "sha256": "96186a846b0e9c19736e16af4f91265931a1e25e145981c2c75bb0bd65e85419",
+      "size": 7771,
+      "normalized_sha256": "96186a846b0e9c19736e16af4f91265931a1e25e145981c2c75bb0bd65e85419"
     },
     "catalog/examples/scirel.plasma.fast-ion-heating.json": {
       "role": "index",
@@ -1718,6 +1796,18 @@
       "sha256": "5f9fa14e3bb682f0950857ab7b4a1418330d94391eeb5fe182558afece3289cc",
       "size": 5896,
       "normalized_sha256": "5f9fa14e3bb682f0950857ab7b4a1418330d94391eeb5fe182558afece3289cc"
+    },
+    "catalog/examples/scirel.source.exponential.json": {
+      "role": "index",
+      "sha256": "6bea3be807c8c59cab6281769723d118a67fa4f3d6eafad7074c57a5b4868e07",
+      "size": 7580,
+      "normalized_sha256": "6bea3be807c8c59cab6281769723d118a67fa4f3d6eafad7074c57a5b4868e07"
+    },
+    "catalog/examples/scirel.source.gaussian.json": {
+      "role": "index",
+      "sha256": "b0e3b94031bf422d84508d21dc7987e539df71591bc7db28b11c52b387cde5d0",
+      "size": 7505,
+      "normalized_sha256": "b0e3b94031bf422d84508d21dc7987e539df71591bc7db28b11c52b387cde5d0"
     },
     "catalog/fluidbw-full-retained/scirel.kinetic.fluidbw-bonk-search.json": {
       "role": "index",
@@ -3143,9 +3233,9 @@
     },
     "docs/design/scirel-wheel-packaging-strategy.md": {
       "role": "index",
-      "sha256": "d72dfe4a6d531b05370fb9c8b75382f48c8263142974e8623652e3d6aec9869c",
-      "size": 18154,
-      "normalized_sha256": "d72dfe4a6d531b05370fb9c8b75382f48c8263142974e8623652e3d6aec9869c"
+      "sha256": "3cb6644b593d51fc705913e15d74c8ae74f3b2ab8292fd565c6fa9edb4323389",
+      "size": 24132,
+      "normalized_sha256": "3cb6644b593d51fc705913e15d74c8ae74f3b2ab8292fd565c6fa9edb4323389"
     },
     "docs/design/scirel-workflow.md": {
       "role": "index",
@@ -6447,6 +6537,12 @@
       "size": 11002,
       "normalized_sha256": "bf94e0b41ab3577d18e5d1ba7ab62762a8fea61ebf4dbc96d488c2d55ab5f9c4"
     },
+    "scripts/audit_public_export_documents.py": {
+      "role": "index",
+      "sha256": "31d230af2bbace62e8c9b37e0bf1cf055a1ea824ae61da447952ad41eefb5e23",
+      "size": 5419,
+      "normalized_sha256": "31d230af2bbace62e8c9b37e0bf1cf055a1ea824ae61da447952ad41eefb5e23"
+    },
     "scripts/build_admitted_distribution.py": {
       "role": "index",
       "sha256": "2ee09c714dcc26b2b7ff84b13d182c1333411e9ee8a6d9097539ad48154f7927",
@@ -6569,9 +6665,9 @@
     },
     "scripts/measure_capability_runtime.py": {
       "role": "index",
-      "sha256": "5bf76479dcefc850f7a0aff14af21877c7e4cc7e7c5c17cfcd8b492a49d2880d",
-      "size": 18262,
-      "normalized_sha256": "5bf76479dcefc850f7a0aff14af21877c7e4cc7e7c5c17cfcd8b492a49d2880d"
+      "sha256": "e27b696df330dfdb2749822e8f704e461f33ba9c767ab199d867c654dd6e7292",
+      "size": 18913,
+      "normalized_sha256": "e27b696df330dfdb2749822e8f704e461f33ba9c767ab199d867c654dd6e7292"
     },
     "scripts/package_catalog_snapshot.py": {
       "role": "index",
@@ -6635,9 +6731,9 @@
     },
     "scripts/select_affected_tests.py": {
       "role": "index",
-      "sha256": "aa7e324c4f07605de52dbb1a84acb8e089c0c951d78f3f69ebfe0c5ab6665a0a",
-      "size": 41301,
-      "normalized_sha256": "aa7e324c4f07605de52dbb1a84acb8e089c0c951d78f3f69ebfe0c5ab6665a0a"
+      "sha256": "b81a8988c102d0bdd254b0f270460fe0b3f0e6a9176787d15799b32d4501da96",
+      "size": 41798,
+      "normalized_sha256": "b81a8988c102d0bdd254b0f270460fe0b3f0e6a9176787d15799b32d4501da96"
     },
     "scripts/spark_codex.py": {
       "role": "index",
@@ -6659,9 +6755,9 @@
     },
     "scripts/validate_capability_runtime_closure.py": {
       "role": "index",
-      "sha256": "be75eef888b83616b9e6d1814410c7df755a68eb049d767a3f35190ed3275c92",
-      "size": 12832,
-      "normalized_sha256": "be75eef888b83616b9e6d1814410c7df755a68eb049d767a3f35190ed3275c92"
+      "sha256": "69f9fea2a5afb8eea05441a421d54795f4b94dd2aab36609744cd02b84fefce9",
+      "size": 13007,
+      "normalized_sha256": "69f9fea2a5afb8eea05441a421d54795f4b94dd2aab36609744cd02b84fefce9"
     },
     "scripts/validate_installed_wheel.py": {
       "role": "index",
@@ -6713,9 +6809,9 @@
     },
     "skills/development/README.md": {
       "role": "index",
-      "sha256": "27fadb3c941c80adaa3e8cebfe171a5910bb8b9410537787e0cbb282224f80e1",
-      "size": 7638,
-      "normalized_sha256": "27fadb3c941c80adaa3e8cebfe171a5910bb8b9410537787e0cbb282224f80e1"
+      "sha256": "d72864109e0407f06356276ae417b68fbe9fd98d7b56cc9f8237730b62be59b1",
+      "size": 3860,
+      "normalized_sha256": "d72864109e0407f06356276ae417b68fbe9fd98d7b56cc9f8237730b62be59b1"
     },
     "skills/development/integration/scientific-asset-correctness/SKILL.md": {
       "role": "index",
@@ -6827,15 +6923,15 @@
     },
     "skills/development/references/development-lifecycle.md": {
       "role": "index",
-      "sha256": "b971d0feeff25c19269ee57fe869cdfd55d693770562e40f4d7017eff1fd1b7d",
-      "size": 17328,
-      "normalized_sha256": "b971d0feeff25c19269ee57fe869cdfd55d693770562e40f4d7017eff1fd1b7d"
+      "sha256": "ed0373ae02154a0ce279012167bceebd95de5ba0518f16f14992a9a64f8634da",
+      "size": 19048,
+      "normalized_sha256": "ed0373ae02154a0ce279012167bceebd95de5ba0518f16f14992a9a64f8634da"
     },
     "skills/development/references/scirel-development-core.md": {
       "role": "index",
-      "sha256": "1d9c153053524919677478f7056304248cbf431acfb24bd5bfb4d864148cf4ec",
-      "size": 9671,
-      "normalized_sha256": "1d9c153053524919677478f7056304248cbf431acfb24bd5bfb4d864148cf4ec"
+      "sha256": "7841bb9532942ce4c61fcae414c13b762c2e06b2a396fddc418f36b65c666eda",
+      "size": 8718,
+      "normalized_sha256": "7841bb9532942ce4c61fcae414c13b762c2e06b2a396fddc418f36b65c666eda"
     },
     "skills/development/scientific-computation-validation/SKILL.md": {
       "role": "index",
@@ -9905,9 +10001,9 @@
     },
     "tests/_document_fixtures.py": {
       "role": "index",
-      "sha256": "5be54ff5759591e9bd06df9837df214258da9d6ee20f3e00f19881d88bdfc63e",
-      "size": 822,
-      "normalized_sha256": "5be54ff5759591e9bd06df9837df214258da9d6ee20f3e00f19881d88bdfc63e"
+      "sha256": "d7f510f28ce1d5f9ceffb5a26680e1c7754be003b3ebde331c8d8b26d7014433",
+      "size": 1098,
+      "normalized_sha256": "d7f510f28ce1d5f9ceffb5a26680e1c7754be003b3ebde331c8d8b26d7014433"
     },
     "tests/_pdrk_axis_oracle.py": {
       "role": "index",
@@ -11297,9 +11393,9 @@
     },
     "tests/test_affected_test_selection.py": {
       "role": "index",
-      "sha256": "f2b90857e2dbc41cd400259ef91c726964696f1db044ac85b282243b5e9e679b",
-      "size": 46350,
-      "normalized_sha256": "f2b90857e2dbc41cd400259ef91c726964696f1db044ac85b282243b5e9e679b"
+      "sha256": "81b111c7a75e01c77cd5fb58ca455e33cc8c18b224575d0cec734263884d8dfa",
+      "size": 47507,
+      "normalized_sha256": "81b111c7a75e01c77cd5fb58ca455e33cc8c18b224575d0cec734263884d8dfa"
     },
     "tests/test_asset_documentation.py": {
       "role": "index",
@@ -11315,15 +11411,15 @@
     },
     "tests/test_canonical_binding_census.py": {
       "role": "index",
-      "sha256": "cf52a74f678f90f9b6b696df3b4bfbacb758b0fb353c5bf4be25b5544dc42d47",
-      "size": 19151,
-      "normalized_sha256": "cf52a74f678f90f9b6b696df3b4bfbacb758b0fb353c5bf4be25b5544dc42d47"
+      "sha256": "aa1de2852d80b20a726d1aa0b9147a37d66acba66244df1cabccaa9168ed5238",
+      "size": 19019,
+      "normalized_sha256": "aa1de2852d80b20a726d1aa0b9147a37d66acba66244df1cabccaa9168ed5238"
     },
     "tests/test_capability_import_closure.py": {
       "role": "index",
-      "sha256": "0428a7a909f68139ce6539bb0b4ec0f116ce4c00fc556d054590b6eecbed6fa8",
-      "size": 9250,
-      "normalized_sha256": "0428a7a909f68139ce6539bb0b4ec0f116ce4c00fc556d054590b6eecbed6fa8"
+      "sha256": "0f79ff2aecd3d1d6123dd1782e569fb205b1174e74e53b26f688444fb499b11c",
+      "size": 10716,
+      "normalized_sha256": "0f79ff2aecd3d1d6123dd1782e569fb205b1174e74e53b26f688444fb499b11c"
     },
     "tests/test_catalog_snapshot_package.py": {
       "role": "index",
@@ -11345,9 +11441,9 @@
     },
     "tests/test_development_skill_contract.py": {
       "role": "index",
-      "sha256": "d38fd489f82b1988ac405da4ba9d2abe5e0202032cbd2023c877901a35463a46",
-      "size": 12533,
-      "normalized_sha256": "d38fd489f82b1988ac405da4ba9d2abe5e0202032cbd2023c877901a35463a46"
+      "sha256": "d8b40fc28bfacdca07d94685670d4e2e57a6fdde2b5e187829b18e60b59d5ec6",
+      "size": 12767,
+      "normalized_sha256": "d8b40fc28bfacdca07d94685670d4e2e57a6fdde2b5e187829b18e60b59d5ec6"
     },
     "tests/test_document_requalification.py": {
       "role": "index",
@@ -11510,6 +11606,12 @@
       "sha256": "114d24165e59bd630d123cee4cfd49204ee7d6caa8cc88d7e5ec8caa9d4f8dfb",
       "size": 6672,
       "normalized_sha256": "114d24165e59bd630d123cee4cfd49204ee7d6caa8cc88d7e5ec8caa9d4f8dfb"
+    },
+    "tests/test_public_export_document_census.py": {
+      "role": "index",
+      "sha256": "0cde85f9e34e3d15bdfb562c25de9273a7cefb3bed63a53e0e9c65ebac4072a0",
+      "size": 1594,
+      "normalized_sha256": "0cde85f9e34e3d15bdfb562c25de9273a7cefb3bed63a53e0e9c65ebac4072a0"
     },
     "tests/test_public_surface.py": {
       "role": "index",

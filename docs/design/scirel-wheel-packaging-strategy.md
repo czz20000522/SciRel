@@ -103,6 +103,85 @@ NumPy；这说明存在依赖精简机会，但不构成移除 SciPy 或 mpmath 
 运行时字段，必须由同一 source revision、同一文档选择和同一 wheel candidate 绑定，不能把
 测量脚本输出直接复制成第二套科学合同。
 
+#### 2026-10-19 Linux 闭包测量快照
+
+在 Git `abc30007b0c987c1b50986b733121931841a35cc`、Linux x86_64、CPython 3.14.4 的 clean
+source checkout 中，对 10 个代表性入口完成了 `scirel.capability-runtime-closure.v2` 测量；10/10
+均为 `PASS + BOUND`。导入层的 field、geometry、Faddeeva FFT/DR、PDRK rational 和相对论
+Bessel 入口只观测到 NumPy 或无外部根；相对论 Bessel 的导入本身不加载 SciPy。
+
+caller-owned probe 把边界补齐：Faddeeva 正虚轴稳定化、相对论 Bessel 合法调用和 Maxwellian
+electrostatic response 加载 SciPy；高精度 J-pole 构造加载 mpmath。该快照支持“按调用路径继续
+拆分”的方向，但不授权从 core `Requires-Dist` 移除 SciPy/mpmath；完整能力分母、失败路径和
+目标平台 clean-venv 证据仍需在正式 capability 方案前补齐。原始技术证据保存在本机
+`build/verification/scirel-linux-smoke-abc3000-20261019/capability-closure-inventory.json`，
+不属于 release projection。
+
+#### 2026-10-19 Linux 全文档调用闭包快照
+
+在同一 Git `abc30007b0c987c1b50986b733121931841a35cc`、Linux x86_64、CPython 3.14.4
+环境中，对当前 267 份 exact document 的 caller-owned probe 完成了调用层测量。该数字只描述
+这一次 source-bound snapshot，随当前 manifest 演进，不是永久分母。
+
+- 267 条记录全部为 `BOUND`；226 条 `PASS`，41 条 `FAIL`。
+- 7 个 fluidBW 入口因缺少 GNU Octave 7.3.0 失败；34 个 PDRK 入口因找不到外部
+  `octave` 进程失败。这些是 native runtime 缺口，不是 NumPy/SciPy Python 依赖失败，
+  也不应被摘要为 universal core 的科学通过。
+- 调用层观察到 NumPy 267 条、SciPy 94 条、mpmath 3 条、Matplotlib 6 条；其余根是这些
+  包的编译或传递子模块。按 caller-owned probe 的主要根组合，168 条只进入 NumPy，91 条进入
+  NumPy+SciPy，8 条进入绘图/高精度组合。该结果说明 SciPy/mpmath/Matplotlib 存在能力级拆分
+  候选，但不授权从 core `Requires-Dist` 直接移除任何包。
+
+原始调用 inventory 保存在
+`build/verification/scirel-linux-smoke-abc3000-20261019/full-call-inventory.json`；它是开发期
+source-bound evidence，不属于 release projection。正式 capability 拆分仍需为每个受影响能力
+补齐完整分母、成功与失败路径、可安装依赖闭包和目标平台 clean-venv 结果。
+
+#### 2026-10-19 NumPy-only 能力边界试探
+
+在同一 Linux x86_64 + CPython 3.14.4 source-bound 环境中，复制 clean venv 并移除 SciPy、
+mpmath、Matplotlib 及其绘图传递依赖，只保留 `numpy==2.5.4`。从全文档调用快照中筛出
+161 条已观测为 PASS 且不加载 SciPy、mpmath、Matplotlib 或 PIL 的能力，逐个执行 exact
+ document example；161/161 通过，且 `scipy_importable=false`。
+
+这覆盖 basis、closures、collisions、diagnostics、field、equilibrium、geometry、inference、
+io、kinetic、sampling 等多个领域，说明当前源树中存在相当大的 NumPy-only 能力候选集合。
+它仍是能力级 source/runtime 证据，不授权修改全局 `Requires-Dist`；下一步还需为候选集合补齐
+失败路径、完整反向依赖、安装包边界和独立的 API/文档闭包。
+
+原始结果保存在
+`build/verification/scirel-linux-smoke-abc3000-20261019/numpy-only-full-example-smoke.json`。
+
+#### 2026-10-19 无 SciPy public surface 试探
+
+在相同的无 SciPy 临时环境中，导入 `scirel` 根包和 18 个 domain 包，并逐项解析所有公开
+`__all__` 导出。19/19 个 public surfaces 通过，未出现 SciPy import failure；这说明当前
+lazy import 边界允许 NumPy-only 能力在没有 SciPy 时被发现和导入。
+
+原始结果保存在
+`build/verification/scirel-linux-smoke-abc3000-20261019/no-scipy-public-surface.json`。
+这仍不等于可以立即移除 unconditional `scipy` dependency：SciPy 能力的调用失败语义、候选
+wheel metadata、完整 capability closure 和安装包验证仍需单独收口。
+
+#### 2026-10-19 SciPy 调用边界审计
+
+对 SciPy-dependent 候选做了 fresh-process 缺依赖审计，结果只绑定到本机 macOS + CPython 3.14.7；
+Linux amd64 + CPython 3.14 的同一重跑保持 `NOT_RUN`。这些结果用于设计失败合同，不替代目标平台
+安装证据：
+
+| 能力边界 | 无 SciPy 时的可观察行为 | 当前结论 |
+| --- | --- | --- |
+| `evaluate_tabulated_pressure` | 非法网格、表或查询先保留 `ValueError`；合法 1D/2D 调用在 `scipy.interpolate` 延迟导入处抛 `ModuleNotFoundError` | SciPy call capability |
+| `relativistic_maxwellian_bessel` | 非正或非有限参数先抛 `InvalidBesselArgumentError`；合法参数在 `scipy.special.kve` 处抛 `ModuleNotFoundError` | SciPy call capability |
+| circular Green / response matrices / `ArbitraryPoints` | 奇异或形状错误先保留 `ValueError`；有效非零 kernel 在 SciPy special backend 处缺依赖失败；空源和零权重可提前返回 | SciPy call capability，存在数据相关短路 |
+| `get_deltapsi` | 目标、维度和变量错误先保留 `ValueError`；合法输入即使零电流仍在 `LinearNDInterpolator` 处需要 SciPy | SciPy call capability |
+| `compute_equilibrium` | 早期参数错误仍按 `ValueError`；合法基线捕获 spline 导入失败并返回 `status="nonfinite"` 的结果对象 | SciPy call capability，失败形态与其他入口不同 |
+
+当前多数边界暴露原始 `ModuleNotFoundError`，而 `compute_equilibrium` 将后端缺失转为结构化
+`nonfinite` 结果；它们都应先写入能力文档和缺依赖回归，再决定是否统一异常。此审计不授权改变
+`pyproject.toml` 的 core 依赖，也不授权把 SciPy 移入 extra。后续 optional 化必须在 Linux clean-venv
+中重跑同一批合法、非法、短路和结构化失败路径，并绑定到同一 source revision 的能力闭包。
+
 ### Optional Python
 
 当前源码中没有 `netCDF4` 的 `src/scirel` 导入，搜索结果只在测试中使用它。`get_deltapsi`

@@ -224,6 +224,8 @@ def test_cli_preflight_failure_emits_a_complete_receipt(capsys: pytest.CaptureFi
     result = json.loads(capsys.readouterr().out)
     validate_receipt(result)
     assert result["status"] == "FAIL"
+    assert result["binding_status"] == "UNBOUND"
+    assert "measurement preflight failed" in result["binding_reasons"]
     assert result["child"]["executed"] is False
 
 
@@ -237,4 +239,36 @@ def test_cli_missing_probe_emits_an_unbound_complete_receipt(
     result = json.loads(capsys.readouterr().out)
     validate_receipt(result)
     assert result["binding_status"] == "UNBOUND"
+    assert "probe input unavailable" in result["binding_reasons"]
     assert result["child"]["executed"] is False
+
+
+def test_cli_timeout_emits_an_unbound_complete_receipt(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from measure_capability_runtime import main
+
+    probe = tmp_path / "sleep-probe.py"
+    probe.write_text("import time\ntime.sleep(1)\n", encoding="utf-8")
+    assert main(["--root", str(ROOT), "--probe", str(probe), "--timeout", "0.01"]) == 1
+    result = json.loads(capsys.readouterr().out)
+    validate_receipt(result)
+    assert result["status"] == "FAIL"
+    assert result["binding_status"] == "UNBOUND"
+    assert "child did not emit a runtime measurement" in result["binding_reasons"]
+    assert result["child"]["executed"] is False
+
+
+def test_validator_rejects_bound_receipt_without_an_executed_isolated_child() -> None:
+    result = measure(ROOT, asset_id="scirel.field.poloidal-field-from-flux")
+    result["status"] = "FAIL"
+    result["error"] = {"type": "ChildProcessError", "message": "no measurement"}
+    result["child"]["executed"] = False
+    result["child"]["isolated"] = False
+    result["binding_status"] = "BOUND"
+    result["binding_reasons"] = []
+    result["source"]["dirty"] = False
+    result["source_after"]["dirty"] = False
+
+    with pytest.raises(ValueError, match="BOUND receipt child"):
+        validate_receipt(result)

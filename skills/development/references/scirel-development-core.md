@@ -11,34 +11,18 @@ versioning and artifact closure are canonical in
 
 Bind only the identities required by the selected lifecycle mode. Ordinary
 `development` binds the task, Git base/head, owned change scope, primary claim
-and the tests or benchmark that can decide it. Bind owner, consumer, next
-owner and handoff custody only for a checkpoint, handoff or release. Bind an
-exact runtime or dependency only when the task actually executes it. A missing
+and the checks that can decide it. Bind owner, consumer, next owner and
+handoff custody only for a checkpoint, handoff or release. Bind an exact
+runtime or dependency only when the task actually executes it. A missing
 required identity stops that claim as `blocked` or `NOT_RUN` with a concrete
-reopen condition; do not manufacture a denominator or a release packet to fill
+reopen condition; do not manufacture a denominator or release packet to fill
 an unused field. Never replace an exact candidate with `latest` or infer a
 scientific oracle from a summary.
 
-- In `development`, bind the Git base/head (or the current source revision),
-  changed scope, affected API/test/benchmark target and claim. Bind exact
-  runtime or dependency identities only when the task actually executes a
-  scientific runtime, installed package or consumer case. A source-only
-  change does not need a release candidate or a complete denominator.
-- In `integration_checkpoint`, bind the current working-tree for source-only
-  smoke or an exact clean development candidate for any installable artifact;
-  if a dirty artifact is explicitly requested, mark it `source_dirty` and
-  `unbound` and do not use it as revision-bound evidence. Also bind its
-  dependency/runtime identities when exercised, the current manifest scope and
-  reverse dependencies.
-- In `release_freeze`, bind one exact Git revision, complete manifest and
-  denominator, dependency/runtime identities, selected scope and all release
-  evidence before making candidate or publication claims.
-
-Before choosing tests or artifacts, bind the work to one lifecycle mode. The
-default is `development`; `integration_checkpoint` and `release_freeze` require
-an explicit task or owner decision. Read [the development lifecycle](development-lifecycle.md)
-for transition triggers, versioning, closure and artifact gates; do not duplicate
-those rules in a task-specific route.
+The [development lifecycle](development-lifecycle.md) is canonical for mode
+selection, selector-first checks, evidence reuse, stopping, artifact closure
+and versioning. This contract supplies the shared correctness, evidence and
+AOCI rules; routed skills must not repeat the lifecycle or widen its gates.
 
 ## Product-development loop
 
@@ -65,12 +49,11 @@ scope warrants it. Performance claims carry a comparable benchmark with a
 before/after observation. These are development checks, not a request to build
 a wheel or regenerate release projections.
 
-After the edit, rerun the affected selector and reverse dependencies. Unknown
-ownership fails closed to a wider test layer. Finish with a reviewable diff and
-the checks that support the claim. Create a Git commit when the requested
-handoff or repository workflow calls for one; a continuation, status request or
-unchanged evidence does not justify a new commit. A commit may contain several
-compatible fixes, but it must not mix unrelated work.
+After the edit, use the lifecycle's selector-first decision and finish with a
+reviewable diff and the checks that support the claim. Create a Git commit when
+the requested handoff or repository workflow calls for one; a continuation,
+status request or unchanged evidence does not justify a new commit. A commit
+may contain several compatible fixes, but it must not mix unrelated work.
 
 Use the [development lifecycle](development-lifecycle.md) as the canonical
 rule for batching, stop conditions and source-bound maintenance. Keep related
@@ -96,7 +79,9 @@ development evidence, not a release claim: it must state `BOUND` or `UNBOUND`,
 preserve the source and probe identities observed before and after measurement,
 and keep a dirty source, an identity change, an unisolated child or a
 platform/Python mismatch (including the declared Linux amd64 + CPython 3.14
-baseline) unbound. A structural validator may reject malformed
+baseline) unbound. `BOUND` also requires an executed isolated child; a
+preflight failure, timeout or child that emits no measurement is `UNBOUND` even
+when the source bytes remain stable. A structural validator may reject malformed
 receipts, but it must not upgrade an unbound or wrong-platform observation into
 release evidence.
 

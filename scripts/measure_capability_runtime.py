@@ -19,7 +19,7 @@ import subprocess
 import sys
 import time
 import tomllib
-from typing import Any
+from typing import Any, Iterable
 
 from public_api_binding import (
     canonical_binding,
@@ -141,8 +141,10 @@ def _binding_status(
     source_after: dict[str, Any],
     probe_before: str | None,
     probe_after: str | None,
+    *,
+    extra_reasons: Iterable[str] = (),
 ) -> tuple[str, list[str]]:
-    reasons: list[str] = []
+    reasons: list[str] = list(extra_reasons)
     if source_before != source_after:
         reasons.append("source identity changed during measurement")
     if probe_before != probe_after:
@@ -420,6 +422,10 @@ def measure(
                     child_result = None
                 break
     if child_result is None:
+        binding_status = "UNBOUND"
+        binding_reasons = sorted(
+            set(binding_reasons) | {"child did not emit a runtime measurement"}
+        )
         return _failure_result(
             mode=mode,
             target=target_info,
@@ -442,6 +448,11 @@ def measure(
             executed=completed is not None,
         )
     child_isolated = bool(child_result.pop("child_isolated", False))
+    if not child_isolated:
+        binding_status = "UNBOUND"
+        binding_reasons = sorted(
+            set(binding_reasons) | {"child process was not isolated"}
+        )
     child_result["target"] = target_info
     child_result["mode"] = mode
     child_result["binding_status"] = binding_status
@@ -483,8 +494,15 @@ def main(argv: list[str] | None = None) -> int:
         source_after = _source_binding(failure_root)
         probe_path = args.probe.resolve() if args.probe else None
         probe_before = _optional_sha256(probe_path)
+        extra_reasons = ["measurement preflight failed"]
+        if args.probe and probe_before is None:
+            extra_reasons.append("probe input unavailable")
         binding_status, binding_reasons = _binding_status(
-            source_before, source_after, probe_before, probe_before
+            source_before,
+            source_after,
+            probe_before,
+            probe_before,
+            extra_reasons=extra_reasons,
         )
         result = _failure_result(
             mode="probe" if args.probe else "import",

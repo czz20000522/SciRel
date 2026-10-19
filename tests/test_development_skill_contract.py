@@ -37,14 +37,18 @@ def test_project_contract_routes_agents_changes_to_the_lightweight_contract():
 
 
 def test_skill_maintenance_closes_before_product_candidate_work():
-    readme = compact((ROOT / "skills/development/README.md").read_text(encoding="utf-8"))
+    lifecycle = compact(
+        (ROOT / "skills/development/references/development-lifecycle.md").read_text(
+            encoding="utf-8"
+        )
+    )
     project_contract = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
-    assert "close that maintenance claim before changing product code" in readme
-    assert "do not build a wheel" in readme
-    assert "keep it read-only until the skill claim closes" in readme
-    assert "先收口 skill 维护并跑轻量合同检查" in project_contract
-    assert "不按中间编辑重复维护" in project_contract
+    assert "Close that claim before promoting an existing candidate diff" in lifecycle
+    assert "Candidate code stays read-only" in lifecycle
+    assert "Skill maintenance alone does not" in lifecycle
+    assert "先完成 skill 的轻量合同检查" in project_contract
+    assert "只做一次 AOCI maintenance" in project_contract
 
 
 def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
@@ -52,20 +56,14 @@ def test_project_contract_keeps_ordinary_optimization_out_of_release_flow():
 
     assert "当前默认开发模式" in project_contract
     assert "普通任务默认处于 `development`" in project_contract
-    assert "不会启动发布流程" in project_contract
-    assert "数量只属于具体 manifest/revision" in project_contract
-    assert "相关变更的批次、停点和 source-bound maintenance 遵循" in project_contract
-    assert "长程 goal 只是待处理 claim 的队列" in project_contract
-    assert "首次公开发布时才选择初始 `major.minor`" in project_contract
+    assert "不会自动进入发布流程" in project_contract
+    assert "数量不是永久门禁" in project_contract
+    assert "长程 goal 是 claim 队列" in project_contract
     assert "按 SciPy 式标准库结构维护一个当前源树" in project_contract
-    assert "canonical direct test 路径" in project_contract
-    assert "遵循该入口" in project_contract
-    assert "一个主要 claim、一个 owned scope 和一个 stop condition" in project_contract
-    assert "不为每次继续创建 release record" in project_contract
-    assert "不因状态查询、继续或不变证据制造新提交" in project_contract
-    assert "skill/AGENTS 维护与候选 diff 审查可以同轮进行" in project_contract
-    assert "同一科学域或 affected closure" in project_contract
-    assert "不为每个兄弟项单独制造提交" in project_contract
+    assert "selector-first" in project_contract
+    assert "一个主要 claim、owned scope 和 stop condition" in project_contract
+    assert "skill/AGENTS 维护与候选 diff 审查是两个独立 claim" in project_contract
+    assert "只做一次 AOCI maintenance" in project_contract
 
 
 def test_lifecycle_requires_selector_visible_regressions():
@@ -87,9 +85,9 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
         )
     )
 
-    assert "Load those references only when the current route needs them" in readme
-    assert "Repeated guidance may be duplicated deliberately" not in readme
-    assert "not project-wide invariants" in lifecycle
+    assert "Load only the sub-skill reference" in readme
+    assert "copy the lifecycle" in readme
+    assert "not a project-wide invariant" in lifecycle
     assert "derive its members and counts from the same current" in lifecycle
     assert "Do not create a release receipt" in lifecycle
     assert "Linux amd64 with CPython 3.14" in lifecycle
@@ -105,7 +103,7 @@ def test_lifecycle_keeps_incubation_counts_dynamic_and_release_gates_explicit():
     assert "durable decision, blocker or next action" in lifecycle
     assert "queue of possible claims, not an execution scheduler" in lifecycle
     assert "Release acceptance means the frozen wheel/document/catalog" in lifecycle
-    assert "only a named `integration_checkpoint` whose consumer or handoff needs an artifact" in lifecycle
+    assert "Treat `integration_checkpoint` as an explicit artifact request" in lifecycle
     assert "previous release tuple, wheel, document" in lifecycle
     assert "generic requests to continue, review, verify or refresh do not create that route" in lifecycle
     assert "exact clean revision" in lifecycle
@@ -130,16 +128,16 @@ def test_development_loop_keeps_related_evidence_together_without_release_work()
         ROOT / "skills/development/integration/scirel-integration/SKILL.md"
     ).read_text(encoding="utf-8")
 
-    assert "direct product development (default)" in readme
-    assert "D1 integration" in readme
-    assert "SciPy-style change-set loop" in lifecycle
+    assert "direct product path" in readme
+    assert "exact D1 packet" in readme
+    assert "Change-set loop" in lifecycle
     assert "callable docstring" in lifecycle
     assert "comparable benchmark" in lifecycle
     assert "several related public surfaces" in lifecycle
     assert "Do not repeat the same setup" in lifecycle
     assert "public API change needs import" in lifecycle
     assert "Neither claim requires a wheel or catalog" in lifecycle
-    assert "Unknown" in core
+    assert "selector-first" in core
     assert "unrelated work" in integration
     assert "development lifecycle" in integration
 
@@ -152,14 +150,17 @@ def test_runtime_closure_receipts_keep_binding_and_target_identity_explicit():
     )
     project_contract = compact((ROOT / "AGENTS.md").read_text(encoding="utf-8"))
 
-    for text in (core, project_contract):
-        assert "BOUND" in text
-        assert "UNBOUND" in text
-        assert "identity" in text
-        assert "Linux amd64" in text
-        assert "CPython 3.14" in text
+    assert "BOUND" in core
+    assert "UNBOUND" in core
+    assert "identity" in core
+    assert "Linux amd64" in core
+    assert "CPython 3.14" in core
+    assert "BOUND" in project_contract
+    assert "UNBOUND" in project_contract
+    assert "Linux amd64" in project_contract
+    assert "CPython 3.14" in project_contract
     assert "structural validator" in core
-    assert "结构校验不得把它们升级为发布证据" in project_contract
+    assert "都保持未绑定" in project_contract
 
 
 def test_claim_ceiling_does_not_turn_missing_benchmark_into_release_work():
@@ -197,13 +198,30 @@ def test_document_and_checkpoint_projection_boundaries_are_explicit():
 
 
 def test_skill_routes_structural_reference_adoption_without_native_build_drift():
-    readme = (ROOT / "skills/development/README.md").read_text(encoding="utf-8")
+    readme = compact((ROOT / "skills/development/README.md").read_text(encoding="utf-8"))
 
-    assert "Batching related changes" in readme
-    assert "canonical in [the development lifecycle]" in readme
-    assert "domain self-contained" in readme
-    assert "top-level namespace small" in readme
-    assert "Do not add a native build system" in readme
+    assert "one Git source tree" in readme
+    assert "each scientific domain" in readme
+    assert "root namespace stays small" in readme
+    assert "native distribution" in readme
+
+
+def test_skill_keeps_scipy_reference_target_specific_and_checks_public_docs_both_ways():
+    readme = compact((ROOT / "skills/development/README.md").read_text(encoding="utf-8"))
+    lifecycle = compact(
+        (ROOT / "skills/development/references/development-lifecycle.md").read_text(
+            encoding="utf-8"
+        )
+    )
+    project_contract = compact((ROOT / "AGENTS.md").read_text(encoding="utf-8"))
+
+    assert "not authority for SciRel's" in readme
+    assert "document-to-export" in readme
+    assert "function-export-to-document" in readme
+    assert "document-to-export" in lifecycle
+    assert "function-export-to-document" in lifecycle
+    assert "SciPy 只提供结构参考" in project_contract
+    assert "document→export 与 function-export→document" in project_contract
 
 
 def test_heavy_development_routes_are_explicit_only():
@@ -239,7 +257,7 @@ def test_direct_product_work_does_not_synthesize_d1_or_full_aoci_proof():
     assert "Without an exact D1 packet" in core
     assert "AOCI is a repository-maintenance aid, not a development gate" in core
     assert "one applicable `aoci_maintain` after" in core
-    assert "dirty artifact is explicitly requested" in core
+    assert "selector-first checks" in core
     assert "minimal execution and stop rule" in core
     assert "**release_freeze**" not in core
 

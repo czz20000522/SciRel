@@ -129,6 +129,10 @@ def validate_receipt(
         _fail("receipt child is missing")
     if not isinstance(child.get("isolated"), bool) or not isinstance(child.get("executed"), bool):
         _fail("receipt child must declare boolean isolated and executed")
+    if binding_status == "BOUND" and (
+        not child["executed"] or not child["isolated"]
+    ):
+        _fail("BOUND receipt child must be an executed isolated process")
     if value["status"] == "PASS" and (
         not child["executed"] or not child["isolated"]
     ):

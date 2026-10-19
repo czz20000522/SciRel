@@ -212,6 +212,7 @@ def test_package_export_change_checks_public_surface_and_asset_examples():
     assert result["test_paths"] == [
         "tests/test_asset_documentation.py",
         "tests/test_lazy_namespace.py",
+        "tests/test_public_export_document_census.py",
         "tests/test_public_surface.py",
     ]
 
@@ -223,6 +224,7 @@ def test_equilibrium_package_export_change_checks_lazy_namespace_contract():
     assert result["test_paths"] == [
         "tests/test_asset_documentation.py",
         "tests/test_lazy_namespace.py",
+        "tests/test_public_export_document_census.py",
         "tests/test_public_surface.py",
     ]
 
@@ -451,7 +453,11 @@ def test_asset_schema_and_example_changes_select_contract_tests():
     )
 
     assert result["full_suite_required"] is False
-    assert result["test_paths"] == ["tests/test_asset_documentation.py"]
+    assert result["test_paths"] == [
+        "tests/test_asset_documentation.py",
+        "tests/test_canonical_binding_census.py",
+        "tests/test_public_export_document_census.py",
+    ]
 
 
 def test_release_environment_helper_change_selects_only_its_contract_test():
@@ -949,10 +955,14 @@ def test_current_asset_index_uses_canonical_documents():
     fast_ion = [doc for doc in direct_documents if doc["asset_id"] == "scirel.plasma.fast-ion-heating"]
     assert len(fast_ion) == 1
     assert fast_ion[0]["public_api"]["python"]["symbol"] == "fast_ion_fractional_heating"
-    assert len(direct_documents) == 267
-    assert len(catalog_assets) == 267
-    assert len({asset.public_callable for asset in catalog_assets}) == 267
-    assert len(assets) == 319
+    assert len(direct_documents) == len(catalog_assets)
+    assert len({asset.public_callable for asset in catalog_assets}) == len(catalog_assets)
+    ledger_assets = namespace["_load_ledger_assets"]()
+    documented_callables = {asset.public_callable for asset in catalog_assets}
+    expected_asset_count = len(catalog_assets) + sum(
+        asset.public_callable not in documented_callables for asset in ledger_assets
+    )
+    assert len(assets) == expected_asset_count
     fluidbw_symbols = {
         "derive_fluidbw_case",
         "evaluate_fluidbw_special",
@@ -1061,7 +1071,11 @@ def test_shared_corrected_green_keeps_current_consumers():
 def test_canonical_green_document_is_classified_as_an_exact_contract():
     result = select("catalog/examples/scirel.electromagnetism.green-response-matrices.json")
     assert result["full_suite_required"] is False
-    assert result["test_paths"] == ["tests/test_asset_documentation.py"]
+    assert result["test_paths"] == [
+        "tests/test_asset_documentation.py",
+        "tests/test_canonical_binding_census.py",
+        "tests/test_public_export_document_census.py",
+    ]
 
 
 def test_catalog_asset_keeps_every_declared_direct_test(tmp_path):
@@ -1123,13 +1137,25 @@ def test_documented_asset_without_a_test_mapping_still_fails_closed():
     assert "without an asset/test mapping" in result["full_suite_reasons"][0]
 
 
-def test_external_project_source_without_canonical_document_fails_closed():
+def test_mixed_documented_sources_select_reverse_dependencies():
     result = select(
         "src/scirel/geometry/face_to_cell.py",
         "src/scirel/physics/dilution.py",
         "src/scirel/physics/coulomb_logs.py",
     )
-    assert result["full_suite_required"] is True
-    assert result["test_paths"] == ["tests"]
-    assert result["affected_assets"] == []
-    assert len(result["full_suite_reasons"]) == 3
+    assert result["full_suite_required"] is False
+    assert result["full_suite_reasons"] == []
+    assert result["affected_assets"] == [
+        "scirel.geometry.face_to_cell",
+        "scirel.neoclassical.calculate_bootstrap_current",
+        "scirel.neoclassical.calculate_redl_coefficients",
+        "scirel.neoclassical.calculate_sauter_coefficients",
+        "scirel.physics.calculate_log_lambda_ee",
+        "scirel.physics.calculate_log_lambda_ei",
+        "scirel.physics.calculate_log_lambda_ii",
+        "scirel.physics.calculate_main_ion_dilution_factor",
+    ]
+    assert result["test_paths"] == [
+        "tests/operator_contracts/test_torax_algebra_grid.py",
+        "tests/test_bootstrap.py",
+    ]

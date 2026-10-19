@@ -1,0 +1,224 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fvm.theta-step",
+  "kind": "operator",
+  "title": {
+    "en": "Linear finite-volume theta step",
+    "zh": "线性有限体积theta步"
+  },
+  "summary": "Advance a single channel with separately supplied old/new linear operators",
+  "taxonomy": [
+    "numerical-methods",
+    "finite-volume"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "u_t=C(t)u+c(t)",
+    "direction": "Explicit cell/face data to spatial operator or state update",
+    "definition": "(I-dt*theta*C_new)u_new=(I+dt*(1-theta)*C_old)u_old+dt*((1-theta)*c_old+theta*c_new). C is diffusion plus convection; c includes boundary forcing and explicit source. Output carries new boundary data. No hidden iteration or stopping condition.",
+    "model": "TORAX one-dimensional finite-volume discretization",
+    "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
+    "coordinates": "Caller coordinate X; positive increasing direction",
+    "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",
+    "assumptions": [
+      "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "var_old",
+      "description": "Old cell values and old boundary conditions",
+      "units": "Q",
+      "shape": "CellVariable",
+      "dtype": "CellVariable",
+      "required": true,
+      "constraints": "Validated CellVariable"
+    },
+    {
+      "name": "var_new",
+      "description": "New boundary data and output grid; initial value is not a nonlinear iterate",
+      "units": "Q",
+      "shape": "CellVariable",
+      "dtype": "CellVariable",
+      "required": true,
+      "constraints": "Exact same grid/shape as var_old"
+    },
+    {
+      "name": "dt",
+      "description": "Time increment",
+      "units": "time",
+      "shape": "scalar",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite positive real scalar"
+    },
+    {
+      "name": "d_old",
+      "description": "Old/new coefficient or explicit source; None means absent term",
+      "units": "X^2/time",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite explicit real array when supplied",
+      "default": null
+    },
+    {
+      "name": "d_new",
+      "description": "Old/new coefficient or explicit source; None means absent term",
+      "units": "X^2/time",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite explicit real array when supplied",
+      "default": null
+    },
+    {
+      "name": "v_old",
+      "description": "Old/new coefficient or explicit source; None means absent term",
+      "units": "X/time",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite explicit real array when supplied",
+      "default": null
+    },
+    {
+      "name": "v_new",
+      "description": "Old/new coefficient or explicit source; None means absent term",
+      "units": "X/time",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite explicit real array when supplied",
+      "default": null
+    },
+    {
+      "name": "source_old",
+      "description": "Old/new coefficient or explicit source; None means absent term",
+      "units": "Q/time",
+      "shape": "N",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite explicit real array when supplied",
+      "default": null
+    },
+    {
+      "name": "source_new",
+      "description": "Old/new coefficient or explicit source; None means absent term",
+      "units": "Q/time",
+      "shape": "N",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite explicit real array when supplied",
+      "default": null
+    },
+    {
+      "name": "theta",
+      "description": "Implicit new-time weight",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "0<=theta<=1; 0=Euler explicit, .5=Crank-Nicolson, 1=backward Euler",
+      "default": 1.0
+    },
+    {
+      "name": "dirichlet_mode",
+      "description": "Boundary face reconstruction strategy",
+      "units": "1",
+      "shape": "string",
+      "dtype": "str",
+      "required": false,
+      "constraints": "ghost/direct/semi-implicit",
+      "default": "ghost"
+    },
+    {
+      "name": "neumann_mode",
+      "description": "Boundary face reconstruction strategy for prescribed du/dx",
+      "units": "1",
+      "shape": "string",
+      "dtype": "str",
+      "required": false,
+      "constraints": "ghost/semi-implicit",
+      "default": "ghost"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "variable",
+      "description": "New float64 cell values and new boundary data",
+      "units": "Q",
+      "shape": "CellVariable",
+      "dtype": "CellVariable",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+    ],
+    "supported": [
+      "Advance a single channel with separately supplied old/new linear operators"
+    ],
+    "excluded": [
+      "Single-channel unit transient coefficient only; coupled source matrices, transient-in/out factors, nonlinear coefficients, internal boundary row replacement and nonlinear solvers are excluded.",
+      "Explicit and Crank-Nicolson modes have caller-dependent stability/oscillation constraints; no adaptive timestep or positivity guarantee. The implicit branch solves the tridiagonal system with a banded linear solver; no global stability bound is claimed."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for shape/domain/finite/masked input failures; FVM nonnumeric inputs raise TypeError. No partial result.",
+    "runtime_failure": "FloatingPointError for nonfinite computed results; singular banded systems raise numpy.linalg.LinAlgError.",
+    "nonconvergence": "No iteration; theta is one linear solve. No convergence flag is fabricated.",
+    "partial_results": "No partial output returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from Apache-2.0 TORAX source commit4d338d0bd3f5fd38f1a9ebb36252dcb86c33412f. SciRel combines the retained conservative diffusion/convection operators with an explicit theta update and banded linear solve. Face-to-cell is reused from the maintained scientific library.",
+    "source_kinds": [
+      "TORAX Python scientific implementation",
+      "Independent analytic/discrete numerical derivation"
+    ],
+    "public_references": [
+      "https://github.com/google-deepmind/torax"
+    ],
+    "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fvm.implicit",
+      "symbol": "theta_step",
+      "signature": "theta_step(var_old, var_new, dt, *, d_old=None, d_new=None, v_old=None, v_new=None, source_old=None, source_new=None, theta=1.0, dirichlet_mode='ghost', neumann_mode='ghost')",
+      "canonical_module": "scirel.fvm",
+      "canonical_symbol": "theta_step"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev11",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fvm.diffusion"
+      },
+      {
+        "asset_id": "scirel.fvm.convection"
+      }
+    ]
+  },
+  "example": {
+    "description": "Minimal analytic/invariant check",
+    "code": "import numpy as np\nfrom scirel.fvm import CellVariable,theta_step\nv=CellVariable([0.,0.],[0.,1.,2.])\nx=theta_step(v,v,.2,source_old=[1.,1.],source_new=[1.,1.],theta=.5)\nnp.testing.assert_allclose(x.value,.2)",
+    "expected": "Assertions complete without error."
+  },
+  "verification": {
+    "scope": [
+      "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks"
+    ],
+    "tests": [
+      "tests/test_fvm.py"
+    ],
+    "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
+    "known_limitations": [
+      "Single-channel unit transient coefficient only; coupled source matrices, transient-in/out factors, nonlinear coefficients, internal boundary row replacement and nonlinear solvers are excluded.",
+      "Explicit and Crank-Nicolson modes have caller-dependent stability/oscillation constraints; no adaptive timestep or positivity guarantee. The implicit branch uses a banded linear solve; no global stability bound is claimed."
+    ]
+  }
+}

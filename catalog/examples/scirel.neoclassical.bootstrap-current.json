@@ -1,0 +1,242 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.neoclassical.bootstrap-current",
+  "kind": "operator",
+  "title": {
+    "en": "Analytic parallel bootstrap current",
+    "zh": "解析平行自举电流"
+  },
+  "summary": "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients",
+  "taxonomy": [
+    "neoclassical",
+    "bootstrap"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "Sauter PoP1999 Eq12 / Redl PoP2021 Eq5",
+    "direction": "Explicit inputs to fit coefficients/current",
+    "definition": "j_face=-F*2*pi*multiplier/(B0*dpsi_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi]. First axis face is exactly zero. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation.",
+    "model": "Bounded analytic empirical tokamak fit",
+    "geometry": "Caller-supplied axisymmetric tokamak face data",
+    "coordinates": "rho normalized radius; psi total flux Wb",
+    "boundary": "First current face at magnetic axis exactly zero; other gradients explicit",
+    "assumptions": [
+      "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "bootstrap_multiplier",
+      "description": "Dimensionless multiplicative scale; signed algebra retained",
+      "units": "1",
+      "shape": "scalar",
+      "dtype": "real numeric converted to float64",
+      "required": false,
+      "constraints": "Finite real scalar; physical source configuration uses nonnegative multiplier",
+      "default": 1.0
+    },
+    {
+      "name": "F_face",
+      "description": "Toroidal flux function R*B_toroidal on faces",
+      "units": "T m",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "B0",
+      "description": "Reference toroidal magnetic field with signed convention retained",
+      "units": "T",
+      "shape": "scalar",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite nonzero scalar"
+    },
+    {
+      "name": "dpsi_drho_face",
+      "description": "Derivative of total poloidal flux (not flux/radian) wrt normalized radius",
+      "units": "Wb",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite matching faces; nonzero away from axis"
+    },
+    {
+      "name": "p_e_face",
+      "description": "Electron scalar thermal pressure",
+      "units": "Pa",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "p_i_face",
+      "description": "Ion scalar thermal pressure",
+      "units": "Pa",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnne_drho_face",
+      "description": "Electron density logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnni_drho_face",
+      "description": "Main-ion density logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnte_drho_face",
+      "description": "Electron temperature logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "dlnti_drho_face",
+      "description": "Ion temperature logarithmic gradient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "L31",
+      "description": "Density-gradient fit coefficient",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "L32",
+      "description": "Electron-temperature coefficient correction",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "L34",
+      "description": "Ion-temperature coefficient; Redl must use L31",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    },
+    {
+      "name": "alpha",
+      "description": "Ion temperature-gradient fit multiplier",
+      "units": "1",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite explicit matching faces"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "j_parallel_bootstrap_face",
+      "description": "Parallel current density; first entry zero at magnetic axis",
+      "units": "A/m^2",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    },
+    {
+      "name": "j_parallel_bootstrap",
+      "description": "Arithmetic adjacent-face cell current density",
+      "units": "A/m^2",
+      "shape": "N",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+    ],
+    "supported": [
+      "Evaluate parallel current density from explicit pressure/logarithmic gradients and fit coefficients"
+    ],
+    "excluded": [
+      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full TORAX physics qualification.",
+      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
+      "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for malformed, nonfinite, masked, mismatched or out-of-domain face inputs; no partial result.",
+    "runtime_failure": "FloatingPointError for nonfinite coefficient/current arithmetic; no fallback is returned.",
+    "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
+    "partial_results": "No partial output returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from Apache-2.0 TORAX source commit4d338d0bd3f5fd38f1a9ebb36252dcb86c33412f. SciRel retains the explicit Sauter/Redl bootstrap-current relation, finite face validation and binary exponent scaling for the alpha coefficient; the returned cell current uses the shared face-to-cell midpoint mapping.",
+    "source_kinds": [
+      "TORAX Python scientific implementation",
+      "Independent analytic/discrete numerical derivation"
+    ],
+    "public_references": [
+      "https://github.com/google-deepmind/torax"
+    ],
+    "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.neoclassical.bootstrap",
+      "symbol": "calculate_bootstrap_current",
+      "signature": "calculate_bootstrap_current(*, bootstrap_multiplier=1.0, F_face, B0, dpsi_drho_face, p_e_face, p_i_face, dlnne_drho_face, dlnni_drho_face, dlnte_drho_face, dlnti_drho_face, L31, L32, L34, alpha)",
+      "canonical_module": "scirel.neoclassical",
+      "canonical_symbol": "calculate_bootstrap_current"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev11",
+    "dependencies": [
+      {
+        "asset_id": "scirel.geometry.face-to-cell"
+      }
+    ]
+  },
+  "example": {
+    "description": "Minimal analytic/invariant check",
+    "code": "import numpy as np\nfrom scirel.neoclassical import calculate_bootstrap_current\none=np.ones(3); zero=np.zeros(3)\nx=calculate_bootstrap_current(F_face=one,B0=2.,dpsi_drho_face=one,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)\nnp.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])",
+    "expected": "Assertions complete without error."
+  },
+  "verification": {
+    "scope": [
+      "Independent Decimal fit checks, source-bound coefficient/caller parity and finite arithmetic regressions"
+    ],
+    "tests": [
+      "tests/test_bootstrap.py"
+    ],
+    "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
+    "known_limitations": [
+      "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full TORAX physics qualification.",
+      "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
+      "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
+    ]
+  }
+}

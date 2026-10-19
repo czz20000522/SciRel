@@ -1,0 +1,160 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fvm.convection",
+  "kind": "operator",
+  "title": {
+    "en": "Conservative power-law convection",
+    "zh": "守恒幂律对流"
+  },
+  "summary": "Assemble TORAX power-law convection and selected boundary flux conventions",
+  "taxonomy": [
+    "numerical-methods",
+    "finite-volume"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "-d/dx(v u)=M u+b",
+    "direction": "Explicit cell/face data to spatial operator or state update",
+    "definition": "Face Peclet p=distance*v/D with half-cell distance at boundaries, |D| floored to1e-20. Alpha=.5 for |p|<=.001; [(p-1)+(1-p/10)^5]/p for .001<p<=10; [(1+p/10)^5-1]/p for -10<=p<-.001; 1-1/p above10; -1/p below-10. Internal face flux uses complementary left/right alpha weights and identical flux in adjacent cells. Ghost boundaries reconstruct ghost cell from face data; direct uses imposed face value; semi-implicit weights current cell and face data. Neumann gradients are positive-coordinate at both ends.",
+    "model": "TORAX one-dimensional finite-volume discretization",
+    "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
+    "coordinates": "Caller coordinate X; positive increasing direction",
+    "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",
+    "assumptions": [
+      "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "v_face",
+      "description": "Face convection coefficient positive toward increasing x",
+      "units": "X/time",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    },
+    {
+      "name": "d_face",
+      "description": "Signed diffusion scale used only for power-law face weighting",
+      "units": "X^2/time",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite matching faces; magnitude floor 1e-20 in supplied units, zero sign positive as TORAX"
+    },
+    {
+      "name": "var",
+      "description": "CellVariable provides grid and scalar boundary constraints; assembly uses its shape and boundary data",
+      "units": "Q",
+      "shape": "CellVariable",
+      "dtype": "CellVariable",
+      "required": true,
+      "constraints": "Validated CellVariable, N>=2"
+    },
+    {
+      "name": "dirichlet_mode",
+      "description": "Boundary face reconstruction strategy",
+      "units": "1",
+      "shape": "string",
+      "dtype": "str",
+      "required": false,
+      "constraints": "ghost/direct/semi-implicit",
+      "default": "ghost"
+    },
+    {
+      "name": "neumann_mode",
+      "description": "Boundary face reconstruction strategy for prescribed du/dx",
+      "units": "1",
+      "shape": "string",
+      "dtype": "str",
+      "required": false,
+      "constraints": "ghost/semi-implicit",
+      "default": "ghost"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "matrix",
+      "description": "TriDiagonal with diagonal/above/below, to_dense() and matvec()",
+      "units": "1/time",
+      "shape": "N by N operator",
+      "dtype": "TriDiagonal",
+      "required": true,
+      "constraints": "Finite tridiagonal operator"
+    },
+    {
+      "name": "forcing",
+      "description": "Boundary contribution independent of cell values",
+      "units": "Q/time",
+      "shape": "N",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "Finite real cell array"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+    ],
+    "supported": [
+      "Assemble TORAX power-law convection and selected boundary flux conventions"
+    ],
+    "excluded": [
+      "The absolute D floor is source behavior in supplied units, not a unit-invariant physical regularization.",
+      "Conservation is relative to selected numerical boundary flux; ghost/semi-implicit face value may differ from the prescribed Dirichlet value. No unrestricted-grid accuracy or positivity claim."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for shape/domain/finite/masked input failures; FVM nonnumeric inputs raise TypeError. No partial result.",
+    "runtime_failure": "FloatingPointError for nonfinite computed results.",
+    "nonconvergence": "No iteration; theta is one linear solve. No convergence flag is fabricated.",
+    "partial_results": "No partial output returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from Apache-2.0 TORAX source commit4d338d0bd3f5fd38f1a9ebb36252dcb86c33412f. Alpha and positive-Peclet arithmetic corrections retain the mathematical relation while avoiding overflow. Face-to-cell is reused from the maintained scientific library.",
+    "source_kinds": [
+      "TORAX Python scientific implementation",
+      "Independent analytic/discrete numerical derivation"
+    ],
+    "public_references": [
+      "https://github.com/google-deepmind/torax"
+    ],
+    "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fvm.convection",
+      "symbol": "make_convection_terms",
+      "signature": "make_convection_terms(v_face, d_face, var, dirichlet_mode='ghost', neumann_mode='ghost')",
+      "canonical_module": "scirel.fvm",
+      "canonical_symbol": "make_convection_terms"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev11",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fvm.cell-variable"
+      }
+    ]
+  },
+  "example": {
+    "description": "Minimal analytic/invariant check",
+    "code": "import numpy as np\nfrom scirel.fvm import CellVariable,make_convection_terms\nv=CellVariable([1.,1.],[0.,1.,2.])\nm,b=make_convection_terms([2.,2.,2.],[0.,0.,0.],v)\nnp.testing.assert_allclose(m.matvec(v.value)+b,0.)",
+    "expected": "Assertions complete without error."
+  },
+  "verification": {
+    "scope": [
+      "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks"
+    ],
+    "tests": [
+      "tests/test_fvm.py"
+    ],
+    "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
+    "known_limitations": [
+      "The absolute D floor is source behavior in supplied units, not a unit-invariant physical regularization.",
+      "Conservation is relative to selected numerical boundary flux; ghost/semi-implicit face value may differ from the prescribed Dirichlet value. No unrestricted-grid accuracy or positivity claim."
+    ]
+  }
+}

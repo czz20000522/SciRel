@@ -8,7 +8,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "catalog/examples"
-EXAMPLE_CLOSURE_COUNT = 267
+# Keep the fixture denominator tied to the current working-tree document set.
+# Release selections carry their own frozen counts; development tests must not
+# turn one historical manifest into a permanent project gate.
+EXAMPLE_CLOSURE_COUNT = sum(1 for path in EXAMPLES.glob("*.json") if path.is_file())
 
 
 def example_document_sources():

@@ -4,41 +4,20 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 
 ## 当前默认开发模式
 
-- 普通任务默认处于 `development`：优化源码、公共 API、依赖边界、测试、文档、基准和构建配置，使用影响范围匹配的检查，并以一个可审阅的 Git change set 收口。
-- “继续”“完成”“审查”“验证”本身不会启动发布流程。没有明确的 consumer、handoff、candidate cut 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵，也不推进 `devN`。
-- 长程 goal 只是待处理 claim 的队列，不是无限执行许可：每次继续只把当前 claim 推到 stop condition；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口，没有新的范围或阻塞就不自动启动下一项优化，也不重复同一检查。
-- 普通开发先确定一个主要 claim、一个 owned scope 和一个 stop condition，运行能够决定该 claim 的最小 affected 检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 后收口。结果改变影响范围或暴露具体阻塞时，可以追加更宽测试；wheel、文档/catalog 闭包和平台门禁只在 named `integration_checkpoint` 明确需要 consumer/handoff artifact，或进入 `release_freeze` 时追加。AOCI 只按受管对象的收尾规则处理；若本次产生 durable decision、blocker 或 next action，按收尾约定同步工作台，不为每次继续创建 release record。
-- skill/AGENTS 维护与候选 diff 审查可以同轮进行，但必须保持两个独立 claim 和 owned scope：先收口 skill 维护并跑轻量合同检查，候选审查在此之前保持只读；只有审查发现确定且影响范围明确的产品 claim，才另起产品变更，不把它混入 skill 维护或自动进入发布流程。skill 维护和产品变更各自达到 stop condition 后再做一次 AOCI 收尾，不按中间编辑重复维护。
-- operators、TaskGraphs、文档和 catalog 的数量随当前 Git 树变化；数量只属于具体 manifest/revision，不是项目永久门禁。需要 wheel、文档和 catalog 时，才从同一个确切 revision 派生并绑定它们。
-- 普通开发期间 `release/CURRENT.json`、外部 wheel、文档 selection 或 catalog 可以继续指向旧 revision；这属于待切候选的 stale projection，不是当前开发失败，不要为了对齐 `HEAD` 先修复或重建它们。
-- 相关变更的批次、停点和 source-bound maintenance 遵循 `skills/development/references/development-lifecycle.md`；同一科学域或 affected closure 的兼容兄弟项合并为一个可审阅批次，只有 owner、风险、依赖边界或 stop condition 不同才拆批，不为每个兄弟项单独制造提交、工作记录、AOCI 维护或验收循环。
-- incubation 期间版本号只是 Git 可追溯的开发元数据；首次公开发布时才选择初始 `major.minor`。兼容修复、数值修正、性能优化和内部重构可批量留在同一能力线，只有公共能力或兼容边界的大范围变化才开启新的能力线。
-- SciRel 对公开算子和 TaskGraph 的实现、输入/输出合同、数值结果、失败语义和直接回归负责；Agent 只负责发现、选择、组合和编写胶水代码，不在胶水层复制科学算法或用组合测试替代能力本身的正确性证据。
-- 先按影响范围选检查：局部实现运行 affected 测试，共享 API/依赖边界扩大到直接反向依赖；性能基准不可运行时只将性能子声明记为 `NOT_RUN`，保留 affected correctness 结果，不升级为发布或平台流程；只有 named `integration_checkpoint` 且该 checkpoint 明确需要安装 artifact，或 `release_freeze` 时才构建 wheel、生成闭包和运行平台门禁。没有证据支持时，不把一次慢运行或一次成功安装升级成通用性能/跨平台结论。
-- 平台 wheel 的拆分由实际 native/ABI 和依赖闭包决定：纯 Python 或已有通用 wheel 能覆盖的能力保持统一分发；只有实测存在平台边界时才增加平台特定构建和门禁。
-- 非平凡修改或验证任务按 lifecycle reference 先确定 mode、主要 claim 和负责路径，并记录已有脏改动；证据复用及工作记录更新遵循该入口，不因“继续”或状态查询重复验证、重建 wheel 或同步不变状态。
-- 普通开发只要求可审阅的 diff 和与 claim 匹配的检查；提交由用户交付或仓库工作流需要时再做，不因状态查询、继续或不变证据制造新提交。
-- 并行协作时每个可变源码/测试/文档路径只设一个 owner；其他 agent 只并行做独立只读审查、基准或测试。相同路径的编辑、AOCI maintenance、catalog/投影生成必须串行，源码稳定后才取得最终候选；后续编辑会使此前结果失效。
-- 区分 SciRel 开发项目与用户安装的 `scirel` 包：skill、审核状态、来源工件、开发工具和平台适配属于项目开发/集成层；科学 wheel 只包含所选科学 API、运行实现、必要组件/数据及分发元数据。历史试验不自动进入后续发行或成为永久门禁；仍被引用的来源与许可依据保留可取得。
-- 按 SciPy 式标准库结构维护一个当前源树：`src/scirel`、直接测试、公共文档、构建配置和依赖声明各保留一套 Git 表示；各科学域保持显式导出、可调用文档和直接回归，运行时、可选和开发依赖分层。完整 wheel、文档快照和 catalog 属于按确切 revision 生成的外部投影，不复制进版本目录。
-- 不同整合批次、发行候选和维护版本在确有重叠或需要隔离验收时使用隔离分支/worktree、环境及构建输出；普通小范围开发继续使用当前工作树。以确切提交、审核内容和 wheel 摘要定义版本，不以分支名/worktree 路径定义批准。具体边界见 `docs/design/project-and-distribution.md`；创建 worktree 前检查已有工作区，不覆盖他人未提交修改。
-- 任务消费或产生 D0/D1 来源交付时，先读 README、`docs/` 中相关架构/目录/流程、相关函数、科学测试和 provenance；不得把候选来源记录解释为人工批准。
-- 任务消费或产生 D0/D1 来源交付时，官方来源只读；D0 在可编辑的 Git 分支/副本先完成或复用初始 AOCI 索引，再清理有依据的不完整/明显有问题代码，对稳定改动增量维护 AOCI/CodeGraph，最后交付固定 D0。记录相对上游的改动、剔除范围和理由；首建完成不自动触发全量语义重审，已知缺陷仍须按证据范围修复。已授权范围由 Agent 自主处理，不逐项申请批准；具体边界见 `docs/development-process.md`。
-- 任务消费或产生 D0/D1 来源交付时，默认先尽量完成冻结 D0 项目的 D1，再保存可由新 owner 延后接续的项目交付供 D2/D3 使用；算子/图是阶段内部工作单位，不逐项触发整链。局部试点须明确范围，不代表项目完成。具体交付与异步接续见 `docs/requirements/scirel-workflow.md`。
-- 已明确授权整项目交付时，才以全部核心物理能力的无源码安装替代为终点，并为该交付准备独立接收与合入。普通产品优化停在影响范围匹配的检查和可审阅变更；真实阻塞记录责任方、下一动作和重查条件。具体规则见 workflow 的“已授权整项目目标的连续交付”。
-- 不依赖 CodeFusion、源项目 checkout、数据库或网络来执行科学函数。
-- 任务消费或产生 D0/D1 来源交付时，分开选择来源运行、科学 wheel 运行和 SciRel 项目开发三类依赖。D0 先按证据确定保留入口，再按必要对照准备源码运行子集，不预装全部上游依赖；wheel 按最终实现的实际传递闭包声明；构建/测试/独立参考计算/文档工具留在开发侧。版本统一不等于清单统一，缺开发工具不算数值失败；细则见 `docs/design/project-and-distribution.md`。
-- 任务消费或产生 D0/D1 来源交付时，D1 忠实复现冻结 D0 的现有功能和失败行为，不重做 D0 范围裁决，也不冒称完整原上游保真；允许封装随包的原语言实现，不要求纯 Python。保留 D0 中新发现的疑似错误记录触发条件与证据交 D2，D1 修复自身抽取缺陷。科学/数值正确性判断与修正属于 D2，D3 验证实际安装包的应用；全链保留上游→D0→SciRel 包的来源关系。
-- 公共 API 按科学领域组织，任务图是组合函数；共享代码必须保持科学合同、默认值与失败行为。
-- 普通 TaskGraph 依赖保持 DAG；反馈/迭代必须显式声明状态、顺序、停止条件和上限。资产发现使用分片索引与渐进披露，不建立需要全量 import 或把全部合同送入上下文的 registry。
-- 日常内循环先用 `scripts/check.ps1 -Mode affected` 根据变更资产、共享源码和 TaskGraph 反向依赖选择精确测试；无法归属时先扩大到能覆盖未知归属的更宽测试层，只有影响范围仍无法界定时才回落到全仓。只有影响范围、发布门禁或公共基线要求时才跑全仓，不把全仓测试作为每个算子修改的默认动作。
-- 新增回归应放在 affected selector 能识别的 canonical direct test 路径中，或在同一变更中补充 selector 归属；selector 未覆盖的测试不能支撑自动 affected 结论，但手动执行且范围匹配时仍可作为已报告的局部证据。
-- 新增或改变公共资产，在 D2 比较、去重和代码稳定后、最终待审冻结前维护唯一 `scirel.asset-document.v1` exact document；普通 docstring/公共文档批次仍留在 development，不因此生成 exact document 或 catalog，只有 named handoff、integration checkpoint、review preparation 或 release freeze 才创建这些投影。实验内循环使用代码、YAML、注释/docstring 和现有证据锚点，不要求先写正式文档。catalog 只从已验证文档生成。不得从名称/源码猜补科学字段，不得把 CodeFusion 私有 owner/ref 或 adapter session/job 字段写入公共合同。
-- 上一阶段交付只读；本阶段的修正、重复吸收和来源说明写入本阶段派生代码注释/docstring 或接续记录。正式审查文档面向人，不复制内部路径或过程备注。不用文件覆盖方式重复导入整批资产；对照当前 Git 基线逐项整合，保留其他贡献者的修改。
-- 改变科学行为先写失败回归；保持旧数值断言和容差，不能为了通过测试弱化它们。
-- 改动后运行与声明匹配的相关测试；只有明确需要安装 artifact 的 named `integration_checkpoint` 或 `release_freeze` 才构建 wheel，checkpoint 同时产出的 wheel、文档、catalog 和 receipt 必须绑定同一个确切 `source_revision`；只有 `release_freeze` 才在没有源码的环境验证全套测试和公共 API。运行时闭包 receipt 必须明确 `BOUND`/`UNBOUND`，比较测量前后的 source/probe identity，并把 dirty source、identity 漂移、非隔离子进程或 Linux amd64 + CPython 3.14 目标不匹配保留为未绑定证据；结构校验不得把它们升级为发布证据。
-- 冻结的来源、审核和准入记录不可改写；源码演进另记版本和审查。语言/格式调整也要保留可核对差异。
-- 每个来源项目使用独立容器，环境定义随交付保存；源码、依赖/工具、探针、缓存、证据与产物分开，冻结预处理与索引供各 worker 复用，不逐区域重装或重建。依赖下载通过开发机本地代理；服务器不构建。清理前先列出精确范围进行 dry run；用户明确清空旧工作且不备份时遵从该范围，保留指定来源、工具与凭据，不把历史运行保留规则变成额外批准门槛。
+- 普通任务默认处于 `development`：以当前 Git 源树为真相，先确定一个主要 claim、owned scope 和 stop condition，再做影响范围匹配的检查。模式、证据复用、停止、artifact 和版本规则以 `skills/development/references/development-lifecycle.md` 为唯一流程来源。
+- “继续”“完成”“审查”“验证”不会自动进入发布流程。没有明确的 consumer、handoff、candidate cut 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵、不推进 `devN`。`integration_checkpoint` 只是明确请求 artifact 的开发期例外；`release_freeze` 才冻结候选。
+- 长程 goal 是 claim 队列，不是执行调度器。继续同一 claim 时只做轻量身份检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 且没有新范围或阻塞就收口，不重复相同检查，也不自动启动下一项优化。
+- incubation 期间 capability、operator、TaskGraph、document 和 catalog 的数量随 manifest/revision 变化；数量不是永久门禁。需要 projection 时从同一确切 revision 派生并绑定 wheel、文档和 catalog；普通开发不为追赶旧 projection 重建它们。
+- 按 SciPy 式标准库结构维护一个当前源树：`src/scirel`、直接测试、公共文档、构建/测试工具和依赖声明各保留一套 Git 表示；Git 历史保存旧版本，不复制平行 wheel、文档或 catalog 树。SciPy 只提供结构参考，不决定 SciRel 的 Python 下界、依赖 pin、classifier 或 native 分发。
+- SciRel 对每个公开 Operator 和 TaskGraph 的实现、输入/输出合同、数值结果、失败语义和直接回归负责；Agent 只发现、选择、组合和编写 glue，不复制科学算法，也不用组合成功替代能力正确性。
+- 日常检查采用 selector-first：先运行 affected selector；只有 selector 显示共享边界或 claim 明确需要时才追加反向依赖、API/import/failure 或 benchmark；未知归属才扩大测试层。性能基准不能运行时只将性能子声明记为 `NOT_RUN`，保留 affected correctness 结果。只有 named checkpoint 或 `release_freeze` 才生成安装 artifact 或闭包；checkpoint 只运行 consumer/claim-scoped 的安装与闭包检查，只有 `release_freeze` 才运行全平台门禁。
+- exact document/catalog 是 handoff、checkpoint、review preparation 或 release 的投影。普通开发可用 docstring、注释和直接测试；形成 exact-document projection 时检查 document→export 与 function-export→document 双向绑定。类与异常由 public-surface/asset-document 测试覆盖。
+- 平台 wheel 的拆分由实测 native/ABI 和依赖闭包决定；纯 Python 或通用依赖能覆盖的能力保持统一分发。Linux amd64 + CPython 3.14 是开发基线，其他平台只能由明确 claim 提供证据。运行时闭包 receipt 必须明确 `BOUND`/`UNBOUND`；`BOUND` 还要求实际执行过隔离子进程，脏源、身份漂移、无 child 测量或目标不匹配都保持未绑定。
+- skill/AGENTS 维护与候选 diff 审查是两个独立 claim：先完成 skill 的轻量合同检查，候选审查保持只读；只有形成明确产品 claim 才进入产品变更。受管文件达到最终稳定状态后只做一次 AOCI maintenance。checkpoint 产生的 wheel、文档、catalog 和 receipt 必须绑定同一个确切 `source_revision`。
+- 任务消费或产生 D0/D1 来源交付时，先读相关 README、架构、函数、科学测试和 provenance；官方来源只读，保留来源改动、剔除范围和失败证据。没有 exact D1 packet 时不制造 D1 manifest 或完整 denominator。
+- D1 忠实复现冻结 D0 的现有功能和失败行为；D2 负责科学比较、修正和归一化；D3 验证实际安装包的应用。来源运行、科学 wheel 运行和项目开发依赖分开选择，wheel 只声明最终实现的实际传递闭包。
+- 普通 TaskGraph 依赖保持 DAG；反馈/迭代显式声明状态、顺序、停止条件和上限。资产发现使用分片索引和渐进披露，不建立需要全量 import 或把全部合同送入上下文的 registry。
+- 改变科学行为先写失败回归并保持原数值断言和容差。冻结来源、审核和准入记录不可改写；源码演进另记版本和审查。清理资产前先做精确 dry run。
 
 ## AOCI 接入与增量维护
 

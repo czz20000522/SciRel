@@ -1,0 +1,131 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.fvm.diffusion",
+  "kind": "operator",
+  "title": {
+    "en": "Conservative finite-volume diffusion",
+    "zh": "守恒有限体积扩散"
+  },
+  "summary": "Assemble diffusion flux divergence as a tridiagonal operator plus boundary forcing",
+  "taxonomy": [
+    "numerical-methods",
+    "finite-volume"
+  ],
+  "aliases": [],
+  "identity": {
+    "relation": "+d/dx(D du/dx)=M u+b",
+    "direction": "Explicit cell/face data to spatial operator or state update",
+    "definition": "Inner face flux=D_face*(u_right-u_left)/center_spacing; boundary Dirichlet flux uses half-cell secants, Neumann flux uses positive-coordinate gradient. Row residual=(right_flux-left_flux)/cell_width. Sum(cell_width*residual)=right_boundary_flux-left_boundary_flux. Signed D preserves algebra; physical diffusion requires D>=0.",
+    "model": "TORAX one-dimensional finite-volume discretization",
+    "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
+    "coordinates": "Caller coordinate X; positive increasing direction",
+    "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",
+    "assumptions": [
+      "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "d_face",
+      "description": "Face diffusion coefficient, including any caller-supplied metric factors",
+      "units": "X^2/time",
+      "shape": "N+1",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite N+1 real array; physical diffusion nonnegative"
+    },
+    {
+      "name": "var",
+      "description": "CellVariable provides grid and scalar boundary constraints; assembly uses its shape and boundary data",
+      "units": "Q",
+      "shape": "CellVariable",
+      "dtype": "CellVariable",
+      "required": true,
+      "constraints": "Validated CellVariable, N>=2"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "matrix",
+      "description": "TriDiagonal with diagonal/above/below, to_dense() and matvec()",
+      "units": "1/time",
+      "shape": "N by N operator",
+      "dtype": "TriDiagonal",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    },
+    {
+      "name": "forcing",
+      "description": "Boundary contribution independent of cell values",
+      "units": "Q/time",
+      "shape": "N",
+      "dtype": "real numeric converted to float64",
+      "required": true,
+      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+    ],
+    "supported": [
+      "Assemble diffusion flux divergence as a tridiagonal operator plus boundary forcing"
+    ],
+    "excluded": [
+      "Uniform sine manufactured stationary solution exhibits second-order point error under grid refinement; arbitrary nonuniform convergence is not established.",
+      "No physical face areas or cell volumes inferred; all metric transformations and compatible coordinate units belong to caller."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "ValueError for shape/domain/finite/masked input failures; FVM nonnumeric inputs raise TypeError. No partial result.",
+    "runtime_failure": "FloatingPointError for nonfinite computed results.",
+    "nonconvergence": "No iteration; theta is one linear solve. No convergence flag is fabricated.",
+    "partial_results": "No partial output returned on failure."
+  },
+  "provenance": {
+    "lineage_summary": "Derived from Apache-2.0 TORAX source commit4d338d0bd3f5fd38f1a9ebb36252dcb86c33412f. SciRel preserves the conservative two-point flux relation with explicit finite-value checks. Face-to-cell is reused from the maintained scientific library.",
+    "source_kinds": [
+      "TORAX Python scientific implementation",
+      "Independent analytic/discrete numerical derivation"
+    ],
+    "public_references": [
+      "https://github.com/google-deepmind/torax"
+    ],
+    "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.fvm.diffusion",
+      "symbol": "make_diffusion_terms",
+      "signature": "make_diffusion_terms(d_face, var)",
+      "canonical_module": "scirel.fvm",
+      "canonical_symbol": "make_diffusion_terms"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev11",
+    "dependencies": [
+      {
+        "asset_id": "scirel.fvm.cell-variable"
+      }
+    ]
+  },
+  "example": {
+    "description": "Minimal analytic/invariant check",
+    "code": "import numpy as np\nfrom scirel.fvm import CellVariable,make_diffusion_terms\nv=CellVariable([.5,1.5],[0.,1.,2.],left_face_grad_constraint=1.,right_face_grad_constraint=1.)\nm,b=make_diffusion_terms([1.,1.,1.],v)\nnp.testing.assert_allclose(m.matvec(v.value)+b,0.)",
+    "expected": "Assertions complete without error."
+  },
+  "verification": {
+    "scope": [
+      "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks"
+    ],
+    "tests": [
+      "tests/test_fvm.py"
+    ],
+    "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
+    "known_limitations": [
+      "Uniform sine manufactured stationary solution exhibits second-order point error under grid refinement; arbitrary nonuniform convergence is not established.",
+      "No physical face areas or cell volumes inferred; all metric transformations and compatible coordinate units belong to caller."
+    ]
+  }
+}
