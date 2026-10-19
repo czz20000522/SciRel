@@ -166,9 +166,8 @@ wheel metadata、完整 capability closure 和安装包验证仍需单独收口�
 #### 2026-10-19 SciPy 调用边界审计
 
 对 SciPy-dependent 候选做了 fresh-process 缺依赖审计。初始审计绑定到 macOS + CPython 3.14.7；
-随后在当前提交 `422588e` 的源码归档上，于 Linux amd64 + CPython 3.14.4 重放同一调用边界。
-Linux 重放使用 fresh-process import blocker，验证缺依赖失败路径，但没有把 SciPy 从既有 venv
-物理卸载；因此它仍是调用边界证据，不替代 optional extra 的 clean-venv 安装证据：
+随后在当前提交 `422588e` 的源码归档上，于 Linux amd64 + CPython 3.14.4 的 NumPy-only
+clean venv 重放同一调用边界。另保留了一次 import blocker 重放用于确认延迟导入顺序：
 
 | 能力边界 | 无 SciPy 时的可观察行为 | 当前结论 |
 | --- | --- | --- |
@@ -179,15 +178,16 @@ Linux 重放使用 fresh-process import blocker，验证缺依赖失败路径，
 | `compute_equilibrium` | 早期参数错误仍按 `ValueError`；合法基线捕获 spline 导入失败并返回 `status="nonfinite"` 的结果对象 | SciPy call capability，失败形态与其他入口不同 |
 
 当前多数边界暴露原始 `ModuleNotFoundError`，而 `compute_equilibrium` 将后端缺失转为结构化
-`nonfinite` 结果；它们都应先写入能力文档和缺依赖回归，再决定是否统一异常。此审计不授权改变
-`pyproject.toml` 的 core 依赖，也不授权把 SciPy 移入 extra。后续 optional 化必须在 Linux clean-venv
-中重跑同一批合法、非法、短路和结构化失败路径，并绑定到同一 source revision 的能力闭包。
+`nonfinite` 结果；它们都应先写入能力文档和缺依赖回归，再决定是否统一异常。该证据仍不授权改变
+`pyproject.toml` 的 core 依赖，也不授权把 SciPy 移入 extra；optional 化还需要成功路径、完整能力
+分母、wheel metadata 和安装后公共 API 闭包。
 
-Linux 重放结果保存在
-`build/verification/scirel-linux-smoke-422588e-20261019/no-scipy-boundary.json`，其 source archive
-SHA-256 为 `94b39a9479a82f93ffeaa30e746b6caf1ffcc35ad795f9f0d9095fc3d00156d6`；结果为 6 个入口
-抛出 `ModuleNotFoundError(name="scipy")`，`compute_equilibrium` 返回 `status="nonfinite"`，且
-探针结束时没有加载 SciPy。该文件是开发期运行证据，不属于 release projection。
+Linux clean-venv 结果保存在
+`build/verification/scirel-linux-smoke-422588e-20261019/no-scipy-boundary-clean-venv.json`，其
+source archive SHA-256 为 `94b39a9479a82f93ffeaa30e746b6caf1ffcc35ad795f9f0d9095fc3d00156d6`；
+环境只安装 `numpy==2.5.4`，结果为 6 个入口抛出 `ModuleNotFoundError(name="scipy")`，
+`compute_equilibrium` 返回 `status="nonfinite"`，且探针结束时没有加载 SciPy。较早的 blocker
+重放保存在同目录的 `no-scipy-boundary.json`。这些文件都是开发期运行证据，不属于 release projection。
 
 ### Optional Python
 
