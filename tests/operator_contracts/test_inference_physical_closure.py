@@ -80,7 +80,7 @@ def test_failed_zero_chi2_never_becomes_best():
 def test_real_picard_forward_recovers_two_physical_parameters_from_analytic_observations():
     import importlib.util
     from pathlib import Path
-    spec=importlib.util.spec_from_file_location('physical_recovery',Path(__file__).resolve().parents[2]/'examples/inference/anisotropic_recovery.py')
+    spec=importlib.util.spec_from_file_location('physical_recovery',Path(__file__).resolve().parents[1]/'fixtures/inference/anisotropic_recovery.py')
     module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     result=module.run()
     assert result['failed_trials']>0

@@ -18,7 +18,7 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
-MANIFEST = ROOT / "release/wheel/native-resource-closure.json"
+MANIFEST = ROOT / "tools/wheel/native-resource-closure.json"
 
 
 def _read(path: Path) -> dict[str, Any]:

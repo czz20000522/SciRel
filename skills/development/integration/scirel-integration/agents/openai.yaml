@@ -1,6 +1,0 @@
-interface:
-  display_name: "Scientific Asset Integration"
-  short_description: "Integrate an exact D1 packet into the development library"
-  default_prompt: "Use $scirel-integration when an exact D1 packet is supplied; compare it with the receiving library, integrate retained changes, and verify the bounded development package."
-policy:
-  allow_implicit_invocation: false

@@ -11,8 +11,9 @@ from zipfile import ZipFile
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-CURRENT = json.loads((ROOT / "release/CURRENT.json").read_text(encoding="utf-8"))
-CURRENT_VERSION = CURRENT["version"]
+import tomllib
+
+CURRENT_VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
 sys.path.insert(0, str(ROOT))
 
 from scripts import validate_installed_wheel as validator  # noqa: E402

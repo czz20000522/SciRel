@@ -1,61 +1,71 @@
 # Contributing to SciRel
 
-SciRel 是长期维护的独立 Python 科学关系库。贡献必须同时保护科学合同、公共 API、准入来源边界和可安装发行物；不能把它当作一次性资产汇总目录。
+SciRel 是一个自包含的科学计算库。贡献的核心单位是一个**功能**，它由三部分组成：
 
-## 开发环境
+1. `src/scirel/<domain>/` 中的实现；
+2. `tests/` 中的直接功能测试（数值对照为主）；
+3. `catalog/examples/` 中的正式资产合同（模型、输入输出、单位、适用条件、失败行为、示例与验证边界）。
 
-使用 Python 3.14（>=3.14,<3.15）与 `pwsh` 7+。规范检查入口是 `pwsh ./scripts/check.ps1`；在没有 `pwsh` 的环境（如本机 macOS）用 `.venv/bin/python -m pytest <affected tests>` 跑受影响检查，并将 `pwsh` 门禁记为环境边界，不得声称已运行。在隔离环境安装项目及测试依赖：
+由合同生成的中英双语文档（HTML）是派生阅读层，不单独维护。
 
-```powershell
-python -m pip install -e ".[test]"
-pwsh ./scripts/check.ps1 -Mode affected
+## 环境
+
+- Python 3.14（`>=3.14,<3.15`）；
+- 使用仓库内 `.venv` 或重建环境：
+
+```bash
+python3.14 -m venv .venv
+.venv/bin/python -m pip install -e ".[test]"
+# 或
+uv sync --locked --group test
 ```
 
-科学函数运行时不得依赖 CodeFusion、源项目 checkout、数据库、网络或主机绝对路径。依赖变更需先说明用途、运行时影响、许可证和替代方案；不为便利引入新的框架。
+## 修改前
 
-上述安装只提供科学库。开发 workflow/plugin/adapter 在源码 checkout 通过项目脚本、测试入口或显式
-`PYTHONPATH=src` 使用；宿主服务须另行部署。项目与包的范围、历史样本及多版本 worktree 规则见
-[开发项目与科学包交付](docs/design/project-and-distribution.md)。各整合/候选/维护分支使用独立环境和输出。
+1. 读相关实现、直接测试和 `catalog/examples/` 中的合同；确认修改属于哪个科学合同。
+2. 科学行为变化（公式、单位/轴序、默认值、边界、失败语义、数值方法、依赖绑定）先写失败回归，
+   保留原断言与容差；不得为让实现通过而放宽容差。
+3. 未公开发布前公共 API 可以重构（改域名、函数名、签名），不保留兼容别名；同时更新合同、
+   测试与双语阅读层。
 
-## 开始修改前
+## 实现与性能
 
-1. 阅读 `README.md`、[架构合同](docs/architecture.md)、相关函数、科学测试和 provenance。
-2. 固定本次保存的 L1 输入和只读 SciRel 基线，并读取当前全部未发布候选；候选准备期间只写隔离 worktree/输出目录，L1 来源材料、机器检查和模型结论都不能代替后续专家审核。
-3. 对照当前 Git/release 基线与候选池，列出公共 API、科学身份、直接依赖和受影响 TaskGraph；不要把不完整 catalog 当作全部已有能力。未发布开发候选可以明确其信任状态后用于内部验证，不能冒充已批准能力。
-4. 对 L1 整合使用项目的 `scirel-integration` skill，逐项判断复用、重复、变体、组合、新增或未决；在隔离开发分支修改维护源码、测试和开发包。比较、去重与代码稳定后生成保留增量的正式文档，再提交最终待审三件套；人工认可不阻断日常开发，上一可信版保持只读。
-5. 候选记录比较时的 Git base；上传前草稿可合并、替换或撤回，上传时固定逐项初始内容，首次打开只记录所见版本。候选入队后原 Agent run 即可结束；批准后由独立任务对照最新基线固化，同一资产、合同、依赖闭包、TaskGraph 或 patch hunk 已变化时形成关联候选，不采用 last-write-wins 或改写原审核版本。
-6. 新增或改变公共资产，在代码稳定后、最终待审冻结前维护唯一标准资产文档，并运行相关 runtime/example/catalog 验证；缺失可信元数据时保留 metadata gap，不生成占位科学合同。
+- 实现可以复刻来源行为，但必须改写成适配本项目的设计与代码，不得直接复制来源实现；
+- 先保证正确性，再考虑性能；
+- 默认使用 NumPy 向量化的 Python；只有 profiling 证明是瓶颈、且维护成本可接受时才引入 C 扩展；
+- C 扩展会改变 wheel 平台边界，引入前需说明构建、ABI 与分发影响。
 
-## 变更分类
+## 验证
 
-- 科学行为：公式、模型、单位、轴序、边界、默认值、容差、失败行为、数值算法或图绑定发生变化。先写失败回归，并确认是否需要新的候选与审查。
-- 公共接口：signature、module/symbol、返回结构或异常合同变化。默认保持兼容；破坏性变更说明调用方、版本影响、弃用与迁移路径。
-- 行为不变重构：仍需运行原科学回归和受影响 TaskGraph，不改写冻结准入记录。
-- 文档/工具：不得声称未实现能力；命令、路径和当前边界应能由可执行检查验证。
+```bash
+# 受影响的功能测试（推荐先跑最贴近的测试文件）
+.venv/bin/python -m pytest tests/operator_contracts/test_<asset>.py -q
 
-共享实现前先证明科学合同、默认值和失败行为确实相同。实现复用不自动合并科学身份；无法确定等价时保留变体或未决状态。
+# 完整功能测试（提交前）
+.venv/bin/python -m pytest -q
 
-## 验证与提交
-
-内循环默认按资产依赖计算精确测试：
-
-```powershell
-pwsh ./scripts/check.ps1 -Mode affected -ChangedPath src/scirel/<domain>/<asset>.py
+# 合同与文档
+.venv/bin/python scripts/validate_asset_documents.py catalog/examples
+.venv/bin/python scripts/scirel_docs.py build --output .runtime/docs-snapshot
 ```
 
-选择器会加入改变资产的直接合同测试、所有传递依赖 TaskGraph、共享实现测试和历史绑定一致性测试。当前工作区可省略
-`-ChangedPath`，提交范围使用 `-BaseRef <ref>`。只有正在处理单个失败断点时使用
-`-Mode focused -TestPath tests/<relevant-test>.py`；不能手工缩小已经计算出的影响闭包。
+发布轮子/安装包目前不在日常流程内；首次公开发布基线确定后统一冻结并补充对应发布检查。
 
-切片稳定后按影响和合并策略运行 `-Mode full`。准备发行候选时使用一个全新的输出目录运行 `-Mode release`；保留 wheel、manifest digest、验收报告以及 Python/pip/setuptools 版本。不要删除旧断言、扩大容差或弱化异常检查来使替换通过。
+## 文档
 
-标准资产文档和 catalog 改动另外运行：
+- 正式合同是唯一科学真值；中英文档都必须从同一份合同生成并保持一致；
+- 中文与英文阅读层必须同步更新；HTML 仅是派生显示；
+- 手册目标形态是「教科书式」：从领域问题出发，给出模型、调用、实际结果与解释；
+- 每个函数都要有可运行的说明示例。
 
-```powershell
-python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
-python -m pytest tests/test_asset_documentation.py
-```
+## 许可与来源
 
-公开 provenance 只保留 framework-neutral lineage 摘要、公开参考和许可证状态。正式分发许可证仍是发布前的人类决定；贡献不得自行添加或推定许可证。
+自行实现不等于免除许可义务。来源项目的许可与署名义务保留在 `licenses/`；新增或改写一个功能时
+确认其许可与署名材料仍然正确。未声明独立分发许可证前，不要假定可以再分发。
 
-提交说明应解释为什么改变、可观察行为、兼容性和实际验证。交付时列出修改文件、检查结果、未验证边界与待决项。构建成功不产生人工批准或发布授权；冻结 provenance 不随源码演进改写。
+## 提交
+
+- 一次提交一个连贯的功能/修复批次；
+- 提交说明写清改了什么、为什么、可观察行为、验证命令与未验证边界；
+- 不提交生成物（HTML 快照、wheel、缓存）与本机配置；
+- 不要在未经授权时改写冻结的来源、审核或准入记录。

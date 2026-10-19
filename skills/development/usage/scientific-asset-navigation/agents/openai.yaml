@@ -1,6 +1,0 @@
-interface:
-  display_name: "Scientific Asset Navigation"
-  short_description: "Find compatible scientific assets with bounded evidence"
-  default_prompt: "Use $scientific-asset-navigation to search a released scientific asset catalog, compare typed contracts, and return an auditable bounded shortlist without deciding approval or physical truth."
-policy:
-  allow_implicit_invocation: false

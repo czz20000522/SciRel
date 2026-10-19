@@ -30,7 +30,7 @@ def test_native_resource_closure_covers_source_and_declared_package_data() -> No
         "pdrk-finiteN": 2,
         "pdrk-shared-plot-helper": 1,
     }
-    manifest = json.loads((ROOT / "release/wheel/native-resource-closure.json").read_text())
+    manifest = json.loads((ROOT / "tools/wheel/native-resource-closure.json").read_text())
     pdrk_binding = next(
         binding
         for binding in manifest["package_data_bindings"]
@@ -48,7 +48,7 @@ def test_native_resource_closure_covers_source_and_declared_package_data() -> No
 
 
 def test_native_resource_closure_rejects_unlisted_resource(tmp_path: Path) -> None:
-    manifest = json.loads((ROOT / "release/wheel/native-resource-closure.json").read_text())
+    manifest = json.loads((ROOT / "tools/wheel/native-resource-closure.json").read_text())
     manifest["groups"][0]["files"].pop()
     manifest_path = tmp_path / "native-resource-closure.json"
     manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
@@ -57,7 +57,7 @@ def test_native_resource_closure_rejects_unlisted_resource(tmp_path: Path) -> No
 
 
 def test_native_resource_closure_checks_exact_wheel_members(tmp_path: Path) -> None:
-    manifest = json.loads((ROOT / "release/wheel/native-resource-closure.json").read_text())
+    manifest = json.loads((ROOT / "tools/wheel/native-resource-closure.json").read_text())
     expected = {
         "scirel/kinetic/" + name
         for group in manifest["groups"]
@@ -77,7 +77,7 @@ def test_native_resource_closure_checks_exact_wheel_members(tmp_path: Path) -> N
 
 
 def test_native_resource_closure_rejects_source_digest_drift(tmp_path: Path) -> None:
-    manifest = json.loads((ROOT / "release/wheel/native-resource-closure.json").read_text())
+    manifest = json.loads((ROOT / "tools/wheel/native-resource-closure.json").read_text())
     first = manifest["groups"][0]["files"][0]
     manifest["groups"][0]["file_digests"][first]["sha256"] = "0" * 64
     manifest_path = tmp_path / "native-resource-closure.json"
@@ -87,7 +87,7 @@ def test_native_resource_closure_rejects_source_digest_drift(tmp_path: Path) -> 
 
 
 def test_native_resource_closure_rejects_package_data_drift(tmp_path: Path) -> None:
-    manifest = json.loads((ROOT / "release/wheel/native-resource-closure.json").read_text())
+    manifest = json.loads((ROOT / "tools/wheel/native-resource-closure.json").read_text())
     (tmp_path / "pyproject.toml").write_text(
         """[tool.setuptools.package-data]\n"""
         """\"scirel.kinetic\" = [\"_fluidbw_native/*.m\"]\n"""

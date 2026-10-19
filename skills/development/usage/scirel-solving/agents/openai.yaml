@@ -1,6 +1,0 @@
-interface:
-  display_name: "Scientific Request Solving"
-  short_description: "Clarify the goal and deliver checked scientific results"
-  default_prompt: "Use $scirel-solving to understand this scientific request, ask about unclear physical facts, internally find and call SciRel capabilities, check the result and deliver what the user needs. The host owns authorization, observability and recovery."
-policy:
-  allow_implicit_invocation: true

@@ -1,6 +1,0 @@
-interface:
-  display_name: "Scientific Runtime Dataset Construction"
-  short_description: "Build source-backed scientific closure datasets"
-  default_prompt: "Use $scientific-runtime-dataset-construction to capture source observations for this named gap; D1 source_fidelity uses original behavior and records source failures for D2 without scientific repair."
-policy:
-  allow_implicit_invocation: false

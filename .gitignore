@@ -19,3 +19,7 @@ dist/
 /.agents/
 *.DS_Store
 AGENTS.md.backup.*
+
+# Local project assets: method skills and agent instructions stay outside Git
+/skills/
+/AGENTS.md

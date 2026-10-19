@@ -8,7 +8,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from finalize_release import _reviewed_initializers  # noqa: E402
 from build_catalog import build_catalog  # noqa: E402
 from public_api_binding import implementation_module  # noqa: E402
 from validate_asset_documents import (  # noqa: E402
@@ -36,45 +35,6 @@ def test_legacy_package_root_documents_resolve_to_child_implementations():
         implementation = implementation_module(ROOT, module, symbol)
         assert implementation.startswith(module + ".")
         assert (ROOT / "src" / Path(*implementation.split("."))).with_suffix(".py").is_file()
-
-
-def test_reviewed_initializers_keep_direct_modules_in_their_parent_package():
-    document = _document("scirel.kinetic.species-equilibrium-scales.json")
-    api = document["public_api"]["python"]
-    initializers = _reviewed_initializers({document["asset_id"]: document}, set())
-
-    assert "kinetic/__init__.py" not in initializers
-    assert "scirel/kinetic/__init__.py" in initializers
-    assert b"from .species_equilibrium_scales import derive_species_equilibrium_scales" in initializers[
-        "scirel/kinetic/__init__.py"
-    ]
-    assert "scirel/kinetic/species_equilibrium_scales/__init__.py" not in initializers
-
-
-def test_reviewed_initializers_resolve_legacy_package_root_exports():
-    document = _document("scirel.geometry.spherical-r-chord.json")
-    initializers = _reviewed_initializers(
-        {document["asset_id"]: document}, set(), ROOT
-    )
-
-    body = initializers["scirel/geometry/__init__.py"]
-    assert b"from .mesh import SphericalRChord" in body
-    assert "scirel/geometry/SphericalRChord/__init__.py" not in initializers
-
-
-def test_reviewed_initializers_alias_a_canonical_symbol_when_names_differ():
-    document = _document("scirel.geometry.spherical-r-chord.json")
-    document["public_api"]["python"].update(
-        {"canonical_module": "scirel.geometry", "canonical_symbol": "PublicChord"}
-    )
-    initializers = _reviewed_initializers(
-        {document["asset_id"]: document}, set(), ROOT
-    )
-
-    assert (
-        b"from .mesh import SphericalRChord as PublicChord"
-        in initializers["scirel/geometry/__init__.py"]
-    )
 
 
 def test_canonical_binding_requires_a_pair_and_preserves_runtime_identity():

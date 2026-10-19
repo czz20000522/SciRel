@@ -110,26 +110,11 @@ def plain(text):
 
 
 def kinetic_tutorial_proof(root):
-    """Select the newest Git-tracked tutorial proof for this package version."""
-    try:
-        package_version = tomllib.loads(
-            (root / 'pyproject.toml').read_text(encoding='utf-8')
-        )['project']['version']
-    except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
-        raise ValueError('pyproject.toml has no readable project.version') from error
-    validation = root / 'provenance/validation'
-    candidates = sorted(validation.glob('scirel-*-kinetic-tutorial-*.json'))
-    for path in reversed(candidates):
-        try:
-            proof = json.loads(path.read_bytes())
-        except (OSError, json.JSONDecodeError):
-            continue
-        if proof.get('wheel_version') == package_version:
-            return path
-    legacy = validation / 'scirel-dev9-kinetic-tutorial-20261018.json'
-    if legacy.is_file():
-        return legacy
-    return validation / 'kinetic-tutorial-current-wheel-20261015.json'
+    """Return the tutorial execution evidence bound to this documentation build."""
+    proof = root / 'tools/docs/kinetic-tutorial/execution.json'
+    if not proof.is_file():
+        raise ValueError('kinetic tutorial execution evidence is missing')
+    return proof
 
 
 def title(text, char='='):
