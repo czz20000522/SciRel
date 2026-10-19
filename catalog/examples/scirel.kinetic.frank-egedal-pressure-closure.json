@@ -124,18 +124,6 @@
   "nonconvergence": "Source normalization, spectrum or raw hot-moment nonconvergence propagates; the graph does not return a partially normalized pressure closure.",
   "partial_results": "None."
  },
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "retained project notice and public scientific reference where listed"
-  ],
-  "public_references": [
-   "https://arxiv.org/html/2509.17288v4"
-  ],
-  "license_status": "retained project notices under licenses/; redistribution pending human decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.frank_egedal_pressure_closure",
@@ -771,5 +759,8 @@
    "failure_propagation": "Any leaf validation or numerical exception stops the call and propagates; no partial pressure mapping or fallback model is returned.",
    "feedback": []
   }
- }
+ },
+ "references": [
+  "https://arxiv.org/html/2509.17288v4"
+ ]
 }

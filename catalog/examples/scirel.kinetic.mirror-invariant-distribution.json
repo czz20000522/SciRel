@@ -248,16 +248,6 @@
   "nonconvergence": "Not applicable; no iterative solve or numerical quadrature is performed.",
   "partial_results": "No mapping is returned when validation or arithmetic raises; all four fields are assembled at return."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
-  "source_kinds": [
-   "SciRel implementation",
-   "mathematical derivation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.mirror_invariant_distribution",

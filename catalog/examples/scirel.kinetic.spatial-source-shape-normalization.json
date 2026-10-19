@@ -84,16 +84,6 @@
   "nonconvergence": "Not applicable.",
   "partial_results": "Never returned; a rejected call produces no result."
  },
- "provenance": {
-  "lineage_summary": "SciRel implements trapezoidal normalization of a finite nonnegative spatial source profile and returns both the normalized shape and original integral; direct tests cover valid and rejected profiles.",
-  "source_kinds": [
-   "SciRel implementation",
-   "discrete quadrature relation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt; no public redistribution permission is asserted."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.spatial_source_shape_normalization",

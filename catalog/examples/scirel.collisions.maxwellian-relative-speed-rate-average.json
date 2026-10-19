@@ -156,15 +156,6 @@
   "nonconvergence": "Not applicable; this operator has no iteration or feedback. Quadrature accuracy is the mesh's, which is a caller input.",
   "partial_results": "Never returned; a rejected call produces no rate."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the energy-resolved rate coefficient obtained by averaging a caller-supplied cross section over the relative speed between a monoenergetic axial particle and a discretized Maxwellian target. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.collisions.maxwellian_relative_speed_rate_average",

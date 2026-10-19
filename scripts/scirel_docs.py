@@ -275,7 +275,6 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         summary['summary_zh'] = translations[asset]['summary']
         summary['evidence_ceiling'] = doc['verification']['evidence_ceiling']
         summary['known_limitations'] = doc['verification']['known_limitations']
-        summary['license_status'] = doc['provenance']['license_status']
         # Lexical retrieval of existing scientific text, never generated semantics.
         summary['search_text'] = json.dumps([doc, translations[asset]], ensure_ascii=False).lower()
         index.append(summary)

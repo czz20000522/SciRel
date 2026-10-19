@@ -245,15 +245,6 @@
   "nonconvergence": "Not applicable; this Operator performs no iteration.",
   "partial_results": "No partial mapping is returned after an exception."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of R-Z poloidal magnetic field and parallel/perpendicular pressure to cylindrical pressure force and toroidal current density. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.anisotropic_force_balance",

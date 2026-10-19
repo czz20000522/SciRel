@@ -114,15 +114,6 @@
   "nonconvergence": "Not applicable; this is direct geometry arithmetic.",
   "partial_results": "No geometry tuple is returned after validation failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel retains the documented scientific relation and tested implementation; this operator has no separate upstream approval or redistribution claim in the current development record.",
-  "source_kinds": [
-   "SciRel implementation",
-   "repository regression tests"
-  ],
-  "public_references": [],
-  "license_status": "No separate source license for this operator is declared in licenses/; retained upstream obligations remain unresolved and no public redistribution permission is asserted."
- },
  "public_api": {
   "python": {
    "module": "scirel.field.coil_green_geometry",

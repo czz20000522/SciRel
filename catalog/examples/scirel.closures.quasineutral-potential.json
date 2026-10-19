@@ -182,15 +182,6 @@
   "nonconvergence": "Raises RuntimeError('ambipolar potential solve did not converge') if both width and residual tolerances are not met on all active surfaces within max_iterations. Adjacent-float stalling is not success: a root between representable potentials that cannot satisfy the residual gate raises rather than widening the tolerance.",
   "partial_results": "No mapping is returned after validation, callback, bracketing or convergence failure; the final callback evaluation can also fail after midpoint stopping."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of root of a caller-supplied logarithmic ion-electron charge residual as a function of potential. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.closures.quasineutral_potential",

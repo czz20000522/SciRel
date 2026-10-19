@@ -646,16 +646,6 @@
   "nonconvergence": "In ambipolar_end_loss mode each endpoint potential uses its bound finite iteration limit, default 100; the nested local potential solve separately uses its own default 100. Either failure aborts the whole graph. Prescribed endpoint mode evaluates fluxes at supplied potentials without solving endpoint current balance.",
   "partial_results": "No mapping is returned on any upstream failure. A successful mapping includes full-grid nested and endpoint diagnostics even when selected top-level fields are confined."
  },
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "retained project notice and public scientific reference where listed"
-  ],
-  "public_references": [],
-  "license_status": "retained project notices under licenses/; redistribution pending human decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.grid_mirror_kinetic_closure",

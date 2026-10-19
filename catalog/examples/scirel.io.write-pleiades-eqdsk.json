@@ -83,17 +83,6 @@
   "nonconvergence": "Not applicable.",
   "partial_results": "Class wrapper preserves previous mapping when a read fails."
  },
- "provenance": {
-  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-  "source_kinds": [
-   "Pleiades-derived SciRel implementation",
-   "SciRel regression tests"
-  ],
-  "public_references": [
-   "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
-  ],
-  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.io.eqdsk",
@@ -127,5 +116,8 @@
    "No units/COCOS",
    "This dialect cannot represent arbitrary radial or axial origins; attach solver axes to detect loss before writing."
   ]
- }
+ },
+ "references": [
+  "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
+ ]
 }

@@ -233,18 +233,6 @@
   "nonconvergence": "Linear-solve errors propagate. ArithmeticError for unresolved/repeated/collapsed roots, failed polynomial/linear residual or the bounded 100-step Newton refinement; FloatingPointError for unrepresentable binary64 poles/residues.",
   "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
-  "source_kinds": [
-   "SciRel implementation",
-   "PDRK-derived mathematical relation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-  ],
-  "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.pdrk.rational",
@@ -277,5 +265,8 @@
    "Human scientific and plot approval pending.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]
- }
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
 }

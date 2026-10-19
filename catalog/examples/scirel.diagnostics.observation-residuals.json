@@ -86,15 +86,6 @@
   "nonconvergence": "无迭代；前向有效性由 trial 层单独判定。",
   "partial_results": "不返回删掉错误通道后的部分残差。"
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of 完整匹配的预测与观测到归一化残差与平方和. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.diagnostics.observation_residuals",

@@ -95,16 +95,6 @@
   "nonconvergence": "The peak count is a data sufficiency condition, not an iterative convergence test.",
   "partial_results": "No diagnostic mapping is returned when the peak condition fails."
  },
- "provenance": {
-  "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
-  "source_kinds": [
-   "SciRel implementation",
-   "equation-based numerical relation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.vlasov_poisson",

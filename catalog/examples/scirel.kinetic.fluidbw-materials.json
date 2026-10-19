@@ -91,18 +91,6 @@
    "units": "mixed SI and dimensionless as described"
   }
  ],
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "retained project notice and public scientific reference where listed"
-  ],
-  "public_references": [
-   "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
-  ],
-  "license_status": "retained fluidBW notices under licenses/; source redistribution permission not established; redistribution pending human decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.fluidbw",
@@ -150,5 +138,8 @@
    }
   ],
   "implementation_version": "0.1.0.dev11"
- }
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
 }

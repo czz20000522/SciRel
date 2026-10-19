@@ -523,15 +523,6 @@
   "nonconvergence": "The Hall outer graph can return converged=false at maxiter after successful terminal checks. A nested ambipolar/end-loss or Hall local-inertia failure may raise instead; the outer wrapper does not retry.",
   "partial_results": "No partial mapping is returned after an exception. A successful Hall result is passed through unchanged, including converged=false when applicable."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of grid mirror kinetic pressure state to reduced-Hall magnetic-flux feedback. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.kinetic_mirror_hall_equilibrium",

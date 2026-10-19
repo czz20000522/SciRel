@@ -79,15 +79,6 @@
   "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no cross section."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the H2 + H2+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.collisions.molecular_hydrogen_charge_exchange_cross_section",

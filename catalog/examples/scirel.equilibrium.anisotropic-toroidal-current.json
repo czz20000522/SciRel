@@ -151,15 +151,6 @@
   "nonconvergence": "Not applicable; this Operator performs no iteration.",
   "partial_results": "No partial mapping is returned if either force-balance evaluation fails."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of R-Z poloidal field and gyrotropic pressures to toroidal current density and two additive contributions. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.anisotropic_toroidal_current",

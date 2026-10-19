@@ -206,15 +206,6 @@
   "nonconvergence": "前向 False 直接返回 forward_nonconvergence；绝不执行该状态的诊断。",
   "partial_results": "保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of 参数和相容物理端口到固定维数的有效性记录. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.inference.anisotropic_trial_evaluation",

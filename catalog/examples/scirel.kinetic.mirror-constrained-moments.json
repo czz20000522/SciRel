@@ -285,16 +285,6 @@
   "nonconvergence": "General trapped fractions require a quadrature error estimate within max(2e-13 absolute, 2e-11 relative to the largest fraction); work-budget exhaustion or unmet estimated accuracy raises RuntimeError. quadrature_order controls the subdivision work budget and retains the historical int conversion in this leaf.",
   "partial_results": "No partial mapping is returned on an exception; all nine fields are assembled together after computation."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
-  "source_kinds": [
-   "SciRel implementation",
-   "mathematical derivation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.mirror_constrained_moments",

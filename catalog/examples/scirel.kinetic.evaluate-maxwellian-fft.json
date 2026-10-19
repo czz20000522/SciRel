@@ -10,19 +10,6 @@
   "implementation_version": "0.1.0.dev11",
   "dependencies": []
  },
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "public scientific literature for the stated numerical relation"
-  ],
-  "public_references": [
-   "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
-   "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476"
-  ],
-  "license_status": "retained project notices under licenses/; redistribution pending human decision"
- },
  "failure_semantics": {
   "invalid_input": "ValueError for nonfinite/empty phase points, invalid integer order or unsupported pole count.",
   "nonconvergence": "Fixed approximation has no iterative convergence claim.",
@@ -132,5 +119,9 @@
   "description": "Evaluate a finite upper-plane response.",
   "code": "from scirel.kinetic import evaluate_maxwellian_fft\nimport numpy as np\nr=evaluate_maxwellian_fft(0.2+0.7j)\nassert np.isfinite(r[\"Z\"])\n",
   "expected": "Observed PASS: Finite complex response with the retained effective order."
- }
+ },
+ "references": [
+  "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
+  "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476"
+ ]
 }

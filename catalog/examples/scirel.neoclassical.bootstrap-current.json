@@ -191,17 +191,6 @@
   "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
   "partial_results": "No partial output returned on failure."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Sauter PoP1999 Eq12 / Redl PoP2021 Eq5. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [
-   "https://github.com/google-deepmind/torax"
-  ],
-  "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
- },
  "public_api": {
   "python": {
    "module": "scirel.neoclassical.bootstrap",
@@ -237,5 +226,8 @@
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
    "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
   ]
- }
+ },
+ "references": [
+  "https://github.com/google-deepmind/torax"
+ ]
 }

@@ -85,16 +85,6 @@
   "nonconvergence": "Not applicable; this relation reports convergence, it does not iterate.",
   "partial_results": "Never returned; a rejected call produces no result."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
-  "source_kinds": [
-   "SciRel implementation",
-   "KN1D-derived mathematical relation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.kn1d_outer_convergence",

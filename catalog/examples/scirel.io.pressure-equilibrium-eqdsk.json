@@ -107,15 +107,6 @@
   "nonconvergence": "拒绝非收敛输入，绝不把部分状态标为成功。",
   "partial_results": "输入状态拒绝在创建目标文件前发生；IO失败不保证原子覆盖。"
  },
- "provenance": {
-  "lineage_summary": "SciRel pressure-equilibrium EQDSK writer combining the accepted terminal-pressure wiring correction with the maintained Pleiades extended format. Current source and regression tests define the relation; no corresponding upstream public license grant is asserted in licenses/.",
-  "source_kinds": [
-   "SciRel implementation",
-   "scientific regression tests"
-  ],
-  "public_references": [],
-  "license_status": "No public upstream license grant is asserted in licenses/ for this internal development relation; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.io",

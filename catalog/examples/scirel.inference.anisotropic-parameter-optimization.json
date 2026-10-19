@@ -300,15 +300,6 @@
   "nonconvergence": "优化停止和前向有效性分开返回；fallback 从不称 converged。",
   "partial_results": "best_valid_trial 保存历史有效最小值；best_parameters 只来自新的终点或 fallback 验证；全失败时两者均 None。"
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of 有界参数和固定维数 trial 到经新调用验证的局部拟合记录. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.inference.anisotropic_parameter_optimization",

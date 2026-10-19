@@ -98,15 +98,6 @@
   "nonconvergence": "Not applicable; this is finite sampling, not optimization.",
   "partial_results": "None after an exception."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of parameter intervals and sample count to a stratified initial parameter design. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.inference.latin_hypercube_sampling",

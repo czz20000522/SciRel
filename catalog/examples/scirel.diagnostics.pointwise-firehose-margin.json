@@ -99,15 +99,6 @@
   "nonconvergence": "Not applicable; no iteration is performed.",
   "partial_results": "None; the single margin field is returned only on success."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Anisotropic pressures and magnetic-field samples to the pointwise firehose margin only. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.diagnostics.pointwise_firehose_margin",

@@ -151,16 +151,6 @@
   "nonconvergence": "Not applicable; no iteration.",
   "partial_results": "Never returned."
  },
- "provenance": {
-  "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
-  "source_kinds": [
-   "SciRel implementation",
-   "equation-based numerical relation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.terminal_ion_state_reduction",

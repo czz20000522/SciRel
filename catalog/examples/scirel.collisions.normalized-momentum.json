@@ -97,15 +97,6 @@
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no profile."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the normalized momentum profile p_n on a grid, from the grid, a velocity scale and the speed of light. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.collisions.momentum_scales",

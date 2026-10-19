@@ -164,15 +164,6 @@
   "nonconvergence": "Not applicable; no iterative root or equilibrium solve is performed.",
   "partial_results": "No partial mapping after an exception. Successful calls return both pressure arrays, exact component-equality metadata and table dimension."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Caller-supplied pressure tables and magnetic-field/flux query values to interpolated gyrotropic pressure components. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.closures.tabulated_pressure_closure",

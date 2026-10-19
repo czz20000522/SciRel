@@ -112,17 +112,6 @@
   "nonconvergence": "No iteration; theta is one linear solve. No convergence flag is fabricated.",
   "partial_results": "No partial output returned on failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
-  "source_kinds": [
-   "TORAX-derived implementation",
-   "SciRel regression tests"
-  ],
-  "public_references": [
-   "https://github.com/google-deepmind/torax"
-  ],
-  "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.fvm.cell_variable",
@@ -154,5 +143,8 @@
    "Unbatched point values only, N>=2. No alternate-coordinate chain-rule x port, mesh adaptation, area/volume inference or JAX transformations.",
    "Quadratic internal-face exactness does not establish global second order with arbitrary boundary data or arbitrary distorted grids."
   ]
- }
+ },
+ "references": [
+  "https://github.com/google-deepmind/torax"
+ ]
 }

@@ -76,15 +76,6 @@
   "nonconvergence": "Intersection raises ValueError when no unique fitted-interval crossing is found; finite multistart search does not prove root completeness.",
   "partial_results": "apply_boundary updates both bounds only after both intersections succeed; failed construction returns no helper line."
  },
- "provenance": {
-  "lineage_summary": "SciRel retains the documented scientific relation and implementation; applicable source-license obligations are recorded in licenses/Pleiades-MIT.txt.",
-  "source_kinds": [
-   "SciRel implementation",
-   "repository regression tests"
-  ],
-  "public_references": [],
-  "license_status": "Pleiades-derived source portions retain the MIT notice in licenses/Pleiades-MIT.txt; SciRel has no separate distribution-license declaration."
- },
  "public_api": {
   "python": {
    "module": "scirel.geometry.fieldline",

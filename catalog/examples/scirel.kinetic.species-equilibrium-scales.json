@@ -285,16 +285,6 @@
   "nonconvergence": "Not applicable; no iterative solve is exposed.",
   "partial_results": "None; returns the complete scale dictionary only after validation."
  },
- "provenance": {
-  "lineage_summary": "SciRel computes the declared SI species equilibrium scales from caller-owned arrays and constants; direct tests cover signed axes, array ownership and invalid inputs.",
-  "source_kinds": [
-   "SciRel implementation",
-   "SI scale relations",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Source redistribution permission is NOT_ESTABLISHED; source obligations and the no-public-release boundary follow licenses/fluidbw-D1-source-NOTICE.md and licenses/fluidbw-D2-NOTICE.md."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.species_equilibrium_scales",

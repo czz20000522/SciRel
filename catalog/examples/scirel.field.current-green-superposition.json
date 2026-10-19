@@ -113,15 +113,6 @@
   "nonconvergence": "Not applicable; this is a direct contraction.",
   "partial_results": "No output mapping is returned after validation failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel retains the documented scientific relation and tested implementation; this operator has no separate upstream approval or redistribution claim in the current development record.",
-  "source_kinds": [
-   "SciRel implementation",
-   "repository regression tests"
-  ],
-  "public_references": [],
-  "license_status": "No separate source license for this operator is declared in licenses/; retained upstream obligations remain unresolved and no public redistribution permission is asserted."
- },
  "public_api": {
   "python": {
    "module": "scirel.field.current_green_superposition",

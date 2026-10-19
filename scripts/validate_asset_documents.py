@@ -35,14 +35,14 @@ TOP_LEVEL_KEYS = {
     "outputs",
     "applicability",
     "failure_semantics",
-    "provenance",
     "public_api",
     "version",
     "example",
     "verification",
     "graph",
+    "references",
 }
-REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"graph"}
+REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"graph", "references"}
 PORT_KEYS = {
     "name",
     "description",
@@ -203,20 +203,6 @@ def _validate_failures(value: Any) -> None:
     _exact_keys(item, keys, keys, "failure_semantics")
     for field in keys:
         _text(item[field], f"failure_semantics.{field}")
-
-
-def _validate_provenance(value: Any) -> None:
-    provenance = _object(value, "provenance")
-    keys = {"lineage_summary", "source_kinds", "public_references", "license_status"}
-    _exact_keys(provenance, keys, keys, "provenance")
-    _text(provenance["lineage_summary"], "provenance.lineage_summary")
-    _validate_string_list(
-        provenance["source_kinds"], "provenance.source_kinds", nonempty=True
-    )
-    _validate_string_list(
-        provenance["public_references"], "provenance.public_references"
-    )
-    _text(provenance["license_status"], "provenance.license_status")
 
 
 def _validate_public_api(value: Any) -> tuple[str, str, str]:
@@ -526,7 +512,8 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     output_ports = _validate_ports(item["outputs"], f"{location}.outputs", nonempty=True)
     _validate_applicability(item["applicability"])
     _validate_failures(item["failure_semantics"])
-    _validate_provenance(item["provenance"])
+    if "references" in item:
+        _validate_string_list(item["references"], "references")
     _validate_public_api(item["public_api"])
     dependency_ids = _validate_version(item["version"])
     _validate_example(item["example"])

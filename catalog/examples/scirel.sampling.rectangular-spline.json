@@ -93,15 +93,6 @@
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
  },
- "provenance": {
-  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-  "source_kinds": [
-   "Pleiades-derived SciRel implementation",
-   "SciRel regression tests"
-  ],
-  "public_references": [],
-  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.geometry.sampling",

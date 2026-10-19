@@ -154,16 +154,6 @@
   "nonconvergence": "Not applicable; no iterative root solve is exposed.",
   "partial_results": "No partial mapping is returned after an exception."
  },
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "retained project notice and public scientific reference where listed"
-  ],
-  "public_references": [],
-  "license_status": "retained project notices under licenses/; redistribution pending human decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.fluid_wavevector_eigensolve",

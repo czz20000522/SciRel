@@ -104,15 +104,6 @@
   "nonconvergence": "Not applicable; kernel evaluation and quadrature are direct.",
   "partial_results": "No field mapping is returned after validation or arithmetic failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel retains the documented scientific relation and tested implementation; this operator has no separate upstream approval or redistribution claim in the current development record.",
-  "source_kinds": [
-   "SciRel implementation",
-   "repository regression tests"
-  ],
-  "public_references": [],
-  "license_status": "No separate source license for this operator is declared in licenses/; retained upstream obligations remain unresolved and no public redistribution permission is asserted."
- },
  "public_api": {
   "python": {
    "module": "scirel.field.filament_vacuum_field",

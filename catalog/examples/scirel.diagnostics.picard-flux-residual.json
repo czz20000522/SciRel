@@ -77,15 +77,6 @@
   "nonconvergence": "Not applicable; this Operator only measures one state change.",
   "partial_results": "No partial mapping is returned on failure."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of previous and next flux states to a relative Euclidean change diagnostic. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.diagnostics.picard_flux_residual",

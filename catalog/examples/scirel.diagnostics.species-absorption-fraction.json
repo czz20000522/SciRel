@@ -109,15 +109,6 @@
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected ledger produces no mapping."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of four-species absorbed-power ledger to source-ordered percentage shares and the closure residual. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.diagnostics.species_absorption_fraction",

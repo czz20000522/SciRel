@@ -98,18 +98,6 @@
   "nonconvergence": "Not applicable; no iterative root solve is exposed.",
   "partial_results": "No partial mapping is returned after an exception."
  },
- "provenance": {
-  "lineage_summary": "SciRel contains the declared finite numerical relation and its direct contract tests; source-scope limits remain explicit and no external approval is inferred.",
-  "source_kinds": [
-   "SciRel implementation",
-   "equation-based numerical relation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
-  ],
-  "license_status": "Source redistribution permission is NOT_ESTABLISHED; source obligations and the no-public-release boundary follow licenses/fluidbw-D1-source-NOTICE.md and licenses/fluidbw-D2-NOTICE.md."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.ronnmark_r_function",
@@ -140,5 +128,8 @@
    "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
    "Full source/runtime qualification that uses GNU Octave on Linux amd64 is NOT_RUN in this macOS checkout."
   ]
- }
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
 }

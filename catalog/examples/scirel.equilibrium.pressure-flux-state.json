@@ -144,15 +144,6 @@
   "nonconvergence": "Not applicable; this spline construction does not iterate toward equilibrium.",
   "partial_results": "No partial result mapping is returned if validation or spline construction raises."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of midplane pressure P(R) and flux psi(R,Z) to pressure-flux spline and dP/dpsi. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.pressure_flux_state",

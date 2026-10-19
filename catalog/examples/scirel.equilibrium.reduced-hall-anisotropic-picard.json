@@ -523,15 +523,6 @@
   "nonconvergence": "At maxiter without meeting the outer flux threshold, reevaluate and gate the terminal state, then return converged=false with last psi and history. Local Hall inertia nonconvergence instead raises RuntimeError.",
   "partial_results": "No mapping is returned after an exception. Outer bounded nonconvergence is a complete last-state mapping if terminal evaluation and gates succeed."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of caller-supplied pressure state and reduced Hall current to axisymmetric Green-feedback magnetic flux. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.reduced_hall_anisotropic_picard",

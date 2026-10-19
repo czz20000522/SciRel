@@ -104,18 +104,6 @@
   "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
   "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
-  "source_kinds": [
-   "SciRel implementation",
-   "PDRK-derived mathematical relation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-  ],
-  "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.pdrk.magnetized",
@@ -153,5 +141,8 @@
    "Native FIG/workspace encodings are runtime-specific; bytes are artifacts, not a portable physical data standard.",
    "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
   ]
- }
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
 }

@@ -113,17 +113,6 @@
   "nonconvergence": "Not applicable; direct finite relation.",
   "partial_results": "Unrepresentable finite result raises FloatingPointError."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Discrete exponential source with signed float64-tiny width floor and supplied-volume normalization. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [
-   "https://github.com/google-deepmind/torax"
-  ],
-  "license_status": "TORAX-derived relations retain Apache-2.0 attribution and the full source license in the selected distribution."
- },
  "public_api": {
   "python": {
    "module": "scirel.source.exponential",
@@ -156,5 +145,8 @@
    "Extended-intermediate checks were executed on Linux x86_64 with NumPy longdouble; platforms whose longdouble has no extended range are not computationally qualified for extreme-scale cases.",
    "No array-parameter broadcasting or batch axis: all grid inputs are equal-length vectors and profile parameters are scalar-shaped."
   ]
- }
+ },
+ "references": [
+  "https://github.com/google-deepmind/torax"
+ ]
 }

@@ -320,16 +320,6 @@
   "nonconvergence": "Root exit flags remain in the result.",
   "partial_results": "No partial mapping is returned after an exception."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the finite fluidBW kinetic relation and its bounded numerical checks; the retained source and attribution obligations are recorded in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. No external approval or source parity is claimed.",
-  "source_kinds": [
-   "SciRel implementation",
-   "historical fluidBW relation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Private technical development candidate; fluidBW source redistribution permission remains NOT_ESTABLISHED and no public release is authorized."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.kinetic_wavevector_scan",

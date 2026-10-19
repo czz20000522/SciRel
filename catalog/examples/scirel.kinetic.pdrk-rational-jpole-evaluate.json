@@ -84,18 +84,6 @@
   "nonconvergence": "FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain certification.",
   "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
  },
- "provenance": {
-  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-  "source_kinds": [
-   "SciRel implementation",
-   "equation-based numerical relation",
-   "bundled native relation"
-  ],
-  "public_references": [
-   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-  ],
-  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.pdrk.rational",
@@ -129,5 +117,8 @@
    "Human scientific and plot approval pending.",
    "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
   ]
- }
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
 }

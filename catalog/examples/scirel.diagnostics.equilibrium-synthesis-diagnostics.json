@@ -117,15 +117,6 @@
   "nonconvergence": "本函数不求平衡；反演 trial 必须在进入此函数之前核对前向收敛。",
   "partial_results": "出现错误时不返回部分成功结果；不修改调用方平衡态。"
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of 平衡场和显式观测约定到指定位置的物理量样本. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.diagnostics.equilibrium_synthesis_diagnostics",

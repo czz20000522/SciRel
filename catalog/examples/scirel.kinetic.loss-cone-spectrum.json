@@ -150,18 +150,6 @@
   "nonconvergence": "RuntimeError if an independently evaluated endpoint residual exceeds 2e-8; no incomplete eigenpair set is returned.",
   "partial_results": "None."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
-  "source_kinds": [
-   "SciRel implementation",
-   "mathematical derivation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "Frank and Egedal, arXiv:2509.17288 (2025)."
-  ],
-  "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.loss_cone_spectrum",
@@ -194,5 +182,8 @@
    "The legacy backend names no longer request a truncated approximation.",
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]
- }
+ },
+ "references": [
+  "Frank and Egedal, arXiv:2509.17288 (2025)."
+ ]
 }

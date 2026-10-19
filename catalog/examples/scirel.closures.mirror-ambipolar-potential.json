@@ -316,15 +316,6 @@
   "nonconvergence": "Raises RuntimeError unless all active surfaces meet half-bracket-width and absolute log-current-ratio tests at the same returned potential within max_iterations. A mathematically desired root that cannot be represented at the requested width and residual resolution still fails; no ULP-sized tolerance floor is silently introduced.",
   "partial_results": "No result mapping is returned after any validation, callback, bracketing or solve failure. Evaluate mode returns a complete diagnostic mapping even when the prescribed potential leaves a large current residual."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Single-ion mirror end-loss fluxes and ambipolar plug potential relative to a reference surface. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.closures.mirror_ambipolar_potential",

@@ -161,16 +161,6 @@
   "nonconvergence": "Not applicable; no iterative solve is performed.",
   "partial_results": "No result dict is returned if validation or pressure conversion raises. A successful call returns all named assembled fields plus non-overwritten original ion fields."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
-  "source_kinds": [
-   "SciRel implementation",
-   "mathematical derivation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.mirror_total_pressure",

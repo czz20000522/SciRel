@@ -489,15 +489,6 @@
   "nonconvergence": "在最多maxiter次更新后，若返回态完整固定点残差或力相容性不通过，则返回converged=false及明确失败原因。最后允许更新恰好通过仍可converged=true。maxiter=0跳过更新，终态评估后返回residual=inf、空历史且不声称收敛。",
   "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state mapping, not an exception."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of vacuum flux and field, dense cell-current Green responses and caller pressure closure to a bounded anisotropic R-Z equilibrium state. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.free_boundary_anisotropic_picard",

@@ -309,15 +309,6 @@
   "nonconvergence": "converged 同时要求优化器成功且其新终点评估有效，另给 optimizer_converged 与 forward_converged。",
   "partial_results": "允许返回新验证的部分有效候选及日志，不将其算作完成拟合；全失败返回 None 候选。"
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of 参数化前向平衡与观测到经实际终点验证的各向异性拟合. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.inference.direct_anisotropic_inversion",

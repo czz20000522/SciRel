@@ -94,15 +94,6 @@
   "nonconvergence": "Not applicable; each matrix entry is evaluated directly.",
   "partial_results": "No partial matrix is returned after a failed source evaluation."
  },
- "provenance": {
-  "lineage_summary": "SciRel retains the documented scientific relation and implementation; applicable source-license obligations are recorded in licenses/Pleiades-MIT.txt.",
-  "source_kinds": [
-   "SciRel implementation",
-   "repository regression tests"
-  ],
-  "public_references": [],
-  "license_status": "Pleiades-derived source portions retain the MIT notice in licenses/Pleiades-MIT.txt; SciRel has no separate distribution-license declaration."
- },
  "public_api": {
   "python": {
    "module": "scirel.electromagnetism",

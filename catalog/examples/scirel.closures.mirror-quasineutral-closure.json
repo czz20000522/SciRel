@@ -455,15 +455,6 @@
   "nonconvergence": "If all active surfaces do not satisfy both potential-width and logarithmic-residual tolerances within max_iterations, the potential operator raises RuntimeError and this TaskGraph returns no state. The graph also raises RuntimeError for a nonconverged solver status or a returned potential whose reevaluated terminal residual fails; it does not trust a stale intermediate residual.",
   "partial_results": "No result mapping is returned after a validation, dependency, bracketing or nonconvergence failure; intermediate trial moments are local to the call."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Positive-ion mirror kinetic moments and Boltzmann electrons closed by local quasineutral potential. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.closures.mirror_quasineutral_closure",

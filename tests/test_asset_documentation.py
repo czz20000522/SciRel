@@ -146,7 +146,7 @@ def test_missing_units_and_private_governance_fields_fail_closed():
         validate_document(missing_units)
 
     leaked = _task_graph_document()
-    leaked["provenance"]["admission_ref"] = "private-owner-reference"
+    leaked["identity"]["admission_ref"] = "private-owner-reference"
     with pytest.raises(AssetDocumentError, match="private governance fields"):
         validate_document(leaked)
 

@@ -479,18 +479,6 @@
   "nonconvergence": "No physical iteration. Numerical eigensolver failure propagates; no result is claimed on failure.",
   "partial_results": "No result dictionary is returned after failure; an explicitly requested PNG is a caller-directed file side effect."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel PDRF effective fluid implementation with explicit state, matrix, spectrum and scan contracts; PDRK attribution and bundled notices are recorded in licenses/pdrk/NOTICE. The effective model and tests do not claim upstream approval.",
-  "source_kinds": [
-   "SciRel implementation",
-   "published PDRF relation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
-  ],
-  "license_status": "PDRK/PDRF source redistribution permission remains unresolved; this is a private technical development record."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.pdrf",
@@ -1476,5 +1464,8 @@
    "failure_propagation": "First invalid input, arithmetic, eigensolver or export failure propagates; no partial result dictionary.",
    "feedback": []
   }
- }
+ },
+ "references": [
+  "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
+ ]
 }

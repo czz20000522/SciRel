@@ -371,15 +371,6 @@
   "nonconvergence": "After maxiter steps, returns the last state with converged=false and the iteration history; there is no automatic retry or failure_reason field.",
   "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state result, not an exception."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of vacuum flux, dense cell-current Green response and caller pressure closure to a bounded anisotropic axisymmetric equilibrium state. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.axisymmetric_anisotropic_picard",

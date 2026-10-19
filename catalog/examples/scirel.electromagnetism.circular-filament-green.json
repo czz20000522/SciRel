@@ -77,17 +77,6 @@
   "nonconvergence": "Not applicable; the kernel is evaluated directly.",
   "partial_results": "A failed source evaluation returns no response tuple."
  },
- "provenance": {
-  "lineage_summary": "SciRel retains the documented scientific relation and implementation; applicable source-license obligations are recorded in licenses/Pleiades-MIT.txt.",
-  "source_kinds": [
-   "SciRel implementation",
-   "repository regression tests"
-  ],
-  "public_references": [
-   "NASA-20010038494"
-  ],
-  "license_status": "Pleiades-derived source portions retain the MIT notice in licenses/Pleiades-MIT.txt; SciRel has no separate distribution-license declaration."
- },
  "public_api": {
   "python": {
    "module": "scirel.electromagnetism.greens",
@@ -124,5 +113,8 @@
    "有限导体内部自场、材料磁导率与全连续域误差界未建立。",
    "独立科学计算和安装任务不构成人工批准或发行批准。"
   ]
- }
+ },
+ "references": [
+  "NASA-20010038494"
+ ]
 }

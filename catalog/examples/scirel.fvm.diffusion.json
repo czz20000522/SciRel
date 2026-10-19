@@ -81,17 +81,6 @@
   "nonconvergence": "No iteration; theta is one linear solve. No convergence flag is fabricated.",
   "partial_results": "No partial output returned on failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
-  "source_kinds": [
-   "TORAX-derived implementation",
-   "SciRel regression tests"
-  ],
-  "public_references": [
-   "https://github.com/google-deepmind/torax"
-  ],
-  "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.fvm.diffusion",
@@ -126,5 +115,8 @@
    "Uniform sine manufactured stationary solution exhibits second-order point error under grid refinement; arbitrary nonuniform convergence is not established.",
    "No physical face areas or cell volumes inferred; all metric transformations and compatible coordinate units belong to caller."
   ]
- }
+ },
+ "references": [
+  "https://github.com/google-deepmind/torax"
+ ]
 }

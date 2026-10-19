@@ -16,7 +16,6 @@
   "outputs",
   "applicability",
   "failure_semantics",
-  "provenance",
   "public_api",
   "version",
   "example",
@@ -130,32 +129,6 @@
      "minLength": 1
     },
     "partial_results": {
-     "type": "string",
-     "minLength": 1
-    }
-   }
-  },
-  "provenance": {
-   "type": "object",
-   "additionalProperties": false,
-   "required": [
-    "lineage_summary",
-    "source_kinds",
-    "public_references",
-    "license_status"
-   ],
-   "properties": {
-    "lineage_summary": {
-     "type": "string",
-     "minLength": 1
-    },
-    "source_kinds": {
-     "$ref": "#/$defs/nonemptyStringArray"
-    },
-    "public_references": {
-     "$ref": "#/$defs/stringArray"
-    },
-    "license_status": {
      "type": "string",
      "minLength": 1
     }
@@ -297,6 +270,13 @@
   },
   "graph": {
    "$ref": "#/$defs/graph"
+  },
+  "references": {
+   "type": "array",
+   "items": {
+    "type": "string",
+    "minLength": 1
+   }
   }
  },
  "$defs": {

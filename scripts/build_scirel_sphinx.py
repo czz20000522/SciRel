@@ -199,12 +199,12 @@ def render_api(doc, zh, related):
     out += '**已有验证范围**\n\n' + bullets(zh['verification']['scope'])
     out += '**已知限制**\n\n' + bullets(zh['verification']['known_limitations'])
     out += title('参考资料', '-')
-    refs = doc['provenance'].get('public_references', [])
+    refs = doc.get('references', [])
     for ref in refs:
         out += '* ' + plain(json.dumps(ref, ensure_ascii=False) if isinstance(ref, dict) else ref) + '\n'
     out += '\n`读取正式合同 JSON </api/asset?id=' + asset + '>`_ · '
     out += '`读取同源中文说明 </api/reader?id=' + asset + '>`_\n\n'
-    out += '中文说明绑定正式合同摘要 ``' + zh['source_sha256'] + '``。来源与许可状态保留在原合同中。\n'
+    out += '中文说明绑定正式合同摘要 ``' + zh['source_sha256'] + '``。\n'
     # Match numpydoc's field-list and rubric structure used by SciPy. The
     # Chinese prose remains a projection; no scientific module is imported.
     for label in ('异常与失败行为', '说明', '适用范围', '相关函数', '示例', '验证与限制', '参考资料'):

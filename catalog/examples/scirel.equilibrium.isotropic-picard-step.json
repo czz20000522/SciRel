@@ -160,15 +160,6 @@
   "nonconvergence": "Not applicable to this single step; an enclosing task graph owns the iteration limit and convergence decision.",
   "partial_results": "No mapping after validation or arithmetic failure. Every successful numerical result is finite."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of isotropic pressure derivative and previous cell currents to relaxed cell currents, updated flux and normalized flux residual. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.isotropic_picard_step",

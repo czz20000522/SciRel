@@ -85,15 +85,6 @@
   "nonconvergence": "Not applicable; the transforms are direct affine operations.",
   "partial_results": "A failed transform call does not promise a partially transformed collection; transpose_patches returns None after mutating supplied patches."
  },
- "provenance": {
-  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-  "source_kinds": [
-   "Pleiades-derived SciRel implementation",
-   "SciRel regression tests"
-  ],
-  "public_references": [],
-  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.geometry.plotting",

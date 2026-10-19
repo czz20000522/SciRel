@@ -66,15 +66,6 @@
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."
  },
- "provenance": {
-  "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
-  "source_kinds": [
-   "TORAX-derived implementation",
-   "SciRel regression tests"
-  ],
-  "public_references": [],
-  "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.geometry.face_to_cell",

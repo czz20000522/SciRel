@@ -76,15 +76,6 @@
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of lnΛ=31.0-0.5 ln(n_e)+ln(1000*T_e). Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "TORAX-derived implementation: Apache-2.0; license text and attribution are included in the selected distribution."
- },
  "public_api": {
   "python": {
    "module": "scirel.physics.coulomb_logs",

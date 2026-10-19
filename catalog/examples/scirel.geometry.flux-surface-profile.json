@@ -125,15 +125,6 @@
   "nonconvergence": "Not applicable; no iterative solver is used.",
   "partial_results": "No result mapping is returned after validation or interpolation failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
-  "source_kinds": [
-   "SciRel implementation",
-   "scientific regression tests"
-  ],
-  "public_references": [],
-  "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.geometry.flux_surface_profile",

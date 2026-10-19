@@ -646,15 +646,6 @@
   "nonconvergence": "The local inertia loop is bounded; when enabled and its unrelaxed current-map residual threshold is not reached, RuntimeError is raised instead of returning a partial state.",
   "partial_results": "No result mapping is returned after an exception. A returned mapping has inertia_converged=true, including the no-inertia branch."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of R-Z field, ion pressure, electrostatic potential and species closure state to reduced Hall toroidal current and drifts. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.closures.reduced_hall_drift",

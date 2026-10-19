@@ -98,16 +98,6 @@
   "nonconvergence": "Not applicable.",
   "partial_results": "Never returned; a rejected call produces no result."
  },
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "retained project notices"
-  ],
-  "public_references": [],
-  "license_status": "retained project notices under licenses/; redistribution pending human decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.cross_mesh_scalar_interpolation",

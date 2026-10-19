@@ -88,15 +88,6 @@
   "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no cross section."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the H + H+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4 with the Freeman-Jones analytic form 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2 / (1 + 0.1112e-14 E^3.3) as the alternative branch. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.collisions.atomic_hydrogen_charge_exchange_cross_section",

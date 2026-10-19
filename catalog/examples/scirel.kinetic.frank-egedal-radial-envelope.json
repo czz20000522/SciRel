@@ -79,16 +79,6 @@
   "nonconvergence": "Not applicable; evaluation is elementwise without iteration.",
   "partial_results": "No partial array is returned on a raised exception. A successful call returns only the envelope array."
  },
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "retained project notice and public scientific reference where listed"
-  ],
-  "public_references": [],
-  "license_status": "retained project notices under licenses/; redistribution pending human decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.frank_egedal_radial_envelope",

@@ -235,15 +235,6 @@
   "nonconvergence": "status=maxiter, converged=False and failure_reason=maxiter_reached when the bound is reached before both residual gates. With maxiter=0 both residuals remain +inf.",
   "partial_results": "Failed results retain the available terminal state and histories; pressure_of_psi is None if no valid spline exists. A failed Green update retains the preceding finite flux/current pair. No partial state is accepted as a solution."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of midplane radial pressure, vacuum flux and cell-current Green response to an isotropic pressure-driven flux state. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium.isotropic_pressure_flux",

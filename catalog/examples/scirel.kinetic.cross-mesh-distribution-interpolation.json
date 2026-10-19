@@ -185,19 +185,6 @@
   "nonconvergence": "The state is the entropy-dual parameter on the feasible hull face. Each bounded update computes moment residual and covariance Hessian, then takes a damped Newton step (at most 64 line-search trials). Stop when the scaled moment residual is at most 32 binary64 eps; return also requires the actual output three-moment postcondition within 128 eps. Exceeding max_correction_iterations updates per spatial slice raises MomentCorrectionConvergenceError with its index; infeasible targets use a separate error.",
   "partial_results": "Never returned; any rejected spatial slice aborts the call without a partial distribution or input mutation."
  },
- "provenance": {
-  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-POSITIVE-REMAP-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-  "source_kinds": [
-   "current SciRel implementation",
-   "direct scientific regression tests",
-   "retained project notices"
-  ],
-  "public_references": [
-   "https://user.eng.umd.edu/~andre/ahot12.pdf",
-   "https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.logsumexp.html"
-  ],
-  "license_status": "retained project notices under licenses/; redistribution pending human decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.cross_mesh_distribution_interpolation",
@@ -242,5 +229,9 @@
    "correct=0 is retained algebraic compatibility only and does not carry the default branch physical guarantees.",
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
- }
+ },
+ "references": [
+  "https://user.eng.umd.edu/~andre/ahot12.pdf",
+  "https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.logsumexp.html"
+ ]
 }

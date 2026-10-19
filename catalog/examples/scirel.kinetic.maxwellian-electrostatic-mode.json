@@ -94,18 +94,6 @@
    "units": "dimensionless"
   }
  ],
- "provenance": {
-  "lineage_summary": "Self-contained SciRel Maxwellian electrostatic response and bounded solver; NumPy/SciPy obligations are retained through the notices in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt. Upstream GPDF redistribution is not asserted.",
-  "source_kinds": [
-   "SciRel implementation",
-   "equation-based derivation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas 20 (2013), 092125."
-  ],
-  "license_status": "Upstream GPDF source redistribution grant is NOT_ESTABLISHED; NumPy and SciPy notices remain applicable."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.maxwellian_electrostatic",
@@ -150,5 +138,8 @@
    }
   ],
   "implementation_version": "0.1.0.dev11"
- }
+ },
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas 20 (2013), 092125."
+ ]
 }

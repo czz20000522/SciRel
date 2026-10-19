@@ -430,15 +430,6 @@
   "nonconvergence": "本函数没有迭代；调用方负责速度和角网格收敛。",
   "partial_results": "返回完整状态映射；启用零分母项的 NaN 是明确的未定义结果，其他有限矩保留，不是部分执行成功。"
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of atomic H elastic Omega_H_P, Omega_H_H2 and Omega_H_H frequency aggregation. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.collisions.atomic_hydrogen_omega_frequencies",

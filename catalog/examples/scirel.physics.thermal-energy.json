@@ -122,17 +122,6 @@
   "nonconvergence": "Not applicable; direct finite relation.",
   "partial_results": "No partial tuple is returned."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of W = 3/2 integral(p dV) for each supplied pressure profile. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [
-   "https://github.com/google-deepmind/torax"
-  ],
-  "license_status": "TORAX-derived relations retain Apache-2.0 attribution and the full source license in the selected distribution."
- },
  "public_api": {
   "python": {
    "module": "scirel.physics.thermal_energy",
@@ -167,5 +156,8 @@
    "Signed inputs are an algebraic compatibility extension; they do not describe positive stored physical energy.",
    "Exact intermediate arithmetic preserves the discrete relation for the converted binary64 inputs; it does not recover precision lost in input conversion or validate the quadrature grid."
   ]
- }
+ },
+ "references": [
+  "https://github.com/google-deepmind/torax"
+ ]
 }

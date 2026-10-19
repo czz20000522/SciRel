@@ -74,16 +74,6 @@
   "nonconvergence": "No iterative solve is performed.",
   "partial_results": "No partial result is returned on failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel provides a package-local PDRK reference-table or plotting relation; the callable preserves the stored table/adapter behavior and does not infer missing physical metadata.",
-  "source_kinds": [
-   "SciRel implementation",
-   "bundled reference data",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.pdrk.plotting",

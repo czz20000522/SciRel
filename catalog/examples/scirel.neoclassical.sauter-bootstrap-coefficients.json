@@ -90,17 +90,6 @@
   "nonconvergence": "Not applicable; these are direct analytic fit and arithmetic mappings.",
   "partial_results": "No partial output returned on failure."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Sauter PoP 1999 Eqs.14-17. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [
-   "https://github.com/google-deepmind/torax"
-  ],
-  "license_status": "TORAX-derived implementation under Apache-2.0; full license and source attribution included in selected distribution."
- },
  "public_api": {
   "python": {
    "module": "scirel.neoclassical.bootstrap",
@@ -131,5 +120,8 @@
    "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full TORAX physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
   ]
- }
+ },
+ "references": [
+  "https://github.com/google-deepmind/torax"
+ ]
 }

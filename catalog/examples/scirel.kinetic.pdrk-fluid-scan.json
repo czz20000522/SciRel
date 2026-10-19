@@ -106,18 +106,6 @@
   "nonconvergence": "Any point solver failure aborts the graph; no complete successful scan is returned.",
   "partial_results": "Completed point data are local until the complete scan succeeds."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
-  "source_kinds": [
-   "SciRel implementation",
-   "PDRK-derived mathematical relation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-  ],
-  "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.pdrk.multifluid",
@@ -426,5 +414,8 @@
     }
    ]
   }
- }
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
 }

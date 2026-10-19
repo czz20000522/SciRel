@@ -85,18 +85,6 @@
   "nonconvergence": "No iterative solve is performed.",
   "partial_results": "No partial result is returned on failure."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
-  "source_kinds": [
-   "SciRel implementation",
-   "PDRK-derived mathematical relation",
-   "direct contract tests"
-  ],
-  "public_references": [
-   "Weideman, Comput. Phys. 95 (1994), 1-4."
-  ],
-  "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.pdrk.special",
@@ -132,5 +120,8 @@
    "Requires an external compatible Octave runtime, unlike the canonical SciPy-backed relation.",
    "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
   ]
- }
+ },
+ "references": [
+  "Weideman, Comput. Phys. 95 (1994), 1-4."
+ ]
 }

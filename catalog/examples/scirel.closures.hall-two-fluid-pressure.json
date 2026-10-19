@@ -283,15 +283,6 @@
   "nonconvergence": "Not applicable; no solver iteration is performed.",
   "partial_results": "Validation or callback failure returns no mapping; successful return includes all original fields and the four explicit composition fields."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Total gyrotropic pressure and prescribed species profiles to an explicit two-fluid pressure and density state. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.closures.hall_two_fluid_pressure",

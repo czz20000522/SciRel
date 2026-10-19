@@ -211,17 +211,6 @@
   "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
   "partial_results": "None. Optional upstream parallel-equilibrium values in the margin API are forwarded without independent validation."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Parallel pressure and magnetic-field samples to an expected perpendicular pressure and residual. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [
-   "https://arxiv.org/html/2509.17288v4"
-  ],
-  "license_status": "Original-source mapping and applicable distribution licensing must be retained with the selected distribution; no article text or reference implementation is bundled by this document."
- },
  "public_api": {
   "python": {
    "module": "scirel.diagnostics.parallel_pressure_residual",
@@ -254,5 +243,8 @@
    "The new derivative/axis/psi keywords require callers to supply missing physical information; old global-B-sort behavior is intentionally removed.",
    "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability."
   ]
- }
+ },
+ "references": [
+  "https://arxiv.org/html/2509.17288v4"
+ ]
 }

@@ -127,16 +127,6 @@
   "nonconvergence": "The diagnostic is optional: insufficient peaks are captured as diagnostic=None with diagnostic_status while the evolved state is retained.",
   "partial_results": "If evolution fails no result mapping is returned; if only the diagnostic is unavailable, the valid state and envelope are returned."
  },
- "provenance": {
-  "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
-  "source_kinds": [
-   "SciRel implementation",
-   "equation-based numerical relation",
-   "direct contract tests"
-  ],
-  "public_references": [],
-  "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
- },
  "public_api": {
   "python": {
    "module": "scirel.kinetic.vlasov_poisson",

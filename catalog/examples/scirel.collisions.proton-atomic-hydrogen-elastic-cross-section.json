@@ -73,15 +73,6 @@
   "nonconvergence": "不适用，无迭代。",
   "partial_results": "不返回部分结果。"
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.collisions.hydrogen_proton_elastic_cross_section",

@@ -161,15 +161,6 @@
   "nonconvergence": "maxiter status with last local state and residual; maxiter=0 has residual +inf.",
   "partial_results": "nonfinite is explicitly not accepted; failed Green arithmetic retains the preceding finite flux/current pair. Histories contain only completed paired residual evaluations."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of I_target=R (dP/dpsi) abs(dR*dZ); I_new=(1-relax) I_target+relax I_old; psi_new=psi_vac+G I_new. P is re-fitted from the prescribed midplane P(R). Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "Source/license evidence retained; scientific and release approval pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.equilibrium",

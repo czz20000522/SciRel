@@ -71,15 +71,6 @@
   "nonconvergence": "Not applicable; no iteration.",
   "partial_results": "Never returned."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of H+ + e -> H(1s) + hv radiative recombination rate coefficient as a function of electron temperature. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.collisions.atomic_hydrogen_1s_radiative_recombination_rate",

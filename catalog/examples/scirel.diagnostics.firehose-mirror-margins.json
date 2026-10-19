@@ -229,19 +229,6 @@
   "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
   "partial_results": "None. Optional upstream parallel-equilibrium values in the margin API are forwarded without independent validation."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of Anisotropic pressures and magnetic-field samples to two sampled margin criteria. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [
-   "https://arxiv.org/html/2509.17288v4",
-   "https://arxiv.org/html/0902.1710v2",
-   "https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/on-the-stability-of-the-m-1-rigid-ballooning-mode-in-a-mirror-trap-with-highbeta-sloshing-ions/3EAF658191C7552CDC1BA3332C5EF987"
-  ],
-  "license_status": "Original-source mapping and applicable distribution licensing must be retained with the selected distribution; no article text or reference implementation is bundled by this document."
- },
  "public_api": {
   "python": {
    "module": "scirel.diagnostics.firehose_mirror_margins",
@@ -279,5 +266,10 @@
    "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability.",
    "The literal Frank Eq6 sign conflict is recorded; this implementation follows the stated total-pressure derivative and bi-Maxwellian criterion rather than asserting an author erratum."
   ]
- }
+ },
+ "references": [
+  "https://arxiv.org/html/2509.17288v4",
+  "https://arxiv.org/html/0902.1710v2",
+  "https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/on-the-stability-of-the-m-1-rigid-ballooning-mode-in-a-mirror-trap-with-highbeta-sloshing-ions/3EAF658191C7552CDC1BA3332C5EF987"
+ ]
 }

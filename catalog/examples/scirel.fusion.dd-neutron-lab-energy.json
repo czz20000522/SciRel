@@ -100,15 +100,6 @@
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no value, and a call that fails the representability check produces no partial energy."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of two deuteron velocities and a detector direction to the laboratory-frame neutron energy of the D(d,n)3He reaction. Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [],
-  "license_status": "pending-human-decision"
- },
  "public_api": {
   "python": {
    "module": "scirel.fusion.dd_neutron_lab_energy",

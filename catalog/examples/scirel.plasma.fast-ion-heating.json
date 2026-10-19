@@ -86,17 +86,6 @@
   "nonconvergence": "Not applicable; the small-x series has fixed 12-term order.",
   "partial_results": "Never returned."
  },
- "provenance": {
-  "lineage_summary": "Self-contained SciRel implementation of f_i(x)=2/x² integral from 0 to x of t/(1+t³) dt, x²=E_birth/(10 m_fast T_e). Licence and attribution obligations retained from the original sources are listed under licenses/; redistribution and scientific endorsement remain human decisions.",
-  "source_kinds": [
-   "SciRel local implementation",
-   "direct regression tests"
-  ],
-  "public_references": [
-   "Mikkelsen, Nucl. Technol. Fusion 237 (1983), equations 5 and 26"
-  ],
-  "license_status": "Source license retained with the exact development selection; see the source license text."
- },
  "public_api": {
   "python": {
    "module": "scirel.plasma.fast_ion_heating",
@@ -130,5 +119,8 @@
    "Finite input values can produce a nonfinite dimensionless ratio and then raise FloatingPointError.",
    "Full slowing-down trajectories, spatial transport evolution and coupling to other plasma models are outside this operator."
   ]
- }
+ },
+ "references": [
+  "Mikkelsen, Nucl. Technol. Fusion 237 (1983), equations 5 and 26"
+ ]
 }

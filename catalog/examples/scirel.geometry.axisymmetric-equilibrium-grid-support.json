@@ -193,15 +193,6 @@
   "nonconvergence": "Not applicable; this TaskGraph is an ordered DAG with no feedback loop.",
   "partial_results": "No partial result is returned after a node failure."
  },
- "provenance": {
-  "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
-  "source_kinds": [
-   "SciRel implementation",
-   "scientific regression tests"
-  ],
-  "public_references": [],
-  "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
- },
  "public_api": {
   "python": {
    "module": "scirel.geometry.axisymmetric_equilibrium_grid_support",
