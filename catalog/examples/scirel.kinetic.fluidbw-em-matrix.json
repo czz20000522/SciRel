@@ -1,153 +1,152 @@
 {
-  "aliases": [
-    "assemble_fluidbw_em"
+ "aliases": [
+  "assemble_fluidbw_em"
+ ],
+ "applicability": {
+  "excluded": [
+   "No identity between finite fitted response and exact Bessel/Z kinetic dielectric."
   ],
-  "applicability": {
-    "excluded": [
-      "No identity between finite fitted response and exact Bessel/Z kinetic dielectric."
-    ],
-    "preconditions": [
-      "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
-      "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 GNU Octave 7.3.0 remains required."
-    ],
-    "supported": [
-      "J8/J12, every N0..7, complete matrix state and source tables.",
-      "Coherent SI state; signed/zero kz away from true rational resonance denominators."
-    ]
-  },
-  "asset_id": "scirel.kinetic.fluidbw-em-matrix",
-  "example": {
-    "code": "from scirel.kinetic.fluidbw import derive_fluidbw_case,assemble_fluidbw_em\ns=derive_fluidbw_case('em',2)\nr=assemble_fluidbw_em(s,.83*s['wn'].item(),8,0)\n",
-    "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
-    "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
-  },
-  "failure_semantics": {
-    "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
-    "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
-    "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
-    "runtime_failure": "Raises RuntimeError before numerical evaluation unless the pinned Linux amd64 and GNU Octave 7.3.0 runtime is available; native errors propagate and no fallback is selected."
-  },
-  "identity": {
-    "assumptions": [
-      "No flow or temperature anisotropy.",
-      "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
-      "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
-    ],
-    "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-    "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-    "definition": "M acts on [Jx_snl,Jy_snl,Jz_snl,Ey,Ez,By,Bz]; polynomial conductivity restores four matrix entries; n>=1 inverse moments projected to zero with stable Gamma representation.",
-    "direction": "forward",
-    "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-    "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-    "relation": "finite rational Maxwell kx eigenmatrix"
-  },
-  "inputs": [
-    {
-      "constraints": "Finite numeric fields and coherent thermal/gyro scales; metadata cannot override explicit controls.",
-      "description": "Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs; positive wps2 and vts; optional metadata w and signed kz. Matrix assembly additionally requires epsilon0. rho=vts/(sqrt(2)*wcs). Explicit omega is authoritative; state w is not required.",
-      "dtype": "mapping",
-      "name": "state",
-      "required": true,
-      "shape": "mapping; species vectors length S; numeric arrays retain MATLAB shapes",
-      "units": "c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m"
-    },
-    {
-      "constraints": "Finite nonzero scalar.",
-      "description": "Explicit angular frequency, authoritative over state metadata.",
-      "dtype": "real",
-      "name": "omega",
-      "required": true,
-      "shape": "scalar",
-      "units": "rad/s"
-    },
-    {
-      "constraints": "Exactly 8 or 12.",
-      "default": 8,
-      "description": "Source J-pole approximation order.",
-      "dtype": "integer",
-      "name": "j_order",
-      "required": false,
-      "shape": "scalar",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "Integer 0..7.",
-      "default": 6,
-      "description": "Finite L-table maximum harmonic.",
-      "dtype": "integer",
-      "name": "max_harmonic",
-      "required": false,
-      "shape": "scalar",
-      "units": "dimensionless"
-    }
+  "preconditions": [
+   "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 GNU Octave 7.3.0 remains required."
   ],
-  "kind": "operator",
-  "outputs": [
-    {
-      "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-      "description": "M entries carry mixed-state SI dimensions for kx X=M X; corrected poles and exact cn_raw source tables, normalization ledger, state, omega and N.",
-      "dtype": "mapping",
-      "name": "result",
-      "required": true,
-      "shape": "mapping of MATLAB-shape arrays",
-      "units": "mixed SI and dimensionless as described"
-    }
+  "supported": [
+   "J8/J12, every N0..7, complete matrix state and source tables.",
+   "Coherent SI state; signed/zero kz away from true rational resonance denominators."
+  ]
+ },
+ "asset_id": "scirel.kinetic.fluidbw-em-matrix",
+ "example": {
+  "code": "from scirel.kinetic.fluidbw import derive_fluidbw_case,assemble_fluidbw_em\ns=derive_fluidbw_case('em',2)\nr=assemble_fluidbw_em(s,.83*s['wn'].item(),8,0)\n",
+  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
+  "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
+  "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
+  "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
+  "runtime_failure": "Raises RuntimeError before numerical evaluation unless the pinned Linux amd64 and GNU Octave 7.3.0 runtime is available; native errors propagate and no fallback is selected."
+ },
+ "identity": {
+  "assumptions": [
+   "No flow or temperature anisotropy.",
+   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
   ],
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notice and public scientific reference where listed"
-    ],
-    "public_references": [
-      "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
-    ],
-    "license_status": "retained fluidBW notices under licenses/; source redistribution permission not established; redistribution pending human decision"
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+  "definition": "M acts on [Jx_snl,Jy_snl,Jz_snl,Ey,Ez,By,Bz]; polynomial conductivity restores four matrix entries; n>=1 inverse moments projected to zero with stable Gamma representation.",
+  "direction": "forward",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "relation": "finite rational Maxwell kx eigenmatrix"
+ },
+ "inputs": [
+  {
+   "constraints": "Finite numeric fields and coherent thermal/gyro scales; metadata cannot override explicit controls.",
+   "description": "Explicit isotropic Maxwellian SI state. S species; c2; signed wcs and rhocs; positive wps2 and vts; optional metadata w and signed kz. Matrix assembly additionally requires epsilon0. rho=vts/(sqrt(2)*wcs). Explicit omega is authoritative; state w is not required.",
+   "dtype": "mapping",
+   "name": "state",
+   "required": true,
+   "shape": "mapping; species vectors length S; numeric arrays retain MATLAB shapes",
+   "units": "c2 m²/s²; wcs,w rad/s; wps2 s^-2; rhocs m; vts m/s; kz m^-1; epsilon0 F/m"
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.fluidbw",
-      "signature": "assemble_fluidbw_em(state, omega, j_order=8, max_harmonic=6)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "assemble_fluidbw_em",
-      "symbol": "assemble_fluidbw_em"
-    }
+  {
+   "constraints": "Finite nonzero scalar.",
+   "description": "Explicit angular frequency, authoritative over state metadata.",
+   "dtype": "real",
+   "name": "omega",
+   "required": true,
+   "shape": "scalar",
+   "units": "rad/s"
   },
-  "schema": "scirel.asset-document",
-  "summary": "Assemble the complete finite L/J matrix with restored conductivity polynomials and constrained source-table moments.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-waves",
-    "fluidbw"
-  ],
-  "title": {
-    "en": "Corrected finite rational EM matrix",
-    "zh": "修正的有限有理 EM 矩阵"
+  {
+   "constraints": "Exactly 8 or 12.",
+   "default": 8,
+   "description": "Source J-pole approximation order.",
+   "dtype": "integer",
+   "name": "j_order",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
   },
-  "verification": {
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "Source permissions remain NOT_ESTABLISHED; no public release.",
-      "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-      "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
-      "Example execution requires Linux amd64 with GNU Octave 7.3.0; it was not run on this macOS host."
-    ],
-    "scope": [
-      "J8/J12, every N0..7, complete matrix state and source tables.",
-      "Coherent SI state; signed/zero kz away from true rational resonance denominators."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_fluidbw_full_d2.py"
-    ]
-  },
-  "version": {
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.fluidbw-case-state"
-      }
-    ],
-    "implementation_version": "0.1.0.dev11"
+  {
+   "constraints": "Integer 0..7.",
+   "default": 6,
+   "description": "Finite L-table maximum harmonic.",
+   "dtype": "integer",
+   "name": "max_harmonic",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
   }
+ ],
+ "outputs": [
+  {
+   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+   "description": "M entries carry mixed-state SI dimensions for kx X=M X; corrected poles and exact cn_raw source tables, normalization ledger, state, omega and N.",
+   "dtype": "mapping",
+   "name": "result",
+   "required": true,
+   "shape": "mapping of MATLAB-shape arrays",
+   "units": "mixed SI and dimensionless as described"
+  }
+ ],
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notice and public scientific reference where listed"
+  ],
+  "public_references": [
+   "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+  ],
+  "license_status": "retained fluidBW notices under licenses/; source redistribution permission not established; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluidbw",
+   "signature": "assemble_fluidbw_em(state, omega, j_order=8, max_harmonic=6)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "assemble_fluidbw_em",
+   "symbol": "assemble_fluidbw_em"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Assemble the complete finite L/J matrix with restored conductivity polynomials and constrained source-table moments.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-waves",
+  "fluidbw"
+ ],
+ "title": {
+  "en": "Corrected finite rational EM matrix",
+  "zh": "修正的有限有理 EM 矩阵"
+ },
+ "verification": {
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "Example execution requires Linux amd64 with GNU Octave 7.3.0; it was not run on this macOS host."
+  ],
+  "scope": [
+   "J8/J12, every N0..7, complete matrix state and source tables.",
+   "Coherent SI state; signed/zero kz away from true rational resonance denominators."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fluidbw_full_d2.py"
+  ]
+ },
+ "version": {
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.fluidbw-case-state"
+   }
+  ],
+  "implementation_version": "0.1.0.dev11"
+ }
 }

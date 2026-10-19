@@ -1,120 +1,119 @@
 {
-  "schema": "scirel.asset-document",
-  "kind": "operator",
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "verification": {
-    "scope": [
-      "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-      "The executable constructor example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_native_geometry_qualification.py",
-      "tests/pleiades/geometry/test_native_lifecycle.py"
-    ],
-    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
-    "known_limitations": [
-      "Mesh objects do not by themselves validate a physical field model or device geometry."
-    ]
-  },
-  "asset_id": "scirel.geometry.spherical-r-chord",
-  "title": {
-    "en": "Spherical radial chord",
-    "zh": "球坐标径向弦"
-  },
-  "summary": "Points varying spherical radius at a fixed degree angle.",
-  "taxonomy": [
-    "geometry",
-    "coordinates"
+ "schema": "scirel.asset-document",
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
   ],
-  "aliases": [
-    "SphericalRChord"
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "verification": {
+  "scope": [
+   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+   "The executable constructor example stored in this contract"
   ],
-  "identity": {
-    "relation": "Spherical radial coordinate relation",
-    "direction": "rpts,theta0 to cylindrical R,Z",
-    "definition": "R=r sin(theta), Z=r cos(theta)",
-    "model": "Spherical-to-cylindrical coordinate map",
-    "geometry": "Spherical-to-cylindrical coordinate map",
-    "coordinates": "Cylindrical storage derived from spherical inputs",
-    "boundary": "Angles are degrees",
-    "assumptions": [
-      "Finite radii"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "rpts",
-      "description": "Spherical radius",
-      "units": "m",
-      "shape": "N",
-      "dtype": "Finite float64",
-      "required": true,
-      "constraints": "Nonnegative radius"
-    },
-    {
-      "name": "theta0",
-      "description": "Fixed polar angle",
-      "units": "degree",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Finite degrees",
-      "default": 0.0
-    }
+  "tests": [
+   "tests/pleiades/geometry/test_native_geometry_qualification.py",
+   "tests/pleiades/geometry/test_native_lifecycle.py"
   ],
-  "outputs": [
-    {
-      "name": "mesh",
-      "description": "Constructed SphericalRChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
-      "units": "Object; property units as described",
-      "shape": "one object",
-      "dtype": "SphericalRChord",
-      "required": true,
-      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
-      "Generated cylindrical R must be nonnegative; use nonnegative spherical radii and degree angles in the usual 0..180 polar domain."
-    ],
-    "supported": [
-      "Finite spherical radial chord"
-    ],
-    "excluded": [
-      "Negative radius"
-    ]
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "known_limitations": [
+   "Mesh objects do not by themselves validate a physical field model or device geometry."
+  ]
+ },
+ "asset_id": "scirel.geometry.spherical-r-chord",
+ "title": {
+  "en": "Spherical radial chord",
+  "zh": "球坐标径向弦"
+ },
+ "summary": "Points varying spherical radius at a fixed degree angle.",
+ "taxonomy": [
+  "geometry",
+  "coordinates"
+ ],
+ "aliases": [
+  "SphericalRChord"
+ ],
+ "identity": {
+  "relation": "Spherical radial coordinate relation",
+  "direction": "rpts,theta0 to cylindrical R,Z",
+  "definition": "R=r sin(theta), Z=r cos(theta)",
+  "model": "Spherical-to-cylindrical coordinate map",
+  "geometry": "Spherical-to-cylindrical coordinate map",
+  "coordinates": "Cylindrical storage derived from spherical inputs",
+  "boundary": "Angles are degrees",
+  "assumptions": [
+   "Finite radii"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rpts",
+   "description": "Spherical radius",
+   "units": "m",
+   "shape": "N",
+   "dtype": "Finite float64",
+   "required": true,
+   "constraints": "Nonnegative radius"
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
-    "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
-    "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
-    "partial_results": "A failed constructor returns no mesh object."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry",
-      "symbol": "SphericalRChord",
-      "signature": "SphericalRChord(rpts: 'Iterable[float]', theta0: 'float' = 0.0)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "SphericalRChord"
-    }
-  },
-  "example": {
-    "description": "Convert a unit spherical radial point at polar angle 90 degrees to cylindrical R,Z.",
-    "code": "import numpy as np\nfrom scirel.geometry import SphericalRChord\n\nmesh = SphericalRChord([1.0], 90.0)\nnp.testing.assert_allclose(mesh.R, [1.0])\nnp.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)",
-    "expected": "The generated cylindrical coordinates are R=[1.0] m and Z=[0.0] m."
+  {
+   "name": "theta0",
+   "description": "Fixed polar angle",
+   "units": "degree",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Finite degrees",
+   "default": 0.0
   }
+ ],
+ "outputs": [
+  {
+   "name": "mesh",
+   "description": "Constructed SphericalRChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
+   "units": "Object; property units as described",
+   "shape": "one object",
+   "dtype": "SphericalRChord",
+   "required": true,
+   "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
+   "Generated cylindrical R must be nonnegative; use nonnegative spherical radii and degree angles in the usual 0..180 polar domain."
+  ],
+  "supported": [
+   "Finite spherical radial chord"
+  ],
+  "excluded": [
+   "Negative radius"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
+  "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
+  "partial_results": "A failed constructor returns no mesh object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry",
+   "symbol": "SphericalRChord",
+   "signature": "SphericalRChord(rpts: 'Iterable[float]', theta0: 'float' = 0.0)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "SphericalRChord"
+  }
+ },
+ "example": {
+  "description": "Convert a unit spherical radial point at polar angle 90 degrees to cylindrical R,Z.",
+  "code": "import numpy as np\nfrom scirel.geometry import SphericalRChord\n\nmesh = SphericalRChord([1.0], 90.0)\nnp.testing.assert_allclose(mesh.R, [1.0])\nnp.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)",
+  "expected": "The generated cylindrical coordinates are R=[1.0] m and Z=[0.0] m."
+ }
 }

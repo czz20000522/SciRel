@@ -1,171 +1,170 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
-  "kind": "operator",
-  "title": {
-    "en": "Neutral total-loss collision frequency assembly",
-    "zh": "中性总损失碰撞频率组装"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
+ "title": {
+  "en": "Neutral total-loss collision frequency assembly",
+  "zh": "中性总损失碰撞频率组装"
+ },
+ "summary": "Assemble the neutral total-loss frequency alpha_c = optional Alpha_CX + base loss + Omega_EL + wall loss (2 vr / D broadcast over the grid) used by the saved source's spatial advance.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "collision-frequency",
+  "wall-loss"
+ ],
+ "aliases": [
+  "assemble_neutral_total_collision_frequency"
+ ],
+ "identity": {
+  "relation": "alpha_c[vr,vx,x] = optional CX[vr,vx,x] + base[x] + elastic[x] + wall[vr,x], with wall = 2 vr / D[x] where D[x] > 0 and zero where D[x] = 0",
+  "direction": "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency",
+  "definition": "The saved assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the saved semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed",
+  "model": "the saved formal implementation's total-loss assembly",
+  "geometry": "one radial and one axial velocity dimension over one spatial axis",
+  "coordinates": "frequencies in s^-1; pipe diameter in m",
+  "boundary": "finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)",
+  "assumptions": [
+   "The wall loss 2 vr / D is the saved free-flight pipe model; it is a geometric escape frequency, not a surface-interaction model.",
+   "A zero pipe diameter means no wall loss in the saved arithmetic; whether the published contract should instead reject zero diameters is an open expert question.",
+   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "vr",
+   "description": "The radial velocity axis.",
+   "units": "source-normalized",
+   "shape": "[nvr]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, strictly positive nodes."
   },
-  "summary": "Assemble the neutral total-loss frequency alpha_c = optional Alpha_CX + base loss + Omega_EL + wall loss (2 vr / D broadcast over the grid) used by the saved source's spatial advance.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "collision-frequency",
-    "wall-loss"
-  ],
-  "aliases": [
-    "assemble_neutral_total_collision_frequency"
-  ],
-  "identity": {
-    "relation": "alpha_c[vr,vx,x] = optional CX[vr,vx,x] + base[x] + elastic[x] + wall[vr,x], with wall = 2 vr / D[x] where D[x] > 0 and zero where D[x] = 0",
-    "direction": "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency",
-    "definition": "The saved assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the saved semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed",
-    "model": "the saved formal implementation's total-loss assembly",
-    "geometry": "one radial and one axial velocity dimension over one spatial axis",
-    "coordinates": "frequencies in s^-1; pipe diameter in m",
-    "boundary": "finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)",
-    "assumptions": [
-      "The wall loss 2 vr / D is the saved free-flight pipe model; it is a geometric escape frequency, not a surface-interaction model.",
-      "A zero pipe diameter means no wall loss in the saved arithmetic; whether the published contract should instead reject zero diameters is an open expert question.",
-      "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
-    ]
+  {
+   "name": "vx",
+   "description": "The axial velocity axis.",
+   "units": "source-normalized",
+   "shape": "[nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite."
   },
-  "inputs": [
-    {
-      "name": "vr",
-      "description": "The radial velocity axis.",
-      "units": "source-normalized",
-      "shape": "[nvr]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, strictly positive nodes."
-    },
-    {
-      "name": "vx",
-      "description": "The axial velocity axis.",
-      "units": "source-normalized",
-      "shape": "[nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite."
-    },
-    {
-      "name": "base_loss_frequency_s_inv",
-      "description": "The base ionization/dissociation loss profile.",
-      "units": "s^-1",
-      "shape": "[nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative."
-    },
-    {
-      "name": "elastic_frequency_s_inv",
-      "description": "The elastic frequency profile.",
-      "units": "s^-1",
-      "shape": "[nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative, same shape as the base loss."
-    },
-    {
-      "name": "pipe_diameter_m",
-      "description": "The pipe diameter profile.",
-      "units": "m",
-      "shape": "[nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative; zero diameter cells get zero wall loss."
-    },
-    {
-      "name": "charge_exchange_frequency_s_inv",
-      "description": "The optional CX frequency field.",
-      "units": "s^-1",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": false,
-      "constraints": "When enabled: required, finite and nonnegative. When disabled: ignored even if supplied.",
-      "default": null
-    },
-    {
-      "name": "charge_exchange_enabled",
-      "description": "Whether the CX contribution is included.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "boolean scalar",
-      "required": false,
-      "constraints": "The saved branch selector.",
-      "default": true
-    }
-  ],
-  "outputs": [
-    {
-      "name": "total_frequency_s_inv",
-      "description": "The assembled total loss frequency.",
-      "units": "s^-1",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite; nonnegative on the declared domain (all inputs nonnegative)."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite aligned profiles and axes with positive radial nodes."
-    ],
-    "supported": [
-      "Total-loss assembly for H and H2 spatial-advance schemes with optional wall and CX terms."
-    ],
-    "excluded": [
-      "Negative loss contributions; negative diameters; enabled CX without a field."
-    ]
+  {
+   "name": "base_loss_frequency_s_inv",
+   "description": "The base ionization/dissociation loss profile.",
+   "units": "s^-1",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError when the axes/profiles violate the real-value, finiteness, nonnegativity or alignment contract, when charge_exchange_enabled is not boolean, or when enabled charge exchange lacks its explicit field.",
-    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
+  {
+   "name": "elastic_frequency_s_inv",
+   "description": "The elastic frequency profile.",
+   "units": "s^-1",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative, same shape as the base loss."
   },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
-    "source_kinds": [
-      "SciRel implementation",
-      "KN1D-derived mathematical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
+  {
+   "name": "pipe_diameter_m",
+   "description": "The pipe diameter profile.",
+   "units": "m",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; zero diameter cells get zero wall loss."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.neutral_total_collision_frequency",
-      "symbol": "assemble_neutral_total_collision_frequency",
-      "signature": "assemble_neutral_total_collision_frequency(vr, vx, base_loss_frequency_s_inv, elastic_frequency_s_inv, pipe_diameter_m, charge_exchange_frequency_s_inv=None, charge_exchange_enabled=True)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "assemble_neutral_total_collision_frequency"
-    }
+  {
+   "name": "charge_exchange_frequency_s_inv",
+   "description": "The optional CX frequency field.",
+   "units": "s^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": false,
+   "constraints": "When enabled: required, finite and nonnegative. When disabled: ignored even if supplied.",
+   "default": null
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Assemble the total loss with wall and CX terms, confirm the zero-diameter wall semantics and the enabled-CX fail-closed rule.",
-    "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_total_collision_frequency\nresult = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], np.ones((2, 2, 2)))\nnp.testing.assert_allclose(result[:, :, 0], [[10.0, 10.0], [11.0, 11.0]])\nnp.testing.assert_allclose(result[:, :, 1], [[11.0, 11.0], [11.0, 11.0]])\ndisabled = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], charge_exchange_enabled=False)\nnp.testing.assert_allclose(disabled[:, :, 0], [[9.0, 9.0], [10.0, 10.0]])\ntry:\n    assemble_neutral_total_collision_frequency([1.0], [1.0], [1.0], [1.0], [0.0])\nexcept ValueError as error:\n    assert 'charge exchange' in str(error)\nelse:\n    raise AssertionError('enabled CX without a field must fail closed')",
-    "expected": "The enabled-CX example returned the declared (2,2,2) totals, including wall loss only for positive diameters; enabled CX without a field raised ValueError."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_neutral_frequency_assembly.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision.",
-      "Example output is a bounded runtime observation, not a universal scientific claim."
-    ]
+  {
+   "name": "charge_exchange_enabled",
+   "description": "Whether the CX contribution is included.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "boolean scalar",
+   "required": false,
+   "constraints": "The saved branch selector.",
+   "default": true
   }
+ ],
+ "outputs": [
+  {
+   "name": "total_frequency_s_inv",
+   "description": "The assembled total loss frequency.",
+   "units": "s^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; nonnegative on the declared domain (all inputs nonnegative)."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite aligned profiles and axes with positive radial nodes."
+  ],
+  "supported": [
+   "Total-loss assembly for H and H2 spatial-advance schemes with optional wall and CX terms."
+  ],
+  "excluded": [
+   "Negative loss contributions; negative diameters; enabled CX without a field."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when the axes/profiles violate the real-value, finiteness, nonnegativity or alignment contract, when charge_exchange_enabled is not boolean, or when enabled charge exchange lacks its explicit field.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
+  "source_kinds": [
+   "SciRel implementation",
+   "KN1D-derived mathematical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.neutral_total_collision_frequency",
+   "symbol": "assemble_neutral_total_collision_frequency",
+   "signature": "assemble_neutral_total_collision_frequency(vr, vx, base_loss_frequency_s_inv, elastic_frequency_s_inv, pipe_diameter_m, charge_exchange_frequency_s_inv=None, charge_exchange_enabled=True)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "assemble_neutral_total_collision_frequency"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Assemble the total loss with wall and CX terms, confirm the zero-diameter wall semantics and the enabled-CX fail-closed rule.",
+  "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_total_collision_frequency\nresult = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], np.ones((2, 2, 2)))\nnp.testing.assert_allclose(result[:, :, 0], [[10.0, 10.0], [11.0, 11.0]])\nnp.testing.assert_allclose(result[:, :, 1], [[11.0, 11.0], [11.0, 11.0]])\ndisabled = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], charge_exchange_enabled=False)\nnp.testing.assert_allclose(disabled[:, :, 0], [[9.0, 9.0], [10.0, 10.0]])\ntry:\n    assemble_neutral_total_collision_frequency([1.0], [1.0], [1.0], [1.0], [0.0])\nexcept ValueError as error:\n    assert 'charge exchange' in str(error)\nelse:\n    raise AssertionError('enabled CX without a field must fail closed')",
+  "expected": "The enabled-CX example returned the declared (2,2,2) totals, including wall loss only for positive diameters; enabled CX without a field raised ValueError."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_neutral_frequency_assembly.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Public distribution licensing remains pending a human decision.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ }
 }

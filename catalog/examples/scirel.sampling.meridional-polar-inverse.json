@@ -1,140 +1,139 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.sampling.meridional-polar-inverse",
-  "kind": "operator",
-  "title": {
-    "en": "Inverse meridional polar projection",
-    "zh": "子午面极坐标与矢量逆向投影"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.meridional-polar-inverse",
+ "title": {
+  "en": "Inverse meridional polar projection",
+  "zh": "子午面极坐标与矢量逆向投影"
+ },
+ "summary": "Map positive r,theta and polar vector components to meridional rho,Z components.",
+ "taxonomy": [
+  "geometry",
+  "coordinates",
+  "sampling"
+ ],
+ "aliases": [
+  "transform_to_rhoz"
+ ],
+ "identity": {
+  "relation": "rho=r sin(theta); z=r cos(theta); u_rho=u_r sin(theta)+u_theta cos(theta); u_z=u_r cos(theta)-u_theta sin(theta).",
+  "direction": "r,theta,u_r,u_theta to rho,z,u_rho,u_z",
+  "definition": "Inverse of the same orthogonal meridional basis; theta radians from +Z toward +rho. This explicit inverse fixes the forward convention and preserves vector norm.",
+  "model": "Euclidean meridional coordinate transformation, no magnetic model.",
+  "geometry": "Planar signed rho,Z coordinates with positive distance from origin.",
+  "coordinates": "Caller coherent length/vector units; theta radians.",
+  "boundary": "Origin has no polar vector basis and rejects; nonzero points on the axis are valid.",
+  "assumptions": [
+   "Finite real broadcastable inputs",
+   "r>0; no physical field null convention inferred"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "R",
+   "description": "Distance from origin",
+   "units": "caller length",
+   "shape": "broadcastable",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Strictly positive"
   },
-  "summary": "Map positive r,theta and polar vector components to meridional rho,Z components.",
-  "taxonomy": [
-    "geometry",
-    "coordinates",
-    "sampling"
-  ],
-  "aliases": [
-    "transform_to_rhoz"
-  ],
-  "identity": {
-    "relation": "rho=r sin(theta); z=r cos(theta); u_rho=u_r sin(theta)+u_theta cos(theta); u_z=u_r cos(theta)-u_theta sin(theta).",
-    "direction": "r,theta,u_r,u_theta to rho,z,u_rho,u_z",
-    "definition": "Inverse of the same orthogonal meridional basis; theta radians from +Z toward +rho. This explicit inverse fixes the forward convention and preserves vector norm.",
-    "model": "Euclidean meridional coordinate transformation, no magnetic model.",
-    "geometry": "Planar signed rho,Z coordinates with positive distance from origin.",
-    "coordinates": "Caller coherent length/vector units; theta radians.",
-    "boundary": "Origin has no polar vector basis and rejects; nonzero points on the axis are valid.",
-    "assumptions": [
-      "Finite real broadcastable inputs",
-      "r>0; no physical field null convention inferred"
-    ]
+  {
+   "name": "Theta",
+   "description": "Meridional angle from +Z toward +rho",
+   "units": "rad",
+   "shape": "broadcastable",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Periodic sine/cosine convention"
   },
-  "inputs": [
-    {
-      "name": "R",
-      "description": "Distance from origin",
-      "units": "caller length",
-      "shape": "broadcastable",
-      "dtype": "finite real",
-      "required": true,
-      "constraints": "Strictly positive"
-    },
-    {
-      "name": "Theta",
-      "description": "Meridional angle from +Z toward +rho",
-      "units": "rad",
-      "shape": "broadcastable",
-      "dtype": "finite real",
-      "required": true,
-      "constraints": "Periodic sine/cosine convention"
-    },
-    {
-      "name": "r_component",
-      "description": "Radial vector component",
-      "units": "caller vector",
-      "shape": "broadcastable",
-      "dtype": "finite real",
-      "required": true,
-      "constraints": "Coherent vector units"
-    },
-    {
-      "name": "theta_component",
-      "description": "Angular vector component",
-      "units": "caller vector",
-      "shape": "broadcastable",
-      "dtype": "finite real",
-      "required": true,
-      "constraints": "Coherent vector units"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "position_and_vector",
-      "description": "Tuple rho,z,u_rho,u_z",
-      "units": "caller length,caller length,caller vector,caller vector",
-      "shape": "four broadcasted arrays",
-      "dtype": "float64 tuple",
-      "required": true,
-      "constraints": "Orthogonal vector projection"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite broadcastable real arrays; away from coordinate origin"
-    ],
-    "supported": [
-      "Axis and signed planar coordinate quadrants",
-      "Vector norm and roundtrip identity"
-    ],
-    "excluded": [
-      "Polar basis at the origin",
-      "Magnetic-axis curvature or topology"
-    ]
+  {
+   "name": "r_component",
+   "description": "Radial vector component",
+   "units": "caller vector",
+   "shape": "broadcastable",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Coherent vector units"
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for nonfinite input or origin; NumPy broadcasting errors propagate.",
-    "runtime_failure": "NumPy arithmetic errors propagate.",
-    "nonconvergence": "Direct transformation.",
-    "partial_results": "No partial tuple on invalid input."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.sampling",
-      "symbol": "transform_to_rhoz",
-      "signature": "transform_to_rhoz(R, Theta, r_component, theta_component)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "transform_to_rhoz"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Transform r=2, theta=0 and polar vector components back to cylindrical meridional coordinates.",
-    "code": "from scirel.geometry.sampling import transform_to_rhoz\n\nrho, z, radial, axial = transform_to_rhoz(2.0, 0.0, 4.0, 3.0)\nassert (rho, z, radial, axial) == (0.0, 2.0, 3.0, 4.0)",
-    "expected": "The inverse transform returns rho=0, Z=2, rho-component=3, and Z-component=4."
-  },
-  "verification": {
-    "scope": [
-      "Independent projection, signed quadrants, norm and inverse roundtrip",
-      "Origin/nonfinite rejection"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_polar_projection_repair.py"
-    ],
-    "evidence_ceiling": "Coordinate/vector identity; not physical field qualification.",
-    "known_limitations": [
-      "Coordinate origin undefined",
-      "Length and vector units remain caller supplied"
-    ]
+  {
+   "name": "theta_component",
+   "description": "Angular vector component",
+   "units": "caller vector",
+   "shape": "broadcastable",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Coherent vector units"
   }
+ ],
+ "outputs": [
+  {
+   "name": "position_and_vector",
+   "description": "Tuple rho,z,u_rho,u_z",
+   "units": "caller length,caller length,caller vector,caller vector",
+   "shape": "four broadcasted arrays",
+   "dtype": "float64 tuple",
+   "required": true,
+   "constraints": "Orthogonal vector projection"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite broadcastable real arrays; away from coordinate origin"
+  ],
+  "supported": [
+   "Axis and signed planar coordinate quadrants",
+   "Vector norm and roundtrip identity"
+  ],
+  "excluded": [
+   "Polar basis at the origin",
+   "Magnetic-axis curvature or topology"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for nonfinite input or origin; NumPy broadcasting errors propagate.",
+  "runtime_failure": "NumPy arithmetic errors propagate.",
+  "nonconvergence": "Direct transformation.",
+  "partial_results": "No partial tuple on invalid input."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "transform_to_rhoz",
+   "signature": "transform_to_rhoz(R, Theta, r_component, theta_component)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "transform_to_rhoz"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Transform r=2, theta=0 and polar vector components back to cylindrical meridional coordinates.",
+  "code": "from scirel.geometry.sampling import transform_to_rhoz\n\nrho, z, radial, axial = transform_to_rhoz(2.0, 0.0, 4.0, 3.0)\nassert (rho, z, radial, axial) == (0.0, 2.0, 3.0, 4.0)",
+  "expected": "The inverse transform returns rho=0, Z=2, rho-component=3, and Z-component=4."
+ },
+ "verification": {
+  "scope": [
+   "Independent projection, signed quadrants, norm and inverse roundtrip",
+   "Origin/nonfinite rejection"
+  ],
+  "tests": [
+   "tests/pleiades/geometry/test_polar_projection_repair.py"
+  ],
+  "evidence_ceiling": "Coordinate/vector identity; not physical field qualification.",
+  "known_limitations": [
+   "Coordinate origin undefined",
+   "Length and vector units remain caller supplied"
+  ]
+ }
 }

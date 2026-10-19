@@ -291,5 +291,5 @@ def test_u1_c_t07_public_signature_is_the_documented_one(candidate):
         "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)"
     )
     assert python_api["module"] == "scirel.geometry.axisymmetric_equilibrium_grid_support"
-    assert document["kind"] == "task_graph"
+    assert "graph" in document
     assert document["asset_id"] == "scirel.geometry.axisymmetric-equilibrium-grid-support"

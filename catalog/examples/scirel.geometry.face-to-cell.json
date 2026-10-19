@@ -1,112 +1,111 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.geometry.face-to-cell",
-  "kind": "operator",
-  "title": {
-    "en": "Face to cell midpoint",
-    "zh": "面到单元中点"
-  },
-  "summary": "Adjacent face values to cell-center midpoints on a one-dimensional grid.",
-  "taxonomy": [
-    "geometry",
-    "grid",
-    "interpolation"
-  ],
-  "aliases": [
-    "face_to_cell"
-  ],
-  "identity": {
-    "relation": "cell[i]=(face[i]+face[i+1])/2",
-    "direction": "finite face vector -> cell vector",
-    "definition": "Adjacent arithmetic midpoint; output has one fewer entry and same units. Sum first when representable, otherwise sum halved endpoints; no invented geometry or coordinate fallback.",
-    "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
-    "geometry": "one-dimensional cell/face grid",
-    "coordinates": "face index order; no coordinate values consumed",
-    "boundary": "finite real one-dimensional face vector with at least two entries",
-    "assumptions": [
-      "No extrapolation or broadcast axis is inferred.",
-      "The relation carries values only; geometry coordinates remain caller-owned."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "face",
-      "description": "Face values",
-      "units": "same as output",
-      "shape": "[n]",
-      "dtype": "real integer/float numeric one-dimensional array-like; converted to float64",
-      "required": true,
-      "constraints": "finite numeric one-dimensional array, n>=2; nonempty, boolean/string/complex/masked values rejected"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "cell",
-      "description": "Cell midpoint values",
-      "units": "same as input",
-      "shape": "[n-1]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "finite; one fewer entry than face"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "finite real one-dimensional face vector with at least two entries"
-    ],
-    "supported": [
-      "Finite one-dimensional midpoint interpolation with at least two face values; no broadcasting."
-    ],
-    "excluded": [
-      "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
-    "runtime_failure": "Raises FloatingPointError if an accepted midpoint unexpectedly becomes nonfinite; finite float64 endpoint midpoints are representable.",
-    "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
-    "partial_results": "No output is returned after an exception."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
-    "source_kinds": [
-      "TORAX-derived implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.face_to_cell",
-      "symbol": "face_to_cell",
-      "signature": "face_to_cell(face)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "face_to_cell"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Convert four face coordinates to the three adjacent cell-center coordinates.",
-    "code": "import numpy as np\nfrom scirel.geometry import face_to_cell\nnp.testing.assert_array_equal(face_to_cell([0.,2.,8.,10.]), [1.,5.,9.])",
-    "expected": "The returned float64 cell centers are [1.0, 5.0, 9.0]."
-  },
-  "verification": {
-    "scope": [
-      "Manufactured midpoint values, subnormal rounding, finite endpoint overflow avoidance, shape and dtype boundary.",
-      "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
-      "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_torax_algebra_grid.py"
-    ],
-    "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
-    "known_limitations": [
-      "No nonuniform coordinate interpolation is provided.",
-      "Source parity is bounded to the retained midpoint relation; SciRel adds explicit input checks."
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.geometry.face-to-cell",
+ "title": {
+  "en": "Face to cell midpoint",
+  "zh": "面到单元中点"
+ },
+ "summary": "Adjacent face values to cell-center midpoints on a one-dimensional grid.",
+ "taxonomy": [
+  "geometry",
+  "grid",
+  "interpolation"
+ ],
+ "aliases": [
+  "face_to_cell"
+ ],
+ "identity": {
+  "relation": "cell[i]=(face[i]+face[i+1])/2",
+  "direction": "finite face vector -> cell vector",
+  "definition": "Adjacent arithmetic midpoint; output has one fewer entry and same units. Sum first when representable, otherwise sum halved endpoints; no invented geometry or coordinate fallback.",
+  "model": "retained TORAX relation with explicit SciRel numeric boundary checks",
+  "geometry": "one-dimensional cell/face grid",
+  "coordinates": "face index order; no coordinate values consumed",
+  "boundary": "finite real one-dimensional face vector with at least two entries",
+  "assumptions": [
+   "No extrapolation or broadcast axis is inferred.",
+   "The relation carries values only; geometry coordinates remain caller-owned."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "face",
+   "description": "Face values",
+   "units": "same as output",
+   "shape": "[n]",
+   "dtype": "real integer/float numeric one-dimensional array-like; converted to float64",
+   "required": true,
+   "constraints": "finite numeric one-dimensional array, n>=2; nonempty, boolean/string/complex/masked values rejected"
   }
+ ],
+ "outputs": [
+  {
+   "name": "cell",
+   "description": "Cell midpoint values",
+   "units": "same as input",
+   "shape": "[n-1]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; one fewer entry than face"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "finite real one-dimensional face vector with at least two entries"
+  ],
+  "supported": [
+   "Finite one-dimensional midpoint interpolation with at least two face values; no broadcasting."
+  ],
+  "excluded": [
+   "Whole TORAX evolution, experimental calibration, and implicit coordinate reconstruction."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+  "runtime_failure": "Raises FloatingPointError if an accepted midpoint unexpectedly becomes nonfinite; finite float64 endpoint midpoints are representable.",
+  "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
+  "partial_results": "No output is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
+  "source_kinds": [
+   "TORAX-derived implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [],
+  "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.face_to_cell",
+   "symbol": "face_to_cell",
+   "signature": "face_to_cell(face)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "face_to_cell"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Convert four face coordinates to the three adjacent cell-center coordinates.",
+  "code": "import numpy as np\nfrom scirel.geometry import face_to_cell\nnp.testing.assert_array_equal(face_to_cell([0.,2.,8.,10.]), [1.,5.,9.])",
+  "expected": "The returned float64 cell centers are [1.0, 5.0, 9.0]."
+ },
+ "verification": {
+  "scope": [
+   "Manufactured midpoint values, subnormal rounding, finite endpoint overflow avoidance, shape and dtype boundary.",
+   "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
+   "Source relation attribution and comparison with actual canonical SciRel callers/dependencies."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_torax_algebra_grid.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+  "known_limitations": [
+   "No nonuniform coordinate interpolation is provided.",
+   "Source parity is bounded to the retained midpoint relation; SciRel adds explicit input checks."
+  ]
+ }
 }

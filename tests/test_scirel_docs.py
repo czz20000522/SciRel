@@ -40,7 +40,7 @@ def test_queries_are_bounded_and_exact_records_unchanged(snapshot):
     asset = p['items'][0]['asset_id']
     original = json.loads(example_document_sources()[asset].read_text())
     assert docs.asset(asset)['document'] == original
-    assert docs.search(kind='task_graph', domain='equilibrium')['total'] > 0
+    assert docs.search(domain='equilibrium')['total'] > 0
     assert docs.search('中文未找到', offset=999)['next_offset'] is None
     code = 'from scirel_docs import Documentation; import sys; Documentation(sys.argv[1]).search(); assert not any(n == "scirel" or n.startswith("scirel.") for n in sys.modules)'
     subprocess.run([sys.executable, '-c', code, str(snapshot)], cwd=ROOT/'scripts', check=True)
@@ -81,8 +81,7 @@ def test_document_responses_expose_the_documentation_revision(snapshot):
 
 @pytest.mark.parametrize('url', ['/api/search?limit=0', '/api/search?limit=101',
                                  '/api/search?offset=-1', '/api/search?offset=x',
-                                 '/api/search?q=a&q=b', '/api/search?unknown=x',
-                                 '/api/search?kind=other'])
+                                 '/api/search?q=a&q=b', '/api/search?unknown=x'])
 def test_invalid_queries_fail_closed(snapshot, url):
     with pytest.raises(ValueError):
         Documentation(snapshot).handle(url)
@@ -373,7 +372,7 @@ def test_reference_domains_list_linked_functions_and_keep_sidebar_compact(snapsh
             assert link['href'] == 'generated/'+asset+'.html'
             assert link.get_text(strip=True) == record['public_api']['python']['symbol']
             assert len(cells[1].get_text(strip=True)) > 10
-            assert ('（复合入口）' in cells[1].get_text()) == (record['kind'] == 'task_graph')
+            assert '（复合入口）' not in cells[1].get_text()
         sidebar = page.select_one('nav.bd-docs-nav')
         assert len(sidebar.select('a')) == len(book['chapters'])
         assert not sidebar.select('a[href*="generated/"]')

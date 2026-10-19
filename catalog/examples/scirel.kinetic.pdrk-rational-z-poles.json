@@ -1,125 +1,124 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-rational-z-poles",
-  "kind": "operator",
-  "title": {
-    "en": "Rational plasma-dispersion poles",
-    "zh": "有理等离子体色散极点"
-  },
-  "summary": "Return ordered J4/J8 tables or the precision-corrected J12/I16/K8 pole-residue table.",
-  "taxonomy": [
-    "kinetic",
-    "magnetized-plasma",
-    "pdrk"
-  ],
-  "aliases": [
-    "PDRK pole_coefficients"
-  ],
-  "identity": {
-    "relation": "Rational plasma-dispersion poles",
-    "direction": "J -> bzj,czj",
-    "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within native precision. J12 regenerates the source-prescribed Padé relation at80digits, checked against120digit construction before rounding to binary64; J4/J8 source values are retained.",
-    "model": "Explicit rational approximation or two-Gaussian representation for magnetized kinetic response.",
-    "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
-    "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
-    "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
-    "assumptions": [
-      "Linear small-amplitude response.",
-      "Caller retains the explicit truncation, state provenance and normalization."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "J",
-      "description": "Number of rational terms in Z(z)=sum_j bzj/(z-czj).",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer numeric",
-      "required": false,
-      "constraints": "Exactly4,8 or12; J12/I16/K8 table is intentionally regenerated at high precision and rounded to native double.",
-      "default": 8
-    }
-  ],
-  "outputs": [
-    {
-      "name": "bzj",
-      "description": "Ordered complex residues.",
-      "units": "dimensionless",
-      "shape": "(1,J)",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    },
-    {
-      "name": "czj",
-      "description": "Ordered lower-half-plane complex poles.",
-      "units": "dimensionless",
-      "shape": "(1,J)",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "J in{4,8,12}; causal physical mapping must still handle the sign of parallel k."
-    ],
-    "supported": [
-      "J in{4,8,12}; causal physical mapping must still handle the sign of parallel k."
-    ],
-    "excluded": [
-      "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-    "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
-    "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
-    "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.magnetized",
-      "symbol": "pole_coefficients",
-      "signature": "pole_coefficients(J=8)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
-    "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\nr=m.pole_coefficients(12)\nassert r.state['bzj'].size==12\nassert abs(np.sum(r.state['bzj'])+1)<1e-10\n",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
-  },
-  "verification": {
-    "scope": [
-      "First three asymptotic moments retain the1e-10 gate; J12 raw80/120 construction yields stable binary64 coefficients.",
-      "Independent Z values and resolved kinetic responses bound the corrected J12 table; J4/J8 lower-order approximation errors remain explicit diagnostics."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_magnetized.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "Local technical development; human scientific endorsement and publication clearance remain pending.",
-      "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
-      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-      "Lower-half-plane poles define a rational approximation; its global strong-damping accuracy is not established by bounded upper-half-plane response tests.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-rational-z-poles",
+ "title": {
+  "en": "Rational plasma-dispersion poles",
+  "zh": "有理等离子体色散极点"
+ },
+ "summary": "Return ordered J4/J8 tables or the precision-corrected J12/I16/K8 pole-residue table.",
+ "taxonomy": [
+  "kinetic",
+  "magnetized-plasma",
+  "pdrk"
+ ],
+ "aliases": [
+  "PDRK pole_coefficients"
+ ],
+ "identity": {
+  "relation": "Rational plasma-dispersion poles",
+  "direction": "J -> bzj,czj",
+  "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within native precision. J12 regenerates the source-prescribed Padé relation at80digits, checked against120digit construction before rounding to binary64; J4/J8 source values are retained.",
+  "model": "Explicit rational approximation or two-Gaussian representation for magnetized kinetic response.",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "assumptions": [
+   "Linear small-amplitude response.",
+   "Caller retains the explicit truncation, state provenance and normalization."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "J",
+   "description": "Number of rational terms in Z(z)=sum_j bzj/(z-czj).",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer numeric",
+   "required": false,
+   "constraints": "Exactly4,8 or12; J12/I16/K8 table is intentionally regenerated at high precision and rounded to native double.",
+   "default": 8
   }
+ ],
+ "outputs": [
+  {
+   "name": "bzj",
+   "description": "Ordered complex residues.",
+   "units": "dimensionless",
+   "shape": "(1,J)",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "czj",
+   "description": "Ordered lower-half-plane complex poles.",
+   "units": "dimensionless",
+   "shape": "(1,J)",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "J in{4,8,12}; causal physical mapping must still handle the sign of parallel k."
+  ],
+  "supported": [
+   "J in{4,8,12}; causal physical mapping must still handle the sign of parallel k."
+  ],
+  "excluded": [
+   "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+  "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.magnetized",
+   "symbol": "pole_coefficients",
+   "signature": "pole_coefficients(J=8)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\nr=m.pole_coefficients(12)\nassert r.state['bzj'].size==12\nassert abs(np.sum(r.state['bzj'])+1)<1e-10\n",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "First three asymptotic moments retain the1e-10 gate; J12 raw80/120 construction yields stable binary64 coefficients.",
+   "Independent Z values and resolved kinetic responses bound the corrected J12 table; J4/J8 lower-order approximation errors remain explicit diagnostics."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_magnetized.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+   "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+   "Lower-half-plane poles define a rational approximation; its global strong-damping accuracy is not established by bounded upper-half-plane response tests.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

@@ -1,151 +1,150 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.vp-rhs",
-  "kind": "operator",
-  "title": {
-    "en": "Linear Vlasov right-hand side",
-    "zh": "线性 Vlasov 右端"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.vp-rhs",
+ "title": {
+  "en": "Linear Vlasov right-hand side",
+  "zh": "线性 Vlasov 右端"
+ },
+ "summary": "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "vlasov-poisson"
+ ],
+ "aliases": [
+  "vp_rhs"
+ ],
+ "identity": {
+  "relation": "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE.",
+  "direction": "Inputs to vp_rhs -> result",
+  "definition": "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE.",
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+  "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
+  "assumptions": [
+   "Linear perturbations and homogeneous equilibrium.",
+   "Velocity-window truncation and recurrence are separate from temporal integration error."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "df",
+   "description": "Complex perturbation on velocity nodes.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite one-dimensional N>=2."
   },
-  "summary": "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave",
-    "vlasov-poisson"
-  ],
-  "aliases": [
-    "vp_rhs"
-  ],
-  "identity": {
-    "relation": "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE.",
-    "direction": "Inputs to vp_rhs -> result",
-    "definition": "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE.",
-    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-    "geometry": "One velocity coordinate and one spatial Fourier mode.",
-    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-    "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
-    "assumptions": [
-      "Linear perturbations and homogeneous equilibrium.",
-      "Velocity-window truncation and recurrence are separate from temporal integration error."
-    ]
+  {
+   "name": "dE",
+   "description": "Scalar Fourier electric field.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex scalar",
+   "required": true,
+   "constraints": "Finite scalar; RK4 requires Poisson consistency within rtol=1e-12,atol=1e-14."
   },
-  "inputs": [
-    {
-      "name": "df",
-      "description": "Complex perturbation on velocity nodes.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite one-dimensional N>=2."
-    },
-    {
-      "name": "dE",
-      "description": "Scalar Fourier electric field.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "complex scalar",
-      "required": true,
-      "constraints": "Finite scalar; RK4 requires Poisson consistency within rtol=1e-12,atol=1e-14."
-    },
-    {
-      "name": "vv",
-      "description": "Velocity nodes.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "real array",
-      "required": true,
-      "constraints": "Finite one-dimensional; aligned with df and df0dv when applicable."
-    },
-    {
-      "name": "df0dv",
-      "description": "Equilibrium derivative or declared forcing on velocity nodes.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "real array",
-      "required": true,
-      "constraints": "Finite one-dimensional aligned vector; can include quadrature-deposited jump masses."
-    },
-    {
-      "name": "k",
-      "description": "Nonzero spatial Fourier wavenumber.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite and nonzero."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "Complex vector [N] time derivative; no input mutation.",
-      "units": "dimensionless",
-      "shape": "As described in output mapping or tuple.",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "df, vv and df0dv are finite one-dimensional vectors with identical shape and at least two entries.",
-      "dE and k are finite scalars and k is nonzero."
-    ],
-    "supported": [
-      "Linear one-dimensional Vlasov RHS with one shared electric field."
-    ],
-    "excluded": [
-      "Nonlinear evolution, multidimensional modes and implicit Poisson correction."
-    ]
+  {
+   "name": "vv",
+   "description": "Velocity nodes.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Finite one-dimensional; aligned with df and df0dv when applicable."
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for misaligned/nonfinite vectors, non-scalar dE, or nonfinite/zero k.",
-    "runtime_failure": "FloatingPointError when the RHS contains a nonfinite value.",
-    "nonconvergence": "Not applicable; no iteration is performed.",
-    "partial_results": "No RHS vector is returned after an exception."
+  {
+   "name": "df0dv",
+   "description": "Equilibrium derivative or declared forcing on velocity nodes.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Finite one-dimensional aligned vector; can include quadrature-deposited jump masses."
   },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.vlasov_poisson",
-      "symbol": "vp_rhs",
-      "signature": "vp_rhs(df, dE, vv, df0dv, k)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "vp_rhs"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "code": "from scirel.kinetic.vlasov_poisson import vp_rhs\nr=vp_rhs([1,2],1j,[-1,1],[.1,-.1],.5)\nassert r.shape == (2,)",
-    "description": "Evaluate the linear Vlasov RHS on two velocity nodes.",
-    "expected": "PASS: .venv/bin/python completed; the returned complex vector has shape (2,)."
-  },
-  "verification": {
-    "scope": [
-      "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-      "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-      "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
-    ],
-    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
-    "known_limitations": [
-      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
-      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
-      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
-    ]
+  {
+   "name": "k",
+   "description": "Nonzero spatial Fourier wavenumber.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and nonzero."
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Complex vector [N] time derivative; no input mutation.",
+   "units": "dimensionless",
+   "shape": "As described in output mapping or tuple.",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "df, vv and df0dv are finite one-dimensional vectors with identical shape and at least two entries.",
+   "dE and k are finite scalars and k is nonzero."
+  ],
+  "supported": [
+   "Linear one-dimensional Vlasov RHS with one shared electric field."
+  ],
+  "excluded": [
+   "Nonlinear evolution, multidimensional modes and implicit Poisson correction."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for misaligned/nonfinite vectors, non-scalar dE, or nonfinite/zero k.",
+  "runtime_failure": "FloatingPointError when the RHS contains a nonfinite value.",
+  "nonconvergence": "Not applicable; no iteration is performed.",
+  "partial_results": "No RHS vector is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.vlasov_poisson",
+   "symbol": "vp_rhs",
+   "signature": "vp_rhs(df, dE, vv, df0dv, k)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "vp_rhs"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "code": "from scirel.kinetic.vlasov_poisson import vp_rhs\nr=vp_rhs([1,2],1j,[-1,1],[.1,-.1],.5)\nassert r.shape == (2,)",
+  "description": "Evaluate the linear Vlasov RHS on two velocity nodes.",
+  "expected": "PASS: .venv/bin/python completed; the returned complex vector has shape (2,)."
+ },
+ "verification": {
+  "scope": [
+   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
+   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
+   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
+  ],
+  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+  "known_limitations": [
+   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+  ]
+ }
 }

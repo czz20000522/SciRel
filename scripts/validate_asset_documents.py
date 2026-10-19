@@ -26,7 +26,6 @@ FEEDBACK_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*$")
 TOP_LEVEL_KEYS = {
     "schema",
     "asset_id",
-    "kind",
     "title",
     "summary",
     "taxonomy",
@@ -515,8 +514,6 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     asset_id = _text(item["asset_id"], f"{location}.asset_id")
     if not ASSET_ID_RE.fullmatch(asset_id):
         _fail(f"{location}.asset_id", "has an invalid stable asset ID")
-    if item["kind"] not in {"operator", "task_graph"}:
-        _fail(f"{location}.kind", "must be operator or task_graph")
     title = _object(item["title"], f"{location}.title")
     _exact_keys(title, {"en", "zh"}, {"en", "zh"}, f"{location}.title")
     _text(title["en"], f"{location}.title.en")
@@ -534,13 +531,8 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     dependency_ids = _validate_version(item["version"])
     _validate_example(item["example"])
     _validate_verification(item["verification"])
-    if item["kind"] == "task_graph":
-        if "graph" not in item:
-            _fail(location, "task_graph requires graph")
+    if "graph" in item:
         _validate_graph(item["graph"], input_ports, output_ports, dependency_ids)
-    else:
-        if "graph" in item:
-            _fail(location, "operator must not contain graph")
     return item
 
 
@@ -743,7 +735,7 @@ def _validate_runtime_inputs(
     mapping = signature.parameters.get("inputs")
     accepts_keywords = any(parameter.kind is inspect.Parameter.VAR_KEYWORD
                            for parameter in signature.parameters.values())
-    if document.get("kind") == "task_graph" and mapping is not None:
+    if "graph" in document and mapping is not None:
         if function is None:
             _fail(document["asset_id"], "TaskGraph mapping requires its actual callable binding")
         bound_signature = _explicit_mapping_signature(document, function)
@@ -761,7 +753,7 @@ def _validate_runtime_inputs(
                    if parameter.default is inspect.Parameter.empty and name not in documented_names}
         if missing:
             _fail(document["asset_id"], f"required scientific inputs are undocumented: {sorted(missing)}")
-    elif document.get("kind") == "task_graph" and accepts_keywords:
+    elif "graph" in document and accepts_keywords:
         if function is None:
             _fail(document["asset_id"], "TaskGraph keywords require their actual callable binding")
         bound_signature = _explicit_mapping_signature(document, function)

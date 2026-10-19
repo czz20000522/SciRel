@@ -135,7 +135,8 @@ def test_contract_schemas_and_dependency_closed_examples_parse(tmp_path):
     assert len([doc for doc in documents if doc["asset_id"] not in PDRF_ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(PDRF_ASSET_IDS) - 1
     assert {doc["asset_id"] for doc in documents} >= PDRF_ASSET_IDS
     assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [FAST_ION_ASSET_ID]
-    assert {item["kind"] for item in documents} == {"operator", "task_graph"}
+    assert any("graph" in item for item in documents)
+    assert any("graph" not in item for item in documents)
 
 
 def test_missing_units_and_private_governance_fields_fail_closed():

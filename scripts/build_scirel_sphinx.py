@@ -144,12 +144,10 @@ def doclink(label, path):
 
 def function_table(records, translations):
     """One linked callable and its bound Chinese purpose per row."""
-    out = '.. list-table::\n   :header-rows: 1\n   :widths: 40 60\n   :class: scirel-api-summary\n\n   * - 函数 / 复合入口\n     - 用途\n'
+    out = '.. list-table::\n   :header-rows: 1\n   :widths: 40 60\n   :class: scirel-api-summary\n\n   * - 函数\n     - 用途\n'
     for doc in records:
         label = doc['public_api']['python']['symbol']
         purpose = plain(translations[doc['asset_id']]['summary'])
-        if doc['kind'] == 'task_graph':
-            purpose += ' **（复合入口）**'
         out += '   * - ' + doclink(label, api_path(doc['asset_id'])) + '\n     - ' + purpose + '\n'
     return out + '\n'
 
@@ -176,7 +174,7 @@ def render_api(doc, zh, related):
         out += '.. warning::\n\n   原正式文档含有待修正的内部矛盾。以下为阅读提示，不改变原合同或科学资格。\n\n'
         out += ''.join('   * ' + plain(item) + '\n' for item in zh['source_conflicts']) + '\n'
     out += '实现版本：``' + doc['version']['implementation_version'] + '``。'
-    out += '复合任务入口。\n\n' if doc['kind'] == 'task_graph' else '科学关系函数。\n\n'
+    out += '科学关系函数。\n\n'
     out += ports(doc, zh, 'inputs') + ports(doc, zh, 'outputs')
     out += title('异常与失败行为', '-')
     for key, label in [('invalid_input', '无效输入'), ('runtime_failure', '运行失败'),
@@ -284,7 +282,7 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
         write('getting-started', (root/'tools/docs/sphinx/getting-started.rst').read_text())
         write('agent', (root/'tools/docs/sphinx/agent.rst').read_text())
         write('user-guide/index', title('用户指南') + '用户指南解释科学问题、模型选择与组合方式。函数的完整参数、单位和失败行为见 API 参考。\n\n' + toctree([c['id'] for c in book['chapters']]) + title('完整计算案例','-') + toctree(['/tutorials/magnetostatics'] + (['/tutorials/kinetic-initial-value'] if any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']) else [])))
-        write('reference/index', title('API 参考') + '按科学领域查阅函数与复合入口。选择左侧领域，在正文中按问题浏览函数及用途，点击函数名查看参数、返回值、适用范围与示例。\n\n' + toctree([c['id'] for c in book['chapters']], maxdepth=1))
+        write('reference/index', title('API 参考') + '按科学领域查阅功能函数。选择左侧领域，在正文中按问题浏览函数及用途，点击函数名查看参数、返回值、适用范围与示例。\n\n' + toctree([c['id'] for c in book['chapters']], maxdepth=1))
         for c in book['chapters']:
             write('user-guide/'+c['id'], title(c['title']) + c['introduction'] + '\n\n' + toctree(['topics/'+t['id'] for t in c['topics']]))
             ref = title(c['title']) + c['introduction'] + '\n\n'

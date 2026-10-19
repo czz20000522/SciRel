@@ -1,159 +1,158 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.fvm.cell-variable",
-  "kind": "operator",
-  "title": {
-    "en": "Cell variable and face reconstruction",
-    "zh": "单元变量与面重构"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.fvm.cell-variable",
+ "title": {
+  "en": "Cell variable and face reconstruction",
+  "zh": "单元变量与面重构"
+ },
+ "summary": "Construct immutable one-dimensional cell samples with explicit face grid and boundary data",
+ "taxonomy": [
+  "numerical-methods",
+  "finite-volume"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "Cell/face staggered reconstruction",
+  "direction": "Explicit cell/face data to spatial operator or state update",
+  "definition": "Cell centers are arithmetic face midpoints. face_value linearly interpolates inner faces and uses prescribed values or half-cell gradient extrapolation at endpoints. face_grad fits three neighboring point values for internal faces. At the last internal face it uses the two adjacent cells with the actual right Dirichlet value or the prescribed positive-coordinate Neumann derivative. For the latter, let s=(u1-u0)/(x1-x0), b be the boundary, and f the internal face: q_prime(f)=s+(g-s)*(2*f-x0-x1)/(2*b-x0-x1). A boolean N+1 two_point_mask overrides internal gradients with adjacent secants. Endpoint Dirichlet gradients remain half-cell secants; Neumann gradients are prescribed. grad is the face_value difference divided by cell width.",
+  "model": "TORAX one-dimensional finite-volume discretization",
+  "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
+  "coordinates": "Caller coordinate X; positive increasing direction",
+  "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",
+  "assumptions": [
+   "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "value",
+   "description": "Point samples at arithmetic cell centers, not cell volume averages",
+   "units": "caller quantity Q",
+   "shape": "N",
+   "dtype": "real numeric converted to float64",
+   "required": true,
+   "constraints": "Finite real 1D array, N>=2"
   },
-  "summary": "Construct immutable one-dimensional cell samples with explicit face grid and boundary data",
-  "taxonomy": [
-    "numerical-methods",
-    "finite-volume"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "Cell/face staggered reconstruction",
-    "direction": "Explicit cell/face data to spatial operator or state update",
-    "definition": "Cell centers are arithmetic face midpoints. face_value linearly interpolates inner faces and uses prescribed values or half-cell gradient extrapolation at endpoints. face_grad fits three neighboring point values for internal faces. At the last internal face it uses the two adjacent cells with the actual right Dirichlet value or the prescribed positive-coordinate Neumann derivative. For the latter, let s=(u1-u0)/(x1-x0), b be the boundary, and f the internal face: q_prime(f)=s+(g-s)*(2*f-x0-x1)/(2*b-x0-x1). A boolean N+1 two_point_mask overrides internal gradients with adjacent secants. Endpoint Dirichlet gradients remain half-cell secants; Neumann gradients are prescribed. grad is the face_value difference divided by cell width.",
-    "model": "TORAX one-dimensional finite-volume discretization",
-    "geometry": "Explicit one-dimensional face grid, cell centers at arithmetic midpoints",
-    "coordinates": "Caller coordinate X; positive increasing direction",
-    "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; homogeneous unit cross-section unless metrics supplied",
-    "assumptions": [
-      "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
-    ]
+  {
+   "name": "face_centers",
+   "description": "Explicit monotonically increasing cell boundary coordinates",
+   "units": "coordinate X",
+   "shape": "N+1",
+   "dtype": "real numeric converted to float64",
+   "required": true,
+   "constraints": "Finite strictly increasing; finite positive widths and distinct midpoint spacings"
   },
-  "inputs": [
-    {
-      "name": "value",
-      "description": "Point samples at arithmetic cell centers, not cell volume averages",
-      "units": "caller quantity Q",
-      "shape": "N",
-      "dtype": "real numeric converted to float64",
-      "required": true,
-      "constraints": "Finite real 1D array, N>=2"
-    },
-    {
-      "name": "face_centers",
-      "description": "Explicit monotonically increasing cell boundary coordinates",
-      "units": "coordinate X",
-      "shape": "N+1",
-      "dtype": "real numeric converted to float64",
-      "required": true,
-      "constraints": "Finite strictly increasing; finite positive widths and distinct midpoint spacings"
-    },
-    {
-      "name": "left_face_constraint",
-      "description": "Boundary value at this end",
-      "units": "Q",
-      "shape": "scalar or None",
-      "dtype": "real numeric converted to float64",
-      "required": false,
-      "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
-      "default": null
-    },
-    {
-      "name": "right_face_constraint",
-      "description": "Boundary value at this end",
-      "units": "Q",
-      "shape": "scalar or None",
-      "dtype": "real numeric converted to float64",
-      "required": false,
-      "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
-      "default": null
-    },
-    {
-      "name": "left_face_grad_constraint",
-      "description": "Boundary du/dx in positive coordinate direction at this end",
-      "units": "Q/X",
-      "shape": "scalar or None",
-      "dtype": "real numeric converted to float64",
-      "required": false,
-      "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
-      "default": 0.0
-    },
-    {
-      "name": "right_face_grad_constraint",
-      "description": "Boundary du/dx in positive coordinate direction at this end",
-      "units": "Q/X",
-      "shape": "scalar or None",
-      "dtype": "real numeric converted to float64",
-      "required": false,
-      "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
-      "default": 0.0
-    }
-  ],
-  "outputs": [
-    {
-      "name": "variable",
-      "description": "Immutable copied float64 CellVariable with face_value(), face_grad() and grad()",
-      "units": "Q; derivatives Q/X",
-      "shape": "CellVariable object",
-      "dtype": "CellVariable",
-      "required": true,
-      "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
-    ],
-    "supported": [
-      "Construct immutable one-dimensional cell samples with explicit face grid and boundary data"
-    ],
-    "excluded": [
-      "Unbatched point values only, N>=2. No alternate-coordinate chain-rule x port, mesh adaptation, area/volume inference or JAX transformations.",
-      "Quadratic internal-face exactness does not establish global second order with arbitrary boundary data or arbitrary distorted grids."
-    ]
+  {
+   "name": "left_face_constraint",
+   "description": "Boundary value at this end",
+   "units": "Q",
+   "shape": "scalar or None",
+   "dtype": "real numeric converted to float64",
+   "required": false,
+   "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
+   "default": null
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for shape/domain/finite/masked input failures; FVM nonnumeric inputs raise TypeError. No partial result.",
-    "runtime_failure": "FloatingPointError for nonfinite computed results.",
-    "nonconvergence": "No iteration; theta is one linear solve. No convergence flag is fabricated.",
-    "partial_results": "No partial output returned on failure."
+  {
+   "name": "right_face_constraint",
+   "description": "Boundary value at this end",
+   "units": "Q",
+   "shape": "scalar or None",
+   "dtype": "real numeric converted to float64",
+   "required": false,
+   "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
+   "default": null
   },
-  "provenance": {
-    "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
-    "source_kinds": [
-      "TORAX-derived implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [
-      "https://github.com/google-deepmind/torax"
-    ],
-    "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
+  {
+   "name": "left_face_grad_constraint",
+   "description": "Boundary du/dx in positive coordinate direction at this end",
+   "units": "Q/X",
+   "shape": "scalar or None",
+   "dtype": "real numeric converted to float64",
+   "required": false,
+   "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
+   "default": 0.0
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.fvm.cell_variable",
-      "symbol": "CellVariable",
-      "signature": "CellVariable(value: object, face_centers: object, left_face_constraint: object = None, right_face_constraint: object = None, left_face_grad_constraint: object = 0.0, right_face_grad_constraint: object = 0.0) -> None",
-      "canonical_module": "scirel.fvm",
-      "canonical_symbol": "CellVariable"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Construct a two-cell variable with unit Neumann gradients and verify face reconstruction.",
-    "code": "import numpy as np\nfrom scirel.fvm import CellVariable\nv=CellVariable([.5,1.5],[0.,1.,2.],left_face_grad_constraint=1.,right_face_grad_constraint=1.)\nnp.testing.assert_allclose(v.face_value(),[0.,1.,2.])\nnp.testing.assert_allclose(v.face_grad(),1.)",
-    "expected": "The face values are [0, 1, 2] and the reconstructed face gradient is one everywhere."
-  },
-  "verification": {
-    "scope": [
-      "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
-      "Quadratic, linear and constant face derivatives with matching Neumann data on unequal terminal widths and N=2; the derivative-constrained reconstruction replaces the inaccurate linearly extrapolated boundary value. Explicit two-point masks, Dirichlet endpoint half-cell secants and linear face values retain their definitions."
-    ],
-    "tests": [
-      "tests/test_fvm.py"
-    ],
-    "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
-    "known_limitations": [
-      "Unbatched point values only, N>=2. No alternate-coordinate chain-rule x port, mesh adaptation, area/volume inference or JAX transformations.",
-      "Quadratic internal-face exactness does not establish global second order with arbitrary boundary data or arbitrary distorted grids."
-    ]
+  {
+   "name": "right_face_grad_constraint",
+   "description": "Boundary du/dx in positive coordinate direction at this end",
+   "units": "Q/X",
+   "shape": "scalar or None",
+   "dtype": "real numeric converted to float64",
+   "required": false,
+   "constraints": "Exactly one of value or gradient is non-None at each end; finite scalar when set",
+   "default": 0.0
   }
+ ],
+ "outputs": [
+  {
+   "name": "variable",
+   "description": "Immutable copied float64 CellVariable with face_value(), face_grad() and grad()",
+   "units": "Q; derivatives Q/X",
+   "shape": "CellVariable object",
+   "dtype": "CellVariable",
+   "required": true,
+   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Declared shapes, domains and matching scientific conventions; no implicit broadcasting"
+  ],
+  "supported": [
+   "Construct immutable one-dimensional cell samples with explicit face grid and boundary data"
+  ],
+  "excluded": [
+   "Unbatched point values only, N>=2. No alternate-coordinate chain-rule x port, mesh adaptation, area/volume inference or JAX transformations.",
+   "Quadratic internal-face exactness does not establish global second order with arbitrary boundary data or arbitrary distorted grids."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for shape/domain/finite/masked input failures; FVM nonnumeric inputs raise TypeError. No partial result.",
+  "runtime_failure": "FloatingPointError for nonfinite computed results.",
+  "nonconvergence": "No iteration; theta is one linear solve. No convergence flag is fabricated.",
+  "partial_results": "No partial output returned on failure."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel finite-volume relation derived from Google DeepMind TORAX, with SciRel boundary and finite-value checks documented by the current implementation and tests. License basis: licenses/torax/LICENSE and licenses/torax/NOTICE.",
+  "source_kinds": [
+   "TORAX-derived implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [
+   "https://github.com/google-deepmind/torax"
+  ],
+  "license_status": "Apache License 2.0 attribution and notice obligations are retained in licenses/torax/LICENSE and licenses/torax/NOTICE; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.fvm.cell_variable",
+   "symbol": "CellVariable",
+   "signature": "CellVariable(value: object, face_centers: object, left_face_constraint: object = None, right_face_constraint: object = None, left_face_grad_constraint: object = 0.0, right_face_grad_constraint: object = 0.0) -> None",
+   "canonical_module": "scirel.fvm",
+   "canonical_symbol": "CellVariable"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Construct a two-cell variable with unit Neumann gradients and verify face reconstruction.",
+  "code": "import numpy as np\nfrom scirel.fvm import CellVariable\nv=CellVariable([.5,1.5],[0.,1.,2.],left_face_grad_constraint=1.,right_face_grad_constraint=1.)\nnp.testing.assert_allclose(v.face_value(),[0.,1.,2.])\nnp.testing.assert_allclose(v.face_grad(),1.)",
+  "expected": "The face values are [0, 1, 2] and the reconstructed face gradient is one everywhere."
+ },
+ "verification": {
+  "scope": [
+   "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks",
+   "Quadratic, linear and constant face derivatives with matching Neumann data on unequal terminal widths and N=2; the derivative-constrained reconstruction replaces the inaccurate linearly extrapolated boundary value. Explicit two-point masks, Dirichlet endpoint half-cell secants and linear face values retain their definitions."
+  ],
+  "tests": [
+   "tests/test_fvm.py"
+  ],
+  "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
+  "known_limitations": [
+   "Unbatched point values only, N>=2. No alternate-coordinate chain-rule x port, mesh adaptation, area/volume inference or JAX transformations.",
+   "Quadratic internal-face exactness does not establish global second order with arbitrary boundary data or arbitrary distorted grids."
+  ]
+ }
 }

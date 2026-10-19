@@ -1,116 +1,115 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.basis.build-basis",
-  "kind": "operator",
-  "title": {
-    "en": "Basis evaluator factory",
-    "zh": "基函数求值器构造"
-  },
-  "summary": "Construct callable ascending-power polynomial or retained cubic-spline basis functions.",
-  "taxonomy": [
-    "analysis",
-    "basis"
-  ],
-  "aliases": [
-    "build_basis"
-  ],
-  "identity": {
-    "relation": "Basis evaluator factory",
-    "direction": "Declared inputs to List of independent basis evaluators",
-    "definition": "Construct a list of ascending-power polynomial or retained cubic-spline evaluators",
-    "model": "Source basis-map selection with poly_deg=3 or n_knots=5 defaults",
-    "geometry": "one-dimensional scalar abscissa and ordinate samples",
-    "coordinates": "Generic coordinate and ordinate units",
-    "boundary": "Spline selectors inherit their precise endpoint rules",
-    "assumptions": [
-      "Finite constructor samples and boundary-specific assumptions",
-      "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
-      "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "basis",
-      "description": "Basis selector",
-      "units": "dimensionless",
-      "shape": "string",
-      "dtype": "str",
-      "required": false,
-      "constraints": "poly or retained cubic-spline selector; lowercased",
-      "default": "poly"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "basis_fns",
-      "description": "List of independent basis evaluators",
-      "units": "caller units",
-      "shape": "list(K)",
-      "dtype": "list",
-      "required": true,
-      "constraints": "Polynomial or spline callables"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite constructor samples and boundary-specific assumptions",
-      "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
-      "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
-    ],
-    "supported": [
-      "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
-    ],
-    "excluded": [
-      "Quartic and special-function factory selections are rejected; no invented implementations",
-      "Physical special-spline closures and unsupported knot domains remain unresolved"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
-    "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
-    "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
-    "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.basis",
-      "symbol": "build_basis",
-      "signature": "build_basis(basis='poly', **kwargs)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "build_basis"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Build the default ascending-power polynomial evaluators and evaluate all three at x=0.5.",
-    "code": "import numpy as np\nfrom scirel.geometry.basis import build_basis\n\nevaluators = build_basis()\nassert len(evaluators) == 3\nnp.testing.assert_allclose([fn(0.5) for fn in evaluators], [1.0, 0.5, 0.25])",
-    "expected": "Three evaluators are returned; their values at 0.5 are [1.0, 0.5, 0.25]."
-  },
-  "verification": {
-    "scope": [
-      "Public callable signature and documented finite-input behavior",
-      "The direct regression fixtures listed in verification.tests",
-      "The executable example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/equilibrium/test_analysis_families.py"
-    ],
-    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
-    "known_limitations": [
-      "Quartic and special-function factory selections are rejected; no invented implementations",
-      "Physical special-spline closures and unsupported knot domains remain unresolved"
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.basis.build-basis",
+ "title": {
+  "en": "Basis evaluator factory",
+  "zh": "基函数求值器构造"
+ },
+ "summary": "Construct callable ascending-power polynomial or retained cubic-spline basis functions.",
+ "taxonomy": [
+  "analysis",
+  "basis"
+ ],
+ "aliases": [
+  "build_basis"
+ ],
+ "identity": {
+  "relation": "Basis evaluator factory",
+  "direction": "Declared inputs to List of independent basis evaluators",
+  "definition": "Construct a list of ascending-power polynomial or retained cubic-spline evaluators",
+  "model": "Source basis-map selection with poly_deg=3 or n_knots=5 defaults",
+  "geometry": "one-dimensional scalar abscissa and ordinate samples",
+  "coordinates": "Generic coordinate and ordinate units",
+  "boundary": "Spline selectors inherit their precise endpoint rules",
+  "assumptions": [
+   "Finite constructor samples and boundary-specific assumptions",
+   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "basis",
+   "description": "Basis selector",
+   "units": "dimensionless",
+   "shape": "string",
+   "dtype": "str",
+   "required": false,
+   "constraints": "poly or retained cubic-spline selector; lowercased",
+   "default": "poly"
   }
+ ],
+ "outputs": [
+  {
+   "name": "basis_fns",
+   "description": "List of independent basis evaluators",
+   "units": "caller units",
+   "shape": "list(K)",
+   "dtype": "list",
+   "required": true,
+   "constraints": "Polynomial or spline callables"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite constructor samples and boundary-specific assumptions",
+   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+  ],
+  "supported": [
+   "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
+  ],
+  "excluded": [
+   "Quartic and special-function factory selections are rejected; no invented implementations",
+   "Physical special-spline closures and unsupported knot domains remain unresolved"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
+  "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
+  "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
+  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.basis",
+   "symbol": "build_basis",
+   "signature": "build_basis(basis='poly', **kwargs)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "build_basis"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Build the default ascending-power polynomial evaluators and evaluate all three at x=0.5.",
+  "code": "import numpy as np\nfrom scirel.geometry.basis import build_basis\n\nevaluators = build_basis()\nassert len(evaluators) == 3\nnp.testing.assert_allclose([fn(0.5) for fn in evaluators], [1.0, 0.5, 0.25])",
+  "expected": "Three evaluators are returned; their values at 0.5 are [1.0, 0.5, 0.25]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/pleiades/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Quartic and special-function factory selections are rejected; no invented implementations",
+   "Physical special-spline closures and unsupported knot domains remain unresolved"
+  ]
+ }
 }

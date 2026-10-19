@@ -1,115 +1,114 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-rational-jpole-grid-coordinates",
-  "kind": "operator",
-  "title": {
-    "en": "Complex dispersion diagnostic grid",
-    "zh": "复色散诊断网格"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-rational-jpole-grid-coordinates",
+ "title": {
+  "en": "Complex dispersion diagnostic grid",
+  "zh": "复色散诊断网格"
+ },
+ "summary": "Return the retained source101x101 complex diagnostic ndgrid, without implying approximation validity over the grid.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "plasma-dispersion-function"
+ ],
+ "aliases": [
+  "legacy.jpole_grid_coordinates"
+ ],
+ "identity": {
+  "relation": "Complex dispersion diagnostic grid",
+  "direction": "Declared inputs to named scientific outputs.",
+  "definition": "Historical x,y ndgrid and z=x+i*y; full two-dimensional orientation preserved for diagnostic plots.",
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "assumptions": [
+   "Model-specific deck conventions are explicit.",
+   "A numerical spectrum is not automatically a physically certified mode."
+  ]
+ },
+ "inputs": [],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "Dimensionless x,y,z arrays, each (101,101): ndgrid of x=-5:0.1:5 and y=-3:0.08:5, z=x+1i*y. The first index varies real x; the second varies imaginary y.",
+   "units": "dimensionless",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Preserve complete native ndgrid orientation. This historical diagnostic grid is not a declared approximation-validity domain."
   },
-  "summary": "Return the retained source101x101 complex diagnostic ndgrid, without implying approximation validity over the grid.",
-  "taxonomy": [
-    "kinetic",
-    "plasma",
-    "plasma-dispersion-function"
-  ],
-  "aliases": [
-    "legacy.jpole_grid_coordinates"
-  ],
-  "identity": {
-    "relation": "Complex dispersion diagnostic grid",
-    "direction": "Declared inputs to named scientific outputs.",
-    "definition": "Historical x,y ndgrid and z=x+i*y; full two-dimensional orientation preserved for diagnostic plots.",
-    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-    "assumptions": [
-      "Model-specific deck conventions are explicit.",
-      "A numerical spectrum is not automatically a physically certified mode."
-    ]
-  },
-  "inputs": [],
-  "outputs": [
-    {
-      "name": "state",
-      "description": "Dimensionless x,y,z arrays, each (101,101): ndgrid of x=-5:0.1:5 and y=-3:0.08:5, z=x+1i*y. The first index varies real x; the second varies imaginary y.",
-      "units": "dimensionless",
-      "shape": "mapping",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "Preserve complete native ndgrid orientation. This historical diagnostic grid is not a declared approximation-validity domain."
-    },
-    {
-      "name": "receipt",
-      "description": "Frozen NativeReceipt for an executed native relation; execution provenance is separate from scientific validity.",
-      "units": "not applicable",
-      "shape": "NativeReceipt object",
-      "dtype": "NativeReceipt",
-      "required": true,
-      "constraints": "Execution provenance does not certify scientific validity by itself."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Constituent inputs finite and representable in declared numeric ports."
-    ],
-    "supported": [
-      "Source diagnostic grid coordinates."
-    ],
-    "excluded": [
-      "The grid is not an independent accuracy certificate."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "No scientific caller inputs; packaged native grid execution errors remain observable.",
-    "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback.",
-    "nonconvergence": "No convergence iteration or approximation-validity assertion.",
-    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.rational",
-      "symbol": "jpole_grid_coordinates",
-      "signature": "jpole_grid_coordinates()"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Run the declared PDRK relation with its native-backed scientific ports.",
-    "code": "from scirel.kinetic.pdrk.rational import jpole_grid_coordinates\nr = jpole_grid_coordinates()['state']\nassert r['z'].shape == (101, 101)",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
-  },
-  "verification": {
-    "scope": [
-      "Source-absent installed own scientific package; exact package/resource closure.",
-      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_rational.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
-      "Finite-J/finite-N physics must be qualified for a new requested regime.",
-      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "receipt",
+   "description": "Frozen NativeReceipt for an executed native relation; execution provenance is separate from scientific validity.",
+   "units": "not applicable",
+   "shape": "NativeReceipt object",
+   "dtype": "NativeReceipt",
+   "required": true,
+   "constraints": "Execution provenance does not certify scientific validity by itself."
   }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Constituent inputs finite and representable in declared numeric ports."
+  ],
+  "supported": [
+   "Source diagnostic grid coordinates."
+  ],
+  "excluded": [
+   "The grid is not an independent accuracy certificate."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "No scientific caller inputs; packaged native grid execution errors remain observable.",
+  "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback.",
+  "nonconvergence": "No convergence iteration or approximation-validity assertion.",
+  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.rational",
+   "symbol": "jpole_grid_coordinates",
+   "signature": "jpole_grid_coordinates()"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run the declared PDRK relation with its native-backed scientific ports.",
+  "code": "from scirel.kinetic.pdrk.rational import jpole_grid_coordinates\nr = jpole_grid_coordinates()['state']\nassert r['z'].shape == (101, 101)",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Source-absent installed own scientific package; exact package/resource closure.",
+   "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
+   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_rational.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Finite-J/finite-N physics must be qualified for a new requested regime.",
+   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+   "Human scientific and plot approval pending.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

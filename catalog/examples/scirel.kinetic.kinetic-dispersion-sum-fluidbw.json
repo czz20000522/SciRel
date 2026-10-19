@@ -1,282 +1,281 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
-  "kind": "operator",
-  "title": {
-    "en": "Weideman finite-harmonic kinetic dispersion",
-    "zh": "Weideman 有限谐波动理学色散"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluidbw",
+ "title": {
+  "en": "Weideman finite-harmonic kinetic dispersion",
+  "zh": "Weideman 有限谐波动理学色散"
+ },
+ "summary": "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the source's positive near-zero kz clamp.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "SI species and wavepoint to dielectric and dispersion tensors and determinant",
+  "direction": "SI species and wavepoint to dielectric and dispersion tensors and determinant",
+  "definition": "Sum harmonics -lmx..lmx using scaled Bessel Gamma terms and N=64 Weideman Z; D adds Maxwell curl terms to K and determinant=det(D).",
+  "model": "homogeneous magnetized Maxwellian plasma",
+  "geometry": "homogeneous plasma",
+  "coordinates": "wavevector in the x-z plane, with z parallel to B0",
+  "boundary": "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "B0",
+   "description": "背景磁场强度，决定回旋频率",
+   "units": "T",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且非零，回旋频率正比于 B0。"
   },
-  "summary": "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the source's positive near-zero kz clamp.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "SI species and wavepoint to dielectric and dispersion tensors and determinant",
-    "direction": "SI species and wavepoint to dielectric and dispersion tensors and determinant",
-    "definition": "Sum harmonics -lmx..lmx using scaled Bessel Gamma terms and N=64 Weideman Z; D adds Maxwell curl terms to K and determinant=det(D).",
-    "model": "homogeneous magnetized Maxwellian plasma",
-    "geometry": "homogeneous plasma",
-    "coordinates": "wavevector in the x-z plane, with z parallel to B0",
-    "boundary": "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
-    "assumptions": [
-      "Input units and normalization follow the declared ports; no physical parameters are inferred."
-    ]
+  {
+   "name": "qs",
+   "description": "各组分电荷，决定回旋频率符号",
+   "units": "C",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限，元素数与其余组分数组一致。"
   },
-  "inputs": [
-    {
-      "name": "B0",
-      "description": "背景磁场强度，决定回旋频率",
-      "units": "T",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且非零，回旋频率正比于 B0。"
-    },
-    {
-      "name": "qs",
-      "description": "各组分电荷，决定回旋频率符号",
-      "units": "C",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限，元素数与其余组分数组一致。"
-    },
-    {
-      "name": "ms",
-      "description": "各组分质量，进入热速度与回旋频率",
-      "units": "kg",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且严格为正。"
-    },
-    {
-      "name": "ns0",
-      "description": "各组分绝对数密度，进入等离子体频率",
-      "units": "m^-3",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且严格为正。"
-    },
-    {
-      "name": "Ts0",
-      "description": "各组分温度，已按源码约定换算为开尔文",
-      "units": "K",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且严格为正。"
-    },
-    {
-      "name": "f",
-      "description": "电磁波频率，转换为角频率后进入共振分母与归一化折射率",
-      "units": "Hz",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且非零，omega 作除法。"
-    },
-    {
-      "name": "kz",
-      "description": "波矢平行磁场分量，进入平行共振宗量与 Maxwell 旋度项",
-      "units": "1/m",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限；冻结源码在除法前把 `abs(kz)<1e-10`（包括 `kz=0`）钳位到 `+1e-10`。"
-    },
-    {
-      "name": "kx",
-      "description": "波矢垂直磁场分量，给出贝塞尔宗量与折射率",
-      "units": "1/m",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限。"
-    },
-    {
-      "name": "lmx",
-      "description": "贝塞尔谐波截断阶数，求和范围为 $|n|\\le$ `lmx`",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "可选，默认 5（与源码 frozen source 一致），必须为非负整数。",
-      "default": 5
-    }
-  ],
-  "outputs": [
-    {
-      "name": "K",
-      "description": "介电张量，按约定 $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(\\mathrm{i}\\omega\\varepsilon_0)$",
-      "units": "无量纲",
-      "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限复数，非对角反对称对满足 $K_{yx}=-K_{xy}$、$K_{zy}=-K_{yz}$。"
-    },
-    {
-      "name": "D",
-      "description": "加入 Maxwell 旋度项的色散张量，即色散关系所在的矩阵",
-      "units": "无量纲",
-      "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限复数，$D_{xx}=K_{xx}-n_z^2$、$D_{yy}=K_{yy}-(n_x^2+n_z^2)$、$D_{zz}=K_{zz}-n_x^2$、$D_{xz}=D_{zx}=K_{xz}+n_xn_z$。"
-    },
-    {
-      "name": "determinant",
-      "description": "色散行列式 $\\mathcal{D}=\\det D$，其零点给出本征模",
-      "units": "无量纲",
-      "shape": "标量复数",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限复数。"
-    },
-    {
-      "name": "omega",
-      "description": "由输入频率换算的角频率",
-      "units": "rad/s",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且非零。"
-    },
-    {
-      "name": "nx",
-      "description": "垂直折射率 $c k_\\perp/\\omega$",
-      "units": "无量纲",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限。"
-    },
-    {
-      "name": "nz",
-      "description": "平行折射率 $c k_\\parallel/\\omega$",
-      "units": "无量纲",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限。"
-    },
-    {
-      "name": "vts",
-      "description": "各组分热速度 $\\sqrt{2k_BT_s/m_s}$",
-      "units": "m/s",
-      "shape": "`(S,)`",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "严格为正。"
-    },
-    {
-      "name": "wcs",
-      "description": "各组分含符号回旋频率",
-      "units": "rad/s",
-      "shape": "`(S,)`",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "非零，符号随 qs。"
-    },
-    {
-      "name": "wps2",
-      "description": "各组分等离子体频率平方",
-      "units": "rad^2/s^2",
-      "shape": "`(S,)`",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "严格为正。"
-    },
-    {
-      "name": "b",
-      "description": "各组分贝塞尔宗量 $b_s=(k_\\perp\\rho_{cs})^2$",
-      "units": "无量纲",
-      "shape": "`(S,)`",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "非负。"
-    },
-    {
-      "name": "lmx",
-      "description": "本次实际使用的谐波截断阶数，回显输入",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "非负整数。"
-    },
-    {
-      "name": "tensor_convention",
-      "description": "张量约定的文字标识，供调用者核对符号",
-      "units": "不适用",
-      "shape": "字符串",
-      "dtype": "string",
-      "required": true,
-      "constraints": "固定为 `K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)`。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
-      "The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain."
-    ],
-    "supported": [
-      "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the source's positive near-zero kz clamp."
-    ],
-    "excluded": [
-      "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
-      "Inputs that violate the numerical domain or require a different tensor convention."
-    ]
+  {
+   "name": "ms",
+   "description": "各组分质量，进入热速度与回旋频率",
+   "units": "kg",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且严格为正。"
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
-    "runtime_failure": "Raises ValueError if the calculated tensor or function value is nonfinite.",
-    "nonconvergence": "Not applicable; no iterative root solve is exposed.",
-    "partial_results": "No partial mapping is returned after an exception."
+  {
+   "name": "ns0",
+   "description": "各组分绝对数密度，进入等离子体频率",
+   "units": "m^-3",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且严格为正。"
   },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notice and public scientific reference where listed"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
+  {
+   "name": "Ts0",
+   "description": "各组分温度，已按源码约定换算为开尔文",
+   "units": "K",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且严格为正。"
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.kinetic_dispersion_sum_fluidbw",
-      "symbol": "evaluate_fluidbw_kinetic_dispersion_sum",
-      "signature": "evaluate_fluidbw_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "evaluate_fluidbw_kinetic_dispersion_sum"
-    }
+  {
+   "name": "f",
+   "description": "电磁波频率，转换为角频率后进入共振分母与归一化折射率",
+   "units": "Hz",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且非零，omega 作除法。"
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
+  {
+   "name": "kz",
+   "description": "波矢平行磁场分量，进入平行共振宗量与 Maxwell 旋度项",
+   "units": "1/m",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限；冻结源码在除法前把 `abs(kz)<1e-10`（包括 `kz=0`）钳位到 `+1e-10`。"
   },
-  "example": {
-    "description": "Evaluate the finite-harmonic Maxwellian tensor at one bounded wavepoint.",
-    "code": "from scirel.kinetic import evaluate_fluidbw_kinetic_dispersion_sum\nr=evaluate_fluidbw_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], f=1e10, kz=1.0, kx=1.0); assert r['D'].shape==(3,3)\n",
-    "expected": "Observed PASS: the finite-harmonic case returns finite 3x3 K and D tensors, determinant, species scales, and lmx=5."
+  {
+   "name": "kx",
+   "description": "波矢垂直磁场分量，给出贝塞尔宗量与折射率",
+   "units": "1/m",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限。"
   },
-  "verification": {
-    "scope": [
-      "Declared source-method numerical case and relevant failure boundaries."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_fluidbw_r43_variants.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
-      "Public distribution license and expert review remain pending.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "lmx",
+   "description": "贝塞尔谐波截断阶数，求和范围为 $|n|\\le$ `lmx`",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "可选，默认 5（与源码 frozen source 一致），必须为非负整数。",
+   "default": 5
   }
+ ],
+ "outputs": [
+  {
+   "name": "K",
+   "description": "介电张量，按约定 $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(\\mathrm{i}\\omega\\varepsilon_0)$",
+   "units": "无量纲",
+   "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限复数，非对角反对称对满足 $K_{yx}=-K_{xy}$、$K_{zy}=-K_{yz}$。"
+  },
+  {
+   "name": "D",
+   "description": "加入 Maxwell 旋度项的色散张量，即色散关系所在的矩阵",
+   "units": "无量纲",
+   "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限复数，$D_{xx}=K_{xx}-n_z^2$、$D_{yy}=K_{yy}-(n_x^2+n_z^2)$、$D_{zz}=K_{zz}-n_x^2$、$D_{xz}=D_{zx}=K_{xz}+n_xn_z$。"
+  },
+  {
+   "name": "determinant",
+   "description": "色散行列式 $\\mathcal{D}=\\det D$，其零点给出本征模",
+   "units": "无量纲",
+   "shape": "标量复数",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限复数。"
+  },
+  {
+   "name": "omega",
+   "description": "由输入频率换算的角频率",
+   "units": "rad/s",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且非零。"
+  },
+  {
+   "name": "nx",
+   "description": "垂直折射率 $c k_\\perp/\\omega$",
+   "units": "无量纲",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限。"
+  },
+  {
+   "name": "nz",
+   "description": "平行折射率 $c k_\\parallel/\\omega$",
+   "units": "无量纲",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限。"
+  },
+  {
+   "name": "vts",
+   "description": "各组分热速度 $\\sqrt{2k_BT_s/m_s}$",
+   "units": "m/s",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "严格为正。"
+  },
+  {
+   "name": "wcs",
+   "description": "各组分含符号回旋频率",
+   "units": "rad/s",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "非零，符号随 qs。"
+  },
+  {
+   "name": "wps2",
+   "description": "各组分等离子体频率平方",
+   "units": "rad^2/s^2",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "严格为正。"
+  },
+  {
+   "name": "b",
+   "description": "各组分贝塞尔宗量 $b_s=(k_\\perp\\rho_{cs})^2$",
+   "units": "无量纲",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "非负。"
+  },
+  {
+   "name": "lmx",
+   "description": "本次实际使用的谐波截断阶数，回显输入",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "非负整数。"
+  },
+  {
+   "name": "tensor_convention",
+   "description": "张量约定的文字标识，供调用者核对符号",
+   "units": "不适用",
+   "shape": "字符串",
+   "dtype": "string",
+   "required": true,
+   "constraints": "固定为 `K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)`。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Species arrays are finite, non-empty and shape-compatible; masses, densities and temperatures are positive, with nonzero charge and magnetic field.",
+   "The wavepoint and derived frequency/scales are finite and satisfy the selected numerical path domain."
+  ],
+  "supported": [
+   "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the source's positive near-zero kz clamp."
+  ],
+  "excluded": [
+   "Mode identification, root finding and accuracy outside the tested finite-harmonic or rational-pole approximation.",
+   "Inputs that violate the numerical domain or require a different tensor convention."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Raises ValueError if the calculated tensor or function value is nonfinite.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notice and public scientific reference where listed"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.kinetic_dispersion_sum_fluidbw",
+   "symbol": "evaluate_fluidbw_kinetic_dispersion_sum",
+   "signature": "evaluate_fluidbw_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_fluidbw_kinetic_dispersion_sum"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the finite-harmonic Maxwellian tensor at one bounded wavepoint.",
+  "code": "from scirel.kinetic import evaluate_fluidbw_kinetic_dispersion_sum\nr=evaluate_fluidbw_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937], f=1e10, kz=1.0, kx=1.0); assert r['D'].shape==(3,3)\n",
+  "expected": "Observed PASS: the finite-harmonic case returns finite 3x3 K and D tensors, determinant, species scales, and lmx=5."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fluidbw_r43_variants.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
+   "Public distribution license and expert review remain pending.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

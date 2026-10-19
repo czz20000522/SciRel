@@ -1,122 +1,121 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-whamp-overlay",
-  "kind": "operator",
-  "title": {
-    "en": "WHAMP table figure overlay",
-    "zh": "WHAMP 表格图像叠加"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-whamp-overlay",
+ "title": {
+  "en": "WHAMP table figure overlay",
+  "zh": "WHAMP 表格图像叠加"
+ },
+ "summary": "Apply the literal stored-reference overlay to an explicit native predecessor figure; source legends are retained without claiming compatible predecessor physics.",
+ "taxonomy": [
+  "kinetic",
+  "pdrk",
+  "examples"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "Attributed stored reference data to sequential native figure overlay",
+  "direction": "artifact composition",
+  "definition": "Overlay source rows 1:2:end as black x markers of linewidth2; retain the imaginary-axis range [-1,0.1] and five southwest legend labels. Existing predecessor curves are retained.",
+  "model": "Stored external-solver reference observations; not an executable WHAMP solver.",
+  "geometry": "The source kx column is the literal constant 0.5.",
+  "coordinates": "Column units and complete run normalization are not stated in the source.",
+  "boundary": "No interpolation, fit or physical setup reconstruction.",
+  "assumptions": [
+   "Missing source physical metadata remains unknown."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "predecessor_plot",
+   "description": "Explicit predecessor native figure and its scientific provenance.",
+   "units": "not applicable",
+   "shape": "NativeResult or mapping containing figure_native bytes, or null",
+   "dtype": "NativeResult | mapping | None",
+   "required": false,
+   "constraints": "figure_native is uint8 and preserved as bytes. None creates fresh axes; caller must establish compatible physical coordinates and curve lineage.",
+   "default": null
   },
-  "summary": "Apply the literal stored-reference overlay to an explicit native predecessor figure; source legends are retained without claiming compatible predecessor physics.",
-  "taxonomy": [
-    "kinetic",
-    "pdrk",
-    "examples"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "Attributed stored reference data to sequential native figure overlay",
-    "direction": "artifact composition",
-    "definition": "Overlay source rows 1:2:end as black x markers of linewidth2; retain the imaginary-axis range [-1,0.1] and five southwest legend labels. Existing predecessor curves are retained.",
-    "model": "Stored external-solver reference observations; not an executable WHAMP solver.",
-    "geometry": "The source kx column is the literal constant 0.5.",
-    "coordinates": "Column units and complete run normalization are not stated in the source.",
-    "boundary": "No interpolation, fit or physical setup reconstruction.",
-    "assumptions": [
-      "Missing source physical metadata remains unknown."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "predecessor_plot",
-      "description": "Explicit predecessor native figure and its scientific provenance.",
-      "units": "not applicable",
-      "shape": "NativeResult or mapping containing figure_native bytes, or null",
-      "dtype": "NativeResult | mapping | None",
-      "required": false,
-      "constraints": "figure_native is uint8 and preserved as bytes. None creates fresh axes; caller must establish compatible physical coordinates and curve lineage.",
-      "default": null
-    },
-    {
-      "name": "transport",
-      "description": "Optional explicit native executor; None uses the packaged resource closure.",
-      "units": "not applicable",
-      "shape": "object or null",
-      "dtype": "NativeTransport or None",
-      "required": false,
-      "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "NativeResult containing native FIG and PNG bytes plus decoded line, axes and legend state; receipt is execution metadata rather than a scientific quantity. Also includes the exact WHAMP table and columns.",
-      "units": "line coordinates follow the plot model; artifact bytes unitless",
-      "shape": "state: figure_native/figure_png byte vectors; line_x/line_y vectors; line_offsets/line_axes/line_width; line_markers; axes_limits; legend_labels",
-      "dtype": "NativeResult with typed numeric state",
-      "required": true,
-      "constraints": "Line offsets retain the native 1-based convention. All predecessor and appended curves remain represented; the legend is source composition, not independent branch classification."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite inputs satisfying the declared units and shapes."
-    ],
-    "supported": [
-      "Fresh figure or explicit sequential native predecessor."
-    ],
-    "excluded": [
-      "Inferring source table units or identifying unrelated predecessor branches from legend text."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
-    "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
-    "nonconvergence": "No iterative solve is performed.",
-    "partial_results": "No partial result is returned on failure."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel provides a package-local PDRK reference-table or plotting relation; the callable preserves the stored table/adapter behavior and does not infer missing physical metadata.",
-    "source_kinds": [
-      "SciRel implementation",
-      "bundled reference data",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.plotting",
-      "symbol": "whamp_overlay",
-      "signature": "whamp_overlay(predecessor_plot=None, *, transport=None)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.pdrk-whamp-reference"
-      }
-    ]
-  },
-  "example": {
-    "description": "Render only the attributed stored overlay.",
-    "code": "from scirel.kinetic.pdrk.plotting import whamp_overlay\nr = whamp_overlay()\nassert r.state[\"whpdat\"].shape == (40, 4)\nassert r.state[\"figure_native\"].size > 0",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
-  },
-  "verification": {
-    "scope": [
-      "Table-to-marker mapping, sequential figure lineage, axes/style and legend fidelity."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_examples_support.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "Overlay compatibility is the caller's scientific responsibility.",
-      "Human figure interpretation and missing source metadata remain outside this operator.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "transport",
+   "description": "Optional explicit native executor; None uses the packaged resource closure.",
+   "units": "not applicable",
+   "shape": "object or null",
+   "dtype": "NativeTransport or None",
+   "required": false,
+   "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "NativeResult containing native FIG and PNG bytes plus decoded line, axes and legend state; receipt is execution metadata rather than a scientific quantity. Also includes the exact WHAMP table and columns.",
+   "units": "line coordinates follow the plot model; artifact bytes unitless",
+   "shape": "state: figure_native/figure_png byte vectors; line_x/line_y vectors; line_offsets/line_axes/line_width; line_markers; axes_limits; legend_labels",
+   "dtype": "NativeResult with typed numeric state",
+   "required": true,
+   "constraints": "Line offsets retain the native 1-based convention. All predecessor and appended curves remain represented; the legend is source composition, not independent branch classification."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite inputs satisfying the declared units and shapes."
+  ],
+  "supported": [
+   "Fresh figure or explicit sequential native predecessor."
+  ],
+  "excluded": [
+   "Inferring source table units or identifying unrelated predecessor branches from legend text."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+  "nonconvergence": "No iterative solve is performed.",
+  "partial_results": "No partial result is returned on failure."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel provides a package-local PDRK reference-table or plotting relation; the callable preserves the stored table/adapter behavior and does not infer missing physical metadata.",
+  "source_kinds": [
+   "SciRel implementation",
+   "bundled reference data",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.plotting",
+   "symbol": "whamp_overlay",
+   "signature": "whamp_overlay(predecessor_plot=None, *, transport=None)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.pdrk-whamp-reference"
+   }
+  ]
+ },
+ "example": {
+  "description": "Render only the attributed stored overlay.",
+  "code": "from scirel.kinetic.pdrk.plotting import whamp_overlay\nr = whamp_overlay()\nassert r.state[\"whpdat\"].shape == (40, 4)\nassert r.state[\"figure_native\"].size > 0",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Table-to-marker mapping, sequential figure lineage, axes/style and legend fidelity."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_examples_support.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "Overlay compatibility is the caller's scientific responsibility.",
+   "Human figure interpretation and missing source metadata remain outside this operator.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

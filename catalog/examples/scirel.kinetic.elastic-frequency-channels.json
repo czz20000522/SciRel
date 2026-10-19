@@ -1,114 +1,113 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.elastic-frequency-channels",
-  "kind": "operator",
-  "title": {
-    "en": "Elastic collision-frequency channel sum",
-    "zh": "弹性频率通道求和"
-  },
-  "summary": "The pointwise sum of exactly three already-normalized elastic collision-frequency channels into the transport total elastic frequency, preserving the caller's channel order.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "elastic-frequency",
-    "reduction"
-  ],
-  "aliases": [
-    "sum_elastic_frequency_channels"
-  ],
-  "identity": {
-    "relation": "Omega_total = Omega_1 + Omega_2 + Omega_3 pointwise over equal-shape channel profiles",
-    "direction": "three caller-ordered channel profiles -> one total profile",
-    "definition": "The three channels are added left to right in caller order (float summation order preserved); exactly three channels are admitted by the saved contract",
-    "model": "the saved formal implementation's channel confluence",
-    "geometry": "none; a pointwise reduction over caller-declared shapes",
-    "coordinates": "frequencies in s^-1",
-    "boundary": "exactly three non-empty finite equal-shape profiles",
-    "assumptions": [
-      "The three-channel count is the saved contract for one species family's elastic pairs; other counts are rejected.",
-      "Channels are expected nonnegative by physics but only finiteness is enforced, as saved.",
-      "The saved arm does not gate the sum finiteness (three 1e308 channels overflow to inf and are returned); this asset fail-closes on a non-finite total instead, per the declared finite-output contract. The divergence is pinned by a regression test."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "frequency_profiles",
-      "description": "The elastic frequency channels.",
-      "units": "s^-1",
-      "shape": "list[3] of equal-shape arrays",
-      "dtype": "sequence of real array-like",
-      "required": true,
-      "constraints": "Exactly three non-empty finite arrays of one common shape, in caller order."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "elastic_frequency_s_inv",
-      "description": "The summed transport frequency.",
-      "units": "s^-1",
-      "shape": "common shape",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite; equals the pointwise sum in the saved order."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Three finite equal-shape caller-normalized channel profiles."
-    ],
-    "supported": [
-      "Confluence of the species-pair elastic Omega channels on one shared grid."
-    ],
-    "excluded": [
-      "Fewer or more than three channels; mismatched shapes; non-finite values."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError when the channel count is not three, any channel is empty, shapes differ, or any value is non-real or non-finite; implicit boolean, string and complex conversion is rejected.",
-    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
-  },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notices"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.elastic_frequency_channels",
-      "symbol": "sum_elastic_frequency_channels",
-      "signature": "sum_elastic_frequency_channels(frequency_profiles)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "sum_elastic_frequency_channels"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Sum three channels pointwise, confirm zero channels pass through, and reject contract violations.",
-    "code": "import numpy as np\nfrom scirel.kinetic import sum_elastic_frequency_channels\nresult = sum_elastic_frequency_channels([np.array([1.0, 2.0]), np.array([0.5, 1.0]), np.array([0.25, 0.5])])\nnp.testing.assert_array_equal(result['elastic_frequency_s_inv'], [1.75, 3.5])\ntry:\n    sum_elastic_frequency_channels([np.ones(3), np.ones(3)])\nexcept ValueError as error:\n    assert 'exactly three' in str(error)\nelse:\n    raise AssertionError('a two-channel call must be rejected')\n",
-    "expected": "Observed PASS: The pointwise sum in caller order; a two-channel call is rejected."
-  },
-  "verification": {
-    "scope": [
-      "That the sum equals an independent pointwise addition in the saved order.",
-      "The channel-count, shape, and finiteness failure contracts.",
-      "That an overflowing channel sum fails closed (declared narrowing of the saved contract; the saved arm would return inf)."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_neutral_frequency_assembly.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.elastic-frequency-channels",
+ "title": {
+  "en": "Elastic collision-frequency channel sum",
+  "zh": "弹性频率通道求和"
+ },
+ "summary": "The pointwise sum of exactly three already-normalized elastic collision-frequency channels into the transport total elastic frequency, preserving the caller's channel order.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "elastic-frequency",
+  "reduction"
+ ],
+ "aliases": [
+  "sum_elastic_frequency_channels"
+ ],
+ "identity": {
+  "relation": "Omega_total = Omega_1 + Omega_2 + Omega_3 pointwise over equal-shape channel profiles",
+  "direction": "three caller-ordered channel profiles -> one total profile",
+  "definition": "The three channels are added left to right in caller order (float summation order preserved); exactly three channels are admitted by the saved contract",
+  "model": "the saved formal implementation's channel confluence",
+  "geometry": "none; a pointwise reduction over caller-declared shapes",
+  "coordinates": "frequencies in s^-1",
+  "boundary": "exactly three non-empty finite equal-shape profiles",
+  "assumptions": [
+   "The three-channel count is the saved contract for one species family's elastic pairs; other counts are rejected.",
+   "Channels are expected nonnegative by physics but only finiteness is enforced, as saved.",
+   "The saved arm does not gate the sum finiteness (three 1e308 channels overflow to inf and are returned); this asset fail-closes on a non-finite total instead, per the declared finite-output contract. The divergence is pinned by a regression test."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "frequency_profiles",
+   "description": "The elastic frequency channels.",
+   "units": "s^-1",
+   "shape": "list[3] of equal-shape arrays",
+   "dtype": "sequence of real array-like",
+   "required": true,
+   "constraints": "Exactly three non-empty finite arrays of one common shape, in caller order."
   }
+ ],
+ "outputs": [
+  {
+   "name": "elastic_frequency_s_inv",
+   "description": "The summed transport frequency.",
+   "units": "s^-1",
+   "shape": "common shape",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; equals the pointwise sum in the saved order."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Three finite equal-shape caller-normalized channel profiles."
+  ],
+  "supported": [
+   "Confluence of the species-pair elastic Omega channels on one shared grid."
+  ],
+  "excluded": [
+   "Fewer or more than three channels; mismatched shapes; non-finite values."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when the channel count is not three, any channel is empty, shapes differ, or any value is non-real or non-finite; implicit boolean, string and complex conversion is rejected.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notices"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.elastic_frequency_channels",
+   "symbol": "sum_elastic_frequency_channels",
+   "signature": "sum_elastic_frequency_channels(frequency_profiles)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "sum_elastic_frequency_channels"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Sum three channels pointwise, confirm zero channels pass through, and reject contract violations.",
+  "code": "import numpy as np\nfrom scirel.kinetic import sum_elastic_frequency_channels\nresult = sum_elastic_frequency_channels([np.array([1.0, 2.0]), np.array([0.5, 1.0]), np.array([0.25, 0.5])])\nnp.testing.assert_array_equal(result['elastic_frequency_s_inv'], [1.75, 3.5])\ntry:\n    sum_elastic_frequency_channels([np.ones(3), np.ones(3)])\nexcept ValueError as error:\n    assert 'exactly three' in str(error)\nelse:\n    raise AssertionError('a two-channel call must be rejected')\n",
+  "expected": "Observed PASS: The pointwise sum in caller order; a two-channel call is rejected."
+ },
+ "verification": {
+  "scope": [
+   "That the sum equals an independent pointwise addition in the saved order.",
+   "The channel-count, shape, and finiteness failure contracts.",
+   "That an overflowing channel sum fails closed (declared narrowing of the saved contract; the saved arm would return inf)."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_neutral_frequency_assembly.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

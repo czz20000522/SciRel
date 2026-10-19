@@ -1,201 +1,200 @@
 {
-  "aliases": [],
-  "applicability": {
-    "excluded": [
-      "Callback-only whole-line support discovery (fails closed because it is information-limited).",
-      "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."
-    ],
-    "preconditions": [
-      "Density returns finite real numeric scalar samples; the Cauchy integral exists on the selected contour.",
-      "Caller bounds or mesh resolve all material density features; whole-line tails are integrable and contain no unresolved density features. The integrator resolves the known kernel peak without requiring the caller to mesh the pole-height scale."
-    ],
-    "supported": [
-      "Finite ordered bounds already resolving the callback support.",
-      "Whole-line integration with an explicit finite increasing integration_mesh that resolves support/features and integrable tails."
-    ]
-  },
-  "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-  "example": {
-    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_cauchy_transform\nmesh=np.linspace(-10,10,81)\nr=evaluate_cauchy_transform(0.4+0.7j,lambda v: np.exp(-v*v)/np.sqrt(np.pi),integration_mesh=mesh)\nassert np.isfinite(r[\"G\"])\n",
-    "description": "Integrate a normalized Gaussian with an explicit finite feature mesh.",
-    "expected": "Observed PASS: the explicit 81-point mesh gives a finite complex G and two component quadrature-error estimates."
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs, including epsabs/epsrel=None or non-scalar values and callback-only whole-line integration without integration_mesh.",
-    "nonconvergence": "Raises RuntimeError if any QUADPACK panel reports nonconvergence; no partial result is returned.",
-    "partial_results": "No partial scientific result is returned after a failed call.",
-    "runtime_failure": "Callback exceptions propagate; invalid callback output or unrepresentable result raises ValueError."
-  },
-  "identity": {
-    "assumptions": [
-      "The callback is finite on every integrated panel.",
-      "For bounds=null, integration_mesh explicitly partitions material support/features and the two tails are integrable.",
-      "A generic callback cannot certify unseen density support from adaptive samples; the known Cauchy kernel scale is handled internally. Error estimates remain conditional."
-    ],
-    "boundary": "Real-axis poles are rejected.",
-    "coordinates": "Complex phase point and real integration coordinate",
-    "definition": "For z=x+i*y, near-projection finite panels use v=x+abs(y)*sinh(t), giving density(v)*(tanh(t)+i*sign(y)*sech(t)) dt. Bounded transformed panels resolve the known kernel peak and long tails; smooth far panels and infinite tails use real-coordinate quadrature. Explicit analytic continuation is added only under the stated support policy.",
-    "direction": "(z,density,bounds|integration_mesh)->G",
-    "geometry": "Velocity space",
-    "model": "One-dimensional generalized plasma response",
-    "relation": "G(z)=integral density(v)/(v-z)dv"
-  },
-  "inputs": [
-    {
-      "constraints": "Finite and representable.",
-      "description": "Complex phase points off the real axis.",
-      "dtype": "complex numeric",
-      "name": "z",
-      "required": true,
-      "shape": "scalar or nonempty array",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "Callable returning finite real numeric scalars at all sampled velocities; caller declares feature resolution.",
-      "description": "Real density callback of one real velocity.",
-      "dtype": "callable",
-      "name": "density",
-      "required": true,
-      "shape": "callable",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "None selects whole-line mode with required mesh; otherwise finite ordered real pair; booleans and complex coordinates rejected.",
-      "default": null,
-      "description": "Ordered real integration bounds.",
-      "dtype": "real sequence",
-      "name": "bounds",
-      "required": false,
-      "shape": "2-sequence",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "Strictly increasing finite points; with bounds, mesh must lie inside bounds. When bounds is null, mesh endpoints delimit a resolved feature region and infinite tails are also integrated.",
-      "default": null,
-      "description": "Finite strictly increasing real mesh partitioning material support/features; required when bounds is null.",
-      "dtype": "finite real array",
-      "name": "integration_mesh",
-      "required": false,
-      "shape": "one-dimensional array with at least two points",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "None or callable returning finite numeric scalars, representing the analytic extension of the same density. Finite-bound continuation only for strict a < Re(z) < b.",
-      "default": null,
-      "description": "Optional analytic extension for lower-plane continuation.",
-      "dtype": "callable",
-      "name": "analytic_density",
-      "required": false,
-      "shape": "callable or None",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "Finite and representable.",
-      "default": 1e-10,
-      "description": "Absolute quadrature tolerance.",
-      "dtype": "positive real",
-      "name": "epsabs",
-      "required": false,
-      "shape": "scalar",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "Finite and representable.",
-      "default": 1e-10,
-      "description": "Relative quadrature tolerance.",
-      "dtype": "positive real",
-      "name": "epsrel",
-      "required": false,
-      "shape": "scalar",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "Finite and representable.",
-      "default": 200,
-      "description": "QUADPACK subdivision bound.",
-      "dtype": "positive integer",
-      "name": "limit",
-      "required": false,
-      "shape": "scalar",
-      "units": "count"
-    }
+ "aliases": [],
+ "applicability": {
+  "excluded": [
+   "Callback-only whole-line support discovery (fails closed because it is information-limited).",
+   "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."
   ],
-  "kind": "operator",
-  "outputs": [
-    {
-      "constraints": "Finite and representable.",
-      "description": "Cauchy transform.",
-      "dtype": "complex array",
-      "name": "G",
-      "required": true,
-      "shape": "same as z",
-      "units": "dimensionless"
-    },
-    {
-      "constraints": "Finite and representable.",
-      "description": "Summed real/imaginary quadrature indicators with floating accumulation allowances, including continuation; not bounds on callback or analytic-extension errors.",
-      "dtype": "real array",
-      "name": "quadrature_error",
-      "required": true,
-      "shape": "z shape + [2]",
-      "units": "dimensionless"
-    }
+  "preconditions": [
+   "Density returns finite real numeric scalar samples; the Cauchy integral exists on the selected contour.",
+   "Caller bounds or mesh resolve all material density features; whole-line tails are integrable and contain no unresolved density features. The integrator resolves the known kernel peak without requiring the caller to mesh the pole-height scale."
   ],
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "public scientific literature for the stated numerical relation"
-    ],
-    "public_references": [
-      "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
-    ],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.cauchy_transform",
-      "signature": "evaluate_cauchy_transform(z, density, *, bounds=None, analytic_density=None, epsabs=1e-10, epsrel=1e-10, limit=200, integration_mesh=None)",
-      "symbol": "evaluate_cauchy_transform",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "evaluate_cauchy_transform"
-    }
-  },
-  "schema": "scirel.asset-document",
-  "summary": "Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave",
-    "gpdf"
+  "supported": [
+   "Finite ordered bounds already resolving the callback support.",
+   "Whole-line integration with an explicit finite increasing integration_mesh that resolves support/features and integrable tails."
+  ]
+ },
+ "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
+ "example": {
+  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_cauchy_transform\nmesh=np.linspace(-10,10,81)\nr=evaluate_cauchy_transform(0.4+0.7j,lambda v: np.exp(-v*v)/np.sqrt(np.pi),integration_mesh=mesh)\nassert np.isfinite(r[\"G\"])\n",
+  "description": "Integrate a normalized Gaussian with an explicit finite feature mesh.",
+  "expected": "Observed PASS: the explicit 81-point mesh gives a finite complex G and two component quadrature-error estimates."
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs, including epsabs/epsrel=None or non-scalar values and callback-only whole-line integration without integration_mesh.",
+  "nonconvergence": "Raises RuntimeError if any QUADPACK panel reports nonconvergence; no partial result is returned.",
+  "partial_results": "No partial scientific result is returned after a failed call.",
+  "runtime_failure": "Callback exceptions propagate; invalid callback output or unrepresentable result raises ValueError."
+ },
+ "identity": {
+  "assumptions": [
+   "The callback is finite on every integrated panel.",
+   "For bounds=null, integration_mesh explicitly partitions material support/features and the two tails are integrable.",
+   "A generic callback cannot certify unseen density support from adaptive samples; the known Cauchy kernel scale is handled internally. Error estimates remain conditional."
   ],
-  "title": {
-    "en": "Adaptive Cauchy transform",
-    "zh": "自适应 Cauchy 变换"
+  "boundary": "Real-axis poles are rejected.",
+  "coordinates": "Complex phase point and real integration coordinate",
+  "definition": "For z=x+i*y, near-projection finite panels use v=x+abs(y)*sinh(t), giving density(v)*(tanh(t)+i*sign(y)*sech(t)) dt. Bounded transformed panels resolve the known kernel peak and long tails; smooth far panels and infinite tails use real-coordinate quadrature. Explicit analytic continuation is added only under the stated support policy.",
+  "direction": "(z,density,bounds|integration_mesh)->G",
+  "geometry": "Velocity space",
+  "model": "One-dimensional generalized plasma response",
+  "relation": "G(z)=integral density(v)/(v-z)dv"
+ },
+ "inputs": [
+  {
+   "constraints": "Finite and representable.",
+   "description": "Complex phase points off the real axis.",
+   "dtype": "complex numeric",
+   "name": "z",
+   "required": true,
+   "shape": "scalar or nonempty array",
+   "units": "dimensionless"
   },
-  "verification": {
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "A finite interval truncates any tail not represented by caller bounds; whole-line mode requires caller-supplied mesh/support resolution and assumes integrable tails.",
-      "Component indicators include quadrature and floating accumulation estimates but exclude callback, analytic-extension and finite-domain truncation errors; they are not global certificates.",
-      "Analytic continuation requires an explicit analytic callback matching the density.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ],
-    "scope": [
-      "Independent analytic finite-interval identities and component error reporting.",
-      "Explicit feature-mesh whole-line shifted Gaussian cases with independent Faddeeva references.",
-      "Failure closure for callback-only whole-line support and malformed tolerances.",
-      "Known near-real-axis kernel peaks and logarithmic-scale tails are resolved independently of density feature mesh; strict finite-support continuation endpoint policy is retained."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_gpdf_d2.py",
-      "tests/operator_contracts/test_gpdf_d2_successor_regressions.py",
-      "tests/operator_contracts/test_gpdf_numerical_repair.py",
-      "tests/operator_contracts/test_cauchy_kernel_resolution.py"
-    ]
+  {
+   "constraints": "Callable returning finite real numeric scalars at all sampled velocities; caller declares feature resolution.",
+   "description": "Real density callback of one real velocity.",
+   "dtype": "callable",
+   "name": "density",
+   "required": true,
+   "shape": "callable",
+   "units": "dimensionless"
   },
-  "version": {
-    "dependencies": [],
-    "implementation_version": "0.1.0.dev11"
+  {
+   "constraints": "None selects whole-line mode with required mesh; otherwise finite ordered real pair; booleans and complex coordinates rejected.",
+   "default": null,
+   "description": "Ordered real integration bounds.",
+   "dtype": "real sequence",
+   "name": "bounds",
+   "required": false,
+   "shape": "2-sequence",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Strictly increasing finite points; with bounds, mesh must lie inside bounds. When bounds is null, mesh endpoints delimit a resolved feature region and infinite tails are also integrated.",
+   "default": null,
+   "description": "Finite strictly increasing real mesh partitioning material support/features; required when bounds is null.",
+   "dtype": "finite real array",
+   "name": "integration_mesh",
+   "required": false,
+   "shape": "one-dimensional array with at least two points",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "None or callable returning finite numeric scalars, representing the analytic extension of the same density. Finite-bound continuation only for strict a < Re(z) < b.",
+   "default": null,
+   "description": "Optional analytic extension for lower-plane continuation.",
+   "dtype": "callable",
+   "name": "analytic_density",
+   "required": false,
+   "shape": "callable or None",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "default": 1e-10,
+   "description": "Absolute quadrature tolerance.",
+   "dtype": "positive real",
+   "name": "epsabs",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "default": 1e-10,
+   "description": "Relative quadrature tolerance.",
+   "dtype": "positive real",
+   "name": "epsrel",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "default": 200,
+   "description": "QUADPACK subdivision bound.",
+   "dtype": "positive integer",
+   "name": "limit",
+   "required": false,
+   "shape": "scalar",
+   "units": "count"
   }
+ ],
+ "outputs": [
+  {
+   "constraints": "Finite and representable.",
+   "description": "Cauchy transform.",
+   "dtype": "complex array",
+   "name": "G",
+   "required": true,
+   "shape": "same as z",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "description": "Summed real/imaginary quadrature indicators with floating accumulation allowances, including continuation; not bounds on callback or analytic-extension errors.",
+   "dtype": "real array",
+   "name": "quadrature_error",
+   "required": true,
+   "shape": "z shape + [2]",
+   "units": "dimensionless"
+  }
+ ],
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt and licenses/gpdf/SCIPY-LICENSE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "public scientific literature for the stated numerical relation"
+  ],
+  "public_references": [
+   "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+  ],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.cauchy_transform",
+   "signature": "evaluate_cauchy_transform(z, density, *, bounds=None, analytic_density=None, epsabs=1e-10, epsrel=1e-10, limit=200, integration_mesh=None)",
+   "symbol": "evaluate_cauchy_transform",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_cauchy_transform"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "gpdf"
+ ],
+ "title": {
+  "en": "Adaptive Cauchy transform",
+  "zh": "自适应 Cauchy 变换"
+ },
+ "verification": {
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "A finite interval truncates any tail not represented by caller bounds; whole-line mode requires caller-supplied mesh/support resolution and assumes integrable tails.",
+   "Component indicators include quadrature and floating accumulation estimates but exclude callback, analytic-extension and finite-domain truncation errors; they are not global certificates.",
+   "Analytic continuation requires an explicit analytic callback matching the density.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ],
+  "scope": [
+   "Independent analytic finite-interval identities and component error reporting.",
+   "Explicit feature-mesh whole-line shifted Gaussian cases with independent Faddeeva references.",
+   "Failure closure for callback-only whole-line support and malformed tolerances.",
+   "Known near-real-axis kernel peaks and logarithmic-scale tails are resolved independently of density feature mesh; strict finite-support continuation endpoint policy is retained."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_gpdf_d2.py",
+   "tests/operator_contracts/test_gpdf_d2_successor_regressions.py",
+   "tests/operator_contracts/test_gpdf_numerical_repair.py",
+   "tests/operator_contracts/test_cauchy_kernel_resolution.py"
+  ]
+ },
+ "version": {
+  "dependencies": [],
+  "implementation_version": "0.1.0.dev11"
+ }
 }

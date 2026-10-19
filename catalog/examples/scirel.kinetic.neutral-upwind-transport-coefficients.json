@@ -1,142 +1,141 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
-  "kind": "operator",
-  "title": {
-    "en": "Neutral upwind spatial transport coefficients",
-    "zh": "中性上风空间推进系数"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
+ "title": {
+  "en": "Neutral upwind spatial transport coefficients",
+  "zh": "中性上风空间推进系数"
+ },
+ "summary": "Assemble the source forward/backward trapezoidal transport coefficients Ak/Bk/Fk/Ck/Dk/Gk from spatial nodes, velocity axis, collision frequency and source distribution.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "upwind-scheme",
+  "coefficients"
+ ],
+ "aliases": [
+  "assemble_neutral_upwind_transport_coefficients"
+ ],
+ "identity": {
+  "relation": "source forward/backward trapezoidal transport coefficients for bidirectional neutral propagation",
+  "direction": "spatial nodes, velocity axis, collision frequency, source -> Ak/Bk/Fk/Ck/Dk/Gk + branch indices",
+  "definition": "Forward branch (positive vx): Ak = (2*vx - dx*alpha_k)/(2*vx + dx*alpha_{k+1}), Bk = dx/(2*vx + dx*alpha_{k+1}), Fk = dx*(source_{k+1}+source_k)/(2*vx + dx*alpha_{k+1}). Backward branch (negative vx): Ck/Dk/Gk analogous.",
+  "model": "the saved formal implementation's first-order upwind trapezoidal discretization",
+  "geometry": "one spatial dimension with two velocity branches (positive/negative vx)",
+  "coordinates": "x in m; vx and collision frequency in the source's own discrete units; the dimensional convention is source-defined and not independently calibrated",
+  "boundary": "x strictly increasing with >= 2 nodes and finite positive spatial steps, vx one-dimensional with no zero node, alpha/source finite 3-D aligned shapes, alpha nonnegative, vx must contain both positive and negative branches",
+  "assumptions": [
+   "The saved first-order upwind scheme is the development reference; no higher-order or conservative correction is applied.",
+   "SciRel rejects boolean, string and complex coercions and any non-finite coefficient produced from finite inputs. The saved implementation does not enforce those output and type boundaries.",
+   "The vx axis must contain both positive and negative branches; a zero node is rejected."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x_m",
+   "description": "Spatial nodes.",
+   "units": "m",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, strictly increasing, at least two nodes, with representable finite positive spatial steps."
   },
-  "summary": "Assemble the source forward/backward trapezoidal transport coefficients Ak/Bk/Fk/Ck/Dk/Gk from spatial nodes, velocity axis, collision frequency and source distribution.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "upwind-scheme",
-    "coefficients"
-  ],
-  "aliases": [
-    "assemble_neutral_upwind_transport_coefficients"
-  ],
-  "identity": {
-    "relation": "source forward/backward trapezoidal transport coefficients for bidirectional neutral propagation",
-    "direction": "spatial nodes, velocity axis, collision frequency, source -> Ak/Bk/Fk/Ck/Dk/Gk + branch indices",
-    "definition": "Forward branch (positive vx): Ak = (2*vx - dx*alpha_k)/(2*vx + dx*alpha_{k+1}), Bk = dx/(2*vx + dx*alpha_{k+1}), Fk = dx*(source_{k+1}+source_k)/(2*vx + dx*alpha_{k+1}). Backward branch (negative vx): Ck/Dk/Gk analogous.",
-    "model": "the saved formal implementation's first-order upwind trapezoidal discretization",
-    "geometry": "one spatial dimension with two velocity branches (positive/negative vx)",
-    "coordinates": "x in m; vx and collision frequency in the source's own discrete units; the dimensional convention is source-defined and not independently calibrated",
-    "boundary": "x strictly increasing with >= 2 nodes and finite positive spatial steps, vx one-dimensional with no zero node, alpha/source finite 3-D aligned shapes, alpha nonnegative, vx must contain both positive and negative branches",
-    "assumptions": [
-      "The saved first-order upwind scheme is the development reference; no higher-order or conservative correction is applied.",
-      "SciRel rejects boolean, string and complex coercions and any non-finite coefficient produced from finite inputs. The saved implementation does not enforce those output and type boundaries.",
-      "The vx axis must contain both positive and negative branches; a zero node is rejected."
-    ]
+  {
+   "name": "vx",
+   "description": "Velocity axis.",
+   "units": "source-defined discrete",
+   "shape": "[nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite one-dimensional; no zero nodes; must contain both positive and negative branches."
   },
-  "inputs": [
-    {
-      "name": "x_m",
-      "description": "Spatial nodes.",
-      "units": "m",
-      "shape": "[nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, strictly increasing, at least two nodes, with representable finite positive spatial steps."
-    },
-    {
-      "name": "vx",
-      "description": "Velocity axis.",
-      "units": "source-defined discrete",
-      "shape": "[nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite one-dimensional; no zero nodes; must contain both positive and negative branches."
-    },
-    {
-      "name": "collision_frequency_s_inv",
-      "description": "Collision frequency field.",
-      "units": "s^-1",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative, shape (nvr,nvx,nx)."
-    },
-    {
-      "name": "source_distribution",
-      "description": "Source distribution field.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, same shape as collision_frequency_s_inv."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "coefficients",
-      "description": "The transport coefficient mapping.",
-      "units": "mixed",
-      "shape": "mapping",
-      "dtype": "mapping of [nvr,nvx,nx] float64 arrays and two index arrays",
-      "required": true,
-      "constraints": "Exactly Ak, Bk, Fk, Ck, Dk, Gk (each [nvr,nvx,nx]), positive_vx_indices, negative_vx_indices."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "x strictly increasing >= 2 nodes; vx no zero, both branches present; alpha/source finite aligned 3-D."
-    ],
-    "supported": [
-      "Forward/backward trapezoidal transport coefficients for H and H2 neutral generation propagation."
-    ],
-    "excluded": [
-      "Higher-order schemes; nonuniform velocity-axis weighting; conservative flux correction."
-    ]
+  {
+   "name": "collision_frequency_s_inv",
+   "description": "Collision frequency field.",
+   "units": "s^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative, shape (nvr,nvx,nx)."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError when x is not strictly increasing (>= 2 nodes), vx has a zero node or lacks a branch, alpha/source are not finite aligned 3-D, or alpha has negative entries.",
-    "runtime_failure": "Raises ValueError if finite inputs overflow to non-finite transport coefficients.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
-  },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
-    "source_kinds": [
-      "SciRel implementation",
-      "KN1D-derived mathematical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.upwind_transport_coefficients",
-      "symbol": "assemble_neutral_upwind_transport_coefficients",
-      "signature": "assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_s_inv, source_distribution)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "assemble_neutral_upwind_transport_coefficients"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Assemble coefficients on a small mesh and confirm branch separation.",
-    "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_upwind_transport_coefficients\nx = np.linspace(0, 1, 3)\nvx = np.array([-1.0, 1.0])\nalpha = np.ones((2, 2, 3))\nsource = np.ones((2, 2, 3))\nr = assemble_neutral_upwind_transport_coefficients(x, vx, alpha, source)\nassert r['Ak'].shape == (2, 2, 3)\nassert np.all(r['Ak'][:, 0, :] == 0.0)  # vx[0]=-1 is negative\nassert np.all(r['Ck'][:, 1, :] == 0.0)  # vx[1]=+1 is positive",
-    "expected": "The coefficient mapping had shape (2,2,3) for each transport field; Ak was zero on the negative branch and Ck was zero on the positive branch."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_transport_step.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision.",
-      "Example output is a bounded runtime observation, not a universal scientific claim."
-    ]
+  {
+   "name": "source_distribution",
+   "description": "Source distribution field.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, same shape as collision_frequency_s_inv."
   }
+ ],
+ "outputs": [
+  {
+   "name": "coefficients",
+   "description": "The transport coefficient mapping.",
+   "units": "mixed",
+   "shape": "mapping",
+   "dtype": "mapping of [nvr,nvx,nx] float64 arrays and two index arrays",
+   "required": true,
+   "constraints": "Exactly Ak, Bk, Fk, Ck, Dk, Gk (each [nvr,nvx,nx]), positive_vx_indices, negative_vx_indices."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "x strictly increasing >= 2 nodes; vx no zero, both branches present; alpha/source finite aligned 3-D."
+  ],
+  "supported": [
+   "Forward/backward trapezoidal transport coefficients for H and H2 neutral generation propagation."
+  ],
+  "excluded": [
+   "Higher-order schemes; nonuniform velocity-axis weighting; conservative flux correction."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when x is not strictly increasing (>= 2 nodes), vx has a zero node or lacks a branch, alpha/source are not finite aligned 3-D, or alpha has negative entries.",
+  "runtime_failure": "Raises ValueError if finite inputs overflow to non-finite transport coefficients.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
+  "source_kinds": [
+   "SciRel implementation",
+   "KN1D-derived mathematical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.upwind_transport_coefficients",
+   "symbol": "assemble_neutral_upwind_transport_coefficients",
+   "signature": "assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_s_inv, source_distribution)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "assemble_neutral_upwind_transport_coefficients"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Assemble coefficients on a small mesh and confirm branch separation.",
+  "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_upwind_transport_coefficients\nx = np.linspace(0, 1, 3)\nvx = np.array([-1.0, 1.0])\nalpha = np.ones((2, 2, 3))\nsource = np.ones((2, 2, 3))\nr = assemble_neutral_upwind_transport_coefficients(x, vx, alpha, source)\nassert r['Ak'].shape == (2, 2, 3)\nassert np.all(r['Ak'][:, 0, :] == 0.0)  # vx[0]=-1 is negative\nassert np.all(r['Ck'][:, 1, :] == 0.0)  # vx[1]=+1 is positive",
+  "expected": "The coefficient mapping had shape (2,2,3) for each transport field; Ak was zero on the negative branch and Ck was zero on the positive branch."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_transport_step.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Public distribution licensing remains pending a human decision.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ }
 }

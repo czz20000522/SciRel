@@ -1,294 +1,293 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature",
-  "kind": "operator",
-  "title": {
-    "en": "Cylindrical velocity-space quadrature",
-    "zh": "圆柱速度空间积分权重"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature",
+ "title": {
+  "en": "Cylindrical velocity-space quadrature",
+  "zh": "圆柱速度空间积分权重"
+ },
+ "summary": "From strictly increasing normalized radial-speed and axial-velocity meshes, build the ghost-extended half-cell faces, the annular radial measure, the (nvr, nvx) cylindrical cell volumes, the ghosted finite-volume difference coefficients, the speed squared, and the positive/negative axial index ranges. This is the N1 preparation relation whose volume output is the cylindrical_volume port consumed by the Maxwellian relative-speed rate average.",
+ "taxonomy": [
+  "kinetic",
+  "velocity-mesh",
+  "quadrature",
+  "finite-volume"
+ ],
+ "aliases": [
+  "make_dvr_dvx",
+  "cylindrical velocity weights",
+  "N1 quadrature"
+ ],
+ "identity": {
+  "relation": "the cylindrical velocity-space quadrature of a normalized (vr, vx) mesh: ghost-extended cell faces, annular radial measure, cell volumes, ghosted finite-volume coefficients, speed squared and axial sign index ranges",
+  "direction": "vr, vx -> radial_measure, radial_four_pi_measure, dvx, vr_left, vr_right, vx_left, vx_right, volume, inv_dvx_ghost, vx_over_dvx_ghost, vr_over_dvr_ghost, speed_squared, positive/negative vx index ranges",
+  "definition": "The radial mesh is extended by mirroring the last node (2*vr[-1] - vr[-2]) and the axial mesh by mirroring both ends; cell faces are midpoints of adjacent extended nodes with the innermost radial face fixed at zero. radial_measure = pi*(r_right^2 - r_left^2), volume = radial_measure[:, None] * dvx[None, :], radial_four_pi_measure = 4/3*pi*(r_right^3 - r_left^3). The ghosted arrays carry 1/dvx, vx/dvx and vr/dvr in their interior and exact zeros on the boundary shell. The index ranges locate strictly positive and strictly negative axial velocities.",
+  "model": "discrete finite-volume construction on the saved source's ghost-face convention; no distribution, collision model or field model is evaluated",
+  "geometry": "velocity space, cylindrical: radial speed vr (inner face at zero) and axial velocity vx; the azimuthal angle is integrated out into the pi*(r_right^2 - r_left^2) measure",
+  "coordinates": "vr and vx in whatever normalized velocity unit the caller works in; no unit conversion is performed",
+  "boundary": "the innermost radial face is exactly zero; the outermost faces are midpoints between the last node and its mirrored ghost; the ghosted coefficient arrays are exactly zero on their boundary shell; vx must contain both strictly negative and strictly positive entries",
+  "assumptions": [
+   "The meshes are already expressed in the caller's normalized velocity unit, consistent with the normalization temperature convention of the downstream consumers.",
+   "The ghost faces follow the saved source's half-cell extrapolation convention; callers whose scheme expects different face placements must not reuse the measure unreviewed.",
+   "The azimuthal measure is exact for the annulus (pi times the squared-face difference), not a midpoint rule in vr.",
+   "Non-finite mesh points are rejected. The saved implementation checked only monotonicity and sizes, propagating NaN silently although its own document declared the fail-closed finite contract; this is the one documented repair."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "vr",
+   "description": "Normalized radial-speed mesh of the velocity grid.",
+   "units": "v/vth (caller's normalized unit)",
+   "shape": "[nvr]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite, strictly increasing, nonnegative one-dimensional array of length at least two. vr is a radial-speed axis: a negative node would make the annular measure negative, so the domain is restricted to nonnegative meshes."
   },
-  "summary": "From strictly increasing normalized radial-speed and axial-velocity meshes, build the ghost-extended half-cell faces, the annular radial measure, the (nvr, nvx) cylindrical cell volumes, the ghosted finite-volume difference coefficients, the speed squared, and the positive/negative axial index ranges. This is the N1 preparation relation whose volume output is the cylindrical_volume port consumed by the Maxwellian relative-speed rate average.",
-  "taxonomy": [
-    "kinetic",
-    "velocity-mesh",
-    "quadrature",
-    "finite-volume"
-  ],
-  "aliases": [
-    "make_dvr_dvx",
-    "cylindrical velocity weights",
-    "N1 quadrature"
-  ],
-  "identity": {
-    "relation": "the cylindrical velocity-space quadrature of a normalized (vr, vx) mesh: ghost-extended cell faces, annular radial measure, cell volumes, ghosted finite-volume coefficients, speed squared and axial sign index ranges",
-    "direction": "vr, vx -> radial_measure, radial_four_pi_measure, dvx, vr_left, vr_right, vx_left, vx_right, volume, inv_dvx_ghost, vx_over_dvx_ghost, vr_over_dvr_ghost, speed_squared, positive/negative vx index ranges",
-    "definition": "The radial mesh is extended by mirroring the last node (2*vr[-1] - vr[-2]) and the axial mesh by mirroring both ends; cell faces are midpoints of adjacent extended nodes with the innermost radial face fixed at zero. radial_measure = pi*(r_right^2 - r_left^2), volume = radial_measure[:, None] * dvx[None, :], radial_four_pi_measure = 4/3*pi*(r_right^3 - r_left^3). The ghosted arrays carry 1/dvx, vx/dvx and vr/dvr in their interior and exact zeros on the boundary shell. The index ranges locate strictly positive and strictly negative axial velocities.",
-    "model": "discrete finite-volume construction on the saved source's ghost-face convention; no distribution, collision model or field model is evaluated",
-    "geometry": "velocity space, cylindrical: radial speed vr (inner face at zero) and axial velocity vx; the azimuthal angle is integrated out into the pi*(r_right^2 - r_left^2) measure",
-    "coordinates": "vr and vx in whatever normalized velocity unit the caller works in; no unit conversion is performed",
-    "boundary": "the innermost radial face is exactly zero; the outermost faces are midpoints between the last node and its mirrored ghost; the ghosted coefficient arrays are exactly zero on their boundary shell; vx must contain both strictly negative and strictly positive entries",
-    "assumptions": [
-      "The meshes are already expressed in the caller's normalized velocity unit, consistent with the normalization temperature convention of the downstream consumers.",
-      "The ghost faces follow the saved source's half-cell extrapolation convention; callers whose scheme expects different face placements must not reuse the measure unreviewed.",
-      "The azimuthal measure is exact for the annulus (pi times the squared-face difference), not a midpoint rule in vr.",
-      "Non-finite mesh points are rejected. The saved implementation checked only monotonicity and sizes, propagating NaN silently although its own document declared the fail-closed finite contract; this is the one documented repair."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "vr",
-      "description": "Normalized radial-speed mesh of the velocity grid.",
-      "units": "v/vth (caller's normalized unit)",
-      "shape": "[nvr]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite, strictly increasing, nonnegative one-dimensional array of length at least two. vr is a radial-speed axis: a negative node would make the annular measure negative, so the domain is restricted to nonnegative meshes."
-    },
-    {
-      "name": "vx",
-      "description": "Normalized axial-velocity mesh of the velocity grid.",
-      "units": "v/vth (caller's normalized unit)",
-      "shape": "[nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite, strictly increasing one-dimensional array of length at least two that contains at least one strictly negative and one strictly positive entry."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "radial_measure",
-      "description": "Annular radial measure pi*(r_right^2 - r_left^2) per radial cell.",
-      "units": "normalized velocity-space measure",
-      "shape": "[nvr]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and strictly positive for accepted input."
-    },
-    {
-      "name": "radial_four_pi_measure",
-      "description": "Full-sphere measure 4/3*pi*(r_right^3 - r_left^3) per radial cell.",
-      "units": "normalized velocity-space measure",
-      "shape": "[nvr]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and strictly positive for accepted input."
-    },
-    {
-      "name": "dvx",
-      "description": "Axial cell widths from the ghost-extended faces.",
-      "units": "v/vth",
-      "shape": "[nvx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and strictly positive for accepted input."
-    },
-    {
-      "name": "vr_left",
-      "description": "Inner radial face of each radial cell (first entry exactly zero).",
-      "units": "v/vth",
-      "shape": "[nvr]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite, strictly increasing."
-    },
-    {
-      "name": "vr_right",
-      "description": "Outer radial face of each radial cell.",
-      "units": "v/vth",
-      "shape": "[nvr]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite, strictly increasing."
-    },
-    {
-      "name": "vx_left",
-      "description": "Inner axial face of each axial cell (ghost-extended at the ends).",
-      "units": "v/vth",
-      "shape": "[nvx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and strictly increasing."
-    },
-    {
-      "name": "vx_right",
-      "description": "Outer axial face of each axial cell (ghost-extended at the ends).",
-      "units": "v/vth",
-      "shape": "[nvx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and strictly increasing."
-    },
-    {
-      "name": "volume",
-      "description": "Cylindrical cell volumes, rows matched to vr and columns to vx; the cylindrical_volume port of the downstream consumers.",
-      "units": "normalized velocity-space measure",
-      "shape": "[nvr, nvx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and strictly positive for accepted input."
-    },
-    {
-      "name": "inv_dvx_ghost",
-      "description": "1/dvx in a ghost-extended (nvr+2, nvx+2) array, exact zeros on the boundary shell.",
-      "units": "v/vth inverse",
-      "shape": "[nvr+2, nvx+2]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite; boundary shell exactly zero."
-    },
-    {
-      "name": "vx_over_dvx_ghost",
-      "description": "vx/dvx in a ghost-extended (nvr+2, nvx+2) array, exact zeros on the boundary shell.",
-      "units": "dimensionless",
-      "shape": "[nvr+2, nvx+2]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite; boundary shell exactly zero."
-    },
-    {
-      "name": "vr_over_dvr_ghost",
-      "description": "vr/dvr in a ghost-extended (nvr+2, nvx+2) array, exact zeros on the boundary shell.",
-      "units": "dimensionless",
-      "shape": "[nvr+2, nvx+2]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite; boundary shell exactly zero."
-    },
-    {
-      "name": "speed_squared",
-      "description": "vr^2 + vx^2 on the mesh nodes.",
-      "units": "dimensionless (normalized speed squared)",
-      "shape": "[nvr, nvx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and nonnegative."
-    },
-    {
-      "name": "positive_vx_indices",
-      "description": "Indices of strictly positive axial velocities.",
-      "units": "dimensionless",
-      "shape": "[n_positive]",
-      "dtype": "int64 array",
-      "required": true,
-      "constraints": "Nonempty for accepted input."
-    },
-    {
-      "name": "positive_vx_first_index",
-      "description": "First strictly positive axial index.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Integer in [0, nvx)."
-    },
-    {
-      "name": "positive_vx_last_index",
-      "description": "Last strictly positive axial index.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Integer in [0, nvx)."
-    },
-    {
-      "name": "negative_vx_indices",
-      "description": "Indices of strictly negative axial velocities.",
-      "units": "dimensionless",
-      "shape": "[n_negative]",
-      "dtype": "int64 array",
-      "required": true,
-      "constraints": "Nonempty for accepted input."
-    },
-    {
-      "name": "negative_vx_first_index",
-      "description": "First strictly negative axial index.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Integer in [0, nvx)."
-    },
-    {
-      "name": "negative_vx_last_index",
-      "description": "Last strictly negative axial index.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Integer in [0, nvx)."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller works in a single normalized velocity unit for both meshes and downstream consumers.",
-      "The downstream scheme accepts the saved source's ghost-face and sign-index conventions."
-    ],
-    "supported": [
-      "Constructing the cylindrical cell-volume measure that the Maxwellian relative-speed rate average normalizes against.",
-      "Ghosted finite-volume coefficients for schemes that consume 1/dvx, vx/dvx and vr/dvr with a zero boundary shell.",
-      "Sign index ranges for flux-split axial updates.",
-      "Nonuniform meshes: the annular measure stays exact for the ghost-face construction."
-    ],
-    "excluded": [
-      "Mesh generation or adaptation: the meshes are caller inputs.",
-      "Any distribution, collision or field model.",
-      "Schemes whose cell faces differ from the saved source's ghost-face convention.",
-      "Unit conversion between normalized velocity and m/s; that scale is the caller's."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError with a message naming the quantity when vr or vx is not a real numeric finite strictly increasing one-dimensional array of length at least two, when vr has a negative entry (vr is a radial-speed axis; a negative node would make the annular measure negative), or when vx does not contain both strictly negative and strictly positive velocities. Boolean, string and complex arrays are not coerced.",
-    "runtime_failure": "Raises ValueError when the quadrature outputs are not representable in double precision for finite inputs that satisfy the stated domain -- for example a radial mesh at 1e308 whose mirrored ghost face and squared faces overflow to infinity, or an axial ghost face beyond the float64 ceiling -- and when the annular measures, the four-pi measure, the axial widths or the volumes underflow to exact zero (for example a radial mesh at 0 and 1e-200 whose squared faces underflow), contradicting the strictly-positive output contract. There is no callback and no iteration.",
-    "nonconvergence": "Not applicable; no iteration.",
-    "partial_results": "Never returned; a rejected call produces no fields."
-  },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notices"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.cylindrical_velocity_quadrature",
-      "symbol": "make_cylindrical_velocity_quadrature",
-      "signature": "make_cylindrical_velocity_quadrature(*, vr, vx)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "make_cylindrical_velocity_quadrature"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Build the quadrature of a small normalized mesh, check the hand-derived annular measure and ghost shells, and feed the volume into the Maxwellian relative-speed rate average.",
-    "code": "import numpy as np\nfrom scirel.kinetic import make_cylindrical_velocity_quadrature\nfrom scirel.collisions import average_cross_section_over_maxwellian\n\nvr = np.array([0.5, 1.5])\nvx = np.array([-1.5, -0.5, 0.5, 1.5])\nresult = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)\nnp.testing.assert_allclose(result['radial_measure'], [np.pi, 3.0 * np.pi], rtol=0, atol=0)\nnp.testing.assert_allclose(result['vx_left'], [-2.0, -1.0, 0.0, 1.0], rtol=0, atol=0)\nassert np.all(result['inv_dvx_ghost'][0, :] == 0.0)\nassert np.all(result['inv_dvx_ghost'][1:-1, 1:-1] == 1.0)\nassert result['positive_vx_first_index'] == 2\nrate = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=result['volume'],\n    cross_section_m2=lambda energy: np.full_like(energy, 3.0e-20),\n)\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\ntry:\n    make_cylindrical_velocity_quadrature(vr=vr, vx=np.array([1.0, np.nan, 2.0]))\nexcept ValueError as error:\n    assert 'vx' in str(error)\nelse:\n    raise AssertionError('a non-finite mesh must be rejected')\n",
-    "expected": "Observed PASS: radial_measure is exactly [pi, 3*pi] for the ghost faces [0, 1], [1, 2]; the axial ghost faces extend by half a cell on both ends; the ghosted coefficient arrays are zero on their boundary shell and 1/dvx in the interior; the strictly positive axial indices start at 2; the volume feeds the Maxwellian rate average to finite positive rates; and a NaN mesh point raises ValueError naming vx."
-  },
-  "verification": {
-    "scope": [
-      "That the public callable reproduces the saved source's field set, shapes and index semantics exactly ( eighteen output fields asserted by name ).",
-      "The hand-derived oracle on a different mesh than the saved package test: annular measures, ghost-extended faces, dvx, volume, speed squared and sign indices, exact to floating point.",
-      "The box-partition closure: the total volume equals the annulus up to the ghost face times the ghosted axial span.",
-      "Nonuniform radial meshes: the annular measure stays exact for the ghost-face construction, including the mirrored outer face.",
-      "The ghosted coefficient arrays are exactly zero on the boundary shell and carry 1/dvx, vx/dvx and vr/dvr in the interior.",
-      "The composition contract: the volume feeds the Maxwellian relative-speed rate average to finite positive rates.",
-      "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes, and meshes whose squared faces underflow to zero (radial 0 and 1e-200) are rejected instead of returning zero measures. Ordinary positive meshes produce unchanged numbers."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_cylindrical_velocity_quadrature.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "The outer faces use the saved source's half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
-      "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
-      "Non-finite and non-real mesh rejection are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the saved implementation accepted with negative or non-finite measures is rejected here.",
-      "The nonnegative radial domain makes the saved source's positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "vx",
+   "description": "Normalized axial-velocity mesh of the velocity grid.",
+   "units": "v/vth (caller's normalized unit)",
+   "shape": "[nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite, strictly increasing one-dimensional array of length at least two that contains at least one strictly negative and one strictly positive entry."
   }
+ ],
+ "outputs": [
+  {
+   "name": "radial_measure",
+   "description": "Annular radial measure pi*(r_right^2 - r_left^2) per radial cell.",
+   "units": "normalized velocity-space measure",
+   "shape": "[nvr]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive for accepted input."
+  },
+  {
+   "name": "radial_four_pi_measure",
+   "description": "Full-sphere measure 4/3*pi*(r_right^3 - r_left^3) per radial cell.",
+   "units": "normalized velocity-space measure",
+   "shape": "[nvr]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive for accepted input."
+  },
+  {
+   "name": "dvx",
+   "description": "Axial cell widths from the ghost-extended faces.",
+   "units": "v/vth",
+   "shape": "[nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive for accepted input."
+  },
+  {
+   "name": "vr_left",
+   "description": "Inner radial face of each radial cell (first entry exactly zero).",
+   "units": "v/vth",
+   "shape": "[nvr]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite, strictly increasing."
+  },
+  {
+   "name": "vr_right",
+   "description": "Outer radial face of each radial cell.",
+   "units": "v/vth",
+   "shape": "[nvr]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite, strictly increasing."
+  },
+  {
+   "name": "vx_left",
+   "description": "Inner axial face of each axial cell (ghost-extended at the ends).",
+   "units": "v/vth",
+   "shape": "[nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly increasing."
+  },
+  {
+   "name": "vx_right",
+   "description": "Outer axial face of each axial cell (ghost-extended at the ends).",
+   "units": "v/vth",
+   "shape": "[nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly increasing."
+  },
+  {
+   "name": "volume",
+   "description": "Cylindrical cell volumes, rows matched to vr and columns to vx; the cylindrical_volume port of the downstream consumers.",
+   "units": "normalized velocity-space measure",
+   "shape": "[nvr, nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive for accepted input."
+  },
+  {
+   "name": "inv_dvx_ghost",
+   "description": "1/dvx in a ghost-extended (nvr+2, nvx+2) array, exact zeros on the boundary shell.",
+   "units": "v/vth inverse",
+   "shape": "[nvr+2, nvx+2]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; boundary shell exactly zero."
+  },
+  {
+   "name": "vx_over_dvx_ghost",
+   "description": "vx/dvx in a ghost-extended (nvr+2, nvx+2) array, exact zeros on the boundary shell.",
+   "units": "dimensionless",
+   "shape": "[nvr+2, nvx+2]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; boundary shell exactly zero."
+  },
+  {
+   "name": "vr_over_dvr_ghost",
+   "description": "vr/dvr in a ghost-extended (nvr+2, nvx+2) array, exact zeros on the boundary shell.",
+   "units": "dimensionless",
+   "shape": "[nvr+2, nvx+2]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; boundary shell exactly zero."
+  },
+  {
+   "name": "speed_squared",
+   "description": "vr^2 + vx^2 on the mesh nodes.",
+   "units": "dimensionless (normalized speed squared)",
+   "shape": "[nvr, nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative."
+  },
+  {
+   "name": "positive_vx_indices",
+   "description": "Indices of strictly positive axial velocities.",
+   "units": "dimensionless",
+   "shape": "[n_positive]",
+   "dtype": "int64 array",
+   "required": true,
+   "constraints": "Nonempty for accepted input."
+  },
+  {
+   "name": "positive_vx_first_index",
+   "description": "First strictly positive axial index.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Integer in [0, nvx)."
+  },
+  {
+   "name": "positive_vx_last_index",
+   "description": "Last strictly positive axial index.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Integer in [0, nvx)."
+  },
+  {
+   "name": "negative_vx_indices",
+   "description": "Indices of strictly negative axial velocities.",
+   "units": "dimensionless",
+   "shape": "[n_negative]",
+   "dtype": "int64 array",
+   "required": true,
+   "constraints": "Nonempty for accepted input."
+  },
+  {
+   "name": "negative_vx_first_index",
+   "description": "First strictly negative axial index.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Integer in [0, nvx)."
+  },
+  {
+   "name": "negative_vx_last_index",
+   "description": "Last strictly negative axial index.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Integer in [0, nvx)."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller works in a single normalized velocity unit for both meshes and downstream consumers.",
+   "The downstream scheme accepts the saved source's ghost-face and sign-index conventions."
+  ],
+  "supported": [
+   "Constructing the cylindrical cell-volume measure that the Maxwellian relative-speed rate average normalizes against.",
+   "Ghosted finite-volume coefficients for schemes that consume 1/dvx, vx/dvx and vr/dvr with a zero boundary shell.",
+   "Sign index ranges for flux-split axial updates.",
+   "Nonuniform meshes: the annular measure stays exact for the ghost-face construction."
+  ],
+  "excluded": [
+   "Mesh generation or adaptation: the meshes are caller inputs.",
+   "Any distribution, collision or field model.",
+   "Schemes whose cell faces differ from the saved source's ghost-face convention.",
+   "Unit conversion between normalized velocity and m/s; that scale is the caller's."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError with a message naming the quantity when vr or vx is not a real numeric finite strictly increasing one-dimensional array of length at least two, when vr has a negative entry (vr is a radial-speed axis; a negative node would make the annular measure negative), or when vx does not contain both strictly negative and strictly positive velocities. Boolean, string and complex arrays are not coerced.",
+  "runtime_failure": "Raises ValueError when the quadrature outputs are not representable in double precision for finite inputs that satisfy the stated domain -- for example a radial mesh at 1e308 whose mirrored ghost face and squared faces overflow to infinity, or an axial ghost face beyond the float64 ceiling -- and when the annular measures, the four-pi measure, the axial widths or the volumes underflow to exact zero (for example a radial mesh at 0 and 1e-200 whose squared faces underflow), contradicting the strictly-positive output contract. There is no callback and no iteration.",
+  "nonconvergence": "Not applicable; no iteration.",
+  "partial_results": "Never returned; a rejected call produces no fields."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notices"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.cylindrical_velocity_quadrature",
+   "symbol": "make_cylindrical_velocity_quadrature",
+   "signature": "make_cylindrical_velocity_quadrature(*, vr, vx)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "make_cylindrical_velocity_quadrature"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Build the quadrature of a small normalized mesh, check the hand-derived annular measure and ghost shells, and feed the volume into the Maxwellian relative-speed rate average.",
+  "code": "import numpy as np\nfrom scirel.kinetic import make_cylindrical_velocity_quadrature\nfrom scirel.collisions import average_cross_section_over_maxwellian\n\nvr = np.array([0.5, 1.5])\nvx = np.array([-1.5, -0.5, 0.5, 1.5])\nresult = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)\nnp.testing.assert_allclose(result['radial_measure'], [np.pi, 3.0 * np.pi], rtol=0, atol=0)\nnp.testing.assert_allclose(result['vx_left'], [-2.0, -1.0, 0.0, 1.0], rtol=0, atol=0)\nassert np.all(result['inv_dvx_ghost'][0, :] == 0.0)\nassert np.all(result['inv_dvx_ghost'][1:-1, 1:-1] == 1.0)\nassert result['positive_vx_first_index'] == 2\nrate = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx,\n    vr=vr,\n    tnorm_ev=20.0,\n    cylindrical_volume=result['volume'],\n    cross_section_m2=lambda energy: np.full_like(energy, 3.0e-20),\n)\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\ntry:\n    make_cylindrical_velocity_quadrature(vr=vr, vx=np.array([1.0, np.nan, 2.0]))\nexcept ValueError as error:\n    assert 'vx' in str(error)\nelse:\n    raise AssertionError('a non-finite mesh must be rejected')\n",
+  "expected": "Observed PASS: radial_measure is exactly [pi, 3*pi] for the ghost faces [0, 1], [1, 2]; the axial ghost faces extend by half a cell on both ends; the ghosted coefficient arrays are zero on their boundary shell and 1/dvx in the interior; the strictly positive axial indices start at 2; the volume feeds the Maxwellian rate average to finite positive rates; and a NaN mesh point raises ValueError naming vx."
+ },
+ "verification": {
+  "scope": [
+   "That the public callable reproduces the saved source's field set, shapes and index semantics exactly ( eighteen output fields asserted by name ).",
+   "The hand-derived oracle on a different mesh than the saved package test: annular measures, ghost-extended faces, dvx, volume, speed squared and sign indices, exact to floating point.",
+   "The box-partition closure: the total volume equals the annulus up to the ghost face times the ghosted axial span.",
+   "Nonuniform radial meshes: the annular measure stays exact for the ghost-face construction, including the mirrored outer face.",
+   "The ghosted coefficient arrays are exactly zero on the boundary shell and carry 1/dvx, vx/dvx and vr/dvr in the interior.",
+   "The composition contract: the volume feeds the Maxwellian relative-speed rate average to finite positive rates.",
+   "Output representability: meshes near the float64 ceiling (radial 1e308 with a mirrored ghost face, or an axial ghost beyond the ceiling) are rejected with a ValueError instead of returning non-finite measures or volumes, and meshes whose squared faces underflow to zero (radial 0 and 1e-200) are rejected instead of returning zero measures. Ordinary positive meshes produce unchanged numbers."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_cylindrical_velocity_quadrature.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "The outer faces use the saved source's half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
+   "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
+   "Non-finite and non-real mesh rejection are documented development repairs, not source behavior: a caller migrating from the saved implementation sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the saved implementation accepted with negative or non-finite measures is rejected here.",
+   "The nonnegative radial domain makes the saved source's positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

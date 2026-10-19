@@ -1,122 +1,121 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.io.eqdsk-class",
-  "kind": "operator",
-  "title": {
-    "en": "Pleiades EQDSK mutable wrapper",
-    "zh": "Pleiades EQDSK可变映射封装"
-  },
-  "summary": "Mutable mapping wrapper that reads and writes the Pleiades extended EQDSK dialect.",
-  "taxonomy": [
-    "io",
-    "eqdsk",
-    "serialization"
-  ],
-  "aliases": [
-    "EQDSK"
-  ],
-  "identity": {
-    "relation": "Deterministic text serialization/deserialization of Pleiades EQDSK records",
-    "direction": "extended EQDSK text and validated dictionary/class state",
-    "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs Optional supplied R/Z or r_origin/z_origin must match the dialect fixed origin; otherwise writing raises before destination truncation.",
-    "model": "Pleiades legacy extended dialect retained from D0 lexical successor",
-    "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2)",
-    "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
-    "boundary": "Strict mode rejects trailing records; non-strict permits trailing records after complete declared sections",
-    "assumptions": [
-      "Exactly declared record dimensions",
-      "Finite real values and fixed-width coordinate fields",
-      "This is not standard EFIT gEQDSK"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "fname",
-      "description": "Optional EQDSK path",
-      "units": "n/a",
-      "shape": "path or None",
-      "dtype": "filesystem path",
-      "required": false,
-      "constraints": "If supplied, parsed before state replacement",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "mapping",
-      "description": "Mutable EQDSK mapping state",
-      "units": "source-defined",
-      "shape": "dict subclass",
-      "dtype": "EQDSK",
-      "required": true,
-      "constraints": "Failed reads preserve prior state"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "No path creates an empty wrapper; supplied path must be the declared Pleiades extended dialect."
-    ],
-    "supported": [
-      "Roundtrip of finite validated dictionaries",
-      "Packed negative fixed-width coordinates",
-      "Strict/non-strict trailing record policy",
-      "Class read/write wrapper"
-    ],
-    "excluded": [
-      "Standard EFIT gEQDSK semantics",
-      "Units or COCOS assignment",
-      "Raw contour/spline writer source route",
-      "Arbitrary malformed truncation recovery"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
-    "runtime_failure": "Filesystem errors propagate; parse errors are EQDSKFormatError.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Class wrapper preserves previous mapping when a read fails."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [
-      "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
-    ],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.io.eqdsk",
-      "symbol": "EQDSK",
-      "signature": "EQDSK(fname: 'str | Path | None' = None)",
-      "canonical_module": "scirel.io",
-      "canonical_symbol": "EQDSK"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Construct the empty mutable EQDSK mapping wrapper used for caller-supplied records.",
-    "code": "from scirel.io.eqdsk import EQDSK\n\nstate = EQDSK()\nassert state == {}\nstate[\"title\"] = \"EXAMPLE\"\nassert state[\"title\"] == \"EXAMPLE\"",
-    "expected": "EQDSK() returns an empty mutable mapping; caller fields can then be assigned."
-  },
-  "verification": {
-    "scope": [
-      "Roundtrip, lexical fixed-width, malformed input and class-state tests",
-      "Nonzero-origin rejection, unchanged destination on failure, opaque scalar preservation."
-    ],
-    "tests": [
-      "tests/pleiades/test_eqdsk.py"
-    ],
-    "evidence_ceiling": "Structural IO qualification only; no physical interpretation or release approval.",
-    "known_limitations": [
-      "Not standard EFIT gEQDSK",
-      "No units/COCOS",
-      "This dialect cannot represent arbitrary radial or axial origins; attach solver axes to detect loss before writing."
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.io.eqdsk-class",
+ "title": {
+  "en": "Pleiades EQDSK mutable wrapper",
+  "zh": "Pleiades EQDSK可变映射封装"
+ },
+ "summary": "Mutable mapping wrapper that reads and writes the Pleiades extended EQDSK dialect.",
+ "taxonomy": [
+  "io",
+  "eqdsk",
+  "serialization"
+ ],
+ "aliases": [
+  "EQDSK"
+ ],
+ "identity": {
+  "relation": "Deterministic text serialization/deserialization of Pleiades EQDSK records",
+  "direction": "extended EQDSK text and validated dictionary/class state",
+  "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs Optional supplied R/Z or r_origin/z_origin must match the dialect fixed origin; otherwise writing raises before destination truncation.",
+  "model": "Pleiades legacy extended dialect retained from D0 lexical successor",
+  "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2)",
+  "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
+  "boundary": "Strict mode rejects trailing records; non-strict permits trailing records after complete declared sections",
+  "assumptions": [
+   "Exactly declared record dimensions",
+   "Finite real values and fixed-width coordinate fields",
+   "This is not standard EFIT gEQDSK"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "fname",
+   "description": "Optional EQDSK path",
+   "units": "n/a",
+   "shape": "path or None",
+   "dtype": "filesystem path",
+   "required": false,
+   "constraints": "If supplied, parsed before state replacement",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "mapping",
+   "description": "Mutable EQDSK mapping state",
+   "units": "source-defined",
+   "shape": "dict subclass",
+   "dtype": "EQDSK",
+   "required": true,
+   "constraints": "Failed reads preserve prior state"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "No path creates an empty wrapper; supplied path must be the declared Pleiades extended dialect."
+  ],
+  "supported": [
+   "Roundtrip of finite validated dictionaries",
+   "Packed negative fixed-width coordinates",
+   "Strict/non-strict trailing record policy",
+   "Class read/write wrapper"
+  ],
+  "excluded": [
+   "Standard EFIT gEQDSK semantics",
+   "Units or COCOS assignment",
+   "Raw contour/spline writer source route",
+   "Arbitrary malformed truncation recovery"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
+  "runtime_failure": "Filesystem errors propagate; parse errors are EQDSKFormatError.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Class wrapper preserves previous mapping when a read fails."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [
+   "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
+  ],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.io.eqdsk",
+   "symbol": "EQDSK",
+   "signature": "EQDSK(fname: 'str | Path | None' = None)",
+   "canonical_module": "scirel.io",
+   "canonical_symbol": "EQDSK"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Construct the empty mutable EQDSK mapping wrapper used for caller-supplied records.",
+  "code": "from scirel.io.eqdsk import EQDSK\n\nstate = EQDSK()\nassert state == {}\nstate[\"title\"] = \"EXAMPLE\"\nassert state[\"title\"] == \"EXAMPLE\"",
+  "expected": "EQDSK() returns an empty mutable mapping; caller fields can then be assigned."
+ },
+ "verification": {
+  "scope": [
+   "Roundtrip, lexical fixed-width, malformed input and class-state tests",
+   "Nonzero-origin rejection, unchanged destination on failure, opaque scalar preservation."
+  ],
+  "tests": [
+   "tests/pleiades/test_eqdsk.py"
+  ],
+  "evidence_ceiling": "Structural IO qualification only; no physical interpretation or release approval.",
+  "known_limitations": [
+   "Not standard EFIT gEQDSK",
+   "No units/COCOS",
+   "This dialect cannot represent arbitrary radial or axial origins; attach solver axes to detect loss before writing."
+  ]
+ }
 }

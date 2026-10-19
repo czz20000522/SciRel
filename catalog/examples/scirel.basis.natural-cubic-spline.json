@@ -1,123 +1,122 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.basis.natural-cubic-spline",
-  "kind": "operator",
-  "title": {
-    "en": "Natural cubic spline",
-    "zh": "自然三次样条"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.basis.natural-cubic-spline",
+ "title": {
+  "en": "Natural cubic spline",
+  "zh": "自然三次样条"
+ },
+ "summary": "Callable piecewise-cubic Hermite interpolation with zero second derivatives at both endpoints.",
+ "taxonomy": [
+  "analysis",
+  "basis"
+ ],
+ "aliases": [
+  "NaturalCubicSpline"
+ ],
+ "identity": {
+  "relation": "Natural cubic spline",
+  "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+  "definition": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
+  "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
+  "geometry": "one-dimensional scalar abscissa and ordinate samples",
+  "coordinates": "Knots in arbitrary coherent coordinate units",
+  "boundary": "Second derivatives vanish at both ends",
+  "assumptions": [
+   "Finite strictly increasing matched one-dimensional knots and values with N>=3",
+   "In-domain deriv=0/1/2 for the qualified numerical claim"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x_data",
+   "description": "Interpolation knots",
+   "units": "coordinate units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite strictly increasing N>=3"
   },
-  "summary": "Callable piecewise-cubic Hermite interpolation with zero second derivatives at both endpoints.",
-  "taxonomy": [
-    "analysis",
-    "basis"
-  ],
-  "aliases": [
-    "NaturalCubicSpline"
-  ],
-  "identity": {
-    "relation": "Natural cubic spline",
-    "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
-    "definition": "Piecewise cubic Hermite interpolation with a boundary-specific linear slope system",
-    "model": "C2 cubic spline; Clamped/FirstClamped use corrected unequal-knot continuity rows",
-    "geometry": "one-dimensional scalar abscissa and ordinate samples",
-    "coordinates": "Knots in arbitrary coherent coordinate units",
-    "boundary": "Second derivatives vanish at both ends",
-    "assumptions": [
-      "Finite strictly increasing matched one-dimensional knots and values with N>=3",
-      "In-domain deriv=0/1/2 for the qualified numerical claim"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "x_data",
-      "description": "Interpolation knots",
-      "units": "coordinate units",
-      "shape": "(N,)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite strictly increasing N>=3"
-    },
-    {
-      "name": "y_data",
-      "description": "Ordinate samples",
-      "units": "ordinate units",
-      "shape": "(N,)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite, same N as x_data"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "spline",
-      "description": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
-      "units": "ordinate units; derivative units per coordinate power",
-      "shape": "object",
-      "dtype": "Python callable object",
-      "required": true,
-      "constraints": "Query array shape preserved; zero outside knot interval"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite strictly increasing matched one-dimensional knots and values with N>=3",
-      "In-domain deriv=0/1/2 for the qualified numerical claim"
-    ],
-    "supported": [
-      "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
-    ],
-    "excluded": [
-      "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
-      "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
-    "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
-    "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
-    "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.basis",
-      "symbol": "NaturalCubicSpline",
-      "signature": "NaturalCubicSpline(x_data, y_data)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "NaturalCubicSpline"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Construct a natural cubic spline and evaluate the supplied interior knot.",
-    "code": "import numpy as np\nfrom scirel.geometry.basis import NaturalCubicSpline\n\nspline = NaturalCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))\nnp.testing.assert_allclose(spline(np.array([0.3])), [0.2])",
-    "expected": "The callable returns 0.2 at the interior knot with output shape (1,)."
-  },
-  "verification": {
-    "scope": [
-      "Public callable signature and documented finite-input behavior",
-      "The direct regression fixtures listed in verification.tests",
-      "The executable example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/equilibrium/test_analysis_families.py",
-      "tests/pleiades/equilibrium/test_analysis_corrections.py"
-    ],
-    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
-    "known_limitations": [
-      "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
-      "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
-    ]
+  {
+   "name": "y_data",
+   "description": "Ordinate samples",
+   "units": "ordinate units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite, same N as x_data"
   }
+ ],
+ "outputs": [
+  {
+   "name": "spline",
+   "description": "Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",
+   "units": "ordinate units; derivative units per coordinate power",
+   "shape": "object",
+   "dtype": "Python callable object",
+   "required": true,
+   "constraints": "Query array shape preserved; zero outside knot interval"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite strictly increasing matched one-dimensional knots and values with N>=3",
+   "In-domain deriv=0/1/2 for the qualified numerical claim"
+  ],
+  "supported": [
+   "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
+  ],
+  "excluded": [
+   "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
+   "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
+  "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
+  "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
+  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.basis",
+   "symbol": "NaturalCubicSpline",
+   "signature": "NaturalCubicSpline(x_data, y_data)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "NaturalCubicSpline"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Construct a natural cubic spline and evaluate the supplied interior knot.",
+  "code": "import numpy as np\nfrom scirel.geometry.basis import NaturalCubicSpline\n\nspline = NaturalCubicSpline(np.array([0.0, 0.3, 1.0]), np.array([0.0, 0.2, 1.0]))\nnp.testing.assert_allclose(spline(np.array([0.3])), [0.2])",
+  "expected": "The callable returns 0.2 at the interior knot with output shape (1,)."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/pleiades/equilibrium/test_analysis_families.py",
+   "tests/pleiades/equilibrium/test_analysis_corrections.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
+   "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
+  ]
+ }
 }

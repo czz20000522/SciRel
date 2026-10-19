@@ -1,1258 +1,1257 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.fluid-wavevector-scan",
-  "kind": "task_graph",
-  "title": {
-    "en": "Fluid perpendicular-wavenumber scan",
-    "zh": "流体垂直波数扫描"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.fluid-wavevector-scan",
+ "title": {
+  "en": "Fluid perpendicular-wavenumber scan",
+  "zh": "流体垂直波数扫描"
+ },
+ "summary": "Derive the equilibrium frequency ladder, assemble one L/J-pole matrix per frequency, and select fluid kx branches.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "task-graph"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "SI equilibrium controls and dimensionless ladder bounds to fluid kx spectra",
+  "direction": "SI equilibrium controls and dimensionless ladder bounds to fluid kx spectra",
+  "definition": "The graph derives kn and wn from one species equilibrium, builds (omega_scale:omega_step:omega_stop)*wn and kz_scale*kn, and independently solves kx X=M(omega,kz)X at each frequency.",
+  "model": "homogeneous magnetized Maxwellian multi-species fluid pole model",
+  "geometry": "homogeneous magnetized plasma",
+  "coordinates": "wavevector x-z plane, z parallel to B0; frequency is an ordered scan axis",
+  "boundary": "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero",
+  "assumptions": [
+   "All species controls describe one shared equilibrium snapshot."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "ms",
+   "description": "各组分质量，进入热速度与回旋频率",
+   "units": "kg",
+   "shape": "(S,) 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive masses, one value per species."
   },
-  "summary": "Derive the equilibrium frequency ladder, assemble one L/J-pole matrix per frequency, and select fluid kx branches.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave",
-    "task-graph"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "SI equilibrium controls and dimensionless ladder bounds to fluid kx spectra",
-    "direction": "SI equilibrium controls and dimensionless ladder bounds to fluid kx spectra",
-    "definition": "The graph derives kn and wn from one species equilibrium, builds (omega_scale:omega_step:omega_stop)*wn and kz_scale*kn, and independently solves kx X=M(omega,kz)X at each frequency.",
-    "model": "homogeneous magnetized Maxwellian multi-species fluid pole model",
-    "geometry": "homogeneous magnetized plasma",
-    "coordinates": "wavevector x-z plane, z parallel to B0; frequency is an ordered scan axis",
-    "boundary": "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero",
-    "assumptions": [
-      "All species controls describe one shared equilibrium snapshot."
-    ]
+  {
+   "name": "qs",
+   "description": "各组分电荷，决定回旋频率符号与耦合项符号",
+   "units": "C",
+   "shape": "(S,) 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite nonzero charges, one value per species."
   },
-  "inputs": [
-    {
-      "name": "ms",
-      "description": "各组分质量，进入热速度与回旋频率",
-      "units": "kg",
-      "shape": "(S,) 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite positive masses, one value per species."
-    },
-    {
-      "name": "qs",
-      "description": "各组分电荷，决定回旋频率符号与耦合项符号",
-      "units": "C",
-      "shape": "(S,) 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite nonzero charges, one value per species."
-    },
-    {
-      "name": "ns_unit",
-      "description": "各组分密度相对参考密度的倍数",
-      "units": "无量纲",
-      "shape": "(S,) 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite positive density ratios matching the species axis."
-    },
-    {
-      "name": "Ts_unit",
-      "description": "各组分温度相对参考温度的倍数",
-      "units": "无量纲",
-      "shape": "(S,) 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite positive temperature ratios matching the species axis."
-    },
-    {
-      "name": "B0",
-      "description": "背景磁场强度，标定回旋频率尺度",
-      "units": "T",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite nonzero background field."
-    },
-    {
-      "name": "n00",
-      "description": "参考数密度",
-      "units": "m^-3",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite positive reference density."
-    },
-    {
-      "name": "T00",
-      "description": "参考温度",
-      "units": "eV",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite positive reference temperature in eV."
-    },
-    {
-      "name": "omega_scale",
-      "description": "扫描频率阶梯的起始比例（源码 0.05），乘以本图内部导出的 wn 得绝对起始频率",
-      "units": "无量纲",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite scan start; every derived angular frequency must be nonzero."
-    },
-    {
-      "name": "omega_step",
-      "description": "扫描频率阶梯的等步长比例（源码 0.05），乘以本图内部导出的 wn 得绝对步长",
-      "units": "无量纲",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite strictly positive scan step."
-    },
-    {
-      "name": "omega_stop",
-      "description": "扫描频率阶梯的终点倍数（源码 3.95），与起点、步长一起写定源码的冒号表达式，扫描频点数即由此导出",
-      "units": "无量纲",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite scan endpoint not below the start."
-    },
-    {
-      "name": "kz_scale",
-      "description": "平行波数相对 kn 的比例，给出扫描用的 kz",
-      "units": "无量纲",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "Finite parallel-wavenumber ratio."
-    },
-    {
-      "name": "max_harmonic",
-      "description": "贝塞尔最大谐波阶数 N，决定矩阵分块数",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "Integer from 0 through 7, limited by the frozen L-pole tables."
-    },
-    {
-      "name": "j_order",
-      "description": "Z 极点阶数 J，选定极点表并决定每组分极点块大小",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "Integer 8 or 12, selecting a frozen Z-pole table."
-    },
-    {
-      "name": "keep",
-      "description": "每个频点返回的前导分支个数",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "Positive integer branch count.",
-      "default": 5
-    }
-  ],
-  "outputs": [
-    {
-      "name": "scales",
-      "description": "由平衡输入导出的逐组分尺度，被组装与本征求解共同消费",
-      "units": "混合（各键自带单位）",
-      "shape": "映射 dict",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "kn",
-      "description": "本图内部导出的波数归一尺度 kn=1/max|rho_cs|，作为端物理量返回",
-      "units": "1/m",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "wn",
-      "description": "本图内部导出的频率归一尺度 wn=min|w_cs|，作为端物理量返回",
-      "units": "rad/s",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "omegas",
-      "description": "本图内部导出的扫描角频率轴 xx=(omega_scale:omega_step:omega_stop)*wn，即源码保存的 xx",
-      "units": "rad/s",
-      "shape": "(F,) 一维频点轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "count",
-      "description": "由源码冒号阶梯 (omega_scale:omega_step:omega_stop) 导出的频点个数",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "kx_spectra",
-      "description": "每个频点的完整 kx 谱",
-      "units": "1/m",
-      "shape": "(F,) object array of full complex spectra",
-      "dtype": "object array",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "kx_selected",
-      "description": "每个频点通过实部阈值并按 |Im| 升序排列的分支",
-      "units": "1/m",
-      "shape": "(F,) object array of variable-length complex branches",
-      "dtype": "object array",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "kx_head",
-      "description": "每个频点前 keep 个分支，构成扫描曲线",
-      "units": "1/m",
-      "shape": "(F,) object array of variable-length complex branches",
-      "dtype": "object array",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "kz",
-      "description": "本次扫描实际使用的平行波数",
-      "units": "1/m",
-      "shape": "标量 scalar",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "matrix_sizes",
-      "description": "每个频点的矩阵阶数与非零元个数",
-      "units": "无量纲",
-      "shape": "(F,) object array of (matrix order, nonzero count) tuples",
-      "dtype": "object array",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    },
-    {
-      "name": "graph_order",
-      "description": "本图的执行顺序",
-      "units": "不适用",
-      "shape": "(7,) 字符串数组",
-      "dtype": "string sequence",
-      "required": true,
-      "constraints": "The returned value follows the stated shape and physical normalization."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero"
-    ],
-    "supported": [
-      "Derive the equilibrium frequency ladder, assemble one L/J-pole matrix per frequency, and select fluid kx branches."
-    ],
-    "excluded": [
-      "No unrequested mode identity or accuracy guarantee is inferred."
-    ]
+  {
+   "name": "ns_unit",
+   "description": "各组分密度相对参考密度的倍数",
+   "units": "无量纲",
+   "shape": "(S,) 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive density ratios matching the species axis."
   },
-  "failure_semantics": {
-    "invalid_input": "The first invalid graph control or dependency input raises ValueError; no partial result mapping is returned.",
-    "runtime_failure": "Dependency numerical errors propagate without fallback; solver diagnostics remain observable where returned.",
-    "nonconvergence": "No graph feedback loop is exposed.",
-    "partial_results": "No partial mapping is returned after an exception."
+  {
+   "name": "Ts_unit",
+   "description": "各组分温度相对参考温度的倍数",
+   "units": "无量纲",
+   "shape": "(S,) 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive temperature ratios matching the species axis."
   },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notice and public scientific reference where listed"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
+  {
+   "name": "B0",
+   "description": "背景磁场强度，标定回旋频率尺度",
+   "units": "T",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite nonzero background field."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.fluid_wavevector_scan",
-      "symbol": "scan_fluid_wavevectors",
-      "signature": "scan_fluid_wavevectors(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_scale, omega_step, omega_stop, kz_scale, max_harmonic, j_order, keep=5)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "scan_fluid_wavevectors"
-    }
+  {
+   "name": "n00",
+   "description": "参考数密度",
+   "units": "m^-3",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive reference density."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.species-equilibrium-scales"
-      },
-      {
-        "asset_id": "scirel.kinetic.gamma-lpole-coefficients"
-      },
-      {
-        "asset_id": "scirel.kinetic.z-pole-coefficients"
-      },
-      {
-        "asset_id": "scirel.kinetic.fluid-dispersion-matrix"
-      },
-      {
-        "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve"
-      }
-    ]
+  {
+   "name": "T00",
+   "description": "参考温度",
+   "units": "eV",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive reference temperature in eV."
   },
-  "example": {
-    "description": "Run a one-point normalized fluid scan and check its terminal mapping.",
-    "code": "from scirel.kinetic import scan_fluid_wavevectors\nr=scan_fluid_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_scale=0.5,omega_step=0.05,omega_stop=0.5,kz_scale=0.1,max_harmonic=0,j_order=8); assert r['count']==1\n",
-    "expected": "Observed PASS: the bounded scan produces one frequency sample, one spectrum entry, and the declared seven-node graph order."
+  {
+   "name": "omega_scale",
+   "description": "扫描频率阶梯的起始比例（源码 0.05），乘以本图内部导出的 wn 得绝对起始频率",
+   "units": "无量纲",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite scan start; every derived angular frequency must be nonzero."
   },
-  "verification": {
-    "scope": [
-      "Direct graph composition and bounded source numerical cases."
-    ],
-    "tests": [
-      "tests/graph_contracts/test_fluidbw_r43_graphs.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero",
-      "Public distribution license and expert review remain pending.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "omega_step",
+   "description": "扫描频率阶梯的等步长比例（源码 0.05），乘以本图内部导出的 wn 得绝对步长",
+   "units": "无量纲",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite strictly positive scan step."
   },
-  "graph": {
-    "nodes": [
-      {
-        "id": "species_equilibrium_scales",
-        "kind": "operator",
-        "description": "组分平衡尺度",
-        "inputs": [
-          "ms",
-          "qs",
-          "ns_unit",
-          "Ts_unit",
-          "B0",
-          "n00",
-          "T00"
-        ],
-        "outputs": [
-          "c2",
-          "epsilon0",
-          "vts",
-          "wcs",
-          "wps2",
-          "rhocs",
-          "sgns",
-          "absrhocs",
-          "kn",
-          "wn",
-          "scales"
-        ],
-        "asset_id": "scirel.kinetic.species-equilibrium-scales"
-      },
-      {
-        "id": "scan_wavenumber",
-        "kind": "controlled_glue",
-        "description": "扫描平行波数标定",
-        "inputs": [
-          "kz_scale",
-          "kn"
-        ],
-        "outputs": [
-          "kz"
-        ]
-      },
-      {
-        "id": "scan_frequencies",
-        "kind": "controlled_glue",
-        "description": "扫描频率阶梯",
-        "inputs": [
-          "omega_scale",
-          "omega_step",
-          "omega_stop",
-          "wn"
-        ],
-        "outputs": [
-          "omegas",
-          "count"
-        ]
-      },
-      {
-        "id": "gamma_lpole_coefficients",
-        "kind": "operator",
-        "description": "L 极点系数表",
-        "inputs": [
-          "max_harmonic"
-        ],
-        "outputs": [
-          "residues",
-          "poles",
-          "order_lengths"
-        ],
-        "asset_id": "scirel.kinetic.gamma-lpole-coefficients"
-      },
-      {
-        "id": "z_pole_coefficients",
-        "kind": "operator",
-        "description": "Z 极点留数与位置表",
-        "inputs": [
-          "j_order"
-        ],
-        "outputs": [
-          "bzj",
-          "czj",
-          "j_order",
-          "half_order",
-          "sum_bzj",
-          "sum_bzcj",
-          "sum_bzcj2"
-        ],
-        "asset_id": "scirel.kinetic.z-pole-coefficients"
-      },
-      {
-        "id": "fluid_dispersion_matrix",
-        "kind": "operator",
-        "description": "流体色散矩阵组装",
-        "inputs": [
-          "omega",
-          "kz",
-          "c2",
-          "epsilon0",
-          "wps2",
-          "wcs",
-          "vts",
-          "rhocs",
-          "sgns",
-          "absrhocs",
-          "cn_residues",
-          "cn_poles",
-          "order_lengths",
-          "bzj",
-          "czj",
-          "max_harmonic",
-          "n_species"
-        ],
-        "outputs": [
-          "M",
-          "n_sl",
-          "n_sl3",
-          "matrix_size",
-          "n_l",
-          "nonzero_entries",
-          "state_layout"
-        ],
-        "asset_id": "scirel.kinetic.fluid-dispersion-matrix"
-      },
-      {
-        "id": "fluid_wavevector_eigensolve",
-        "kind": "operator",
-        "description": "垂直波数本征求解",
-        "inputs": [
-          "matrix",
-          "kn",
-          "keep"
-        ],
-        "outputs": [
-          "eigenvalues",
-          "selected",
-          "head",
-          "eigenvalue_count",
-          "selected_count",
-          "returned_count",
-          "real_floor",
-          "sort_key"
-        ],
-        "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve"
-      },
-      {
-        "id": "species_count",
-        "kind": "controlled_glue",
-        "description": "Count the supplied species axis for matrix assembly.",
-        "inputs": [
-          "qs"
-        ],
-        "outputs": [
-          "n_species"
-        ]
-      },
-      {
-        "id": "matrix_summary",
-        "kind": "controlled_glue",
-        "description": "Collect matrix dimension and nonzero count at each frequency.",
-        "inputs": [
-          "matrix_size",
-          "nonzero_entries"
-        ],
-        "outputs": [
-          "matrix_sizes"
-        ]
-      },
-      {
-        "id": "graph_order",
-        "kind": "controlled_glue",
-        "description": "Expose the fixed source-stage execution labels.",
-        "inputs": [],
-        "outputs": [
-          "graph_order"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "c2"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "c2"
-        },
-        "description": "光速平方进入 Maxwell 旋度项",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "epsilon0"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "epsilon0"
-        },
-        "description": "真空介电常数进入安培定律源项",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "wps2"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "wps2"
-        },
-        "description": "等离子体频率平方是全部耦合项的公共因子",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "wcs"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "wcs"
-        },
-        "description": "含符号回旋频率进入共振分母",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "vts"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "vts"
-        },
-        "description": "热速度进入平行共振宗量",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "rhocs"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "rhocs"
-        },
-        "description": "含符号回旋半径与极点缩放共同确定速度块",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "sgns"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "sgns"
-        },
-        "description": "回旋半径符号进入 xz 与 yz 耦合项",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "absrhocs"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "absrhocs"
-        },
-        "description": "回旋半径绝对值缩放 L 极点系数",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "gamma_lpole_coefficients",
-          "port": "residues"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "cn_residues"
-        },
-        "description": "L 极点留数给出贝塞尔项的有理权重",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "gamma_lpole_coefficients",
-          "port": "poles"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "cn_poles"
-        },
-        "description": "L 极点位置给出贝塞尔项的有理分母",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "gamma_lpole_coefficients",
-          "port": "order_lengths"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "order_lengths"
-        },
-        "description": "每阶极点个数决定速度块维数",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "z_pole_coefficients",
-          "port": "bzj"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "bzj"
-        },
-        "description": "Z 极点留数决定共振权重",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "z_pole_coefficients",
-          "port": "czj"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "czj"
-        },
-        "description": "Z 极点位置决定共振位置",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "fluid_dispersion_matrix",
-          "port": "M"
-        },
-        "to": {
-          "node": "fluid_wavevector_eigensolve",
-          "port": "matrix"
-        },
-        "description": "本征问题只对完整组装出的矩阵定义",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "kn"
-        },
-        "to": {
-          "node": "fluid_wavevector_eigensolve",
-          "port": "kn"
-        },
-        "description": "实部阈值以扫描波数归一尺度表达",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan_wavenumber",
-          "port": "kz"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "kz"
-        },
-        "description": "扫描平行波数由同一归一尺度标定后进入共振宗量与 Maxwell 旋项",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "wn"
-        },
-        "to": {
-          "node": "scan_frequencies",
-          "port": "wn"
-        },
-        "description": "扫描频率轴按平衡态导出的 wn 缩放；轴由本图导出而非调用者提供",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan_frequencies",
-          "port": "omegas"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "omega"
-        },
-        "description": "逐频点扫描轴进入矩阵组装；每个频点独立组装，轴是源码保存的 xx",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "qs"
-        },
-        "to": {
-          "node": "species_count",
-          "port": "qs"
-        },
-        "description": "Species array fixes S.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_count",
-          "port": "n_species"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "n_species"
-        },
-        "description": "Supply S.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "fluid_dispersion_matrix",
-          "port": "matrix_size"
-        },
-        "to": {
-          "node": "matrix_summary",
-          "port": "matrix_size"
-        },
-        "description": "Collect matrix order.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "fluid_dispersion_matrix",
-          "port": "nonzero_entries"
-        },
-        "to": {
-          "node": "matrix_summary",
-          "port": "nonzero_entries"
-        },
-        "description": "Collect nonzero count.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ms"
-        },
-        "to": {
-          "node": "species_equilibrium_scales",
-          "port": "ms"
-        },
-        "description": "Caller supplies ms to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "qs"
-        },
-        "to": {
-          "node": "species_equilibrium_scales",
-          "port": "qs"
-        },
-        "description": "Caller supplies qs to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "ns_unit"
-        },
-        "to": {
-          "node": "species_equilibrium_scales",
-          "port": "ns_unit"
-        },
-        "description": "Caller supplies ns_unit to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "Ts_unit"
-        },
-        "to": {
-          "node": "species_equilibrium_scales",
-          "port": "Ts_unit"
-        },
-        "description": "Caller supplies Ts_unit to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "B0"
-        },
-        "to": {
-          "node": "species_equilibrium_scales",
-          "port": "B0"
-        },
-        "description": "Caller supplies B0 to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "n00"
-        },
-        "to": {
-          "node": "species_equilibrium_scales",
-          "port": "n00"
-        },
-        "description": "Caller supplies n00 to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "T00"
-        },
-        "to": {
-          "node": "species_equilibrium_scales",
-          "port": "T00"
-        },
-        "description": "Caller supplies T00 to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "kz_scale"
-        },
-        "to": {
-          "node": "scan_wavenumber",
-          "port": "kz_scale"
-        },
-        "description": "Caller supplies kz_scale to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "kn"
-        },
-        "to": {
-          "node": "scan_wavenumber",
-          "port": "kn"
-        },
-        "description": "Use the equilibrium-derived kn.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "omega_scale"
-        },
-        "to": {
-          "node": "scan_frequencies",
-          "port": "omega_scale"
-        },
-        "description": "Caller supplies omega_scale to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "omega_step"
-        },
-        "to": {
-          "node": "scan_frequencies",
-          "port": "omega_step"
-        },
-        "description": "Caller supplies omega_step to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "omega_stop"
-        },
-        "to": {
-          "node": "scan_frequencies",
-          "port": "omega_stop"
-        },
-        "description": "Caller supplies omega_stop to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "max_harmonic"
-        },
-        "to": {
-          "node": "gamma_lpole_coefficients",
-          "port": "max_harmonic"
-        },
-        "description": "Caller supplies max_harmonic to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "j_order"
-        },
-        "to": {
-          "node": "z_pole_coefficients",
-          "port": "j_order"
-        },
-        "description": "Caller supplies j_order to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "max_harmonic"
-        },
-        "to": {
-          "node": "fluid_dispersion_matrix",
-          "port": "max_harmonic"
-        },
-        "description": "Caller supplies max_harmonic to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "keep"
-        },
-        "to": {
-          "node": "fluid_wavevector_eigensolve",
-          "port": "keep"
-        },
-        "description": "Caller supplies keep to this stage.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "scales"
-        },
-        "to": {
-          "node": "$output",
-          "port": "scales"
-        },
-        "description": "Return the declared scales terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "kn"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kn"
-        },
-        "description": "Return the declared kn terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "species_equilibrium_scales",
-          "port": "wn"
-        },
-        "to": {
-          "node": "$output",
-          "port": "wn"
-        },
-        "description": "Return the declared wn terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan_frequencies",
-          "port": "omegas"
-        },
-        "to": {
-          "node": "$output",
-          "port": "omegas"
-        },
-        "description": "Return the declared omegas terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan_frequencies",
-          "port": "count"
-        },
-        "to": {
-          "node": "$output",
-          "port": "count"
-        },
-        "description": "Return the declared count terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "fluid_wavevector_eigensolve",
-          "port": "eigenvalues"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kx_spectra"
-        },
-        "description": "Return the declared kx_spectra terminal.",
-        "condition": "always",
-        "transform": "collect independently per frequency",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "fluid_wavevector_eigensolve",
-          "port": "selected"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kx_selected"
-        },
-        "description": "Return the declared kx_selected terminal.",
-        "condition": "always",
-        "transform": "collect independently per frequency",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "fluid_wavevector_eigensolve",
-          "port": "head"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kx_head"
-        },
-        "description": "Return the declared kx_head terminal.",
-        "condition": "always",
-        "transform": "collect independently per frequency",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan_wavenumber",
-          "port": "kz"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kz"
-        },
-        "description": "Return the declared kz terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "matrix_summary",
-          "port": "matrix_sizes"
-        },
-        "to": {
-          "node": "$output",
-          "port": "matrix_sizes"
-        },
-        "description": "Return the declared matrix_sizes terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "graph_order",
-          "port": "graph_order"
-        },
-        "to": {
-          "node": "$output",
-          "port": "graph_order"
-        },
-        "description": "Return the declared graph_order terminal.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      }
-    ],
-    "execution": {
-      "mode": "dag",
-      "ordering": "source stage order; each frequency independently evaluated",
-      "branches": [
-        "Each numerical method retains its own declared branches and failure behavior."
-      ],
-      "state_ownership": "One graph-local equilibrium and derived scan/probe state; no persistent state.",
-      "failure_propagation": "First dependency failure raises; no partial graph result is returned.",
-      "feedback": []
-    }
+  {
+   "name": "omega_stop",
+   "description": "扫描频率阶梯的终点倍数（源码 3.95），与起点、步长一起写定源码的冒号表达式，扫描频点数即由此导出",
+   "units": "无量纲",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite scan endpoint not below the start."
+  },
+  {
+   "name": "kz_scale",
+   "description": "平行波数相对 kn 的比例，给出扫描用的 kz",
+   "units": "无量纲",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite parallel-wavenumber ratio."
+  },
+  {
+   "name": "max_harmonic",
+   "description": "贝塞尔最大谐波阶数 N，决定矩阵分块数",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Integer from 0 through 7, limited by the frozen L-pole tables."
+  },
+  {
+   "name": "j_order",
+   "description": "Z 极点阶数 J，选定极点表并决定每组分极点块大小",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Integer 8 or 12, selecting a frozen Z-pole table."
+  },
+  {
+   "name": "keep",
+   "description": "每个频点返回的前导分支个数",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "Positive integer branch count.",
+   "default": 5
   }
+ ],
+ "outputs": [
+  {
+   "name": "scales",
+   "description": "由平衡输入导出的逐组分尺度，被组装与本征求解共同消费",
+   "units": "混合（各键自带单位）",
+   "shape": "映射 dict",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "kn",
+   "description": "本图内部导出的波数归一尺度 kn=1/max|rho_cs|，作为端物理量返回",
+   "units": "1/m",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "wn",
+   "description": "本图内部导出的频率归一尺度 wn=min|w_cs|，作为端物理量返回",
+   "units": "rad/s",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "omegas",
+   "description": "本图内部导出的扫描角频率轴 xx=(omega_scale:omega_step:omega_stop)*wn，即源码保存的 xx",
+   "units": "rad/s",
+   "shape": "(F,) 一维频点轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "count",
+   "description": "由源码冒号阶梯 (omega_scale:omega_step:omega_stop) 导出的频点个数",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "kx_spectra",
+   "description": "每个频点的完整 kx 谱",
+   "units": "1/m",
+   "shape": "(F,) object array of full complex spectra",
+   "dtype": "object array",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "kx_selected",
+   "description": "每个频点通过实部阈值并按 |Im| 升序排列的分支",
+   "units": "1/m",
+   "shape": "(F,) object array of variable-length complex branches",
+   "dtype": "object array",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "kx_head",
+   "description": "每个频点前 keep 个分支，构成扫描曲线",
+   "units": "1/m",
+   "shape": "(F,) object array of variable-length complex branches",
+   "dtype": "object array",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "kz",
+   "description": "本次扫描实际使用的平行波数",
+   "units": "1/m",
+   "shape": "标量 scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "matrix_sizes",
+   "description": "每个频点的矩阵阶数与非零元个数",
+   "units": "无量纲",
+   "shape": "(F,) object array of (matrix order, nonzero count) tuples",
+   "dtype": "object array",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "graph_order",
+   "description": "本图的执行顺序",
+   "units": "不适用",
+   "shape": "(7,) 字符串数组",
+   "dtype": "string sequence",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero"
+  ],
+  "supported": [
+   "Derive the equilibrium frequency ladder, assemble one L/J-pole matrix per frequency, and select fluid kx branches."
+  ],
+  "excluded": [
+   "No unrequested mode identity or accuracy guarantee is inferred."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "The first invalid graph control or dependency input raises ValueError; no partial result mapping is returned.",
+  "runtime_failure": "Dependency numerical errors propagate without fallback; solver diagnostics remain observable where returned.",
+  "nonconvergence": "No graph feedback loop is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notice and public scientific reference where listed"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_wavevector_scan",
+   "symbol": "scan_fluid_wavevectors",
+   "signature": "scan_fluid_wavevectors(ms, qs, ns_unit, Ts_unit, B0, n00, T00, omega_scale, omega_step, omega_stop, kz_scale, max_harmonic, j_order, keep=5)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "scan_fluid_wavevectors"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.species-equilibrium-scales"
+   },
+   {
+    "asset_id": "scirel.kinetic.gamma-lpole-coefficients"
+   },
+   {
+    "asset_id": "scirel.kinetic.z-pole-coefficients"
+   },
+   {
+    "asset_id": "scirel.kinetic.fluid-dispersion-matrix"
+   },
+   {
+    "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve"
+   }
+  ]
+ },
+ "example": {
+  "description": "Run a one-point normalized fluid scan and check its terminal mapping.",
+  "code": "from scirel.kinetic import scan_fluid_wavevectors\nr=scan_fluid_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,omega_scale=0.5,omega_step=0.05,omega_stop=0.5,kz_scale=0.1,max_harmonic=0,j_order=8); assert r['count']==1\n",
+  "expected": "Observed PASS: the bounded scan produces one frequency sample, one spectrum entry, and the declared seven-node graph order."
+ },
+ "verification": {
+  "scope": [
+   "Direct graph composition and bounded source numerical cases."
+  ],
+  "tests": [
+   "tests/graph_contracts/test_fluidbw_r43_graphs.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero",
+   "Public distribution license and expert review remain pending.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "species_equilibrium_scales",
+    "kind": "operator",
+    "description": "组分平衡尺度",
+    "inputs": [
+     "ms",
+     "qs",
+     "ns_unit",
+     "Ts_unit",
+     "B0",
+     "n00",
+     "T00"
+    ],
+    "outputs": [
+     "c2",
+     "epsilon0",
+     "vts",
+     "wcs",
+     "wps2",
+     "rhocs",
+     "sgns",
+     "absrhocs",
+     "kn",
+     "wn",
+     "scales"
+    ],
+    "asset_id": "scirel.kinetic.species-equilibrium-scales"
+   },
+   {
+    "id": "scan_wavenumber",
+    "kind": "controlled_glue",
+    "description": "扫描平行波数标定",
+    "inputs": [
+     "kz_scale",
+     "kn"
+    ],
+    "outputs": [
+     "kz"
+    ]
+   },
+   {
+    "id": "scan_frequencies",
+    "kind": "controlled_glue",
+    "description": "扫描频率阶梯",
+    "inputs": [
+     "omega_scale",
+     "omega_step",
+     "omega_stop",
+     "wn"
+    ],
+    "outputs": [
+     "omegas",
+     "count"
+    ]
+   },
+   {
+    "id": "gamma_lpole_coefficients",
+    "kind": "operator",
+    "description": "L 极点系数表",
+    "inputs": [
+     "max_harmonic"
+    ],
+    "outputs": [
+     "residues",
+     "poles",
+     "order_lengths"
+    ],
+    "asset_id": "scirel.kinetic.gamma-lpole-coefficients"
+   },
+   {
+    "id": "z_pole_coefficients",
+    "kind": "operator",
+    "description": "Z 极点留数与位置表",
+    "inputs": [
+     "j_order"
+    ],
+    "outputs": [
+     "bzj",
+     "czj",
+     "j_order",
+     "half_order",
+     "sum_bzj",
+     "sum_bzcj",
+     "sum_bzcj2"
+    ],
+    "asset_id": "scirel.kinetic.z-pole-coefficients"
+   },
+   {
+    "id": "fluid_dispersion_matrix",
+    "kind": "operator",
+    "description": "流体色散矩阵组装",
+    "inputs": [
+     "omega",
+     "kz",
+     "c2",
+     "epsilon0",
+     "wps2",
+     "wcs",
+     "vts",
+     "rhocs",
+     "sgns",
+     "absrhocs",
+     "cn_residues",
+     "cn_poles",
+     "order_lengths",
+     "bzj",
+     "czj",
+     "max_harmonic",
+     "n_species"
+    ],
+    "outputs": [
+     "M",
+     "n_sl",
+     "n_sl3",
+     "matrix_size",
+     "n_l",
+     "nonzero_entries",
+     "state_layout"
+    ],
+    "asset_id": "scirel.kinetic.fluid-dispersion-matrix"
+   },
+   {
+    "id": "fluid_wavevector_eigensolve",
+    "kind": "operator",
+    "description": "垂直波数本征求解",
+    "inputs": [
+     "matrix",
+     "kn",
+     "keep"
+    ],
+    "outputs": [
+     "eigenvalues",
+     "selected",
+     "head",
+     "eigenvalue_count",
+     "selected_count",
+     "returned_count",
+     "real_floor",
+     "sort_key"
+    ],
+    "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve"
+   },
+   {
+    "id": "species_count",
+    "kind": "controlled_glue",
+    "description": "Count the supplied species axis for matrix assembly.",
+    "inputs": [
+     "qs"
+    ],
+    "outputs": [
+     "n_species"
+    ]
+   },
+   {
+    "id": "matrix_summary",
+    "kind": "controlled_glue",
+    "description": "Collect matrix dimension and nonzero count at each frequency.",
+    "inputs": [
+     "matrix_size",
+     "nonzero_entries"
+    ],
+    "outputs": [
+     "matrix_sizes"
+    ]
+   },
+   {
+    "id": "graph_order",
+    "kind": "controlled_glue",
+    "description": "Expose the fixed source-stage execution labels.",
+    "inputs": [],
+    "outputs": [
+     "graph_order"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "c2"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "c2"
+    },
+    "description": "光速平方进入 Maxwell 旋度项",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "epsilon0"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "epsilon0"
+    },
+    "description": "真空介电常数进入安培定律源项",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "wps2"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "wps2"
+    },
+    "description": "等离子体频率平方是全部耦合项的公共因子",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "wcs"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "wcs"
+    },
+    "description": "含符号回旋频率进入共振分母",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "vts"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "vts"
+    },
+    "description": "热速度进入平行共振宗量",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "rhocs"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "rhocs"
+    },
+    "description": "含符号回旋半径与极点缩放共同确定速度块",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "sgns"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "sgns"
+    },
+    "description": "回旋半径符号进入 xz 与 yz 耦合项",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "absrhocs"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "absrhocs"
+    },
+    "description": "回旋半径绝对值缩放 L 极点系数",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "gamma_lpole_coefficients",
+     "port": "residues"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "cn_residues"
+    },
+    "description": "L 极点留数给出贝塞尔项的有理权重",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "gamma_lpole_coefficients",
+     "port": "poles"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "cn_poles"
+    },
+    "description": "L 极点位置给出贝塞尔项的有理分母",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "gamma_lpole_coefficients",
+     "port": "order_lengths"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "order_lengths"
+    },
+    "description": "每阶极点个数决定速度块维数",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "z_pole_coefficients",
+     "port": "bzj"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "bzj"
+    },
+    "description": "Z 极点留数决定共振权重",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "z_pole_coefficients",
+     "port": "czj"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "czj"
+    },
+    "description": "Z 极点位置决定共振位置",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "fluid_dispersion_matrix",
+     "port": "M"
+    },
+    "to": {
+     "node": "fluid_wavevector_eigensolve",
+     "port": "matrix"
+    },
+    "description": "本征问题只对完整组装出的矩阵定义",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "kn"
+    },
+    "to": {
+     "node": "fluid_wavevector_eigensolve",
+     "port": "kn"
+    },
+    "description": "实部阈值以扫描波数归一尺度表达",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_wavenumber",
+     "port": "kz"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "kz"
+    },
+    "description": "扫描平行波数由同一归一尺度标定后进入共振宗量与 Maxwell 旋项",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "wn"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "wn"
+    },
+    "description": "扫描频率轴按平衡态导出的 wn 缩放；轴由本图导出而非调用者提供",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_frequencies",
+     "port": "omegas"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "omega"
+    },
+    "description": "逐频点扫描轴进入矩阵组装；每个频点独立组装，轴是源码保存的 xx",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "qs"
+    },
+    "to": {
+     "node": "species_count",
+     "port": "qs"
+    },
+    "description": "Species array fixes S.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_count",
+     "port": "n_species"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "n_species"
+    },
+    "description": "Supply S.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "fluid_dispersion_matrix",
+     "port": "matrix_size"
+    },
+    "to": {
+     "node": "matrix_summary",
+     "port": "matrix_size"
+    },
+    "description": "Collect matrix order.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "fluid_dispersion_matrix",
+     "port": "nonzero_entries"
+    },
+    "to": {
+     "node": "matrix_summary",
+     "port": "nonzero_entries"
+    },
+    "description": "Collect nonzero count.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ms"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "ms"
+    },
+    "description": "Caller supplies ms to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "qs"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "qs"
+    },
+    "description": "Caller supplies qs to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ns_unit"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "ns_unit"
+    },
+    "description": "Caller supplies ns_unit to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "Ts_unit"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "Ts_unit"
+    },
+    "description": "Caller supplies Ts_unit to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "B0"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "B0"
+    },
+    "description": "Caller supplies B0 to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "n00"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "n00"
+    },
+    "description": "Caller supplies n00 to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "T00"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "T00"
+    },
+    "description": "Caller supplies T00 to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "kz_scale"
+    },
+    "to": {
+     "node": "scan_wavenumber",
+     "port": "kz_scale"
+    },
+    "description": "Caller supplies kz_scale to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "kn"
+    },
+    "to": {
+     "node": "scan_wavenumber",
+     "port": "kn"
+    },
+    "description": "Use the equilibrium-derived kn.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "omega_scale"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "omega_scale"
+    },
+    "description": "Caller supplies omega_scale to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "omega_step"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "omega_step"
+    },
+    "description": "Caller supplies omega_step to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "omega_stop"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "omega_stop"
+    },
+    "description": "Caller supplies omega_stop to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "max_harmonic"
+    },
+    "to": {
+     "node": "gamma_lpole_coefficients",
+     "port": "max_harmonic"
+    },
+    "description": "Caller supplies max_harmonic to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "j_order"
+    },
+    "to": {
+     "node": "z_pole_coefficients",
+     "port": "j_order"
+    },
+    "description": "Caller supplies j_order to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "max_harmonic"
+    },
+    "to": {
+     "node": "fluid_dispersion_matrix",
+     "port": "max_harmonic"
+    },
+    "description": "Caller supplies max_harmonic to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "keep"
+    },
+    "to": {
+     "node": "fluid_wavevector_eigensolve",
+     "port": "keep"
+    },
+    "description": "Caller supplies keep to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "scales"
+    },
+    "to": {
+     "node": "$output",
+     "port": "scales"
+    },
+    "description": "Return the declared scales terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "kn"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kn"
+    },
+    "description": "Return the declared kn terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "wn"
+    },
+    "to": {
+     "node": "$output",
+     "port": "wn"
+    },
+    "description": "Return the declared wn terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_frequencies",
+     "port": "omegas"
+    },
+    "to": {
+     "node": "$output",
+     "port": "omegas"
+    },
+    "description": "Return the declared omegas terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_frequencies",
+     "port": "count"
+    },
+    "to": {
+     "node": "$output",
+     "port": "count"
+    },
+    "description": "Return the declared count terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "fluid_wavevector_eigensolve",
+     "port": "eigenvalues"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kx_spectra"
+    },
+    "description": "Return the declared kx_spectra terminal.",
+    "condition": "always",
+    "transform": "collect independently per frequency",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "fluid_wavevector_eigensolve",
+     "port": "selected"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kx_selected"
+    },
+    "description": "Return the declared kx_selected terminal.",
+    "condition": "always",
+    "transform": "collect independently per frequency",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "fluid_wavevector_eigensolve",
+     "port": "head"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kx_head"
+    },
+    "description": "Return the declared kx_head terminal.",
+    "condition": "always",
+    "transform": "collect independently per frequency",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_wavenumber",
+     "port": "kz"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kz"
+    },
+    "description": "Return the declared kz terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "matrix_summary",
+     "port": "matrix_sizes"
+    },
+    "to": {
+     "node": "$output",
+     "port": "matrix_sizes"
+    },
+    "description": "Return the declared matrix_sizes terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "graph_order",
+     "port": "graph_order"
+    },
+    "to": {
+     "node": "$output",
+     "port": "graph_order"
+    },
+    "description": "Return the declared graph_order terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "dag",
+   "ordering": "source stage order; each frequency independently evaluated",
+   "branches": [
+    "Each numerical method retains its own declared branches and failure behavior."
+   ],
+   "state_ownership": "One graph-local equilibrium and derived scan/probe state; no persistent state.",
+   "failure_propagation": "First dependency failure raises; no partial graph result is returned.",
+   "feedback": []
+  }
+ }
 }

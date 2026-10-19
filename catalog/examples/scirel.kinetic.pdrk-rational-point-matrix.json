@@ -1,176 +1,175 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-rational-point-matrix",
-  "kind": "operator",
-  "title": {
-    "en": "Kinetic frequency relation assembly",
-    "zh": "动理学频率关系组装"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-rational-point-matrix",
+ "title": {
+  "en": "Kinetic frequency relation assembly",
+  "zh": "动理学频率关系组装"
+ },
+ "summary": "Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "frequency-dispersion"
+ ],
+ "aliases": [
+  "legacy.point_matrix"
+ ],
+ "identity": {
+  "relation": "Kinetic frequency relation assembly",
+  "direction": "Declared inputs to named scientific outputs.",
+  "definition": "ES3D D(omega)=a+sum B/(omega-C); source a*diag(C)-B*ones ordinary eigenvalues were scaled incorrectly. EM includes full Maxwell constant in exact perpendicular response; uniform zero-wavevector cold gyro response ignores harmonic cutoff analytically. Negative k/kz selects causal Z poles. Compressed pole pencils retain E/B observables; source auxiliary aliases are not physical waves.",
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "assumptions": [
+   "Model-specific deck conventions are explicit.",
+   "A numerical spectrum is not automatically a physically certified mode."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "model",
+   "description": "Physical relation variant: es1d, es3d or em.",
+   "units": "not applicable",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "Select an explicitly supported model."
   },
-  "summary": "Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes.",
-  "taxonomy": [
-    "kinetic",
-    "plasma",
-    "frequency-dispersion"
-  ],
-  "aliases": [
-    "legacy.point_matrix"
-  ],
-  "identity": {
-    "relation": "Kinetic frequency relation assembly",
-    "direction": "Declared inputs to named scientific outputs.",
-    "definition": "ES3D D(omega)=a+sum B/(omega-C); source a*diag(C)-B*ones ordinary eigenvalues were scaled incorrectly. EM includes full Maxwell constant in exact perpendicular response; uniform zero-wavevector cold gyro response ignores harmonic cutoff analytically. Negative k/kz selects causal Z poles. Compressed pole pencils retain E/B observables; source auxiliary aliases are not physical waves.",
-    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-    "assumptions": [
-      "Model-specific deck conventions are explicit.",
-      "A numerical spectrum is not automatically a physically certified mode."
-    ]
+  {
+   "name": "state",
+   "description": "Equilibrium and pole-table numeric state composed without renaming fields.",
+   "units": "Model-specific ES dimensionless or EM SI; named source scales.",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Use the state returned by equilibrium and pole_table for the same model."
   },
-  "inputs": [
-    {
-      "name": "model",
-      "description": "Physical relation variant: es1d, es3d or em.",
-      "units": "not applicable",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "Select an explicitly supported model."
-    },
-    {
-      "name": "state",
-      "description": "Equilibrium and pole-table numeric state composed without renaming fields.",
-      "units": "Model-specific ES dimensionless or EM SI; named source scales.",
-      "shape": "mapping",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "Use the state returned by equilibrium and pole_table for the same model."
-    },
-    {
-      "name": "k",
-      "description": "ES1D signed nonzero wavevector.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "numeric",
-      "required": false,
-      "constraints": "Required finite real nonzero scalar for ES1D; ignored for ES3D/EM.",
-      "default": null
-    },
-    {
-      "name": "kx",
-      "description": "Signed perpendicular wavevector.",
-      "units": "ES dimensionless or EM m^-1",
-      "shape": "scalar",
-      "dtype": "numeric",
-      "required": false,
-      "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
-      "default": null
-    },
-    {
-      "name": "kz",
-      "description": "Signed parallel wavevector.",
-      "units": "ES dimensionless or EM m^-1",
-      "shape": "scalar",
-      "dtype": "numeric",
-      "required": false,
-      "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
-      "default": null
-    },
-    {
-      "name": "N",
-      "description": "Retained cyclotron harmonic cutoff; ES3D default10 and EM default2.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "Integer >=0 for ES3D/EM; None selects 10/2 respectively. Ignored for ES1D. Uniform EM analytic gyro response is independent of harmonic cutoff, including N=0.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "state",
-      "description": "Model-specific scientific numeric state with named physical scales or coefficient fields.",
-      "units": "Model-dependent ES dimensionless or EM SI.",
-      "shape": "mapping",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "Native arrays preserve source row shapes; use named fields rather than inferred positional scales."
-    },
-    {
-      "name": "receipt",
-      "description": "NativeReceipt on native ES1D/ES3D and oblique EM paths; analytic exact-perpendicular or uniform EM dispatch returns a provenance mapping.",
-      "units": "not applicable",
-      "shape": "NativeReceipt object or mapping",
-      "dtype": "NativeReceipt | mapping",
-      "required": true,
-      "constraints": "Execution provenance does not certify scientific validity by itself."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Constituent inputs finite and representable in declared numeric ports."
-    ],
-    "supported": [
-      "Magnetized Gaussian kinetic response, finite harmonics and rational parallel response.",
-      "Parallel/perpendicular EM axes and uniform k0 including N0."
-    ],
-    "excluded": [
-      "ES total zero wavevector requires a separate longitudinal limit.",
-      "Exact perpendicular interlacing is restricted to positive Gaussian ES species."
-    ]
+  {
+   "name": "k",
+   "description": "ES1D signed nonzero wavevector.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "numeric",
+   "required": false,
+   "constraints": "Required finite real nonzero scalar for ES1D; ignored for ES3D/EM.",
+   "default": null
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates, noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise KeyError.",
-    "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback. Analytic perpendicular/uniform EM uses Python and returns mapping provenance.",
-    "nonconvergence": "Assembly/helper arithmetic errors propagate; this operation does not solve or certify roots.",
-    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+  {
+   "name": "kx",
+   "description": "Signed perpendicular wavevector.",
+   "units": "ES dimensionless or EM m^-1",
+   "shape": "scalar",
+   "dtype": "numeric",
+   "required": false,
+   "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
+   "default": null
   },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+  {
+   "name": "kz",
+   "description": "Signed parallel wavevector.",
+   "units": "ES dimensionless or EM m^-1",
+   "shape": "scalar",
+   "dtype": "numeric",
+   "required": false,
+   "constraints": "Required finite real scalar for ES3D/EM; ignored for ES1D. ES3D excludes total zero wavevector; EM includes the uniform zero-wavevector limit.",
+   "default": null
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.rational",
-      "symbol": "point_matrix",
-      "signature": "point_matrix(model, state, *, k=None, kx=None, kz=None, N=None)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Run the declared PDRK relation with its native-backed scientific ports.",
-    "code": "from scirel.kinetic.pdrk.rational import equilibrium, pole_table, point_matrix\neq = equilibrium('es3d', [[1, 1, 1, 1, 2, 0.1]], B0=1)['state']\ntab = pole_table('es3d', 8)['state']\nr = point_matrix('es3d', {**eq, **tab}, kx=2, kz=0.7, N=0)\nassert 'constant' in r['state'] and 'M' not in r['state']",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
-  },
-  "verification": {
-    "scope": [
-      "Source-absent installed own scientific package; exact package/resource closure.",
-      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_rational.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
-      "Finite-J/finite-N physics must be qualified for a new requested regime.",
-      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "N",
+   "description": "Retained cyclotron harmonic cutoff; ES3D default10 and EM default2.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "Integer >=0 for ES3D/EM; None selects 10/2 respectively. Ignored for ES1D. Uniform EM analytic gyro response is independent of harmonic cutoff, including N=0.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "Model-specific scientific numeric state with named physical scales or coefficient fields.",
+   "units": "Model-dependent ES dimensionless or EM SI.",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Native arrays preserve source row shapes; use named fields rather than inferred positional scales."
+  },
+  {
+   "name": "receipt",
+   "description": "NativeReceipt on native ES1D/ES3D and oblique EM paths; analytic exact-perpendicular or uniform EM dispatch returns a provenance mapping.",
+   "units": "not applicable",
+   "shape": "NativeReceipt object or mapping",
+   "dtype": "NativeReceipt | mapping",
+   "required": true,
+   "constraints": "Execution provenance does not certify scientific validity by itself."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Constituent inputs finite and representable in declared numeric ports."
+  ],
+  "supported": [
+   "Magnetized Gaussian kinetic response, finite harmonics and rational parallel response.",
+   "Parallel/perpendicular EM axes and uniform k0 including N0."
+  ],
+  "excluded": [
+   "ES total zero wavevector requires a separate longitudinal limit.",
+   "Exact perpendicular interlacing is restricted to positive Gaussian ES species."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for invalid model, missing branch-required scalar, nonfinite/unrepresentable coordinates, noninteger/negative N, ES1D k=0 or ES3D total zero wavevector; incomplete state can raise KeyError.",
+  "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback. Analytic perpendicular/uniform EM uses Python and returns mapping provenance.",
+  "nonconvergence": "Assembly/helper arithmetic errors propagate; this operation does not solve or certify roots.",
+  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.rational",
+   "symbol": "point_matrix",
+   "signature": "point_matrix(model, state, *, k=None, kx=None, kz=None, N=None)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run the declared PDRK relation with its native-backed scientific ports.",
+  "code": "from scirel.kinetic.pdrk.rational import equilibrium, pole_table, point_matrix\neq = equilibrium('es3d', [[1, 1, 1, 1, 2, 0.1]], B0=1)['state']\ntab = pole_table('es3d', 8)['state']\nr = point_matrix('es3d', {**eq, **tab}, kx=2, kz=0.7, N=0)\nassert 'constant' in r['state'] and 'M' not in r['state']",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Source-absent installed own scientific package; exact package/resource closure.",
+   "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
+   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_rational.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Finite-J/finite-N physics must be qualified for a new requested regime.",
+   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+   "Human scientific and plot approval pending.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

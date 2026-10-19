@@ -1,210 +1,209 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.mirror-total-pressure",
-  "kind": "operator",
-  "title": {
-    "en": "Mirror ion-electron total-pressure assembly",
-    "zh": "双温镜离子-电子总压强状态组装"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.mirror-total-pressure",
+ "title": {
+  "en": "Mirror ion-electron total-pressure assembly",
+  "zh": "双温镜离子-电子总压强状态组装"
+ },
+ "summary": "Add a supplied isotropic electron pressure to both broadcast ion pressure components and assemble a terminal state with pass-through densities, residual, optional potential and ion-moment fields.",
+ "taxonomy": [
+  "kinetic",
+  "mirror",
+  "pressure-state"
+ ],
+ "aliases": [
+  "mirror total pressure state",
+  "ion-electron mirror pressure assembly"
+ ],
+ "identity": {
+  "relation": "Ion kinetic-moment state and electron response to two total-pressure components and a merged terminal state",
+  "direction": "(kinetic_moments, electron_state) -> p_parallel, p_perpendicular and merged ion-electron state",
+  "definition": "Broadcast ion/electron pressure fields together with density, residual and optional potential shapes. Require finite nonnegative species density/pressure, finite residual and optional potential; add the electron pressure equally to parallel and perpendicular ion pressure and reject a nonfinite sum. Return a shallow copy retaining the original kinetic_moments mapping and original valid density/residual/potential objects. Residual is observational: this leaf does not certify quasineutrality.",
+  "model": "Terminal state assembly for a mirror kinetic-ion state with an externally supplied isotropic electron pressure; not a pressure, electron-response or quasineutrality solver",
+  "geometry": "No geometry is computed; the caller supplies aligned ion and electron states for the same mirror-plasma samples.",
+  "coordinates": "Physical fields must have one NumPy-broadcast-compatible shape; successful broadcasting does not establish coordinate alignment. Original valid density/residual/potential objects are retained.",
+  "boundary": "No spatial or kinetic boundary is evaluated. The potential is taken from electron_state when present and otherwise recorded as None.",
+  "assumptions": [
+   "The supplied ion pressure components and electron pressure are in Pa and refer to the same physical samples.",
+   "Densities, pressure and residual use compatible conventions; numerical validation does not certify physical quasineutrality."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "kinetic_moments",
+   "description": "Ion kinetic-moment mapping, including parallel and perpendicular pressure and ion number density; other ion entries are copied into the result.",
+   "units": "p_parallel_pa and p_perpendicular_pa: Pa; density_m3: m^-3; other entries retain their own units",
+   "shape": "dict containing pressure values broadcast-compatible with electron pressure; other entries unconstrained",
+   "dtype": "dict; pressure entries convertible to float64 arrays",
+   "required": true,
+   "constraints": "Must contain p_parallel_pa, p_perpendicular_pa and density_m3. The two converted pressure arrays must broadcast with electron pressure and contain only finite values. Extra nonphysical metadata fields are not interpreted. Physical density/pressure values must be finite and nonnegative; residual and optional potential finite, with a common broadcast-compatible shape."
   },
-  "summary": "Add a supplied isotropic electron pressure to both broadcast ion pressure components and assemble a terminal state with pass-through densities, residual, optional potential and ion-moment fields.",
-  "taxonomy": [
-    "kinetic",
-    "mirror",
-    "pressure-state"
-  ],
-  "aliases": [
-    "mirror total pressure state",
-    "ion-electron mirror pressure assembly"
-  ],
-  "identity": {
-    "relation": "Ion kinetic-moment state and electron response to two total-pressure components and a merged terminal state",
-    "direction": "(kinetic_moments, electron_state) -> p_parallel, p_perpendicular and merged ion-electron state",
-    "definition": "Broadcast ion/electron pressure fields together with density, residual and optional potential shapes. Require finite nonnegative species density/pressure, finite residual and optional potential; add the electron pressure equally to parallel and perpendicular ion pressure and reject a nonfinite sum. Return a shallow copy retaining the original kinetic_moments mapping and original valid density/residual/potential objects. Residual is observational: this leaf does not certify quasineutrality.",
-    "model": "Terminal state assembly for a mirror kinetic-ion state with an externally supplied isotropic electron pressure; not a pressure, electron-response or quasineutrality solver",
-    "geometry": "No geometry is computed; the caller supplies aligned ion and electron states for the same mirror-plasma samples.",
-    "coordinates": "Physical fields must have one NumPy-broadcast-compatible shape; successful broadcasting does not establish coordinate alignment. Original valid density/residual/potential objects are retained.",
-    "boundary": "No spatial or kinetic boundary is evaluated. The potential is taken from electron_state when present and otherwise recorded as None.",
-    "assumptions": [
-      "The supplied ion pressure components and electron pressure are in Pa and refer to the same physical samples.",
-      "Densities, pressure and residual use compatible conventions; numerical validation does not certify physical quasineutrality."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "kinetic_moments",
-      "description": "Ion kinetic-moment mapping, including parallel and perpendicular pressure and ion number density; other ion entries are copied into the result.",
-      "units": "p_parallel_pa and p_perpendicular_pa: Pa; density_m3: m^-3; other entries retain their own units",
-      "shape": "dict containing pressure values broadcast-compatible with electron pressure; other entries unconstrained",
-      "dtype": "dict; pressure entries convertible to float64 arrays",
-      "required": true,
-      "constraints": "Must contain p_parallel_pa, p_perpendicular_pa and density_m3. The two converted pressure arrays must broadcast with electron pressure and contain only finite values. Extra nonphysical metadata fields are not interpreted. Physical density/pressure values must be finite and nonnegative; residual and optional potential finite, with a common broadcast-compatible shape."
-    },
-    {
-      "name": "electron_state",
-      "description": "Electron density, pressure and relative charge residual, optionally including an electrostatic potential.",
-      "units": "electron_density_m3: m^-3; electron_pressure_pa: Pa; relative_charge_residual: dimensionless; electrostatic_potential when supplied: V",
-      "shape": "dict containing pressure broadcast-compatible with ion pressure; other entries unconstrained",
-      "dtype": "dict; electron_pressure_pa convertible to float64 array",
-      "required": true,
-      "constraints": "Must contain electron_density_m3, electron_pressure_pa and relative_charge_residual. The converted electron-pressure array must broadcast with both ion pressures and be finite. Valid density, residual and optional potential objects retain their identity after numeric validation. Physical density/pressure values must be finite and nonnegative; residual and optional potential finite, with a common broadcast-compatible shape."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "p_parallel",
-      "description": "Sum of ion parallel pressure and the supplied electron pressure.",
-      "units": "Pa",
-      "shape": "common broadcast pressure shape",
-      "dtype": "NumPy float64 array",
-      "required": true,
-      "constraints": "Finite sum on successful return."
-    },
-    {
-      "name": "p_perpendicular",
-      "description": "Sum of ion perpendicular pressure and the supplied electron pressure.",
-      "units": "Pa",
-      "shape": "common broadcast pressure shape",
-      "dtype": "NumPy float64 array",
-      "required": true,
-      "constraints": "Finite sum on successful return."
-    },
-    {
-      "name": "ion_density",
-      "description": "Unconverted ion density from kinetic_moments['density_m3'].",
-      "units": "m^-3 by caller contract",
-      "shape": "unchanged input density shape",
-      "dtype": "original input value",
-      "required": true,
-      "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
-    },
-    {
-      "name": "ion_p_parallel",
-      "description": "Converted and broadcast ion parallel-pressure component.",
-      "units": "Pa",
-      "shape": "common broadcast pressure shape",
-      "dtype": "NumPy float64 array",
-      "required": true,
-      "constraints": "Finite on successful return."
-    },
-    {
-      "name": "ion_p_perpendicular",
-      "description": "Converted and broadcast ion perpendicular-pressure component.",
-      "units": "Pa",
-      "shape": "common broadcast pressure shape",
-      "dtype": "NumPy float64 array",
-      "required": true,
-      "constraints": "Finite on successful return."
-    },
-    {
-      "name": "electron_density",
-      "description": "Unconverted electron density from electron_state['electron_density_m3'].",
-      "units": "m^-3 by caller contract",
-      "shape": "unchanged input density shape",
-      "dtype": "original input value",
-      "required": true,
-      "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
-    },
-    {
-      "name": "electron_pressure",
-      "description": "Converted and broadcast electron pressure added to both ion components.",
-      "units": "Pa",
-      "shape": "common broadcast pressure shape",
-      "dtype": "NumPy float64 array",
-      "required": true,
-      "constraints": "Finite on successful return."
-    },
-    {
-      "name": "electrostatic_potential",
-      "description": "Optional electron-state potential, or None when absent.",
-      "units": "V by caller contract when supplied",
-      "shape": "unchanged input potential shape or None",
-      "dtype": "original input value or None",
-      "required": true,
-      "constraints": "If supplied, finite and broadcast-compatible; original object retained. Absent means None."
-    },
-    {
-      "name": "relative_charge_residual",
-      "description": "Relative charge residual supplied by electron_state; not recalculated.",
-      "units": "dimensionless by caller contract",
-      "shape": "unchanged input residual shape",
-      "dtype": "original input value",
-      "required": true,
-      "constraints": "Finite and broadcast-compatible; observational residual is not required to be zero."
-    },
-    {
-      "name": "kinetic_moments",
-      "description": "Reference to the original ion-moment dict.",
-      "units": "per contained field",
-      "shape": "original dict",
-      "dtype": "dict identity",
-      "required": true,
-      "constraints": "The result is a new shallow dict, but this entry is the original mapping by object identity; other ion fields are copied unless a named assembly output overwrites them."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller has already computed scientifically compatible ion kinetic moments and electron state for the same sample locations.",
-      "The three pressure values are float-convertible, mutually broadcast-compatible, finite and expressed in Pa."
-    ],
-    "supported": [
-      "Pointwise addition of a supplied isotropic electron pressure to both anisotropic ion pressure components.",
-      "Assembly of a terminal result retaining original ion fields and the supplied electron density, charge residual and optional potential."
-    ],
-    "excluded": [
-      "Computing ion moments, Boltzmann electron response, electrostatic potential or a quasineutral root.",
-      "Certifying charge neutrality, potential units, array-axis alignment or the physical correctness of the supplied pressure model; finite nonnegative species density and pressure are nevertheless mandatory numerical input checks.",
-      "Electron anisotropic pressure or tensor addition."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for missing fields, nonbroadcastable physical states, nonfinite fields or negative species density/pressure; numeric conversion may raise TypeError or ValueError.",
-    "runtime_failure": "Raises FloatingPointError if finite species pressures overflow the total pressure. Unrecognized extra ion fields remain shallow-copy metadata and are not interpreted scientifically.",
-    "nonconvergence": "Not applicable; no iterative solve is performed.",
-    "partial_results": "No result dict is returned if validation or pressure conversion raises. A successful call returns all named assembled fields plus non-overwritten original ion fields."
-  },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
-    "source_kinds": [
-      "SciRel implementation",
-      "mathematical derivation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.mirror_total_pressure",
-      "symbol": "assemble_mirror_total_pressure",
-      "signature": "assemble_mirror_total_pressure(kinetic_moments, electron_state)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "assemble_mirror_total_pressure"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Add a scalar electron pressure to two ion pressure arrays while retaining the ion input mapping and an absent potential.",
-    "code": "import numpy as np\nfrom scirel.kinetic import assemble_mirror_total_pressure\nion = {'p_parallel_pa': [2.0, 3.0], 'p_perpendicular_pa': [4.0, 5.0], 'density_m3': [1.0, 2.0], 'marker': 'ion'}\nelectron = {'electron_density_m3': [6.0, 7.0], 'electron_pressure_pa': 1.5, 'relative_charge_residual': [0.1, 0.2]}\nr = assemble_mirror_total_pressure(ion, electron)\nnp.testing.assert_allclose(r['p_parallel'], [3.5, 4.5])\nnp.testing.assert_allclose(r['p_perpendicular'], [5.5, 6.5])\nassert r['kinetic_moments'] is ion and r['marker'] == 'ion'\nassert r['electrostatic_potential'] is None",
-    "expected": "The returned total pressures were p_parallel=[3.5, 4.5] Pa and p_perpendicular=[5.5, 6.5] Pa; the input ion mapping was retained and electrostatic_potential was None."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_mirror_total_pressure.py",
-      "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "The returned state is shallow and retains the caller kinetic mapping; later caller mutation can change referenced fields.",
-      "Broadcasting is not coordinate alignment. A finite nonzero observational charge residual remains permitted.",
-      "Public licensing and scientific human recognition are separate decisions.",
-      "Example output is a bounded runtime observation, not a universal scientific claim."
-    ]
+  {
+   "name": "electron_state",
+   "description": "Electron density, pressure and relative charge residual, optionally including an electrostatic potential.",
+   "units": "electron_density_m3: m^-3; electron_pressure_pa: Pa; relative_charge_residual: dimensionless; electrostatic_potential when supplied: V",
+   "shape": "dict containing pressure broadcast-compatible with ion pressure; other entries unconstrained",
+   "dtype": "dict; electron_pressure_pa convertible to float64 array",
+   "required": true,
+   "constraints": "Must contain electron_density_m3, electron_pressure_pa and relative_charge_residual. The converted electron-pressure array must broadcast with both ion pressures and be finite. Valid density, residual and optional potential objects retain their identity after numeric validation. Physical density/pressure values must be finite and nonnegative; residual and optional potential finite, with a common broadcast-compatible shape."
   }
+ ],
+ "outputs": [
+  {
+   "name": "p_parallel",
+   "description": "Sum of ion parallel pressure and the supplied electron pressure.",
+   "units": "Pa",
+   "shape": "common broadcast pressure shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite sum on successful return."
+  },
+  {
+   "name": "p_perpendicular",
+   "description": "Sum of ion perpendicular pressure and the supplied electron pressure.",
+   "units": "Pa",
+   "shape": "common broadcast pressure shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite sum on successful return."
+  },
+  {
+   "name": "ion_density",
+   "description": "Unconverted ion density from kinetic_moments['density_m3'].",
+   "units": "m^-3 by caller contract",
+   "shape": "unchanged input density shape",
+   "dtype": "original input value",
+   "required": true,
+   "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
+  },
+  {
+   "name": "ion_p_parallel",
+   "description": "Converted and broadcast ion parallel-pressure component.",
+   "units": "Pa",
+   "shape": "common broadcast pressure shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite on successful return."
+  },
+  {
+   "name": "ion_p_perpendicular",
+   "description": "Converted and broadcast ion perpendicular-pressure component.",
+   "units": "Pa",
+   "shape": "common broadcast pressure shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite on successful return."
+  },
+  {
+   "name": "electron_density",
+   "description": "Unconverted electron density from electron_state['electron_density_m3'].",
+   "units": "m^-3 by caller contract",
+   "shape": "unchanged input density shape",
+   "dtype": "original input value",
+   "required": true,
+   "constraints": "Finite nonnegative and common-shape broadcastable; original valid object retained."
+  },
+  {
+   "name": "electron_pressure",
+   "description": "Converted and broadcast electron pressure added to both ion components.",
+   "units": "Pa",
+   "shape": "common broadcast pressure shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite on successful return."
+  },
+  {
+   "name": "electrostatic_potential",
+   "description": "Optional electron-state potential, or None when absent.",
+   "units": "V by caller contract when supplied",
+   "shape": "unchanged input potential shape or None",
+   "dtype": "original input value or None",
+   "required": true,
+   "constraints": "If supplied, finite and broadcast-compatible; original object retained. Absent means None."
+  },
+  {
+   "name": "relative_charge_residual",
+   "description": "Relative charge residual supplied by electron_state; not recalculated.",
+   "units": "dimensionless by caller contract",
+   "shape": "unchanged input residual shape",
+   "dtype": "original input value",
+   "required": true,
+   "constraints": "Finite and broadcast-compatible; observational residual is not required to be zero."
+  },
+  {
+   "name": "kinetic_moments",
+   "description": "Reference to the original ion-moment dict.",
+   "units": "per contained field",
+   "shape": "original dict",
+   "dtype": "dict identity",
+   "required": true,
+   "constraints": "The result is a new shallow dict, but this entry is the original mapping by object identity; other ion fields are copied unless a named assembly output overwrites them."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller has already computed scientifically compatible ion kinetic moments and electron state for the same sample locations.",
+   "The three pressure values are float-convertible, mutually broadcast-compatible, finite and expressed in Pa."
+  ],
+  "supported": [
+   "Pointwise addition of a supplied isotropic electron pressure to both anisotropic ion pressure components.",
+   "Assembly of a terminal result retaining original ion fields and the supplied electron density, charge residual and optional potential."
+  ],
+  "excluded": [
+   "Computing ion moments, Boltzmann electron response, electrostatic potential or a quasineutral root.",
+   "Certifying charge neutrality, potential units, array-axis alignment or the physical correctness of the supplied pressure model; finite nonnegative species density and pressure are nevertheless mandatory numerical input checks.",
+   "Electron anisotropic pressure or tensor addition."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for missing fields, nonbroadcastable physical states, nonfinite fields or negative species density/pressure; numeric conversion may raise TypeError or ValueError.",
+  "runtime_failure": "Raises FloatingPointError if finite species pressures overflow the total pressure. Unrecognized extra ion fields remain shallow-copy metadata and are not interpreted scientifically.",
+  "nonconvergence": "Not applicable; no iterative solve is performed.",
+  "partial_results": "No result dict is returned if validation or pressure conversion raises. A successful call returns all named assembled fields plus non-overwritten original ion fields."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the declared mirror or loss-cone relation, retaining the Pleiades attribution and notices in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. The notices preserve their license obligations and do not assert external approval.",
+  "source_kinds": [
+   "SciRel implementation",
+   "mathematical derivation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Pleiades MIT notice is retained; historical extension rights and public release approval remain unresolved."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.mirror_total_pressure",
+   "symbol": "assemble_mirror_total_pressure",
+   "signature": "assemble_mirror_total_pressure(kinetic_moments, electron_state)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "assemble_mirror_total_pressure"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Add a scalar electron pressure to two ion pressure arrays while retaining the ion input mapping and an absent potential.",
+  "code": "import numpy as np\nfrom scirel.kinetic import assemble_mirror_total_pressure\nion = {'p_parallel_pa': [2.0, 3.0], 'p_perpendicular_pa': [4.0, 5.0], 'density_m3': [1.0, 2.0], 'marker': 'ion'}\nelectron = {'electron_density_m3': [6.0, 7.0], 'electron_pressure_pa': 1.5, 'relative_charge_residual': [0.1, 0.2]}\nr = assemble_mirror_total_pressure(ion, electron)\nnp.testing.assert_allclose(r['p_parallel'], [3.5, 4.5])\nnp.testing.assert_allclose(r['p_perpendicular'], [5.5, 6.5])\nassert r['kinetic_moments'] is ion and r['marker'] == 'ion'\nassert r['electrostatic_potential'] is None",
+  "expected": "The returned total pressures were p_parallel=[3.5, 4.5] Pa and p_perpendicular=[5.5, 6.5] Pa; the input ion mapping was retained and electrostatic_potential was None."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_mirror_total_pressure.py",
+   "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "The returned state is shallow and retains the caller kinetic mapping; later caller mutation can change referenced fields.",
+   "Broadcasting is not coordinate alignment. A finite nonzero observational charge residual remains permitted.",
+   "Public licensing and scientific human recognition are separate decisions.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ }
 }

@@ -1,120 +1,119 @@
 {
-  "schema": "scirel.asset-document",
-  "kind": "operator",
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "verification": {
-    "scope": [
-      "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-      "The executable constructor example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_native_geometry_qualification.py",
-      "tests/pleiades/geometry/test_native_lifecycle.py"
-    ],
-    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
-    "known_limitations": [
-      "Mesh objects do not by themselves validate a physical field model or device geometry."
-    ]
-  },
-  "asset_id": "scirel.geometry.theta-chord",
-  "title": {
-    "en": "Polar-angle chord",
-    "zh": "极角弦"
-  },
-  "summary": "Points varying polar angle at fixed spherical radius.",
-  "taxonomy": [
-    "geometry",
-    "coordinates"
+ "schema": "scirel.asset-document",
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
   ],
-  "aliases": [
-    "ThetaChord"
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "verification": {
+  "scope": [
+   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+   "The executable constructor example stored in this contract"
   ],
-  "identity": {
-    "relation": "Polar angle coordinate relation",
-    "direction": "tpts,r0 to cylindrical R,Z",
-    "definition": "R=r0 sin(theta), Z=r0 cos(theta)",
-    "model": "Polar-angle coordinate map",
-    "geometry": "Polar-angle coordinate map",
-    "coordinates": "Cylindrical storage derived from angle inputs",
-    "boundary": "Angles are degrees",
-    "assumptions": [
-      "Finite radius and angles"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "tpts",
-      "description": "Polar angles",
-      "units": "degree",
-      "shape": "N",
-      "dtype": "Finite float64",
-      "required": true,
-      "constraints": "Finite degrees"
-    },
-    {
-      "name": "r0",
-      "description": "Fixed spherical radius",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "Finite radius",
-      "default": 1.0
-    }
+  "tests": [
+   "tests/pleiades/geometry/test_native_geometry_qualification.py",
+   "tests/pleiades/geometry/test_native_lifecycle.py"
   ],
-  "outputs": [
-    {
-      "name": "mesh",
-      "description": "Constructed ThetaChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
-      "units": "Object; property units as described",
-      "shape": "one object",
-      "dtype": "ThetaChord",
-      "required": true,
-      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
-      "Generated cylindrical R must be nonnegative; use nonnegative spherical radii and degree angles in the usual 0..180 polar domain."
-    ],
-    "supported": [
-      "Finite polar-angle chord"
-    ],
-    "excluded": [
-      "Negative fixed radius"
-    ]
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "known_limitations": [
+   "Mesh objects do not by themselves validate a physical field model or device geometry."
+  ]
+ },
+ "asset_id": "scirel.geometry.theta-chord",
+ "title": {
+  "en": "Polar-angle chord",
+  "zh": "极角弦"
+ },
+ "summary": "Points varying polar angle at fixed spherical radius.",
+ "taxonomy": [
+  "geometry",
+  "coordinates"
+ ],
+ "aliases": [
+  "ThetaChord"
+ ],
+ "identity": {
+  "relation": "Polar angle coordinate relation",
+  "direction": "tpts,r0 to cylindrical R,Z",
+  "definition": "R=r0 sin(theta), Z=r0 cos(theta)",
+  "model": "Polar-angle coordinate map",
+  "geometry": "Polar-angle coordinate map",
+  "coordinates": "Cylindrical storage derived from angle inputs",
+  "boundary": "Angles are degrees",
+  "assumptions": [
+   "Finite radius and angles"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "tpts",
+   "description": "Polar angles",
+   "units": "degree",
+   "shape": "N",
+   "dtype": "Finite float64",
+   "required": true,
+   "constraints": "Finite degrees"
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
-    "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
-    "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
-    "partial_results": "A failed constructor returns no mesh object."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry",
-      "symbol": "ThetaChord",
-      "signature": "ThetaChord(tpts: 'Iterable[float]', r0: 'float' = 1.0)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "ThetaChord"
-    }
-  },
-  "example": {
-    "description": "Convert polar angles 0 and 90 degrees at unit radius to cylindrical R,Z.",
-    "code": "import numpy as np\nfrom scirel.geometry import ThetaChord\n\nmesh = ThetaChord([0.0, 90.0])\nnp.testing.assert_allclose(mesh.R, [0.0, 1.0], atol=1e-15)\nnp.testing.assert_allclose(mesh.Z, [1.0, 0.0], atol=1e-15)",
-    "expected": "The generated coordinates are (R,Z)=[(0,1), (1,0)] m."
+  {
+   "name": "r0",
+   "description": "Fixed spherical radius",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Finite radius",
+   "default": 1.0
   }
+ ],
+ "outputs": [
+  {
+   "name": "mesh",
+   "description": "Constructed ThetaChord object. Available properties/methods: R: Cylindrical radius [m], N; Z: Axial coordinate [m], N",
+   "units": "Object; property units as described",
+   "shape": "one object",
+   "dtype": "ThetaChord",
+   "required": true,
+   "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs satisfy the documented finite cylindrical coordinate and shape contract",
+   "Generated cylindrical R must be nonnegative; use nonnegative spherical radii and degree angles in the usual 0..180 polar domain."
+  ],
+  "supported": [
+   "Finite polar-angle chord"
+  ],
+  "excluded": [
+   "Negative fixed radius"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
+  "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
+  "partial_results": "A failed constructor returns no mesh object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry",
+   "symbol": "ThetaChord",
+   "signature": "ThetaChord(tpts: 'Iterable[float]', r0: 'float' = 1.0)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "ThetaChord"
+  }
+ },
+ "example": {
+  "description": "Convert polar angles 0 and 90 degrees at unit radius to cylindrical R,Z.",
+  "code": "import numpy as np\nfrom scirel.geometry import ThetaChord\n\nmesh = ThetaChord([0.0, 90.0])\nnp.testing.assert_allclose(mesh.R, [0.0, 1.0], atol=1e-15)\nnp.testing.assert_allclose(mesh.Z, [1.0, 0.0], atol=1e-15)",
+  "expected": "The generated coordinates are (R,Z)=[(0,1), (1,0)] m."
+ }
 }

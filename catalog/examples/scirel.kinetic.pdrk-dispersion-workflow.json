@@ -1,466 +1,465 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-dispersion-workflow",
-  "kind": "task_graph",
-  "title": {
-    "en": "Magnetized dispersion workflow",
-    "zh": "磁化色散流程"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-dispersion-workflow",
+ "title": {
+  "en": "Magnetized dispersion workflow",
+  "zh": "磁化色散流程"
+ },
+ "summary": "Species initialization followed by the finite ordered spectral scan.",
+ "taxonomy": [
+  "kinetic",
+  "magnetized-plasma",
+  "pdrk"
+ ],
+ "aliases": [
+  "PDRK solve_dispersion"
+ ],
+ "identity": {
+  "relation": "Magnetized dispersion workflow",
+  "direction": "Declared scientific input ports in one mapping -> completed scientific state and declared artifacts",
+  "definition": "Species initialization followed by the finite ordered spectral scan. inputs mapping: deck=None,scenario=\"default\",controls=None,par=None; operator units/defaults apply. Scientific graph nodes reuse the declared native numerical relations; a fused native implementation may execute them in one process. Controlled glue only schedules, carries state and projects results. The public Python wrapper accepts one inputs mapping; each listed scientific port is an entry of that mapping, with required/default status from the actual underlying callable.",
+  "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "assumptions": [
+   "All nodes consume compatible scientific predecessor state.",
+   "Ordinary dependencies are acyclic; feedback, when present, has the stated finite schedule.",
+   "Mode selection is an explicitly defined algorithm; physical uniqueness is not asserted."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "deck",
+   "description": "Species columns q/e,m/mp,n,Tparallel,Tperp,alpha,Delta,vd/c.",
+   "units": "mixed:1,1,m^-3,eV,eV,1,1,1",
+   "shape": "(S,8)",
+   "dtype": "real numeric array-like",
+   "required": false,
+   "constraints": "S>=1; charged q!=0,m>0,n>=0 with first n>0,Tparallel/Tperp/alpha>0,Delta in[0,1],abs(vd/c)<1; finite representable binary64. None loads packaged scenario deck.",
+   "default": null
   },
-  "summary": "Species initialization followed by the finite ordered spectral scan.",
-  "taxonomy": [
-    "kinetic",
-    "magnetized-plasma",
-    "pdrk"
-  ],
-  "aliases": [
-    "PDRK solve_dispersion"
-  ],
-  "identity": {
-    "relation": "Magnetized dispersion workflow",
-    "direction": "Declared scientific input ports in one mapping -> completed scientific state and declared artifacts",
-    "definition": "Species initialization followed by the finite ordered spectral scan. inputs mapping: deck=None,scenario=\"default\",controls=None,par=None; operator units/defaults apply. Scientific graph nodes reuse the declared native numerical relations; a fused native implementation may execute them in one process. Controlled glue only schedules, carries state and projects results. The public Python wrapper accepts one inputs mapping; each listed scientific port is an entry of that mapping, with required/default status from the actual underlying callable.",
-    "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
-    "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
-    "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
-    "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
-    "assumptions": [
-      "All nodes consume compatible scientific predecessor state.",
-      "Ordinary dependencies are acyclic; feedback, when present, has the stated finite schedule.",
-      "Mode selection is an explicitly defined algorithm; physical uniqueness is not asserted."
-    ]
+  {
+   "name": "scenario",
+   "description": "Packaged scientific setup and seed prescription.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": false,
+   "constraints": "One of default,beammode,coldplasma,dispersionsurface,es1d_beam,es3d_losscone,loss_cone_mirror; each retains its own source setup.",
+   "default": "default"
   },
-  "inputs": [
-    {
-      "name": "deck",
-      "description": "Species columns q/e,m/mp,n,Tparallel,Tperp,alpha,Delta,vd/c.",
-      "units": "mixed:1,1,m^-3,eV,eV,1,1,1",
-      "shape": "(S,8)",
-      "dtype": "real numeric array-like",
-      "required": false,
-      "constraints": "S>=1; charged q!=0,m>0,n>=0 with first n>0,Tparallel/Tperp/alpha>0,Delta in[0,1],abs(vd/c)<1; finite representable binary64. None loads packaged scenario deck.",
-      "default": null
-    },
-    {
-      "name": "scenario",
-      "description": "Packaged scientific setup and seed prescription.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": false,
-      "constraints": "One of default,beammode,coldplasma,dispersionsurface,es1d_beam,es3d_losscone,loss_cone_mirror; each retains its own source setup.",
-      "default": "default"
-    },
-    {
-      "name": "controls",
-      "description": "Explicit overrides after scenario setup and before initialization.",
-      "units": "mixed; B0 T,wg0 omega/wcs1,angles degree,k coordinates k*cwp",
-      "shape": "mapping or None",
-      "dtype": "mapping[str,numeric]",
-      "required": false,
-      "constraints": "Only iem,N,J,sp,wg0,B0,ipa,ipb,iloga,ilogb,pa1,pa2,dpa,pb1,pb2,dpb,iout. iem0/1,J4/8/12,Ninteger>=0,sp0/1,iout1/2; B0,dpa,dpb nonzero; scan pairs(1,1),(2,2),(3,3),(4,4),(1,2),(3,4). None preserves scenario defaults; default scenario uses N3,J8,B0=1e-7,sp0,wg0=1.5+.01i,ipa=ipb3,linear pa0:.01:1,iout1.",
-      "default": null
-    },
-    {
-      "name": "par",
-      "description": "Independent six-coordinate state override, without implicit synchronization between polar and Cartesian entries.",
-      "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
-      "shape": "(6,) or(6,1) or(1,6)",
-      "dtype": "real array-like or None",
-      "required": false,
-      "constraints": "Entries1..4 are normalized k,angle,kz,kx. Entries5..6 retain source slots; no new scanned physics is inferred. None preserves scenario setup.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "state",
-      "description": "Completed NativeResult.state with compatible native scientific carrier and typed artifacts.",
-      "units": "mixed explicit scientific state",
-      "shape": "mapping",
-      "dtype": "NativeResult.state mapping",
-      "required": true,
-      "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
-    },
-    {
-      "name": "ww",
-      "description": "Computed dimensional frequencies ordered by descending imaginary part at each point.",
-      "units": "rad s^-1",
-      "shape": "(npa,npb,nw) for nw>1; (npa,npb) for nw=1; conceptual axes are scan a, scan b, frequency",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
-    },
-    {
-      "name": "kxx",
-      "description": "Stored actual Cartesian wave-number grid.",
-      "units": "m^-1",
-      "shape": "(npa,npb)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
-    },
-    {
-      "name": "kzz",
-      "description": "Stored actual Cartesian wave-number grid.",
-      "units": "m^-1",
-      "shape": "(npa,npb)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
-    },
-    {
-      "name": "par",
-      "description": "Updated independent six-entry coordinate carrier; one-dimensional Python input is serialized as a row, and native coordinate assignments preserve its orientation.",
-      "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
-      "shape": "(6,1) or (1,6), preserving supplied/native orientation",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    },
-    {
-      "name": "wg",
-      "description": "Final source guess restored according to row continuation, not necessarily the last eigenfrequency.",
-      "units": "rad s^-1",
-      "shape": "(1,1)",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "inputs mapping: deck=None,scenario=\"default\",controls=None,par=None; operator units/defaults apply."
-    ],
-    "supported": [
-      "Explicit DAG composition with bounded native feedback where declared."
-    ],
-    "excluded": [
-      "Physical branch uniqueness, arbitrary changes to source state, visual acceptance and unbounded root searches."
-    ]
+  {
+   "name": "controls",
+   "description": "Explicit overrides after scenario setup and before initialization.",
+   "units": "mixed; B0 T,wg0 omega/wcs1,angles degree,k coordinates k*cwp",
+   "shape": "mapping or None",
+   "dtype": "mapping[str,numeric]",
+   "required": false,
+   "constraints": "Only iem,N,J,sp,wg0,B0,ipa,ipb,iloga,ilogb,pa1,pa2,dpa,pb1,pb2,dpb,iout. iem0/1,J4/8/12,Ninteger>=0,sp0/1,iout1/2; B0,dpa,dpb nonzero; scan pairs(1,1),(2,2),(3,3),(4,4),(1,2),(3,4). None preserves scenario defaults; default scenario uses N3,J8,B0=1e-7,sp0,wg0=1.5+.01i,ipa=ipb3,linear pa0:.01:1,iout1.",
+   "default": null
   },
-  "failure_semantics": {
-    "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-    "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
-    "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
-    "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
-  },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
-    "source_kinds": [
-      "SciRel implementation",
-      "PDRK-derived mathematical relation",
-      "direct contract tests"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.workflows",
-      "symbol": "solve_dispersion",
-      "signature": "solve_dispersion(inputs)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.pdrk-species-equilibrium"
-      },
-      {
-        "asset_id": "scirel.kinetic.pdrk-spectral-scan-workflow"
-      }
-    ]
-  },
-  "example": {
-    "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
-    "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nr=w.solve_dispersion({'deck':deck,'controls':controls,'par':[.2,0,.2,0,0,0]})\nassert np.isfinite(r.state['ww']).all()\n",
-    "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-      "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_graphs.py"
-    ],
-    "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
-    "known_limitations": [
-      "Local technical development; human scientific endorsement and publication clearance remain pending.",
-      "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
-      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-      "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
-    ]
-  },
-  "graph": {
-    "nodes": [
-      {
-        "id": "unpack",
-        "kind": "controlled_glue",
-        "description": "Unpack the one public inputs mapping into these explicitly documented scientific ports, applying only the actual underlying callable defaults. No numerical relation is performed in glue.",
-        "inputs": [
-          "deck",
-          "scenario",
-          "controls",
-          "par"
-        ],
-        "outputs": [
-          "carrier"
-        ]
-      },
-      {
-        "id": "stage1",
-        "kind": "operator",
-        "description": "Initialize compatible charged Gaussian species and source scan controls.",
-        "inputs": [
-          "carrier"
-        ],
-        "outputs": [
-          "carrier"
-        ],
-        "asset_id": "scirel.kinetic.pdrk-species-equilibrium"
-      },
-      {
-        "id": "stage2",
-        "kind": "task_graph",
-        "description": "Execute the bounded spectral-scan graph.",
-        "inputs": [
-          "carrier"
-        ],
-        "outputs": [
-          "carrier"
-        ],
-        "asset_id": "scirel.kinetic.pdrk-spectral-scan-workflow"
-      },
-      {
-        "id": "project",
-        "kind": "controlled_glue",
-        "description": "Expose the final NativeResult and declared state/artifact fields; do not modify scientific values.",
-        "inputs": [
-          "carrier"
-        ],
-        "outputs": [
-          "state",
-          "ww",
-          "kxx",
-          "kzz",
-          "par",
-          "wg"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "par"
-        },
-        "to": {
-          "node": "unpack",
-          "port": "par"
-        },
-        "description": "Read the declared scientific mapping entry and its exact default.",
-        "condition": "Entry present or documented default applied",
-        "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "controls"
-        },
-        "to": {
-          "node": "unpack",
-          "port": "controls"
-        },
-        "description": "Read the declared scientific mapping entry and its exact default.",
-        "condition": "Entry present or documented default applied",
-        "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "scenario"
-        },
-        "to": {
-          "node": "unpack",
-          "port": "scenario"
-        },
-        "description": "Read the declared scientific mapping entry and its exact default.",
-        "condition": "Entry present or documented default applied",
-        "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "deck"
-        },
-        "to": {
-          "node": "unpack",
-          "port": "deck"
-        },
-        "description": "Read the declared scientific mapping entry and its exact default.",
-        "condition": "Entry present or documented default applied",
-        "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
-        "kind": "data",
-        "required": false
-      },
-      {
-        "from": {
-          "node": "unpack",
-          "port": "carrier"
-        },
-        "to": {
-          "node": "stage1",
-          "port": "carrier"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "stage1",
-          "port": "carrier"
-        },
-        "to": {
-          "node": "stage2",
-          "port": "carrier"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "stage2",
-          "port": "carrier"
-        },
-        "to": {
-          "node": "project",
-          "port": "carrier"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "project",
-          "port": "state"
-        },
-        "to": {
-          "node": "$output",
-          "port": "state"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "project",
-          "port": "ww"
-        },
-        "to": {
-          "node": "$output",
-          "port": "ww"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "project",
-          "port": "kxx"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kxx"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "project",
-          "port": "kzz"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kzz"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "project",
-          "port": "par"
-        },
-        "to": {
-          "node": "$output",
-          "port": "par"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "project",
-          "port": "wg"
-        },
-        "to": {
-          "node": "$output",
-          "port": "wg"
-        },
-        "description": "Carry declared scientific state without recomputing the relation.",
-        "condition": "Always",
-        "transform": "Identity or explicitly named field projection; no new scientific approximation.",
-        "kind": "data",
-        "required": true
-      }
-    ],
-    "execution": {
-      "mode": "Sequential scientific composition; fused native point relations preserve the same order.",
-      "ordering": "Listed DAG order; bounded source index feedback is explicit for scan and polarization.",
-      "branches": [
-        "iem selects electromagnetic or electrostatic matrix.",
-        "sp selects dense full spectrum or sparse targeted eigenvalues.",
-        "iout2 EM owns field reconstruction; iout1 retains frequency-only output."
-      ],
-      "state_ownership": "Caller owns input mapping; each native invocation owns isolated scratch state. Return immutable NativeResult with completed state; no source checkout or hidden mutable global scientific state.",
-      "failure_propagation": "Python/native/domain/timeout failures propagate. source_output raises SourceOutputError retaining partial terminal artifacts. original_program returns program_completed/program_error separately from transport status; a false completion flag is never scientific success.",
-      "feedback": []
-    }
+  {
+   "name": "par",
+   "description": "Independent six-coordinate state override, without implicit synchronization between polar and Cartesian entries.",
+   "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
+   "shape": "(6,) or(6,1) or(1,6)",
+   "dtype": "real array-like or None",
+   "required": false,
+   "constraints": "Entries1..4 are normalized k,angle,kz,kx. Entries5..6 retain source slots; no new scanned physics is inferred. None preserves scenario setup.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "Completed NativeResult.state with compatible native scientific carrier and typed artifacts.",
+   "units": "mixed explicit scientific state",
+   "shape": "mapping",
+   "dtype": "NativeResult.state mapping",
+   "required": true,
+   "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "ww",
+   "description": "Computed dimensional frequencies ordered by descending imaginary part at each point.",
+   "units": "rad s^-1",
+   "shape": "(npa,npb,nw) for nw>1; (npa,npb) for nw=1; conceptual axes are scan a, scan b, frequency",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "kxx",
+   "description": "Stored actual Cartesian wave-number grid.",
+   "units": "m^-1",
+   "shape": "(npa,npb)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "kzz",
+   "description": "Stored actual Cartesian wave-number grid.",
+   "units": "m^-1",
+   "shape": "(npa,npb)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  },
+  {
+   "name": "par",
+   "description": "Updated independent six-entry coordinate carrier; one-dimensional Python input is serialized as a row, and native coordinate assignments preserve its orientation.",
+   "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
+   "shape": "(6,1) or (1,6), preserving supplied/native orientation",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "wg",
+   "description": "Final source guess restored according to row continuation, not necessarily the last eigenfrequency.",
+   "units": "rad s^-1",
+   "shape": "(1,1)",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Compatible typed scientific predecessor; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain and inactive fields remain empty arrays."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "inputs mapping: deck=None,scenario=\"default\",controls=None,par=None; operator units/defaults apply."
+  ],
+  "supported": [
+   "Explicit DAG composition with bounded native feedback where declared."
+  ],
+  "excluded": [
+   "Physical branch uniqueness, arbitrary changes to source state, visual acceptance and unbounded root searches."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+  "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
+  "source_kinds": [
+   "SciRel implementation",
+   "PDRK-derived mathematical relation",
+   "direct contract tests"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.workflows",
+   "symbol": "solve_dispersion",
+   "signature": "solve_dispersion(inputs)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.pdrk-species-equilibrium"
+   },
+   {
+    "asset_id": "scirel.kinetic.pdrk-spectral-scan-workflow"
+   }
+  ]
+ },
+ "example": {
+  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nr=w.solve_dispersion({'deck':deck,'controls':controls,'par':[.2,0,.2,0,0,0]})\nassert np.isfinite(r.state['ww']).all()\n",
+  "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_graphs.py"
+  ],
+  "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
+  "known_limitations": [
+   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+   "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+   "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "unpack",
+    "kind": "controlled_glue",
+    "description": "Unpack the one public inputs mapping into these explicitly documented scientific ports, applying only the actual underlying callable defaults. No numerical relation is performed in glue.",
+    "inputs": [
+     "deck",
+     "scenario",
+     "controls",
+     "par"
+    ],
+    "outputs": [
+     "carrier"
+    ]
+   },
+   {
+    "id": "stage1",
+    "kind": "operator",
+    "description": "Initialize compatible charged Gaussian species and source scan controls.",
+    "inputs": [
+     "carrier"
+    ],
+    "outputs": [
+     "carrier"
+    ],
+    "asset_id": "scirel.kinetic.pdrk-species-equilibrium"
+   },
+   {
+    "id": "stage2",
+    "kind": "task_graph",
+    "description": "Execute the bounded spectral-scan graph.",
+    "inputs": [
+     "carrier"
+    ],
+    "outputs": [
+     "carrier"
+    ],
+    "asset_id": "scirel.kinetic.pdrk-spectral-scan-workflow"
+   },
+   {
+    "id": "project",
+    "kind": "controlled_glue",
+    "description": "Expose the final NativeResult and declared state/artifact fields; do not modify scientific values.",
+    "inputs": [
+     "carrier"
+    ],
+    "outputs": [
+     "state",
+     "ww",
+     "kxx",
+     "kzz",
+     "par",
+     "wg"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "par"
+    },
+    "to": {
+     "node": "unpack",
+     "port": "par"
+    },
+    "description": "Read the declared scientific mapping entry and its exact default.",
+    "condition": "Entry present or documented default applied",
+    "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "controls"
+    },
+    "to": {
+     "node": "unpack",
+     "port": "controls"
+    },
+    "description": "Read the declared scientific mapping entry and its exact default.",
+    "condition": "Entry present or documented default applied",
+    "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "scenario"
+    },
+    "to": {
+     "node": "unpack",
+     "port": "scenario"
+    },
+    "description": "Read the declared scientific mapping entry and its exact default.",
+    "condition": "Entry present or documented default applied",
+    "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "deck"
+    },
+    "to": {
+     "node": "unpack",
+     "port": "deck"
+    },
+    "description": "Read the declared scientific mapping entry and its exact default.",
+    "condition": "Entry present or documented default applied",
+    "transform": "Identity; public mapping wrapper unpacks actual keyword ports.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "unpack",
+     "port": "carrier"
+    },
+    "to": {
+     "node": "stage1",
+     "port": "carrier"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "stage1",
+     "port": "carrier"
+    },
+    "to": {
+     "node": "stage2",
+     "port": "carrier"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "stage2",
+     "port": "carrier"
+    },
+    "to": {
+     "node": "project",
+     "port": "carrier"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "project",
+     "port": "state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "state"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "project",
+     "port": "ww"
+    },
+    "to": {
+     "node": "$output",
+     "port": "ww"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "project",
+     "port": "kxx"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kxx"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "project",
+     "port": "kzz"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kzz"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "project",
+     "port": "par"
+    },
+    "to": {
+     "node": "$output",
+     "port": "par"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "project",
+     "port": "wg"
+    },
+    "to": {
+     "node": "$output",
+     "port": "wg"
+    },
+    "description": "Carry declared scientific state without recomputing the relation.",
+    "condition": "Always",
+    "transform": "Identity or explicitly named field projection; no new scientific approximation.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "Sequential scientific composition; fused native point relations preserve the same order.",
+   "ordering": "Listed DAG order; bounded source index feedback is explicit for scan and polarization.",
+   "branches": [
+    "iem selects electromagnetic or electrostatic matrix.",
+    "sp selects dense full spectrum or sparse targeted eigenvalues.",
+    "iout2 EM owns field reconstruction; iout1 retains frequency-only output."
+   ],
+   "state_ownership": "Caller owns input mapping; each native invocation owns isolated scratch state. Return immutable NativeResult with completed state; no source checkout or hidden mutable global scientific state.",
+   "failure_propagation": "Python/native/domain/timeout failures propagate. source_output raises SourceOutputError retaining partial terminal artifacts. original_program returns program_completed/program_error separately from transport status; a false completion flag is never scientific success.",
+   "feedback": []
+  }
+ }
 }

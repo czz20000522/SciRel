@@ -270,7 +270,7 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         asset = doc['asset_id']
         files[f'records/{asset}.json'] = (documents / (asset + '.json')).read_bytes()
         files[f'readers/{asset}.json'] = encode(translations[asset])
-        summary = {k: doc[k] for k in ('asset_id', 'kind', 'title', 'summary', 'taxonomy', 'aliases', 'version')}
+        summary = {k: doc[k] for k in ('asset_id', 'title', 'summary', 'taxonomy', 'aliases', 'version')}
         summary['public_api'] = doc['public_api']
         summary['summary_zh'] = translations[asset]['summary']
         summary['evidence_ceiling'] = doc['verification']['evidence_ceiling']
@@ -374,16 +374,14 @@ class Documentation:
                 ),
                 'notice': NOTICE, **items}
 
-    def search(self, q='', kind='', domain='', offset=0, limit=20, topic=''):
+    def search(self, q='', domain='', offset=0, limit=20, topic=''):
         if len(q) > 512 or offset < 0 or not 1 <= limit <= 100:
             raise ValueError('q <= 512 characters, offset >= 0, limit 1..100 required')
-        if kind not in ('', 'operator', 'task_graph'):
-            raise ValueError('kind must be operator or task_graph')
         # Read the bound index again so mutation after startup also fails closed.
         index = json.loads(self.read('index.json'))
         topic_ids = set(self.topic(topic)['document']['assets']) if topic else self.ids
         terms = q.lower().split()
-        matches = [x for x in index if x['asset_id'] in topic_ids and (not kind or x['kind'] == kind)
+        matches = [x for x in index if x['asset_id'] in topic_ids
                    and (not domain or domain in x['taxonomy'])
                    and all(t in x['search_text'] for t in terms)]
         page = [{k: v for k, v in x.items() if k != 'search_text'} for x in matches[offset:offset+limit]]
@@ -425,7 +423,7 @@ class Documentation:
             raise ValueError('duplicate query parameter')
         p = {k: v[0] for k, v in params.items()}
         if parsed.path == '/api/search':
-            if set(p) - {'q', 'kind', 'domain', 'offset', 'limit', 'topic'}:
+            if set(p) - {'q', 'domain', 'offset', 'limit', 'topic'}:
                 raise ValueError('unknown search parameter')
             for key in ('offset', 'limit'):
                 if key in p:
@@ -445,7 +443,7 @@ class Documentation:
             c = self.chapter('magnetostatics')['document']
             return self.envelope(items=[{k: c[k] for k in ('id', 'title', 'discipline', 'introduction')}])
         if parsed.path == '/api' and not p:
-            return self.envelope(endpoints={'search': '/api/search?q=&kind=&domain=&offset=0&limit=20',
+            return self.envelope(endpoints={'search': '/api/search?q=&domain=&offset=0&limit=20',
                                             'asset': '/api/asset?id=scirel.…',
                                             'reader': '/api/reader?id=scirel.…',
                                             'manifest': '/api/manifest',
@@ -454,7 +452,7 @@ class Documentation:
                                  handbook='/api/handbook', topic='/api/topic?id=…',
                                  topic_search='/api/search?topic=…&q=&offset=0&limit=20',
                                  operations='read-only; no callable execution',
-                                 discovery='lexical AND search, lowercase, whitespace separated; exact domain/kind filters')
+                                 discovery='lexical AND search, lowercase, whitespace separated; exact domain filter')
         if parsed.path == '/api/manifest' and not p:
             return self.manifest
         raise KeyError('unknown endpoint')
@@ -510,7 +508,7 @@ def main():
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
-            sub.add_argument('--q', default=''); sub.add_argument('--kind', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--reader'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
+            sub.add_argument('--q', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--reader'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
         else:
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
@@ -523,7 +521,7 @@ def main():
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':
-        result = docs.reader(a.reader) if a.reader else (docs.handbook() if a.handbook else (docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.kind, a.domain, a.offset, a.limit, a.topic))))
+        result = docs.reader(a.reader) if a.reader else (docs.handbook() if a.handbook else (docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.domain, a.offset, a.limit, a.topic))))
         print(encode(result).decode()); return
     http = server(docs, a.port)
     print(f'SciRel documentation: http://127.0.0.1:{http.server_port}', flush=True)

@@ -1,128 +1,127 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
-  "kind": "operator",
-  "title": {
-    "en": "Frank-Egedal radial envelope",
-    "zh": "Frank-Egedal 径向包络"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
+ "title": {
+  "en": "Frank-Egedal radial envelope",
+  "zh": "Frank-Egedal 径向包络"
+ },
+ "summary": "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with reference fluxes and exponent supplied in a parameter mapping.",
+ "taxonomy": [
+  "kinetic",
+  "mirror-plasma",
+  "radial-envelope"
+ ],
+ "aliases": [
+  "Frank-Egedal pressure-source envelope",
+  "normalized-flux radial profile"
+ ],
+ "identity": {
+  "relation": "Flux grid and radial profile controls to a dimensionless pressure-source envelope",
+  "direction": "(psi, params) -> radial envelope array with the shape of psi",
+  "definition": "Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0. Both signs of the finite nonzero flux interval are accepted; alpha=0 makes the entire clipped grid equal one, including the outer endpoint, by NumPy's zero-power convention.",
+  "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
+  "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
+  "coordinates": "The array is indexed [Z,R] by the saved source contract. psi, psi_axis and psi_edge must share one caller-selected flux convention; the historical descriptor labels psi in Wb, but the callable does not enforce or convert that convention.",
+  "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
+  "assumptions": [
+   "The two reference fluxes denote distinct levels in the same units and normalization as psi.",
+   "The exponent is finite and nonnegative; this source-defined envelope alone makes no statement about the physical pressure profile or its normalization."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "psi",
+   "description": "Axisymmetric flux grid whose elements are normalized between two reference levels.",
+   "units": "same flux unit as params.psi_axis and params.psi_edge; historical source label Wb",
+   "shape": "nonempty [N_Z,N_R]",
+   "dtype": "float64-convertible array-like",
+   "required": true,
+   "constraints": "np.asarray(..., dtype=float) must produce a finite two-dimensional nonempty array."
   },
-  "summary": "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with reference fluxes and exponent supplied in a parameter mapping.",
-  "taxonomy": [
-    "kinetic",
-    "mirror-plasma",
-    "radial-envelope"
-  ],
-  "aliases": [
-    "Frank-Egedal pressure-source envelope",
-    "normalized-flux radial profile"
-  ],
-  "identity": {
-    "relation": "Flux grid and radial profile controls to a dimensionless pressure-source envelope",
-    "direction": "(psi, params) -> radial envelope array with the shape of psi",
-    "definition": "Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0. Both signs of the finite nonzero flux interval are accepted; alpha=0 makes the entire clipped grid equal one, including the outer endpoint, by NumPy's zero-power convention.",
-    "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
-    "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
-    "coordinates": "The array is indexed [Z,R] by the saved source contract. psi, psi_axis and psi_edge must share one caller-selected flux convention; the historical descriptor labels psi in Wb, but the callable does not enforce or convert that convention.",
-    "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
-    "assumptions": [
-      "The two reference fluxes denote distinct levels in the same units and normalization as psi.",
-      "The exponent is finite and nonnegative; this source-defined envelope alone makes no statement about the physical pressure profile or its normalization."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "psi",
-      "description": "Axisymmetric flux grid whose elements are normalized between two reference levels.",
-      "units": "same flux unit as params.psi_axis and params.psi_edge; historical source label Wb",
-      "shape": "nonempty [N_Z,N_R]",
-      "dtype": "float64-convertible array-like",
-      "required": true,
-      "constraints": "np.asarray(..., dtype=float) must produce a finite two-dimensional nonempty array."
-    },
-    {
-      "name": "params",
-      "description": "Mapping of optional psi_axis, psi_edge and alpha controls.",
-      "units": "psi_axis and psi_edge: same as psi; alpha: dimensionless",
-      "shape": "dict; each recognized value scalar float-convertible",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "Must be a dict. Missing psi_axis defaults to min(psi), missing psi_edge to max(psi), and missing alpha to 1.0. References and alpha must be finite; alpha >= 0 and abs(psi_edge-psi_axis) >= 1e-30. Unknown keys are ignored."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "radial_envelope",
-      "description": "Direct array return of the clipped source-order radial multiplier, not a key in a result mapping.",
-      "units": "dimensionless",
-      "shape": "same [N_Z,N_R] shape as psi",
-      "dtype": "float64 ndarray",
-      "required": true,
-      "constraints": "For successful finite arithmetic, values lie in [0,1]. An alpha of zero returns ones, even at u=1; there is no post-computation finite-output validation."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "psi is a finite nonempty 2-D grid, and params is a dict with finite scalar-convertible recognized values.",
-      "The selected axis and edge fluxes define a finite nonzero interval at least 1e-30 in absolute size."
-    ],
-    "supported": [
-      "Forward and reverse flux orientations and nonnegative power-law exponents on a clipped normalized interval.",
-      "Caller-supplied reference fluxes or grid extrema as defaults."
-    ],
-    "excluded": [
-      "Inferring a physically correct axis, edge, flux unit or pressure normalization from the grid.",
-      "A full Frank-Egedal closure, magnetic-field calculation, coordinate conversion or extrapolation beyond the clipped interval."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for a nonfinite, empty or non-2-D psi grid; non-dict params; nonfinite reference/exponent values; negative exponent; or a reference interval with abs(psi_edge-psi_axis)<1e-30. Float-conversion errors may propagate as ValueError or TypeError.",
-    "runtime_failure": "Array allocation or arithmetic errors can propagate. No general finite-output check follows the power evaluation, and extreme finite values may encounter floating-point warnings or nonfinite intermediate arithmetic.",
-    "nonconvergence": "Not applicable; evaluation is elementwise without iteration.",
-    "partial_results": "No partial array is returned on a raised exception. A successful call returns only the envelope array."
-  },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notice and public scientific reference where listed"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.frank_egedal_radial_envelope",
-      "symbol": "evaluate_frank_egedal_radial_envelope",
-      "signature": "evaluate_frank_egedal_radial_envelope(psi, params)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "evaluate_frank_egedal_radial_envelope"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Apply a quadratic envelope on a grid with values both inside and outside the chosen flux interval.",
-    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(psi, {'psi_axis': 0.0, 'psi_edge': 1.0, 'alpha': 2.0})\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape\n",
-    "expected": "Observed PASS: The clipped quadratic envelope is [[1, 1, 0.25], [0, 0, 0]] and retains the input grid shape."
-  },
-  "verification": {
-    "scope": [
-      "Direct two-row closed-form examples for quadratic and linear exponents, clipped endpoints and reverse flux orientation.",
-      "Affine flux relabeling, default reference extrema, zero exponent, input ownership and selected invalid-grid/reference cases."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_frank_egedal_radial_envelope.py",
-      "tests/operator_contracts/test_frank_egedal_radial_envelope_admitted.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "Reference flux levels and flux convention are supplied or inferred from grid extrema, not physically identified by this function.",
-      "The historical Wb label and other SciRel Wb/rad flux conventions have no automatic conversion; the tested coupling requires axis/edge references to share the current psi coordinate.",
-      "A zero exponent yields one even at the clipped edge; finite extrema can still trigger extreme arithmetic without a post-computation check.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "params",
+   "description": "Mapping of optional psi_axis, psi_edge and alpha controls.",
+   "units": "psi_axis and psi_edge: same as psi; alpha: dimensionless",
+   "shape": "dict; each recognized value scalar float-convertible",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Must be a dict. Missing psi_axis defaults to min(psi), missing psi_edge to max(psi), and missing alpha to 1.0. References and alpha must be finite; alpha >= 0 and abs(psi_edge-psi_axis) >= 1e-30. Unknown keys are ignored."
   }
+ ],
+ "outputs": [
+  {
+   "name": "radial_envelope",
+   "description": "Direct array return of the clipped source-order radial multiplier, not a key in a result mapping.",
+   "units": "dimensionless",
+   "shape": "same [N_Z,N_R] shape as psi",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "For successful finite arithmetic, values lie in [0,1]. An alpha of zero returns ones, even at u=1; there is no post-computation finite-output validation."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "psi is a finite nonempty 2-D grid, and params is a dict with finite scalar-convertible recognized values.",
+   "The selected axis and edge fluxes define a finite nonzero interval at least 1e-30 in absolute size."
+  ],
+  "supported": [
+   "Forward and reverse flux orientations and nonnegative power-law exponents on a clipped normalized interval.",
+   "Caller-supplied reference fluxes or grid extrema as defaults."
+  ],
+  "excluded": [
+   "Inferring a physically correct axis, edge, flux unit or pressure normalization from the grid.",
+   "A full Frank-Egedal closure, magnetic-field calculation, coordinate conversion or extrapolation beyond the clipped interval."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for a nonfinite, empty or non-2-D psi grid; non-dict params; nonfinite reference/exponent values; negative exponent; or a reference interval with abs(psi_edge-psi_axis)<1e-30. Float-conversion errors may propagate as ValueError or TypeError.",
+  "runtime_failure": "Array allocation or arithmetic errors can propagate. No general finite-output check follows the power evaluation, and extreme finite values may encounter floating-point warnings or nonfinite intermediate arithmetic.",
+  "nonconvergence": "Not applicable; evaluation is elementwise without iteration.",
+  "partial_results": "No partial array is returned on a raised exception. A successful call returns only the envelope array."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notice and public scientific reference where listed"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.frank_egedal_radial_envelope",
+   "symbol": "evaluate_frank_egedal_radial_envelope",
+   "signature": "evaluate_frank_egedal_radial_envelope(psi, params)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_frank_egedal_radial_envelope"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Apply a quadratic envelope on a grid with values both inside and outside the chosen flux interval.",
+  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_frank_egedal_radial_envelope\npsi = np.array([[-1.0, 0.0, 0.5], [1.0, 1.5, 2.0]])\nr = evaluate_frank_egedal_radial_envelope(psi, {'psi_axis': 0.0, 'psi_edge': 1.0, 'alpha': 2.0})\nnp.testing.assert_allclose(r, [[1.0, 1.0, 0.25], [0.0, 0.0, 0.0]])\nassert r.shape == psi.shape\n",
+  "expected": "Observed PASS: The clipped quadratic envelope is [[1, 1, 0.25], [0, 0, 0]] and retains the input grid shape."
+ },
+ "verification": {
+  "scope": [
+   "Direct two-row closed-form examples for quadratic and linear exponents, clipped endpoints and reverse flux orientation.",
+   "Affine flux relabeling, default reference extrema, zero exponent, input ownership and selected invalid-grid/reference cases."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_frank_egedal_radial_envelope.py",
+   "tests/operator_contracts/test_frank_egedal_radial_envelope_admitted.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Reference flux levels and flux convention are supplied or inferred from grid extrema, not physically identified by this function.",
+   "The historical Wb label and other SciRel Wb/rad flux conventions have no automatic conversion; the tested coupling requires axis/edge references to share the current psi coordinate.",
+   "A zero exponent yields one even at the clipped edge; finite extrema can still trigger extreme arithmetic without a post-computation check.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

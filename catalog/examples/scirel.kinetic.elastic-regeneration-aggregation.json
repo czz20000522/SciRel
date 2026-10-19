@@ -1,122 +1,121 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
-  "kind": "operator",
-  "title": {
-    "en": "Elastic regeneration-source channel aggregation",
-    "zh": "弹性重生散射源聚合"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
+ "title": {
+  "en": "Elastic regeneration-source channel aggregation",
+  "zh": "弹性重生散射源聚合"
+ },
+ "summary": "The channel-keyed elastic regeneration sum sum_q Omega_q[x] * M_q(vr,vx,x): each named channel contributes its one-dimensional frequency profile multiplied into its three-dimensional regenerated distribution.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "elastic-scattering",
+  "aggregation"
+ ],
+ "aliases": [
+  "aggregate_elastic_regeneration_source"
+ ],
+ "identity": {
+  "relation": "Beta_EL = sum over channels q of Omega_q[x] * M_q[vr,vx,x]",
+  "direction": "named channel frequency profiles plus regenerated distributions -> one aggregated source",
+  "definition": "The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the saved dict iteration order defines the float summation order",
+  "model": "the saved formal implementation's channel aggregation",
+  "geometry": "two velocity dimensions over one spatial axis, one term per declared channel",
+  "coordinates": "frequencies in s^-1; distributions in the source's discrete units",
+  "boundary": "matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions on one shared velocity and spatial mesh",
+  "assumptions": [
+   "Channel keys are caller-declared identifiers (e.g. species-pair names); the asset does not interpret them. All channels must use one velocity mesh; the saved arm may broadcast singleton velocity dimensions, which SciRel rejects.",
+   "Distributions and frequencies are expected nonnegative by physics and enforced so, as saved.",
+   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "frequencies_s_inv",
+   "description": "The per-channel elastic frequency profiles.",
+   "units": "s^-1",
+   "shape": "mapping name->[nx]",
+   "dtype": "mapping of real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; keys must match the distribution mapping exactly."
   },
-  "summary": "The channel-keyed elastic regeneration sum sum_q Omega_q[x] * M_q(vr,vx,x): each named channel contributes its one-dimensional frequency profile multiplied into its three-dimensional regenerated distribution.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "elastic-scattering",
-    "aggregation"
-  ],
-  "aliases": [
-    "aggregate_elastic_regeneration_source"
-  ],
-  "identity": {
-    "relation": "Beta_EL = sum over channels q of Omega_q[x] * M_q[vr,vx,x]",
-    "direction": "named channel frequency profiles plus regenerated distributions -> one aggregated source",
-    "definition": "The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the saved dict iteration order defines the float summation order",
-    "model": "the saved formal implementation's channel aggregation",
-    "geometry": "two velocity dimensions over one spatial axis, one term per declared channel",
-    "coordinates": "frequencies in s^-1; distributions in the source's discrete units",
-    "boundary": "matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions on one shared velocity and spatial mesh",
-    "assumptions": [
-      "Channel keys are caller-declared identifiers (e.g. species-pair names); the asset does not interpret them. All channels must use one velocity mesh; the saved arm may broadcast singleton velocity dimensions, which SciRel rejects.",
-      "Distributions and frequencies are expected nonnegative by physics and enforced so, as saved.",
-      "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "frequencies_s_inv",
-      "description": "The per-channel elastic frequency profiles.",
-      "units": "s^-1",
-      "shape": "mapping name->[nx]",
-      "dtype": "mapping of real array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative; keys must match the distribution mapping exactly."
-    },
-    {
-      "name": "regenerated_distributions",
-      "description": "The per-channel regenerated distributions.",
-      "units": "source-discrete",
-      "shape": "mapping name->[nvr,nvx,nx]",
-      "dtype": "mapping of real array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative; all channels use the same (nvr,nvx,nx) shape, and each spatial axis matches its frequency profile."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "regeneration_source",
-      "description": "The aggregated regeneration source.",
-      "units": "source-discrete s^-1",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and nonnegative; the saved-order channel sum."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Matching nonempty channel key sets with finite nonnegative fields aligned to one shared velocity and spatial mesh."
-    ],
-    "supported": [
-      "Elastic regeneration aggregation over caller-declared species-pair channels."
-    ],
-    "excluded": [
-      "Mismatched key sets; empty channel sets; negative or non-finite fields; spatial-axis mismatches. Broadcastable but unequal velocity meshes."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for non-mapping, mismatched or empty channels; implicit boolean, string or complex conversion; negative or non-finite fields; or distributions that do not share one (nvr,nvx,nx) mesh.",
-    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
-  },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notices"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.elastic_regeneration_aggregation",
-      "symbol": "aggregate_elastic_regeneration_source",
-      "signature": "aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distributions)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "aggregate_elastic_regeneration_source"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Aggregate two named channels and confirm the key and field fail-closed contracts.",
-    "code": "import numpy as np\nfrom scirel.kinetic import aggregate_elastic_regeneration_source\nfreqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}\ndists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}\nresult = aggregate_elastic_regeneration_source(freqs, dists)\nnp.testing.assert_array_equal(result, [[[1.5, 3.0]]])\ntry:\n    aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})\nexcept ValueError as error:\n    assert 'channel keys must match' in str(error)\nelse:\n    raise AssertionError('mismatched keys must be rejected')\n",
-    "expected": "Observed PASS: The channel-weighted sum; mismatched keys are rejected."
-  },
-  "verification": {
-    "scope": [
-      "That the aggregation equals an independent channel-weighted sum in the saved iteration order.",
-      "The key-set, real-value, common-mesh, alignment, nonnegativity and finite-output failure contracts."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_neutral_scattered_sources.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "regenerated_distributions",
+   "description": "The per-channel regenerated distributions.",
+   "units": "source-discrete",
+   "shape": "mapping name->[nvr,nvx,nx]",
+   "dtype": "mapping of real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; all channels use the same (nvr,nvx,nx) shape, and each spatial axis matches its frequency profile."
   }
+ ],
+ "outputs": [
+  {
+   "name": "regeneration_source",
+   "description": "The aggregated regeneration source.",
+   "units": "source-discrete s^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; the saved-order channel sum."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Matching nonempty channel key sets with finite nonnegative fields aligned to one shared velocity and spatial mesh."
+  ],
+  "supported": [
+   "Elastic regeneration aggregation over caller-declared species-pair channels."
+  ],
+  "excluded": [
+   "Mismatched key sets; empty channel sets; negative or non-finite fields; spatial-axis mismatches. Broadcastable but unequal velocity meshes."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-mapping, mismatched or empty channels; implicit boolean, string or complex conversion; negative or non-finite fields; or distributions that do not share one (nvr,nvx,nx) mesh.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notices"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.elastic_regeneration_aggregation",
+   "symbol": "aggregate_elastic_regeneration_source",
+   "signature": "aggregate_elastic_regeneration_source(frequencies_s_inv, regenerated_distributions)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "aggregate_elastic_regeneration_source"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Aggregate two named channels and confirm the key and field fail-closed contracts.",
+  "code": "import numpy as np\nfrom scirel.kinetic import aggregate_elastic_regeneration_source\nfreqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}\ndists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}\nresult = aggregate_elastic_regeneration_source(freqs, dists)\nnp.testing.assert_array_equal(result, [[[1.5, 3.0]]])\ntry:\n    aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})\nexcept ValueError as error:\n    assert 'channel keys must match' in str(error)\nelse:\n    raise AssertionError('mismatched keys must be rejected')\n",
+  "expected": "Observed PASS: The channel-weighted sum; mismatched keys are rejected."
+ },
+ "verification": {
+  "scope": [
+   "That the aggregation equals an independent channel-weighted sum in the saved iteration order.",
+   "The key-set, real-value, common-mesh, alignment, nonnegativity and finite-output failure contracts."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_neutral_scattered_sources.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

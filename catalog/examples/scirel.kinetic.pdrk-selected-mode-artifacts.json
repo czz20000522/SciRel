@@ -1,175 +1,174 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-selected-mode-artifacts",
-  "kind": "operator",
-  "title": {
-    "en": "Selected-mode fields and workspace artifacts",
-    "zh": "选定模态场与工作空间工件"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-selected-mode-artifacts",
+ "title": {
+  "en": "Selected-mode fields and workspace artifacts",
+  "zh": "选定模态场与工作空间工件"
+ },
+ "summary": "Produce selected-mode field/plot/workspace artifacts, retaining partial terminal state when a stored output stage fails.",
+ "taxonomy": [
+  "kinetic",
+  "magnetized-plasma",
+  "pdrk"
+ ],
+ "aliases": [
+  "PDRK source_output"
+ ],
+ "identity": {
+  "relation": "Selected-mode fields and workspace artifacts",
+  "direction": "selected plotting state -> normalized fields and artifacts",
+  "definition": "The output terminal owns its EM iout2 near-target eigensolve and shared Hermitian E normalization, then writes plots and workspace. E has unit Hermitian norm; largest represented E component is real nonnegative, first exact tie wins; B shares the scale and phase. UE=epsilon0|E|^2/2,UB=|B|^2/(2mu0). iout1 writes numeric d0=d without a new field solve.",
+  "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "assumptions": [
+   "Linear small-amplitude response.",
+   "Caller retains the explicit truncation, state provenance and normalization."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
+   "units": "mixed; physical dimensions recorded by state fields",
+   "shape": "mapping or NativeResult",
+   "dtype": "state carrier",
+   "required": true,
+   "constraints": "Must contain the complete compatible predecessor state; handcrafted inconsistent fields are outside the qualified composition."
   },
-  "summary": "Produce selected-mode field/plot/workspace artifacts, retaining partial terminal state when a stored output stage fails.",
-  "taxonomy": [
-    "kinetic",
-    "magnetized-plasma",
-    "pdrk"
-  ],
-  "aliases": [
-    "PDRK source_output"
-  ],
-  "identity": {
-    "relation": "Selected-mode fields and workspace artifacts",
-    "direction": "selected plotting state -> normalized fields and artifacts",
-    "definition": "The output terminal owns its EM iout2 near-target eigensolve and shared Hermitian E normalization, then writes plots and workspace. E has unit Hermitian norm; largest represented E component is real nonnegative, first exact tie wins; B shares the scale and phase. UE=epsilon0|E|^2/2,UB=|B|^2/(2mu0). iout1 writes numeric d0=d without a new field solve.",
-    "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
-    "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
-    "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
-    "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
-    "assumptions": [
-      "Linear small-amplitude response.",
-      "Caller retains the explicit truncation, state provenance and normalization."
-    ]
+  {
+   "name": "runtime",
+   "description": "Elapsed-time annotation supplied by caller; does not affect scientific roots.",
+   "units": "s",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "Display metadata; caller supplies finite elapsed time.",
+   "default": 0.0
   },
-  "inputs": [
-    {
-      "name": "state",
-      "description": "NativeResult or its state mapping produced by the named predecessor. Scalar numeric fields are usually1x1 native arrays; native stored dimensions are retained; trailing singleton axes may be omitted while interior singleton axes remain. Scientific numeric transport is float64/complex128; inactive fields are empty arrays, never fabricated zeros.",
-      "units": "mixed; physical dimensions recorded by state fields",
-      "shape": "mapping or NativeResult",
-      "dtype": "state carrier",
-      "required": true,
-      "constraints": "Must contain the complete compatible predecessor state; handcrafted inconsistent fields are outside the qualified composition."
-    },
-    {
-      "name": "runtime",
-      "description": "Elapsed-time annotation supplied by caller; does not affect scientific roots.",
-      "units": "s",
-      "shape": "scalar",
-      "dtype": "real numeric",
-      "required": false,
-      "constraints": "Display metadata; caller supplies finite elapsed time.",
-      "default": 0.0
-    },
-    {
-      "name": "rng_seed",
-      "description": "Optional startup rand/randn seed for controlled comparisons.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer numeric or None",
-      "required": false,
-      "constraints": "None retains native startup RNG. Applied once at action entry; no reset within a scientific kernel loop. Public examples use2718.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "Pola",
-      "description": "Zero-based channels0:6 are Ex,Ey,Ez,Bx,By,Bz, channel6 is UE and channel7 is UB; channels8:20 are reserved zero-filled slots, not computed diagnostics.",
-      "units": "E relative to unit electric amplitude; B T for E=1V/m; energy J m^-3 under that convention",
-      "shape": "(npa,npb,npl,20) when iout2 allocates; otherwise empty or supplied predecessor shape",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "iout2 allocates Pola and initializes wws2 from selected wws regardless of iem. Only completed EM iout2 computes physical fields and newly solved selected frequencies. ES iout2 zero/forwarded carriers and any partial terminal state are not qualified physical fields; no successful ES iout2 terminal is asserted. iout1 does not reconstruct and may leave empty arrays or retain supplied predecessor carriers. A failed terminal exposes partial state through SourceOutputError.result."
-    },
-    {
-      "name": "wws2",
-      "description": "Selected-frequency carrier initialized from wws; completed EM iout2 overwrites points with actually recomputed frequencies. A partial failure can retain a mixture of completed and forwarded values.",
-      "units": "omega/wcs1",
-      "shape": "For iout2: (npa,npb,npl) when npl>1 or (npa,npb) when npl=1; otherwise empty or supplied predecessor shape",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "iout2 allocates Pola and initializes wws2 from selected wws regardless of iem. Only completed EM iout2 computes physical fields and newly solved selected frequencies. ES iout2 zero/forwarded carriers and any partial terminal state are not qualified physical fields; no successful ES iout2 terminal is asserted. iout1 does not reconstruct and may leave empty arrays or retain supplied predecessor carriers. A failed terminal exposes partial state through SourceOutputError.result."
-    },
-    {
-      "name": "workspace_mat",
-      "description": "Opaque native saved-workspace bytes; writer may use Octave text format despite .mat suffix.",
-      "units": "bytes",
-      "shape": "(nbytes,1)",
-      "dtype": "uint8",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    },
-    {
-      "name": "figure_png",
-      "description": "Encoded selected output PNG.",
-      "units": "bytes",
-      "shape": "(nbytes,1)",
-      "dtype": "uint8",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    },
-    {
-      "name": "figure_native",
-      "description": "Encoded native selected output FIG.",
-      "units": "bytes",
-      "shape": "(nbytes,1)",
-      "dtype": "uint8",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Compatible selected plot carrier; EM field branch requires iem1/iout2. Zero electric mode cannot use this phase/amplitude convention."
-    ],
-    "supported": [
-      "Compatible selected plot carrier; EM field branch requires iem1/iout2. Zero electric mode cannot use this phase/amplitude convention."
-    ],
-    "excluded": [
-      "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-    "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
-    "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
-    "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.magnetized",
-      "symbol": "source_output",
-      "signature": "source_output(state, *, runtime=0.0, rng_seed=None)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.pdrk-magnetized-mode-fields"
-      }
-    ]
-  },
-  "example": {
-    "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
-    "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nscan=w.scan_spectrum({'state':eq,'rng_seed':2718})\nroots=np.asarray(scan.state['ww']);j=int(np.argmax(roots[0,0].real))\nseeds=np.array([[.2,0,roots[0,0,j]/float(np.asarray(scan.state['wcs1']).item())]])\nplotted=m.render_selected_modes(m.select_modes(m.render_spectrum(scan),seeds))\nr=m.source_output(plotted,rng_seed=2718)\nassert r.state['workspace_mat'].size>0\n",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
-  },
-  "verification": {
-    "scope": [
-      "Actual bounded canonical/fresh-holdout output graphs check normalized E, SI relative-amplitude energy, phase, newly computed d/D, grid coordinates and normalized Faraday residual<=1e-7.",
-      "Numeric iout1 writer continuity and native artifact production have separate affected closure; source-output failure retains its partial result."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_magnetized.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "Local technical development; human scientific endorsement and publication clearance remain pending.",
-      "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
-      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-      "Native FIG/workspace encodings are runtime-specific; bytes are artifacts, not a portable physical data standard.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "rng_seed",
+   "description": "Optional startup rand/randn seed for controlled comparisons.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer numeric or None",
+   "required": false,
+   "constraints": "None retains native startup RNG. Applied once at action entry; no reset within a scientific kernel loop. Public examples use2718.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "Pola",
+   "description": "Zero-based channels0:6 are Ex,Ey,Ez,Bx,By,Bz, channel6 is UE and channel7 is UB; channels8:20 are reserved zero-filled slots, not computed diagnostics.",
+   "units": "E relative to unit electric amplitude; B T for E=1V/m; energy J m^-3 under that convention",
+   "shape": "(npa,npb,npl,20) when iout2 allocates; otherwise empty or supplied predecessor shape",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "iout2 allocates Pola and initializes wws2 from selected wws regardless of iem. Only completed EM iout2 computes physical fields and newly solved selected frequencies. ES iout2 zero/forwarded carriers and any partial terminal state are not qualified physical fields; no successful ES iout2 terminal is asserted. iout1 does not reconstruct and may leave empty arrays or retain supplied predecessor carriers. A failed terminal exposes partial state through SourceOutputError.result."
+  },
+  {
+   "name": "wws2",
+   "description": "Selected-frequency carrier initialized from wws; completed EM iout2 overwrites points with actually recomputed frequencies. A partial failure can retain a mixture of completed and forwarded values.",
+   "units": "omega/wcs1",
+   "shape": "For iout2: (npa,npb,npl) when npl>1 or (npa,npb) when npl=1; otherwise empty or supplied predecessor shape",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "iout2 allocates Pola and initializes wws2 from selected wws regardless of iem. Only completed EM iout2 computes physical fields and newly solved selected frequencies. ES iout2 zero/forwarded carriers and any partial terminal state are not qualified physical fields; no successful ES iout2 terminal is asserted. iout1 does not reconstruct and may leave empty arrays or retain supplied predecessor carriers. A failed terminal exposes partial state through SourceOutputError.result."
+  },
+  {
+   "name": "workspace_mat",
+   "description": "Opaque native saved-workspace bytes; writer may use Octave text format despite .mat suffix.",
+   "units": "bytes",
+   "shape": "(nbytes,1)",
+   "dtype": "uint8",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "figure_png",
+   "description": "Encoded selected output PNG.",
+   "units": "bytes",
+   "shape": "(nbytes,1)",
+   "dtype": "uint8",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "figure_native",
+   "description": "Encoded native selected output FIG.",
+   "units": "bytes",
+   "shape": "(nbytes,1)",
+   "dtype": "uint8",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Compatible selected plot carrier; EM field branch requires iem1/iout2. Zero electric mode cannot use this phase/amplitude convention."
+  ],
+  "supported": [
+   "Compatible selected plot carrier; EM field branch requires iem1/iout2. Zero electric mode cannot use this phase/amplitude convention."
+  ],
+  "excluded": [
+   "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+  "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.magnetized",
+   "symbol": "source_output",
+   "signature": "source_output(state, *, runtime=0.0, rng_seed=None)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.pdrk-magnetized-mode-fields"
+   }
+  ]
+ },
+ "example": {
+  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nscan=w.scan_spectrum({'state':eq,'rng_seed':2718})\nroots=np.asarray(scan.state['ww']);j=int(np.argmax(roots[0,0].real))\nseeds=np.array([[.2,0,roots[0,0,j]/float(np.asarray(scan.state['wcs1']).item())]])\nplotted=m.render_selected_modes(m.select_modes(m.render_spectrum(scan),seeds))\nr=m.source_output(plotted,rng_seed=2718)\nassert r.state['workspace_mat'].size>0\n",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Actual bounded canonical/fresh-holdout output graphs check normalized E, SI relative-amplitude energy, phase, newly computed d/D, grid coordinates and normalized Faraday residual<=1e-7.",
+   "Numeric iout1 writer continuity and native artifact production have separate affected closure; source-output failure retains its partial result."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_magnetized.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+   "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+   "Native FIG/workspace encodings are runtime-specific; bytes are artifacts, not a portable physical data standard.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

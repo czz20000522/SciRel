@@ -1,172 +1,171 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-species-equilibrium",
-  "kind": "operator",
-  "title": {
-    "en": "Magnetized species equilibrium",
-    "zh": "磁化物种平衡"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-species-equilibrium",
+ "title": {
+  "en": "Magnetized species equilibrium",
+  "zh": "磁化物种平衡"
+ },
+ "summary": "Species deck to physical equilibrium, loss-cone branches, signed gyrofrequency, rational poles and finite scan controls.",
+ "taxonomy": [
+  "kinetic",
+  "magnetized-plasma",
+  "pdrk"
+ ],
+ "aliases": [
+  "PDRK initialize_equilibrium"
+ ],
+ "identity": {
+  "relation": "Magnetized species equilibrium",
+  "direction": "deck,setup -> equilibrium state",
+  "definition": "Convert q/e and m/mp to SI, temperatures eV to K and drift/c to m/s; vt_parallel=sqrt(2 kB Tparallel/m), omega_c=qB0/m, omega_p^2=nq^2/(epsilon0 m), cwp=c/omega_p1. Retain alpha==1 Maxwellian branch and separate polar/Cartesian par entries. Source constant profile: c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m, kB=1.3807e-23 J/K, qe=1.6022e-19 C, mp=1.6726e-27 kg; mu0=1/(c^2 epsilon0). Deck charge is q/qe, mass is m/mp, temperatures are eV, parallel drift is vd/c. These source approximations intentionally differ from other runtime profiles.",
+  "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "assumptions": [
+   "Linear small-amplitude response.",
+   "Caller retains the explicit truncation, state provenance and normalization."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "deck",
+   "description": "Species columns q/e,m/mp,n,Tparallel,Tperp,alpha,Delta,vd/c.",
+   "units": "mixed:1,1,m^-3,eV,eV,1,1,1",
+   "shape": "(S,8)",
+   "dtype": "real numeric array-like",
+   "required": false,
+   "constraints": "S>=1; charged q!=0,m>0,n>=0 with first n>0,Tparallel/Tperp/alpha>0,Delta in[0,1],abs(vd/c)<1; finite representable binary64. None loads packaged scenario deck.",
+   "default": null
   },
-  "summary": "Species deck to physical equilibrium, loss-cone branches, signed gyrofrequency, rational poles and finite scan controls.",
-  "taxonomy": [
-    "kinetic",
-    "magnetized-plasma",
-    "pdrk"
-  ],
-  "aliases": [
-    "PDRK initialize_equilibrium"
-  ],
-  "identity": {
-    "relation": "Magnetized species equilibrium",
-    "direction": "deck,setup -> equilibrium state",
-    "definition": "Convert q/e and m/mp to SI, temperatures eV to K and drift/c to m/s; vt_parallel=sqrt(2 kB Tparallel/m), omega_c=qB0/m, omega_p^2=nq^2/(epsilon0 m), cwp=c/omega_p1. Retain alpha==1 Maxwellian branch and separate polar/Cartesian par entries. Source constant profile: c=2.9979e8 m/s, epsilon0=8.8542e-12 F/m, kB=1.3807e-23 J/K, qe=1.6022e-19 C, mp=1.6726e-27 kg; mu0=1/(c^2 epsilon0). Deck charge is q/qe, mass is m/mp, temperatures are eV, parallel drift is vd/c. These source approximations intentionally differ from other runtime profiles.",
-    "model": "Uniform magnetized, nonrelativistic charged Gaussian species with optional gyrotropic loss-cone mixture; B0 along signed z and k=(kx,0,kz).",
-    "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
-    "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
-    "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
-    "assumptions": [
-      "Linear small-amplitude response.",
-      "Caller retains the explicit truncation, state provenance and normalization."
-    ]
+  {
+   "name": "scenario",
+   "description": "Packaged scientific setup and seed prescription.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": false,
+   "constraints": "One of default,beammode,coldplasma,dispersionsurface,es1d_beam,es3d_losscone,loss_cone_mirror; each retains its own source setup.",
+   "default": "default"
   },
-  "inputs": [
-    {
-      "name": "deck",
-      "description": "Species columns q/e,m/mp,n,Tparallel,Tperp,alpha,Delta,vd/c.",
-      "units": "mixed:1,1,m^-3,eV,eV,1,1,1",
-      "shape": "(S,8)",
-      "dtype": "real numeric array-like",
-      "required": false,
-      "constraints": "S>=1; charged q!=0,m>0,n>=0 with first n>0,Tparallel/Tperp/alpha>0,Delta in[0,1],abs(vd/c)<1; finite representable binary64. None loads packaged scenario deck.",
-      "default": null
-    },
-    {
-      "name": "scenario",
-      "description": "Packaged scientific setup and seed prescription.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": false,
-      "constraints": "One of default,beammode,coldplasma,dispersionsurface,es1d_beam,es3d_losscone,loss_cone_mirror; each retains its own source setup.",
-      "default": "default"
-    },
-    {
-      "name": "controls",
-      "description": "Explicit overrides after scenario setup and before initialization.",
-      "units": "mixed; B0 T,wg0 omega/wcs1,angles degree,k coordinates k*cwp",
-      "shape": "mapping or None",
-      "dtype": "mapping[str,numeric]",
-      "required": false,
-      "constraints": "Only iem,N,J,sp,wg0,B0,ipa,ipb,iloga,ilogb,pa1,pa2,dpa,pb1,pb2,dpb,iout. iem0/1,J4/8/12,Ninteger>=0,sp0/1,iout1/2; B0,dpa,dpb nonzero; scan pairs(1,1),(2,2),(3,3),(4,4),(1,2),(3,4). None preserves scenario defaults; default scenario uses N3,J8,B0=1e-7,sp0,wg0=1.5+.01i,ipa=ipb3,linear pa0:.01:1,iout1.",
-      "default": null
-    },
-    {
-      "name": "par",
-      "description": "Independent six-coordinate state override, without implicit synchronization between polar and Cartesian entries.",
-      "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
-      "shape": "(6,) or(6,1) or(1,6)",
-      "dtype": "real array-like or None",
-      "required": false,
-      "constraints": "Entries1..4 are normalized k,angle,kz,kx. Entries5..6 retain source slots; no new scanned physics is inferred. None preserves scenario setup.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "state",
-      "description": "Immutable result state mapping with native physical variables and source-shaped diagnostics.",
-      "units": "mixed:SI state variables and explicit dimensionless source controls",
-      "shape": "mapping",
-      "dtype": "mapping[str,numeric array/str]",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    },
-    {
-      "name": "wcs",
-      "description": "Signed species gyrofrequency.",
-      "units": "rad s^-1",
-      "shape": "(1,S)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    },
-    {
-      "name": "wps2",
-      "description": "Squared plasma frequencies.",
-      "units": "s^-2",
-      "shape": "(1,S)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    },
-    {
-      "name": "rsab",
-      "description": "Two perpendicular Gaussian weights.",
-      "units": "dimensionless",
-      "shape": "(2,S)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Charged positive-mass finite-temperature species, nonzero signed B0 and positive reference density."
-    ],
-    "supported": [
-      "Charged positive-mass finite-temperature species, nonzero signed B0 and positive reference density."
-    ],
-    "excluded": [
-      "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
-    ]
+  {
+   "name": "controls",
+   "description": "Explicit overrides after scenario setup and before initialization.",
+   "units": "mixed; B0 T,wg0 omega/wcs1,angles degree,k coordinates k*cwp",
+   "shape": "mapping or None",
+   "dtype": "mapping[str,numeric]",
+   "required": false,
+   "constraints": "Only iem,N,J,sp,wg0,B0,ipa,ipb,iloga,ilogb,pa1,pa2,dpa,pb1,pb2,dpb,iout. iem0/1,J4/8/12,Ninteger>=0,sp0/1,iout1/2; B0,dpa,dpb nonzero; scan pairs(1,1),(2,2),(3,3),(4,4),(1,2),(3,4). None preserves scenario defaults; default scenario uses N3,J8,B0=1e-7,sp0,wg0=1.5+.01i,ipa=ipb3,linear pa0:.01:1,iout1.",
+   "default": null
   },
-  "failure_semantics": {
-    "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-    "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
-    "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
-    "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.magnetized",
-      "symbol": "initialize_equilibrium",
-      "signature": "initialize_equilibrium(deck=None, *, scenario='default', controls=None, par=None)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
-    "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nassert int(eq.state['S'].item())==2\n",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
-  },
-  "verification": {
-    "scope": [
-      "SI conversion and first-species normalization, signed gyrofrequency and loss-cone branch state are bound to the preserved source convention.",
-      "Independent physical response and analytic-axis checks exercise the initialized canonical/holdout species; malformed physical deck and controls are rejected."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_magnetized.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "Local technical development; human scientific endorsement and publication clearance remain pending.",
-      "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
-      "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "par",
+   "description": "Independent six-coordinate state override, without implicit synchronization between polar and Cartesian entries.",
+   "units": "mixed:k*cwp,degree,kz*cwp,kx*cwp,1,1",
+   "shape": "(6,) or(6,1) or(1,6)",
+   "dtype": "real array-like or None",
+   "required": false,
+   "constraints": "Entries1..4 are normalized k,angle,kz,kx. Entries5..6 retain source slots; no new scanned physics is inferred. None preserves scenario setup.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "Immutable result state mapping with native physical variables and source-shaped diagnostics.",
+   "units": "mixed:SI state variables and explicit dimensionless source controls",
+   "shape": "mapping",
+   "dtype": "mapping[str,numeric array/str]",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "wcs",
+   "description": "Signed species gyrofrequency.",
+   "units": "rad s^-1",
+   "shape": "(1,S)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "wps2",
+   "description": "Squared plasma frequencies.",
+   "units": "s^-2",
+   "shape": "(1,S)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  },
+  {
+   "name": "rsab",
+   "description": "Two perpendicular Gaussian weights.",
+   "units": "dimensionless",
+   "shape": "(2,S)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Charged positive-mass finite-temperature species, nonzero signed B0 and positive reference density."
+  ],
+  "supported": [
+   "Charged positive-mass finite-temperature species, nonzero signed B0 and positive reference density."
+  ],
+  "excluded": [
+   "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
+  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError with retained result and receipt when its caught scientific terminal fails.",
+  "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
+  "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.magnetized",
+   "symbol": "initialize_equilibrium",
+   "signature": "initialize_equilibrium(deck=None, *, scenario='default', controls=None, par=None)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
+  "code": "import numpy as np\nfrom scirel.kinetic.pdrk import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nassert int(eq.state['S'].item())==2\n",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "SI conversion and first-species normalization, signed gyrofrequency and loss-cone branch state are bound to the preserved source convention.",
+   "Independent physical response and analytic-axis checks exercise the initialized canonical/holdout species; malformed physical deck and controls are rejected."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_magnetized.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+   "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

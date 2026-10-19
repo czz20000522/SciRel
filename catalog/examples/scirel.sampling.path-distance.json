@@ -1,109 +1,108 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.sampling.path-distance",
-  "kind": "operator",
-  "title": {
-    "en": "Cumulative polyline distance",
-    "zh": "折线累积距离"
-  },
-  "summary": "Accumulate Euclidean adjacent-vertex distances from zero",
-  "taxonomy": [
-    "analysis",
-    "sampling"
-  ],
-  "aliases": [
-    "get_fieldline_distance"
-  ],
-  "identity": {
-    "relation": "Cumulative polyline distance",
-    "direction": "Declared inputs to Cumulative path distance",
-    "definition": "Accumulate Euclidean adjacent-vertex distances from zero",
-    "model": "Exact polygonal chord lengths",
-    "geometry": "planar polyline vertices",
-    "coordinates": "Planar pairs in coherent length units",
-    "boundary": "Starts at zero; no implicit closing segment",
-    "assumptions": [
-      "Finite ordered planar vertices"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "flpoints",
-      "description": "Ordered planar path vertices",
-      "units": "length units",
-      "shape": "(N,2)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite supplied ordering"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "distance",
-      "description": "Cumulative path distance",
-      "units": "length units",
-      "shape": "(N,)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Nondecreasing; duplicate vertices give zero increments"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite ordered planar vertices"
-    ],
-    "supported": [
-      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-    ],
-    "excluded": [
-      "No true smooth-curve arclength or implicit closure"
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
-    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.sampling",
-      "symbol": "get_fieldline_distance",
-      "signature": "get_fieldline_distance(flpoints)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "get_fieldline_distance"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Accumulate Euclidean distance along a two-segment polyline.",
-    "code": "import numpy as np\nfrom scirel.geometry.sampling import get_fieldline_distance\n\npoints = np.array([[0.0, 0.0], [3.0, 0.0], [3.0, 4.0]])\nnp.testing.assert_allclose(get_fieldline_distance(points), [0.0, 3.0, 7.0])",
-    "expected": "Cumulative distances are [0.0, 3.0, 7.0]."
-  },
-  "verification": {
-    "scope": [
-      "Public callable signature and documented finite-input behavior",
-      "The direct regression fixtures listed in verification.tests",
-      "The executable example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/equilibrium/test_analysis_families.py"
-    ],
-    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
-    "known_limitations": [
-      "No true smooth-curve arclength or implicit closure"
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.path-distance",
+ "title": {
+  "en": "Cumulative polyline distance",
+  "zh": "折线累积距离"
+ },
+ "summary": "Accumulate Euclidean adjacent-vertex distances from zero",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "get_fieldline_distance"
+ ],
+ "identity": {
+  "relation": "Cumulative polyline distance",
+  "direction": "Declared inputs to Cumulative path distance",
+  "definition": "Accumulate Euclidean adjacent-vertex distances from zero",
+  "model": "Exact polygonal chord lengths",
+  "geometry": "planar polyline vertices",
+  "coordinates": "Planar pairs in coherent length units",
+  "boundary": "Starts at zero; no implicit closing segment",
+  "assumptions": [
+   "Finite ordered planar vertices"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "flpoints",
+   "description": "Ordered planar path vertices",
+   "units": "length units",
+   "shape": "(N,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite supplied ordering"
   }
+ ],
+ "outputs": [
+  {
+   "name": "distance",
+   "description": "Cumulative path distance",
+   "units": "length units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Nondecreasing; duplicate vertices give zero increments"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite ordered planar vertices"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "No true smooth-curve arclength or implicit closure"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "get_fieldline_distance",
+   "signature": "get_fieldline_distance(flpoints)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "get_fieldline_distance"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Accumulate Euclidean distance along a two-segment polyline.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import get_fieldline_distance\n\npoints = np.array([[0.0, 0.0], [3.0, 0.0], [3.0, 4.0]])\nnp.testing.assert_allclose(get_fieldline_distance(points), [0.0, 3.0, 7.0])",
+  "expected": "Cumulative distances are [0.0, 3.0, 7.0]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/pleiades/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "No true smooth-curve arclength or implicit closure"
+  ]
+ }
 }

@@ -1,126 +1,125 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.thermal-speed-scale",
-  "kind": "operator",
-  "title": {
-    "en": "Neutral species thermal-speed scale",
-    "zh": "中性物种热速度标度"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.thermal-speed-scale",
+ "title": {
+  "en": "Neutral species thermal-speed scale",
+  "zh": "中性物种热速度标度"
+ },
+ "summary": "The explicit second-moment thermal speed sqrt(2 e T / m) of a neutral species from its temperature in eV and a mass factor relative to the saved hydrogen mass, using frozen constants (hydrogen mass 1.6726231e-27 kg, elementary charge 1.602177e-19 J/eV).",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "thermal-speed",
+  "scale"
+ ],
+ "aliases": [
+  "compute_thermal_speed_m_s"
+ ],
+ "identity": {
+  "relation": "the second-moment thermal speed scale v = sqrt(2 e T_ev / (m_amu m_H)) with frozen constants",
+  "direction": "temperature and mass -> one thermal-speed scalar",
+  "definition": "v = sqrt(2 * 1.602177e-19 * T_ev / (m_amu * 1.6726231e-27)); the same Vth normalization the saved moment-reduction and boundary-flux relations consume",
+  "model": "the saved formal implementation's explicit scalar relation",
+  "geometry": "none; a scalar material scale",
+  "coordinates": "temperature in eV; mass_amu is a multiple of the saved hydrogen mass, not the standard atomic mass unit; speed in m/s",
+  "boundary": "Both input scalars are finite and strictly positive; the final thermal speed must be finite and positive. Intermediate conversion underflow does not exclude a representable result.",
+  "assumptions": [
+   "The frozen hydrogen mass and elementary charge are the saved source's values, not CODATA-current values.",
+   "This is a normalization scale, not a measured temperature diagnostic."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "temperature_ev",
+   "description": "Temperature of the species.",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
   },
-  "summary": "The explicit second-moment thermal speed sqrt(2 e T / m) of a neutral species from its temperature in eV and a mass factor relative to the saved hydrogen mass, using frozen constants (hydrogen mass 1.6726231e-27 kg, elementary charge 1.602177e-19 J/eV).",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "thermal-speed",
-    "scale"
-  ],
-  "aliases": [
-    "compute_thermal_speed_m_s"
-  ],
-  "identity": {
-    "relation": "the second-moment thermal speed scale v = sqrt(2 e T_ev / (m_amu m_H)) with frozen constants",
-    "direction": "temperature and mass -> one thermal-speed scalar",
-    "definition": "v = sqrt(2 * 1.602177e-19 * T_ev / (m_amu * 1.6726231e-27)); the same Vth normalization the saved moment-reduction and boundary-flux relations consume",
-    "model": "the saved formal implementation's explicit scalar relation",
-    "geometry": "none; a scalar material scale",
-    "coordinates": "temperature in eV; mass_amu is a multiple of the saved hydrogen mass, not the standard atomic mass unit; speed in m/s",
-    "boundary": "Both input scalars are finite and strictly positive; the final thermal speed must be finite and positive. Intermediate conversion underflow does not exclude a representable result.",
-    "assumptions": [
-      "The frozen hydrogen mass and elementary charge are the saved source's values, not CODATA-current values.",
-      "This is a normalization scale, not a measured temperature diagnostic."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "temperature_ev",
-      "description": "Temperature of the species.",
-      "units": "eV",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
-    },
-    {
-      "name": "mass_amu",
-      "description": "Particle mass factor relative to the saved hydrogen mass, despite the historical parameter name.",
-      "units": "multiples of 1.6726231e-27 kg",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "The thermal-speed mapping.",
-      "units": "m/s",
-      "shape": "mapping",
-      "dtype": "mapping with one float64 scalar",
-      "required": true,
-      "constraints": "Carries exactly one field thermal_speed_m_s; finite and strictly positive."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite positive temperature and mass scalars."
-    ],
-    "supported": [
-      "Thermal-speed normalization for a neutral species whose mass is supplied in saved hydrogen-mass multiples."
-    ],
-    "excluded": [
-      "Non-finite or nonpositive inputs; a non-finite result."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for boolean, string, complex or nonscalar inputs, or when temperature_ev or mass_amu is non-finite or nonpositive.",
-    "runtime_failure": "Raises ValueError only if the final speed is non-finite or nonpositive. Dangerous intermediate range uses 100-digit Decimal evaluation of the defining relation with exact binary64 inputs before final float rounding.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.thermal_speed_scale",
-      "symbol": "compute_thermal_speed_m_s",
-      "signature": "compute_thermal_speed_m_s(temperature_ev, mass_amu)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "compute_thermal_speed_m_s"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Evaluate the thermal speed for one temperature/mass pair and confirm the frozen-constant relation and the rejections.",
-    "code": "import math\nfrom scirel.kinetic import compute_thermal_speed_m_s\nresult = compute_thermal_speed_m_s(1.0, 2.0)\nassert result['thermal_speed_m_s'] == math.sqrt(2.0 * 1.602177e-19 / (2.0 * 1.6726231e-27))\nassert compute_thermal_speed_m_s(4.0, 2.0)['thermal_speed_m_s'] == 2.0 * result['thermal_speed_m_s']\ntry:\n    compute_thermal_speed_m_s(0.0, 1.0)\nexcept ValueError as error:\n    assert 'temperature_ev' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')",
-    "expected": "The frozen-constant thermal speed; quadrupling the temperature doubles the speed at fixed mass; a nonpositive temperature is rejected."
-  },
-  "verification": {
-    "scope": [
-      "That the speed equals the independent frozen-constant relation exactly.",
-      "Temperature square-root scaling and inverse-square-root mass scaling.",
-      "Input/type failures and high-precision recovery across intermediate underflow/overflow; true final overflow remains rejected.",
-      "Read-only digest-bound archived-source replay at three finite positive scalar points during integration."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_thermal_speed_and_density_reduction.py",
-      "tests/operator_contracts/test_legacy_admission_regressions.py"
-    ],
-    "evidence_ceiling": "Maintained tests establish the frozen-constant formula and declared input/final-result failures. Historical digest-bound archived-source replay found exact agreement at three ordinary finite positive scalar points; it does not establish behavior across the current corrected extreme range. Current independent Decimal100 regressions and exact-rational final-square checks establish that representable thermal speeds survive dangerous intermediate underflow/overflow while genuinely unrepresentable final results are rejected; ordinary operation order is unchanged. The earlier rejection of underflowed mass conversion remains a preserved historical failure, not the current contract. This does not prove all-input source parity, qualified D1, global physical applicability, expert approval or release.",
-    "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "The historical mass_amu name denotes saved hydrogen-mass multiples, not standard amu. Non-real coercions are rejected; dangerous intermediate range is evaluated at higher precision.",
-      "Public distribution licensing remains pending a human decision."
-    ]
+  {
+   "name": "mass_amu",
+   "description": "Particle mass factor relative to the saved hydrogen mass, despite the historical parameter name.",
+   "units": "multiples of 1.6726231e-27 kg",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "The thermal-speed mapping.",
+   "units": "m/s",
+   "shape": "mapping",
+   "dtype": "mapping with one float64 scalar",
+   "required": true,
+   "constraints": "Carries exactly one field thermal_speed_m_s; finite and strictly positive."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite positive temperature and mass scalars."
+  ],
+  "supported": [
+   "Thermal-speed normalization for a neutral species whose mass is supplied in saved hydrogen-mass multiples."
+  ],
+  "excluded": [
+   "Non-finite or nonpositive inputs; a non-finite result."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean, string, complex or nonscalar inputs, or when temperature_ev or mass_amu is non-finite or nonpositive.",
+  "runtime_failure": "Raises ValueError only if the final speed is non-finite or nonpositive. Dangerous intermediate range uses 100-digit Decimal evaluation of the defining relation with exact binary64 inputs before final float rounding.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.thermal_speed_scale",
+   "symbol": "compute_thermal_speed_m_s",
+   "signature": "compute_thermal_speed_m_s(temperature_ev, mass_amu)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "compute_thermal_speed_m_s"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the thermal speed for one temperature/mass pair and confirm the frozen-constant relation and the rejections.",
+  "code": "import math\nfrom scirel.kinetic import compute_thermal_speed_m_s\nresult = compute_thermal_speed_m_s(1.0, 2.0)\nassert result['thermal_speed_m_s'] == math.sqrt(2.0 * 1.602177e-19 / (2.0 * 1.6726231e-27))\nassert compute_thermal_speed_m_s(4.0, 2.0)['thermal_speed_m_s'] == 2.0 * result['thermal_speed_m_s']\ntry:\n    compute_thermal_speed_m_s(0.0, 1.0)\nexcept ValueError as error:\n    assert 'temperature_ev' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')",
+  "expected": "The frozen-constant thermal speed; quadrupling the temperature doubles the speed at fixed mass; a nonpositive temperature is rejected."
+ },
+ "verification": {
+  "scope": [
+   "That the speed equals the independent frozen-constant relation exactly.",
+   "Temperature square-root scaling and inverse-square-root mass scaling.",
+   "Input/type failures and high-precision recovery across intermediate underflow/overflow; true final overflow remains rejected.",
+   "Read-only digest-bound archived-source replay at three finite positive scalar points during integration."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_thermal_speed_and_density_reduction.py",
+   "tests/operator_contracts/test_legacy_admission_regressions.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish the frozen-constant formula and declared input/final-result failures. Historical digest-bound archived-source replay found exact agreement at three ordinary finite positive scalar points; it does not establish behavior across the current corrected extreme range. Current independent Decimal100 regressions and exact-rational final-square checks establish that representable thermal speeds survive dangerous intermediate underflow/overflow while genuinely unrepresentable final results are rejected; ordinary operation order is unchanged. The earlier rejection of underflowed mass conversion remains a preserved historical failure, not the current contract. This does not prove all-input source parity, qualified D1, global physical applicability, expert approval or release.",
+  "known_limitations": [
+   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "The historical mass_amu name denotes saved hydrogen-mass multiples, not standard amu. Non-real coercions are rejected; dangerous intermediate range is evaluated at higher precision.",
+   "Public distribution licensing remains pending a human decision."
+  ]
+ }
 }

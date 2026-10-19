@@ -1,244 +1,243 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
-  "kind": "operator",
-  "title": {
-    "en": "Conditioned temporal eigenspectrum",
-    "zh": "多流体时间色散谱"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
+ "title": {
+  "en": "Conditioned temporal eigenspectrum",
+  "zh": "多流体时间色散谱"
+ },
+ "summary": "Solve and independently sort temporal modes with coherent arity and real precision refinement.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "effective-multifluid"
+ ],
+ "aliases": [
+  "solve_pdrf_spectrum"
+ ],
+ "identity": {
+  "relation": "Finite generalized temporal eigenspectrum and corresponding polarizations",
+  "direction": "M,A,selectors,scales -> sorted frequencies and optional polarizations",
+  "definition": "lambda*A*X=M*X; omega=i*lambda. Apply positive diagonal physical and radix-two similarity transforms to both matrices. Initial double eig is followed, when component residual>1e-12, by actual 50-decimal mpmath inversion and eig in a private cloned context. Reject final global or active component residual>1e-10. Convert to complex128 and normalize vectors without overflowing their unscaled magnitudes. Sorting is stable and independent by real/imaginary frequency.",
+  "model": "Dense linear generalized eigenproblem, with backward-error controlled arithmetic refinement",
+  "geometry": "No additional geometry; matrix contract carries physical meaning",
+  "coordinates": "Returned columns use the original matrix state coordinates",
+  "boundary": "Nonfinite matrices/solutions, singular inertia or excessive residuals fail; repeated modes have arbitrary basis",
+  "assumptions": [
+   "SciPy double arithmetic plus mpmath1.3.0 core for genuine precision fallback.",
+   "Accuracy is limited by conditioning and rounded input coefficients; high precision is not a universal forward-error proof.",
+   "The retained four/six output vpa order split is intentionally removed; post-eig symbolic conversion provided no additional precision."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "M",
+   "description": "Temporal generator.",
+   "units": "row derivative units divided by column state units",
+   "shape": "[N,N]",
+   "dtype": "complex array-like",
+   "required": true,
+   "constraints": "Nonempty finite square matrix."
   },
-  "summary": "Solve and independently sort temporal modes with coherent arity and real precision refinement.",
-  "taxonomy": [
-    "kinetic",
-    "plasma",
-    "effective-multifluid"
-  ],
-  "aliases": [
-    "solve_pdrf_spectrum"
-  ],
-  "identity": {
-    "relation": "Finite generalized temporal eigenspectrum and corresponding polarizations",
-    "direction": "M,A,selectors,scales -> sorted frequencies and optional polarizations",
-    "definition": "lambda*A*X=M*X; omega=i*lambda. Apply positive diagonal physical and radix-two similarity transforms to both matrices. Initial double eig is followed, when component residual>1e-12, by actual 50-decimal mpmath inversion and eig in a private cloned context. Reject final global or active component residual>1e-10. Convert to complex128 and normalize vectors without overflowing their unscaled magnitudes. Sorting is stable and independent by real/imaginary frequency.",
-    "model": "Dense linear generalized eigenproblem, with backward-error controlled arithmetic refinement",
-    "geometry": "No additional geometry; matrix contract carries physical meaning",
-    "coordinates": "Returned columns use the original matrix state coordinates",
-    "boundary": "Nonfinite matrices/solutions, singular inertia or excessive residuals fail; repeated modes have arbitrary basis",
-    "assumptions": [
-      "SciPy double arithmetic plus mpmath1.3.0 core for genuine precision fallback.",
-      "Accuracy is limited by conditioning and rounded input coefficients; high precision is not a universal forward-error proof.",
-      "The retained four/six output vpa order split is intentionally removed; post-eig symbolic conversion provided no additional precision."
-    ]
+  {
+   "name": "A",
+   "description": "Inertia matrix of same size.",
+   "units": "inertia conventions paired with M",
+   "shape": "[N,N]",
+   "dtype": "complex array-like",
+   "required": true,
+   "constraints": "Nonsingular for finite modes."
   },
-  "inputs": [
-    {
-      "name": "M",
-      "description": "Temporal generator.",
-      "units": "row derivative units divided by column state units",
-      "shape": "[N,N]",
-      "dtype": "complex array-like",
-      "required": true,
-      "constraints": "Nonempty finite square matrix."
-    },
-    {
-      "name": "A",
-      "description": "Inertia matrix of same size.",
-      "units": "inertia conventions paired with M",
-      "shape": "[N,N]",
-      "dtype": "complex array-like",
-      "required": true,
-      "constraints": "Nonsingular for finite modes."
-    },
-    {
-      "name": "vectors",
-      "description": "Expose corresponding eigenvector columns.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": false,
-      "constraints": "Does not change the eigenvalue calculation path.",
-      "default": false
-    },
-    {
-      "name": "oldmethod",
-      "description": "Numerical initial solver selector.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "1 generalized SciPy eig; 2 eig of solve(A,M); both use balanced coordinates and the same refinement checks.",
-      "default": 2
-    },
-    {
-      "name": "scales",
-      "description": "Optional positive physical similarity scales.",
-      "units": "state units per component",
-      "shape": "[N] or null",
-      "dtype": "real array-like or None",
-      "required": false,
-      "constraints": "Both M and A transformed identically; radix-two balance follows. None uses balancing alone.",
-      "default": null
-    },
-    {
-      "name": "output_count",
-      "description": "Optional positional local return count.",
-      "units": "dimensionless",
-      "shape": "scalar or null",
-      "dtype": "int or None",
-      "required": false,
-      "constraints": "0..6 returns (M,A,w1,w2,X1,X2) prefix; five now has a defined X1. None returns the documented mapping.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "w1",
-      "description": "Frequencies sorted by decreasing real part.",
-      "units": "s^-1 SI or normalized frequency",
-      "shape": "[N]",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "omega=i*lambda; stable ties; not mode tracking."
-    },
-    {
-      "name": "w2",
-      "description": "Same modes sorted by decreasing imaginary part.",
-      "units": "s^-1 SI or normalized frequency",
-      "shape": "[N]",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Independent sort order."
-    },
-    {
-      "name": "X1",
-      "description": "Eigenvector columns corresponding to w1.",
-      "units": "mixed state units with max-absolute normalization",
-      "shape": "[N,N]",
-      "dtype": "complex128",
-      "required": false,
-      "constraints": "Only vectors=True (or positional return); arbitrary phase and degenerate basis.",
-      "default": null
-    },
-    {
-      "name": "X2",
-      "description": "Eigenvector columns corresponding to w2.",
-      "units": "mixed state units with max-absolute normalization",
-      "shape": "[N,N]",
-      "dtype": "complex128",
-      "required": false,
-      "constraints": "Only vectors=True (or positional return).",
-      "default": null
-    },
-    {
-      "name": "residual1",
-      "description": "Scaled global backward error for w1.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite and at most1e-10; not a forward-accuracy certificate."
-    },
-    {
-      "name": "residual2",
-      "description": "Scaled global backward error for w2.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Same criterion."
-    },
-    {
-      "name": "component_residual",
-      "description": "Maximum active component backward error.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "50-decimal fallback if double exceeds1e-12; reject if final exceeds1e-10."
-    },
-    {
-      "name": "precision",
-      "description": "Actual arithmetic path.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "string",
-      "required": true,
-      "constraints": "complex128 or mpmath-50-decimal-to-complex128; original input coefficients remain double precision."
-    },
-    {
-      "name": "oldmethod",
-      "description": "Selected initial method.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "1 or2."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite nonempty same-shaped square M and A; A nonsingular; positive finite optional similarity scales.",
-      "oldmethod in {1,2}; vectors boolean; output_count None or integer0..6. Matrix units and physical meaning are caller responsibility."
-    ],
-    "supported": [
-      "Dense generalized temporal eigenproblem with coherent values/vectors, stable independent real/imaginary sorts and backward-residual-controlled arithmetic."
-    ],
-    "excluded": [
-      "No species initialization, unit conversion, physical sign/relativity validation, scan scheduling, plotting or mode tracking.",
-      "No universal forward eigenvalue accuracy, unique degenerate polarizations or recovery of precision lost in input coefficients.",
-      "Only local authorized D2 evaluation; redistribution rights remain NOT_ESTABLISHED."
-    ]
+  {
+   "name": "vectors",
+   "description": "Expose corresponding eigenvector columns.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "Does not change the eigenvalue calculation path.",
+   "default": false
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for invalid M/A shape, nonfinite matrix/scales, selectors or singular inertia where detected.",
-    "runtime_failure": "NumPy/SciPy/mpmath failures propagate; ArithmeticError rejects nonfinite modes, zero vectors or excessive final residuals.",
-    "nonconvergence": "Underlying eigensolver failure propagates; no physical iteration or fabricated result.",
-    "partial_results": "No spectrum mapping or positional result returned after failure; no file or plotting side effects."
+  {
+   "name": "oldmethod",
+   "description": "Numerical initial solver selector.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "1 generalized SciPy eig; 2 eig of solve(A,M); both use balanced coordinates and the same refinement checks.",
+   "default": 2
   },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel PDRF effective fluid implementation with explicit state, matrix, spectrum and scan contracts; PDRK attribution and bundled notices are recorded in licenses/pdrk/NOTICE. The effective model and tests do not claim upstream approval.",
-    "source_kinds": [
-      "SciRel implementation",
-      "published PDRF relation",
-      "direct contract tests"
-    ],
-    "public_references": [
-      "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
-    ],
-    "license_status": "PDRK/PDRF source redistribution permission remains unresolved; this is a private technical development record."
+  {
+   "name": "scales",
+   "description": "Optional positive physical similarity scales.",
+   "units": "state units per component",
+   "shape": "[N] or null",
+   "dtype": "real array-like or None",
+   "required": false,
+   "constraints": "Both M and A transformed identically; radix-two balance follows. None uses balancing alone.",
+   "default": null
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrf",
-      "symbol": "solve_pdrf_spectrum",
-      "signature": "solve_pdrf_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, output_count=None)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "solve_pdrf_spectrum"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Analytic diagonal eigenspectrum.",
-    "code": "import numpy as np\nfrom scirel.kinetic import solve_pdrf_spectrum\nr = solve_pdrf_spectrum(np.diag([-1j, 2j]), np.eye(2), vectors=True)\nnp.testing.assert_allclose(r['w1'], [1, -2])",
-    "expected": "For M=diag(-i,2i) and A=I, both returned frequency orderings were [1+0j, -2+0j] with zero residuals."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrf_d2.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
-      "No branch tracking or unique phase/degenerate basis.",
-      "No source/physical species model is inferred from arbitrary matrix inputs.",
-      "Local authorized D2 only; source/paper redistribution NOT_ESTABLISHED.",
-      "Example output is a bounded runtime observation, not a universal scientific claim."
-    ]
+  {
+   "name": "output_count",
+   "description": "Optional positional local return count.",
+   "units": "dimensionless",
+   "shape": "scalar or null",
+   "dtype": "int or None",
+   "required": false,
+   "constraints": "0..6 returns (M,A,w1,w2,X1,X2) prefix; five now has a defined X1. None returns the documented mapping.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "w1",
+   "description": "Frequencies sorted by decreasing real part.",
+   "units": "s^-1 SI or normalized frequency",
+   "shape": "[N]",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "omega=i*lambda; stable ties; not mode tracking."
+  },
+  {
+   "name": "w2",
+   "description": "Same modes sorted by decreasing imaginary part.",
+   "units": "s^-1 SI or normalized frequency",
+   "shape": "[N]",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Independent sort order."
+  },
+  {
+   "name": "X1",
+   "description": "Eigenvector columns corresponding to w1.",
+   "units": "mixed state units with max-absolute normalization",
+   "shape": "[N,N]",
+   "dtype": "complex128",
+   "required": false,
+   "constraints": "Only vectors=True (or positional return); arbitrary phase and degenerate basis.",
+   "default": null
+  },
+  {
+   "name": "X2",
+   "description": "Eigenvector columns corresponding to w2.",
+   "units": "mixed state units with max-absolute normalization",
+   "shape": "[N,N]",
+   "dtype": "complex128",
+   "required": false,
+   "constraints": "Only vectors=True (or positional return).",
+   "default": null
+  },
+  {
+   "name": "residual1",
+   "description": "Scaled global backward error for w1.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and at most1e-10; not a forward-accuracy certificate."
+  },
+  {
+   "name": "residual2",
+   "description": "Scaled global backward error for w2.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Same criterion."
+  },
+  {
+   "name": "component_residual",
+   "description": "Maximum active component backward error.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "50-decimal fallback if double exceeds1e-12; reject if final exceeds1e-10."
+  },
+  {
+   "name": "precision",
+   "description": "Actual arithmetic path.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "complex128 or mpmath-50-decimal-to-complex128; original input coefficients remain double precision."
+  },
+  {
+   "name": "oldmethod",
+   "description": "Selected initial method.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "1 or2."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite nonempty same-shaped square M and A; A nonsingular; positive finite optional similarity scales.",
+   "oldmethod in {1,2}; vectors boolean; output_count None or integer0..6. Matrix units and physical meaning are caller responsibility."
+  ],
+  "supported": [
+   "Dense generalized temporal eigenproblem with coherent values/vectors, stable independent real/imaginary sorts and backward-residual-controlled arithmetic."
+  ],
+  "excluded": [
+   "No species initialization, unit conversion, physical sign/relativity validation, scan scheduling, plotting or mode tracking.",
+   "No universal forward eigenvalue accuracy, unique degenerate polarizations or recovery of precision lost in input coefficients.",
+   "Only local authorized D2 evaluation; redistribution rights remain NOT_ESTABLISHED."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for invalid M/A shape, nonfinite matrix/scales, selectors or singular inertia where detected.",
+  "runtime_failure": "NumPy/SciPy/mpmath failures propagate; ArithmeticError rejects nonfinite modes, zero vectors or excessive final residuals.",
+  "nonconvergence": "Underlying eigensolver failure propagates; no physical iteration or fabricated result.",
+  "partial_results": "No spectrum mapping or positional result returned after failure; no file or plotting side effects."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel PDRF effective fluid implementation with explicit state, matrix, spectrum and scan contracts; PDRK attribution and bundled notices are recorded in licenses/pdrk/NOTICE. The effective model and tests do not claim upstream approval.",
+  "source_kinds": [
+   "SciRel implementation",
+   "published PDRF relation",
+   "direct contract tests"
+  ],
+  "public_references": [
+   "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
+  ],
+  "license_status": "PDRK/PDRF source redistribution permission remains unresolved; this is a private technical development record."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrf",
+   "symbol": "solve_pdrf_spectrum",
+   "signature": "solve_pdrf_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, output_count=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_pdrf_spectrum"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Analytic diagonal eigenspectrum.",
+  "code": "import numpy as np\nfrom scirel.kinetic import solve_pdrf_spectrum\nr = solve_pdrf_spectrum(np.diag([-1j, 2j]), np.eye(2), vectors=True)\nnp.testing.assert_allclose(r['w1'], [1, -2])",
+  "expected": "For M=diag(-i,2i) and A=I, both returned frequency orderings were [1+0j, -2+0j] with zero residuals."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrf_d2.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
+   "No branch tracking or unique phase/degenerate basis.",
+   "No source/physical species model is inferred from arbitrary matrix inputs.",
+   "Local authorized D2 only; source/paper redistribution NOT_ESTABLISHED.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ }
 }

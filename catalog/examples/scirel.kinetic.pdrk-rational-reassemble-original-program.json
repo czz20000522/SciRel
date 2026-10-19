@@ -1,1171 +1,1170 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-rational-reassemble-original-program",
-  "kind": "task_graph",
-  "title": {
-    "en": "Corrected kinetic scientific presentation",
-    "zh": "修正动理学科学呈现"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-rational-reassemble-original-program",
+ "title": {
+  "en": "Corrected kinetic scientific presentation",
+  "zh": "修正动理学科学呈现"
+ },
+ "summary": "Compose the corrected model scan or Padé diagnostic and save scientific terminal arrays, complete carriers when needed, and labelled plots.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "frequency-dispersion"
+ ],
+ "aliases": [
+  "legacy.reassemble_original_program"
+ ],
+ "identity": {
+  "relation": "Corrected kinetic scientific presentation",
+  "direction": "Declared inputs to named scientific outputs.",
+  "definition": "Four legacy scientific purposes es1d/es3d/em/generator retained. Source D1 plots remain historical evidence, not a known-wrong corrected default. Rounded raster plots are distinct from decimal carrier state; human visual approval remains explicit.",
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "assumptions": [
+   "Model-specific deck conventions are explicit.",
+   "A numerical spectrum is not automatically a physically certified mode."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "model",
+   "description": "Scientific purpose: es1d, es3d, em or generator.",
+   "units": "not applicable",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "Explicit model selection; no implicit conversion between ES and EM deck conventions."
   },
-  "summary": "Compose the corrected model scan or Padé diagnostic and save scientific terminal arrays, complete carriers when needed, and labelled plots.",
-  "taxonomy": [
-    "kinetic",
-    "plasma",
-    "frequency-dispersion"
-  ],
-  "aliases": [
-    "legacy.reassemble_original_program"
-  ],
-  "identity": {
-    "relation": "Corrected kinetic scientific presentation",
-    "direction": "Declared inputs to named scientific outputs.",
-    "definition": "Four legacy scientific purposes es1d/es3d/em/generator retained. Source D1 plots remain historical evidence, not a known-wrong corrected default. Rounded raster plots are distinct from decimal carrier state; human visual approval remains explicit.",
-    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-    "assumptions": [
-      "Model-specific deck conventions are explicit.",
-      "A numerical spectrum is not automatically a physically certified mode."
-    ]
+  {
+   "name": "output_dir",
+   "description": "Fresh caller-owned directory for scientific arrays, complete carrier metadata where applicable, and labelled PNG.",
+   "units": "not applicable",
+   "shape": "scalar",
+   "dtype": "str or path",
+   "required": true,
+   "constraints": "Directory must not already exist; filesystem/presentation failure propagates. Human visual approval remains pending."
   },
-  "inputs": [
-    {
-      "name": "model",
-      "description": "Scientific purpose: es1d, es3d, em or generator.",
-      "units": "not applicable",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "Explicit model selection; no implicit conversion between ES and EM deck conventions."
-    },
-    {
-      "name": "output_dir",
-      "description": "Fresh caller-owned directory for scientific arrays, complete carrier metadata where applicable, and labelled PNG.",
-      "units": "not applicable",
-      "shape": "scalar",
-      "dtype": "str or path",
-      "required": true,
-      "constraints": "Directory must not already exist; filesystem/presentation failure propagates. Human visual approval remains pending."
-    },
-    {
-      "name": "points",
-      "description": "Finite ordered wavevector tuples. None uses exact original for-loop iterates: ES1D .4:-.02:.01; ES3D kx .05:.1:5,kz0; EM kc/omega_pi .01:.02:1 at71degrees.",
-      "units": "ES wavevectors dimensionless; supplied EM kx,kz in m^-1. EM default scan parameter kc/omega_pi dimensionless.",
-      "shape": "P tuples of length1 for es1d; length2 for es3d/em",
-      "dtype": "iterable of real tuples or None",
-      "required": false,
-      "constraints": "ES1D k!=0; ES3D kx²+kz²>0; EM uniform kx=kz=0 supported. Input order and all per-point carrier records preserved; no padding of differing mode counts.",
-      "default": null
-    },
-    {
-      "name": "deck",
-      "description": "Species table; None reads the packaged default for the selected model. ES1D columns q,m,n,T,vd. ES3D q,m,n,Tparallel,Tperp,vd. EM q/e,m/me,n,Tparallel,Tperp,vd/c.",
-      "units": "ES dimensionless normalized quantities; EM n in m^-3, T in eV, mass in electron masses.",
-      "shape": "Sx5 for es1d; Sx6 for es3d/em",
-      "dtype": "real array or None",
-      "required": false,
-      "constraints": "Nonzero charge; positive mass,density,temperatures; EM S>=2 for declared second-species normalizers. Finite after float64 narrowing. Applies only to es1d/es3d/em scan branch; omit for generator.",
-      "default": null
-    },
-    {
-      "name": "J",
-      "description": "Model-dependent pole order when omitted: scan models8, generator12. This metadata maps branch defaults; it is not a dictionary passed as J.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "For scan models use the supported fixed-table orders; for generator integerJ>=1 and0<=I<=2J. Omit unsupported branch controls.",
-      "default": {
-        "es1d": 8,
-        "es3d": 8,
-        "em": 8,
-        "generator": 12
-      }
-    },
-    {
-      "name": "opt",
-      "description": "ES1D table variant; None selects J4 variant2, otherwise variant1.",
-      "units": "not applicable",
-      "shape": "scalar",
-      "dtype": "integer or None",
-      "required": false,
-      "constraints": "ES1D opt1 or2. Only J4/J8 distinguish variants; other model tables do not use opt. Applies only to es1d/es3d/em scan branch; omit for generator.",
-      "default": null
-    },
-    {
-      "name": "N",
-      "description": "Retained cyclotron harmonic index n=-N,...,N. None selects ES3D10 or EM2; ES1D does not use N.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer or None",
-      "required": false,
-      "constraints": "Integer>=0 when relevant. Uniform EM k0 uses analytic gyro response independently of this cutoff, including N0. Applies only to es1d/es3d/em scan branch; omit for generator.",
-      "default": null
-    },
-    {
-      "name": "B0",
-      "description": "Signed background field along z; None selects ES3D1 or EM100e-9. ES1D has no field.",
-      "units": "ES3D normalized B; EM tesla.",
-      "shape": "scalar",
-      "dtype": "real or None",
-      "required": false,
-      "constraints": "Relevant magnetized field finite and nonzero; no inferred unmagnetized substitute. ES3D Omega_s=B0*q_s/m_s. Applies only to es1d/es3d/em scan branch; omit for generator.",
-      "default": null
-    },
-    {
-      "name": "sp",
-      "description": "Dense0 or shifted sparse1 for ES1D/EM; ES3D uses its qualified descriptor/interlacing path.",
-      "units": "not applicable",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "sp0 or1. Sparse frequency count follows solve_matrix default1; original shifted solve limitations still apply. Applies only to es1d/es3d/em scan branch; omit for generator.",
-      "default": 0
-    },
-    {
-      "name": "wg0",
-      "description": "Initial EM frequency guess normalized by source wci=abs(Omega_second). Internal physical shift begins wg0*wci and updates from the preceding selected root. ES ignores this control.",
-      "units": "dimensionless frequency ratio omega/omega_ci.",
-      "shape": "scalar",
-      "dtype": "complex",
-      "required": false,
-      "constraints": "Finite after complex128 narrowing. Ordered continuation state is owned by this call. Applies only to es1d/es3d/em scan branch; omit for generator.",
-      "default": 1.5
-    },
-    {
-      "name": "I",
-      "description": "Number of Taylor matching equations; K=2J-I inverse-power equations. Generator branch only; omit for scan models.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "Integer0<=I<=2J. Meaningful accuracy must be independently checked for selected J/I and z domain.",
-      "default": 16
-    },
-    {
-      "name": "precision",
-      "description": "Decimal coefficient/root construction precision; numeric result ports remain complex128. Generator branch only; omit for scan models.",
-      "units": "decimal digits",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "Integer>=32; repeated/unresolved roots fail explicitly. Higher precision alone does not certify finite-J approximation accuracy.",
-      "default": 80
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "Corrected scientific composition result.",
-      "units": "Per constituent relation.",
-      "shape": "mapping",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "Finite and representable in the declared numeric type."
-    },
-    {
-      "name": "artifacts",
-      "description": "Scientific arrays/plot metadata/hash inventory, human approval pending.",
-      "units": "not applicable",
-      "shape": "mapping",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "Finite and representable in the declared numeric type."
-    },
-    {
-      "name": "output_dir",
-      "description": "Owned artifact directory.",
-      "units": "not applicable",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": true,
-      "constraints": "Finite and representable in the declared numeric type."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Constituent inputs finite and representable in declared numeric ports."
-    ],
-    "supported": [
-      "Fresh caller-owned output directory and constituent scientific preconditions."
-    ],
-    "excluded": [
-      "Historical PNG identity is not claimed after scientific correction.",
-      "No rendering success implies human scientific endorsement."
-    ]
+  {
+   "name": "points",
+   "description": "Finite ordered wavevector tuples. None uses exact original for-loop iterates: ES1D .4:-.02:.01; ES3D kx .05:.1:5,kz0; EM kc/omega_pi .01:.02:1 at71degrees.",
+   "units": "ES wavevectors dimensionless; supplied EM kx,kz in m^-1. EM default scan parameter kc/omega_pi dimensionless.",
+   "shape": "P tuples of length1 for es1d; length2 for es3d/em",
+   "dtype": "iterable of real tuples or None",
+   "required": false,
+   "constraints": "ES1D k!=0; ES3D kx²+kz²>0; EM uniform kx=kz=0 supported. Input order and all per-point carrier records preserved; no padding of differing mode counts.",
+   "default": null
   },
-  "failure_semantics": {
-    "invalid_input": "Model and branch-specific constituent argument failures propagate; omit controls unsupported by the selected branch.",
-    "runtime_failure": "Constituent native/Python errors propagate; fresh output-directory creation, Matplotlib and filesystem failures propagate.",
-    "nonconvergence": "Selected scan or Padé/evaluation qualification failures stop before successful presentation.",
-    "partial_results": "Presentation may leave a partial fresh output directory if writing fails; no successful composition is returned. Numeric completion is separate from human visual approval."
+  {
+   "name": "deck",
+   "description": "Species table; None reads the packaged default for the selected model. ES1D columns q,m,n,T,vd. ES3D q,m,n,Tparallel,Tperp,vd. EM q/e,m/me,n,Tparallel,Tperp,vd/c.",
+   "units": "ES dimensionless normalized quantities; EM n in m^-3, T in eV, mass in electron masses.",
+   "shape": "Sx5 for es1d; Sx6 for es3d/em",
+   "dtype": "real array or None",
+   "required": false,
+   "constraints": "Nonzero charge; positive mass,density,temperatures; EM S>=2 for declared second-species normalizers. Finite after float64 narrowing. Applies only to es1d/es3d/em scan branch; omit for generator.",
+   "default": null
   },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+  {
+   "name": "J",
+   "description": "Model-dependent pole order when omitted: scan models8, generator12. This metadata maps branch defaults; it is not a dictionary passed as J.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "For scan models use the supported fixed-table orders; for generator integerJ>=1 and0<=I<=2J. Omit unsupported branch controls.",
+   "default": {
+    "es1d": 8,
+    "es3d": 8,
+    "em": 8,
+    "generator": 12
+   }
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.workflows",
-      "symbol": "reassemble_rational_program",
-      "signature": "reassemble_rational_program(inputs)"
-    }
+  {
+   "name": "opt",
+   "description": "ES1D table variant; None selects J4 variant2, otherwise variant1.",
+   "units": "not applicable",
+   "shape": "scalar",
+   "dtype": "integer or None",
+   "required": false,
+   "constraints": "ES1D opt1 or2. Only J4/J8 distinguish variants; other model tables do not use opt. Applies only to es1d/es3d/em scan branch; omit for generator.",
+   "default": null
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.pdrk-rational-ordered-spectrum"
-      },
-      {
-        "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator"
-      }
-    ]
+  {
+   "name": "N",
+   "description": "Retained cyclotron harmonic index n=-N,...,N. None selects ES3D10 or EM2; ES1D does not use N.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer or None",
+   "required": false,
+   "constraints": "Integer>=0 when relevant. Uniform EM k0 uses analytic gyro response independently of this cutoff, including N0. Applies only to es1d/es3d/em scan branch; omit for generator.",
+   "default": null
   },
-  "example": {
-    "description": "Corrected two-point perpendicular ES3D presentation in a fresh output directory.",
-    "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.kinetic.pdrk.workflows import reassemble_rational_program\nwith TemporaryDirectory() as td:\n    r = reassemble_rational_program({'model': 'es3d', 'output_dir': str(Path(td)/'program'), 'J': 4, 'N': 1, 'points': [(0.2, 0.0), (0.3, 0.0)]})\n    assert len(r['result']['spectra']) == 2",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+  {
+   "name": "B0",
+   "description": "Signed background field along z; None selects ES3D1 or EM100e-9. ES1D has no field.",
+   "units": "ES3D normalized B; EM tesla.",
+   "shape": "scalar",
+   "dtype": "real or None",
+   "required": false,
+   "constraints": "Relevant magnetized field finite and nonzero; no inferred unmagnetized substitute. ES3D Omega_s=B0*q_s/m_s. Applies only to es1d/es3d/em scan branch; omit for generator.",
+   "default": null
   },
-  "verification": {
-    "scope": [
-      "Source-absent installed own scientific package; exact package/resource closure.",
-      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks.",
-      "Flattened scientific input ports documented independently of the thin wrapper(inputs) calling convention."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_rational.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
-      "Finite-J/finite-N physics must be qualified for a new requested regime.",
-      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "sp",
+   "description": "Dense0 or shifted sparse1 for ES1D/EM; ES3D uses its qualified descriptor/interlacing path.",
+   "units": "not applicable",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "sp0 or1. Sparse frequency count follows solve_matrix default1; original shifted solve limitations still apply. Applies only to es1d/es3d/em scan branch; omit for generator.",
+   "default": 0
   },
-  "graph": {
-    "nodes": [
-      {
-        "id": "scan_arguments",
-        "kind": "controlled_glue",
-        "description": "If model is es1d/es3d/em, assemble the actual ordered_rational_spectrum inputs mapping; omit absent controls to retain function defaults.",
-        "inputs": [
-          "model",
-          "points",
-          "deck",
-          "J",
-          "opt",
-          "N",
-          "B0",
-          "sp",
-          "wg0"
-        ],
-        "outputs": [
-          "inputs"
-        ]
-      },
-      {
-        "id": "scan",
-        "kind": "task_graph",
-        "description": "Run the selected corrected numeric scan graph.",
-        "inputs": [
-          "inputs"
-        ],
-        "outputs": [
-          "model",
-          "points",
-          "equilibrium",
-          "pole_table",
-          "spectra",
-          "wg",
-          "mode_axis"
-        ],
-        "asset_id": "scirel.kinetic.pdrk-rational-ordered-spectrum"
-      },
-      {
-        "id": "scan_result",
-        "kind": "controlled_glue",
-        "description": "Preserve the complete scan return mapping, including every nested solution carrier.",
-        "inputs": [
-          "model",
-          "points",
-          "equilibrium",
-          "pole_table",
-          "spectra",
-          "wg",
-          "mode_axis"
-        ],
-        "outputs": [
-          "result"
-        ]
-      },
-      {
-        "id": "generator_arguments",
-        "kind": "controlled_glue",
-        "description": "If model=generator, pass only J/I/precision controls in the actual regenerate_jpole inputs mapping; unsupported scan controls are not silently accepted.",
-        "inputs": [
-          "model",
-          "J",
-          "I",
-          "precision"
-        ],
-        "outputs": [
-          "inputs"
-        ]
-      },
-      {
-        "id": "generator",
-        "kind": "task_graph",
-        "description": "Construct and evaluate the selected corrected Padé graph.",
-        "inputs": [
-          "inputs"
-        ],
-        "outputs": [
-          "J",
-          "I",
-          "K",
-          "precision_digits",
-          "bzj",
-          "czj",
-          "p",
-          "q",
-          "pq",
-          "Mpq",
-          "B",
-          "moments",
-          "high_precision_linear_residual",
-          "high_precision_root_residual",
-          "high_precision_poles",
-          "high_precision_residues",
-          "precision_claim",
-          "x",
-          "y",
-          "z",
-          "ZJ"
-        ],
-        "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator"
-      },
-      {
-        "id": "generator_result",
-        "kind": "controlled_glue",
-        "description": "Preserve the complete generator return mapping.",
-        "inputs": [
-          "J",
-          "I",
-          "K",
-          "precision_digits",
-          "bzj",
-          "czj",
-          "p",
-          "q",
-          "pq",
-          "Mpq",
-          "B",
-          "moments",
-          "high_precision_linear_residual",
-          "high_precision_root_residual",
-          "high_precision_poles",
-          "high_precision_residues",
-          "precision_claim",
-          "x",
-          "y",
-          "z",
-          "ZJ"
-        ],
-        "outputs": [
-          "result"
-        ]
-      },
-      {
-        "id": "present",
-        "kind": "controlled_glue",
-        "description": "Select exactly the completed numeric branch and call save_program(model,result,output_dir); write arrays, full decimal carrier metadata when applicable, and labelled plots. Human visual approval remains separate.",
-        "inputs": [
-          "model",
-          "output_dir",
-          "scan_result",
-          "generator_result"
-        ],
-        "outputs": [
-          "result",
-          "artifacts",
-          "output_dir"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "model"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "model"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "points"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "points"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "deck"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "deck"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "J"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "J"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "opt"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "opt"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "N"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "N"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "B0"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "B0"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "sp"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "sp"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "wg0"
-        },
-        "to": {
-          "node": "scan_arguments",
-          "port": "wg0"
-        },
-        "description": "Pass supported scan branch control.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan_arguments",
-          "port": "inputs"
-        },
-        "to": {
-          "node": "scan",
-          "port": "inputs"
-        },
-        "description": "Call the real mapping wrapper for the scan.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan",
-          "port": "model"
-        },
-        "to": {
-          "node": "scan_result",
-          "port": "model"
-        },
-        "description": "Preserve complete actual scan field.",
-        "condition": "Successful selected scan branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan",
-          "port": "points"
-        },
-        "to": {
-          "node": "scan_result",
-          "port": "points"
-        },
-        "description": "Preserve complete actual scan field.",
-        "condition": "Successful selected scan branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan",
-          "port": "equilibrium"
-        },
-        "to": {
-          "node": "scan_result",
-          "port": "equilibrium"
-        },
-        "description": "Preserve complete actual scan field.",
-        "condition": "Successful selected scan branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan",
-          "port": "pole_table"
-        },
-        "to": {
-          "node": "scan_result",
-          "port": "pole_table"
-        },
-        "description": "Preserve complete actual scan field.",
-        "condition": "Successful selected scan branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan",
-          "port": "spectra"
-        },
-        "to": {
-          "node": "scan_result",
-          "port": "spectra"
-        },
-        "description": "Preserve complete actual scan field.",
-        "condition": "Successful selected scan branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan",
-          "port": "wg"
-        },
-        "to": {
-          "node": "scan_result",
-          "port": "wg"
-        },
-        "description": "Preserve complete actual scan field.",
-        "condition": "Successful selected scan branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan",
-          "port": "mode_axis"
-        },
-        "to": {
-          "node": "scan_result",
-          "port": "mode_axis"
-        },
-        "description": "Preserve complete actual scan field.",
-        "condition": "Successful selected scan branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "model"
-        },
-        "to": {
-          "node": "generator_arguments",
-          "port": "model"
-        },
-        "description": "Pass generator branch control.",
-        "condition": "model=generator.",
-        "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "J"
-        },
-        "to": {
-          "node": "generator_arguments",
-          "port": "J"
-        },
-        "description": "Pass generator branch control.",
-        "condition": "model=generator.",
-        "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "I"
-        },
-        "to": {
-          "node": "generator_arguments",
-          "port": "I"
-        },
-        "description": "Pass generator branch control.",
-        "condition": "model=generator.",
-        "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "precision"
-        },
-        "to": {
-          "node": "generator_arguments",
-          "port": "precision"
-        },
-        "description": "Pass generator branch control.",
-        "condition": "model=generator.",
-        "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator_arguments",
-          "port": "inputs"
-        },
-        "to": {
-          "node": "generator",
-          "port": "inputs"
-        },
-        "description": "Call the real mapping wrapper for coefficient/grid evaluation.",
-        "condition": "model=generator.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "J"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "J"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "I"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "I"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "K"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "K"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "precision_digits"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "precision_digits"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "bzj"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "bzj"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "czj"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "czj"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "p"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "p"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "q"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "q"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "pq"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "pq"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "Mpq"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "Mpq"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "B"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "B"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "moments"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "moments"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "high_precision_linear_residual"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "high_precision_linear_residual"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "high_precision_root_residual"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "high_precision_root_residual"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "high_precision_poles"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "high_precision_poles"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "high_precision_residues"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "high_precision_residues"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "precision_claim"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "precision_claim"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "x"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "x"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "y"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "y"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "z"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "z"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator",
-          "port": "ZJ"
-        },
-        "to": {
-          "node": "generator_result",
-          "port": "ZJ"
-        },
-        "description": "Preserve complete actual generator field.",
-        "condition": "Successful selected generator branch.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "model"
-        },
-        "to": {
-          "node": "present",
-          "port": "model"
-        },
-        "description": "Pass caller identity/destination to actual presentation, not to a dummy branch adapter.",
-        "condition": "Successful upstream completion.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "output_dir"
-        },
-        "to": {
-          "node": "present",
-          "port": "output_dir"
-        },
-        "description": "Pass caller identity/destination to actual presentation, not to a dummy branch adapter.",
-        "condition": "Successful upstream completion.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "scan_result",
-          "port": "result"
-        },
-        "to": {
-          "node": "present",
-          "port": "scan_result"
-        },
-        "description": "Present completed scan result.",
-        "condition": "model is es1d, es3d or em.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "generator_result",
-          "port": "result"
-        },
-        "to": {
-          "node": "present",
-          "port": "generator_result"
-        },
-        "description": "Present completed coefficient/evaluation result.",
-        "condition": "model=generator.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "present",
-          "port": "result"
-        },
-        "to": {
-          "node": "$output",
-          "port": "result"
-        },
-        "description": "Return actual presentation composition field.",
-        "condition": "Successful upstream completion.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "present",
-          "port": "artifacts"
-        },
-        "to": {
-          "node": "$output",
-          "port": "artifacts"
-        },
-        "description": "Return actual presentation composition field.",
-        "condition": "Successful upstream completion.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "present",
-          "port": "output_dir"
-        },
-        "to": {
-          "node": "$output",
-          "port": "output_dir"
-        },
-        "description": "Return actual presentation composition field.",
-        "condition": "Successful upstream completion.",
-        "transform": "Identity named-field projection; units unchanged.",
-        "kind": "data",
-        "required": true
-      }
-    ],
-    "execution": {
-      "mode": "Explicit Python scientific composition; ordinary data edges form a DAG and any iteration is separately bounded.",
-      "ordering": "Choose generator iff model=generator, otherwise the selected supported scan; complete that numeric graph, then save_program with the actual model and caller output_dir.",
-      "branches": [
-        "Only one numeric branch executes. Unsupported branch keyword arguments still fail.",
-        "Fresh destination required; partial filesystem artifacts do not constitute successful scientific presentation."
-      ],
-      "state_ownership": "Invocation owns scratch, point index, carried guess and completed results; caller mappings are not mutated.",
-      "failure_propagation": "First constituent failure propagates without a successful graph result.",
-      "feedback": []
-    }
+  {
+   "name": "wg0",
+   "description": "Initial EM frequency guess normalized by source wci=abs(Omega_second). Internal physical shift begins wg0*wci and updates from the preceding selected root. ES ignores this control.",
+   "units": "dimensionless frequency ratio omega/omega_ci.",
+   "shape": "scalar",
+   "dtype": "complex",
+   "required": false,
+   "constraints": "Finite after complex128 narrowing. Ordered continuation state is owned by this call. Applies only to es1d/es3d/em scan branch; omit for generator.",
+   "default": 1.5
+  },
+  {
+   "name": "I",
+   "description": "Number of Taylor matching equations; K=2J-I inverse-power equations. Generator branch only; omit for scan models.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "Integer0<=I<=2J. Meaningful accuracy must be independently checked for selected J/I and z domain.",
+   "default": 16
+  },
+  {
+   "name": "precision",
+   "description": "Decimal coefficient/root construction precision; numeric result ports remain complex128. Generator branch only; omit for scan models.",
+   "units": "decimal digits",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "Integer>=32; repeated/unresolved roots fail explicitly. Higher precision alone does not certify finite-J approximation accuracy.",
+   "default": 80
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Corrected scientific composition result.",
+   "units": "Per constituent relation.",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Finite and representable in the declared numeric type."
+  },
+  {
+   "name": "artifacts",
+   "description": "Scientific arrays/plot metadata/hash inventory, human approval pending.",
+   "units": "not applicable",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Finite and representable in the declared numeric type."
+  },
+  {
+   "name": "output_dir",
+   "description": "Owned artifact directory.",
+   "units": "not applicable",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "Finite and representable in the declared numeric type."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Constituent inputs finite and representable in declared numeric ports."
+  ],
+  "supported": [
+   "Fresh caller-owned output directory and constituent scientific preconditions."
+  ],
+  "excluded": [
+   "Historical PNG identity is not claimed after scientific correction.",
+   "No rendering success implies human scientific endorsement."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Model and branch-specific constituent argument failures propagate; omit controls unsupported by the selected branch.",
+  "runtime_failure": "Constituent native/Python errors propagate; fresh output-directory creation, Matplotlib and filesystem failures propagate.",
+  "nonconvergence": "Selected scan or Padé/evaluation qualification failures stop before successful presentation.",
+  "partial_results": "Presentation may leave a partial fresh output directory if writing fails; no successful composition is returned. Numeric completion is separate from human visual approval."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.workflows",
+   "symbol": "reassemble_rational_program",
+   "signature": "reassemble_rational_program(inputs)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.pdrk-rational-ordered-spectrum"
+   },
+   {
+    "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator"
+   }
+  ]
+ },
+ "example": {
+  "description": "Corrected two-point perpendicular ES3D presentation in a fresh output directory.",
+  "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.kinetic.pdrk.workflows import reassemble_rational_program\nwith TemporaryDirectory() as td:\n    r = reassemble_rational_program({'model': 'es3d', 'output_dir': str(Path(td)/'program'), 'J': 4, 'N': 1, 'points': [(0.2, 0.0), (0.3, 0.0)]})\n    assert len(r['result']['spectra']) == 2",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Source-absent installed own scientific package; exact package/resource closure.",
+   "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
+   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks.",
+   "Flattened scientific input ports documented independently of the thin wrapper(inputs) calling convention."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_rational.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Finite-J/finite-N physics must be qualified for a new requested regime.",
+   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+   "Human scientific and plot approval pending.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "scan_arguments",
+    "kind": "controlled_glue",
+    "description": "If model is es1d/es3d/em, assemble the actual ordered_rational_spectrum inputs mapping; omit absent controls to retain function defaults.",
+    "inputs": [
+     "model",
+     "points",
+     "deck",
+     "J",
+     "opt",
+     "N",
+     "B0",
+     "sp",
+     "wg0"
+    ],
+    "outputs": [
+     "inputs"
+    ]
+   },
+   {
+    "id": "scan",
+    "kind": "task_graph",
+    "description": "Run the selected corrected numeric scan graph.",
+    "inputs": [
+     "inputs"
+    ],
+    "outputs": [
+     "model",
+     "points",
+     "equilibrium",
+     "pole_table",
+     "spectra",
+     "wg",
+     "mode_axis"
+    ],
+    "asset_id": "scirel.kinetic.pdrk-rational-ordered-spectrum"
+   },
+   {
+    "id": "scan_result",
+    "kind": "controlled_glue",
+    "description": "Preserve the complete scan return mapping, including every nested solution carrier.",
+    "inputs": [
+     "model",
+     "points",
+     "equilibrium",
+     "pole_table",
+     "spectra",
+     "wg",
+     "mode_axis"
+    ],
+    "outputs": [
+     "result"
+    ]
+   },
+   {
+    "id": "generator_arguments",
+    "kind": "controlled_glue",
+    "description": "If model=generator, pass only J/I/precision controls in the actual regenerate_jpole inputs mapping; unsupported scan controls are not silently accepted.",
+    "inputs": [
+     "model",
+     "J",
+     "I",
+     "precision"
+    ],
+    "outputs": [
+     "inputs"
+    ]
+   },
+   {
+    "id": "generator",
+    "kind": "task_graph",
+    "description": "Construct and evaluate the selected corrected Padé graph.",
+    "inputs": [
+     "inputs"
+    ],
+    "outputs": [
+     "J",
+     "I",
+     "K",
+     "precision_digits",
+     "bzj",
+     "czj",
+     "p",
+     "q",
+     "pq",
+     "Mpq",
+     "B",
+     "moments",
+     "high_precision_linear_residual",
+     "high_precision_root_residual",
+     "high_precision_poles",
+     "high_precision_residues",
+     "precision_claim",
+     "x",
+     "y",
+     "z",
+     "ZJ"
+    ],
+    "asset_id": "scirel.kinetic.pdrk-rational-jpole-generator"
+   },
+   {
+    "id": "generator_result",
+    "kind": "controlled_glue",
+    "description": "Preserve the complete generator return mapping.",
+    "inputs": [
+     "J",
+     "I",
+     "K",
+     "precision_digits",
+     "bzj",
+     "czj",
+     "p",
+     "q",
+     "pq",
+     "Mpq",
+     "B",
+     "moments",
+     "high_precision_linear_residual",
+     "high_precision_root_residual",
+     "high_precision_poles",
+     "high_precision_residues",
+     "precision_claim",
+     "x",
+     "y",
+     "z",
+     "ZJ"
+    ],
+    "outputs": [
+     "result"
+    ]
+   },
+   {
+    "id": "present",
+    "kind": "controlled_glue",
+    "description": "Select exactly the completed numeric branch and call save_program(model,result,output_dir); write arrays, full decimal carrier metadata when applicable, and labelled plots. Human visual approval remains separate.",
+    "inputs": [
+     "model",
+     "output_dir",
+     "scan_result",
+     "generator_result"
+    ],
+    "outputs": [
+     "result",
+     "artifacts",
+     "output_dir"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "model"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "model"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "points"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "points"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "deck"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "deck"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "J"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "J"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "opt"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "opt"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "N"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "N"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "B0"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "B0"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "sp"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "sp"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "wg0"
+    },
+    "to": {
+     "node": "scan_arguments",
+     "port": "wg0"
+    },
+    "description": "Pass supported scan branch control.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Preserve omission/default semantics; do not pass generator-only controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_arguments",
+     "port": "inputs"
+    },
+    "to": {
+     "node": "scan",
+     "port": "inputs"
+    },
+    "description": "Call the real mapping wrapper for the scan.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan",
+     "port": "model"
+    },
+    "to": {
+     "node": "scan_result",
+     "port": "model"
+    },
+    "description": "Preserve complete actual scan field.",
+    "condition": "Successful selected scan branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan",
+     "port": "points"
+    },
+    "to": {
+     "node": "scan_result",
+     "port": "points"
+    },
+    "description": "Preserve complete actual scan field.",
+    "condition": "Successful selected scan branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "scan_result",
+     "port": "equilibrium"
+    },
+    "description": "Preserve complete actual scan field.",
+    "condition": "Successful selected scan branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan",
+     "port": "pole_table"
+    },
+    "to": {
+     "node": "scan_result",
+     "port": "pole_table"
+    },
+    "description": "Preserve complete actual scan field.",
+    "condition": "Successful selected scan branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan",
+     "port": "spectra"
+    },
+    "to": {
+     "node": "scan_result",
+     "port": "spectra"
+    },
+    "description": "Preserve complete actual scan field.",
+    "condition": "Successful selected scan branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan",
+     "port": "wg"
+    },
+    "to": {
+     "node": "scan_result",
+     "port": "wg"
+    },
+    "description": "Preserve complete actual scan field.",
+    "condition": "Successful selected scan branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan",
+     "port": "mode_axis"
+    },
+    "to": {
+     "node": "scan_result",
+     "port": "mode_axis"
+    },
+    "description": "Preserve complete actual scan field.",
+    "condition": "Successful selected scan branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "model"
+    },
+    "to": {
+     "node": "generator_arguments",
+     "port": "model"
+    },
+    "description": "Pass generator branch control.",
+    "condition": "model=generator.",
+    "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "J"
+    },
+    "to": {
+     "node": "generator_arguments",
+     "port": "J"
+    },
+    "description": "Pass generator branch control.",
+    "condition": "model=generator.",
+    "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "I"
+    },
+    "to": {
+     "node": "generator_arguments",
+     "port": "I"
+    },
+    "description": "Pass generator branch control.",
+    "condition": "model=generator.",
+    "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "precision"
+    },
+    "to": {
+     "node": "generator_arguments",
+     "port": "precision"
+    },
+    "description": "Pass generator branch control.",
+    "condition": "model=generator.",
+    "transform": "Select generator defaults only when omitted; omit unsupported scan controls.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator_arguments",
+     "port": "inputs"
+    },
+    "to": {
+     "node": "generator",
+     "port": "inputs"
+    },
+    "description": "Call the real mapping wrapper for coefficient/grid evaluation.",
+    "condition": "model=generator.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "J"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "J"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "I"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "I"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "K"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "K"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "precision_digits"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "precision_digits"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "bzj"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "bzj"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "czj"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "czj"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "p"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "p"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "q"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "q"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "pq"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "pq"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "Mpq"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "Mpq"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "B"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "B"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "moments"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "moments"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "high_precision_linear_residual"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "high_precision_linear_residual"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "high_precision_root_residual"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "high_precision_root_residual"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "high_precision_poles"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "high_precision_poles"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "high_precision_residues"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "high_precision_residues"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "precision_claim"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "precision_claim"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "x"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "x"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "y"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "y"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "z"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "z"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator",
+     "port": "ZJ"
+    },
+    "to": {
+     "node": "generator_result",
+     "port": "ZJ"
+    },
+    "description": "Preserve complete actual generator field.",
+    "condition": "Successful selected generator branch.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "model"
+    },
+    "to": {
+     "node": "present",
+     "port": "model"
+    },
+    "description": "Pass caller identity/destination to actual presentation, not to a dummy branch adapter.",
+    "condition": "Successful upstream completion.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "output_dir"
+    },
+    "to": {
+     "node": "present",
+     "port": "output_dir"
+    },
+    "description": "Pass caller identity/destination to actual presentation, not to a dummy branch adapter.",
+    "condition": "Successful upstream completion.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_result",
+     "port": "result"
+    },
+    "to": {
+     "node": "present",
+     "port": "scan_result"
+    },
+    "description": "Present completed scan result.",
+    "condition": "model is es1d, es3d or em.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "generator_result",
+     "port": "result"
+    },
+    "to": {
+     "node": "present",
+     "port": "generator_result"
+    },
+    "description": "Present completed coefficient/evaluation result.",
+    "condition": "model=generator.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "present",
+     "port": "result"
+    },
+    "to": {
+     "node": "$output",
+     "port": "result"
+    },
+    "description": "Return actual presentation composition field.",
+    "condition": "Successful upstream completion.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "present",
+     "port": "artifacts"
+    },
+    "to": {
+     "node": "$output",
+     "port": "artifacts"
+    },
+    "description": "Return actual presentation composition field.",
+    "condition": "Successful upstream completion.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "present",
+     "port": "output_dir"
+    },
+    "to": {
+     "node": "$output",
+     "port": "output_dir"
+    },
+    "description": "Return actual presentation composition field.",
+    "condition": "Successful upstream completion.",
+    "transform": "Identity named-field projection; units unchanged.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "Explicit Python scientific composition; ordinary data edges form a DAG and any iteration is separately bounded.",
+   "ordering": "Choose generator iff model=generator, otherwise the selected supported scan; complete that numeric graph, then save_program with the actual model and caller output_dir.",
+   "branches": [
+    "Only one numeric branch executes. Unsupported branch keyword arguments still fail.",
+    "Fresh destination required; partial filesystem artifacts do not constitute successful scientific presentation."
+   ],
+   "state_ownership": "Invocation owns scratch, point index, carried guess and completed results; caller mappings are not mutated.",
+   "failure_propagation": "First constituent failure propagates without a successful graph result.",
+   "feedback": []
+  }
+ }
 }

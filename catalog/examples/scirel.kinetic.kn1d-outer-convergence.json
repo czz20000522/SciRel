@@ -1,132 +1,131 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.kn1d-outer-convergence",
-  "kind": "operator",
-  "title": {
-    "en": "KN1DPy top-level outer convergence",
-    "zh": "KN1DPy顶层外层收敛判据"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.kn1d-outer-convergence",
+ "title": {
+  "en": "KN1DPy top-level outer convergence",
+  "zh": "KN1DPy顶层外层收敛判据"
+ },
+ "summary": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "convergence",
+  "top-level"
+ ],
+ "aliases": [
+  "evaluate_kn1d_outer_convergence"
+ ],
+ "identity": {
+  "relation": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+  "direction": "previous and current outer-pass molecular density profiles plus truncate -> top-level reentry decision",
+  "definition": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
+  "model": "the saved KN1DPy top-level outer-pass ratio-of-max relation with truncate threshold and fail-closed domain tightenings",
+  "geometry": "one spatial axis for two aligned density profiles",
+  "coordinates": "densities in m^-3, truncate dimensionless",
+  "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error",
+  "assumptions": [
+   "The saved ratio-of-max and strict greater-than comparison with truncate are retained; this top-level threshold is separate from the inner 10*truncate relation. SciRel rejects non-real coercions and non-finite derived values.",
+   "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "previous_density_m3",
+   "description": "The density profile before the pass.",
+   "units": "m^-3",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative, one-dimensional."
   },
-  "summary": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "convergence",
-    "top-level"
-  ],
-  "aliases": [
-    "evaluate_kn1d_outer_convergence"
-  ],
-  "identity": {
-    "relation": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
-    "direction": "previous and current outer-pass molecular density profiles plus truncate -> top-level reentry decision",
-    "definition": "Evaluate the source top-level kn1d outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
-    "model": "the saved KN1DPy top-level outer-pass ratio-of-max relation with truncate threshold and fail-closed domain tightenings",
-    "geometry": "one spatial axis for two aligned density profiles",
-    "coordinates": "densities in m^-3, truncate dimensionless",
-    "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error",
-    "assumptions": [
-      "The saved ratio-of-max and strict greater-than comparison with truncate are retained; this top-level threshold is separate from the inner 10*truncate relation. SciRel rejects non-real coercions and non-finite derived values.",
-      "No external atomic-physics reference is bound: the saved package records that residual as validation_oracle_gap."
-    ]
+  {
+   "name": "current_density_m3",
+   "description": "The density profile after the pass.",
+   "units": "m^-3",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative, one-dimensional, same shape as previous."
   },
-  "inputs": [
-    {
-      "name": "previous_density_m3",
-      "description": "The density profile before the pass.",
-      "units": "m^-3",
-      "shape": "[nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, nonnegative, one-dimensional."
-    },
-    {
-      "name": "current_density_m3",
-      "description": "The density profile after the pass.",
-      "units": "m^-3",
-      "shape": "[nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, nonnegative, one-dimensional, same shape as previous."
-    },
-    {
-      "name": "truncate",
-      "description": "The convergence threshold.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "A mapping with seed_error (relative change), reentry_threshold (truncate), should_reiterate (bool), and reason ('reiterate' or 'converged').",
-      "units": "mixed (dimensionless ratio, boolean, string)",
-      "shape": "mapping",
-      "dtype": "mapping of scalars and a boolean",
-      "required": true,
-      "constraints": "Finite seed_error; reentry_threshold = truncate; should_reiterate is a Python bool."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Nonempty finite nonnegative aligned density profiles, positive current maximum and positive truncate."
-    ],
-    "supported": [
-      "Top-level molecular-density outer-pass reentry decisions."
-    ],
-    "excluded": [
-      "Non-density convergence criteria; external physical validation."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for empty, non-real, non-finite, negative or misaligned density vectors, nonpositive current maximum, or non-real/non-finite/nonpositive truncate.",
-    "runtime_failure": "Raises ValueError if finite inputs overflow seed_error.",
-    "nonconvergence": "Not applicable; this relation reports convergence, it does not iterate.",
-    "partial_results": "Never returned; a rejected call produces no result."
-  },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
-    "source_kinds": [
-      "SciRel implementation",
-      "KN1D-derived mathematical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.kn1d_outer_convergence",
-      "symbol": "evaluate_kn1d_outer_convergence",
-      "signature": "evaluate_kn1d_outer_convergence(previous_density_m3, current_density_m3, truncate)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "evaluate_kn1d_outer_convergence"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Evaluate the top-level kn1d outer-pass convergence.",
-    "code": "import numpy as np\nfrom scirel.kinetic import evaluate_kn1d_outer_convergence\nprev = np.array([100.0])\ncurr = np.array([100.05])\nresult = evaluate_kn1d_outer_convergence(prev, curr, truncate=0.1)\nassert result['should_reiterate'] is False\nassert result['reentry_threshold'] == 0.1\ncurr2 = np.array([120.0])\nresult2 = evaluate_kn1d_outer_convergence(prev, curr2, truncate=0.1)\nassert result2['should_reiterate'] is True",
-    "expected": "For current=[100.05], seed_error=0.0004997501249375028 and should_reiterate=False; for current=[120], seed_error=0.16666666666666666 and should_reiterate=True."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_convergence_accumulation.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision.",
-      "Example output is a bounded runtime observation, not a universal scientific claim."
-    ]
+  {
+   "name": "truncate",
+   "description": "The convergence threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive."
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "A mapping with seed_error (relative change), reentry_threshold (truncate), should_reiterate (bool), and reason ('reiterate' or 'converged').",
+   "units": "mixed (dimensionless ratio, boolean, string)",
+   "shape": "mapping",
+   "dtype": "mapping of scalars and a boolean",
+   "required": true,
+   "constraints": "Finite seed_error; reentry_threshold = truncate; should_reiterate is a Python bool."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Nonempty finite nonnegative aligned density profiles, positive current maximum and positive truncate."
+  ],
+  "supported": [
+   "Top-level molecular-density outer-pass reentry decisions."
+  ],
+  "excluded": [
+   "Non-density convergence criteria; external physical validation."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for empty, non-real, non-finite, negative or misaligned density vectors, nonpositive current maximum, or non-real/non-finite/nonpositive truncate.",
+  "runtime_failure": "Raises ValueError if finite inputs overflow seed_error.",
+  "nonconvergence": "Not applicable; this relation reports convergence, it does not iterate.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
+  "source_kinds": [
+   "SciRel implementation",
+   "KN1D-derived mathematical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.kn1d_outer_convergence",
+   "symbol": "evaluate_kn1d_outer_convergence",
+   "signature": "evaluate_kn1d_outer_convergence(previous_density_m3, current_density_m3, truncate)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_kn1d_outer_convergence"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the top-level kn1d outer-pass convergence.",
+  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_kn1d_outer_convergence\nprev = np.array([100.0])\ncurr = np.array([100.05])\nresult = evaluate_kn1d_outer_convergence(prev, curr, truncate=0.1)\nassert result['should_reiterate'] is False\nassert result['reentry_threshold'] == 0.1\ncurr2 = np.array([120.0])\nresult2 = evaluate_kn1d_outer_convergence(prev, curr2, truncate=0.1)\nassert result2['should_reiterate'] is True",
+  "expected": "For current=[100.05], seed_error=0.0004997501249375028 and should_reiterate=False; for current=[120], seed_error=0.16666666666666666 and should_reiterate=True."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_convergence_accumulation.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Public distribution licensing remains pending a human decision.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ }
 }

@@ -1,155 +1,154 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-parallel-em-plot",
-  "kind": "operator",
-  "title": {
-    "en": "Parallel EM figure composition",
-    "zh": "平行电磁图像组合"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-parallel-em-plot",
+ "title": {
+  "en": "Parallel EM figure composition",
+  "zh": "平行电磁图像组合"
+ },
+ "summary": "Append accepted continuation curves to an explicit native predecessor figure while retaining source styles and legend behavior.",
+ "taxonomy": [
+  "kinetic",
+  "pdrk",
+  "examples"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "Accepted kinetic continuation to a composed native figure",
+  "direction": "artifact composition",
+  "definition": "Render k*cwp and Re/Im(omega)/wcs1 onto an explicit predecessor figure; pm=-1 retains the source six-label legend composition.",
+  "model": "Visualization of an already accepted parallel kinetic continuation; no dispersion solve.",
+  "geometry": "Parallel signed-k Cartesian frequency plot.",
+  "coordinates": "Normalized k*cwp and omega/wcs1.",
+  "boundary": "Explicit predecessor figure or fresh axes.",
+  "assumptions": [
+   "cwp and wcs1 are supplied physical normalization scales.",
+   "A retained source legend does not prove arbitrary predecessor curve identities."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "graph",
+   "description": "Accepted continuation with k and omega.",
+   "units": "k m^-1; omega rad/s",
+   "shape": "matching (K,) arrays",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "No root is recomputed."
   },
-  "summary": "Append accepted continuation curves to an explicit native predecessor figure while retaining source styles and legend behavior.",
-  "taxonomy": [
-    "kinetic",
-    "pdrk",
-    "examples"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "Accepted kinetic continuation to a composed native figure",
-    "direction": "artifact composition",
-    "definition": "Render k*cwp and Re/Im(omega)/wcs1 onto an explicit predecessor figure; pm=-1 retains the source six-label legend composition.",
-    "model": "Visualization of an already accepted parallel kinetic continuation; no dispersion solve.",
-    "geometry": "Parallel signed-k Cartesian frequency plot.",
-    "coordinates": "Normalized k*cwp and omega/wcs1.",
-    "boundary": "Explicit predecessor figure or fresh axes.",
-    "assumptions": [
-      "cwp and wcs1 are supplied physical normalization scales.",
-      "A retained source legend does not prove arbitrary predecessor curve identities."
-    ]
+  {
+   "name": "state",
+   "description": "Explicit physical plot normalization.",
+   "units": "cwp m; wcs1 rad/s",
+   "shape": "mapping with scalar cwp,wcs1",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Caller supplies compatible finite nonzero normalization scales."
   },
-  "inputs": [
-    {
-      "name": "graph",
-      "description": "Accepted continuation with k and omega.",
-      "units": "k m^-1; omega rad/s",
-      "shape": "matching (K,) arrays",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "No root is recomputed."
-    },
-    {
-      "name": "state",
-      "description": "Explicit physical plot normalization.",
-      "units": "cwp m; wcs1 rad/s",
-      "shape": "mapping with scalar cwp,wcs1",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "Caller supplies compatible finite nonzero normalization scales."
-    },
-    {
-      "name": "predecessor_plot",
-      "description": "Explicit predecessor native figure and its scientific provenance.",
-      "units": "not applicable",
-      "shape": "NativeResult or mapping containing figure_native bytes, or null",
-      "dtype": "NativeResult | mapping | None",
-      "required": false,
-      "constraints": "figure_native is uint8 and preserved as bytes. None creates fresh axes; caller must establish compatible physical coordinates and curve lineage.",
-      "default": null
-    },
-    {
-      "name": "pm",
-      "description": "Circular-polarization sign about the fixed positive z basis.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "Exactly +1 or -1. This is not helicity defined along k and is not swapped when k changes sign.",
-      "default": 1
-    },
-    {
-      "name": "transport",
-      "description": "Optional explicit native executor; None uses the packaged resource closure.",
-      "units": "not applicable",
-      "shape": "object or null",
-      "dtype": "NativeTransport or None",
-      "required": false,
-      "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "NativeResult containing native FIG and PNG bytes plus decoded line, axes and legend state; receipt is execution metadata rather than a scientific quantity.",
-      "units": "line coordinates follow the plot model; artifact bytes unitless",
-      "shape": "state: figure_native/figure_png byte vectors; line_x/line_y vectors; line_offsets/line_axes/line_width; line_markers; axes_limits; legend_labels",
-      "dtype": "NativeResult with typed numeric state",
-      "required": true,
-      "constraints": "Line offsets retain the native 1-based convention. All predecessor and appended curves remain represented; the legend is source composition, not independent branch classification."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite inputs satisfying the declared units and shapes."
-    ],
-    "supported": [
-      "Fresh native figures and explicit sequential predecessor composition, pm=+1/-1."
-    ],
-    "excluded": [
-      "Inferred predecessor curve physics or an inferred six-branch identity."
-    ]
+  {
+   "name": "predecessor_plot",
+   "description": "Explicit predecessor native figure and its scientific provenance.",
+   "units": "not applicable",
+   "shape": "NativeResult or mapping containing figure_native bytes, or null",
+   "dtype": "NativeResult | mapping | None",
+   "required": false,
+   "constraints": "figure_native is uint8 and preserved as bytes. None creates fresh axes; caller must establish compatible physical coordinates and curve lineage.",
+   "default": null
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
-    "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
-    "nonconvergence": "No iterative solve is performed.",
-    "partial_results": "No partial result is returned on failure."
+  {
+   "name": "pm",
+   "description": "Circular-polarization sign about the fixed positive z basis.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Exactly +1 or -1. This is not helicity defined along k and is not swapped when k changes sign.",
+   "default": 1
   },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
-    "source_kinds": [
-      "SciRel implementation",
-      "PDRK-derived mathematical relation",
-      "direct contract tests"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.plotting",
-      "symbol": "em1d_plot",
-      "signature": "em1d_plot(graph, state, predecessor_plot=None, *, pm=1, transport=None)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.pdrk-parallel-em-continuation"
-      }
-    ]
-  },
-  "example": {
-    "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
-    "code": "import numpy as np\nfrom scirel.kinetic.pdrk.plotting import em1d_plot\nr = em1d_plot(dict(k=np.array([0.2, 0.3]), omega=np.array([0.2+0j, 0.3+0j])), dict(cwp=1.0, wcs1=1.0))\nassert r.state[\"figure_native\"].size > 0",
-    "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-      "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_examples_support.py"
-    ],
-    "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
-    "known_limitations": [
-      "Octave graphics and native figure compatibility are runtime requirements.",
-      "Human visual acceptance is separate from typed plot-data/style qualification.",
-      "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
-    ]
+  {
+   "name": "transport",
+   "description": "Optional explicit native executor; None uses the packaged resource closure.",
+   "units": "not applicable",
+   "shape": "object or null",
+   "dtype": "NativeTransport or None",
+   "required": false,
+   "constraints": "Requires a compatible external Octave runtime. No original checkout or network is consulted.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "NativeResult containing native FIG and PNG bytes plus decoded line, axes and legend state; receipt is execution metadata rather than a scientific quantity.",
+   "units": "line coordinates follow the plot model; artifact bytes unitless",
+   "shape": "state: figure_native/figure_png byte vectors; line_x/line_y vectors; line_offsets/line_axes/line_width; line_markers; axes_limits; legend_labels",
+   "dtype": "NativeResult with typed numeric state",
+   "required": true,
+   "constraints": "Line offsets retain the native 1-based convention. All predecessor and appended curves remain represented; the legend is source composition, not independent branch classification."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite inputs satisfying the declared units and shapes."
+  ],
+  "supported": [
+   "Fresh native figures and explicit sequential predecessor composition, pm=+1/-1."
+  ],
+  "excluded": [
+   "Inferred predecessor curve physics or an inferred six-branch identity."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+  "nonconvergence": "No iterative solve is performed.",
+  "partial_results": "No partial result is returned on failure."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel PDRK-derived implementation of the declared operator or graph relation; source attribution and Faddeeva obligations are retained in licenses/pdrk/NOTICE and licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. No unrestricted redistribution, external approval or universal physical validity is claimed.",
+  "source_kinds": [
+   "SciRel implementation",
+   "PDRK-derived mathematical relation",
+   "direct contract tests"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "PDRK source redistribution permission remains unresolved; bundled Faddeeva BSD obligations are retained and no public release is authorized."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.plotting",
+   "symbol": "em1d_plot",
+   "signature": "em1d_plot(graph, state, predecessor_plot=None, *, pm=1, transport=None)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.pdrk-parallel-em-continuation"
+   }
+  ]
+ },
+ "example": {
+  "description": "Requires GNU Octave on Linux amd64 for the native PDRK path; this macOS execution is NOT_RUN.",
+  "code": "import numpy as np\nfrom scirel.kinetic.pdrk.plotting import em1d_plot\nr = em1d_plot(dict(k=np.array([0.2, 0.3]), omega=np.array([0.2+0j, 0.3+0j])), dict(cwp=1.0, wcs1=1.0))\nassert r.state[\"figure_native\"].size > 0",
+  "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_examples_support.py"
+  ],
+  "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
+  "known_limitations": [
+   "Octave graphics and native figure compatibility are runtime requirements.",
+   "Human visual acceptance is separate from typed plot-data/style qualification.",
+   "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
+  ]
+ }
 }

@@ -1,242 +1,241 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
-  "kind": "operator",
-  "title": {
-    "en": "Frank-Egedal hot-ion velocity and pitch moments",
-    "zh": "Frank-Egedal 热离子速度与俯仰矩"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
+ "title": {
+  "en": "Frank-Egedal hot-ion velocity and pitch moments",
+  "zh": "Frank-Egedal 热离子速度与俯仰矩"
+ },
+ "summary": "Integrate one explicitly defined nonnegative reference population over a common speed domain for density and both pressure moments.",
+ "taxonomy": [
+  "kinetic",
+  "mirror-plasma",
+  "hot-ion-moments"
+ ],
+ "aliases": [
+  "Frank-Egedal hot-ion moments",
+  "loss-cone hot-ion pressure shapes"
+ ],
+ "identity": {
+  "relation": "Local magnetic-field magnitude and source angular modes to normalized hot-ion density and pressure shapes",
+  "direction": "(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode) -> normalized_field, xi_tp_mid, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, quadrature",
+  "definition": "Let b=B/B0, xi_max=sqrt(max(0,1-b/R)), xi_min=sqrt(max(0,1-b)), and xi0=sqrt((xi^2-(1-b))/b). Only xi_min<=xi<=xi_max belongs to the population specified at B0; for b>=R moments are zero. With s=v/v0 in the common interval [s_min,1], f=max(sum_j c_j*u_nu_j(xi0)*U(s)^(nu_j*(nu_j+1))/(s^3+vc^3),0), U(s)=[(1+vc^3)*s^3/(s^3+vc^3)]^(beta_m/3). Compute n=4*pi*integral s^2*f ds dxi, P_parallel=4*pi*integral s^4*xi^2*f ds dxi and P_perp=2*pi*integral s^4*(1-xi^2)*f ds dxi over the SAME domain. Normalize both pressures to P_parallel(b=1), density to n(b=1), requiring positive finite normalizers. Refine raw quadrature before dividing. For a zero lower cutoff and vc>0, factor the least active speed power q=min(beta_m*nu*(nu+1)) and, when q>-3, use a Gauss-Jacobi density weight v^(2+q); evaluate remaining nonnegative powers explicitly. This resolves integrable endpoint singularities without separately overflowing f and underflowing v^2.",
+  "model": "Mathematical moments of the stated nonnegative part of a finite-mode reference distribution. It is not an independently established exact Frank-Egedal kinetic solution or measured plasma population.",
+  "geometry": "A positive two-dimensional local magnetic-field magnitude on caller-supplied [Z,R] samples; no field-line geometry or spatial metric is computed.",
+  "coordinates": "The input axes and returned shape-field axes are [Z,R]. Speed is normalized by v0; xi is the implementation's nonnegative pitch cosine, and xi0 is mapped to the reference field. B0 is a field magnitude in T; all returned shape fields are dimensionless.",
+  "boundary": "Common s_min=velocity_lower, falling back to legacy perp_velocity_lower, then zero; 0<=s_min<1. For b<1, inaccessible reference orbits xi<sqrt(1-b) carry zero supplied population, instead of clipping imaginary xi0 to zero. For vc=0,s_min=0 a nonzero nonnegative density diverges logarithmically and is rejected.",
+  "assumptions": [
+   "All three moments describe the same population and integration domain.",
+   "The nonnegative-part operation is part of this explicit finite-mode model; no exact untruncated kinetic-solution claim is made.",
+   "Frank2509.17288v4 Eq16 uses common speed support, while Eq19b prints a perpendicular-only critical-speed lower bound. This implementation follows the stated common-population moment definition; an author-confirmed erratum is not established.",
+   "Changing the legacy perp_velocity_lower now changes density and parallel moments as well; this is a scientific behavior correction, not numerical compatibility with the earlier inconsistent tensor."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "magnetic_field",
+   "description": "Local magnetic-field magnitude B.",
+   "units": "T",
+   "shape": "[N_Z,N_R] two-dimensional array; an empty axis is accepted when an explicit valid B0 is supplied",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Every present value finite and strictly positive; B0 must also be positive. Without explicit B0 an empty field yields an invalid reference median."
   },
-  "summary": "Integrate one explicitly defined nonnegative reference population over a common speed domain for density and both pressure moments.",
-  "taxonomy": [
-    "kinetic",
-    "mirror-plasma",
-    "hot-ion-moments"
-  ],
-  "aliases": [
-    "Frank-Egedal hot-ion moments",
-    "loss-cone hot-ion pressure shapes"
-  ],
-  "identity": {
-    "relation": "Local magnetic-field magnitude and source angular modes to normalized hot-ion density and pressure shapes",
-    "direction": "(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode) -> normalized_field, xi_tp_mid, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, quadrature",
-    "definition": "Let b=B/B0, xi_max=sqrt(max(0,1-b/R)), xi_min=sqrt(max(0,1-b)), and xi0=sqrt((xi^2-(1-b))/b). Only xi_min<=xi<=xi_max belongs to the population specified at B0; for b>=R moments are zero. With s=v/v0 in the common interval [s_min,1], f=max(sum_j c_j*u_nu_j(xi0)*U(s)^(nu_j*(nu_j+1))/(s^3+vc^3),0), U(s)=[(1+vc^3)*s^3/(s^3+vc^3)]^(beta_m/3). Compute n=4*pi*integral s^2*f ds dxi, P_parallel=4*pi*integral s^4*xi^2*f ds dxi and P_perp=2*pi*integral s^4*(1-xi^2)*f ds dxi over the SAME domain. Normalize both pressures to P_parallel(b=1), density to n(b=1), requiring positive finite normalizers. Refine raw quadrature before dividing. For a zero lower cutoff and vc>0, factor the least active speed power q=min(beta_m*nu*(nu+1)) and, when q>-3, use a Gauss-Jacobi density weight v^(2+q); evaluate remaining nonnegative powers explicitly. This resolves integrable endpoint singularities without separately overflowing f and underflowing v^2.",
-    "model": "Mathematical moments of the stated nonnegative part of a finite-mode reference distribution. It is not an independently established exact Frank-Egedal kinetic solution or measured plasma population.",
-    "geometry": "A positive two-dimensional local magnetic-field magnitude on caller-supplied [Z,R] samples; no field-line geometry or spatial metric is computed.",
-    "coordinates": "The input axes and returned shape-field axes are [Z,R]. Speed is normalized by v0; xi is the implementation's nonnegative pitch cosine, and xi0 is mapped to the reference field. B0 is a field magnitude in T; all returned shape fields are dimensionless.",
-    "boundary": "Common s_min=velocity_lower, falling back to legacy perp_velocity_lower, then zero; 0<=s_min<1. For b<1, inaccessible reference orbits xi<sqrt(1-b) carry zero supplied population, instead of clipping imaginary xi0 to zero. For vc=0,s_min=0 a nonzero nonnegative density diverges logarithmically and is rejected.",
-    "assumptions": [
-      "All three moments describe the same population and integration domain.",
-      "The nonnegative-part operation is part of this explicit finite-mode model; no exact untruncated kinetic-solution claim is made.",
-      "Frank2509.17288v4 Eq16 uses common speed support, while Eq19b prints a perpendicular-only critical-speed lower bound. This implementation follows the stated common-population moment definition; an author-confirmed erratum is not established.",
-      "Changing the legacy perp_velocity_lower now changes density and parallel moments as well; this is a scientific behavior correction, not numerical compatibility with the earlier inconsistent tensor."
-    ]
+  {
+   "name": "params",
+   "description": "B0, mirror_ratio/turning_b, vc_over_v0, velocity_lower (legacy alias perp_velocity_lower), beta_m/zeff, initial velocity_nodes/pitch_nodes, quadrature_rtol and max_quadrature_nodes.",
+   "units": "B0: T; ratios and beta_m: dimensionless; nodes: count",
+   "shape": "mapping with scalar values",
+   "dtype": "mapping with get and numeric-convertible selected values",
+   "required": true,
+   "constraints": "B0 defaults to median(B), positive; R defaults to 2, finite >1; vc defaults to .25, finite >=0. Common lower speed defaults to 0 and lies in [0,1); specifying both aliases with different values is rejected. vc=0 with lower=0 has divergent density and is rejected; positive lower retains vc=0. beta_m defaults to zeff/2 (zeff=1) and is finite. Initial node counts int-convert to >=2. quadrature_rtol defaults to 1e-7 and is positive; max_quadrature_nodes defaults to max(768,2*max(initial counts)) and must allow at least one refinement. Negative beta is not uniformly excluded, but unresolved/nonintegrable raw moments fail convergence."
   },
-  "inputs": [
-    {
-      "name": "magnetic_field",
-      "description": "Local magnetic-field magnitude B.",
-      "units": "T",
-      "shape": "[N_Z,N_R] two-dimensional array; an empty axis is accepted when an explicit valid B0 is supplied",
-      "dtype": "real array-like converted to float64",
-      "required": true,
-      "constraints": "Every present value finite and strictly positive; B0 must also be positive. Without explicit B0 an empty field yields an invalid reference median."
-    },
-    {
-      "name": "params",
-      "description": "B0, mirror_ratio/turning_b, vc_over_v0, velocity_lower (legacy alias perp_velocity_lower), beta_m/zeff, initial velocity_nodes/pitch_nodes, quadrature_rtol and max_quadrature_nodes.",
-      "units": "B0: T; ratios and beta_m: dimensionless; nodes: count",
-      "shape": "mapping with scalar values",
-      "dtype": "mapping with get and numeric-convertible selected values",
-      "required": true,
-      "constraints": "B0 defaults to median(B), positive; R defaults to 2, finite >1; vc defaults to .25, finite >=0. Common lower speed defaults to 0 and lies in [0,1); specifying both aliases with different values is rejected. vc=0 with lower=0 has divergent density and is rejected; positive lower retains vc=0. beta_m defaults to zeff/2 (zeff=1) and is finite. Initial node counts int-convert to >=2. quadrature_rtol defaults to 1e-7 and is positive; max_quadrature_nodes defaults to max(768,2*max(initial counts)) and must allow at least one refinement. Negative beta is not uniformly excluded, but unresolved/nonintegrable raw moments fail convergence."
-    },
-    {
-      "name": "degrees",
-      "description": "Fractional angular-mode degrees paired with source_coefficients.",
-      "units": "dimensionless",
-      "shape": "nonempty one-dimensional [N_mode]",
-      "dtype": "real array-like converted to float64",
-      "required": true,
-      "constraints": "Finite and nonnegative, shape matched with source_coefficients."
-    },
-    {
-      "name": "source_coefficients",
-      "description": "Source-mode amplitudes paired with degrees.",
-      "units": "dimensionless in this normalized closure",
-      "shape": "nonempty one-dimensional [N_mode]",
-      "dtype": "real array-like converted to float64",
-      "required": true,
-      "constraints": "Finite and exactly the same shape as degrees; sign is not restricted."
-    },
-    {
-      "name": "legendre_terms",
-      "description": "Retained term count passed through to fractional_mode.",
-      "units": "count",
-      "shape": "scalar by caller convention",
-      "dtype": "not converted or validated by this operator",
-      "required": true,
-      "constraints": "Passed unchanged to each mode call; the supplied callable owns its validity checks."
-    },
-    {
-      "name": "fractional_mode",
-      "description": "Angular-mode evaluator called as fractional_mode(degree, xi0, legendre_terms).",
-      "units": "dimensionless output",
-      "shape": "callable returning values broadcast-compatible with the speed-by-pitch quadrature grid",
-      "dtype": "callable; returned values participate in float-array arithmetic",
-      "required": true,
-      "constraints": "No preflight callable or finite-output check; exceptions, shape errors and nonfinite mode values may propagate."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "normalized_field",
-      "description": "Input B divided by selected reference B0.",
-      "units": "dimensionless",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64 ndarray",
-      "required": true,
-      "constraints": "Positive and finite on validated finite inputs."
-    },
-    {
-      "name": "xi_tp_mid",
-      "description": "Reference-field trapped-pitch cosine sqrt(1-1/mirror_ratio).",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "Python float",
-      "required": true,
-      "constraints": "Strictly between zero and one for a valid finite mirror_ratio >1."
-    },
-    {
-      "name": "hot_parallel_shape",
-      "description": "Parallel pressure moment divided by the reference parallel moment.",
-      "units": "dimensionless",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64 ndarray",
-      "required": true,
-      "constraints": "Zero outside the supplied accessible pitch support. Reference pressure/density normalizers must be finite and positive; no floor replaces a zero normalizer."
-    },
-    {
-      "name": "hot_perpendicular_shape",
-      "description": "Perpendicular pressure moment divided by the reference parallel, not perpendicular, moment.",
-      "units": "dimensionless",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64 ndarray",
-      "required": true,
-      "constraints": "Zero outside the supplied accessible pitch support. Reference pressure/density normalizers must be finite and positive; no floor replaces a zero normalizer."
-    },
-    {
-      "name": "hot_density_shape",
-      "description": "Density moment divided by the reference density moment.",
-      "units": "dimensionless",
-      "shape": "[N_Z,N_R]",
-      "dtype": "float64 ndarray",
-      "required": true,
-      "constraints": "Zero outside the supplied accessible pitch support. Reference pressure/density normalizers must be finite and positive; no floor replaces a zero normalizer."
-    },
-    {
-      "name": "quadrature",
-      "description": "Requested initial Gaussian node counts.",
-      "units": "count",
-      "shape": "mapping with velocity_nodes and pitch_nodes",
-      "dtype": "dict of int",
-      "required": true,
-      "constraints": "Effective refined counts and agreement tolerance are separately reported in quadrature_convergence."
-    },
-    {
-      "name": "velocity_domain",
-      "description": "Common speed domain of all three moments.",
-      "units": "normalized speed",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "lower, upper=1 and common_to_density_and_both_pressures=True."
-    },
-    {
-      "name": "quadrature_convergence",
-      "description": "Raw-moment refinement result before normalization.",
-      "units": "counts and relative tolerance",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "Reports effective velocity_nodes, pitch_nodes, relative_tolerance and raw_moments_checked=True; finite-rule agreement is an estimate, not a proof for arbitrary angular callbacks. velocity_rule records Jacobi-factored or ordinary Legendre evaluation, with factored_density_power when applicable."
-    },
-    {
-      "name": "reference_raw_moments",
-      "description": "Raw dimensionless parallel, perpendicular and density moments at B/B0=1 before normalization.",
-      "units": "dimensionless in the stated normalized distribution",
-      "shape": "mapping with parallel, perpendicular and density",
-      "dtype": "dict of float",
-      "required": true,
-      "constraints": "Finite positive parallel and density normalizers; records the explicitly defined moment integrals rather than an independent physical validation."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "A finite nonzero integrable supplied reference population and positive B/B0.",
-      "Caller-supplied angular function and coefficients have a stated common normalization and support."
-    ],
-    "supported": [
-      "Common full or truncated speed populations, including vc=0 with positive lower cutoff.",
-      "Fields below, at and above B0 with the explicitly supplied accessible-orbit support.",
-      "Finite negative beta cases when raw-moment refinement converges."
-    ],
-    "excluded": [
-      "Unspecified populations on orbits that cannot reach B0, arbitrary callback feature discovery, zero normalizers and divergent or unresolved integrals.",
-      "A claim that the printed Eq19b discrepancy has been confirmed as an author erratum."
-    ]
+  {
+   "name": "degrees",
+   "description": "Fractional angular-mode degrees paired with source_coefficients.",
+   "units": "dimensionless",
+   "shape": "nonempty one-dimensional [N_mode]",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Finite and nonnegative, shape matched with source_coefficients."
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for invalid field/configuration/degrees, conflicting speed aliases, the logarithmically divergent zero-vc zero-cutoff density or nonpositive normalizers.",
-    "runtime_failure": "FloatingPointError for nonfinite distribution values; callback errors propagate.",
-    "nonconvergence": "RuntimeError when doubled raw-moment rules fail the requested tolerance before max_quadrature_nodes; normalized ratios are never used to conceal raw divergence.",
-    "partial_results": "None."
+  {
+   "name": "source_coefficients",
+   "description": "Source-mode amplitudes paired with degrees.",
+   "units": "dimensionless in this normalized closure",
+   "shape": "nonempty one-dimensional [N_mode]",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Finite and exactly the same shape as degrees; sign is not restricted."
   },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notice and public scientific reference where listed"
-    ],
-    "public_references": [
-      "https://arxiv.org/html/2509.17288v4"
-    ],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
+  {
+   "name": "legendre_terms",
+   "description": "Retained term count passed through to fractional_mode.",
+   "units": "count",
+   "shape": "scalar by caller convention",
+   "dtype": "not converted or validated by this operator",
+   "required": true,
+   "constraints": "Passed unchanged to each mode call; the supplied callable owns its validity checks."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.frank_egedal_hot_ion_moments",
-      "symbol": "evaluate_frank_egedal_hot_ion_moments",
-      "signature": "evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "evaluate_frank_egedal_hot_ion_moments"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Check a common constant-mode population at reference field and below it.",
-    "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments\nr=evaluate_frank_egedal_hot_ion_moments([[1.,.25]],{'B0':1.,'mirror_ratio':4.,'beta_m':0.,'velocity_lower':.2},[0.],[1.],2,lambda degree,xi,terms:np.ones_like(xi))\na=np.sqrt(.75);lo=np.sqrt(.75);hi=np.sqrt(1-.25/4)\nnp.testing.assert_allclose(r['hot_density_shape'],[[1.,(hi-lo)/a]],rtol=2e-11)\nnp.testing.assert_allclose(r['hot_perpendicular_shape'][0,0],1.5,rtol=2e-11)\nassert r['velocity_domain']['common_to_density_and_both_pressures']\n",
-    "expected": "Observed PASS: The reference perpendicular-to-parallel ratio is 1.5 for this finite cone, and below-B0 density only counts orbits reaching the reference plane."
-  },
-  "verification": {
-    "scope": [
-      "Same-population tensor and lower-cutoff regression.",
-      "Thirty-six independent polynomial moment/support cases, including b<1, closed cone and vc=0 with positive cutoff.",
-      "A divergent negative-beta raw density is rejected while a demonstrated integrable negative-beta input remains supported.",
-      "Independent 70-digit incomplete-Beta raw-moment values for degree 2 and beta=-0.1,-0.3,-0.4,-0.4999,0,0.5, including near the density-integrability boundary."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "The positive part of a finite modal sum is an explicitly modified mathematical model; arbitrary mode truncation does not establish physical positivity or kinetic equivalence.",
-      "Raw quadrature refinement is a finite numerical agreement test and cannot discover arbitrary unresolved caller-function features.",
-      "The common-domain correction changes legacy density/parallel values when perp_velocity_lower was set.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "fractional_mode",
+   "description": "Angular-mode evaluator called as fractional_mode(degree, xi0, legendre_terms).",
+   "units": "dimensionless output",
+   "shape": "callable returning values broadcast-compatible with the speed-by-pitch quadrature grid",
+   "dtype": "callable; returned values participate in float-array arithmetic",
+   "required": true,
+   "constraints": "No preflight callable or finite-output check; exceptions, shape errors and nonfinite mode values may propagate."
   }
+ ],
+ "outputs": [
+  {
+   "name": "normalized_field",
+   "description": "Input B divided by selected reference B0.",
+   "units": "dimensionless",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "Positive and finite on validated finite inputs."
+  },
+  {
+   "name": "xi_tp_mid",
+   "description": "Reference-field trapped-pitch cosine sqrt(1-1/mirror_ratio).",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "Python float",
+   "required": true,
+   "constraints": "Strictly between zero and one for a valid finite mirror_ratio >1."
+  },
+  {
+   "name": "hot_parallel_shape",
+   "description": "Parallel pressure moment divided by the reference parallel moment.",
+   "units": "dimensionless",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "Zero outside the supplied accessible pitch support. Reference pressure/density normalizers must be finite and positive; no floor replaces a zero normalizer."
+  },
+  {
+   "name": "hot_perpendicular_shape",
+   "description": "Perpendicular pressure moment divided by the reference parallel, not perpendicular, moment.",
+   "units": "dimensionless",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "Zero outside the supplied accessible pitch support. Reference pressure/density normalizers must be finite and positive; no floor replaces a zero normalizer."
+  },
+  {
+   "name": "hot_density_shape",
+   "description": "Density moment divided by the reference density moment.",
+   "units": "dimensionless",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "Zero outside the supplied accessible pitch support. Reference pressure/density normalizers must be finite and positive; no floor replaces a zero normalizer."
+  },
+  {
+   "name": "quadrature",
+   "description": "Requested initial Gaussian node counts.",
+   "units": "count",
+   "shape": "mapping with velocity_nodes and pitch_nodes",
+   "dtype": "dict of int",
+   "required": true,
+   "constraints": "Effective refined counts and agreement tolerance are separately reported in quadrature_convergence."
+  },
+  {
+   "name": "velocity_domain",
+   "description": "Common speed domain of all three moments.",
+   "units": "normalized speed",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "lower, upper=1 and common_to_density_and_both_pressures=True."
+  },
+  {
+   "name": "quadrature_convergence",
+   "description": "Raw-moment refinement result before normalization.",
+   "units": "counts and relative tolerance",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Reports effective velocity_nodes, pitch_nodes, relative_tolerance and raw_moments_checked=True; finite-rule agreement is an estimate, not a proof for arbitrary angular callbacks. velocity_rule records Jacobi-factored or ordinary Legendre evaluation, with factored_density_power when applicable."
+  },
+  {
+   "name": "reference_raw_moments",
+   "description": "Raw dimensionless parallel, perpendicular and density moments at B/B0=1 before normalization.",
+   "units": "dimensionless in the stated normalized distribution",
+   "shape": "mapping with parallel, perpendicular and density",
+   "dtype": "dict of float",
+   "required": true,
+   "constraints": "Finite positive parallel and density normalizers; records the explicitly defined moment integrals rather than an independent physical validation."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "A finite nonzero integrable supplied reference population and positive B/B0.",
+   "Caller-supplied angular function and coefficients have a stated common normalization and support."
+  ],
+  "supported": [
+   "Common full or truncated speed populations, including vc=0 with positive lower cutoff.",
+   "Fields below, at and above B0 with the explicitly supplied accessible-orbit support.",
+   "Finite negative beta cases when raw-moment refinement converges."
+  ],
+  "excluded": [
+   "Unspecified populations on orbits that cannot reach B0, arbitrary callback feature discovery, zero normalizers and divergent or unresolved integrals.",
+   "A claim that the printed Eq19b discrepancy has been confirmed as an author erratum."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for invalid field/configuration/degrees, conflicting speed aliases, the logarithmically divergent zero-vc zero-cutoff density or nonpositive normalizers.",
+  "runtime_failure": "FloatingPointError for nonfinite distribution values; callback errors propagate.",
+  "nonconvergence": "RuntimeError when doubled raw-moment rules fail the requested tolerance before max_quadrature_nodes; normalized ratios are never used to conceal raw divergence.",
+  "partial_results": "None."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/Pleiades-Anisotropy-NOTICE.txt and licenses/Pleiades-MIT.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notice and public scientific reference where listed"
+  ],
+  "public_references": [
+   "https://arxiv.org/html/2509.17288v4"
+  ],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.frank_egedal_hot_ion_moments",
+   "symbol": "evaluate_frank_egedal_hot_ion_moments",
+   "signature": "evaluate_frank_egedal_hot_ion_moments(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_frank_egedal_hot_ion_moments"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Check a common constant-mode population at reference field and below it.",
+  "code": "import numpy as np\nfrom scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments\nr=evaluate_frank_egedal_hot_ion_moments([[1.,.25]],{'B0':1.,'mirror_ratio':4.,'beta_m':0.,'velocity_lower':.2},[0.],[1.],2,lambda degree,xi,terms:np.ones_like(xi))\na=np.sqrt(.75);lo=np.sqrt(.75);hi=np.sqrt(1-.25/4)\nnp.testing.assert_allclose(r['hot_density_shape'],[[1.,(hi-lo)/a]],rtol=2e-11)\nnp.testing.assert_allclose(r['hot_perpendicular_shape'][0,0],1.5,rtol=2e-11)\nassert r['velocity_domain']['common_to_density_and_both_pressures']\n",
+  "expected": "Observed PASS: The reference perpendicular-to-parallel ratio is 1.5 for this finite cone, and below-B0 density only counts orbits reaching the reference plane."
+ },
+ "verification": {
+  "scope": [
+   "Same-population tensor and lower-cutoff regression.",
+   "Thirty-six independent polynomial moment/support cases, including b<1, closed cone and vc=0 with positive cutoff.",
+   "A divergent negative-beta raw density is rejected while a demonstrated integrable negative-beta input remains supported.",
+   "Independent 70-digit incomplete-Beta raw-moment values for degree 2 and beta=-0.1,-0.3,-0.4,-0.4999,0,0.5, including near the density-integrability boundary."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pleiades_spectral_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "The positive part of a finite modal sum is an explicitly modified mathematical model; arbitrary mode truncation does not establish physical positivity or kinetic equivalence.",
+   "Raw quadrature refinement is a finite numerical agreement test and cannot discover arbitrary unresolved caller-function features.",
+   "The common-domain correction changes legacy density/parallel values when perp_velocity_lower was set.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

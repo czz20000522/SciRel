@@ -161,7 +161,6 @@ def build_catalog(
             routes.append(
                 {
                     "asset_id": asset_id,
-                    "kind": document["kind"],
                     "taxonomy": document["taxonomy"],
                     "relation": document["identity"]["relation"],
                     "direction": document["identity"]["direction"],
@@ -179,7 +178,6 @@ def build_catalog(
             python_api = document["public_api"]["python"]
             summary = {
                 "asset_id": asset_id,
-                "kind": document["kind"],
                 "title": document["title"],
                 "summary": document["summary"],
                 "identity": {

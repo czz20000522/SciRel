@@ -1,181 +1,180 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
-  "kind": "operator",
-  "title": {
-    "en": "Terminal molecular random and total heat flux",
-    "zh": "终态分子随机与总热通量归约"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
+ "title": {
+  "en": "Terminal molecular random and total heat flux",
+  "zh": "终态分子随机与总热通量归约"
+ },
+ "summary": "Reduce a terminal H2 distribution to random and total axial energy-flux profiles with a caller-supplied thermal speed, mass ratio and cylindrical velocity quadrature.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "terminal-diagnostics",
+  "heat-flux"
+ ],
+ "aliases": [
+  "reduce_terminal_molecular_heat_flux"
+ ],
+ "identity": {
+  "relation": "terminal H2 random and total axial heat-flux reduction",
+  "direction": "terminal (vr,vx,x) distribution, normalized velocity nodes, explicit mass and thermal speed, quadrature -> two x profiles",
+  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], using the saved per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2, and m=2*mass_ratio*1.6726231e-27 kg. The random flux is 0.5*m*Vth^3 times the weighted integral of c_squared*c_x*f. Pressure is m*Vth^2/(3*1.602177e-19) times the weighted integral of c_squared*f, and axial stress is m*Vth^2/1.602177e-19 times the weighted integral of c_x^2*f minus pressure. Total flux is (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux. On finite exact arithmetic it equals the raw kinetic-energy flux 0.5*m*Vth^3 times the weighted integral of (vr^2+vx^2)*vx*f.",
+  "model": "saved KN1DPy terminal H2 energy-moment diagnostic with caller-supplied mass ratio and thermal speed",
+  "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
+  "coordinates": "radial and axial velocity nodes are dimensionless speeds normalized by the supplied thermal speed; radial nodes are nonnegative and axial nodes may be signed",
+  "boundary": "finite nonnegative nonempty three-dimensional distribution; finite one-dimensional aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio and thermal speed; positive integrated density in every x cell",
+  "assumptions": [
+   "On positive quadrature weights the random-flux field agrees with scirel.kinetic.axisymmetric-neutral-moments when its derived thermal speed equals this caller-supplied speed and molecularity is 2. The total-flux field is additional; this terminal relation allows zero weights and does not expose the intermediate pressure or stress fields.",
+   "The mass ratio multiplies the saved hydrogen mass constant, not a standard atomic mass unit; the H2 mass uses twice that factor.",
+   "The callable neither establishes the upstream terminal distribution nor validates a full KN1D terminal closure. Boolean, complex and numeric-string coercions in the saved implementation are excluded by the maintained real-numeric contract."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "radial_velocity_normalized",
+   "description": "Nonnegative normalized radial velocity nodes.",
+   "units": "v/Vth",
+   "shape": "[nvr]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative, nonempty and one-dimensional; zero nodes are allowed and no monotonicity gate is imposed."
   },
-  "summary": "Reduce a terminal H2 distribution to random and total axial energy-flux profiles with a caller-supplied thermal speed, mass ratio and cylindrical velocity quadrature.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "terminal-diagnostics",
-    "heat-flux"
-  ],
-  "aliases": [
-    "reduce_terminal_molecular_heat_flux"
-  ],
-  "identity": {
-    "relation": "terminal H2 random and total axial heat-flux reduction",
-    "direction": "terminal (vr,vx,x) distribution, normalized velocity nodes, explicit mass and thermal speed, quadrature -> two x profiles",
-    "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], using the saved per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2, and m=2*mass_ratio*1.6726231e-27 kg. The random flux is 0.5*m*Vth^3 times the weighted integral of c_squared*c_x*f. Pressure is m*Vth^2/(3*1.602177e-19) times the weighted integral of c_squared*f, and axial stress is m*Vth^2/1.602177e-19 times the weighted integral of c_x^2*f minus pressure. Total flux is (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux. On finite exact arithmetic it equals the raw kinetic-energy flux 0.5*m*Vth^3 times the weighted integral of (vr^2+vx^2)*vx*f.",
-    "model": "saved KN1DPy terminal H2 energy-moment diagnostic with caller-supplied mass ratio and thermal speed",
-    "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
-    "coordinates": "radial and axial velocity nodes are dimensionless speeds normalized by the supplied thermal speed; radial nodes are nonnegative and axial nodes may be signed",
-    "boundary": "finite nonnegative nonempty three-dimensional distribution; finite one-dimensional aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio and thermal speed; positive integrated density in every x cell",
-    "assumptions": [
-      "On positive quadrature weights the random-flux field agrees with scirel.kinetic.axisymmetric-neutral-moments when its derived thermal speed equals this caller-supplied speed and molecularity is 2. The total-flux field is additional; this terminal relation allows zero weights and does not expose the intermediate pressure or stress fields.",
-      "The mass ratio multiplies the saved hydrogen mass constant, not a standard atomic mass unit; the H2 mass uses twice that factor.",
-      "The callable neither establishes the upstream terminal distribution nor validates a full KN1D terminal closure. Boolean, complex and numeric-string coercions in the saved implementation are excluded by the maintained real-numeric contract."
-    ]
+  {
+   "name": "axial_velocity_normalized",
+   "description": "Signed normalized axial velocity nodes.",
+   "units": "v/Vth",
+   "shape": "[nvx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, nonempty and one-dimensional; zero nodes are allowed and no monotonicity gate is imposed."
   },
-  "inputs": [
-    {
-      "name": "radial_velocity_normalized",
-      "description": "Nonnegative normalized radial velocity nodes.",
-      "units": "v/Vth",
-      "shape": "[nvr]",
-      "dtype": "real numeric array-like",
-      "required": true,
-      "constraints": "Finite, nonnegative, nonempty and one-dimensional; zero nodes are allowed and no monotonicity gate is imposed."
-    },
-    {
-      "name": "axial_velocity_normalized",
-      "description": "Signed normalized axial velocity nodes.",
-      "units": "v/Vth",
-      "shape": "[nvx]",
-      "dtype": "real numeric array-like",
-      "required": true,
-      "constraints": "Finite, nonempty and one-dimensional; zero nodes are allowed and no monotonicity gate is imposed."
-    },
-    {
-      "name": "mass_ratio",
-      "description": "Positive factor of the saved hydrogen mass used for the H2 particle mass.",
-      "units": "factor of 1.6726231e-27 kg",
-      "shape": "scalar",
-      "dtype": "real numeric scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive; boolean and numeric-string coercions are rejected."
-    },
-    {
-      "name": "thermal_speed_m_s",
-      "description": "Caller-supplied H2 thermal speed.",
-      "units": "m/s",
-      "shape": "scalar",
-      "dtype": "real numeric scalar",
-      "required": true,
-      "constraints": "Finite and strictly positive; no speed is derived from temperature in this callable."
-    },
-    {
-      "name": "terminal_distribution",
-      "description": "Terminal H2 velocity distribution by spatial cell.",
-      "units": "source-normalized distribution; no implicit conversion",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real numeric array-like",
-      "required": true,
-      "constraints": "Finite, nonnegative and nonempty with exactly three axes."
-    },
-    {
-      "name": "cylindrical_weight",
-      "description": "Radial cylindrical integration measure.",
-      "units": "source-normalized radial-area measure",
-      "shape": "[nvr]",
-      "dtype": "real numeric array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative; zero cells are allowed if every integrated density remains positive."
-    },
-    {
-      "name": "dvx",
-      "description": "Normalized axial cell widths.",
-      "units": "normalized axial-speed increment",
-      "shape": "[nvx]",
-      "dtype": "real numeric array-like",
-      "required": true,
-      "constraints": "Finite and nonnegative; zero cells are allowed if every integrated density remains positive."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "random_heat_flux_profile_w_m2",
-      "description": "Centered axial random-energy flux profile.",
-      "units": "W/m^2 on the source distribution normalization",
-      "shape": "[nx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and signed; follows the centered axial velocity."
-    },
-    {
-      "name": "total_heat_flux_profile_w_m2",
-      "description": "Total axial kinetic-energy flux profile, including convective and random terms.",
-      "units": "W/m^2 on the source distribution normalization",
-      "shape": "[nx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite and signed; follows the source's pressure/stress decomposition."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The caller supplies a terminal H2 distribution aligned to the explicit cylindrical velocity quadrature.",
-      "Each spatial slice has strictly positive integrated density."
-    ],
-    "supported": [
-      "Stateless terminal H2 random and total heat-flux reduction on finite cylindrical carriers, including some zero quadrature cells."
-    ],
-    "excluded": [
-      "Terminal generation-state selection, energy-transfer rates, wall-source feedback and external physical validation."
-    ]
+  {
+   "name": "mass_ratio",
+   "description": "Positive factor of the saved hydrogen mass used for the H2 particle mass.",
+   "units": "factor of 1.6726231e-27 kg",
+   "shape": "scalar",
+   "dtype": "real numeric scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive; boolean and numeric-string coercions are rejected."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for non-real numeric or non-finite inputs, malformed axes, negative radial nodes/distribution/weights/widths, nonpositive mass ratio or thermal speed, or nonpositive integrated density.",
-    "runtime_failure": "Raises ValueError if a random or total heat-flux output becomes non-finite; no partial mapping is returned.",
-    "nonconvergence": "Not applicable; no iteration.",
-    "partial_results": "Never returned."
+  {
+   "name": "thermal_speed_m_s",
+   "description": "Caller-supplied H2 thermal speed.",
+   "units": "m/s",
+   "shape": "scalar",
+   "dtype": "real numeric scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive; no speed is derived from temperature in this callable."
   },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
+  {
+   "name": "terminal_distribution",
+   "description": "Terminal H2 velocity distribution by spatial cell.",
+   "units": "source-normalized distribution; no implicit conversion",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative and nonempty with exactly three axes."
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.terminal_heat_flux_reduction",
-      "symbol": "reduce_terminal_molecular_heat_flux",
-      "signature": "reduce_terminal_molecular_heat_flux(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "reduce_terminal_molecular_heat_flux"
-    }
+  {
+   "name": "cylindrical_weight",
+   "description": "Radial cylindrical integration measure.",
+   "units": "source-normalized radial-area measure",
+   "shape": "[nvr]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; zero cells are allowed if every integrated density remains positive."
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Reduce one terminal H2 spatial cell with a zero axial node and a zero-width cell.",
-    "code": "import numpy as np\nfrom scirel.kinetic import reduce_terminal_molecular_heat_flux\nvr = np.array([0.5, 1.0])\nvx = np.array([-1.0, 0.0, 2.0])\nf = np.ones((2, 3, 1))\nr = reduce_terminal_molecular_heat_flux(vr, vx, 1.0, 5000.0, f, np.array([1.0, 2.0]), np.array([0.5, 0.0, 0.25]))\nassert set(r) == {'random_heat_flux_profile_w_m2', 'total_heat_flux_profile_w_m2'}\nassert r['random_heat_flux_profile_w_m2'].shape == (1,)\nassert all(np.isfinite(value).all() for value in r.values())",
-    "expected": "Two finite one-cell heat-flux profiles; a zero axial node and a zero-width cell are accepted when integrated density remains positive."
-  },
-  "verification": {
-    "scope": [
-      "Independent per-cell centered and raw energy-flux integrals check both outputs on a nonuniform signed carrier.",
-      "Positive-weight random-flux overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
-      "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_terminal_molecular_heat_flux.py",
-      "tests/operator_contracts/test_terminal_molecular_heat_flux_l1.py"
-    ],
-    "evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
-    "known_limitations": [
-      "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
-      "The physical normalization of the supplied distribution requires expert review.",
-      "Public distribution licensing remains pending."
-    ]
+  {
+   "name": "dvx",
+   "description": "Normalized axial cell widths.",
+   "units": "normalized axial-speed increment",
+   "shape": "[nvx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; zero cells are allowed if every integrated density remains positive."
   }
+ ],
+ "outputs": [
+  {
+   "name": "random_heat_flux_profile_w_m2",
+   "description": "Centered axial random-energy flux profile.",
+   "units": "W/m^2 on the source distribution normalization",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and signed; follows the centered axial velocity."
+  },
+  {
+   "name": "total_heat_flux_profile_w_m2",
+   "description": "Total axial kinetic-energy flux profile, including convective and random terms.",
+   "units": "W/m^2 on the source distribution normalization",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and signed; follows the source's pressure/stress decomposition."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller supplies a terminal H2 distribution aligned to the explicit cylindrical velocity quadrature.",
+   "Each spatial slice has strictly positive integrated density."
+  ],
+  "supported": [
+   "Stateless terminal H2 random and total heat-flux reduction on finite cylindrical carriers, including some zero quadrature cells."
+  ],
+  "excluded": [
+   "Terminal generation-state selection, energy-transfer rates, wall-source feedback and external physical validation."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real numeric or non-finite inputs, malformed axes, negative radial nodes/distribution/weights/widths, nonpositive mass ratio or thermal speed, or nonpositive integrated density.",
+  "runtime_failure": "Raises ValueError if a random or total heat-flux output becomes non-finite; no partial mapping is returned.",
+  "nonconvergence": "Not applicable; no iteration.",
+  "partial_results": "Never returned."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-grid kinetic relation and preserves its explicit units, input ownership and fail-closed behavior; direct tests provide the bounded numerical evidence.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Source obligations and the internal technical boundary follow licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt; no public redistribution permission is asserted."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.terminal_heat_flux_reduction",
+   "symbol": "reduce_terminal_molecular_heat_flux",
+   "signature": "reduce_terminal_molecular_heat_flux(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, cylindrical_weight, dvx)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "reduce_terminal_molecular_heat_flux"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Reduce one terminal H2 spatial cell with a zero axial node and a zero-width cell.",
+  "code": "import numpy as np\nfrom scirel.kinetic import reduce_terminal_molecular_heat_flux\nvr = np.array([0.5, 1.0])\nvx = np.array([-1.0, 0.0, 2.0])\nf = np.ones((2, 3, 1))\nr = reduce_terminal_molecular_heat_flux(vr, vx, 1.0, 5000.0, f, np.array([1.0, 2.0]), np.array([0.5, 0.0, 0.25]))\nassert set(r) == {'random_heat_flux_profile_w_m2', 'total_heat_flux_profile_w_m2'}\nassert r['random_heat_flux_profile_w_m2'].shape == (1,)\nassert all(np.isfinite(value).all() for value in r.values())",
+  "expected": "Two finite one-cell heat-flux profiles; a zero axial node and a zero-width cell are accepted when integrated density remains positive."
+ },
+ "verification": {
+  "scope": [
+   "Independent per-cell centered and raw energy-flux integrals check both outputs on a nonuniform signed carrier.",
+   "Positive-weight random-flux overlap agrees with the existing nine-moment relation; zero-weight acceptance distinguishes their contracts.",
+   "Three SHA-gated historical cases cover exact finite replay and the saved boolean-coercion divergence."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_terminal_molecular_heat_flux.py",
+   "tests/operator_contracts/test_terminal_molecular_heat_flux_l1.py"
+  ],
+  "evidence_ceiling": "Direct and optional saved comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the upstream terminal distribution, physical normalization, whole-source D1 qualification or expert approval.",
+  "known_limitations": [
+   "The source's strict D1 qualification is withdrawn; historical parity is only bounded development evidence.",
+   "The physical normalization of the supplied distribution requires expert review.",
+   "Public distribution licensing remains pending."
+  ]
+ }
 }

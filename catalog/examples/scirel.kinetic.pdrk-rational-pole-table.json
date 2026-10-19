@@ -1,148 +1,147 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-rational-pole-table",
-  "kind": "operator",
-  "title": {
-    "en": "Maxwellian rational pole table",
-    "zh": "麦克斯韦有理极点表"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-rational-pole-table",
+ "title": {
+  "en": "Maxwellian rational pole table",
+  "zh": "麦克斯韦有理极点表"
+ },
+ "summary": "Select an explicit source table family and variant; J12 uses the qualified high-precision reconstruction of the source two-sided Padé equations.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "frequency-dispersion"
+ ],
+ "aliases": [
+  "legacy.pole_table"
+ ],
+ "identity": {
+  "relation": "Maxwellian rational pole table",
+  "direction": "Declared inputs to named scientific outputs.",
+  "definition": "Z_J(z)=sum_j b_j/(z-c_j). Historical lower-order families and source ordering retained; regenerated J12 is an intentional numerical correction, not historical numeric identity.",
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "assumptions": [
+   "Model-specific deck conventions are explicit.",
+   "A numerical spectrum is not automatically a physically certified mode."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "model",
+   "description": "Model selecting the legacy table family.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": false,
+   "constraints": "One of es1d, es3d, em; selects its explicit source-family table.",
+   "default": "es1d"
   },
-  "summary": "Select an explicit source table family and variant; J12 uses the qualified high-precision reconstruction of the source two-sided Padé equations.",
-  "taxonomy": [
-    "kinetic",
-    "plasma",
-    "frequency-dispersion"
-  ],
-  "aliases": [
-    "legacy.pole_table"
-  ],
-  "identity": {
-    "relation": "Maxwellian rational pole table",
-    "direction": "Declared inputs to named scientific outputs.",
-    "definition": "Z_J(z)=sum_j b_j/(z-c_j). Historical lower-order families and source ordering retained; regenerated J12 is an intentional numerical correction, not historical numeric identity.",
-    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-    "assumptions": [
-      "Model-specific deck conventions are explicit.",
-      "A numerical spectrum is not automatically a physically certified mode."
-    ]
+  {
+   "name": "J",
+   "description": "Number of Maxwellian rational poles.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "ES1D supports J=2,3,4,8,12; ES3D and EM support J=4,8,12. Unsupported orders fail without fallback.",
+   "default": 8
   },
-  "inputs": [
-    {
-      "name": "model",
-      "description": "Model selecting the legacy table family.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "str",
-      "required": false,
-      "constraints": "One of es1d, es3d, em; selects its explicit source-family table.",
-      "default": "es1d"
-    },
-    {
-      "name": "J",
-      "description": "Number of Maxwellian rational poles.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "ES1D supports J=2,3,4,8,12; ES3D and EM support J=4,8,12. Unsupported orders fail without fallback.",
-      "default": 8
-    },
-    {
-      "name": "opt",
-      "description": "ES1D variant: None selects 2 for J4, otherwise 1; explicit 1 or 2 accepted. Only J4/J8 change table values. Other models ignore opt.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "integer or None",
-      "required": false,
-      "constraints": "When model=es1d, resolved opt must be integer 1 or 2; ignored for ES3D/EM.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "state",
-      "description": "Dimensionless state: J is a native (1,1) scalar; bzj and czj are complex (1,J) rows in the selected table order.",
-      "units": "dimensionless",
-      "shape": "mapping",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "Native row shapes preserved. Table selection alone is not an approximation-error or physical-mode certificate."
-    },
-    {
-      "name": "receipt",
-      "description": "Frozen NativeReceipt for an executed native relation; execution provenance is separate from scientific validity.",
-      "units": "not applicable",
-      "shape": "NativeReceipt object",
-      "dtype": "NativeReceipt",
-      "required": true,
-      "constraints": "Execution provenance does not certify scientific validity by itself."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Constituent inputs finite and representable in declared numeric ports."
-    ],
-    "supported": [
-      "ES1D J2/3/4/8/12; ES3D/EM J4/8/12.",
-      "Specified source ES1D J4/J8 variants."
-    ],
-    "excluded": [
-      "Unsupported orders do not silently fall back.",
-      "Finite-J approximation accuracy is not uniform over the complex plane."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "ValueError for invalid model, unsupported J or invalid ES1D opt.",
-    "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback.",
-    "nonconvergence": "No iterative coefficient construction; fixed table access does not certify approximation accuracy.",
-    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.rational",
-      "symbol": "pole_table",
-      "signature": "pole_table(model='es1d', J=8, *, opt=None)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Run the declared PDRK relation with its native-backed scientific ports.",
-    "code": "from scirel.kinetic.pdrk.rational import pole_table\nr = pole_table('es1d', 8)\nassert r['state']['czj'].size == 8",
-    "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
-  },
-  "verification": {
-    "scope": [
-      "Source-absent installed own scientific package; exact package/resource closure.",
-      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_rational.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
-      "Finite-J/finite-N physics must be qualified for a new requested regime.",
-      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "opt",
+   "description": "ES1D variant: None selects 2 for J4, otherwise 1; explicit 1 or 2 accepted. Only J4/J8 change table values. Other models ignore opt.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer or None",
+   "required": false,
+   "constraints": "When model=es1d, resolved opt must be integer 1 or 2; ignored for ES3D/EM.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "Dimensionless state: J is a native (1,1) scalar; bzj and czj are complex (1,J) rows in the selected table order.",
+   "units": "dimensionless",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Native row shapes preserved. Table selection alone is not an approximation-error or physical-mode certificate."
+  },
+  {
+   "name": "receipt",
+   "description": "Frozen NativeReceipt for an executed native relation; execution provenance is separate from scientific validity.",
+   "units": "not applicable",
+   "shape": "NativeReceipt object",
+   "dtype": "NativeReceipt",
+   "required": true,
+   "constraints": "Execution provenance does not certify scientific validity by itself."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Constituent inputs finite and representable in declared numeric ports."
+  ],
+  "supported": [
+   "ES1D J2/3/4/8/12; ES3D/EM J4/8/12.",
+   "Specified source ES1D J4/J8 variants."
+  ],
+  "excluded": [
+   "Unsupported orders do not silently fall back.",
+   "Finite-J approximation accuracy is not uniform over the complex plane."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for invalid model, unsupported J or invalid ES1D opt.",
+  "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback.",
+  "nonconvergence": "No iterative coefficient construction; fixed table access does not certify approximation accuracy.",
+  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.rational",
+   "symbol": "pole_table",
+   "signature": "pole_table(model='es1d', J=8, *, opt=None)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run the declared PDRK relation with its native-backed scientific ports.",
+  "code": "from scirel.kinetic.pdrk.rational import pole_table\nr = pole_table('es1d', 8)\nassert r['state']['czj'].size == 8",
+  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+ },
+ "verification": {
+  "scope": [
+   "Source-absent installed own scientific package; exact package/resource closure.",
+   "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
+   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_rational.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Finite-J/finite-N physics must be qualified for a new requested regime.",
+   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+   "Human scientific and plot approval pending.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

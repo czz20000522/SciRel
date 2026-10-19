@@ -1,159 +1,158 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.sampling.weighted-line-integral",
-  "kind": "operator",
-  "title": {
-    "en": "B-weighted line reduction",
-    "zh": "磁场加权路径归约"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.weighted-line-integral",
+ "title": {
+  "en": "B-weighted line reduction",
+  "zh": "磁场加权路径归约"
+ },
+ "summary": "Return integral(1/B ds) or integral(Q/B ds)/integral(1/B ds)",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "flux_surface_avg"
+ ],
+ "identity": {
+  "relation": "B-weighted line reduction",
+  "direction": "Declared inputs to Scalar weighted integral or average",
+  "definition": "Return integral(1/B ds) or integral(Q/B ds)/integral(1/B ds)",
+  "model": "Source rectangular spline sampling and trapezoid polygonal quadrature",
+  "geometry": "planar R-Z grid and polyline path",
+  "coordinates": "xy rectangular grids and planar path with explicit chord arclength",
+  "boundary": "No line closing or toroidal geometric factor",
+  "assumptions": [
+   "Finite positive B along finite interior path",
+   "Finite matching Q when supplied",
+   "Grid satisfies rectangular-spline and path-distance contracts"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "Rho",
+   "description": "Rectangular radial x grid",
+   "units": "length units",
+   "shape": "(Nz,Nr)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Rho[0,:] strictly increasing"
   },
-  "summary": "Return integral(1/B ds) or integral(Q/B ds)/integral(1/B ds)",
-  "taxonomy": [
-    "analysis",
-    "sampling"
-  ],
-  "aliases": [
-    "flux_surface_avg"
-  ],
-  "identity": {
-    "relation": "B-weighted line reduction",
-    "direction": "Declared inputs to Scalar weighted integral or average",
-    "definition": "Return integral(1/B ds) or integral(Q/B ds)/integral(1/B ds)",
-    "model": "Source rectangular spline sampling and trapezoid polygonal quadrature",
-    "geometry": "planar R-Z grid and polyline path",
-    "coordinates": "xy rectangular grids and planar path with explicit chord arclength",
-    "boundary": "No line closing or toroidal geometric factor",
-    "assumptions": [
-      "Finite positive B along finite interior path",
-      "Finite matching Q when supplied",
-      "Grid satisfies rectangular-spline and path-distance contracts"
-    ]
+  {
+   "name": "Z",
+   "description": "Rectangular axial y grid",
+   "units": "length units",
+   "shape": "same as Rho",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Z[:,0] strictly increasing"
   },
-  "inputs": [
-    {
-      "name": "Rho",
-      "description": "Rectangular radial x grid",
-      "units": "length units",
-      "shape": "(Nz,Nr)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Rho[0,:] strictly increasing"
-    },
-    {
-      "name": "Z",
-      "description": "Rectangular axial y grid",
-      "units": "length units",
-      "shape": "same as Rho",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Z[:,0] strictly increasing"
-    },
-    {
-      "name": "B",
-      "description": "Positive weight field",
-      "units": "field units",
-      "shape": "same as Rho",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite and positive on sampled path"
-    },
-    {
-      "name": "flpoints",
-      "description": "Ordered planar path vertices",
-      "units": "length units",
-      "shape": "(N,2)",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite supplied ordering"
-    },
-    {
-      "name": "Q",
-      "description": "Optional quantity to average",
-      "units": "quantity units",
-      "shape": "grid-shaped or None",
-      "dtype": "float64 array or None",
-      "required": false,
-      "constraints": "Finite matched shape when supplied",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "reduction",
-      "description": "Scalar weighted integral or average",
-      "units": "length/field when Q absent; quantity units when present",
-      "shape": "scalar",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "No volume-per-flux interpretation without external closure"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite positive B along finite interior path",
-      "Finite matching Q when supplied",
-      "Grid satisfies rectangular-spline and path-distance contracts"
-    ],
-    "supported": [
-      "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
-    ],
-    "excluded": [
-      "Physical flux-volume normalization/closed-surface interpretation remains unqualified",
-      "Zero/nonfinite B and outside-support queries are outside claim"
-    ]
+  {
+   "name": "B",
+   "description": "Positive weight field",
+   "units": "field units",
+   "shape": "same as Rho",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and positive on sampled path"
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
-    "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
-    "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
-    "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+  {
+   "name": "flpoints",
+   "description": "Ordered planar path vertices",
+   "units": "length units",
+   "shape": "(N,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite supplied ordering"
   },
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.sampling",
-      "symbol": "flux_surface_avg",
-      "signature": "flux_surface_avg(Rho, Z, B, flpoints, Q=None)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "flux_surface_avg"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.sampling.rectangular-spline"
-      },
-      {
-        "asset_id": "scirel.sampling.path-distance"
-      }
-    ]
-  },
-  "example": {
-    "description": "Compute the B-weighted line reduction for a constant unit field and a straight path.",
-    "code": "import numpy as np\nfrom scirel.geometry.sampling import flux_surface_avg\n\nrho, z = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-0.2, 0.2, 5))\npath = np.column_stack([np.linspace(0.0, 1.0, 33), np.zeros(33)])\nnp.testing.assert_allclose(flux_surface_avg(rho, z, np.ones_like(rho), path), 1.0)",
-    "expected": "The weighted reduction is the scalar 1.0."
-  },
-  "verification": {
-    "scope": [
-      "Public callable signature and documented finite-input behavior",
-      "The direct regression fixtures listed in verification.tests",
-      "The executable example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/equilibrium/test_analysis_families.py"
-    ],
-    "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
-    "known_limitations": [
-      "Physical flux-volume normalization/closed-surface interpretation remains unqualified",
-      "Zero/nonfinite B and outside-support queries are outside claim"
-    ]
+  {
+   "name": "Q",
+   "description": "Optional quantity to average",
+   "units": "quantity units",
+   "shape": "grid-shaped or None",
+   "dtype": "float64 array or None",
+   "required": false,
+   "constraints": "Finite matched shape when supplied",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "reduction",
+   "description": "Scalar weighted integral or average",
+   "units": "length/field when Q absent; quantity units when present",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "No volume-per-flux interpretation without external closure"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite positive B along finite interior path",
+   "Finite matching Q when supplied",
+   "Grid satisfies rectangular-spline and path-distance contracts"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "Physical flux-volume normalization/closed-surface interpretation remains unqualified",
+   "Zero/nonfinite B and outside-support queries are outside claim"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
+  ],
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "flux_surface_avg",
+   "signature": "flux_surface_avg(Rho, Z, B, flpoints, Q=None)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "flux_surface_avg"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.sampling.rectangular-spline"
+   },
+   {
+    "asset_id": "scirel.sampling.path-distance"
+   }
+  ]
+ },
+ "example": {
+  "description": "Compute the B-weighted line reduction for a constant unit field and a straight path.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import flux_surface_avg\n\nrho, z = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-0.2, 0.2, 5))\npath = np.column_stack([np.linspace(0.0, 1.0, 33), np.zeros(33)])\nnp.testing.assert_allclose(flux_surface_avg(rho, z, np.ones_like(rho), path), 1.0)",
+  "expected": "The weighted reduction is the scalar 1.0."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/pleiades/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Physical flux-volume normalization/closed-surface interpretation remains unqualified",
+   "Zero/nonfinite B and outside-support queries are outside claim"
+  ]
+ }
 }

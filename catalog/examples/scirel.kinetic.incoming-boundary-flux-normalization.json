@@ -1,168 +1,167 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.incoming-boundary-flux-normalization",
-  "kind": "operator",
-  "title": {
-    "en": "Incoming neutral boundary-flux normalization",
-    "zh": "入射中性边界通量归一化"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.incoming-boundary-flux-normalization",
+ "title": {
+  "en": "Incoming neutral boundary-flux normalization",
+  "zh": "入射中性边界通量归一化"
+ },
+ "summary": "Scale a caller-owned H or H2 boundary shape distribution on the positive axial-velocity half space to a requested incoming neutral particle flux, returning the scaled boundary distribution, the applied scale, and the pre-scale flux integral.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "boundary-condition",
+  "normalization"
+ ],
+ "aliases": [
+  "normalize_incoming_neutral_boundary"
+ ],
+ "identity": {
+  "relation": "the saved positive-half flux normalization: incoming_flux = Vth * sum(volume * shape * vx) over vx > 0; scale = abs(target_flux) / incoming_flux",
+  "direction": "boundary shape plus axes, volume, thermal speed and target flux -> scaled boundary, scale, incoming flux",
+  "definition": "Only the positive-vx half enters the integral; the returned distribution is exactly zero on the nonpositive half; the scale is the saved abs(target)/flux form, so negative and positive targets of equal magnitude yield the same scale and a zero target yields zero scale and boundary",
+  "model": "the saved formal implementation's boundary source normalization",
+  "geometry": "one radial dimension times the axial velocity axis",
+  "coordinates": "shape and volume in the source's normalized units, vx in normalized axial speed, thermal speed m/s, target flux m^-2 s^-1",
+  "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite",
+  "assumptions": [
+   "The caller owns the boundary shape and the quadrature; this asset normalizes, it does not construct a distribution.",
+   "The sign convention of the requested flux is the caller's (the saved scale uses abs); this function does not preserve target sign in its returned distribution."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "boundary_shape",
+   "description": "The caller's boundary shape.",
+   "units": "source-normalized",
+   "shape": "[nvr,nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite nonnegative real numeric values; axial velocity on the second axis. Boolean, string and complex coercions are rejected."
   },
-  "summary": "Scale a caller-owned H or H2 boundary shape distribution on the positive axial-velocity half space to a requested incoming neutral particle flux, returning the scaled boundary distribution, the applied scale, and the pre-scale flux integral.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "boundary-condition",
-    "normalization"
-  ],
-  "aliases": [
-    "normalize_incoming_neutral_boundary"
-  ],
-  "identity": {
-    "relation": "the saved positive-half flux normalization: incoming_flux = Vth * sum(volume * shape * vx) over vx > 0; scale = abs(target_flux) / incoming_flux",
-    "direction": "boundary shape plus axes, volume, thermal speed and target flux -> scaled boundary, scale, incoming flux",
-    "definition": "Only the positive-vx half enters the integral; the returned distribution is exactly zero on the nonpositive half; the scale is the saved abs(target)/flux form, so negative and positive targets of equal magnitude yield the same scale and a zero target yields zero scale and boundary",
-    "model": "the saved formal implementation's boundary source normalization",
-    "geometry": "one radial dimension times the axial velocity axis",
-    "coordinates": "shape and volume in the source's normalized units, vx in normalized axial speed, thermal speed m/s, target flux m^-2 s^-1",
-    "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite",
-    "assumptions": [
-      "The caller owns the boundary shape and the quadrature; this asset normalizes, it does not construct a distribution.",
-      "The sign convention of the requested flux is the caller's (the saved scale uses abs); this function does not preserve target sign in its returned distribution."
-    ]
+  {
+   "name": "vx",
+   "description": "The axial velocity axis.",
+   "units": "source-normalized",
+   "shape": "[nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real numeric one-dimensional axis; must contain at least one positive node. Boolean, string and complex coercions are rejected."
   },
-  "inputs": [
-    {
-      "name": "boundary_shape",
-      "description": "The caller's boundary shape.",
-      "units": "source-normalized",
-      "shape": "[nvr,nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite nonnegative real numeric values; axial velocity on the second axis. Boolean, string and complex coercions are rejected."
-    },
-    {
-      "name": "vx",
-      "description": "The axial velocity axis.",
-      "units": "source-normalized",
-      "shape": "[nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite real numeric one-dimensional axis; must contain at least one positive node. Boolean, string and complex coercions are rejected."
-    },
-    {
-      "name": "cylindrical_volume",
-      "description": "The cylindrical quadrature weight.",
-      "units": "source-normalized measure",
-      "shape": "[nvr,nvx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite nonnegative real numeric values, same shape as the boundary shape. Boolean, string and complex coercions are rejected."
-    },
-    {
-      "name": "thermal_speed_m_s",
-      "description": "The species thermal speed.",
-      "units": "m/s",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
-    },
-    {
-      "name": "target_flux_m2_s",
-      "description": "The requested incoming particle flux.",
-      "units": "m^-2 s^-1",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite real numeric scalar of any sign, including zero; booleans, strings, complex values and nonscalars are rejected."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "incoming_boundary",
-      "description": "The scaled boundary distribution.",
-      "units": "source-normalized",
-      "shape": "[nvr,nvx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Finite; zero on the nonpositive-vx half; the scaled shape on the positive half."
-    },
-    {
-      "name": "scale",
-      "description": "The applied scalar scale.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float scalar",
-      "required": true,
-      "constraints": "Finite and nonnegative; positive for a nonzero target flux and exactly zero for a zero target."
-    },
-    {
-      "name": "incoming_flux",
-      "description": "The pre-scale positive-half flux integral.",
-      "units": "m^-2 s^-1",
-      "shape": "scalar",
-      "dtype": "float scalar",
-      "required": true,
-      "constraints": "Finite and positive."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite nonnegative shape and volume, finite positive thermal speed, a positive-vx half with positive flux."
-    ],
-    "supported": [
-      "Boundary sources for H and H2 inflow conditions on a shared normalized mesh."
-    ],
-    "excluded": [
-      "Shapes with nonpositive flux on the positive half; meshes without a positive-vx node; non-finite scalars."
-    ]
+  {
+   "name": "cylindrical_volume",
+   "description": "The cylindrical quadrature weight.",
+   "units": "source-normalized measure",
+   "shape": "[nvr,nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite nonnegative real numeric values, same shape as the boundary shape. Boolean, string and complex coercions are rejected."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for boolean, string, complex or nonscalar values outside the declared shapes, non-finite or negative shape/volume, non-finite vx or scalars, nonpositive thermal speed, no positive vx node, or nonpositive positive-half flux.",
-    "runtime_failure": "Raises ValueError when the evaluated flux, scale or boundary is non-finite, or a nonzero target's scale underflows to zero; no fallback is selected.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
+  {
+   "name": "thermal_speed_m_s",
+   "description": "The species thermal speed.",
+   "units": "m/s",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
   },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notices"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.incoming_boundary_flux_normalization",
-      "symbol": "normalize_incoming_neutral_boundary",
-      "signature": "normalize_incoming_neutral_boundary(boundary_shape, vx, cylindrical_volume, thermal_speed_m_s, target_flux_m2_s)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "normalize_incoming_neutral_boundary"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Normalize one boundary shape to a requested flux and confirm the positive-half semantics and rejections.",
-    "code": "import numpy as np\nfrom scirel.kinetic import normalize_incoming_neutral_boundary\nshape = np.ones((2, 3))\nvolume = np.ones((2, 3))\nvx = np.array([-1.0, 0.5, 1.0])\nresult, scale, initial = normalize_incoming_neutral_boundary(shape, vx, volume, 2.0, -12.0)\nassert initial == 6.0 and scale == 2.0\nassert np.all(result[:, 0] == 0.0)\ntry:\n    normalize_incoming_neutral_boundary(shape, np.array([-1.0, -0.5, 0.0]), volume, 2.0, 12.0)\nexcept ValueError as error:\n    assert 'positive incoming half' in str(error)\nelse:\n    raise AssertionError('a mesh without a positive-vx node must be rejected')\n",
-    "expected": "Observed PASS: The positive half scaled to the requested flux (sign-independent scale), the negative half exactly zero; a mesh without an incoming half is rejected."
-  },
-  "verification": {
-    "scope": [
-      "That the returned positive-half flux integral after scaling equals the absolute value of the requested target on finite valid inputs.",
-      "That the negative half is exactly zero and the scale matches the saved abs(target)/flux form.",
-      "The fail-closed contracts, including real finite inputs, nonnegative volume and finite derived outputs; zero target remains a valid zero boundary."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_neutral_normalizations.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "The historical function accepts some coercible non-real inputs and does not fully enforce finite quadrature or derived outputs; SciRel rejects them. A zero target is valid and produces zero scale, contrary to the intake document's positive-scale wording.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "target_flux_m2_s",
+   "description": "The requested incoming particle flux.",
+   "units": "m^-2 s^-1",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite real numeric scalar of any sign, including zero; booleans, strings, complex values and nonscalars are rejected."
   }
+ ],
+ "outputs": [
+  {
+   "name": "incoming_boundary",
+   "description": "The scaled boundary distribution.",
+   "units": "source-normalized",
+   "shape": "[nvr,nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; zero on the nonpositive-vx half; the scaled shape on the positive half."
+  },
+  {
+   "name": "scale",
+   "description": "The applied scalar scale.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float scalar",
+   "required": true,
+   "constraints": "Finite and nonnegative; positive for a nonzero target flux and exactly zero for a zero target."
+  },
+  {
+   "name": "incoming_flux",
+   "description": "The pre-scale positive-half flux integral.",
+   "units": "m^-2 s^-1",
+   "shape": "scalar",
+   "dtype": "float scalar",
+   "required": true,
+   "constraints": "Finite and positive."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite nonnegative shape and volume, finite positive thermal speed, a positive-vx half with positive flux."
+  ],
+  "supported": [
+   "Boundary sources for H and H2 inflow conditions on a shared normalized mesh."
+  ],
+  "excluded": [
+   "Shapes with nonpositive flux on the positive half; meshes without a positive-vx node; non-finite scalars."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean, string, complex or nonscalar values outside the declared shapes, non-finite or negative shape/volume, non-finite vx or scalars, nonpositive thermal speed, no positive vx node, or nonpositive positive-half flux.",
+  "runtime_failure": "Raises ValueError when the evaluated flux, scale or boundary is non-finite, or a nonzero target's scale underflows to zero; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notices"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.incoming_boundary_flux_normalization",
+   "symbol": "normalize_incoming_neutral_boundary",
+   "signature": "normalize_incoming_neutral_boundary(boundary_shape, vx, cylindrical_volume, thermal_speed_m_s, target_flux_m2_s)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "normalize_incoming_neutral_boundary"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Normalize one boundary shape to a requested flux and confirm the positive-half semantics and rejections.",
+  "code": "import numpy as np\nfrom scirel.kinetic import normalize_incoming_neutral_boundary\nshape = np.ones((2, 3))\nvolume = np.ones((2, 3))\nvx = np.array([-1.0, 0.5, 1.0])\nresult, scale, initial = normalize_incoming_neutral_boundary(shape, vx, volume, 2.0, -12.0)\nassert initial == 6.0 and scale == 2.0\nassert np.all(result[:, 0] == 0.0)\ntry:\n    normalize_incoming_neutral_boundary(shape, np.array([-1.0, -0.5, 0.0]), volume, 2.0, 12.0)\nexcept ValueError as error:\n    assert 'positive incoming half' in str(error)\nelse:\n    raise AssertionError('a mesh without a positive-vx node must be rejected')\n",
+  "expected": "Observed PASS: The positive half scaled to the requested flux (sign-independent scale), the negative half exactly zero; a mesh without an incoming half is rejected."
+ },
+ "verification": {
+  "scope": [
+   "That the returned positive-half flux integral after scaling equals the absolute value of the requested target on finite valid inputs.",
+   "That the negative half is exactly zero and the scale matches the saved abs(target)/flux form.",
+   "The fail-closed contracts, including real finite inputs, nonnegative volume and finite derived outputs; zero target remains a valid zero boundary."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_neutral_normalizations.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "The historical function accepts some coercible non-real inputs and does not fully enforce finite quadrature or derived outputs; SciRel rejects them. A zero target is valid and produces zero scale, contrary to the intake document's positive-scale wording.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

@@ -1,197 +1,196 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
-  "kind": "operator",
-  "title": {
-    "en": "Axisymmetric equilibrium map to Cartesian solver grid",
-    "zh": "轴对称平衡映射到笛卡尔求解网格"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+ "title": {
+  "en": "Axisymmetric equilibrium map to Cartesian solver grid",
+  "zh": "轴对称平衡映射到笛卡尔求解网格"
+ },
+ "summary": "Reconstruct the static magnetic field and poloidal flux of an axisymmetric equilibrium onto a Cartesian solver grid by tensor-product linear interpolation on the map's R-Z axes, clamping query points onto the closed map box and reporting where that clamping happened.",
+ "taxonomy": [
+  "geometry",
+  "grid-mapping",
+  "axisymmetric",
+  "interpolation"
+ ],
+ "aliases": [
+  "equilibrium to solver grid mapping",
+  "coarse CAD grid equilibrium mapping"
+ ],
+ "identity": {
+  "relation": "an axisymmetric equilibrium map in cylindrical coordinates and a rectilinear Cartesian solver grid to the static field, the poloidal flux, and the coverage of that grid by the map",
+  "direction": "equilibrium map arrays plus x_m, y_m, z_m -> magnetic_flux_density_t, poloidal_flux_wb_per_rad, covered_mask, radially_clamped_point_count, axially_clamped_point_count",
+  "definition": "Builds the radius and the axial coordinate of every Cartesian grid point, clamps each query coordinate onto the closed map box, evaluates the tensor-product linear interpolant of each map array at the clamped coordinates, splits the interpolated radial field into Cartesian transverse components, and marks the grid points that lay inside the closed map box.",
+  "model": "tensor-product (bilinear) interpolation of an axisymmetric map on a rectilinear R-Z grid, with independent clamping of each query coordinate onto the closed map box",
+  "geometry": "axisymmetric equilibrium map sampled on an R-Z grid, evaluated on a rectilinear Cartesian x-y-z solver grid",
+  "coordinates": "the map is cylindrical (r, z) and the target is Cartesian (x, y, z) with the axial coordinate shared; mesh built with C-order ij indexing over the target axes",
+  "boundary": "the relation is defined on the closed box spanned by the map axes; a query point outside that box is clamped onto the nearest box face rather than rejected or extrapolated, and the clamping is counted",
+  "assumptions": [
+   "The equilibrium map is axisymmetric, so the map depends on radius and axial coordinate only and carries no toroidal mode structure.",
+   "The map axes are strictly increasing, so the enclosing interpolation cell of every clamped query coordinate is well defined.",
+   "The map arrays are finite, so the interpolation cannot be poisoned by a non-finite sample.",
+   "The radial field component is the poloidal field magnitude in the R-Z plane, so its Cartesian transverse split is br * (x, y) / r and is undefined on the axis.",
+   "The caller owns the equilibrium mapping and the grid; this relation retains no state and reads no file."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "equilibrium",
+   "description": "Caller-owned axisymmetric equilibrium mapping carrying r_m, z_m, psi_wb_per_rad, br_t, and bz_t.",
+   "units": "mixed SI",
+   "shape": "mapping of arrays",
+   "dtype": "Python mapping of array-like",
+   "required": true,
+   "constraints": "Must be a mapping. r_m and z_m are finite strictly increasing 1D axes of at least five points; psi_wb_per_rad, br_t, and bz_t are finite [N_r, N_z] arrays on the map axes. No other entry is read, so the flux-surface classification parameters are not part of this relation."
   },
-  "summary": "Reconstruct the static magnetic field and poloidal flux of an axisymmetric equilibrium onto a Cartesian solver grid by tensor-product linear interpolation on the map's R-Z axes, clamping query points onto the closed map box and reporting where that clamping happened.",
-  "taxonomy": [
-    "geometry",
-    "grid-mapping",
-    "axisymmetric",
-    "interpolation"
-  ],
-  "aliases": [
-    "equilibrium to solver grid mapping",
-    "coarse CAD grid equilibrium mapping"
-  ],
-  "identity": {
-    "relation": "an axisymmetric equilibrium map in cylindrical coordinates and a rectilinear Cartesian solver grid to the static field, the poloidal flux, and the coverage of that grid by the map",
-    "direction": "equilibrium map arrays plus x_m, y_m, z_m -> magnetic_flux_density_t, poloidal_flux_wb_per_rad, covered_mask, radially_clamped_point_count, axially_clamped_point_count",
-    "definition": "Builds the radius and the axial coordinate of every Cartesian grid point, clamps each query coordinate onto the closed map box, evaluates the tensor-product linear interpolant of each map array at the clamped coordinates, splits the interpolated radial field into Cartesian transverse components, and marks the grid points that lay inside the closed map box.",
-    "model": "tensor-product (bilinear) interpolation of an axisymmetric map on a rectilinear R-Z grid, with independent clamping of each query coordinate onto the closed map box",
-    "geometry": "axisymmetric equilibrium map sampled on an R-Z grid, evaluated on a rectilinear Cartesian x-y-z solver grid",
-    "coordinates": "the map is cylindrical (r, z) and the target is Cartesian (x, y, z) with the axial coordinate shared; mesh built with C-order ij indexing over the target axes",
-    "boundary": "the relation is defined on the closed box spanned by the map axes; a query point outside that box is clamped onto the nearest box face rather than rejected or extrapolated, and the clamping is counted",
-    "assumptions": [
-      "The equilibrium map is axisymmetric, so the map depends on radius and axial coordinate only and carries no toroidal mode structure.",
-      "The map axes are strictly increasing, so the enclosing interpolation cell of every clamped query coordinate is well defined.",
-      "The map arrays are finite, so the interpolation cannot be poisoned by a non-finite sample.",
-      "The radial field component is the poloidal field magnitude in the R-Z plane, so its Cartesian transverse split is br * (x, y) / r and is undefined on the axis.",
-      "The caller owns the equilibrium mapping and the grid; this relation retains no state and reads no file."
-    ]
+  {
+   "name": "x_m",
+   "description": "Cartesian solver grid x axis.",
+   "units": "m",
+   "shape": "[N_x]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
   },
-  "inputs": [
-    {
-      "name": "equilibrium",
-      "description": "Caller-owned axisymmetric equilibrium mapping carrying r_m, z_m, psi_wb_per_rad, br_t, and bz_t.",
-      "units": "mixed SI",
-      "shape": "mapping of arrays",
-      "dtype": "Python mapping of array-like",
-      "required": true,
-      "constraints": "Must be a mapping. r_m and z_m are finite strictly increasing 1D axes of at least five points; psi_wb_per_rad, br_t, and bz_t are finite [N_r, N_z] arrays on the map axes. No other entry is read, so the flux-surface classification parameters are not part of this relation."
-    },
-    {
-      "name": "x_m",
-      "description": "Cartesian solver grid x axis.",
-      "units": "m",
-      "shape": "[N_x]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
-    },
-    {
-      "name": "y_m",
-      "description": "Cartesian solver grid y axis.",
-      "units": "m",
-      "shape": "[N_y]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
-    },
-    {
-      "name": "z_m",
-      "description": "Cartesian solver grid axial axis, shared with the map's axial coordinate.",
-      "units": "m",
-      "shape": "[N_z]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "magnetic_flux_density_t",
-      "description": "Static magnetic field on the solver grid, with the field vector in the last axis.",
-      "units": "T",
-      "shape": "[N_x, N_y, N_z, 3]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite everywhere. The transverse pair is the interpolated radial field split as br * (x, y) / r and is set exactly to zero on the axis, where that split is undefined."
-    },
-    {
-      "name": "poloidal_flux_wb_per_rad",
-      "description": "Poloidal flux per radian interpolated onto the solver grid.",
-      "units": "Wb/rad",
-      "shape": "[N_x, N_y, N_z]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite everywhere, and evaluated at the clamped query coordinates so that clamped points carry the box-face value."
-    },
-    {
-      "name": "covered_mask",
-      "description": "Grid points that lay inside the closed box spanned by the map axes before clamping.",
-      "units": "dimensionless",
-      "shape": "[N_x, N_y, N_z]",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "A point is covered when its radius is between the first and last map radial axis values and its axial coordinate is between the first and last map axial axis values. Because the map's radial axis is usually positive, the grid axis r = 0 is normally not covered."
-    },
-    {
-      "name": "radially_clamped_point_count",
-      "description": "Number of grid points whose radius exceeded the outer map radius and was clamped onto it.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Counts only radii above the outer map radius, matching the retained relation; radii below the inner map radius are clamped as well but are not counted."
-    },
-    {
-      "name": "axially_clamped_point_count",
-      "description": "Number of grid points whose axial coordinate lay outside the map axial axis and was clamped onto a face.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Counts points below the first and above the last map axial axis value."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "The equilibrium map is axisymmetric and finite on a strictly increasing R-Z grid of at least five points per axis.",
-      "The solver grid axes are finite and strictly increasing, and share the axial coordinate convention of the map.",
-      "The caller accepts that query points outside the map box are answered with the box-face value and reported through covered_mask."
-    ],
-    "supported": [
-      "Any rectilinear Cartesian solver grid shape.",
-      "Grids that extend beyond the map box radially or axially, with the clamping reported.",
-      "An equilibrium map whose radial axis starts at zero, which makes the grid axis covered.",
-      "Any number of map samples at or above five per axis."
-    ],
-    "excluded": [
-      "Non-axisymmetric or three-dimensional equilibria.",
-      "Extrapolation beyond the map box; the relation clamps instead.",
-      "Spline, conservative, or flux-surface-aligned interpolation; only tensor-product linear interpolation is defined here.",
-      "Flux-surface classification, PML framing, and PEC masking, which belong to the separate material-support relation.",
-      "Any unit conversion; the map arrays are taken in the caller's units."
-    ]
+  {
+   "name": "y_m",
+   "description": "Cartesian solver grid y axis.",
+   "units": "m",
+   "shape": "[N_y]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError when equilibrium is not a mapping, when a required map entry is missing, when a map axis is not a finite strictly increasing 1D array of at least five points, when a map array does not have the [N_r, N_z] map shape or is not finite, or when a solver grid axis is not a finite strictly increasing 1D array of at least two points.",
-    "runtime_failure": "Raises ValueError if the assembled static field is not finite anywhere, which can only arise from an input the validation did not cover. There is no fallback interpolation method.",
-    "nonconvergence": "Not applicable; this relation is a single closed-form evaluation with no iteration or feedback.",
-    "partial_results": "Never returned; a rejected call produces no mapping."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
-    "source_kinds": [
-      "SciRel implementation",
-      "scientific regression tests"
-    ],
-    "public_references": [],
-    "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry.axisymmetric_grid_mapping",
-      "symbol": "map_axisymmetric_equilibrium_to_cartesian_grid",
-      "signature": "map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "map_axisymmetric_equilibrium_to_cartesian_grid"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Reconstruct a synthetic axisymmetric equilibrium on a 9x9x7 Cartesian grid and verify field shapes, coverage, clamping counts, and the cylindrical-axis split.",
-    "code": "import numpy as np\nfrom scirel.geometry import map_axisymmetric_equilibrium_to_cartesian_grid\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n}\nresult = map_axisymmetric_equilibrium_to_cartesian_grid(\n    equilibrium,\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.4, 0.4, 7),\n)\nmagnetic = result['magnetic_flux_density_t']\nassert magnetic.shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert np.isfinite(magnetic).all()\nassert magnetic[4, 4, 3, 0] == 0.0 and magnetic[4, 4, 3, 1] == 0.0\nassert magnetic[4, 4, 3, 2] != 0.0",
-    "expected": "The output contains finite field and flux arrays with shapes (9, 9, 7, 3) and (9, 9, 7), 560 covered points, zero clamp counts, and zero transverse field on axis."
-  },
-  "verification": {
-    "scope": [
-      "Agreement of the reconstruction with an independently built tensor-product bilinear interpolant on a deliberately non-separable map.",
-      "A measurement that the two-stage interpolation ordering is not discriminating on a rectilinear grid.",
-      "The coverage mask marking exactly the closed map box, including the inner-radius exclusion.",
-      "Both clamp counters, on a grid that extends beyond the map box on every face.",
-      "The Cartesian transverse split, including the exactly zero on-axis convention.",
-      "Fail-closed validation of the map axes, the map arrays, and the solver grid axes.",
-      "The absence of the classification parameters from this relation, by call and by import inspection.",
-      "Exact agreement with the retained reconstruction for the field, the flux, the coverage mask, and both counters."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_axisymmetric_grid_mapping.py"
-    ],
-    "evidence_ceiling": "Establishes that the declared tensor-product reconstruction reproduces the retained mapping relation and reports its clamping honestly. It does not establish that the equilibrium map itself is physically correct, nor that bilinear interpolation is adequate at any particular grid resolution, nor that the map's coordinate convention matches any specific device.",
-    "known_limitations": [
-      "The interpolation is linear; a coarse map produces a piecewise-bilinear field with discontinuous derivatives across map cells.",
-      "Query points outside the map box silently receive the box-face value. The coverage mask and the clamp counters report this, but a caller that ignores them will not notice.",
-      "The retained asymmetry that only radii above the outer map radius are counted is preserved; radii below the inner map radius are clamped and counted by neither counter.",
-      "The relation assumes the axial coordinate is shared between the cylindrical map and the Cartesian grid; a target grid with a different axial origin would be mapped silently wrong.",
-      "Public distribution licensing remains pending a human decision."
-    ]
+  {
+   "name": "z_m",
+   "description": "Cartesian solver grid axial axis, shared with the map's axial coordinate.",
+   "units": "m",
+   "shape": "[N_z]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
   }
+ ],
+ "outputs": [
+  {
+   "name": "magnetic_flux_density_t",
+   "description": "Static magnetic field on the solver grid, with the field vector in the last axis.",
+   "units": "T",
+   "shape": "[N_x, N_y, N_z, 3]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite everywhere. The transverse pair is the interpolated radial field split as br * (x, y) / r and is set exactly to zero on the axis, where that split is undefined."
+  },
+  {
+   "name": "poloidal_flux_wb_per_rad",
+   "description": "Poloidal flux per radian interpolated onto the solver grid.",
+   "units": "Wb/rad",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite everywhere, and evaluated at the clamped query coordinates so that clamped points carry the box-face value."
+  },
+  {
+   "name": "covered_mask",
+   "description": "Grid points that lay inside the closed box spanned by the map axes before clamping.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "A point is covered when its radius is between the first and last map radial axis values and its axial coordinate is between the first and last map axial axis values. Because the map's radial axis is usually positive, the grid axis r = 0 is normally not covered."
+  },
+  {
+   "name": "radially_clamped_point_count",
+   "description": "Number of grid points whose radius exceeded the outer map radius and was clamped onto it.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Counts only radii above the outer map radius, matching the retained relation; radii below the inner map radius are clamped as well but are not counted."
+  },
+  {
+   "name": "axially_clamped_point_count",
+   "description": "Number of grid points whose axial coordinate lay outside the map axial axis and was clamped onto a face.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Counts points below the first and above the last map axial axis value."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The equilibrium map is axisymmetric and finite on a strictly increasing R-Z grid of at least five points per axis.",
+   "The solver grid axes are finite and strictly increasing, and share the axial coordinate convention of the map.",
+   "The caller accepts that query points outside the map box are answered with the box-face value and reported through covered_mask."
+  ],
+  "supported": [
+   "Any rectilinear Cartesian solver grid shape.",
+   "Grids that extend beyond the map box radially or axially, with the clamping reported.",
+   "An equilibrium map whose radial axis starts at zero, which makes the grid axis covered.",
+   "Any number of map samples at or above five per axis."
+  ],
+  "excluded": [
+   "Non-axisymmetric or three-dimensional equilibria.",
+   "Extrapolation beyond the map box; the relation clamps instead.",
+   "Spline, conservative, or flux-surface-aligned interpolation; only tensor-product linear interpolation is defined here.",
+   "Flux-surface classification, PML framing, and PEC masking, which belong to the separate material-support relation.",
+   "Any unit conversion; the map arrays are taken in the caller's units."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when equilibrium is not a mapping, when a required map entry is missing, when a map axis is not a finite strictly increasing 1D array of at least five points, when a map array does not have the [N_r, N_z] map shape or is not finite, or when a solver grid axis is not a finite strictly increasing 1D array of at least two points.",
+  "runtime_failure": "Raises ValueError if the assembled static field is not finite anywhere, which can only arise from an input the validation did not cover. There is no fallback interpolation method.",
+  "nonconvergence": "Not applicable; this relation is a single closed-form evaluation with no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no mapping."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel-owned geometry relation defined by the current implementation and its direct regression tests; historical development mapping is retained as lineage evidence. No corresponding upstream public license grant is asserted in licenses/.",
+  "source_kinds": [
+   "SciRel implementation",
+   "scientific regression tests"
+  ],
+  "public_references": [],
+  "license_status": "No public upstream license grant is asserted in licenses/ for this development relation; scientific and release approval remain pending."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.axisymmetric_grid_mapping",
+   "symbol": "map_axisymmetric_equilibrium_to_cartesian_grid",
+   "signature": "map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "map_axisymmetric_equilibrium_to_cartesian_grid"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Reconstruct a synthetic axisymmetric equilibrium on a 9x9x7 Cartesian grid and verify field shapes, coverage, clamping counts, and the cylindrical-axis split.",
+  "code": "import numpy as np\nfrom scirel.geometry import map_axisymmetric_equilibrium_to_cartesian_grid\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n}\nresult = map_axisymmetric_equilibrium_to_cartesian_grid(\n    equilibrium,\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.5, 0.5, 9),\n    np.linspace(-0.4, 0.4, 7),\n)\nmagnetic = result['magnetic_flux_density_t']\nassert magnetic.shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert np.isfinite(magnetic).all()\nassert magnetic[4, 4, 3, 0] == 0.0 and magnetic[4, 4, 3, 1] == 0.0\nassert magnetic[4, 4, 3, 2] != 0.0",
+  "expected": "The output contains finite field and flux arrays with shapes (9, 9, 7, 3) and (9, 9, 7), 560 covered points, zero clamp counts, and zero transverse field on axis."
+ },
+ "verification": {
+  "scope": [
+   "Agreement of the reconstruction with an independently built tensor-product bilinear interpolant on a deliberately non-separable map.",
+   "A measurement that the two-stage interpolation ordering is not discriminating on a rectilinear grid.",
+   "The coverage mask marking exactly the closed map box, including the inner-radius exclusion.",
+   "Both clamp counters, on a grid that extends beyond the map box on every face.",
+   "The Cartesian transverse split, including the exactly zero on-axis convention.",
+   "Fail-closed validation of the map axes, the map arrays, and the solver grid axes.",
+   "The absence of the classification parameters from this relation, by call and by import inspection.",
+   "Exact agreement with the retained reconstruction for the field, the flux, the coverage mask, and both counters."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_axisymmetric_grid_mapping.py"
+  ],
+  "evidence_ceiling": "Establishes that the declared tensor-product reconstruction reproduces the retained mapping relation and reports its clamping honestly. It does not establish that the equilibrium map itself is physically correct, nor that bilinear interpolation is adequate at any particular grid resolution, nor that the map's coordinate convention matches any specific device.",
+  "known_limitations": [
+   "The interpolation is linear; a coarse map produces a piecewise-bilinear field with discontinuous derivatives across map cells.",
+   "Query points outside the map box silently receive the box-face value. The coverage mask and the clamp counters report this, but a caller that ignores them will not notice.",
+   "The retained asymmetry that only radii above the outer map radius are counted is preserved; radii below the inner map radius are clamped and counted by neither counter.",
+   "The relation assumes the axial coordinate is shared between the cylindrical map and the Cartesian grid; a target grid with a different axial origin would be mapped silently wrong.",
+   "Public distribution licensing remains pending a human decision."
+  ]
+ }
 }

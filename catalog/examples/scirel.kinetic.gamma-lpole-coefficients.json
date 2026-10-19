@@ -1,144 +1,143 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
-  "kind": "operator",
-  "title": {
-    "en": "Bessel-Gamma L-pole coefficients",
-    "zh": "贝塞尔伽马 L 极点系数"
-  },
-  "summary": "Return fixed rational residue and pole tables indexed by Bessel order |n|+1.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "maximum harmonic N to residue and pole tables for orders 0..N",
-    "direction": "maximum harmonic N to residue and pole tables for orders 0..N",
-    "definition": "The fixed L-pole residues and positions approximate Bessel-Gamma terms by rational pole sums; table key is |n|+1.",
-    "model": "rational approximation of Maxwellian finite-Larmor-radius terms",
-    "geometry": "no physical spatial grid",
-    "coordinates": "integer harmonic and complex pole axes",
-    "boundary": "frozen tables cover |n|=0..7; requests beyond them fail",
-    "assumptions": [
-      "Input units and normalization follow the declared ports; no physical parameters are inferred."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "max_harmonic",
-      "description": "调用者将要组装的贝塞尔最大阶数 $N$",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "非负整数，且 `max_harmonic+1` 不超过冻结表的最大系数序号 8。"
-    }
-  ],
-  "outputs": [
-    {
-      "name": "orders",
-      "description": "返回的系数序号列表，即 $|n|+1$ 从 1 到 `max_harmonic+1`",
-      "units": "无量纲",
-      "shape": "长度 `max_harmonic+1` 的整数列表",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "升序且连续。"
-    },
-    {
-      "name": "order_lengths",
-      "description": "每个系数序号的极点个数 $L(|n|+1)$",
-      "units": "无量纲",
-      "shape": "以序号为键的字典",
-      "dtype": "mapping",
-      "required": true,
-      "constraints": "取值来自冻结表。"
-    },
-    {
-      "name": "residues",
-      "description": "每个序号的留数数组 $r_l$",
-      "units": "无量纲",
-      "shape": "以序号为键，值为长度 `order_lengths[序号]` 的复数组",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限复数。"
-    },
-    {
-      "name": "poles",
-      "description": "每个序号的极点数组 $p_l$",
-      "units": "无量纲",
-      "shape": "以序号为键，值为长度 `order_lengths[序号]` 的复数组",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限复数，极点成对共轭出现。"
-    },
-    {
-      "name": "total_poles",
-      "description": "返回的全部极点总数 $\\sum_{|n|\\le N}L(|n|+1)$",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "等于色散矩阵每组分速度块的维数。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "frozen tables cover |n|=0..7; requests beyond them fail"
-    ],
-    "supported": [
-      "Return fixed rational residue and pole tables indexed by Bessel order |n|+1."
-    ],
-    "excluded": [
-      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
-    "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
-    "nonconvergence": "Not applicable; no iterative root solve is exposed.",
-    "partial_results": "No partial mapping is returned after an exception."
-  },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notice and public scientific reference where listed"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.gamma_lpole_coefficients",
-      "symbol": "get_gamma_lpole_coefficients",
-      "signature": "get_gamma_lpole_coefficients(*, max_harmonic: 'int') -> 'dict'",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "get_gamma_lpole_coefficients"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Return the order-one L-pole table and check its declared length.",
-    "code": "from scirel.kinetic import get_gamma_lpole_coefficients\nr=get_gamma_lpole_coefficients(max_harmonic=0); assert r['order_lengths'][1]==12\n",
-    "expected": "Observed PASS: max_harmonic=0 returns order 1 with 12 residues/poles and the associated table metadata."
-  },
-  "verification": {
-    "scope": [
-      "Declared source-method numerical case and relevant failure boundaries."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_fluidbw_r43_fluid.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "frozen tables cover |n|=0..7; requests beyond them fail",
-      "Public distribution license and expert review remain pending.",
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
+ "title": {
+  "en": "Bessel-Gamma L-pole coefficients",
+  "zh": "贝塞尔伽马 L 极点系数"
+ },
+ "summary": "Return fixed rational residue and pole tables indexed by Bessel order |n|+1.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "maximum harmonic N to residue and pole tables for orders 0..N",
+  "direction": "maximum harmonic N to residue and pole tables for orders 0..N",
+  "definition": "The fixed L-pole residues and positions approximate Bessel-Gamma terms by rational pole sums; table key is |n|+1.",
+  "model": "rational approximation of Maxwellian finite-Larmor-radius terms",
+  "geometry": "no physical spatial grid",
+  "coordinates": "integer harmonic and complex pole axes",
+  "boundary": "frozen tables cover |n|=0..7; requests beyond them fail",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "max_harmonic",
+   "description": "调用者将要组装的贝塞尔最大阶数 $N$",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "非负整数，且 `max_harmonic+1` 不超过冻结表的最大系数序号 8。"
   }
+ ],
+ "outputs": [
+  {
+   "name": "orders",
+   "description": "返回的系数序号列表，即 $|n|+1$ 从 1 到 `max_harmonic+1`",
+   "units": "无量纲",
+   "shape": "长度 `max_harmonic+1` 的整数列表",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "升序且连续。"
+  },
+  {
+   "name": "order_lengths",
+   "description": "每个系数序号的极点个数 $L(|n|+1)$",
+   "units": "无量纲",
+   "shape": "以序号为键的字典",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "取值来自冻结表。"
+  },
+  {
+   "name": "residues",
+   "description": "每个序号的留数数组 $r_l$",
+   "units": "无量纲",
+   "shape": "以序号为键，值为长度 `order_lengths[序号]` 的复数组",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限复数。"
+  },
+  {
+   "name": "poles",
+   "description": "每个序号的极点数组 $p_l$",
+   "units": "无量纲",
+   "shape": "以序号为键，值为长度 `order_lengths[序号]` 的复数组",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限复数，极点成对共轭出现。"
+  },
+  {
+   "name": "total_poles",
+   "description": "返回的全部极点总数 $\\sum_{|n|\\le N}L(|n|+1)$",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "等于色散矩阵每组分速度块的维数。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "frozen tables cover |n|=0..7; requests beyond them fail"
+  ],
+  "supported": [
+   "Return fixed rational residue and pole tables indexed by Bessel order |n|+1."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/fluidbw-D2-NOTICE.md and licenses/SCIREL-COLD-TENSOR-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notice and public scientific reference where listed"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.gamma_lpole_coefficients",
+   "symbol": "get_gamma_lpole_coefficients",
+   "signature": "get_gamma_lpole_coefficients(*, max_harmonic: 'int') -> 'dict'",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "get_gamma_lpole_coefficients"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Return the order-one L-pole table and check its declared length.",
+  "code": "from scirel.kinetic import get_gamma_lpole_coefficients\nr=get_gamma_lpole_coefficients(max_harmonic=0); assert r['order_lengths'][1]==12\n",
+  "expected": "Observed PASS: max_harmonic=0 returns order 1 with 12 residues/poles and the associated table metadata."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fluidbw_r43_fluid.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "frozen tables cover |n|=0..7; requests beyond them fail",
+   "Public distribution license and expert review remain pending.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

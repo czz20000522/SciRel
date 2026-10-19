@@ -1,133 +1,132 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
-  "kind": "operator",
-  "title": {
-    "en": "Molecular scattered-source three-channel reduction",
-    "zh": "分子三通道散射源归约"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
+ "title": {
+  "en": "Molecular scattered-source three-channel reduction",
+  "zh": "分子三通道散射源归约"
+ },
+ "summary": "The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "scattering-source",
+  "reduction"
+ ],
+ "aliases": [
+  "reduce_molecular_scattered_sources"
+ ],
+ "identity": {
+  "relation": "Beta = Swall + Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
+  "direction": "three aligned source fields -> their pointwise sum in the saved source order",
+  "definition": "The saved plain pointwise addition in the order wall, CX, elastic; no clamping of signed values",
+  "model": "the saved formal implementation's scattered-source aggregation",
+  "geometry": "two velocity dimensions over one spatial axis",
+  "coordinates": "all fields in the source's discrete source-distribution units",
+  "boundary": "three finite aligned three-dimensional fields; signed values preserved",
+  "assumptions": [
+   "The wall-source channel exists only on the molecular side of the saved source; this is why the molecular reduction is a separate asset from its atomic sibling.",
+   "The caller owns the per-channel source construction; this asset only aggregates.",
+   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "wall_source_distribution",
+   "description": "The wall scattered source.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite three-dimensional field; signed values preserved."
   },
-  "summary": "The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "scattering-source",
-    "reduction"
-  ],
-  "aliases": [
-    "reduce_molecular_scattered_sources"
-  ],
-  "identity": {
-    "relation": "Beta = Swall + Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
-    "direction": "three aligned source fields -> their pointwise sum in the saved source order",
-    "definition": "The saved plain pointwise addition in the order wall, CX, elastic; no clamping of signed values",
-    "model": "the saved formal implementation's scattered-source aggregation",
-    "geometry": "two velocity dimensions over one spatial axis",
-    "coordinates": "all fields in the source's discrete source-distribution units",
-    "boundary": "three finite aligned three-dimensional fields; signed values preserved",
-    "assumptions": [
-      "The wall-source channel exists only on the molecular side of the saved source; this is why the molecular reduction is a separate asset from its atomic sibling.",
-      "The caller owns the per-channel source construction; this asset only aggregates.",
-      "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
-    ]
+  {
+   "name": "charge_exchange_source_distribution",
+   "description": "The CX scattered source.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite three-dimensional field aligned to the wall field."
   },
-  "inputs": [
-    {
-      "name": "wall_source_distribution",
-      "description": "The wall scattered source.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite three-dimensional field; signed values preserved."
-    },
-    {
-      "name": "charge_exchange_source_distribution",
-      "description": "The CX scattered source.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite three-dimensional field aligned to the wall field."
-    },
-    {
-      "name": "elastic_source_distribution",
-      "description": "The elastic scattered source.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite three-dimensional field aligned to the wall field."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "total_source",
-      "description": "The aggregated scattered source.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "The pointwise sum in the saved order; finite; signed values preserved."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Three finite aligned scattered-source fields."
-    ],
-    "supported": [
-      "Molecular generation-source aggregation on a shared mesh."
-    ],
-    "excluded": [
-      "Misaligned meshes; non-finite fields."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for implicit boolean, string or complex conversion, non-finite inputs, or misaligned three-dimensional source fields.",
-    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
-  },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
-    "source_kinds": [
-      "SciRel implementation",
-      "KN1D-derived mathematical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.molecular_scattered_sources_reduction",
-      "symbol": "reduce_molecular_scattered_sources",
-      "signature": "reduce_molecular_scattered_sources(wall_source_distribution, charge_exchange_source_distribution, elastic_source_distribution)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "reduce_molecular_scattered_sources"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Aggregate three molecular sources in the saved order and reject misalignment.",
-    "code": "import numpy as np\nfrom scirel.kinetic import reduce_molecular_scattered_sources\nrng = np.random.default_rng(31)\nwall, cx, elastic = (rng.random((2, 3, 4)) for _ in range(3))\nresult = reduce_molecular_scattered_sources(wall, cx, elastic)\nnp.testing.assert_array_equal(result, wall + cx + elastic)\ntry:\n    reduce_molecular_scattered_sources(wall, cx, np.ones((2, 3, 5)))\nexcept ValueError as error:\n    assert 'finite aligned 3-D' in str(error)\nelse:\n    raise AssertionError('a misaligned field must be rejected')",
-    "expected": "The returned field equaled wall + charge_exchange + elastic elementwise, and a misaligned 3-D field raised ValueError."
-  },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_neutral_scattered_sources.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
-      "Public distribution licensing remains pending a human decision.",
-      "Example output is a bounded runtime observation, not a universal scientific claim."
-    ]
+  {
+   "name": "elastic_source_distribution",
+   "description": "The elastic scattered source.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite three-dimensional field aligned to the wall field."
   }
+ ],
+ "outputs": [
+  {
+   "name": "total_source",
+   "description": "The aggregated scattered source.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "The pointwise sum in the saved order; finite; signed values preserved."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Three finite aligned scattered-source fields."
+  ],
+  "supported": [
+   "Molecular generation-source aggregation on a shared mesh."
+  ],
+  "excluded": [
+   "Misaligned meshes; non-finite fields."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for implicit boolean, string or complex conversion, non-finite inputs, or misaligned three-dimensional source fields.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the declared neutral-transport or molecular moment relation, with the retained KN1D attribution and development-only rights recorded in licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt and licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt. No complete KN1D replacement or external approval is claimed.",
+  "source_kinds": [
+   "SciRel implementation",
+   "KN1D-derived mathematical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Internal technical development; source and fit redistribution rights and human release approval remain unresolved."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.molecular_scattered_sources_reduction",
+   "symbol": "reduce_molecular_scattered_sources",
+   "signature": "reduce_molecular_scattered_sources(wall_source_distribution, charge_exchange_source_distribution, elastic_source_distribution)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "reduce_molecular_scattered_sources"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Aggregate three molecular sources in the saved order and reject misalignment.",
+  "code": "import numpy as np\nfrom scirel.kinetic import reduce_molecular_scattered_sources\nrng = np.random.default_rng(31)\nwall, cx, elastic = (rng.random((2, 3, 4)) for _ in range(3))\nresult = reduce_molecular_scattered_sources(wall, cx, elastic)\nnp.testing.assert_array_equal(result, wall + cx + elastic)\ntry:\n    reduce_molecular_scattered_sources(wall, cx, np.ones((2, 3, 5)))\nexcept ValueError as error:\n    assert 'finite aligned 3-D' in str(error)\nelse:\n    raise AssertionError('a misaligned field must be rejected')",
+  "expected": "The returned field equaled wall + charge_exchange + elastic elementwise, and a misaligned 3-D field raised ValueError."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_neutral_scattered_sources.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+   "Public distribution licensing remains pending a human decision.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ }
 }

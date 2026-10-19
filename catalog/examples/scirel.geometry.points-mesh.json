@@ -1,120 +1,119 @@
 {
-  "schema": "scirel.asset-document",
-  "kind": "operator",
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "verification": {
-    "scope": [
-      "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-      "The executable constructor example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_native_geometry_qualification.py",
-      "tests/pleiades/geometry/test_native_lifecycle.py"
-    ],
-    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
-    "known_limitations": [
-      "Mesh objects do not by themselves validate a physical field model or device geometry."
-    ]
-  },
-  "asset_id": "scirel.geometry.points-mesh",
-  "title": {
-    "en": "Points mesh",
-    "zh": "点集网格"
-  },
-  "summary": "Finite unstructured cylindrical points.",
-  "taxonomy": [
-    "geometry",
-    "coordinates"
+ "schema": "scirel.asset-document",
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
   ],
-  "aliases": [
-    "PointsMesh"
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "verification": {
+  "scope": [
+   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+   "The executable constructor example stored in this contract"
   ],
-  "identity": {
-    "relation": "Point coordinate relation",
-    "direction": "points to R,Z arrays",
-    "definition": "Each paired rpts,zpts value defines one point",
-    "model": "Unstructured finite point set",
-    "geometry": "Unstructured finite point set",
-    "coordinates": "Cylindrical R-Z",
-    "boundary": "R must be nonnegative",
-    "assumptions": [
-      "Finite paired coordinates"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "rpts",
-      "description": "Radial coordinates",
-      "units": "m",
-      "shape": "N",
-      "dtype": "Finite float64",
-      "required": true,
-      "constraints": "Equal shape to zpts; R >= 0"
-    },
-    {
-      "name": "zpts",
-      "description": "Axial coordinates",
-      "units": "m",
-      "shape": "N",
-      "dtype": "Finite float64",
-      "required": true,
-      "constraints": "Equal shape to rpts"
-    }
+  "tests": [
+   "tests/pleiades/geometry/test_native_geometry_qualification.py",
+   "tests/pleiades/geometry/test_native_lifecycle.py"
   ],
-  "outputs": [
-    {
-      "name": "mesh",
-      "description": "Constructed PointsMesh object. Available properties/methods: R: Radial coordinates [m], N; Z: Axial coordinates [m], N",
-      "units": "Object; property units as described",
-      "shape": "one object",
-      "dtype": "PointsMesh",
-      "required": true,
-      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
-    ],
-    "supported": [
-      "Scalar and vector point inputs",
-      "theta away from origin"
-    ],
-    "excluded": [
-      "Negative radius",
-      "Mismatched shapes"
-    ]
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "known_limitations": [
+   "Mesh objects do not by themselves validate a physical field model or device geometry."
+  ]
+ },
+ "asset_id": "scirel.geometry.points-mesh",
+ "title": {
+  "en": "Points mesh",
+  "zh": "点集网格"
+ },
+ "summary": "Finite unstructured cylindrical points.",
+ "taxonomy": [
+  "geometry",
+  "coordinates"
+ ],
+ "aliases": [
+  "PointsMesh"
+ ],
+ "identity": {
+  "relation": "Point coordinate relation",
+  "direction": "points to R,Z arrays",
+  "definition": "Each paired rpts,zpts value defines one point",
+  "model": "Unstructured finite point set",
+  "geometry": "Unstructured finite point set",
+  "coordinates": "Cylindrical R-Z",
+  "boundary": "R must be nonnegative",
+  "assumptions": [
+   "Finite paired coordinates"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rpts",
+   "description": "Radial coordinates",
+   "units": "m",
+   "shape": "N",
+   "dtype": "Finite float64",
+   "required": true,
+   "constraints": "Equal shape to zpts; R >= 0"
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
-    "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
-    "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
-    "partial_results": "A failed constructor returns no mesh object."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry",
-      "symbol": "PointsMesh",
-      "signature": "PointsMesh(rpts: 'Iterable[float]', zpts: 'Iterable[float]')",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "PointsMesh"
-    }
-  },
-  "example": {
-    "description": "Construct one finite cylindrical point and inspect both coordinate arrays.",
-    "code": "import numpy as np\nfrom scirel.geometry import PointsMesh\n\nmesh = PointsMesh([0.2], [0.3])\nnp.testing.assert_allclose(mesh.R, [0.2])\nnp.testing.assert_allclose(mesh.Z, [0.3])",
-    "expected": "R and Z are one-element float arrays containing 0.2 m and 0.3 m."
+  {
+   "name": "zpts",
+   "description": "Axial coordinates",
+   "units": "m",
+   "shape": "N",
+   "dtype": "Finite float64",
+   "required": true,
+   "constraints": "Equal shape to rpts"
   }
+ ],
+ "outputs": [
+  {
+   "name": "mesh",
+   "description": "Constructed PointsMesh object. Available properties/methods: R: Radial coordinates [m], N; Z: Axial coordinates [m], N",
+   "units": "Object; property units as described",
+   "shape": "one object",
+   "dtype": "PointsMesh",
+   "required": true,
+   "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+  ],
+  "supported": [
+   "Scalar and vector point inputs",
+   "theta away from origin"
+  ],
+  "excluded": [
+   "Negative radius",
+   "Mismatched shapes"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
+  "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
+  "partial_results": "A failed constructor returns no mesh object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry",
+   "symbol": "PointsMesh",
+   "signature": "PointsMesh(rpts: 'Iterable[float]', zpts: 'Iterable[float]')",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "PointsMesh"
+  }
+ },
+ "example": {
+  "description": "Construct one finite cylindrical point and inspect both coordinate arrays.",
+  "code": "import numpy as np\nfrom scirel.geometry import PointsMesh\n\nmesh = PointsMesh([0.2], [0.3])\nnp.testing.assert_allclose(mesh.R, [0.2])\nnp.testing.assert_allclose(mesh.Z, [0.3])",
+  "expected": "R and Z are one-element float arrays containing 0.2 m and 0.3 m."
+ }
 }

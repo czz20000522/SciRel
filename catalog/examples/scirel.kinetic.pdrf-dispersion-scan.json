@@ -1,1481 +1,1480 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrf-dispersion-scan",
-  "kind": "task_graph",
-  "title": {
-    "en": "Effective multi-fluid dispersion scan",
-    "zh": "多流体色散扫描"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrf-dispersion-scan",
+ "title": {
+  "en": "Effective multi-fluid dispersion scan",
+  "zh": "多流体色散扫描"
+ },
+ "summary": "Run the full retained source scan family through corrected operators with explicit state and limits.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "effective-multifluid"
+ ],
+ "aliases": [
+  "evaluate_pdrf_dispersion"
+ ],
+ "identity": {
+  "relation": "Complete bounded effective multi-fluid spectrum scan and terminal projection",
+  "direction": "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting",
+  "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. Then produce a two-panel PNG in Agg for2/3/4; other selectors retain zero axes. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
+  "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; source scan grids retained",
+  "geometry": "x-z wavevector scans; B0 along z",
+  "coordinates": "Scan axes precede mode axis; Cartesian shape [kz_index,kx_index,mode]",
+  "boundary": "Entire scan bounded by max_points; failure aborts without partial scientific results; independent sorting is not branch continuation",
+  "assumptions": [
+   "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+   "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+   "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+   "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "species",
+   "description": "Rows q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,eps_x,eps_y; one header line for text.",
+   "units": "SI C,kg,m^-3,m/s,m^-1 by quantity; normalized units fixed by explicit c2,epsilon0 and B0",
+   "shape": "[s,10] or text",
+   "dtype": "real array-like or string",
+   "required": false,
+   "constraints": "s>=1, m/n>0, cs>=0; None uses documented example rows; rows are independent fluids, including equal rows. Default normalized rows: [-1,1,4,0,0,0,0,0,0,0], [1,4,4,0,0,0,0,0,0,0]. Default SI rows: [-1.602e-19,9.109e-31,8.7e6,0,0,0,4.631e6,4.631e6,0,0], [1.602e-19,1.673e-27,8.7e6,0,0,0,9.360e4,9.360e4,0,0].",
+   "default": null
   },
-  "summary": "Run the full retained source scan family through corrected operators with explicit state and limits.",
-  "taxonomy": [
-    "kinetic",
-    "plasma",
-    "effective-multifluid"
-  ],
-  "aliases": [
-    "evaluate_pdrf_dispersion"
-  ],
-  "identity": {
-    "relation": "Complete bounded effective multi-fluid spectrum scan and terminal projection",
-    "direction": "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting",
-    "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. Then produce a two-panel PNG in Agg for2/3/4; other selectors retain zero axes. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
-    "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; source scan grids retained",
-    "geometry": "x-z wavevector scans; B0 along z",
-    "coordinates": "Scan axes precede mode axis; Cartesian shape [kz_index,kx_index,mode]",
-    "boundary": "Entire scan bounded by max_points; failure aborts without partial scientific results; independent sorting is not branch continuation",
-    "assumptions": [
-      "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
-      "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
-      "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-      "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
-    ]
+  {
+   "name": "unit",
+   "description": "Unit convention and default constants.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": false,
+   "constraints": "normalized or si, without input conversion.",
+   "default": "normalized"
   },
-  "inputs": [
-    {
-      "name": "species",
-      "description": "Rows q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,eps_x,eps_y; one header line for text.",
-      "units": "SI C,kg,m^-3,m/s,m^-1 by quantity; normalized units fixed by explicit c2,epsilon0 and B0",
-      "shape": "[s,10] or text",
-      "dtype": "real array-like or string",
-      "required": false,
-      "constraints": "s>=1, m/n>0, cs>=0; None uses documented example rows; rows are independent fluids, including equal rows. Default normalized rows: [-1,1,4,0,0,0,0,0,0,0], [1,4,4,0,0,0,0,0,0,0]. Default SI rows: [-1.602e-19,9.109e-31,8.7e6,0,0,0,4.631e6,4.631e6,0,0], [1.602e-19,1.673e-27,8.7e6,0,0,0,9.360e4,9.360e4,0,0].",
-      "default": null
-    },
-    {
-      "name": "unit",
-      "description": "Unit convention and default constants.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "string",
-      "required": false,
-      "constraints": "normalized or si, without input conversion.",
-      "default": "normalized"
-    },
-    {
-      "name": "method",
-      "description": "Scan selector.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "0/1 and unknown nonnegative integers single point;2 magnitude,3 angle,4 Cartesian mesh.",
-      "default": 2
-    },
-    {
-      "name": "rel",
-      "description": "Inertia selector passed unchanged to matrix assembly.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "0 or1; rel1 strictly subluminal.",
-      "default": 0
-    },
-    {
-      "name": "vectors",
-      "description": "Expose corresponding eigenvector columns.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "bool",
-      "required": false,
-      "constraints": "Does not change the eigenvalue calculation path.",
-      "default": false
-    },
-    {
-      "name": "oldmethod",
-      "description": "Numerical initial solver selector.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "1 generalized SciPy eig; 2 eig of solve(A,M); both use balanced coordinates and the same refinement checks.",
-      "default": 2
-    },
-    {
-      "name": "prior",
-      "description": "Prior state accepted for call compatibility, never used as primary scientific input.",
-      "units": "state convention",
-      "shape": "mapping or null",
-      "dtype": "dict or None",
-      "required": false,
-      "constraints": "Every field is freshly derived; prior is not mutated.",
-      "default": null
-    },
-    {
-      "name": "cfg",
-      "description": "Constants B0,c2,epsilon0,gammaTs; collision controls and classification.",
-      "units": "B0 in T/SI or normalized; c2 speed squared; epsilon0 SI or normalized; rates s^-1 or normalized frequency",
-      "shape": "mapping or null",
-      "dtype": "dict or None",
-      "required": false,
-      "constraints": "Only documented fields; c2/epsilon0/gammaTs>0. Explicit rates receiver i toward j, zero diagonal, nonnegative and rho reciprocal. drag_rates>=0. Legacy nue/nui light/heavy bath, nuei light-receiver cross-class, same-class nuee/nuii lower-rho receiver. Default mass classes normalized<=1 or SI<=9.1093837139e-31 kg; collision_classes explicit light/heavy (electron/ion aliases) overrides. These are numerical categories, not inferred species identities. Defaults normalized: B0=1,c2=1,epsilon0=1,gammaTs=1; SI: B0=8e-9 T,c2=(2.9979e8)^2,epsilon0=8.854e-12,gammaTs=5/3. All five legacy rates zero; absent explicit pair/drag rates derive from those zero controls. Default classes use the declared mass threshold.",
-      "default": null
-    },
-    {
-      "name": "k_grid",
-      "description": "Magnitude scan override.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "[K] or null",
-      "dtype": "real array-like or None",
-      "required": false,
-      "constraints": "Finite nonempty; method2 only. Default101 normalized or196 SI literal-source samples.",
-      "default": null
-    },
-    {
-      "name": "theta_grid",
-      "description": "Angle scan override.",
-      "units": "rad",
-      "shape": "[T] or null",
-      "dtype": "real array-like or None",
-      "required": false,
-      "constraints": "Finite nonempty; method3 only. Default51 samples0..pi/2.",
-      "default": null
-    },
-    {
-      "name": "kx_grid",
-      "description": "Cartesian x scan override.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "[X] or null",
-      "dtype": "real array-like or None",
-      "required": false,
-      "constraints": "Finite nonempty; method4 only. Default75 samples. Shape order [Z,X,N].",
-      "default": null
-    },
-    {
-      "name": "kz_grid",
-      "description": "Cartesian z scan override.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "[Z] or null",
-      "dtype": "real array-like or None",
-      "required": false,
-      "constraints": "Finite nonempty; method4 only. Default50 samples.",
-      "default": null
-    },
-    {
-      "name": "k",
-      "description": "Single-point wave number.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "scalar",
-      "dtype": "complex numeric",
-      "required": false,
-      "constraints": "Finite; applies only single branch. Angle sweep retains source k=2.",
-      "default": 0.1
-    },
-    {
-      "name": "theta",
-      "description": "Single-point propagation angle from z.",
-      "units": "rad",
-      "shape": "scalar",
-      "dtype": "real numeric",
-      "required": false,
-      "constraints": "Finite; method2 source angle pi/4 normalized or0 SI is retained.",
-      "default": 1.0471975511965976
-    },
-    {
-      "name": "max_points",
-      "description": "Upper bound on solved scan points.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "Positive; whole requested scan must fit. No feedback or iteration.",
-      "default": 10000
-    },
-    {
-      "name": "plot_path",
-      "description": "Explicit optional PNG export destination.",
-      "units": "filesystem path",
-      "shape": "scalar or null",
-      "dtype": "path-like or None",
-      "required": false,
-      "constraints": "Only methods2/3/4; Agg generates PNG in memory and writes this path if supplied.",
-      "default": null
-    },
-    {
-      "name": "output_count",
-      "description": "Optional source-position public return prefix.",
-      "units": "dimensionless",
-      "shape": "scalar or null",
-      "dtype": "int or None",
-      "required": false,
-      "constraints": "normalized0..4,SI0..17. All branches now define kk,ww1,ww2. None returns mapping.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "M",
-      "description": "Temporal generator with species [dn,dvx,dvy,dvz] then [Ex,Ey,Ez,Bx,By,Bz].",
-      "units": "row output units per second divided by column state units; normalized analog",
-      "shape": "[4s+6,4s+6]",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Finite; lambda*A*x=M*x and omega=i*lambda."
-    },
-    {
-      "name": "A",
-      "description": "Inertia matrix.",
-      "units": "dimensionless within equally scaled velocity blocks",
-      "shape": "[4s+6,4s+6]",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Identity except d(gamma*v)/dv in rel=1 velocity blocks."
-    },
-    {
-      "name": "state",
-      "description": "Revalidated fresh state used by the matrix.",
-      "units": "per-state quantity conventions",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "No stale derived fields; preserves explicit collision classes."
-    },
-    {
-      "name": "scales",
-      "description": "Positive physical state-column scales for similarity transformation.",
-      "units": "density,velocity,electric field,magnetic field by component",
-      "shape": "[4s+6]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Density=n_j, velocity=c, B=sqrt(sum(rho)/epsilon0), E=c*B; transforms rows and columns consistently."
-    },
-    {
-      "name": "kx",
-      "description": "Accepted wave number x.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "scalar",
-      "dtype": "complex",
-      "required": true,
-      "constraints": "Same as requested."
-    },
-    {
-      "name": "kz",
-      "description": "Accepted wave number z.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "scalar",
-      "dtype": "complex",
-      "required": true,
-      "constraints": "Same as requested."
-    },
-    {
-      "name": "w1",
-      "description": "Frequencies sorted by decreasing real part.",
-      "units": "s^-1 SI or normalized frequency",
-      "shape": "[N]",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "omega=i*lambda; stable ties; not mode tracking."
-    },
-    {
-      "name": "w2",
-      "description": "Same modes sorted by decreasing imaginary part.",
-      "units": "s^-1 SI or normalized frequency",
-      "shape": "[N]",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Independent sort order."
-    },
-    {
-      "name": "X1",
-      "description": "Eigenvector columns corresponding to w1.",
-      "units": "mixed state units with max-absolute normalization",
-      "shape": "[N,N]",
-      "dtype": "complex128",
-      "required": false,
-      "constraints": "Only the mapping with vectors=True exposes corresponding last-point vectors; public positional prefixes do not contain vectors. Arbitrary phase and degenerate basis.",
-      "default": null
-    },
-    {
-      "name": "X2",
-      "description": "Eigenvector columns corresponding to w2.",
-      "units": "mixed state units with max-absolute normalization",
-      "shape": "[N,N]",
-      "dtype": "complex128",
-      "required": false,
-      "constraints": "Only the mapping with vectors=True exposes corresponding last-point vectors; public positional prefixes do not contain vectors. Arbitrary phase and degenerate basis.",
-      "default": null
-    },
-    {
-      "name": "residual1",
-      "description": "Scaled global backward error for w1.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Finite and at most1e-10; not a forward-accuracy certificate."
-    },
-    {
-      "name": "residual2",
-      "description": "Scaled global backward error for w2.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "Same criterion."
-    },
-    {
-      "name": "component_residual",
-      "description": "Maximum active component backward error.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "float64",
-      "required": true,
-      "constraints": "50-decimal fallback if double exceeds1e-12; reject if final exceeds1e-10."
-    },
-    {
-      "name": "precision",
-      "description": "Actual arithmetic path.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "string",
-      "required": true,
-      "constraints": "complex128 or mpmath-50-decimal-to-complex128; original input coefficients remain double precision."
-    },
-    {
-      "name": "oldmethod",
-      "description": "Selected initial method.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "1 or2."
-    },
-    {
-      "name": "method",
-      "description": "Executed selector.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Exact supplied method."
-    },
-    {
-      "name": "unit",
-      "description": "Unit convention.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "string",
-      "required": true,
-      "constraints": "normalized or si."
-    },
-    {
-      "name": "kk",
-      "description": "Magnitude data.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "[K], [T], [Z,X], or[1]",
-      "dtype": "numeric array",
-      "required": true,
-      "constraints": "Always defined; SI nonscan arities do not return undefined fields."
-    },
-    {
-      "name": "tt",
-      "description": "Angle-scan abscissa.",
-      "units": "rad",
-      "shape": "[T] or empty",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Populated only method3."
-    },
-    {
-      "name": "kkx",
-      "description": "Cartesian mesh x component.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "[Z,X] or empty",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Only method4."
-    },
-    {
-      "name": "kkz",
-      "description": "Cartesian mesh z component.",
-      "units": "m^-1 SI or normalized inverse length",
-      "shape": "[Z,X] or empty",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "Only method4."
-    },
-    {
-      "name": "ww1",
-      "description": "Real-part independently sorted frequencies at every point.",
-      "units": "s^-1 SI or normalized frequency",
-      "shape": "[K,N],[T,N],[Z,X,N],or[1,N]",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Full scan arrays; not continuous mode tracking."
-    },
-    {
-      "name": "ww2",
-      "description": "Imaginary-part independently sorted frequencies at every point.",
-      "units": "s^-1 SI or normalized frequency",
-      "shape": "same as ww1",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "Full scan arrays."
-    },
-    {
-      "name": "points",
-      "description": "Number of solved points.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "At most max_points."
-    },
-    {
-      "name": "execution_order",
-      "description": "Explicit sequencing.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "string",
-      "required": true,
-      "constraints": "initialize; row-major assemble/spectrum; plot."
-    },
-    {
-      "name": "max_points",
-      "description": "Enforced point limit.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": true,
-      "constraints": "Same as supplied."
-    },
-    {
-      "name": "graphics",
-      "description": "Axes and plotted mode counts.",
-      "units": "dimensionless",
-      "shape": "mapping",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "Two axes for2/3/4, zero axes for other selectors; no one-species mass title indexing or zero color index."
-    },
-    {
-      "name": "plot_png",
-      "description": "Computed PNG bytes.",
-      "units": "PNG bytes",
-      "shape": "bytes or absent",
-      "dtype": "bytes",
-      "required": false,
-      "constraints": "Methods2/3/4 only; requested file mirrors these bytes.",
-      "default": null
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Finite ten-column species data with positive mass/density and nonnegative sound speeds; all configured constants and rates satisfy their declared domains.",
-      "Caller chooses consistent SI or normalized quantities; unit selection labels data and selects defaults, and does not implicitly convert arrays."
-    ],
-    "supported": [
-      "The complete retained normalized/SI local multi-fluid mapping, source scan selectors and caller-owned state under the explicitly declared effective closure."
-    ],
-    "excluded": [
-      "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
-      "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
-      "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-      "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
-    ]
+  {
+   "name": "method",
+   "description": "Scan selector.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "0/1 and unknown nonnegative integers single point;2 magnitude,3 angle,4 Cartesian mesh.",
+   "default": 2
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for invalid units, shape, nonfinite data, physical signs, rates, selectors, or a numerically unrepresentable state. The matrix rejects rel=1 at or above c.",
-    "runtime_failure": "Native NumPy/SciPy/mpmath or file export failures propagate; ArithmeticError rejects residual or eigenvector failure.",
-    "nonconvergence": "No physical iteration. Numerical eigensolver failure propagates; no result is claimed on failure.",
-    "partial_results": "No result dictionary is returned after failure; an explicitly requested PNG is a caller-directed file side effect."
+  {
+   "name": "rel",
+   "description": "Inertia selector passed unchanged to matrix assembly.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "0 or1; rel1 strictly subluminal.",
+   "default": 0
   },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel PDRF effective fluid implementation with explicit state, matrix, spectrum and scan contracts; PDRK attribution and bundled notices are recorded in licenses/pdrk/NOTICE. The effective model and tests do not claim upstream approval.",
-    "source_kinds": [
-      "SciRel implementation",
-      "published PDRF relation",
-      "direct contract tests"
-    ],
-    "public_references": [
-      "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
-    ],
-    "license_status": "PDRK/PDRF source redistribution permission remains unresolved; this is a private technical development record."
+  {
+   "name": "vectors",
+   "description": "Expose corresponding eigenvector columns.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "Does not change the eigenvalue calculation path.",
+   "default": false
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrf",
-      "symbol": "evaluate_pdrf_dispersion",
-      "signature": "evaluate_pdrf_dispersion(species=None, *, unit='normalized', method=2, rel=0, vectors=False, oldmethod=2, prior=None, cfg=None, k_grid=None, theta_grid=None, kx_grid=None, kz_grid=None, k=0.1, theta=1.0471975511965976, max_points=10000, plot_path=None, output_count=None)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "evaluate_pdrf_dispersion"
-    }
+  {
+   "name": "oldmethod",
+   "description": "Numerical initial solver selector.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "1 generalized SciPy eig; 2 eig of solve(A,M); both use balanced coordinates and the same refinement checks.",
+   "default": 2
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.pdrf-plasma-state"
-      },
-      {
-        "asset_id": "scirel.kinetic.pdrf-temporal-matrix"
-      },
-      {
-        "asset_id": "scirel.kinetic.pdrf-temporal-spectrum"
-      }
-    ]
+  {
+   "name": "prior",
+   "description": "Prior state accepted for call compatibility, never used as primary scientific input.",
+   "units": "state convention",
+   "shape": "mapping or null",
+   "dtype": "dict or None",
+   "required": false,
+   "constraints": "Every field is freshly derived; prior is not mutated.",
+   "default": null
   },
-  "example": {
-    "description": "Complete two-point magnitude scan.",
-    "code": "from scirel.kinetic import evaluate_pdrf_dispersion\nr = evaluate_pdrf_dispersion(method=2, k_grid=[0, .1])\nassert r['ww1'].shape == (2, 14) and r['graphics']['axes_count'] == 2",
-    "expected": "The normalized two-point scan returned ww1 with shape (2,14), graphics axes_count=2 and mode_count=5, and an in-memory PNG of 23674 bytes in this run."
+  {
+   "name": "cfg",
+   "description": "Constants B0,c2,epsilon0,gammaTs; collision controls and classification.",
+   "units": "B0 in T/SI or normalized; c2 speed squared; epsilon0 SI or normalized; rates s^-1 or normalized frequency",
+   "shape": "mapping or null",
+   "dtype": "dict or None",
+   "required": false,
+   "constraints": "Only documented fields; c2/epsilon0/gammaTs>0. Explicit rates receiver i toward j, zero diagonal, nonnegative and rho reciprocal. drag_rates>=0. Legacy nue/nui light/heavy bath, nuei light-receiver cross-class, same-class nuee/nuii lower-rho receiver. Default mass classes normalized<=1 or SI<=9.1093837139e-31 kg; collision_classes explicit light/heavy (electron/ion aliases) overrides. These are numerical categories, not inferred species identities. Defaults normalized: B0=1,c2=1,epsilon0=1,gammaTs=1; SI: B0=8e-9 T,c2=(2.9979e8)^2,epsilon0=8.854e-12,gammaTs=5/3. All five legacy rates zero; absent explicit pair/drag rates derive from those zero controls. Default classes use the declared mass threshold.",
+   "default": null
   },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrf_d2.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
-      "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
-      "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
-      "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
-      "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval.",
-      "Example output is a bounded runtime observation, not a universal scientific claim."
-    ]
+  {
+   "name": "k_grid",
+   "description": "Magnitude scan override.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "[K] or null",
+   "dtype": "real array-like or None",
+   "required": false,
+   "constraints": "Finite nonempty; method2 only. Default101 normalized or196 SI literal-source samples.",
+   "default": null
   },
-  "graph": {
-    "nodes": [
-      {
-        "id": "initialize",
-        "kind": "operator",
-        "asset_id": "scirel.kinetic.pdrf-plasma-state",
-        "description": "Initialize the complete fresh state; state edge carries the whole returned mapping.",
-        "inputs": [
-          "species",
-          "unit",
-          "prior",
-          "cfg"
-        ],
-        "outputs": [
-          "state"
-        ]
-      },
-      {
-        "id": "schedule",
-        "kind": "controlled_glue",
-        "description": "Select source grid, point cap, row-major order and return/plot controls; no plasma arithmetic.",
-        "inputs": [
-          "method",
-          "rel",
-          "vectors",
-          "oldmethod",
-          "k_grid",
-          "theta_grid",
-          "kx_grid",
-          "kz_grid",
-          "k",
-          "theta",
-          "max_points",
-          "plot_path",
-          "output_count"
-        ],
-        "outputs": [
-          "wavepoints",
-          "rel",
-          "vectors",
-          "oldmethod",
-          "controls"
-        ]
-      },
-      {
-        "id": "assemble",
-        "kind": "operator",
-        "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
-        "description": "At each point assemble exact corrected M,A and owned state.",
-        "inputs": [
-          "state",
-          "wavepoints",
-          "rel"
-        ],
-        "outputs": [
-          "matrix"
-        ]
-      },
-      {
-        "id": "spectrum",
-        "kind": "operator",
-        "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
-        "description": "Compute same eigenvalue/vector path at every point and independent sorts.",
-        "inputs": [
-          "matrix",
-          "vectors",
-          "oldmethod"
-        ],
-        "outputs": [
-          "spectrum"
-        ]
-      },
-      {
-        "id": "terminal",
-        "kind": "controlled_glue",
-        "description": "Collect full arrays and final state/matrices, then plot in Agg and optionally return a positional prefix.",
-        "inputs": [
-          "matrix",
-          "spectrum",
-          "controls"
-        ],
-        "outputs": [
-          "M",
-          "A",
-          "state",
-          "scales",
-          "kx",
-          "kz",
-          "w1",
-          "w2",
-          "X1",
-          "X2",
-          "residual1",
-          "residual2",
-          "component_residual",
-          "precision",
-          "oldmethod",
-          "method",
-          "unit",
-          "kk",
-          "tt",
-          "kkx",
-          "kkz",
-          "ww1",
-          "ww2",
-          "points",
-          "execution_order",
-          "max_points",
-          "graphics",
-          "plot_png"
-        ]
-      }
-    ],
-    "edges": [
-      {
-        "from": {
-          "node": "$input",
-          "port": "species"
-        },
-        "to": {
-          "node": "initialize",
-          "port": "species"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "unit"
-        },
-        "to": {
-          "node": "initialize",
-          "port": "unit"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "method"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "method"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "rel"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "rel"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "vectors"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "vectors"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "oldmethod"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "oldmethod"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "prior"
-        },
-        "to": {
-          "node": "initialize",
-          "port": "prior"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "cfg"
-        },
-        "to": {
-          "node": "initialize",
-          "port": "cfg"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "k_grid"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "k_grid"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "theta_grid"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "theta_grid"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "kx_grid"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "kx_grid"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "kz_grid"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "kz_grid"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "k"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "k"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "theta"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "theta"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "max_points"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "max_points"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "plot_path"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "plot_path"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "$input",
-          "port": "output_count"
-        },
-        "to": {
-          "node": "schedule",
-          "port": "output_count"
-        },
-        "description": "Pass declared graph input.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "initialize",
-          "port": "state"
-        },
-        "to": {
-          "node": "assemble",
-          "port": "state"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "schedule",
-          "port": "wavepoints"
-        },
-        "to": {
-          "node": "assemble",
-          "port": "wavepoints"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "schedule",
-          "port": "rel"
-        },
-        "to": {
-          "node": "assemble",
-          "port": "rel"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "assemble",
-          "port": "matrix"
-        },
-        "to": {
-          "node": "spectrum",
-          "port": "matrix"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "schedule",
-          "port": "vectors"
-        },
-        "to": {
-          "node": "spectrum",
-          "port": "vectors"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "schedule",
-          "port": "oldmethod"
-        },
-        "to": {
-          "node": "spectrum",
-          "port": "oldmethod"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "assemble",
-          "port": "matrix"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "matrix"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "spectrum",
-          "port": "spectrum"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "spectrum"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "schedule",
-          "port": "controls"
-        },
-        "to": {
-          "node": "terminal",
-          "port": "controls"
-        },
-        "description": "Preserve declared physical state, selectors and numerical matrix ports.",
-        "condition": "always",
-        "transform": "identity",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "M"
-        },
-        "to": {
-          "node": "$output",
-          "port": "M"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "A"
-        },
-        "to": {
-          "node": "$output",
-          "port": "A"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "state"
-        },
-        "to": {
-          "node": "$output",
-          "port": "state"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "scales"
-        },
-        "to": {
-          "node": "$output",
-          "port": "scales"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "kx"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kx"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "kz"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kz"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "w1"
-        },
-        "to": {
-          "node": "$output",
-          "port": "w1"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "w2"
-        },
-        "to": {
-          "node": "$output",
-          "port": "w2"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "X1"
-        },
-        "to": {
-          "node": "$output",
-          "port": "X1"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "X2"
-        },
-        "to": {
-          "node": "$output",
-          "port": "X2"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "residual1"
-        },
-        "to": {
-          "node": "$output",
-          "port": "residual1"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "residual2"
-        },
-        "to": {
-          "node": "$output",
-          "port": "residual2"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "component_residual"
-        },
-        "to": {
-          "node": "$output",
-          "port": "component_residual"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "precision"
-        },
-        "to": {
-          "node": "$output",
-          "port": "precision"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "oldmethod"
-        },
-        "to": {
-          "node": "$output",
-          "port": "oldmethod"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "method"
-        },
-        "to": {
-          "node": "$output",
-          "port": "method"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "unit"
-        },
-        "to": {
-          "node": "$output",
-          "port": "unit"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "kk"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kk"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "tt"
-        },
-        "to": {
-          "node": "$output",
-          "port": "tt"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "kkx"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kkx"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "kkz"
-        },
-        "to": {
-          "node": "$output",
-          "port": "kkz"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "ww1"
-        },
-        "to": {
-          "node": "$output",
-          "port": "ww1"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "ww2"
-        },
-        "to": {
-          "node": "$output",
-          "port": "ww2"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "points"
-        },
-        "to": {
-          "node": "$output",
-          "port": "points"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "execution_order"
-        },
-        "to": {
-          "node": "$output",
-          "port": "execution_order"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "max_points"
-        },
-        "to": {
-          "node": "$output",
-          "port": "max_points"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "graphics"
-        },
-        "to": {
-          "node": "$output",
-          "port": "graphics"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      },
-      {
-        "from": {
-          "node": "terminal",
-          "port": "plot_png"
-        },
-        "to": {
-          "node": "$output",
-          "port": "plot_png"
-        },
-        "description": "Return complete declared terminal field.",
-        "condition": "always",
-        "transform": "collect scan values or select final-point field",
-        "kind": "data",
-        "required": true
-      }
-    ],
-    "execution": {
-      "mode": "dag",
-      "ordering": "initialize; finite row-major point schedule; assemble then spectrum per point; collect terminal then plot. One pass, at most max_points(default10000); no state feedback.",
-      "branches": [
-        "method0/1/unknown nonnegative: single point",
-        "method2: magnitude",
-        "method3: angle",
-        "method4: Cartesian mesh",
-        "vectors and oldmethod forwarded unchanged; positive point bound checked before loop"
-      ],
-      "state_ownership": "Caller inputs remain untouched; fresh graph-local state; prior contributes no fields. Each point derives from the same explicit primaries.",
-      "failure_propagation": "First invalid input, arithmetic, eigensolver or export failure propagates; no partial result dictionary.",
-      "feedback": []
-    }
+  {
+   "name": "theta_grid",
+   "description": "Angle scan override.",
+   "units": "rad",
+   "shape": "[T] or null",
+   "dtype": "real array-like or None",
+   "required": false,
+   "constraints": "Finite nonempty; method3 only. Default51 samples0..pi/2.",
+   "default": null
+  },
+  {
+   "name": "kx_grid",
+   "description": "Cartesian x scan override.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "[X] or null",
+   "dtype": "real array-like or None",
+   "required": false,
+   "constraints": "Finite nonempty; method4 only. Default75 samples. Shape order [Z,X,N].",
+   "default": null
+  },
+  {
+   "name": "kz_grid",
+   "description": "Cartesian z scan override.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "[Z] or null",
+   "dtype": "real array-like or None",
+   "required": false,
+   "constraints": "Finite nonempty; method4 only. Default50 samples.",
+   "default": null
+  },
+  {
+   "name": "k",
+   "description": "Single-point wave number.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "scalar",
+   "dtype": "complex numeric",
+   "required": false,
+   "constraints": "Finite; applies only single branch. Angle sweep retains source k=2.",
+   "default": 0.1
+  },
+  {
+   "name": "theta",
+   "description": "Single-point propagation angle from z.",
+   "units": "rad",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "Finite; method2 source angle pi/4 normalized or0 SI is retained.",
+   "default": 1.0471975511965976
+  },
+  {
+   "name": "max_points",
+   "description": "Upper bound on solved scan points.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Positive; whole requested scan must fit. No feedback or iteration.",
+   "default": 10000
+  },
+  {
+   "name": "plot_path",
+   "description": "Explicit optional PNG export destination.",
+   "units": "filesystem path",
+   "shape": "scalar or null",
+   "dtype": "path-like or None",
+   "required": false,
+   "constraints": "Only methods2/3/4; Agg generates PNG in memory and writes this path if supplied.",
+   "default": null
+  },
+  {
+   "name": "output_count",
+   "description": "Optional source-position public return prefix.",
+   "units": "dimensionless",
+   "shape": "scalar or null",
+   "dtype": "int or None",
+   "required": false,
+   "constraints": "normalized0..4,SI0..17. All branches now define kk,ww1,ww2. None returns mapping.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "M",
+   "description": "Temporal generator with species [dn,dvx,dvy,dvz] then [Ex,Ey,Ez,Bx,By,Bz].",
+   "units": "row output units per second divided by column state units; normalized analog",
+   "shape": "[4s+6,4s+6]",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; lambda*A*x=M*x and omega=i*lambda."
+  },
+  {
+   "name": "A",
+   "description": "Inertia matrix.",
+   "units": "dimensionless within equally scaled velocity blocks",
+   "shape": "[4s+6,4s+6]",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Identity except d(gamma*v)/dv in rel=1 velocity blocks."
+  },
+  {
+   "name": "state",
+   "description": "Revalidated fresh state used by the matrix.",
+   "units": "per-state quantity conventions",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "No stale derived fields; preserves explicit collision classes."
+  },
+  {
+   "name": "scales",
+   "description": "Positive physical state-column scales for similarity transformation.",
+   "units": "density,velocity,electric field,magnetic field by component",
+   "shape": "[4s+6]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Density=n_j, velocity=c, B=sqrt(sum(rho)/epsilon0), E=c*B; transforms rows and columns consistently."
+  },
+  {
+   "name": "kx",
+   "description": "Accepted wave number x.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "scalar",
+   "dtype": "complex",
+   "required": true,
+   "constraints": "Same as requested."
+  },
+  {
+   "name": "kz",
+   "description": "Accepted wave number z.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "scalar",
+   "dtype": "complex",
+   "required": true,
+   "constraints": "Same as requested."
+  },
+  {
+   "name": "w1",
+   "description": "Frequencies sorted by decreasing real part.",
+   "units": "s^-1 SI or normalized frequency",
+   "shape": "[N]",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "omega=i*lambda; stable ties; not mode tracking."
+  },
+  {
+   "name": "w2",
+   "description": "Same modes sorted by decreasing imaginary part.",
+   "units": "s^-1 SI or normalized frequency",
+   "shape": "[N]",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Independent sort order."
+  },
+  {
+   "name": "X1",
+   "description": "Eigenvector columns corresponding to w1.",
+   "units": "mixed state units with max-absolute normalization",
+   "shape": "[N,N]",
+   "dtype": "complex128",
+   "required": false,
+   "constraints": "Only the mapping with vectors=True exposes corresponding last-point vectors; public positional prefixes do not contain vectors. Arbitrary phase and degenerate basis.",
+   "default": null
+  },
+  {
+   "name": "X2",
+   "description": "Eigenvector columns corresponding to w2.",
+   "units": "mixed state units with max-absolute normalization",
+   "shape": "[N,N]",
+   "dtype": "complex128",
+   "required": false,
+   "constraints": "Only the mapping with vectors=True exposes corresponding last-point vectors; public positional prefixes do not contain vectors. Arbitrary phase and degenerate basis.",
+   "default": null
+  },
+  {
+   "name": "residual1",
+   "description": "Scaled global backward error for w1.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and at most1e-10; not a forward-accuracy certificate."
+  },
+  {
+   "name": "residual2",
+   "description": "Scaled global backward error for w2.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Same criterion."
+  },
+  {
+   "name": "component_residual",
+   "description": "Maximum active component backward error.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "50-decimal fallback if double exceeds1e-12; reject if final exceeds1e-10."
+  },
+  {
+   "name": "precision",
+   "description": "Actual arithmetic path.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "complex128 or mpmath-50-decimal-to-complex128; original input coefficients remain double precision."
+  },
+  {
+   "name": "oldmethod",
+   "description": "Selected initial method.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "1 or2."
+  },
+  {
+   "name": "method",
+   "description": "Executed selector.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Exact supplied method."
+  },
+  {
+   "name": "unit",
+   "description": "Unit convention.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "normalized or si."
+  },
+  {
+   "name": "kk",
+   "description": "Magnitude data.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "[K], [T], [Z,X], or[1]",
+   "dtype": "numeric array",
+   "required": true,
+   "constraints": "Always defined; SI nonscan arities do not return undefined fields."
+  },
+  {
+   "name": "tt",
+   "description": "Angle-scan abscissa.",
+   "units": "rad",
+   "shape": "[T] or empty",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Populated only method3."
+  },
+  {
+   "name": "kkx",
+   "description": "Cartesian mesh x component.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "[Z,X] or empty",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Only method4."
+  },
+  {
+   "name": "kkz",
+   "description": "Cartesian mesh z component.",
+   "units": "m^-1 SI or normalized inverse length",
+   "shape": "[Z,X] or empty",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Only method4."
+  },
+  {
+   "name": "ww1",
+   "description": "Real-part independently sorted frequencies at every point.",
+   "units": "s^-1 SI or normalized frequency",
+   "shape": "[K,N],[T,N],[Z,X,N],or[1,N]",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Full scan arrays; not continuous mode tracking."
+  },
+  {
+   "name": "ww2",
+   "description": "Imaginary-part independently sorted frequencies at every point.",
+   "units": "s^-1 SI or normalized frequency",
+   "shape": "same as ww1",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Full scan arrays."
+  },
+  {
+   "name": "points",
+   "description": "Number of solved points.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "At most max_points."
+  },
+  {
+   "name": "execution_order",
+   "description": "Explicit sequencing.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "initialize; row-major assemble/spectrum; plot."
+  },
+  {
+   "name": "max_points",
+   "description": "Enforced point limit.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Same as supplied."
+  },
+  {
+   "name": "graphics",
+   "description": "Axes and plotted mode counts.",
+   "units": "dimensionless",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Two axes for2/3/4, zero axes for other selectors; no one-species mass title indexing or zero color index."
+  },
+  {
+   "name": "plot_png",
+   "description": "Computed PNG bytes.",
+   "units": "PNG bytes",
+   "shape": "bytes or absent",
+   "dtype": "bytes",
+   "required": false,
+   "constraints": "Methods2/3/4 only; requested file mirrors these bytes.",
+   "default": null
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite ten-column species data with positive mass/density and nonnegative sound speeds; all configured constants and rates satisfy their declared domains.",
+   "Caller chooses consistent SI or normalized quantities; unit selection labels data and selects defaults, and does not implicitly convert arrays."
+  ],
+  "supported": [
+   "The complete retained normalized/SI local multi-fluid mapping, source scan selectors and caller-owned state under the explicitly declared effective closure."
+  ],
+  "excluded": [
+   "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+   "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+   "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+   "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for invalid units, shape, nonfinite data, physical signs, rates, selectors, or a numerically unrepresentable state. The matrix rejects rel=1 at or above c.",
+  "runtime_failure": "Native NumPy/SciPy/mpmath or file export failures propagate; ArithmeticError rejects residual or eigenvector failure.",
+  "nonconvergence": "No physical iteration. Numerical eigensolver failure propagates; no result is claimed on failure.",
+  "partial_results": "No result dictionary is returned after failure; an explicitly requested PNG is a caller-directed file side effect."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel PDRF effective fluid implementation with explicit state, matrix, spectrum and scan contracts; PDRK attribution and bundled notices are recorded in licenses/pdrk/NOTICE. The effective model and tests do not claim upstream approval.",
+  "source_kinds": [
+   "SciRel implementation",
+   "published PDRF relation",
+   "direct contract tests"
+  ],
+  "public_references": [
+   "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
+  ],
+  "license_status": "PDRK/PDRF source redistribution permission remains unresolved; this is a private technical development record."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrf",
+   "symbol": "evaluate_pdrf_dispersion",
+   "signature": "evaluate_pdrf_dispersion(species=None, *, unit='normalized', method=2, rel=0, vectors=False, oldmethod=2, prior=None, cfg=None, k_grid=None, theta_grid=None, kx_grid=None, kz_grid=None, k=0.1, theta=1.0471975511965976, max_points=10000, plot_path=None, output_count=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_pdrf_dispersion"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.pdrf-plasma-state"
+   },
+   {
+    "asset_id": "scirel.kinetic.pdrf-temporal-matrix"
+   },
+   {
+    "asset_id": "scirel.kinetic.pdrf-temporal-spectrum"
+   }
+  ]
+ },
+ "example": {
+  "description": "Complete two-point magnitude scan.",
+  "code": "from scirel.kinetic import evaluate_pdrf_dispersion\nr = evaluate_pdrf_dispersion(method=2, k_grid=[0, .1])\nassert r['ww1'].shape == (2, 14) and r['graphics']['axes_count'] == 2",
+  "expected": "The normalized two-point scan returned ww1 with shape (2,14), graphics axes_count=2 and mode_count=5, and an in-memory PNG of 23674 bytes in this run."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrf_d2.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
+   "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
+   "The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy claim.",
+   "Relativistic inertia is d(gamma*v)/dv with retained noncovariant pressure and friction; no fully covariant thermodynamics claim.",
+   "Only local authorized D2 evaluation; source and paper redistribution NOT_ESTABLISHED, no public distribution permission or human/release approval.",
+   "Example output is a bounded runtime observation, not a universal scientific claim."
+  ]
+ },
+ "graph": {
+  "nodes": [
+   {
+    "id": "initialize",
+    "kind": "operator",
+    "asset_id": "scirel.kinetic.pdrf-plasma-state",
+    "description": "Initialize the complete fresh state; state edge carries the whole returned mapping.",
+    "inputs": [
+     "species",
+     "unit",
+     "prior",
+     "cfg"
+    ],
+    "outputs": [
+     "state"
+    ]
+   },
+   {
+    "id": "schedule",
+    "kind": "controlled_glue",
+    "description": "Select source grid, point cap, row-major order and return/plot controls; no plasma arithmetic.",
+    "inputs": [
+     "method",
+     "rel",
+     "vectors",
+     "oldmethod",
+     "k_grid",
+     "theta_grid",
+     "kx_grid",
+     "kz_grid",
+     "k",
+     "theta",
+     "max_points",
+     "plot_path",
+     "output_count"
+    ],
+    "outputs": [
+     "wavepoints",
+     "rel",
+     "vectors",
+     "oldmethod",
+     "controls"
+    ]
+   },
+   {
+    "id": "assemble",
+    "kind": "operator",
+    "asset_id": "scirel.kinetic.pdrf-temporal-matrix",
+    "description": "At each point assemble exact corrected M,A and owned state.",
+    "inputs": [
+     "state",
+     "wavepoints",
+     "rel"
+    ],
+    "outputs": [
+     "matrix"
+    ]
+   },
+   {
+    "id": "spectrum",
+    "kind": "operator",
+    "asset_id": "scirel.kinetic.pdrf-temporal-spectrum",
+    "description": "Compute same eigenvalue/vector path at every point and independent sorts.",
+    "inputs": [
+     "matrix",
+     "vectors",
+     "oldmethod"
+    ],
+    "outputs": [
+     "spectrum"
+    ]
+   },
+   {
+    "id": "terminal",
+    "kind": "controlled_glue",
+    "description": "Collect full arrays and final state/matrices, then plot in Agg and optionally return a positional prefix.",
+    "inputs": [
+     "matrix",
+     "spectrum",
+     "controls"
+    ],
+    "outputs": [
+     "M",
+     "A",
+     "state",
+     "scales",
+     "kx",
+     "kz",
+     "w1",
+     "w2",
+     "X1",
+     "X2",
+     "residual1",
+     "residual2",
+     "component_residual",
+     "precision",
+     "oldmethod",
+     "method",
+     "unit",
+     "kk",
+     "tt",
+     "kkx",
+     "kkz",
+     "ww1",
+     "ww2",
+     "points",
+     "execution_order",
+     "max_points",
+     "graphics",
+     "plot_png"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "species"
+    },
+    "to": {
+     "node": "initialize",
+     "port": "species"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "unit"
+    },
+    "to": {
+     "node": "initialize",
+     "port": "unit"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "method"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "method"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "rel"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "rel"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "vectors"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "vectors"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "oldmethod"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "oldmethod"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "prior"
+    },
+    "to": {
+     "node": "initialize",
+     "port": "prior"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "cfg"
+    },
+    "to": {
+     "node": "initialize",
+     "port": "cfg"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "k_grid"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "k_grid"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "theta_grid"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "theta_grid"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "kx_grid"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "kx_grid"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "kz_grid"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "kz_grid"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "k"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "k"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "theta"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "theta"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "max_points"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "max_points"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "plot_path"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "plot_path"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "output_count"
+    },
+    "to": {
+     "node": "schedule",
+     "port": "output_count"
+    },
+    "description": "Pass declared graph input.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "initialize",
+     "port": "state"
+    },
+    "to": {
+     "node": "assemble",
+     "port": "state"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "wavepoints"
+    },
+    "to": {
+     "node": "assemble",
+     "port": "wavepoints"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "rel"
+    },
+    "to": {
+     "node": "assemble",
+     "port": "rel"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "assemble",
+     "port": "matrix"
+    },
+    "to": {
+     "node": "spectrum",
+     "port": "matrix"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "vectors"
+    },
+    "to": {
+     "node": "spectrum",
+     "port": "vectors"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "oldmethod"
+    },
+    "to": {
+     "node": "spectrum",
+     "port": "oldmethod"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "assemble",
+     "port": "matrix"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "matrix"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "spectrum",
+     "port": "spectrum"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "spectrum"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "schedule",
+     "port": "controls"
+    },
+    "to": {
+     "node": "terminal",
+     "port": "controls"
+    },
+    "description": "Preserve declared physical state, selectors and numerical matrix ports.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "M"
+    },
+    "to": {
+     "node": "$output",
+     "port": "M"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "A"
+    },
+    "to": {
+     "node": "$output",
+     "port": "A"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "state"
+    },
+    "to": {
+     "node": "$output",
+     "port": "state"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "scales"
+    },
+    "to": {
+     "node": "$output",
+     "port": "scales"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "kx"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kx"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "kz"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kz"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "w1"
+    },
+    "to": {
+     "node": "$output",
+     "port": "w1"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "w2"
+    },
+    "to": {
+     "node": "$output",
+     "port": "w2"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "X1"
+    },
+    "to": {
+     "node": "$output",
+     "port": "X1"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "X2"
+    },
+    "to": {
+     "node": "$output",
+     "port": "X2"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "residual1"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual1"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "residual2"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual2"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "component_residual"
+    },
+    "to": {
+     "node": "$output",
+     "port": "component_residual"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "precision"
+    },
+    "to": {
+     "node": "$output",
+     "port": "precision"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "oldmethod"
+    },
+    "to": {
+     "node": "$output",
+     "port": "oldmethod"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "method"
+    },
+    "to": {
+     "node": "$output",
+     "port": "method"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "unit"
+    },
+    "to": {
+     "node": "$output",
+     "port": "unit"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "kk"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kk"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "tt"
+    },
+    "to": {
+     "node": "$output",
+     "port": "tt"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "kkx"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kkx"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "kkz"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kkz"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "ww1"
+    },
+    "to": {
+     "node": "$output",
+     "port": "ww1"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "ww2"
+    },
+    "to": {
+     "node": "$output",
+     "port": "ww2"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "points"
+    },
+    "to": {
+     "node": "$output",
+     "port": "points"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "execution_order"
+    },
+    "to": {
+     "node": "$output",
+     "port": "execution_order"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "max_points"
+    },
+    "to": {
+     "node": "$output",
+     "port": "max_points"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "graphics"
+    },
+    "to": {
+     "node": "$output",
+     "port": "graphics"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "terminal",
+     "port": "plot_png"
+    },
+    "to": {
+     "node": "$output",
+     "port": "plot_png"
+    },
+    "description": "Return complete declared terminal field.",
+    "condition": "always",
+    "transform": "collect scan values or select final-point field",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "dag",
+   "ordering": "initialize; finite row-major point schedule; assemble then spectrum per point; collect terminal then plot. One pass, at most max_points(default10000); no state feedback.",
+   "branches": [
+    "method0/1/unknown nonnegative: single point",
+    "method2: magnitude",
+    "method3: angle",
+    "method4: Cartesian mesh",
+    "vectors and oldmethod forwarded unchanged; positive point bound checked before loop"
+   ],
+   "state_ownership": "Caller inputs remain untouched; fresh graph-local state; prior contributes no fields. Each point derives from the same explicit primaries.",
+   "failure_propagation": "First invalid input, arithmetic, eigensolver or export failure propagates; no partial result dictionary.",
+   "feedback": []
+  }
+ }
 }

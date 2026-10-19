@@ -1,133 +1,132 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.vp-field",
-  "kind": "operator",
-  "title": {
-    "en": "Poisson electric-field closure",
-    "zh": "Poisson 电场闭合"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.vp-field",
+ "title": {
+  "en": "Poisson electric-field closure",
+  "zh": "Poisson 电场闭合"
+ },
+ "summary": "E=i dv sum(df)/k.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "vlasov-poisson"
+ ],
+ "aliases": [
+  "vp_field"
+ ],
+ "identity": {
+  "relation": "E=i dv sum(df)/k.",
+  "direction": "Inputs to vp_field -> result",
+  "definition": "E=i dv sum(df)/k.",
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+  "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
+  "assumptions": [
+   "Linear perturbations and homogeneous equilibrium.",
+   "Velocity-window truncation and recurrence are separate from temporal integration error."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "df",
+   "description": "Complex perturbation on velocity nodes.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite one-dimensional N>=2."
   },
-  "summary": "E=i dv sum(df)/k.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave",
-    "vlasov-poisson"
-  ],
-  "aliases": [
-    "vp_field"
-  ],
-  "identity": {
-    "relation": "E=i dv sum(df)/k.",
-    "direction": "Inputs to vp_field -> result",
-    "definition": "E=i dv sum(df)/k.",
-    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-    "geometry": "One velocity coordinate and one spatial Fourier mode.",
-    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-    "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
-    "assumptions": [
-      "Linear perturbations and homogeneous equilibrium.",
-      "Velocity-window truncation and recurrence are separate from temporal integration error."
-    ]
+  {
+   "name": "k",
+   "description": "Nonzero spatial Fourier wavenumber.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and nonzero."
   },
-  "inputs": [
-    {
-      "name": "df",
-      "description": "Complex perturbation on velocity nodes.",
-      "units": "dimensionless",
-      "shape": "[N]",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite one-dimensional N>=2."
-    },
-    {
-      "name": "k",
-      "description": "Nonzero spatial Fourier wavenumber.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Finite and nonzero."
-    },
-    {
-      "name": "dv",
-      "description": "Uniform velocity quadrature spacing.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real scalar",
-      "required": true,
-      "constraints": "Positive finite."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "Complex scalar electric field satisfying ikE=-dv sum(df).",
-      "units": "dimensionless",
-      "shape": "As described in output mapping or tuple.",
-      "dtype": "complex scalar",
-      "required": true,
-      "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "df is a finite one-dimensional vector with at least two entries.",
-      "k is finite and nonzero; dv is finite and positive."
-    ],
-    "supported": [
-      "Discrete Poisson closure E=i*dv*sum(df)/k."
-    ],
-    "excluded": [
-      "Nonlinear fields, multidimensional modes and k=0."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "ValueError for non-vector/nonfinite df, nonfinite or zero k, or nonpositive/nonfinite dv.",
-    "runtime_failure": "FloatingPointError when the computed field is not finite.",
-    "nonconvergence": "Not applicable; this is a direct algebraic closure.",
-    "partial_results": "No field is returned after an exception."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.vlasov_poisson",
-      "symbol": "vp_field",
-      "signature": "vp_field(df, k, dv)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "vp_field"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "code": "from scirel.kinetic.vlasov_poisson import vp_field\nassert vp_field([1,2],.5,.1) == .6000000000000001j",
-    "description": "Evaluate the discrete Poisson closure for df=[1,2], k=0.5 and dv=0.1.",
-    "expected": "PASS: .venv/bin/python completed; the field is 0.6j."
-  },
-  "verification": {
-    "scope": [
-      "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-      "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-      "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
-    ],
-    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
-    "known_limitations": [
-      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
-      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
-      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
-    ]
+  {
+   "name": "dv",
+   "description": "Uniform velocity quadrature spacing.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Positive finite."
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Complex scalar electric field satisfying ikE=-dv sum(df).",
+   "units": "dimensionless",
+   "shape": "As described in output mapping or tuple.",
+   "dtype": "complex scalar",
+   "required": true,
+   "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "df is a finite one-dimensional vector with at least two entries.",
+   "k is finite and nonzero; dv is finite and positive."
+  ],
+  "supported": [
+   "Discrete Poisson closure E=i*dv*sum(df)/k."
+  ],
+  "excluded": [
+   "Nonlinear fields, multidimensional modes and k=0."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for non-vector/nonfinite df, nonfinite or zero k, or nonpositive/nonfinite dv.",
+  "runtime_failure": "FloatingPointError when the computed field is not finite.",
+  "nonconvergence": "Not applicable; this is a direct algebraic closure.",
+  "partial_results": "No field is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.vlasov_poisson",
+   "symbol": "vp_field",
+   "signature": "vp_field(df, k, dv)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "vp_field"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "code": "from scirel.kinetic.vlasov_poisson import vp_field\nassert vp_field([1,2],.5,.1) == .6000000000000001j",
+  "description": "Evaluate the discrete Poisson closure for df=[1,2], k=0.5 and dv=0.1.",
+  "expected": "PASS: .venv/bin/python completed; the field is 0.6j."
+ },
+ "verification": {
+  "scope": [
+   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
+   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
+   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
+  ],
+  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+  "known_limitations": [
+   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+  ]
+ }
 }

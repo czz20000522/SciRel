@@ -1,122 +1,121 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
-  "kind": "operator",
-  "title": {
-    "en": "Atomic scattered-source two-channel reduction",
-    "zh": "原子双通道散射源归约"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
+ "title": {
+  "en": "Atomic scattered-source two-channel reduction",
+  "zh": "原子双通道散射源归约"
+ },
+ "summary": "The source-order sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "scattering-source",
+  "reduction"
+ ],
+ "aliases": [
+  "reduce_atomic_scattered_sources"
+ ],
+ "identity": {
+  "relation": "Beta = Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
+  "direction": "two aligned source fields -> their pointwise sum",
+  "definition": "The saved plain pointwise addition; no clamping of signed values",
+  "model": "the saved formal implementation's scattered-source aggregation",
+  "geometry": "two velocity dimensions over one spatial axis",
+  "coordinates": "all fields in the source's discrete source-distribution units",
+  "boundary": "two finite aligned three-dimensional fields; signed values preserved",
+  "assumptions": [
+   "The caller owns the upstream per-channel source construction; this asset only aggregates.",
+   "Signed entries are meaningful (upstream normalizations may subtract); the saved sum does not clamp.",
+   "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "charge_exchange_source_distribution",
+   "description": "The CX scattered source.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite three-dimensional field; signed values preserved."
   },
-  "summary": "The source-order sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
-  "taxonomy": [
-    "kinetic",
-    "neutral-transport",
-    "scattering-source",
-    "reduction"
-  ],
-  "aliases": [
-    "reduce_atomic_scattered_sources"
-  ],
-  "identity": {
-    "relation": "Beta = Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
-    "direction": "two aligned source fields -> their pointwise sum",
-    "definition": "The saved plain pointwise addition; no clamping of signed values",
-    "model": "the saved formal implementation's scattered-source aggregation",
-    "geometry": "two velocity dimensions over one spatial axis",
-    "coordinates": "all fields in the source's discrete source-distribution units",
-    "boundary": "two finite aligned three-dimensional fields; signed values preserved",
-    "assumptions": [
-      "The caller owns the upstream per-channel source construction; this asset only aggregates.",
-      "Signed entries are meaningful (upstream normalizations may subtract); the saved sum does not clamp.",
-      "Declared r60 pre-review tightening: the saved arm does not gate its output for finiteness, so extreme-but-valid inputs can overflow to non-finite results; this asset fail-closes on a non-finite result, per the exact document's finite-output contract. The saved-arm divergence is pinned by a bounded regression test."
-    ]
-  },
-  "inputs": [
-    {
-      "name": "charge_exchange_source_distribution",
-      "description": "The CX scattered source.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite three-dimensional field; signed values preserved."
-    },
-    {
-      "name": "elastic_source_distribution",
-      "description": "The elastic scattered source.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "real array-like",
-      "required": true,
-      "constraints": "A finite three-dimensional field aligned to the CX field; signed values preserved."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "total_source",
-      "description": "The aggregated scattered source.",
-      "units": "source-discrete",
-      "shape": "[nvr,nvx,nx]",
-      "dtype": "float64 array",
-      "required": true,
-      "constraints": "The pointwise sum; finite; signed values preserved."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Two finite aligned scattered-source fields."
-    ],
-    "supported": [
-      "Atomic generation-source aggregation on a shared mesh."
-    ],
-    "excluded": [
-      "Misaligned meshes; non-finite fields."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for implicit boolean, string or complex conversion, non-finite inputs, or misaligned three-dimensional source fields.",
-    "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
-    "nonconvergence": "Not applicable.",
-    "partial_results": "Never returned; a rejected call produces no result."
-  },
-  "provenance": {
-    "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
-    "source_kinds": [
-      "current SciRel implementation",
-      "direct scientific regression tests",
-      "retained project notices"
-    ],
-    "public_references": [],
-    "license_status": "retained project notices under licenses/; redistribution pending human decision"
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.atomic_scattered_sources_reduction",
-      "symbol": "reduce_atomic_scattered_sources",
-      "signature": "reduce_atomic_scattered_sources(charge_exchange_source_distribution, elastic_source_distribution)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "reduce_atomic_scattered_sources"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Aggregate two atomic sources, including a cancellation case, and reject misalignment.",
-    "code": "import numpy as np\nfrom scirel.kinetic import reduce_atomic_scattered_sources\nsource = np.ones((1, 2, 3))\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, 2 * source), 3 * source)\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, -source), np.zeros_like(source))\ntry:\n    reduce_atomic_scattered_sources(source, np.ones((1, 2, 4)))\nexcept ValueError as error:\n    assert 'finite aligned 3-D' in str(error)\nelse:\n    raise AssertionError('a misaligned field must be rejected')\n",
-    "expected": "Observed PASS: The pointwise sums including exact cancellation; a misaligned field is rejected."
-  },
-  "verification": {
-    "scope": [
-      "That the sum equals an independent pointwise addition and preserves signed values.",
-      "The alignment and finiteness failure contracts."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_neutral_scattered_sources.py"
-    ],
-    "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-    "known_limitations": [
-      "Scientific validity is bounded by the tested numerical domain and applicability conditions."
-    ]
+  {
+   "name": "elastic_source_distribution",
+   "description": "The elastic scattered source.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite three-dimensional field aligned to the CX field; signed values preserved."
   }
+ ],
+ "outputs": [
+  {
+   "name": "total_source",
+   "description": "The aggregated scattered source.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "The pointwise sum; finite; signed values preserved."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Two finite aligned scattered-source fields."
+  ],
+  "supported": [
+   "Atomic generation-source aggregation on a shared mesh."
+  ],
+  "excluded": [
+   "Misaligned meshes; non-finite fields."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for implicit boolean, string or complex conversion, non-finite inputs, or misaligned three-dimensional source fields.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "provenance": {
+  "lineage_summary": "Current SciRel implementation and the listed direct regression tests define the retained scientific relation and its tested failure behavior. Attribution and license obligations are retained in licenses/SCIREL-BOUNDED-LEGACY-NOTICE.txt and licenses/SCIREL-COLLISION-MOMENT-NOTICE.txt. This contract records bounded implementation evidence only; it does not assert external approval or redistribution permission.",
+  "source_kinds": [
+   "current SciRel implementation",
+   "direct scientific regression tests",
+   "retained project notices"
+  ],
+  "public_references": [],
+  "license_status": "retained project notices under licenses/; redistribution pending human decision"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.atomic_scattered_sources_reduction",
+   "symbol": "reduce_atomic_scattered_sources",
+   "signature": "reduce_atomic_scattered_sources(charge_exchange_source_distribution, elastic_source_distribution)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "reduce_atomic_scattered_sources"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Aggregate two atomic sources, including a cancellation case, and reject misalignment.",
+  "code": "import numpy as np\nfrom scirel.kinetic import reduce_atomic_scattered_sources\nsource = np.ones((1, 2, 3))\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, 2 * source), 3 * source)\nnp.testing.assert_allclose(reduce_atomic_scattered_sources(source, -source), np.zeros_like(source))\ntry:\n    reduce_atomic_scattered_sources(source, np.ones((1, 2, 4)))\nexcept ValueError as error:\n    assert 'finite aligned 3-D' in str(error)\nelse:\n    raise AssertionError('a misaligned field must be rejected')\n",
+  "expected": "Observed PASS: The pointwise sums including exact cancellation; a misaligned field is rejected."
+ },
+ "verification": {
+  "scope": [
+   "That the sum equals an independent pointwise addition and preserves signed values.",
+   "The alignment and finiteness failure contracts."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_neutral_scattered_sources.py"
+  ],
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+  ]
+ }
 }

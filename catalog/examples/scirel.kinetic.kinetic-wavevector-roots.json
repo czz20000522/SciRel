@@ -1,343 +1,342 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-  "kind": "operator",
-  "title": {
-    "en": "Complex kinetic perpendicular-wavenumber roots",
-    "zh": "复动理学垂直波数根"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
+ "title": {
+  "en": "Complex kinetic perpendicular-wavenumber roots",
+  "zh": "复动理学垂直波数根"
+ },
+ "summary": "Solve the Ronnmark determinant for complex kx at each supplied angular frequency from one fixed seed.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "identity": {
+  "relation": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",
+  "direction": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",
+  "definition": "Each frequency independently starts from kx_start and solves det(D)=0 with source-compatible complex trust-region dogleg arithmetic and bounded iteration/evaluation counts.",
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "coordinates": "complex perpendicular wavenumber plane; frequencies remain in caller order",
+  "boundary": "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "B0",
+   "description": "背景磁场强度，经色散行列式进入回旋频率",
+   "units": "T",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且非零。"
   },
-  "summary": "Solve the Ronnmark determinant for complex kx at each supplied angular frequency from one fixed seed.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave"
-  ],
-  "aliases": [],
-  "identity": {
-    "relation": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",
-    "direction": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",
-    "definition": "Each frequency independently starts from kx_start and solves det(D)=0 with source-compatible complex trust-region dogleg arithmetic and bounded iteration/evaluation counts.",
-    "model": "homogeneous magnetized Maxwellian multi-species plasma",
-    "geometry": "homogeneous plasma",
-    "coordinates": "complex perpendicular wavenumber plane; frequencies remain in caller order",
-    "boundary": "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
-    "assumptions": [
-      "Input units and normalization follow the declared ports; no physical parameters are inferred."
-    ]
+  {
+   "name": "qs",
+   "description": "各组分电荷，决定回旋频率符号",
+   "units": "C",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限，元素数与其余组分数组一致。"
   },
-  "inputs": [
-    {
-      "name": "B0",
-      "description": "背景磁场强度，经色散行列式进入回旋频率",
-      "units": "T",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且非零。"
-    },
-    {
-      "name": "qs",
-      "description": "各组分电荷，决定回旋频率符号",
-      "units": "C",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限，元素数与其余组分数组一致。"
-    },
-    {
-      "name": "ms",
-      "description": "各组分质量，进入热速度与回旋频率",
-      "units": "kg",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且严格为正。"
-    },
-    {
-      "name": "ns0",
-      "description": "各组分绝对数密度，进入等离子体频率",
-      "units": "m^-3",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且严格为正。"
-    },
-    {
-      "name": "Ts0",
-      "description": "各组分温度，已按源码约定换算为开尔文",
-      "units": "K",
-      "shape": "`(S,)` 一维组分轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限且严格为正。"
-    },
-    {
-      "name": "omegas",
-      "description": "待求根的角频率序列；各频点独立求根并重复使用同一 `kx_start` 初值，不作频率间延续",
-      "units": "rad/s",
-      "shape": "`(F,)` 一维频点轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "非空有限数组且元素非零，因为频率出现在共振分母中。"
-    },
-    {
-      "name": "kz",
-      "description": "波矢平行磁场分量，固定不变并进入平行共振宗量",
-      "units": "1/m",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "有限；允许为零（源码算例 2 取 `kz=0.0`），此时平行共振宗量退化为 $\\omega/\\omega_{cs}$。"
-    },
-    {
-      "name": "kx_start",
-      "description": "延续求根的起始复初值，对应源码 frozen source 的 `x01=(0.6+0.0i)*kn`",
-      "units": "1/m",
-      "shape": "标量复数",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限；只影响收敛到哪个根，不影响根本身的存在性。"
-    },
-    {
-      "name": "tol_fun",
-      "description": "对应 Octave `TolFun` 的残差相对收敛阈值",
-      "units": "无量纲",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": false,
-      "constraints": "有限且严格为正，默认 `1e-16`（源码 `optimset` 取值）。",
-      "default": 1e-16
-    },
-    {
-      "name": "tol_x",
-      "description": "对应 Octave `Tolx` 的变量相对步长收敛阈值",
-      "units": "无量纲",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": false,
-      "constraints": "有限且严格为正，默认 `1e-16`（源码 `optimset` 取值）。",
-      "default": 1e-16
-    },
-    {
-      "name": "max_iterations",
-      "description": "对应 Octave `MaxIter` 的每个频点最大迭代次数",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "不小于 1，默认 400（Octave 默认值）。",
-      "default": 400
-    },
-    {
-      "name": "max_function_evals",
-      "description": "对应 Octave `MaxFunEvals` 的每个频点最大目标函数求值次数",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": false,
-      "constraints": "不小于 1，默认 100（Octave 对标量未知量取 `100*numel(x0)`）。",
-      "default": 100
-    }
-  ],
-  "outputs": [
-    {
-      "name": "roots",
-      "description": "逐频点求得的复垂直波数根",
-      "units": "1/m",
-      "shape": "`(F,)` 一维频点轴复数组",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限复数。"
-    },
-    {
-      "name": "residuals",
-      "description": "各根处的色散行列式残差 $\\mathcal{D}$",
-      "units": "无量纲",
-      "shape": "`(F,)` 一维频点轴复数组",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "有限复数；根的质量须由该残差与 `last_updates` 共同判断。"
-    },
-    {
-      "name": "determinant_scale",
-      "description": "各根处介电张量元素的模最大值，用作该频点行列式残差的抵消量级基准",
-      "units": "无量纲",
-      "shape": "`(F,)` 一维频点轴浮点数组",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "非负有限；`abs(residuals)/determinant_scale` 即该根的相对零点质量。"
-    },
-    {
-      "name": "exit_flags",
-      "description": "各频点的 Octave `fsolve` 退出标志（`1` 残差达标、`2` 步长达标、`3` 残差下降达标、`-2` 雅可比退化、`-3` 信赖域收缩到无意义、`0` 达到迭代或求值上限）",
-      "units": "不适用",
-      "shape": "`(F,)` 一维频点轴整数数组",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "取值限于 `{1,2,3,0,-2,-3}`。"
-    },
-    {
-      "name": "iterations",
-      "description": "各频点实际使用的迭代次数",
-      "units": "无量纲",
-      "shape": "`(F,)` 一维频点轴整数数组",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "不超过 `max_iterations`。"
-    },
-    {
-      "name": "function_evals",
-      "description": "各频点实际的目标函数求值次数",
-      "units": "无量纲",
-      "shape": "`(F,)` 一维频点轴整数数组",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "不超过 `max_function_evals`。"
-    },
-    {
-      "name": "converged",
-      "description": "各频点退出标志是否为正（即 Octave 判定收敛）",
-      "units": "不适用",
-      "shape": "`(F,)` 一维频点轴布尔数组",
-      "dtype": "bool",
-      "required": true,
-      "constraints": "为假时根仍是行列式的数值驻点或未收敛点，调用者须按 `residuals` 与 `determinant_scale` 自行判定是否接受。"
-    },
-    {
-      "name": "omegas",
-      "description": "本次实际使用的角频率序列，回显输入",
-      "units": "rad/s",
-      "shape": "`(F,)` 一维频点轴",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "与 `roots` 等长。"
-    },
-    {
-      "name": "kz",
-      "description": "本次求根使用的平行波数，回显输入",
-      "units": "1/m",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "kx_start",
-      "description": "本次求根使用的起始初值，回显输入",
-      "units": "1/m",
-      "shape": "标量复数",
-      "dtype": "complex128",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "tol_fun",
-      "description": "本次使用的残差阈值，回显输入",
-      "units": "无量纲",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "tol_x",
-      "description": "本次使用的变量阈值，回显输入",
-      "units": "无量纲",
-      "shape": "标量",
-      "dtype": "real numeric",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "max_iterations",
-      "description": "本次使用的迭代上限，回显输入",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "max_function_evals",
-      "description": "本次使用的求值上限，回显输入",
-      "units": "无量纲",
-      "shape": "标量整数",
-      "dtype": "integer",
-      "required": true,
-      "constraints": "与输入一致。"
-    },
-    {
-      "name": "solver",
-      "description": "求根算法的文字标识，供调用者核对所用的数值路径",
-      "units": "不适用",
-      "shape": "字符串",
-      "dtype": "string",
-      "required": true,
-      "constraints": "固定为 `octave_fsolve_dogleg_on_fDR`。"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots"
-    ],
-    "supported": [
-      "Solve the Ronnmark determinant for complex kx at each supplied angular frequency from one fixed seed."
-    ],
-    "excluded": [
-      "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
-    ]
+  {
+   "name": "ms",
+   "description": "各组分质量，进入热速度与回旋频率",
+   "units": "kg",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且严格为正。"
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
-    "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
-    "nonconvergence": "Exit flags and residuals expose bounded nonconvergence.",
-    "partial_results": "No partial mapping is returned after an exception."
+  {
+   "name": "ns0",
+   "description": "各组分绝对数密度，进入等离子体频率",
+   "units": "m^-3",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且严格为正。"
   },
-  "provenance": {
-    "lineage_summary": "Self-contained SciRel implementation of the finite fluidBW kinetic relation and its bounded numerical checks; the retained source and attribution obligations are recorded in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. No external approval or source parity is claimed.",
-    "source_kinds": [
-      "SciRel implementation",
-      "historical fluidBW relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "Private technical development candidate; fluidBW source redistribution permission remains NOT_ESTABLISHED and no public release is authorized."
+  {
+   "name": "Ts0",
+   "description": "各组分温度，已按源码约定换算为开尔文",
+   "units": "K",
+   "shape": "`(S,)` 一维组分轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限且严格为正。"
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.kinetic_wavevector_roots",
-      "symbol": "solve_kinetic_wavevector_roots",
-      "signature": "solve_kinetic_wavevector_roots(*, B0, qs, ms, ns0, Ts0, omegas, kz, kx_start, tol_fun=1e-16, tol_x=1e-16, max_iterations=400, max_function_evals=100)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "solve_kinetic_wavevector_roots"
-    }
+  {
+   "name": "omegas",
+   "description": "待求根的角频率序列；各频点独立求根并重复使用同一 `kx_start` 初值，不作频率间延续",
+   "units": "rad/s",
+   "shape": "`(F,)` 一维频点轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "非空有限数组且元素非零，因为频率出现在共振分母中。"
   },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": [
-      {
-        "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark"
-      }
-    ]
+  {
+   "name": "kz",
+   "description": "波矢平行磁场分量，固定不变并进入平行共振宗量",
+   "units": "1/m",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "有限；允许为零（源码算例 2 取 `kz=0.0`），此时平行共振宗量退化为 $\\omega/\\omega_{cs}$。"
   },
-  "example": {
-    "description": "Evaluate one bounded source-method case. Python preflight ran locally; fluidBW/Octave parity remains NOT_RUN on this macOS host.",
-    "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1",
-    "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. Source fluidBW/Octave parity is NOT_RUN on this macOS host."
+  {
+   "name": "kx_start",
+   "description": "延续求根的起始复初值，对应源码 frozen source 的 `x01=(0.6+0.0i)*kn`",
+   "units": "1/m",
+   "shape": "标量复数",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限；只影响收敛到哪个根，不影响根本身的存在性。"
   },
-  "verification": {
-    "scope": [
-      "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-      "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-      "Python preflight ran, but source fluidBW/Octave parity is NOT_RUN on this macOS host."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
-    ],
-    "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
-    "known_limitations": [
-      "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
-      "Public distribution license and expert review remain pending.",
-      "Source fluidBW/Octave parity is NOT_RUN on this host."
-    ]
+  {
+   "name": "tol_fun",
+   "description": "对应 Octave `TolFun` 的残差相对收敛阈值",
+   "units": "无量纲",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "有限且严格为正，默认 `1e-16`（源码 `optimset` 取值）。",
+   "default": 1e-16
+  },
+  {
+   "name": "tol_x",
+   "description": "对应 Octave `Tolx` 的变量相对步长收敛阈值",
+   "units": "无量纲",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "有限且严格为正，默认 `1e-16`（源码 `optimset` 取值）。",
+   "default": 1e-16
+  },
+  {
+   "name": "max_iterations",
+   "description": "对应 Octave `MaxIter` 的每个频点最大迭代次数",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "不小于 1，默认 400（Octave 默认值）。",
+   "default": 400
+  },
+  {
+   "name": "max_function_evals",
+   "description": "对应 Octave `MaxFunEvals` 的每个频点最大目标函数求值次数",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "不小于 1，默认 100（Octave 对标量未知量取 `100*numel(x0)`）。",
+   "default": 100
   }
+ ],
+ "outputs": [
+  {
+   "name": "roots",
+   "description": "逐频点求得的复垂直波数根",
+   "units": "1/m",
+   "shape": "`(F,)` 一维频点轴复数组",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限复数。"
+  },
+  {
+   "name": "residuals",
+   "description": "各根处的色散行列式残差 $\\mathcal{D}$",
+   "units": "无量纲",
+   "shape": "`(F,)` 一维频点轴复数组",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "有限复数；根的质量须由该残差与 `last_updates` 共同判断。"
+  },
+  {
+   "name": "determinant_scale",
+   "description": "各根处介电张量元素的模最大值，用作该频点行列式残差的抵消量级基准",
+   "units": "无量纲",
+   "shape": "`(F,)` 一维频点轴浮点数组",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "非负有限；`abs(residuals)/determinant_scale` 即该根的相对零点质量。"
+  },
+  {
+   "name": "exit_flags",
+   "description": "各频点的 Octave `fsolve` 退出标志（`1` 残差达标、`2` 步长达标、`3` 残差下降达标、`-2` 雅可比退化、`-3` 信赖域收缩到无意义、`0` 达到迭代或求值上限）",
+   "units": "不适用",
+   "shape": "`(F,)` 一维频点轴整数数组",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "取值限于 `{1,2,3,0,-2,-3}`。"
+  },
+  {
+   "name": "iterations",
+   "description": "各频点实际使用的迭代次数",
+   "units": "无量纲",
+   "shape": "`(F,)` 一维频点轴整数数组",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "不超过 `max_iterations`。"
+  },
+  {
+   "name": "function_evals",
+   "description": "各频点实际的目标函数求值次数",
+   "units": "无量纲",
+   "shape": "`(F,)` 一维频点轴整数数组",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "不超过 `max_function_evals`。"
+  },
+  {
+   "name": "converged",
+   "description": "各频点退出标志是否为正（即 Octave 判定收敛）",
+   "units": "不适用",
+   "shape": "`(F,)` 一维频点轴布尔数组",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "为假时根仍是行列式的数值驻点或未收敛点，调用者须按 `residuals` 与 `determinant_scale` 自行判定是否接受。"
+  },
+  {
+   "name": "omegas",
+   "description": "本次实际使用的角频率序列，回显输入",
+   "units": "rad/s",
+   "shape": "`(F,)` 一维频点轴",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "与 `roots` 等长。"
+  },
+  {
+   "name": "kz",
+   "description": "本次求根使用的平行波数，回显输入",
+   "units": "1/m",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "kx_start",
+   "description": "本次求根使用的起始初值，回显输入",
+   "units": "1/m",
+   "shape": "标量复数",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "tol_fun",
+   "description": "本次使用的残差阈值，回显输入",
+   "units": "无量纲",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "tol_x",
+   "description": "本次使用的变量阈值，回显输入",
+   "units": "无量纲",
+   "shape": "标量",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "max_iterations",
+   "description": "本次使用的迭代上限，回显输入",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "max_function_evals",
+   "description": "本次使用的求值上限，回显输入",
+   "units": "无量纲",
+   "shape": "标量整数",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "与输入一致。"
+  },
+  {
+   "name": "solver",
+   "description": "求根算法的文字标识，供调用者核对所用的数值路径",
+   "units": "不适用",
+   "shape": "字符串",
+   "dtype": "string",
+   "required": true,
+   "constraints": "固定为 `octave_fsolve_dogleg_on_fDR`。"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots"
+  ],
+  "supported": [
+   "Solve the Ronnmark determinant for complex kx at each supplied angular frequency from one fixed seed."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+  "nonconvergence": "Exit flags and residuals expose bounded nonconvergence.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "provenance": {
+  "lineage_summary": "Self-contained SciRel implementation of the finite fluidBW kinetic relation and its bounded numerical checks; the retained source and attribution obligations are recorded in licenses/fluidbw-D2-NOTICE.md and licenses/fluidbw-D1-source-NOTICE.md. No external approval or source parity is claimed.",
+  "source_kinds": [
+   "SciRel implementation",
+   "historical fluidBW relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "Private technical development candidate; fluidBW source redistribution permission remains NOT_ESTABLISHED and no public release is authorized."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.kinetic_wavevector_roots",
+   "symbol": "solve_kinetic_wavevector_roots",
+   "signature": "solve_kinetic_wavevector_roots(*, B0, qs, ms, ns0, Ts0, omegas, kz, kx_start, tol_fun=1e-16, tol_x=1e-16, max_iterations=400, max_function_evals=100)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_kinetic_wavevector_roots"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark"
+   }
+  ]
+ },
+ "example": {
+  "description": "Evaluate one bounded source-method case. Python preflight ran locally; fluidBW/Octave parity remains NOT_RUN on this macOS host.",
+  "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1",
+  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. Source fluidBW/Octave parity is NOT_RUN on this macOS host."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Python preflight ran, but source fluidBW/Octave parity is NOT_RUN on this macOS host."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_fluidbw_r43_kinetic.py"
+  ],
+  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "known_limitations": [
+   "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
+   "Public distribution license and expert review remain pending.",
+   "Source fluidBW/Octave parity is NOT_RUN on this host."
+  ]
+ }
 }

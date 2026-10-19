@@ -1,166 +1,165 @@
 {
-  "schema": "scirel.asset-document",
-  "kind": "operator",
-  "provenance": {
-    "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
-    "source_kinds": [
-      "Pleiades-derived SciRel implementation",
-      "SciRel regression tests"
-    ],
-    "public_references": [],
-    "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "verification": {
-    "scope": [
-      "Constructor and coordinate-shape invariants covered by the direct geometry tests",
-      "The executable constructor example stored in this contract"
-    ],
-    "tests": [
-      "tests/pleiades/geometry/test_native_geometry_qualification.py",
-      "tests/pleiades/geometry/test_native_lifecycle.py"
-    ],
-    "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
-    "known_limitations": [
-      "Mesh objects do not by themselves validate a physical field model or device geometry."
-    ]
-  },
-  "asset_id": "scirel.geometry.rect-mesh",
-  "title": {
-    "en": "Rectangular R-Z mesh",
-    "zh": "矩形 R-Z 网格"
-  },
-  "summary": "Regular rectangular mesh in cylindrical R,Z coordinates.",
-  "taxonomy": [
-    "geometry",
-    "coordinates",
-    "mesh"
+ "schema": "scirel.asset-document",
+ "provenance": {
+  "lineage_summary": "SciRel implementation derived from retained Pleiades geometry, analysis, or IO behavior; the current relation and its limits are defined by source and regression tests. License basis: licenses/Pleiades-MIT.txt.",
+  "source_kinds": [
+   "Pleiades-derived SciRel implementation",
+   "SciRel regression tests"
   ],
-  "aliases": [
-    "RectMesh"
+  "public_references": [],
+  "license_status": "MIT attribution and notice obligations are retained in licenses/Pleiades-MIT.txt; scientific and release approval remain pending."
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "verification": {
+  "scope": [
+   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+   "The executable constructor example stored in this contract"
   ],
-  "identity": {
-    "relation": "Rectangular grid relation",
-    "direction": "bounds and counts to mesh arrays",
-    "definition": "meshgrid over independent R and Z bounds",
-    "model": "Regular rectangular grid",
-    "geometry": "Regular rectangular grid",
-    "coordinates": "Cylindrical R-Z",
-    "boundary": "Finite ordered bounds and positive integer counts",
-    "assumptions": [
-      "Finite bounds",
-      "rmin <= rmax",
-      "zmin <= zmax"
-    ]
-  },
-  "inputs": [
-    {
-      "name": "rmin",
-      "description": "Minimum radius",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "R >= 0",
-      "default": 0.0
-    },
-    {
-      "name": "rmax",
-      "description": "Maximum radius",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "rmax >= rmin",
-      "default": 1.0
-    },
-    {
-      "name": "nr",
-      "description": "Radial count",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "Positive integer",
-      "default": 101
-    },
-    {
-      "name": "zmin",
-      "description": "Minimum axial coordinate",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "zmin <= zmax",
-      "default": -0.5
-    },
-    {
-      "name": "zmax",
-      "description": "Maximum axial coordinate",
-      "units": "m",
-      "shape": "scalar",
-      "dtype": "Finite float64",
-      "required": false,
-      "constraints": "zmax >= zmin",
-      "default": 0.5
-    },
-    {
-      "name": "nz",
-      "description": "Axial count",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "int",
-      "required": false,
-      "constraints": "Positive integer",
-      "default": 101
-    }
+  "tests": [
+   "tests/pleiades/geometry/test_native_geometry_qualification.py",
+   "tests/pleiades/geometry/test_native_lifecycle.py"
   ],
-  "outputs": [
-    {
-      "name": "mesh",
-      "description": "Constructed RectMesh object. Available properties/methods: R: Radial mesh [m], (nz,nr); Z: Axial mesh [m], (nz,nr)",
-      "units": "Object; property units as described",
-      "shape": "one object",
-      "dtype": "RectMesh",
-      "required": true,
-      "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
-    ],
-    "supported": [
-      "Regular finite rectangular grids",
-      "Atomic bound/count setters"
-    ],
-    "excluded": [
-      "Distorted structured coordinates",
-      "Negative radius",
-      "Noninteger counts"
-    ]
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "known_limitations": [
+   "Mesh objects do not by themselves validate a physical field model or device geometry."
+  ]
+ },
+ "asset_id": "scirel.geometry.rect-mesh",
+ "title": {
+  "en": "Rectangular R-Z mesh",
+  "zh": "矩形 R-Z 网格"
+ },
+ "summary": "Regular rectangular mesh in cylindrical R,Z coordinates.",
+ "taxonomy": [
+  "geometry",
+  "coordinates",
+  "mesh"
+ ],
+ "aliases": [
+  "RectMesh"
+ ],
+ "identity": {
+  "relation": "Rectangular grid relation",
+  "direction": "bounds and counts to mesh arrays",
+  "definition": "meshgrid over independent R and Z bounds",
+  "model": "Regular rectangular grid",
+  "geometry": "Regular rectangular grid",
+  "coordinates": "Cylindrical R-Z",
+  "boundary": "Finite ordered bounds and positive integer counts",
+  "assumptions": [
+   "Finite bounds",
+   "rmin <= rmax",
+   "zmin <= zmax"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rmin",
+   "description": "Minimum radius",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "R >= 0",
+   "default": 0.0
   },
-  "failure_semantics": {
-    "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
-    "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
-    "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
-    "partial_results": "A failed constructor returns no mesh object."
+  {
+   "name": "rmax",
+   "description": "Maximum radius",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "rmax >= rmin",
+   "default": 1.0
   },
-  "public_api": {
-    "python": {
-      "module": "scirel.geometry",
-      "symbol": "RectMesh",
-      "signature": "RectMesh(rmin=0.0, rmax=1.0, nr=101, zmin=-0.5, zmax=0.5, nz=101)",
-      "canonical_module": "scirel.geometry",
-      "canonical_symbol": "RectMesh"
-    }
+  {
+   "name": "nr",
+   "description": "Radial count",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Positive integer",
+   "default": 101
   },
-  "example": {
-    "description": "Construct a 2-by-2 regular cylindrical R-Z mesh with default bounds.",
-    "code": "import numpy as np\nfrom scirel.geometry import RectMesh\n\nmesh = RectMesh(nr=2, nz=2)\nassert mesh.R.shape == (2, 2)\nassert mesh.Z.shape == (2, 2)\nnp.testing.assert_allclose(mesh.R[0], [0.0, 1.0])\nnp.testing.assert_allclose(mesh.Z[:, 0], [-0.5, 0.5])",
-    "expected": "R and Z both have shape (2, 2), with R spanning [0, 1] and Z spanning [-0.5, 0.5]."
+  {
+   "name": "zmin",
+   "description": "Minimum axial coordinate",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "zmin <= zmax",
+   "default": -0.5
+  },
+  {
+   "name": "zmax",
+   "description": "Maximum axial coordinate",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "zmax >= zmin",
+   "default": 0.5
+  },
+  {
+   "name": "nz",
+   "description": "Axial count",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Positive integer",
+   "default": 101
   }
+ ],
+ "outputs": [
+  {
+   "name": "mesh",
+   "description": "Constructed RectMesh object. Available properties/methods: R: Radial mesh [m], (nz,nr); Z: Axial mesh [m], (nz,nr)",
+   "units": "Object; property units as described",
+   "shape": "one object",
+   "dtype": "RectMesh",
+   "required": true,
+   "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+  ],
+  "supported": [
+   "Regular finite rectangular grids",
+   "Atomic bound/count setters"
+  ],
+  "excluded": [
+   "Distorted structured coordinates",
+   "Negative radius",
+   "Noninteger counts"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
+  "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
+  "partial_results": "A failed constructor returns no mesh object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry",
+   "symbol": "RectMesh",
+   "signature": "RectMesh(rmin=0.0, rmax=1.0, nr=101, zmin=-0.5, zmax=0.5, nz=101)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "RectMesh"
+  }
+ },
+ "example": {
+  "description": "Construct a 2-by-2 regular cylindrical R-Z mesh with default bounds.",
+  "code": "import numpy as np\nfrom scirel.geometry import RectMesh\n\nmesh = RectMesh(nr=2, nz=2)\nassert mesh.R.shape == (2, 2)\nassert mesh.Z.shape == (2, 2)\nnp.testing.assert_allclose(mesh.R[0], [0.0, 1.0])\nnp.testing.assert_allclose(mesh.Z[:, 0], [-0.5, 0.5])",
+  "expected": "R and Z both have shape (2, 2), with R spanning [0, 1] and Z spanning [-0.5, 0.5]."
+ }
 }

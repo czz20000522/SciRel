@@ -1,134 +1,133 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.pdrk-rational-jpole-evaluate",
-  "kind": "operator",
-  "title": {
-    "en": "Rational plasma dispersion evaluation",
-    "zh": "有理等离子体色散计算"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.pdrk-rational-jpole-evaluate",
+ "title": {
+  "en": "Rational plasma dispersion evaluation",
+  "zh": "有理等离子体色散计算"
+ },
+ "summary": "Evaluate a declared simple-pole rational approximation while preserving the evaluation-point shape.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "plasma-dispersion-function"
+ ],
+ "aliases": [
+  "legacy.jpole_evaluate"
+ ],
+ "identity": {
+  "relation": "Rational plasma dispersion evaluation",
+  "direction": "Declared inputs to named scientific outputs.",
+  "definition": "Z_J(z)=sum b_j/(z-c_j), complex128 evaluation; no hidden Z-table choice or scientific-domain extrapolation.",
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "assumptions": [
+   "Model-specific deck conventions are explicit.",
+   "A numerical spectrum is not automatically a physically certified mode."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "bzj",
+   "description": "Aligned nonempty simple-pole residues.",
+   "units": "dimensionless",
+   "shape": "J",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite and representable in the declared numeric type."
   },
-  "summary": "Evaluate a declared simple-pole rational approximation while preserving the evaluation-point shape.",
-  "taxonomy": [
-    "kinetic",
-    "plasma",
-    "plasma-dispersion-function"
-  ],
-  "aliases": [
-    "legacy.jpole_evaluate"
-  ],
-  "identity": {
-    "relation": "Rational plasma dispersion evaluation",
-    "direction": "Declared inputs to named scientific outputs.",
-    "definition": "Z_J(z)=sum b_j/(z-c_j), complex128 evaluation; no hidden Z-table choice or scientific-domain extrapolation.",
-    "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-    "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-    "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-    "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
-    "assumptions": [
-      "Model-specific deck conventions are explicit.",
-      "A numerical spectrum is not automatically a physically certified mode."
-    ]
+  {
+   "name": "czj",
+   "description": "Aligned simple poles.",
+   "units": "dimensionless",
+   "shape": "J",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite and representable in the declared numeric type."
   },
-  "inputs": [
-    {
-      "name": "bzj",
-      "description": "Aligned nonempty simple-pole residues.",
-      "units": "dimensionless",
-      "shape": "J",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite and representable in the declared numeric type."
-    },
-    {
-      "name": "czj",
-      "description": "Aligned simple poles.",
-      "units": "dimensionless",
-      "shape": "J",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite and representable in the declared numeric type."
-    },
-    {
-      "name": "z",
-      "description": "Complex evaluation arguments.",
-      "units": "dimensionless",
-      "shape": "arbitrary shape",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite and representable in the declared numeric type."
-    }
-  ],
-  "outputs": [
-    {
-      "name": "ZJ",
-      "description": "Rational dispersion approximation.",
-      "units": "dimensionless",
-      "shape": "same shape as z",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite and representable in the declared numeric type."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "Constituent inputs finite and representable in declared numeric ports."
-    ],
-    "supported": [
-      "Finite aligned pole/residue arrays and finite z away from declared poles."
-    ],
-    "excluded": [
-      "Evaluation at a rational pole is singular."
-    ]
-  },
-  "failure_semantics": {
-    "invalid_input": "ValueError for empty/misaligned/nonfinite poles, residues or points; exact evaluation at a rational pole raises ZeroDivisionError.",
-    "runtime_failure": "Python/dependency errors propagate; this operator launches no native process and has no native execution receipt.",
-    "nonconvergence": "FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain certification.",
-    "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "bundled native relation"
-    ],
-    "public_references": [
-      "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
-    ],
-    "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.pdrk.rational",
-      "symbol": "jpole_evaluate",
-      "signature": "jpole_evaluate(bzj, czj, z)"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "description": "Evaluate one finite simple-pole rational term at a complex argument.",
-    "code": "import numpy as np\nfrom scirel.kinetic.pdrk.rational import jpole_evaluate\nr = jpole_evaluate([-1], [-1j], 1+1j)\nassert np.isclose(r['ZJ'], -1/(1+2j))",
-    "expected": "PASS: .venv/bin/python completed; ZJ equals -1/(1+2j) for the one-pole fixture. This fixture does not certify Maxwellian approximation accuracy."
-  },
-  "verification": {
-    "scope": [
-      "Source-absent installed own scientific package; exact package/resource closure.",
-      "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-      "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_pdrk_rational.py"
-    ],
-    "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
-    "known_limitations": [
-      "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
-      "Finite-J/finite-N physics must be qualified for a new requested regime.",
-      "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-      "Human scientific and plot approval pending.",
-      "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
-    ]
+  {
+   "name": "z",
+   "description": "Complex evaluation arguments.",
+   "units": "dimensionless",
+   "shape": "arbitrary shape",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite and representable in the declared numeric type."
   }
+ ],
+ "outputs": [
+  {
+   "name": "ZJ",
+   "description": "Rational dispersion approximation.",
+   "units": "dimensionless",
+   "shape": "same shape as z",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite and representable in the declared numeric type."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Constituent inputs finite and representable in declared numeric ports."
+  ],
+  "supported": [
+   "Finite aligned pole/residue arrays and finite z away from declared poles."
+  ],
+  "excluded": [
+   "Evaluation at a rational pole is singular."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for empty/misaligned/nonfinite poles, residues or points; exact evaluation at a rational pole raises ZeroDivisionError.",
+  "runtime_failure": "Python/dependency errors propagate; this operator launches no native process and has no native execution receipt.",
+  "nonconvergence": "FloatingPointError for nonfinite rational output; no iterative solver or approximation-domain certification.",
+  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared finite-pole or magnetized PDRK relation in Python with bundled native relations where the public callable requires them; direct tests define the bounded numerical cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "bundled native relation"
+  ],
+  "public_references": [
+   "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+  ],
+  "license_status": "Attribution and source obligations follow licenses/pdrk/NOTICE; the bundled Faddeeva component follows licenses/pdrk/Faddeeva-Ikuma-BSD-2-Clause.txt. The PDRK notice does not grant unrestricted redistribution."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.pdrk.rational",
+   "symbol": "jpole_evaluate",
+   "signature": "jpole_evaluate(bzj, czj, z)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate one finite simple-pole rational term at a complex argument.",
+  "code": "import numpy as np\nfrom scirel.kinetic.pdrk.rational import jpole_evaluate\nr = jpole_evaluate([-1], [-1j], 1+1j)\nassert np.isclose(r['ZJ'], -1/(1+2j))",
+  "expected": "PASS: .venv/bin/python completed; ZJ equals -1/(1+2j) for the one-pole fixture. This fixture does not certify Maxwellian approximation accuracy."
+ },
+ "verification": {
+  "scope": [
+   "Source-absent installed own scientific package; exact package/resource closure.",
+   "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
+   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_pdrk_rational.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native PDRK execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "known_limitations": [
+   "PDRK source redistribution authority remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Finite-J/finite-N physics must be qualified for a new requested regime.",
+   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+   "Human scientific and plot approval pending.",
+   "Native example and full PDRK qualification require GNU Octave on Linux amd64; current macOS run is NOT_RUN."
+  ]
+ }
 }

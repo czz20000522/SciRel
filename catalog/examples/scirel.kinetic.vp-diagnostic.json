@@ -1,143 +1,142 @@
 {
-  "schema": "scirel.asset-document",
-  "asset_id": "scirel.kinetic.vp-diagnostic",
-  "kind": "operator",
-  "title": {
-    "en": "Oscillation-peak damping diagnostic",
-    "zh": "振荡峰阻尼诊断"
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.vp-diagnostic",
+ "title": {
+  "en": "Oscillation-peak damping diagnostic",
+  "zh": "振荡峰阻尼诊断"
+ },
+ "summary": "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "vlasov-poisson"
+ ],
+ "aliases": [
+  "vp_diagnostic"
+ ],
+ "identity": {
+  "relation": "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes.",
+  "direction": "Inputs to vp_diagnostic -> result",
+  "definition": "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes.",
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+  "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
+  "assumptions": [
+   "Linear perturbations and homogeneous equilibrium.",
+   "Velocity-window truncation and recurrence are separate from temporal integration error."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "dEt",
+   "description": "Complex electric field time series.",
+   "units": "dimensionless",
+   "shape": "[T]",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite one-dimensional T>=2."
   },
-  "summary": "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes.",
-  "taxonomy": [
-    "kinetic",
-    "plasma-wave",
-    "vlasov-poisson"
-  ],
-  "aliases": [
-    "vp_diagnostic"
-  ],
-  "identity": {
-    "relation": "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes.",
-    "direction": "Inputs to vp_diagnostic -> result",
-    "definition": "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes.",
-    "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
-    "geometry": "One velocity coordinate and one spatial Fourier mode.",
-    "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-    "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
-    "assumptions": [
-      "Linear perturbations and homogeneous equilibrium.",
-      "Velocity-window truncation and recurrence are separate from temporal integration error."
-    ]
+  {
+   "name": "tt",
+   "description": "Sampling times.",
+   "units": "dimensionless",
+   "shape": "[T]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Finite strictly increasing, same shape as dEt."
   },
-  "inputs": [
-    {
-      "name": "dEt",
-      "description": "Complex electric field time series.",
-      "units": "dimensionless",
-      "shape": "[T]",
-      "dtype": "complex array",
-      "required": true,
-      "constraints": "Finite one-dimensional T>=2."
-    },
-    {
-      "name": "tt",
-      "description": "Sampling times.",
-      "units": "dimensionless",
-      "shape": "[T]",
-      "dtype": "real array",
-      "required": true,
-      "constraints": "Finite strictly increasing, same shape as dEt."
-    },
-    {
-      "name": "start",
-      "description": "Window start; None means 5% of actual time span.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real scalar or None",
-      "required": false,
-      "constraints": "Finite; see function-specific scientific conditions.",
-      "default": null
-    },
-    {
-      "name": "end",
-      "description": "Window end; None means 80% of actual time span.",
-      "units": "dimensionless",
-      "shape": "scalar",
-      "dtype": "real scalar or None",
-      "required": false,
-      "constraints": "Finite; see function-specific scientific conditions.",
-      "default": null
-    }
-  ],
-  "outputs": [
-    {
-      "name": "result",
-      "description": "Mapping peak_indices,peak_times,peak_log_magnitudes [P>=2], scalar omega,gamma,gammas; gammas aliases gamma.",
-      "units": "dimensionless",
-      "shape": "As described in output mapping or tuple.",
-      "dtype": "dict",
-      "required": true,
-      "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
-    }
-  ],
-  "applicability": {
-    "preconditions": [
-      "dEt and tt are finite one-dimensional vectors with identical shape and at least two entries; tt is real and strictly increasing."
-    ],
-    "supported": [
-      "Peak-spacing frequency and least-squares logarithmic damping when at least two isolated nonzero peaks are in the selected window."
-    ],
-    "excluded": [
-      "Signals without two qualifying peaks and non-oscillatory/nonlinear diagnostics."
-    ]
+  {
+   "name": "start",
+   "description": "Window start; None means 5% of actual time span.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar or None",
+   "required": false,
+   "constraints": "Finite; see function-specific scientific conditions.",
+   "default": null
   },
-  "failure_semantics": {
-    "invalid_input": "ValueError for misaligned/nonfinite vectors, non-real/non-increasing times, or fewer than two isolated nonzero peaks.",
-    "runtime_failure": "Arithmetic/type errors from NumPy operations propagate; no native process is launched.",
-    "nonconvergence": "The peak count is a data sufficiency condition, not an iterative convergence test.",
-    "partial_results": "No diagnostic mapping is returned when the peak condition fails."
-  },
-  "provenance": {
-    "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
-    "source_kinds": [
-      "SciRel implementation",
-      "equation-based numerical relation",
-      "direct contract tests"
-    ],
-    "public_references": [],
-    "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
-  },
-  "public_api": {
-    "python": {
-      "module": "scirel.kinetic.vlasov_poisson",
-      "symbol": "vp_diagnostic",
-      "signature": "vp_diagnostic(dEt, tt, *, start=None, end=None)",
-      "canonical_module": "scirel.kinetic",
-      "canonical_symbol": "vp_diagnostic"
-    }
-  },
-  "version": {
-    "implementation_version": "0.1.0.dev11",
-    "dependencies": []
-  },
-  "example": {
-    "code": "import numpy as np\nfrom scirel.kinetic.vlasov_poisson import vp_diagnostic\nt=np.linspace(0,30,3001)\nr=vp_diagnostic(np.exp(-.1*t)*np.cos(t),t)\nassert abs(r[\"gamma\"]+.1) < 1e-4",
-    "description": "Use a damped cosine to estimate its damping rate.",
-    "expected": "PASS: .venv/bin/python completed; the fitted gamma is within 1e-4 of -0.1."
-  },
-  "verification": {
-    "scope": [
-      "Discrete Poisson constraint and off-diagonal rank-one feedback.",
-      "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-      "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
-    ],
-    "tests": [
-      "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
-    ],
-    "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
-    "known_limitations": [
-      "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
-      "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
-      "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
-    ]
+  {
+   "name": "end",
+   "description": "Window end; None means 80% of actual time span.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar or None",
+   "required": false,
+   "constraints": "Finite; see function-specific scientific conditions.",
+   "default": null
   }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Mapping peak_indices,peak_times,peak_log_magnitudes [P>=2], scalar omega,gamma,gammas; gammas aliases gamma.",
+   "units": "dimensionless",
+   "shape": "As described in output mapping or tuple.",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "dEt and tt are finite one-dimensional vectors with identical shape and at least two entries; tt is real and strictly increasing."
+  ],
+  "supported": [
+   "Peak-spacing frequency and least-squares logarithmic damping when at least two isolated nonzero peaks are in the selected window."
+  ],
+  "excluded": [
+   "Signals without two qualifying peaks and non-oscillatory/nonlinear diagnostics."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for misaligned/nonfinite vectors, non-real/non-increasing times, or fewer than two isolated nonzero peaks.",
+  "runtime_failure": "Arithmetic/type errors from NumPy operations propagate; no native process is launched.",
+  "nonconvergence": "The peak count is a data sufficiency condition, not an iterative convergence test.",
+  "partial_results": "No diagnostic mapping is returned when the peak condition fails."
+ },
+ "provenance": {
+  "lineage_summary": "SciRel implements the declared one-dimensional linear Vlasov-Poisson relation in Python; direct tests cover the discrete closure, finite-grid evolution and diagnostic boundary cases.",
+  "source_kinds": [
+   "SciRel implementation",
+   "equation-based numerical relation",
+   "direct contract tests"
+  ],
+  "public_references": [],
+  "license_status": "The independent SciRel implementation and its NumPy/SciPy dependencies follow licenses/gpdf/SCIREL-GPDF-D2-NOTICE.txt, licenses/gpdf/NUMPY-LICENSE.txt and licenses/gpdf/SCIPY-LICENSE.txt; no public redistribution permission is asserted."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.vlasov_poisson",
+   "symbol": "vp_diagnostic",
+   "signature": "vp_diagnostic(dEt, tt, *, start=None, end=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "vp_diagnostic"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "code": "import numpy as np\nfrom scirel.kinetic.vlasov_poisson import vp_diagnostic\nt=np.linspace(0,30,3001)\nr=vp_diagnostic(np.exp(-.1*t)*np.cos(t),t)\nassert abs(r[\"gamma\"]+.1) < 1e-4",
+  "description": "Use a damped cosine to estimate its damping rate.",
+  "expected": "PASS: .venv/bin/python completed; the fitted gamma is within 1e-4 of -0.1."
+ },
+ "verification": {
+  "scope": [
+   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
+   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
+   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+  ],
+  "tests": [
+   "tests/operator_contracts/test_gpdf_vlasov_poisson.py"
+  ],
+  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+  "known_limitations": [
+   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+  ]
+ }
 }
