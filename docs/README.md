@@ -57,5 +57,5 @@ SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 
 
 - `requirements/`、`design/`、`integration/` 保存可复用的需求、设计和跨系统合同；具体批次的状态、日志及参数不在这里维护。设计中的历史样本只说明当时的适用条件，不是当前进度。
 - `domains/` 保存有依据的领域草稿与待专家裁定问题；资产级科学合同以 exact document 为准。
-- `evaluations/` 保存带日期和证据引用的评估结论；大体积运行产物、临时工作副本及 wheel 留在 `build/verification/<run>/` 等对应运行目录。`scripts/` 保存可复用的工具，单次运行命令与探针随运行证据保存。
+- `evaluations/` 保存带日期和证据引用的评估结论；本地 `build/verification/<run>/` 只保存当前工作产生且被 Git 忽略的输出，历史评估引用的 run 目录不在 checkout 内。候选 wheel/文档由 `release/CURRENT.json` 的逻辑引用指向外置 artifact root（本机示例：`~/Projects/SciReL-artifacts-v2`），字节校验使用 `scripts/validate_release_alignment.py --artifact-root`。不删除历史评估里的引用，也不声称所有历史 run 工件仍可取得。`scripts/` 保存可复用的工具，单次运行命令与探针随运行证据保存。
 - 已有 manifest、测试或其他工作树引用的证据不直接移动；确需迁移时先核引用方与文件摘要，再在所属线路更新引用并复验。多人工作区中归属不明的文件保持原位。

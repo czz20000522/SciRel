@@ -74,9 +74,11 @@ catalog 和 exact contract。
 
 当前仍处于开发期，尚未形成公开发行。保存的 L1 产物是新 workflow 的重跑输入；
 旧的 `provenance/admitted-assets.json` 仅作为历史开发样本和来源证据，不再定义新的准入流程。
-当前未发布候选以 `provenance/release-index.dev.json` 为统一入口。冻结、出库、验收和
-CodeFusion 联调先选定索引中的确切 `entry_id`，再按该条目的状态、来源绑定、工件摘要与证据引用
-核对同一候选；单次 `build/verification/<review-run>/manifest.json` 只绑定该次构建。
+当前候选的绑定记录是 `release/CURRENT.json`，其中记录版本、source revision、wheel/文档选择和平台回执。
+`provenance/release-index.dev.json` 是开发期索引，按不可变条目记录已登记的 development/candidate/evidence
+快照，不随每个新候选自动更新。冻结、出库、验收和 CodeFusion 联调先选定确切候选（索引入口或
+`CURRENT` 绑定的候选元组），再按状态、来源绑定、工件摘要与证据引用核对同一候选；单次
+`build/verification/<review-run>/manifest.json` 只绑定该次构建。
 新候选不继承旧候选的回执，不能以未冻结的 HEAD、开发版本号或历史 52 项快照代替验收基线。
 开发期索引与合同可迭代，在最终正式发布前统一收敛为 `v1`。
 

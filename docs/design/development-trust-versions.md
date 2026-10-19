@@ -75,6 +75,7 @@
 
 ## 统一发布索引
 
+该索引按不可变条目累积已登记的开发快照，不保证覆盖每个新候选；当前候选自身以 `release/CURRENT.json` 绑定。
 SciRel 的单一开发期索引位于 `provenance/release-index.dev.json`，按不可变的确切版本记录
 未发布开发快照、待审候选及最终发布结果。`development` 条目绑定实际 catalog/wheel 字节、
 来源资格、证据和 D3 去向；完整文档闭包不表示来源合格。候选条目
