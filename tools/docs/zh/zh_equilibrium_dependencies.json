@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.compute-equilibrium",
-   "source_sha256": "e389ad4af0ecb03f90b0c92400d10fac25b9907fb21597e19bab2d757c8cba72",
+   "source_sha256": "8cab50c06ede4eafb2c4f9c8551a42962402a866801a39c2304037664b59f93f",
    "summary": "在给定真空磁通和 Green 矩阵下执行有界轴对称压力电流反馈，并返回显式终态。",
    "definition": "压力闭合为 j_phi=R dP/dpsi；每轮按给定松弛系数更新电流、磁通、压力拟合和两个残差，只有两个残差同时满足 tol 才报告 converged。",
    "model": "基于给定压力—半径函数、真空磁通和 Green 矩阵的来源约束反馈实现。",
@@ -20,61 +20,81 @@
      "name": "R",
      "description": "Radial grid",
      "constraints": "Column-consistent, uniformly spaced, at least 2x2",
-     "dtype": "finite real"
+     "dtype": "finite real",
+     "shape": "2-D 矩形",
+     "units": "源-unspecified"
     },
     {
      "name": "Z",
      "description": "Vertical grid",
      "constraints": "Row-consistent, uniformly spaced, contains >=3 exact zero midplane points",
-     "dtype": "finite real"
+     "dtype": "finite real",
+     "shape": "2-D 矩形",
+     "units": "源-unspecified"
     },
     {
      "name": "Pfunc",
      "description": "Pressure versus radius callable",
      "constraints": "Must provide an exact zero pressure edge",
-     "dtype": "finite real outputs on midplane"
+     "dtype": "finite real outputs on midplane",
+     "shape": "合同说明：callable",
+     "units": "源-unspecified"
     },
     {
      "name": "psi_vac",
      "description": "Vacuum flux",
      "constraints": "Midplane flux strictly increasing through pressure edge",
-     "dtype": "finite real"
+     "dtype": "finite real",
+     "shape": "R.形状",
+     "units": "源-unspecified"
     },
     {
      "name": "g_psi",
      "description": "Supplied Green matrix",
      "constraints": "Finite",
-     "dtype": "finite real"
+     "dtype": "finite real",
+     "shape": "(R.大小,R.大小)",
+     "units": "源-unspecified"
     },
     {
      "name": "tol",
      "description": "Threshold for both normalized flux-update and current-closure residuals",
      "constraints": "positive finite",
-     "dtype": "float"
+     "dtype": "float",
+     "shape": "标量",
+     "units": "无量纲"
     },
     {
      "name": "maxiter",
      "description": "Maximum feedback updates",
      "constraints": "nonnegative nonboolean integer",
-     "dtype": "int"
+     "dtype": "int",
+     "shape": "标量",
+     "units": "无量纲"
     },
     {
      "name": "relax",
      "description": "Weight on old current",
      "constraints": "finite in [0,1)",
-     "dtype": "float"
+     "dtype": "float",
+     "shape": "标量",
+     "units": "无量纲"
     },
     {
      "name": "plas_clip",
      "description": "Optional plasma-current exclusion mask",
      "constraints": "same grid shape and boolean",
-     "dtype": "bool array or None"
+     "dtype": "bool array or None",
+     "shape": "R.形状 或 None",
+     "units": "无量纲"
     },
     {
      "name": "plotit",
      "description": "GUI plotting selector",
      "constraints": "True is unsupported",
-     "dtype": "bool"
+     "dtype": "bool",
+     "shape": "标量",
+     "units": "无量纲"
     }
    ],
    "outputs": [
@@ -82,7 +102,9 @@
      "name": "EquilibriumResult",
      "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations",
      "constraints": "status is converged, maxiter or nonfinite; history length may be less than attempted iterations when an update fails before residual evaluation",
-     "dtype": "dataclass"
+     "dtype": "dataclass",
+     "shape": "psi/plas_currents R.形状",
+     "units": "源-unspecified"
     }
    ],
    "applicability": {

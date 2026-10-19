@@ -4,14 +4,15 @@
  "records": [
   {
    "asset_id": "scirel.electromagnetism.arbitrary-points",
-   "source_sha256": "38459a2b879ea4a471d8e35f523ead58e148e4e5b63497039d2f3c5b07cfe039",
-   "summary": "有限、带权的圆电流丝源点。",
-   "definition": "一组理想圆电流丝共用同一电流。",
-   "model": "轴对称圆电流丝。",
-   "boundary": "活动电流丝与目标重合时具有奇异性。",
+   "source_sha256": "5f7d1f0df73f67758f9c141484f8a25f792a65c0b6c617fef696b35aa4f19b71",
+   "summary": "构造有限个带符号权重的圆电流丝源点，并计算其依赖目标网格的场。",
+   "definition": "有限个 (R,Z) 点共用一个电流标量，并带有无量纲有符号权重。",
+   "model": "用 Green 核计算的轴对称理想圆电流丝。",
+   "boundary": "目标点若与活动的正半径电流丝重合，则响应奇异。",
    "assumptions": [
-    "源点有限。",
-    "源半径非负。"
+    "源点有限且半径非负。",
+    "计算场时必须提供目标网格。",
+    "几何和权重保持调用者给定的顺序。"
    ],
    "inputs": [
     {
@@ -49,22 +50,22 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入满足文档中有限柱坐标和形状合同。"
+     "源点有限且半径非负。",
+     "计算场时必须提供目标网格。"
     ],
     "supported": [
-     "有限源几何、有符号权重与缓存失效处理。"
+     "有限点集、有符号权重、网格转换、坐标变换和缓存失效。"
     ],
     "excluded": [
-     "与活动电流丝重合的目标。",
-     "多进程。",
-     "绘图适配器。"
+     "有限导线或材料磁学。",
+     "绘图、simplify、多进程和持久扫描。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "点、 电流、权重、网格畸形或非有限，或与活动电流丝重合时抛出 ValueError；不支持的 simplify 或装置添加抛出 NotImplementedError。",
+    "runtime_failure": "不可表示的 Green 响应产生 FloatingPointError 并向上传播；参数化更新失败时恢复先前的有效几何。",
+    "nonconvergence": "不适用；构造和场计算均为直接操作。",
+    "partial_results": "构造器失败不返回对象；原子化更新保留先前有效状态。"
    },
    "verification": {
     "scope": [
@@ -82,20 +83,21 @@
     "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
    },
    "example": {
-    "description": "计算一个有限源的响应。",
-    "expected": "在已配置目标网格上获得三个有限场数组。"
+    "description": "在一个单点网格上构造一个带权源，并检查返回磁通的形状。",
+    "expected": "构造器成功，psi() 返回一个有限值，形状为 (1,)。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.brb",
-   "source_sha256": "c797a4a40bf40ef695885e0bd6c5eeb051418f917c93ca7228182ccf7acad943",
-   "summary": "有序来源常数组成：两组 88 丝 TREX 线圈、两组 130 丝矩形镜线圈和 36 个各含 16 条带符号电流丝的磁环。",
-   "definition": "按来源次序组合两组 88 丝 TREX、两组 130 丝矩形镜线圈及 36 个带符号 16 丝磁环。",
-   "model": "来源定义的 Big Red Ball 几何，以轴对称圆电流丝表示。",
-   "boundary": "未建立实验装置标定或材料本构律。",
+   "source_sha256": "22a1a12d594461455f1ae580767bcc79c3a8e75eb2979fbf67496f7e4f7730f9",
+   "summary": "构造固定的 BRB 源组合：两组 88 点 TREX 线圈、两组 130 点矩形线圈，以及 36 个带符号的 16 点磁环。",
+   "definition": "BRB 按属性顺序注册两组 TREXCoil、两组 RectangularCoil 和 36 个 MagnetRing 子对象。",
+   "model": "采用来源定义常数的轴对称理想圆电流丝几何。",
+   "boundary": "该对象只是几何组合，不标定实验装置或材料响应。",
    "assumptions": [
-    "保留来源几何常数及其约定。",
-    "采用真空理想圆电流丝响应，排除有限导线和磁导率物理。"
+    "保留的常数只描述几何。",
+    "子源采用理想圆电流丝响应。",
+    "计算场仍需有限且不奇异的目标网格。"
    ],
    "inputs": [],
    "outputs": [
@@ -108,26 +110,21 @@
    ],
    "applicability": {
     "preconditions": [
-     "公开参数对应的几何输入有限。"
+     "保留的常数只描述几何。",
+     "子源采用理想圆电流丝响应。"
     ],
     "supported": [
-     "保留的来源几何常数。",
-     "有序电流源集合组合。",
-     "非奇异目标点上的有限源场。"
+     "子源顺序和数量、网格传播、电流投影及有限非奇异场计算。"
     ],
     "excluded": [
-     "实验装置标定。",
-     "添加电极。",
-     "持久扫描。",
-     "仅有注释的 PCX 来源。",
-     "非线性磁化、有限导线或磁导率模型。"
+     "实验标定、有限导线或磁导率物理、阴极/阳极扩展和持久扫描。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "BRB 构造或子源场计算沿用子源的 ValueError/FloatingPointError 语义；排除的扩展抛出 NotImplementedError。",
+    "runtime_failure": "子源的 Green 核数值失败向上传播。",
+    "nonconvergence": "不适用；配置是直接的有序组合。",
+    "partial_results": "构造失败不返回可用配置；子源由构造器注册。"
    },
    "verification": {
     "scope": [
@@ -145,19 +142,21 @@
     "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
    },
    "example": {
-    "description": "构造限定来源几何。",
-    "expected": "返回精确的来源几何数量。"
+    "description": "构造 BRB，并检查合同指定的子源数量。",
+    "expected": "装置注册 40 个子源，hh_n 含有 88 个电流丝点。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.device",
-   "source_sha256": "dc80edb650e18eccc256acc830a795238b0ccfda9db6c727ebed59676ca4e7f8",
-   "summary": "构造有序电流丝装置，子属性赋值注册源；场方法接受有限标量或逐子源电流覆盖并对带权 Green 矩阵求和。",
-   "definition": "逐子源 Green 矩阵由电流向量投影后叠加。",
-   "model": "轴对称源组合。",
-   "boundary": "子源注册和网格状态必须有效。",
+   "source_sha256": "ca21b10db6128755dccd37c3e20f81ec4ecdaf0870a50e15af8ae4481265f553",
+   "summary": "组合有序圆电流丝源，并用标量电流或逐子源电流收缩各自的 Green 响应。",
+   "definition": "Device 按赋值顺序保存 CurrentFilamentSet 子源，并收缩它们的 Green 矩阵。",
+   "model": "轴对称理想圆电流丝响应的线性叠加。",
+   "boundary": "调用场方法时，网格和电流向量必须与已注册子源兼容。",
    "assumptions": [
-    "子源有限且网格兼容。"
+    "只有 CurrentFilamentSet 属性会注册为子源。",
+    "标量电流覆盖所有子源，向量按子源顺序对应。",
+    "子源几何和权重数组仍可变。"
    ],
    "inputs": [
     {
@@ -177,24 +176,21 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入满足文档中有限柱坐标和形状合同。"
+     "只有 CurrentFilamentSet 属性会注册为子源。",
+     "标量电流覆盖所有子源，向量按子源顺序对应。"
     ],
     "supported": [
-     "注册源的替换／删除。",
-     "网格向子源传播。",
-     "电流投影。"
+     "子源注册/替换/删除、网格传播、逐子源电流收缩及空装置形状。"
     ],
     "excluded": [
-     "绘图适配器。",
-     "持久扫描。",
-     "文档缓存合同以外的任意源改动。"
+     "绘图、持久扫描和不支持的源操作。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "网格、电流覆盖、缺失网格或子核奇异时抛出 ValueError；重复注册子源抛出 AttributeError。",
+    "runtime_failure": "子源 Green 核的 FloatingPointError 向上传播。",
+    "nonconvergence": "不适用；组合是直接矩阵收缩。",
+    "partial_results": "子源赋值失败时保留已有注册集合；场调用失败不返回场向量。"
    },
    "verification": {
     "scope": [
@@ -212,22 +208,21 @@
     "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
    },
    "example": {
-    "description": "组合两个子源。",
-    "expected": "按有序子源集合叠加场。"
+    "description": "在单点网格上注册一个 ArbitraryPoints 子源，并计算组合装置。",
+    "expected": "有序装置返回有限 psi 向量，形状为 (1,)。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.distributed-current-flux",
-   "source_sha256": "b34383e515b10ea52f76d91816bc9a54d1f7b7139faffd2addb939535bb4a911",
-   "summary": "在均匀源网格上叠加环向电流层，将离散磁通响应插值到柱坐标目标。",
-   "definition": "ψ=R Aφ；源节点电流为密度乘均匀完整单元面积，重合自节点响应为零。",
-   "model": "真空圆电流丝响应，保留兼容的离散零自点积分策略。",
-   "boundary": "不外推到源网格凸包以外，不表示有限导线自场。",
+   "source_sha256": "b5ef09d20fca30ef14cdd750eba80a9af5b14ae8d6e1df26a0fcc1540d8af7ae",
+   "summary": "把规则 A/cm² 电流网格转换为指定 R、Z 目标上的离散环向磁通贡献。",
+   "definition": "电流密度按均匀完整单元面积换算为每个源节点的电流，经带权圆电流丝磁通收缩后再线性插值。",
+   "model": "带零自节点响应的规则矩形源网格。",
+   "boundary": "目标 R、Z 跨度必须为正，且目标位于源网格凸包内。",
    "assumptions": [
-    "输入电流密度单位为 A/cm²。",
-    "可有一个前导轴，按可叠加电流层求和，不解释为时间演化。",
-    "完整节点单元面积包括端点节点。",
-    "半径为零的源单元贡献为零。"
+    "电流变量名为 curr_diamcurv_phi。",
+    "末两维为 nzeqadim、nreqadim，单位严格为 A/cm²。",
+    "可选前导轴表示可叠加层，不表示时间。"
    ],
    "inputs": [
     {
@@ -259,28 +254,21 @@
    ],
    "applicability": {
     "preconditions": [
-     "声明的数据集单位和轴符合电流协议。",
-     "目标几何有限且各方向跨度为正。"
+     "电流变量名为 curr_diamcurv_phi。",
+     "末两维为 nzeqadim、nreqadim，单位严格为 A/cm²。"
     ],
     "supported": [
-     "矩形网格上有符号且不等的可叠加电流层。",
-     "目标数组转置。",
-     "零自单元兼容离散化。",
-     "在 float64 构轴舍入误差内保留节点值。"
+     "有符号电流层、转置目标数组、节点值恢复及合同声明的数据集/目标失败。"
     ],
     "excluded": [
-     "不规则反射源网格实现。",
-     "有限导线自感。",
-     "连续体精度或网格收敛。",
-     "把可叠加层解释为时间演化。",
-     "极端尺度资格。"
+     "不规则源网格、有限导线自感、连续体收敛和极端尺度资格。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺失命名字段、维度畸形、遮罩／非有限电流、声明单位不兼容或目标几何无效时抛出 ValueError。",
-    "runtime_failure": "内核、收缩或插值输出无法表示时抛出 FloatingPointError；netCDF 输入输出失败向上传播。",
-    "nonconvergence": "直接离散响应，不涉及迭代收敛。",
-    "partial_results": "失败不返回部分磁通。"
+    "invalid_input": "缺失字段、维度或名称错误、遮罩、非有限电流、单位错误或目标几何无效时抛出 ValueError。",
+    "runtime_failure": "响应非有限时，FloatingPointError 或底层 netCDF/插值错误向上传播。",
+    "nonconvergence": "不适用；这是直接离散收缩和插值。",
+    "partial_results": "验证、核计算或插值失败后不返回磁通数组。"
    },
    "verification": {
     "scope": [
@@ -297,19 +285,21 @@
     "evidence_ceiling": "作者对指定离散样例和声明失败边界的验证，不构成科学或人工批准。"
    },
    "example": {
-    "description": "从零电流数据集协议计算零磁通。",
-    "expected": "返回形状 (2,2) 的 float64 零磁通数组。"
+    "description": "在 2×2 目标网格上使用零电流 netCDF 类数据集协议。",
+    "expected": "get_deltapsi 返回形状为 (2,2) 的全零 float64 数组。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.magnet-ring",
-   "source_sha256": "38f7eae715ee6b6cadfde16c7614ee0b84957643c5d1278585f11f5cf36b215d",
-   "summary": "用有限带符号电流丝近似有方向的矩形磁体截面。",
-   "definition": "在两个径向表面沿轴向采样并赋予有符号权重。",
-   "model": "轴对称理想化磁环。",
-   "boundary": "与活动电流丝重合仍具有奇异性。",
+   "source_sha256": "40858e7508f27a5d7b23f768ff0ce4c87530bad726d526ed4927048a6ab569a3",
+   "summary": "构造矩形永磁环截面的有符号双面 16 丝近似。",
+   "definition": "两个径向面各放置 8 个轴向电流丝点，并使用相反的默认权重。",
+   "model": "用轴对称理想圆电流丝近似几何。",
+   "boundary": "生成的电流丝半径必须非负；活动源与目标重合仍会产生奇异性。",
    "assumptions": [
-    "宽度和高度有限且为正。"
+    "宽度和高度有限且为正。",
+    "默认权重为 8 个 -1 后接 8 个 +1。",
+    "该对象不是材料磁化模型。"
    ],
    "inputs": [
     {
@@ -371,22 +361,21 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入满足文档中有限柱坐标和形状合同。"
+     "宽度和高度有限且为正。",
+     "默认权重为 8 个 -1 后接 8 个 +1。"
     ],
     "supported": [
-     "有符号磁环几何和变换。"
+     "有符号几何、变换、电流/权重修改、网格传播和生命周期行为。"
     ],
     "excluded": [
-     "权重和为零时的总电流设值。",
-     "电极。",
-     "有限导线磁学。"
+     "有限导线磁学、磁导率/材料响应、电极及不支持的 simplify 操作。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "几何、电流、权重、网格无效或与活动电流丝重合时抛出 ValueError；simplify 抛出 NotImplementedError。",
+    "runtime_failure": "不可表示的 Green 响应产生 FloatingPointError 并向上传播。",
+    "nonconvergence": "不适用；几何和场计算均为直接操作。",
+    "partial_results": "构造器失败不返回源；原子化更新保留先前状态。"
    },
    "verification": {
     "scope": [
@@ -404,19 +393,21 @@
     "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
    },
    "example": {
-    "description": "构造默认磁环。",
-    "expected": "默认有符号电流丝几何包含 16 个采样点。"
+    "description": "构造默认的有符号磁环源。",
+    "expected": "源包含 16 个电流丝点，采用默认的有符号双面几何。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.rectangular-coil",
-   "source_sha256": "77170c6e49e57a27f8035ae174aeb617d2ed12a198ec4f298a4d10b88d6d2a6e",
-   "summary": "参数化的矩形圆电流丝阵列。",
-   "definition": "按均匀矩形点阵采样，施加有符号权重。",
-   "model": "轴对称圆电流丝阵列。",
-   "boundary": "R≥0，尺寸和点数均为正。",
+   "source_sha256": "76b328cd88ce270628ed5cd1624fe2cddbd58ad1c07e499f31979236e44c9fc7",
+   "summary": "构造有序矩形圆电流丝阵列，支持可选旋转以及继承的电流/权重控制。",
+   "definition": "生成 nr×nz 个中心点，径向索引在外、轴向索引在内。",
+   "model": "轴对称理想圆电流丝源阵列。",
+   "boundary": "生成的点必须保持非负柱坐标半径。",
    "assumptions": [
-    "几何参数有限。"
+    "计数为正整数，间距为有限正数。",
+    "旋转采用本包的行向量约定。",
+    "权重、电流和网格从 CurrentFilamentSet 继承。"
    ],
    "inputs": [
     {
@@ -490,22 +481,21 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入满足文档中有限柱坐标和形状合同。"
+     "计数为正整数，间距为有限正数。",
+     "旋转采用本包的行向量约定。"
     ],
     "supported": [
-     "几何设值、刚体变换和场计算。"
+     "有序几何、旋转/平移、原子化参数更新、带权电流及依赖网格的场。"
     ],
     "excluded": [
-     "负半径。",
-     "非正尺寸。",
-     "持久扫描。"
+     "有限导线截面、材料响应、绘图和持久扫描。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "几何、计数、电流、权重、网格无效或与活动电流丝重合时抛出 ValueError。",
+    "runtime_failure": "不可表示的 Green 响应产生 FloatingPointError 并向上传播。",
+    "nonconvergence": "不适用；几何和场计算均为直接操作。",
+    "partial_results": "构造器失败不返回源；原子化几何更新保留先前状态。"
    },
    "verification": {
     "scope": [
@@ -523,20 +513,21 @@
     "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
    },
    "example": {
-    "description": "构造两个点的线圈。",
-    "expected": "可取得生成的电流丝中心和面积代理。"
+    "description": "构造含两个径向电流丝点的矩形线圈。",
+    "expected": "源恰好包含 2 个按顺序排列的电流丝点。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.trex-coil",
-   "source_sha256": "2238e81d47e3531238862465cdd2e8a2090a126bb9a59f084555f477e1c2b1b4",
-   "summary": "88 条电流丝：五个径向列各 16 个轴向点，外列为 8 个轴向中点；面积沿用 88×(0.0134166 m)²。",
-   "definition": "五列各 16 点加外列 8 个中点构成 88 丝；来源面积约定为 88×(0.0134166 m)²。",
-   "model": "来源定义的 TREX 电流丝几何，采用轴对称圆电流丝。",
-   "boundary": "未建立实验装置标定或材料本构律。",
+   "source_sha256": "2772e27916d9b2c0b9657851c5e8af52355b15200e6484dc4223ee35b0d18260",
+   "summary": "构造固定的 88 点 TREX 线圈几何，并继承电流、权重、网格和场方法。",
+   "definition": "五个径向列各含 16 个轴向点，第六列含 8 个轴向中点。",
+   "model": "保留来源常数的轴对称理想圆电流丝点云。",
+   "boundary": "点云可通过 z0 或继承的刚体变换改变；活动目标重合仍会奇异。",
    "assumptions": [
-    "保留来源几何常数及其约定。",
-    "采用真空理想圆电流丝响应，排除有限导线和磁导率物理。"
+    "构造器恰好创建 88 个点。",
+    "权重必须与全部 88 个点匹配。",
+    "area 属性是源几何代理，不是导线模型。"
    ],
    "inputs": [
     {
@@ -574,26 +565,21 @@
    ],
    "applicability": {
     "preconditions": [
-     "公开参数对应的几何输入有限。"
+     "构造器恰好创建 88 个点。",
+     "权重必须与全部 88 个点匹配。"
     ],
     "supported": [
-     "保留的来源几何常数。",
-     "有序电流源集合组合。",
-     "非奇异目标点上的有限源场。"
+     "参考几何数量、z0 平移、继承的电流/权重/网格行为及有限场计算。"
     ],
     "excluded": [
-     "实验装置标定。",
-     "添加电极。",
-     "持久扫描。",
-     "仅有注释的 PCX 来源。",
-     "非线性磁化、有限导线或磁导率模型。"
+     "通过 rz_pts 修改单点几何、有限导线或材料物理以及持久扫描。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "z0、电流、权重或网格无效，或与活动电流丝重合时抛出 ValueError；直接赋值 rz_pts 抛出 NotImplementedError。",
+    "runtime_failure": "Green 响应的 FloatingPointError 向上传播。",
+    "nonconvergence": "不适用；几何和场计算均为直接操作。",
+    "partial_results": "构造器失败不返回源；原子化更新保留先前状态。"
    },
    "verification": {
     "scope": [
@@ -611,20 +597,21 @@
     "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
    },
    "example": {
-    "description": "构造限定来源几何并平移。",
-    "expected": "返回精确来源几何数量。"
+    "description": "构造 TREX 线圈并平移它，读取参考平面坐标。",
+    "expected": "源包含 88 个点；平移 0.2 m 后，z0 从 0.7 变为 0.9 m。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.wham",
-   "source_sha256": "a995e1e2596fc054cb3ae8b4faadc74fd8558ecc6b278813e1a137c18cf477aa",
-   "summary": "有序四线圈几何，电流丝数依次 32、32、10、10；各共同电流保留构造默认 1 A。",
-   "definition": "按固定次序组合 32、32、10、10 条丝的四个线圈，共同电流默认均为 1 A。",
-   "model": "来源定义的 WHAM 几何，以轴对称圆电流丝表示。",
-   "boundary": "未建立实验装置标定或材料本构律。",
+   "source_sha256": "663b55ee2b384602c36867fe9fb3813a3ac2b9a10b259cb2a5bcd225dc64c316",
+   "summary": "构造有序 WHAM 装置：四个矩形线圈依次含 32、32、10、10 条电流丝。",
+   "definition": "WHAM 按 hts1、hts2、cc1、cc2 顺序注册四个矩形线圈子源。",
+   "model": "轴对称理想圆电流丝几何。",
+   "boundary": "该对象表示固定几何，不标定实验装置。",
    "assumptions": [
-    "保留来源几何常数及其约定。",
-    "采用真空理想圆电流丝响应，排除有限导线和磁导率物理。"
+    "构造器使用实现中的固定常数。",
+    "计算场需要目标网格且目标点不能奇异。",
+    "Device 保留子源顺序。"
    ],
    "inputs": [],
    "outputs": [
@@ -637,26 +624,21 @@
    ],
    "applicability": {
     "preconditions": [
-     "公开参数对应的几何输入有限。"
+     "构造器使用实现中的固定常数。",
+     "计算场需要目标网格且目标点不能奇异。"
     ],
     "supported": [
-     "保留的来源几何常数。",
-     "有序电流源集合组合。",
-     "非奇异目标点上的有限源场。"
+     "子源数量、反射几何、网格传播、电流投影及有限场计算。"
     ],
     "excluded": [
-     "实验装置标定。",
-     "添加电极。",
-     "持久扫描。",
-     "仅有注释的 PCX 来源。",
-     "非线性磁化、有限导线或磁导率模型。"
+     "实验标定、有限导线或磁导率物理以及持久扫描。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "固定配置或子源场计算沿用子源的 ValueError/FloatingPointError 语义；排除的扩展抛出 NotImplementedError。",
+    "runtime_failure": "子源 Green 核数值失败向上传播。",
+    "nonconvergence": "不适用；配置是直接的有序组合。",
+    "partial_results": "构造失败不返回可用配置；子源注册由构造器完成。"
    },
    "verification": {
     "scope": [
@@ -674,13 +656,13 @@
     "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
    },
    "example": {
-    "description": "构造限定来源几何。",
-    "expected": "返回精确来源几何数量。"
+    "description": "构造固定 WHAM 装置并检查各子源点数。",
+    "expected": "四个电流集合按顺序包含 [32, 32, 10, 10] 个点。"
    }
   },
   {
    "asset_id": "scirel.geometry.points-mesh",
-   "source_sha256": "7bad1172ab6b851c21df1985a607dbc1b913f5ba91ee2dded465f41904627577",
+   "source_sha256": "8f319c66d0c46b4d8b1f909fa0eb92a712495141f14a3ea990b46d7cb4966c95",
    "summary": "有限的非结构柱坐标点集。",
    "definition": "每对 rpts、zpts 值定义一个点。",
    "model": "非结构有限点集。",
@@ -724,34 +706,29 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
+    "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
+    "partial_results": "构造失败不返回网格对象。"
    },
    "verification": {
     "scope": [
-     "有界刚体几何和坐标不变量。",
-     "有序电流投影和源生命周期。",
-     "保留的完整 BRB／WHAM 配置在有限目标点上的组合。"
+     "直接几何测试覆盖构造器及坐标形状不变量。",
+     "执行合同中保存的构造器示例。"
     ],
     "known_limitations": [
-     "不宣称源装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "科学、人工及发行批准均仍为否。"
+     "网格对象本身不能证明物理场模型或装置几何。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行授权。"
    },
    "example": {
-    "description": "构造一个点。",
-    "expected": "返回一个有限点坐标数组。"
+    "description": "构造一个有限柱坐标点，并检查两个坐标数组。",
+    "expected": "R、Z 都是单元素 float 数组，分别为 0.2 m 和 0.3 m。"
    }
   },
   {
    "asset_id": "scirel.geometry.r-chord",
-   "source_sha256": "c8ef1074a036cab09dfaccc72b334efd4c1881ed987dca754275dc6d91608da6",
+   "source_sha256": "48e21829b662fd4084715ec36ccff113e5a1e5db88147a820316cad71f7818c3",
    "summary": "在固定 Z 位置沿 R 变化的点列。",
    "definition": "径向坐标改变，轴向坐标保持常数。",
    "model": "柱坐标弦。",
@@ -793,34 +770,29 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
+    "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
+    "partial_results": "构造失败不返回网格对象。"
    },
    "verification": {
     "scope": [
-     "有界刚体几何和坐标不变量。",
-     "有序电流投影和源生命周期。",
-     "保留的完整 BRB／WHAM 配置在有限目标点上的组合。"
+     "直接几何测试覆盖构造器及坐标形状不变量。",
+     "执行合同中保存的构造器示例。"
     ],
     "known_limitations": [
-     "不宣称源装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "科学、人工及发行批准均仍为否。"
+     "网格对象本身不能证明物理场模型或装置几何。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行授权。"
    },
    "example": {
-    "description": "构造径向弦。",
-    "expected": "R、Z 数组具有相同长度 N。"
+    "description": "在固定轴向坐标 Z=0.3 m 处构造径向弦。",
+    "expected": "弦包含 R=[0.2, 0.5] m，且 Z=[0.3, 0.3] m 保持不变。"
    }
   },
   {
    "asset_id": "scirel.geometry.rect-mesh",
-   "source_sha256": "e8df66c0edf0dfc179d3eff244f75637c0db64e26ab19980746d82eef2f4a125",
+   "source_sha256": "b569bcbc92ebc67a76d363817a873ecab39c8ad5fb86cf947c9d6260cd1c2628",
    "summary": "柱坐标 R、Z 上的规则矩形网格。",
    "definition": "对独立 R、Z 边界构造 meshgrid。",
    "model": "规则矩形网格。",
@@ -891,34 +863,29 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
+    "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
+    "partial_results": "构造失败不返回网格对象。"
    },
    "verification": {
     "scope": [
-     "有界刚体几何和坐标不变量。",
-     "有序电流投影和源生命周期。",
-     "保留的完整 BRB／WHAM 配置在有限目标点上的组合。"
+     "直接几何测试覆盖构造器及坐标形状不变量。",
+     "执行合同中保存的构造器示例。"
     ],
     "known_limitations": [
-     "不宣称源装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "科学、人工及发行批准均仍为否。"
+     "网格对象本身不能证明物理场模型或装置几何。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行授权。"
    },
    "example": {
-    "description": "构造小网格。",
-    "expected": "返回形状 (nz,nr) 的规则网格数组。"
+    "description": "构造默认边界的 2×2 规则柱坐标 R-Z 网格。",
+    "expected": "R、Z 形状均为 (2,2)，R 跨越 [0,1]，Z 跨越 [-0.5,0.5]。"
    }
   },
   {
    "asset_id": "scirel.geometry.spherical-r-chord",
-   "source_sha256": "70e98e0e7d4cf4c9839fda3ffc7ef7907356b2facbfcda5706d82af53e6ea0c9",
+   "source_sha256": "8e63e5d772d179143867777ee48e848b23cbd21bcea3f5189361f18372c329c5",
    "summary": "在固定角度处改变球半径得到点列。",
    "definition": "按 R=r sinθ、Z=r cosθ 将球坐标输入映射为柱坐标。",
    "model": "球坐标到柱坐标的映射。",
@@ -961,34 +928,29 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不合法的受支持输入使构造器或几何设值抛出 ValueError；未实现的源添加抛出 NotImplementedError。场方法拒绝缺失目标网格、非有限电流及活动电流丝重合。",
-    "runtime_failure": "内核结果无法表示时，场计算传播 FloatingPointError；参数化几何设值失败时保留前一个有效状态。",
-    "nonconvergence": "不适用；几何构造、变换和静态响应为直接计算。",
-    "partial_results": "构造失败不返回部分对象；原子化参数几何设值保留原有效状态。"
+    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
+    "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
+    "partial_results": "构造失败不返回网格对象。"
    },
    "verification": {
     "scope": [
-     "有界刚体几何和坐标不变量。",
-     "有序电流投影和源生命周期。",
-     "保留的完整 BRB／WHAM 配置在有限目标点上的组合。"
+     "直接几何测试覆盖构造器及坐标形状不变量。",
+     "执行合同中保存的构造器示例。"
     ],
     "known_limitations": [
-     "不宣称源装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "科学、人工及发行批准均仍为否。"
+     "网格对象本身不能证明物理场模型或装置几何。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行授权。"
    },
    "example": {
-    "description": "构造 90 度球半径弦。",
-    "expected": "按度角生成柱坐标。"
+    "description": "把极角 90 度处的单位球面径向点转换为柱坐标 R、Z。",
+    "expected": "生成的柱坐标为 R=[1.0] m、Z=[0.0] m。"
    }
   },
   {
    "asset_id": "scirel.geometry.theta-chord",
-   "source_sha256": "ff577825400b6aea7a5cb2013755fb6624be54e445971f3ffd73246695501219",
+   "source_sha256": "d4a6a0fcbc862697089c6aaf3be1d940a4cc7496423be15c1a0e33ace1ab5482",
    "summary": "在固定球半径上随极角变化的一组点。",
    "definition": "R=r0 sin(theta)，Z=r0 cos(theta)。",
    "model": "极角坐标映射；由输入角度生成并以柱坐标保存。",
@@ -1031,34 +993,29 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "构造器或几何设置器对支持域内的非法输入抛 ValueError；不可用的源添加操作抛 NotImplementedError。源场方法拒绝缺失目标网格、非有限电流及活跃电流丝重合。",
-    "runtime_failure": "场求值对不可表示的核结果传播 FloatingPointError。参数化几何设置失败时保留之前的有效状态。",
-    "nonconvergence": "不适用；直接构造几何、变换及静态响应。",
-    "partial_results": "构造器失败不返回部分对象。原子的参数化几何设置器保留之前的有效状态。"
+    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
+    "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
+    "partial_results": "构造失败不返回网格对象。"
    },
    "example": {
-    "description": "构造极角弦。",
-    "expected": "由以度为单位的角度生成柱坐标。"
+    "description": "把单位半径下 0 度和 90 度的极角转换为柱坐标 R、Z。",
+    "expected": "生成坐标 (R,Z)=[(0,1),(1,0)] m。"
    },
    "verification": {
     "scope": [
-     "有界刚体几何与坐标不变量。",
-     "有序电流投影与源生命周期。",
-     "在有限目标上组合全部保留的 BRB/WHAM 配置。"
+     "直接几何测试覆盖构造器及坐标形状不变量。",
+     "执行合同中保存的构造器示例。"
     ],
-    "evidence_ceiling": "仅限具名几何、生命周期和配置案例；不宣称任意输入的科学正确性或发行资格。",
+    "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行授权。",
     "known_limitations": [
-     "不宣称对源装置常数、导体面积代理或材料磁化作过实验验证。",
-     "几何/权重数组可直接修改；缓存能检测内容变化，但令参数化几何与其参数失去同步的修改不在支持合同内。",
-     "继承的接口可能宽容接受未知 **kwargs；不宣称任意关键字的语义。",
-     "绘图/图形片、simplify/clone、多进程、电极及持久扫描被排除或尚未解决。",
-     "所有科学、人工和发行批准仍为 false。"
+     "网格对象本身不能证明物理场模型或装置几何。"
     ]
    }
   },
   {
    "asset_id": "scirel.geometry.z-chord",
-   "source_sha256": "53205f52fa9842ad72504f4b04b49fd23eb47d65375de80df31dc3eb052917d4",
+   "source_sha256": "fbe3998d61046f6aa09a8440d27a7eed0b1aa51f41d73859df3968c7935e50cc",
    "summary": "在固定 R 上随 Z 变化的一组点。",
    "definition": "Z 坐标变化，R 保持不变。",
    "model": "柱坐标弦，采用柱坐标 R-Z。",
@@ -1100,34 +1057,29 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "构造器或几何设置器对支持域内的非法输入抛 ValueError；不可用的源添加操作抛 NotImplementedError。源场方法拒绝缺失目标网格、非有限电流及活跃电流丝重合。",
-    "runtime_failure": "场求值对不可表示的核结果传播 FloatingPointError。参数化几何设置失败时保留之前的有效状态。",
-    "nonconvergence": "不适用；直接构造几何、变换及静态响应。",
-    "partial_results": "构造器失败不返回部分对象。原子的参数化几何设置器保留之前的有效状态。"
+    "invalid_input": "坐标非有限、形状不匹配、半径为负、点维度错误或矩形边界/计数无效时抛出 ValueError。",
+    "runtime_failure": "NumPy 坐标构造或变换异常向上传播。",
+    "nonconvergence": "不适用；网格构造和旋转均为直接操作。",
+    "partial_results": "构造失败不返回网格对象。"
    },
    "example": {
-    "description": "构造轴向弦。",
-    "expected": "R、Z 数组长度均为 N。"
+    "description": "在固定径向坐标 R=0.3 m 处构造轴向弦。",
+    "expected": "弦包含恒定的 R=[0.3,0.3] m，Z=[-0.2,0.4] m。"
    },
    "verification": {
     "scope": [
-     "有界刚体几何与坐标不变量。",
-     "有序电流投影与源生命周期。",
-     "在有限目标上组合全部保留的 BRB/WHAM 配置。"
+     "直接几何测试覆盖构造器及坐标形状不变量。",
+     "执行合同中保存的构造器示例。"
     ],
-    "evidence_ceiling": "仅限具名几何、生命周期和配置案例；不宣称任意输入的科学正确性或发行资格。",
+    "evidence_ceiling": "仅建立具名有限几何案例；不涉及场求解器、实验验证或发行授权。",
     "known_limitations": [
-     "不宣称对源装置常数、导体面积代理或材料磁化作过实验验证。",
-     "几何/权重数组可直接修改；缓存能检测内容变化，但令参数化几何与其参数失去同步的修改不在支持合同内。",
-     "继承的接口可能宽容接受未知 **kwargs；不宣称任意关键字的语义。",
-     "绘图/图形片、simplify/clone、多进程、电极及持久扫描被排除或尚未解决。",
-     "所有科学、人工和发行批准仍为 false。"
+     "网格对象本身不能证明物理场模型或装置几何。"
     ]
    }
   },
   {
    "asset_id": "scirel.io.eqdsk-class",
-   "source_sha256": "f4ebea2fdcf57b9b6ef328c939af119743950e9d7131ebbf1f1e72c6c85866ca",
+   "source_sha256": "f8180364007669a70f4c3fb0fe9a717cc4d0d9a985010695dc14f9c32012984e",
    "summary": "读写 Pleiades 扩展 EQDSK 方言的可变映射封装。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "保留自 D0 词法后继的 Pleiades 历史扩展方言。nnr×nnz 网格重建为 R=linspace(0,rbox)，Z=linspace(-zbox/2,zbox/2)；R/Z 坐标值采用源定义约定，单位及 COCOS 未指定。",
@@ -1177,8 +1129,8 @@
     "partial_results": "读取失败时，类封装保留原映射。"
    },
    "example": {
-    "description": "为空封装构造由调用者提供的字典状态。",
-    "expected": "空的可变 EQDSK 字典。"
+    "description": "构造用于调用者提供记录的空可变 EQDSK 映射封装。",
+    "expected": "EQDSK() 返回空的可变映射，随后可由调用者赋值字段。"
    },
    "verification": {
     "scope": [
@@ -1195,7 +1147,7 @@
   },
   {
    "asset_id": "scirel.io.pressure-equilibrium-eqdsk",
-   "source_sha256": "0a64172e0267f96ba2a0b5c5d1f1f2cff0c4842a51e64a06a49c0e0e1eccbfe6",
+   "source_sha256": "89579330040199f61d2f9e6de0d022b7a91ae63f804665d71fecd95faa4c63e4",
    "summary": "将真实收敛的压力反馈终态写入明确赋予 SI 压力语义的 Pleiades 扩展格式，拒绝未收敛结果。",
    "definition": "psi_grid=result.psi；Ip=sum(result.plas_currents)；profile_psi=linspace(psi(R=0,Z=0),psi_lim,nnv)；p_flux=P(profile_psi)；pprime_flux=dP/dpsi(profile_psi)。将收敛的 EquilibriumResult 及其 R、Z 网格转换为交换文件和显式压力采样磁通坐标。终态 psi=R A_phi，电流单元 I=Jphi abs(dR*dZ)。采用已有 Pleiades 写读格式及稳健弧长轮廓；psi_lim 为终态中最近 (0.6,0) 节点的 psi。此后继明确赋予 p_flux 压力 Pa、pprime_flux 压力对 psi 的导数 Pa/(Wb/rad) 语义，保留压力样条域外零值。其余三 profile 仍为历史零值，不推断物理 F 或 q。",
    "model": "压力-only 离散反馈终态的显式交换组合；不增加平衡模型。规则二维网格从 R=0 开始，Z 关于 0 对称，与压力反馈结果一致。R、Z 单位为 m，数组按 [Z,R] 排列；psi 单位为 Wb/rad，Ip 为 A，p_flux 为 Pa。",
@@ -1269,8 +1221,8 @@
     "partial_results": "输入状态拒绝在创建目标文件前发生；I/O 失败不保证原子覆盖。"
    },
    "example": {
-    "description": "精确多项式压力的收敛零 Green 终态写读；完整非零 Green 任务证据另列。",
-    "expected": "显式压力 profile 与解析 P(psi) 一致；零 Green 例不代表完整物理平衡验证。"
+    "description": "写出具有显式 SI 压力语义的收敛零 Green 压力平衡，读回后将压力剖面与解析多项式比较。",
+    "expected": "读回的 p_flux 与 (1-2*axis)**2 在声明容差内一致；该夹具不验证非零 Green 物理平衡。"
    },
    "verification": {
     "scope": [
@@ -1288,7 +1240,7 @@
   },
   {
    "asset_id": "scirel.io.read-pleiades-eqdsk",
-   "source_sha256": "cf6fbbf4c070a2d9533c7933aa64487142ca3060917ca5408d898c2062d9f2ce",
+   "source_sha256": "d9038a766c6d5c93a4e8308fde141ef277a1e28957c9b66f23fcb9f30b155643",
    "summary": "解析一份已验证的 Pleiades 扩展 EQDSK 文本文件。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。",
    "model": "保留自 D0 词法后继的 Pleiades 历史扩展方言。nnr×nnz 网格重建为 R=linspace(0,rbox)，Z=linspace(-zbox/2,zbox/2)；R/Z 坐标值采用源定义约定，单位及 COCOS 未指定。",
@@ -1344,8 +1296,8 @@
     "partial_results": "读取失败时，类封装保留原映射。"
    },
    "example": {
-    "description": "解析独立构造的矩形记录。",
-    "expected": "不依赖符号的记录格式给出所声明的 2×2 psi 次序。"
+    "description": "构造最小定宽 Pleiades EQDSK 文本，并读取其 2×2 psi 记录。",
+    "expected": "解析器按声明顺序返回 psi=[[1.0,2.0],[3.0,4.0]]。"
    },
    "verification": {
     "scope": [
@@ -1361,7 +1313,7 @@
   },
   {
    "asset_id": "scirel.io.write-pleiades-eqdsk",
-   "source_sha256": "036834d385fee8a5af0e3877300f0429dfb8f106f9a60301a0e329cbbef69334",
+   "source_sha256": "7bb5e0db8eb4675be0b660609ef506be5dff6d2b9027da5ab56aa9130d1421e9",
    "summary": "序列化一个已验证的 Pleiades 扩展 EQDSK 映射。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "保留自 D0 词法后继的 Pleiades 历史扩展方言。nnr×nnz 网格重建为 R=linspace(0,rbox)，Z=linspace(-zbox/2,zbox/2)；R/Z 坐标值采用源定义约定，单位及 COCOS 未指定。",
@@ -1418,8 +1370,8 @@
     "partial_results": "读取失败时，类封装保留原映射。"
    },
    "example": {
-    "description": "将调用者提供的记录序列化为定宽文本。",
-    "expected": "文本文件包含所声明的四个头部整数及有效定宽数组。"
+    "description": "序列化调用者提供的最小 Pleiades EQDSK 映射，并检查定宽头部。",
+    "expected": "首行包含标题和四个声明的头部整数，其余定宽数组也被写出。"
    },
    "verification": {
     "scope": [
@@ -1436,7 +1388,7 @@
   },
   {
    "asset_id": "scirel.io.write-pleiades-eqdsk-legacy-raw",
-   "source_sha256": "55c66abb228b2a831d824f1d25d907fb01fccf709eae43d888f5df2ac6918a9b",
+   "source_sha256": "91ec556a2dae1b338cd6a42eae5330ff78be1aca7f39669692798e68031cc5aa",
    "summary": "恢复源轮廓 writer，并明确网格、轮廓选择及参数化弧长合同。",
    "definition": "最近 (0.6,0) 的网格节点决定 psi_lim；vessel 等值为 1.02 psi_lim；每个等值选最长轮廓分量；源提示点 (0.05,0.5) 和 (0.05,-0.5) 附近的顶点选择弧段。此后继按累计折线弧长重采样，替代 R(Z) 拟合，保留相邻关系及方向。",
    "model": "Pleiades 历史扩展方言及源轮廓选择；不宣称 EFIT/COCOS 或物理边界资格。序列化的五个剖面块固定为源长度 101 的零数组；此 writer 不推断压力、安全因子或其他物理剖面。采用有限、可分离、矩形、零原点的 R、Z 网格及二维磁通场；R、Z 为调用者坐标，序列化坐标对及 psi 使用源单位。",
@@ -1518,8 +1470,8 @@
     "partial_results": "轮廓数据验证之前不提交输出文件。"
    },
    "example": {
-    "description": "写入可表示的解析磁通网格。",
-    "expected": "可解析的扩展 EQDSK，含源选择的轮廓记录。"
+    "description": "通过旧式原始轮廓写入器写出可表示的解析磁通网格。",
+    "expected": "临时输出可解析为扩展 EQDSK，并包含写入器选定的轮廓记录。"
    },
    "verification": {
     "scope": [

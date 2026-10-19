@@ -4,8 +4,8 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
-   "source_sha256": "e477769e7e993f48683298ac4910f3522afdf8ed495690df4384e43ad5eb6043",
-   "summary": "Faddeeva 16 阶变体；保留独立默认值、截断及失败合同。",
+   "source_sha256": "e615ad8d615ca995572f7455e39ecf3ed4cff2dde12a5a91f560f60e4184955e",
+   "summary": "计算带默认阶数和声明失败合同的16 阶 Faddeeva变体。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
    "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
@@ -69,7 +69,7 @@
    },
    "example": {
     "description": "计算有限的上半平面响应。",
-    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+    "expected": "PASS：返回有限复数响应，并保留实际采用的阶数。"
    },
    "verification": {
     "scope": [
@@ -77,16 +77,17 @@
      "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
     ],
     "known_limitations": [
-     "下半平面的指数项可能超出 float64 范围。",
-     "固定截断的误差取决于相位点和阶数。"
+     "下半平面指数项可能超出 float64。",
+     "固定截断误差取决于相位点和阶数。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
-   "source_sha256": "dd46ca27e6c1977ce19b7bc48be2f11e08a5dcbcf950051df2f41c4e879ca16f",
-   "summary": "Faddeeva 32 阶变体；保留独立默认值、截断及失败合同。",
+   "source_sha256": "cb046f4bce551ccff5abd56e38f712d10e0069ea5b88e3dbbc75249f69a5a6e0",
+   "summary": "计算带默认阶数和声明失败合同的32 阶 Faddeeva变体。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
    "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
@@ -150,7 +151,7 @@
    },
    "example": {
     "description": "计算有限的上半平面响应。",
-    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+    "expected": "PASS：返回有限复数响应，并保留实际采用的阶数。"
    },
    "verification": {
     "scope": [
@@ -158,16 +159,17 @@
      "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
     ],
     "known_limitations": [
-     "下半平面的指数项可能超出 float64 范围。",
-     "固定截断的误差取决于相位点和阶数。"
+     "下半平面指数项可能超出 float64。",
+     "固定截断误差取决于相位点和阶数。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
-   "source_sha256": "7dc0ac6a61928cb385b19a57f6e77dec3dd0d687a1da954974ce6717e26adb7a",
-   "summary": "Maxwellian FFT 色散函数；保留独立默认值、截断及失败合同。",
+   "source_sha256": "b9f9f0c1217a74af468795ab590fed6d946c588307f01d717e7b77666eb13b3d",
+   "summary": "计算带默认阶数和声明失败合同的FFT Maxwellian 色散近似。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
    "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
@@ -231,7 +233,7 @@
    },
    "example": {
     "description": "计算有限的上半平面响应。",
-    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+    "expected": "PASS：返回有限复数响应，并保留实际采用的阶数。"
    },
    "verification": {
     "scope": [
@@ -240,16 +242,17 @@
      "当 w 有限而缩放后的 Z 溢出时明确失败；覆盖混合矩阵及负虚轴数学缩放阈值的两侧。"
     ],
     "known_limitations": [
-     "下半平面的指数项可能超出 float64 范围。",
-     "固定截断的误差取决于相位点和阶数。"
+     "下半平面指数项可能超出 float64。",
+     "固定截断误差取决于相位点和阶数。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
-   "source_sha256": "dc8c461e7b2d91fb455a86bb98ab7abea3836b21eda0d6bf7071d53eea591337",
-   "summary": "Maxwellian 固定极点色散近似；保留独立默认值、截断及失败合同。",
+   "source_sha256": "69a62b1bea9dadbdc252e2d34daa1826331da7bd7e821dc9243c0624819aec1d",
+   "summary": "计算带默认阶数和声明失败合同的固定极点 Maxwellian 色散近似。",
    "definition": "采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。",
    "model": "一维 Maxwellian 等离子体响应。",
    "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
@@ -313,7 +316,7 @@
    },
    "example": {
     "description": "计算有限的上半平面响应。",
-    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+    "expected": "PASS：返回有限复数响应，并保留实际采用的阶数。"
    },
    "verification": {
     "scope": [
@@ -321,15 +324,16 @@
      "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
     ],
     "known_limitations": [
-     "下半平面的指数项可能超出 float64 范围。",
-     "固定截断的误差取决于相位点和阶数。"
+     "下半平面指数项可能超出 float64。",
+     "固定截断误差取决于相位点和阶数。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-dispersion",
-   "source_sha256": "3891105fe06864fbf9215c748764da5561f3033d78a0bca0b6c37d3214ed1c8e",
+   "source_sha256": "79eb3df7e1aff27d71a4a0448797856a15ec458c689f2a0ccf83b0f836ff32ce",
    "summary": "计算来源定义的全部七类广义分布选择器。",
    "definition": "选择器密度分别为 delta(v)、在 [-.5,.5] 上取 1 的密度、max(0,1-|v|)、sqrt(2)/pi/(1+v²/2)²、H(v-.1)exp(-v²)/sqrt(pi)，以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位置 a 的跳跃 J 向 Zp 贡献 J/(a-z)。修正了来源中不一致的 top-hat 密度符号及不完整 Maxwellian 截断跳跃。大相位处的 Gaussian 导数采用避免消减的原始极化率或矩展开，不减去已舍入的单位项。远场 top-hat 值使用收敛的逆幂级数；导数先分别组成分母的实部与虚部，再取倒数，以保留可表示的微小轮廓分量。中心附近的实响应使用实 log1p，边缘附近使用 log-hypot 之差，轮廓相位使用单个 atan2；不使用复 log1p。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -415,8 +419,8 @@
     "partial_results": "失败后不返回部分科学结果。"
    },
    "example": {
-    "description": "广义等离子体色散函数七类分布的可执行例子。",
-    "expected": "断言检查所声明的输出性质。"
+    "description": "在上半平面点计算一个广义色散选择器。",
+    "expected": "PASS：selector 2 在 z=i 处返回有限 Z 和 Zp，且 Z 的虚部为正。"
    },
    "verification": {
     "scope": [
@@ -428,14 +432,15 @@
     "known_limitations": [
      "选择器 5 保留不完整的总质量；选择器 6 保留上游有限截断的归一化约定。",
      "分段分布的下半平面响应为实轮廓变换，不是推断的解析延拓。",
-     "具名固定选择器保留原物理参数；本 API 不增加任意形状参数。"
+     "具名固定选择器保留原物理参数；本 API 不增加任意形状参数。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-expression-differentiation",
-   "source_sha256": "3acf1a52d7ce052057e398d23a4dc087eab2655a8376d4fdf37fb6602a4d20b7",
+   "source_sha256": "bc457acc3bf0eedbd3bf9a8ed32d75f04201d69d5b98cc8b4c79680aa7198077",
    "summary": "把受限密度表达式编译为函数值及解析一阶导数的可调用对象。",
    "definition": "解析有限实常量、pi、v、算术和已声明初等函数，并按精确解析链式法则传播（函数值，导数）对；解析前先规范化 MATLAB 逐元素运算符。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -486,8 +491,8 @@
     "partial_results": "失败后不返回部分科学结果。"
    },
    "example": {
-    "description": "无需符号运行时即可求 Lorentzian 密度及其导数。",
-    "expected": "Lorentzian 解析值与导数符合闭式公式。"
+    "description": "编译 Lorentzian 表达式，并把其值和导数与闭式结果比较。",
+    "expected": "PASS：在 v=0.7 处，编译得到的 Lorentzian 值和解析导数与闭式结果一致。"
    },
    "verification": {
     "scope": [
@@ -496,14 +501,15 @@
     ],
     "known_limitations": [
      "本解析器不证明可积性、正性、归一化或解析延拓有效性。",
-     "算术异常及非有限表达式求值不会转换为符号诊断。"
+     "算术异常及非有限表达式求值不会转换为符号诊断。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "证据来自独立解析导数恒等式及不支持语法的回归；不构成通用计算机代数等价性或任意表达式证明。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-hilbert",
-   "source_sha256": "a53604767c37cf711061d027acdf163ee9ad283dc54fec407bdbb9e5d402cebf",
+   "source_sha256": "50378e93057d1937c8062e814b85a8f48ec025c45271c14774fa232f86295a2b",
    "summary": "计算安全解析表达式及其导数的变换。",
    "definition": "DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数减去 f(x)exp(-(v-x)²)，该减项在全实轴上的奇主值为零；边界值加上 i*pi*f(x)，可选下半平面延拓再加上 2*pi*i*f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v*fprime]/z，避免零总质量导数的相消；绝对求积容差随相位模的倒数缩放。密度导数及其解析延拓不从已舍入的 Z 或 epsilon 重建。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -589,8 +595,8 @@
     "partial_results": "失败后不返回部分科学结果。"
    },
    "example": {
-    "description": "解析分布的 Hilbert 与 Cauchy 变换的可执行例子。",
-    "expected": "断言检查所声明的输出性质。"
+    "description": "在显式特征网格上计算解析 Lorentzian 的 Hilbert/Cauchy 变换。",
+    "expected": "PASS：显式积分网格返回有限变换，并在 2e-9 内符合 -1/(z+i)。"
    },
    "verification": {
     "scope": [
@@ -600,14 +606,15 @@
     ],
     "known_limitations": [
      "导数被积函数在实轴局部可去点的求值使用对称二阶导数估计；不返回全局误差证书。",
-     "受限解析器支持有限实常量、pi、v、算术及 exp/log/sqrt/sin/cos/sinh/cosh/tanh。"
+     "受限解析器支持有限实常量、pi、v、算术及 exp/log/sqrt/sin/cos/sinh/cosh/tanh。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-residual",
-   "source_sha256": "0a8a86a998946d6fd48a0967d41c3a3ddd20ae35fd5add0bbb89c388fe2ee07d",
+   "source_sha256": "c75bddb58b34e5970ebb974762a372c659808660c0c408faa90bfe23693741ab",
    "summary": "计算 Langmuir、离子声波、束流和广义分布残差。",
    "definition": "离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化遵循冻结脚本。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -738,8 +745,8 @@
     "partial_results": "失败后不返回部分科学结果。"
    },
    "example": {
-    "description": "四类静电色散残差的可执行例子。",
-    "expected": "断言检查所声明的输出性质。"
+    "description": "在有限复频率处计算一个 Langmuir 残差。",
+    "expected": "PASS：z=i、k=0.3 时 Langmuir 残差的虚部小于 1e-12。"
    },
    "verification": {
     "scope": [
@@ -747,14 +754,15 @@
      "Maxwellian 的 Langmuir 和 generalized 分支复用已资格化、避免消减的小 k 实现。"
     ],
     "known_limitations": [
-     "离子声波与束流使用普通 Faddeeva 响应；极端相位或温度输入可能导致不可表示结果。"
+     "离子声波与束流使用普通 Faddeeva 响应；极端相位或温度输入可能导致不可表示结果。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-root-scans",
-   "source_sha256": "1ff01cfce9fc10dd2b40072e0af21e744dcb1323a571ed3367d1968b51066869",
+   "source_sha256": "9aa8456f6aab019f17f9c3b746ab961b2502a3f5b3c5f5fc43b215592d244db8",
    "summary": "运行来源全部四类带初始种子的静电根扫描。",
    "definition": "来源网格为：Langmuir .1:.1:1 后接 2:1:10，固定相位种子 1-.1i；离子声波 1.1:-.05:.05，相位种子 .04-.02i；束流 .4:-.005:.05，相位种子 (1-.01i)*sqrt(2)*.4；generalized .1:.1:1 后接 1.5:.5:5，频率种子 1.5-.001i。离子声波和束流接续上一个相位，generalized 接续上一个频率。k 通过闭包绑定，不再作为无效的 fsolve 第四参数传递。求解使用 D/k² 或直接使用已资格化的 Maxwellian epsilon，并同时检查求解器成功、残差容差及函数求值预算。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -924,8 +932,8 @@
     "partial_results": "失败后不返回部分科学结果。"
    },
    "example": {
-    "description": "四类 GPDF 连续根扫描的可执行例子。",
-    "expected": "断言检查所声明的输出性质。"
+    "description": "扫描两个相邻的束流波数，并用残差核验返回的根。",
+    "expected": "PASS：两点束流扫描的介电残差均小于 1e-9，并返回虚部为正的频率根。"
    },
    "verification": {
     "scope": [
@@ -936,14 +944,15 @@
     "known_limitations": [
      "来源默认束流种子跟随阻尼高频分支；基于频率信息显式设置的相位种子可以找到不稳定分支。",
      "来源默认束流种子在自定义短网格 [.3,.295] 上失败；保留这一失败行为。",
-     "通用非 Maxwellian 求积根未经区间认证；其接受门禁未包含求积误差估计。"
+     "通用非 Maxwellian 求积根未经区间认证；其接受门禁未包含求积误差估计。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-small-k",
-   "source_sha256": "68dd4bf2465b38a15864ec9ea22e07145f033ab58891d5cc87be2f7df89d7234",
+   "source_sha256": "9fba2fe227f6292f6bf5a8e13a57b59efda1e832f902a919b38a24af77bc9b22",
    "summary": "计算来源定义的 Langmuir 频率与阻尼渐近式。",
    "definition": "在对数域计算阻尼幅值，避免 k³ 下溢时来源表达式出现 0/0；拒绝精确 k=0。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -999,8 +1008,8 @@
     "partial_results": "失败后不返回部分科学结果。"
    },
    "example": {
-    "description": "Langmuir 小波数渐近频率的可执行例子。",
-    "expected": "断言检查所声明的输出性质。"
+    "description": "计算源 Langmuir 频率和阻尼渐近式。",
+    "expected": "PASS：在声明的小 k 点返回有限的实频率和阻尼。"
    },
    "verification": {
     "scope": [
@@ -1008,14 +1017,15 @@
     ],
     "known_limitations": [
      "大 k 处输出有限并不表示渐近式有效。",
-     "小于浮点可表示范围的阻尼下溢为零。"
+     "小于浮点可表示范围的阻尼下溢为零。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
    "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-   "source_sha256": "1b460d922c3f31907961913c665153288dfd22499b945df80eccaf12aa9f97bb",
+   "source_sha256": "3361fe7430e69c28de6f6d73f8bbcca77e2d97ce92e21c3bb4c284bbd2ab1515",
    "summary": "对已解析密度特征的回调计算 Cauchy 变换，并解析近实轴核峰。",
    "definition": "G(z)=integral density(v)/(v-z)dv。对 z=x+i*y，邻近投影的有限面板采用 v=x+abs(y)*sinh(t)，使被积核为 density(v)*(tanh(t)+i*sign(y)*sech(t))。变换面板解析核峰与长尾，平滑远面板和无穷尾使用实坐标求积。仅按声明支撑政策增加显式解析延拓。",
    "model": "一维广义等离子体响应。",
@@ -1119,18 +1129,19 @@
     "known_limitations": [
      "有限区间截掉未包含尾部；全实轴模式须提供已解析的网格/支撑并假定尾部可积。",
      "分量指标含求积及浮点累加估计，不含回调、解析扩展、有限区间截断误差，不是全局认证。",
-     "解析延拓须显式提供与密度一致的解析回调。"
+     "解析延拓须显式提供与密度一致的解析回调。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "常数/仿射有限支撑的对数原函数覆盖两半平面、1 到 1e-300 极点高度、端点/内外部与多点形状；Gaussian 特殊函数和 Lorentzian 留数恒等式覆盖全实轴尾部。只支持核变换，不支持任意回调特征发现或严格全局误差界。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    },
    "example": {
-    "description": "积分归一化 Gaussian 密度。",
-    "expected": "返回有限复变换及实虚两分量误差估计。"
+    "description": "用显式有限特征网格积分归一化 Gaussian。",
+    "expected": "PASS：显式 81 点网格返回有限复数 G 及两个分量的求积误差估计。"
    }
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
-   "source_sha256": "22331305548d7663f569d67a0985e310ee1ee7d3eb01a60998c11ffe350c8488",
+   "source_sha256": "71a565786dcf1f713220f93694231115544b1c5e460cab81655fd0a30b9a4c76",
    "summary": "计算归一化 Maxwellian 介电响应，并避免大相速处的相消。",
    "definition": "epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 保留为诊断量。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1203,18 +1214,19 @@
     ],
     "known_limitations": [
      "epsilon_error 只是估计，不是严格包络。",
-     "有限输入仍可能有不可表示复响应；单次求值不表示找到根。"
+     "有限输入仍可能有不可表示复响应；单次求值不表示找到根。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "独立高精度 Faddeeva、Gaussian 矩和种子根计算支持声明的正 k 实/复响应及已测区域的误差门禁；估计不是严格包络。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    },
    "example": {
-    "description": "在给定复频率计算残差。",
-    "expected": "返回有限 epsilon、D 和相速参数。"
+    "description": "计算一个归一化 Maxwellian 静电残差。",
+    "expected": "调用返回 epsilon、D、z 及约 9.36e-14 的 epsilon_error，数值与合同一致。"
    }
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
-   "source_sha256": "95cb0c15f1a89c5c6caedee836d7cc02b879cca24184a9a023a9f9db63f03a33",
+   "source_sha256": "91f81252f456905cf44c7f97ccd135ec47ee84b689a098b8bbf50cb71bf488a1",
    "summary": "从显式复种子求一个 Maxwellian 模态，并检查残差与误差。",
    "definition": "用两个实分量求解 epsilon(omega,k)=0，再进行不依赖 k² 缩放的归一化残差与估计误差门禁。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1317,18 +1329,19 @@
     ],
     "known_limitations": [
      "估计误差不是严格包络。",
-     "不承诺唯一根、最弱阻尼分支或全局选根；种子决定分支。"
+     "不承诺唯一根、最弱阻尼分支或全局选根；种子决定分支。",
+     "科学有效性受已测试数值域和适用条件限制。"
     ],
-    "evidence_ceiling": "独立高精度 Faddeeva、Gaussian 矩和种子根计算支持声明的正 k 实/复响应及已测区域的误差门禁；估计不是严格包络。"
+    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    },
    "example": {
-    "description": "从给定种子求一个模态。",
-    "expected": "复模态满足归一化残差及误差检查。"
+    "description": "求解一个由种子指定的 Maxwellian 模态。",
+    "expected": "返回 omega=1.2850569696537468-0.066127958690749j；归一化残差约 1.11e-15。"
    }
   },
   {
    "asset_id": "scirel.kinetic.vp-diagnostic",
-   "source_sha256": "b9c7138346687adb994a09d9f75b5164a068d947a22ac5d1f70cc886427b0646",
+   "source_sha256": "9393aea8a9658375e97bb8cb8cc60e5369216ad9bc78c60d921e7418d2ac5465",
    "summary": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
    "definition": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1389,19 +1402,18 @@
      "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "没有两个合格峰的信号，以及非振荡/非线性诊断。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "向量未对齐/含非有限值、时间非实或非递增，或合格的孤立非零峰少于两个时抛出 ValueError。",
+    "runtime_failure": "NumPy 运算产生的算术或类型错误向上传播；不启动原生进程。",
+    "nonconvergence": "峰值数量是数据充足性条件，不是迭代收敛测试。",
+    "partial_results": "峰值条件失败时不返回诊断映射。"
    },
    "example": {
-    "description": "振荡峰阻尼诊断的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "用阻尼余弦估计阻尼率。",
+    "expected": "PASS：拟合的 gamma 与 -0.1 的差值小于 1e-4。"
    },
    "verification": {
     "scope": [
@@ -1419,7 +1431,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-distribution",
-   "source_sha256": "43e0a0324d9e89b451f3474ec1b2131cbcd76fd8845aff2a6fb4837710bd0c99",
+   "source_sha256": "e8723ac853ec17980f52c162e57876f9c51b61bd9d3af7ca7f498739d4dbb716",
    "summary": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "definition": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1482,25 +1494,25 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+     "vv 是有限的一维实数组。",
+     "k 有限且为正；Fn、kappa 和 cutoff_mode 选择受支持分支。"
     ],
     "supported": [
      "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "该叶函数返回导数和可选理论频率，不推进状态。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "Fn/cutoff_mode 不受支持、vv 非有限或非向量、kappa/k 无效，或弱截断网格不递增/不均匀时抛出 ValueError。",
+    "runtime_failure": "导数非有限时抛出 FloatingPointError。",
+    "nonconvergence": "不适用；不执行迭代求解。",
+    "partial_results": "异常后不返回映射。"
    },
    "example": {
-    "description": "分布导数与截断跳跃的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "在 101 点速度网格上计算 Fn=4 的弱截断导数。",
+    "expected": "PASS：g 形状为 (101,)，弱截断分支结果有限。"
    },
    "verification": {
     "scope": [
@@ -1518,7 +1530,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-envelope",
-   "source_sha256": "159c43e16f79bbca8c80d3968e420c373596e373f6de4d3f06f07500f3cb1548",
+   "source_sha256": "6430e97ef872f45a515f61c16d6552dc2c4e1eef84353b0d5d5f72099bae13ee",
    "summary": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
    "definition": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1579,19 +1591,18 @@
      "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "峰值拟合、非线性场和连续体精度声明。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "向量未对齐/含非有限值，或时间非实/非递增时抛出 ValueError。",
+    "runtime_failure": "按声明的运算返回 NumPy 浮点结果，包括幅值恰为零时的 -inf。",
+    "nonconvergence": "不适用；不执行迭代。",
+    "partial_results": "输入校验失败后不返回包络映射。"
    },
    "example": {
-    "description": "复电场幅值包络的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "用两个复数场样本计算对数幅值包络。",
+    "expected": "PASS：lndE 形状为 (2,)。"
    },
    "verification": {
     "scope": [
@@ -1609,7 +1620,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-evolve",
-   "source_sha256": "6ac09fc2b288b597ba861fa754efe1d87db7fd14bfcbc7c9484c0d70f7dcbf2c",
+   "source_sha256": "1612552b12fdaa0130bca288d09be244e007f97666e8db1acda7d14628fa1728",
    "summary": "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。",
    "definition": "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1640,25 +1651,24 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+     "state 含有限且满足 Poisson 闭合的 vp_init 映射，nt 为不小于 0 的整数。"
     ],
     "supported": [
      "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "非线性演化、多维模态和自适应时间步长。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "state 控制项缺失/无效，或初始状态不满足 Poisson 闭合时抛出 ValueError。",
+    "runtime_failure": "非有限 RK4 状态或场产生 FloatingPointError 并向上传播。",
+    "nonconvergence": "不适用；步数预先给定，不执行收敛测试。",
+    "partial_results": "不返回演化状态；步进前复制调用者映射，不修改原映射。"
    },
    "example": {
-    "description": "有限步线性反馈演化的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "在 32 个区间的网格上初始化状态并执行 5 个有限 RK4 步。",
+    "expected": "PASS：dEt 形状为 (6,)。"
    },
    "verification": {
     "scope": [
@@ -1676,7 +1686,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-field",
-   "source_sha256": "f7828a4ae69736328ba0007106c381adc6f9741a2a712d0115f3f66ed73a20cb",
+   "source_sha256": "a202a6f869e0513b7f104aaf4ed59dd6f0d052d3f02f1843cf946d813d2a5e51",
    "summary": "Poisson 闭合关系为 E=i dv sum(df)/k。",
    "definition": "Poisson 闭合关系为 E=i dv sum(df)/k。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1723,25 +1733,25 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+     "df 是至少含两个元素的有限一维向量。",
+     "k 有限且非零；dv 有限且为正。"
     ],
     "supported": [
      "Poisson 闭合关系为 E=i dv sum(df)/k。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "非线性场、多维模态和 k=0。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "df 非向量或含非有限值、k 非有限或为零，或 dv 非正/非有限时抛出 ValueError。",
+    "runtime_failure": "计算场非有限时抛出 FloatingPointError。",
+    "nonconvergence": "不适用；这是直接代数闭合。",
+    "partial_results": "异常后不返回场。"
    },
    "example": {
-    "description": "Poisson 电场闭合的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "对 df=[1,2]、k=0.5、dv=0.1 计算离散 Poisson 闭合。",
+    "expected": "PASS：.venv/bin/python 执行完成，场值为 0.6j。"
    },
    "verification": {
     "scope": [
@@ -1759,7 +1769,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-init",
-   "source_sha256": "889305c622daca0c14c3469f049136bc28b905a3f192a95ce024de031f2cf504",
+   "source_sha256": "b2c24f464af93c000bda2d55a5d4e6ca6ba00662e28331e903e7726ce1cdc388",
    "summary": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
    "definition": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1844,19 +1854,18 @@
      "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "非线性或多维初始状态。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "标量控制无效，或所选参数不被分布分支接受时抛出 ValueError。",
+    "runtime_failure": "生成的导数或 Poisson 场非有限时抛出 FloatingPointError。",
+    "nonconvergence": "不适用；初始化不迭代。",
+    "partial_results": "异常后不返回状态。"
    },
    "example": {
-    "description": "Poisson 一致初始化的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "构造含 5 个时间步、32 个区间且满足 Poisson 闭合的初始状态。",
+    "expected": "PASS：df 形状为 (33,)。"
    },
    "verification": {
     "scope": [
@@ -1874,7 +1883,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-landau",
-   "source_sha256": "87ab7a5fd7c1503ae4c598a5deba6b2bd17774a108f41ee6f73a992a5a1887f8",
+   "source_sha256": "758872603c2f161a2536bd089b8582aacdbcdcfc1c866ec17f701e272638eb19",
    "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1959,19 +1968,18 @@
      "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "非线性或多维 Vlasov–Poisson，以及回返后的连续体声明。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "初始化、状态校验或 Poisson 闭合产生的 ValueError 向上传播。",
+    "runtime_failure": "非有限导数、场或 RK4 状态产生的 FloatingPointError 向上传播。",
+    "nonconvergence": "诊断是可选的：峰值不足时保留演化状态，并以 diagnostic=None 和 diagnostic_status 表示不可用。",
+    "partial_results": "演化失败时不返回结果映射；仅诊断不可用时返回有效状态和包络。"
    },
    "example": {
-    "description": "Vlasov–Poisson 初值组合的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "执行 Vlasov–Poisson 的初始化、演化和诊断组合流程，共 5 步。",
+    "expected": "PASS：state.dEt 形状为 (6,)；短轨迹可能没有可用的峰值诊断。"
    },
    "verification": {
     "scope": [
@@ -1989,7 +1997,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-rhs",
-   "source_sha256": "0b242c2995f529284764aeaeb28e79d80c25b96101dc2d45f716ac173cc5ea6e",
+   "source_sha256": "e234c547d71ab755ff7d5ae22d19a936b0437e3212d0eef620ce8fa15766dffd",
    "summary": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
    "definition": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -2052,25 +2060,25 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+     "df、vv、df0dv 为有限的一维向量且形状一致，长度至少为 2。",
+     "dE 与 k 为有限标量，且 k 非零。"
     ],
     "supported": [
      "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "非线性演化、多维模态和不受约束的入射场。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "向量未对齐/含非有限值、dE 非标量，或 k 非有限/为零时抛出 ValueError。",
+    "runtime_failure": "右端含非有限值时抛出 FloatingPointError。",
+    "nonconvergence": "不适用；不执行迭代。",
+    "partial_results": "异常后不返回右端向量。"
    },
    "example": {
-    "description": "线性 Vlasov 右端的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "计算一个有限 Vlasov 右端。",
+    "expected": "PASS：返回与输入速度网格同形且有限的右端向量。"
    },
    "verification": {
     "scope": [
@@ -2088,7 +2096,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-rk4-step",
-   "source_sha256": "9f5fdddf0da8b5f883de75bc7e52eea5577a4070fd7512d1bb51822c90104fd0",
+   "source_sha256": "c9e8805f8d68abbcacfbc0184e8b5bf3757198dd759f741a844579d6bfad61b3",
    "summary": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。",
    "definition": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -2167,25 +2175,25 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+     "df、vv 和 df0dv 是有限且一维对齐的向量。",
+     "dE 满足离散 Poisson 闭合；k 与 dv 有限，k 非零且 dv 为正；dt 为正。"
     ],
     "supported": [
      "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。"
     ],
     "excluded": [
-     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+     "非线性演化、多维模态和不受约束的入射场。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+    "invalid_input": "数组或标量无效，或输入 dE 超出声明的 Poisson 容差时抛出 ValueError。",
+    "runtime_failure": "中间或更新后的状态/场非有限时抛出 FloatingPointError。",
+    "nonconvergence": "不适用；只计算一个预先给定的步。",
+    "partial_results": "异常后不返回更新后的元组。"
    },
    "example": {
-    "description": "Poisson 闭合 RK4 单步的最小调用。",
-    "expected": "所声明的形状或数值断言通过。"
+    "description": "从 32 个区间的初始状态推进一个 Poisson 闭合 RK4 步。",
+    "expected": "PASS：.venv/bin/python 执行完成，更新分布形状为 (33,)。"
    },
    "verification": {
     "scope": [

@@ -28,11 +28,11 @@
     }
    ],
    "example": {
-    "description": "构造第三个 BONK 算例的完整 SI 状态。",
-    "expected": "返回三个组分的含符号回旋频率，以及有限、正的归一化尺度。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-case-state",
-   "source_sha256": "4e9a14732928ac9f5f812f49822af07b2650ae353cdc47d52860530210c46844",
+   "source_sha256": "b27a9e9a840a8741f490e4f5d105b6fc04cc7677e4f96b037c55db5a18b7e2ab",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -55,7 +55,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -64,11 +64,13 @@
      "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
     ],
     "known_limitations": [
-     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
+     "科学有效性受已测试数值域和适用条件限制。",
+     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
     ],
-    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
@@ -103,11 +105,11 @@
     }
    ],
    "example": {
-    "description": "计算 Y=2、b=0 时的 R 响应解析极限。",
-    "expected": "有限 RC 矩阵的第一行为 2/3，第二行为 −10/9。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-special-functions",
-   "source_sha256": "b208b1a5df29bc1da6ef2618c05aa2e9b7cdc20e68ef0721f8d516bd8b176762",
+   "source_sha256": "5f674200903d7bc18b29d3d2dde510236f20840e2e1de3dbc80a7c3aa9c3d0ec",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -133,7 +135,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -144,11 +146,13 @@
      "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
     ],
     "known_limitations": [
-     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
+     "科学有效性受已测试数值域和适用条件限制。",
+     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
     ],
-    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
@@ -183,11 +187,11 @@
     }
    ],
    "example": {
-    "description": "计算指定频率下零横向波矢的 Maxwell 响应。",
-    "expected": "张量有限，kz 保持不变。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
-   "source_sha256": "c9293f75951a169c3b30d87bb0cde73d10997168de8c968ef327960746aa5ff4",
+   "source_sha256": "d325b936b432a6162d0e0639049c5b77f6fecc2748c4e45154e835c4c8691e10",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -210,7 +214,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -220,11 +224,13 @@
      "分别保留有限 5/15 谐波模型与完整谐波 J8 模型的合同。"
     ],
     "known_limitations": [
-     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
+     "科学有效性受已测试数值域和适用条件限制。",
+     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
     ],
-    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
@@ -265,11 +271,11 @@
     }
    ],
    "example": {
-    "description": "在 EM 算例 2 中组装 J8、N=0 的矩阵。",
-    "expected": "返回有限 40×40 矩阵，并同时保留原始和修正后的极点表。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-em-matrix",
-   "source_sha256": "7cf9716f4d2bdd3ac00ee3a2c9d811c1a7564f4e402fb5831e54b98728947e80",
+   "source_sha256": "8e0c58446c815916afc8546c377ad99d54362e25a5358ce3b8ea5622dd2148f8",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -292,7 +298,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -302,11 +308,13 @@
      "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
     ],
     "known_limitations": [
-     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
+     "科学有效性受已测试数值域和适用条件限制。",
+     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
     ],
-    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
@@ -335,11 +343,11 @@
     }
    ],
    "example": {
-    "description": "在 BONK 算例 2 的 0.63wn 处执行有界根搜索。",
-    "expected": "修复原有非根，得到约 +0.09834448108i kn 的已核验候选。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-bonk-search",
-   "source_sha256": "bc4e831a0c852e23859f76d84a78672c528b5dc483134f1e22fd999049503928",
+   "source_sha256": "f0e3cc1dfc709c5b48d85fcf0fe81ce49fb73761474f2035bbde6256dadea229",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -362,7 +370,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
     "nonconvergence": "科学精度或有界搜索失败明确记录。找不到已核验根时，返回全部尝试及未核验行；原始求解标志本身不能证明科学根。",
     "partial_results": "算子异常不返回结果；完成的频率轴可包含 root_valid 为假的候选，不把隐藏的部分结果作为完整成功输出。"
    },
@@ -372,11 +380,13 @@
      "保留原求解容差，显式记录有界尝试和根核验。"
     ],
     "known_limitations": [
-     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
+     "科学有效性受已测试数值域和适用条件限制。",
+     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
     ],
-    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
@@ -417,11 +427,11 @@
     }
    ],
    "example": {
-    "description": "在 EM 算例 2 的 0.83wn 处计算 J8、N=0 的有限谱。",
-    "expected": "返回完整 40 个有限本征值、五个候选及缩放后的后向误差诊断。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
-   "source_sha256": "dad47da053b5c2a86e0762e629a9bf510d9725635281c0565a3fed048757720e",
+   "source_sha256": "4376e67702bb4ec596e846e191d31c0aa55031edb1944d484463cc8471cd6bf3",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -444,7 +454,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -454,11 +464,13 @@
      "全部有限谱、原有排序值、候选及末端矩阵。"
     ],
     "known_limitations": [
-     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
+     "科学有效性受已测试数值域和适用条件限制。",
+     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
     ],
-    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   },
   {
@@ -499,11 +511,11 @@
     }
    ],
    "example": {
-    "description": "将已核验的 BONK 算例 2 状态写入临时目录。",
-    "expected": "生成可读取的 PNG，带逆米波矢及无量纲频率标注。"
+    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生 fluidBW 边界，在 macOS 上记为 NOT_RUN。",
+    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 fluidBW 运行时保护，并抛出 RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")。"
    },
    "asset_id": "scirel.kinetic.fluidbw-materials",
-   "source_sha256": "baeb92eb677a342e1af1891aa12025b2da43c0b14aa9bff9088acdb1157d5799",
+   "source_sha256": "2c8a37c15854ff174d2bf467ed538c3a8d1a74f4373a97ccddc384584a43e410",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -526,7 +538,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果；后端失败前可能已经写出部分文件，这些文件不构成成功返回。"
    },
@@ -536,11 +548,13 @@
      "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
     ],
     "known_limitations": [
-     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+     "来源权限仍为 NOT_ESTABLISHED，尚无公开发行。",
+     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
+     "科学有效性受已测试数值域和适用条件限制。",
+     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
     ],
-    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
   }
  ]

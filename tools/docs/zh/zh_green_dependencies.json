@@ -4,16 +4,15 @@
  "records": [
   {
    "asset_id": "scirel.electromagnetism.green-response-matrices",
-   "source_sha256": "772be081ce6c4be063ff2d6504ff49993955bcc44b09919e57eb8e9ab02622d3",
-   "summary": "按实际源目标坐标生成逐源磁通、径向与轴向场响应，保留目标行、源列及有符号权重。",
-   "definition": "每列使用实际坐标圆环核，不排序、不反射。第三列为无量纲 csign，乘一次；以安培为单位的电流由调用者矩阵乘向量施加。省略源时，目标依原顺序作为单位权重源。",
-   "model": "真空理想圆电流丝，mu0=4π*1e-7 H/m。",
-   "boundary": "精确重合三响应按离散兼容规则为零，不是有限导体自场；非零距离没有近场截止。零半径源无贡献，轴上目标 BZ 为解析非零极限。",
+   "source_sha256": "b4c343be932404d3060a5fb64fe3d4a4a1eee3e10989d0c96b3db45b84b90f06",
+   "summary": "构造按调用者顺序排列的圆电流丝磁通、BR 和 BZ 响应矩阵，行对应目标、列对应源。",
+   "definition": "按调用者顺序在每个目标点计算每个源列；源权重只应用一次。",
+   "model": "带显式零自项的轴对称理想圆电流丝响应。",
+   "boundary": "每个矩阵项的源目标精确重合置零；零半径或零权重源贡献为零。",
    "assumptions": [
-    "坐标和权重为有限实数。",
-    "默认隐式源的正半径节点不可重复。",
-    "显式重复源列代表独立权重。",
-    "不推断设备电流、导体半径或物理自感。"
+    "输入为有限实数数组，半径非负。",
+    "省略 rzw 时，目标点按单位权重作为源集合。",
+    "显式源行可以重复，因为各列彼此独立。"
    ],
    "inputs": [
     {
@@ -34,45 +33,42 @@
      "name": "psi",
      "description": "目标行、源列的 R A_phi 磁通响应。",
      "constraints": "有限；精确重合离散置零。",
-     "dtype": "float64"
+     "dtype": "float64（双精度浮点数）"
     },
     {
      "name": "BR",
      "description": "目标行、源列的径向场响应。",
      "constraints": "保留有符号权重及实际高度差。",
-     "dtype": "float64"
+     "dtype": "float64（双精度浮点数）"
     },
     {
      "name": "BZ",
      "description": "目标行、源列的轴向场响应。",
      "constraints": "轴上目标采用解析极限。",
-     "dtype": "float64"
+     "dtype": "float64（双精度浮点数）"
     }
    ],
    "applicability": {
     "preconditions": [
-     "有限实坐标和源权重。"
+     "输入为有限实数数组，半径非负。",
+     "省略 rzw 时，目标点按单位权重作为源集合。"
     ],
     "supported": [
-     "逐源矩阵与电流向量组合。",
-     "源目标独立换序。",
-     "默认单位源、轴上目标及显式零自项。"
+     "支持不规则排序、有符号权重、隐式单位源、轴上极限及矩阵电流收缩。"
     ],
     "excluded": [
-     "有限导体自场或自感。",
-     "极端尺度精度保证。",
-     "矩阵计算本身不证明物理平衡。"
+     "不涵盖有限导体自场、极端尺度保证或物理平衡结论。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "畸形、复数、非有限、负半径或默认重复正半径源抛 ValueError。",
-    "runtime_failure": "不可表示输出抛 FloatingPointError，不吞为零。",
-    "nonconvergence": "直接计算，无迭代。",
-    "partial_results": "失败不返回部分矩阵。"
+    "invalid_input": "格式错误、复数、非有限、负半径或隐式源中重复正半径时抛出 ValueError。",
+    "runtime_failure": "不可表示的核响应产生 FloatingPointError，并向上传播。",
+    "nonconvergence": "不适用；逐个矩阵项直接计算。",
+    "partial_results": "源求值失败后不返回部分矩阵。"
    },
    "example": {
-    "description": "两个目标、三个有符号源及独立电流向量。",
-    "expected": "轴上磁通零、轴向场有限；电流在消费矩阵时才施加。"
+    "description": "构造两个目标、三个源的响应矩阵，并应用独立电流向量。",
+    "expected": "每个矩阵形状为 (2,3)；第一目标在轴上，因此其 psi 为零，收缩后的 BZ 有限。"
    },
    "verification": {
     "scope": [
@@ -89,15 +85,15 @@
   },
   {
    "asset_id": "scirel.electromagnetism.loop-flux-matrix",
-   "source_sha256": "4b58b2b88b06a8fb482896a3d14f2406aa401a9f86a44cee7f2bcca9b7caea68",
-   "summary": "逐对使用实际坐标构造目标行、源列圆环真空响应，保留明确的离散零自项。",
-   "definition": "psi_i=Σ_j G_ij I_j，psi=R A_phi，两轴按 C 序展平。前驱反射平移行块仅对等 Z 间距及相同 R 行成立；后继逐对求实际几何。",
-   "model": "真空理想圆电流丝及离散零自项，不是有限导线电感。",
-   "boundary": "轴上目标磁通和零半径源磁通为零，对角严格零；不同正半径节点精确重合拒绝。",
+   "source_sha256": "e4684a05995182731eeeb37488096b599e79d34edcea28bf1602087340d3af75",
+   "summary": "构造 R、Z 节点网格上的稠密实际坐标磁通矩阵。",
+   "definition": "按 C 顺序展平匹配的 R、Z 数组，计算每个实际目标/源点对。",
+   "model": "带有活跃源节点零对角的轴对称理想圆电流丝磁通。",
+   "boundary": "轴上行和零半径源列为零；重复正半径节点拒绝。",
    "assumptions": [
-    "真空 mu0=4π*1e-7 H/m。",
-    "没有有限导线或自场模型。",
-    "有限实坐标；稠密输出需要 O(N²) 存储。"
+    "输入为有限实数且形状匹配的二维数组。",
+    "矩阵为稠密矩阵，并采用显式零自项约定。",
+    "不建模有限导线电感。"
    ],
    "inputs": [
     {
@@ -118,34 +114,30 @@
      "name": "G",
      "description": "目标行、源列磁通响应矩阵。",
      "constraints": "对角零、有限；独立换序满足协变性。",
-     "dtype": "float64"
+     "dtype": "float64（双精度浮点数）"
     }
    ],
    "applicability": {
     "preconditions": [
-     "有限实数、匹配的二维坐标数组。",
-     "不得重复正半径坐标对。"
+     "输入为有限实数且形状匹配的二维数组。",
+     "矩阵为稠密矩阵，并采用显式零自项约定。"
     ],
     "supported": [
-     "不规则/非对称实际坐标逐对计算。",
-     "均匀域的来源数值一致性。",
-     "互易性和换序协变性。"
+     "支持不规则/非对称坐标、换序协变性、轴上极限及重复/复数失败。"
     ],
     "excluded": [
-     "有限导体自感。",
-     "极端尺度资格。",
-     "任意矩阵消费不自动证明物理平衡。"
+     "不涵盖有限导体自感、极端尺度资格或平衡结论。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "畸形、复数、非有限、负半径或重复活跃坐标抛 ValueError。",
-    "runtime_failure": "核的不可表示输出 FloatingPointError 传播。",
-    "nonconvergence": "直接响应，无迭代。",
-    "partial_results": "失败不返回部分矩阵。"
+    "invalid_input": "格式错误、复数、非有限、负半径或重复活跃节点时抛出 ValueError。",
+    "runtime_failure": "不可表示的核响应产生 FloatingPointError，并向上传播。",
+    "nonconvergence": "不适用；这是直接的矩阵计算。",
+    "partial_results": "校验或核计算失败后不返回矩阵。"
    },
    "example": {
-    "description": "构造三个不等距 Z 行的节点响应。",
-    "expected": "返回有限稠密矩阵，对角显式零。"
+    "description": "从 3×3 不规则 R、Z 网格构造稠密矩阵。",
+    "expected": "结果是有限的 (9,9) 矩阵，对角线严格为零。"
    },
    "verification": {
     "scope": [
@@ -163,15 +155,15 @@
   },
   {
    "asset_id": "scirel.electromagnetism.circular-filament-green",
-   "source_sha256": "f85b8276800f60f368875d0cb89efd4340465eb98337473e35db8c4e08ca24d7",
-   "summary": "在柱坐标 R、Z 目标上求有符号圆电流丝的 SI Green 响应。",
-   "definition": "psi=R A_phi；源无量纲权重乘在每安培圆电流丝响应上，实际驱动电流由调用者施加。",
-   "model": "理想圆电流丝：完全椭圆积分与等价超几何表达分区求值；m<0.5 避免消差，近丝 BZ 分子用 (a−R)(a+R)−h²。",
-   "boundary": "目标轴极限解析求值；活跃理想源精确重合为奇点，拒绝。",
+   "source_sha256": "261d0b6a92a4c9d851ab7b93fd388b73d47887c6b96e491daaa622d0e4347de9",
+   "summary": "计算有序圆电流丝在柱坐标目标点的磁通和磁场响应。",
+   "definition": "对每个源行 (R,Z,weight)，返回每安培加权响应 psi=R A_phi、BR 和 BZ。",
+   "model": "使用小模数超几何分支和互补椭圆积分分支的轴对称理想圆电流丝核。",
+   "boundary": "轴上目标使用解析极限；活跃的正半径源与目标精确重合时拒绝。",
    "assumptions": [
-    "输入为有限 float64。",
-    "不包含有限导线或磁导率材料模型。",
-    "保留任何正半径活跃电流丝。"
+    "输入为有限实数数组，半径非负。",
+    "零半径和零权重源视为非活跃。",
+    "不包含有限导线或磁导率模型。"
    ],
    "inputs": [
     {
@@ -191,34 +183,31 @@
     {
      "name": "response",
      "description": "psi、BR、BZ 元组；列表输入为每集合保留目标轴。",
-     "constraints": "返回有限响应，否则抛 FloatingPointError。",
-     "dtype": "float64"
+     "constraints": "返回有限响应；否则抛出 FloatingPointError。",
+     "dtype": "float64（双精度浮点数）"
     }
    ],
    "applicability": {
     "preconditions": [
-     "满足有限柱坐标输入合同。"
+     "输入为有限实数数组，半径非负。",
+     "零半径和零权重源视为非活跃。"
     ],
     "supported": [
-     "具名有限离轴与轴极限案例。",
-     "显式奇点拒绝及零权重行为。",
-     "独立源集合分组。"
+     "支持有序源集合、有符号权重、轴上极限及测试覆盖的显式奇点失败。"
     ],
     "excluded": [
-     "有限导线自场。",
-     "任意输入域的科学资格。",
-     "多进程或持久场分块。"
+     "不涵盖有限导线自场、任意输入域的科学资格或持久化/多进程计算。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "畸形、非有限、负半径或活跃源精确重合输入抛 ValueError。",
-    "runtime_failure": "上溢、非法算术或非有限输出抛 FloatingPointError。",
-    "nonconvergence": "直接核计算，无迭代。",
-    "partial_results": "某源求值失败不返回部分结果。"
+    "invalid_input": "格式错误、复数、非有限、负半径或活跃输入重合时抛出 ValueError。",
+    "runtime_failure": "有限响应不可表示时抛出 FloatingPointError。",
+    "nonconvergence": "不适用；核直接计算。",
+    "partial_results": "源求值失败时不返回响应元组。"
    },
    "example": {
-    "description": "求一个单位权重源在两个有限目标处的响应。",
-    "expected": "返回三个形状 (2,) 的有限数组。"
+    "description": "计算一个加权电流丝在两个目标点的响应，并用独立电流向量收缩轴向响应。",
+    "expected": "响应数组形状为 (2,)；第一目标的 psi 为零，收缩后的 BZ 值有限。"
    },
    "verification": {
     "scope": [
