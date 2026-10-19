@@ -348,6 +348,72 @@ def _species_terms(item):
     return density, charge, mass, collision
 
 
+
+def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
+    """Project Stix scalars into the caller basis with stable local arithmetic."""
+    # The symmetric projector is evaluated from exact binary64 rationals.  This
+    # avoids forming P-S first, which can overflow or erase a small parallel
+    # response when the two coefficients are large and close.
+    field = np.asarray(field, dtype=float)
+    shape = magnitude.shape
+    tensor = np.empty(shape + (3, 3), dtype=complex)
+    for prefix in np.ndindex(shape):
+        s, d, p = (complex(value[prefix]) for value in (stix_s, stix_d, stix_p))
+        if s == p and d == 0:
+            tensor[prefix] = 0.0
+            for axis in range(3):
+                tensor[prefix + (axis, axis)] = p
+            continue
+
+        components = [Fraction(float(field[prefix + (axis,)])) for axis in range(3)]
+        squares = [component * component for component in components]
+        norm_squared = sum(squares)
+        cross = ((0, -components[2], components[1]),
+                 (components[2], 0, -components[0]),
+                 (-components[1], components[0], 0))
+        sr, si, dr, di, pr, pi = map(
+            Fraction, (s.real, s.imag, d.real, d.imag, p.real, p.imag)
+        )
+        with localcontext(Context(prec=80)):
+            def decimal(value):
+                return Decimal(value.numerator) / Decimal(value.denominator)
+
+            norm = decimal(norm_squared).sqrt()
+
+            def component(symmetric, hall_numerator):
+                if not hall_numerator:
+                    return float(symmetric)
+                a, b = symmetric, hall_numerator
+                if a * b < 0:
+                    numerator = a * a * norm_squared - b * b
+                    if not numerator:
+                        return 0.0
+                    value = decimal(numerator) / (
+                        norm * (decimal(a) * norm - decimal(b))
+                    )
+                else:
+                    value = decimal(a) + decimal(b) / norm
+                return float(value)
+
+            for i in range(3):
+                for j in range(3):
+                    parallel = components[i] * components[j] / norm_squared
+                    perpendicular = (
+                        sum(squares[k] for k in range(3) if k != i) / norm_squared
+                        if i == j else -parallel
+                    )
+                    try:
+                        real = component(sr * perpendicular + pr * parallel, -di * cross[i][j])
+                        imag = component(si * perpendicular + pi * parallel, dr * cross[i][j])
+                        tensor[prefix + (i, j)] = complex(real, imag)
+                    except OverflowError as error:
+                        raise ColdPlasmaOverflowError(
+                            f"{OVERFLOW_MESSAGE} (final tensor assembly)"
+                        ) from error
+    if not _is_finite(tensor):
+        raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (final tensor assembly)")
+    return tensor
+
 def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species):
     """Return the local cold-plasma relative dielectric tensor.
 
@@ -663,79 +729,8 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
                 f"{OVERFLOW_MESSAGE} (species index {index})"
             )
 
-    # At zero field the cold tensor is isotropic, so the off-diagonal term must
-    # vanish and the diagonal collapses onto the plasma term.  Only a genuine
-    # zero field reaches this: the field guard above rejects a non-zero field
-    # whose norm collapsed.
+    # A zero field has no direction; its response is isotropic and has no Hall
+    # term.  A nonzero field whose norm collapsed was rejected above.
     stix_s = np.where(magnitude == 0.0, stix_p, stix_s)
     stix_d = np.where(magnitude == 0.0, 0.0 + 0.0j, stix_d)
-
-    # Assemble each final entry without first forming P-S, without subtracting
-    # a rounded projector from one, and without rounding products before their
-    # sum. Even a finite P-S can erase the small parallel response when added
-    # back to S. The two projectors use exact ratios of the supplied binary64
-    # Cartesian field components; their diagonals partition unity exactly.
-    # Only the final projection is evaluated at higher precision. The Stix
-    # scalars retain the upstream binary64 arithmetic and its guards. The Hall
-    # term shares the exact field norm with the symmetric projectors.
-    tensor = np.empty(shape + (3, 3), dtype=complex)
-    for prefix in np.ndindex(shape):
-        s, d, p = (complex(value[prefix]) for value in (stix_s, stix_d, stix_p))
-        if s == p and d == 0:
-            # Includes true zero fields and every explicitly inert-species
-            # case; their response does not require a magnetic direction.
-            tensor[prefix] = 0.0
-            for i in range(3):
-                tensor[prefix + (i, i)] = p
-            continue
-        components = [Fraction(float(field[prefix + (i,)])) for i in range(3)]
-        squares = [component * component for component in components]
-        norm_squared = sum(squares)
-        cross = ((0, -components[2], components[1]),
-                 (components[2], 0, -components[0]),
-                 (-components[1], components[0], 0))
-        sr, si, dr, di, pr, pi = map(
-            Fraction, (s.real, s.imag, d.real, d.imag, p.real, p.imag))
-        with localcontext(Context(prec=80)):
-            def decimal(value):
-                return Decimal(value.numerator) / Decimal(value.denominator)
-
-            norm = decimal(norm_squared).sqrt()
-
-            def final_component(symmetric, hall_numerator):
-                # Each real/imaginary component is a + b/sqrt(q), with a, b,
-                # q exact rationals. For opposite signs, rationalize its sum:
-                # (a*a*q-b*b) / (sqrt(q)*(a*sqrt(q)-b)). The numerator stays
-                # exact and the denominator adds same-sign quantities, so even
-                # near-exact symmetric/Hall cancellation is not lost before
-                # rounding. Decimal evaluates only well-conditioned divisions
-                # and the square root, far beyond binary64 precision.
-                if not hall_numerator:
-                    return float(symmetric)
-                a, b = symmetric, hall_numerator
-                if a * b < 0:
-                    numerator = a * a * norm_squared - b * b
-                    if not numerator:
-                        return 0.0
-                    value = decimal(numerator) / (norm * (decimal(a) * norm - decimal(b)))
-                else:
-                    value = decimal(a) + decimal(b) / norm
-                return float(value)
-
-            for i in range(3):
-                for j in range(3):
-                    parallel = components[i] * components[j] / norm_squared
-                    perpendicular = (sum(squares[k] for k in range(3) if k != i)
-                                     / norm_squared if i == j else -parallel)
-                    try:
-                        real = final_component(sr * perpendicular + pr * parallel,
-                                               -di * cross[i][j])
-                        imag = final_component(si * perpendicular + pi * parallel,
-                                               dr * cross[i][j])
-                        tensor[prefix + (i, j)] = complex(real, imag)
-                    except OverflowError as error:
-                        raise ColdPlasmaOverflowError(
-                            f"{OVERFLOW_MESSAGE} (final tensor assembly)") from error
-    if not _is_finite(tensor):
-        raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (final tensor assembly)")
-    return tensor
+    return _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p)

@@ -2,8 +2,6 @@
 from __future__ import annotations
 from scirel._validation import finite_scalar as _require_finite_scalar, integer_scalar as _require_integer_scalar, bool_scalar as _require_bool_scalar
 from collections.abc import Mapping
-import hashlib
-from pathlib import Path
 import numpy as np
 from ._anisotropic_numerics import cell_areas, flux_field_increment
 

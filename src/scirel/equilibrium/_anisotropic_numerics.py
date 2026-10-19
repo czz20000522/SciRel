@@ -1,4 +1,11 @@
-"""Equilibrium-specific numerical helpers kept behind the legacy module path."""
+"""Small numerical assemblies shared by the equilibrium operators.
+
+The public equilibrium functions keep physical validation at their API boundary.
+This module owns only quadrature areas for a rectangular R--Z mesh and the
+magnetic field produced by an added poloidal flux.  Both routines use local
+NumPy operations on caller-owned arrays.
+"""
+from __future__ import annotations
 
 import numpy as np
 
@@ -10,62 +17,103 @@ from scirel._anisotropic_numerics import (
 )
 from scirel._numerics import stable_gradient
 
+__all__ = [
+    "cell_areas", "flux_field_increment", "gradient_roundoff",
+    "pressure_divergence", "residual_metrics", "rms",
+]
+
+
+def _axis_widths(axis, edges, *, radial=False):
+    """Return positive integration widths in the orientation of ``axis``."""
+    values = np.asarray(axis, dtype=float)
+    if values.ndim != 1 or values.size < 2 or not np.all(np.isfinite(values)):
+        raise ValueError("cell axes require at least two finite locations")
+    steps = np.diff(values)
+    if not (np.all(steps > 0.0) or np.all(steps < 0.0)):
+        raise ValueError("cell axes must be strictly monotone")
+    if radial and np.min(values) < 0.0:
+        raise ValueError("radial locations must be nonnegative")
+
+    if edges is None:
+        lengths = np.abs(steps)
+        widths = np.empty(values.size, dtype=float)
+        widths[0] = lengths[0] / 2.0
+        widths[-1] = lengths[-1] / 2.0
+        if values.size > 2:
+            widths[1:-1] = (lengths[:-1] + lengths[1:]) / 2.0
+        return widths
+
+    boundary = np.asarray(edges, dtype=float)
+    if boundary.shape != (values.size + 1,) or not np.all(np.isfinite(boundary)):
+        raise ValueError("cell edges must be finite and have center_count+1 entries")
+    edge_steps = np.diff(boundary)
+    direction = np.sign(steps[0])
+    if not np.all(edge_steps * direction > 0.0):
+        raise ValueError("cell edges must be strictly monotone in center orientation")
+    lower = np.minimum(boundary[:-1], boundary[1:])
+    upper = np.maximum(boundary[:-1], boundary[1:])
+    if np.any(values < lower) or np.any(values > upper):
+        raise ValueError("each center must lie within its declared cell edges")
+    if radial and np.min(boundary) < 0.0:
+        raise ValueError("radial cell edges must be nonnegative")
+    return np.abs(edge_steps)
+
 
 def cell_areas(R, Z, cell_edges=None):
-    """Cross-section quadrature areas on the declared node domain by default.
+    """Construct R--Z quadrature areas for node or cell-center data.
 
-    Without cell_edges, composite-trapezoid weights integrate over
-    [min(R),max(R)] x [min(Z),max(Z)]; endpoints own half-neighbor intervals.
-    For actual cell-center data, pass (radial_edges, axial_edges), each with
-    one more value than centers, in the same orientation, enclosing its
-    associated center. This explicitly binds the physical integration domain.
-    The toroidal filament current has no 2*pi*R volume factor.
+    Without explicit edges, endpoint half-widths implement the composite
+    trapezoid domain.  ``cell_edges=(radial_edges, axial_edges)`` binds each
+    sample to a physical cell.  No toroidal ``2*pi*R`` factor is included.
     """
-    def widths(x, edges, radial=False):
-        x = np.asarray(x,dtype=float)
-        if x.size<2 or not np.all(np.isfinite(x)):
-            raise ValueError('cell axes require at least two finite locations')
-        d = np.diff(x)
-        if not (np.all(d>0.) or np.all(d<0.)):
-            raise ValueError('cell axes must be strictly monotone')
-        if radial and np.min(x)<0.:
-            raise ValueError('radial locations must be nonnegative')
-        if edges is None:
-            h=np.abs(d)
-            return np.r_[h[0]/2,(h[:-1]+h[1:])/2,h[-1]/2]
-        e=np.asarray(edges,dtype=float)
-        if e.shape!=(x.size+1,) or not np.all(np.isfinite(e)):
-            raise ValueError('cell edges must be finite and have center_count+1 entries')
-        de=np.diff(e)
-        if not np.all(de*np.sign(d[0])>0.):
-            raise ValueError('cell edges must be strictly monotone in center orientation')
-        if np.any(x<np.minimum(e[:-1],e[1:])) or np.any(x>np.maximum(e[:-1],e[1:])):
-            raise ValueError('each center must lie within its declared cell edges')
-        if radial and np.min(e)<0.:
-            raise ValueError('radial cell edges must be nonnegative')
-        return np.abs(de)
-    if cell_edges is not None and (not isinstance(cell_edges,(tuple,list)) or len(cell_edges)!=2):
-        raise ValueError('cell_edges must be (radial_edges, axial_edges)')
-    re,ze=(None,None) if cell_edges is None else cell_edges
-    return widths(Z[:,0],ze)[:,None]*widths(R[0],re,True)[None,:]
+    radial = np.asarray(R, dtype=float)
+    axial = np.asarray(Z, dtype=float)
+    if radial.ndim != 2 or axial.shape != radial.shape:
+        raise ValueError("R and Z must be equal-shape two-dimensional grids")
+    if not np.all(np.isfinite(radial)) or not np.all(np.isfinite(axial)):
+        raise ValueError("R and Z must be finite")
+    if not np.allclose(radial, radial[0:1, :]) or not np.allclose(axial, axial[:, 0:1]):
+        raise ValueError("R and Z must be tensor-product grids")
+    if cell_edges is not None:
+        if not isinstance(cell_edges, (tuple, list)) or len(cell_edges) != 2:
+            raise ValueError("cell_edges must be (radial_edges, axial_edges)")
+        radial_edges, axial_edges = cell_edges
+    else:
+        radial_edges = axial_edges = None
+    radial_width = _axis_widths(radial[0, :], radial_edges, radial=True)
+    axial_width = _axis_widths(axial[:, 0], axial_edges)
+    return axial_width[:, None] * radial_width[None, :]
 
 
-def flux_field_increment(R,Z,psi):
-    """Differentiate an added psi on increasing axes (linear for two nodes).
+def _differentiate(values, coordinate, axis):
+    """Differentiate along one axis, retaining the two-node linear rule."""
+    if coordinate.size >= 3:
+        return stable_gradient(values, coordinate, axis)
+    slope = np.diff(values, axis=axis) / (coordinate[1] - coordinate[0])
+    return np.repeat(slope, 2, axis=axis)
 
-    This preserves the feedback leaf's two-node contract; with three or more
-    nodes each axis uses the quadratic stencil. A regular axis has BR=0 and
-    BZ=2*(psi(R1)-psi(0))/R1**2, consistent to second order for even psi.
+
+def flux_field_increment(R, Z, psi):
+    """Return the poloidal field generated by a flux increment.
+
+    The axisymmetric relations are ``B_R=-dpsi/dZ/R`` and
+    ``B_Z=dpsi/dR/R``.  At a regular axis the limiting quadratic expression is
+    used for ``B_Z`` so an even flux profile remains finite.
     """
-    r,z=R[0],Z[:,0]
-    def derivative(f,x,axis):
-        if x.size>=3:
-            return stable_gradient(f,x,axis)
-        slope=np.diff(f,axis=axis)/(x[1]-x[0])
-        return np.repeat(slope,2,axis=axis)
-    dr,dz=derivative(psi,r,1),derivative(psi,z,0)
-    br=np.divide(-dz,R,out=np.zeros_like(psi),where=R>0.)
-    bz=np.divide(dr,R,out=np.zeros_like(psi),where=R>0.)
-    if r[0]==0.:
-        bz[:,0]=2*(psi[:,1]-psi[:,0])/r[1]**2
-    return {'B_R':br,'B_Z':bz}
+    radial = np.asarray(R, dtype=float)
+    axial = np.asarray(Z, dtype=float)
+    flux = np.asarray(psi, dtype=float)
+    if radial.ndim != 2 or axial.shape != radial.shape or flux.shape != radial.shape:
+        raise ValueError("R, Z and psi must be equal-shape two-dimensional arrays")
+    if not all(np.all(np.isfinite(value)) for value in (radial, axial, flux)):
+        raise ValueError("R, Z and psi must be finite")
+    r_axis, z_axis = radial[0, :], axial[:, 0]
+    if not np.allclose(radial, r_axis[None, :]) or not np.allclose(axial, z_axis[:, None]):
+        raise ValueError("R and Z must be tensor-product grids")
+    dpsi_dr = _differentiate(flux, r_axis, 1)
+    dpsi_dz = _differentiate(flux, z_axis, 0)
+    B_R = np.divide(-dpsi_dz, radial, out=np.zeros_like(flux), where=radial != 0.0)
+    B_Z = np.divide(dpsi_dr, radial, out=np.zeros_like(flux), where=radial != 0.0)
+    if r_axis[0] == 0.0:
+        B_Z[:, 0] = 2.0 * (flux[:, 1] - flux[:, 0]) / r_axis[1] ** 2
+    return {"B_R": B_R, "B_Z": B_Z}
