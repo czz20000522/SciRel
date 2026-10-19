@@ -1,4 +1,4 @@
-"""Fixed-flux gyrotropic parallel-pressure compatibility diagnostic."""
+"""Fixed-flux gyrotropic parallel-pressure compatibility check."""
 import numpy as np
 from ._fixed_flux_derivative import fixed_flux_derivative
 

@@ -1,15 +1,8 @@
-# Derived from TORAX: Copyright 2024 DeepMind Technologies Limited.
-# Licensed under Apache-2.0; the retained source license is licenses/torax/LICENSE.
-# SciRel D2 changes: stable small-energy evaluation, explicit domain/failure
-# handling, NumPy implementation, and bounded mathematical applicability.
 """Fast ion heating partition relation.
 
-The TORAX D1 implementation evaluates Mikkelsen's dimensionless relation
-``f_i(x)`` with ``x² = E_birth / (10 m_fast T_e)``.  Its direct expression has
-an avoidable 0/0 at zero birth energy although the continuous limit of this mathematical relation is
-``f_i(0)=1``.  This SciRel successor makes that boundary explicit and rejects
-nonphysical inputs instead of returning NaN/inf.  The D1 source and its exact
-failure are retained in the D2 evidence record.
+The local Mikkelsen approximation uses ``x² = E_birth/(10 m_fast T_e)``.
+The zero-energy limit is evaluated explicitly, while positive inputs use a
+series near the origin and the closed form elsewhere.
 """
 import numpy as np
 
@@ -48,13 +41,14 @@ def fast_ion_fractional_heating(
         raise ValueError("birth_energy, T_e, and fast_ion_mass must be finite")
     if np.any(E < 0) or np.any(Te <= 0) or np.any(mass <= 0):
         raise ValueError("birth_energy must be nonnegative; T_e and fast_ion_mass must be positive")
-    # Compute ratios in log space to avoid overflow in the dimensional product.
+    # Compute the dimensionless ratio in log space to avoid an unnecessary
+    # overflow in the dimensional product.
     with np.errstate(divide="ignore", over="ignore", under="ignore"):
         x2 = np.exp(np.log(E) - np.log(10.0) - np.log(mass) - np.log(Te))
     if not np.all(np.isfinite(x2)):
         raise FloatingPointError("dimensionless energy ratio is not finite")
     small = x2 < 0.01
-    y = np.where(small, x2, 0.0)**1.5
+    y = np.where(small, x2, 0.0) ** 1.5
     out = np.zeros_like(x2)
     if np.any(small):
         # The series is only used for small x².  Avoid evaluating all twelve
@@ -62,12 +56,16 @@ def fast_ion_fractional_heating(
         ys = y[small]
         series = np.zeros_like(ys)
         for k in range(12):
-            series += 2.0 * (-ys)**k / (3*k + 2)
+            series += 2.0 * (-ys) ** k / (3 * k + 2)
         out[small] = series
     xn = np.sqrt(x2[~small])
     x2n = x2[~small]
-    numerator = (1.0 / 6.0) * np.log((1.0 - xn + x2n) / (1.0 + 2.0 * xn + x2n))
-    numerator += (np.arctan((2.0 * xn - 1.0) / np.sqrt(3.0)) + np.pi / 6.0) / np.sqrt(3.0)
+    numerator = (1.0 / 6.0) * np.log(
+        (1.0 - xn + x2n) / (1.0 + 2.0 * xn + x2n)
+    )
+    numerator += (
+        np.arctan((2.0 * xn - 1.0) / np.sqrt(3.0)) + np.pi / 6.0
+    ) / np.sqrt(3.0)
     out[~small] = 2.0 * numerator / x2n
     if not np.all(np.isfinite(out)):
         raise FloatingPointError("fast-ion heating relation produced a nonfinite result")

@@ -1,4 +1,4 @@
-"""Finite-volume cell, flux, and single-channel theta-step operators."""
+"""Finite-volume cells, conservative fluxes, and theta integration."""
 
 from importlib import import_module as _import_module
 

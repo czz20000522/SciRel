@@ -1,16 +1,9 @@
-"""Species absorption fraction closure for a four-species power ledger.
+"""Convert a four-entry RF power ledger into a percentage split.
 
-Two relations in the observed RF source compute the same closure from the same
-four-entry species power ledger: the E-star-dot-J route and the Wdot route.
-They differ only in the name of the entry point and the wording of the
-docstring; the arithmetic, the validation, the failure boundary, and the
-returned keys are identical.  SciRel therefore carries **one** scientific
-identity here, with both source routes recorded as provenance rather than as
-two competing implementations.
-
-The source leaves the percentage temporaries undefined when the derived total is
-zero.  This relation fails closed at that boundary instead of emitting a
-non-finite or silently-zero split, and reports the non-zero branch explicitly.
+Signed entries are summed as exact binary64 rationals before percentages are
+formed, which keeps a small net total observable instead of losing it to
+reduction order.  A zero net power has no defined percentage split and is
+rejected explicitly.
 """
 from __future__ import annotations
 
@@ -44,12 +37,12 @@ def _finite_species_power_vector(value: object) -> np.ndarray:
 
 
 def compute_species_absorption_fraction(species_power_values):
-    """Compute source-ordered species absorption percentages from a power ledger.
+    """Compute ordered species absorption percentages from a power ledger.
 
     Returns the derived total, the per-species percentage split in caller order,
     the stably summed returned percentages, the residual against 100 percent, and the
-    branch label.  A zero derived total is rejected: the source defines no
-    percentage result there, so no split is invented. Signed totals are summed
+    branch label.  A zero derived total is rejected because no percentage split
+    is defined. Signed totals are summed
     exactly before binary64 rounding. Cancellation can amplify rounding of
     individual returned shares; their reported sum need not be close to 100.
     Numeric object arrays are accepted when convertible to finite real floats.

@@ -1,4 +1,4 @@
-"""Plasma heating relations with lazy scientific exports."""
+"""Lazy access to plasma heating relations."""
 
 from importlib import import_module as _import_module
 

@@ -6,8 +6,8 @@ import numpy as np
 MU_0 = 4e-07 * np.pi
 ELECTRON_MASS_KG = 9.1093837139e-31
 
-def _source_hypot(left, right):
-    """Reproduce source ``np.hypot`` without finite-range under/overflow."""
+def _stable_hypot(left, right):
+    """Evaluate a Euclidean norm without avoidable range loss."""
     left, right = np.broadcast_arrays(np.asarray(left, dtype=float), np.asarray(right, dtype=float))
     values = []
     for x, y in zip(left.flat, right.flat):
@@ -36,6 +36,11 @@ def _source_hypot(left, right):
             values.append(math.inf)
     return np.asarray(values, dtype=float).reshape(left.shape)
 
+
+# Kept for the operator-contract test's numerical stress helper.  Both names
+# resolve to the same local implementation; no second numerical path exists.
+_source_hypot = _stable_hypot
+
 def _grid(r_grid, z_grid):
     r_grid, z_grid = (np.asarray(r_grid, dtype=float), np.asarray(z_grid, dtype=float))
     if r_grid.shape != z_grid.shape or r_grid.ndim != 2:
@@ -62,7 +67,7 @@ def _rms(values, mask):
     return 0.0 if not np.any(mask) else float(np.sqrt(np.mean(np.asarray(values)[mask] ** 2)))
 
 from scirel._anisotropic_numerics import gradient_roundoff, pressure_divergence, residual_metrics
-from scirel._numerics import stable_gradient as _source_gradient
+from scirel._numerics import stable_gradient as _gradient
 
 def _pressure_force(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular):
     r_grid, z_grid, _, _ = _grid(r_grid, z_grid)
@@ -113,7 +118,7 @@ def close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicul
     force_r, force_z, j_pressure = (total_force[k] for k in ('force_R','force_Z','J_phi'))
     electron_force = pressure_divergence(r_grid, z_grid, b_r, b_z, electron_parallel, electron_perpendicular)
     electron_force_r, electron_force_z = electron_force['force_R'], electron_force['force_Z']
-    dphi_dz, dphi_dr = (_source_gradient(potential, z, axis=0), _source_gradient(potential, r, axis=1))
+    dphi_dz, dphi_dr = (_gradient(potential, z, axis=0), _gradient(potential, r, axis=1))
     electric_r, electric_z = (-dphi_dr, -dphi_dz)
     b_squared = b_r ** 2 + b_z ** 2
     b = np.sqrt(b_squared)
@@ -179,15 +184,15 @@ def close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicul
     target_force_r, target_force_z = (force_r - centrifugal_force, force_z)
     momentum_r, momentum_z = (j_phi * b_z - target_force_r, -j_phi * b_r - target_force_z)
     parallel_force = np.divide(b_r * target_force_r + b_z * target_force_z, b, out=np.zeros_like(b), where=b > np.finfo(float).tiny)
-    force_norm = _source_hypot(target_force_r, target_force_z)
+    force_norm = _stable_hypot(target_force_r, target_force_z)
     force_bound = np.hypot(total_force['force_roundoff_R'],total_force['force_roundoff_Z']) + 64*np.finfo(float).eps*np.abs(centrifugal_force)
     parallel_metrics = residual_metrics(parallel_force,force_norm,force_bound,plasma_mask)
     momentum_metrics = residual_metrics(np.hypot(momentum_r,momentum_z),force_norm,force_bound,plasma_mask)
     parallel_force_error = parallel_metrics['error']
     momentum_error = momentum_metrics['error']
     skin_depth = np.sqrt(np.divide(ion_mass_kg, MU_0 * ion_density * ion_charge_c ** 2, out=np.zeros_like(b), where=ion_density > 0.0))
-    db_dz, db_dr = (_source_gradient(b, z, axis=0), _source_gradient(b, r, axis=1))
-    gradient_magnitude = _source_hypot(db_dr, db_dz)
+    db_dz, db_dr = (_gradient(b, z, axis=0), _gradient(b, r, axis=1))
+    gradient_magnitude = _stable_hypot(db_dr, db_dz)
     scale = np.divide(b, gradient_magnitude, out=np.full_like(b, np.inf), where=gradient_magnitude > 0.0)
     hall_ratio = np.divide(skin_depth, scale, out=np.zeros_like(b), where=np.isfinite(scale) & (scale > 0.0))
     electron_skin_depth = skin_depth * np.sqrt(ELECTRON_MASS_KG / ion_mass_kg)

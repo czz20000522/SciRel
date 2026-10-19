@@ -1,4 +1,4 @@
-"""Local gyrotropic tension and fixed-flux total-pressure-slope diagnostics."""
+"""Local gyrotropic tension and fixed-flux pressure-slope diagnostics."""
 import numpy as np
 from ._fixed_flux_derivative import fixed_flux_derivative
 from .pointwise_firehose_margin import _firehose_kernel, _mirror_kernel

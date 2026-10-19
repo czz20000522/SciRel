@@ -1,4 +1,4 @@
-"""Derivative evidence for pressure laws p(B, psi), never a global spatial sort."""
+"""Fixed-flux derivative evidence for pressure laws ``p(B, psi)``."""
 import numpy as np
 
 

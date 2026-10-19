@@ -1,4 +1,4 @@
-"""Closure-domain public API with lazy scientific operator exports."""
+"""Lazy access to the closure-domain scientific operators."""
 
 from importlib import import_module as _import_module
 

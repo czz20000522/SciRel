@@ -1,65 +1,92 @@
-# Derived from TORAX: Copyright 2024 DeepMind Technologies Limited.
-# Apache-2.0; retained license: licenses/torax/LICENSE.
-"""TORAX power-law conservative convection; stable Péclet asymptotes."""
+"""Conservative one-dimensional convection assembled on cell faces."""
+
 import numpy as np
-from .cell_variable import CellVariable, finite_array, checked
+
+from .cell_variable import CellVariable, checked, finite_array
 from .diffusion import TriDiagonal
 
 __all__ = ["make_convection_terms"]
 
 
-def _alpha(p):
-    # Algebraic source branches, using 1-1/p avoids inf/inf for p=+inf.
-    a=np.full(p.shape,.5)
-    hi=p>10; lo=p<-10
-    a[hi]=1-1/p[hi]; a[lo]=-1/p[lo]
-    midp=(p>1e-3)&(p<=10); midn=(p<-1e-3)&(p>=-10)
-    a[midp]=((p[midp]-1)+(1-p[midp]/10)**5)/p[midp]
-    a[midn]=((1+p[midn]/10)**5-1)/p[midn]
-    return a
+def _power_weight(peclet):
+    """Evaluate the bounded power-law interpolation weight elementwise."""
+
+    result = np.full_like(peclet, 0.5, dtype=float)
+    high = peclet > 10.0
+    low = peclet < -10.0
+    result[high] = 1.0 - 1.0 / peclet[high]
+    result[low] = -1.0 / peclet[low]
+    middle_positive = (peclet > 1.0e-3) & (peclet <= 10.0)
+    middle_negative = (peclet < -1.0e-3) & (peclet >= -10.0)
+    result[middle_positive] = ((peclet[middle_positive] - 1.0)
+                               + (1.0 - peclet[middle_positive] / 10.0) ** 5) / peclet[middle_positive]
+    result[middle_negative] = ((1.0 + peclet[middle_negative] / 10.0) ** 5 - 1.0) / peclet[middle_negative]
+    return result
 
 
-def make_convection_terms(v_face,d_face,var,dirichlet_mode='ghost',neumann_mode='ghost'):
-    """Return a ``(TriDiagonal, b)`` pair for -d/dx(v u)=M u+b, with TORAX power-law weights.
+def make_convection_terms(v_face, d_face, var, dirichlet_mode="ghost", neumann_mode="ghost"):
+    """Return ``(M, b)`` for the conservative flux ``-d(v*u)/dx``.
 
-    v has coordinate/time units, D coordinate^2/time; both are finite N+1
-    arrays. Relative v/D chooses the upstream face weighting. D is floored in
-    magnitude at 1e-20 (zero takes positive sign), as in TORAX. Boundary Péclet
-    distances are half cell widths. Modes: Dirichlet 'ghost' (default), 'direct',
-    'semi-implicit'; Neumann 'ghost' (default) or 'semi-implicit'. Gradient means
-    du/dx, not outward normal derivative. All modes conserve shared internal
-    face fluxes on nonuniform meshes; no arbitrary-grid accuracy claim. The
-    integrated conservation boundary flux uses the selected numerical face
-    value, which can differ from the prescribed Dirichlet value in ghost mode.
-    Pure convection reaches its finite upwind limit when the ratio overflows;
-    unrepresentable final coefficients raise FloatingPointError.
+    Face values are assembled locally and differenced by cell width.  The
+    coefficient arrays contain one finite value per face.  Dirichlet modes
+    are ``ghost``, ``direct`` and ``semi-implicit``; Neumann modes are
+    ``ghost`` and ``semi-implicit``.  Boundary gradients use the positive
+    coordinate direction at both ends.
     """
-    if not isinstance(var,CellVariable): raise TypeError('var must be CellVariable')
-    if dirichlet_mode not in ('ghost','direct','semi-implicit') or neumann_mode not in ('ghost','semi-implicit'): raise ValueError('invalid convection boundary mode')
-    n=len(var.value); v=finite_array(v_face,'v_face',(n+1,)); d=finite_array(d_face,'d_face',(n+1,)); w=var.cell_widths
-    spacing=np.r_[w[0],var.cell_spacings,w[-1]]
-    dd=np.where(d<0,-1.,1.)*np.maximum(1e-20,np.abs(d))
-    with np.errstate(all='ignore'):
-        ratio=spacing*v/dd; ratio[[0,-1]]/=2
-        la=_alpha(-ratio[:-1]); ra=_alpha(ratio[1:])
-        diag=(la*v[:-1]-ra*v[1:])/w
-        above=-(1-ra[:-1])*v[1:-1]/w[:-1]
-        below=(1-la[1:])*v[1:-1]/w[1:]
-        b=np.zeros(n)
+    if not isinstance(var, CellVariable):
+        raise TypeError("var must be CellVariable")
+    if dirichlet_mode not in ("ghost", "direct", "semi-implicit"):
+        raise ValueError("invalid convection boundary mode")
+    if neumann_mode not in ("ghost", "semi-implicit"):
+        raise ValueError("invalid convection boundary mode")
+
+    n_cells = var.value.size
+    velocity = finite_array(v_face, "v_face", (n_cells + 1,))
+    diffusivity = finite_array(d_face, "d_face", (n_cells + 1,))
+    widths = var.cell_widths
+    face_spacing = np.concatenate(([widths[0]], var.cell_spacings, [widths[-1]]))
+    scale = np.where(diffusivity < 0.0, -1.0, 1.0) * np.maximum(1.0e-20, np.abs(diffusivity))
+
+    with np.errstate(all="ignore"):
+        peclet = face_spacing * velocity / scale
+        peclet[[0, -1]] /= 2.0
+        left_weight = _power_weight(-peclet[:-1])
+        right_weight = _power_weight(peclet[1:])
+        diagonal = (left_weight * velocity[:-1] - right_weight * velocity[1:]) / widths
+        upper = -(1.0 - right_weight[:-1]) * velocity[1:-1] / widths[:-1]
+        lower = (1.0 - left_weight[1:]) * velocity[1:-1] / widths[1:]
+        offset = np.zeros(n_cells, dtype=float)
+
         if var.left_face_constraint is not None:
-            z=var.left_face_constraint
-            if dirichlet_mode=='ghost': diag[0]=(v[0]*(2*la[0]-1)-v[1]*ra[0])/w[0]; b[0]=2*v[0]*(1-la[0])*z/w[0]
-            elif dirichlet_mode=='direct': diag[0]=-v[1]*ra[0]/w[0]; b[0]=v[0]*z/w[0]
-            else: b[0]=v[0]*(1-la[0])*z/w[0]
+            boundary = var.left_face_constraint
+            if dirichlet_mode == "ghost":
+                diagonal[0] = (velocity[0] * (2.0 * left_weight[0] - 1.0) - velocity[1] * right_weight[0]) / widths[0]
+                offset[0] = 2.0 * velocity[0] * (1.0 - left_weight[0]) * boundary / widths[0]
+            elif dirichlet_mode == "direct":
+                diagonal[0] = -velocity[1] * right_weight[0] / widths[0]
+                offset[0] = velocity[0] * boundary / widths[0]
+            else:
+                offset[0] = velocity[0] * (1.0 - left_weight[0]) * boundary / widths[0]
         else:
-            diag[0]=(v[0]-ra[0]*v[1])/w[0]; b[0]=-v[0]*(1-la[0])*var.left_face_grad_constraint
-            if neumann_mode=='semi-implicit': b[0]/=2
+            diagonal[0] = (velocity[0] - right_weight[0] * velocity[1]) / widths[0]
+            offset[0] = -velocity[0] * (1.0 - left_weight[0]) * var.left_face_grad_constraint
+            if neumann_mode == "semi-implicit":
+                offset[0] /= 2.0
+
         if var.right_face_constraint is not None:
-            z=var.right_face_constraint
-            if dirichlet_mode=='ghost': diag[-1]=(v[-2]*la[-1]+v[-1]*(1-2*ra[-1]))/w[-1]; b[-1]=-2*v[-1]*(1-ra[-1])*z/w[-1]
-            elif dirichlet_mode=='direct': diag[-1]=v[-2]*la[-1]/w[-1]; b[-1]=-v[-1]*z/w[-1]
-            else: b[-1]=-v[-1]*(1-ra[-1])*z/w[-1]
+            boundary = var.right_face_constraint
+            if dirichlet_mode == "ghost":
+                diagonal[-1] = (velocity[-2] * left_weight[-1] + velocity[-1] * (1.0 - 2.0 * right_weight[-1])) / widths[-1]
+                offset[-1] = -2.0 * velocity[-1] * (1.0 - right_weight[-1]) * boundary / widths[-1]
+            elif dirichlet_mode == "direct":
+                diagonal[-1] = velocity[-2] * left_weight[-1] / widths[-1]
+                offset[-1] = -velocity[-1] * boundary / widths[-1]
+            else:
+                offset[-1] = -velocity[-1] * (1.0 - right_weight[-1]) * boundary / widths[-1]
         else:
-            diag[-1]=-(v[-1]-v[-2]*la[-1])/w[-1]; b[-1]=-v[-1]*(1-ra[-1])*var.right_face_grad_constraint
-            if neumann_mode=='semi-implicit': b[-1]/=2
-    return TriDiagonal(checked(diag),checked(above),checked(below)),checked(b)
+            diagonal[-1] = -(velocity[-1] - velocity[-2] * left_weight[-1]) / widths[-1]
+            offset[-1] = -velocity[-1] * (1.0 - right_weight[-1]) * var.right_face_grad_constraint
+            if neumann_mode == "semi-implicit":
+                offset[-1] /= 2.0
+
+    return TriDiagonal(checked(diagonal), checked(upper), checked(lower)), checked(offset)

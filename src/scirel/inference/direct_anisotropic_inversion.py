@@ -1,4 +1,4 @@
-"""Standalone orchestration for direct anisotropic parameter inversion."""
+"""Task-graph orchestration for direct anisotropic parameter inversion."""
 from __future__ import annotations
 from functools import partial
 from scirel.diagnostics.observation_residuals import _observation_layout

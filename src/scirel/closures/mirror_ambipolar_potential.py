@@ -19,7 +19,7 @@ def _field(value, psi, name):
     return values
 
 def _one_way_flux(density, mass_kg, charge_c, temperature_parallel_j, temperature_perpendicular_j, b_reference_t, b_plug_t, phi_reference_v, phi_plug_v, refill):
-    """Source-equivalent half-space flux above a mirror/electrostatic barrier."""
+    """Evaluate the one-way half-space flux above a mirror/electrostatic barrier."""
     return _mirror_flux(density, mass_kg, charge_c, temperature_parallel_j,
         temperature_perpendicular_j, b_reference_t, b_plug_t,
         phi_reference_v, phi_plug_v, refill)

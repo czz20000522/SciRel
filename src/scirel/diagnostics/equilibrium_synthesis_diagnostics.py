@@ -1,4 +1,4 @@
-"""Unit-explicit equilibrium point sampling, not a calibrated instrument model."""
+"""Unit-explicit equilibrium point sampling for declared observations."""
 from __future__ import annotations
 from collections.abc import Mapping
 import numpy as np

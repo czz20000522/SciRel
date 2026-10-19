@@ -1,4 +1,4 @@
-"""Pointwise firehose margin from the maintained combined diagnostic.
+"""Pointwise firehose margin and shared gyrotropic arithmetic kernels.
 
 Single-sample and repeated/unsorted-field calls require no mirror derivative.
 The combined diagnostic consumes the same validated arithmetic kernel.

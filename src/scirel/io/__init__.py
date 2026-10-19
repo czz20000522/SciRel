@@ -1,4 +1,4 @@
-"""Pleiades extended-dialect scientific exchange helpers."""
+"""Lazy access to explicit SciRel interchange formats."""
 
 from importlib import import_module as _import_module
 

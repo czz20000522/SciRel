@@ -1,4 +1,4 @@
-"""Fixed-layout, flux-first normalized residuals; no requested channel is dropped."""
+"""Fixed-layout normalized residuals for declared observation channels."""
 from __future__ import annotations
 from collections.abc import Mapping
 import numpy as np

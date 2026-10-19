@@ -1,4 +1,4 @@
-"""Validated local optimization with an explicit total scientific-evaluation budget."""
+"""Budgeted bounded optimization around caller-owned scientific evaluations."""
 from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy

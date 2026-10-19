@@ -1,4 +1,4 @@
-"""Standalone bisection of the kinetic quasineutral-potential relation."""
+"""Bisection solver for the quasineutral potential relation."""
 from __future__ import annotations
 
 from collections.abc import Mapping

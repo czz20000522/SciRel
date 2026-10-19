@@ -1,16 +1,14 @@
-"""Pleiades legacy extended EQDSK exchange.
+"""Read and write the Pleiades extended EQDSK exchange dialect.
 
 This module intentionally names the retained Pleiades dialect rather than
-calling it standard GEQDSK.  The source format has a 48-character title,
+calling it standard GEQDSK.  The dialect has a 48-character title,
 four integer header fields (``cursign, nnr, nnz, nnv``), five profiles of
 length ``nnv``, a C-order ``(nnz, nnr)`` psi grid, and one combined limiter /
 vessel coordinate section.  It is not the standard EFIT gEQDSK contract,
 which uses three header integers and distinct ``NW``/``NH`` dimensions.
 
-The implementation is derived from Pleiades D0 ``pleiades/io.py`` (commit
-``be412aa14b775f2a8170315242b92208bd11fc0e``), with D2-bounded structural
-validation.  It does not assign units, COCOS, or physical meaning to values
-whose source did not establish them.
+SciRel validates representability before I/O. It does not assign units, COCOS,
+or physical meaning to values that this dialect does not encode.
 """
 from __future__ import annotations
 
@@ -82,7 +80,7 @@ def _float_fields(line: str, *, fixed: bool = False) -> list[float]:
 
 def _read_values(lines: list[str], start: int, count: int, *, section: str,
                  coordinates: bool = False) -> tuple[np.ndarray, int]:
-    """Read exactly ``count`` values from the source-defined record group."""
+    """Read exactly ``count`` values from a named record group."""
     if count < 0:
         raise EQDSKFormatError(f"{section} count must be non-negative")
     nlines = (count + 4) // 5
@@ -367,12 +365,11 @@ def write_pleiades_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
 
 def _resample_contour(segment: np.ndarray, count: int, start: tuple[float, float],
                       end: tuple[float, float]) -> np.ndarray:
-    """Resample the source-selected arc without assuming single-valued R(Z).
+    """Resample a selected contour arc without assuming single-valued R(Z).
 
-    The source rolls open paths as if they were rings and fits R(Z), creating
-    spurious jumps or failing when Z is not monotonic. Here an open path keeps
-    its adjacency; a closed path keeps the source clockwise direction. Nearest
-    start/end vertices and longest-component selection retain source choices.
+    Open paths retain point adjacency and closed paths retain clockwise
+    orientation. Nearest start/end vertices and longest-component selection
+    provide deterministic contour choices.
     """
     points = np.asarray(segment, dtype=float)
     if points.ndim != 2 or points.shape[1] != 2 or points.shape[0] < 2 or not np.all(np.isfinite(points)):
@@ -412,10 +409,10 @@ def _resample_contour(segment: np.ndarray, count: int, start: tuple[float, float
 
 def write_pleiades_eqdsk_legacy_raw(R, Z, psi, plas_currents,
                                     filename: str | Path, title: str) -> None:
-    """Write the retained source contour workflow with robust geometry.
+    """Write the contour-based raw Pleiades representation.
 
-    This explicit ``legacy_raw`` entry point recovers the source workflow's
-    nearest ``(0.6, 0)`` flux level, 2% vessel offset, longest contour and
+    This explicit ``legacy_raw`` entry point selects the nearest ``(0.6, 0)``
+    flux level, a 2% vessel offset, the longest contour and
     100-point limiter/vessel records.  It uses parametric arclength contour
     points so vertical/open and closed boundaries remain representable.  It
     intentionally preserves the Pleiades grid-origin convention (R starts at
@@ -544,13 +541,11 @@ def write_pressure_equilibrium_eqdsk(R, Z, result, filename: str | Path,
     return profile_psi
 
 
-# Keep the source spelling available only as an explicit legacy alias; the
-# corrected name above is preferred in new code and in catalog documents.
+# Keep the historical short spelling as an explicit file-format entry point.
 write_eqdsk = write_pleiades_eqdsk_legacy_raw
 
 
-# Explicit aliases preserve the useful source vocabulary while the module and
-# docstrings keep the non-standard dialect visible to callers.
+# The aliases preserve the established file-format vocabulary.
 read_eqdsk = read_pleiades_eqdsk
 write_eqdsk_fromdict = write_pleiades_eqdsk
 

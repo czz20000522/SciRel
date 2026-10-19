@@ -1,4 +1,4 @@
-"""Sequential ambipolar closure composed from the emitted kinetic-moment leaf."""
+"""Sequential ambipolar closure composed from a kinetic-moment evaluator."""
 from __future__ import annotations
 from scirel._validation import finite_scalar as _require_finite_scalar, integer_scalar as _require_integer_scalar, bool_scalar as _require_bool_scalar
 import hashlib

@@ -1,4 +1,4 @@
-"""WHAM source coil geometry; currents remain constructor-default 1 A."""
+"""WHAM coil geometry with device-library constructor defaults."""
 from scirel.electromagnetism import Device, RectangularCoil
 class WHAM(Device):
     def __init__(self):

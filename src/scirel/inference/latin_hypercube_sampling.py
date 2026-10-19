@@ -1,50 +1,44 @@
-"""Seeded stratified Latin-hypercube design for direct inversion."""
+"""Seeded stratified Latin-hypercube designs for bounded inversion."""
+
 from __future__ import annotations
+
 import numpy as np
 
+
 def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
-    """Generate a seeded stratified Latin-hypercube parameter design.
+    """Generate one uniformly jittered point in every selected stratum.
 
-    Parameters
-    ----------
-    bounds : dict
-        Mapping from parameter keys to finite increasing ``(low, high)``
-        endpoint pairs. Only selected keys are validated and sampled.
-    n_samples : int
-        Positive number of strata and returned sample dictionaries.
-    seed : object, optional
-        Seed passed unchanged to ``numpy.random.default_rng``.
-    fit_keys : iterable, optional
-        Ordered subset of keys to sample; omitted keys follow ``bounds``
-        insertion order.
+    ``bounds`` maps parameter names to finite increasing ``(low, high)``
+    pairs.  ``fit_keys`` fixes the sampled column order; omitted keys follow
+    mapping insertion order.  The returned ``initial_samples`` list is ready
+    for the optimizer graph and contains no hidden parameters.
 
-    Returns
-    -------
-    dict
-        Mapping with ``initial_samples``, an ordered list of dictionaries
-        containing one draw in each stratum for every selected key.
-
-    Raises
-    ------
-    ValueError
-        If ``bounds`` or ``n_samples`` has an invalid type or selected bounds
-        are nonfinite or nonincreasing.
-    KeyError
-        If ``fit_keys`` names a key absent from ``bounds``.
+    Raises ``ValueError`` for malformed bounds or a non-positive sample count.
     """
     if not isinstance(bounds, dict) or not isinstance(n_samples, int) or n_samples < 1:
-        raise ValueError('bounds mapping and positive n_samples required')
+        raise ValueError("bounds mapping and positive n_samples required")
     keys = list(bounds) if fit_keys is None else list(fit_keys)
     rng = np.random.default_rng(seed)
-    unit = np.empty((n_samples, len(keys)))
-    samples = []
-    for index, key in enumerate(keys):
+    lower = np.empty(len(keys), dtype=float)
+    upper = np.empty(len(keys), dtype=float)
+    for column, key in enumerate(keys):
         low, high = map(float, bounds[key])
         if not np.isfinite(low) or not np.isfinite(high) or high <= low:
-            raise ValueError(f'finite increasing bounds required for {key}')
-        unit[:, index] = (rng.permutation(n_samples) + rng.random(n_samples)) / n_samples
-    for row in unit:
-        samples.append({key: float(bounds[key][0]) + value * (float(bounds[key][1]) - float(bounds[key][0])) for key, value in zip(keys, row)})
-    return {'initial_samples': samples}
+            raise ValueError(f"finite increasing bounds required for {key}")
+        lower[column] = low
+        upper[column] = high
+
+    unit = np.empty((n_samples, len(keys)), dtype=float)
+    strata = np.arange(n_samples, dtype=float)
+    for column in range(len(keys)):
+        unit[:, column] = (rng.permutation(strata) + rng.random(n_samples)) / n_samples
+    samples = [
+        {key: float(low + fraction * (high - low))
+         for key, low, high, fraction in zip(keys, lower, upper, row)}
+        for row in unit
+    ]
+    return {"initial_samples": samples}
+
+
 run = sample_latin_hypercube
-__all__ = ['sample_latin_hypercube']
+__all__ = ["sample_latin_hypercube"]

@@ -1,4 +1,4 @@
-"""Dimension-preserving, typed evaluation through caller-owned scientific ports."""
+"""Dimension-preserving evaluation through caller-owned scientific ports."""
 from __future__ import annotations
 from collections.abc import Mapping
 from copy import deepcopy

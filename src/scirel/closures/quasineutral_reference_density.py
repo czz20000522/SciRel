@@ -1,4 +1,4 @@
-"""Emit the quasineutral reference electron-density relation."""
+"""Evaluate the reference electron-density relation."""
 from __future__ import annotations
 import numpy as np
 

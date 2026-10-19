@@ -1,4 +1,4 @@
-"""Validated equilibrium diagnostics with lazy scientific exports."""
+"""Lazy access to validated equilibrium diagnostics."""
 
 from importlib import import_module as _import_module
 

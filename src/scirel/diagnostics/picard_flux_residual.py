@@ -1,4 +1,4 @@
-"""Relative flux-state residual used by Pleiades Picard feedback."""
+"""Scaled relative residual between two flux states."""
 
 import numpy as np
 

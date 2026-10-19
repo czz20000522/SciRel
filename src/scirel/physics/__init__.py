@@ -1,4 +1,4 @@
-"""Algebraic plasma-physics relations with lazy scientific exports."""
+"""Lazy access to algebraic plasma-physics relations."""
 
 from importlib import import_module as _import_module
 

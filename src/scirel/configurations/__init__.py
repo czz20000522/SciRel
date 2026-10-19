@@ -1,4 +1,4 @@
-"""Source-supported configuration geometry models with lazy exports."""
+"""Lazy access to the built-in experimental configuration geometries."""
 
 from importlib import import_module as _import_module
 

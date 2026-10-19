@@ -1,19 +1,15 @@
-# Derived from TORAX: Copyright 2024 DeepMind Technologies Limited.
-# Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
 """Main-ion dilution from a one-main/one-impurity charge model.
 
-This is the TORAX relation
+The relation is
 ``d = (Z_impurity - Z_eff) / (Z_i * (Z_impurity - Z_i))``.
 Inputs are dimensionless charge numbers and the output is the dimensionless
 ratio ``n_i / n_e``.  The SciRel boundary makes the source's implicit
 one-species physical assumptions explicit: all charges are finite and
 positive, the two charge states differ, and ``Z_eff`` lies between them.
 
-Source: TORAX 8cd1184007c82ff379d118b2ad22753358820fe5,
-``torax/_src/physics/formulas.py:calculate_main_ion_dilution_factor``
-(SHA-256 825c3730c8d7d057b82de2ac716b0d8588fb1098c14e995470c039c098ded10d).
-Canonical quasineutral reference-density relations lack impurity and Zeff
-ports and are retained independently. No SciRel caller is rebound.
+The implementation validates the one-main/one-impurity applicability domain
+before applying the dimensionless algebra. It is independent of the
+quasineutral reference-density closure.
 """
 from __future__ import annotations
 
@@ -23,11 +19,21 @@ __all__ = ["calculate_main_ion_dilution_factor"]
 
 
 def _real_array(value, name):
+    """Return a finite float64 array while rejecting booleans and masks."""
     try:
         raw = np.asarray(value)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{name} must be a finite real numeric value") from exc
-    if raw.dtype.kind not in "iuf" or raw.size == 0 or np.ma.isMaskedArray(value) or any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat) or np.any(~np.isfinite(raw)):
+    if (
+        raw.dtype.kind not in "iuf"
+        or raw.size == 0
+        or np.ma.isMaskedArray(value)
+        or any(
+            isinstance(item, (bool, np.bool_))
+            for item in np.asarray(value, dtype=object).flat
+        )
+        or np.any(~np.isfinite(raw))
+    ):
         raise ValueError(f"{name} must be a finite real numeric value")
     return np.asarray(raw, dtype=np.float64)
 
@@ -59,10 +65,10 @@ def calculate_main_ion_dilution_factor(Z_i, Z_impurity, Z_eff):
     if np.any((zeff < low) | (zeff > high)):
         raise ValueError("Z_eff must lie between the main and impurity charge states")
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
-        # Divide in stages: the equivalent product denominator can overflow
-        # for finite, physically ordered charge scales even though the ratio
-        # itself is representable.
-        result = ((zimp - zeff) / (zimp - zi)) / zi
+        # Divide in stages so a large but representable ratio does not create
+        # an unnecessary product overflow in the denominator.
+        impurity_fraction = (zimp - zeff) / (zimp - zi)
+        result = impurity_fraction / zi
     if not np.all(np.isfinite(result)):
         raise FloatingPointError("main-ion dilution result is not representable")
     return result

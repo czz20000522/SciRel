@@ -14,8 +14,8 @@ def _profile(value, magnetic_field, psi, name):
 def close_hall_two_fluid_pressure(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, ion_p_parallel_pa=None, ion_p_perpendicular_pa=None, electron_p_parallel_pa=None, electron_p_perpendicular_pa=None, pressure_composition_mode="independent_fit"):
     """Assemble a prescribed reduced Hall state in SI units.
 
-    ``independent_fit`` preserves the source capability to fit total and ion
-    tensors independently. Their difference after subtracting the electron
+    ``independent_fit`` permits total and ion tensors to be fitted independently.
+    Their difference after subtracting the electron
     tensor is returned as residual stress, not a validated extra species.
     Total force uses the supplied total tensor; ion thermal inertia uses only
     ion moments. This prescribed state is not proof of self-consistent two-fluid

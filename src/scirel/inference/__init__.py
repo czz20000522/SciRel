@@ -1,4 +1,4 @@
-"""Anisotropic inference helpers with lazy scientific exports."""
+"""Lazy access to bounded anisotropic inference operators."""
 
 from importlib import import_module as _import_module
 

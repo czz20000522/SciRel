@@ -1,10 +1,11 @@
-"""Source-supported BRB geometry models without plotting adapters."""
+"""Geometry primitives for the Big Red Ball and TREX coil arrangement."""
 from __future__ import annotations
 import math
 import numpy as np
 from scirel.electromagnetism import ArbitraryPoints, RectangularCoil, MagnetRing, Device
 
 class TREXCoil(ArbitraryPoints):
+    """Represent the fixed conductor cloud of one TREX coil."""
     _RMIN=2.00467; _DR=.0134166; _DZ=.0140625; _COND_AREA=_DR*_DR; _NPTS=88
     _Z_REL_POS=np.linspace(-.105469,.105469,16); _R_REL_POS=np.linspace(0,.067083,6)
     def __init__(self,z0=1.1,**kwargs):
@@ -34,8 +35,8 @@ class BRB(Device):
         self.ltrx_n=RectangularCoil(r0,z0,nr=10,nz=13,dr=dr,dz=dz); self.ltrx_s=RectangularCoil(r0,-z0,nr=10,nz=13,dr=dr,dz=dz)
         cr=1.514475; theta=np.linspace(7.5,172.5,34); rzmu=np.empty((36,3)); rzmu[0]=[.0768,1.5117,0.]; rzmu[1:-1,0]=cr*np.sin(np.deg2rad(theta)); rzmu[1:-1,1]=cr*np.cos(np.deg2rad(theta)); rzmu[1:-1,2]=theta+np.mod(np.arange(1,35),2)*180; rzmu[-1]=[.0768,-1.5117,0.]
         for i,(r,z,mu) in enumerate(rzmu): setattr(self,f'mr{i+1}',MagnetRing(r0=r,z0=z,mu_hat=mu,current=2710.68,height=.0254,width=.0381))
-    def add_cathode(self,*args,**kwargs): raise NotImplementedError('cathodes are not part of the source-supported filament model')
-    def add_anode(self,*args,**kwargs): raise NotImplementedError('anodes are not part of the source-supported filament model')
+    def add_cathode(self,*args,**kwargs): raise NotImplementedError('cathodes are outside the filament geometry contract')
+    def add_anode(self,*args,**kwargs): raise NotImplementedError('anodes are outside the filament geometry contract')
     def add_sweep(self,*args,**kwargs): raise NotImplementedError('persistent sweep geometry is not implemented')
 
 __all__=['TREXCoil','BRB']

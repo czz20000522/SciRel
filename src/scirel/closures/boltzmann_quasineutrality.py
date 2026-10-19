@@ -1,4 +1,4 @@
-"""Boltzmann electron response and charge-neutrality residual."""
+"""Vectorized Boltzmann electron response and charge-neutrality residual."""
 from __future__ import annotations
 import numpy as np
 from scirel._numerics import _scaled_difference
