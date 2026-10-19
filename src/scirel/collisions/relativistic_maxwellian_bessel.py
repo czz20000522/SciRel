@@ -117,6 +117,13 @@ class BesselBackendEvaluationError(ValueError):
     """
 
 
+def _evaluate_closure(argument):
+    """Evaluate the backend orders and the K2 recurrence once."""
+    bk0 = float(kve(0, argument))
+    bk1 = float(kve(1, argument))
+    return bk0, bk1, bk0 + 2.0 * bk1 / argument
+
+
 def relativistic_maxwellian_bessel(x):
     """Return the ``{bk0, bk1, bk2}`` relativistic Maxwellian Bessel closure.
 
@@ -148,9 +155,7 @@ def relativistic_maxwellian_bessel(x):
     value = float(x)
     if not math.isfinite(value) or value <= 0.0:
         raise InvalidBesselArgumentError("x must be positive and finite")
-    bk0 = float(kve(0, value))
-    bk1 = float(kve(1, value))
-    bk2 = bk0 + 2.0 * bk1 / value
+    bk0, bk1, bk2 = _evaluate_closure(value)
     # One check, after the arithmetic, over all three outputs.  The V3 candidate
     # returned non-finite values here; an accepted call may not.
     if not (math.isfinite(bk0) and math.isfinite(bk1) and math.isfinite(bk2)):

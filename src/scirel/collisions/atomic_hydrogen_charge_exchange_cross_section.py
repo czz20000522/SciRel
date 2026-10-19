@@ -41,7 +41,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import finite_nonnegative_energy
+from ._energy_input import clipped_energy, log_polynomial
 
 __all__ = [
     "evaluate_atomic_hydrogen_charge_exchange_cross_section",
@@ -83,12 +83,10 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
         If ``energy_ev`` contains a non-real, non-finite or negative value, or if
         ``freeman`` is not a scalar.
     """
-    energy = finite_nonnegative_energy(energy_ev)
     selector = np.asarray(freeman)
     if selector.ndim != 0:
         raise ValueError("freeman must be a scalar branch selector, not an array")
+    energy = clipped_energy(energy_ev, 0.1, 1.0e5 if bool(selector) else 2.01e4)
     if bool(selector):
-        clipped = np.clip(energy, 0.1, 1.0e5)
-        return 1.0e-4 * 0.6937e-14 * (1.0 - 0.155 * np.log10(clipped)) ** 2 / (1.0 + 0.1112e-14 * clipped**3.3)
-    clipped = np.clip(energy, 0.1, 2.01e4)
-    return np.exp(np.polynomial.polynomial.polyval(np.log(clipped), _JANE_COEFFICIENTS)) * 1.0e-4
+        return 1.0e-4 * 0.6937e-14 * (1.0 - 0.155 * np.log10(energy)) ** 2 / (1.0 + 0.1112e-14 * energy**3.3)
+    return np.exp(log_polynomial(np.log(energy), _JANE_COEFFICIENTS)) * 1.0e-4

@@ -1,4 +1,4 @@
-# Derived from TORAX: Copyright 2024 DeepMind Technologies Limited.
+# Derived profile conventions: TORAX, Copyright 2024 DeepMind Technologies Limited.
 # Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
 """Volume-normalized exponential radial source profile.
 

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import finite_nonnegative_energy
+from ._energy_input import bivariate_log_fit, finite_nonnegative_energy, positive_real_array
 
 __all__ = ["evaluate_hydrogen2_charge_exchange_rate"]
 
@@ -28,28 +28,9 @@ _COEFFICIENTS = np.array(
 )
 
 
-def _finite_positive_temperature(value):
-    try:
-        raw = np.asarray(value)
-        if raw.dtype.kind not in "iuf" or (
-            isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_))
-                    for item in np.asarray(value, dtype=object).flat)
-        ):
-            raise ValueError
-        temperature = np.asarray(raw, dtype=float)
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise ValueError("temperature_ev must contain real numeric values") from exc
-    if not np.all(np.isfinite(temperature)):
-        raise ValueError("temperature_ev must be finite")
-    if np.any(temperature <= 0.0):
-        raise ValueError("temperature_ev must be positive")
-    return temperature
-
-
 def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
     """Return the H2 + H2+ charge-exchange fit in m^3/s on paired samples."""
-    temperature = _finite_positive_temperature(temperature_ev)
+    temperature = positive_real_array(temperature_ev, "temperature_ev")
     energy = finite_nonnegative_energy(energy_ev)
     if temperature.shape != energy.shape:
         raise ValueError("temperature_ev and energy_ev must have the same shape")
@@ -58,21 +39,7 @@ def evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev):
     clipped_energy = np.minimum(np.maximum(energy, 0.1), 2.01e4)
     log_temperature = np.log(clipped_temperature)
     log_energy = np.log(clipped_energy)
-    log_rate = np.zeros_like(log_energy, dtype=float)
-    # Cache the powers once while preserving the historical accumulation
-    # order below.  The fit is replayed bit-for-bit, but the old loop raised
-    # both powers for every one of the 81 coefficient terms.
-    log_energy_powers = [log_energy**energy_power for energy_power in range(9)]
-    log_temperature_powers = [
-        log_temperature**temperature_power for temperature_power in range(9)
-    ]
-    for energy_power in range(9):
-        for temperature_power in range(9):
-            log_rate = log_rate + (
-                _COEFFICIENTS[temperature_power, energy_power]
-                * log_energy_powers[energy_power]
-                * log_temperature_powers[temperature_power]
-            )
+    log_rate = bivariate_log_fit(log_energy, log_temperature, _COEFFICIENTS)
     rate = np.exp(log_rate) * 1.0e-6
     if not np.all(np.isfinite(rate)) or np.any(rate <= 0.0):
         raise ValueError("molecular hydrogen charge-exchange fit produced a non-finite or nonpositive rate")

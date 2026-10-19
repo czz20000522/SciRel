@@ -111,6 +111,37 @@ def _finite_1d_nonnegative(name, value):
     return array
 
 
+def _mesh_distribution(radial, axial, volume, tnorm_ev, target_temperature_ev):
+    """Return the normalized target Maxwellian on the supplied mesh."""
+    with np.errstate(over="ignore", invalid="ignore"):
+        shape = np.exp(
+            -(radial[:, None] ** 2 + axial[None, :] ** 2)
+            * tnorm_ev / target_temperature_ev
+        )
+        distribution = shape / np.sum(volume * shape)
+    if not np.all(np.isfinite(distribution)):
+        raise ValueError("target Maxwellian is not representable")
+    return distribution
+
+
+def _relative_kinematics(energies, radial, axial, thermal_speed, particle_mass_amu):
+    """Build relative speed and collision energy arrays for every beam energy."""
+    with np.errstate(over="ignore", invalid="ignore"):
+        particle_vx = (
+            np.sqrt(2.0 * ELEMENTARY_CHARGE_C * energies / (particle_mass_amu * AMU_KG))
+            / thermal_speed
+        )
+        relative_speed = np.sqrt(
+            radial[None, :, None] ** 2
+            + (axial[None, None, :] - particle_vx[:, None, None]) ** 2
+        )
+        collision_energy = (
+            0.5 * thermal_speed**2 * relative_speed**2
+            * particle_mass_amu * AMU_KG / ELEMENTARY_CHARGE_C
+        )
+    return relative_speed, collision_energy
+
+
 def average_cross_section_over_maxwellian(
     *,
     particle_energy_ev,
@@ -188,25 +219,11 @@ def average_cross_section_over_maxwellian(
         thermal_speed = np.sqrt(
             2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (target_mass_amu * AMU_KG)
         )
-        target_distribution = np.exp(
-            -(radial[:, None] ** 2 + axial[None, :] ** 2) * tnorm_ev / target_temperature_ev
+        target_distribution = _mesh_distribution(
+            radial, axial, volume, tnorm_ev, target_temperature_ev
         )
-        target_distribution /= np.sum(volume * target_distribution)
-        particle_vx = (
-            np.sqrt(2.0 * ELEMENTARY_CHARGE_C * energies / (particle_mass_amu * AMU_KG))
-            / thermal_speed
-        )
-        relative_speed = np.sqrt(
-            radial[None, :, None] ** 2
-            + (axial[None, None, :] - particle_vx[:, None, None]) ** 2
-        )
-        collision_energy = (
-            0.5
-            * thermal_speed**2
-            * relative_speed**2
-            * particle_mass_amu
-            * AMU_KG
-            / ELEMENTARY_CHARGE_C
+        relative_speed, collision_energy = _relative_kinematics(
+            energies, radial, axial, thermal_speed, particle_mass_amu
         )
         # Extreme-but-finite inputs can overflow this intermediate array.  The
         # failure contract requires rejecting it here, before the caller's

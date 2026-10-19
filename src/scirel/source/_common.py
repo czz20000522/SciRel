@@ -1,21 +1,21 @@
-# Derived profile conventions: TORAX, Copyright 2024 DeepMind Technologies Limited.
-# Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
-"""Shared validation and stable discrete profile normalization."""
+"""Shared grid validation and stable discrete profile normalization."""
 from __future__ import annotations
 import numpy as np
 
 
 def grid(rho_norm, vpr, drho_norm):
-    vals = []
-    for value, name in zip((rho_norm, vpr, drho_norm), ("rho_norm", "vpr", "drho_norm")):
+    values = []
+    for value, name in zip(
+        (rho_norm, vpr, drho_norm), ("rho_norm", "vpr", "drho_norm")
+    ):
         a = np.asarray(value)
         if np.ma.isMaskedArray(value) or a.ndim != 1 or a.size == 0 or a.dtype.kind not in "iuf":
             raise ValueError(f"{name} must be a nonempty one-dimensional real array")
         a = np.asarray(a, dtype=np.float64)
         if not np.all(np.isfinite(a)):
             raise ValueError(f"{name} must be finite")
-        vals.append(a)
-    rho, vpr_a, drho = vals
+        values.append(a)
+    rho, vpr_a, drho = values
     if rho.size != vpr_a.size or rho.size != drho.size:
         raise ValueError("rho_norm, vpr and drho_norm must have equal length")
     if np.any(np.diff(rho) <= 0) or np.any(rho < 0) or np.any(rho > 1):
@@ -43,6 +43,8 @@ def width_scalar(value):
 
 
 def normalize_log_shape(log_shape, weights, total):
+    log_shape = np.asarray(log_shape, dtype=np.longdouble)
+    weights = np.asarray(weights, dtype=np.longdouble)
     if not np.all(np.isfinite(log_shape)):
         # A valid finite input may still produce an overflowed intermediate;
         # use the finite limiting endpoint when possible.
@@ -51,7 +53,8 @@ def normalize_log_shape(log_shape, weights, total):
     peak = np.max(log_shape)
     if not np.isfinite(peak):
         raise FloatingPointError("profile exponent is not representable")
-    shape = np.exp(log_shape - peak)
+    with np.errstate(over="ignore", invalid="ignore"):
+        shape = np.exp(log_shape - peak)
     denominator = np.sum(shape * weights, dtype=np.longdouble)
     if not np.isfinite(denominator) or denominator == 0:
         raise FloatingPointError("profile normalization is not representable")

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from ._energy_input import positive_real_array
+
 __all__ = ["evaluate_atomic_hydrogen_1s_radiative_recombination_rate"]
 
 _RY_EV = 13.58
@@ -12,28 +14,9 @@ _A_NL = 3.92
 _X_NL = 0.35
 
 
-def _positive_temperature(value):
-    try:
-        raw = np.asarray(value)
-        if raw.dtype.kind not in "iuf" or (
-            isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_))
-                    for item in np.asarray(value, dtype=object).flat)
-        ):
-            raise ValueError
-        temperature = np.asarray(raw, dtype=float)
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise ValueError("electron_temperature_ev must contain real numeric values") from exc
-    if not np.all(np.isfinite(temperature)):
-        raise ValueError("electron_temperature_ev must be finite")
-    if np.any(temperature <= 0.0):
-        raise ValueError("electron_temperature_ev must be positive")
-    return temperature
-
-
 def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperature_ev):
     """Return the H+ + e -> H(1s) + hv rate coefficient in m^3/s."""
-    temperature = _positive_temperature(electron_temperature_ev)
+    temperature = positive_real_array(electron_temperature_ev, "electron_temperature_ev")
     clipped = np.minimum(np.maximum(temperature, 0.1), 2.01e4)
     ionization_energy_ev = _RY_EV / _LEVEL_N
     b_n = ionization_energy_ev / clipped

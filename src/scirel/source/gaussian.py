@@ -1,4 +1,4 @@
-# Derived from TORAX: Copyright 2024 DeepMind Technologies Limited.
+# Derived profile conventions: TORAX, Copyright 2024 DeepMind Technologies Limited.
 # Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
 """Volume-normalized Gaussian radial source profile.
 
@@ -46,7 +46,12 @@ def gaussian_profile(rho_norm, vpr, drho_norm, *, center, width, total):
     ref = r[0] if c <= rho[0] else r[-1] if c >= rho[-1] else r[np.argmin(np.abs(r - c))]
     delta_square = (r - ref) * (r + ref - 2 * np.longdouble(c))
     # Preserve the repaired source's float64 denominator floor for tiny widths.
-    den = max(np.longdouble(2) * np.longdouble(w) * np.longdouble(w), np.longdouble(np.finfo(np.float64).tiny))
+    with np.errstate(over="ignore", invalid="ignore"):
+        den = max(
+            np.longdouble(2) * np.longdouble(w) * np.longdouble(w),
+            np.longdouble(np.finfo(np.float64).tiny),
+        )
     log_shape = -delta_square / den
-    weights = np.asarray(vpr_a, dtype=np.longdouble) * np.asarray(drho, dtype=np.longdouble)
+    with np.errstate(over="ignore", invalid="ignore"):
+        weights = np.asarray(vpr_a, dtype=np.longdouble) * np.asarray(drho, dtype=np.longdouble)
     return normalize_log_shape(log_shape, weights, total_f)

@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import finite_nonnegative_energy
+from ._energy_input import clipped_energy, log_polynomial
 
 __all__ = [
     "evaluate_hydrogen2_proton_elastic_cross_section",
@@ -64,7 +64,6 @@ def evaluate_hydrogen2_proton_elastic_cross_section(energy_ev):
     ValueError
         If ``energy_ev`` contains a non-real, non-finite or negative value.
     """
-    energy = finite_nonnegative_energy(energy_ev)
-    clipped = np.clip(energy, 0.03, 1.01e4)
-    log_sigma = np.polynomial.polynomial.polyval(np.log(clipped), _COEFFICIENTS)
+    clipped = clipped_energy(energy_ev, 0.03, 1.01e4)
+    log_sigma = log_polynomial(np.log(clipped), _COEFFICIENTS)
     return np.exp(log_sigma) * 1.0e-4

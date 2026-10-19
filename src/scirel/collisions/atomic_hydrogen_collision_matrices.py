@@ -29,6 +29,7 @@ from .atomic_hydrogen_charge_exchange_cross_section import evaluate_atomic_hydro
 from .atomic_hydrogen_elastic_cross_section import evaluate_atomic_hydrogen_elastic_cross_section
 from .hydrogen_h2_elastic_cross_section import evaluate_hydrogen_h2_elastic_cross_section
 from .hydrogen_proton_elastic_cross_section import evaluate_hydrogen_proton_elastic_cross_section
+from ._velocity_geometry import averaged_matrix, predecessor_state
 
 __all__ = ["assemble_atomic_hydrogen_collision_matrices"]
 
@@ -52,29 +53,7 @@ def _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta=5):
     Shapes: ``v_v2, v_v, vr2_vx2`` are ``(nvr,nvx,nvr,nvx,ntheta)``;
     ``vx_vx`` and ``Vr2pidVrdVx`` are ``(nvr,nvx,nvr,nvx)``.
     """
-    cos_theta = np.cos(np.pi * (np.arange(n_theta) + 0.5) / n_theta)
-    nvr = vr.size
-    nvx = vx.size
-    # Broadcast the four velocity axes together.  This is algebraically the
-    # same predecessor geometry as the source loops above, while avoiding the
-    # O(n_theta*n_vr**2*n_vx) Python assignment loop for every assembly.
-    vr_i = vr[:, None, None, None, None]
-    vr_k = vr[None, None, :, None, None]
-    delta_vx = vx[None, :, None, None, None] - vx[None, None, None, :, None]
-    v_starter = vr_i**2 + vr_k**2 - 2 * vr_i * vr_k * cos_theta[None, None, None, None, :]
-    v_v2 = v_starter + delta_vx**2
-    vr2_vx2 = v_starter - 2 * delta_vx**2
-    v_v = np.sqrt(v_v2)
-
-    vx_vx = np.broadcast_to(
-        vx[None, :, None, None] - vx[None, None, None, :],
-        (nvr, nvx, nvr, nvx),
-    ).copy()
-    Vr2pidVrdVx = np.broadcast_to(
-        Vr2pidVr[None, None, :, None] * dVx[None, None, None, :],
-        (nvr, nvx, nvr, nvx),
-    ).copy()
-    return v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx
+    return predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta)
 
 
 # --------------------------------------------------------------------------- #
@@ -162,40 +141,28 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     sig = {}
 
     # SIG_CX (source kinetic_h.py:939-945)
-    _sig = np.zeros((nsig * nsig, n_theta))
-    _sig[:] = (v_v * evaluate_atomic_hydrogen_charge_exchange_cross_section(v_v2 * ecx)).reshape(_sig.shape, order="F")
-    sig_cx = np.zeros((nsig, nsig))
-    sig_cx[:] = (
-        Vr2pidVrdVx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
-    ).reshape(sig_cx.shape, order="F")
-    sig["SIG_CX"] = sig_cx
+    sig["SIG_CX"] = averaged_matrix(
+        v_v * evaluate_atomic_hydrogen_charge_exchange_cross_section(v_v2 * ecx),
+        Vr2pidVrdVx, angular_weights, nsig,
+    )
 
     # SIG_H_H (source kinetic_h.py:956-965)
-    _sig = np.zeros((nsig * nsig, n_theta))
-    _sig[:] = (vr2_vx2 * v_v * evaluate_atomic_hydrogen_elastic_cross_section(v_v2 * ehh, viscosity=True) / 8).reshape(_sig.shape, order="F")
-    sig_hh = np.zeros((nsig, nsig))
-    sig_hh[:] = (
-        Vr2pidVrdVx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
-    ).reshape(sig_hh.shape, order="F")
-    sig["SIG_H_H"] = sig_hh
+    sig["SIG_H_H"] = averaged_matrix(
+        vr2_vx2 * v_v * evaluate_atomic_hydrogen_elastic_cross_section(v_v2 * ehh, viscosity=True) / 8,
+        Vr2pidVrdVx, angular_weights, nsig,
+    )
 
     # SIG_H_H2 (source kinetic_h.py:979-988)
-    _sig = np.zeros((nsig * nsig, n_theta))
-    _sig[:] = (v_v * evaluate_hydrogen_h2_elastic_cross_section(v_v2 * ecx)[0]).reshape(_sig.shape, order="F")
-    sig_hh2 = np.zeros((nsig, nsig))
-    sig_hh2[:] = (
-        Vr2pidVrdVx * vx_vx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
-    ).reshape(sig_hh2.shape, order="F")
-    sig["SIG_H_H2"] = sig_hh2
+    sig["SIG_H_H2"] = averaged_matrix(
+        v_v * evaluate_hydrogen_h2_elastic_cross_section(v_v2 * ecx)[0],
+        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+    )
 
     # SIG_H_P (source kinetic_h.py:1004-1011)
-    _sig = np.zeros((nsig * nsig, n_theta))
-    _sig[:] = (v_v * evaluate_hydrogen_proton_elastic_cross_section(v_v2 * ecx)[0]).reshape(_sig.shape, order="F")
-    sig_hp = np.zeros((nsig, nsig))
-    sig_hp[:] = (
-        Vr2pidVrdVx * vx_vx * ((_sig @ angular_weights).reshape(Vr2pidVrdVx.shape, order="F"))
-    ).reshape(sig_hp.shape, order="F")
-    sig["SIG_H_P"] = sig_hp
+    sig["SIG_H_P"] = averaged_matrix(
+        v_v * evaluate_hydrogen_proton_elastic_cross_section(v_v2 * ecx)[0],
+        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+    )
 
     for key, value in sig.items():
         if not np.all(np.isfinite(value)):

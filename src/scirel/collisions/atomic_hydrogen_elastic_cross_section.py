@@ -39,7 +39,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import finite_nonnegative_energy
+from ._energy_input import clipped_energy, log_polynomial
 
 __all__ = [
     "evaluate_atomic_hydrogen_elastic_cross_section",
@@ -82,10 +82,10 @@ def evaluate_atomic_hydrogen_elastic_cross_section(energy_ev, viscosity=False):
         If ``energy_ev`` contains a non-real, non-finite or negative value, or if
         ``viscosity`` is not a scalar.
     """
-    energy = finite_nonnegative_energy(energy_ev)
+    energy = clipped_energy(energy_ev, 0.03, 1.01e4)
     selector = np.asarray(viscosity)
     if selector.ndim != 0:
         raise ValueError("viscosity must be a scalar branch selector, not an array")
-    clipped = np.clip(energy, 0.03, 1.01e4)
+    clipped = energy
     coefficients = _VISCOSITY_COEFFICIENTS if bool(selector) else _MOMENTUM_TRANSFER_COEFFICIENTS
-    return np.exp(np.polynomial.polynomial.polyval(np.log(clipped), coefficients)) * 1.0e-4
+    return np.exp(log_polynomial(np.log(clipped), coefficients)) * 1.0e-4

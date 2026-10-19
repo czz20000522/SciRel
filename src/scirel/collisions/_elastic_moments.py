@@ -44,7 +44,10 @@ def reduce_elastic_moments(f, density, alpha1, alpha2, sig_self, wr, dx, vr, vx,
     if any(not isinstance(e, (bool, np.bool_)) for e in enabled):
         raise ValueError('channel flags must be booleans')
     weights = wr[:, None] * dx[None, :]
-    integral = lambda a: np.sum(weights[:, :, None] * a, axis=(0, 1))
+
+    def integral(values):
+        """Integrate one velocity-grid field independently per spatial cell."""
+        return np.sum(weights[:, :, None] * values, axis=(0, 1))
     # This tolerance only accommodates binary64 quadrature summation roundoff;
     # it never floors a collision moment or replaces a zero denominator.
     roundoff = 64 * np.finfo(float).eps

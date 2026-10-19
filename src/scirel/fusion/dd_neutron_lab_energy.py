@@ -183,6 +183,22 @@ def _require_representable(value, quantity):
         raise ValueError(f"{NON_REPRESENTABLE_MESSAGE}: {quantity} is not finite")
 
 
+def _validated_vectors(reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector):
+    """Convert and validate the three vectors at the public boundary."""
+    vectors = tuple(
+        np.asarray(value, dtype=float)
+        for value in (reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector)
+    )
+    if any(vector.shape != (3,) or not np.all(np.isfinite(vector)) for vector in vectors):
+        raise ValueError(
+            "velocity vectors and detector_unit_vector must be finite shape-(3,) vectors"
+        )
+    detector = vectors[2]
+    if not np.isclose(np.linalg.norm(detector), 1.0, rtol=0.0, atol=DETECTOR_NORM_ATOL):
+        raise ValueError("detector_unit_vector must have unit norm")
+    return vectors
+
+
 def calculate_dd_neutron_lab_energy_kev(
     *,
     reactant1_velocity_cm_s,
@@ -230,22 +246,9 @@ def calculate_dd_neutron_lab_energy_kev(
     removal, for the exact-cancellation configuration, and for the measured
     non-representable inputs.
     """
-    v1 = np.asarray(reactant1_velocity_cm_s, dtype=float)
-    v2 = np.asarray(reactant2_velocity_cm_s, dtype=float)
-    detector = np.asarray(detector_unit_vector, dtype=float)
-    if (
-        v1.shape != (3,)
-        or v2.shape != (3,)
-        or detector.shape != (3,)
-        or not all(np.all(np.isfinite(v)) for v in (v1, v2, detector))
-    ):
-        raise ValueError(
-            "velocity vectors and detector_unit_vector must be finite shape-(3,) vectors"
-        )
-    if not np.isclose(
-        np.linalg.norm(detector), 1.0, rtol=0.0, atol=DETECTOR_NORM_ATOL
-    ):
-        raise ValueError("detector_unit_vector must have unit norm")
+    v1, v2, detector = _validated_vectors(
+        reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector
+    )
 
     # The overflow and invalid-operation warnings NumPy would raise below are the
     # conditions `_require_representable` detects explicitly and reports as a
