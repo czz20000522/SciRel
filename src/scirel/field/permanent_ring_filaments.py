@@ -1,24 +1,29 @@
-"""Fixed 16-filament geometry from the shared validated MagnetRing source."""
+"""Discretization of a signed permanent-ring approximation."""
 import numpy as np
-from scirel.electromagnetism.sources import MagnetRing
 
 
 def discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0):
-    """Return two radial faces, eight points each, and dimensionless +/-1 weights.
+    """Return two eight-point radial faces and their default signed weights."""
+    center = np.asarray((r0, z0), dtype=float)
+    dimensions = np.asarray((width, height, mu_hat_deg), dtype=float)
+    if not np.all(np.isfinite(center)) or not np.all(np.isfinite(dimensions)):
+        raise ValueError("ring geometry must be finite")
+    if center[0] < 0.0 or dimensions[0] <= 0.0 or dimensions[1] <= 0.0:
+        raise ValueError("ring geometry must have nonnegative radius and positive dimensions")
+    with np.errstate(over="ignore", invalid="ignore"):
+        radial = center[0] + np.array([-0.5, 0.5]) * dimensions[0]
+        axial = np.linspace(center[1] - 0.5 * dimensions[1], center[1] + 0.5 * dimensions[1], 8)
+        points = np.vstack((
+            np.column_stack((np.full(8, radial[0]), axial)),
+            np.column_stack((np.full(8, radial[1]), axial)),
+        ))
+        if dimensions[2] != 0.0:
+            theta = np.deg2rad(dimensions[2])
+            rotation = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])
+            points = (points - center) @ rotation + center
+    if not np.all(np.isfinite(points)) or np.any(points[:, 0] < 0.0):
+        raise ValueError("ring geometry crosses the cylindrical axis or contains nonfinite points")
+    return {"rz_pts": points, "default_weights": np.r_[-np.ones(8), np.ones(8)]}
 
-    Positive degrees rotate clockwise in the (R,Z) drawing about the centroid.
-    Every nonzero angle is rotated, including angles below 1e-12 degrees.
-    Geometry must remain finite with nonnegative cylindrical radius. These
-    weights describe geometry; they do not specify magnetization or amperes.
-    """
-    with np.errstate(over='ignore', invalid='ignore'):
-        try:
-            ring = MagnetRing(r0=r0, z0=z0, width=width, height=height, mu_hat=mu_hat_deg)
-        except ValueError as exc:
-            if 'non-negative radius' in str(exc):
-                raise ValueError('ring geometry crosses the cylindrical axis or contains nonfinite points') from exc
-            raise
-    return {'rz_pts': ring.rz_pts.copy(), 'default_weights': ring.weights.copy()}
 
-
-__all__ = ['discretize_permanent_ring']
+__all__ = ["discretize_permanent_ring"]

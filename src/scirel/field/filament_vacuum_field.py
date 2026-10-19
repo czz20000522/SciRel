@@ -1,69 +1,68 @@
-"""Corrected ideal-filament field with preserved radial flux quadrature."""
+"""Ideal circular-filament vacuum-field integration on a regular grid."""
 from __future__ import annotations
+
 import numpy as np
+
 from scirel.electromagnetism.greens import compute_greens
 
-def integrate_filament_vacuum_field(r_grid, z_grid, filaments):
-    """Evaluate ideal-filament B and the preserved radial-trapezoid psi.
 
-    BR/BZ use the corrected actual-coordinate loop relation, including nonzero
-    near-axis BR and no artificial elliptic cap or radius offset. Active exact
-    filament coincidence raises. psi remains the source's uniform radial
-    trapezoid integral of R*BZ, with zero reference at the first supplied R.
-    This numerical producer differs from direct analytic R*A_phi and is not
-    replaced by it. psi units are Wb/rad, magnetic fields T, currents A.
-    保留径向离散磁通生产者及首半径零参考，只修磁场核的近轴/近丝错误。
+def integrate_filament_vacuum_field(r_grid, z_grid, filaments):
+    """Evaluate ``b_r``, ``b_z`` and the declared radial flux quadrature.
+
+    The magnetic components use the actual-coordinate Green kernel.  ``psi``
+    is the caller-facing cumulative trapezoid of ``R*B_Z`` along the uniform
+    radial axis, referenced to zero at its first radial node.
     """
-    if any(np.iscomplexobj(x) for x in (r_grid,z_grid,filaments)):
-        raise ValueError('grid coordinates and filament currents must be real')
-    r_grid = np.asarray(r_grid, dtype=float)
-    z_grid = np.asarray(z_grid, dtype=float)
-    filaments = np.asarray(filaments, dtype=float)
-    if filaments.size == 0:
-        filaments = np.empty((0, 3), dtype=float)
-    if r_grid.ndim != 2 or z_grid.shape != r_grid.shape or min(r_grid.shape) < 2:
-        raise ValueError('r_grid and z_grid must be equal-shape 2-D grids with at least two points per axis')
-    if filaments.ndim != 2 or filaments.shape[1] != 3:
-        raise ValueError('filaments must have shape (n_filaments, 3) = (R0_m, Z0_m, current_A)')
-    if not np.all(np.isfinite(r_grid)) or not np.all(np.isfinite(z_grid)) or (not np.all(np.isfinite(filaments))):
-        raise ValueError('grid and filament values must be finite')
-    if np.any(filaments[:, 0] <= 0.0):
-        raise ValueError('filament cylindrical radii must be strictly positive')
-    radial_varies_axis_1 = np.any(r_grid != r_grid[:, :1])
-    radial_varies_axis_0 = np.any(r_grid != r_grid[:1, :])
-    if radial_varies_axis_1 == radial_varies_axis_0:
-        raise ValueError('r_grid must be a rectilinear radial coordinate varying along exactly one axis')
-    radial_axis = 1 if radial_varies_axis_1 else 0
-    radial = r_grid[0, :] if radial_axis == 1 else r_grid[:, 0]
-    expected_r = radial[np.newaxis, :] if radial_axis == 1 else radial[:, np.newaxis]
-    if np.any(radial < 0.0) or np.any(np.diff(radial) <= 0.0) or (not np.array_equal(r_grid, np.broadcast_to(expected_r, r_grid.shape))):
-        raise ValueError('r_grid must be a nonnegative, strictly increasing rectilinear radial coordinate')
+    if any(np.iscomplexobj(value) for value in (r_grid, z_grid, filaments)):
+        raise ValueError("grid coordinates and filament currents must be real")
+    radius_grid, height_grid = np.asarray(r_grid, dtype=float), np.asarray(z_grid, dtype=float)
+    sources = np.asarray(filaments, dtype=float)
+    if sources.size == 0:
+        sources = np.empty((0, 3), dtype=float)
+    if radius_grid.ndim != 2 or height_grid.shape != radius_grid.shape or min(radius_grid.shape) < 2:
+        raise ValueError("r_grid and z_grid must be equal-shape 2-D grids with at least two points per axis")
+    if sources.ndim != 2 or sources.shape[1] != 3:
+        raise ValueError("filaments must have shape (n_filaments, 3) = (R0_m, Z0_m, current_A)")
+    if not np.all(np.isfinite(radius_grid)) or not np.all(np.isfinite(height_grid)) or not np.all(np.isfinite(sources)):
+        raise ValueError("grid and filament values must be finite")
+    if np.any(sources[:, 0] <= 0.0):
+        raise ValueError("filament cylindrical radii must be strictly positive")
+
+    varies_by_column = np.any(radius_grid != radius_grid[:, :1])
+    varies_by_row = np.any(radius_grid != radius_grid[:1, :])
+    if varies_by_column == varies_by_row:
+        raise ValueError("r_grid must be a rectilinear radial coordinate varying along exactly one axis")
+    radial_axis = 1 if varies_by_column else 0
+    radial = radius_grid[0, :] if radial_axis == 1 else radius_grid[:, 0]
+    expected = radial[None, :] if radial_axis == 1 else radial[:, None]
+    if (np.any(radial < 0.0) or np.any(np.diff(radial) <= 0.0)
+            or not np.array_equal(radius_grid, np.broadcast_to(expected, radius_grid.shape))):
+        raise ValueError("r_grid must be a nonnegative, strictly increasing rectilinear radial coordinate")
     if radial_axis == 1:
-        if not np.allclose(z_grid, z_grid[:, :1]):
-            raise ValueError('z_grid must be rectilinear when R varies along axis 1')
-    elif not np.allclose(z_grid, z_grid[:1, :]):
-        raise ValueError('z_grid must be rectilinear when R varies along axis 0')
-    spacing_values = np.diff(radial)
-    if not np.allclose(spacing_values, spacing_values[0], rtol=1e-12, atol=1e-14):
-        raise ValueError('radial flux quadrature requires a uniformly spaced radial axis')
-    points = np.column_stack((r_grid.ravel(),z_grid.ravel()))
-    _,br_flat,bz_flat = compute_greens(filaments,points)
-    b_r,b_z = br_flat.reshape(r_grid.shape),bz_flat.reshape(r_grid.shape)
-    psi = np.zeros_like(r_grid)
-    spacing = float(radial[1] - radial[0])
+        if not np.allclose(height_grid, height_grid[:, :1]):
+            raise ValueError("z_grid must be rectilinear when R varies along axis 1")
+    elif not np.allclose(height_grid, height_grid[:1, :]):
+        raise ValueError("z_grid must be rectilinear when R varies along axis 0")
+    spacing = np.diff(radial)
+    if not np.allclose(spacing, spacing[0], rtol=1.0e-12, atol=1.0e-14):
+        raise ValueError("radial flux quadrature requires a uniformly spaced radial axis")
+
+    points = np.column_stack((radius_grid.ravel(), height_grid.ravel()))
+    _, radial_field, axial_field = compute_greens(sources, points)
+    b_r = radial_field.reshape(radius_grid.shape)
+    b_z = axial_field.reshape(radius_grid.shape)
+    psi = np.zeros_like(radius_grid)
+    step = float(spacing[0])
+    integrand = (radial[:, None] if radial_axis == 0 else radial[None, :]) * b_z
+    increments = 0.5 * (np.take(integrand, indices=range(integrand.shape[radial_axis] - 1), axis=radial_axis)
+                        + np.take(integrand, indices=range(1, integrand.shape[radial_axis]), axis=radial_axis)) * step
     if radial_axis == 1:
-        integrand = radial * b_z
-        # The source recurrence is a cumulative trapezoid along each row.
-        # Materialize all independent increments once and let NumPy perform
-        # the same left-to-right accumulation without Python dispatch per
-        # radial node.
-        increments = 0.5 * (integrand[:, :-1] + integrand[:, 1:]) * spacing
         psi[:, 1:] = np.cumsum(increments, axis=1)
     else:
-        integrand = radial[:, np.newaxis] * b_z
-        increments = 0.5 * (integrand[:-1, :] + integrand[1:, :]) * spacing
         psi[1:, :] = np.cumsum(increments, axis=0)
-    if not all((np.all(np.isfinite(value)) for value in (psi, b_r, b_z))):
-        raise FloatingPointError('filament field evaluation produced a nonfinite result')
-    return {'psi': psi, 'b_r': b_r, 'b_z': b_z}
-__all__ = ['integrate_filament_vacuum_field']
+    if not all(np.all(np.isfinite(value)) for value in (psi, b_r, b_z)):
+        raise FloatingPointError("filament field evaluation produced a nonfinite result")
+    return {"psi": psi, "b_r": b_r, "b_z": b_z}
+
+
+__all__ = ["integrate_filament_vacuum_field"]

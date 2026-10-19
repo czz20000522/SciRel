@@ -1,278 +1,212 @@
-"""Static circular-filament Green functions, SI, with psi = R A_phi.
+"""Axisymmetric circular-filament Green operators.
 
-Derived from Pleiades fields.py (D0 be412aa) and Simpson et al., NASA
-20010038494, equations (1), (24), (25), (30). The source prefactor and signs
-are retained; silent nonfinite-to-zero handling is intentionally replaced.
-Small elliptic parameter uses the analytic hypergeometric representation of
-the same vector potential to avoid subtractive cancellation, not a cutoff
-that zeros the radial field. No finite-wire or permeability model is implied.
+The public functions in this module use one explicit coordinate convention:
+``(R, Z)`` for points and ``(R, Z, weight)`` for weighted source rings.  The
+kernel is assembled in target-sized NumPy arrays.  Keeping source rings in
+caller order makes the resulting matrices suitable for direct current
+contraction and keeps the discrete zero-self rule visible at the assembly
+boundary.
 """
 from __future__ import annotations
+
 import numpy as np
 
 
 def _load_special_functions():
-    """Load SciPy's elliptic/hypergeometric kernels at numerical call time."""
-    from scipy.special import ellipkm1, ellipe, hyp2f1
+    """Load optional numerical kernels only after a valid numerical call."""
+    from scipy.special import ellipe, ellipkm1, hyp2f1
 
     return ellipkm1, ellipe, hyp2f1
 
 
-def _array(value, columns, name):
-    arr = np.asarray(value, dtype=float)
-    if arr.ndim != 2 or arr.shape[1] != columns:
-        raise ValueError(f'{name} must have shape (N, {columns})')
-    if np.any(~np.isfinite(arr)) or np.any(arr[:, 0] < 0):
-        raise ValueError(f'{name} must be finite with non-negative cylindrical radius')
-    return arr
+def _as_real_table(value, width, name):
+    """Validate a finite ``(N, width)`` real coordinate table."""
+    if np.iscomplexobj(value):
+        raise ValueError(f"{name} must contain real values")
+    table = np.asarray(value, dtype=float)
+    if table.ndim != 2 or table.shape[1] != width:
+        raise ValueError(f"{name} must have shape (N, {width})")
+    if not np.all(np.isfinite(table)) or np.any(table[:, 0] < 0.0):
+        raise ValueError(f"{name} must be finite with non-negative cylindrical radius")
+    return table
+
+
+def _one_ring_response(source, targets, special):
+    """Evaluate one weighted ring on a target table.
+
+    The small-modulus hypergeometric form avoids cancellation in the flux
+    expression.  The elliptic form handles the complementary part.  Both
+    branches are differentiated analytically so ``B_R`` and ``B_Z`` remain
+    consistent with ``psi`` near the axis.
+    """
+    radius, height, weight = source
+    if radius == 0.0 or weight == 0.0 or targets.shape[0] == 0:
+        return np.zeros((3, targets.shape[0]), dtype=float)
+
+    if np.any((targets[:, 0] == radius) & (targets[:, 1] == height)):
+        raise ValueError("target coincident with singular circular filament")
+
+    ellipkm1, ellipe, hyp2f1 = special
+    target_r = targets[:, 0]
+    separation_z = targets[:, 1] - height
+    with np.errstate(over="raise", divide="raise", invalid="raise"):
+        distance = np.hypot(target_r + radius, separation_z)
+        modulus = 4.0 * (target_r / distance) * (radius / distance)
+        complement = (np.hypot(target_r - radius, separation_z) / distance) ** 2
+        small = modulus < 0.5
+        response = np.zeros((3, targets.shape[0]), dtype=float)
+
+        if np.any(small):
+            r = target_r[small]
+            h = separation_z[small]
+            d = distance[small]
+            m = modulus[small]
+            h0 = hyp2f1(1.5, 1.5, 3.0, m)
+            h1 = 0.75 * hyp2f1(2.5, 2.5, 4.0, m)
+            scale = np.pi * 1.0e-7 * (radius / d) ** 2 / d
+            dm_dr = 4.0 * (radius / d) / d - 2.0 * m * ((r + radius) / d) / d
+            response[0, small] = scale * r**2 * h0
+            response[1, small] = scale * (r / d) * (h / d) * (3.0 * h0 + 2.0 * m * h1)
+            response[2, small] = scale * (
+                (2.0 - 3.0 * (r / d) * ((r + radius) / d)) * h0
+                + r * h1 * dm_dr
+            )
+
+        if np.any(~small):
+            r = target_r[~small]
+            h = separation_z[~small]
+            d = distance[~small]
+            m = modulus[~small]
+            q = complement[~small]
+            k_value, e_value = ellipkm1(q), ellipe(1.0 - q)
+            radial_gap2 = np.hypot(r - radius, h) ** 2
+            response[0, ~small] = 1.0e-7 * d * ((2.0 - m) * k_value - 2.0 * e_value)
+            response[1, ~small] = 2.0e-7 * h / (r * d) * (
+                -k_value + (radius * radius + r * r + h * h) / radial_gap2 * e_value
+            )
+            response[2, ~small] = 2.0e-7 / d * (
+                k_value + ((radius - r) * (radius + r) - h * h) / radial_gap2 * e_value
+            )
+    return weight * response
 
 
 def compute_greens(rzw, rz_pts):
-    """Return ``(psi, BR, BZ)`` for signed circular-filament weights.
+    """Return ordered aggregate ``(psi, BR, BZ)`` ring responses.
 
-    ``rzw`` is an (Ns,3) array of radius, height (m), and current weight.
-    ``rz_pts`` is an (Nt,2) array of target R,Z (m). Outputs are (Nt,) arrays,
-    in Wb/rad and T per ampere of common set current. A Python *list of
-    arrays* represents independent sets and returns (Nset,Nt) arrays; plain
-    row lists must first be converted to an ndarray to avoid ambiguity.
-
-    Axis values are analytic. Exactly zero-radius loops and zero-weight
-    filaments contribute zero; every positive loop radius is retained.
-    Coincidence with an active positive-radius filament raises ValueError.
-    NumPy overflow, division-by-zero and invalid operations, and nonfinite
-    outputs raise FloatingPointError instead of being replaced by zero.
-    Underflow is not trapped; extreme-scale accuracy is not qualified.
+    ``rzw`` may be one source table or a list of independent source tables.
+    The latter returns one ``(N_target,)`` result per list element.  Positive
+    radius rings are retained down to subnormal scales; zero-radius and
+    zero-weight rows are inactive.  Exact positive-radius coincidences are
+    rejected because a line-current self field is outside this discrete
+    contract.  Arithmetic overflow and invalid floating-point results are
+    reported as :class:`FloatingPointError`.
     """
-    points = _array(rz_pts, 2, 'rz_pts')
+    targets = _as_real_table(rz_pts, 2, "rz_pts")
     if isinstance(rzw, list):
-        vals = [compute_greens(v, points) for v in rzw]
-        if not vals:
-            return tuple(np.zeros((0, len(points))) for _ in range(3))
-        return tuple(np.stack([v[j] for v in vals]) for j in range(3))
-    sources = _array(rzw, 3, 'rzw')
-    out = np.zeros((3, len(points)))
-    r, z = points.T
-    ellipkm1 = ellipe = hyp2f1 = None
-    with np.errstate(over='raise', divide='raise', invalid='raise'):
-        for a, z0, weight in sources:
-            if a == 0 or weight == 0:
+        grouped = [compute_greens(group, targets) for group in rzw]
+        if not grouped:
+            return tuple(np.zeros((0, len(targets)), dtype=float) for _ in range(3))
+        return tuple(np.stack([item[index] for item in grouped]) for index in range(3))
+
+    sources = _as_real_table(rzw, 3, "rzw")
+    result = np.zeros((3, len(targets)), dtype=float)
+    special = None
+    with np.errstate(over="raise", divide="raise", invalid="raise"):
+        for source in sources:
+            if source[0] == 0.0 or source[2] == 0.0:
                 continue
-            h = z-z0
-            # Validate the singularity before loading SciPy.  This keeps
-            # rejected calls dependency-light while preserving source order
-            # and the original failure precedence for later sources.
-            if np.any((r == a) & (h == 0)):
-                raise ValueError('target coincident with singular circular filament')
-            if ellipkm1 is None:
-                ellipkm1, ellipe, hyp2f1 = _load_special_functions()
-            d = np.hypot(r+a, h)
-            q = (np.hypot(r-a, h)/d)**2
-            m = 4*(r/d)*(a/d)
-            # The K/E vector-potential subtraction loses relative precision
-            # well above m=.05 (an 80-digit witness at m=.1096 exceeds 2e-14).
-            # Use the equivalent analytic expression through m<.5; this is a
-            # numerical formula partition, never a geometry/field cutoff.
-            small = m < .5
-            psi, br, bz = np.zeros((3, len(points)))
-            if np.any(small):
-                rs, hs, ds, ms = r[small], h[small], d[small], m[small]
-                H = hyp2f1(1.5, 1.5, 3., ms)
-                Hp = .75*hyp2f1(2.5, 2.5, 4., ms)
-                # psi = pi*1e-7*a^2*r^2/d^3 H(m); differentiate analytically.
-                c = np.pi*1e-7*(a/ds)**2/ds
-                dm = 4*(a/ds)/ds - 2*ms*((rs+a)/ds)/ds
-                psi[small] = c*rs**2*H
-                br[small] = c*(rs/ds)*(hs/ds)*(3*H+2*ms*Hp)
-                bz[small] = c*((2-3*(rs/ds)*((rs+a)/ds))*H+rs*Hp*dm)
-            large = ~small
-            if np.any(large):
-                rl, hl, dl, ql, ml = r[large], h[large], d[large], q[large], m[large]
-                K, E = ellipkm1(ql), ellipe(1-ql)
-                rho2 = np.hypot(rl-a, hl)**2
-                psi[large] = 1e-7*dl*((2-ml)*K-2*E)
-                br[large] = 2e-7*hl/(rl*dl)*(-K+(a*a+rl*rl+hl*hl)/rho2*E)
-                # Factor the difference of squares before multiplying: near a
-                # wire, separately rounded a² and R² erase radial separation.
-                bz[large] = 2e-7/dl*(K+((a-rl)*(a+rl)-hl*hl)/rho2*E)
-            out += weight*np.array([psi, br, bz])
-    if np.any(~np.isfinite(out)):
-        raise FloatingPointError('Green function output is not representable as finite float64')
-    return tuple(out)
+            if np.any((targets[:, 0] == source[0]) & (targets[:, 1] == source[1])):
+                raise ValueError("target coincident with singular circular filament")
+            if special is None:
+                special = _load_special_functions()
+            result += _one_ring_response(source, targets, special)
+    if not np.all(np.isfinite(result)):
+        raise FloatingPointError("Green function output is not representable as finite float64")
+    return tuple(result[index] for index in range(3))
 
 
 def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
-    """Return the weighted ``psi`` sum for many sources in bounded blocks.
-
-    This private path is used by regular-grid consumers that need only the
-    flux component.  It keeps the same formula partition and exact zero-self
-    compatibility rule as :func:`compute_greens`, but broadcasts a bounded
-    source block over all targets instead of making one Python call per
-    source.  ``max_pairs`` bounds the temporary ``(source, target)`` arrays so
-    a large target grid does not turn the optimization into an allocation
-    spike.
-    """
-    sources = _array(rzw, 3, 'rzw')
-    points = _array(rz_pts, 2, 'rz_pts')
-    result = np.zeros(len(points))
-    if not len(sources) or not len(points):
-        return result
-
+    """Assemble a weighted flux vector in bounded source blocks."""
+    sources = _as_real_table(rzw, 3, "rzw")
+    targets = _as_real_table(rz_pts, 2, "rz_pts")
+    result = np.zeros(len(targets), dtype=float)
     active = sources[(sources[:, 0] > 0.0) & (sources[:, 2] != 0.0)]
-    if not len(active):
+    if len(active) == 0 or len(targets) == 0:
         return result
-    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
-    block_size = max(1, min(len(active), int(max_pairs) // max(1, len(points))))
-    r = points[:, 0][None, :]
-    z = points[:, 1][None, :]
 
-    with np.errstate(over='raise', divide='raise', invalid='raise'):
+    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
+    block_size = max(1, min(len(active), int(max_pairs) // max(1, len(targets))))
+    r = targets[:, 0][None, :]
+    z = targets[:, 1][None, :]
+    with np.errstate(over="raise", divide="raise", invalid="raise"):
         for start in range(0, len(active), block_size):
-            block = active[start:start + block_size]
+            block = active[start : start + block_size]
             a = block[:, 0, None]
             z0 = block[:, 1, None]
             h = z - z0
+            self_mask = (r == a) & (z == z0) if zero_self else None
             if zero_self:
-                self_mask = (r == a) & (z == z0)
-                # Avoid evaluating the singular expression; the compatibility
-                # value is assigned back to zero after the regular formula.
                 h = np.where(self_mask, 1.0, h)
             d = np.hypot(r + a, h)
+            m = 4.0 * (r / d) * (a / d)
             q = (np.hypot(r - a, h) / d) ** 2
-            m = 4 * (r / d) * (a / d)
+            values = np.zeros_like(m)
             small = m < 0.5
-            psi = np.zeros_like(m)
-            a_full = np.broadcast_to(a, m.shape)
-            r_full = np.broadcast_to(r, m.shape)
             if np.any(small):
                 ds = d[small]
-                rs = r_full[small]
+                rs = np.broadcast_to(r, m.shape)[small]
                 ms = m[small]
-                H = hyp2f1(1.5, 1.5, 3.0, ms)
-                c = np.pi * 1e-7 * (a_full[small] / ds) ** 2 / ds
-                psi[small] = c * rs**2 * H
-            large = ~small
-            if np.any(large):
-                dl = d[large]
-                ql = q[large]
-                ml = m[large]
-                K, E = ellipkm1(ql), ellipe(1 - ql)
-                psi[large] = 1e-7 * dl * ((2 - ml) * K - 2 * E)
+                aa = np.broadcast_to(a, m.shape)[small]
+                values[small] = np.pi * 1.0e-7 * (aa / ds) ** 2 / ds * rs**2 * hyp2f1(1.5, 1.5, 3.0, ms)
+            if np.any(~small):
+                dl, ql, ml = d[~small], q[~small], m[~small]
+                k_value, e_value = ellipkm1(ql), ellipe(1.0 - ql)
+                values[~small] = 1.0e-7 * dl * ((2.0 - ml) * k_value - 2.0 * e_value)
             if zero_self:
-                psi[self_mask] = 0.0
-            result += np.add.reduce(block[:, 2, None] * psi, axis=0)
-
+                values[self_mask] = 0.0
+            result += np.add.reduce(block[:, 2, None] * values, axis=0)
     if not np.all(np.isfinite(result)):
-        raise FloatingPointError('weighted Green psi output is not representable as finite float64')
+        raise FloatingPointError("weighted Green psi output is not representable as finite float64")
     return result
 
 
 def _psi_matrix(points, *, max_pairs=1_000_000):
-    """Return the unit-weight ``psi`` matrix for positive-radius sources.
-
-    ``points`` is the flattened ``(R, Z)`` coordinate table used by
-    :func:`get_gpsi`.  The source axis is evaluated in bounded blocks so the
-    temporary source/target arrays remain bounded independently of the dense
-    output matrix.  This is the matrix analogue of :func:`_weighted_psi`; it
-    deliberately keeps the same small-modulus hypergeometric and large-modulus
-    elliptic partition as :func:`compute_greens`.
-    """
-    source_indices = np.flatnonzero(points[:, 0] > 0.0)
-    matrix = np.zeros((len(points), len(source_indices)))
-    if not len(source_indices) or not len(points):
+    """Build the unit-weight flux matrix for positive-radius point sources."""
+    point_table = _as_real_table(points, 2, "points")
+    source_indices = np.flatnonzero(point_table[:, 0] > 0.0)
+    matrix = np.zeros((len(point_table), len(source_indices)), dtype=float)
+    if len(source_indices) == 0 or len(point_table) == 0:
         return matrix
-
-    ellipkm1, ellipe, hyp2f1 = _load_special_functions()
-    block_size = max(1, min(len(source_indices), int(max_pairs) // max(1, len(points))))
-    r = points[:, 0][None, :]
-    z = points[:, 1][None, :]
-
-    with np.errstate(over='raise', divide='raise', invalid='raise'):
-        for start in range(0, len(source_indices), block_size):
-            indices = source_indices[start:start + block_size]
-            block = points[indices]
-            a = block[:, 0, None]
-            z0 = block[:, 1, None]
-            h = z - z0
-            self_mask = (r == a) & (z == z0)
-            valid = ~self_mask
-            a_full = np.broadcast_to(a, self_mask.shape)[valid]
-            r_full = np.broadcast_to(r, self_mask.shape)[valid]
-            h_full = h[valid]
-            # Exclude exact self pairs before evaluating the singular kernel.
-            # This preserves the old off-self call semantics even for extreme
-            # coordinates where substituting a finite sentinel would overflow.
-            d = np.hypot(r_full + a_full, h_full)
-            q = (np.hypot(r_full - a_full, h_full) / d) ** 2
-            m = 4 * (r_full / d) * (a_full / d)
-            small = m < 0.5
-            values = np.zeros_like(m)
-            if np.any(small):
-                ds = d[small]
-                rs = r_full[small]
-                ms = m[small]
-                H = hyp2f1(1.5, 1.5, 3.0, ms)
-                Hp = 0.75 * hyp2f1(2.5, 2.5, 4.0, ms)
-                c = np.pi * 1e-7 * (a_full[small] / ds) ** 2 / ds
-                dm = 4 * (a_full[small] / ds) / ds - 2 * ms * (
-                    (rs + a_full[small]) / ds
-                ) / ds
-                values[small] = c * rs**2 * H
-                # Keep compute_greens' arithmetic-failure contract even though
-                # get_gpsi only returns psi: its historical implementation
-                # evaluated BR/BZ for every off-self pair as well.
-                _ = c * (rs / ds) * ((h_full[small] / ds) * (3 * H + 2 * ms * Hp))
-                _ = c * (
-                    (2 - 3 * (rs / ds) * ((rs + a_full[small]) / ds)) * H
-                    + rs * Hp * dm
-                )
-            large = ~small
-            if np.any(large):
-                dl = d[large]
-                ql = q[large]
-                ml = m[large]
-                K, E = ellipkm1(ql), ellipe(1 - ql)
-                values[large] = 1e-7 * dl * ((2 - ml) * K - 2 * E)
-                rho2 = np.hypot(r_full[large] - a_full[large], h_full[large]) ** 2
-                _ = 2e-7 * h_full[large] / (r_full[large] * dl) * (
-                    -K + (a_full[large] ** 2 + r_full[large] ** 2 + h_full[large] ** 2) / rho2 * E
-                )
-                _ = 2e-7 / dl * (
-                    K + ((a_full[large] - r_full[large]) * (a_full[large] + r_full[large])
-                         - h_full[large] ** 2) / rho2 * E
-                )
-            psi = np.zeros(self_mask.shape, dtype=float)
-            psi[valid] = values
-            matrix[:, start:start + len(indices)] = psi.T
-
+    special = _load_special_functions()
+    block_size = max(1, min(len(source_indices), int(max_pairs) // max(1, len(point_table))))
+    for start in range(0, len(source_indices), block_size):
+        indices = source_indices[start : start + block_size]
+        for local, source_index in enumerate(indices):
+            source = np.r_[point_table[source_index], 1.0]
+            target_mask = np.ones(len(point_table), dtype=bool)
+            target_mask[source_index] = False
+            if np.any(target_mask):
+                matrix[target_mask, start + local] = _one_ring_response(
+                    source, point_table[target_mask], special
+                )[0]
     if not np.all(np.isfinite(matrix)):
-        raise FloatingPointError('Green psi matrix output is not representable as finite float64')
+        raise FloatingPointError("Green psi matrix output is not representable as finite float64")
     return matrix
 
 
 def get_gpsi(R, Z):
-    """Return the actual-coordinate discrete loop flux matrix (target, source).
-
-    R,Z are matching finite 2-D coordinate arrays in metres; row-major flattening
-    fixes source and target order. Entries are Wb/rad per ampere, psi=R*A_phi.
-    Self diagonal and zero-radius sources have exactly zero flux under the
-    original discrete compatibility rule (not finite-conductor self-inductance).
-    Distinct array entries cannot represent coincident positive-radius loops.
-
-    D2 correction of Pleiades analysis/math.py:get_gpsi: shifting reflected row
-    blocks assumes uniform axial spacing and repeated radial coordinates. Direct
-    evaluation uses actual coordinates and supports irregular/asymmetric geometry.
-    """
+    """Return the actual-coordinate ``(target, source)`` flux matrix."""
     if np.iscomplexobj(R) or np.iscomplexobj(Z):
         raise ValueError("R,Z must be real coordinate arrays")
-    r,z=np.asarray(R,dtype=float),np.asarray(Z,dtype=float)
-    if (r.ndim!=2 or z.shape!=r.shape or not np.all(np.isfinite(r)) or
-            not np.all(np.isfinite(z)) or np.any(r<0)):
+    radius, height = np.asarray(R, dtype=float), np.asarray(Z, dtype=float)
+    if (radius.ndim != 2 or height.shape != radius.shape or not np.all(np.isfinite(radius))
+            or not np.all(np.isfinite(height)) or np.any(radius < 0.0)):
         raise ValueError("R,Z must be matching finite 2-D arrays with nonnegative R")
-    points=np.column_stack((r.ravel(),z.ravel()))
-    active=points[points[:,0]>0]
-    if len(np.unique(active,axis=0))!=len(active):
+    points = np.column_stack((radius.ravel(), height.ravel()))
+    active = points[points[:, 0] > 0.0]
+    if len(np.unique(active, axis=0)) != len(active):
         raise ValueError("distinct positive-radius loop entries cannot be coincident")
-    matrix=np.zeros((len(points),len(points)))
+    matrix = np.zeros((len(points), len(points)), dtype=float)
     active_indices = np.flatnonzero(points[:, 0] > 0.0)
     if len(active_indices):
         matrix[:, active_indices] = _psi_matrix(points)
@@ -280,50 +214,32 @@ def get_gpsi(R, Z):
 
 
 def green_response_matrices(rz_pts, rzw=None):
-    """Return ordered per-filament ``(psi, BR, BZ)`` response matrices.
-
-    Each matrix has shape ``(Ntarget, Nsource)``; neither coordinate order is
-    sorted or reflected. Targets are ``(R,Z)`` metres. Sources are ``(R,Z,w)``
-    with signed dimensionless weights (the predecessor's ``csign``), or
-    ``(R,Z)`` with unit weights. ``rzw=None`` uses the target coordinates as
-    unit-weight sources. Multiply a matrix by an ordered source-current vector
-    in amperes to obtain Wb/rad (psi=R*A_phi) or tesla. Weights are applied once;
-    no device current is inferred.
-
-    Exact source/target coordinate coincidences contribute zero by the explicit
-    discrete compatibility convention of Pleiades analysis/math.py. This is
-    neither a finite-wire self-field nor a near-coincidence cutoff. Nonzero
-    separation uses the actual-coordinate corrected kernel; its arithmetic
-    failures propagate. Zero-radius *sources* contribute zero; axis targets
-    retain the analytic nonzero BZ. Repeated positive-radius target nodes are
-    rejected when they implicitly define the source grid. Explicit sources may
-    repeat, representing independently weighted columns at the same position.
-
-    This serial composite absorbs the old full/parallel per-source builders;
-    acceleration and their original spelling are not scientific capabilities.
-    """
+    """Return ``(psi, BR, BZ)`` matrices with shape ``(target, source)``."""
     if np.iscomplexobj(rz_pts) or (rzw is not None and np.iscomplexobj(rzw)):
-        raise ValueError('target and source coordinates/weights must be real')
-    targets = _array(rz_pts, 2, 'rz_pts')
+        raise ValueError("target and source coordinates/weights must be real")
+    targets = _as_real_table(rz_pts, 2, "rz_pts")
     if rzw is None:
-        active = targets[targets[:, 0] > 0]
+        active = targets[targets[:, 0] > 0.0]
         if len(np.unique(active, axis=0)) != len(active):
-            raise ValueError('implicit positive-radius source nodes cannot be coincident')
+            raise ValueError("implicit positive-radius source nodes cannot be coincident")
         sources = np.column_stack((targets, np.ones(len(targets))))
     else:
         raw = np.asarray(rzw, dtype=float)
         if raw.ndim != 2 or raw.shape[1] not in (2, 3):
-            raise ValueError('rzw must have shape (Nsource, 2) or (Nsource, 3)')
-        sources = (np.column_stack((raw, np.ones(len(raw))))
-                   if raw.shape[1] == 2 else raw)
-        sources = _array(sources, 3, 'rzw')
-    response = np.zeros((3, len(targets), len(sources)))
-    for j, (a, z0, weight) in enumerate(sources):
-        if a == 0 or weight == 0:
+            raise ValueError("rzw must have shape (Nsource, 2) or (Nsource, 3)")
+        sources = np.column_stack((raw, np.ones(len(raw)))) if raw.shape[1] == 2 else raw
+        sources = _as_real_table(sources, 3, "rzw")
+
+    response = np.zeros((3, len(targets), len(sources)), dtype=float)
+    for index, source in enumerate(sources):
+        if source[0] == 0.0 or source[2] == 0.0:
             continue
-        off_self = ~((targets[:, 0] == a) & (targets[:, 1] == z0))
-        response[:, off_self, j] = compute_greens(sources[j:j+1], targets[off_self])
-    return tuple(response)
+        off_self = ~((targets[:, 0] == source[0]) & (targets[:, 1] == source[1]))
+        if np.any(off_self):
+            response[:, off_self, index] = np.asarray(
+                compute_greens(source[None, :], targets[off_self])
+            )
+    return tuple(response[index] for index in range(3))
 
 
-__all__ = ['compute_greens','get_gpsi','green_response_matrices']
+__all__ = ["compute_greens", "get_gpsi", "green_response_matrices"]
