@@ -103,7 +103,7 @@ locked direct and transitive dependency closure and records platform-tag
 compatibility for every wheelhouse member. A shared wheelhouse may contain the
 union of core and optional-extra wheels; the receipt reports unneeded members
 for each selected closure without treating that reusable superset as a failure.
-For dev9, the current Linux platform receipt combines the existing same-source
+For the dev9 receipt, the Linux platform receipt collected for that candidate combines the existing same-source
 rebuild evidence with the offline validation result; the raw network and offline
 receipts remain separate lineage records. A passing offline check still does
 not establish complete scientific capability closure or release approval.

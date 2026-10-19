@@ -4,7 +4,7 @@ SciRel 是长期维护的独立 Python 科学关系库。贡献必须同时保�
 
 ## 开发环境
 
-使用 Python 3.10+ 与 `pwsh` 7+。在隔离环境安装项目及测试依赖：
+使用 Python 3.14（>=3.14,<3.15）与 `pwsh` 7+。规范检查入口是 `pwsh ./scripts/check.ps1`；在没有 `pwsh` 的环境（如本机 macOS）用 `.venv/bin/python -m pytest <affected tests>` 跑受影响检查，并将 `pwsh` 门禁记为环境边界，不得声称已运行。在隔离环境安装项目及测试依赖：
 
 ```powershell
 python -m pip install -e ".[test]"
