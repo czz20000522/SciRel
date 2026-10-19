@@ -6,9 +6,10 @@ SciRel 是长期独立维护的 Python 科学关系库；不要套用相邻 Code
 
 - 普通任务默认处于 `development`：以当前 Git 源树为真相，先确定一个主要 claim、owned scope 和 stop condition，再做影响范围匹配的检查。模式、证据复用、停止、artifact 和版本规则以 `skills/development/references/development-lifecycle.md` 为唯一流程来源。
 - 生命周期只有三个边界：`development` 只优化源树并运行 claim 匹配的最小检查；`integration_checkpoint` 只在明确的 consumer、handoff 或 owner 请求下生成有界 artifact/安装闭包；`release_freeze` 只在明确的 candidate cut、发布或 release decision 下冻结并验收。
-- 未发布阶段不会因为“继续”“完成”“审查”或“验证”自动进入发布流程；这些动作不会自动进入发布流程。没有明确 checkpoint 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵、不推进 `devN`。
+- 未发布阶段的普通工作不会自动进入发布流程，也不会因为“继续”“完成”“审查”或“验证”改变模式。没有明确 checkpoint 或 release decision 时，不构建 wheel、不更新 `release/CURRENT.json`、不生成发布回执、不跑全平台矩阵、不推进 `devN`。
 - 长程 goal 是 claim 队列，不是执行调度器。继续同一 claim 时只做轻量身份检查；达到 `passed`、`failed`、`blocked` 或 `NOT_RUN` 且没有新范围或阻塞就收口，不重复相同检查，也不自动启动下一项优化。
 - incubation 期间 capability、operator、TaskGraph、document 和 catalog 的数量随 manifest/revision 变化；数量不是永久门禁。需要 projection 时从同一确切 revision 派生并绑定 wheel、文档和 catalog；普通开发不为追赶旧 projection 重建它们。
+- 版本按能力线和批次处理：首次公开发布前只用 Git 累积工作，不推进历史 `devN`；公开后，兼容修复、数值修正、性能优化和内部重构可合并为同一维护批次。只有大范围新增或删减公共能力，或公共 API、失败合同、依赖/平台/分发边界发生不兼容变化时，才开启新的能力线；单个函数修改、文档小修或计数变化本身都不是大版本边界。具体切候选和版本选择见 `docs/design/scirel-release-batching.md`。
 - 按 SciPy 式标准库结构维护一个当前源树：`src/scirel`、直接测试、公共文档、构建/测试工具和依赖声明各保留一套 Git 表示；Git 历史保存旧版本，不复制平行 wheel、文档或 catalog 树。SciPy 只提供结构参考，不决定 SciRel 的 Python 下界、依赖 pin、classifier 或 native 分发。
 - SciRel 对每个公开 Operator 和 TaskGraph 的实现、输入/输出合同、数值结果、失败语义和直接回归负责；Agent 只发现、选择、组合和编写 glue，不复制科学算法，也不用组合成功替代能力正确性。
 - 日常检查采用 selector-first：先运行 affected selector；只有 selector 显示共享边界或 claim 明确需要时才追加反向依赖、API/import/failure 或 benchmark；未知归属才扩大测试层。性能声明由 owner 选择最小可复现命令或脚本；性能基准没有统一入口或运行条件时只将性能子声明记为 `NOT_RUN`，保留 affected correctness 结果。只有 named checkpoint 或 `release_freeze` 才生成安装 artifact 或闭包；checkpoint 只运行 consumer/claim-scoped 的安装与闭包检查，只有 `release_freeze` 才运行全平台门禁。

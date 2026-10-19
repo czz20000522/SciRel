@@ -226,8 +226,11 @@ explicitly requests it.
 Do not update `release/CURRENT.json`, platform receipts or a public version as
 part of ordinary development. A previous release tuple, wheel, document
 selection or catalog may therefore be stale relative to `HEAD`; record that
-state and leave the projection untouched. Do not treat a buildable wheel or a
-successful alignment check against an older tuple as a release candidate.
+state and leave the projection untouched. A release-alignment failure caused
+only by that stale projection is a release-state observation, not a development
+failure and not a reason to rebuild the projection. Do not treat a buildable
+wheel or a successful alignment check against an older tuple as a release
+candidate.
 
 If the project has not received an explicit first-public-release decision,
 this mode is the only default. A legacy `0.1.0.devN` value, an old release note,
@@ -329,10 +332,15 @@ release, do not advance or normalize the package version at all; existing
 `devN` labels are historical working metadata. Select the initial public
 `major.minor` line and any maintenance suffix once, at the first
 `release_freeze`, after the capability and compatibility boundary are
-understood. Later compatible fixes can be batched on that line; a broad
-capability or compatibility boundary can start the next line. A commit, document
-edit, benchmark, count change or buildable wheel never advances a version by
-itself.
+understood. After that, compatible implementation fixes, numerical corrections,
+performance work, internal refactors and small backward-compatible additions
+can be accumulated into one maintenance batch on the same capability line.
+Open a new capability line only for a broad public capability addition/removal
+or an incompatible public API, failure contract, dependency, platform or
+distribution boundary. A commit, document edit, benchmark, count change or
+buildable wheel never advances a version by itself; a wheel and its documents
+advance together only when a named checkpoint or release freeze actually emits
+those artifacts.
 
 ## Transition triggers
 
