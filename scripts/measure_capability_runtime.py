@@ -29,7 +29,7 @@ from public_api_binding import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = "scirel.capability-runtime-closure.v2"
+SCHEMA = "scirel.capability-runtime-closure"
 _RESULT_PREFIX = "SCIREL_RUNTIME_RESULT="
 _CHILD_COMMAND = ("-I", "-c")
 

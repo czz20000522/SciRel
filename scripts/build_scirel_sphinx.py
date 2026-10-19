@@ -30,7 +30,7 @@ def load_translations(root, documents, docs, translation_paths=None):
              if translation_paths is None else translation_paths)
     for path in paths:
         bundle = json.loads(path.read_bytes())
-        if bundle['schema'] != 'scirel.reader-translation.v1' or bundle['language'] != 'zh-CN':
+        if bundle['schema'] != 'scirel.reader-translation' or bundle['language'] != 'zh-CN':
             raise ValueError('invalid reader translation: ' + str(path))
         for item in bundle['records']:
             if item['asset_id'] in records:

@@ -173,9 +173,13 @@ def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
             cwd=ROOT,
         )
         (historical_root/name).write_bytes(body)
-    binding = json.loads((historical_root/'execution.json').read_text())
+    execution_path = historical_root/'execution.json'
+    historical_execution = json.loads(execution_path.read_text())
+    historical_execution['schema'] = 'scirel.chapter-execution'
+    execution_path.write_text(json.dumps(historical_execution, ensure_ascii=False, indent=1) + '\n')
+    binding = json.loads(execution_path.read_text())
     selection = {
-        'schema': 'scirel.chapter-selection.v1',
+        'schema': 'scirel.chapter-selection',
         'chapters': {
             'magnetostatics': {
                 'directory': 'tools/docs/magnetostatics',
@@ -219,7 +223,7 @@ def test_successor_chapter_selection_is_explicit_and_digest_bound(tmp_path, monk
     root = tmp_path/'tools/docs'; root.mkdir(parents=True)
     successor = root/'magnetostatics-20261013'; successor.mkdir()
     execution = successor/'execution.json'; execution.write_text('{}')
-    selection = {'schema': 'scirel.chapter-selection.v1', 'chapters': {
+    selection = {'schema': 'scirel.chapter-selection', 'chapters': {
         'magnetostatics': {'directory': 'tools/docs/magnetostatics-20261013',
                           'execution_sha256': hashlib.sha256(execution.read_bytes()).hexdigest()}}}
     path = root/'chapter-selection.json'; path.write_text(json.dumps(selection))
@@ -393,7 +397,7 @@ def test_explicit_reader_bundle_selects_exact_distribution_without_global_record
                for record in json.loads(file.read_bytes())["records"] if record["asset_id"] == asset]
     assert len(records) == 1
     bundle = tmp_path / "selected-readers.json"
-    bundle.write_text(json.dumps({"schema": "scirel.reader-translation.v1", "language": "zh-CN", "records": records}))
+    bundle.write_text(json.dumps({"schema": "scirel.reader-translation", "language": "zh-CN", "records": records}))
     # Default retains the strict complete global scope and rejects this subset.
     with pytest.raises(ValueError, match="coverage differs"):
         load_translations(ROOT, documents, [doc])
@@ -401,6 +405,6 @@ def test_explicit_reader_bundle_selects_exact_distribution_without_global_record
     assert set(selected) == {asset}
     # Explicit selection still rejects missing, extra and stale records.
     for changed in [[], records + [records[0]], [dict(records[0], source_sha256="0"*64)]]:
-        bundle.write_text(json.dumps({"schema": "scirel.reader-translation.v1", "language": "zh-CN", "records": changed}))
+        bundle.write_text(json.dumps({"schema": "scirel.reader-translation", "language": "zh-CN", "records": changed}))
         with pytest.raises(ValueError):
             load_translations(ROOT, documents, [doc], translation_paths=[bundle])

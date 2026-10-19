@@ -1,2205 +1,2205 @@
 {
-  "schema": "scirel.reader-translation.v1",
-  "language": "zh-CN",
-  "records": [
+ "schema": "scirel.reader-translation",
+ "language": "zh-CN",
+ "records": [
+  {
+   "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
+   "source_sha256": "e477769e7e993f48683298ac4910f3522afdf8ed495690df4384e43ad5eb6043",
+   "summary": "Faddeeva 16 阶变体；保留独立默认值、截断及失败合同。",
+   "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
+   "model": "一维 Maxwellian 等离子体响应。",
+   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
+   "assumptions": [
+    "输入为无量纲、已归一化的 Maxwellian 自变量。"
+   ],
+   "inputs": [
     {
-      "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
-      "source_sha256": "e4d27cfd129ef274f1c7f6dd6ca4eae5a311f38011d0334f26154587f133540b",
-      "summary": "Faddeeva 16 阶变体；保留独立默认值、截断及失败合同。",
-      "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
-      "model": "一维 Maxwellian 等离子体响应。",
-      "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
-      "assumptions": [
-        "输入为无量纲、已归一化的 Maxwellian 自变量。"
-      ],
-      "inputs": [
-        {
-          "name": "z",
-          "description": "无量纲复相位点。",
-          "constraints": "必须有限。",
-          "dtype": "复数数值",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "有理近似的截断阶数或极点数；None 选择 16 阶。",
-          "constraints": "允许任意正整数阶数；拒绝布尔值。",
-          "dtype": "整数或 None",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "w",
-          "description": "复数响应值。",
-          "constraints": "必须为有限的 complex128 值。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "实际采用的截断阶数或极点数。",
-          "constraints": "允许任意正整数阶数。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
-        ],
-        "supported": [
-          "允许任意正整数阶数。",
-          "支持有限、非空的标量或数组输入，并保持形状。"
-        ],
-        "excluded": [
-          "不提供有保证的全局误差界。",
-          "不提供任意分布的响应。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-        "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
-        "nonconvergence": "采用固定近似，不声称迭代收敛。",
-        "partial_results": "调用失败后不返回部分结果。"
-      },
-      "example": {
-        "description": "计算有限的上半平面响应。",
-        "expected": "返回有限复数响应，并保留实际采用的阶数。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-          "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
-        ],
-        "known_limitations": [
-          "下半平面的指数项可能超出 float64 范围。",
-          "固定截断的误差取决于相位点和阶数。"
-        ],
-        "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
-      }
+     "name": "z",
+     "description": "无量纲复相位点。",
+     "constraints": "必须有限。",
+     "dtype": "复数数值",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
     },
     {
-      "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
-      "source_sha256": "606ec2212da137a05654d64fbb4037a07b7dff10e6a99ebe7bbb7bffbce2d655",
-      "summary": "Faddeeva 32 阶变体；保留独立默认值、截断及失败合同。",
-      "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
-      "model": "一维 Maxwellian 等离子体响应。",
-      "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
-      "assumptions": [
-        "输入为无量纲、已归一化的 Maxwellian 自变量。"
-      ],
-      "inputs": [
-        {
-          "name": "z",
-          "description": "无量纲复相位点。",
-          "constraints": "必须有限。",
-          "dtype": "复数数值",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "有理近似的截断阶数或极点数；None 选择 32 阶。",
-          "constraints": "允许任意正整数阶数；拒绝布尔值。",
-          "dtype": "整数或 None",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "w",
-          "description": "复数响应值。",
-          "constraints": "必须为有限的 complex128 值。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "实际采用的截断阶数或极点数。",
-          "constraints": "允许任意正整数阶数。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
-        ],
-        "supported": [
-          "允许任意正整数阶数。",
-          "支持有限、非空的标量或数组输入，并保持形状。"
-        ],
-        "excluded": [
-          "不提供有保证的全局误差界。",
-          "不提供任意分布的响应。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-        "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
-        "nonconvergence": "采用固定近似，不声称迭代收敛。",
-        "partial_results": "调用失败后不返回部分结果。"
-      },
-      "example": {
-        "description": "计算有限的上半平面响应。",
-        "expected": "返回有限复数响应，并保留实际采用的阶数。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-          "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
-        ],
-        "known_limitations": [
-          "下半平面的指数项可能超出 float64 范围。",
-          "固定截断的误差取决于相位点和阶数。"
-        ],
-        "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
-      "source_sha256": "564196adff1e7b9b5580d7a9b034fb47ce203666f58eb74ab289edf724be3661",
-      "summary": "Maxwellian FFT 色散函数；保留独立默认值、截断及失败合同。",
-      "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
-      "model": "一维 Maxwellian 等离子体响应。",
-      "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
-      "assumptions": [
-        "输入为无量纲、已归一化的 Maxwellian 自变量。"
-      ],
-      "inputs": [
-        {
-          "name": "z",
-          "description": "无量纲复相位点。",
-          "constraints": "必须有限。",
-          "dtype": "复数数值",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "有理近似的截断阶数或极点数；显式传入 None 无效。",
-          "constraints": "允许任意正整数阶数；拒绝布尔值。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Z",
-          "description": "复数响应值。",
-          "constraints": "必须为有限的 complex128 值。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "实际采用的截断阶数或极点数。",
-          "constraints": "允许任意正整数阶数。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
-        ],
-        "supported": [
-          "允许任意正整数阶数。",
-          "支持有限、非空的标量或数组输入，并保持形状。"
-        ],
-        "excluded": [
-          "不提供有保证的全局误差界。",
-          "不提供任意分布的响应。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-        "runtime_failure": "w 或最终缩放后的 Z 超出 float64 有限范围时抛出 FloatingPointError；仅 w 有限不能证明 Z 可表示。",
-        "nonconvergence": "采用固定近似，不声称迭代收敛。",
-        "partial_results": "调用失败后不返回部分结果。"
-      },
-      "example": {
-        "description": "计算有限的上半平面响应。",
-        "expected": "返回有限复数响应，并保留实际采用的阶数。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-          "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。",
-          "当 w 有限而缩放后的 Z 溢出时明确失败；覆盖混合矩阵及负虚轴数学缩放阈值的两侧。"
-        ],
-        "known_limitations": [
-          "下半平面的指数项可能超出 float64 范围。",
-          "固定截断的误差取决于相位点和阶数。"
-        ],
-        "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
-      "source_sha256": "eef589814f9c5197c3c01cc028b03a616d6ccc322ffc8fc8a265e7b3bb0c4bd6",
-      "summary": "Maxwellian 固定极点色散近似；保留独立默认值、截断及失败合同。",
-      "definition": "采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。",
-      "model": "一维 Maxwellian 等离子体响应。",
-      "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
-      "assumptions": [
-        "输入为无量纲、已归一化的 Maxwellian 自变量。"
-      ],
-      "inputs": [
-        {
-          "name": "z",
-          "description": "无量纲复相位点。",
-          "constraints": "必须有限。",
-          "dtype": "复数数值",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "有理近似的截断阶数或极点数；显式传入 None 无效。",
-          "constraints": "仅允许 8、12、16 或 24 个极点；拒绝布尔值。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Z",
-          "description": "复数响应值。",
-          "constraints": "必须为有限的 complex128 值。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        },
-        {
-          "name": "order",
-          "description": "实际采用的截断阶数或极点数。",
-          "constraints": "仅允许 8、12、16 或 24 个极点。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "计数"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
-        ],
-        "supported": [
-          "仅允许 8、12、16 或 24 个极点。",
-          "支持有限、非空的标量或数组输入，并保持形状。"
-        ],
-        "excluded": [
-          "不提供有保证的全局误差界。",
-          "不提供任意分布的响应。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-        "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
-        "nonconvergence": "采用固定近似，不声称迭代收敛。",
-        "partial_results": "调用失败后不返回部分结果。"
-      },
-      "example": {
-        "description": "计算有限的上半平面响应。",
-        "expected": "返回有限复数响应，并保留实际采用的阶数。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
-          "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
-        ],
-        "known_limitations": [
-          "下半平面的指数项可能超出 float64 范围。",
-          "固定截断的误差取决于相位点和阶数。"
-        ],
-        "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-dispersion",
-      "source_sha256": "0d930bae10d11c59cee4028b2e6510e3c23be72db0175b74d0d7234105a8cac5",
-      "summary": "计算来源定义的全部七类广义分布选择器。",
-      "definition": "选择器密度分别为 delta(v)、在 [-.5,.5] 上取 1 的密度、max(0,1-|v|)、sqrt(2)/pi/(1+v²/2)²、H(v-.1)exp(-v²)/sqrt(pi)，以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位置 a 的跳跃 J 向 Zp 贡献 J/(a-z)。修正了来源中不一致的 top-hat 密度符号及不完整 Maxwellian 截断跳跃。大相位处的 Gaussian 导数采用避免消减的原始极化率或矩展开，不减去已舍入的单位项。远场 top-hat 值使用收敛的逆幂级数；导数先分别组成分母的实部与虚部，再取倒数，以保留可表示的微小轮廓分量。中心附近的实响应使用实 log1p，边缘附近使用 log-hypot 之差，轮廓相位使用单个 atan2；不使用复 log1p。",
-      "model": "一维、无磁场、无碰撞的静电等离子体。",
-      "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
-      "assumptions": [
-        "密度在实积分轮廓上为实值且可积。",
-        "不声称集体模唯一，也不提供经认证的全局求积误差界。",
-        "自定义表达式必须提供 integration_mesh。"
-      ],
-      "inputs": [
-        {
-          "name": "z",
-          "description": "Maxwellian 归一化下的复相位点 z=omega/(sqrt(2)*k)。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数或复数数值",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "selector",
-          "description": "0 为解析表达式或 Maxwellian；1 为原点 delta；2 为 [-.5,.5] 上的正单位 top-hat；3 为 [-1,1] 上的三角分布；4 为 n=2、vt=1 的归一化 gamma 分布；5 为 H(v-.1)exp(-v²)/sqrt(pi)；6 为 |v|≤4 的截断 slowing-down 分布。",
-          "constraints": "必须是 0 至 6 的整数；拒绝布尔值。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "expression",
-          "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
-          "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "integration_mesh",
-          "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
-          "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
-          "dtype": "实数向量",
-          "shape": "至少两个点的一维数组",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Z",
-          "description": "依声明的延拓约定计算积分 ∫f(v)/(v-z)dv。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        },
-        {
-          "name": "Zp",
-          "description": "导数 dZ/dz，包含分布意义下的跳跃贡献。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "密度在实积分轮廓上为实值且可积。",
-          "不声称集体模唯一，也不提供经认证的全局求积误差界。",
-          "自定义表达式必须提供 integration_mesh。"
-        ],
-        "supported": [
-          "覆盖来源全部 0 至 6 选择器，包括精确 delta/top-hat 及截断导数的跳跃项。",
-          "解析 Maxwellian、gamma 和自定义表达式使用 Landau 延拓；分段分布在两个半平面均按实轮廓积分定义。",
-          "支持避开端点及三角分布导数角点的实轴上侧边界值。"
-        ],
-        "excluded": [
-          "不支持任意符号表达式或可执行输入。",
-          "不猜测不连续分布的解析延拓。",
-          "不会把未知选择器静默回落为 Maxwellian。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-        "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-        "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-        "partial_results": "失败后不返回部分科学结果。"
-      },
-      "example": {
-        "description": "广义等离子体色散函数七类分布的可执行例子。",
-        "expected": "断言检查所声明的输出性质。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖来源全部 0 至 6 选择器，包括精确 delta/top-hat 及截断导数的跳跃项。",
-          "解析 Maxwellian、gamma 和自定义表达式使用 Landau 延拓；分段分布在两个半平面均按实轮廓积分定义。",
-          "支持避开端点及三角分布导数角点的实轴上侧边界值。",
-          "在大相位及渐近切换处，以独立 Gaussian 平方核积分和高精度导数进行检查；以零绝对容差检查 top-hat 的直接积分或级数、中心/边缘/实轴分支及微小导数分量。"
-        ],
-        "known_limitations": [
-          "选择器 5 保留不完整的总质量；选择器 6 保留上游有限截断的归一化约定。",
-          "分段分布的下半平面响应为实轮廓变换，不是推断的解析延拓。",
-          "具名固定选择器保留原物理参数；本 API 不增加任意形状参数。"
-        ],
-        "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-expression-differentiation",
-      "source_sha256": "5d0cd129b8ea94ac5f8f77b05b28d203ba561193d9f88332b15094f09caae9a6",
-      "summary": "把受限密度表达式编译为函数值及解析一阶导数的可调用对象。",
-      "definition": "解析有限实常量、pi、v、算术和已声明初等函数，并按精确解析链式法则传播（函数值，导数）对；解析前先规范化 MATLAB 逐元素运算符。",
-      "model": "一维、无磁场、无碰撞的静电等离子体。",
-      "boundary": "仅支持所声明的受限解析表达式语法。",
-      "assumptions": [
-        "密度在实积分轮廓上为实值且可积。",
-        "不声称集体模唯一，也不提供经认证的全局求积误差界。",
-        "请求延拓的区域内，表达式必须具有有效解析延拓。",
-        "显式递增网格必须解析密度的全部特征与尾部。"
-      ],
-      "inputs": [
-        {
-          "name": "expression",
-          "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
-          "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "return",
-          "description": "返回 DensityExpression 实例；instance(v) 给出 f(v)，instance.derivative(v) 给出解析 df/dv；v 可为实数或复数标量及 NumPy 数组。",
-          "constraints": "遵循输入表达式自身的算术与定义域约束。",
-          "dtype": "DensityExpression 密度表达式对象",
-          "shape": "可调用对象",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "表达式语法仅限所声明的算术与函数。",
-          "求值点必须位于有限定义域内，且表达式及其导数均可表示。"
-        ],
-        "supported": [
-          "支持安全 AST 表达式解析、MATLAB 点运算符规范化、解析一阶导数以及实数或复数标量/数组求值。"
-        ],
-        "excluded": [
-          "不支持任意代码、属性访问、索引、比较和分段表达式。",
-          "不提供符号化简或可积性保证。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-        "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-        "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-        "partial_results": "失败后不返回部分科学结果。"
-      },
-      "example": {
-        "description": "无需符号运行时即可求 Lorentzian 密度及其导数。",
-        "expected": "Lorentzian 解析值与导数符合闭式公式。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖实数及复数点上的 Lorentzian 函数值与导数。",
-          "明确拒绝属性访问、任意调用、未知名称、索引、列表和布尔值。"
-        ],
-        "known_limitations": [
-          "本解析器不证明可积性、正性、归一化或解析延拓有效性。",
-          "算术异常及非有限表达式求值不会转换为符号诊断。"
-        ],
-        "evidence_ceiling": "证据来自独立解析导数恒等式及不支持语法的回归；不构成通用计算机代数等价性或任意表达式证明。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-hilbert",
-      "source_sha256": "ffb4d274858cd2e0dc538feeffcca6c4032d3707571540c6e5c548dea1542a6c",
-      "summary": "计算安全解析表达式及其导数的变换。",
-      "definition": "DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数减去 f(x)exp(-(v-x)²)，该减项在全实轴上的奇主值为零；边界值加上 i*pi*f(x)，可选下半平面延拓再加上 2*pi*i*f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v*fprime]/z，避免零总质量导数的相消；绝对求积容差随相位模的倒数缩放。密度导数及其解析延拓不从已舍入的 Z 或 epsilon 重建。",
-      "model": "一维、无磁场、无碰撞的静电等离子体。",
-      "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
-      "assumptions": [
-        "密度在实积分轮廓上为实值且可积。",
-        "不声称集体模唯一，也不提供经认证的全局求积误差界。",
-        "请求延拓的区域内，表达式必须具有有效解析延拓。",
-        "显式递增网格必须解析密度的全部特征与尾部。"
-      ],
-      "inputs": [
-        {
-          "name": "z",
-          "description": "Maxwellian 归一化下的复相位点 z=omega/(sqrt(2)*k)。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数或复数数值",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "expression",
-          "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
-          "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "integration_mesh",
-          "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
-          "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
-          "dtype": "实数向量",
-          "shape": "至少两个点的一维数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "continuation",
-          "description": "为真时，在下半平面加入 2*pi*i*f(z) 及相应导数项。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "布尔值",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "Z",
-          "description": "依声明的延拓约定计算积分 ∫f(v)/(v-z)dv。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        },
-        {
-          "name": "Zp",
-          "description": "导数 dZ/dz，包含分布意义下的跳跃贡献。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数数组",
-          "shape": "与 z 同形",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "密度在实积分轮廓上为实值且可积。",
-          "不声称集体模唯一，也不提供经认证的全局求积误差界。",
-          "请求延拓的区域内，表达式必须具有有效解析延拓。",
-          "显式递增网格必须解析密度的全部特征与尾部。"
-        ],
-        "supported": [
-          "通过 DensityExpression 进行安全 AST 代数与解析链式求导。",
-          "离实轴采用已资格化的 Cauchy 求积，实轴采用减奇点主值积分。"
-        ],
-        "excluded": [
-          "不支持分段或非解析表达式语法；此类模型应使用分布选择器。",
-          "不自动发现未解析的回调特征。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-        "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-        "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-        "partial_results": "失败后不返回部分科学结果。"
-      },
-      "example": {
-        "description": "解析分布的 Hilbert 与 Cauchy 变换的可执行例子。",
-        "expected": "断言检查所声明的输出性质。"
-      },
-      "verification": {
-        "scope": [
-          "通过 DensityExpression 进行安全 AST 代数与解析链式求导。",
-          "离实轴采用已资格化的 Cauchy 求积，实轴采用减奇点主值积分。",
-          "覆盖大相位处中心及平移 Gaussian 的显式 Hilbert 导数、两个半平面及实轴边界，并以独立高精度方程按分量使用零绝对容差检验。"
-        ],
-        "known_limitations": [
-          "导数被积函数在实轴局部可去点的求值使用对称二阶导数估计；不返回全局误差证书。",
-          "受限解析器支持有限实常量、pi、v、算术及 exp/log/sqrt/sin/cos/sinh/cosh/tanh。"
-        ],
-        "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-residual",
-      "source_sha256": "e728b6f8af6d0e80f0ba7e29516714f70833ba902477a321d6603e24002c7043",
-      "summary": "计算 Langmuir、离子声波、束流和广义分布残差。",
-      "definition": "离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化遵循冻结脚本。",
-      "model": "一维、无磁场、无碰撞的静电等离子体。",
-      "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
-      "assumptions": [
-        "密度在实积分轮廓上为实值且可积。",
-        "不声称集体模唯一，也不提供经认证的全局求积误差界。",
-        "k 必须为有限正标量。"
-      ],
-      "inputs": [
-        {
-          "name": "kind",
-          "description": "选择 langmuir、iaw、beam 或 generalized。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "x",
-          "description": "相位 omega/(sqrt(2)*k)。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数数值",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "k",
-          "description": "以 Debye 长度倒数归一化的波数。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "ion_temperature",
-          "description": "离子与电子温度比 Ti/Te。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "ion_mass",
-          "description": "离子与电子质量比 mi/me。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "beam_fraction",
-          "description": "束流密度与总密度之比。",
-          "constraints": "beam_fraction 必须在 [0,1] 内。",
-          "dtype": "实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "beam_temperature",
-          "description": "束流与电子温度比 Tb/Te。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "beam_drift",
-          "description": "束流漂移速度除以束流热速度。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "selector",
-          "description": "广义分布选择器。",
-          "constraints": "取值为 0 至 6。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "expression",
-          "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
-          "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "integration_mesh",
-          "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
-          "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
-          "dtype": "实数向量",
-          "shape": "至少两个点的一维数组",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "return",
-          "description": "采用来源归一化约定的 D 残差。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数数组",
-          "shape": "与 x 同形",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "密度在实积分轮廓上为实值且可积。",
-          "不声称集体模唯一，也不提供经认证的全局求积误差界。",
-          "k 必须为有限正标量。"
-        ],
-        "supported": [
-          "覆盖来源四类残差，并保留温度、质量及漂移归一化。",
-          "Maxwellian 的 Langmuir 和 generalized 分支复用已资格化、避免消减的小 k 实现。"
-        ],
-        "excluded": [
-          "不能直接把很小的绝对 D 值当作小 k 模已成立的证据。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-        "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-        "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-        "partial_results": "失败后不返回部分科学结果。"
-      },
-      "example": {
-        "description": "四类静电色散残差的可执行例子。",
-        "expected": "断言检查所声明的输出性质。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖来源四类残差，并保留温度、质量及漂移归一化。",
-          "Maxwellian 的 Langmuir 和 generalized 分支复用已资格化、避免消减的小 k 实现。"
-        ],
-        "known_limitations": [
-          "离子声波与束流使用普通 Faddeeva 响应；极端相位或温度输入可能导致不可表示结果。"
-        ],
-        "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-root-scans",
-      "source_sha256": "1760ef75bcee10e8e92bbd67d025b1e3e6dea9961866080f70fb6d557bce09dd",
-      "summary": "运行来源全部四类带初始种子的静电根扫描。",
-      "definition": "来源网格为：Langmuir .1:.1:1 后接 2:1:10，固定相位种子 1-.1i；离子声波 1.1:-.05:.05，相位种子 .04-.02i；束流 .4:-.005:.05，相位种子 (1-.01i)*sqrt(2)*.4；generalized .1:.1:1 后接 1.5:.5:5，频率种子 1.5-.001i。离子声波和束流接续上一个相位，generalized 接续上一个频率。k 通过闭包绑定，不再作为无效的 fsolve 第四参数传递。求解使用 D/k² 或直接使用已资格化的 Maxwellian epsilon，并同时检查求解器成功、残差容差及函数求值预算。",
-      "model": "一维、无磁场、无碰撞的静电等离子体。",
-      "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
-      "assumptions": [
-        "每个带种子的根必须在求值预算与介电残差容差内收敛。",
-        "k_values 保持接续顺序；initial_guess 的单位依各分支的明确声明解释。"
-      ],
-      "inputs": [
-        {
-          "name": "kind",
-          "description": "选择 langmuir、iaw、beam 或 generalized。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "k_values",
-          "description": "可选的有序正波数扫描网格；None 选择来源对应分支的网格。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数向量",
-          "shape": "非空一维数组",
-          "units": "无量纲"
-        },
-        {
-          "name": "initial_guess",
-          "description": "可选复种子：除 generalized 使用频率 omega 外均为相位 x；None 选择来源分支的种子。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "residual_tolerance",
-          "description": "介电残差的绝对接受阈值。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "max_evaluations",
-          "description": "每个网格点的 MINPACK 函数求值上限。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "ion_temperature",
-          "description": "离子与电子温度比 Ti/Te。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "ion_mass",
-          "description": "离子与电子质量比 mi/me。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "beam_fraction",
-          "description": "束流密度与总密度之比。",
-          "constraints": "beam_fraction 必须在 [0,1] 内。",
-          "dtype": "实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "beam_temperature",
-          "description": "束流与电子温度比 Tb/Te。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "beam_drift",
-          "description": "束流漂移速度除以束流热速度。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "selector",
-          "description": "广义分布选择器。",
-          "constraints": "取值为 0 至 6。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "expression",
-          "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
-          "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "integration_mesh",
-          "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
-          "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
-          "dtype": "实数向量",
-          "shape": "至少两个点的一维数组",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "k",
-          "description": "保持请求顺序的扫描网格。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数向量",
-          "shape": "网格点数",
-          "units": "无量纲"
-        },
-        {
-          "name": "omega",
-          "description": "通过门禁并以等离子体频率归一化的根。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "复数向量",
-          "shape": "网格点数",
-          "units": "无量纲"
-        },
-        {
-          "name": "dielectric_residual",
-          "description": "介电残差实部和虚部组成向量的范数。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "非负实数向量",
-          "shape": "网格点数",
-          "units": "无量纲"
-        },
-        {
-          "name": "evaluations",
-          "description": "每个网格点的 MINPACK 函数求值次数。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "整数向量",
-          "shape": "网格点数",
-          "units": "计数"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "每个带种子的根必须在求值预算与介电残差容差内收敛。",
-          "k_values 保持接续顺序；initial_guess 的单位依各分支的明确声明解释。"
-        ],
-        "supported": [
-          "覆盖四类来源完整网格：Langmuir 19 点、离子声波 22 点、束流 71 点及 generalized 18 点。",
-          "支持调用者指定网格，并以显式种子选择分支。",
-          "以两个实分量显式调用 MINPACK 求解后验证介电残差。"
-        ],
-        "excluded": [
-          "不保证根唯一、不穷尽谱，也不自动选择最不稳定或最弱阻尼分支。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-        "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-        "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-        "partial_results": "失败后不返回部分科学结果。"
-      },
-      "example": {
-        "description": "四类 GPDF 连续根扫描的可执行例子。",
-        "expected": "断言检查所声明的输出性质。"
-      },
-      "verification": {
-        "scope": [
-          "覆盖四类来源完整网格：Langmuir 19 点、离子声波 22 点、束流 71 点及 generalized 18 点。",
-          "支持调用者指定网格，并以显式种子选择分支。",
-          "以两个实分量显式调用 MINPACK 求解后验证介电残差。"
-        ],
-        "known_limitations": [
-          "来源默认束流种子跟随阻尼高频分支；基于频率信息显式设置的相位种子可以找到不稳定分支。",
-          "来源默认束流种子在自定义短网格 [.3,.295] 上失败；保留这一失败行为。",
-          "通用非 Maxwellian 求积根未经区间认证；其接受门禁未包含求积误差估计。"
-        ],
-        "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-small-k",
-      "source_sha256": "a1fc07ef4068acb1c67c815bb856316445d52c532b6a4c52a7be89b062cf6cc5",
-      "summary": "计算来源定义的 Langmuir 频率与阻尼渐近式。",
-      "definition": "在对数域计算阻尼幅值，避免 k³ 下溢时来源表达式出现 0/0；拒绝精确 k=0。",
-      "model": "一维、无磁场、无碰撞的静电等离子体。",
-      "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
-      "assumptions": [
-        "Maxwellian 归一化热速度标准差与等离子体频率均为 1。",
-        "使用该渐近式要求 k 远小于 1。"
-      ],
-      "inputs": [
-        {
-          "name": "k",
-          "description": "以 Debye 长度倒数归一化的小波数。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "正实数",
-          "shape": "标量或非空数组",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "omega_real",
-          "description": "Bohm–Gross 实频率的首项近似。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数数组",
-          "shape": "与 k 同形",
-          "units": "无量纲"
-        },
-        {
-          "name": "omega_imag",
-          "description": "小 k Landau 阻尼的首项近似。",
-          "constraints": "必须有限且可表示。",
-          "dtype": "实数数组",
-          "shape": "与 k 同形",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "Maxwellian 归一化热速度标准差与等离子体频率均为 1。",
-          "使用该渐近式要求 k 远小于 1。"
-        ],
-        "supported": [
-          "支持正小波数；指数阻尼下溢时返回零。"
-        ],
-        "excluded": [
-          "不提供有限 k 的精确根，也不提供受控的全局渐近余项。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-        "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-        "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-        "partial_results": "失败后不返回部分科学结果。"
-      },
-      "example": {
-        "description": "Langmuir 小波数渐近频率的可执行例子。",
-        "expected": "断言检查所声明的输出性质。"
-      },
-      "verification": {
-        "scope": [
-          "支持正小波数；指数阻尼下溢时返回零。"
-        ],
-        "known_limitations": [
-          "大 k 处输出有限并不表示渐近式有效。",
-          "小于浮点可表示范围的阻尼下溢为零。"
-        ],
-        "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-      "source_sha256": "e53fe902cbfde5a9a40fd804d7913694257839771e3b7fb6e0a16a497dbf06a9",
-      "summary": "对已解析密度特征的回调计算 Cauchy 变换，并解析近实轴核峰。",
-      "definition": "G(z)=integral density(v)/(v-z)dv。对 z=x+i*y，邻近投影的有限面板采用 v=x+abs(y)*sinh(t)，使被积核为 density(v)*(tanh(t)+i*sign(y)*sech(t))。变换面板解析核峰与长尾，平滑远面板和无穷尾使用实坐标求积。仅按声明支撑政策增加显式解析延拓。",
-      "model": "一维广义等离子体响应。",
-      "boundary": "拒绝实轴极点。",
-      "assumptions": [
-        "回调在每个求积面板上均有限。",
-        "bounds=None 时 integration_mesh 显式划分密度支撑和特征，两个无穷尾均可积。",
-        "自适应样本不能认证未见的密度支撑；已知 Cauchy 核尺度由内部处理，误差估计仍有条件。"
-      ],
-      "inputs": [
-        {
-          "name": "z",
-          "description": "不在实轴上的复相点",
-          "dtype": "复数数值",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "density",
-          "description": "单个实速度对应的实密度回调",
-          "dtype": "callable",
-          "constraints": "所有采样点返回有限实数标量，调用者声明特征解析。"
-        },
-        {
-          "name": "bounds",
-          "description": "有序实积分上下界",
-          "dtype": "实数序列",
-          "constraints": "None 表示须提供网格的全实轴模式；否则为有限有序实数对，拒绝布尔和复数坐标。"
-        },
-        {
-          "name": "integration_mesh",
-          "description": "划分密度支撑和特征的有限递增实网格",
-          "dtype": "有限实数组",
-          "constraints": "严格递增；有 bounds 时位于范围内。bounds=None 时端点包围已解析特征区域，并继续积分无穷尾。"
-        },
-        {
-          "name": "analytic_density",
-          "description": "下半平面延拓的可选解析密度",
-          "dtype": "callable",
-          "constraints": "None 或返回有限数值标量的同一密度解析延拓。有限区间仅在 a<Re(z)<b 内延拓。"
-        },
-        {
-          "name": "epsabs",
-          "description": "绝对求积容差",
-          "dtype": "正实数",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "epsrel",
-          "description": "相对求积容差",
-          "dtype": "正实数",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "limit",
-          "description": "QUADPACK 子划分上限",
-          "dtype": "正整数",
-          "constraints": "有限且可表示。"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "G",
-          "description": "Cauchy 变换",
-          "dtype": "复数组",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "quadrature_error",
-          "description": "实虚分量求积指标与浮点累加估计，包含延拓；不界定回调或解析扩展误差",
-          "dtype": "实数组",
-          "constraints": "有限且可表示。"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "密度回调返回有限实数标量，选定轮廓上的 Cauchy 积分存在。",
-          "调用者的上下界或网格解析全部重要密度特征，无穷尾可积且无未解析密度特征。积分器自行解析核峰，无需调用者按极点高度建网格。"
-        ],
-        "supported": [
-          "有限有序上下界已解析回调支撑。",
-          "全实轴积分使用显式有限递增网格解析支撑/特征，并假定尾部可积。"
-        ],
-        "excluded": [
-          "不从回调样本自动发现全实轴支撑；信息不足时拒绝。",
-          "不复现来源 MATLAB 行为、绘图、全局根扫描或任意解析延拓。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "无效、非有限、奇异或不兼容输入抛出 ValueError，包括 None/非标量容差，以及没有 integration_mesh 的纯回调全实轴积分。",
-        "runtime_failure": "回调异常继续传播；无效回调输出或不可表示结果抛出 ValueError。",
-        "nonconvergence": "任意 QUADPACK 面板不收敛时抛出 RuntimeError，无部分结果。",
-        "partial_results": "失败后不返回部分结果。"
-      },
-      "verification": {
-        "scope": [
-          "独立有限区间解析恒等式和分量误差报告。",
-          "显式特征网格的全实轴平移 Gaussian 案例，以独立 Faddeeva 函数为参考。",
-          "纯回调全实轴支撑和错误容差的失败闭合。",
-          "独立于密度特征网格解析近实轴核峰与对数尺度尾部；保留严格有限支撑延拓端点政策。"
-        ],
-        "known_limitations": [
-          "有限区间截掉未包含尾部；全实轴模式须提供已解析的网格/支撑并假定尾部可积。",
-          "分量指标含求积及浮点累加估计，不含回调、解析扩展、有限区间截断误差，不是全局认证。",
-          "解析延拓须显式提供与密度一致的解析回调。"
-        ],
-        "evidence_ceiling": "常数/仿射有限支撑的对数原函数覆盖两半平面、1 到 1e-300 极点高度、端点/内外部与多点形状；Gaussian 特殊函数和 Lorentzian 留数恒等式覆盖全实轴尾部。只支持核变换，不支持任意回调特征发现或严格全局误差界。"
-      },
-      "example": {
-        "description": "积分归一化 Gaussian 密度。",
-        "expected": "返回有限复变换及实虚两分量误差估计。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
-      "source_sha256": "f2b80e96bac34a399ec149bf741258f893e3eddda69c4b8eb0249e5365a5515e",
-      "summary": "计算归一化 Maxwellian 介电响应，并避免大相速处的相消。",
-      "definition": "epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 保留为诊断量。",
-      "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
-      "boundary": "k 为正，omega 有限；不作全局分支选择。",
-      "assumptions": [
-        "只有给定种子并经过最终残差检查才识别模态。",
-        "f0(v)=exp(-v²/2)/sqrt(2*pi)，热速度标准差为一，扰动采用 exp(-i*omega*t)。"
-      ],
-      "inputs": [
-        {
-          "name": "omega",
-          "description": "归一化复频率，可为标量或数组",
-          "dtype": "复数数值",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "k",
-          "description": "正归一化波数",
-          "dtype": "正实数",
-          "constraints": "有限正实标量；拒绝布尔、复数或数组。"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "epsilon",
-          "description": "纵向介电响应",
-          "dtype": "复数组",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "D",
-          "description": "缩放残差 k²*epsilon",
-          "dtype": "复数组",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "z",
-          "description": "无量纲相速参数 omega/(sqrt(2)*k)",
-          "dtype": "复数组",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "epsilon_error",
-          "description": "epsilon 的算术/渐近误差估计，不是严格包络",
-          "dtype": "实数组",
-          "constraints": "合法输入下为有限估计。"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "k 为有限正值；输出须能以双精度表示。"
-        ],
-        "supported": [
-          "正有限实标量 k 和有限归一化频率，包括可表示的上下半平面复数。"
-        ],
-        "excluded": [
-          "不复现来源 MATLAB 行为、绘图、全局根扫描或任意解析延拓。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "输入无效、非有限、奇异或不匹配时抛出 ValueError。",
-        "runtime_failure": "不可表示的求值抛出 ValueError；求根中的不可表示试探响应抛出 RuntimeError；未预期的 SciPy 错误继续传播。",
-        "nonconvergence": "求根和求积上限显式给出；残差检查失败抛出 RuntimeError。",
-        "partial_results": "失败后不返回部分结果。"
-      },
-      "verification": {
-        "scope": [
-          "跨实数和复数正 k 定义域的独立高精度 Faddeeva 与 Gaussian 矩参考。",
-          "小 k、omega=2 极限、有限可表示性以及形状和误差报告。"
-        ],
-        "known_limitations": [
-          "epsilon_error 只是估计，不是严格包络。",
-          "有限输入仍可能有不可表示复响应；单次求值不表示找到根。"
-        ],
-        "evidence_ceiling": "独立高精度 Faddeeva、Gaussian 矩和种子根计算支持声明的正 k 实/复响应及已测区域的误差门禁；估计不是严格包络。"
-      },
-      "example": {
-        "description": "在给定复频率计算残差。",
-        "expected": "返回有限 epsilon、D 和相速参数。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
-      "source_sha256": "3cc38ceffa3f3c655cc60a0128e836a94273f145720924701186e9ab622310b3",
-      "summary": "从显式复种子求一个 Maxwellian 模态，并检查残差与误差。",
-      "definition": "用两个实分量求解 epsilon(omega,k)=0，再进行不依赖 k² 缩放的归一化残差与估计误差门禁。",
-      "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
-      "boundary": "仅承诺由给定种子到达的分支。",
-      "assumptions": [
-        "MINPACK 成功状态不能替代最终残差检查。",
-        "f0(v)=exp(-v²/2)/sqrt(2*pi)，热速度标准差为一，扰动采用 exp(-i*omega*t)。"
-      ],
-      "inputs": [
-        {
-          "name": "k",
-          "description": "正归一化波数",
-          "dtype": "正实数",
-          "constraints": "有限正实标量；拒绝布尔、复数和数组。"
-        },
-        {
-          "name": "initial_omega",
-          "description": "复根初始种子",
-          "dtype": "复数数值",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "xtol",
-          "description": "MINPACK 步长容差",
-          "dtype": "正实数",
-          "constraints": "有限正实标量；拒绝布尔和数组。"
-        },
-        {
-          "name": "residual_tolerance",
-          "description": "归一化 epsilon 残差与估计误差的验收阈值",
-          "dtype": "正实数",
-          "constraints": "有限正实标量；拒绝布尔和数组。"
-        },
-        {
-          "name": "max_evaluations",
-          "description": "最大残差求值次数",
-          "dtype": "正整数",
-          "constraints": "正整数标量，拒绝布尔。"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "omega",
-          "description": "收敛复模态",
-          "dtype": "复数",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "residual",
-          "description": "最终复 D",
-          "dtype": "复数",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "evaluations",
-          "description": "残差求值次数",
-          "dtype": "整数",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "epsilon",
-          "description": "最终介电响应",
-          "dtype": "复数",
-          "constraints": "有限且可表示。"
-        },
-        {
-          "name": "normalized_residual",
-          "description": "以 1+|chi| 归一化的绝对 epsilon 残差",
-          "dtype": "实数",
-          "constraints": "有限，并在估计误差门禁后低于 residual_tolerance。"
-        },
-        {
-          "name": "normalized_residual_error",
-          "description": "同归一化下的 epsilon 误差估计",
-          "dtype": "实数",
-          "constraints": "有限，低于 residual_tolerance/4 才接受。"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "k 为有限正值；输出须能以双精度表示。"
-        ],
-        "supported": [
-          "正有限实标量 k 和有限归一化频率，包括可表示的上下半平面复数。"
-        ],
-        "excluded": [
-          "不复现来源 MATLAB 行为、绘图、全局根扫描或任意解析延拓。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "输入无效、非有限、奇异或不匹配时抛出 ValueError。",
-        "runtime_failure": "不可表示的求值抛出 ValueError；求根中的不可表示试探响应抛出 RuntimeError；未预期的 SciPy 错误继续传播。",
-        "nonconvergence": "MINPACK 失败、超出求值上限或归一化残差/误差门禁失败时抛出 RuntimeError，不返回部分模态。",
-        "partial_results": "失败后不返回部分结果。"
-      },
-      "verification": {
-        "scope": [
-          "正 k 实/复案例的独立高精度根与归一化残差/误差门禁。",
-          "小 k 假种子、成功种子根与明确不收敛行为。"
-        ],
-        "known_limitations": [
-          "估计误差不是严格包络。",
-          "不承诺唯一根、最弱阻尼分支或全局选根；种子决定分支。"
-        ],
-        "evidence_ceiling": "独立高精度 Faddeeva、Gaussian 矩和种子根计算支持声明的正 k 实/复响应及已测区域的误差门禁；估计不是严格包络。"
-      },
-      "example": {
-        "description": "从给定种子求一个模态。",
-        "expected": "复模态满足归一化残差及误差检查。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-diagnostic",
-      "source_sha256": "0a93f7675c6b1a2bb836f4094adafc403eb9126dd0bf3eeeb5209a323bb923b5",
-      "summary": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
-      "definition": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "dEt",
-          "description": "复电场时间序列。",
-          "constraints": "必须为有限一维数组，T≥2。",
-          "dtype": "复数数组",
-          "shape": "[T]",
-          "units": "无量纲"
-        },
-        {
-          "name": "tt",
-          "description": "采样时刻。",
-          "constraints": "必须有限且严格递增，并与 dEt 同形。",
-          "dtype": "实数数组",
-          "shape": "[T]",
-          "units": "无量纲"
-        },
-        {
-          "name": "start",
-          "description": "诊断时间窗起点；None 表示实际时间跨度的 5% 位置。",
-          "constraints": "必须有限；还须满足对应函数的科学条件。",
-          "dtype": "实数标量或 None",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "end",
-          "description": "诊断时间窗终点；None 表示实际时间跨度的 80% 位置。",
-          "constraints": "必须有限；还须满足对应函数的科学条件。",
-          "dtype": "实数标量或 None",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回映射，含长度 P≥2 的 peak_indices、peak_times、peak_log_magnitudes，以及标量 omega、gamma 和 gammas；gammas 是 gamma 的别名。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "字典",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "振荡峰阻尼诊断的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-distribution",
-      "source_sha256": "f330cf42c8e1fe581533b1cdc3a75f7f3a89b7d6b67f317b6f0d41e0a4639781",
-      "summary": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
-      "definition": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "vv",
-          "description": "速度节点。",
-          "constraints": "必须为有限一维数组；相应函数中须与 df、df0dv 对齐。",
-          "dtype": "实数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "Fn",
-          "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
-          "constraints": "取值为 1、2、3 或 4。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "k",
-          "description": "空间 Fourier 波数，以 Debye 长度倒数归一化。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "kappa",
-          "description": "kappa 形状参数，仅在 Fn=2 时使用。",
-          "constraints": "Fn=2 时必须有限且大于 1/2。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "cutoff_mode",
-          "description": "Fn4 的弱导数模式，或显式采用来源仅平滑部分的强迫项。",
-          "constraints": "取 weak 或 smooth；Fn4 的 weak 模式要求递增等距网格。",
-          "dtype": "字符串",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回元组 (g,wr,wi)，其中 g 形状为 [N]；仅 Fn=2、kappa=1 时提供理论 wr=1、wi=-k sqrt(2)，其他情况理论值为 None。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "元组",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "分布导数与截断跳跃的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-envelope",
-      "source_sha256": "bab42ca475fabdc750e75f520a43f34bd551ff0ffb366c5343922717da43e1ab",
-      "summary": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
-      "definition": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "dEt",
-          "description": "复电场时间序列。",
-          "constraints": "必须为有限一维数组，T≥2。",
-          "dtype": "复数数组",
-          "shape": "[T]",
-          "units": "无量纲"
-        },
-        {
-          "name": "tt",
-          "description": "采样时刻。",
-          "constraints": "必须有限且严格递增，并与 dEt 同形。",
-          "dtype": "实数数组",
-          "shape": "[T]",
-          "units": "无量纲"
-        },
-        {
-          "name": "wr",
-          "description": "可选理论实频率；仅作为元数据返回。",
-          "constraints": "必须有限；还须满足对应函数的科学条件。",
-          "dtype": "实数标量或 None",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "wi",
-          "description": "可选理论阻尼率。",
-          "constraints": "必须有限；还须满足对应函数的科学条件。",
-          "dtype": "实数标量或 None",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回映射，含 ttmp[T]、lndE[T]、lndEe[T] 或 None，以及 wr、wi。幅度精确为零时其对数为 -inf；保留全部样本。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "字典",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "复电场幅值包络的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-evolve",
-      "source_sha256": "7e7c7badc3eff6f398b071c271255cfa46263c5b78c15142857304cc47db9933",
-      "summary": "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。",
-      "definition": "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "state",
-          "description": "由 vp_init 生成的状态映射，含 df、dE、vv、df0dv、k、dv、dt、nt 及来源控制参数。",
-          "constraints": "必须为完整 VP 状态；数组有限且对齐；初始场满足 Poisson 闭合；nt 为非负整数。",
-          "dtype": "字典",
-          "shape": "映射",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回状态映射：Fn、kappa、nv、dt、nt、k、vmax、vmin、dv、TR；形状 [nv+1] 的 vv、df、df0dv；标量 dE；形状 [nt+1] 的 dEt、tt；wr、wi 为 kappa=1 的理论值或 None。场及数组独立持有，不修改输入；再次调用会从传入 df 开始新的局部时间历史。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "字典",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "有限步线性反馈演化的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-field",
-      "source_sha256": "3adee239dcf14edba4806a93262b01ce8f45d5f7720a7e1d3c2ba13d03271e97",
-      "summary": "Poisson 闭合关系为 E=i dv sum(df)/k。",
-      "definition": "Poisson 闭合关系为 E=i dv sum(df)/k。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "df",
-          "description": "速度节点上的复扰动。",
-          "constraints": "必须为有限一维数组，N≥2。",
-          "dtype": "复数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "k",
-          "description": "非零空间 Fourier 波数。",
-          "constraints": "必须有限且非零。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "dv",
-          "description": "等距速度求积的间距。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "满足 ikE=-dv sum(df) 的复标量电场。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "复数标量",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "Poisson 闭合关系为 E=i dv sum(df)/k。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "Poisson 电场闭合的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-init",
-      "source_sha256": "5f26c4fa1ba66e6143cc0fe5a0d5f0adaeb09c24908fb0b39be62ae5377d0c04",
-      "summary": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
-      "definition": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "Fn",
-          "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
-          "constraints": "取值为 1、2、3 或 4。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "kappa",
-          "description": "kappa 形状参数，仅在 Fn=2 时使用。",
-          "constraints": "Fn=2 时必须有限且大于 1/2。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "nv",
-          "description": "等长速度区间的数量。",
-          "constraints": "必须为不小于 2 的整数；拒绝布尔值。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "dt",
-          "description": "以等离子体频率倒数归一化的时间步长。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "nt",
-          "description": "精确执行的有序时间步数。",
-          "constraints": "必须为非负整数；拒绝布尔值。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "k",
-          "description": "空间 Fourier 波数，以 Debye 长度倒数归一化。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "vmax",
-          "description": "对称速度窗的半宽。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回状态映射：Fn、kappa、nv、dt、nt、k、vmax、vmin、dv、TR；形状 [nv+1] 的 vv、df、df0dv；标量 dE；形状 [nt+1] 的 dEt、tt；wr、wi 为 kappa=1 的理论值或 None。场及数组独立持有。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "字典",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "Poisson 一致初始化的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-landau",
-      "source_sha256": "f682f558f310c530b1736d87f2376261d67cd59cd3e0c33c9542fe7938f41c43",
-      "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
-      "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "Fn",
-          "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
-          "constraints": "取值为 1、2、3 或 4。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "kappa",
-          "description": "kappa 形状参数，仅在 Fn=2 时使用。",
-          "constraints": "Fn=2 时必须有限且大于 1/2。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "nv",
-          "description": "等长速度区间的数量。",
-          "constraints": "必须为不小于 2 的整数；拒绝布尔值。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "dt",
-          "description": "以等离子体频率倒数归一化的时间步长。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "nt",
-          "description": "精确执行的有序时间步数。",
-          "constraints": "必须为非负整数；拒绝布尔值。",
-          "dtype": "整数",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "k",
-          "description": "空间 Fourier 波数，以 Debye 长度倒数归一化。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "vmax",
-          "description": "对称速度窗的半宽。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回映射，含 state（完整 VP 状态）、envelope、diagnostic 和 diagnostic_status。nt=0 时包络和诊断为 None；峰值不足时保留演化，返回 diagnostic=None 及相应原因。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "字典",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "Vlasov–Poisson 初值组合的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-rhs",
-      "source_sha256": "488e88015f738eed0d1e843efb87da279d8409f54514ef80f3fd0976aa7f442c",
-      "summary": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
-      "definition": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "df",
-          "description": "速度节点上的复扰动。",
-          "constraints": "必须为有限一维数组，N≥2。",
-          "dtype": "复数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "dE",
-          "description": "标量 Fourier 电场。",
-          "constraints": "必须为有限标量；RK4 要求在 rtol=1e-12、atol=1e-14 范围内满足 Poisson 一致性。",
-          "dtype": "复数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "vv",
-          "description": "速度节点。",
-          "constraints": "必须为有限一维数组；相应函数中须与 df、df0dv 对齐。",
-          "dtype": "实数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "df0dv",
-          "description": "速度节点上的平衡态导数或所声明的强迫项。",
-          "constraints": "必须为有限、对齐的一维向量；可以包含按求积权重沉积的跳跃质量。",
-          "dtype": "实数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "k",
-          "description": "非零空间 Fourier 波数。",
-          "constraints": "必须有限且非零。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回形状 [N] 的复数时间导数向量；不修改输入。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "复数数组",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "线性 Vlasov 右端的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
-    },
-    {
-      "asset_id": "scirel.kinetic.vp-rk4-step",
-      "source_sha256": "4fd88ebdeecb049be6a7e6db284faf97a45a8223c328f639be6565a8dc28f051",
-      "summary": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。",
-      "definition": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。",
-      "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-      "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
-      "assumptions": [
-        "假设线性扰动及均匀平衡态。",
-        "速度窗截断与离散复现现象应和时间积分误差分别评估。"
-      ],
-      "inputs": [
-        {
-          "name": "df",
-          "description": "速度节点上的复扰动。",
-          "constraints": "必须为有限一维数组，N≥2。",
-          "dtype": "复数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "dE",
-          "description": "标量 Fourier 电场。",
-          "constraints": "必须为有限标量；RK4 要求在 rtol=1e-12、atol=1e-14 范围内满足 Poisson 一致性。",
-          "dtype": "复数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "vv",
-          "description": "速度节点。",
-          "constraints": "必须为有限一维数组；相应函数中须与 df、df0dv 对齐。",
-          "dtype": "实数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "df0dv",
-          "description": "速度节点上的平衡态导数或所声明的强迫项。",
-          "constraints": "必须为有限、对齐的一维向量；可以包含按求积权重沉积的跳跃质量。",
-          "dtype": "实数数组",
-          "shape": "[N]",
-          "units": "无量纲"
-        },
-        {
-          "name": "k",
-          "description": "非零空间 Fourier 波数。",
-          "constraints": "必须有限且非零。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "dv",
-          "description": "等距速度求积的间距。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        },
-        {
-          "name": "dt",
-          "description": "以等离子体频率倒数归一化的时间步长。",
-          "constraints": "必须为有限正值。",
-          "dtype": "实数标量",
-          "shape": "标量",
-          "units": "无量纲"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "返回元组 (new_df,new_dE)，分别为形状 [N] 的复向量和满足闭合的复标量；不修改输入。",
-          "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
-          "dtype": "元组",
-          "shape": "形状见输出映射或元组的说明。",
-          "units": "无量纲"
-        }
-      ],
-      "applicability": {
-        "preconditions": [
-          "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
-        ],
-        "supported": [
-          "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。"
-        ],
-        "excluded": [
-          "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
-          "不提供连续方程精度认证，也不保证复现时间后的有效性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
-        "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
-        "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
-        "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
-      },
-      "example": {
-        "description": "Poisson 闭合 RK4 单步的最小调用。",
-        "expected": "所声明的形状或数值断言通过。"
-      },
-      "verification": {
-        "scope": [
-          "验证离散 Poisson 约束和含非对角项的秩一反馈。",
-          "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-          "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
-        ],
-        "known_limitations": [
-          "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
-          "Fn4 截断密度保留来源系数，截断后不重新归一化。",
-          "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
-        ],
-        "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
-      }
+     "name": "order",
+     "description": "有理近似的截断阶数或极点数；None 选择 16 阶。",
+     "constraints": "允许任意正整数阶数；拒绝布尔值。",
+     "dtype": "整数或 None",
+     "shape": "标量",
+     "units": "计数"
     }
-  ]
+   ],
+   "outputs": [
+    {
+     "name": "w",
+     "description": "复数响应值。",
+     "constraints": "必须为有限的 complex128 值。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    },
+    {
+     "name": "order",
+     "description": "实际采用的截断阶数或极点数。",
+     "constraints": "允许任意正整数阶数。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "计数"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
+    ],
+    "supported": [
+     "允许任意正整数阶数。",
+     "支持有限、非空的标量或数组输入，并保持形状。"
+    ],
+    "excluded": [
+     "不提供有保证的全局误差界。",
+     "不提供任意分布的响应。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
+    "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
+    "nonconvergence": "采用固定近似，不声称迭代收敛。",
+    "partial_results": "调用失败后不返回部分结果。"
+   },
+   "example": {
+    "description": "计算有限的上半平面响应。",
+    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
+     "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
+    ],
+    "known_limitations": [
+     "下半平面的指数项可能超出 float64 范围。",
+     "固定截断的误差取决于相位点和阶数。"
+    ],
+    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
+   "source_sha256": "dd46ca27e6c1977ce19b7bc48be2f11e08a5dcbcf950051df2f41c4e879ca16f",
+   "summary": "Faddeeva 32 阶变体；保留独立默认值、截断及失败合同。",
+   "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
+   "model": "一维 Maxwellian 等离子体响应。",
+   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
+   "assumptions": [
+    "输入为无量纲、已归一化的 Maxwellian 自变量。"
+   ],
+   "inputs": [
+    {
+     "name": "z",
+     "description": "无量纲复相位点。",
+     "constraints": "必须有限。",
+     "dtype": "复数数值",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "order",
+     "description": "有理近似的截断阶数或极点数；None 选择 32 阶。",
+     "constraints": "允许任意正整数阶数；拒绝布尔值。",
+     "dtype": "整数或 None",
+     "shape": "标量",
+     "units": "计数"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "w",
+     "description": "复数响应值。",
+     "constraints": "必须为有限的 complex128 值。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    },
+    {
+     "name": "order",
+     "description": "实际采用的截断阶数或极点数。",
+     "constraints": "允许任意正整数阶数。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "计数"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
+    ],
+    "supported": [
+     "允许任意正整数阶数。",
+     "支持有限、非空的标量或数组输入，并保持形状。"
+    ],
+    "excluded": [
+     "不提供有保证的全局误差界。",
+     "不提供任意分布的响应。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
+    "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
+    "nonconvergence": "采用固定近似，不声称迭代收敛。",
+    "partial_results": "调用失败后不返回部分结果。"
+   },
+   "example": {
+    "description": "计算有限的上半平面响应。",
+    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
+     "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
+    ],
+    "known_limitations": [
+     "下半平面的指数项可能超出 float64 范围。",
+     "固定截断的误差取决于相位点和阶数。"
+    ],
+    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
+   "source_sha256": "7dc0ac6a61928cb385b19a57f6e77dec3dd0d687a1da954974ce6717e26adb7a",
+   "summary": "Maxwellian FFT 色散函数；保留独立默认值、截断及失败合同。",
+   "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
+   "model": "一维 Maxwellian 等离子体响应。",
+   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
+   "assumptions": [
+    "输入为无量纲、已归一化的 Maxwellian 自变量。"
+   ],
+   "inputs": [
+    {
+     "name": "z",
+     "description": "无量纲复相位点。",
+     "constraints": "必须有限。",
+     "dtype": "复数数值",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "order",
+     "description": "有理近似的截断阶数或极点数；显式传入 None 无效。",
+     "constraints": "允许任意正整数阶数；拒绝布尔值。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "计数"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "Z",
+     "description": "复数响应值。",
+     "constraints": "必须为有限的 complex128 值。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    },
+    {
+     "name": "order",
+     "description": "实际采用的截断阶数或极点数。",
+     "constraints": "允许任意正整数阶数。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "计数"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
+    ],
+    "supported": [
+     "允许任意正整数阶数。",
+     "支持有限、非空的标量或数组输入，并保持形状。"
+    ],
+    "excluded": [
+     "不提供有保证的全局误差界。",
+     "不提供任意分布的响应。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
+    "runtime_failure": "w 或最终缩放后的 Z 超出 float64 有限范围时抛出 FloatingPointError；仅 w 有限不能证明 Z 可表示。",
+    "nonconvergence": "采用固定近似，不声称迭代收敛。",
+    "partial_results": "调用失败后不返回部分结果。"
+   },
+   "example": {
+    "description": "计算有限的上半平面响应。",
+    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
+     "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。",
+     "当 w 有限而缩放后的 Z 溢出时明确失败；覆盖混合矩阵及负虚轴数学缩放阈值的两侧。"
+    ],
+    "known_limitations": [
+     "下半平面的指数项可能超出 float64 范围。",
+     "固定截断的误差取决于相位点和阶数。"
+    ],
+    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
+   "source_sha256": "dc8c461e7b2d91fb455a86bb98ab7abea3836b21eda0d6bf7071d53eea591337",
+   "summary": "Maxwellian 固定极点色散近似；保留独立默认值、截断及失败合同。",
+   "definition": "采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。",
+   "model": "一维 Maxwellian 等离子体响应。",
+   "boundary": "接受实轴输入；指数延拓发生溢出时报错。",
+   "assumptions": [
+    "输入为无量纲、已归一化的 Maxwellian 自变量。"
+   ],
+   "inputs": [
+    {
+     "name": "z",
+     "description": "无量纲复相位点。",
+     "constraints": "必须有限。",
+     "dtype": "复数数值",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "order",
+     "description": "有理近似的截断阶数或极点数；显式传入 None 无效。",
+     "constraints": "仅允许 8、12、16 或 24 个极点；拒绝布尔值。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "计数"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "Z",
+     "description": "复数响应值。",
+     "constraints": "必须为有限的 complex128 值。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    },
+    {
+     "name": "order",
+     "description": "实际采用的截断阶数或极点数。",
+     "constraints": "仅允许 8、12、16 或 24 个极点。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "计数"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "所有相位输入及计算结果都必须在 complex128 的可表示范围内。"
+    ],
+    "supported": [
+     "仅允许 8、12、16 或 24 个极点。",
+     "支持有限、非空的标量或数组输入，并保持形状。"
+    ],
+    "excluded": [
+     "不提供有保证的全局误差界。",
+     "不提供任意分布的响应。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
+    "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
+    "nonconvergence": "采用固定近似，不声称迭代收敛。",
+    "partial_results": "调用失败后不返回部分结果。"
+   },
+   "example": {
+    "description": "计算有限的上半平面响应。",
+    "expected": "返回有限复数响应，并保留实际采用的阶数。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖默认与显式阶数、标量和矩阵形状、反射恒等式、归一化及正虚轴溢出回归。",
+     "使用 80 位 mpmath 方程网格和 70 位独立 Gaussian Cauchy 积分作对照。"
+    ],
+    "known_limitations": [
+     "下半平面的指数项可能超出 float64 范围。",
+     "固定截断的误差取决于相位点和阶数。"
+    ],
+    "evidence_ceiling": "证据覆盖有限网格与恒等式，不是整个复平面上的一致误差证书。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-dispersion",
+   "source_sha256": "3891105fe06864fbf9215c748764da5561f3033d78a0bca0b6c37d3214ed1c8e",
+   "summary": "计算来源定义的全部七类广义分布选择器。",
+   "definition": "选择器密度分别为 delta(v)、在 [-.5,.5] 上取 1 的密度、max(0,1-|v|)、sqrt(2)/pi/(1+v²/2)²、H(v-.1)exp(-v²)/sqrt(pi)，以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位置 a 的跳跃 J 向 Zp 贡献 J/(a-z)。修正了来源中不一致的 top-hat 密度符号及不完整 Maxwellian 截断跳跃。大相位处的 Gaussian 导数采用避免消减的原始极化率或矩展开，不减去已舍入的单位项。远场 top-hat 值使用收敛的逆幂级数；导数先分别组成分母的实部与虚部，再取倒数，以保留可表示的微小轮廓分量。中心附近的实响应使用实 log1p，边缘附近使用 log-hypot 之差，轮廓相位使用单个 atan2；不使用复 log1p。",
+   "model": "一维、无磁场、无碰撞的静电等离子体。",
+   "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
+   "assumptions": [
+    "密度在实积分轮廓上为实值且可积。",
+    "不声称集体模唯一，也不提供经认证的全局求积误差界。",
+    "自定义表达式必须提供 integration_mesh。"
+   ],
+   "inputs": [
+    {
+     "name": "z",
+     "description": "Maxwellian 归一化下的复相位点 z=omega/(sqrt(2)*k)。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数或复数数值",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "selector",
+     "description": "0 为解析表达式或 Maxwellian；1 为原点 delta；2 为 [-.5,.5] 上的正单位 top-hat；3 为 [-1,1] 上的三角分布；4 为 n=2、vt=1 的归一化 gamma 分布；5 为 H(v-.1)exp(-v²)/sqrt(pi)；6 为 |v|≤4 的截断 slowing-down 分布。",
+     "constraints": "必须是 0 至 6 的整数；拒绝布尔值。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "expression",
+     "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
+     "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "integration_mesh",
+     "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
+     "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
+     "dtype": "实数向量",
+     "shape": "至少两个点的一维数组",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "Z",
+     "description": "依声明的延拓约定计算积分 ∫f(v)/(v-z)dv。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    },
+    {
+     "name": "Zp",
+     "description": "导数 dZ/dz，包含分布意义下的跳跃贡献。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "密度在实积分轮廓上为实值且可积。",
+     "不声称集体模唯一，也不提供经认证的全局求积误差界。",
+     "自定义表达式必须提供 integration_mesh。"
+    ],
+    "supported": [
+     "覆盖来源全部 0 至 6 选择器，包括精确 delta/top-hat 及截断导数的跳跃项。",
+     "解析 Maxwellian、gamma 和自定义表达式使用 Landau 延拓；分段分布在两个半平面均按实轮廓积分定义。",
+     "支持避开端点及三角分布导数角点的实轴上侧边界值。"
+    ],
+    "excluded": [
+     "不支持任意符号表达式或可执行输入。",
+     "不猜测不连续分布的解析延拓。",
+     "不会把未知选择器静默回落为 Maxwellian。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
+    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
+    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
+    "partial_results": "失败后不返回部分科学结果。"
+   },
+   "example": {
+    "description": "广义等离子体色散函数七类分布的可执行例子。",
+    "expected": "断言检查所声明的输出性质。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖来源全部 0 至 6 选择器，包括精确 delta/top-hat 及截断导数的跳跃项。",
+     "解析 Maxwellian、gamma 和自定义表达式使用 Landau 延拓；分段分布在两个半平面均按实轮廓积分定义。",
+     "支持避开端点及三角分布导数角点的实轴上侧边界值。",
+     "在大相位及渐近切换处，以独立 Gaussian 平方核积分和高精度导数进行检查；以零绝对容差检查 top-hat 的直接积分或级数、中心/边缘/实轴分支及微小导数分量。"
+    ],
+    "known_limitations": [
+     "选择器 5 保留不完整的总质量；选择器 6 保留上游有限截断的归一化约定。",
+     "分段分布的下半平面响应为实轮廓变换，不是推断的解析延拓。",
+     "具名固定选择器保留原物理参数；本 API 不增加任意形状参数。"
+    ],
+    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-expression-differentiation",
+   "source_sha256": "3acf1a52d7ce052057e398d23a4dc087eab2655a8376d4fdf37fb6602a4d20b7",
+   "summary": "把受限密度表达式编译为函数值及解析一阶导数的可调用对象。",
+   "definition": "解析有限实常量、pi、v、算术和已声明初等函数，并按精确解析链式法则传播（函数值，导数）对；解析前先规范化 MATLAB 逐元素运算符。",
+   "model": "一维、无磁场、无碰撞的静电等离子体。",
+   "boundary": "仅支持所声明的受限解析表达式语法。",
+   "assumptions": [
+    "密度在实积分轮廓上为实值且可积。",
+    "不声称集体模唯一，也不提供经认证的全局求积误差界。",
+    "请求延拓的区域内，表达式必须具有有效解析延拓。",
+    "显式递增网格必须解析密度的全部特征与尾部。"
+   ],
+   "inputs": [
+    {
+     "name": "expression",
+     "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
+     "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "return",
+     "description": "返回 DensityExpression 实例；instance(v) 给出 f(v)，instance.derivative(v) 给出解析 df/dv；v 可为实数或复数标量及 NumPy 数组。",
+     "constraints": "遵循输入表达式自身的算术与定义域约束。",
+     "dtype": "DensityExpression 密度表达式对象",
+     "shape": "可调用对象",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "表达式语法仅限所声明的算术与函数。",
+     "求值点必须位于有限定义域内，且表达式及其导数均可表示。"
+    ],
+    "supported": [
+     "支持安全 AST 表达式解析、MATLAB 点运算符规范化、解析一阶导数以及实数或复数标量/数组求值。"
+    ],
+    "excluded": [
+     "不支持任意代码、属性访问、索引、比较和分段表达式。",
+     "不提供符号化简或可积性保证。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
+    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
+    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
+    "partial_results": "失败后不返回部分科学结果。"
+   },
+   "example": {
+    "description": "无需符号运行时即可求 Lorentzian 密度及其导数。",
+    "expected": "Lorentzian 解析值与导数符合闭式公式。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖实数及复数点上的 Lorentzian 函数值与导数。",
+     "明确拒绝属性访问、任意调用、未知名称、索引、列表和布尔值。"
+    ],
+    "known_limitations": [
+     "本解析器不证明可积性、正性、归一化或解析延拓有效性。",
+     "算术异常及非有限表达式求值不会转换为符号诊断。"
+    ],
+    "evidence_ceiling": "证据来自独立解析导数恒等式及不支持语法的回归；不构成通用计算机代数等价性或任意表达式证明。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-hilbert",
+   "source_sha256": "a53604767c37cf711061d027acdf163ee9ad283dc54fec407bdbb9e5d402cebf",
+   "summary": "计算安全解析表达式及其导数的变换。",
+   "definition": "DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数减去 f(x)exp(-(v-x)²)，该减项在全实轴上的奇主值为零；边界值加上 i*pi*f(x)，可选下半平面延拓再加上 2*pi*i*f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v*fprime]/z，避免零总质量导数的相消；绝对求积容差随相位模的倒数缩放。密度导数及其解析延拓不从已舍入的 Z 或 epsilon 重建。",
+   "model": "一维、无磁场、无碰撞的静电等离子体。",
+   "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
+   "assumptions": [
+    "密度在实积分轮廓上为实值且可积。",
+    "不声称集体模唯一，也不提供经认证的全局求积误差界。",
+    "请求延拓的区域内，表达式必须具有有效解析延拓。",
+    "显式递增网格必须解析密度的全部特征与尾部。"
+   ],
+   "inputs": [
+    {
+     "name": "z",
+     "description": "Maxwellian 归一化下的复相位点 z=omega/(sqrt(2)*k)。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数或复数数值",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "expression",
+     "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
+     "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "integration_mesh",
+     "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
+     "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
+     "dtype": "实数向量",
+     "shape": "至少两个点的一维数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "continuation",
+     "description": "为真时，在下半平面加入 2*pi*i*f(z) 及相应导数项。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "布尔值",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "Z",
+     "description": "依声明的延拓约定计算积分 ∫f(v)/(v-z)dv。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    },
+    {
+     "name": "Zp",
+     "description": "导数 dZ/dz，包含分布意义下的跳跃贡献。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数数组",
+     "shape": "与 z 同形",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "密度在实积分轮廓上为实值且可积。",
+     "不声称集体模唯一，也不提供经认证的全局求积误差界。",
+     "请求延拓的区域内，表达式必须具有有效解析延拓。",
+     "显式递增网格必须解析密度的全部特征与尾部。"
+    ],
+    "supported": [
+     "通过 DensityExpression 进行安全 AST 代数与解析链式求导。",
+     "离实轴采用已资格化的 Cauchy 求积，实轴采用减奇点主值积分。"
+    ],
+    "excluded": [
+     "不支持分段或非解析表达式语法；此类模型应使用分布选择器。",
+     "不自动发现未解析的回调特征。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
+    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
+    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
+    "partial_results": "失败后不返回部分科学结果。"
+   },
+   "example": {
+    "description": "解析分布的 Hilbert 与 Cauchy 变换的可执行例子。",
+    "expected": "断言检查所声明的输出性质。"
+   },
+   "verification": {
+    "scope": [
+     "通过 DensityExpression 进行安全 AST 代数与解析链式求导。",
+     "离实轴采用已资格化的 Cauchy 求积，实轴采用减奇点主值积分。",
+     "覆盖大相位处中心及平移 Gaussian 的显式 Hilbert 导数、两个半平面及实轴边界，并以独立高精度方程按分量使用零绝对容差检验。"
+    ],
+    "known_limitations": [
+     "导数被积函数在实轴局部可去点的求值使用对称二阶导数估计；不返回全局误差证书。",
+     "受限解析器支持有限实常量、pi、v、算术及 exp/log/sqrt/sin/cos/sinh/cosh/tanh。"
+    ],
+    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-residual",
+   "source_sha256": "0a8a86a998946d6fd48a0967d41c3a3ddd20ae35fd5add0bbb89c388fe2ee07d",
+   "summary": "计算 Langmuir、离子声波、束流和广义分布残差。",
+   "definition": "离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化遵循冻结脚本。",
+   "model": "一维、无磁场、无碰撞的静电等离子体。",
+   "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
+   "assumptions": [
+    "密度在实积分轮廓上为实值且可积。",
+    "不声称集体模唯一，也不提供经认证的全局求积误差界。",
+    "k 必须为有限正标量。"
+   ],
+   "inputs": [
+    {
+     "name": "kind",
+     "description": "选择 langmuir、iaw、beam 或 generalized。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "x",
+     "description": "相位 omega/(sqrt(2)*k)。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数数值",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "k",
+     "description": "以 Debye 长度倒数归一化的波数。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "ion_temperature",
+     "description": "离子与电子温度比 Ti/Te。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "ion_mass",
+     "description": "离子与电子质量比 mi/me。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "beam_fraction",
+     "description": "束流密度与总密度之比。",
+     "constraints": "beam_fraction 必须在 [0,1] 内。",
+     "dtype": "实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "beam_temperature",
+     "description": "束流与电子温度比 Tb/Te。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "beam_drift",
+     "description": "束流漂移速度除以束流热速度。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "selector",
+     "description": "广义分布选择器。",
+     "constraints": "取值为 0 至 6。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "expression",
+     "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
+     "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "integration_mesh",
+     "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
+     "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
+     "dtype": "实数向量",
+     "shape": "至少两个点的一维数组",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "return",
+     "description": "采用来源归一化约定的 D 残差。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数数组",
+     "shape": "与 x 同形",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "密度在实积分轮廓上为实值且可积。",
+     "不声称集体模唯一，也不提供经认证的全局求积误差界。",
+     "k 必须为有限正标量。"
+    ],
+    "supported": [
+     "覆盖来源四类残差，并保留温度、质量及漂移归一化。",
+     "Maxwellian 的 Langmuir 和 generalized 分支复用已资格化、避免消减的小 k 实现。"
+    ],
+    "excluded": [
+     "不能直接把很小的绝对 D 值当作小 k 模已成立的证据。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
+    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
+    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
+    "partial_results": "失败后不返回部分科学结果。"
+   },
+   "example": {
+    "description": "四类静电色散残差的可执行例子。",
+    "expected": "断言检查所声明的输出性质。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖来源四类残差，并保留温度、质量及漂移归一化。",
+     "Maxwellian 的 Langmuir 和 generalized 分支复用已资格化、避免消减的小 k 实现。"
+    ],
+    "known_limitations": [
+     "离子声波与束流使用普通 Faddeeva 响应；极端相位或温度输入可能导致不可表示结果。"
+    ],
+    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-root-scans",
+   "source_sha256": "1ff01cfce9fc10dd2b40072e0af21e744dcb1323a571ed3367d1968b51066869",
+   "summary": "运行来源全部四类带初始种子的静电根扫描。",
+   "definition": "来源网格为：Langmuir .1:.1:1 后接 2:1:10，固定相位种子 1-.1i；离子声波 1.1:-.05:.05，相位种子 .04-.02i；束流 .4:-.005:.05，相位种子 (1-.01i)*sqrt(2)*.4；generalized .1:.1:1 后接 1.5:.5:5，频率种子 1.5-.001i。离子声波和束流接续上一个相位，generalized 接续上一个频率。k 通过闭包绑定，不再作为无效的 fsolve 第四参数传递。求解使用 D/k² 或直接使用已资格化的 Maxwellian epsilon，并同时检查求解器成功、残差容差及函数求值预算。",
+   "model": "一维、无磁场、无碰撞的静电等离子体。",
+   "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
+   "assumptions": [
+    "每个带种子的根必须在求值预算与介电残差容差内收敛。",
+    "k_values 保持接续顺序；initial_guess 的单位依各分支的明确声明解释。"
+   ],
+   "inputs": [
+    {
+     "name": "kind",
+     "description": "选择 langmuir、iaw、beam 或 generalized。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "k_values",
+     "description": "可选的有序正波数扫描网格；None 选择来源对应分支的网格。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数向量",
+     "shape": "非空一维数组",
+     "units": "无量纲"
+    },
+    {
+     "name": "initial_guess",
+     "description": "可选复种子：除 generalized 使用频率 omega 外均为相位 x；None 选择来源分支的种子。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "residual_tolerance",
+     "description": "介电残差的绝对接受阈值。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "max_evaluations",
+     "description": "每个网格点的 MINPACK 函数求值上限。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "ion_temperature",
+     "description": "离子与电子温度比 Ti/Te。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "ion_mass",
+     "description": "离子与电子质量比 mi/me。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "beam_fraction",
+     "description": "束流密度与总密度之比。",
+     "constraints": "beam_fraction 必须在 [0,1] 内。",
+     "dtype": "实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "beam_temperature",
+     "description": "束流与电子温度比 Tb/Te。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "beam_drift",
+     "description": "束流漂移速度除以束流热速度。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "selector",
+     "description": "广义分布选择器。",
+     "constraints": "取值为 0 至 6。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "expression",
+     "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
+     "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "integration_mesh",
+     "description": "有限、递增且解析分布特征的速度网格；同时对无限尾部积分。",
+     "constraints": "必须解析全部实质特征；尾部不能存在未解析特征。",
+     "dtype": "实数向量",
+     "shape": "至少两个点的一维数组",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "k",
+     "description": "保持请求顺序的扫描网格。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数向量",
+     "shape": "网格点数",
+     "units": "无量纲"
+    },
+    {
+     "name": "omega",
+     "description": "通过门禁并以等离子体频率归一化的根。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "复数向量",
+     "shape": "网格点数",
+     "units": "无量纲"
+    },
+    {
+     "name": "dielectric_residual",
+     "description": "介电残差实部和虚部组成向量的范数。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "非负实数向量",
+     "shape": "网格点数",
+     "units": "无量纲"
+    },
+    {
+     "name": "evaluations",
+     "description": "每个网格点的 MINPACK 函数求值次数。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "整数向量",
+     "shape": "网格点数",
+     "units": "计数"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "每个带种子的根必须在求值预算与介电残差容差内收敛。",
+     "k_values 保持接续顺序；initial_guess 的单位依各分支的明确声明解释。"
+    ],
+    "supported": [
+     "覆盖四类来源完整网格：Langmuir 19 点、离子声波 22 点、束流 71 点及 generalized 18 点。",
+     "支持调用者指定网格，并以显式种子选择分支。",
+     "以两个实分量显式调用 MINPACK 求解后验证介电残差。"
+    ],
+    "excluded": [
+     "不保证根唯一、不穷尽谱，也不自动选择最不稳定或最弱阻尼分支。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
+    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
+    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
+    "partial_results": "失败后不返回部分科学结果。"
+   },
+   "example": {
+    "description": "四类 GPDF 连续根扫描的可执行例子。",
+    "expected": "断言检查所声明的输出性质。"
+   },
+   "verification": {
+    "scope": [
+     "覆盖四类来源完整网格：Langmuir 19 点、离子声波 22 点、束流 71 点及 generalized 18 点。",
+     "支持调用者指定网格，并以显式种子选择分支。",
+     "以两个实分量显式调用 MINPACK 求解后验证介电残差。"
+    ],
+    "known_limitations": [
+     "来源默认束流种子跟随阻尼高频分支；基于频率信息显式设置的相位种子可以找到不稳定分支。",
+     "来源默认束流种子在自定义短网格 [.3,.295] 上失败；保留这一失败行为。",
+     "通用非 Maxwellian 求积根未经区间认证；其接受门禁未包含求积误差估计。"
+    ],
+    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-small-k",
+   "source_sha256": "68dd4bf2465b38a15864ec9ea22e07145f033ab58891d5cc87be2f7df89d7234",
+   "summary": "计算来源定义的 Langmuir 频率与阻尼渐近式。",
+   "definition": "在对数域计算阻尼幅值，避免 k³ 下溢时来源表达式出现 0/0；拒绝精确 k=0。",
+   "model": "一维、无磁场、无碰撞的静电等离子体。",
+   "boundary": "沿无限实速度轮廓积分，并遵循所声明的延拓或有限支撑约定。",
+   "assumptions": [
+    "Maxwellian 归一化热速度标准差与等离子体频率均为 1。",
+    "使用该渐近式要求 k 远小于 1。"
+   ],
+   "inputs": [
+    {
+     "name": "k",
+     "description": "以 Debye 长度倒数归一化的小波数。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "正实数",
+     "shape": "标量或非空数组",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "omega_real",
+     "description": "Bohm–Gross 实频率的首项近似。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数数组",
+     "shape": "与 k 同形",
+     "units": "无量纲"
+    },
+    {
+     "name": "omega_imag",
+     "description": "小 k Landau 阻尼的首项近似。",
+     "constraints": "必须有限且可表示。",
+     "dtype": "实数数组",
+     "shape": "与 k 同形",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "Maxwellian 归一化热速度标准差与等离子体频率均为 1。",
+     "使用该渐近式要求 k 远小于 1。"
+    ],
+    "supported": [
+     "支持正小波数；指数阻尼下溢时返回零。"
+    ],
+    "excluded": [
+     "不提供有限 k 的精确根，也不提供受控的全局渐近余项。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
+    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
+    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
+    "partial_results": "失败后不返回部分科学结果。"
+   },
+   "example": {
+    "description": "Langmuir 小波数渐近频率的可执行例子。",
+    "expected": "断言检查所声明的输出性质。"
+   },
+   "verification": {
+    "scope": [
+     "支持正小波数；指数阻尼下溢时返回零。"
+    ],
+    "known_limitations": [
+     "大 k 处输出有限并不表示渐近式有效。",
+     "小于浮点可表示范围的阻尼下溢为零。"
+    ],
+    "evidence_ceiling": "独立定义积分、解析残数、分布跳跃、四类完整默认扫描和 50 位独立根方程构成源码层数值证据。实际安装 wheel 的证据另行记入冻结交付回执。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
+   "source_sha256": "1b460d922c3f31907961913c665153288dfd22499b945df80eccaf12aa9f97bb",
+   "summary": "对已解析密度特征的回调计算 Cauchy 变换，并解析近实轴核峰。",
+   "definition": "G(z)=integral density(v)/(v-z)dv。对 z=x+i*y，邻近投影的有限面板采用 v=x+abs(y)*sinh(t)，使被积核为 density(v)*(tanh(t)+i*sign(y)*sech(t))。变换面板解析核峰与长尾，平滑远面板和无穷尾使用实坐标求积。仅按声明支撑政策增加显式解析延拓。",
+   "model": "一维广义等离子体响应。",
+   "boundary": "拒绝实轴极点。",
+   "assumptions": [
+    "回调在每个求积面板上均有限。",
+    "bounds=None 时 integration_mesh 显式划分密度支撑和特征，两个无穷尾均可积。",
+    "自适应样本不能认证未见的密度支撑；已知 Cauchy 核尺度由内部处理，误差估计仍有条件。"
+   ],
+   "inputs": [
+    {
+     "name": "z",
+     "description": "不在实轴上的复相点",
+     "dtype": "复数数值",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "density",
+     "description": "单个实速度对应的实密度回调",
+     "dtype": "callable",
+     "constraints": "所有采样点返回有限实数标量，调用者声明特征解析。"
+    },
+    {
+     "name": "bounds",
+     "description": "有序实积分上下界",
+     "dtype": "实数序列",
+     "constraints": "None 表示须提供网格的全实轴模式；否则为有限有序实数对，拒绝布尔和复数坐标。"
+    },
+    {
+     "name": "integration_mesh",
+     "description": "划分密度支撑和特征的有限递增实网格",
+     "dtype": "有限实数组",
+     "constraints": "严格递增；有 bounds 时位于范围内。bounds=None 时端点包围已解析特征区域，并继续积分无穷尾。"
+    },
+    {
+     "name": "analytic_density",
+     "description": "下半平面延拓的可选解析密度",
+     "dtype": "callable",
+     "constraints": "None 或返回有限数值标量的同一密度解析延拓。有限区间仅在 a<Re(z)<b 内延拓。"
+    },
+    {
+     "name": "epsabs",
+     "description": "绝对求积容差",
+     "dtype": "正实数",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "epsrel",
+     "description": "相对求积容差",
+     "dtype": "正实数",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "limit",
+     "description": "QUADPACK 子划分上限",
+     "dtype": "正整数",
+     "constraints": "有限且可表示。"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "G",
+     "description": "Cauchy 变换",
+     "dtype": "复数组",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "quadrature_error",
+     "description": "实虚分量求积指标与浮点累加估计，包含延拓；不界定回调或解析扩展误差",
+     "dtype": "实数组",
+     "constraints": "有限且可表示。"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "密度回调返回有限实数标量，选定轮廓上的 Cauchy 积分存在。",
+     "调用者的上下界或网格解析全部重要密度特征，无穷尾可积且无未解析密度特征。积分器自行解析核峰，无需调用者按极点高度建网格。"
+    ],
+    "supported": [
+     "有限有序上下界已解析回调支撑。",
+     "全实轴积分使用显式有限递增网格解析支撑/特征，并假定尾部可积。"
+    ],
+    "excluded": [
+     "不从回调样本自动发现全实轴支撑；信息不足时拒绝。",
+     "不复现来源 MATLAB 行为、绘图、全局根扫描或任意解析延拓。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "无效、非有限、奇异或不兼容输入抛出 ValueError，包括 None/非标量容差，以及没有 integration_mesh 的纯回调全实轴积分。",
+    "runtime_failure": "回调异常继续传播；无效回调输出或不可表示结果抛出 ValueError。",
+    "nonconvergence": "任意 QUADPACK 面板不收敛时抛出 RuntimeError，无部分结果。",
+    "partial_results": "失败后不返回部分结果。"
+   },
+   "verification": {
+    "scope": [
+     "独立有限区间解析恒等式和分量误差报告。",
+     "显式特征网格的全实轴平移 Gaussian 案例，以独立 Faddeeva 函数为参考。",
+     "纯回调全实轴支撑和错误容差的失败闭合。",
+     "独立于密度特征网格解析近实轴核峰与对数尺度尾部；保留严格有限支撑延拓端点政策。"
+    ],
+    "known_limitations": [
+     "有限区间截掉未包含尾部；全实轴模式须提供已解析的网格/支撑并假定尾部可积。",
+     "分量指标含求积及浮点累加估计，不含回调、解析扩展、有限区间截断误差，不是全局认证。",
+     "解析延拓须显式提供与密度一致的解析回调。"
+    ],
+    "evidence_ceiling": "常数/仿射有限支撑的对数原函数覆盖两半平面、1 到 1e-300 极点高度、端点/内外部与多点形状；Gaussian 特殊函数和 Lorentzian 留数恒等式覆盖全实轴尾部。只支持核变换，不支持任意回调特征发现或严格全局误差界。"
+   },
+   "example": {
+    "description": "积分归一化 Gaussian 密度。",
+    "expected": "返回有限复变换及实虚两分量误差估计。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
+   "source_sha256": "22331305548d7663f569d67a0985e310ee1ee7d3eb01a60998c11ffe350c8488",
+   "summary": "计算归一化 Maxwellian 介电响应，并避免大相速处的相消。",
+   "definition": "epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 保留为诊断量。",
+   "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
+   "boundary": "k 为正，omega 有限；不作全局分支选择。",
+   "assumptions": [
+    "只有给定种子并经过最终残差检查才识别模态。",
+    "f0(v)=exp(-v²/2)/sqrt(2*pi)，热速度标准差为一，扰动采用 exp(-i*omega*t)。"
+   ],
+   "inputs": [
+    {
+     "name": "omega",
+     "description": "归一化复频率，可为标量或数组",
+     "dtype": "复数数值",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "k",
+     "description": "正归一化波数",
+     "dtype": "正实数",
+     "constraints": "有限正实标量；拒绝布尔、复数或数组。"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "epsilon",
+     "description": "纵向介电响应",
+     "dtype": "复数组",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "D",
+     "description": "缩放残差 k²*epsilon",
+     "dtype": "复数组",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "z",
+     "description": "无量纲相速参数 omega/(sqrt(2)*k)",
+     "dtype": "复数组",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "epsilon_error",
+     "description": "epsilon 的算术/渐近误差估计，不是严格包络",
+     "dtype": "实数组",
+     "constraints": "合法输入下为有限估计。"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "k 为有限正值；输出须能以双精度表示。"
+    ],
+    "supported": [
+     "正有限实标量 k 和有限归一化频率，包括可表示的上下半平面复数。"
+    ],
+    "excluded": [
+     "不复现来源 MATLAB 行为、绘图、全局根扫描或任意解析延拓。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "输入无效、非有限、奇异或不匹配时抛出 ValueError。",
+    "runtime_failure": "不可表示的求值抛出 ValueError；求根中的不可表示试探响应抛出 RuntimeError；未预期的 SciPy 错误继续传播。",
+    "nonconvergence": "求根和求积上限显式给出；残差检查失败抛出 RuntimeError。",
+    "partial_results": "失败后不返回部分结果。"
+   },
+   "verification": {
+    "scope": [
+     "跨实数和复数正 k 定义域的独立高精度 Faddeeva 与 Gaussian 矩参考。",
+     "小 k、omega=2 极限、有限可表示性以及形状和误差报告。"
+    ],
+    "known_limitations": [
+     "epsilon_error 只是估计，不是严格包络。",
+     "有限输入仍可能有不可表示复响应；单次求值不表示找到根。"
+    ],
+    "evidence_ceiling": "独立高精度 Faddeeva、Gaussian 矩和种子根计算支持声明的正 k 实/复响应及已测区域的误差门禁；估计不是严格包络。"
+   },
+   "example": {
+    "description": "在给定复频率计算残差。",
+    "expected": "返回有限 epsilon、D 和相速参数。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
+   "source_sha256": "95cb0c15f1a89c5c6caedee836d7cc02b879cca24184a9a023a9f9db63f03a33",
+   "summary": "从显式复种子求一个 Maxwellian 模态，并检查残差与误差。",
+   "definition": "用两个实分量求解 epsilon(omega,k)=0，再进行不依赖 k² 缩放的归一化残差与估计误差门禁。",
+   "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
+   "boundary": "仅承诺由给定种子到达的分支。",
+   "assumptions": [
+    "MINPACK 成功状态不能替代最终残差检查。",
+    "f0(v)=exp(-v²/2)/sqrt(2*pi)，热速度标准差为一，扰动采用 exp(-i*omega*t)。"
+   ],
+   "inputs": [
+    {
+     "name": "k",
+     "description": "正归一化波数",
+     "dtype": "正实数",
+     "constraints": "有限正实标量；拒绝布尔、复数和数组。"
+    },
+    {
+     "name": "initial_omega",
+     "description": "复根初始种子",
+     "dtype": "复数数值",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "xtol",
+     "description": "MINPACK 步长容差",
+     "dtype": "正实数",
+     "constraints": "有限正实标量；拒绝布尔和数组。"
+    },
+    {
+     "name": "residual_tolerance",
+     "description": "归一化 epsilon 残差与估计误差的验收阈值",
+     "dtype": "正实数",
+     "constraints": "有限正实标量；拒绝布尔和数组。"
+    },
+    {
+     "name": "max_evaluations",
+     "description": "最大残差求值次数",
+     "dtype": "正整数",
+     "constraints": "正整数标量，拒绝布尔。"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "omega",
+     "description": "收敛复模态",
+     "dtype": "复数",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "residual",
+     "description": "最终复 D",
+     "dtype": "复数",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "evaluations",
+     "description": "残差求值次数",
+     "dtype": "整数",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "epsilon",
+     "description": "最终介电响应",
+     "dtype": "复数",
+     "constraints": "有限且可表示。"
+    },
+    {
+     "name": "normalized_residual",
+     "description": "以 1+|chi| 归一化的绝对 epsilon 残差",
+     "dtype": "实数",
+     "constraints": "有限，并在估计误差门禁后低于 residual_tolerance。"
+    },
+    {
+     "name": "normalized_residual_error",
+     "description": "同归一化下的 epsilon 误差估计",
+     "dtype": "实数",
+     "constraints": "有限，低于 residual_tolerance/4 才接受。"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "k 为有限正值；输出须能以双精度表示。"
+    ],
+    "supported": [
+     "正有限实标量 k 和有限归一化频率，包括可表示的上下半平面复数。"
+    ],
+    "excluded": [
+     "不复现来源 MATLAB 行为、绘图、全局根扫描或任意解析延拓。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "输入无效、非有限、奇异或不匹配时抛出 ValueError。",
+    "runtime_failure": "不可表示的求值抛出 ValueError；求根中的不可表示试探响应抛出 RuntimeError；未预期的 SciPy 错误继续传播。",
+    "nonconvergence": "MINPACK 失败、超出求值上限或归一化残差/误差门禁失败时抛出 RuntimeError，不返回部分模态。",
+    "partial_results": "失败后不返回部分结果。"
+   },
+   "verification": {
+    "scope": [
+     "正 k 实/复案例的独立高精度根与归一化残差/误差门禁。",
+     "小 k 假种子、成功种子根与明确不收敛行为。"
+    ],
+    "known_limitations": [
+     "估计误差不是严格包络。",
+     "不承诺唯一根、最弱阻尼分支或全局选根；种子决定分支。"
+    ],
+    "evidence_ceiling": "独立高精度 Faddeeva、Gaussian 矩和种子根计算支持声明的正 k 实/复响应及已测区域的误差门禁；估计不是严格包络。"
+   },
+   "example": {
+    "description": "从给定种子求一个模态。",
+    "expected": "复模态满足归一化残差及误差检查。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-diagnostic",
+   "source_sha256": "b9c7138346687adb994a09d9f75b5164a068d947a22ac5d1f70cc886427b0646",
+   "summary": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
+   "definition": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "dEt",
+     "description": "复电场时间序列。",
+     "constraints": "必须为有限一维数组，T≥2。",
+     "dtype": "复数数组",
+     "shape": "[T]",
+     "units": "无量纲"
+    },
+    {
+     "name": "tt",
+     "description": "采样时刻。",
+     "constraints": "必须有限且严格递增，并与 dEt 同形。",
+     "dtype": "实数数组",
+     "shape": "[T]",
+     "units": "无量纲"
+    },
+    {
+     "name": "start",
+     "description": "诊断时间窗起点；None 表示实际时间跨度的 5% 位置。",
+     "constraints": "必须有限；还须满足对应函数的科学条件。",
+     "dtype": "实数标量或 None",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "end",
+     "description": "诊断时间窗终点；None 表示实际时间跨度的 80% 位置。",
+     "constraints": "必须有限；还须满足对应函数的科学条件。",
+     "dtype": "实数标量或 None",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回映射，含长度 P≥2 的 peak_indices、peak_times、peak_log_magnitudes，以及标量 omega、gamma 和 gammas；gammas 是 gamma 的别名。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "字典",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "振荡峰阻尼诊断的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-distribution",
+   "source_sha256": "43e0a0324d9e89b451f3474ec1b2131cbcd76fd8845aff2a6fb4837710bd0c99",
+   "summary": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
+   "definition": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "vv",
+     "description": "速度节点。",
+     "constraints": "必须为有限一维数组；相应函数中须与 df、df0dv 对齐。",
+     "dtype": "实数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "Fn",
+     "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
+     "constraints": "取值为 1、2、3 或 4。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "k",
+     "description": "空间 Fourier 波数，以 Debye 长度倒数归一化。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "kappa",
+     "description": "kappa 形状参数，仅在 Fn=2 时使用。",
+     "constraints": "Fn=2 时必须有限且大于 1/2。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "cutoff_mode",
+     "description": "Fn4 的弱导数模式，或显式采用来源仅平滑部分的强迫项。",
+     "constraints": "取 weak 或 smooth；Fn4 的 weak 模式要求递增等距网格。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回元组 (g,wr,wi)，其中 g 形状为 [N]；仅 Fn=2、kappa=1 时提供理论 wr=1、wi=-k sqrt(2)，其他情况理论值为 None。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "元组",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "分布导数与截断跳跃的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-envelope",
+   "source_sha256": "159c43e16f79bbca8c80d3968e420c373596e373f6de4d3f06f07500f3cb1548",
+   "summary": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
+   "definition": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "dEt",
+     "description": "复电场时间序列。",
+     "constraints": "必须为有限一维数组，T≥2。",
+     "dtype": "复数数组",
+     "shape": "[T]",
+     "units": "无量纲"
+    },
+    {
+     "name": "tt",
+     "description": "采样时刻。",
+     "constraints": "必须有限且严格递增，并与 dEt 同形。",
+     "dtype": "实数数组",
+     "shape": "[T]",
+     "units": "无量纲"
+    },
+    {
+     "name": "wr",
+     "description": "可选理论实频率；仅作为元数据返回。",
+     "constraints": "必须有限；还须满足对应函数的科学条件。",
+     "dtype": "实数标量或 None",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "wi",
+     "description": "可选理论阻尼率。",
+     "constraints": "必须有限；还须满足对应函数的科学条件。",
+     "dtype": "实数标量或 None",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回映射，含 ttmp[T]、lndE[T]、lndEe[T] 或 None，以及 wr、wi。幅度精确为零时其对数为 -inf；保留全部样本。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "字典",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "复电场幅值包络的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-evolve",
+   "source_sha256": "6ac09fc2b288b597ba861fa754efe1d87db7fd14bfcbc7c9484c0d70f7dcbf2c",
+   "summary": "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。",
+   "definition": "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "state",
+     "description": "由 vp_init 生成的状态映射，含 df、dE、vv、df0dv、k、dv、dt、nt 及来源控制参数。",
+     "constraints": "必须为完整 VP 状态；数组有限且对齐；初始场满足 Poisson 闭合；nt 为非负整数。",
+     "dtype": "字典",
+     "shape": "映射",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回状态映射：Fn、kappa、nv、dt、nt、k、vmax、vmin、dv、TR；形状 [nv+1] 的 vv、df、df0dv；标量 dE；形状 [nt+1] 的 dEt、tt；wr、wi 为 kappa=1 的理论值或 None。场及数组独立持有，不修改输入；再次调用会从传入 df 开始新的局部时间历史。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "字典",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "按阶段顺序进行电场反馈，精确执行 nt 个 RK4 步；内存复杂度 O(nv+nt)。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "有限步线性反馈演化的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-field",
+   "source_sha256": "f7828a4ae69736328ba0007106c381adc6f9741a2a712d0115f3f66ed73a20cb",
+   "summary": "Poisson 闭合关系为 E=i dv sum(df)/k。",
+   "definition": "Poisson 闭合关系为 E=i dv sum(df)/k。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "df",
+     "description": "速度节点上的复扰动。",
+     "constraints": "必须为有限一维数组，N≥2。",
+     "dtype": "复数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "k",
+     "description": "非零空间 Fourier 波数。",
+     "constraints": "必须有限且非零。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "dv",
+     "description": "等距速度求积的间距。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "满足 ikE=-dv sum(df) 的复标量电场。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "复数标量",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "Poisson 闭合关系为 E=i dv sum(df)/k。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "Poisson 电场闭合的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-init",
+   "source_sha256": "889305c622daca0c14c3469f049136bc28b905a3f192a95ce024de031f2cf504",
+   "summary": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
+   "definition": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "Fn",
+     "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
+     "constraints": "取值为 1、2、3 或 4。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "kappa",
+     "description": "kappa 形状参数，仅在 Fn=2 时使用。",
+     "constraints": "Fn=2 时必须有限且大于 1/2。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "nv",
+     "description": "等长速度区间的数量。",
+     "constraints": "必须为不小于 2 的整数；拒绝布尔值。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "dt",
+     "description": "以等离子体频率倒数归一化的时间步长。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "nt",
+     "description": "精确执行的有序时间步数。",
+     "constraints": "必须为非负整数；拒绝布尔值。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "k",
+     "description": "空间 Fourier 波数，以 Debye 长度倒数归一化。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "vmax",
+     "description": "对称速度窗的半宽。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回状态映射：Fn、kappa、nv、dt、nt、k、vmax、vmin、dv、TR；形状 [nv+1] 的 vv、df、df0dv；标量 dE；形状 [nt+1] 的 dEt、tt；wr、wi 为 kappa=1 的理论值或 None。场及数组独立持有。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "字典",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "Poisson 一致初始化的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-landau",
+   "source_sha256": "87ab7a5fd7c1503ae4c598a5deba6b2bd17774a108f41ee6f73a992a5a1887f8",
+   "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
+   "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "Fn",
+     "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
+     "constraints": "取值为 1、2、3 或 4。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "kappa",
+     "description": "kappa 形状参数，仅在 Fn=2 时使用。",
+     "constraints": "Fn=2 时必须有限且大于 1/2。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "nv",
+     "description": "等长速度区间的数量。",
+     "constraints": "必须为不小于 2 的整数；拒绝布尔值。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "dt",
+     "description": "以等离子体频率倒数归一化的时间步长。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "nt",
+     "description": "精确执行的有序时间步数。",
+     "constraints": "必须为非负整数；拒绝布尔值。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "k",
+     "description": "空间 Fourier 波数，以 Debye 长度倒数归一化。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "vmax",
+     "description": "对称速度窗的半宽。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回映射，含 state（完整 VP 状态）、envelope、diagnostic 和 diagnostic_status。nt=0 时包络和诊断为 None；峰值不足时保留演化，返回 diagnostic=None 及相应原因。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "字典",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "Vlasov–Poisson 初值组合的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-rhs",
+   "source_sha256": "0b242c2995f529284764aeaeb28e79d80c25b96101dc2d45f716ac173cc5ea6e",
+   "summary": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
+   "definition": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "df",
+     "description": "速度节点上的复扰动。",
+     "constraints": "必须为有限一维数组，N≥2。",
+     "dtype": "复数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "dE",
+     "description": "标量 Fourier 电场。",
+     "constraints": "必须为有限标量；RK4 要求在 rtol=1e-12、atol=1e-14 范围内满足 Poisson 一致性。",
+     "dtype": "复数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "vv",
+     "description": "速度节点。",
+     "constraints": "必须为有限一维数组；相应函数中须与 df、df0dv 对齐。",
+     "dtype": "实数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "df0dv",
+     "description": "速度节点上的平衡态导数或所声明的强迫项。",
+     "constraints": "必须为有限、对齐的一维向量；可以包含按求积权重沉积的跳跃质量。",
+     "dtype": "实数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "k",
+     "description": "非零空间 Fourier 波数。",
+     "constraints": "必须有限且非零。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回形状 [N] 的复数时间导数向量；不修改输入。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "复数数组",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "线性 Vlasov 右端的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-rk4-step",
+   "source_sha256": "9f5fdddf0da8b5f883de75bc7e52eea5577a4070fd7512d1bb51822c90104fd0",
+   "summary": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。",
+   "definition": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。",
+   "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
+   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数沉积截断 delta 项；显式选择 smooth 变体时省略这些项。",
+   "assumptions": [
+    "假设线性扰动及均匀平衡态。",
+    "速度窗截断与离散复现现象应和时间积分误差分别评估。"
+   ],
+   "inputs": [
+    {
+     "name": "df",
+     "description": "速度节点上的复扰动。",
+     "constraints": "必须为有限一维数组，N≥2。",
+     "dtype": "复数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "dE",
+     "description": "标量 Fourier 电场。",
+     "constraints": "必须为有限标量；RK4 要求在 rtol=1e-12、atol=1e-14 范围内满足 Poisson 一致性。",
+     "dtype": "复数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "vv",
+     "description": "速度节点。",
+     "constraints": "必须为有限一维数组；相应函数中须与 df、df0dv 对齐。",
+     "dtype": "实数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "df0dv",
+     "description": "速度节点上的平衡态导数或所声明的强迫项。",
+     "constraints": "必须为有限、对齐的一维向量；可以包含按求积权重沉积的跳跃质量。",
+     "dtype": "实数数组",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "k",
+     "description": "非零空间 Fourier 波数。",
+     "constraints": "必须有限且非零。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "dv",
+     "description": "等距速度求积的间距。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "dt",
+     "description": "以等离子体频率倒数归一化的时间步长。",
+     "constraints": "必须为有限正值。",
+     "dtype": "实数标量",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "返回元组 (new_df,new_dE)，分别为形状 [N] 的复向量和满足闭合的复标量；不修改输入。",
+     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "dtype": "元组",
+     "shape": "形状见输出映射或元组的说明。",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入数组必须对齐且有限，并满足所述标量控制条件；速度网格须解析分布及演化。"
+    ],
+    "supported": [
+     "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；全部阶段均满足闭合。"
+    ],
+    "excluded": [
+     "不支持非线性 Vlasov 演化、可动离子动力学或多维模式。",
+     "不提供连续方程精度认证，也不保证复现时间后的有效性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "显式检查的形状、有限性、标量定义域或 Poisson 一致性不满足时抛出 ValueError；不支持的 Python 类型可能传播 TypeError。",
+    "runtime_failure": "分布导数、Poisson 场、Vlasov 右端或 RK4 状态不可表示时抛出 FloatingPointError；其他算术或类型错误向上传播。",
+    "nonconvergence": "仅执行给定的有限步积分，不进行收敛迭代。孤立峰不足两个时峰值诊断抛出 ValueError；组合求解器报告诊断不可用。",
+    "partial_results": "数值失败后不返回部分积分；若只有峰值诊断不可用，组合求解器仍保留有效演化。"
+   },
+   "example": {
+    "description": "Poisson 闭合 RK4 单步的最小调用。",
+    "expected": "所声明的形状或数值断言通过。"
+   },
+   "verification": {
+    "scope": [
+     "验证离散 Poisson 约束和含非对角项的秩一反馈。",
+     "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+    ],
+    "known_limitations": [
+     "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
+     "Fn4 截断密度保留来源系数，截断后不重新归一化。",
+     "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
+    ],
+    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+   }
+  }
+ ]
 }

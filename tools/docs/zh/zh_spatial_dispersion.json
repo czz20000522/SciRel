@@ -1,547 +1,547 @@
 {
-  "schema": "scirel.reader-translation.v1",
-  "language": "zh-CN",
-  "records": [
+ "schema": "scirel.reader-translation",
+ "language": "zh-CN",
+ "records": [
+  {
+   "summary": "构造固定组分算例的 SI 状态和归一化尺度。",
+   "definition": "热速度为 sqrt(2 kB T/m)，含符号回旋半径为 sqrt(kB T/m)/Omega；wn=min abs(Omega)，kn=1/max abs(rho)，保留原有 eV 换算。",
+   "inputs": [
     {
-      "summary": "构造固定组分算例的 SI 状态和归一化尺度。",
-      "definition": "热速度为 sqrt(2 kB T/m)，含符号回旋半径为 sqrt(kB T/m)/Omega；wn=min abs(Omega)，kn=1/max abs(rho)，保留原有 eV 换算。",
-      "inputs": [
-        {
-          "name": "family",
-          "description": "算例族。",
-          "constraints": "只允许 bonk 或 em。",
-          "dtype": "字符串"
-        },
-        {
-          "name": "jcase",
-          "description": "算例编号。",
-          "constraints": "BONK 为 1、2、3；EM 为 1、2；None 分别选择 BONK 1 或 EM 2。",
-          "dtype": "整数或 None"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "完整组分尺度和材料元数据；EM 状态设置 kz=0.1kn。",
-          "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
-          "dtype": "映射"
-        }
-      ],
-      "example": {
-        "description": "构造第三个 BONK 算例的完整 SI 状态。",
-        "expected": "返回三个组分的含符号回旋频率，以及有限、正的归一化尺度。"
-      },
-      "asset_id": "scirel.kinetic.fluidbw-case-state",
-      "source_sha256": "c35a2462f721d13c9c140953de798fb4acfdae3129daebaeb43e8142a83dbe53",
-      "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-      "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-      "assumptions": [
-        "无背景流动或温度各向异性。",
-        "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-        "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-      ],
-      "applicability": {
-        "preconditions": [
-          "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-          "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
-        ],
-        "supported": [
-          "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
-        ],
-        "excluded": [
-          "不能通过算例控制参数构造任意组分模型。",
-          "不证明仅含电子的算例 2 具有全局电中性或自洽背景平衡。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-        "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
-        "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-        "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
-      },
-      "verification": {
-        "scope": [
-          "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
-        ],
-        "known_limitations": [
-          "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-          "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-          "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
-        ],
-        "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
-      }
+     "name": "family",
+     "description": "算例族。",
+     "constraints": "只允许 bonk 或 em。",
+     "dtype": "字符串"
     },
     {
-      "summary": "计算缩放贝塞尔函数、等离子体 Z 函数及完整 R 响应。",
-      "definition": "RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]，R=2Y/b sum(n² Gamma_n/(Y²−n²),n>=1)。真正的极点报错。历史名称 RTAY、RASY、RINT、RYLA 均使用修正后的谐波求和，不代表原来的四种算法。",
-      "inputs": [
-        {
-          "name": "method",
-          "description": "科学计算方法选择器。",
-          "constraints": "Gamman、Gammapn、zfun、RTAY、RASY、RINT 或 RYLA。",
-          "dtype": "字符串"
-        },
-        {
-          "name": "x",
-          "description": "贝塞尔整数阶数、Z 函数宗量或 R 响应的 Y。",
-          "constraints": "Gamma 阶数为实整数；其余宗量有限。",
-          "dtype": "实数或复数"
-        },
-        {
-          "name": "parameter",
-          "description": "Gamma 或 R 的 b 参数；Z 不使用。",
-          "constraints": "Gamma 与 R 必须提供有限参数。",
-          "dtype": "实数、复数或 None"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "value",
-          "description": "Gamma、Gamma 导数或 Z 数组，或完整的 2×2 R 响应矩阵。",
-          "constraints": "返回有限值，否则明确报告精度失败或极点。",
-          "dtype": "复数数值数组"
-        }
-      ],
-      "example": {
-        "description": "计算 Y=2、b=0 时的 R 响应解析极限。",
-        "expected": "有限 RC 矩阵的第一行为 2/3，第二行为 −10/9。"
-      },
-      "asset_id": "scirel.kinetic.fluidbw-special-functions",
-      "source_sha256": "43761cfdb27099ff00d2940c679ea8c874bd10fcb1bc6db192146a0f930b213f",
-      "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-      "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-      "assumptions": [
-        "无背景流动或温度各向异性。",
-        "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-        "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-      ],
-      "applicability": {
-        "preconditions": [
-          "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-          "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。",
-          "Gamma 的谐波阶数必须是有限整数；Gamma 和 R 必须提供 parameter，Z 忽略该参数。"
-        ],
-        "supported": [
-          "对整数 n 计算 Gamma_n=exp(−b) I_n(b) 及邻阶恒等式导数，b 可为有限标量或数组。",
-          "Z(z) 使用 Weideman 64 阶算法，虚轴使用 erfcx；溢出明确报错。",
-          "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
-        ],
-        "excluded": [
-          "不宣称执行或忠实保留原 Taylor、渐近、积分等选择器对应的算法。",
-          "不宣称整个复平面具有认证精度。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-        "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
-        "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-        "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
-      },
-      "verification": {
-        "scope": [
-          "对整数 n 计算 Gamma_n=exp(−b) I_n(b) 及邻阶恒等式导数，b 可为有限标量或数组。",
-          "Z(z) 使用 Weideman 64 阶算法，虚轴使用 erfcx；溢出明确报错。",
-          "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
-        ],
-        "known_limitations": [
-          "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-          "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-          "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
-        ],
-        "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
-      }
-    },
-    {
-      "summary": "从显式 SI 状态计算 Maxwell 色散张量和行列式。",
-      "definition": "D=K+nnᵀ−n²I。fD 与 fDtensor 在解析消去后分别采用对称谐波截断 5 与 15；fDR 使用修正的完整 R 响应与 J8 近似。",
-      "inputs": [
-        {
-          "name": "kx",
-          "description": "横向波矢，单位 m^-1。",
-          "constraints": "有限标量。",
-          "dtype": "实数或复数"
-        },
-        {
-          "name": "state",
-          "description": "显式的各向同性 Maxwell 分布 SI 状态：S 个组分、c2、含符号 wcs 与 rhocs、正 wps2 与 vts、角频率 w 和含符号 kz；矩阵组装另需 epsilon0。rho=vts/(sqrt(2)*wcs)。",
-          "constraints": "数值字段有限，热速度和回旋尺度相互一致；元数据不能覆盖显式控制参数。",
-          "dtype": "映射"
-        },
-        {
-          "name": "method",
-          "description": "数值响应近似。",
-          "constraints": "fD、fDR 或 fDtensor。",
-          "dtype": "字符串"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "无量纲行列式、3×3 介电张量 K 与色散张量 D，以及未被修改的显式 state_after。",
-          "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
-          "dtype": "映射"
-        }
-      ],
-      "example": {
-        "description": "计算指定频率下零横向波矢的 Maxwell 响应。",
-        "expected": "张量有限，kz 保持不变。"
-      },
-      "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
-      "source_sha256": "844f5c7c10e348ed61cf8b45b2648bb9b5c24b5798a8e9066c9c90ba1f7880b2",
-      "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-      "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-      "assumptions": [
-        "无背景流动或温度各向异性。",
-        "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-        "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-      ],
-      "applicability": {
-        "preconditions": [
-          "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-          "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
-        ],
-        "supported": [
-          "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
-          "分别保留有限 5/15 谐波模型与完整谐波 J8 模型的合同。"
-        ],
-        "excluded": [
-          "不支持 kz=0 时留有非零留数的真正回旋极点，以及无磁场、零温、零密度或静态频率极限。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-        "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
-        "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-        "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
-      },
-      "verification": {
-        "scope": [
-          "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
-          "分别保留有限 5/15 谐波模型与完整谐波 J8 模型的合同。"
-        ],
-        "known_limitations": [
-          "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-          "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-          "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
-        ],
-        "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
-      }
-    },
-    {
-      "summary": "组装有限有理近似的横向波矢本征矩阵。",
-      "definition": "M 作用于按 Jx_snl、Jy_snl、Jz_snl、Ey、Ez、By、Bz 排列的状态，满足 kx X=M X；电导多项式恢复四个矩阵元素，n>=1 的逆矩投影为零，并稳定计算 Gamma。",
-      "inputs": [
-        {
-          "name": "state",
-          "description": "显式的各向同性 Maxwell 分布 SI 状态：S 个组分、c2、含符号 wcs 与 rhocs、正 wps2 与 vts、角频率 w 和含符号 kz；矩阵组装另需 epsilon0。rho=vts/(sqrt(2)*wcs)。此入口的 w 元数据可省略，显式 omega 优先。",
-          "constraints": "数值字段有限，热速度和回旋尺度相互一致；元数据不能覆盖显式控制参数。",
-          "dtype": "映射"
-        },
-        {
-          "name": "omega",
-          "description": "显式角频率，单位 rad/s，优先于状态元数据。",
-          "constraints": "有限、非零实标量。",
-          "dtype": "实数"
-        },
-        {
-          "name": "j_order",
-          "description": "J 极点近似阶数。",
-          "constraints": "只允许 8 或 12。",
-          "dtype": "整数"
-        },
-        {
-          "name": "max_harmonic",
-          "description": "有限 L 表的最大谐波序号。",
-          "constraints": "只允许 0 至 7 的整数。",
-          "dtype": "整数"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "具有混合状态 SI 量纲的 M；修正极点与原始 cn_raw 表、归一化账目、状态、omega 和 N。",
-          "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
-          "dtype": "映射"
-        }
-      ],
-      "example": {
-        "description": "在 EM 算例 2 中组装 J8、N=0 的矩阵。",
-        "expected": "返回有限 40×40 矩阵，并同时保留原始和修正后的极点表。"
-      },
-      "asset_id": "scirel.kinetic.fluidbw-em-matrix",
-      "source_sha256": "37ef27fbc59667866d902797a64ad7d2a02d2c43ea947bf17a9aece943cd2afc",
-      "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-      "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-      "assumptions": [
-        "无背景流动或温度各向异性。",
-        "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-        "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-      ],
-      "applicability": {
-        "preconditions": [
-          "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-          "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
-        ],
-        "supported": [
-          "J8/J12 与全部 N=0..7 控制，保留完整矩阵状态及原始表。",
-          "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
-        ],
-        "excluded": [
-          "有限拟合响应不能视为精确贝塞尔/Z 动理学介电响应。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-        "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
-        "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-        "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
-      },
-      "verification": {
-        "scope": [
-          "J8/J12 与全部 N=0..7 控制，保留完整矩阵状态及原始表。",
-          "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
-        ],
-        "known_limitations": [
-          "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-          "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-          "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
-        ],
-        "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
-      }
-    },
-    {
-      "summary": "逐频率执行有界复波矢搜索并独立核验候选根。",
-      "definition": "对每个角频率在固定的无量纲实部、虚部搜索域内尝试求根；只有独立行列式残差和范数化 Maxwell 零空间残差均通过，root_valid 才为真。",
-      "inputs": [
-        {
-          "name": "jcase",
-          "description": "固定算例编号。",
-          "constraints": "只允许 BONK 算例 1、2、3。",
-          "dtype": "整数"
-        },
-        {
-          "name": "omegas",
-          "description": "角频率轴，单位 rad/s；None 使用算例的默认频率阶梯。",
-          "constraints": "元素必须为有限、非零实数；保留输入次序。",
-          "dtype": "实数数组或 None"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "nf 的单位为 m^-1，xx 的单位为 rad/s；包含 root_valid、双重残差、原始求解标志、迭代和求值次数、全部尝试及完整材料状态。",
-          "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
-          "dtype": "映射"
-        }
-      ],
-      "example": {
-        "description": "在 BONK 算例 2 的 0.63wn 处执行有界根搜索。",
-        "expected": "修复原有非根，得到约 +0.09834448108i kn 的已核验候选。"
-      },
-      "asset_id": "scirel.kinetic.fluidbw-bonk-search",
-      "source_sha256": "1f58bfd35b5794011bed8be3cf7d304e396fd2bd4d1881a14c6df8e39aca6fc0",
-      "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-      "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-      "assumptions": [
-        "无背景流动或温度各向异性。",
-        "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-        "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-      ],
-      "applicability": {
-        "preconditions": [
-          "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-          "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
-        ],
-        "supported": [
-          "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
-          "保留原求解容差，显式记录有界尝试和根核验。"
-        ],
-        "excluded": [
-          "不提供分支追踪、全部物理模态枚举或无条件收敛保证。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-        "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
-        "nonconvergence": "科学精度或有界搜索失败明确记录。找不到已核验根时，返回全部尝试及未核验行；原始求解标志本身不能证明科学根。",
-        "partial_results": "算子异常不返回结果；完成的频率轴可包含 root_valid 为假的候选，不把隐藏的部分结果作为完整成功输出。"
-      },
-      "verification": {
-        "scope": [
-          "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
-          "保留原求解容差，显式记录有界尝试和根核验。"
-        ],
-        "known_limitations": [
-          "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-          "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-          "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
-        ],
-        "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
-      }
-    },
-    {
-      "summary": "计算有限 EM 矩阵的完整谱和五个启发式候选。",
-      "definition": "保留全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，物理状态相似缩放后的后向误差门槛不超过 2e-12。",
-      "inputs": [
-        {
-          "name": "jcase",
-          "description": "固定算例编号。",
-          "constraints": "只允许 EM 算例 1 或 2。",
-          "dtype": "整数"
-        },
-        {
-          "name": "j_order",
-          "description": "J 极点近似阶数。",
-          "constraints": "只允许 8 或 12。",
-          "dtype": "整数"
-        },
-        {
-          "name": "max_harmonic",
-          "description": "有限 L 表的最大谐波序号。",
-          "constraints": "只允许 0 至 7 的整数。",
-          "dtype": "整数"
-        },
-        {
-          "name": "omegas",
-          "description": "角频率轴，单位 rad/s；None 使用算例的默认频率阶梯。",
-          "constraints": "元素必须为有限、非零实数；保留输入次序。",
-          "dtype": "实数数组或 None"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "kxx 为频率轴长度×5 的 m^-1 数组；另含每个频率的全部谱、候选、矩阵、精确表、算例状态和独立本征诊断。",
-          "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
-          "dtype": "映射"
-        }
-      ],
-      "example": {
-        "description": "在 EM 算例 2 的 0.83wn 处计算 J8、N=0 的有限谱。",
-        "expected": "返回完整 40 个有限本征值、五个候选及缩放后的后向误差诊断。"
-      },
-      "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
-      "source_sha256": "410efbde569f146becf9a12660796577ed517f619cbbd6abf3e360c017b6db4d",
-      "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-      "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-      "assumptions": [
-        "无背景流动或温度各向异性。",
-        "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-        "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-      ],
-      "applicability": {
-        "preconditions": [
-          "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-          "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
-        ],
-        "supported": [
-          "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-          "全部有限谱、原有排序值、候选及末端矩阵。"
-        ],
-        "excluded": [
-          "不把全部辅助本征值认定为动理学物理模态，不保证无限模态完备性或跨线程不变性。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-        "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
-        "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-        "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
-      },
-      "verification": {
-        "scope": [
-          "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
-          "全部有限谱、原有排序值、候选及末端矩阵。"
-        ],
-        "known_limitations": [
-          "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-          "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-          "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
-        ],
-        "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
-      }
-    },
-    {
-      "summary": "将完整求解状态写为带单位的科学图及 MAT 材料。",
-      "definition": "支持 BONK 三个算例的 PNG、EM 两种绘图布局的 PNG，以及依算例确定的 ICW/ECW MAT。图像沿用既有科学状态和单位标注。",
-      "inputs": [
-        {
-          "name": "result",
-          "description": "完整 BONK/EM 返回状态及材料元数据。",
-          "constraints": "必须与 family 对应。",
-          "dtype": "映射"
-        },
-        {
-          "name": "family",
-          "description": "科学材料族。",
-          "constraints": "只允许 bonk 或 em。",
-          "dtype": "字符串"
-        },
-        {
-          "name": "output_directory",
-          "description": "明确存在且可写的输出目录。",
-          "constraints": "目录由调用者拥有；返回实际文件名，包括覆盖写。",
-          "dtype": "字符串或路径"
-        },
-        {
-          "name": "jplt",
-          "description": "EM 图形布局选择器。",
-          "constraints": "只允许 1 或 2；BONK 忽略此参数。",
-          "dtype": "整数"
-        }
-      ],
-      "outputs": [
-        {
-          "name": "result",
-          "description": "files 列出实际写出的 PNG/MAT 文件名，包括同目录中的重复写入。",
-          "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
-          "dtype": "映射"
-        }
-      ],
-      "example": {
-        "description": "将已核验的 BONK 算例 2 状态写入临时目录。",
-        "expected": "生成可读取的 PNG，带逆米波矢及无量纲频率标注。"
-      },
-      "asset_id": "scirel.kinetic.fluidbw-materials",
-      "source_sha256": "020347aca85e18c28340e605364cd0ba9ae23eadf6106e1a26f53156b870d06b",
-      "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-      "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-      "assumptions": [
-        "无背景流动或温度各向异性。",
-        "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-        "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-      ],
-      "applicability": {
-        "preconditions": [
-          "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-          "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
-        ],
-        "supported": [
-          "BONK 三个算例和 EM 两种布局，以及 ICW/ECW MAT 序列化。",
-          "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
-        ],
-        "excluded": [
-          "不宣称艺术质量、逐像素一致或物理真值；原有裁剪及后端警告可能保留。"
-        ]
-      },
-      "failure_semantics": {
-        "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-        "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
-        "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-        "partial_results": "异常不返回结果；后端失败前可能已经写出部分文件，这些文件不构成成功返回。"
-      },
-      "verification": {
-        "scope": [
-          "BONK 三个算例和 EM 两种布局，以及 ICW/ECW MAT 序列化。",
-          "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
-        ],
-        "known_limitations": [
-          "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
-          "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-          "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
-        ],
-        "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
-      }
+     "name": "jcase",
+     "description": "算例编号。",
+     "constraints": "BONK 为 1、2、3；EM 为 1、2；None 分别选择 BONK 1 或 EM 2。",
+     "dtype": "整数或 None"
     }
-  ]
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "完整组分尺度和材料元数据；EM 状态设置 kz=0.1kn。",
+     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "dtype": "映射"
+    }
+   ],
+   "example": {
+    "description": "构造第三个 BONK 算例的完整 SI 状态。",
+    "expected": "返回三个组分的含符号回旋频率，以及有限、正的归一化尺度。"
+   },
+   "asset_id": "scirel.kinetic.fluidbw-case-state",
+   "source_sha256": "4e9a14732928ac9f5f812f49822af07b2650ae353cdc47d52860530210c46844",
+   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
+   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
+   "assumptions": [
+    "无背景流动或温度各向异性。",
+    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
+    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
+   ],
+   "applicability": {
+    "preconditions": [
+     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+    ],
+    "supported": [
+     "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
+    ],
+    "excluded": [
+     "不能通过算例控制参数构造任意组分模型。",
+     "不证明仅含电子的算例 2 具有全局电中性或自洽背景平衡。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
+    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+   },
+   "verification": {
+    "scope": [
+     "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
+    ],
+    "known_limitations": [
+     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
+     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+    ],
+    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+   }
+  },
+  {
+   "summary": "计算缩放贝塞尔函数、等离子体 Z 函数及完整 R 响应。",
+   "definition": "RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]，R=2Y/b sum(n² Gamma_n/(Y²−n²),n>=1)。真正的极点报错。历史名称 RTAY、RASY、RINT、RYLA 均使用修正后的谐波求和，不代表原来的四种算法。",
+   "inputs": [
+    {
+     "name": "method",
+     "description": "科学计算方法选择器。",
+     "constraints": "Gamman、Gammapn、zfun、RTAY、RASY、RINT 或 RYLA。",
+     "dtype": "字符串"
+    },
+    {
+     "name": "x",
+     "description": "贝塞尔整数阶数、Z 函数宗量或 R 响应的 Y。",
+     "constraints": "Gamma 阶数为实整数；其余宗量有限。",
+     "dtype": "实数或复数"
+    },
+    {
+     "name": "parameter",
+     "description": "Gamma 或 R 的 b 参数；Z 不使用。",
+     "constraints": "Gamma 与 R 必须提供有限参数。",
+     "dtype": "实数、复数或 None"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "value",
+     "description": "Gamma、Gamma 导数或 Z 数组，或完整的 2×2 R 响应矩阵。",
+     "constraints": "返回有限值，否则明确报告精度失败或极点。",
+     "dtype": "复数数值数组"
+    }
+   ],
+   "example": {
+    "description": "计算 Y=2、b=0 时的 R 响应解析极限。",
+    "expected": "有限 RC 矩阵的第一行为 2/3，第二行为 −10/9。"
+   },
+   "asset_id": "scirel.kinetic.fluidbw-special-functions",
+   "source_sha256": "b208b1a5df29bc1da6ef2618c05aa2e9b7cdc20e68ef0721f8d516bd8b176762",
+   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
+   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
+   "assumptions": [
+    "无背景流动或温度各向异性。",
+    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
+    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
+   ],
+   "applicability": {
+    "preconditions": [
+     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。",
+     "Gamma 的谐波阶数必须是有限整数；Gamma 和 R 必须提供 parameter，Z 忽略该参数。"
+    ],
+    "supported": [
+     "对整数 n 计算 Gamma_n=exp(−b) I_n(b) 及邻阶恒等式导数，b 可为有限标量或数组。",
+     "Z(z) 使用 Weideman 64 阶算法，虚轴使用 erfcx；溢出明确报错。",
+     "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
+    ],
+    "excluded": [
+     "不宣称执行或忠实保留原 Taylor、渐近、积分等选择器对应的算法。",
+     "不宣称整个复平面具有认证精度。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
+    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+   },
+   "verification": {
+    "scope": [
+     "对整数 n 计算 Gamma_n=exp(−b) I_n(b) 及邻阶恒等式导数，b 可为有限标量或数组。",
+     "Z(z) 使用 Weideman 64 阶算法，虚轴使用 erfcx；溢出明确报错。",
+     "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
+    ],
+    "known_limitations": [
+     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
+     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+    ],
+    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+   }
+  },
+  {
+   "summary": "从显式 SI 状态计算 Maxwell 色散张量和行列式。",
+   "definition": "D=K+nnᵀ−n²I。fD 与 fDtensor 在解析消去后分别采用对称谐波截断 5 与 15；fDR 使用修正的完整 R 响应与 J8 近似。",
+   "inputs": [
+    {
+     "name": "kx",
+     "description": "横向波矢，单位 m^-1。",
+     "constraints": "有限标量。",
+     "dtype": "实数或复数"
+    },
+    {
+     "name": "state",
+     "description": "显式的各向同性 Maxwell 分布 SI 状态：S 个组分、c2、含符号 wcs 与 rhocs、正 wps2 与 vts、角频率 w 和含符号 kz；矩阵组装另需 epsilon0。rho=vts/(sqrt(2)*wcs)。",
+     "constraints": "数值字段有限，热速度和回旋尺度相互一致；元数据不能覆盖显式控制参数。",
+     "dtype": "映射"
+    },
+    {
+     "name": "method",
+     "description": "数值响应近似。",
+     "constraints": "fD、fDR 或 fDtensor。",
+     "dtype": "字符串"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "无量纲行列式、3×3 介电张量 K 与色散张量 D，以及未被修改的显式 state_after。",
+     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "dtype": "映射"
+    }
+   ],
+   "example": {
+    "description": "计算指定频率下零横向波矢的 Maxwell 响应。",
+    "expected": "张量有限，kz 保持不变。"
+   },
+   "asset_id": "scirel.kinetic.fluidbw-dispersion-response",
+   "source_sha256": "c9293f75951a169c3b30d87bb0cde73d10997168de8c968ef327960746aa5ff4",
+   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
+   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
+   "assumptions": [
+    "无背景流动或温度各向异性。",
+    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
+    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
+   ],
+   "applicability": {
+    "preconditions": [
+     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+    ],
+    "supported": [
+     "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
+     "分别保留有限 5/15 谐波模型与完整谐波 J8 模型的合同。"
+    ],
+    "excluded": [
+     "不支持 kz=0 时留有非零留数的真正回旋极点，以及无磁场、零温、零密度或静态频率极限。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
+    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+   },
+   "verification": {
+    "scope": [
+     "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
+     "分别保留有限 5/15 谐波模型与完整谐波 J8 模型的合同。"
+    ],
+    "known_limitations": [
+     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
+     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+    ],
+    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+   }
+  },
+  {
+   "summary": "组装有限有理近似的横向波矢本征矩阵。",
+   "definition": "M 作用于按 Jx_snl、Jy_snl、Jz_snl、Ey、Ez、By、Bz 排列的状态，满足 kx X=M X；电导多项式恢复四个矩阵元素，n>=1 的逆矩投影为零，并稳定计算 Gamma。",
+   "inputs": [
+    {
+     "name": "state",
+     "description": "显式的各向同性 Maxwell 分布 SI 状态：S 个组分、c2、含符号 wcs 与 rhocs、正 wps2 与 vts、角频率 w 和含符号 kz；矩阵组装另需 epsilon0。rho=vts/(sqrt(2)*wcs)。此入口的 w 元数据可省略，显式 omega 优先。",
+     "constraints": "数值字段有限，热速度和回旋尺度相互一致；元数据不能覆盖显式控制参数。",
+     "dtype": "映射"
+    },
+    {
+     "name": "omega",
+     "description": "显式角频率，单位 rad/s，优先于状态元数据。",
+     "constraints": "有限、非零实标量。",
+     "dtype": "实数"
+    },
+    {
+     "name": "j_order",
+     "description": "J 极点近似阶数。",
+     "constraints": "只允许 8 或 12。",
+     "dtype": "整数"
+    },
+    {
+     "name": "max_harmonic",
+     "description": "有限 L 表的最大谐波序号。",
+     "constraints": "只允许 0 至 7 的整数。",
+     "dtype": "整数"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "具有混合状态 SI 量纲的 M；修正极点与原始 cn_raw 表、归一化账目、状态、omega 和 N。",
+     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "dtype": "映射"
+    }
+   ],
+   "example": {
+    "description": "在 EM 算例 2 中组装 J8、N=0 的矩阵。",
+    "expected": "返回有限 40×40 矩阵，并同时保留原始和修正后的极点表。"
+   },
+   "asset_id": "scirel.kinetic.fluidbw-em-matrix",
+   "source_sha256": "7cf9716f4d2bdd3ac00ee3a2c9d811c1a7564f4e402fb5831e54b98728947e80",
+   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
+   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
+   "assumptions": [
+    "无背景流动或温度各向异性。",
+    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
+    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
+   ],
+   "applicability": {
+    "preconditions": [
+     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+    ],
+    "supported": [
+     "J8/J12 与全部 N=0..7 控制，保留完整矩阵状态及原始表。",
+     "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
+    ],
+    "excluded": [
+     "有限拟合响应不能视为精确贝塞尔/Z 动理学介电响应。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
+    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+   },
+   "verification": {
+    "scope": [
+     "J8/J12 与全部 N=0..7 控制，保留完整矩阵状态及原始表。",
+     "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
+    ],
+    "known_limitations": [
+     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
+     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+    ],
+    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+   }
+  },
+  {
+   "summary": "逐频率执行有界复波矢搜索并独立核验候选根。",
+   "definition": "对每个角频率在固定的无量纲实部、虚部搜索域内尝试求根；只有独立行列式残差和范数化 Maxwell 零空间残差均通过，root_valid 才为真。",
+   "inputs": [
+    {
+     "name": "jcase",
+     "description": "固定算例编号。",
+     "constraints": "只允许 BONK 算例 1、2、3。",
+     "dtype": "整数"
+    },
+    {
+     "name": "omegas",
+     "description": "角频率轴，单位 rad/s；None 使用算例的默认频率阶梯。",
+     "constraints": "元素必须为有限、非零实数；保留输入次序。",
+     "dtype": "实数数组或 None"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "nf 的单位为 m^-1，xx 的单位为 rad/s；包含 root_valid、双重残差、原始求解标志、迭代和求值次数、全部尝试及完整材料状态。",
+     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "dtype": "映射"
+    }
+   ],
+   "example": {
+    "description": "在 BONK 算例 2 的 0.63wn 处执行有界根搜索。",
+    "expected": "修复原有非根，得到约 +0.09834448108i kn 的已核验候选。"
+   },
+   "asset_id": "scirel.kinetic.fluidbw-bonk-search",
+   "source_sha256": "bc4e831a0c852e23859f76d84a78672c528b5dc483134f1e22fd999049503928",
+   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
+   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
+   "assumptions": [
+    "无背景流动或温度各向异性。",
+    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
+    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
+   ],
+   "applicability": {
+    "preconditions": [
+     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+    ],
+    "supported": [
+     "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
+     "保留原求解容差，显式记录有界尝试和根核验。"
+    ],
+    "excluded": [
+     "不提供分支追踪、全部物理模态枚举或无条件收敛保证。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
+    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "nonconvergence": "科学精度或有界搜索失败明确记录。找不到已核验根时，返回全部尝试及未核验行；原始求解标志本身不能证明科学根。",
+    "partial_results": "算子异常不返回结果；完成的频率轴可包含 root_valid 为假的候选，不把隐藏的部分结果作为完整成功输出。"
+   },
+   "verification": {
+    "scope": [
+     "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
+     "保留原求解容差，显式记录有界尝试和根核验。"
+    ],
+    "known_limitations": [
+     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
+     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+    ],
+    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+   }
+  },
+  {
+   "summary": "计算有限 EM 矩阵的完整谱和五个启发式候选。",
+   "definition": "保留全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，物理状态相似缩放后的后向误差门槛不超过 2e-12。",
+   "inputs": [
+    {
+     "name": "jcase",
+     "description": "固定算例编号。",
+     "constraints": "只允许 EM 算例 1 或 2。",
+     "dtype": "整数"
+    },
+    {
+     "name": "j_order",
+     "description": "J 极点近似阶数。",
+     "constraints": "只允许 8 或 12。",
+     "dtype": "整数"
+    },
+    {
+     "name": "max_harmonic",
+     "description": "有限 L 表的最大谐波序号。",
+     "constraints": "只允许 0 至 7 的整数。",
+     "dtype": "整数"
+    },
+    {
+     "name": "omegas",
+     "description": "角频率轴，单位 rad/s；None 使用算例的默认频率阶梯。",
+     "constraints": "元素必须为有限、非零实数；保留输入次序。",
+     "dtype": "实数数组或 None"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "kxx 为频率轴长度×5 的 m^-1 数组；另含每个频率的全部谱、候选、矩阵、精确表、算例状态和独立本征诊断。",
+     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "dtype": "映射"
+    }
+   ],
+   "example": {
+    "description": "在 EM 算例 2 的 0.83wn 处计算 J8、N=0 的有限谱。",
+    "expected": "返回完整 40 个有限本征值、五个候选及缩放后的后向误差诊断。"
+   },
+   "asset_id": "scirel.kinetic.fluidbw-em-spectrum",
+   "source_sha256": "dad47da053b5c2a86e0762e629a9bf510d9725635281c0565a3fed048757720e",
+   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
+   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
+   "assumptions": [
+    "无背景流动或温度各向异性。",
+    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
+    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
+   ],
+   "applicability": {
+    "preconditions": [
+     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+    ],
+    "supported": [
+     "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
+     "全部有限谱、原有排序值、候选及末端矩阵。"
+    ],
+    "excluded": [
+     "不把全部辅助本征值认定为动理学物理模态，不保证无限模态完备性或跨线程不变性。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
+    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+   },
+   "verification": {
+    "scope": [
+     "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
+     "全部有限谱、原有排序值、候选及末端矩阵。"
+    ],
+    "known_limitations": [
+     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
+     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+    ],
+    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+   }
+  },
+  {
+   "summary": "将完整求解状态写为带单位的科学图及 MAT 材料。",
+   "definition": "支持 BONK 三个算例的 PNG、EM 两种绘图布局的 PNG，以及依算例确定的 ICW/ECW MAT。图像沿用既有科学状态和单位标注。",
+   "inputs": [
+    {
+     "name": "result",
+     "description": "完整 BONK/EM 返回状态及材料元数据。",
+     "constraints": "必须与 family 对应。",
+     "dtype": "映射"
+    },
+    {
+     "name": "family",
+     "description": "科学材料族。",
+     "constraints": "只允许 bonk 或 em。",
+     "dtype": "字符串"
+    },
+    {
+     "name": "output_directory",
+     "description": "明确存在且可写的输出目录。",
+     "constraints": "目录由调用者拥有；返回实际文件名，包括覆盖写。",
+     "dtype": "字符串或路径"
+    },
+    {
+     "name": "jplt",
+     "description": "EM 图形布局选择器。",
+     "constraints": "只允许 1 或 2；BONK 忽略此参数。",
+     "dtype": "整数"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "files 列出实际写出的 PNG/MAT 文件名，包括同目录中的重复写入。",
+     "constraints": "保留状态和末端诊断的科学含义，不修改调用者的状态。",
+     "dtype": "映射"
+    }
+   ],
+   "example": {
+    "description": "将已核验的 BONK 算例 2 状态写入临时目录。",
+    "expected": "生成可读取的 PNG，带逆米波矢及无量纲频率标注。"
+   },
+   "asset_id": "scirel.kinetic.fluidbw-materials",
+   "source_sha256": "baeb92eb677a342e1af1891aa12025b2da43c0b14aa9bff9088acdb1157d5799",
+   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
+   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
+   "assumptions": [
+    "无背景流动或温度各向异性。",
+    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
+    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
+   ],
+   "applicability": {
+    "preconditions": [
+     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+    ],
+    "supported": [
+     "BONK 三个算例和 EM 两种布局，以及 ICW/ECW MAT 序列化。",
+     "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
+    ],
+    "excluded": [
+     "不宣称艺术质量、逐像素一致或物理真值；原有裁剪及后端警告可能保留。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
+    "runtime_failure": "不支持或缺少原语言运行时、原语言进程异常退出触发 RuntimeError；子进程超时明确上报。",
+    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "partial_results": "异常不返回结果；后端失败前可能已经写出部分文件，这些文件不构成成功返回。"
+   },
+   "verification": {
+    "scope": [
+     "BONK 三个算例和 EM 两种布局，以及 ICW/ECW MAT 序列化。",
+     "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
+    ],
+    "known_limitations": [
+     "来源再分发权限仍为 NOT_ESTABLISHED，未获公开发行资格。",
+     "不保证跨线程或平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
+     "J/L 极点近似及有限谐波截断的模型误差，与关系一致性和数值残差分别判断。"
+    ],
+    "evidence_ceiling": "固定运行环境中的有界解析、独立本构、根和状态测试支持所声明的数值模型；不证明全部输入域精度，也不代替科学专家认可。"
+   }
+  }
+ ]
 }

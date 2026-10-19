@@ -22,7 +22,7 @@ def test_documented_field_capability_reports_import_closure() -> None:
     result = measure(ROOT, asset_id="scirel.field.poloidal-field-from-flux")
 
     assert result["status"] == "PASS"
-    assert result["schema"] == "scirel.capability-runtime-closure.v2"
+    assert result["schema"] == "scirel.capability-runtime-closure"
     assert result["mode"] == "import"
     assert result["source"]["revision"]
     assert len(result["source"]["content_sha256"]) == 64
@@ -204,7 +204,7 @@ def test_runtime_closure_contract_declares_the_receipt_schema() -> None:
         )
     )
     assert contract["properties"]["schema"]["const"] == (
-        "scirel.capability-runtime-closure.v2"
+        "scirel.capability-runtime-closure"
     )
     assert "source" in contract["required"]
     assert "source_after" in contract["required"]

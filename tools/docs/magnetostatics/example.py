@@ -63,7 +63,7 @@ np.testing.assert_allclose(double['BZ'], 2*bz_pair, rtol=2e-14, atol=1e-16)
 checks = dict(axis_max_abs_error_T=float(np.max(np.abs(bz_single-analytic))),
               pair_midplane_max_abs_BR_T=float(np.max(np.abs(1000*midgreen['gBR']))),
               double_current_max_abs_error_T=float(np.max(np.abs(double['BZ']-2*bz_pair))))
-output = dict(schema='scirel.chapter-results.v1', numpy=np.__version__, scipy=scipy.__version__,
+output = dict(schema='scirel.chapter-results', numpy=np.__version__, scipy=scipy.__version__,
               z_m=z.tolist(), single_BZ_T=bz_single.tolist(), pair_BZ_T=bz_pair.tolist(),
               opposed_BZ_T=opposed['BZ'].tolist(), center_single_T=float(bz_single[70]),
               center_pair_T=float(bz_pair[70]), refinement_n=[2,4,8,16], refinement_center_T=center_values,

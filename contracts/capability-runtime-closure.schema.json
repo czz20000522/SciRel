@@ -27,7 +27,7 @@
     "duration_ms"
   ],
   "properties": {
-    "schema": {"const": "scirel.capability-runtime-closure.v2"},
+    "schema": {"const": "scirel.capability-runtime-closure"},
     "status": {"enum": ["PASS", "FAIL"]},
     "binding_status": {"enum": ["BOUND", "UNBOUND"]},
     "binding_reasons": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},

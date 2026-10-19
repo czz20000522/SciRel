@@ -22,7 +22,7 @@ def _catalog(root: Path) -> None:
     partition = b'{"asset_id":"test"}\n'
     (root / "routes" / "all.jsonl").write_bytes(partition)
     release = {
-        "schema": "scirel.catalog-release.v1",
+        "schema": "scirel.catalog-release",
         "catalog_id": "test",
         "release_version": "0.0.0",
         "coverage": {"status": "complete", "included_asset_count": 1, "declared_total_asset_count": 1},

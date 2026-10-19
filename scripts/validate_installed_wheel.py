@@ -55,7 +55,7 @@ except ModuleNotFoundError:  # imported as ``scripts.validate_installed_wheel`` 
     from public_api_binding import implementation_module, source_module_path
 
 
-SCHEMA = "scirel.installed-wheel-validation.v1"
+SCHEMA = "scirel.installed-wheel-validation"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_EXPECTED_PYTHON = "3.14"
 _REQUIREMENT_NAME = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9_.-]*)")

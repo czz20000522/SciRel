@@ -12,7 +12,7 @@ from audit_public_export_documents import census  # noqa: E402
 def test_public_export_document_census_has_no_current_reverse_gap():
     report = census(ROOT)
 
-    assert report["schema"] == "scirel.public-export-document-census.v1"
+    assert report["schema"] == "scirel.public-export-document-census"
     assert report["counts"]["domains"] == len(report["domains"])
     assert report["counts"]["documented_bindings"] <= report["counts"]["public_callables"]
     assert report["counts"]["missing"] == 0

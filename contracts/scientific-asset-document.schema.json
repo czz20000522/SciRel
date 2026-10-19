@@ -24,7 +24,7 @@
     "verification"
   ],
   "properties": {
-    "schema": {"const": "scirel.asset-document.v1"},
+    "schema": {"const": "scirel.asset-document"},
     "asset_id": {
       "type": "string",
       "pattern": "^scirel\\.[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$"

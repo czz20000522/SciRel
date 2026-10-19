@@ -21,7 +21,7 @@ from public_api_binding import (
 from validate_asset_documents import load_document_set
 
 
-CATALOG_SCHEMA = "scirel.catalog-release.v1"
+CATALOG_SCHEMA = "scirel.catalog-release"
 _GIT_REVISION = re.compile(r"[0-9a-f]{40}")
 
 

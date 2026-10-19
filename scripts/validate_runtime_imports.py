@@ -136,7 +136,7 @@ def validate(root: Path = ROOT) -> dict[str, Any]:
                     )
 
     return {
-        "schema": "scirel.runtime-import-closure.v1",
+        "schema": "scirel.runtime-import-closure",
         "status": "PASS" if not errors else "FAIL",
         "core_dependencies": sorted(core),
         "optional_dependencies": {

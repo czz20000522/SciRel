@@ -11,7 +11,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 
-CATALOG_SCHEMA = "scirel.catalog-release.v1"
+CATALOG_SCHEMA = "scirel.catalog-release"
 
 
 def _digest(payload: bytes) -> str:

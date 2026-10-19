@@ -14,7 +14,7 @@
     "root_digest"
   ],
   "properties": {
-    "schema": {"const": "scirel.catalog-release.v1"},
+    "schema": {"const": "scirel.catalog-release"},
     "catalog_id": {"type": "string", "minLength": 1},
     "release_version": {"type": "string", "minLength": 1},
     "source_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},

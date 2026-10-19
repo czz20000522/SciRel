@@ -241,7 +241,7 @@ def _validate_wheel(
 
 def validate(root: Path = ROOT, *, manifest_path: Path = MANIFEST, wheel: Path | None = None) -> dict[str, Any]:
     manifest = _read(manifest_path)
-    if manifest.get("schema") != "scirel.native-resource-closure.v1":
+    if manifest.get("schema") != "scirel.native-resource-closure":
         raise ValueError("native closure has an invalid schema")
     if manifest.get("package") != "scirel":
         raise ValueError("native closure names an unexpected package")

@@ -19,7 +19,7 @@ from typing import Any, Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ASSET_SCHEMA = "scirel.asset-document.v1"
+ASSET_SCHEMA = "scirel.asset-document"
 ASSET_ID_RE = re.compile(r"^scirel\.[a-z][a-z0-9]*(?:[.-][a-z0-9]+)+$")
 FEEDBACK_ID_RE = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*$")
 
@@ -850,7 +850,7 @@ def main() -> int:
     print(
         json.dumps(
             {
-                "schema": "scirel.asset-document-validation.v1",
+                "schema": "scirel.asset-document-validation",
                 "asset_count": len(documents),
                 "asset_ids": sorted(document["asset_id"] for document in documents),
                 "runtime_checked": args.check_runtime,

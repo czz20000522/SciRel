@@ -20,7 +20,7 @@ from validate_asset_documents import AssetDocumentError, load_document_set
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = "scirel.public-export-document-census.v1"
+SCHEMA = "scirel.public-export-document-census"
 
 
 def _document_keys(source_root: Path, document: dict[str, Any]) -> set[tuple[str, str]]:

@@ -214,7 +214,7 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
 
     receipt = validator.validate_installed_wheel(expected_platform="linux-x86_64-cp314")
 
-    assert receipt["schema"] == "scirel.installed-wheel-validation.v1"
+    assert receipt["schema"] == "scirel.installed-wheel-validation"
     assert receipt["status"] == "PASS"
     assert receipt["extras"] == {}
     assert receipt["errors"] == []

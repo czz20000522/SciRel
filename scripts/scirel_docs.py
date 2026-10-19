@@ -23,7 +23,7 @@ from validate_asset_documents import load_document_set
 from build_scirel_sphinx import load_translations, render_site
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = 'scirel.documentation-snapshot.v1'
+SCHEMA = 'scirel.documentation-snapshot'
 NOTICE = ('开发文档 · 按每条资产的版本与证据范围使用。文档收录不代表人工批准、'
           '全项目通过或公开发行；此快照不是单一 wheel 的安装清单。')
 STATIC_FILES = {
@@ -85,7 +85,7 @@ def handbook_document(asset_ids, outline=None):
     requested = set(asset_ids)
     source = outline or ROOT / 'tools/docs/handbook.json'
     book = json.loads(Path(source).read_bytes())
-    if book.get('schema') != 'scirel.handbook.v1':
+    if book.get('schema') != 'scirel.handbook':
         raise ValueError('invalid handbook schema')
     seen, placements = set(), []
     canonical_assets = {
@@ -162,7 +162,7 @@ def chapter_directory():
     if not selection_path.exists():
         raise ValueError('chapter selection is required; refusing historical fallback')
     selection = json.loads(selection_path.read_bytes())
-    if set(selection) != {'schema', 'chapters'} or selection['schema'] != 'scirel.chapter-selection.v1':
+    if set(selection) != {'schema', 'chapters'} or selection['schema'] != 'scirel.chapter-selection':
         raise ValueError('invalid chapter selection schema')
     if set(selection['chapters']) != {'magnetostatics'}:
         raise ValueError('unsupported chapter selection IDs')
@@ -188,7 +188,7 @@ def chapter_files(asset_ids, *, expected_source_revision=None,
     """Bind executed examples to current implementation before publishing them."""
     root = chapter_directory()
     execution = json.loads((root/'execution.json').read_bytes())
-    if execution.get('schema') != 'scirel.chapter-execution.v1':
+    if execution.get('schema') != 'scirel.chapter-execution':
         raise ValueError('selected chapter execution has an invalid schema')
     execution_source = execution.get('source_commit')
     if not isinstance(execution_source, str) or not re.fullmatch(r'[0-9a-f]{40}', execution_source):
@@ -365,7 +365,7 @@ class Documentation:
         return data
 
     def envelope(self, **items):
-        return {'schema': 'scirel.documentation-response.v1',
+        return {'schema': 'scirel.documentation-response',
                 'snapshot_sha256': self.manifest['snapshot_sha256'],
                 'source_commit': self.manifest['source_commit'],
                 'source_revision': self.manifest.get('source_revision', self.manifest['source_commit']),
