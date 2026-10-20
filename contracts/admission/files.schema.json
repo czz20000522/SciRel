@@ -1,0 +1,30 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://scirel.local/contracts/admission/files.schema.json",
+ "title": "SciRel admission payload membership manifest",
+ "description": "Binds every payload byte of one FINAL. FINAL.json and PATH_MAP.json are members; FILES.json and ROOT.sha256 are not. ROOT.sha256 binds the three control files.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": ["schema", "files"],
+ "properties": {
+  "schema": {"const": "scirel.final-files"},
+  "files": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["path", "bytes", "sha256"],
+    "properties": {
+     "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\\\]+$"
+     },
+     "bytes": {"type": "integer", "minimum": 0},
+     "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    }
+   }
+  }
+ }
+}
