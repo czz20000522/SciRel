@@ -330,6 +330,22 @@ def test_reader_translation_cannot_drift_or_drop_contracts(tmp_path, change):
         load_translations(tmp_path, documents, load_document_set(documents))
 
 
+def test_user_guide_is_authored_and_never_projects_contract_prose(snapshot):
+    docs = Documentation(snapshot)
+    book = json.loads((ROOT/'tools/docs/handbook.json').read_bytes())
+    for chapter in book['chapters']:
+        manual = ROOT/'tools/docs/manual'/(chapter['id']+'.rst')
+        assert manual.is_file(), 'missing authored tutorial: ' + chapter['id']
+        source = manual.read_text(encoding='utf-8')
+        assert '.. code-block:: python' in source
+        assert '实际输出' in source
+        html = docs.read('web/user-guide/'+chapter['id']+'.html').decode()
+        for forbidden in ('选择计算入口', '模型与使用条件', '验证与使用边界'):
+            assert forbidden not in html, (chapter['id'], forbidden)
+        assert '参数' in docs.read('web/reference/generated/'+next(
+            asset for topic in chapter['topics'] for asset in topic['assets'])+'.html').decode()
+
+
 def test_all_reference_pages_exist_and_use_bound_chinese_prose(snapshot):
     docs = Documentation(snapshot)
     for asset in docs.ids:

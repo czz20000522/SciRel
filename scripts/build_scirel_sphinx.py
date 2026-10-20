@@ -283,8 +283,15 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
         write('agent', (root/'tools/docs/sphinx/agent.rst').read_text())
         write('user-guide/index', title('用户指南') + '用户指南解释科学问题、模型选择与组合方式。函数的完整参数、单位和失败行为见 API 参考。\n\n' + toctree([c['id'] for c in book['chapters']]) + title('完整计算案例','-') + toctree(['/tutorials/magnetostatics'] + (['/tutorials/kinetic-initial-value'] if any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']) else [])))
         write('reference/index', title('API 参考') + '按科学领域查阅功能函数。选择左侧领域，在正文中按问题浏览函数及用途，点击函数名查看参数、返回值、适用范围与示例。\n\n' + toctree([c['id'] for c in book['chapters']], maxdepth=1))
+        manual_root = root / 'tools/docs/manual'
         for c in book['chapters']:
-            write('user-guide/'+c['id'], title(c['title']) + c['introduction'] + '\n\n' + toctree(['topics/'+t['id'] for t in c['topics']]))
+            authored = manual_root / (c['id'] + '.rst')
+            if authored.is_file():
+                write('user-guide/'+c['id'], authored.read_text())
+            else:
+                # Never project contract prose into the user guide. Untranslated
+                # chapters stay blank until an authored tutorial exists.
+                write('user-guide/'+c['id'], title(c['title']) + '本章手写教程尚未完成。\n\n')
             ref = title(c['title']) + c['introduction'] + '\n\n'
             for topic in c['topics']:
                 records = [by_id[a] for a in topic['assets']]
@@ -305,7 +312,6 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
                     tutorial_id = topic['tutorial_id']
                     tutorial_title = {'magnetostatics': '轴对称线圈磁场：代码、实际结果与解释', 'kinetic-initial-value': '静电根与线性初值演化：实际结果及解释'}[tutorial_id]
                     intro += title('计算案例','-') + doclink(tutorial_title, '/tutorials/' + tutorial_id) + '\n'
-                write('user-guide/topics/'+topic['id'], intro)
                 ref += title(topic['title'], '-') + topic['introduction'] + '\n\n'
                 ref += function_table(records, translations)
                 ref += toctree(['generated/'+d['asset_id'] for d in records], hidden=True, maxdepth=1)

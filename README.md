@@ -21,8 +21,7 @@ assert result["B"][0, 0] == 5.0
 
 ## 文档
 
-手册为中文/英文双语，按「领域 → 问题 → 函数」组织，每个函数页包含签名、参数、返回值、
-失败行为、适用范围、示例与验证边界；HTML 由正式资产合同生成，是派生阅读层。
+手册分为两层：用户指南是手写教程，从科学问题出发讲模型、代码、实际输出与解释；API 参考从正式资产合同生成，逐函数给出签名、参数、返回值、失败行为、适用范围与示例。没有手写教程的章节保持空白，不会用合同摘要填充。
 
 ```bash
 python scripts/validate_asset_documents.py catalog/examples
@@ -36,7 +35,7 @@ python scripts/scirel_docs.py serve --snapshot .runtime/docs-snapshot
 src/scirel/            # 科学实现，按领域组织
 tests/                 # 功能测试（占绝大多数）与少量发布测试
 catalog/examples/      # 每个功能的正式资产合同（machine-readable）
-tools/docs/            # 双语手册构建器、目录与中文阅读层
+tools/docs/            # 手写用户指南、API 参考构建器与中文阅读层
 scripts/               # 构建、catalog、文档与安装校验工具
 contracts/             # 资产合同 schema、准入与接收规则
 licenses/              # 许可与来源署名
