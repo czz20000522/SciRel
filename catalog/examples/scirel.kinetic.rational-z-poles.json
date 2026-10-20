@@ -72,7 +72,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Declared Python guards raise ValueError; unsupported J is rejected without a table fallback.",
-  "runtime_failure": "Pure Python numeric errors propagate with operation context; no Octave or source-runtime process is invoked.",
+  "runtime_failure": "Pure Python numeric errors propagate with operation context; no the reference runtime or source-runtime process is invoked.",
   "nonconvergence": "No iterative solve is performed by fixed-table lookup; J12 construction is validated by the separate pure mpmath Padé operator.",
   "partial_results": "No partial result is returned when validation or table loading fails."
  },
@@ -90,7 +90,7 @@
  "example": {
   "description": "Return a pure-Python J-pole table and inspect its moments.",
   "code": "from scirel.kinetic.dispersion import magnetized\nr = magnetized.pole_coefficients(8)\nassert r.state['bzj'].size == 8",
-  "expected": "PASS: .venv/bin/python returns the declared table without GNU Octave."
+  "expected": "PASS: .venv/bin/python returns the declared table without the declared local Python runtime."
  },
  "verification": {
   "scope": [
@@ -98,9 +98,9 @@
    "Independent Z values and resolved kinetic responses bound the corrected J12 table; J4/J8 lower-order approximation errors remain explicit diagnostics."
   ],
   "tests": [
-   "tests/operator_contracts/test_dispersion_magnetized.py"
+   "tests/operator_contracts/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without GNU Octave.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without the declared local Python runtime.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",

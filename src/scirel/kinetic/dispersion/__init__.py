@@ -4,7 +4,7 @@ The native dispersion implementation is split into focused modules so discovery 
 import every numerical backend.  The module names below are the public entry
 points; each module keeps its own callable ``__all__`` and is loaded only when
 requested.  Scientific limits live in each callable contract.  Native
-numerical/support calls require Octave; ordinary Python calls are isolated.
+numerical/support calls require the reference solver; ordinary Python calls are isolated.
 """
 
 from importlib import import_module as _import_module
@@ -16,16 +16,13 @@ __all__ = [
     "magnetized",
     "multifluid",
     "parallel",
-    "plotting",
     "rational",
-    "reference",
-    "special",
 ]
 
 _LAZY_MODULES = {name: f".{name}" for name in __all__}
 
 
-class _LazyPdrkModule(_ModuleType):
+class _LazyChildModule(_ModuleType):
     """Proxy a catalogued child module without importing its backend.
 
     The proxy deliberately is a real ``ModuleType`` so package discovery and
@@ -70,7 +67,7 @@ class _LazyPdrkModule(_ModuleType):
 
 
 for _name, _module_path in _LAZY_MODULES.items():
-    globals()[_name] = _LazyPdrkModule(
+    globals()[_name] = _LazyChildModule(
         f"{__name__}.{_name}",
         f"{__name__}{_module_path}",
     )

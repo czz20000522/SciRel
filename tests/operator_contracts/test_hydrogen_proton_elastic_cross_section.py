@@ -1,7 +1,6 @@
 """Direct contract tests for ``scirel.collisions.hydrogen_proton_elastic_cross_section``.
 
-The saved KN1DPy leaf (source anchor ``KN1DPy/sigma/sigma_el_p_h.py:1-42``,
-caller ``KN1DPy/kinetic_h.py:996-1016``) fits the H+-on-H elastic
+The saved the neutral-transport formulation leaf fits the H+-on-H elastic
 momentum-transfer cross section with a distinct logarithmic polynomial below
 and above 10 eV, clipped to ``[0.001, 1.01e5] eV``. The Python source
 incorrectly omitted the exact breakpoint. The corrected contract follows the

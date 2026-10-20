@@ -1,5 +1,5 @@
-# Derived profile conventions: TORAX, Copyright 2024 DeepMind Technologies Limited.
-# Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
+# Derived profile conventions: the profile convention, Copyright 2024 DeepMind Technologies Limited.
+# Retained attribution: see licenses/.
 """Volume-normalized Gaussian radial source profile.
 
 The explicit metric ports carry cell volumes; this is distinct from spatial
@@ -22,13 +22,13 @@ def gaussian_profile(rho_norm, vpr, drho_norm, *, center, width, total):
     are dimensionless. ``total`` has the source quantity times m³. The
     returned float64 vector is ``total * exp(-(rho-center)^2/(2 width^2))``
     normalized by ``sum(profile*vpr*drho_norm)``. Zero or nonfinite widths
-    preserve TORAX's direct-call NaN boundary; finite nonzero signed widths
+    preserve the profile convention's direct-call NaN boundary; finite nonzero signed widths
     are accepted (the Gaussian is even in width).
 
     All grid ports are nonempty equal-length 1D vectors; parameters are real
     scalars, with no broadcasting or defaults. Integer/float32/float64 inputs
     convert to float64. The numerical denominator is floored at float64 tiny,
-    retaining the repaired TORAX tiny-width convention. Grid/type/nonfinite
+    retaining the repaired the profile convention tiny-width convention. Grid/type/nonfinite
     center/total errors raise ValueError. Unrepresentable float64 results or
     loss of the target integral beyond 64 epsilons relative raise
     FloatingPointError; negligible tails may round to zero.

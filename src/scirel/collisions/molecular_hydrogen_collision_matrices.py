@@ -1,7 +1,7 @@
 """Source-free assembly of the molecular H2 four-family SIG collision matrices.
 
 Reproduces the double-velocity-space (``vr,vx``) x (``vr',vx'``) collision-operator
-assembly of KN1DPy ``kinetic_h2.py:1036-1125`` for the molecular four families:
+assembly of the neutral-transport formulation ``kinetic_h2.py:1036-1125`` for the molecular four families:
 
 - ``SIG_CX``   : H2 + H2+ charge exchange, weight ``Vr2pidVrdVx``
 - ``SIG_H2_H`` : H2-H     elastic,          weight ``Vr2pidVrdVx * vx_vx``
@@ -25,7 +25,7 @@ Source-exact energy factors (verbatim from ``kinetic_h2.py:1045,1061,1078,1108``
 Energy is projectile laboratory energy for a stationary target, not a generic
 center-of-mass energy. H2+ charge exchange therefore uses twice the atomic
 proton mass. Mixed H/H2 and p/H2 fits use the H projectile mass, even when the
-molecule is the test particle. For deuterium KN1D section 2.1.2.6 uses the H
+molecule is the test particle. For deuterium the neutral-transport formulation section 2.1.2.6 uses the H
 momentum-transfer fit at E_D/2, but the viscosity fit at E_D (same laboratory
 energy for equal-mass collisions). The self molecular viscosity cross section
 is the source's momentum-transfer surrogate, not measured independent viscosity.
@@ -85,7 +85,7 @@ def assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm,
         default 1.0).
 
     n_theta : int, keyword-only
-        Positive midpoint azimuth count; default 5 retains the KN1D rule.
+        Positive midpoint azimuth count; default 5 retains the neutral-transport formulation rule.
         Increase and verify convergence for the caller's velocity grid.
 
     Returns

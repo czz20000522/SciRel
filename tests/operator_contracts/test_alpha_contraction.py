@@ -2,7 +2,7 @@
 ``contract_atomic_hydrogen_alpha_frequencies`` and
 ``contract_molecular_hydrogen_alpha_frequencies``.
 
-The saved KN1DPy formal implementations (SHA-256 pinned in the L1 replay) are
+The saved the neutral-transport formulation formal implementations (SHA-256 pinned in the L1 replay) are
 reproduced bit for bit on the declared domain.  The atomic saved formal
 implementation is verbatim; the molecular one carries the registered
 kinetic_h2.py:1204 Alpha_CX reshape repair, which this port reproduces.

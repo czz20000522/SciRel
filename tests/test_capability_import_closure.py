@@ -62,7 +62,7 @@ def test_mirror_ambipolar_closure_does_not_load_kinetic_private_helpers() -> Non
     assert "scirel.kinetic._mirror_numerics" not in result["loaded_scirel_modules"]
 
 
-def test_direct_pdrk_capability_reports_implementation_path() -> None:
+def test_direct_dispersion_capability_reports_implementation_path() -> None:
     result = measure(ROOT, asset_id="scirel.kinetic.rational-jpole-coefficients")
 
     assert result["status"] == "PASS"

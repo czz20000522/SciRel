@@ -1,6 +1,6 @@
 """Atomic-hydrogen Saha equilibrium population on the saved scientific branch.
 
-The saved KN1DPy ``nh_saha`` slice uses constants 3.310e-28 and 13.6057 eV.
+The saved the neutral-transport formulation ``nh_saha`` slice uses constants 3.310e-28 and 13.6057 eV.
 Its non-scientific branches use a 1e32 sentinel; this callable rejects those
 inputs. Its two density factors assume hydrogen-ion density equals electron
 density. The comparison is historical development evidence, not a qualified

@@ -1,6 +1,6 @@
 """Source-free atomic collision-frequency contraction (Alpha four-family).
 
-Reproduces the ``SIG ? f -> Alpha`` contraction of KN1DPy ``kinetic_h.py`` for
+Reproduces the ``SIG ? f -> Alpha`` contraction of the neutral-transport formulation ``kinetic_h.py`` for
 the atomic four-family Alpha collision frequencies:
 
 - ``Alpha_CX``  : H + H+  charge exchange,     ``Alpha_CX[:,:,k]  = F^{-1}(SIG_CX  @ F(fi_hat*ni))``

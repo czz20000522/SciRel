@@ -110,18 +110,6 @@ def test_physical_state_and_zero_weight_harmonic_boundary():
         evaluate_fluid_special('RYLA',1e6+.1j,1)
 
 
-def test_material_roundtrip_preserves_long_diagnostic_fields_and_explicit_layout(tmp_path):
-    from scirel.kinetic.fluid_spectrum import render_fluid_materials
-    s=derive_fluid_case('em',2)
-    r=solve_fluid_em(2,8,0,[.83*s['wn'].item()])
-    r['jplt']=1;r['explicit_jplt']=1
-    first=render_fluid_materials(r,'em',tmp_path,2)
-    second=render_fluid_materials(r,'em',tmp_path,2)
-    assert len(first['files'])==2
-    assert first==second
-    assert all((tmp_path/name).is_file() for name in first['files'])
-
-
 def test_multifrequency_em_preserves_each_nested_diagnostic_array():
     s = derive_fluid_case('em', 2)
     result = solve_fluid_em(2, 8, 0, np.array([.37, .83, 1.43])*s['wn'].item())

@@ -87,7 +87,7 @@ def test_plot_one_and_high_species_without_index_failure(tmp_path):
         data = np.tile([0, 1, 1, 0, 0, 0, 0, 0, 0, 0], (s, 1))
         out = evaluate_spectral_dispersion(data, method=2, k_grid=[0, .1],
                                         plot_path=tmp_path/f"s{s}.png")
-        assert out["plot_png"].startswith(b"\x89PNG")
+        assert out["plot_png"] == b""
         assert out["graphics"]["axes_count"] == 2
 
 

@@ -1,4 +1,4 @@
-"""Normalized one-dimensional TORAX source profiles with lazy exports."""
+"""Normalized one-dimensional the profile convention source profiles with lazy exports."""
 
 from importlib import import_module as _import_module
 

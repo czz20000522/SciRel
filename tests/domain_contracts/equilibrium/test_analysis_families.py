@@ -4,18 +4,8 @@ import inspect
 import numpy as np
 import pytest
 from scipy.interpolate import CubicSpline as ReferenceSpline
-from scirel.geometry import basis, fieldline, sampling, plotting
+from scirel.geometry import basis, fieldline, sampling
 from scirel.geometry.numerics import diff_12_central, NumericalContractError
-from matplotlib.patches import Rectangle
-import os
-if os.environ.get('ANALYSIS_SOURCE') == '1':
-    import importlib.util
-    import sys
-    sys.path.insert(0,'/prior-delivery/artifact/source-bundle')
-    spec=importlib.util.spec_from_file_location('source_helpers','/prior-delivery/artifact/source-bundle/pleiades/analysis/helpers.py')
-    plotting=importlib.util.module_from_spec(spec);spec.loader.exec_module(plotting)
-
-
 def test_natural_spline_boundary_continuity_and_reference():
     x=np.array([-.8,-.5,.1,.9,1.3,2.])
     y=np.cos(x)+x*x
@@ -309,19 +299,3 @@ def test_closed_circle_flux_curvature_refinement():
     assert errors[2]<errors[1]/3.4
     assert errors[2]<.004
 
-
-@pytest.mark.parametrize('operation',['mirror','scale','transpose'])
-def test_affine_plotting_support_contracts(operation):
-    p=Rectangle((.3,.4),.2,.1)
-    v=np.array([[0,0],[1,1]])
-    orig=p.get_transform().transform(v)
-    if operation=='mirror':
-        mirror=plotting.get_mirror_patches([p],axis=0,scale=2)[0]
-        np.testing.assert_allclose(mirror.get_transform().transform(v),orig*np.array([2,-2]),rtol=0,atol=3e-15)
-        np.testing.assert_array_equal(p.get_transform().transform(v),orig)
-    elif operation=='scale':
-        assert plotting.scale_patches([p],2)==[p]
-        np.testing.assert_allclose(p.get_transform().transform(v),2*orig,rtol=0,atol=3e-15)
-    else:
-        assert plotting.transpose_patches([p]) is None
-        np.testing.assert_allclose(p.get_transform().transform(v),orig[:,::-1],rtol=0,atol=3e-15)

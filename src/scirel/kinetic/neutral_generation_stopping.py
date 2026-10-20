@@ -1,4 +1,4 @@
-"""KN1DPy H/H2 collision-generation stopping criterion."""
+"""the neutral-transport formulation H/H2 collision-generation stopping criterion."""
 from __future__ import annotations
 
 import numpy as np

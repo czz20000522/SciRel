@@ -120,8 +120,5 @@
    "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision."
   ]
- },
- "references": [
-  "https://github.com/google-deepmind/torax"
- ]
+ }
 }

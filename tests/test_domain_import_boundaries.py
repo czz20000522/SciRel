@@ -143,7 +143,7 @@ assert "scipy" in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_pdrf_state_and_matrix_paths_defer_linalg_until_spectrum_solve() -> None:
+def test_state_and_matrix_paths_defer_linalg_until_spectrum_solve() -> None:
     result = _run(
         """
 import sys
@@ -163,7 +163,7 @@ try:
 except ValueError as error:
     assert str(error) == "oldmethod must be 1 or 2"
 else:
-    raise AssertionError("invalid PDRF spectrum method unexpectedly succeeded")
+    raise AssertionError("invalid the multi-fluid dispersion formulation spectrum method unexpectedly succeeded")
 assert "scipy" not in sys.modules
 output = solve_temporal_spectrum(matrix["M"], matrix["A"])
 assert output["w1"].shape == (14,)
@@ -371,37 +371,6 @@ else:
     raise AssertionError("singular filament unexpectedly produced a value")
 assert "scipy" not in sys.modules
 compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.3, 0.2]]))
-assert "scipy" in sys.modules
-"""
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
-def test_electromagnetism_distributed_defers_scipy_until_numerical_call() -> None:
-    result = _run(
-        """
-import sys
-import numpy as np
-from scirel.electromagnetism.distributed import get_deltapsi
-
-assert "scipy" not in sys.modules
-
-class Dimension:
-    size = 2
-
-class Variable:
-    dimensions = ("nzeqadim", "nreqadim")
-    units = "A/cm^2"
-
-    def __getitem__(self, key):
-        return np.ones((2, 2))
-
-class Dataset:
-    dimensions = {"nzeqadim": Dimension(), "nreqadim": Dimension()}
-    variables = {"curr_diamcurv_phi": Variable()}
-
-get_deltapsi(Dataset(), np.array([[0.2, 1.0], [0.2, 1.0]]),
-             np.array([[-0.5, -0.5], [0.5, 0.5]]))
 assert "scipy" in sys.modules
 """
     )

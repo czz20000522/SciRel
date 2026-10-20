@@ -1,4 +1,4 @@
-"""KN1DPy H/H2 Ak/Bk/Fk/Ck/Dk/Gk spatial transport coefficients."""
+"""the neutral-transport formulation H/H2 Ak/Bk/Fk/Ck/Dk/Gk spatial transport coefficients."""
 from __future__ import annotations
 
 import numpy as np

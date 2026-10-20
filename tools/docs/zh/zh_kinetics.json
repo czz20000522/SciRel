@@ -89,7 +89,7 @@
   },
   {
    "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
-   "source_sha256": "cc276e439f888bb0569ea98b5797133bf05e13d9a82a53869cfd0492cf270b28",
+   "source_sha256": "d73f4c228106bd72d62966852900bcdc21df55f0aed52735eb609c7a5298b2f5",
    "summary": "由电子温度求 H 与 H₂ 各自的 Maxwell 电子碰撞电离速率拟合。",
    "definition": "将严格正的电子温度截断至 [0.1, 2.01e4] eV，再用所选 H 或 H₂ 分支的升幂九系数 Janev 表计算 exp(polyval(log(T), a_species))×1e-6 m³/s，保持输入形状和 NumPy 多项式求值顺序。",
    "model": "Janev 的 H 与 H₂ Maxwell 电离速率拟合，不是运行时的截面积分。",
@@ -753,7 +753,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-   "source_sha256": "52c5eeafec89eb7ff2ffa43c425fb0c4cbfef83a1a2ba1a0f60db212cbb63595",
+   "source_sha256": "8ffe3f12c752c3e9a77198270627eb28069a36f44c8636fc8c8fd9cf3960fd91",
    "summary": "在每个空间单元独立归约原子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -1056,7 +1056,7 @@
   },
   {
    "asset_id": "scirel.kinetic.molecular-alpha-contraction",
-   "source_sha256": "51f59227d848f7c5b44eaa343e650292f117e84112498dac2007c2d8f6a9688f",
+   "source_sha256": "51d2225fa080dd29b2d00b949b1df5b72a4794429fa9a0855eda868c4d86650a",
    "summary": "逐空间单元将分子三类 SIG 碰撞矩阵与 Fortran 顺序展平的前态分布收缩为三个 Alpha 碰撞频率场；ni_correct 可按逐点 max(n−nHP,0) 修正离子密度。",
    "definition": "逐 k 的矩阵–向量收缩：每个家族用一个装配好的 (N,N) SIG 矩阵乘以某个前驱分布按 Fortran 顺序展平后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 家族携带 fHp_hat（以漂移 vxi 和温度 THP 为参数的 H2+ Maxwell 种子），按单元乘以 nHP[k]；H2-H 家族携带裸原子分布 fH；H2-P 家族携带质子种子 fi_hat，按 ni 缩放，其中 ni = n，或在设置 ni_correct 时按单元取 ni = max(n - nHP, 0)。",
    "model": "Fortran 顺序收缩，并包含保持顺序的最小 reshape 修复；维护回归测试在所声明的合法域内逐位复现。",
@@ -1183,7 +1183,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section",
-   "source_sha256": "9ce33d2056d7cc95b7a010ce7f9cc290cd066c5f4f2137f3dcbf2f749d623d8a",
+   "source_sha256": "d7c1ced9d9afa8b83d0984a97d0f313a99d3e67c39461d5c6ef1ed808522b169",
    "summary": "以碰撞能量（eV）为自变量，给出 H–H 弹性截面（m²）：默认使用五系数动量转移对数多项式，viscosity=True 时改用另一组五系数黏性拟合。两个分支都在 [0.03, 1.01e4] eV 上截断。负能量被拒绝，分支选择器必须是 0 维标量。",
    "definition": "将能量截断至 [0.03, 1.01e4] eV，再以所选分支的五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²（默认动量转移，选择器为真时用黏性）。截断范围之外返回端点值。",
    "model": "两个相互独立的经验截面拟合；不插值外部数据，也不对速率做积分。",
@@ -1644,7 +1644,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "b24b0c309b67aa94c3880568d8fe392c58ab87ced276f8d7285ea9ef30d8095d",
+   "source_sha256": "8b879264d702e5610fe30b556c0b6fd12cd66753f93334c319f5a3c505713439",
    "summary": "以碰撞能量（eV）为自变量，给出 H–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式，并按 np.array([E]) 约定多带一个前导单例轴。负能量被拒绝。",
    "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。结果比输入多一个前导单例轴，即 np.array([E]) 包装约定。",
    "model": "单一所声明的截面拟合；不插值外部数据，也不对速率做积分。",
@@ -1791,7 +1791,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "d728e0b11f6b8fa44e9aaac28e4cf2632de74a6ece00ee4a7b95baef310f238a",
+   "source_sha256": "05afcb7ce535938fc1ca4a5d53985cc6938d7c3acb59faf77b068dbe7b90951c",
    "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）：默认使用九系数 Janev 对数多项式，freeman=True 时改用 Freeman–Jones 解析拟合。两个分支各自在截断后的能量范围上求值，因此拟合域外返回端点值。负能量和非标量分支选择器被拒绝。",
    "definition": "默认分支将能量截断至 [0.1, 2.01e4] eV，返回 exp(polyval(log(E_clipped), a))×1e-4 m²（a 为九系数 Janev 表）。freeman=True 分支截断至 [0.1, 1e5] eV，返回 1e-4×0.6937e-14×(1−0.155 log10(E_clipped))²/(1+0.1112e-14 E_clipped^3.3) m²。两个截断范围之外都返回端点值。",
    "model": "两个独立的所声明截面拟合；不插值外部数据，也不对速率做积分。",
@@ -2738,7 +2738,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-ion-state-reduction",
-   "source_sha256": "96b4d665c8c2bb9b4c9de38863b299a94c3e61c563205174cf90219731b1e395",
+   "source_sha256": "7883cbe019a769c1f101b0d626de9533c426288dfd720250b3b9cfb7cf3b1b91",
    "summary": "由显式H₂/中性密度、离子温度与反应率求终态H₂⁺密度、温度、解离及能量交换剖面。",
    "definition": "对每个空间格 k，dissociation_frequency=neutral_density[k]*sum(reaction_rate_table[k,7:11])，energy_exchange_frequency=(7.7e-7*neutral_density[k]*1e-6)/(sqrt(mass_ratio)*ion_temperature[k]^1.5)，并保持所声明的算术顺序。H2+ 密度分母是 dissociation_frequency+loss_frequency，必须有限且严格为正。分子离子密度等于 molecular_density*neutral_density*ionization_rate 除以该分母。分子离子温度等于 ion_temperature*energy_exchange_frequency 除以 energy_exchange_frequency 加密度分母；其分母也必须有限且严格为正。",
    "model": "终态分子离子代数状态归约，速率表由调用者提供。",
@@ -2918,7 +2918,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-pressure-temperature-reduction",
-   "source_sha256": "8bb0f13e28dc548aee4be6077a1f07ff38f2bc676b331270ce9e28ac82836c9b",
+   "source_sha256": "60c67455da31183184072e8477a4d78423cb0f13e000faf55c95de8c15417315",
    "summary": "用显式热速度、质量比和柱坐标求积计算终态H₂中心压力与温度。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，并遵循所声明的逐格矩阵–向量和径向归约顺序。中心化归一化速度平方为 vr[i]^2+(vx[j]-flux/(density*Vth))^2。压力为其加权分布积分乘以 2*mass_ratio*1.6726231e-27*Vth^2/(3*1.602177e-19)；温度为压力/密度。每个空间格的密度必须严格为正，但单个权重可以为零。",
    "model": "终态 H₂ 中心矩诊断，质量比和热速度由调用者提供。",
@@ -3172,7 +3172,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-flux-velocity-reduction",
-   "source_sha256": "fbdd9ed09e0f6023b01f629f870f0ce6a5ff5d0cdd21ccce2824947bee5be46d",
+   "source_sha256": "a6e7138068f25ab3f29a43fda6ddf77ba2a7ccbe5cce20998fcf5decded2a6d3",
    "summary": "用调用者热速度及径向/轴向求积将终态 H₂ 分布归约为轴向通量和平均速度；允许零权重单元，只要求每个空间格积分密度为正，且不计算高阶矩。",
    "definition": "每空间格按矩阵向量乘及径向加和顺序计算 n=Σ_i w_iΣ_j f_ijk dvx_j，Γ=VthΣ_i w_iΣ_j vx_j f_ijk dvx_j，u=Γ/n。单元权重可零，但每格积分密度必须正。",
    "model": "终态 H₂ 诊断，热速度由调用者提供。",
@@ -3364,7 +3364,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
-   "source_sha256": "ead3a4cee7513f13435da9dd881c7c6e2211c88b593e30330e786a11d04b1982",
+   "source_sha256": "16f976d441a160adf8bb50c75d9762e5880944d32bf07370ae4ddc1c0927e980",
    "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -4331,7 +4331,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
-   "source_sha256": "5b9ef421cccf534b193c12324628cbb584c076669093fad235b67abc7f953aac",
+   "source_sha256": "c03fa530cdc6422c04984196ca5ff927db0e4a43b5550c51cbd1df8ae81fb6d1",
    "summary": "由成对的等离子体温度和碰撞能量样本（eV）计算 H + H⁺ 电荷交换 Maxwell 速率系数拟合。",
    "definition": "先将正温度和不可负的碰撞能量依次截断至 [0.1, 2.01e4] eV。令 L_T=log(T)、L_E=log(E)，按能量外层、温度内层的累加顺序和 9×9 系数表累加 log_rate=Σ_j=0..8 Σ_i=0..8 a[i,j]*L_E^j*L_T^i。返回 exp(log_rate)×1e-6 m³/s。输出保持成对输入形状。",
    "model": "9×9 二元对数速率拟合，不是在速度网格上积分 Maxwell 分布。",
@@ -4402,7 +4402,7 @@
   },
   {
    "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "a41052c0f72e18c7e35e444464d0a110220e33e5da9ac9fe232c262b824caab9",
+   "source_sha256": "3569d8bae7639609c024c6fd8a2f7fe764d5064d4fdc2a576b2dee9ff66124cd",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂–H⁺ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式。负能量被拒绝。",
    "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。截断范围之外返回端点值。",
    "model": "单一所声明的截面拟合；不插值外部数据，也不对速率做积分。",
@@ -4704,7 +4704,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
-   "source_sha256": "d6d5a9bd1b301add892019c5bda3db1b4ec9a31163ed2f5f5f56bd95796dd601",
+   "source_sha256": "c1608f93a819662d8cc30ceb07e379ec4b67a7867dac92b6c7f7340055267b0f",
    "summary": "由终态H₂分布、有符号碰撞右端和外部源求损失、热能、动量及总能量传递剖面。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，遵循所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。损失为 external_source 减去加权 RHS 积分。热传递为 0.5*m*Vth^2 乘以 c_squared*RHS 的加权积分。动量传递为 m*Vth 乘以 c_x*RHS 的加权积分。总传递为 thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2。在有限精确算术下，总传递等于 0.5*m*Vth^2 乘以 (vr^2+vx^2)*RHS 的加权积分，且与外部源输入无关。",
    "model": "在显式碰撞 RHS 和外部分子源上的终态 H₂ 损失、动量与能量传递诊断。",
@@ -4835,7 +4835,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "be923e758e9b02b179b362b66cefe3220798d05500d36e2520f9928015674173",
+   "source_sha256": "85736924cab7c9a200ce398871e909839386189ac3e883e325ff0fd17d3864e0",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式。选择器校验保留：viscosity=True 选择所声明的同一拟合回退，选择器必须是标量布尔或整数。负能量被拒绝。",
    "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。viscosity=True 选择所声明的回退，仍求同一动量转移拟合。截断范围之外返回端点值。",
    "model": "单一所声明的截面拟合，附一个所声明的无操作回退选择器；不插值外部数据，也不对速率做积分。",
@@ -5012,7 +5012,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "673270ddd22a29da94f68d926a6829e15b37bfbf400b5279214bca744ac457ea",
+   "source_sha256": "30bfe5ce11293f7b8f805ab291fc6591656158efa01a45d3c170916485334ad9",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂ + H₂⁺ 电荷交换截面（m²）：在截断后的 [0.1, 2.01e4] eV 域上求值的九系数 Janev 对数多项式，因此拟合范围之外返回端点值。负能量被拒绝。",
    "definition": "将能量截断至 [0.1, 2.01e4] eV，再以九系数 Janev 表 a 计算 exp(polyval(log(E_clipped), a))×1e-4 m²。截断范围之外返回端点值。",
    "model": "单一所声明的截面拟合；不插值外部数据，无替代分支，也不对速率做积分。",
@@ -5733,7 +5733,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
-   "source_sha256": "5d7b7a93e6e33c75c8db188c4cd8698d21f9cb06f6cf6468c481b90c26323741",
+   "source_sha256": "61d23889a8499cf1678795b7ddc2d239098a3cbd84ba27b0ea3d7ffd465d1b4f",
    "summary": "由成对的等离子体温度和碰撞能量样本（eV）计算 H₂ + H₂⁺ 电荷交换 Maxwell 速率系数拟合。",
    "definition": "先将正温度和不可负的碰撞能量依次截断至 [0.1, 2.01e4] eV。令 L_T=log(T)、L_E=log(E)，按能量外层、温度内层的累加顺序和分子 9×9 系数表累加 log_rate=Σ_j=0..8 Σ_i=0..8 a[i,j]*L_E^j*L_T^i。返回 exp(log_rate)×1e-6 m³/s。输出保持成对输入形状。",
    "model": "分子 H₂ 的 9×9 二元对数速率拟合，不是在速度网格上积分 Maxwell 分布。",
@@ -5913,7 +5913,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-heat-flux-reduction",
-   "source_sha256": "89fe57c552f71342bd8a5fc2dd0bea65f1ab3f64dfd6e6e33237d052def7f01c",
+   "source_sha256": "d149b89dfe279c5e2fd86c4e275538c802b343d1f51c07d357743d1587b6c16d",
    "summary": "用显式质量、热速度和柱坐标求积计算终态H₂随机能流与总轴向能流。",
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，使用所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。随机通量为 0.5*m*Vth^3 乘以 c_squared*c_x*f 的加权积分。压力为 m*Vth^2/(3*1.602177e-19) 乘以 c_squared*f 的加权积分，轴向应力为 m*Vth^2/1.602177e-19 乘以 c_x^2*f 的加权积分再减去压力。总通量为 (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux。在有限精确算术下，它等于原始动能通量 0.5*m*Vth^3 乘以 (vr^2+vx^2)*vx*f 的加权积分。",
    "model": "终态 H₂ 能量矩热通量诊断，质量比和热速度由调用者提供。",
@@ -6173,7 +6173,7 @@
   },
   {
    "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
-   "source_sha256": "b49f6dfa1b0347d64a2726f97ac84728bd06e6315ce7ec42e1ba80d99ee0c921",
+   "source_sha256": "20ce699dd00912e92d75ebda15ceeb2310c7209b1ddc4c0f2198a826269cda2f",
    "summary": "比较总H₂热流的轴向差分与相邻单元总能量传递率的均值，给出全局归一化残差。",
    "definition": "区间k取q1=(flux[k+1]−flux[k])/(x[k+1]−x[k])，q2=(transfer[k+1]+transfer[k])/2；末节点两者置零。N为两整数组绝对值的共同最大值，须正有限；返回abs(q1−q2)/N。末零是约定，不是边界方程核验；残差可超过1。",
    "model": "在调用者拥有的入射剖面上做终态 H₂ 总能量剖面诊断。",
@@ -7197,7 +7197,7 @@
   },
   {
    "asset_id": "scirel.kinetic.atomic-alpha-contraction",
-   "source_sha256": "dee251891602a9e55c57ed703120c7ad220869d15fc30c08f532ce5ff1fc4330",
+   "source_sha256": "d87ea356966161f6c7b9f4eeb5b381784a88b436a22c8598be5d38e6f0486b4f",
    "summary": "逐空间单元将原子氢四类已组装 SIG 矩阵与 Fortran 展平的输入分布收缩为 Alpha 碰撞频率。",
    "definition": "逐 k 的矩阵–向量收缩：每个族将一个已组装的 (N,N) SIG 矩阵乘以一个输入分布按 Fortran 顺序展平到 (nvr*nvx,) Work 缓冲后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 和 H-P 族携带按单元以 ni[k] 缩放的 fi_hat；H-H2 和 H-H 族携带裸分布 fH2 和 fH。",
    "model": "所声明合法域上逐 k 的原子四族 SIG 矩阵收缩。",
@@ -7829,7 +7829,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
-   "source_sha256": "92d249285848a097758062824ef7cda9003e42844d310705f4fafbb4c39d015f",
+   "source_sha256": "1add968bb3b0d91a9b030102ce5c4d7640e40132c0da7e7429cbf94b8156b246",
    "summary": "由电子温度计算 H⁺ + e → H(1s) + hν 的解析速率系数。",
    "definition": "将严格正的电子温度截断至 [0.1, 2.01e4] eV。取 Ry=13.58 eV、n=1、A_nl=3.92、x_nl=0.35，令 ionization_energy=Ry/n、b_n=ionization_energy/T。按所声明的算术顺序返回 A_nl*1e-14*sqrt(ionization_energy/Ry)*(b_n^1.5/(b_n+x_nl))*1e-6 m³/s。",
    "model": "固定常数的 1 能级 Storey 型解析拟合；不插值外部数据，也不在运行时做截面积分。",

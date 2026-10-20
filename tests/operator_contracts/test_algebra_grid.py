@@ -1,4 +1,4 @@
-"""Independent checks for the bounded TORAX algebra/grid leaf family."""
+"""Independent checks for the bounded the profile convention algebra/grid leaf family."""
 import numpy as np
 import pytest
 from decimal import Decimal, localcontext

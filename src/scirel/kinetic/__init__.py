@@ -94,7 +94,7 @@ __all__ = ['assemble_frank_egedal_pressure',
  'solve_fluid_bonk',
  'assemble_fluid_em',
  'solve_fluid_em',
- 'render_fluid_materials']
+]
 
 _LAZY_EXPORTS = {'assemble_frank_egedal_pressure': ('frank_egedal_pressure_state', 'assemble_frank_egedal_pressure'),
  'evaluate_frank_egedal_radial_envelope': ('frank_egedal_radial_envelope', 'evaluate_frank_egedal_radial_envelope'),
@@ -196,7 +196,6 @@ _LAZY_EXPORTS = {'assemble_frank_egedal_pressure': ('frank_egedal_pressure_state
  'solve_fluid_bonk': ('fluid_spectrum', 'solve_fluid_bonk'),
  'assemble_fluid_em': ('fluid_spectrum', 'assemble_fluid_em'),
  'solve_fluid_em': ('fluid_spectrum', 'solve_fluid_em'),
- 'render_fluid_materials': ('fluid_spectrum', 'render_fluid_materials'),
  'evaluate_gpdf_small_k': ('generalized_dispersion', 'evaluate_gpdf_small_k')}
 
 # Keep the child-module facade discoverable without importing every scientific

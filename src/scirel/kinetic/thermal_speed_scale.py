@@ -1,9 +1,6 @@
 """Explicit scalar thermal-speed scale for neutral species.
 
-One leaf recovered from the saved KN1DPy ``热速度标度换算`` package (source
-anchor ``KN1DPy/kinetic_h2.py:1360-1371``, the temperature/mass combination
-of the source-entry dual-branch graphs, as recorded by the saved bundle's own
-provenance section), integrated as :func:`compute_thermal_speed_m_s`:
+One leaf recovered from the saved the neutral-transport formulation ``热速度标度换算`` package, integrated as :func:`compute_thermal_speed_m_s`:
 
 the explicit second-moment thermal speed scale
 ``sqrt(2 e T_ev / (m_amu * m_H))`` with the source's frozen constants

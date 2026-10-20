@@ -112,8 +112,7 @@
    "Three optional digest-pinned reference cases compare two finite carriers exactly and document the boolean-coercion divergence."
   ],
   "tests": [
-   "tests/operator_contracts/test_terminal_molecular_conservation.py",
-   "tests/operator_contracts/test_terminal_molecular_conservation_l1.py"
+   "tests/operator_contracts/test_terminal_molecular_conservation.py"
   ],
   "evidence_ceiling": "Direct tests establish this discrete diagnostic on tested profiles; they do not establish the incident total-profile normalization, the full boundary balance, qualification of the whole closure or expert approval.",
   "known_limitations": [

@@ -1,4 +1,4 @@
-"""Assemble the explicit neutral Boltzmann RHS state used by KN1DPy diagnostics."""
+"""Assemble the explicit neutral Boltzmann RHS state used by the neutral-transport formulation diagnostics."""
 from __future__ import annotations
 
 import numpy as np

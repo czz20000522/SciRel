@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
 FAST_ION_ASSET_ID = "scirel.plasma.fast-ion-heating"
-PDRF_ASSET_IDS = {
+ASSET_IDS = {
     "scirel.kinetic.spectral-plasma-state", "scirel.kinetic.spectral-temporal-matrix",
     "scirel.kinetic.spectral-temporal-spectrum", "scirel.kinetic.spectral-dispersion-scan",
 }
@@ -132,8 +132,8 @@ def test_contract_schemas_and_dependency_closed_examples_parse(tmp_path):
     assert asset_schema["$schema"].endswith("2020-12/schema")
     assert release_schema["properties"]["schema"]["const"] == "scirel.catalog-release"
     assert len(documents) == EXAMPLE_CLOSURE_COUNT
-    assert len([doc for doc in documents if doc["asset_id"] not in PDRF_ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(PDRF_ASSET_IDS) - 1
-    assert {doc["asset_id"] for doc in documents} >= PDRF_ASSET_IDS
+    assert len([doc for doc in documents if doc["asset_id"] not in ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(ASSET_IDS) - 1
+    assert {doc["asset_id"] for doc in documents} >= ASSET_IDS
     assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [FAST_ION_ASSET_ID]
     assert any("graph" in item for item in documents)
     assert any("graph" not in item for item in documents)
@@ -268,8 +268,8 @@ def test_runtime_signatures_tests_and_examples_are_executable(tmp_path):
     report = json.loads(completed.stdout)
     assert report["asset_count"] == EXAMPLE_CLOSURE_COUNT
     assert FAST_ION_ASSET_ID in report["asset_ids"]
-    assert PDRF_ASSET_IDS <= set(report["asset_ids"])
-    assert len([asset_id for asset_id in report["asset_ids"] if asset_id not in PDRF_ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(PDRF_ASSET_IDS) - 1
+    assert ASSET_IDS <= set(report["asset_ids"])
+    assert len([asset_id for asset_id in report["asset_ids"] if asset_id not in ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(ASSET_IDS) - 1
     assert report["runtime_checked"] is True
     assert report["runtime_origin"] == "source"
     assert report["examples_executed"] is True
@@ -277,7 +277,7 @@ def test_runtime_signatures_tests_and_examples_are_executable(tmp_path):
 
 def test_external_project_catalog_is_not_a_scirel_input():
     with pytest.raises(AssetDocumentError):
-        load_document_set(ROOT / "catalog" / "torax-algebra-grid")
+        load_document_set(ROOT / "catalog" / "algebra-grid")
 
 
 def test_catalog_can_bind_a_git_revision_and_source_version(tmp_path, release_examples):

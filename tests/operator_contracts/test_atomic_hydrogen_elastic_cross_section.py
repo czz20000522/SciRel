@@ -1,7 +1,6 @@
 """Direct contract tests for ``scirel.collisions.atomic_hydrogen_elastic_cross_section``.
 
-The saved KN1DPy leaf (source anchor ``KN1DPy/sigma/sigma_el_h_h.py:19-38``,
-caller ``KN1DPy/kinetic_h.py:957``) carries two logarithmic-polynomial fits for
+The saved the neutral-transport formulation leaf carries two logarithmic-polynomial fits for
 the H-on-H elastic cross section -- momentum transfer by default, viscosity
 under the selector -- both source-clipped to ``[0.03, 1.01e4] eV``.  The tests
 assert both branches against independent evaluations, the endpoint clipping,

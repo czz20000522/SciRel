@@ -5,7 +5,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "title": {
   "zh": "Langmuir 小波数渐近频率",
@@ -85,7 +85,7 @@
  },
  "verification": {
   "tests": [
-   "tests/operator_contracts/test_gpdf_generalized.py"
+   "tests/operator_contracts/test_generalized_dispersion_models.py"
   ],
   "scope": [
    "Positive small wavenumbers, including exponentially underflowed damping returned as zero."

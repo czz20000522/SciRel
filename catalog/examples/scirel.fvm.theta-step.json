@@ -208,8 +208,5 @@
    "Single-channel unit transient coefficient only; coupled source matrices, transient-in/out factors, nonlinear coefficients, internal boundary row replacement and nonlinear solvers are excluded.",
    "Explicit and Crank-Nicolson modes have caller-dependent stability/oscillation constraints; no adaptive timestep or positivity guarantee. The implicit branch uses a banded linear solve; no global stability bound is claimed."
   ]
- },
- "references": [
-  "https://github.com/google-deepmind/torax"
- ]
+ }
 }

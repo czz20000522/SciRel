@@ -8,7 +8,7 @@ version = "0.1.0.dev11"
 description = "Scientific Relations Library"
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
-dependencies = ["numpy==2.5.4", "mpmath==1.4.1"]
+dependencies = ["numpy==2.5.4", "scipy==1.18.1", "mpmath==1.4.1"]
 license-files = ["licenses/**/*"]
 keywords = ["scientific computing", "numerical methods", "plasma physics"]
 classifiers = [
@@ -26,20 +26,11 @@ Homepage = "https://github.com/czz20000522/SciRel"
 Repository = "https://github.com/czz20000522/SciRel"
 Issues = "https://github.com/czz20000522/SciRel/issues"
 
-[project.optional-dependencies]
-scipy = ["scipy==1.18.1"]
-plot = ["matplotlib==3.11.2"]
 
 [dependency-groups]
 build = ["setuptools==84.0.0", "wheel==0.48.0"]
-optional-runtime-deps = [
-    "matplotlib==3.11.2",
-    "scipy==1.18.1",
-]
 test = [
     { include-group = "build" },
-    { include-group = "optional-runtime-deps" },
-    "netCDF4==1.7.4",
     "pytest==9.1.1",
 ]
 
@@ -49,22 +40,15 @@ test = [
 [tool.setuptools]
 include-package-data = false
 
+[tool.setuptools.package-data]
+"scirel.kinetic.dispersion" = ["_data/*"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["scirel", "scirel.*"]
 exclude = [
     "scirel._framework_compositions",
     "scirel._framework_compositions.*",
-]
-
-[tool.setuptools.package-data]
-"scirel.kinetic" = ["_fluid_native/*.m"]
-"scirel.kinetic.dispersion" = [
-    "_native/scirel_prepare_plot.m",
-    "_native/current/**/*",
-    "_native/examples/*",
-    "_native/finiteN/*",
-    "_native/legacy/*",
 ]
 
 [tool.pytest.ini_options]

@@ -1,4 +1,4 @@
-"""KN1DPy finite-generation neutral accumulation state update."""
+"""the neutral-transport formulation finite-generation neutral accumulation state update."""
 
 from __future__ import annotations
 

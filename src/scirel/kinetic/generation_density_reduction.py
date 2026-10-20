@@ -1,8 +1,6 @@
 """Neutral generation-distribution density reduction.
 
-One leaf recovered from the saved KN1DPy ``中性分布密度归约`` package (source
-anchors ``KN1DPy/kinetic_h.py:1410-1424`` and ``kinetic_h2.py:1548-1573``, as
-recorded by the saved bundle's own provenance), integrated as
+One leaf recovered from the saved the neutral-transport formulation ``中性分布密度归约`` package, integrated as
 :func:`reduce_generation_density`:
 
 the per-spatial-cell density of one neutral generation, reducing a

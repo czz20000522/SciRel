@@ -2,7 +2,7 @@
 from functools import lru_cache
 import operator
 import numpy as np
-from ._gpdf_pole_data import POLES
+from ._generalized_pole_data import POLES
 
 __all__=['evaluate_faddeeva_gpdf','evaluate_faddeeva_dr',
          'evaluate_maxwellian_fft','evaluate_maxwellian_jpole']

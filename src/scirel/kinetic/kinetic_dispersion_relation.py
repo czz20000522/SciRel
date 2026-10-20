@@ -9,7 +9,7 @@ __all__ = ["evaluate_kinetic_dispersion_relation"]
 def probe_frequency(*, omega_frac, wn):
     """Scale the caller's angular-frequency fraction by the graph's own normalisation.
 
-    This is a bounded scalar affine adapter. The source driver writes its frequency probe
+    This is a bounded scalar affine adapter. The declarationr writes its frequency probe
     as a fraction of its own normalisation frequency (``w=wf(p)*wcn``), so the caller gives
     the dimensionless fraction and the graph supplies the ``wn`` it derived from the same
     equilibrium controls. No source-captured absolute frequency enters the call.
@@ -68,7 +68,7 @@ def evaluate_kinetic_dispersion_relation(
 
     ``omega_frac`` and ``kx_frac`` are dimensionless fractions; the graph derives ``wn``,
     ``kn`` and the absolute ``omega``/``kx`` itself from the caller's raw equilibrium
-    controls. ``kz`` is the source driver's own absolute parallel wavenumber.
+    controls. ``kz`` is the declarationr's own absolute parallel wavenumber.
     """
     # Resolve the scale operator first so its established input validation runs before
     # loading the two determinant implementations and their numerical helpers.

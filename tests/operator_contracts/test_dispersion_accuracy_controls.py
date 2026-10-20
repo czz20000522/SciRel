@@ -7,7 +7,7 @@ from scirel.kinetic.dispersion import multifluid, parallel
 
 pytestmark = pytest.mark.skipif(
     shutil.which("octave") is None,
-    reason="PDRK accuracy controls require GNU Octave",
+    reason="the kinetic dispersion formulation accuracy controls require GNU Octave",
 )
 
 @pytest.mark.parametrize('api',['fluid_solve_state','continue_em1d'])

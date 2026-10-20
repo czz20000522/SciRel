@@ -112,7 +112,7 @@
  "example": {
   "description": "Select a declared Maxwellian pole table with the pure-Python operator.",
   "code": "from scirel.kinetic.dispersion.rational import pole_table\nr = pole_table('es1d', 8)\nassert r['state']['czj'].size == 8",
-  "expected": "PASS: .venv/bin/python runs the table selection on macOS without GNU Octave."
+  "expected": "PASS: .venv/bin/python runs the table selection on macOS without the declared local Python runtime."
  },
  "verification": {
   "scope": [

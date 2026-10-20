@@ -1,7 +1,6 @@
 """Direct contract tests for ``scirel.collisions.molecular_hydrogen_charge_exchange_cross_section``.
 
-The saved KN1DPy leaf (source anchor ``KN1DPy/sigma/sigma_cx_hh.py:5-23`` with
-``KN1DPy/sigma/poly.py:3-10``) is a source-free Janev logarithmic-polynomial
+The saved the neutral-transport formulation leaf is a source-free Janev logarithmic-polynomial
 fit for the H2 + H2+ charge-exchange cross section, source-clipped in energy.
 The tests assert the clipped branch against an independent evaluation, the
 documented endpoint clipping, and the fail-closed contracts.  One documented

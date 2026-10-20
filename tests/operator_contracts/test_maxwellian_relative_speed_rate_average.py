@@ -1,6 +1,6 @@
 """Direct contract tests for ``scirel.collisions.maxwellian_relative_speed_rate_average``.
 
-The relation is the saved KN1DPy ``make_sigmav`` slice: a monoenergetic particle
+The relation is the saved the neutral-transport formulation ``make_sigmav`` slice: a monoenergetic particle
 directed along the axial velocity axis is averaged, through a caller-supplied
 cross section, against a discretized Maxwellian target on a cylindrical
 ``(vr, vx)`` velocity mesh with caller-supplied cell volumes.  The maintained

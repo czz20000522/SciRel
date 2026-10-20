@@ -1,15 +1,12 @@
 # SciRel
 
-SciRel 是一个自包含的 Python 科学计算库：把聚变、等离子体与相关数值方法整理为可复用的科学函数
-（Operator）和组合入口（TaskGraph），以标准 Python 包交付。库本身只依赖代码、测试与正式资产合同；
-来源项目、拆解过程与历史工作记录不属于本仓库。
+SciRel 是一个自包含的 Python 科学计算库：把聚变、等离子体与相关数值方法整理为可复用的科学函数，以标准 Python 包交付。
+库本身只依赖代码、测试与正式资产合同；来源项目、拆解过程与历史工作记录不属于本仓库。
 
 ## 安装与使用
 
 ```bash
-pip install scirel            # NumPy + mpmath 核心
-pip install scirel[scipy]     # 需要 SciPy 调用能力
-pip install scirel[plot]      # 需要绘图能力
+pip install scirel            # NumPy + SciPy + mpmath
 ```
 
 ```python
@@ -41,7 +38,7 @@ tests/                 # 功能测试（占绝大多数）与少量发布测试
 catalog/examples/      # 每个功能的正式资产合同（machine-readable）
 tools/docs/            # 双语手册构建器、目录与中文阅读层
 scripts/               # 构建、catalog、文档与安装校验工具
-contracts/             # 资产合同 schema
+contracts/             # 资产合同 schema、准入与接收规则
 licenses/              # 许可与来源署名
 ```
 
@@ -51,14 +48,11 @@ licenses/              # 许可与来源署名
 测试以数值对照为准，修改实现必须保持既有断言与容差。开发环境、验证命令和贡献规则见
 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
-当前处于首次公开发布前的开发阶段，不发布 wheel，也不维护发行回执；发布基线确定后再统一冻结。
+当前处于首次公开发布前的开发阶段；wheel 仅用于本地 development 验收，发布基线确定后再统一冻结。
 
 ## English
 
-SciRel is a self-contained Python library for scientific computing. It packages reusable
-scientific operators and task graphs behind plain Python callables, with NumPy-only core
-dependencies and optional SciPy/plot extras. Each public function carries a formal asset
-contract that defines its model, inputs/outputs, units, applicability and failure behavior.
+SciRel is a self-contained Python library for scientific computing. It packages reusable scientific functions behind plain Python callables, with NumPy, SciPy and mpmath as core dependencies; plotting and file-format adapters are not part of the library. Each public function carries a formal asset contract that defines its model, inputs/outputs, units, applicability and failure behavior.
 The bilingual manual is generated from those contracts. The repository keeps only the
 implementation, its tests, the contracts and the documentation pipeline; the project is
 pre-release and does not publish wheels yet.

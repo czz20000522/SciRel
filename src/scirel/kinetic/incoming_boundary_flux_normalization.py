@@ -1,8 +1,6 @@
 """Incoming neutral boundary-flux normalization over the positive-vx half.
 
-One leaf recovered from the saved KN1DPy ``入射中性边界通量归一化`` package
-(source anchor ``KN1DPy/kinetic_h.py:600-616`` and ``kinetic_h2.py:715-731``,
-as recorded by the saved bundle's own provenance), integrated as
+One leaf recovered from the saved the neutral-transport formulation ``入射中性边界通量归一化`` package, integrated as
 :func:`normalize_incoming_neutral_boundary`:
 
 scale a caller-owned H or H2 boundary shape distribution on the positive

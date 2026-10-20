@@ -108,10 +108,7 @@
    "tests/domain_contracts/equilibrium/test_analysis_families.py",
    "tests/domain_contracts/equilibrium/test_analysis_corrections.py",
    "tests/domain_contracts/equilibrium/test_curvature_consumer.py",
-   "tests/domain_contracts/equilibrium/test_fieldline_geometry_repair.py",
-   "tests/domain_contracts/equilibrium/test_fieldline_t7_precision.py::test_t7_default_cubic_affine_gradient",
-   "tests/domain_contracts/equilibrium/test_fieldline_t7_precision.py::test_t7_field_curvature_spatial_refinement",
-   "tests/domain_contracts/equilibrium/test_fieldline_t7_precision.py::test_curvature_constant_field_scale_does_not_create_a_null"
+   "tests/domain_contracts/equilibrium/test_fieldline_geometry_repair.py"
   ],
   "evidence_ceiling": "Named-fixture technical evidence for this repository's own tests. It does not establish arbitrary-input correctness, experimental validation or human endorsement.",
   "known_limitations": [

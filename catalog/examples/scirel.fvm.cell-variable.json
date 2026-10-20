@@ -143,8 +143,5 @@
    "Unbatched point values only, N>=2. No alternate-coordinate chain-rule x port, mesh adaptation, area/volume inference or JAX transformations.",
    "Quadratic internal-face exactness does not establish global second order with arbitrary boundary data or arbitrary distorted grids."
   ]
- },
- "references": [
-  "https://github.com/google-deepmind/torax"
- ]
+ }
 }

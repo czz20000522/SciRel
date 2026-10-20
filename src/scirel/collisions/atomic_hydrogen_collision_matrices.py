@@ -1,7 +1,7 @@
 """Source-free assembly of the atomic four-family SIG collision matrices.
 
 Reproduces the double-velocity-space (``vr,vx``) x (``vr',vx'``) collision-operator
-assembly of KN1DPy ``kinetic_h.py:888-1018`` for the atomic four families:
+assembly of the neutral-transport formulation ``kinetic_h.py:888-1018`` for the atomic four families:
 
 - ``SIG_CX``   : H + H+  charge exchange,    weight ``Vr2pidVrdVx``
 - ``SIG_H_H``  : H-H     elastic, viscosity  weight ``Vr2pidVrdVx``
@@ -16,7 +16,7 @@ in the elastic families are intrinsic (signed
 
 Physical energy convention: the input to each fit is the equivalent hydrogen
 projectile laboratory energy with a stationary target. For H/D momentum
-transfer KN1D section 2.1.2.6 maps E_D to E_D/2; for viscosity it maps E_D to
+transfer the neutral-transport formulation section 2.1.2.6 maps E_D to E_D/2; for viscosity it maps E_D to
 E_D. Thus mixed/CX factors are Tnorm/mu and self viscosity is Tnorm.
 Default five-angle midpoint integration is approximate. n_theta enables an
 explicit angular convergence study; fit fidelity is not universal accuracy.
@@ -73,7 +73,7 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     mu : float, normalized mass of the colliding species (default 1.0 = H).
 
     n_theta : int, keyword-only
-        Positive midpoint azimuth count; default 5 retains the KN1D rule.
+        Positive midpoint azimuth count; default 5 retains the neutral-transport formulation rule.
         Increase and verify convergence for the caller's velocity grid.
 
     Returns

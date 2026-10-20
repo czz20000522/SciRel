@@ -11,7 +11,7 @@ A target state uses the difference to a supplied number/flow/energy-conserving t
 independently in each spatial cell. There is no global accumulator sentinel.
 At a zero denominator the rate is NaN with defined=False, while finite
 collision moments are returned. No floor, positivity clipping or equilibrium
-linearization is inferred. The original KN1D model is a moment-matched BGK
+linearization is inferred. The original the neutral-transport formulation model is a moment-matched BGK
 approximation; finite-grid quadrature does not guarantee exact Maxwell balance.
 """
 from ._elastic_moments import reduce_elastic_moments

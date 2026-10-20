@@ -1,4 +1,4 @@
-"""Public multifluid PDRK operators and the packaged SI example deck."""
+"""Public multifluid the kinetic dispersion formulation operators and the packaged SI example deck."""
 
 from . import _fluid_parallel as _core
 from ._example_support import fluid_deck

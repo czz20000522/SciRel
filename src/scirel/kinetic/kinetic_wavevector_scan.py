@@ -12,7 +12,7 @@ __all__ = ["scan_kinetic_wavevectors"]
 def scan_frequencies(*, omega_scale, omega_step, omega_stop, wn):
     """Materialise the source's colon ladder ``xx=(0.11:0.05:3.95).*wn`` internally.
 
-    The frozen source writes the whole ladder as a literal colon expression
+    The declared formulation writes the whole ladder as a literal colon expression
     (``bonk/main_tst.m:88`` builds ``xx=(0.11:0.05:3.95).*wcn+0*wcn``), so the ladder
     length ``nx=length(xx)`` is itself a source-program fact rather than an external
     argument. This adapter therefore takes only the three written bounds and derives both
@@ -90,7 +90,7 @@ def scan_kinetic_wavevectors(
 ):
     """Return the equilibrium state, the derived scan grid and the per-frequency roots.
 
-    ``kz`` is the source driver's own absolute parallel wavenumber (``bonk/main_tst.m:37``
+    ``kz`` is the declarationr's own absolute parallel wavenumber (``bonk/main_tst.m:37``
     writes ``kz=2*5.0`` and ``:50`` writes ``kz=0.0``); it is a caller-owned physical
     control in 1/m and is not reconstructed from any source-derived reference wavenumber.
     The frequency ladder bounds are the source's written colon expression, so both the

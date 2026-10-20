@@ -1,7 +1,6 @@
 """Atomic-hydrogen elastic cross-section fits.
 
-One leaf recovered from the saved KN1DPy ``sigma_el_h_h`` slice (source anchor
-``KN1DPy/sigma/sigma_el_h_h.py:19-38``, caller ``KN1DPy/kinetic_h.py:957``),
+One leaf recovered from the saved the neutral-transport formulation ``sigma_el_h_h`` slice,
 integrated as :func:`evaluate_atomic_hydrogen_elastic_cross_section`:
 
 the H-on-H elastic cross section in ``m^2`` as a function of the collision
@@ -29,7 +28,7 @@ finite nonnegative real inputs.
 Evidence ceiling: this module establishes both clipped fits against
 independent evaluations of the same formulas, the endpoint clipping, the input
 and failure contracts, these repairs, and -- in the environment-gated replay
-test -- exact agreement with the saved KN1DPy implementation on the declared
+test -- exact agreement with the saved the neutral-transport formulation implementation on the declared
 domain.  The saved bundle's strict D1 qualification has been withdrawn; that
 replay is historical development evidence, not qualified-L1 provenance.  No
 test establishes either fit against an external physical cross-section

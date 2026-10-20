@@ -5,7 +5,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "title": {
   "zh": "广义等离子体色散函数七类分布",
@@ -121,8 +121,8 @@
  },
  "verification": {
   "tests": [
-   "tests/operator_contracts/test_gpdf_generalized.py",
-   "tests/operator_contracts/test_gpdf_independent_corrections.py"
+   "tests/operator_contracts/test_generalized_dispersion_models.py",
+   "tests/operator_contracts/test_generalized_dispersion_independent_corrections.py"
   ],
   "scope": [
    "All original selectors 0 through 6, including exact delta/top-hat and cutoff derivative jumps.",

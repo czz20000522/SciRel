@@ -2,7 +2,7 @@
 ``propagate_neutral_generation``, ``assemble_neutral_upwind_transport_coefficients``,
 ``assemble_neutral_boltzmann_rhs``.
 
-The saved KN1DPy implementations (SHA-256 pinned in the L1 replay) are
+The saved the neutral-transport formulation implementations (SHA-256 pinned in the L1 replay) are
 reproduced bit for bit on the declared domain; no repair is claimed.
 """
 from __future__ import annotations

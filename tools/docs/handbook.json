@@ -85,14 +85,6 @@
       "scirel.electromagnetism.brb",
       "scirel.electromagnetism.wham"
      ]
-    },
-    {
-     "id": "distributed-current-data",
-     "title": "消费规则分布电流数据",
-     "introduction": "从真实 netCDF 协议读取 A/cm² 环向电流层，转换 SI 电流后按均匀源网格离散收缩及插值。可叠加层没有时间演化含义，零自单元响应不证明连续体收敛。",
-     "assets": [
-      "scirel.electromagnetism.distributed-current-flux"
-     ]
     }
    ]
   },
@@ -328,8 +320,7 @@
      "assets": [
       "scirel.kinetic.gpdf-cauchy-transform",
       "scirel.kinetic.maxwellian-electrostatic-mode",
-      "scirel.kinetic.maxwellian-electrostatic-solver",
-      "scirel.kinetic.faddeeva-finite-order"
+      "scirel.kinetic.maxwellian-electrostatic-solver"
      ]
     },
     {
@@ -382,43 +373,12 @@
      "tutorial_id": "kinetic-initial-value"
     },
     {
-     "id": "magnetized-species",
-     "title": "磁化组分与扫描坐标",
-     "introduction": "物种表与控制参数定义量纲、质量与场；损失锥分解和有符号波矢不应被隐式变换。",
-     "assets": [
-      "scirel.kinetic.species-equilibrium",
-      "scirel.kinetic.wavevector-coordinates",
-      "scirel.kinetic.loss-cone-partition"
-     ]
-    },
-    {
-     "id": "magnetized-spectrum",
-     "title": "电磁、静电本征关系与频谱",
-     "introduction": "在给定谐波和极点阶数下组装矩阵、求频率并排序；有序扫描与完整流程入口共享显式科学端口。",
-     "assets": [
-      "scirel.kinetic.electromagnetic-eigenmatrix",
-      "scirel.kinetic.electrostatic-eigenmatrix",
-      "scirel.kinetic.frequency-eigensolve"
-     ]
-    },
-    {
      "id": "causal-parallel",
      "title": "平行传播的因果残差与根延续",
      "introduction": "因果色散残差用于给定分布和偏振；根延续保留种子、步进和失败状态。",
      "assets": [
       "scirel.kinetic.parallel-em-residual",
       "scirel.kinetic.parallel-em-continuation"
-     ]
-    },
-    {
-     "id": "mode-fields",
-     "title": "模态选择、极化与电磁场",
-     "introduction": "明确选根规则，再重新求解和归一化模态场；增长率排序本身不能证明跨点同一物理分支。",
-     "assets": [
-      "scirel.kinetic.magnetized-mode-fields",
-      "scirel.kinetic.seed-mode-selection",
-      "scirel.kinetic.selected-dispersion-interpolation",
-      "scirel.kinetic.preset-mode-selection"
      ]
     },
     {
@@ -475,8 +435,7 @@
       "scirel.kinetic.fluid-dispersion-response",
       "scirel.kinetic.fluid-em-matrix",
       "scirel.kinetic.fluid-bonk-search",
-      "scirel.kinetic.fluid-em-spectrum",
-      "scirel.kinetic.fluid-materials"
+      "scirel.kinetic.fluid-em-spectrum"
      ]
     }
    ]
@@ -883,46 +842,6 @@
       "scirel.io.read-eqdsk",
       "scirel.io.write-eqdsk",
       "scirel.io.eqdsk-class"
-     ]
-    },
-    {
-     "id": "equilibrium-state-export",
-     "title": "从实际磁通与压力终态导出交换文件",
-     "introduction": "旧 raw 入口从网格、磁通和电流恢复轮廓写出约定；压力后继只接受真实收敛状态并写入明确压力剖面。文件不存二维 Jφ／P，也不重建未知 F 或 q。",
-     "assets": [
-      "scirel.io.write-eqdsk-legacy-raw",
-      "scirel.io.pressure-equilibrium-eqdsk"
-     ]
-    },
-    {
-     "id": "noncore-patch-transformations",
-     "title": "按既有约定变换绘图片",
-     "introduction": "镜像浅复制图形片并反射数据变换；缩放和转置各有原位修改及返回约定。此组仅处理展示对象，不计算磁场或建立材料物理。",
-     "assets": [
-      "scirel.plotting.mirror-patches",
-      "scirel.plotting.scale-patches",
-      "scirel.plotting.transpose-patches"
-     ]
-    },
-    {
-     "id": "wave-output-data",
-     "title": "频谱与选定模态的数据产物",
-     "introduction": "从实际计算状态写出可消费数据；文件存在不代表物理分支正确。",
-     "assets": [
-      "scirel.kinetic.spectrum-artifacts",
-      "scirel.kinetic.selection-artifacts",
-      "scirel.kinetic.selected-mode-artifacts"
-     ]
-    },
-    {
-     "id": "noncore-wave-presentation",
-     "title": "波谱绘图与预设呈现",
-     "introduction": "绘图和存储场景是可选非核心辅助；存储参考表需单独核对引用与再分发条件，不作为独立科学答案。",
-     "assets": [
-      "scirel.kinetic.multifluid-plot",
-      "scirel.kinetic.parallel-em-plot",
-      "scirel.kinetic.reference-table",
-      "scirel.kinetic.reference-overlay"
      ]
     }
    ]

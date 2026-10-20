@@ -1,8 +1,6 @@
 """Atomic-hydrogen charge-exchange cross-section fits.
 
-One leaf recovered from the saved KN1DPy ``sigma_cx_h0`` slice (source anchor
-``KN1DPy/sigma/sigma_cx_h0.py:7-32`` with the shared polynomial evaluation
-``KN1DPy/poly.py:3-10``), integrated as
+One leaf recovered from the saved the neutral-transport formulation ``sigma_cx_h0`` slice, integrated as
 :func:`evaluate_atomic_hydrogen_charge_exchange_cross_section`:
 
 the H + H+ charge-exchange cross section in ``m^2`` as a function of the
@@ -29,7 +27,7 @@ branches' arithmetic is preserved on finite nonnegative real inputs.
 Evidence ceiling: this module establishes the two clipped fits against an
 independent evaluation of the same formulas, the endpoint clipping, the input
 and failure contracts, these repairs, and -- in the environment-gated replay
-test -- exact agreement with the saved KN1DPy implementation on the declared
+test -- exact agreement with the saved the neutral-transport formulation implementation on the declared
 domain.  The saved bundle's strict D1 qualification has been withdrawn; that
 replay is historical development evidence, not qualified-L1 provenance.  No
 test establishes the fits against an external physical cross-section

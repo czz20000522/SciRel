@@ -1,4 +1,4 @@
-"""Direct contract tests for the KN1DPy spatial scalar mesh handoff."""
+"""Direct contract tests for the neutral-transport formulation spatial scalar mesh handoff."""
 from __future__ import annotations
 
 import numpy as np

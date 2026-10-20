@@ -63,41 +63,6 @@ assert "matplotlib" not in sys.modules
     assert result.returncode == 0, result.stdout + result.stderr
 
 
-def test_geometry_core_imports_without_matplotlib_and_plotting_fails_at_boundary():
-    result = subprocess.run(
-        [sys.executable, '-c', '''
-import importlib.abc
-import sys
-
-class BlockMatplotlib(importlib.abc.MetaPathFinder):
-    def find_spec(self, fullname, path=None, target=None):
-        if fullname == "matplotlib" or fullname.startswith("matplotlib."):
-            raise ModuleNotFoundError("blocked optional dependency", name=fullname)
-        return None
-
-sys.meta_path.insert(0, BlockMatplotlib())
-sys.path.insert(0, sys.argv[1])
-import scirel.geometry as geometry
-assert not any(
-    name.startswith("scirel.geometry.")
-    for name in sys.modules
-)
-assert "numpy" not in sys.modules
-assert "scipy" not in sys.modules
-assert "matplotlib" not in sys.modules
-assert callable(geometry.sample_rectilinear_field)
-try:
-    geometry.scale_patches([], 2)
-except ModuleNotFoundError as error:
-    assert "optional dependency 'matplotlib'" in str(error)
-    assert "pip install scirel[plot]" in str(error)
-else:
-    raise AssertionError("plotting helper unexpectedly ran without Matplotlib")
-''', str(ROOT / 'src')], capture_output=True, text=True,
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
-
-
 def test_root_namespace_discovers_every_public_domain_package():
     result = subprocess.run(
         [sys.executable, '-I', '-c', '''
@@ -133,7 +98,7 @@ import sys
 sys.path.insert(0, sys.argv[1])
 import scirel.kinetic as kinetic
 
-assert len(kinetic.__all__) == 92
+assert len(kinetic.__all__) == 91
 assert not any(
     name.startswith("scirel.kinetic.")
     for name in sys.modules
@@ -146,7 +111,6 @@ assert not any(
     name.startswith("numpy") or name.startswith("scipy")
     for name in sys.modules
 )
-assert kinetic.fluid_spectrum.__name__ == "scirel.kinetic.fluid_spectrum"
 assert kinetic.generalized_dispersion.__name__ == "scirel.kinetic.generalized_dispersion"
 assert kinetic.dispersion.__name__ == "scirel.kinetic.dispersion"
 

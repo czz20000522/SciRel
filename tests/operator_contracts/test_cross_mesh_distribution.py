@@ -1,6 +1,6 @@
 """Direct contract tests for ``scirel.kinetic.interp_distribution_across_mesh``
 (the N5 H<->H2 cross-grid distribution interpolation, saved anchor
-``KN1DPy/interp_fvrvxx.py`` as recorded by the saved bundle's provenance).
+ as recorded by the saved bundle's provenance).
 
 The retained valid numerical assertions are checked against independent
 cylindrical moments. The corrected branch is a scientific successor rather
@@ -10,7 +10,7 @@ declared contract.
 
 The saved formal operator has no cache or w_new branch: it recomputes the
 weight matrix every call, exactly like this stateless port.  The original
-KN1DPy runtime's weight cache lifecycle lives in the source runtime, not
+the neutral-transport formulation runtime's weight cache lifecycle lives in the source runtime, not
 in the saved formal operator, so no cache-state replay is possible here.
 """
 from __future__ import annotations

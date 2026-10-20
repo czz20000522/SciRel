@@ -5,7 +5,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "title": {
   "zh": "四类 GPDF 连续根扫描",
@@ -225,7 +225,7 @@
  },
  "verification": {
   "tests": [
-   "tests/operator_contracts/test_gpdf_generalized.py"
+   "tests/operator_contracts/test_generalized_dispersion_models.py"
   ],
   "scope": [
    "All four complete grids: Langmuir19, IAW22, beam71, generalized18 points.",

@@ -7,8 +7,8 @@
    "No branch tracking, complete physical-mode enumeration or unconditional convergence."
   ],
   "preconditions": [
-   "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
-   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 GNU Octave 7.3.0 remains required."
+   "Pinned Linux amd64 the declared local Python runtime7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 the declared local Python runtime remains required."
   ],
   "supported": [
    "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
@@ -18,7 +18,7 @@
  "asset_id": "scirel.kinetic.fluid-bonk-search",
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_bonk\ns=derive_fluid_case('bonk',2)\nr=solve_fluid_bonk(2,[.63*s['wn'].item()])\n",
-  "description": "Pure Python/NumPy implementation; executes on this macOS host without Octave.",
+  "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {

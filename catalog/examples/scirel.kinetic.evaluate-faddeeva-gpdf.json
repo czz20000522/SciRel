@@ -4,7 +4,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "version": {
   "implementation_version": "0.1.0.dev11",
@@ -22,8 +22,8 @@
    "80-digit mpmath equation grid and 70-digit independent Gaussian Cauchy integrals."
   ],
   "tests": [
-   "tests/operator_contracts/test_gpdf_faddeeva_variants.py",
-   "tests/operator_contracts/test_gpdf_faddeeva_independent.py"
+   "tests/operator_contracts/test_generalized_dispersion_faddeeva_variants.py",
+   "tests/operator_contracts/test_generalized_dispersion_faddeeva_independent.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

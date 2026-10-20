@@ -228,10 +228,10 @@ def test_public_surface_resolves_current_installed_exports() -> None:
     assert errors == []
     assert details["status"] == "PASS"
     assert details["domain_count"] == 18
-    assert details["export_count"] == 249
+    assert details["export_count"] == 242
     assert details["nested_package_count"] == 1
-    assert details["nested_module_count"] == 7
-    assert details["nested_export_count"] == 37
+    assert details["nested_module_count"] == 4
+    assert details["nested_export_count"] == 19
 
 
 def test_public_surface_fails_closed_on_a_missing_export(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -251,37 +251,6 @@ def test_public_surface_fails_closed_on_a_missing_export(monkeypatch: pytest.Mon
     assert details["domain_count"] == 1
     assert details["export_count"] == 2
     assert any("fake.missing cannot be resolved" in error for error in errors)
-
-
-def test_validation_receipt_records_a_successful_optional_extra(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    class FakeMetadata:
-        def get_all(self, name: str):
-            return ["plot"] if name == "Provides-Extra" else None
-
-    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
-    monkeypatch.setattr(
-        validator,
-        "_check_distribution",
-        lambda: ({"status": "PASS"}, [], SimpleNamespace(metadata=FakeMetadata())),
-    )
-    monkeypatch.setattr(validator, "_check_dependencies", lambda requirements=None: [{"name": "numpy", "status": "PASS"}])
-    monkeypatch.setattr(
-        validator,
-        "_declared_extra_requirements",
-        lambda extra: [{"name": "matplotlib", "requirement": "matplotlib==3.11.2", "extra": extra}],
-    )
-    monkeypatch.setattr(validator, "_run_extra_smoke", lambda extra: ({"status": "PASS", "extra": extra}, []))
-    monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "PASS"}, []))
-    monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
-    monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
-
-    receipt = validator.validate_installed_wheel(extras=("plot",))
-
-    assert receipt["status"] == "PASS"
-    assert receipt["extras"]["plot"]["status"] == "PASS"
-    assert receipt["extras"]["plot"]["smoke"]["extra"] == "plot"
 
 
 def test_validation_receipt_rejects_an_undeclared_optional_extra(

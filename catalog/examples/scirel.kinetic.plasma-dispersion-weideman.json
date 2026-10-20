@@ -117,7 +117,7 @@
   "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
   "known_limitations": [
    "finite representable arguments outside numerical poles of the rational approximation",
-   "Full source/runtime qualification that uses GNU Octave on Linux amd64 is NOT_RUN in this macOS checkout."
+   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
   ]
  },
  "references": [

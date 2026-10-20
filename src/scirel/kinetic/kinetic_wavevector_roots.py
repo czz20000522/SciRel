@@ -14,7 +14,7 @@ _MACHINE_EPS = 2.220446049250313e-16
 
 
 def _dogleg(r, b, d, delta):
-    """Octave ``__dogleg__``: double-dogleg trust-region step for a 1x1 system."""
+    """the reference solver ``__dogleg__``: double-dogleg trust-region step for a 1x1 system."""
     x = b / r
     xn = abs(d * x)
     if xn > delta:
@@ -42,10 +42,10 @@ def _dogleg(r, b, d, delta):
     return x
 
 
-def _octave_fsolve(fcn, x0, tol_fun, tol_x, max_iterations, max_function_evals):
-    """Port of Octave 7.3.0 ``fsolve`` for one complex unknown.
+def _reference_fsolve(fcn, x0, tol_fun, tol_x, max_iterations, max_function_evals):
+    """Port of the declared reference solver ``fsolve`` for one complex unknown.
 
-    The source drive sets ``Display``/``TolFun``/``Tolx`` only, so the port keeps Octave's
+    The declaration sets ``Display``/``TolFun``/``Tolx`` only, so the port keeps the reference solver's
     other defaults: ``FinDiffType=forward``, ``Updating=off``, ``AutoScaling=off``,
     ``Jacobian=off``, ``ComplexEqn=off``, ``TypicalX=1``, ``MaxIter=400`` and
     ``MaxFunEvals=100*numel(x0)``.
@@ -147,7 +147,7 @@ def solve_kinetic_wavevector_roots(
     every frequency, which is what ``bonk/main_tst.m:97`` sets to ``(0.6+0i)*kn``. ``kz`` may
     be zero: the source's second test case uses ``kz=0.0``. ``tol_fun``/``tol_x`` mirror
     ``TolFun``/``Tolx`` and default to the source's ``1e-16``; ``max_function_evals`` mirrors
-    ``MaxFunEvals`` and defaults to Octave's ``100*numel(x0)=100`` for a scalar unknown.
+    ``MaxFunEvals`` and defaults to the reference solver's ``100*numel(x0)=100`` for a scalar unknown.
     """
 
     B0 = float(B0)
@@ -222,7 +222,7 @@ def solve_kinetic_wavevector_roots(
         def fcn(kx, omega=omega):
             return residual(omega, kx)
 
-        root, fval, info, niter, nfev = _octave_fsolve(
+        root, fval, info, niter, nfev = _reference_fsolve(
             fcn, seed, tol_fun, tol_x, max_iterations, max_function_evals
         )
         roots[index] = root
@@ -254,13 +254,13 @@ def solve_kinetic_wavevector_roots(
         "tol_x": tol_x,
         "max_iterations": max_iterations,
         "max_function_evals": max_function_evals,
-        "solver": "octave_fsolve_dogleg_on_fDR",
+        "solver": "reference_fsolve_dogleg_on_fDR",
     }
 
 
-# --- r22fslv2 staged FMA-contracted Octave fsolve port (patch_solver_fma.py) ---
-# FMA-contracted port of Octave 7.3.0's scalar-complex fsolve, transcribed from the frozen
-# source's own solver arithmetic. It mirrors Octave at every hard operation:
+# --- r22fslv2 staged FMA-contracted the reference solver fsolve port (patch_solver_fma.py) ---
+# FMA-contracted port of the declared reference solver's scalar-complex fsolve, transcribed from the frozen
+# source's own solver arithmetic. It mirrors the reference solver at every hard operation:
 #
 #   magnitude     -> the scaled LAPACK-style complex `norm` (NOT abs/hypot); see _norm
 #   complex *     -> _cmul  (Dekker two-product + two-sum FMA contraction)
@@ -268,12 +268,12 @@ def solve_kinetic_wavevector_roots(
 #   real * cmplx  -> _rmul  (componentwise, matching std::complex operator*(double, complex))
 #   fdjac         -> err=sqrt(eps); signp=x/|x| (0->1); h=err*signp*max(|x|,1)
 #   nfev          -> forward difference costs 1 per unknown
-#   dogleg        -> double-dogleg with the same statement order as Octave __dogleg__.m
+#   dogleg        -> double-dogleg with the same statement order as the reference solver __dogleg__.m
 #   ratios        -> actred/prered with (fn1/fn)^2, delta update 1.4142*sn, decfac^1.4142
-#   loop guards   -> identical to Octave fsolve.m (Updating=off -> single inner pass)
+#   loop guards   -> identical to the reference solver fsolve.m (Updating=off -> single inner pass)
 #
-# The frozen source's first divergent solver step on the capped rows is the magnitude function:
-# Octave's scalar-complex `norm` rounds one ULP below a correctly-rounded hypot on that operand,
+# The declared formulation's first divergent solver step on the capped rows is the magnitude function:
+# the reference solver's scalar-complex `norm` rounds one ULP below a correctly-rounded hypot on that operand,
 # so the shipped math.hypot-based port flipped the fsolve terminal there.
 
 import math
@@ -306,10 +306,10 @@ def _cmul(a, b):
 
 
 def _d(x, y):
-    """IEEE-faithful float division: Octave yields +-inf / nan on a zero divisor, it never raises.
+    """IEEE-faithful float division: the reference solver yields +-inf / nan on a zero divisor, it never raises.
 
     Python's `/` on floats is the same correctly-rounded IEEE-754 double division numpy and
-    Octave use, so this only changes the zero-divisor branch (the frozen source's own Taylor
+    the reference solver use, so this only changes the zero-divisor branch (the declared formulation's own Taylor
     series can hit ``Y^2 - I^2 == 0`` and continues with Inf/NaN rather than aborting).
     """
     try:
@@ -338,8 +338,8 @@ def _rmul(s, z):
 
 
 def _norm(z):
-    """Octave 7.3.0's scalar-complex `norm`, identified empirically (r26dog-oct2 / r26norm4/5/6/9/10):
-    NOT abs()/hypot. Octave computes the scaled LAPACK-style magnitude
+    """the declared reference solver's scalar-complex `norm`, identified empirically (r26dog-oct2 / r26norm4/5/6/9/10):
+    NOT abs()/hypot. the reference solver computes the scaled LAPACK-style magnitude
     scale=max|x|, ssq=1+sum((|x_i|/scale)^2), result=scale*sqrt(ssq), which rounds one ULP below
     correctly-rounded hypot on the row-26 call-3 input. The shipped port used math.hypot, which is
     the arithmetic seat of the first divergent solver step."""
@@ -389,7 +389,7 @@ def _dogleg_fma(r, b, d, delta):
     return x
 
 
-def _octave_fsolve_fma(fcn, x0, tol_fun, tol_x, max_iterations, max_function_evals):
+def _reference_fsolve_fma(fcn, x0, tol_fun, tol_x, max_iterations, max_function_evals):
     dg = 1.0
     x = complex(x0)
     fval = complex(fcn(x))
@@ -468,9 +468,9 @@ def _octave_fsolve_fma(fcn, x0, tol_fun, tol_x, max_iterations, max_function_eva
 
 def install(module):
     """Wire the FMA-contracted solver (and its dogleg) into a loaded workcopy module."""
-    module._octave_fsolve = _octave_fsolve_fma
+    module._reference_fsolve = _reference_fsolve_fma
     module._dogleg = _dogleg_fma
     return module
 
-_octave_fsolve = _octave_fsolve_fma
+_reference_fsolve = _reference_fsolve_fma
 _dogleg = _dogleg_fma

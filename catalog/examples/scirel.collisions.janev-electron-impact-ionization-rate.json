@@ -107,8 +107,7 @@
    "An optional external comparison test compares finite two-dimensional carriers exactly for both branches and covers three rejection differences; it runs only when an external implementation root is configured."
   ],
   "tests": [
-   "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py",
-   "tests/operator_contracts/test_janev_electron_impact_ionization_rate_l1.py"
+   "tests/operator_contracts/test_janev_electron_impact_ionization_rate.py"
   ],
   "evidence_ceiling": "The tests establish the discrete two-branch fit, clipping and failure contract on tested samples. Bit-exact agreement with an independent implementation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates either fit; public distribution licensing is absent.",
   "known_limitations": [

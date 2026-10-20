@@ -22,7 +22,7 @@ def _expansion_coefficients():
 
 
 def _polyval(a, z):
-    """MATLAB polyval semantics: a[0] is the highest-degree coefficient."""
+    """the reference environment polyval semantics: a[0] is the highest-degree coefficient."""
     p = _np.full(z.shape, a[0], dtype=_np.complex128)
     for coefficient in a[1:]:
         p = p * z + coefficient

@@ -140,7 +140,7 @@
  "example": {
   "description": "Assemble a representative ES1D frequency matrix with the pure-Python operator.",
   "code": "from scirel.kinetic.dispersion import rational\neq = rational.equilibrium('es1d', [[1, 1, 1, 1, .17]])['state']\ntab = rational.pole_table('es1d', 8)['state']\nr = rational.point_matrix('es1d', {**eq, **tab}, k=.4)\nassert r['state']['M'].shape == (8, 8)",
-  "expected": "PASS: .venv/bin/python assembles the bounded matrix on macOS without GNU Octave."
+  "expected": "PASS: .venv/bin/python assembles the bounded matrix on macOS without the declared local Python runtime."
  },
  "verification": {
   "scope": [
@@ -151,7 +151,7 @@
   "tests": [
    "tests/operator_contracts/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without GNU Octave.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without the declared local Python runtime.",
   "known_limitations": [
    "Redistribution permission for the reference material remains unresolved; this implementation does not execute the source runtime.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",

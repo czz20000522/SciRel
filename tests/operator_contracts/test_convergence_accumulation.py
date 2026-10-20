@@ -2,7 +2,7 @@
 ``evaluate_neutral_generation_stopping``, ``update_neutral_generation_accumulation``,
 ``evaluate_neutral_outer_seed_convergence``, ``evaluate_outer_convergence``.
 
-The saved KN1DPy arithmetic is retained on bounded finite inputs. SciRel
+The saved the neutral-transport formulation arithmetic is retained on bounded finite inputs. SciRel
 also validates control types, derived finiteness and caller-owned state.
 """
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""One-dimensional scalar handoff between KN1DPy species spatial meshes.
+"""One-dimensional scalar handoff between the neutral-transport formulation species spatial meshes.
 
 In-range target nodes use the saved linear interpolation; nodes outside the
 source mesh remain exactly zero. The saved bundle is historical development

@@ -1,9 +1,6 @@
 """Axisymmetric neutral velocity-space moment reduction.
 
-One leaf recovered from the saved KN1DPy ``轴对称中性分布矩归约`` package
-(source anchors ``KN1DPy/kinetic_h.py:1443-1605`` and
-``kinetic_h2.py:1612-1801``, as recorded by the saved bundle's own
-provenance), integrated as :func:`reduce_axisymmetric_neutral_moments`:
+One leaf recovered from the saved the neutral-transport formulation ``轴对称中性分布矩归约`` package, integrated as :func:`reduce_axisymmetric_neutral_moments`:
 
 from an H or H2 one-dimensional-space, two-dimensional-axisymmetric velocity
 distribution ``(nvr, nvx, nx)`` with the cylindrical cell-volume weight,
@@ -46,7 +43,7 @@ remain unchanged.
 Evidence ceiling: this module establishes the moment reduction against
 independent recomputation and an independent Maxwellian-moment witness, the
 quadrature reconstruction contract, and bounded read-only comparisons with
-the saved KN1DPy implementation.  The saved bundle's strict D1 qualification
+the saved the neutral-transport formulation implementation.  The saved bundle's strict D1 qualification
 has been withdrawn; that replay is
 historical development evidence, not qualified-L1 provenance.
 """

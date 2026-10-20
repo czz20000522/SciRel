@@ -1,4 +1,4 @@
-"""Discrete conservation and boundary regressions for the TORAX family."""
+"""Discrete conservation and boundary regressions for the the profile convention family."""
 import numpy as np
 import pytest
 

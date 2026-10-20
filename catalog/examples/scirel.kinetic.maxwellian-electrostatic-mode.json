@@ -108,7 +108,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "title": {
   "en": "Maxwellian electrostatic response",
@@ -126,9 +126,9 @@
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
-   "tests/operator_contracts/test_gpdf_d2.py",
-   "tests/operator_contracts/test_gpdf_d2_successor_regressions.py",
-   "tests/operator_contracts/test_gpdf_numerical_repair.py"
+   "tests/operator_contracts/test_generalized_dispersion_d2.py",
+   "tests/operator_contracts/test_generalized_dispersion_d2_successor.py",
+   "tests/operator_contracts/test_generalized_dispersion_numerical_repair.py"
   ]
  },
  "version": {

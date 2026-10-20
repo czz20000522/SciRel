@@ -1,8 +1,6 @@
 """H-on-H2 elastic momentum-transfer cross-section fit.
 
-One leaf recovered from the saved KN1DPy ``sigma_el_h_hh`` slice (source
-anchor ``KN1DPy/sigma/sigma_el_h_hh.py:1-31``, caller
-``KN1DPy/kinetic_h.py:970-984``), integrated as
+One leaf recovered from the saved the neutral-transport formulation ``sigma_el_h_hh`` slice, integrated as
 :func:`evaluate_hydrogen_h2_elastic_cross_section`:
 
 the H-on-H2 elastic momentum-transfer cross section in ``m^2`` as a function
@@ -28,7 +26,7 @@ nonnegative real inputs.
 Evidence ceiling: this module establishes the clipped fit against an
 independent evaluation of the same formula, the leading axis, the endpoint
 clipping, the input and failure contracts, these repairs, and -- in the
-environment-gated replay test -- exact agreement with the saved KN1DPy
+environment-gated replay test -- exact agreement with the saved the neutral-transport formulation
 implementation on the declared domain.  The saved bundle's strict D1
 qualification has been withdrawn; that replay is historical development
 evidence, not qualified-L1 provenance.  No test establishes the fit against an

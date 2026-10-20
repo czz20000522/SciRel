@@ -1,7 +1,7 @@
 """Pure Python/NumPy/SciPy BONK and EM fluid dispersion operators.
 
-The packaged MATLAB files are retained as source evidence only.  Public calls
-execute locally and do not require Linux, Octave, or an external checkout.
+The packaged the reference environment files are retained as source evidence only.  Public calls
+execute locally and do not require Linux, the reference solver, or an external checkout.
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ from .z_pole_coefficients import get_z_pole_coefficients
 
 __all__ = ["evaluate_fluid_special", "derive_fluid_case", "evaluate_fluid_dispersion",
            "solve_fluid_bonk", "assemble_fluid_em", "solve_fluid_em",
-           "render_fluid_materials"]
+           ]
 
 _C2 = (2.99792458e8) ** 2
 _EPSILON0 = 8.854187817e-12
@@ -46,12 +46,12 @@ _ME = 9.1094e-31
 
 
 def _mat_scalar(value, dtype=float):
-    """Represent a scalar as the historical Octave/MAT ``(1, 1)`` port."""
+    """Represent a scalar as the historical binary array ``(1, 1)`` port."""
     return np.asarray([[value]], dtype=dtype)
 
 
 def _mat_row(value, dtype=None):
-    """Represent a vector as the historical Octave row port."""
+    """Represent a vector as the declared row port."""
     array = np.asarray(value, dtype=dtype)
     return array.reshape(1, -1)
 
@@ -567,14 +567,3 @@ def _legacy_em_result(state, last, xx, kxx, spectra, selected_cells, diagnostics
         "xx": frequencies.reshape(1, -1),
     })
     return top
-
-
-def render_fluid_materials(result, family, output_directory, jplt=2):
-    if family not in {"bonk", "em"} or jplt not in (1, 2): raise ValueError("family must be bonk/em and jplt must be 1/2")
-    directory = Path(output_directory).resolve(strict=True); import matplotlib.pyplot as plt
-    names = ["BONK_dispersion.png"] if family == "bonk" else [f"EM_jplt{jplt}.png", f"EM_jplt{jplt}.mat"]
-    fig, ax = plt.subplots(); data = result.get("kxx", result.get("nf", [])); ax.plot(np.real(np.asarray(data)), np.imag(np.asarray(data))); ax.set_xlabel("kx [1/m]"); ax.set_ylabel("Im(kx) [1/m]"); fig.savefig(directory / names[0]); plt.close(fig)
-    if family == "em":
-        from scipy.io import savemat
-        savemat(directory / names[1], {"kxx": np.asarray(result.get("kxx", [])), "xx": np.asarray(result.get("xx", []))})
-    return {"files": sorted(names)}

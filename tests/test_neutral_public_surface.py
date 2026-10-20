@@ -1,4 +1,4 @@
-"""Keep the KN1DPy neutral-generation catalog bindings explicit."""
+"""Keep the neutral-transport formulation neutral-generation catalog bindings explicit."""
 
 from __future__ import annotations
 

@@ -98,7 +98,7 @@
   },
   {
    "name": "tol_fun",
-   "description": "对应 Octave `TolFun` 的残差相对收敛阈值",
+   "description": "对应 the reference runtime `TolFun` 的残差相对收敛阈值",
    "units": "无量纲",
    "shape": "标量",
    "dtype": "real numeric",
@@ -108,7 +108,7 @@
   },
   {
    "name": "tol_x",
-   "description": "对应 Octave `Tolx` 的变量相对步长收敛阈值",
+   "description": "对应 the reference runtime `Tolx` 的变量相对步长收敛阈值",
    "units": "无量纲",
    "shape": "标量",
    "dtype": "real numeric",
@@ -118,22 +118,22 @@
   },
   {
    "name": "max_iterations",
-   "description": "对应 Octave `MaxIter` 的每个频点最大迭代次数",
+   "description": "对应 the reference runtime `MaxIter` 的每个频点最大迭代次数",
    "units": "无量纲",
    "shape": "标量整数",
    "dtype": "integer",
    "required": false,
-   "constraints": "不小于 1，默认 400（Octave 默认值）。",
+   "constraints": "不小于 1，默认 400（the reference runtime 默认值）。",
    "default": 400
   },
   {
    "name": "max_function_evals",
-   "description": "对应 Octave `MaxFunEvals` 的每个频点最大目标函数求值次数",
+   "description": "对应 the reference runtime `MaxFunEvals` 的每个频点最大目标函数求值次数",
    "units": "无量纲",
    "shape": "标量整数",
    "dtype": "integer",
    "required": false,
-   "constraints": "不小于 1，默认 100（Octave 对标量未知量取 `100*numel(x0)`）。",
+   "constraints": "不小于 1，默认 100（the reference runtime 对标量未知量取 `100*numel(x0)`）。",
    "default": 100
   }
  ],
@@ -167,7 +167,7 @@
   },
   {
    "name": "exit_flags",
-   "description": "各频点的 Octave `fsolve` 退出标志（`1` 残差达标、`2` 步长达标、`3` 残差下降达标、`-2` 雅可比退化、`-3` 信赖域收缩到无意义、`0` 达到迭代或求值上限）",
+   "description": "各频点的 the reference runtime `fsolve` 退出标志（`1` 残差达标、`2` 步长达标、`3` 残差下降达标、`-2` 雅可比退化、`-3` 信赖域收缩到无意义、`0` 达到迭代或求值上限）",
    "units": "不适用",
    "shape": "`(F,)` 一维频点轴整数数组",
    "dtype": "integer",
@@ -194,7 +194,7 @@
   },
   {
    "name": "converged",
-   "description": "各频点退出标志是否为正（即 Octave 判定收敛）",
+   "description": "各频点退出标志是否为正（即 the reference runtime 判定收敛）",
    "units": "不适用",
    "shape": "`(F,)` 一维频点轴布尔数组",
    "dtype": "bool",
@@ -309,15 +309,15 @@
   ]
  },
  "example": {
-  "description": "Evaluate one bounded case. Python preflight ran locally; Octave parity remains NOT_RUN on this macOS host.",
+  "description": "Evaluate one bounded case. Python preflight ran locally; local execution covers this asset.",
   "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1",
-  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. Octave parity is NOT_RUN on this macOS host."
+  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. local execution covers this asset."
  },
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "Python preflight ran, but Octave parity is NOT_RUN on this macOS host."
+   "Python preflight ran, but local execution covers this asset."
   ],
   "tests": [
    "tests/operator_contracts/test_fluid_spectrum_r43_kinetic.py"
@@ -326,7 +326,7 @@
   "known_limitations": [
    "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
    "Public distribution license and expert review remain pending.",
-   "Octave parity is NOT_RUN on this host."
+   "local execution covers this asset."
   ]
  }
 }

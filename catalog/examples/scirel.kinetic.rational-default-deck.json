@@ -63,7 +63,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for unknown model; packaged table read/parse errors propagate.",
-  "runtime_failure": "Packaged file I/O errors propagate; no Octave process or native receipt.",
+  "runtime_failure": "Packaged file I/O errors propagate; no the reference runtime process or native receipt.",
   "nonconvergence": "Not an iterative or eigensolve operation.",
   "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
  },

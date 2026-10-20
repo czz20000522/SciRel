@@ -1,8 +1,8 @@
 """Direct contract tests for ``scirel.kinetic.compute_thermal_speed_m_s`` and
 ``scirel.kinetic.reduce_generation_density``.
 
-The saved KN1DPy packages cite ``KN1DPy/kinetic_h2.py:1360-1371`` for the
-thermal-speed scale and ``KN1DPy/kinetic_h.py:1410-1424`` /
+The saved the neutral-transport formulation packages cite  for the
+thermal-speed scale and  /
 ``kinetic_h2.py:1548-1573`` for the density reduction. Valid-path operation
 order is retained; SciRel tightens the input and finite-output contracts.
 """

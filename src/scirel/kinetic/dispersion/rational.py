@@ -1,7 +1,7 @@
-"""Pure-Python rational PDRK models with explicit axis limits and diagnostics.
+"""Pure-Python rational the kinetic dispersion formulation models with explicit axis limits and diagnostics.
 
 The operators validate units, assemble corrected descriptor forms, and qualify
-finite roots. Packaged decks and coefficient JSON are read as data; no Octave
+finite roots. Packaged decks and coefficient JSON are read as data; no the reference solver
 process or source-runtime fallback is consulted.
 """
 from pathlib import Path
@@ -14,8 +14,8 @@ __all__ = [
     'em_coordinates', 'jpole_grid_coordinates', 'jpole_evaluate',
     'jpole_coefficients',
 ]
-_ROOT = Path(__file__).resolve().parent / '_native'
-_POLE_JSON = _ROOT / 'legacy' / 'jpole12-regenerated.json'
+_DATA = Path(__file__).resolve().parent / '_data'
+_POLE_JSON = _DATA / 'jpole12-regenerated.json'
 _MODELS = ('es1d', 'es3d', 'em')
 _EQ = {'es1d': ('S', 'qs', 'ms', 'ns0', 'Ts', 'vs0', 'vts', 'lambdaDs', 'kDs', 'wps'), 'es3d': ('S', 'qs', 'ms', 'ns0', 'Tzs', 'Tps', 'vs0', 'vtzs', 'lambdaDs', 'kDs', 'wps', 'wcs', 'rhocs'), 'em': ('S', 'qs0', 'ms0', 'ns0', 'Tzs0', 'Tps0', 'qs', 'ms', 'Tzs', 'Tps', 'vs0', 'vtzs', 'lambdaDs', 'kDs', 'wps', 'wcs', 'rhocs', 'wps2', 'lmdT', 'betasz', 'betasp', 'vA', 'cS', 'wci', 'wpi', 'cwp', 'vAwp', 'c2', 'epsilon0', 'mu0', 'kB')}
 _IN = {'es1d': ('S', 'J', 'bzj', 'czj', 'vts', 'vs0', 'kDs', 'k'), 'es3d': ('S', 'N', 'J', 'bzj', 'czj', 'kx', 'kz', 'rhocs', 'kDs', 'wcs', 'vtzs', 'vs0', 'Tzs', 'Tps'), 'em': ('S', 'N', 'J', 'bzj', 'czj', 'kx', 'kz', 'rhocs', 'wcs', 'vtzs', 'vs0', 'lmdT', 'wps2', 'c2')}
@@ -136,8 +136,8 @@ def _es1d_poles(J, opt):
 
 def default_deck(model='es1d'):
     """Exact read-only legacy deck; callers explicitly select its unit convention."""
-    name = {'es1d': 'pdrk_es1d.in', 'es3d': 'pdrk_es3d.in', 'em': 'pdrk_em3d.in'}[_model(model)]
-    return np.loadtxt(_ROOT / 'legacy' / name, skiprows=1, ndmin=2)
+    name = {'es1d': 'es1d_deck.in', 'es3d': 'es3d_deck.in', 'em': 'em3d_deck.in'}[_model(model)]
+    return np.loadtxt(_DATA / name, skiprows=1, ndmin=2)
 
 def equilibrium(model, deck, *, B0=None):
     """Positive finite Maxwellian species scales; source constants explicit in output.
@@ -542,13 +542,3 @@ def jpole_generator(J=12, I=16, *, precision=80):
     g = jpole_grid_coordinates()['state']
     return {**p, **g, **jpole_evaluate(p['bzj'], p['czj'], g['z'])}
 
-def reassemble_original_program(model, output_dir, *, points=None, **controls):
-    """Corrected numeric/presentation composition; original replay stays D1 evidence.
-
- All four legacy scientific purposes are retained. Terminal scientific arrays
- and unit-labelled plots derive from corrected operators. Historical PNG byte
- identity is intentionally not claimed for scientifically corrected data.
- """
-    from ._presentation import save_program
-    result = jpole_generator(**controls) if model == 'generator' else ordered_spectrum(model, points=points, **controls)
-    return save_program(model, result, output_dir)

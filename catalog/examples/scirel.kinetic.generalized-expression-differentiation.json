@@ -5,7 +5,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "title": {
   "zh": "安全解析密度与链式法则求导",
@@ -79,7 +79,7 @@
  },
  "verification": {
   "tests": [
-   "tests/operator_contracts/test_gpdf_generalized.py"
+   "tests/operator_contracts/test_generalized_dispersion_models.py"
   ],
   "scope": [
    "Lorentzian values and derivatives at real/complex points.",

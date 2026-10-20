@@ -30,7 +30,7 @@ def test_legacy_package_root_documents_resolve_to_child_implementations():
         if (module_path / "__init__.py").is_file() and not module_path.with_suffix(".py").is_file():
             package_root_documents.append((api["module"], api["symbol"]))
 
-    assert len(package_root_documents) == 12
+    assert len(package_root_documents) == 11
     for module, symbol in package_root_documents:
         implementation = implementation_module(ROOT, module, symbol)
         assert implementation.startswith(module + ".")

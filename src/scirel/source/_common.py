@@ -62,7 +62,7 @@ def normalize_log_shape(log_shape, weights, total):
     if not np.all(np.isfinite(result)) or np.any(np.abs(result) > np.finfo(np.float64).max):
         raise FloatingPointError("profile result is not representable")
     cast_result = np.asarray(result, dtype=np.float64)
-    # Tiny tails may round to zero, as in TORAX, provided their loss does not
+    # Tiny tails may round to zero, as in the profile convention, provided their loss does not
     # destroy the requested discrete integral. The relative gate is fixed at
     # 64 float64 epsilons, with no absolute floor that could hide a tiny total.
     integral = np.sum(cast_result.astype(np.longdouble) * weights, dtype=np.longdouble)

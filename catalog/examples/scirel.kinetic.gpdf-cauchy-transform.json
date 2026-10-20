@@ -154,7 +154,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "title": {
   "en": "Adaptive Cauchy transform",
@@ -175,9 +175,9 @@
    "Known near-real-axis kernel peaks and logarithmic-scale tails are resolved independently of density feature mesh; the strict finite-support continuation endpoint policy applies."
   ],
   "tests": [
-   "tests/operator_contracts/test_gpdf_d2.py",
-   "tests/operator_contracts/test_gpdf_d2_successor_regressions.py",
-   "tests/operator_contracts/test_gpdf_numerical_repair.py",
+   "tests/operator_contracts/test_generalized_dispersion_d2.py",
+   "tests/operator_contracts/test_generalized_dispersion_d2_successor.py",
+   "tests/operator_contracts/test_generalized_dispersion_numerical_repair.py",
    "tests/operator_contracts/test_cauchy_kernel_resolution.py"
   ]
  },

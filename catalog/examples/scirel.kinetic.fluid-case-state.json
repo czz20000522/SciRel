@@ -8,8 +8,8 @@
    "Global charge-neutral or self-consistent background equilibrium proof for electron-only case2."
   ],
   "preconditions": [
-   "Pinned Linux amd64 GNU Octave7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
-   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 GNU Octave 7.3.0 remains required."
+   "Pinned Linux amd64 the declared local Python runtime7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 the declared local Python runtime remains required."
   ],
   "supported": [
    "BONK cases1/2/3 and EM cases1/2; complete fixed source constants/state."
@@ -18,7 +18,7 @@
  "asset_id": "scirel.kinetic.fluid-case-state",
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case\ns=derive_fluid_case('bonk',3)\n",
-  "description": "Pure Python/NumPy implementation; executes on this macOS host without Octave.",
+  "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {

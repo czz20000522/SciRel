@@ -5,7 +5,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-wave",
-  "gpdf"
+  "generalized-dispersion"
  ],
  "title": {
   "zh": "解析分布的 Hilbert 与 Cauchy 变换",
@@ -119,8 +119,8 @@
  },
  "verification": {
   "tests": [
-   "tests/operator_contracts/test_gpdf_generalized.py",
-   "tests/operator_contracts/test_gpdf_independent_corrections.py"
+   "tests/operator_contracts/test_generalized_dispersion_models.py",
+   "tests/operator_contracts/test_generalized_dispersion_independent_corrections.py"
   ],
   "scope": [
    "Safe AST algebra and analytic chain-rule derivative through DensityExpression.",

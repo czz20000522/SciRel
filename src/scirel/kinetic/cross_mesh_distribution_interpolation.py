@@ -1,6 +1,6 @@
 """Nonnegative conservative remapping of cylindrical velocity distributions.
 
-The default ``correct=1`` is a scientific successor to the saved KN1DPy
+The default ``correct=1`` is a scientific successor to the saved the neutral-transport formulation
 ``interp_fvrvxx`` handoff. It retains cell-overlap interpolation and the
 stateless two-velocity/one-spatial-axis interface, but replaces the defective
 AN/BN correction. Historical source parity is not claimed for the correction.
@@ -35,7 +35,7 @@ rescale and has no three-moment or nonnegative-physical-distribution contract.
 ``do_warn`` emits the historical boundary warnings without changing values.
 
 This validates a finite-grid mathematical transfer, not atomic physics or a
-whole KN1D project. The prior strict D1 qualification remains withdrawn;
+whole the neutral-transport formulation project. The prior strict D1 qualification remains withdrawn;
 original failure/replay evidence and pending redistribution licensing remain.
 """
 from __future__ import annotations
@@ -66,7 +66,7 @@ def _make_dvr_dvx(vr, vx):
 
 
 def _locate(table, value):
-    """Reproduce KN1DPy.locate (searchsorted-based index location).
+    """Reproduce the neutral-transport formulation.locate (searchsorted-based index location).
 
     Returns a scalar int for a scalar ``value`` (matching the source, whose
     ``len(indices) == 1`` branch collapses to a scalar), so that downstream

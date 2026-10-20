@@ -27,8 +27,8 @@ def scan_wavenumber(*, kz_scale, kn):
 def scan_frequencies(*, omega_scale, omega_step, omega_stop, wn):
     """Build the source's frequency scan axis ``xx=(0.05:0.05:3.95)*wn`` internally.
 
-    The frozen source builds this colon ladder itself (``em3d_Lpole.m:82``) and saves it as
-    terminal state; it is not an external argument to the source driver. The written
+    The declared formulation builds this colon ladder itself (``em3d_Lpole.m:82``) and saves it as
+    terminal state; it is not an external argument to the declarationr. The written
     expression fixes both the ladder and its length (``nx=length(xx)`` at line 84), so this
     adapter takes only the three written bounds and derives the point count from the colon
     rule (every point is a multiple of the step from the start): ``count`` is

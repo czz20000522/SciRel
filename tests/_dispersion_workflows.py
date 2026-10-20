@@ -1,4 +1,4 @@
-"""Explicit task-graph entry points for PDRK scientific operations."""
+"""Explicit task-graph entry points for the kinetic dispersion formulation scientific operations."""
 
 """Internal workflow cases retained for testing only; not a public capability."""
 

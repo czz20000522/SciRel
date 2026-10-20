@@ -732,7 +732,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
-   "source_sha256": "b2245c62ce746090fadd0ad5d0371352d7540795db7c647950281ba02f049a53",
+   "source_sha256": "b3257506c203f130c6b74912629036223aa28b97a123da92e952ac75270293da",
    "summary": "使用有限回旋谐波求和，为磁化 Maxwellian 多组分等离子体组装 x-z 平面的动力学介电张量、Maxwell 色散张量及其行列式。",
    "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(kz*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。",
    "model": "均匀磁化 Maxwellian 多组分等离子体的截断常规回旋谐波求和；使用 SciRel 解析 Faddeeva Z，而非有限阶 Weideman 实现。",
@@ -1334,7 +1334,7 @@
   },
   {
    "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
-   "source_sha256": "cf38409b18330910077ca65d4a48c170ffeb44ba3460fb473df876f16d077bf2",
+   "source_sha256": "ba0b87f7ff2633b31de9ccdc1e9bec959da1970c24015b3688d1cdc95d2ee11c",
    "summary": "计算 Weideman 方法的 N=64 有理 Faddeeva 近似，并返回逐点分支标记。",
    "definition": "Z(z)=i*sqrt(pi)*w(z)；采用 N=64 Weideman FFT 系数，以及纯虚自变量 erfc 分支和下半平面反射分支。",
    "model": "均匀 Maxwell 等离子体色散特殊函数。",
@@ -2736,7 +2736,7 @@
   },
   {
    "asset_id": "scirel.kinetic.ronnmark-r-function",
-   "source_sha256": "1371643566007069c7a60eba1a1102637ecc1d9bc9f50187b29698353b3daafb",
+   "source_sha256": "004e8f122f360c7d124cd94ea76563f3a76867482819b0c4e2b8c361debee2d0",
    "summary": "计算 Taylor、渐近或积分 R 函数分支及 2×2 伴随矩阵。",
    "definition": "RYLA 按顺序检查三个 Taylor 条件，再检查渐近条件，否则回退到 16 点 Gauss-Legendre 积分；RC[0,1]=d(lambda*R)/d lambda。",
    "model": "磁化 Maxwell 色散的 Ronnmark 有理响应。",
@@ -3735,7 +3735,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-   "source_sha256": "37cc62092fba2d5359cd17fda2445f136b9769a6be114aff4c221b7ad5dfa66e",
+   "source_sha256": "72ca8aefc1a35166bab401b4dfd106820ee4c7e5df76de6fb18041f4405e491e",
    "summary": "对输入的每个角频率，均从同一个固定初值求解 Ronnmark 行列式的复数 kx 零点。",
    "definition": "每个频点独立从 kx_start 开始，用复数信赖域 dogleg 算法求解 det(D)=0，并限制迭代和函数求值次数。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -6783,7 +6783,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "b2b64a162f200b9fd1b34142eff04de1007f26d62d03a0830629c636b48a5a96",
+   "source_sha256": "35036b0d8496e9500e390b6ecffb50224d8a92336b82610d9a77b14e05c69c9a",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -8467,7 +8467,7 @@
   },
   {
    "asset_id": "scirel.kinetic.z-pole-coefficients",
-   "source_sha256": "2985c21826d3ef67b5aefb878309395bcd12737098fd9c4f559d2c46aecdcc49",
+   "source_sha256": "5659a09d70b407fdf00d2d5d6f83abd3c87f647b5dc3f4a54c1aedd2c2960cb1",
    "summary": "返回固定 J=8 或 J=12 复留数与极点表，并完成共轭补齐。",
    "definition": "Z(zeta) 近似为 sum_j bzj[j]/(zeta-czj[j])；存储前半表，留数后半取共轭，极点后半取负共轭。",
    "model": "Maxwell 等离子体色散函数的有理近似。",

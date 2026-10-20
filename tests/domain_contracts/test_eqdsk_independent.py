@@ -49,7 +49,7 @@ def test_manual_signed_rectangular_record_oracle(tmp_path):
 def test_standard_three_integer_geqdsk_is_not_this_dialect(tmp_path):
     text, *_ = independent_text()
     lines = text.splitlines()
-    lines[0] = 'STANDARD GEQDSK IS NOT THE PLEIADES DIALECT'.ljust(48) + '   0   3   2'
+    lines[0] = 'STANDARD GEQDSK IS NOT THE the equilibrium convention DIALECT'.ljust(48) + '   0   3   2'
     path = tmp_path/'standard.eqdsk'; path.write_text('\n'.join(lines)+'\n')
     with pytest.raises(io.EQDSKFormatError, match='header'):
         io.read_eqdsk(path)

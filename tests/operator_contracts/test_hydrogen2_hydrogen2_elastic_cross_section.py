@@ -1,7 +1,6 @@
 """Direct contract tests for ``scirel.collisions.hydrogen2_hydrogen2_elastic_cross_section``.
 
-The saved KN1DPy leaf (source anchor ``KN1DPy/sigma/sigma_el_hh_hh.py:1-31``,
-caller ``KN1DPy/kinetic_h2.py:1099-1125``) fits the H2-on-H2 elastic
+The saved the neutral-transport formulation leaf fits the H2-on-H2 elastic
 momentum-transfer cross section with a single logarithmic polynomial clipped
 to ``[0.03, 1.01e4] eV``.  The saved implementation already validates the
 ``viscosity`` selector as a scalar boolean/integer, and its ``True`` branch is

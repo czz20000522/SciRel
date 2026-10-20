@@ -12,8 +12,8 @@ def _source_runtime_eigvals(matrix):
 
     """Return the eigenvalues via the general complex LAPACK driver the source runtime calls.
 
-    The frozen source ``em3d_Lpole.m:238`` evaluates ``d = eig(matM)`` in Octave. For a
-    general complex matrix Octave's single-output ``eig`` is the LAPACK driver ``zgeev``
+    The declared formulation ``em3d_Lpole.m:238`` evaluates ``d = eig(matM)`` in the reference solver. For a
+    general complex matrix the reference solver's single-output ``eig`` is the LAPACK driver ``zgeev``
     with ``jobvl=jobvr='N'`` (eigenvalues only); ``zgeev`` balances the matrix internally
     before the Schur reduction. This helper calls that driver directly with its minimum
     work array.

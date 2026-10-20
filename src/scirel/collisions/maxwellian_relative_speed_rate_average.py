@@ -1,7 +1,6 @@
 """Maxwellian relative-speed rate average on an explicit velocity mesh.
 
-One leaf recovered from the saved KN1DPy ``make_sigmav`` slice (source anchor
-``KN1DPy/make_sigmav.py:13-57``), integrated as
+One leaf recovered from the saved the neutral-transport formulation ``make_sigmav`` slice, integrated as
 :func:`average_cross_section_over_maxwellian`:
 
 a monoenergetic particle directed along the axial velocity axis is averaged,
@@ -51,7 +50,7 @@ Evidence ceiling: this module establishes the discrete relation above, its
 agreement with an independent loop-per-energy formulation, its rest-beam and
 cold-target analytic limits, its volume-scale invariance, its input and failure
 contracts, and -- in a separate intake replay -- bounded numerical
-agreement with the saved KN1DPy implementation on the compared domain.  The
+agreement with the saved the neutral-transport formulation implementation on the compared domain.  The
 saved bundle's strict D1 qualification has been withdrawn; that replay is
 historical development evidence, not qualified-L1 provenance.  This module does
 not evaluate any physical cross-section model, does not generate the velocity
@@ -70,7 +69,7 @@ __all__ = [
     "average_cross_section_over_maxwellian",
 ]
 
-# The saved KN1DPy make_sigmav constants, kept bit-compatible for the bounded
+# The saved the neutral-transport formulation make_sigmav constants, kept bit-compatible for the bounded
 # historical replay; see the module docstring. AMU_KG is a historical name
 # for the saved hydrogen mass, not the standard atomic mass unit.
 AMU_KG = 1.6726231e-27

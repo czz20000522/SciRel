@@ -1,4 +1,4 @@
-"""Cell-local KN1D elastic moment reduction, independent of iteration caches.
+"""Cell-local the neutral-transport formulation elastic moment reduction, independent of iteration caches.
 
 SIG includes the target velocity quadrature, but not Vth. Therefore Alpha and
 Omega have units m^-1. This is a moment-matched BGK approximation, not the full

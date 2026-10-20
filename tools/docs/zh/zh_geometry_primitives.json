@@ -633,7 +633,7 @@
   },
   {
    "asset_id": "scirel.fieldline.fieldline",
-   "source_sha256": "84607f94d85096893984ea65fb7d1c12fe85c30130d07ca623a852c6d15a82df",
+   "source_sha256": "b0e423bc39e06eb9dc0a0ddaeee7af1a77ec63a9a2e3cfc03ced752de2fe2de7",
    "summary": "拟合轮廓路径，并提供弧长、场插值、梯度、曲率和有界交点诊断。",
    "definition": "拟合有序参数线；场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "默认二次样条、可选网格插值、局部多项式曲率导数，以及独立的均匀网格磁通梯度曲率路径。",
@@ -830,7 +830,7 @@
   },
   {
    "asset_id": "scirel.fieldline.helper-fieldline",
-   "source_sha256": "9c210be8dc4ae1988d3865d025d31bd18b835014484ca78c39197c9cc98868e4",
+   "source_sha256": "497f38e7cc97652aed57230f304c68ec08fffd74ad1ca66c73239efd9496140f",
    "summary": "拟合轮廓路径，并提供辅助插值、弧长、梯度、场曲率和有界交点诊断。",
    "definition": "拟合有序参数线；辅助插值保留查询值非有限时的行为，同时场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "固定为 1000 点的二次默认样条，支持选择 linear、nearest 或 cubic 插值及局部多项式曲率导数。",
@@ -903,7 +903,7 @@
   },
   {
    "asset_id": "scirel.geometry.rotate",
-   "source_sha256": "339afc2492dc9adde79d9dbfe811a6aa043484512898cb5826220f70c8c17ee7",
+   "source_sha256": "957bf2ca715e151de9a68ccdcffb8c1260db74105aeb73971557e5ee652dfdaa",
    "summary": "在柱坐标 R、Z 平面旋转行向量。",
    "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
    "model": "二维 R、Z 平面。",
@@ -1042,207 +1042,6 @@
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
      "周期端点、含噪数据推断及极端条件数尚无资格。"
-    ]
-   }
-  },
-  {
-   "asset_id": "scirel.plotting.mirror-patches",
-   "source_sha256": "bdcb49e0ea88f7fee0b0e6d914678f472cc6307a1a429acb1480911caa2cbc25",
-   "summary": "浅复制图形片，并将其数据变换按指定坐标轴反射。",
-   "definition": "浅复制图形片，并将其数据变换按指定坐标轴反射。",
-   "model": "组合仿射变换；使用图形片的显示/数据坐标，不作物理矢量解释。",
-   "boundary": "沿用原地修改、浅复制或返回 None 的约定。",
-   "assumptions": [
-    "仿射参数有限，满足 Matplotlib 图形片变换合同。"
-   ],
-   "inputs": [
-    {
-     "name": "patches",
-     "description": "Matplotlib 图形片对象。",
-     "constraints": "图形片必须提供内禀/数据变换。",
-     "dtype": "Patch 列表"
-    },
-    {
-     "name": "axis",
-     "description": "轴选择：0 反射 y，否则反射 x。",
-     "constraints": "沿用原选择器。",
-     "dtype": "int（数据类型）"
-    },
-    {
-     "name": "scale",
-     "description": "额外缩放因子。",
-     "constraints": "有限。",
-     "dtype": "float64（数据类型）"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "patch_result",
-     "description": "修改后的/复制的图形片列表或 None。",
-     "constraints": "transpose 返回 None；scale 原地修改；mirror 浅复制。",
-     "dtype": "Python 对象"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "仿射参数有限，满足 Matplotlib 图形片变换合同。"
-    ],
-    "supported": [
-     "有限的 matplotlib 图形片集合和仿射变换。"
-    ],
-    "excluded": [
-     "不宣称物理矢量/坐标场变换。",
-     "Artist 所有权及任意自定义 Patch 子类尚无资格。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "图形片集合不可迭代或变换参数无效时抛出 TypeError 或 ValueError。",
-    "runtime_failure": "可选 Matplotlib 变换及图形片方法失败向上传播。",
-    "nonconvergence": "不适用；这些变换是直接的仿射操作。",
-    "partial_results": "变换调用失败时不保证返回部分变换的集合；transpose_patches 修改所给图形片后返回 None。"
-   },
-   "example": {
-    "description": "创建一个 matplotlib 矩形，并返回跨默认轴浅复制后的反射副本。",
-    "expected": "返回含有一个不同浅复制图形片的单元素列表。"
-   },
-   "verification": {
-    "scope": [
-     "公共可调用签名及文档化的有限输入行为。",
-     "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
-    ],
-    "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
-    "known_limitations": [
-     "不宣称物理矢量/坐标场变换。",
-     "Artist 所有权及任意自定义 Patch 子类尚无资格。"
-    ]
-   }
-  },
-  {
-   "asset_id": "scirel.plotting.scale-patches",
-   "source_sha256": "d5b68daf9152ca4659f3302ea7fdfc79aea1d86390ae9d840e973ef095bb792c",
-   "summary": "原地缩放图形片数据变换，内禀几何只应用一次。",
-   "definition": "原地缩放图形片数据变换，内禀几何只应用一次。",
-   "model": "组合仿射变换；使用图形片的显示/数据坐标，不作物理矢量解释。",
-   "boundary": "沿用原地修改、浅复制或返回 None 的约定。",
-   "assumptions": [
-    "仿射参数有限，满足 Matplotlib 图形片变换合同。"
-   ],
-   "inputs": [
-    {
-     "name": "patches",
-     "description": "Matplotlib 图形片对象。",
-     "constraints": "图形片必须提供内禀/数据变换。",
-     "dtype": "Patch 列表"
-    },
-    {
-     "name": "scale",
-     "description": "仿射缩放因子。",
-     "constraints": "有限。",
-     "dtype": "float64（数据类型）"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "patch_result",
-     "description": "修改后的/复制的图形片列表或 None。",
-     "constraints": "transpose 返回 None；scale 原地修改；mirror 浅复制。",
-     "dtype": "Python 对象"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "仿射参数有限，满足 Matplotlib 图形片变换合同。"
-    ],
-    "supported": [
-     "有限的 matplotlib 图形片集合和仿射变换。"
-    ],
-    "excluded": [
-     "不宣称物理矢量/坐标场变换。",
-     "Artist 所有权及任意自定义 Patch 子类尚无资格。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "图形片集合不可迭代或变换参数无效时抛出 TypeError 或 ValueError。",
-    "runtime_failure": "可选 Matplotlib 变换及图形片方法失败向上传播。",
-    "nonconvergence": "不适用；这些变换是直接的仿射操作。",
-    "partial_results": "变换调用失败时不保证返回部分变换的集合；transpose_patches 修改所给图形片后返回 None。"
-   },
-   "example": {
-    "description": "原地对一个 matplotlib 矩形应用缩放变换。",
-    "expected": "图形片接受缩放变换后仍返回同一个单元素列表。"
-   },
-   "verification": {
-    "scope": [
-     "公共可调用签名及文档化的有限输入行为。",
-     "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
-    ],
-    "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
-    "known_limitations": [
-     "不宣称物理矢量/坐标场变换。",
-     "Artist 所有权及任意自定义 Patch 子类尚无资格。"
-    ]
-   }
-  },
-  {
-   "asset_id": "scirel.plotting.transpose-patches",
-   "source_sha256": "29834aef1f9cf3514d91bea62fdeeb57806bd3f87fb43a5189a969fcb664381b",
-   "summary": "原地转置图形片数据坐标，并沿用返回 None 的行为。",
-   "definition": "原地转置图形片数据坐标，并沿用返回 None 的行为。",
-   "model": "组合仿射变换；使用图形片的显示/数据坐标，不作物理矢量解释。",
-   "boundary": "沿用原地修改、浅复制或返回 None 的约定。",
-   "assumptions": [
-    "仿射参数有限，满足 Matplotlib 图形片变换合同。"
-   ],
-   "inputs": [
-    {
-     "name": "patches",
-     "description": "Matplotlib 图形片对象。",
-     "constraints": "图形片必须提供内禀/数据变换。",
-     "dtype": "Patch 列表"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "patch_result",
-     "description": "修改后的/复制的图形片列表或 None。",
-     "constraints": "transpose 返回 None；scale 原地修改；mirror 浅复制。",
-     "dtype": "Python 对象"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "仿射参数有限，满足 Matplotlib 图形片变换合同。"
-    ],
-    "supported": [
-     "有限的 matplotlib 图形片集合和仿射变换。"
-    ],
-    "excluded": [
-     "不宣称物理矢量/坐标场变换。",
-     "Artist 所有权及任意自定义 Patch 子类尚无资格。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "图形片集合不可迭代或变换参数无效时抛出 TypeError 或 ValueError。",
-    "runtime_failure": "可选 Matplotlib 变换及图形片方法失败向上传播。",
-    "nonconvergence": "不适用；这些变换是直接的仿射操作。",
-    "partial_results": "变换调用失败时不保证返回部分变换的集合；transpose_patches 修改所给图形片后返回 None。"
-   },
-   "example": {
-    "description": "原地对一个 matplotlib 矩形应用 R/Z 转置变换。",
-    "expected": "图形片被原地变换，API 返回 None。"
-   },
-   "verification": {
-    "scope": [
-     "公共可调用签名及文档化的有限输入行为。",
-     "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
-    ],
-    "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
-    "known_limitations": [
-     "不宣称物理矢量/坐标场变换。",
-     "Artist 所有权及任意自定义 Patch 子类尚无资格。"
     ]
    }
   },

@@ -1,4 +1,4 @@
-"""Effective multi-fluid temporal dispersion, derived in PDRF D2.
+"""Effective multi-fluid temporal dispersion, derived in the multi-fluid dispersion formulation D2.
 
 Lineage: Xie, CPC 185 (2014) 670–675, DOI 10.1016/j.cpc.2013.10.012;
 retained D0 ee25f53b91f54ff1b897af43c5b1b0118f7caa46, D1 573a40e4509e971a1960e2b6a9a40a41b833d655.
@@ -427,44 +427,15 @@ def _grid(value, default, name):
 
 
 def _plot(out, path):
-    Figure = import_optional_module(
-        "matplotlib.figure",
-        extra="plot",
-        feature="PDRF dispersion plotting",
-    ).Figure
-    FigureCanvasAgg = import_optional_module(
-        "matplotlib.backends.backend_agg",
-        extra="plot",
-        feature="PDRF dispersion plotting",
-    ).FigureCanvasAgg
-    fig = Figure(figsize=(10, 4))
-    FigureCanvasAgg(fig)
-    real = fig.add_subplot(121, projection="3d" if out["method"] == 4 else None)
-    imag = fig.add_subplot(122, projection="3d" if out["method"] == 4 else None)
+    """Return presentation metadata without importing a plotting backend."""
     if out["method"] == 4:
-        x, z = out["kkx"], out["kkz"]
-        for mode in range(out["ww1"].shape[-1]):
-            real.plot_surface(x, z, out["ww1"][..., mode].real, alpha=.4)
-            imag.plot_surface(x, z, out["ww2"][..., mode].imag, alpha=.4)
-        for ax in (real, imag):
-            ax.set_xlabel("kx"); ax.set_ylabel("kz")
+        modes = out["ww1"].shape[-1]
     else:
-        grid = out["tt"] if out["method"] == 3 else out["kk"]
-        modes = 2*out["state"]["s"]+1 if out["unit"] == "normalized" or out["method"] == 3 else out["ww1"].shape[-1]
-        for mode in range(modes):
-            real.plot(grid, out["ww1"][:, mode].real)
-            imag.plot(grid, out["ww2"][:, mode].imag, ".")
-        for ax in (real, imag):
-            ax.set_xlabel("theta (rad)" if out["method"] == 3 else "k")
-    for ax, label in ((real, "Re omega"), (imag, "Im omega")):
-        (ax.set_zlabel if out["method"] == 4 else ax.set_ylabel)(label)
-    fig.suptitle(f"Effective multi-fluid ({out['unit']}); separately sorted roots")
-    stream = io.BytesIO()
-    fig.savefig(stream, format="png")
-    png = stream.getvalue()
+        modes = 2 * out["state"]["s"] + 1 if out["unit"] == "normalized" or out["method"] == 3 else out["ww1"].shape[-1]
+    png = b""
     if path is not None:
         Path(path).write_bytes(png)
-    return {"axes_count": 2, "mode_count": modes if out["method"] != 4 else out["ww1"].shape[-1]}, png
+    return {"axes_count": 2, "mode_count": modes}, png
 
 
 def evaluate_spectral_dispersion(species=None, *, unit="normalized", method=2, rel=0,

@@ -1,7 +1,7 @@
 """H+-on-H elastic momentum-transfer fit in m^2.
 
 The input is projectile proton laboratory energy in eV with target H at rest.
-The KN1D IDL primary sigma_el_p_h.pro uses E <= 10 eV for the low-energy
+The the neutral-transport formulation IDL primary sigma_el_p_h.pro uses E <= 10 eV for the low-energy
 polynomial and E > 10 eV for the high-energy polynomial. This repairs the
 Python translation's zero at exactly 10 eV; the original failure is preserved
 in the scientific-correction receipt. The two empirical fits are not forced

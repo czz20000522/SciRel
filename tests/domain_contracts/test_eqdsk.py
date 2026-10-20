@@ -10,7 +10,7 @@ io = importlib.import_module('scirel.io.eqdsk')
 
 def sample():
     return dict(
-        title="PLEIADES bounded fixture", cursign=-1, nnr=3, nnz=2, nnv=4,
+        title="the equilibrium convention bounded fixture", cursign=-1, nnr=3, nnz=2, nnv=4,
         rbox=2.0, zbox=3.0, psi_lim=-0.2, Ip=-4.0,
         tor_flux=np.arange(4.0), p_flux=-np.arange(4.0),
         rbphi_flux=np.linspace(-2, 1, 4), pprime_flux=np.ones(4),

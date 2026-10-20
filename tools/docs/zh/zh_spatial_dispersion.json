@@ -32,7 +32,7 @@
     "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-case-state",
-   "source_sha256": "63437ab54517164976a9497547b9984f6549a1dd65217d92b71c554720053385",
+   "source_sha256": "c08937ebba937140b5398a03418d484d5f8300b7cfbdcf90de03209366674cf0",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -109,7 +109,7 @@
     "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-special-functions",
-   "source_sha256": "55ed7402a21d7096023f8a0c8fa5c5ae4dcd1604ac41764c206d1759dd434afb",
+   "source_sha256": "538b18cf8c7f7ec19b55d249d81dc5f1d8bddbd100892f009d63b0e4867e4773",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -191,7 +191,7 @@
     "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-dispersion-response",
-   "source_sha256": "d511d8935e23cfddac8a2c8f47033cc1454551024ebaa140e661694a1fbc97eb",
+   "source_sha256": "337e9840fc41361118ff684dd2cab4208883509b7a79867ecd9d1cf2f252aed5",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -275,7 +275,7 @@
     "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "0b82312dec93debb73a0368968bdd1edc566a7f0c4137158072addb18d1a070a",
+   "source_sha256": "eb840912436a612efa05e8a24359b73a99d4936cee80cb78d8202143835aadc6",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -347,7 +347,7 @@
     "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-bonk-search",
-   "source_sha256": "32f318972d5b0c67d67f99619421ffe96ff753faee2fc73d18c2f39289740e57",
+   "source_sha256": "ab508389e89c6a2381a5a417e6c85fe5aefc5eb5e3613b0a8c636ae7270f717f",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -431,7 +431,7 @@
     "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "34129a1da7076a54c62da878f49f7852a01ed6dc386a7c6a55b04e63c312730f",
+   "source_sha256": "8410fc1325a2b98eb3897be44b7172577e198bc15ff851507691b5163c238272",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -462,90 +462,6 @@
     "scope": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
      "全部有限谱、按原始次序排列的值、候选及末端矩阵。"
-    ],
-    "known_limitations": [
-     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
-     "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
-     "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "科学有效性受已测试数值域和适用条件限制。",
-     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
-    ],
-    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
-   }
-  },
-  {
-   "summary": "将完整求解结果渲染为 BONK/EM 各绘图分支与 EM MAT 材料，修正标注并报告实际生成的文件。",
-   "definition": "由图形状态生成带单位标注的图像：BONK 三个算例的 PNG、EM 两种布局的 PNG，以及依算例确定的 ICW/ECW MAT。",
-   "inputs": [
-    {
-     "name": "result",
-     "description": "完整 BONK/EM 返回状态及材料元数据。",
-     "constraints": "必须与 family 对应。",
-     "dtype": "映射"
-    },
-    {
-     "name": "family",
-     "description": "科学材料族。",
-     "constraints": "只允许 bonk 或 em。",
-     "dtype": "字符串"
-    },
-    {
-     "name": "output_directory",
-     "description": "明确存在且可写的输出目录。",
-     "constraints": "目录由调用者拥有；返回实际文件名，包括覆盖写。",
-     "dtype": "字符串或路径"
-    },
-    {
-     "name": "jplt",
-     "description": "EM 图形布局选择器。",
-     "constraints": "只允许 1 或 2；BONK 忽略此参数。",
-     "dtype": "整数"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "result",
-     "description": "files 列出实际写出的 PNG/MAT 文件名，包括同目录中的重复写入。",
-     "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
-     "dtype": "映射"
-    }
-   ],
-   "example": {
-    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
-    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
-   },
-   "asset_id": "scirel.kinetic.fluid-materials",
-   "source_sha256": "e513901c4894db1272255a01afb5fe24cf78ac9b50d2f4d5f6026e94f01e8ea1",
-   "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
-   "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
-   "assumptions": [
-    "无背景流动或温度各向异性。",
-    "介电张量约定为 K=I−sigma/(i omega epsilon0)，色散张量为 D=K+nnᵀ−(n·n)I。",
-    "只计算列出的组分对线性响应的贡献；仅含电子的算例 2 不证明全局电中性或背景平衡自洽。"
-   ],
-   "applicability": {
-    "preconditions": [
-     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
-    ],
-    "supported": [
-     "BONK 三个算例和 EM 两种布局，以及 ICW/ECW MAT 序列化。",
-     "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
-    ],
-    "excluded": [
-     "不宣称艺术质量、逐像素一致或物理真值；裁剪行为与后端警告仍可能出现。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-    "partial_results": "异常不返回结果；后端失败前可能已经写出部分文件，这些文件不构成成功返回。"
-   },
-   "verification": {
-    "scope": [
-     "BONK 三个算例和 EM 两种布局，以及 ICW/ECW MAT 序列化。",
-     "图形由当前进程拥有，明确文件系统所有权并报告覆盖写。"
     ],
     "known_limitations": [
      "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",

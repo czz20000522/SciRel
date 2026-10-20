@@ -1,4 +1,4 @@
-"""Independent SI velocity-integral oracles; no pdrk_l1/source assembly imports.
+"""Independent SI velocity-integral oracles; no source assembly imports.
 
 Time/space convention follows supplied PDF K=I-sigma/(i*omega*epsilon0).
 Gauss-Hermite uses x=(v_parallel-vd)/vtz; Laguerre uses u=v_perp**2/vtp**2.

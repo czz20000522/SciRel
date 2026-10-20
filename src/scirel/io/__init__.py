@@ -4,8 +4,7 @@ from importlib import import_module as _import_module
 
 __all__ = [
     "DIALECT", "EQDSK", "EQDSKFormatError", "read_eqdsk",
-    "write_eqdsk", "write_eqdsk_legacy_raw",
-    "write_pressure_equilibrium_eqdsk",
+    "write_eqdsk",
 ]
 _LAZY_EXPORTS = {name: ("eqdsk", name) for name in __all__}
 _LAZY_MODULES = frozenset(module for module, _ in _LAZY_EXPORTS.values())

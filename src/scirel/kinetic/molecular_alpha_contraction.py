@@ -1,6 +1,6 @@
 """Source-free molecular collision-frequency contraction (Alpha three-family).
 
-Reproduces the ``SIG ? f -> Alpha`` contraction of KN1DPy ``kinetic_h2.py``
+Reproduces the ``SIG ? f -> Alpha`` contraction of the neutral-transport formulation ``kinetic_h2.py``
 for the molecular three-family Alpha collision frequencies:
 
 - ``Alpha_CX``   : H2 + H2+ charge exchange, ``Alpha_CX[:,:,k]   = F^{-1}(SIG_CX   @ F(fHp_hat*nHP))``

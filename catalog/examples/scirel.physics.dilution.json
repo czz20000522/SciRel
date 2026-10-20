@@ -109,7 +109,7 @@
    "Agreement with the canonical SciRel callers and dependencies of this relation."
   ],
   "tests": [
-   "tests/operator_contracts/test_torax_algebra_grid.py"
+   "tests/operator_contracts/test_algebra_grid.py"
   ],
   "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
   "known_limitations": [

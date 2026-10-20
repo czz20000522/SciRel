@@ -107,8 +107,7 @@
    "Nonzero-origin rejection, unchanged destination on failure, opaque scalar preservation."
   ],
   "tests": [
-   "tests/domain_contracts/test_eqdsk.py",
-   "tests/domain_contracts/test_eqdsk_raw_repair.py"
+   "tests/domain_contracts/test_eqdsk.py"
   ],
   "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [

@@ -167,7 +167,7 @@ def test_all_normalized_public_callables_are_importable():
     assert issubclass(ColdPlasmaOverflowError, ValueError)
 
 
-def test_torax_algebra_grid_exports_keep_domain_callables():
+def test_algebra_grid_exports_keep_domain_callables():
     from scirel import geometry, physics
     from scirel.geometry.face_to_cell import face_to_cell
     from scirel.physics import coulomb_logs, dilution

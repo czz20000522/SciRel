@@ -45,7 +45,6 @@ def test_eqdsk_catalog_callables_are_explicit_module_exports() -> None:
         "EQDSK",
         "read_eqdsk",
         "write_eqdsk",
-        "write_eqdsk_legacy_raw",
     }
     assert expected <= set(module.__all__)
     namespace: dict[str, object] = {}

@@ -1,34 +1,12 @@
-"""Pre-registered independent D2 gates; identical assertions before/after.
+"""Independent analytic gates for spline, field-line and parsing contracts."""
 
-Quadratic/cubic expectations are analytic, curvature follows d(bhat)/ds_B;
-continuity uses independently expanded Hermite endpoint derivatives.
-"""
-import importlib.util
 import inspect
-import os
-from pathlib import Path
-import sys
 import numpy as np
 import pytest
 
-SOURCE = os.environ.get('ANALYSIS_SOURCE') == '1'
-ROOT = Path('/prior-delivery/artifact/source-bundle')
-
-def load_file(name, path):
-    spec = importlib.util.spec_from_file_location(name, path)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-if SOURCE:
-    sys.path.insert(0, str(ROOT))
-    basis = load_file('source_basis', ROOT/'pleiades/analysis/basis_functions.py')
-    fl = load_file('source_fltools', ROOT/'pleiades/analysis/fltools.py')
-    helpers = load_file('source_helpers', ROOT/'pleiades/analysis/helpers.py')
-else:
-    from scirel.geometry import basis
-    from scirel.geometry import fieldline as fl
-    from scirel.geometry import sampling as helpers
+from scirel.geometry import basis
+from scirel.geometry import fieldline as fl
+from scirel.geometry import sampling as helpers
 
 
 def test_clamped_unequal_knots_reproduces_cubic():
@@ -73,7 +51,7 @@ def test_first_clamped_spline_public_docstring_declares_contract():
 
 @pytest.mark.parametrize('which', ['helper','fltools'])
 def test_line_derivative_uses_actual_nonuniform_arclength(which):
-    klass = helpers.FieldLine if SOURCE and which == 'helper' else (fl.HelperFieldLine if which == 'helper' else fl.FieldLine)
+    klass = fl.HelperFieldLine if which == 'helper' else (fl.HelperFieldLine if which == 'helper' else fl.FieldLine)
     line = klass.__new__(klass)
     x = np.array([.2, .27, .5, .82, 1.4, 1.9])
     line.verts = np.column_stack([x, np.zeros_like(x)])
@@ -84,7 +62,7 @@ def test_line_derivative_uses_actual_nonuniform_arclength(which):
 @pytest.mark.parametrize('which', ['helper','fltools'])
 @pytest.mark.parametrize('reverse', [False, True])
 def test_curvature_is_translation_and_field_reversal_invariant(which, reverse):
-    klass = helpers.FieldLine if SOURCE and which == 'helper' else (fl.HelperFieldLine if which == 'helper' else fl.FieldLine)
+    klass = fl.HelperFieldLine if which == 'helper' else (fl.HelperFieldLine if which == 'helper' else fl.FieldLine)
     line = klass.__new__(klass)
     theta = np.linspace(.23, 2.5, 257)
     radius = .7

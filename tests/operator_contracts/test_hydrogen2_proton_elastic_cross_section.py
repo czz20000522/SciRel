@@ -1,7 +1,6 @@
 """Direct contract tests for ``scirel.collisions.hydrogen2_proton_elastic_cross_section``.
 
-The saved KN1DPy leaf (source anchor ``KN1DPy/sigma/sigma_el_p_hh.py:1-31``,
-caller ``KN1DPy/kinetic_h2.py:1070-1093``) fits the H2-on-H+ elastic
+The saved the neutral-transport formulation leaf fits the H2-on-H+ elastic
 momentum-transfer cross section with a single logarithmic polynomial clipped
 to ``[0.03, 1.01e4] eV``.  One documented repair relative to the saved
 implementation is exercised: negative energies are rejected (the saved

@@ -1,8 +1,6 @@
 """Source-specific normalized cylindrical velocity mesh for neutral species.
 
-One leaf recovered from the saved KN1DPy ``自适应中性粒子速度网格`` package
-(source anchor ``KN1DPy/create_vr_vx_mesh.py:16-56`` -- ``create_vr_vx_mesh``,
-as recorded by the saved bundle's own provenance), integrated as
+One leaf recovered from the saved the neutral-transport formulation ``自适应中性粒子速度网格`` package, integrated as
 :func:`create_adaptive_neutral_velocity_mesh`:
 
 the source-equivalent symmetric cylindrical velocity mesh ``(vx, vr)`` built
@@ -23,7 +21,7 @@ cannot feed SciRel's cylindrical quadrature; the saved arm returns them.
 Evidence ceiling: direct tests establish the mesh against the saved source
 formula (uniform 3.5 base mesh, quadratic stretching, exact energy-node
 insertion, axial symmetry), with a separate bounded read-only comparison
-against the saved KN1DPy implementation. The saved
+against the saved the neutral-transport formulation implementation. The saved
 bundle's strict D1 qualification has been withdrawn; that replay is
 historical development evidence, not qualified-L1 provenance.
 """

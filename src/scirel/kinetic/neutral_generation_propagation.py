@@ -1,4 +1,4 @@
-"""KN1DPy first-flight and scattered-generation bidirectional propagation."""
+"""the neutral-transport formulation first-flight and scattered-generation bidirectional propagation."""
 from __future__ import annotations
 
 import numpy as np

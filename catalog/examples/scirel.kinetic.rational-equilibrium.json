@@ -109,13 +109,13 @@
  "example": {
   "description": "Convert a representative species deck with the pure-Python equilibrium operator.",
   "code": "from scirel.kinetic.dispersion.rational import equilibrium\nr = equilibrium('em', [[-1, 1, 1e6, 100, 100, 0], [1, 1836, 1e6, 100, 100, 0]], B0=1e-7)\nassert r['state']['S'].item() == 2",
-  "expected": "PASS: .venv/bin/python computes the declared state on macOS without GNU Octave."
+  "expected": "PASS: .venv/bin/python computes the declared state on macOS without the declared local Python runtime."
  },
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "The pure-Python implementation runs directly on macOS without GNU Octave."
+   "The pure-Python implementation runs directly on macOS without the declared local Python runtime."
   ],
   "tests": [
    "tests/operator_contracts/test_dispersion_rational.py"

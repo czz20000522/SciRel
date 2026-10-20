@@ -56,10 +56,10 @@ def _cmul(a, b):
 
 
 def _d(x, y):
-    """IEEE-faithful float division: Octave yields +-inf / nan on a zero divisor, it never raises.
+    """IEEE-faithful float division: the reference solver yields +-inf / nan on a zero divisor, it never raises.
 
     Python's `/` on floats is the same correctly-rounded IEEE-754 double division numpy and
-    Octave use, so this only changes the zero-divisor branch (the frozen source's own Taylor
+    the reference solver use, so this only changes the zero-divisor branch (the declared formulation's own Taylor
     series can hit ``Y^2 - I^2 == 0`` and continues with Inf/NaN rather than aborting).
     """
     try:

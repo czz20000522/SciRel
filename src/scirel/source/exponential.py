@@ -1,5 +1,5 @@
-# Derived profile conventions: TORAX, Copyright 2024 DeepMind Technologies Limited.
-# Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
+# Derived profile conventions: the profile convention, Copyright 2024 DeepMind Technologies Limited.
+# Retained attribution: see licenses/.
 """Volume-normalized exponential radial source profile.
 
 Normalization cancels decay_start; this is not a cutoff profile or a

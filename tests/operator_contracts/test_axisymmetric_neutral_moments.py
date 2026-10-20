@@ -1,6 +1,6 @@
 """Direct contract tests for ``scirel.kinetic.reduce_axisymmetric_neutral_moments``.
 
-The saved KN1DPy package (anchor ``KN1DPy/kinetic_h.py:1443-1605`` /
+The saved the neutral-transport formulation package (anchor  /
 ``kinetic_h2.py:1612-1801`` as recorded by the saved bundle's provenance)
 provides bounded development comparison. The saved sigma_zz = sigma_yy
 identification and the two empty-slice policies are witnessed here.

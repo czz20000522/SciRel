@@ -1,6 +1,6 @@
 """Direct contract tests for ``scirel.kinetic.cylindrical_velocity_quadrature``.
 
-The relation is the saved KN1DPy ``make_dvr_dvx`` slice: from strictly
+The relation is the saved the neutral-transport formulation ``make_dvr_dvx`` slice: from strictly
 increasing normalized ``vr``/``vx`` meshes it builds the ghost-extended cell
 faces, the annular radial measure, the ``(nvr, nvx)`` cylindrical cell
 volumes, the ghosted finite-volume difference coefficients and the sign index

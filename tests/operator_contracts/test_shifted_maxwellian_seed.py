@@ -1,6 +1,6 @@
 """Direct contract tests for ``scirel.kinetic.shifted_maxwellian_seed``.
 
-The relation is the saved KN1DPy ``create_shifted_maxwellian`` seed leaf: the
+The relation is the saved the neutral-transport formulation ``create_shifted_maxwellian`` seed leaf: the
 normalized exponential distribution on a cylindrical ``(vr, vx)`` mesh before
 any moment compensation, with per-shift temperatures, the molecule-count
 factor in the exponent, the strict-interior ``-80`` clamp and the cell-volume

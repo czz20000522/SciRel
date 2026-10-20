@@ -50,12 +50,9 @@ def test_declared_runtime_import_closure_is_complete() -> None:
     result = validate(ROOT)
 
     assert result["status"] == "PASS"
-    assert result["core_dependencies"] == ["mpmath", "numpy"]
-    assert result["optional_dependencies"] == {
-        "plot": ["matplotlib"],
-        "scipy": ["scipy"],
-    }
-    assert result["observed_external_roots"] == ["matplotlib", "mpmath", "numpy", "scipy"]
+    assert result["core_dependencies"] == ["mpmath", "numpy", "scipy"]
+    assert result["optional_dependencies"] == {}
+    assert result["observed_external_roots"] == ["mpmath", "numpy", "scipy"]
     assert result["errors"] == []
 
 
@@ -75,14 +72,3 @@ def test_runtime_import_guard_rejects_undeclared_dependency(tmp_path: Path) -> N
 
     assert result["status"] == "FAIL"
     assert any("unknown_scirel_dependency" in error for error in result["errors"])
-
-
-def test_runtime_import_guard_rejects_module_scope_optional_import(tmp_path: Path) -> None:
-    root = _copy_runtime_tree(tmp_path)
-    target = root / "src/scirel/geometry/sampling.py"
-    target.write_text("import matplotlib\n" + target.read_text(encoding="utf-8"), encoding="utf-8")
-
-    result = validate(root)
-
-    assert result["status"] == "FAIL"
-    assert any("module scope" in error for error in result["errors"])

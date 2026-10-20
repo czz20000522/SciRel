@@ -84,18 +84,12 @@ def test_extended_finite_inputs_rejected_after_binary64_narrowing():
     with pytest.raises(ValueError):rational.solve_matrix(np.eye(5),model='em',sp=1,nw=1,wg=complexwide)
 
 
-def test_full_default_perpendicular_carrier_and_graph_projection(tmp_path):
-    spec=importlib.util.spec_from_file_location('offset_oracle',Path(__file__).with_name('_dispersion_rational_offset_oracle.py'))
-    oracle=importlib.util.module_from_spec(spec);spec.loader.exec_module(oracle)
-    graph=rational.reassemble_original_program('es3d',tmp_path/'default',J=8,N=10,B0=1.)
-    result=graph['result'];assert result['points'].shape==(50,2)
-    # Native original loop controls are qualified separately; no Python arange reconstruction.
-    assert np.all(result['points'][:,1]==0) and result['points'][0,0]==.05
-    carriers=json.loads((tmp_path/'default/complete-frequency-carriers.json').read_text());assert len(carriers)==50
-    for i,point in enumerate(result['spectra']):
-        r=point['solution'];assert r['mode_count']==20
-        m=r['mode_classification'];assert m['source_auxiliary_modes']==168 and m['total_canceled_source_auxiliary_modes']==148
-        assert m['physical_zero_frequency_modes']==0 and m['associated_descriptor_infinite_constraint_modes']==1
-        oracle.validate(point['matrix']['state']['perpendicular_inputs'],r)
-        assert carriers[i]['frequency_offset_decimal']==r['frequency_offset_decimal']
-    assert graph['artifacts']['plot_metadata']['visual_review']=='PENDING'
+def test_pole_coefficients_expose_ordered_tables_for_every_declared_order():
+    from scirel.kinetic.dispersion.magnetized import pole_coefficients
+    for J in (4, 8, 12):
+        state = pole_coefficients(J).state
+        b = np.asarray(state["bzj"]).ravel(); c = np.asarray(state["czj"]).ravel()
+        assert b.size == c.size == J
+        assert abs(np.sum(b) + 1.0) <= 1e-10
+        assert abs(np.sum(b * c)) <= 1e-10
+        assert abs(np.sum(b * c * c) + 0.5) <= 1e-10

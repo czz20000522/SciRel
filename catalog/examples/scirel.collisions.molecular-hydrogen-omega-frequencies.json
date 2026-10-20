@@ -464,8 +464,7 @@
   "tests": [
    "tests/operator_contracts/test_molecular_hydrogen_omega_frequencies.py",
    "tests/operator_contracts/test_atomic_hydrogen_omega_frequencies.py",
-   "tests/operator_contracts/test_collision_physical_closure.py",
-   "tests/operator_contracts/test_omega_frequencies_l1.py"
+   "tests/operator_contracts/test_collision_physical_closure.py"
   ],
   "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需独立接收；人工科学认可和公开发行另行决定。",
   "known_limitations": [

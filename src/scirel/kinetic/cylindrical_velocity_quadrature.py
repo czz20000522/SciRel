@@ -1,7 +1,6 @@
 """Cylindrical velocity-space quadrature on explicit normalized meshes.
 
-One leaf recovered from the saved KN1DPy ``make_dvr_dvx`` slice (source anchor
-``KN1DPy/make_dvr_dvx.py:20-123``), integrated as
+One leaf recovered from the saved the neutral-transport formulation ``make_dvr_dvx`` slice, integrated as
 :func:`make_cylindrical_velocity_quadrature`: from strictly increasing
 normalized radial-speed and axial-velocity meshes it builds the ghost-extended
 half-cell faces, the annular radial measure, the ``(nvr, nvx)`` cylindrical

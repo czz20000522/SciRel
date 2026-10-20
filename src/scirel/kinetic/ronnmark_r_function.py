@@ -54,10 +54,10 @@ def _cmul(a, b):
 
 
 def _d(x, y):
-    """IEEE-faithful float division: Octave yields +-inf / nan on a zero divisor, it never raises.
+    """IEEE-faithful float division: the reference solver yields +-inf / nan on a zero divisor, it never raises.
 
     Python's `/` on floats is the same correctly-rounded IEEE-754 double division numpy and
-    Octave use, so this only changes the zero-divisor branch (the frozen source's own Taylor
+    the reference solver use, so this only changes the zero-divisor branch (the declared formulation's own Taylor
     series can hit ``Y^2 - I^2 == 0`` and continues with Inf/NaN rather than aborting).
     """
     try:
@@ -240,22 +240,21 @@ def _rint(yy, al):
 
 
 def _is_real_scalar(value):
-    """Octave ``isreal``: true when the value carries no imaginary part."""
+    """the reference solver ``isreal``: true when the value carries no imaginary part."""
     arr = _np.asarray(value)
     if not _np.iscomplexobj(arr):
         return True
     return _np.imag(arr.reshape(())) == 0.0
 
 
-def _octave_gt(lhs, rhs):
-    """Reproduce Octave ``>`` for a scalar pair.
+def _complex_gt(lhs, rhs):
+    """Reproduce the reference solver ``>`` for a scalar pair.
 
-    The frozen source feeds ``AL = b = (k_perp*rho_c)^2``, which is complex
+    The declared formulation feeds ``AL = b = (k_perp*rho_c)^2``, which is complex
     whenever the source's ``fsolve`` scan works in the complex ``k_perp`` plane.
-    Octave compares a complex operand carrying a non-zero imaginary part against
+    the reference solver compares a complex operand carrying a non-zero imaginary part against
     another scalar by MAGNITUDE, and falls back to numeric comparison when both
-    operands are real. Probe record:
-    ``lanes/shared-evidence/octave-complex-comparison-semantics.txt``.
+    operands are real. Probe record:.
     """
     if _is_real_scalar(lhs) and _is_real_scalar(rhs):
         return _np.real(lhs) > _np.real(rhs)
@@ -273,7 +272,7 @@ def evaluate_ronnmark_r(x, lambda_):
     lambda_ : real or complex scalar
         AL = lambda = (k_perp*rho_c)^2, finite. It is real for real ``k_perp``
         and complex when the caller works in the complex ``k_perp`` plane, which
-        is what the frozen source's ``fsolve`` scan does.
+        is what the declared formulation's ``fsolve`` scan does.
 
     Returns
     -------
@@ -286,9 +285,9 @@ def evaluate_ronnmark_r(x, lambda_):
                          ``'RTAY(AL<4)'``, ``'RTAY(|Y|^2>75*AL)'``,
                          ``'RTAY(|Y|>40+AL/3)'``, ``'RASY'``, ``'RINT'``.
         ``RC``         : (2, 2) complex ndarray; full RYLA matrix, indexed as
-                         in the Octave source (RC[0, 0] is RC(1,1)).
+                         in the the reference solver source (RC[0, 0] is RC(1,1)).
     """
-    # The frozen source is Octave, whose arithmetic follows the dtype of Y:
+    # The declared formulation is the reference solver, whose arithmetic follows the dtype of Y:
     # real input stays real double, complex input uses complex double. That
     # distinction is load-bearing, because complex division rounds differently
     # from real division and RASY/RINT amplify it through cancellation. numpy
@@ -310,13 +309,13 @@ def evaluate_ronnmark_r(x, lambda_):
     al = _np.complex128(la) if _np.iscomplexobj(la) else _np.float64(_np.real(la))
     ay = abs(y)
 
-    if _octave_gt(4, al):
+    if _complex_gt(4, al):
         rc, branch = _rtay_fma(y, al), "RTAY(AL<4)"
-    elif _octave_gt(ay ** 2, 75 * al):
+    elif _complex_gt(ay ** 2, 75 * al):
         rc, branch = _rtay_fma(y, al), "RTAY(|Y|^2>75*AL)"
-    elif _octave_gt(ay, 40 + al / 3):
+    elif _complex_gt(ay, 40 + al / 3):
         rc, branch = _rtay_fma(y, al), "RTAY(|Y|>40+AL/3)"
-    elif _octave_gt(3 * (al - 10), ay) and _octave_gt(15 * al, ay ** 2):
+    elif _complex_gt(3 * (al - 10), ay) and _complex_gt(15 * al, ay ** 2):
         rc, branch = _rasy(y, al), "RASY"
     else:
         rc, branch = _rint(y, al), "RINT"

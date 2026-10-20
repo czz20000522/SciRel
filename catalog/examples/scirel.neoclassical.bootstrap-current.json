@@ -226,8 +226,5 @@
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
    "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
   ]
- },
- "references": [
-  "https://github.com/google-deepmind/torax"
- ]
+ }
 }

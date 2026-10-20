@@ -157,8 +157,7 @@
    "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
   ],
   "tests": [
-   "tests/operator_contracts/test_terminal_molecular_pressure_temperature.py",
-   "tests/operator_contracts/test_terminal_molecular_pressure_temperature_l1.py"
+   "tests/operator_contracts/test_terminal_molecular_pressure_temperature.py"
   ],
   "evidence_ceiling": "Direct numerical comparisons establish the finite discrete centered-moment relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval.",
   "known_limitations": [

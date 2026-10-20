@@ -64,7 +64,7 @@ class DensityExpression:
 
     Supported names are ``v``, ``pi`` and the elementary functions
     ``exp``, ``log``, ``sqrt``, ``sin``, ``cos``, ``sinh``, ``cosh`` and
-    ``tanh``.  MATLAB elementwise operators are normalized before parsing;
+    ``tanh``.  the reference environment elementwise operators are normalized before parsing;
     arbitrary attributes, indexing, names and calls are rejected.
     """
 
