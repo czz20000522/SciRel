@@ -24,7 +24,7 @@ FINAL_KEYS = {
     "schema", "project_id", "decomposition_scope", "limitations",
     "claim_ceiling", "files", "path_map", "root_binding", "payload_files",
     "payload_bytes", "evidence_policy", "custody_note", "license",
-    "identity", "stage_evidence", "capabilities", "operators", "task_graphs",
+    "identity", "stage_evidence", "capabilities", "functions", "compositions",
     "platform_boundaries",
 }
 _REQUIRED = (
@@ -104,20 +104,20 @@ def _check_final(final: dict, errors: list[str]) -> None:
     for key in ("identity", "stage_evidence"):
         if key in final and not isinstance(final[key], dict):
             errors.append(f"FINAL.json: {key} must be an object of strings")
-    for key in ("capabilities", "operators", "platform_boundaries"):
+    for key in ("capabilities", "functions", "platform_boundaries"):
         if key in final and (not isinstance(final[key], list)
                              or not all(isinstance(item, str) and item for item in final[key])):
             errors.append(f"FINAL.json: {key} must be a list of strings")
-    graphs = final.get("task_graphs")
-    if graphs is not None:
-        if not isinstance(graphs, list):
-            errors.append("FINAL.json: task_graphs must be a list")
+    compositions = final.get("compositions")
+    if compositions is not None:
+        if not isinstance(compositions, list):
+            errors.append("FINAL.json: compositions must be a list")
         else:
-            for item in graphs:
+            for item in compositions:
                 if not isinstance(item, dict) or set(item) != {"directory", "name"}:
-                    errors.append("FINAL.json: task_graphs entries need exactly directory and name")
+                    errors.append("FINAL.json: compositions entries need exactly directory and name")
                 elif not all(isinstance(item[key], str) and item[key] for key in item):
-                    errors.append("FINAL.json: task_graphs entries need non-empty strings")
+                    errors.append("FINAL.json: compositions entries need non-empty strings")
 
 
 def _check_files(manifest: dict, final_dir: Path, errors: list[str]) -> list[dict]:
