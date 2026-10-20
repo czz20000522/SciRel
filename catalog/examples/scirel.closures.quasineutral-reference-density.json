@@ -100,7 +100,7 @@
    "The callable is a dependency of the maintained mirror quasineutral closure graph; this document describes its leaf relation only."
   ],
   "tests": [
-   "tests/operator_contracts/test_quasineutral_reference_density.py"
+   "tests/closures/test_quasineutral_reference_density.py"
   ],
   "evidence_ceiling": "Maintained tests establish selected products and failure cases. They do not validate physical coordinate alignment, all floating-point underflow behavior, multi-ion physics or expert recognition.",
   "known_limitations": [

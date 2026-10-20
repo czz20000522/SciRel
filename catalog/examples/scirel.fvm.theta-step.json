@@ -201,7 +201,7 @@
    "Independent flux conservation, exact linear/constant states, uniform manufactured diffusion convergence and theta causality checks"
   ],
   "tests": [
-   "tests/test_fvm.py"
+   "tests/fvm/test_fvm.py"
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [

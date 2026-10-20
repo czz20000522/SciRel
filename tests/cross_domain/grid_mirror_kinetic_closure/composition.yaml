@@ -1,0 +1,383 @@
+kind: scientific_composition
+name: 网格镜端动理学闭合
+entrypoint: composition_fixture.py::run_composition
+display_name:
+  zh: 网格镜端动理学闭合
+framework_mapping:
+  primary_pfm_node: N11
+  coverage: full
+inputs:
+- name: r_grid
+  meaning: R-Z 网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: 二维直角 R-Z 张量网格；R 轴非负且严格递增，至少包含两个不同的径向节点；所有坐标必须有限
+- name: z_grid
+  meaning: R-Z 网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: 与 r_grid 同形的二维直角 R-Z 张量网格；Z 轴严格递增，至少包含两个不同的轴向节点；所有坐标必须有限
+- name: b_t
+  meaning: 当前磁场幅值
+  shape: '[N_Z,N_R]'
+  units: T
+  required: true
+  constraints: 当前磁场幅值；必须与网格同形、有限且严格为正
+- name: psi
+  meaning: 当前磁通
+  shape: '[N_Z,N_R]'
+  units: Wb
+  required: true
+  constraints: 当前磁通；必须与网格同形且有限
+- name: reference_z
+  meaning: 参考面位置
+  shape: scalar
+  units: m
+  required: true
+  constraints: 必须为有限标量，且与 plug_left_z、plug_right_z 满足 plug_left_z < reference_z < plug_right_z
+- name: plug_left_z
+  meaning: 左端塞面位置
+  shape: scalar
+  units: m
+  required: true
+  constraints: 必须为有限标量，且与 reference_z、plug_right_z 满足 plug_left_z < reference_z < plug_right_z
+- name: plug_right_z
+  meaning: 右端塞面位置
+  shape: scalar
+  units: m
+  required: true
+  constraints: 必须为有限标量，且与 plug_left_z、reference_z 满足 plug_left_z < reference_z < plug_right_z
+- name: mass_kg
+  meaning: 离子质量
+  shape: scalar
+  units: kg
+  required: true
+  constraints: 离子质量；必须为有限且严格为正的标量
+- name: charge_c
+  meaning: 正离子电荷
+  shape: scalar
+  units: C
+  required: true
+  constraints: 正离子电荷量；必须为有限且严格为正的标量
+- name: density_ref_m3
+  meaning: 离子参考密度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: m^-3
+  required: true
+  constraints: 离子参考数密度；标量、与网格同形的场或按 psi 给出的剖面；所有值必须有限且非负
+- name: temperature_parallel_j
+  meaning: 离子平行参考温度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: J
+  required: true
+  constraints: 离子平行温度能量；标量、与网格同形的场或按 psi 给出的剖面；所有值必须有限且严格为正
+- name: temperature_perpendicular_ref_j
+  meaning: 离子垂直参考温度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: J
+  required: true
+  constraints: 离子垂直参考温度能量；标量、与网格同形的场或按 psi 给出的剖面；所有值必须有限且严格为正
+- name: electron_temperature_j
+  meaning: 等温电子温度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: J
+  required: true
+  constraints: 等温电子温度能量；标量、与网格同形的场或按 psi 给出的剖面；所有值必须有限且严格为正
+- name: electron_density_ref_m3
+  meaning: 电子参考密度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: m^-3
+  required: false
+  constraints: 电子参考数密度；标量、与网格同形的场或按 psi 给出的剖面；提供时所有值必须有限且非负
+- name: phi_ref_v
+  meaning: 参考面电势
+  shape: scalar_or_[N_R]_or_profile(psi_reference)
+  units: V
+  required: false
+  constraints: 参考面电势；标量、reference_z 处的径向剖面或按该剖面磁通求值的 callable；完整二维网格场不接受，所有值必须有限
+- name: phi_plug_left_v
+  meaning: 左端塞规定电势
+  shape: scalar_or_[N_R]_or_profile(psi_reference)
+  units: V
+  required: false
+  constraints: 左端塞电势；只接受标量、参考面径向剖面或可在参考面磁通剖面上求值的 callable；不接受完整二维网格场
+- name: phi_plug_right_v
+  meaning: 右端塞规定电势
+  shape: scalar_or_[N_R]_or_profile(psi_reference)
+  units: V
+  required: false
+  constraints: 右端塞电势；只接受标量、参考面径向剖面或可在参考面磁通剖面上求值的 callable；不接受完整二维网格场
+- name: plug_potential_mode
+  meaning: 端塞电势模式
+  shape: scalar string
+  units: enum
+  required: false
+  constraints: 字符串只能取 prescribed 或 ambipolar_end_loss；前者使用规定端塞电势，后者求解端损失双极电势
+- name: loss_cone_refill
+  meaning: 嵌套动理学矩的损失锥再填充比例
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 嵌套动理学矩的损失锥再填充比例；必须为有限值且位于 [0,1]
+- name: quadrature_order
+  meaning: 速度积分求积阶数
+  shape: scalar integer
+  units: count
+  required: false
+  constraints: 速度积分求积阶数；必须为大于等于 8 的整数
+- name: ion_loss_refill
+  meaning: 离子端损失再填充比例
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 离子端损失再填充比例；必须为有限值且位于 [0,1]；使用 ambipolar_end_loss 时必须严格为正
+- name: electron_loss_refill
+  meaning: 电子端损失再填充比例
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 电子端损失再填充比例；必须为有限值且位于 [0,1]
+- name: potential_tolerance_v
+  meaning: 端损失电势容差
+  shape: scalar
+  units: V
+  required: false
+  constraints: 端损失电势绝对容差；必须为有限且严格为正的标量
+- name: current_tolerance
+  meaning: 端损失电流容差
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 端损失电流相对容差；必须为有限且严格为正的标量
+- name: max_iterations
+  meaning: 端损失最大迭代次数
+  shape: scalar integer
+  units: count
+  required: false
+  constraints: 端损失电势求解最大迭代次数；必须为大于等于 1 的整数
+- name: initial_bracket_thermal
+  meaning: 端损失初始热电势包围宽度
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 端损失初始热电势包围宽度；必须为有限且严格为正的标量
+- name: confine_to_plug_planes
+  meaning: 端塞外屏蔽开关
+  shape: scalar bool
+  units: bool
+  required: false
+  constraints: 必须为 Python bool 或 NumPy bool 标量；不接受 0/1 数值替代
+outputs:
+- name: p_parallel
+  meaning: 总平行压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+- name: p_perpendicular
+  meaning: 总垂直压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+- name: electrostatic_potential
+  meaning: 局部准中性电势
+  shape: '[N_Z,N_R]'
+  units: V
+- name: end_left_potential_v
+  meaning: 左端损失电势映射
+  shape: '[N_Z,N_R]'
+  units: V
+- name: end_right_potential_v
+  meaning: 右端损失电势映射
+  shape: '[N_Z,N_R]'
+  units: V
+- name: relative_charge_residual
+  meaning: 网格上的相对电荷中性残差
+  shape: '[N_Z,N_R]'
+  units: dimensionless
+- name: kinetic_moments
+  meaning: 每个网格点的双温镜动理学矩与积分摘要
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: 保留嵌套准中性闭合返回的完整动理学状态
+- name: ion_density
+  meaning: 端损失修正后的离子数密度
+  shape: '[N_Z,N_R]'
+  units: m^-3
+  required: true
+- name: ion_p_parallel
+  meaning: 离子平行压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+  required: true
+- name: ion_p_perpendicular
+  meaning: 离子垂直压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+  required: true
+- name: electron_density
+  meaning: 准中性电子数密度
+  shape: '[N_Z,N_R]'
+  units: m^-3
+  required: true
+- name: electron_pressure
+  meaning: 电子压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+  required: true
+- name: density
+  meaning: 供下游 Hall 闭合使用的离子密度别名
+  shape: '[N_Z,N_R]'
+  units: m^-3
+  required: true
+- name: T_parallel_J
+  meaning: 局部平行温度能量尺度
+  shape: '[N_Z,N_R]'
+  units: J
+  required: true
+- name: T_perpendicular_local_J
+  meaning: 局部垂直温度能量尺度
+  shape: '[N_Z,N_R]'
+  units: J
+  required: true
+- name: untruncated_density
+  meaning: 端损失裁剪前的离子密度
+  shape: '[N_Z,N_R]'
+  units: m^-3
+  required: true
+- name: density_pitch_integral
+  meaning: 密度端损失积分因子
+  shape: '[N_Z,N_R]'
+  units: dimensionless
+  required: true
+  constraints: 无量纲俯仰积分诊断因子；confine_to_plug_planes=True 时仍保持全网格，不进行端塞外行屏蔽
+- name: parallel_pitch_integral
+  meaning: 平行压强端损失积分因子
+  shape: '[N_Z,N_R]'
+  units: dimensionless
+  required: true
+  constraints: 无量纲平行压强俯仰积分诊断因子；confine_to_plug_planes=True 时仍保持全网格，不进行端塞外行屏蔽
+- name: perpendicular_pitch_integral
+  meaning: 垂直压强端损失积分因子
+  shape: '[N_Z,N_R]'
+  units: dimensionless
+  required: true
+  constraints: 无量纲垂直压强俯仰积分诊断因子；confine_to_plug_planes=True 时仍保持全网格，不进行端塞外行屏蔽
+execution:
+  mode: sequential_state_feedback
+  order_policy: sample_reference_and_plug_profiles_then_end_potential_then_nested_ambipolar_closure
+  state_policy: reference/plug profiles are recomputed from current B and psi; nested potential state is contained in child composition
+  failure_policy: fail on unbracketed plug planes, invalid profiles, or nested closure failure
+nodes:
+- id: flux_surface_profile
+  name: 磁面标量剖面线性延拓
+  kind: scientific_function
+  callable: scirel.geometry.flux_surface_profile::evaluate_flux_surface_profile
+  asset_ref: scirel.geometry.flux_surface_profile
+  inputs: [psi_samples, values, target, left, right]
+  outputs: [values, psi, profile_values]
+- id: nearest_grid_index
+  name: 端塞坐标最近网格索引
+  kind: controlled_glue
+  callable: glue:_nearest_index
+  inputs: [z_axis, coordinate]
+  outputs: [index]
+  glue_contract:
+    operation: index_mapping
+    ownership: caller owns the monotonic axis and coordinate; adapter selects the first nearest integer index
+- id: profile_shape_embedding
+  name: 调用方剖面标量形状适配
+  kind: controlled_glue
+  callable: glue:_field
+  inputs: [value, target, name]
+  outputs: [values]
+  glue_contract:
+    operation: shape_embedding
+    ownership: caller owns scalar or exact-target profile values; adapter validates finiteness and shape only
+- id: confine_rows
+  name: 端塞区间行屏蔽
+  kind: controlled_glue
+  callable: glue:_confine_rows
+  inputs: [field, left_index, right_index]
+  outputs: [field]
+  glue_contract:
+    operation: component_selection
+    ownership: caller owns the explicit plug-plane interval; adapter zeroes rows outside that interval without changing active-row values
+- id: end_loss_left_right
+  name: 镜端双极损失电势闭合
+  kind: scientific_function
+  callable: scirel.closures.mirror_ambipolar_potential::solve_mirror_ambipolar_potential
+  asset_ref: scirel.closures.mirror_ambipolar_potential
+  inputs: [B_reference, B_plug_left, B_plug_right, species_and_moment_parameters]
+  outputs: [left_end_state, right_end_state]
+- id: local_ambipolar
+  name: 双温镜准中性闭合
+  kind: nested_composition
+  callable: scirel.closures.graphs.mirror_quasineutral_closure::run_graph
+  asset_ref: scirel.closures.graphs.mirror_quasineutral_closure
+  inputs: [b_t, psi, reference_and_plug_profiles, species_and_moment_parameters]
+  outputs: [p_parallel, p_perpendicular, electrostatic_potential]
+edges:
+- from: profile_shape_embedding
+  from_output: values
+  to: flux_surface_profile
+  to_input: values
+  data: 调用方标量或参考面剖面经过形状适配后的值
+  condition: when a caller profile is supplied
+  required: false
+  transform: scalar or reference-profile broadcast only
+  closure: controlled_glue
+- from: flux_surface_profile
+  from_output: profile_values
+  to: end_loss_left_right
+  to_input: B_reference_and_plug_profiles
+  data: 参考面与左右端塞面的磁场剖面
+  condition: before endpoint loss evaluation
+  required: true
+  transform: select the three declared profile rows and preserve psi order
+  closure: controlled_glue
+- from: flux_surface_profile
+  from_output: profile_values
+  to: local_ambipolar
+  to_input: reference_and_plug_profiles
+  data: 当前磁通网格上的参考/端塞剖面
+  condition: before nested closure
+  required: true
+  transform: embed each sampled profile on the [N_Z,N_R] target grid
+  closure: controlled_glue
+- from: nearest_grid_index
+  from_output: index
+  to: confine_rows
+  to_input: left_index/right_index
+  data: 最近网格索引确定的左右端塞行
+  condition: when confine_to_plug_planes is enabled
+  required: false
+  transform: bind the left and right selected indices
+  closure: controlled_glue
+- from: local_ambipolar
+  from_output: p_parallel
+  to: confine_rows
+  to_input: field
+  data: 嵌套闭合产生的网格压力场
+  condition: when confine_to_plug_planes is enabled
+  required: false
+  transform: apply the row mask only to returned density, pressure/moment and charge-residual state fields; the three pitch-integral factors, potential and endpoint diagnostics remain full-grid fields
+  closure: controlled_glue
+- from: end_loss_left_right
+  from_output: left_end_state
+  to: local_ambipolar
+  to_input: phi_plug_left_v
+  data: flux-surface interpolated left end potential
+  condition: always
+  required: true
+  transform: linear profile interpolation in psi
+  closure: controlled_glue
+- from: end_loss_left_right
+  from_output: right_end_state
+  to: local_ambipolar
+  to_input: phi_plug_right_v
+  data: flux-surface interpolated right end potential
+  condition: always
+  required: true
+  transform: linear profile interpolation in psi
+  closure: controlled_glue

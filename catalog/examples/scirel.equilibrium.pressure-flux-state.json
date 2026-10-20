@@ -171,8 +171,8 @@
    "Descending radial storage preserves physical edge and original output order; numeric masks and nonfinite fit/derivative fail."
   ],
   "tests": [
-   "tests/operator_contracts/test_pressure_flux_state.py",
-   "tests/operator_contracts/test_legacy_six_absorption.py"
+   "tests/equilibrium/test_pressure_flux_state.py",
+   "tests/cross_domain/test_legacy_six_absorption.py"
   ],
   "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
   "known_limitations": [

@@ -218,7 +218,7 @@
    "Independent Decimal fit checks, source-bound coefficient/caller parity and finite arithmetic regressions"
   ],
   "tests": [
-   "tests/test_bootstrap.py"
+   "tests/tooling/test_bootstrap.py"
   ],
   "evidence_ceiling": "Mathematical fit arithmetic and explicit assembly only; no empirical full-physics qualification.",
   "known_limitations": [

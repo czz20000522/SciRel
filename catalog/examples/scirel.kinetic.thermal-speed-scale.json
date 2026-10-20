@@ -102,8 +102,8 @@
    "Read-only digest-bound comparison at three finite positive scalar points."
   ],
   "tests": [
-   "tests/operator_contracts/test_thermal_speed_and_density_reduction.py",
-   "tests/operator_contracts/test_legacy_admission_regressions.py"
+   "tests/kinetic/test_thermal_speed_and_density_reduction.py",
+   "tests/cross_domain/test_legacy_admission_regressions.py"
   ],
   "evidence_ceiling": "Maintained tests establish the frozen-constant formula and declared input/final-result failures. Earlier digest-bound comparisons found exact agreement at three ordinary finite positive scalar points; they do not establish behavior across the current corrected extreme range. Current independent Decimal100 regressions and exact-rational final-square checks establish that representable thermal speeds survive dangerous intermediate underflow/overflow while genuinely unrepresentable final results are rejected; ordinary operation order is unchanged. An earlier rejection of underflowed mass conversion is no longer the contract. This does not prove all-input numerical parity, full qualification, global physical applicability, expert approval or release.",
   "known_limitations": [

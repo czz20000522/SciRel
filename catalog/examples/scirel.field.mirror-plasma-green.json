@@ -108,8 +108,8 @@
    "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
   ],
   "tests": [
-   "tests/operator_contracts/test_mirror_plasma_green.py",
-   "tests/operator_contracts/test_field_green_correction.py"
+   "tests/field/test_mirror_plasma_green.py",
+   "tests/cross_domain/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Direct SciRel tests establish selected source-plane formula values, whole-matrix agreement with the maintained dense filament response on one symmetric grid, indexing invariants and one invalid-grid case. They do not prove resolved self-fields, arbitrary-grid validity, whole-project reassembly or expert recognition of this development record.",
   "known_limitations": [

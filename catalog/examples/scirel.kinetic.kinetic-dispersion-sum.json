@@ -275,7 +275,7 @@
    "Python preflight ran, but local execution covers this asset."
   ],
   "tests": [
-   "tests/operator_contracts/test_kinetic_dispersion_sum_n.py"
+   "tests/kinetic/test_kinetic_dispersion_sum_n.py"
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [

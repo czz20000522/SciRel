@@ -126,9 +126,9 @@
    "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel."
   ],
   "tests": [
-   "tests/operator_contracts/test_pointwise_firehose_margin.py",
-   "tests/operator_contracts/test_legacy_six_absorption.py",
-   "tests/operator_contracts/test_pressure_margin_cancellation.py"
+   "tests/diagnostics/test_pointwise_firehose_margin.py",
+   "tests/cross_domain/test_legacy_six_absorption.py",
+   "tests/diagnostics/test_pressure_margin_cancellation.py"
   ],
   "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
   "known_limitations": [

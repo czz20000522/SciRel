@@ -308,8 +308,8 @@
    "Independent total=10, ion=3, electron=2 preserves residual stress=5; species_sum rejects it and accepts the default zero-residual algebraic split."
   ],
   "tests": [
-   "tests/operator_contracts/test_hall_two_fluid_pressure.py",
-   "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
+   "tests/closures/test_hall_two_fluid_pressure.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
   ],
   "evidence_ceiling": "Direct SciRel regressions establish the selected two-cell values, callable profiles, default component split and one negative-moment rejection. They do not verify arbitrary user pressure laws, explicit component-total consistency, all broadcast shapes, a physical Hall force balance or current, or current expert recognition.",
   "known_limitations": [

@@ -343,10 +343,10 @@
    "Equal-mass, equal-temperature balanced roots at positive/negative common potentials 1e20 and 1e308 retain the actual zero-current state without midpoint overflow; prescribed endpoint evaluation remains distinct from solving current balance."
   ],
   "tests": [
-   "tests/operator_contracts/test_mirror_ambipolar_potential.py",
-   "tests/test_reviewed_failure_semantics.py",
-   "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
-   "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
+   "tests/closures/test_mirror_ambipolar_potential.py",
+   "tests/kinetic/test_reviewed_failure_semantics.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
   ],
   "evidence_ceiling": "Direct SciRel tests establish selected flux values from an independent half-space limit, reference-potential retention on joint vacuum, a convergent current-balance example, callable density profile equivalence, and selected failure paths. They do not prove the physical end-loss model, all pitch-integral branches, arbitrary parameter regimes, uniqueness of roots, final residual bounds at every extreme or current expert recognition.",
   "known_limitations": [

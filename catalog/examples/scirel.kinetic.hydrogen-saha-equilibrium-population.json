@@ -117,7 +117,7 @@
    "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard, including under caller np.errstate(all='raise')."
   ],
   "tests": [
-   "tests/operator_contracts/test_hydrogen_saha_equilibrium_population.py"
+   "tests/kinetic/test_hydrogen_saha_equilibrium_population.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

@@ -120,7 +120,7 @@
    "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
   ],
   "tests": [
-   "tests/operator_contracts/test_fluid_spectrum_full.py"
+   "tests/kinetic/test_fluid_spectrum_full.py"
   ]
  },
  "version": {

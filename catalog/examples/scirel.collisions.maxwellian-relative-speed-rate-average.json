@@ -190,7 +190,7 @@
    "The module constants AMU_KG and ELEMENTARY_CHARGE_C equal the declared values bit for bit."
   ],
   "tests": [
-   "tests/operator_contracts/test_maxwellian_relative_speed_rate_average.py"
+   "tests/collisions/test_maxwellian_relative_speed_rate_average.py"
   ],
   "evidence_ceiling": "The tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts, and the composition contract of the consumer graph. Bit-exact agreement with an independent implementation holds on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that behaviour outside the compared domain is correct. Public distribution licensing remains pending.",
   "known_limitations": [

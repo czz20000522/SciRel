@@ -122,7 +122,7 @@
    "An empty [0,2] query returns an empty sample vector; an invalid later query rejects the whole call."
   ],
   "tests": [
-   "tests/operator_contracts/test_bilinear_grid_sampling.py"
+   "tests/geometry/test_bilinear_grid_sampling.py"
   ],
   "evidence_ceiling": "Direct SciRel tests establish interpolation arithmetic and selected boundary behavior on small rectilinear grids, not the physical validity of any quantity supplied by a caller or expert recognition of this development record.",
   "known_limitations": [

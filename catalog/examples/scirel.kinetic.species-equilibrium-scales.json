@@ -310,7 +310,7 @@
    "Invalid inputs and unrepresentable derived values fail closed."
   ],
   "tests": [
-   "tests/operator_contracts/test_species_equilibrium_scales.py"
+   "tests/kinetic/test_species_equilibrium_scales.py"
   ],
   "evidence_ceiling": "Direct SciRel tests establish these formulas and failure behavior. A read-only comparison checked all 19 returned fields at two reference cases, but not all species mixtures or alternate normalizations. An independent review of that comparison supports its declared scope only; it does not expand parity to arbitrary inputs or confer expert approval.",
   "known_limitations": [

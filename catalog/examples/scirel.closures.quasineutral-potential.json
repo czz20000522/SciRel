@@ -207,8 +207,8 @@
    "Exact representable local-neutrality roots at common +/-1e20 and +/-1e308 potentials, plus a manufactured root halfway between adjacent floats that must fail without meeting the original residual tolerance."
   ],
   "tests": [
-   "tests/operator_contracts/test_quasineutral_potential.py",
-   "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
+   "tests/closures/test_quasineutral_potential.py",
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
   ],
   "evidence_ceiling": "Selected manufactured roots, actual local-closure composition, failure paths and finite midpoint cases are supported. An exact zero is a root of the supplied numerical callback, not an independent proof of its physical model; arbitrary models, all floating-point regimes and expert recognition are not established.",
   "known_limitations": [

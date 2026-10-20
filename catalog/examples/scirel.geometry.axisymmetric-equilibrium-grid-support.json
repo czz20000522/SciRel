@@ -228,7 +228,7 @@
    "Agreement between the coordinate glue and the mapping relation's own coverage mask."
   ],
   "tests": [
-   "tests/graph_contracts/axisymmetric_equilibrium_grid_support/test_graph_axisymmetric_equilibrium_grid_support.py"
+   "tests/cross_domain/axisymmetric_equilibrium_grid_support/test_composition_axisymmetric_equilibrium_grid_support.py"
   ],
   "evidence_ceiling": "Establishes that the composition reproduces both dependency relations and that its declared dependency closure, connectivity, and purity hold. It does not establish that either dependency is physically adequate for a device, and it does not establish the composition's suitability for grids or equilibria outside the tested contracts.",
   "known_limitations": [

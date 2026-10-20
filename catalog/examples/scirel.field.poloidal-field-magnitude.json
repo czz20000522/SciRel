@@ -111,7 +111,7 @@
    "Large finite component and median arithmetic regressions."
   ],
   "tests": [
-   "tests/operator_contracts/test_poloidal_field_magnitude.py"
+   "tests/field/test_poloidal_field_magnitude.py"
   ],
   "evidence_ceiling": "Direct SciRel tests cover the arithmetic and selected floating-point boundaries of this maintained relation; they do not establish a model-specific physical interpretation of the reference median or expert recognition of the development record.",
   "known_limitations": [

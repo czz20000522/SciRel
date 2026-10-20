@@ -157,7 +157,7 @@
    "Three digest-pinned reference cases cover exact finite replay and the declared boolean-coercion divergence."
   ],
   "tests": [
-   "tests/operator_contracts/test_terminal_molecular_heat_flux.py"
+   "tests/kinetic/test_terminal_molecular_heat_flux.py"
   ],
   "evidence_ceiling": "Direct comparisons establish the finite discrete heat-flux relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, qualification of the whole closure or expert approval.",
   "known_limitations": [

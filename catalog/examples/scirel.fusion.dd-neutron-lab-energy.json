@@ -121,7 +121,7 @@
  "verification": {
   "scope": [
    "How this evidence is organised. Every claim below is either measured by the tests in this repository or stated as a property of the relation. Those tests protect the self-contained claims: the relation's runtime behaviour at pinned witnesses, its input and failure contracts, and its regression values. They depend on no external checkout, candidate directory or fixture payload.",
-   "How this evidence is organised (2/2). The maintained suite is tests/operator_contracts/test_dd_neutron_lab_energy.py, and it is self-contained: it re-derives E_cm, E_boost and the direction cosine from the constants this asset publishes, so its assertions are independent of the asset's own evaluation order, and it imports nothing outside SciRel, NumPy and pytest.",
+   "How this evidence is organised (2/2). The maintained suite is tests/fusion/test_dd_neutron_lab_energy.py, and it is self-contained: it re-derives E_cm, E_boost and the direction cosine from the constants this asset publishes, so its assertions are independent of the asset's own evaluation order, and it imports nothing outside SciRel, NumPy and pytest.",
    "No non-positive substitution at the pinned witnesses. At those two speeds the callable returns 2.9996435921028974e-25 and 2.2132478772107012e-25 keV, strictly positive and twenty-two orders of magnitude below the relation's scale, and not the 2450.47589941598 keV centre-of-mass partition.",
    "The reachability of the non-positive case: evaluating the ordering E_cm + E_boost + 2*sqrt(E_cm*E_boost)*c rounds negative for 997 of the 8001 doubles within +-4000 ulp of the exact-cancellation speed, so a non-positive guard would be reached 6983 times in that neighbourhood. The current form has no such branch.",
    "No clamp is applied. Protected by the maintained tests as a census over the same 8001 doubles: exactly one returns 0.0 -- the single double at which E_boost equals E_cm to the last bit -- and the other 8000 are strictly positive, none negative. A clamp would have answered every non-positive value with zero instead.",
@@ -136,7 +136,7 @@
    "That the anisotropy capability is not composed into this asset and no angular weight is returned. Protected by the maintained tests: the module exposes no angular_weight, and no anisotropy module is loaded by a call."
   ],
   "tests": [
-   "tests/operator_contracts/test_dd_neutron_lab_energy.py"
+   "tests/fusion/test_dd_neutron_lab_energy.py"
   ],
   "evidence_ceiling": "The tests establish the two-body lab-energy relation and its input contract, the non-negativity of the returned value by construction, the exactness of the zero at the complete-cancellation configuration, the census showing no clamp is applied, the failure of non-representable arithmetic, and the rounding bound against the ordering E_cm + E_boost + 2*sqrt(E_cm*E_boost)*c. The tests depend on no external checkout, candidate directory or fixture payload. This asset does not establish the accuracy of the non-relativistic approximation at any energy, and does not establish the mass constants, the atomic mass unit or the MeV-per-joule factor against any independent measurement.",
   "known_limitations": [

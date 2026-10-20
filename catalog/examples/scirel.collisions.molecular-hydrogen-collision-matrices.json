@@ -248,8 +248,8 @@
    "真实归一化分布生成矩和 Alpha，验证 H↔H2 动量交换、Maxwell 平衡动量与弱漂移。"
   ],
   "tests": [
-   "tests/operator_contracts/test_molecular_hydrogen_collision_matrices.py",
-   "tests/operator_contracts/test_collision_physical_closure.py"
+   "tests/collisions/test_molecular_hydrogen_collision_matrices.py",
+   "tests/collisions/test_collision_physical_closure.py"
   ],
   "evidence_ceiling": "支持声明的速度积分核与已测离散输入的一致性；不是所有能区的实验截面验证，也不构成完整物理资格。",
   "known_limitations": [

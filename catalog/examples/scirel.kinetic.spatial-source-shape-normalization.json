@@ -109,7 +109,7 @@
    "A read-only digest-pinned comparison on three finite valid profiles."
   ],
   "tests": [
-   "tests/operator_contracts/test_neutral_normalizations.py"
+   "tests/kinetic/test_neutral_normalizations.py"
   ],
   "evidence_ceiling": "Maintained tests establish the trapezoidal normalization and declared failure behavior. A separate read-only comparison found exact agreement on three finite valid profiles; coercion behavior differs as declared. This does not prove parity on all inputs, reviewed qualification, global applicability, expert approval or release.",
   "known_limitations": [

@@ -93,7 +93,7 @@
    "That an overflowing channel sum fails closed (three 1e308 channels would otherwise be inf)."
   ],
   "tests": [
-   "tests/operator_contracts/test_neutral_frequency_assembly.py"
+   "tests/kinetic/test_neutral_frequency_assembly.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

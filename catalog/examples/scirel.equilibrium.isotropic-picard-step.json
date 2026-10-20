@@ -186,9 +186,9 @@
    "Finite inputs that overflow current, Green contraction or total flux are independently reproduced as explicit failures."
   ],
   "tests": [
-   "tests/operator_contracts/test_isotropic_picard_step.py",
-   "tests/graph_contracts/isotropic_pressure_flux/test_graph_isotropic_pressure_flux.py",
-   "tests/operator_contracts/test_legacy_six_absorption.py"
+   "tests/equilibrium/test_isotropic_picard_step.py",
+   "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
+   "tests/cross_domain/test_legacy_six_absorption.py"
   ],
   "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
   "known_limitations": [

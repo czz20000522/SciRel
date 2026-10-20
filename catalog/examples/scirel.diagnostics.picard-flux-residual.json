@@ -103,7 +103,7 @@
    "Wrong-rank or mismatched shapes and nonfinite input entries are rejected."
   ],
   "tests": [
-   "tests/operator_contracts/test_picard_flux_residual.py"
+   "tests/diagnostics/test_picard_flux_residual.py"
   ],
   "evidence_ceiling": "Direct numerical tests cover selected finite extremes and the formula, but not physical equilibrium convergence, arbitrary underflow behavior or expert recognition.",
   "known_limitations": [

@@ -123,7 +123,7 @@
    "默认单位源、轴上解析极限、精确自项和非法输入。"
   ],
   "tests": [
-   "tests/domain_contracts/geometry/test_green_response_matrices.py"
+   "tests/geometry/test_green_response_matrices.py"
   ],
   "evidence_ceiling": "具名域的独立数值关系与组合验证，非实验或有限导体资格。",
   "known_limitations": [

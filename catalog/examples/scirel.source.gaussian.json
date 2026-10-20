@@ -136,7 +136,7 @@
    "Nonuniform grids, conservation, signed/integer/tiny widths, remote centers and malformed inputs."
   ],
   "tests": [
-   "tests/test_profile_energy.py"
+   "tests/kinetic/test_profile_energy.py"
   ],
   "evidence_ceiling": "Independent numerical probes establish the named mathematical relation, discrete conservation, boundary and shape/failure behavior. They do not establish general plasma calibration or complete edge-model validity.",
   "known_limitations": [

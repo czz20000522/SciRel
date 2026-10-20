@@ -138,8 +138,8 @@
    "Exact zero despite overflowing partial sums; preservation of small terms in signed cancellation; finite final results despite partial sum overflow; subnormal shares; rejection of truly nonrepresentable percentages."
   ],
   "tests": [
-   "tests/operator_contracts/test_species_absorption_fraction.py",
-   "tests/operator_contracts/test_legacy_admission_regressions.py"
+   "tests/diagnostics/test_species_absorption_fraction.py",
+   "tests/cross_domain/test_legacy_admission_regressions.py"
   ],
   "evidence_ceiling": "Independent rational counterexamples establish the numerical ledger relation and its failure boundaries; the ordinary assertions remain in force. No evidence here establishes that the caller supplied physically correct absorbed powers.",
   "known_limitations": [

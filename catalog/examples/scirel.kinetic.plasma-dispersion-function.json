@@ -105,7 +105,7 @@
    "Bounded comparisons against pinned N=32 and N=64 references, recorded in the integration evaluation."
   ],
   "tests": [
-   "tests/operator_contracts/test_plasma_dispersion_function.py"
+   "tests/kinetic/test_plasma_dispersion_function.py"
   ],
   "evidence_ceiling": "Direct tests verify the declared SciRel calculation and failure behavior. Recorded comparisons establish numerical agreement only on listed finite arguments at stated tolerances; N=16 is a distinct approximation. They do not prove arbitrary-input numerical parity, a chosen physical normalization, dispersion-root correctness or expert scientific approval.",
   "known_limitations": [

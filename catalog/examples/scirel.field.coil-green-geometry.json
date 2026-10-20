@@ -139,7 +139,7 @@
    "A finite extreme geometry with an underflowed modulus is rejected before the Green response."
   ],
   "tests": [
-   "tests/operator_contracts/test_filament_coil_green.py"
+   "tests/field/test_filament_coil_green.py"
   ],
   "evidence_ceiling": "The direct tests establish the regularized radius, per-coil moduli and distance denominators against an independent recomputation (exact float equality on the offset, rtol=1e-15 on the closed forms), the (0, 1] modulus range on admissible geometry, axis-point admissibility through the axis offset, and the fail-closed input contracts. No test establishes the geometry against an external physics reference; the relation is a direct closed-form contract. The extreme underflow regression establishes rejection of one finite positive geometry whose computed modulus rounds to zero.",
   "known_limitations": [

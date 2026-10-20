@@ -309,9 +309,9 @@
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
-   "tests/operator_contracts/test_mirror_constrained_moments.py",
-   "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
-   "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
+   "tests/kinetic/test_mirror_constrained_moments.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [

@@ -129,7 +129,7 @@
    "A read-only valid-input comparison against digest-pinned reference values; bounded evidence only."
   ],
   "tests": [
-   "tests/operator_contracts/test_neutral_scattered_sources.py"
+   "tests/kinetic/test_neutral_scattered_sources.py"
   ],
   "evidence_ceiling": "The maintained tests establish the declared operation-order arithmetic, signed-value and fail-closed contracts. A separate read-only comparison can check bounded finite real inputs against digest-pinned reference values; it does not establish malformed-input parity, independently reviewed qualification, expert recognition, version-level trust or distribution licensing.",
   "known_limitations": [

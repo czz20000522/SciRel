@@ -407,8 +407,8 @@
    "Terminal firehose, compatibility and minimum-field checks."
   ],
   "tests": [
-   "tests/graph_contracts/axisymmetric_anisotropic_picard/test_graph_axisymmetric_anisotropic_picard.py",
-   "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard.py",
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
   "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
   "known_limitations": [

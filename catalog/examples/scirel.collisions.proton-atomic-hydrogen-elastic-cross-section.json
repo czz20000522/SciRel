@@ -98,9 +98,9 @@
    "后继原子碰撞矩阵与独立角积分使用修正后的分段定义。"
   ],
   "tests": [
-   "tests/operator_contracts/test_hydrogen_proton_elastic_cross_section.py",
-   "tests/operator_contracts/test_atomic_hydrogen_collision_matrices.py",
-   "tests/operator_contracts/test_collision_physical_closure.py"
+   "tests/collisions/test_hydrogen_proton_elastic_cross_section.py",
+   "tests/collisions/test_atomic_hydrogen_collision_matrices.py",
+   "tests/collisions/test_collision_physical_closure.py"
   ],
   "evidence_ceiling": "证明声明分段拟合与原始断点定义一致，未建立新的实验截面普适精度；根接收、人认可及许可另记。",
   "known_limitations": [

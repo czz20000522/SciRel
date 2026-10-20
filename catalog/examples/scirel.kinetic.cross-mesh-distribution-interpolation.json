@@ -217,9 +217,9 @@
    "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and the correct=0/warning behavior are checked."
   ],
   "tests": [
-   "tests/operator_contracts/test_cross_mesh_distribution.py",
-   "tests/operator_contracts/test_positive_conservative_remap.py",
-   "tests/operator_contracts/test_cylindrical_velocity_quadrature.py"
+   "tests/kinetic/test_cross_mesh_distribution.py",
+   "tests/kinetic/test_positive_conservative_remap.py",
+   "tests/kinetic/test_cylindrical_velocity_quadrature.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

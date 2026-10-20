@@ -110,7 +110,7 @@
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
-   "tests/operator_contracts/test_neutral_scattered_sources.py"
+   "tests/kinetic/test_neutral_scattered_sources.py"
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [

@@ -160,7 +160,7 @@
    "Non-real input rejection including string and boolean pseudo-numbers in pure and mixed containers, nonfinite magnitude rejection and large finite hypot behavior."
   ],
   "tests": [
-   "tests/operator_contracts/test_planar_wavevector.py"
+   "tests/geometry/test_planar_wavevector.py"
   ],
   "evidence_ceiling": "The direct tests establish this callable's declared bounded arithmetic, boolean-pseudo-number rejection and failure behaviour in this tree. No external cross-implementation comparison is re-runnable from this repository, and none is claimed as evidence here.",
   "known_limitations": [

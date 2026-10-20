@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.spectral-temporal-matrix",
-   "source_sha256": "15fa4208f972cfbeb6cdb6d6763acaf21c5c7d16fd3873c9206c5ff157219eb5",
+   "source_sha256": "26400d6b1f6634ff539b7c07422f1268e6ed5b92a7e5ee0041224278511a390a",
    "summary": "组装经独立修正的局域流体/Maxwell 生成器与相对论惯性。",
    "definition": "对 k=(kx,0,kz)、eps=(epsx,epsy,0)：dn_dot=-i(k·v0)dn-n0*(i*k+eps)·dv。动量方程 A_v*d(v)_dot=-i(k·v0)A_v*dv+(q/m)*(dv×B0+v0×dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision。当 B0!=0 时，令 D=(Psz-Psp)/B0/rho，并加入 [-i*kz*D*dBx, -i*kz*D*dBy, -2*D*((i*kx+epsx)*dBx+epsy*dBy)]。Maxwell 方程：dE_dot=i*c2*(k×dB)-sum(q*(n0*dv+v0*dn))/epsilon0；dB_dot=-i*(k×dE)。当 rel=1 时，A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2。额外的密度项与磁系数梯度项修正了此前遗漏的背景压强加速度导数。正的自身强迫被替换为耗散摩擦。不声称对 Lorentz 覆盖作修正：原始 Lorentz 项与各向异性项使用不同的列。",
    "model": "带经验纵向磁压因子 2 的代数各向异性多流体闭合。",
@@ -139,13 +139,13 @@
      "示例输出只是一次有界运行时观测，不是普遍科学结论。"
     ],
     "tests": [
-     "tests/operator_contracts/test_spectral_evolution.py"
+     "tests/kinetic/test_spectral_evolution.py"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.spectral-dispersion-scan",
-   "source_sha256": "f43505e06987ab3b9392cf0e451ee8c817f7765d9a7497c58fa6279bdcc23dfe",
+   "source_sha256": "7ce4e594bda5acff930e72626133d529b45df7b2a04dae9a63954c6ab787bb64",
    "summary": "用修正后的算子运行完整扫描族，并显式给出状态与限制。",
    "definition": "初始化一次；对每个按方法选定的 k 点组装修正矩阵并计算条件化本征谱；收集全部排序后的模式，并记录最后一点的 M、A、w1、w2、state。方法 2/3/4 分别采用默认的 101/196 个幅值点、51 个角度、50×75 笛卡尔网格，以及先 kz 后 kx 的行主序。单分支处理 0/1 及未知非负选择器。随后为 2/3/4 在 Agg 后端生成双面板 PNG；其他选择器保持零坐标轴。可选的 SI 位置返回前缀为 (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0)，各字段均有定义。",
    "model": "由新建状态、修正后的局域多流体矩阵和条件化谱组合而成；扫描网格遵循声明的方法默认值。",
@@ -560,13 +560,13 @@
      "示例输出只是一次有界运行时观测，不是普遍科学结论。"
     ],
     "tests": [
-     "tests/operator_contracts/test_spectral_evolution.py"
+     "tests/kinetic/test_spectral_evolution.py"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
-   "source_sha256": "fb83c391ccbd775fb004a3deeb9b4750cc3ad7ab0f589f3db43bcdc9f2cd7f8b",
+   "source_sha256": "21c13d138834069c84c32efa0e36e0fe5127424fe667596da7cbe330eb4de1de",
    "summary": "求解时间模式并独立排序，保持成对的值与向量，并以实数精度做精化。",
    "definition": "lambda*A*X=M*X；omega=i*lambda。对两个矩阵施加正对角物理相似变换和二进制相似变换。先做双精度 eig；当分量残差 >1e-12 时，在私有克隆上下文中用 50 位十进制 mpmath 做实际求逆和 eig。最终全局残差或活动分量残差 >1e-10 时拒绝。转换为 complex128，并在不使未缩放幅值溢出的前提下归一化向量。排序按实部/虚部频率独立且稳定。",
    "model": "稠密线性广义本征问题，并以向后误差控制算术精化。",
@@ -738,13 +738,13 @@
      "示例输出只是一次有界运行时观测，不是普遍科学结论。"
     ],
     "tests": [
-     "tests/operator_contracts/test_spectral_evolution.py"
+     "tests/kinetic/test_spectral_evolution.py"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.spectral-plasma-state",
-   "source_sha256": "8f0d0d2d7b1f309ba2ae5e983d4feb2f992e9aa9440fcdc4e7b7797a1eb8668b",
+   "source_sha256": "5a0ba4af56c1aa68b2367d70d90c30557f45d20a2888ec77f56ddfec60c17e7a",
    "summary": "从主数据派生新状态、诊断量及耗散互易碰撞矩阵。",
    "definition": "rho=m*n；Q=sum(q*n)；J=sum(q*n*v)；平行/垂直压强=rho*cs^2/gamma；omega_c=q*B0/m；omega_p=sqrt(n*q^2/(epsilon0*m))。配对摩擦：acceleration_i=sum_j rate_ij*(dv_j-dv_i)-drag_i*dv_i，且 rho_i rate_ij=rho_j rate_ji。",
    "model": "带外部支撑背景的局域多流体代数热状态有效模型。",
@@ -1143,7 +1143,7 @@
      "示例输出只是一次有界运行时观测，不是普遍科学结论。"
     ],
     "tests": [
-     "tests/operator_contracts/test_spectral_evolution.py"
+     "tests/kinetic/test_spectral_evolution.py"
     ]
    }
   }

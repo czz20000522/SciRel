@@ -173,7 +173,7 @@
    "Exact agreement with an independent reconstruction of the field, the flux, the coverage mask, and both counters."
   ],
   "tests": [
-   "tests/operator_contracts/test_axisymmetric_grid_mapping.py"
+   "tests/geometry/test_axisymmetric_grid_mapping.py"
   ],
   "evidence_ceiling": "Establishes that the declared tensor-product reconstruction reproduces the mapping relation and reports its clamping honestly. It does not establish that the equilibrium map itself is physically correct, nor that bilinear interpolation is adequate at any particular grid resolution, nor that the map's coordinate convention matches any specific device.",
   "known_limitations": [

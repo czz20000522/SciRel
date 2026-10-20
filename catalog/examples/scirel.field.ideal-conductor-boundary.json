@@ -194,7 +194,7 @@
    "Negative rcond rejection."
   ],
   "tests": [
-   "tests/operator_contracts/test_ideal_conductor_boundary.py"
+   "tests/field/test_ideal_conductor_boundary.py"
   ],
   "evidence_ceiling": "Direct SciRel tests verify a small full-rank sampling-consistent system, one truncated-rank case and consistent 2*pi rescaling of all flux quantities. They do not verify arbitrary boundary Green data, conditioning guarantees, physical wall correctness or expert recognition of this development record.",
   "known_limitations": [

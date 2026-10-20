@@ -139,7 +139,7 @@
    "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
   ],
   "tests": [
-   "tests/operator_contracts/test_terminal_molecular_flux_velocity.py"
+   "tests/kinetic/test_terminal_molecular_flux_velocity.py"
   ],
   "evidence_ceiling": "Direct numerical comparisons establish the stated finite discrete relation and boundary differences on tested carriers. They do not establish the incoming terminal distribution, physical normalization, complete qualification or expert approval.",
   "known_limitations": [

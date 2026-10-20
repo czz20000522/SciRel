@@ -351,7 +351,7 @@
    "Python preflight ran, but fluid native/local execution covers this asset."
   ],
   "tests": [
-   "tests/graph_contracts/test_fluid_spectrum_r43_graphs.py"
+   "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [

@@ -102,7 +102,7 @@
    "Rejection of non-2-D and non-finite matrices and of non-positive or non-finite thresholds."
   ],
   "tests": [
-   "tests/operator_contracts/test_truncated_svd_inverse.py"
+   "tests/geometry/test_truncated_svd_inverse.py"
   ],
   "evidence_ceiling": "Mathematical identity checks on bounded dense matrices; no application-level diagnostic-fitting or statistical-error claim.",
   "known_limitations": [

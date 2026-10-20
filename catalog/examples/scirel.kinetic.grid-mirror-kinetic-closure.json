@@ -683,8 +683,8 @@
    "Injected endpoint evaluation masquerading as a solved balance is rejected before the nested local closure."
   ],
   "tests": [
-   "tests/graph_contracts/grid_mirror_kinetic_closure/test_graph_grid_mirror_kinetic_closure.py",
-   "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py"
+   "tests/cross_domain/grid_mirror_kinetic_closure/test_composition_grid_mirror_kinetic_closure.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

@@ -114,8 +114,8 @@
    "外部历史比较不在本合同的证据范围内；本合同只绑定两个定义及其独立科学合同。"
   ],
   "tests": [
-   "tests/operator_contracts/test_momentum_scales.py",
-   "tests/operator_contracts/test_momentum_intermediate_extremes.py"
+   "tests/collisions/test_momentum_scales.py",
+   "tests/collisions/test_momentum_intermediate_extremes.py"
   ],
   "evidence_ceiling": "有限独立极值与普通闭式测试支持两个定义及其形状/表示性合同；不证明任意碰撞模型、调用者常数/单位、相对论适用性或完整来源项目。危险区采用 100 位 Decimal，输出仍为 binary64，不宣称任意精度结果。",
   "known_limitations": [

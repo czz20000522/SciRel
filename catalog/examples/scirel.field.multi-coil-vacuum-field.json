@@ -149,7 +149,7 @@
    "Missing current and invalid grid failures."
   ],
   "tests": [
-   "tests/graph_contracts/multi_coil_vacuum_field/test_graph_multi_coil_vacuum_field.py"
+   "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py"
   ],
   "evidence_ceiling": "Verified for the declared axisymmetric vacuum-filament model and tested input contracts; it does not establish applicability to material coils, plasma response, or three-dimensional geometry.",
   "known_limitations": [

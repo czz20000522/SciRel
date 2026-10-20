@@ -236,7 +236,7 @@
    "Four sample refinements demonstrate finite-difference convergence along fixed-psi lines."
   ],
   "tests": [
-   "tests/operator_contracts/test_spectral_scientific_correction.py"
+   "tests/cross_domain/test_spectral_scientific_correction.py"
   ],
   "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
   "known_limitations": [

@@ -103,9 +103,9 @@
    "独立70/140位角积分检验近导线BZ与m=0.5两侧连续响应，保留原定容差；正半径极小源、轴上BZ与不可表示算术失败。"
   ],
   "tests": [
-   "tests/domain_contracts/geometry/test_geometry_fields.py",
-   "tests/domain_contracts/geometry/test_geometry_regressions.py",
-   "tests/operator_contracts/test_field_green_correction.py"
+   "tests/geometry/test_geometry_fields.py",
+   "tests/geometry/test_geometry_regressions.py",
+   "tests/cross_domain/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Named fixtures and declared API behavior only; no complete scientific correctness or interchangeability claim.",
   "known_limitations": [

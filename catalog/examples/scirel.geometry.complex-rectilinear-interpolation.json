@@ -130,7 +130,7 @@
    "Empty target sets and preservation of trailing source axes."
   ],
   "tests": [
-   "tests/operator_contracts/test_complex_rectilinear_interpolation.py"
+   "tests/geometry/test_complex_rectilinear_interpolation.py"
   ],
   "evidence_ceiling": "Establishes the declared trilinear reconstruction and out-of-domain reporting contract against an independent reference; it does not establish that a particular source field is adequately resolved by the supplied grid, nor does it bound the interpolation error for any physical field.",
   "known_limitations": [

@@ -125,8 +125,8 @@
    "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
   ],
   "tests": [
-   "tests/operator_contracts/test_circular_filament_green.py",
-   "tests/operator_contracts/test_field_green_correction.py"
+   "tests/field/test_circular_filament_green.py",
+   "tests/cross_domain/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Verified for the maintained axisymmetric circular-filament relation and tested finite points; not an independent validation of arbitrary coil geometries or singular self-fields.",
   "known_limitations": [

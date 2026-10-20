@@ -140,8 +140,8 @@
    "Axis-crossing and nonfinite geometry rejection, exact tiny-angle rotation, and finite generation at a very large finite angle."
   ],
   "tests": [
-   "tests/operator_contracts/test_permanent_ring_filaments.py",
-   "tests/operator_contracts/test_legacy_six_absorption.py"
+   "tests/field/test_permanent_ring_filaments.py",
+   "tests/cross_domain/test_legacy_six_absorption.py"
   ],
   "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
   "known_limitations": [

@@ -112,7 +112,7 @@
    "The alignment, real-input, nonnegativity and finite-output failure contracts."
   ],
   "tests": [
-   "tests/operator_contracts/test_thermal_speed_and_density_reduction.py"
+   "tests/kinetic/test_thermal_speed_and_density_reduction.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

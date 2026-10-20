@@ -98,7 +98,7 @@
    "Independent Z values and resolved kinetic responses bound the corrected J12 table; J4/J8 lower-order approximation errors remain explicit diagnostics."
   ],
   "tests": [
-   "tests/operator_contracts/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py"
   ],
   "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without the declared local Python runtime.",
   "known_limitations": [

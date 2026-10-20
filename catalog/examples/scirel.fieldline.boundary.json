@@ -90,7 +90,7 @@
    "Only the explicitly stated finite input domain and direct-test fixtures"
   ],
   "tests": [
-   "tests/domain_contracts/equilibrium/test_retained_fieldline_primitives.py"
+   "tests/equilibrium/test_retained_fieldline_primitives.py"
   ],
   "evidence_ceiling": "Numerical evidence for the named fixtures only; it does not establish arbitrary-input correctness or experimental physical validation.",
   "known_limitations": [

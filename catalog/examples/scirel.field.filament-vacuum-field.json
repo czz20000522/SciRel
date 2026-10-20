@@ -136,8 +136,8 @@
    "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
   ],
   "tests": [
-   "tests/operator_contracts/test_filament_vacuum_field.py",
-   "tests/operator_contracts/test_field_green_correction.py"
+   "tests/field/test_filament_vacuum_field.py",
+   "tests/cross_domain/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Direct regressions cover selected ideal-filament superposition, axial field, radial quadrature and a fine-grid comparison with the circular-filament psi kernel after subtracting the first-radius reference. They do not establish arbitrary-grid quadrature accuracy, complete source-project closure or expert approval.",
   "known_limitations": [

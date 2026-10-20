@@ -136,7 +136,7 @@
    "Quadratic, linear and constant face derivatives with matching Neumann data on unequal terminal widths and N=2; the derivative-constrained reconstruction replaces the inaccurate linearly extrapolated boundary value. Explicit two-point masks, Dirichlet endpoint half-cell secants and linear face values retain their definitions."
   ],
   "tests": [
-   "tests/test_fvm.py"
+   "tests/fvm/test_fvm.py"
   ],
   "evidence_ceiling": "Named discrete invariants and manufactured uniform-grid convergence; no arbitrary-grid stability/accuracy or full transport-simulation claim.",
   "known_limitations": [

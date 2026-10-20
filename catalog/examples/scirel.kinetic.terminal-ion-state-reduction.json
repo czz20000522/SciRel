@@ -176,7 +176,7 @@
    "Three digest-pinned fixed cases cover exact finite agreement and the boolean-coercion divergence."
   ],
   "tests": [
-   "tests/operator_contracts/test_terminal_molecular_ion_state.py"
+   "tests/kinetic/test_terminal_molecular_ion_state.py"
   ],
   "evidence_ceiling": "Direct numerical comparisons establish the finite discrete algebraic relation and boundary differences on tested carriers. They do not establish rate-table provenance, absolute units, a full H2+ kinetic closure, complete qualification or expert approval.",
   "known_limitations": [

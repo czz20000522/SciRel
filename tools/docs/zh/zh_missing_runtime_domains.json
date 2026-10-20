@@ -91,7 +91,7 @@
      "units": "Q；导数 Q/X"
     }
    ],
-   "source_sha256": "8984a23022d76536e63ea76f8de4830739f4792a9797170f18ae6031a71e6aeb",
+   "source_sha256": "0ce06f5f2706df688bedd9cc0069f581b0c887e2c4fa3800d02aa545156b4f59",
    "summary": "由显式面网格、单元点值和边界数据构造不可变变量。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -104,7 +104,7 @@
      "在不等的末端宽度和双单元网格上检查匹配 Neumann 数据的二次、一次与常数导数；由导数约束的重构取代了不准确的线性外推边界值。显式两点掩码、Dirichlet 端点半单元割线和线性面值均维持原有定义。"
     ],
     "tests": [
-     "tests/test_fvm.py"
+     "tests/fvm/test_fvm.py"
     ]
    }
   },
@@ -198,7 +198,7 @@
      "units": "Q/time"
     }
    ],
-   "source_sha256": "2a3e6a4bb635b692fcf55d03096b357078fe9a068a22ff448b0a05a7c703291a",
+   "source_sha256": "5433363fc5f8ae83dd219870507efa732c7ef9e6e39c839cd254d9d7123cba5c",
    "summary": "使用幂律面权重组装守恒对流算子及指定边界通量。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -210,7 +210,7 @@
      "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。"
     ],
     "tests": [
-     "tests/test_fvm.py"
+     "tests/fvm/test_fvm.py"
     ]
    }
   },
@@ -280,7 +280,7 @@
      "units": "Q/time"
     }
    ],
-   "source_sha256": "e1592a389b035fa8fd29d8db2df428660d888e074967000c8e10db0686d6ac5a",
+   "source_sha256": "b61e2c668b81bca0e768191560da5c76333eb8e474a0ce8cc913fcd1b9814fd0",
    "summary": "将扩散通量散度组装为三对角算子与边界强迫。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -292,7 +292,7 @@
      "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。"
     ],
     "tests": [
-     "tests/test_fvm.py"
+     "tests/fvm/test_fvm.py"
     ]
    }
   },
@@ -434,7 +434,7 @@
      "units": "Q"
     }
    ],
-   "source_sha256": "09a44cd36549bdb9ef57ef79e568d59f95816accbc4e9bb8ab67c84a7e5da42e",
+   "source_sha256": "d62098a819d61d5862de2c448ac573c78bc770224b9da0183b523bea859bad0d",
    "summary": "用分别给出的旧、新线性算子推进单个通道一步。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -446,7 +446,7 @@
      "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。"
     ],
     "tests": [
-     "tests/test_fvm.py"
+     "tests/fvm/test_fvm.py"
     ]
    }
   },
@@ -500,7 +500,7 @@
      "units": "与输入相同"
     }
    ],
-   "source_sha256": "8599722775d3d4ed784b0902efdd059cea0f1fa519195b7625226fe5ee3c7a1a",
+   "source_sha256": "aa9af908ef027d6ac16368042fabd5e0fe821a7d03eab6663149bb3093a58066",
    "summary": "将一维网格上相邻的面值转换为单元中点值。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -514,7 +514,7 @@
      "与本关系的规范 SciRel 调用者及依赖一致。"
     ],
     "tests": [
-     "tests/operator_contracts/test_torax_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py"
     ]
    }
   },
@@ -681,7 +681,7 @@
      "units": "A/m^2"
     }
    ],
-   "source_sha256": "6a573100959509c7e96c72a4f345340be76e87c9327f6d38468b97a58e458920",
+   "source_sha256": "a38f69c96b60b9058f294bc28457cbffeeff59464ea18ea0cceb0876f8020133",
    "summary": "由压强、对数梯度及拟合系数组装平行自举电流。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -694,7 +694,7 @@
      "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。"
     ],
     "tests": [
-     "tests/test_bootstrap.py"
+     "tests/tooling/test_bootstrap.py"
     ]
    }
   },
@@ -772,7 +772,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "d63a65379a6a73a7bc6be49c16570ffa868e003802b2416441d45690bf9519e3",
+   "source_sha256": "8b66a4dd75c30d880592d5b9f955e6cbe1d2a49125c79cd2cfaae2e5b9e7131a",
    "summary": "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -784,7 +784,7 @@
      "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。"
     ],
     "tests": [
-     "tests/test_bootstrap.py"
+     "tests/tooling/test_bootstrap.py"
     ]
    }
   },
@@ -862,7 +862,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "6d381fbb1179ef48e8c879c53ac1474e2a5691059b28950d58fb688c383d2f76",
+   "source_sha256": "02085c99947c421108ebe3564c69a58d992540699a0e08daa827ffeb0754225c",
    "summary": "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -874,7 +874,7 @@
      "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。"
     ],
     "tests": [
-     "tests/test_bootstrap.py"
+     "tests/tooling/test_bootstrap.py"
     ]
    }
   },
@@ -937,7 +937,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "f0254a4264ca8d070e555dab458c183890ef7c96f9c34f02f54ba16dd7130c74",
+   "source_sha256": "88908644384c44826d2cfa5c6bd47be4764e0f6fd870cc5e0b3e35a13df85670",
    "summary": "电子-电子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -951,7 +951,7 @@
      "与本关系的规范 SciRel 调用者及依赖一致。"
     ],
     "tests": [
-     "tests/operator_contracts/test_torax_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py"
     ]
    }
   },
@@ -1014,7 +1014,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "32e4c19def2a2e10c54c0c5b002aad48840debf724b5e098cdf944934cd1a53f",
+   "source_sha256": "c20ec38750cf50fa0757a470fe24b58c741a35ed71ffd741472a0a8c9be3394e",
    "summary": "电子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1028,7 +1028,7 @@
      "与本关系的规范 SciRel 调用者及依赖一致。"
     ],
     "tests": [
-     "tests/operator_contracts/test_torax_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py"
     ]
    }
   },
@@ -1099,7 +1099,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "b4c9254c50949bf90c8bb63bcb00a9a015958c46bf0796b2a6684f290fc5ffa7",
+   "source_sha256": "11b4717b45a6020884b6b6b21123a4b0a389de97819c7353f11464df24f954dc",
    "summary": "离子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1113,7 +1113,7 @@
      "与本关系的规范 SciRel 调用者及依赖一致。"
     ],
     "tests": [
-     "tests/operator_contracts/test_torax_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py"
     ]
    }
   },
@@ -1183,7 +1183,7 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "535a08d584077ddc9455b6c0e2a3dce924318f0c113844518b182f191e6a2a79",
+   "source_sha256": "c1215edff5b5bec752d255018c580f7e5708c221759969abc6bff9e1a5193b62",
    "summary": "由单一主离子与单一杂质电荷计算主离子稀释份额。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1197,7 +1197,7 @@
      "与本关系的规范 SciRel 调用者及依赖一致。"
     ],
     "tests": [
-     "tests/operator_contracts/test_torax_algebra_grid.py"
+     "tests/cross_domain/test_algebra_grid.py"
     ]
    }
   },
@@ -1303,7 +1303,7 @@
      "units": "J"
     }
    ],
-   "source_sha256": "55ff00dc1ea5def3effaed8aa2c8273a88a7bb02705cdecd35c67fe9d72ac863",
+   "source_sha256": "6fbdfded362d5f7d0ab0bbf637ebd3de226f3d8b9e949c3b91d5b9ad29c713eb",
    "summary": "分别积分电子、离子及总标量压强，得到储存热能。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1318,8 +1318,8 @@
      "检查不同排列中的有符号相消以及中间乘积上溢/下溢；使用精确 binary64 乘积且仅最终舍入。"
     ],
     "tests": [
-     "tests/test_profile_energy.py",
-     "tests/test_thermal_cancellation.py"
+     "tests/kinetic/test_profile_energy.py",
+     "tests/kinetic/test_thermal_cancellation.py"
     ]
    }
   },
@@ -1417,7 +1417,7 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "c2f8601273cd6d4dd28d112495e79fe266bbef30ff5b089788495f61a82173e3",
+   "source_sha256": "972dc60209ac593d69e1f47e46dcef62b436fcd5d185f03d8ffcf52894fe0d2a",
    "summary": "在非均匀归一化半径网格上生成体积归一化指数源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1431,7 +1431,7 @@
      "覆盖非均匀网格、守恒、有符号/整数/极小宽度、起始位置相消及错误输入。"
     ],
     "tests": [
-     "tests/test_profile_energy.py"
+     "tests/kinetic/test_profile_energy.py"
     ]
    }
   },
@@ -1529,7 +1529,7 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "f19236e867b6771c1b45a669ee64b017995c53737c2cbc5b48f3c3eda049de1e",
+   "source_sha256": "d8cc59734326dc6d2911744f813c74d732bf09ad4bfb0b724fddad2e0ee1e065",
    "summary": "在非均匀归一化半径网格上生成体积归一化高斯源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1543,7 +1543,7 @@
      "覆盖非均匀网格、守恒、有符号/整数/极小宽度、远离网格的中心及错误输入。"
     ],
     "tests": [
-     "tests/test_profile_energy.py"
+     "tests/kinetic/test_profile_energy.py"
     ]
    }
   }

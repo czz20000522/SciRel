@@ -531,8 +531,8 @@
    "磁通保持不变但场和电流仍变化时不宣称收敛；空磁场在压力回调前失败关闭。"
   ],
   "tests": [
-   "tests/graph_contracts/free_boundary_anisotropic_picard/test_graph_free_boundary_anisotropic_picard.py",
-   "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
+   "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
   "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
   "known_limitations": [

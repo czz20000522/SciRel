@@ -127,8 +127,8 @@
    "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
   ],
   "tests": [
-   "tests/operator_contracts/test_dense_axisymmetric_green.py",
-   "tests/operator_contracts/test_field_green_correction.py"
+   "tests/field/test_dense_axisymmetric_green.py",
+   "tests/cross_domain/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete source-project closure or expert approval.",
   "known_limitations": [

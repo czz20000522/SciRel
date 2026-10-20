@@ -148,7 +148,7 @@
    "Invalid count, spacing, and axis-crossing failures."
   ],
   "tests": [
-   "tests/operator_contracts/test_rectangular_coil_filaments.py"
+   "tests/field/test_rectangular_coil_filaments.py"
   ],
   "evidence_ceiling": "Verified against the maintained SciRel contract for finite axisymmetric rectangular sections; this does not validate a physical winding or field solution.",
   "known_limitations": [

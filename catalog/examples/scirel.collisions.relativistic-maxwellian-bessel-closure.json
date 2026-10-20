@@ -118,7 +118,7 @@
  "verification": {
   "scope": [
    "How this evidence is organised. Every claim below is measured by the tests in this repository or stated as a property of the declared relation. The tests protect the self-contained claims: the relation's runtime behaviour, its input and failure contracts, and its regression values. They depend on no external checkout, candidate directory or fixture payload.",
-   "How this evidence is organised (2/2). The maintained suite is tests/operator_contracts/test_relativistic_maxwellian_bessel.py, and it is self-contained: it imports nothing outside SciRel, SciPy, NumPy and pytest, and it exercises the fail-closed contract by substituting the backend for the duration of a test rather than by probing where the installed SciPy stops being representable.",
+   "How this evidence is organised (2/2). The maintained suite is tests/collisions/test_relativistic_maxwellian_bessel.py, and it is self-contained: it imports nothing outside SciRel, SciPy, NumPy and pytest, and it exercises the fail-closed contract by substituting the backend for the duration of a test rather than by probing where the installed SciPy stops being representable.",
    "That the closure returns exactly the three rescaled Bessel quantities. The tests assert the returned mapping's keys are exactly bk0, bk1 and bk2 for arguments spanning the removed boundary; branch labels, applied switches and per-branch accuracy bounds are not returned.",
    "That the signature takes a single positional argument. The tests assert the parameter list is exactly ('x',) and that a branch_switch keyword raises TypeError.",
    "The removal of the branch discontinuity. The piecewise approximation jumps by 1.5076691838017936e-03 relative in bk1 across x = 2, its own stated per-branch accuracy bound and the largest error in its domain. The direct evaluation's jump at x = 2 is 8.59408144671376e-16, within the rounding scale of two adjacent doubles, and the closure is smooth across every sampled neighbourhood rather than at that one point.",
@@ -134,7 +134,7 @@
    "The rescaled-function identity and the asymptotic form, and the monotone decrease of bk0 and bk1 in x. Protected by the maintained tests directly, independently of either route."
   ],
   "tests": [
-   "tests/operator_contracts/test_relativistic_maxwellian_bessel.py"
+   "tests/collisions/test_relativistic_maxwellian_bessel.py"
   ],
   "evidence_ceiling": "Establishes the measured distance from the piecewise approximation and its boundary discontinuity, and that the difference is the approximation rather than the relation. Establishes, on the direct tests, that the closure is the exponentially rescaled modified Bessel functions of orders zero, one and two, that bk2 is the recurrence, that every accepted call returns three finite floats, and the response to a backend that does not return finite values. The tests depend on no external checkout, candidate directory or fixture payload. This asset does not establish the physical accuracy of the closure for any distribution, temperature or relativistic parameter, does not establish or bound the domain over which the installed backend can evaluate the relation, does not establish that the replaced Abramowitz-Stegun coefficients or the x = 2 split were the right ones to have replaced, and consults no independent special-function table.",
   "known_limitations": [

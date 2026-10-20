@@ -111,7 +111,7 @@
    "Finite and out-of-domain input behavior."
   ],
   "tests": [
-   "tests/operator_contracts/test_fast_ion_heating.py"
+   "tests/plasma/test_fast_ion_heating.py"
   ],
   "evidence_ceiling": "Independent quadrature, analytic boundary limits and regression tests support numerical evaluation of the stated mathematical relation under the declared failure behavior. They do not establish experimental calibration or wider physical applicability.",
   "known_limitations": [

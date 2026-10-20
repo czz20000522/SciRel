@@ -201,7 +201,7 @@
    "Exact agreement with the independently computed support mask for the same sampled flux and coordinates."
   ],
   "tests": [
-   "tests/operator_contracts/test_material_support.py"
+   "tests/geometry/test_material_support.py"
   ],
   "evidence_ceiling": "Establishes that the declared classification reproduces the support mask, that zero thickness is rejected by an explicit precondition, and that the innermost-radius segment's interaction with the coverage mask is documented. It does not establish that the selected side of the separatrix flux is physically the confined region for any device, nor that the innermost grid radius coincides with the magnetic axis.",
   "known_limitations": [

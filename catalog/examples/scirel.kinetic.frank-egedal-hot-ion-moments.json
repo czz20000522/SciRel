@@ -216,7 +216,7 @@
    "Independent 70-digit incomplete-Beta raw-moment values for degree 2 and beta=-0.1,-0.3,-0.4,-0.4999,0,0.5, including near the density-integrability boundary."
   ],
   "tests": [
-   "tests/operator_contracts/test_spectral_scientific_correction.py"
+   "tests/cross_domain/test_spectral_scientific_correction.py"
   ],
   "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
   "known_limitations": [

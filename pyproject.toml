@@ -56,3 +56,12 @@ testpaths = ["tests"]
 norecursedirs = ["build", "provenance", "skills"]
 addopts = "-p no:cacheprovider"
 pythonpath = ["src", "tests"]
+markers = [
+    "unit: fast isolated checks with no scientific or filesystem boundary",
+    "contract: scientific-domain contract tests under tests/<domain>",
+    "integration: cross-domain composition tests under tests/cross_domain",
+    "architecture: public surface, import boundary and package layout checks",
+    "docs: bilingual handbook and documentation pipeline checks",
+    "delivery: admission, reception and installed-wheel checks",
+    "tooling: build, catalog and validation tool checks",
+]

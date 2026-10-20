@@ -143,7 +143,7 @@
    "Nonpositive field and outside-grid rejection."
   ],
   "tests": [
-   "tests/operator_contracts/test_flux_surface_inverse_field_average.py"
+   "tests/geometry/test_flux_surface_inverse_field_average.py"
   ],
   "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove source-project completeness.",
   "known_limitations": [

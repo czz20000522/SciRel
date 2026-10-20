@@ -177,9 +177,9 @@
    "Adjacent binary64 potentials near +/-1e20 reproduce the exact-rational dimensionless exponent; opposite-sign potentials of magnitude 1e308 and subnormal thermal-energy cases preserve representable final responses."
   ],
   "tests": [
-   "tests/operator_contracts/test_boltzmann_quasineutrality.py",
-   "tests/operator_contracts/test_mirror_kinetic_scientific_correction.py",
-   "tests/operator_contracts/test_mirror_gauge_scientific_correction.py"
+   "tests/closures/test_boltzmann_quasineutrality.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
   ],
   "evidence_ceiling": "The evaluated mathematical Boltzmann law, finite arithmetic behavior and declared residual conventions are tested. This does not establish a physical electron equilibrium or all plasma-model applicability.",
   "known_limitations": [

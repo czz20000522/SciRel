@@ -106,7 +106,7 @@
    "Roundtrip, lexical fixed-width, malformed input and class-state tests"
   ],
   "tests": [
-   "tests/domain_contracts/test_eqdsk.py"
+   "tests/io/test_eqdsk.py"
   ],
   "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [

@@ -120,7 +120,7 @@
    "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
   ],
   "tests": [
-   "tests/operator_contracts/test_vlasov_poisson_dispersion.py"
+   "tests/kinetic/test_vlasov_poisson_dispersion.py"
   ],
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [

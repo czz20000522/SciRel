@@ -119,8 +119,8 @@
  },
  "verification": {
   "tests": [
-   "tests/operator_contracts/test_generalized_dispersion_models.py",
-   "tests/operator_contracts/test_generalized_dispersion_independent_corrections.py"
+   "tests/kinetic/test_generalized_dispersion_models.py",
+   "tests/kinetic/test_generalized_dispersion_independent_corrections.py"
   ],
   "scope": [
    "Safe AST algebra and analytic chain-rule derivative through DensityExpression.",

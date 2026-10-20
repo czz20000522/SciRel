@@ -85,7 +85,7 @@
  },
  "verification": {
   "tests": [
-   "tests/operator_contracts/test_generalized_dispersion_models.py"
+   "tests/kinetic/test_generalized_dispersion_models.py"
   ],
   "scope": [
    "Positive small wavenumbers, including exponentially underflowed damping returned as zero."

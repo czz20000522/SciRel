@@ -190,7 +190,7 @@
    "A bounded fixed-case comparison against a separately executed reference implementation, pinned by SHA-256, reproduces the distribution, exponent and thermal speed for single- and double-molecule holdouts at rtol 1e-15. That comparison is environment-gated and does not establish full qualification."
   ],
   "tests": [
-   "tests/operator_contracts/test_shifted_maxwellian_seed.py"
+   "tests/kinetic/test_shifted_maxwellian_seed.py"
   ],
   "evidence_ceiling": "The maintained tests establish the seed relation against an in-file independent formulation, the clamp and far-shift limits, the molecule-count scaling, the input contract, and the composition chain with the quadrature and the rate average. A separately executed comparison establishes bounded numerical agreement with a reference implementation on the compared holdouts only. No test establishes that the pre-compensation seed is physically adequate for any caller purpose without a moment-compensation step, that any caller mesh or volume measure is physically valid, or that the relation behaves correctly outside the compared domain. Broader verification is not claimed beyond these comparisons. Expert recognition, version-level trust and distribution licensing remain pending.",
   "known_limitations": [

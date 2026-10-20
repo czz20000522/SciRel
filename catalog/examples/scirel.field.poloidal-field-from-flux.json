@@ -132,8 +132,8 @@
    "A representable strong constant gauge on a manufactured even flux leaves BR/BZ invariant, including the axis."
   ],
   "tests": [
-   "tests/operator_contracts/test_poloidal_field_from_flux.py",
-   "tests/operator_contracts/test_anisotropic_core_scientific_correction.py"
+   "tests/field/test_poloidal_field_from_flux.py",
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
   "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
   "known_limitations": [

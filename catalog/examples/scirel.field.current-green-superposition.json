@@ -138,7 +138,7 @@
    "Wrong source-axis and nonfinite failure behavior."
   ],
   "tests": [
-   "tests/operator_contracts/test_current_green_superposition.py"
+   "tests/field/test_current_green_superposition.py"
   ],
   "evidence_ceiling": "Verifies the linear contraction and shape contract; it does not establish that the Green model supplying its input is scientifically applicable.",
   "known_limitations": [

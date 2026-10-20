@@ -24,8 +24,8 @@
    "Full BRB/WHAM configuration composition at finite targets"
   ],
   "tests": [
-   "tests/domain_contracts/geometry/test_geometry_qualification.py",
-   "tests/domain_contracts/geometry/test_runtime_lifecycle.py"
+   "tests/geometry/test_geometry_qualification.py",
+   "tests/geometry/test_runtime_lifecycle.py"
   ],
   "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
   "known_limitations": [

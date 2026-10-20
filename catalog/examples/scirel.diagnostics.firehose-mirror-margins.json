@@ -256,9 +256,9 @@
    "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel."
   ],
   "tests": [
-   "tests/operator_contracts/test_spectral_scientific_correction.py",
-   "tests/operator_contracts/test_legacy_six_absorption.py",
-   "tests/operator_contracts/test_pressure_margin_cancellation.py"
+   "tests/cross_domain/test_spectral_scientific_correction.py",
+   "tests/cross_domain/test_legacy_six_absorption.py",
+   "tests/diagnostics/test_pressure_margin_cancellation.py"
   ],
   "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
   "known_limitations": [

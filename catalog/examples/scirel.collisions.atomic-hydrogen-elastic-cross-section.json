@@ -116,8 +116,8 @@
    "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
   ],
   "tests": [
-   "tests/operator_contracts/test_atomic_hydrogen_elastic_cross_section.py",
-   "tests/operator_contracts/test_collision_cross_section_input_types.py"
+   "tests/collisions/test_atomic_hydrogen_elastic_cross_section.py",
+   "tests/collisions/test_collision_cross_section_input_types.py"
   ],
   "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
   "known_limitations": [

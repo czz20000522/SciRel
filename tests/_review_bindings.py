@@ -1,7 +1,7 @@
-"""Private runtime registry used only by normalized TaskGraph wrappers."""
+"""Private runtime registry used only by normalized composition wrappers."""
 from importlib import import_module
 
-_OPERATORS = {
+_ASSETS = {
     'scirel.kinetic.frank_egedal_pressure_state': ('scirel.kinetic.frank_egedal_pressure_state', 'assemble_frank_egedal_pressure'),
     'scirel.kinetic.frank_egedal_radial_envelope': ('scirel.kinetic.frank_egedal_radial_envelope', 'evaluate_frank_egedal_radial_envelope'),
     'scirel.kinetic.frank_egedal_source_projection': ('scirel.kinetic.frank_egedal_source_projection', 'project_frank_egedal_source_modes'),
@@ -45,7 +45,7 @@ _OPERATORS = {
     'scirel.closures.mirror_ambipolar_potential': ('scirel.closures.mirror_ambipolar_potential', 'solve_mirror_ambipolar_potential'),
 }
 
-_GRAPHS = {
+_COMPOSITIONS = {
     'scirel.equilibrium.graphs.free_boundary_anisotropic_picard': ('scirel.equilibrium.free_boundary_anisotropic_picard', 'solve_free_boundary_anisotropic_picard'),
     'scirel.equilibrium.graphs.isotropic_pressure_flux': ('scirel.equilibrium.isotropic_pressure_flux', 'solve_isotropic_pressure_flux'),
     'scirel.diagnostics.graphs.equilibrium_synthesis_diagnostics': ('scirel.diagnostics.equilibrium_synthesis_diagnostics', 'synthesize_equilibrium_diagnostics'),
@@ -67,13 +67,13 @@ def _resolve(table, ref, kind):
     return getattr(import_module(module_name), function_name)
 
 def load_asset(ref):
-    return _resolve(_OPERATORS, ref, 'operator')
+    return _resolve(_ASSETS, ref, 'asset')
 
-def load_graph(ref):
-    return _resolve(_GRAPHS, ref, 'task graph')
+def load_composition(ref):
+    return _resolve(_COMPOSITIONS, ref, 'composition')
 
-def load_operator(ref, attribute=None):
-    function = _resolve(_OPERATORS, ref, 'operator')
+def load_callable(ref, attribute=None):
+    function = _resolve(_ASSETS, ref, 'asset')
     if attribute is not None and attribute not in {function.__name__, 'scientific_operator', 'latin_hypercube_samples'}:
         raise KeyError(f"callable {attribute} is not exported by {ref}")
     return function

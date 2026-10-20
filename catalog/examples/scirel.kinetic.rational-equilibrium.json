@@ -118,7 +118,7 @@
    "The pure-Python implementation runs directly on macOS without the declared local Python runtime."
   ],
   "tests": [
-   "tests/operator_contracts/test_dispersion_rational.py"
+   "tests/kinetic/test_dispersion_rational.py"
   ],
   "evidence_ceiling": "Direct tests establish the declared contract where they run; the pure-Python example and bounded acceptance run on this macOS host. No release or human scientific approval is implied.",
   "known_limitations": [

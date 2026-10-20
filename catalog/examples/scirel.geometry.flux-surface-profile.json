@@ -151,7 +151,7 @@
    "One selected caller-consistent positive coordinate rescaling preserves interpolated values."
   ],
   "tests": [
-   "tests/operator_contracts/test_flux_surface_profile.py"
+   "tests/geometry/test_flux_surface_profile.py"
   ],
   "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or source-project completeness.",
   "known_limitations": [
