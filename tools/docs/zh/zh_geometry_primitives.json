@@ -2337,6 +2337,78 @@
      "B 为零/非有限或查询位于支持范围外，不在声明范围内。"
     ]
    }
+  },
+  {
+   "asset_id": "scirel.numerics.truncated-svd-inverse",
+   "source_sha256": "ad47443034f9e11374d19802fffff01043d82557aa70341a8dfd8ac9925a3fdf",
+   "summary": "计算有限实矩阵的 Moore–Penrose 伪逆，并按相对阈值截断奇异值。",
+   "definition": "对 M = U diag(s) V^T，返回 V diag(s ≥ rcond 时取 1/s，否则取 0) U^T。",
+   "model": "稠密实矩阵的截断奇异值分解。",
+   "boundary": "低于 rcond 的奇异值被丢弃；非二维、非有限输入或非正阈值均被拒绝。",
+   "assumptions": [
+    "输入为有限实矩阵。",
+    "rcond 为正的有限相对阈值。",
+    "采用 NumPy 的奇异值排序与符号约定。"
+   ],
+   "inputs": [
+    {
+     "name": "mat",
+     "description": "待求伪逆的有限实矩阵。",
+     "constraints": "有限实数二维数组。",
+     "dtype": "float64 数组"
+    },
+    {
+     "name": "rcond",
+     "description": "奇异值相对阈值。",
+     "constraints": "有限正标量；默认 1e-10。",
+     "dtype": "float64"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "inverse",
+     "description": "形状为 (n,m) 的截断伪逆。",
+     "constraints": "有限输入下返回有限数组。",
+     "dtype": "float64 数组"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "输入为有限实数二维数组。",
+     "rcond 为正的有限值。"
+    ],
+    "supported": [
+     "方阵、长矩阵与宽矩阵。",
+     "秩亏谱的截断求逆。"
+    ],
+    "excluded": [
+     "复数矩阵与稀疏格式。",
+     "截断之外的迭代或正则化最小二乘语义。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "非二维或非有限矩阵、非正或非有限 rcond 抛出 ValueError。",
+    "runtime_failure": "不额外定义运行时失败；遵循 NumPy 浮点行为。",
+    "nonconvergence": "不适用；分解为直接计算。",
+    "partial_results": "无效输入后不返回部分结果。"
+   },
+   "verification": {
+    "scope": [
+     "方阵、长矩阵与宽矩阵上与 numpy.linalg.pinv 的一致性。",
+     "秩亏谱的阈值截断及 M M^+ M = M 投影恒等式。",
+     "二维形状、非有限元素与非正阈值的拒绝行为。"
+    ],
+    "known_limitations": [
+     "不支持复矩阵与稀疏矩阵。",
+     "rcond 遵循 NumPy 的奇异值约定，不是统计噪声模型。",
+     "不提供加权、迭代或正则化最小二乘语义。"
+    ],
+    "evidence_ceiling": "仅在有界稠密矩阵上建立数学恒等式证据，不建立应用级诊断拟合或统计误差结论。"
+   },
+   "example": {
+    "description": "对一个秩亏 2×2 矩阵和矩形矩阵求截断伪逆。",
+    "expected": "秩亏例与 numpy.linalg.pinv 一致，矩形例返回 (n,m) 形状。"
+   }
   }
  ]
 }

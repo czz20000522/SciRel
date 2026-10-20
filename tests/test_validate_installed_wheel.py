@@ -203,7 +203,7 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
             {
                 "status": "PASS",
                 "domain_count": 18,
-                "export_count": 248,
+                "export_count": 249,
                 "nested_package_count": 1,
                 "nested_module_count": 8,
                 "nested_export_count": 47,
@@ -218,7 +218,7 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
     assert receipt["status"] == "PASS"
     assert receipt["extras"] == {}
     assert receipt["errors"] == []
-    assert receipt["public_surface"]["export_count"] == 248
+    assert receipt["public_surface"]["export_count"] == 249
     assert receipt["public_surface"]["nested_export_count"] == 47
 
 
@@ -228,7 +228,7 @@ def test_public_surface_resolves_current_installed_exports() -> None:
     assert errors == []
     assert details["status"] == "PASS"
     assert details["domain_count"] == 18
-    assert details["export_count"] == 248
+    assert details["export_count"] == 249
     assert details["nested_package_count"] == 1
     assert details["nested_module_count"] == 8
     assert details["nested_export_count"] == 47
