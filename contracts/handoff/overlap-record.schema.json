@@ -1,0 +1,29 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://scirel.local/contracts/handoff/overlap-record.schema.json",
+ "title": "SciRel incoming-capability overlap record",
+ "description": "Records how a FINAL-delivered capability relates to the current catalog. It records overlap only; it does not decide or authorize a library merge.",
+ "type": "object",
+ "additionalProperties": false,
+ "required": ["schema", "schema_version", "records"],
+ "properties": {
+  "schema": {"const": "scirel.overlap-record"},
+  "schema_version": {"type": "string", "pattern": "^\\d+\\.\\d+(\\.\\d+)?$"},
+  "records": {
+   "type": "array",
+   "minItems": 1,
+   "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["incoming_capability_id", "overlap", "matched_asset_ids", "difference_note"],
+    "properties": {
+     "incoming_capability_id": {"type": "string", "minLength": 1},
+     "overlap": {"enum": ["none", "same-relation", "convention-only", "wider-coverage"]},
+     "matched_asset_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+     "difference_note": {"type": "string", "minLength": 1},
+     "evidence": {"type": "array", "items": {"type": "string", "minLength": 1}}
+    }
+   }
+  }
+ }
+}

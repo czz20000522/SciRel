@@ -1,138 +1,99 @@
-# Handoff layer packages
+# Receiving external decomposition results
 
-## The whole chain
+## Authority: `decomposition/FINAL/FINAL.json`
 
-```text
-external owners (independent)                 SciRel receiver                 user
-D0 freeze -> D1 extract -> D2 claims -> D3 delivery
-      isolated packages, each binds its parent digest
-                                   -> admission gate (structure only)
-                                   -> per-capability disposition
-                                      existing -> record, do not import
-                                      partial  -> merge into existing asset
-                                      new      -> rename/relocate/add contract
-                                   -> library triad: implementation + tests + contract
-                                   -> derived bilingual manual (zh/en)
-                                                                    -> installable
-                                                                       package + docs
-```
-
-The user is the last layer and sees only a SciPy-like package: importable
-functions, tests, and a bilingual manual. Decomposition, delivery and merge
-records never enter the user-facing surface. SciRel does not own or prescribe
-how the external chain is executed; it prescribes what each layer **hands over**,
-how the packages interlock, and how the receiver reviews them.
-
-## Independent packages, one interlock
-
-Each layer is its own package with its own schema and version:
-
-| layer | schema | owner delivers |
-| --- | --- | --- |
-| D0 | `d0-package.schema.json` | frozen source identity, digest, delta, retained/excluded scope, licence notices |
-| D1 | `d1-package.schema.json` | callable package digest, declared denominator, source issues, coverage/`NOT_RUN` |
-| D2 | `d2-package.schema.json` | claim packets, assumptions/boundaries/failure/oracle, evidence gaps |
-| D3 | `d3-package.schema.json` | asset documents, source-free implementation, tests, evidence, runtime closure, application evidence |
-
-The only cross-layer contract is `parent_handoff`:
-
-```json
-"parent_handoff": {
-  "layer": "d2",
-  "package_id": "acme-plasma-d2",
-  "payload_digest": "<sha256 of the parent payload>",
-  "schema_version": "1.0"
-}
-```
-
-D0 declares `"parent_handoff": null`. A package never embeds the parent's
-method or internals; it only binds the exact parent bytes it consumed.
-
-## Package layout
+The only authoritative external handoff is a project's `decomposition/FINAL/`
+directory, described by `scirel.project-final.v1`:
 
 ```text
-<package_root>/
-  handoff.json            # the manifest validated against the layer schema
-  <payload artifacts>     # any layout; every artifact is listed in the manifest
+<project>/decomposition/FINAL/
+  FINAL.json        # authoritative description and bounded claim
+  FILES.json        # payload membership manifest: every payload file + sha256
+  PATH_MAP.json     # stored-member aliases; no duplicate payload copy
+  ROOT.sha256       # binds FINAL.json + FILES.json + PATH_MAP.json
+  d0/ d1/ d2/ d3/   # stage payloads (layout may vary by project)
+  evidence/ recovery/   # retained evidence and recovery material
 ```
 
-`declarations.artifacts` lists every payload file with its sha256. The manifest
-digest is computed from those entries:
+`FINAL.json` declares `files`, `path_map`, `root_binding`, `payload_files`,
+`payload_bytes`, `decomposition_scope`, `limitations`, `claim_ceiling`,
+`evidence_policy` and `custody_note`; it may also carry `identity`,
+`stage_evidence`, `capabilities`, `operators`, `task_graphs`, `license` and
+`platform_boundaries`.
+
+The contract is defined and validated by the external decomposition-method
+bundle (`contracts/project-final.schema.json`, `contracts/files.schema.json`,
+`contracts/ROOT.sha256.md`, `scripts/validate_final.py`). SciRel accepts only
+this FINAL contract for a new external delivery; older project-specific FINAL
+schemas are historical evidence, not accepted successors.
+
+### Self-binding
+
+The manifest binds bytes, and the control files bind the manifest:
 
 ```text
-sha256(concat(sort_by_path("sha256  path\n")))
+FILES.json      lists every payload file and FINAL.json + PATH_MAP.json
+ROOT.sha256     binds FINAL.json, FILES.json and PATH_MAP.json
+FINAL.json      binds FILES.json and PATH_MAP.json by fixed names
 ```
 
-`scripts/validate_handoff.py <package_root> --layer d3 [--parent-dir <d2_root>]`
-checks the layer schema, artifact digests, payload digest, licence notices and,
-when `--parent-dir` is given, the exact parent binding. It never inspects how
-the producer worked.
+A receiver must verify all three directions. `FILES.json` alone is not
+sufficient: changing `FINAL.json` would otherwise leave every payload digest
+intact.
 
-## D3 admission gate (is the package reviewable?)
+### Licence records
 
-A D3 package is admitted to review only when:
+Open-source sourcing removes the redistribution gate, but not attribution.
+Each FINAL records `license.spdx`, the retained notice paths and the licence
+bytes; licence files are ordinary payload members in `FILES.json`.
 
-1. the D3 schema passes and the declared parent chain is bound;
-2. every asset contract parses as `scirel.asset-document` and its `asset_id`
-   matches the delivery entry;
-3. implementation, test and evidence paths exist; tests are runnable;
-4. `example_policy` is explicit (`execute` or `declared_not_run`);
-5. runtime closure and licence notices are declared; `application_evidence`
-   contains no declared `fail` case;
-6. `declarations.not_run` and `claim_ceiling` are truthful.
+## Receiving procedure (SciRel side)
 
-Admission is not acceptance into the library.
+1. Run the external `validate_final.py` on the FINAL directory (structure,
+   payload bytes, control-file binding). Record `NOT_RUN` when that validator or
+   a required payload is unavailable; a structural pass is not scientific
+   acceptance.
+2. Compare each delivered capability with the current catalog and write an
+   **overlap record**. This is a record of overlap, not an admission or merge
+   decision.
+3. A library change, if any, is a separate usage-side decision with its own
+   implementation, tests, contract and evidence. It is not part of accepting the
+   decomposition result.
 
-## Capability disposition (receiver-side, per asset)
+### Overlap record
 
-Each delivered capability is compared with the current catalog, one asset at a
-time, by an agent/reviewer. The outcome is one of:
-
-| disposition | meaning | receiver action |
-| --- | --- | --- |
-| `existing` | the library already provides this capability | record the duplicate and the matching asset(s); do not import |
-| `partial` | the library covers part of the capability; a merge is worthwhile **only when the delivery extends capability** (new boundary, edge case, port, semantics, accuracy or coverage) | if `capability_gain.extends=true`, merge into the existing asset; if false, record the overlap like a duplicate and **do not change the library** |
-| `new` | the library has no counterpart | rename into the library namespace, relocate implementation/tests, add the contract, then regenerate the Chinese reader, manual projections and evidence bindings |
-
-This comparison is scientific judgment, not a mechanical diff: relation
-identity, ports, units, axes, applicability, failure semantics and test evidence
-all matter. It is intentionally not automated. The review record for each asset
-should state the disposition, matched existing asset IDs, the overlap and the
-differences, the required changes, and the evidence behind the decision.
-
-A convention-only difference (different units, weights, names or failure wording
-with the same numerical relation and no new coverage) is **not** a capability
-gain. Such a delivery is recorded as `capability_gain.extends=false` and does
-not change the library, even if its disposition is `partial`. Only a declared
-extension makes a partial merge meaningful.
-
-Only `partial` and `new` dispositions lead to code or contract changes in the
-library; `existing` deliveries stay outside the repository.
-
-The review itself is a durable record (`disposition.schema.json`), not an
-automatic merge:
+`overlap-record.schema.json` records, per incoming capability:
 
 ```json
 {
- "schema": "scirel.disposition-review",
- "package": {"package_id": "...", "payload_digest": "...", "layer": "d3"},
- "reviewer_role": "...",
- "summary": {"existing": 1, "partial": 1, "new": 1},
- "dispositions": [
-  {"incoming_asset_id": "...", "disposition": "existing",
-   "matched_asset_ids": ["scirel.field...."], "overlap": "...",
-   "differences": [], "required_changes": [], "evidence": ["..."], "notes": "..."}
- ]
+ "incoming_capability_id": "acme.transport.foo",
+ "overlap": "same-relation | convention-only | wider-coverage | none",
+ "matched_asset_ids": ["scirel.kinetic.foo"],
+ "difference_note": "same relation; naming and units differ; no new coverage",
+ "evidence": ["contract comparison", "numeric probe"]
 }
 ```
 
-`scripts/validate_disposition.py review.json --package-dir <d3>` checks the
-record shape, the `existing`/`partial`/`new` rules and the binding to the exact
-D3 package bytes. It checks the record, not the scientific judgment.
+Rules: `none` has no matches; the other three require matches. Convention-only
+differences (units, weights, names, failure wording with the same numerical
+relation) are recorded, never treated as defects. The record makes no
+`capability_gain` claim and carries no `required_changes` or merge
+authorization.
 
-## Versioning
+`scripts/validate_overlap_record.py <record.json>` validates the record shape
+and the match/overlap consistency.
 
-Each layer schema and package carries `schema_version` (semantic version).
-A layer owner may evolve its package without touching other layers. A parent
-reference binds `schema_version` and `payload_digest`, so an incompatible
-successor is rejected rather than silently accepted.
+## Optional internal stage records
+
+`d0-package.schema.json` … `d3-package.schema.json` remain as optional internal
+records for producers that want layer-level traceability. They are **not** the
+handoff interface and are not required for a FINAL delivery. Real FINAL
+deliveries use the project's own stage reports; absence of these layer packages
+is not a nonconformance. `scripts/validate_handoff.py` validates them only when
+a producer chooses to emit them.
+
+## User-facing boundary
+
+The user sees only the installable SciRel package, its tests and the bilingual
+manual. FINAL records, overlap records, stage reports and merge decisions never
+enter the package or the manual.
