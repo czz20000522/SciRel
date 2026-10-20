@@ -311,9 +311,9 @@
      ]
     },
     {
-     "id": "pdrf-multifluid-dispersion",
-     "title": "构造多流体时间色散与扫描任务图",
-     "introduction": "先由物种和单位建立有效多流体等离子体状态，再构造局部 Maxwell 时间矩阵与条件化本征谱，最后按有界网格执行扫描。相对论惯性、碰撞、各向异性镜修正、残差门禁和扫描顺序均属于冻结合同；扫描成功不替代外部物理验证。",
+     "id": "multifluid-spectral-dispersion",
+     "title": "构造多流体时间色散与扫描",
+     "introduction": "先由物种和单位建立有效多流体等离子体状态，再构造局部 Maxwell 时间矩阵与条件化本征谱，最后按有界网格执行扫描。相对论惯性、碰撞、各向异性镜修正、残差门禁和扫描顺序均属于声明合同；扫描成功不替代外部物理验证。",
      "assets": [
       "scirel.kinetic.spectral-plasma-state",
       "scirel.kinetic.spectral-temporal-matrix",
@@ -923,7 +923,7 @@
     {
      "id": "noncore-wave-presentation",
      "title": "波谱绘图与预设呈现",
-     "introduction": "绘图和存储场景是可选非核心辅助；WHAMP 存储表单列出处与未决再分发条件，不作为独立科学答案。",
+     "introduction": "绘图和存储场景是可选非核心辅助；存储参考表需单独核对引用与再分发条件，不作为独立科学答案。",
      "assets": [
       "scirel.kinetic.multifluid-plot",
       "scirel.kinetic.parallel-em-plot",

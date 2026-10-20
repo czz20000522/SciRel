@@ -45,7 +45,7 @@ def derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)
     ``ms`` [kg], ``qs`` [C], ``ns_unit`` and ``Ts_unit`` [-] share a species axis.
     ``B0`` [T] is signed; ``n00`` [m^-3] and ``T00`` [eV] are positive reference
     values. The thermal speed uses sqrt(2 kB T/m), while the signed gyroradius
-    uses sqrt(kB T/m)/omega_c, as in the fluidBW source convention.
+    uses sqrt(kB T/m)/omega_c, as in the fluid-dispersion convention.
     """
     ms = _species_vector(ms, "ms")
     qs = _species_vector(qs, "qs")
@@ -61,7 +61,7 @@ def derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)
     n00 = _scalar(n00, "n00", positive=True)
     T00 = _scalar(T00, "T00", positive=True)
 
-    # Preserve the frozen fluidBW operation order for its bounded source oracles.
+    # Preserve the declared fluid operation order for the bounded reference oracles.
     with np.errstate(divide="ignore", invalid="ignore", over="ignore", under="ignore"):
         ns0 = ns_unit * n00
         Ts0 = Ts_unit * T00 * _EV_TO_K / _KB

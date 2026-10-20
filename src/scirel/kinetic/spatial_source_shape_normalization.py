@@ -1,9 +1,6 @@
 """Spatial source-shape normalization with trapezoidal measure.
 
-One leaf recovered from the saved KN1DPy ``空间源形状归一化`` package (source
-anchor ``KN1DPy/kn1d.py:520-577``, the spatial source profile normalization
-of the source-entry dual-branch graphs, as recorded by the saved bundle's own
-provenance), integrated as :func:`normalize_spatial_source_shape`:
+This relation normalizes a nonnegative spatial source profile:
 
 normalize a nonnegative one-dimensional spatial source profile to unit
 integral under the trapezoidal measure, returning the unit-integral shape in

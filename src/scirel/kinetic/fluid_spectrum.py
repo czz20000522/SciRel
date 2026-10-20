@@ -1,4 +1,4 @@
-"""Corrected full retained fluidBW family, executed by packaged Octave components.
+"""Fluid dispersion family executed by packaged Octave components.
 
 Lineage: upstream 79829170 -> D0 7fd667f4 -> D1 1a6704a7 -> this D2.
 The native directory is runtime implementation, never an external checkout.
@@ -44,7 +44,7 @@ def _decode(value):
 def _require_runtime():
     """Resolve the pinned native backend once at the numerical boundary."""
     if platform.system() != "Linux" or platform.machine() not in {"x86_64", "amd64"}:
-        raise RuntimeError("fluidBW requires the pinned Linux amd64 runtime")
+        raise RuntimeError("the fluid native runtime requires the pinned Linux amd64")
     octave = shutil.which("octave")
     if octave is None:
         raise RuntimeError("GNU Octave 7.3.0 is required")
@@ -92,7 +92,7 @@ def _run(function, args, *, nout=1, output_directory=None):
         process = subprocess.run([octave, "--no-gui", "--quiet", str(script)], cwd=work,
                                  env=environment, capture_output=True, timeout=1800, check=False)
         if process.returncode or not (root / "output.mat").exists():
-            raise RuntimeError(f"fluidBW runtime failed: {process.stderr.decode(errors='replace')[-2000:]}")
+            raise RuntimeError(f"fluid native runtime failed: {process.stderr.decode(errors='replace')[-2000:]}")
         result = loadmat(root / "output.mat", struct_as_record=False, squeeze_me=False)
         if not result["ok"].item():
             raise ValueError(f"{_decode(result['error_id'])}: {_decode(result['error_message'])}")

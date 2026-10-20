@@ -1,4 +1,4 @@
-"""Keep the fluidBW catalog bindings explicit at implementation modules."""
+"""Keep the fluid-dispersion catalog bindings explicit at implementation modules."""
 
 from __future__ import annotations
 

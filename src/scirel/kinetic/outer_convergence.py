@@ -1,7 +1,7 @@
-"""Source-free top-level KN1DPy outer-loop convergence relation.
+"""Top-level outer-loop convergence relation.
 
 This operator is intentionally separate from the 10*truncate seed relation
-used inside ``kinetic_h``/``kinetic_h2``.  The top-level ``kn1d`` loop compares
+used inside the neutral transport closures.  The top-level outer loop compares
 the molecular density before and after an outer pass and re-enters while the
 relative change is greater than ``truncate``.
 """
@@ -41,7 +41,7 @@ def evaluate_outer_convergence(
     current_density_m3,
     truncate,
 ):
-    """Evaluate the source top-level ``kn1d`` outer-pass stop condition."""
+    """Evaluate the outer-pass stop condition."""
 
     previous = _finite_real(previous_density_m3, "previous_density_m3")
     current = _finite_real(current_density_m3, "current_density_m3")

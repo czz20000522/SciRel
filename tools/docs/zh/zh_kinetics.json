@@ -753,10 +753,10 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-   "source_sha256": "c8d502038fd684df975e1131ea0647d4978d20c327ca995c43ab640a0567cc5f",
+   "source_sha256": "52c5eeafec89eb7ff2ffa43c425fb0c4cbfef83a1a2ba1a0f60db212cbb63595",
    "summary": "在每个空间单元独立归约原子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
-   "model": "KN1D 动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
+   "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
    "assumptions": [
     "所有速度使用同一 Vth；f 对无量纲速度体积积分得到 m⁻³，SIG 已含目标积分权重，Alpha 与 Omega 的量纲均为 m⁻¹。",
     "两路 Alpha 必须由相同网格上的真实背景分布与对应 SIG 生成；背景流速必须与该分布一致。本函数无法仅从 Alpha 反推出背景分布。",
@@ -1046,7 +1046,7 @@
      "独立标量双重求和、守恒目标、空间拆分、共同速度平移、负比值状态及未定义传播。",
      "实际拟合矩阵和归一化 Maxwell 分布生成 Alpha；H/D 自适应角积分、带权交换关系、平衡动量和双侧弱漂移。"
     ],
-    "evidence_ceiling": "支持给定 KN1D 矩模型与已测离散输入的物理一致性；不代表完整 KN1D 项目 D3、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需根独立接收；人工科学认可和公开发行另行决定。",
+    "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需独立接收；人工科学认可和公开发行另行决定。",
     "known_limitations": [
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
@@ -3364,10 +3364,10 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
-   "source_sha256": "b26cf96d858326b162f0fc40b71fce4d0eced846b2b165d2ceb10c8f2521a93c",
+   "source_sha256": "ead3a4cee7513f13435da9dd881c7c6e2211c88b593e30330e786a11d04b1982",
    "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
-   "model": "KN1D 动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
+   "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
    "assumptions": [
     "所有速度使用同一 Vth；f 对无量纲速度体积积分得到 m⁻³，SIG 已含目标积分权重，Alpha 与 Omega 的量纲均为 m⁻¹。",
     "两路 Alpha 必须由相同网格上的真实背景分布与对应 SIG 生成；背景流速必须与该分布一致。本函数无法仅从 Alpha 反推出背景分布。",
@@ -3657,7 +3657,7 @@
      "独立标量双重求和、守恒目标、空间拆分、共同速度平移、负比值状态及未定义传播。",
      "实际拟合矩阵和归一化 Maxwell 分布生成 Alpha；H/D 自适应角积分、带权交换关系、平衡动量和双侧弱漂移。"
     ],
-    "evidence_ceiling": "支持给定 KN1D 矩模型与已测离散输入的物理一致性；不代表完整 KN1D 项目 D3、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需根独立接收；人工科学认可和公开发行另行决定。",
+    "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需独立接收；人工科学认可和公开发行另行决定。",
     "known_limitations": [
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
@@ -3924,7 +3924,7 @@
    "source_sha256": "668a08455c0bb7f4343740dd91fe55f1b7a22811dfa4887461b1e468c678d6ec",
    "summary": "计算静止原子氢靶上的质子弹性动量传递截面；10 eV 使用低能多项式，修复 Python 翻译中的零洞。保留能域端点裁剪和领先单例输出轴。",
    "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E≤10 时使用七系数低能 log 多项式，E>10 时使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；输出增加一个领先单例轴。",
-   "model": "KN1D 原始 IDL sigma_el_p_h 的 H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
+   "model": "原始 IDL sigma_el_p_h 的 H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
    "assumptions": [
     "低/高能拟合系数沿用所声明的数值；只修复低能端把 IDL 的 le 10 误译为 <10 造成的断点空洞。",
     "端点裁剪不代表域外实验精度；低高段可能有有限跳变，不进行无依据平滑。",

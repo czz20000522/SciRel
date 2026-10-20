@@ -1,4 +1,4 @@
-"""Evaluate the finite-harmonic fluidBW-style kinetic dielectric tensor using local special-function terms."""
+"""Evaluate the finite-harmonic fluid-dispersion kinetic dielectric tensor using local special-function terms."""
 from __future__ import annotations
 
 import operator
@@ -12,7 +12,7 @@ _KB = 1.38064852e-23
 __all__ = ["evaluate_fluid_kinetic_dispersion_sum"]
 
 def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
-    """Return the fluidBW conventional harmonic sum and 3x3 tensors.
+    """Return the fluid-dispersion conventional harmonic sum and 3x3 tensors.
 
     All inputs are SI: ``B0`` [T], ``qs`` [C], ``ms`` [kg], ``ns0`` [m^-3], ``Ts0`` [K],
     ``f`` [Hz], ``kz``/``kx`` [1/m]. ``lmx`` is the Bessel harmonic truncation of the

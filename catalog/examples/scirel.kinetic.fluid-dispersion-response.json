@@ -19,7 +19,7 @@
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,evaluate_fluid_dispersion\ns=derive_fluid_case('bonk',2);s['w']=.63*s['wn']\nr=evaluate_fluid_dispersion(0,s,'fD')\n",
   "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native runtime boundary and is reported as NOT_RUN on macOS.",
-  "expected": "NOT_RUN on this macOS host: the call reaches the native runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+  "expected": "NOT_RUN on this macOS host: the call reaches the native runtime guard and raises RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")."
  },
  "failure_semantics": {
   "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
@@ -96,7 +96,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-waves",
-  "fluidbw"
+  "fluid-dispersion"
  ],
  "title": {
   "en": "Maxwell dispersion response",

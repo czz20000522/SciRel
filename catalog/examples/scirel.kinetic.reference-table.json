@@ -2,24 +2,24 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.reference-table",
  "title": {
-  "en": "Attributed WHAMP stored table",
-  "zh": "有出处的 WHAMP 存储表"
+  "en": "Stored reference table",
+  "zh": "存储参考表"
  },
- "summary": "Expose the literal WHAMP reference table as typed package data, retaining the source metadata limits.",
+ "summary": "Expose the literal reference table as typed package data, retaining the reference metadata limits.",
  "taxonomy": [
   "kinetic",
-  "pdrk",
+  "spectral-dispersion",
   "examples"
  ],
  "aliases": [],
  "identity": {
-  "relation": "Attributed WHAMP stored table to typed reference data",
+  "relation": "Stored reference table to typed reference data",
   "direction": "data read",
-  "definition": "Return the exact 40-row four-column source whpdat and its kxwhp,kzwhp,wrwhp,wiwhp columns.",
-  "model": "Stored external-solver reference observations; not an executable WHAMP solver.",
-  "geometry": "The source kx column is the literal constant 0.5.",
-  "coordinates": "Column units and complete run normalization are not stated in the source.",
-  "boundary": "No interpolation, fit or physical setup reconstruction.",
+  "definition": "Return the exact 40-row four-column reference whpdat and its kxwhp, kzwhp, wrwhp and wiwhp columns.",
+  "model": "Stored external-solver reference observations; not an executable solver.",
+  "geometry": "The reference kx column is the literal constant 0.5.",
+  "coordinates": "Column units and complete run normalization are not stated in the reference.",
+  "boundary": "No interpolation, fit or physical inference.",
   "assumptions": [
    "Missing source physical metadata remains unknown."
   ]
@@ -55,7 +55,7 @@
    "Exact stored table and columns."
   ],
   "excluded": [
-   "A new WHAMP solve, calibration oracle, or inferred physical units/equilibrium."
+   "A new solver run, calibration oracle, or inferred physical units/equilibrium."
   ]
  },
  "failure_semantics": {

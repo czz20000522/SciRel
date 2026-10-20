@@ -18,8 +18,8 @@
  "asset_id": "scirel.kinetic.fluid-em-spectrum",
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_em\ns=derive_fluid_case('em',2)\nr=solve_fluid_em(2,8,0,[.83*s['wn'].item()])\n",
-  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluidBW boundary and is reported as NOT_RUN on macOS.",
-  "expected": "NOT_RUN on this macOS host: the call reaches the fluidBW runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluid boundary and is reported as NOT_RUN on macOS.",
+  "expected": "NOT_RUN on this macOS host: the call reaches the fluid native runtime guard and raises RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")."
  },
  "failure_semantics": {
   "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
@@ -329,7 +329,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-waves",
-  "fluidbw"
+  "fluid-dispersion"
  ],
  "title": {
   "en": "Corrected EM finite spectra and candidates",

@@ -732,7 +732,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
-   "source_sha256": "09703a6daf014f4ea117889f33bbb3d08decadd0ce2272c32ec19608ec0d8189",
+   "source_sha256": "b2245c62ce746090fadd0ad5d0371352d7540795db7c647950281ba02f049a53",
    "summary": "使用有限回旋谐波求和，为磁化 Maxwellian 多组分等离子体组装 x-z 平面的动力学介电张量、Maxwell 色散张量及其行列式。",
    "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(kz*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。",
    "model": "均匀磁化 Maxwellian 多组分等离子体的截断常规回旋谐波求和；使用 SciRel 解析 Faddeeva Z，而非有限阶 Weideman 实现。",
@@ -6783,7 +6783,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "4b994ffac66b19ffac751ff2ad7c6e52b932b2f6f35666858fcdf696efc5453d",
+   "source_sha256": "0f7c8565bb6a4d5bbf3c8a8a3fdb43c2315d740c058ed3a557fbd2db6e95c69f",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7281,12 +7281,12 @@
   },
   {
    "asset_id": "scirel.kinetic.bessel-gamma",
-   "source_sha256": "8f0afbb5fa1c3f8d4f6faf1d4023f7a35051aa24b031947fcd9c7173d527c0f7",
+   "source_sha256": "0771357cc4ce46fb2df20fa6aa270e7bba8663d0826d195ef87a21ac751f7cb0",
    "summary": "以可广播整数阶数和实/复自变量计算无量纲 Bessel-Gamma 谐波项及相邻阶组合导数。",
    "definition": "Gamma_n=ive(n,x)*exp(-x+abs(Re(x)))；Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x)))。ive 是指数缩放修正 Bessel I；可表示域内分别等于 exp(-x)*I_n(x) 及其对 x 的导数。",
    "model": "有限 Maxwell 回旋谐波求和使用的整数阶修正 Bessel 项。",
    "assumptions": [
-    "调用者已形成无量纲 x，例如 fluidBW 关系中的 b=(k_perp*rho_c)²。",
+    "调用者已形成无量纲 x，例如 流体色散关系中的 b=(k_perp*rho_c)²。",
     "计算使用指数缩放 Bessel 后端；本调用不选择谐波截断。"
    ],
    "boundary": "输入与输出须有限且 complex128 可表示；阶数须精确可表示为整数，绝对值不超过 2^53。",
@@ -9122,7 +9122,7 @@
   },
   {
    "asset_id": "scirel.kinetic.species-equilibrium-scales",
-   "source_sha256": "66b26de3f08f8dc10455c5813821e340563c836f0510fd173a3ce085e42a1d14",
+   "source_sha256": "db92e370b0525a720eb4054646d98629a20c0317c5b0a75c52c590756dd3ed19",
    "summary": "从非空物种混合物及参考密度、温度导出 SI 热速、回旋频率、等离子体频率、回旋半径和 Debye 尺度。",
    "definition": "n_s=ns_unit_s*n00；T_s[K]=Ts_unit_s*T00[eV]*1.6022e-19/kB；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s²/(m_s*epsilon0)；rhocs=sqrt(kB*T_s/m_s)/wcs；lambdaDs=sqrt(epsilon0*kB*T_s/(n_s*q_s²))。扫描尺度为 wcn=min(abs(wcs))、rhocn=max(abs(rhocs))、kn=1/rhocn、wn=wcn。固定 c2=(2.99792458e8)²、epsilon0=8.854187817e-12、kB=1.38064852e-23。",
    "model": "磁化 Maxwellian 物种平衡，采用声明的热速和有符号回旋半径约定。",

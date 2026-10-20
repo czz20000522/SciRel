@@ -2,9 +2,8 @@
 # Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
 """Volume-normalized exponential radial source profile.
 
-Source: accepted TORAX f21a878998abd74e6812f57d8bb8891641fecfc6,
-torax/_src/sources/formulas.py:exponential_profile. Normalization cancels
-decay_start; this is not a cutoff profile or a velocity-space Maxwellian.
+Normalization cancels decay_start; this is not a cutoff profile or a
+velocity-space Maxwellian. The retained licence and reference are above.
 """
 from __future__ import annotations
 import numpy as np

@@ -341,15 +341,15 @@
   ]
  },
  "example": {
-  "description": "Evaluate one bounded source-method graph case. Python preflight ran locally; fluidBW/Octave parity remains NOT_RUN on this macOS host.",
+  "description": "Evaluate one bounded declared-method graph case. Python preflight ran locally; fluid native/Octave parity remains NOT_RUN on this macOS host.",
   "code": "from scirel.kinetic import scan_kinetic_wavevectors\nr=scan_kinetic_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,kz=0,omega_scale=0.11,omega_step=0.05,omega_stop=0.11); assert r['count']==1",
-  "expected": "Python preflight returned count=1, one root about -0.17247987 - 0.12372616j, and converged=False for the bounded point. Source fluidBW/Octave parity is NOT_RUN on this macOS host."
+  "expected": "Python preflight returned count=1, one root about -0.17247987 - 0.12372616j, and converged=False for the bounded point. Fluid native/Octave parity is NOT_RUN on this macOS host."
  },
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "Python preflight ran, but source fluidBW/Octave parity is NOT_RUN on this macOS host."
+   "Python preflight ran, but fluid native/Octave parity is NOT_RUN on this macOS host."
   ],
   "tests": [
    "tests/graph_contracts/test_fluid_spectrum_r43_graphs.py"
@@ -358,7 +358,7 @@
   "known_limitations": [
    "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable",
    "Public distribution license and expert review remain pending.",
-   "Source fluidBW/Octave parity is NOT_RUN on this host."
+   "Fluid native/Octave parity is NOT_RUN on this host."
   ]
  },
  "graph": {

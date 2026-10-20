@@ -2,10 +2,9 @@
 # Licensed under Apache-2.0; retained license: licenses/torax/LICENSE.
 """Volume-normalized Gaussian radial source profile.
 
-Source: accepted TORAX f21a878998abd74e6812f57d8bb8891641fecfc6,
-torax/_src/sources/formulas.py:gaussian_profile. The explicit metric ports
-replace Geometry without changing its cell-volume sum. This is distinct from
-SciRel's KN1D spatial source normalization and flux-surface interpolation.
+The explicit metric ports carry cell volumes; this is distinct from spatial
+source-shape normalization and flux-surface interpolation. The retained
+licence and reference are above.
 """
 from __future__ import annotations
 import numpy as np

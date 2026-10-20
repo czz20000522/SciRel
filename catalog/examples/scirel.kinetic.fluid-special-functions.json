@@ -22,7 +22,7 @@
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import evaluate_fluid_special\nvalue=evaluate_fluid_special('RTAY',2,0)\n",
   "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native runtime boundary and is reported as NOT_RUN on macOS.",
-  "expected": "NOT_RUN on this macOS host: the call reaches the native runtime guard and raises RuntimeError(\"fluidBW requires the pinned Linux amd64 runtime\")."
+  "expected": "NOT_RUN on this macOS host: the call reaches the native runtime guard and raises RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")."
  },
  "failure_semantics": {
   "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
@@ -99,7 +99,7 @@
  "taxonomy": [
   "kinetic",
   "plasma-waves",
-  "fluidbw"
+  "fluid-dispersion"
  ],
  "title": {
   "en": "Special-function responses",

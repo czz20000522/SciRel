@@ -467,7 +467,7 @@
    "tests/operator_contracts/test_collision_physical_closure.py",
    "tests/operator_contracts/test_omega_frequencies_l1.py"
   ],
-  "evidence_ceiling": "支持给定 KN1D 矩模型与已测离散输入的物理一致性；不代表完整 KN1D 项目 D3、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需根独立接收；人工科学认可和公开发行另行决定。",
+  "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需独立接收；人工科学认可和公开发行另行决定。",
   "known_limitations": [
    "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
    "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",

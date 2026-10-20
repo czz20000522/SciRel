@@ -2,24 +2,24 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.reference-overlay",
  "title": {
-  "en": "WHAMP table figure overlay",
-  "zh": "WHAMP 表格图像叠加"
+  "en": "Stored-reference figure overlay",
+  "zh": "存储参考表图形叠加"
  },
- "summary": "Apply the literal stored-reference overlay onto an explicit native figure; its legends are those of the stored reference and make no claim about compatible external physics.",
+ "summary": "Overlay a stored reference table onto an explicit native figure; legends describe the stored reference only and make no external-physics claim.",
  "taxonomy": [
   "kinetic",
-  "pdrk",
+  "spectral-dispersion",
   "examples"
  ],
  "aliases": [],
  "identity": {
-  "relation": "Attributed stored reference data to sequential native figure overlay",
+  "relation": "Stored reference data to sequential native figure overlay",
   "direction": "artifact composition",
-  "definition": "Overlay rows 1:2:end of the stored reference as black x markers of linewidth2; the imaginary-axis range is fixed at [-1,0.1] and five southwest legend labels are drawn. Existing curves on the caller's figure remain.",
-  "model": "Stored external-solver reference observations; not an executable WHAMP solver.",
-  "geometry": "The source kx column is the literal constant 0.5.",
+  "definition": "Overlay rows 1:2:end of the stored reference as black x markers with linewidth 2; the imaginary-axis range is fixed at [-1,0.1] and five southwest legend labels are drawn. Existing curves on the caller figure remain.",
+  "model": "Stored external-solver reference observations; not an executable solver.",
+  "geometry": "The reference kx column is the literal constant 0.5.",
   "coordinates": "Column units and complete run normalization are not stated in the source.",
-  "boundary": "No interpolation, fit or physical setup reconstruction.",
+  "boundary": "No interpolation, fit or physical inference.",
   "assumptions": [
    "Missing source physical metadata remains unknown."
   ]
@@ -49,7 +49,7 @@
  "outputs": [
   {
    "name": "result",
-   "description": "NativeResult containing native FIG and PNG bytes plus decoded line, axes and legend state; receipt is execution metadata rather than a scientific quantity. Also includes the exact WHAMP table and columns.",
+   "description": "NativeResult containing native FIG and PNG bytes plus decoded line, axes and legend state; receipt is execution metadata rather than a scientific quantity. Also includes the exact reference table and columns.",
    "units": "line coordinates follow the plot model; artifact bytes unitless",
    "shape": "state: figure_native/figure_png byte vectors; line_x/line_y vectors; line_offsets/line_axes/line_width; line_markers; axes_limits; legend_labels",
    "dtype": "NativeResult with typed numeric state",
@@ -65,7 +65,7 @@
    "Fresh figure or explicit sequential native predecessor."
   ],
   "excluded": [
-   "Inferring source table units or identifying unrelated predecessor branches from legend text."
+   "Inferring reference table units or identifying unrelated predecessor branches from legend text."
   ]
  },
  "failure_semantics": {

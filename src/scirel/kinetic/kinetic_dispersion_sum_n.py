@@ -47,7 +47,7 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
 
     Inputs use SI units: B0 [T], q [C], m [kg], n [m^-3], T [K], f [Hz],
     and kx/kz [m^-1]. The x-z plane convention and gamma/Z normalizations
-    follow the saved fluidBW fD relation; no root finding is performed.
+    follow the declared fluid-dispersion fD relation; no root finding is performed.
     """
     B0 = _finite_scalar("B0", B0, nonzero=True)
     f = _finite_scalar("f", f, nonzero=True)

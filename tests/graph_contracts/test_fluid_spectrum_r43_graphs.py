@@ -1,4 +1,4 @@
-"""D2 composition contracts for the three fluidBW source paths."""
+"""Composition contracts for the three fluid-dispersion paths."""
 
 import numpy as np
 import pytest
