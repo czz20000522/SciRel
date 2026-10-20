@@ -51,9 +51,9 @@ checks the layer schema, artifact digests, payload digest, licence notices and,
 when `--parent-dir` is given, the exact parent binding. It never inspects how
 the producer worked.
 
-## D3 merge gate (what SciRel actually consumes)
+## D3 admission gate (is the package reviewable?)
 
-SciRel accepts a D3 package only when:
+A D3 package is admitted to review only when:
 
 1. the D3 schema passes and the declared parent chain is bound;
 2. every asset contract parses as `scirel.asset-document` and its `asset_id`
@@ -64,10 +64,27 @@ SciRel accepts a D3 package only when:
    contains no declared `fail` case;
 6. `declarations.not_run` and `claim_ceiling` are truthful.
 
-On acceptance SciRel renames asset IDs into the library namespace, relocates
-implementation/tests into the repository, regenerates the Chinese reader and
-manual projections, rebinds evidence digests and updates the catalog release.
-Those are receiver-side steps; they are not part of the supplier package.
+Admission is not acceptance into the library.
+
+## Capability disposition (receiver-side, per asset)
+
+Each delivered capability is compared with the current catalog, one asset at a
+time, by an agent/reviewer. The outcome is one of:
+
+| disposition | meaning | receiver action |
+| --- | --- | --- |
+| `existing` | the library already provides this capability | record the duplicate and the matching asset(s); do not import |
+| `partial` | the library covers part of the capability or differs in ports, units, boundary or failure semantics | merge into the existing asset: reconcile contracts, tests and evidence; never add a second competing asset |
+| `new` | the library has no counterpart | rename into the library namespace, relocate implementation/tests, add the contract, then regenerate the Chinese reader, manual projections and evidence bindings |
+
+This comparison is scientific judgment, not a mechanical diff: relation
+identity, ports, units, axes, applicability, failure semantics and test evidence
+all matter. It is intentionally not automated. The review record for each asset
+should state the disposition, matched existing asset IDs, the overlap and the
+differences, the required changes, and the evidence behind the decision.
+
+Only `partial` and `new` dispositions lead to code or contract changes in the
+library; `existing` deliveries stay outside the repository.
 
 ## Versioning
 
