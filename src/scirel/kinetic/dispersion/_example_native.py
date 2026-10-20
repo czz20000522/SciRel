@@ -36,7 +36,7 @@ _ACTION_SPECS = {
         (), ("examples",),
     ),
     "reference_overlay": (
-        "examples/reference_overlay.m",
+        "examples/whamp_overlay.m",
         (*_PLOT_OUTPUTS, "whpdat", "kxwhp", "kzwhp", "wrwhp", "wiwhp"),
         ("predecessor_figure",), ("examples",),
     ),
