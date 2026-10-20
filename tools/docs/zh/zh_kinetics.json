@@ -1338,7 +1338,7 @@
   },
   {
    "asset_id": "scirel.inference.direct-anisotropic-inversion",
-   "source_sha256": "21d888d2a2cb367bd9c18069019c140f782b24091954ffd97e4bbd6104d1dd0c",
+   "source_sha256": "1743201bd57d859865b2fb8e31cd884e076de7512d850e5d8a979bf9e2df0958",
    "summary": "将真实各向异性前向求解、显式单位诊断和有界优化连接为单一调用入口，持续保持固定观测维数与有效终点。",
    "definition": "先按标准观测构造 N，再把 trial、严格残差和有界优化器组合起来。前向 solver_config 深复制并加入 params；未收敛时提前短路，失败的 trial 不参与有效最优。可选 LHS 与总预算在优化器中统一执行，最终参数、残差和状态绑定同一次新评估。当前验证同时包含解析制造的非零 Green 反馈和独立 Biot–Savart/张量散度参考的曲场恢复。",
    "model": "调用者指定物理闭合的直接反演组合，复用已资格化前向关系，不另造各向异性平衡方程",
@@ -1873,7 +1873,7 @@
   },
   {
    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
-   "source_sha256": "30b554032be8ff2a0d229b67c660f779962a24c22ac38edfb6ff2e45f8a8e283",
+   "source_sha256": "18881a2535088aeb1a51e378ed46dd3fb5ab61dba2b9e33007cf8c404c78d2e6",
    "summary": "在一次调用中，用有序 DAG 把轴对称平衡重构到笛卡尔求解网格，并对该网格分类材料支撑；组合了映射关系和材料支撑关系两个依赖。",
    "definition": "先重构静场与极向磁通，构造目标柱坐标，从平衡映射读取分界磁通与所选侧，再用这些参数和重构磁通分类支撑。",
    "model": "张量积平衡重构与几何材料分类的组合，不执行场求解。",
@@ -3667,7 +3667,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-   "source_sha256": "0a0dce6da645a5d1ace3a3cb5baecab3c27afbdc7d93de326e6a8c712dc5410b",
+   "source_sha256": "d76eaed82e299b16e107e6fe38d217e86c7a3ce8d92556806b49a08585473eef",
    "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。",
    "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。",
    "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
