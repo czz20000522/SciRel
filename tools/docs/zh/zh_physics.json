@@ -4029,7 +4029,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-   "source_sha256": "dfd8e1f514934cd175152ae160c52b90c52da571ac39945b3e0573cc05aacd97",
+   "source_sha256": "2664515a06f1423bd49ea8c1697f84206adef3a5bd055df74e6fb8b0f8af5c21",
    "summary": "把网格镜动力学闭合绑定到约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
    "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代及终末动力学重算。",
    "model": "轴对称网格镜端损失/准中性动力学闭合与约化 Hall 各向异性 Picard 反馈的组合。",
@@ -4179,13 +4179,13 @@
      "dtype": "bool 布尔值"
     },
     {
-     "name": "kinetic_graph",
+     "name": "kinetic_composition",
      "description": "可选替代所绑定动力学任务图的调用对象。",
      "constraints": "默认 None；按 Python 真值选取，用于依赖注入；替代会改变科学组合，不属于默认资产证据。",
      "dtype": "Python callable 或 None"
     },
     {
-     "name": "hall_graph",
+     "name": "hall_composition",
      "description": "可选替代 Hall 任务图的调用对象。",
      "constraints": "默认 None；按 Python 真值选取；替代会改变返回映射，不属于默认科学组合。",
      "dtype": "Python callable 或 None"

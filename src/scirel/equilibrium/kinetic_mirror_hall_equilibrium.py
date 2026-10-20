@@ -31,7 +31,7 @@ def run_composition(inputs, *, composition_loader):
 
 
 def solve_kinetic_mirror_hall_equilibrium(
-    inputs=None, *, kinetic_graph=None, hall_graph=None, **kwargs
+    inputs=None, *, kinetic_composition=None, hall_composition=None, **kwargs
 ):
     """Run the nested kinetic and Hall compositions with explicit dependency ports."""
     from scirel._composition import compose
@@ -41,7 +41,7 @@ def solve_kinetic_mirror_hall_equilibrium(
     return compose(
         run_composition, inputs, kwargs,
         {"composition_loader": {
-            "scirel.kinetic.compositions.grid_mirror_kinetic_closure": kinetic_graph or solve_grid_mirror_kinetic_closure,
-            "scirel.equilibrium.compositions.reduced_hall_anisotropic_picard": hall_graph or solve_reduced_hall_anisotropic_picard,
+            "scirel.kinetic.compositions.grid_mirror_kinetic_closure": kinetic_composition or solve_grid_mirror_kinetic_closure,
+            "scirel.equilibrium.compositions.reduced_hall_anisotropic_picard": hall_composition or solve_reduced_hall_anisotropic_picard,
         }},
     )

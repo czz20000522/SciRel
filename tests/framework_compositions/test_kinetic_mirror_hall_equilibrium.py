@@ -14,11 +14,11 @@ from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux
 def test_composition_passes_current_state_into_kinetic_closure():
     seen = {}
 
-    def kinetic_graph(payload):
+    def kinetic_composition(payload):
         seen["kinetic"] = payload
         return {"p_parallel": payload["b_t"], "p_perpendicular": payload["psi"]}
 
-    def hall_graph(payload):
+    def hall_composition(payload):
         closure = payload["pressure_closure"]
         b_t = np.full((1, 2), 2.0)
         psi = np.full((1, 2), 3.0)
@@ -36,8 +36,8 @@ def test_composition_passes_current_state_into_kinetic_closure():
             "ion_charge_c": 1.0,
             "kinetic_config": {"mass_kg": 1.0, "charge_c": 1.0},
         },
-        kinetic_graph=kinetic_graph,
-        hall_graph=hall_graph,
+        kinetic_composition=kinetic_composition,
+        hall_composition=hall_composition,
     )
 
     assert np.all(seen["kinetic"]["b_t"] == 2.0)
@@ -57,11 +57,11 @@ def test_composition_rejects_missing_state():
 def test_public_graph_passes_current_field_to_bound_kinetic_closure():
     observed = {}
 
-    def kinetic_graph(payload):
+    def kinetic_composition(payload):
         observed["kinetic"] = payload
         return {"p_parallel": payload["b_t"], "p_perpendicular": payload["psi"]}
 
-    def hall_graph(payload):
+    def hall_composition(payload):
         observed["hall"] = payload
         return payload["pressure_closure"](
             np.full((1, 2), 2.0), np.full((1, 2), 3.0)
@@ -77,7 +77,7 @@ def test_public_graph_passes_current_field_to_bound_kinetic_closure():
         "kinetic_config": {"density_ref_m3": 1e18},
     }
     result = solve_kinetic_mirror_hall_equilibrium(
-        inputs, kinetic_graph=kinetic_graph, hall_graph=hall_graph
+        inputs, kinetic_composition=kinetic_composition, hall_composition=hall_composition
     )
 
     assert "kinetic_config" not in observed["hall"]
@@ -136,7 +136,7 @@ def test_real_nested_graphs_close_a_manufactured_radial_profile_with_feedback():
     np.testing.assert_array_equal(result["p_parallel"], result["closure_state"]["p_parallel"])
 
 
-def test_real_nested_hall_graphs_with_filament_vacuum_and_mirror_green():
+def test_real_nested_hall_compositions_with_filament_vacuum_and_mirror_green():
     charge_c = 1.602176634e-19
     mass_kg = 1.67262192595e-27
     r_grid, z_grid = np.meshgrid(

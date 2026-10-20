@@ -1,6 +1,6 @@
 from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 import scirel
-from _review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
 # 覆盖：端态映射、端塞外屏蔽、YAML 嵌套声明与 caller profile(psi) 端口。
 from pathlib import Path
 import inspect

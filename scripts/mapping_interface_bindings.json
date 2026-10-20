@@ -493,23 +493,23 @@
      "default": true
     },
     {
-     "name": "kinetic_graph",
+     "name": "kinetic_composition",
      "required": false,
      "default": null
     },
     {
-     "name": "hall_graph",
+     "name": "hall_composition",
      "required": false,
      "default": null
     }
    ],
    "modules": {
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
-    "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "f8865366ca04aab44eca62de923889115f2ce404b777b8ac5b339a5b5c3e1d87",
+    "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "9290751b5fc483dd391895a3f38723bbae32fbcd41803b0c6112730c61ae6d2f",
     "scirel.equilibrium.reduced_hall_anisotropic_picard": "5b689784d665ffb10cb8312711510c63552d57d226f1bd15c114ca515b34ba24",
     "scirel.kinetic.grid_mirror_kinetic_closure": "84a54db506ac9011abdde1aacb4f226c6c6e5609b2610a3e3ffc7c72540ab674"
    },
-   "review_basis": "Wrapper exposes kinetic_graph/hall_graph dependency overrides explicitly. run_composition requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
+   "review_basis": "Wrapper exposes kinetic_composition/hall_composition dependency overrides explicitly. run_composition requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
   },
   {
    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",

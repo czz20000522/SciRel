@@ -2,7 +2,7 @@ import inspect
 
 from scirel.diagnostics.equilibrium_synthesis_diagnostics import synthesize_equilibrium_diagnostics
 import scirel
-from _review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
 from copy import deepcopy
 from pathlib import Path
 

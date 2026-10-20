@@ -1,6 +1,6 @@
 from scirel.equilibrium.free_boundary_anisotropic_picard import solve_free_boundary_anisotropic_picard
 import scirel
-from _review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
 from pathlib import Path
 import inspect
 

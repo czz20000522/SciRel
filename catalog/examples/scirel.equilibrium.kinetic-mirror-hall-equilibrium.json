@@ -255,7 +255,7 @@
    "constraints": "Actual boolean scalar; the separate firehose check remains active."
   },
   {
-   "name": "kinetic_graph",
+   "name": "kinetic_composition",
    "description": "Optional explicit substitute for the bound kinetic TaskGraph.",
    "units": "callable",
    "shape": "callable(mapping)->mapping or null",
@@ -265,7 +265,7 @@
    "constraints": "Dependency-injection hook, selected by Python truthiness; an override changes the scientific composition and is not the canonical asset."
   },
   {
-   "name": "hall_graph",
+   "name": "hall_composition",
    "description": "Optional explicit substitute for the bound Hall TaskGraph.",
    "units": "callable",
    "shape": "callable(mapping)->mapping or null",
@@ -527,7 +527,7 @@
   "python": {
    "module": "scirel.equilibrium.kinetic_mirror_hall_equilibrium",
    "symbol": "solve_kinetic_mirror_hall_equilibrium",
-   "signature": "solve_kinetic_mirror_hall_equilibrium(inputs=None, *, kinetic_graph=None, hall_graph=None, **kwargs)",
+   "signature": "solve_kinetic_mirror_hall_equilibrium(inputs=None, *, kinetic_composition=None, hall_composition=None, **kwargs)",
    "canonical_module": "scirel.equilibrium",
    "canonical_symbol": "solve_kinetic_mirror_hall_equilibrium"
   }
@@ -545,7 +545,7 @@
  },
  "example": {
   "description": "Exercise the public binding contract with explicit test substitutes; this does not verify the canonical scientific coupling.",
-  "code": "import numpy as np\nfrom scirel.equilibrium import solve_kinetic_mirror_hall_equilibrium\nseen = {}\ndef kinetic_graph(payload):\n    seen['kinetic'] = payload\n    return {'p_parallel': np.array([[2.0]]), 'p_perpendicular': np.array([[3.0]])}\ndef hall_graph(payload):\n    state = payload['pressure_closure'](np.array([[1.5]]), np.array([[0.25]]))\n    return {'converged': True, 'closure_state': state}\nresult = solve_kinetic_mirror_hall_equilibrium({'r_grid': np.array([[0.1]]), 'z_grid': np.array([[0.0]]), 'psi_vac': np.array([[0.2]]), 'g_psi': np.zeros((1, 1)), 'ion_mass_kg': 1.0, 'ion_charge_c': 1.0, 'kinetic_config': {'mass_kg': 1.0}}, kinetic_graph=kinetic_graph, hall_graph=hall_graph)\nassert result['converged'] and result['closure_state']['p_parallel'][0, 0] == 2.0\nassert seen['kinetic']['b_t'][0, 0] == 1.5 and seen['kinetic']['psi'][0, 0] == 0.25\nassert np.array_equal(seen['kinetic']['r_grid'], np.array([[0.1]]))",
+  "code": "import numpy as np\nfrom scirel.equilibrium import solve_kinetic_mirror_hall_equilibrium\nseen = {}\ndef kinetic_composition(payload):\n    seen['kinetic'] = payload\n    return {'p_parallel': np.array([[2.0]]), 'p_perpendicular': np.array([[3.0]])}\ndef hall_composition(payload):\n    state = payload['pressure_closure'](np.array([[1.5]]), np.array([[0.25]]))\n    return {'converged': True, 'closure_state': state}\nresult = solve_kinetic_mirror_hall_equilibrium({'r_grid': np.array([[0.1]]), 'z_grid': np.array([[0.0]]), 'psi_vac': np.array([[0.2]]), 'g_psi': np.zeros((1, 1)), 'ion_mass_kg': 1.0, 'ion_charge_c': 1.0, 'kinetic_config': {'mass_kg': 1.0}}, kinetic_composition=kinetic_composition, hall_composition=hall_composition)\nassert result['converged'] and result['closure_state']['p_parallel'][0, 0] == 2.0\nassert seen['kinetic']['b_t'][0, 0] == 1.5 and seen['kinetic']['psi'][0, 0] == 0.25\nassert np.array_equal(seen['kinetic']['r_grid'], np.array([[0.1]]))",
   "expected": "The mock Hall graph calls the bound pressure closure, which receives the current B and psi plus the outer grid; the mock result passes through unchanged."
  },
  "verification": {
@@ -575,7 +575,7 @@
     "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
     "description": "Bind the nested kinetic callable; it is invoked later by Hall through pressure_closure for each current B and psi.",
     "inputs": [
-     "kinetic_graph"
+     "kinetic_composition"
     ],
     "outputs": [
      "kinetic_callable"
@@ -624,7 +624,7 @@
      "compatibility_tol",
      "ohm_tolerance",
      "strict_compatibility",
-     "hall_graph"
+     "hall_composition"
     ],
     "outputs": [
      "result"
@@ -670,11 +670,11 @@
    {
     "from": {
      "node": "$input",
-     "port": "kinetic_graph"
+     "port": "kinetic_composition"
     },
     "to": {
      "node": "kinetic_binding",
-     "port": "kinetic_graph"
+     "port": "kinetic_composition"
     },
     "description": "Optional test substitute for kinetic graph.",
     "condition": "When supplied; otherwise bind the default child.",
@@ -865,11 +865,11 @@
    {
     "from": {
      "node": "$input",
-     "port": "hall_graph"
+     "port": "hall_composition"
     },
     "to": {
      "node": "hall",
-     "port": "hall_graph"
+     "port": "hall_composition"
     },
     "description": "Optional test substitute for Hall graph.",
     "condition": "When supplied; otherwise bind the default child.",

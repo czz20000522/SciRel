@@ -2,7 +2,7 @@ import inspect
 
 from scirel.field.multi_coil_vacuum_field import solve_multi_coil_vacuum_field
 import scirel
-from _review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
 import numpy as np
 import pytest
 

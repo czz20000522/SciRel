@@ -13,8 +13,8 @@ from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic
 def compose_kinetic_mirror_hall_equilibrium(
     inputs: Mapping[str, object],
     *,
-    kinetic_graph: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_grid_mirror_kinetic_closure,
-    hall_graph: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_reduced_hall_anisotropic_picard,
+    kinetic_composition: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_grid_mirror_kinetic_closure,
+    hall_composition: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_reduced_hall_anisotropic_picard,
 ) -> Mapping[str, object]:
     """Feed a kinetic pressure closure into the reduced Hall composition.
 
@@ -45,12 +45,12 @@ def compose_kinetic_mirror_hall_equilibrium(
             "b_t": b_t,
             "psi": psi,
         })
-        return kinetic_graph(kinetic_inputs)
+        return kinetic_composition(kinetic_inputs)
 
     hall_inputs = dict(inputs)
     hall_inputs.pop("kinetic_config")
     hall_inputs["pressure_closure"] = pressure_closure
-    return hall_graph(hall_inputs)
+    return hall_composition(hall_inputs)
 
 
 __all__ = ["compose_kinetic_mirror_hall_equilibrium"]

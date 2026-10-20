@@ -2,7 +2,7 @@ import inspect
 
 from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure
 import scirel
-from _review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
 # 覆盖：解析准中性、损失锥闭合、零密度回退与 caller profile(psi) 端口。
 import importlib.util
 from pathlib import Path

@@ -2,7 +2,7 @@ from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotrop
 
 from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion
 import scirel
-from _review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
 from pathlib import Path
 from functools import partial
 import inspect
