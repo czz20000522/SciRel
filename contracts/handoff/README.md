@@ -1,10 +1,27 @@
 # Handoff layer packages
 
-SciRel receives scientific capabilities from an external decomposition chain
-(D0 source preparation -> D1 source-faithful extraction -> D2 correctness
-decomposition -> D3 delivery). SciRel does not own or prescribe how that chain
-is executed. It prescribes what each layer **hands over** and how the packages
-interlock, so independent owners can deliver independently.
+## The whole chain
+
+```text
+external owners (independent)                 SciRel receiver                 user
+D0 freeze -> D1 extract -> D2 claims -> D3 delivery
+      isolated packages, each binds its parent digest
+                                   -> admission gate (structure only)
+                                   -> per-capability disposition
+                                      existing -> record, do not import
+                                      partial  -> merge into existing asset
+                                      new      -> rename/relocate/add contract
+                                   -> library triad: implementation + tests + contract
+                                   -> derived bilingual manual (zh/en)
+                                                                    -> installable
+                                                                       package + docs
+```
+
+The user is the last layer and sees only a SciPy-like package: importable
+functions, tests, and a bilingual manual. Decomposition, delivery and merge
+records never enter the user-facing surface. SciRel does not own or prescribe
+how the external chain is executed; it prescribes what each layer **hands over**,
+how the packages interlock, and how the receiver reviews them.
 
 ## Independent packages, one interlock
 
@@ -85,6 +102,27 @@ differences, the required changes, and the evidence behind the decision.
 
 Only `partial` and `new` dispositions lead to code or contract changes in the
 library; `existing` deliveries stay outside the repository.
+
+The review itself is a durable record (`disposition.schema.json`), not an
+automatic merge:
+
+```json
+{
+ "schema": "scirel.disposition-review",
+ "package": {"package_id": "...", "payload_digest": "...", "layer": "d3"},
+ "reviewer_role": "...",
+ "summary": {"existing": 1, "partial": 1, "new": 1},
+ "dispositions": [
+  {"incoming_asset_id": "...", "disposition": "existing",
+   "matched_asset_ids": ["scirel.field...."], "overlap": "...",
+   "differences": [], "required_changes": [], "evidence": ["..."], "notes": "..."}
+ ]
+}
+```
+
+`scripts/validate_disposition.py review.json --package-dir <d3>` checks the
+record shape, the `existing`/`partial`/`new` rules and the binding to the exact
+D3 package bytes. It checks the record, not the scientific judgment.
 
 ## Versioning
 
