@@ -60,19 +60,19 @@
  "outputs": [
   {
    "name": "state",
-   "description": "Named source scales: ES1D S,qs,ms,ns0,Ts,vs0,vts,lambdaDs,kDs,wps; ES3D uses Tzs,Tps,vtzs and adds signed wcs plus absolute rhocs. EM additionally retains original deck quantities, wps2,lmdT,betasz,betasp,vA,cS,wci,wpi,cwp,vAwp,c2,epsilon0,mu0,kB. Native species arrays keep their source row shapes.",
+   "description": "Named source scales: ES1D S,qs,ms,ns0,Ts,vs0,vts,lambdaDs,kDs,wps; ES3D uses Tzs,Tps,vtzs and adds signed wcs plus absolute rhocs. EM additionally retains original deck quantities, wps2,lmdT,betasz,betasp,vA,cS,wci,wpi,cwp,vAwp,c2,epsilon0,mu0,kB. Binary64 arrays keep their source row shapes.",
    "units": "Model-dependent ES dimensionless or EM SI.",
    "shape": "mapping",
    "dtype": "mapping",
    "required": true,
-   "constraints": "Native arrays preserve source row shapes; use named fields rather than inferred positional scales."
+   "constraints": "Binary64 arrays preserve source row shapes; use named fields rather than inferred positional scales."
   },
   {
    "name": "receipt",
-   "description": "Frozen NativeReceipt for an executed native relation; execution provenance is separate from scientific validity.",
+   "description": "Frozen Python execution receipt for an executed pure-Python operator; execution provenance is separate from scientific validity.",
    "units": "not applicable",
-   "shape": "NativeReceipt object",
-   "dtype": "NativeReceipt",
+   "shape": "Python execution receipt object",
+   "dtype": "Python execution receipt",
    "required": true,
    "constraints": "Execution provenance does not certify scientific validity by itself."
   }
@@ -91,7 +91,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for invalid model/deck, nonphysical charge/mass/density/temperature, magnetized B0=0 or unrepresentable float64 input.",
-  "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback.",
+  "runtime_failure": "Python numerical errors propagate with operation context; no source-runtime, checkout or network fallback.",
   "nonconvergence": "FloatingPointError if derived equilibrium scales are nonfinite; no root solver is used.",
   "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
  },
@@ -107,26 +107,26 @@
   "dependencies": []
  },
  "example": {
-  "description": "Requires GNU Octave on Linux amd64 for the native Octave path; this macOS execution is NOT_RUN.",
+  "description": "Convert a representative species deck with the pure-Python equilibrium operator.",
   "code": "from scirel.kinetic.dispersion.rational import equilibrium\nr = equilibrium('em', [[-1, 1, 1e6, 100, 100, 0], [1, 1836, 1e6, 100, 100, 0]], B0=1e-7)\nassert r['state']['S'].item() == 2",
-  "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
+  "expected": "PASS: .venv/bin/python computes the declared state on macOS without GNU Octave."
  },
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "Native execution requires GNU Octave on Linux amd64; this macOS run is NOT_RUN."
+   "The pure-Python implementation runs directly on macOS without GNU Octave."
   ],
   "tests": [
    "tests/operator_contracts/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct tests establish the declared contract where they run; the native example and native acceptance remain NOT_RUN because GNU Octave on Linux amd64 is unavailable on this macOS host. No release or human scientific approval is implied.",
+  "evidence_ceiling": "Direct tests establish the declared contract where they run; the pure-Python example and bounded acceptance run on this macOS host. No release or human scientific approval is implied.",
   "known_limitations": [
    "Original license unverified; MATLAB execution NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Human scientific and plot approval pending.",
-   "Native GNU Octave/Linux amd64 execution is NOT_RUN on this host."
+   "Source-runtime execution is outside this pure-Python implementation."
   ]
  },
  "references": [

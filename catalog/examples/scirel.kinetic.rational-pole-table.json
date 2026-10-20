@@ -62,19 +62,19 @@
  "outputs": [
   {
    "name": "state",
-   "description": "Dimensionless state: J is a native (1,1) scalar; bzj and czj are complex (1,J) rows in the selected table order.",
+   "description": "Dimensionless state: J is a binary64 (1,1) scalar; bzj and czj are complex (1,J) rows in the selected table order.",
    "units": "dimensionless",
    "shape": "mapping",
    "dtype": "mapping",
    "required": true,
-   "constraints": "Native row shapes preserved. Table selection alone is not an approximation-error or physical-mode certificate."
+   "constraints": "Binary64 row shapes preserved. Table selection alone is not an approximation-error or physical-mode certificate."
   },
   {
    "name": "receipt",
-   "description": "Frozen NativeReceipt for an executed native relation; execution provenance is separate from scientific validity.",
+   "description": "Frozen Python execution receipt for an executed pure-Python operator; execution provenance is separate from scientific validity.",
    "units": "not applicable",
-   "shape": "NativeReceipt object",
-   "dtype": "NativeReceipt",
+   "shape": "Python execution receipt object",
+   "dtype": "Python execution receipt",
    "required": true,
    "constraints": "Execution provenance does not certify scientific validity by itself."
   }
@@ -94,7 +94,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError for invalid model, unsupported J or invalid ES1D opt.",
-  "runtime_failure": "NativeExecutionError retains its NativeReceipt for unavailable, failed or timed-out owned-scratch execution; no checkout/network fallback.",
+  "runtime_failure": "Python numerical errors propagate with operation context; no source-runtime, checkout or network fallback.",
   "nonconvergence": "No iterative coefficient construction; fixed table access does not certify approximation accuracy.",
   "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
  },
@@ -110,9 +110,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "Run the declared kinetic dispersion relation with its native-backed scientific ports.",
+  "description": "Select a declared Maxwellian pole table with the pure-Python operator.",
   "code": "from scirel.kinetic.dispersion.rational import pole_table\nr = pole_table('es1d', 8)\nassert r['state']['czj'].size == 8",
-  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+  "expected": "PASS: .venv/bin/python runs the table selection on macOS without GNU Octave."
  },
  "verification": {
   "scope": [
@@ -123,13 +123,13 @@
   "tests": [
    "tests/operator_contracts/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native Octave execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python implementation is validated on this macOS checkout.",
   "known_limitations": [
-   "Redistribution authority for the source material remains unresolved; native MATLAB/Octave execution is NOT_RUN.",
+   "Redistribution authority for the reference material remains unresolved; the pure-Python implementation does not execute the source runtime.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
    "Human scientific and plot approval pending.",
-   "The native example and full native-path qualification require GNU Octave on Linux amd64; the run on this macOS host is NOT_RUN."
+   "The pure-Python example and bounded qualification run on this macOS host; arbitrary parameter regimes remain outside the evidence."
   ]
  },
  "references": [

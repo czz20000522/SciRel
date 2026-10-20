@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Rational plasma-dispersion poles",
   "direction": "J -> bzj,czj",
-  "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within native precision. J12 regenerates the prescribed Padé relation at 80 digits, checked against a 120-digit construction before rounding to binary64; the J4/J8 tabulated values are kept as given.",
+  "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within binary64 precision. J12 regenerates the prescribed Padé relation at 80 digits, checked against a 120-digit construction before rounding to binary64; the J4/J8 tabulated values are kept as given.",
   "model": "Explicit rational approximation or two-Gaussian representation for magnetized kinetic response.",
   "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
   "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
@@ -35,7 +35,7 @@
    "shape": "scalar",
    "dtype": "integer numeric",
    "required": false,
-   "constraints": "Exactly4,8 or12; J12/I16/K8 table is intentionally regenerated at high precision and rounded to native double.",
+   "constraints": "Exactly4,8 or12; J12/I16/K8 table is intentionally regenerated at high precision and rounded to binary64.",
    "default": 8
   }
  ],
@@ -47,7 +47,7 @@
    "shape": "(1,J)",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+   "constraints": "Accessible in returned operator result.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
   },
   {
    "name": "czj",
@@ -56,7 +56,7 @@
    "shape": "(1,J)",
    "dtype": "complex128",
    "required": true,
-   "constraints": "Accessible in returned NativeResult.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+   "constraints": "Accessible in returned operator result.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
   }
  ],
  "applicability": {
@@ -71,10 +71,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Declared Python guards raise ValueError; incomplete or inconsistent state may raise KeyError or a native indexing/domain error. No silent physical-model substitution.",
-  "runtime_failure": "NativeExecutionError records unavailable/failed/timed-out Octave execution. source_output additionally raises SourceOutputError carrying the result and receipt computed so far when its caught scientific terminal fails.",
-  "nonconvergence": "Eigen/interpolation/selection native failure is observable; no failed root is converted to a successful mode. This operator does not certify global root convergence.",
-  "partial_results": "Completed NativeResult carries immutable state and receipt. source_output failures expose partial artifacts through exception.result; other failed native calls do not promise a completed scientific state."
+  "invalid_input": "Declared Python guards raise ValueError; unsupported J is rejected without a table fallback.",
+  "runtime_failure": "Pure Python numeric errors propagate with operation context; no Octave or source-runtime process is invoked.",
+  "nonconvergence": "No iterative solve is performed by fixed-table lookup; J12 construction is validated by the separate pure mpmath Padé operator.",
+  "partial_results": "No partial result is returned when validation or table loading fails."
  },
  "public_api": {
   "python": {
@@ -88,9 +88,9 @@
   "dependencies": []
  },
  "example": {
-  "description": "A self-contained example that uses the packaged native resources and raw Octave; no network access is required.",
-  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m, workflows as w\nr=m.pole_coefficients(12)\nassert r.state['bzj'].size==12\nassert abs(np.sum(r.state['bzj'])+1)<1e-10\n",
-  "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
+  "description": "Return a pure-Python J-pole table and inspect its moments.",
+  "code": "from scirel.kinetic.dispersion import magnetized\nr = magnetized.pole_coefficients(8)\nassert r.state['bzj'].size == 8",
+  "expected": "PASS: .venv/bin/python returns the declared table without GNU Octave."
  },
  "verification": {
   "scope": [
@@ -100,13 +100,13 @@
   "tests": [
    "tests/operator_contracts/test_dispersion_magnetized.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; native execution requires GNU Octave on Linux amd64 and is NOT_RUN in this macOS checkout.",
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without GNU Octave.",
   "known_limitations": [
    "Local technical development; human scientific endorsement and publication clearance remain pending.",
    "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
    "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
    "Lower-half-plane poles define a rational approximation; its global strong-damping accuracy is not established by bounded upper-half-plane response tests.",
-   "The native example and full verification require GNU Octave on Linux amd64; the current macOS run is NOT_RUN."
+   "The pure-Python example and bounded verification run on this macOS host; arbitrary parameter regimes remain outside the evidence."
   ]
  },
  "references": [

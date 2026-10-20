@@ -10,15 +10,8 @@ import importlib.util
 import json
 import numpy as np
 import pytest
-import shutil
 from scipy.special import wofz
 from scirel.kinetic.dispersion import rational
-
-
-pytestmark = pytest.mark.skipif(
-    shutil.which("octave") is None,
-    reason="PDRK rational contracts require GNU Octave",
-)
 
 
 def _schur(M,omega):
@@ -77,6 +70,10 @@ def test_regenerated_j12_preserves_asymptotic_moments():
         assert max(abs(sum(b)+1),abs(sum(b*c)),abs(sum(b*c*c)+.5))<=1e-10
 
 
+@pytest.mark.skipif(
+    np.finfo(np.longdouble).max <= np.finfo(float).max,
+    reason="platform longdouble has no wider finite range than float64",
+)
 def test_extended_finite_inputs_rejected_after_binary64_narrowing():
     wide=np.longdouble('1e400');tiny=np.longdouble('1e-400')
     assert np.isfinite(wide) and wide>np.finfo(float).max

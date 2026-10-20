@@ -9,7 +9,7 @@ import _dispersion_oracle as oracle
 import _dispersion_axis_oracle as axes
 
 
-pytestmark = pytest.mark.skipif(
+NATIVE_REQUIRED = pytest.mark.skipif(
     shutil.which("octave") is None,
     reason="PDRK magnetized contracts require GNU Octave",
 )
@@ -33,7 +33,16 @@ def test_poles_asymptotic_moments(J):
     if J==12:
         z=np.array([.2+.7j,2+.3j,4+.6j,-1.5+.8j]);_close(np.sum(b/(z[:,None]-c),axis=1),oracle.plasma_z(z),5e-5)
 
+
+def test_python_eigensolve_reports_sorted_roots_and_backward_error():
+    matrix = np.array([[1 + 1j, 2], [3, 4 - 1j]], dtype=complex)
+    result = m.eigensolve({'M': matrix, 'sp': 0})
+    assert result.receipt.backend == 'Python/NumPy'
+    assert np.all(result.state['wi'][:-1] >= result.state['wi'][1:])
+    assert np.max(result.state['backward_residual']) <= 1e-11
+
 @pytest.mark.parametrize('f',CASES,ids=lambda f:f['id'])
+@NATIVE_REQUIRED
 def test_signed_oblique_response_independent_velocity_integral(f):
     eq,p,kx,kz,w=_case(f)
     for sign in [1,-1]:
@@ -45,6 +54,7 @@ def test_signed_oblique_response_independent_velocity_integral(f):
         eseq,*_=_case(f,0);_close(oracle.es_schur(m.electrostatic_matrix(eseq,kx=kx,kz=sign*kz).state['M'],w),es,5e-5)
 
 @pytest.mark.parametrize('f',CASES,ids=lambda f:f['id'])
+@NATIVE_REQUIRED
 def test_exact_perpendicular_and_zero_wavevector_analytic_tensor(f):
     eq,p,kx,kz,w=_case(f)
     ref=axes.perpendicular(f['deck'],f['B0'],kx,w,12,96)
@@ -58,6 +68,7 @@ def test_exact_perpendicular_and_zero_wavevector_analytic_tensor(f):
         zero_eq=m.initialize_equilibrium(np.asarray(f['deck']),controls=dict(B0=f['B0'],iem=1,N=N,J=12,iout=1,sp=0))
         _close(oracle.em_schur(m.electromagnetic_matrix(zero_eq,kx=0,kz=0).state['M'],w)[0],ref,1e-12)
 
+@NATIVE_REQUIRED
 def test_invalid_domains_rejected_before_native_process():
     with pytest.raises(ValueError):m.pole_coefficients(5)
     with pytest.raises(ValueError):m.initialize_equilibrium(controls={'B0':0})

@@ -109,7 +109,7 @@
  },
  "example": {
   "description": "A self-contained example that uses the packaged native resources and raw Octave; no network access is required.",
-  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m, workflows as w\nst={'pas':np.array([.1,.2,.3]),'wws':np.array([1.,2.,3.]).reshape(3,1,1),'rex':1.,'rez':1.}\nr=m.interpolate_selected_dispersion(st,coordinate=.2)\nassert np.allclose(r.state['winterp'],2.)\n",
+  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m\nst={'pas':np.array([.1,.2,.3]),'wws':np.array([1.,2.,3.]).reshape(3,1,1),'rex':1.,'rez':1.}\nr=m.interpolate_selected_dispersion(st,coordinate=.2)\nassert np.allclose(r.state['winterp'],2.)\n",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
  "verification": {

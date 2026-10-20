@@ -18,14 +18,14 @@
  "asset_id": "scirel.kinetic.fluid-bonk-search",
  "example": {
   "code": "from scirel.kinetic.fluid_spectrum import derive_fluid_case,solve_fluid_bonk\ns=derive_fluid_case('bonk',2)\nr=solve_fluid_bonk(2,[.63*s['wn'].item()])\n",
-  "description": "Requires Linux amd64 and GNU Octave 7.3.0; this example exercises the native fluid boundary and is reported as NOT_RUN on macOS.",
-  "expected": "NOT_RUN on this macOS host: the call reaches the fluid native runtime guard and raises RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")."
+  "description": "Pure Python/NumPy implementation; executes on this macOS host without Octave.",
+  "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {
   "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
   "nonconvergence": "Bounded scientific precision/search failures are explicit. BONK returns every attempt and an unverified row when no verified root is found; a raw solver flag alone is not a scientific root.",
   "partial_results": "Operator errors return no result. A completed BONK axis may contain unverified candidates with root_valid false. No hidden partial output is represented as a complete result.",
-  "runtime_failure": "Raises RuntimeError before numerical evaluation unless the pinned Linux amd64 and GNU Octave 7.3.0 runtime is available; native errors propagate and no fallback is selected."
+  "runtime_failure": "Python numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
  },
  "graph": {
   "edges": [
@@ -294,7 +294,7 @@
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
    "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
-   "Example execution requires Linux amd64 with GNU Octave 7.3.0; it was not run on this macOS host."
+   "Pure-Python execution is tested on this host; native parity is not claimed."
   ],
   "scope": [
    "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",

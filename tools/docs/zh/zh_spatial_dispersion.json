@@ -28,11 +28,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生流体边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 流体原生运行时保护，并抛出 RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")。"
+    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
+    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-case-state",
-   "source_sha256": "644a04299b3c1671e72446fea4d7ed2198d26674aad8669763d0d8e65451301a",
+   "source_sha256": "63437ab54517164976a9497547b9984f6549a1dd65217d92b71c554720053385",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -55,7 +55,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
+    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -68,7 +68,7 @@
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
-     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
@@ -105,11 +105,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生运行时边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用触发原生运行时保护，并抛出 RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")。"
+    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
+    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-special-functions",
-   "source_sha256": "def556b48e16e88528467c38ff51d7f1ab8ef7f821a5cf74f3e3393e5ef24c7d",
+   "source_sha256": "55ed7402a21d7096023f8a0c8fa5c5ae4dcd1604ac41764c206d1759dd434afb",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -135,7 +135,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
+    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -150,7 +150,7 @@
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
-     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
@@ -187,11 +187,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生运行时边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用触发原生运行时保护，并抛出 RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")。"
+    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
+    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-dispersion-response",
-   "source_sha256": "bb845e8a55ff1a8f2fb77dc1235f3c352ae0daa5275e63860f09ac9a25825bb0",
+   "source_sha256": "d511d8935e23cfddac8a2c8f47033cc1454551024ebaa140e661694a1fbc97eb",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -214,7 +214,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
+    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -228,7 +228,7 @@
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
-     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
@@ -271,11 +271,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生流体边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 流体原生运行时保护，并抛出 RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")。"
+    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
+    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "8c5addc4f628bfb0158086c2118a72c90b0a189af81aa4f12c7d4f83a21ff96f",
+   "source_sha256": "0b82312dec93debb73a0368968bdd1edc566a7f0c4137158072addb18d1a070a",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -298,7 +298,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
+    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -312,7 +312,7 @@
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
-     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
@@ -343,11 +343,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生流体边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 流体原生运行时保护，并抛出 RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")。"
+    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
+    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-bonk-search",
-   "source_sha256": "86f433d757c8559aaab0e1a0924660a895d5322674614c3323571e55ddf674e4",
+   "source_sha256": "32f318972d5b0c67d67f99619421ffe96ff753faee2fc73d18c2f39289740e57",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -370,7 +370,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
+    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
     "nonconvergence": "科学精度或有界搜索失败明确记录。找不到已核验根时，返回全部尝试及未核验行；原始求解标志本身不能证明科学根。",
     "partial_results": "算子异常不返回结果；完成的频率轴可包含 root_valid 为假的候选，不把隐藏的部分结果作为完整成功输出。"
    },
@@ -384,7 +384,7 @@
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
-     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
@@ -427,11 +427,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生流体边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 流体原生运行时保护，并抛出 RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")。"
+    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
+    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "4c3f1c86c8b0554f7c481ba0820e95d7bec7395db92f31a780fdf238b358c3e9",
+   "source_sha256": "34129a1da7076a54c62da878f49f7852a01ed6dc386a7c6a55b04e63c312730f",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -454,7 +454,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
+    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
@@ -468,7 +468,7 @@
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
-     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }
@@ -511,11 +511,11 @@
     }
    ],
    "example": {
-    "description": "需要 Linux amd64 和 GNU Octave 7.3.0；该示例执行原生流体边界，在 macOS 上记为 NOT_RUN。",
-    "expected": "本 macOS 主机上为 NOT_RUN：调用到达 流体原生运行时保护，并抛出 RuntimeError(\"the fluid native runtime requires the pinned Linux amd64\")。"
+    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
+    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
    },
    "asset_id": "scirel.kinetic.fluid-materials",
-   "source_sha256": "c34470052f6dc91e8403b67fb3b9db7657bd67ccf09a243d9f1eadf66c15775e",
+   "source_sha256": "e513901c4894db1272255a01afb5fe24cf78ac9b50d2f4d5f6026e94f01e8ea1",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -538,7 +538,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "固定的 Linux amd64 与 GNU Octave 7.3.0 运行时不可用时，在数值计算前抛出 RuntimeError；原生错误向上传播，不选择回退。",
+    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
     "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
     "partial_results": "异常不返回结果；后端失败前可能已经写出部分文件，这些文件不构成成功返回。"
    },
@@ -552,7 +552,7 @@
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "科学有效性受已测试数值域和适用条件限制。",
-     "示例需要 Linux amd64 和 GNU Octave 7.3.0；本 macOS 主机未运行。"
+     "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
    }

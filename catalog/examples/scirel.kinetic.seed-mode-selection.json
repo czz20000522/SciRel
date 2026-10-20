@@ -106,7 +106,7 @@
  },
  "example": {
   "description": "Small wheel-only example using packaged native resources and raw Octave; no source checkout or network.",
-  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m, workflows as w\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nscan=w.scan_spectrum({'state':eq,'rng_seed':2718})\nroots=np.asarray(scan.state['ww']);j=int(np.argmax(roots[0,0].real))\nseeds=np.array([[.2,0,roots[0,0,j]/float(np.asarray(scan.state['wcs1']).item())]])\nr=m.select_modes(scan,seeds)\nassert int(r.state['npl'].item())==1\n",
+  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m\ndeck=np.array([[1,1,1e6,100,100,1,1,0],[-1,1,1e6,100,100,1,1,0.]])\ncontrols=dict(B0=1e-7,N=1,J=4,sp=0,iem=1,iout=2,ipa=3,ipb=3,iloga=0,ilogb=0,pa1=.2,pa2=.4,dpa=.1)\neq=m.initialize_equilibrium(deck,controls=controls,par=[.2,0,.2,0,0,0])\nscan=w.scan_spectrum({'state':eq,'rng_seed':2718})\nroots=np.asarray(scan.state['ww']);j=int(np.argmax(roots[0,0].real))\nseeds=np.array([[.2,0,roots[0,0,j]/float(np.asarray(scan.state['wcs1']).item())]])\nr=m.select_modes(scan,seeds)\nassert int(r.state['npl'].item())==1\n",
   "expected": "NOT_RUN (environment): the example requires GNU Octave on Linux amd64; this macOS checkout has no octave executable, so NativeExecutionError is expected and no scientific result is claimed."
  },
  "verification": {

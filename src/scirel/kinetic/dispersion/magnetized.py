@@ -1,13 +1,16 @@
-"""Validated magnetized PDRK orchestration around the packaged native kernels.
+"""Validated magnetized PDRK orchestration with pure pole/eigensolve paths.
 
 Python owns deck/selector validation, port narrowing, state composition, and
-readback. The existing ``.m`` resources remain behind :mod:`_transport`; no
-Python path invents inactive state fields or silently changes source units.
+readback. Pole tables and frequency eigensolves run in-process; the existing
+``.m`` resources remain behind :mod:`_transport` only for the other source
+orchestration operations.
 """
 from pathlib import Path
 from types import MappingProxyType
+from dataclasses import dataclass
 import numpy as np
 from ._transport import NativeAction, NativeTransport, NativeResult
+from .rational import _fixed_poles
 __all__ = [
     'initialize_equilibrium', 'electromagnetic_matrix', 'electrostatic_matrix',
     'eigensolve', 'reconstruct_point_fields', 'select_modes',
@@ -24,6 +27,13 @@ MATRIX_COMMON = tuple('c2 epsilon0 mu0 S N J NN SNJ SNJ1 SNJ3 wps2 czj bzj vtzs 
 SCAN_OUTPUTS = tuple('ww wwp kxx kzz kk tt par wg wg0 ppa ppb M d omega w wi ind d0_serialized Pola wws2 icalp k kx kz theta'.split())
 EM_OUTPUTS = tuple('M k bsab bsab2 csnj b11 b12 b13 b21 b22 b23 b31 b32 b33 b11snj b12snj b13snj b21snj b22snj b23snj b31snj b32snj b33snj'.split())
 ES_OUTPUTS = tuple('M k bsab bsab2 csnj bsnj'.split())
+
+
+@dataclass(frozen=True)
+class _PythonReceipt:
+    backend: str
+    operation: str
+    dependencies: tuple[str, ...] = ('numpy', 'scipy')
 
 def _state(value):
     return value.state if isinstance(value, NativeResult) else value
@@ -174,10 +184,42 @@ def eigensolve(state, *, matrix=None, guess=None):
     Dense binary64 eig; sparse binary64 eigs near dimensional guess. The d0
     string is a numeric diagnostic, with no arbitrary-precision claim.
     """
-    state = _state(state)
-    inputs = {k: state[k] for k in ('NN', 'iem', 'iout', 'sp', 'nw', 'wcs1', 'epsilon0', 'mu0')}
-    inputs.update(M=state['M'] if matrix is None else matrix, wg=state['wg'] if guess is None else guess, icalp=0)
-    return _call('eigensolve', inputs, ('d', 'omega', 'w', 'wi', 'ind', 'wg', 'd0_serialized', 'Pola', 'wws2'), merge=state)
+    state = dict(_state(state))
+    M = state.get('M') if matrix is None else matrix
+    if M is None:
+        raise ValueError('finite square frequency matrix required')
+    from scipy import sparse
+    from scipy.linalg import eig
+    from scipy.sparse.linalg import eigs
+    is_sparse = sparse.issparse(M)
+    values = M.data if is_sparse else np.asarray(M)
+    if len(M.shape) != 2 or M.shape[0] != M.shape[1] or M.shape[0] == 0 or not np.isfinite(values).all():
+        raise ValueError('finite square frequency matrix required')
+    sp = int(np.asarray(state.get('sp', 0)).item())
+    if sp not in (0, 1):
+        raise ValueError('sp must be dense0 or shifted sparse1')
+    if sp:
+        count = int(np.asarray(state.get('nw', 1)).item())
+        if count < 1 or count >= M.shape[0] - 1:
+            raise ValueError('sparse eigs requires nw<dimension-1')
+        shift = complex(state.get('wg', 0) if guess is None else guess)
+        if not np.isfinite(shift):
+            raise ValueError('finite frequency shift required')
+        d, V = eigs(sparse.csc_matrix(M), k=count, sigma=shift)
+    else:
+        d, V = eig(M.toarray() if is_sparse else np.asarray(M, complex))
+    norm = sparse.linalg.norm(M) if is_sparse else np.linalg.norm(M)
+    residual = np.linalg.norm(M @ V - V * d, axis=0) / ((norm + abs(d)) * np.linalg.norm(V, axis=0))
+    gate = max(1e-11, 128 * len(d) * np.finfo(float).eps)
+    if not np.isfinite(d).all() or not np.isfinite(residual).all() or np.any(residual > gate):
+        raise ArithmeticError('frequency eigensolver failed backward residual gate')
+    order = np.argsort(-d.imag, kind='stable')
+    w = d[order]
+    state.update(d=d, omega=d, V=V, w=w, wi=w.imag, ind=order,
+                indices='zero-based', backward_residual=residual, wg=w[0],
+                d0_serialized=np.array2string(d, precision=17),
+                Pola=np.empty((0,)), wws2=np.empty((0,)))
+    return NativeResult(MappingProxyType(state), _PythonReceipt('Python/NumPy', 'eigensolve'))
 
 def reconstruct_point_fields(state, *, frequency_guess):
     """One near-mode EM eigenpair with unit-Hermitian electric normalization.
@@ -247,7 +289,12 @@ def pole_coefficients(J=8):
     value = _real_values(J, 'J')
     if value.shape != () or float(value) not in (4, 8, 12):
         raise ValueError('J must be 4, 8 or 12')
-    return _call('poles', {'J': J}, ('bzj', 'czj'))
+    J = int(value)
+    bzj, czj = _fixed_poles(J)
+    return NativeResult(MappingProxyType({'J': np.array([[J]], float),
+                                          'bzj': bzj.reshape(1, -1),
+                                          'czj': czj.reshape(1, -1)}),
+                        _PythonReceipt('Python/NumPy', 'poles'))
 
 def loss_cone_partition(alphas, Deltas):
     """Source two-branch core/loss-cone weights; alpha==1 bypass preserved."""

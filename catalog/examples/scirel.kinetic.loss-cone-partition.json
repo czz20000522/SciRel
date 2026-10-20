@@ -88,7 +88,7 @@
  },
  "example": {
   "description": "Requires GNU Octave on Linux amd64 for the native execution path; this macOS execution is NOT_RUN.",
-  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m, workflows as w\nr=m.loss_cone_partition([.5,1.],[.4,.7])\nassert np.allclose(np.sum(r.state['rsab'],axis=0),1)\n",
+  "code": "import numpy as np\nfrom scirel.kinetic.dispersion import magnetized as m\nr=m.loss_cone_partition([.5,1.],[.4,.7])\nassert np.allclose(np.sum(r.state['rsab'],axis=0),1)\n",
   "expected": "NOT_RUN: GNU Octave on Linux amd64 is unavailable on this macOS host; the example was attempted and raised NativeExecutionError before native execution."
  },
  "verification": {

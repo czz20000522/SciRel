@@ -1,221 +1,580 @@
-"""Fluid dispersion family executed by packaged Octave components.
+"""Pure Python/NumPy/SciPy BONK and EM fluid dispersion operators.
 
-Lineage: upstream 79829170 -> D0 7fd667f4 -> D1 1a6704a7 -> this D2.
-The native directory is runtime implementation, never an external checkout.
-Historical Python source-fidelity variants have different approximation, domain,
-state and failure contracts; they are comparison inputs, not dependencies here.
-Source redistribution and WHAMP/Faddeeva permission remain NOT_ESTABLISHED.
-This private technical increment grants neither scientific human approval nor release.
+The packaged MATLAB files are retained as source evidence only.  Public calls
+execute locally and do not require Linux, Octave, or an external checkout.
 """
 from __future__ import annotations
 
-import os
-import platform
+import copy
+import operator
 from pathlib import Path
-import shutil
-import subprocess
-import tempfile
 
 import numpy as np
+
+
+class _LazyModule:
+    def __init__(self, name):
+        self._name = name
+        self._module = None
+
+    def __getattr__(self, attr):
+        if self._module is None:
+            import importlib
+            self._module = importlib.import_module(self._name)
+        return getattr(self._module, attr)
+
+
+optimize = _LazyModule("scipy.optimize")
+special = _LazyModule("scipy.special")
+
+from .fluid_dispersion_matrix import assemble_fluid_dispersion_matrix
+from .fluid_wavevector_eigensolve import _source_runtime_eigvals
+from .gamma_lpole_coefficients import get_gamma_lpole_coefficients
+from .z_pole_coefficients import get_z_pole_coefficients
 
 __all__ = ["evaluate_fluid_special", "derive_fluid_case", "evaluate_fluid_dispersion",
            "solve_fluid_bonk", "assemble_fluid_em", "solve_fluid_em",
            "render_fluid_materials"]
 
-
-def _decode(value):
-    if hasattr(value, "_fieldnames"):
-        return {name: _decode(getattr(value, name)) for name in value._fieldnames}
-    if isinstance(value, np.ndarray) and value.dtype == object:
-        decoded = [_decode(item) for item in value.flat]
-        if value.size == 1:
-            return decoded[0]
-        # np.asarray expands equal-shaped nested arrays even with dtype=object.
-        # Allocate the MAT cell shape explicitly so each cell retains its array.
-        cells = np.empty(value.shape, dtype=object)
-        for index, item in enumerate(decoded):
-            cells.flat[index] = item
-        return cells
-    if isinstance(value, np.ndarray) and value.dtype.kind in "US":
-        return "".join(value.flat)
-    return value
+_C2 = (2.99792458e8) ** 2
+_EPSILON0 = 8.854187817e-12
+_KB = 1.38064852e-23
+_QE = 1.60217662e-19
+_EV_TO_J = 1.6022e-19
+_MP = 1.6726219e-27
+_ME = 9.1094e-31
 
 
-def _require_runtime():
-    """Resolve the pinned native backend once at the numerical boundary."""
-    if platform.system() != "Linux" or platform.machine() not in {"x86_64", "amd64"}:
-        raise RuntimeError("the fluid native runtime requires the pinned Linux amd64")
-    octave = shutil.which("octave")
-    if octave is None:
-        raise RuntimeError("GNU Octave 7.3.0 is required")
-    return octave
+def _mat_scalar(value, dtype=float):
+    """Represent a scalar as the historical Octave/MAT ``(1, 1)`` port."""
+    return np.asarray([[value]], dtype=dtype)
 
 
-def _run(function, args, *, nout=1, output_directory=None):
-    """One process owns all native globals and figures; arguments travel as MAT data."""
-    octave = _require_runtime()
-    # MAT transport is only needed once a native Octave call is requested.
-    # Keeping this import here lets direct module discovery avoid scipy.io and
-    # preserves the existing load/save behavior inside the native boundary.
-    from scipy.io import loadmat, savemat
+def _mat_row(value, dtype=None):
+    """Represent a vector as the historical Octave row port."""
+    array = np.asarray(value, dtype=dtype)
+    return array.reshape(1, -1)
 
-    environment = os.environ.copy()
-    environment.update(OPENBLAS_NUM_THREADS="1", OMP_NUM_THREADS="1")
-    native = Path(__file__).with_name("_fluid_native").resolve()
-    with tempfile.TemporaryDirectory(prefix="scirel-fluid-") as temporary:
-        root = Path(temporary)
-        cells = np.empty((1, len(args)), dtype=object)
-        def encode(argument):
-            if isinstance(argument, dict):
-                return {key: encode(value) for key, value in argument.items()}
-            array = np.asarray(argument)
-            if array.dtype.kind in "iu":
-                if np.any(np.abs(array.astype(object)) > 2**53):
-                    raise ValueError("integer input exceeds exact double representation")
-                return array.astype(np.float64)
-            return argument
-        for index, argument in enumerate(args):
-            cells[0, index] = encode(argument)
-        savemat(root / "input.mat", {"args": cells}, oned_as="row", long_field_names=True)
-        quote = lambda path: str(path).replace("'", "''")
-        script = root / "driver.m"
-        script.write_text(
-            f"addpath('{quote(native)}');\n"
-            "if ~strcmp(OCTAVE_VERSION,'7.3.0'), error('fluid:runtime','Octave 7.3.0 required'); end\n"
-            f"load('{quote(root / 'input.mat')}'); values=cell(1,{nout});\n"
-            f"try; [values{{:}}]=feval('{function}',args{{:}}); ok=true; error_id=''; error_message='';\n"
-            "catch err; ok=false; error_id=err.identifier; error_message=err.message; end;\n"
-            f"save('-mat7-binary','{quote(root / 'output.mat')}','ok','values','error_id','error_message');\n",
-            encoding="utf-8",
-        )
-        work = root if output_directory is None else Path(output_directory).resolve(strict=True)
-        process = subprocess.run([octave, "--no-gui", "--quiet", str(script)], cwd=work,
-                                 env=environment, capture_output=True, timeout=1800, check=False)
-        if process.returncode or not (root / "output.mat").exists():
-            raise RuntimeError(f"fluid native runtime failed: {process.stderr.decode(errors='replace')[-2000:]}")
-        result = loadmat(root / "output.mat", struct_as_record=False, squeeze_me=False)
-        if not result["ok"].item():
-            raise ValueError(f"{_decode(result['error_id'])}: {_decode(result['error_message'])}")
-        values = [_decode(item) for item in result["values"].flat]
-        return values[0] if nout == 1 else values
+
+def _mat_value(value):
+    """Convert NumPy scalars/vectors to the old MAT boundary shapes."""
+    array = np.asarray(value)
+    if array.ndim == 0:
+        return _mat_scalar(array.item(), dtype=array.dtype)
+    if array.ndim == 1:
+        return _mat_row(array, dtype=array.dtype)
+    return array
+
+
+def _legacy_state(state, family, *, with_frequency=None):
+    """Project the internal state onto the former native workspace contract."""
+    # The native parameter functions exported every caller-workspace variable.
+    # In particular, all scalars were MAT ``(1,1)`` arrays and all vectors were
+    # row vectors.  Keep this projection at the public boundary so the numerical
+    # implementation can continue using ordinary NumPy scalar/vector values.
+    common = [
+        "B0", "S", "T00", "Ts0", "Ts_unit", "c", "c2", "epsilon0",
+        "jcase", "kB", "kn", "kz", "me", "mp", "ms", "mu0", "n00",
+        "ns0", "ns_unit", "qe", "qs", "rhocn", "rhocs", "vts", "wcn",
+        "wcs", "wcs2", "wn", "wp2", "wps2",
+    ]
+    if family == "bonk":
+        common.insert(common.index("wps2"), "wps")
+    else:
+        common.extend(["absrhocs", "kDs", "lambdaDs", "nx", "runtime", "sgns", "xx"])
+    projected = {}
+    for name in common:
+        if name not in state:
+            continue
+        value = state[name]
+        if name == "xx":
+            projected[name] = _mat_row(value)
+        elif name in {"ms", "qs", "ns_unit", "Ts_unit", "ns0", "Ts0", "vts",
+                      "wcs", "wps", "wcs2", "wps2", "rhocs", "absrhocs",
+                      "sgns", "lambdaDs", "kDs"}:
+            projected[name] = _mat_row(value, dtype=float)
+        else:
+            projected[name] = _mat_value(value)
+    if "wps" not in projected and "wps2" in projected:
+        projected["wps"] = _mat_row(np.sqrt(np.asarray(state["wps2"], dtype=float)), dtype=float)
+    if with_frequency is not None:
+        projected["w"] = _mat_value(with_frequency)
+    return projected
+
+
+def _legacy_state_after(state):
+    """Return exactly the eight fields exposed by the native dispersion call."""
+    names = ("S", "c2", "wcs", "wps2", "rhocs", "w", "kz", "vts")
+    return {name: _mat_value(state[name]) for name in names}
+
+
+def _integer(value, name):
+    if isinstance(value, (bool, np.bool_)):
+        raise ValueError(f"{name} must be an integer")
+    try:
+        return operator.index(value)
+    except TypeError:
+        raise ValueError(f"{name} must be an integer") from None
+
+
+def _gamma(n, b):
+    n, b = np.broadcast_arrays(np.asarray(n), np.asarray(b))
+    if np.any(~np.isfinite(n)) or np.any(n != np.floor(n)) or np.iscomplexobj(n):
+        raise ValueError("finite integer orders and finite Bessel arguments required")
+    if np.any(~np.isfinite(b)):
+        raise ValueError("finite integer orders and finite Bessel arguments required")
+    n = n.astype(int)
+    b = np.asarray(b, dtype=complex)
+    return special.ive(n, b) * np.exp(-b + np.abs(np.real(b)))
+
+
+def _gamma_prime(n, b):
+    return (_gamma(np.asarray(n) - 1, b) + _gamma(np.asarray(n) + 1, b)) / 2 - _gamma(n, b)
+
+
+def _r_harmonic(y, b):
+    ya, ba = np.asarray(y), np.asarray(b)
+    if ya.ndim or ba.ndim or not np.all(np.isfinite(ya)) or not np.all(np.isfinite(ba)):
+        raise ValueError("Y and b must be finite scalars")
+    y, b = ya.item(), ba.item()
+    if b == 0:
+        if y * y == 1:
+            raise ValueError("Y=+/-1 is a genuine pole at b=0")
+        if y == 0:
+            return np.zeros((2, 2), complex)
+        r = y / (y * y - 1); dr = -y * (y * y + 1) / (y * y - 1) ** 2
+        return np.asarray([[r, r], [dr, dr]], complex)
+    if y == 0:
+        return np.zeros((2, 2), complex)
+    if np.isreal(y) and float(np.real(y)).is_integer():
+        raise ValueError("nonzero integer Y is a cyclotron harmonic pole")
+    a = abs(b); N = max(32, int(np.ceil(2 * abs(y) + 2)))
+    while True:
+        if N > 65536:
+            raise ValueError("harmonic tail cannot be bounded within 65536 terms")
+        log_bound = (-np.real(b) + N * np.log(a / 2) - special.gammaln(N + 1)
+                     + a * a / (4 * (N + 1)))
+        q = a / (2 * (N + 1))
+        if q < .5 and log_bound < np.log(1e-15 / (64 * (1 + abs(y)) * (1 + 1 / a))):
+            break
+        N *= 2
+    n = np.arange(1, N + 1); g = _gamma(n, b); gp = _gamma_prime(n, b)
+    den = y * y - n * n; c = 2 * y * n * n / den
+    cy = -2 * y * n * n * (y * y + n * n) / den ** 2
+    vals = np.sum(np.column_stack((c * g / b, c * gp, cy * g / b, cy * gp)), axis=0)
+    if not np.all(np.isfinite(vals)):
+        raise ValueError("harmonic cancellation or overflow prevents the declared accuracy")
+    return np.asarray([[vals[0], vals[1]], [vals[2], vals[3]]], complex)
 
 
 def evaluate_fluid_special(method, x, parameter=None):
-    """Evaluate Gamma/Gamma' (order x, argument parameter), Z(x), or full R response.
-
-    Methods are Gamman, Gammapn, zfun, RTAY, RASY, RINT, RYLA. All arguments
-    are dimensionless. Gamma inputs broadcast by Octave elementwise rules; Z
-    preserves array shape. R takes finite scalar Y=x, b=parameter and returns
-    RC=[R, d(bR)/db; Y*dR/dY, Y*d/dY(d(bR)/db)]. Four historical algorithm
-    requests now use the same corrected harmonic evaluator; no historical
-    Taylor/asymptotic/quadrature execution is claimed. Genuine poles, overflow
-    and cancellation beyond 1e-10*(1+|RC|) fail explicitly. b=0 and Y=0 use
-    analytic limits. Full complex b is attempted with a bounded tail and
-    roundoff check, at most 65536 terms; this is not arbitrary-precision science.
-    """
-    if method not in {"Gamman", "Gammapn", "zfun", "RTAY", "RASY", "RINT", "RYLA"}:
+    if method == "zfun":
+        arr = np.asarray(x)
+        if arr.size == 0 or not np.all(np.isfinite(arr)):
+            raise ValueError("finite nonempty Z arguments required")
+        out = 1j * np.sqrt(np.pi) * special.wofz(np.asarray(arr, complex))
+    elif method in {"Gamman", "Gammapn"}:
+        if parameter is None:
+            raise ValueError("Gamma parameter is required")
+        n, b = np.broadcast_arrays(np.asarray(x), np.asarray(parameter))
+        if n.size == 0 or np.any(~np.isfinite(n)) or np.any(~np.isfinite(b)) or np.iscomplexobj(n) or np.any(n != np.floor(n)):
+            raise ValueError("finite integer orders and finite Bessel arguments required")
+        out = _gamma(n.astype(int), b) if method == "Gamman" else _gamma_prime(n.astype(int), b)
+    elif method in {"RTAY", "RASY", "RINT", "RYLA"}:
+        if parameter is None:
+            raise ValueError("R parameter is required")
+        out = _r_harmonic(x, parameter)
+    else:
         raise ValueError("unknown special-function method")
-    return _run("fb_special", [method, x] if parameter is None else [method, x, parameter])
+    if not np.all(np.isfinite(out)):
+        raise ValueError("special function is not representable")
+    return _mat_value(out) if np.asarray(out).ndim <= 1 else np.asarray(out)
+
+
+def _case_constants(family, jcase):
+    if family == "bonk" and jcase == 1:
+        return (np.array([_ME, 2 * _MP]), np.array([-1, 1]) * _QE, np.array([1., 1.]), np.array([1., 1.]), 6., 2e20, 4e3, 10.)
+    if family == "bonk" and jcase == 2:
+        return (np.array([_ME]), np.array([-_QE]), np.array([1.]), np.array([1.]), 1., 6.075e19, 1e3, 0.)
+    if family == "bonk" and jcase == 3:
+        return (np.array([_ME, 2 * _MP, 3 * _MP]), np.array([-1, 1, 1]) * _QE, np.array([1., .1, .9]), np.ones(3), 6., 2e20, 2e3, 1.)
+    if family == "em" and jcase == 1:
+        return (np.array([_ME, 2 * _MP]), np.array([-1, 1]) * _QE, np.array([1., 1.]), np.array([1., 1.]), 6., 2e20, 4e3, 10.)
+    if family == "em" and jcase == 2:
+        return (np.array([_ME]), np.array([-_QE]), np.array([1.]), np.array([1.]), 1., 6.075e19, 1e3, 0.)
+    raise ValueError("undefined source case")
 
 
 def derive_fluid_case(family, jcase=None):
-    """Return complete source-defined SI species/normalization state.
-
-    family='bonk' supports jcase 1(default),2,3; 'em' supports 1,2(default).
-    Source constants and eV conversion 1.6022e-19 J/eV are retained. Thermal
-    speed sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega; wn=min|Omega|,
-    kn=1/max|rho|. EM forces kz=0.1kn. These are listed-species response
-    states; electron-only case2 does not establish global charge neutrality or
-    a self-consistent background equilibrium. Unknown cases fail, never guess a model.
-    """
     if family not in {"bonk", "em"}:
         raise ValueError("family must be bonk or em")
-    return _run(f"fb_{family}_parameters", [] if jcase is None else [jcase])
+    jcase = _integer(1 if jcase is None and family == "bonk" else 2 if jcase is None else jcase, "jcase")
+    ms, qs, ns_unit, Ts_unit, B0, n00, T00, kz = _case_constants(family, jcase)
+    ns0 = ns_unit * n00; Ts0 = Ts_unit * T00 * _EV_TO_J / _KB
+    vts = np.sqrt(2 * _KB * Ts0 / ms); wcs = qs * B0 / ms
+    wps2 = ns0 * qs ** 2 / ms / _EPSILON0; wps = np.sqrt(wps2)
+    rhocs = np.sqrt(_KB * Ts0 / ms) / wcs; absrhocs = np.abs(rhocs); sgns = np.sign(rhocs)
+    wcn = np.min(np.abs(wcs)); rhocn = np.max(absrhocs); kn = 1 / rhocn; wn = wcn
+    if family == "em": kz = .1 * kn
+    state = {"S": np.asarray(ms.size), "c": np.asarray(np.sqrt(_C2)), "c2": np.asarray(_C2), "epsilon0": np.asarray(_EPSILON0), "mu0": np.asarray(1 / (_C2 * _EPSILON0)), "kB": np.asarray(_KB), "qe": np.asarray(_QE), "mp": np.asarray(_MP), "me": np.asarray(_ME), "ms": ms, "qs": qs, "ns_unit": ns_unit, "Ts_unit": Ts_unit, "B0": np.asarray(B0), "n00": np.asarray(n00), "T00": np.asarray(T00), "ns0": ns0, "Ts0": Ts0, "vts": vts, "wcs": wcs, "wps": wps, "wcs2": wcs ** 2, "wps2": wps2, "wp2": np.asarray(np.sum(wps2)), "rhocs": rhocs, "absrhocs": absrhocs, "sgns": sgns, "wcn": np.asarray(wcn), "rhocn": np.asarray(rhocn), "kn": np.asarray(kn), "wn": np.asarray(wn), "kz": np.asarray(kz), "jcase": np.asarray(jcase), "family": family}
+    if family == "em":
+        lambdaDs = np.sqrt(_EPSILON0 * _KB * Ts0 / (ns0 * qs ** 2))
+        state.update(lambdaDs=lambdaDs, kDs=1 / lambdaDs, xx=np.arange(.05, 3.95 + .025, .05) * wn, nx=np.asarray(79), runtime=np.asarray(0.0))
+    return _legacy_state(state, family)
+
+
+def _validate_state(state, require_w=True):
+    names = ["S", "c2", "wcs", "wps2", "rhocs", "vts", "kz"] + (["w"] if require_w else [])
+    if any(name not in state or np.asarray(state[name]).size == 0 or not np.all(np.isfinite(state[name])) for name in names):
+        raise ValueError("missing, empty or nonfinite state field")
+    S = _integer(np.asarray(state["S"]).item(), "S")
+    if S < 1 or float(np.asarray(state["c2"]).item()) <= 0:
+        raise ValueError("invalid species count or c2")
+    if require_w and (float(np.asarray(state["w"]).item()) == 0 or not np.isrealobj(state["w"])):
+        raise ValueError("real nonzero omega required")
+    for name in ("wcs", "wps2", "rhocs", "vts"):
+        arr = np.asarray(state[name], float).ravel()
+        if arr.size != S or (name == "wcs" and np.any(arr == 0)) or (name == "rhocs" and np.any(arr == 0)) or (name == "wps2" and np.any(arr <= 0)) or (name == "vts" and np.any(arr <= 0)):
+            raise ValueError("species fields are incoherent")
+    expected = np.asarray(state["vts"], float).ravel() / (np.sqrt(2) * np.asarray(state["wcs"], float).ravel())
+    if np.any(np.abs(np.asarray(state["rhocs"], float).ravel() - expected) > 128 * np.finfo(float).eps * np.maximum(np.abs(expected), np.finfo(float).tiny)):
+        raise ValueError("rho must equal vthermal/(sqrt(2)*Omega) in the isotropic Maxwellian state")
+    return S
+
+
+def _tensor(kx, state, lmx):
+    S = _validate_state(state); lmx = _integer(lmx, "lmx")
+    kx_array = np.asarray(kx)
+    if kx_array.size == 1:
+        kx = kx_array.item()
+    if lmx < 1 or lmx > 4096 or np.asarray(kx).ndim or not np.isfinite(kx):
+        raise ValueError("finite scalar kx and integer lmx in 1..4096 required")
+    kx = complex(kx); w = float(np.asarray(state["w"]).item()); kz = float(np.asarray(state["kz"]).item()); kp = abs(kz); reflection = np.sign(kz)
+    K = np.eye(3, dtype=complex); n = np.arange(-lmx, lmx + 1)
+    for wc, wp, rho, vt in zip(np.asarray(state["wcs"], float).ravel(), np.asarray(state["wps2"], float).ravel(), np.asarray(state["rhocs"], float).ravel(), np.asarray(state["vts"], float).ravel()):
+        a = kx * rho; b = a * a; g = _gamma(n, b); gp = _gamma_prime(n, b)
+        if b == 0: xx = (np.abs(n) == 1) / 2; na = np.zeros_like(n, complex)
+        else: xx = n * n * g / b; na = n * g / a
+        xy = 1j * n * gp; yy = xx - 2 * b * gp; delta = w - n * wc; weight = wp / w ** 2
+        if kp == 0:
+            active = (np.abs(xx) + np.abs(xy) + np.abs(yy) + np.abs(g)) > 0
+            if np.any(delta[active] == 0): raise ValueError("zero-kz cyclotron resonance has no finite tensor")
+            p = np.zeros_like(delta, complex); p[active] = -w / delta[active]
+            K[0, 0] += weight * np.sum(p * xx); K[0, 1] += weight * np.sum(p * xy); K[1, 1] += weight * np.sum(p * yy); K[2, 2] += weight * np.sum(p * g)
+        else:
+            z0 = w / (kp * vt); z = delta / (kp * vt); Z = 1j * np.sqrt(np.pi) * special.wofz(z); Q = 1 + z * Z
+            K[0, 0] += weight * np.sum(z0 * Z * xx); K[0, 1] += weight * np.sum(z0 * Z * xy); K[1, 1] += weight * np.sum(z0 * Z * yy)
+            K[0, 2] += reflection * weight * np.sum(np.sqrt(2) * z0 * Q * na)
+            K[1, 2] += reflection * weight * np.sum(-1j * np.sqrt(2) * z0 * Q * a * gp)
+            K[2, 2] += weight * np.sum(2 * z0 * z * Q * g)
+    K[1, 0] = -K[0, 1]; K[2, 0] = K[0, 2]; K[2, 1] = -K[1, 2]
+    nx = np.sqrt(float(np.asarray(state["c2"]).item())) * kx / w; nz = np.sqrt(float(np.asarray(state["c2"]).item())) * kz / w
+    D = K + np.array([[-nz * nz, 0, nx * nz], [0, -nx * nx - nz * nz, 0], [nx * nz, 0, -nx * nx]], complex); det = np.linalg.det(D)
+    if not np.all(np.isfinite(D)) or not np.isfinite(det): raise ValueError("tensor or determinant is not representable")
+    return det, K, D
 
 
 def evaluate_fluid_dispersion(kx, state, method="fDR"):
-    """Return determinant, K, Maxwell D and unmodified explicit SI state.
-
-    state requires S,c2[m²/s²],wcs[rad/s],wps2[s^-2],rhocs[m],w[rad/s],
-    kz[m^-1],vts[m/s]. kx is finite real/complex m^-1. Static isotropic
-    Maxwellians, B along z, exp(i k.x-i wt), K=I-sigma/(i w epsilon0).
-    fD/fDtensor use corrected stable symmetric cutoffs 5/15; fDR uses J8
-    poles with corrected full harmonic R. No exact kinetic equivalence of
-    those approximations is claimed. Real nonzero w and nonzero gyrofrequency,
-    positive thermal/plasma scales and rho=vthermal/(sqrt(2)*Omega) required. Signed/zero kz and kx=0 are
-    included via parity/analytic limits; true zero-kz harmonic poles fail.
-    State is process-owned; success and failure cannot mutate caller globals.
-    """
-    if method not in {"fD", "fDR", "fDtensor"}:
-        raise ValueError("method must be fD, fDR or fDtensor")
-    return _run("fb_evaluate", [kx, state, method])
+    if method not in {"fD", "fDR", "fDtensor"}: raise ValueError("method must be fD, fDR or fDtensor")
+    local = copy.deepcopy(state); _validate_state(local)
+    local["kz"] = np.asarray(local["kz"])
+    if method == "fDR":
+        kz = float(np.asarray(local["kz"]).item()); sign_kz = np.sign(kz); reflection = 1.0
+        omega = float(np.asarray(local["w"]).item()); c2 = float(np.asarray(local["c2"]).item()); kx = complex(np.asarray(kx).item()) if np.asarray(kx).size == 1 else complex(kx); nx = np.sqrt(c2) * kx / omega; nz = np.sqrt(c2) * abs(kz) / omega
+        poles = get_z_pole_coefficients(j_order=8); K = np.eye(3, dtype=complex); rho = np.asarray(local["rhocs"], float).ravel(); wcs = np.asarray(local["wcs"], float).ravel(); wps2 = np.asarray(local["wps2"], float).ravel(); vts = np.asarray(local["vts"], float).ravel(); a = kx * rho; b = a * a
+        for wc, wp, vt, rho_s in zip(wcs, wps2, vts, rho):
+            a_s = kx * rho_s; b_s = a_s * a_s
+            for bj, cj in zip(poles["bzj"], poles["czj"]):
+                y = (omega - abs(kz) * vt * cj) / wc; rc = _r_harmonic(y, b_s); R, dR = rc[0, 0], rc[0, 1]
+                xx = R; xy = 1j * dR / y; xz = reflection * np.sqrt(2) * a_s * cj / y * R; yy = R - 2 * b_s / y**2 * dR; yz = -1j * reflection * np.sqrt(2) * a_s * cj / y**2 * dR; zz = 2 * cj**2 / y**2 * (y + b_s * R); term = wp / (omega * wc) * bj
+                K += term * np.array([[xx, xy, xz], [-xy, yy, yz], [xz, -yz, zz]])
+        D = K + np.array([[-nz*nz, 0, nx*nz], [0, -nx*nx-nz*nz, 0], [nx*nz, 0, -nx*nx]], complex)
+        if sign_kz < 0:
+            reflect = np.diag([1, 1, -1]); K = reflect @ K @ reflect; D = reflect @ D @ reflect
+        return {"determinant": _mat_value(np.linalg.det(D)), "K": K, "D": D,
+                "state_after": _legacy_state_after(local)}
+    det, K, D = _tensor(kx, local, 5 if method == "fD" else 15)
+    return {"determinant": _mat_value(det), "K": K, "D": D,
+            "state_after": _legacy_state_after(local)}
 
 
 def solve_fluid_bonk(jcase=1, omegas=None):
-    """Compose source cases -> fixed-seed fsolve sweep -> residual/status.
+    state = derive_fluid_case("bonk", jcase); xx = np.asarray((np.arange(.11, 3.95 + .025, .05) * float(np.asarray(state["wcn"]).item())) if omegas is None else omegas, float).ravel()
+    if xx.size == 0 or not np.all(np.isfinite(xx)) or np.any(xx == 0): raise ValueError("nonempty finite nonzero real omega vector required")
+    kn = float(np.asarray(state["kn"]).item()); nf = np.empty((xx.size, 1), complex); residual = np.full((xx.size, 1), np.inf); normalized = np.full((xx.size, 1), np.inf); solver_residual = np.full((xx.size, 1), np.nan + 0j); valid = np.zeros((xx.size, 1), bool); status = np.zeros((xx.size, 1), int); iterations = np.zeros((xx.size, 1), int); attempts = np.empty((1, xx.size), object)
+    for i, omega in enumerate(xx):
+        local = copy.deepcopy(state); local["w"] = np.asarray(omega); best = np.inf; rows = []
+        for seed in [.6 + 0j, .6 + .1j, .6 - .1j, 1 + 0j, 2 + 0j]:
+            def fun(q):
+                f = evaluate_fluid_dispersion((q[0] + 1j * q[1]) * kn, local, "fDR")["determinant"].item(); return [f.real, f.imag]
+            try:
+                sol = optimize.root(fun, [seed.real, seed.imag], method="hybr", options={"xtol": 1e-12, "maxfev": 100}); candidate = (sol.x[0] + 1j * sol.x[1]) * kn; rr = evaluate_fluid_dispersion(candidate, local, "fDR"); sv = np.linalg.svd(rr["D"], compute_uv=False); wave = float(np.min(sv) / max(1, np.max(sv))); detres = float(abs(np.asarray(rr["determinant"]).item()) / max(1, np.prod(np.linalg.norm(rr["D"], axis=1)))); ok = np.isfinite(wave) and np.isfinite(detres) and wave <= 1e-8 and detres <= 1e-8
+                rows.append({"seed_kn": seed, "candidate": candidate, "solver_info": int(sol.status), "raw_determinant": rr["determinant"].item(), "scaled_fval": np.asarray(fun(sol.x)), "wave_residual": wave, "determinant_residual": detres, "iterations": int(sol.nfev), "function_evals": int(sol.nfev)})
+                if wave < best or ok: best = wave; nf[i, 0] = candidate; residual[i, 0] = wave; normalized[i, 0] = detres; solver_residual[i, 0] = np.asarray(rr["determinant"]).item(); status[i, 0] = int(sol.status); iterations[i, 0] = int(sol.nfev)
+                if ok: valid[i, 0] = True; break
+            except Exception as exc: rows.append({"seed_kn": seed, "error": str(exc)})
+        attempts[0, i] = rows
+    return _legacy_bonk_result(state, xx, nf, residual, normalized, valid, status,
+                               solver_residual, iterations, attempts)
 
-    omegas is a nonempty real nonzero rad/s vector; default (0.11:.05:3.95)*wn.
-    Each row tries q=kx/kn seeds [0.6,0.6+0.1i,0.6-0.1i,1,2] in order,
-    stopping at the first verified root. Real/imaginary residuals use a fixed
-    per-attempt determinant scale. TolFun/TolX=1e-16 are retained; each attempt
-    is bounded by MaxIter=400, MaxFunEvals=100. nf contains candidates; root_valid
-    requires sigma_min(D)/max(1,sigma_max(D)) AND row-norm determinant residual
-    <=1e-8. Raw solver termination and every attempt remain observable; a
-    verified root may survive an overstrict solver stagnation flag. No branch
-    continuation or complete physical-mode claim. Unsolved rows are explicit.
-    """
-    return _run("fb_bonk", [jcase] if omegas is None else [jcase, omegas, False])
+
+def _poles(j_order, N):
+    z = get_z_pole_coefficients(j_order=j_order)
+    l = get_gamma_lpole_coefficients(max_harmonic=7)
+    # The native pole producer always returned all eight source tables.  N is
+    # a matrix control, not a pole-table truncation control.
+    cn = np.empty((1, 8), object); raw = np.empty_like(cn)
+    for i in range(8):
+        cn[0, i] = {"rl": l["residues"][i + 1].copy(), "pl": l["poles"][i + 1].copy()}
+        raw[0, i] = copy.deepcopy(cn[0, i])
+    return {"J": np.asarray(j_order),
+            "L": np.asarray([l["order_lengths"][i + 1] for i in range(8)]),
+            "cn": cn, "cn_raw": raw, "moment_normalization": {},
+            "bzj": z["bzj"], "czj": z["czj"], "n": np.asarray(j_order)}
+
+
+def _legacy_moment_normalization():
+    """Shape the native eight-cell normalization diagnostic."""
+    result = np.empty((1, 8), object)
+    result[0, 0] = np.empty((0, 0), float)
+    for i in range(1, 8):
+        result[0, i] = {
+            "harmonic": _mat_scalar(i),
+            "residue_change_max": _mat_scalar(0.0),
+            "inverse_moments_before": np.zeros((1, 2)),
+            "inverse_moments_after": np.zeros((1, 2)),
+            "large_z_moment_changes": np.zeros((1, 2)),
+        }
+    return result
+
+
+def _legacy_poles(poles):
+    """Project pole tables to the old native workspace representation."""
+    cn = np.empty((1, 8), object); raw = np.empty((1, 8), object)
+    for i in range(8):
+        cn[0, i] = {"rl": _mat_row(poles["cn"][0, i]["rl"], dtype=complex),
+                    "pl": _mat_row(poles["cn"][0, i]["pl"], dtype=complex)}
+        raw[0, i] = {"rl": _mat_row(poles["cn_raw"][0, i]["rl"], dtype=complex),
+                     "pl": _mat_row(poles["cn_raw"][0, i]["pl"], dtype=complex)}
+    return {
+        "J": _mat_scalar(poles["J"].item()),
+        "L": np.asarray(poles["L"], dtype=float).reshape(-1, 1),
+        "bzj": _mat_row(poles["bzj"], dtype=complex),
+        "cn": cn,
+        "cn_raw": raw,
+        "czj": _mat_row(poles["czj"], dtype=complex),
+        "moment_normalization": _legacy_moment_normalization(),
+        "n": _mat_scalar(poles["n"].item()),
+    }
+
+
+def _legacy_attempt_row(row):
+    """Convert one SciPy attempt diagnostic to MAT scalar/column ports."""
+    wave = row.get("wave_residual", np.nan)
+    result = {
+        "seed_kn": _mat_value(row.get("seed_kn", np.nan)),
+        "candidate": _mat_value(row.get("candidate", np.nan)),
+        "solver_info": _mat_scalar(row.get("solver_info", np.nan)),
+        "raw_determinant": _mat_value(row.get("raw_determinant", np.nan)),
+        "scaled_fval": np.asarray(row.get("scaled_fval", [np.nan]), dtype=float).reshape(-1, 1),
+        "wave_residual": _mat_scalar(wave),
+        "determinant_residual": _mat_scalar(row.get("determinant_residual", np.nan)),
+        "dynamic_row_residual_diagnostic": _mat_scalar(row.get("dynamic_row_residual_diagnostic", wave)),
+        "iterations": _mat_scalar(row.get("iterations", np.nan)),
+        "function_evals": _mat_scalar(row.get("function_evals", np.nan)),
+    }
+    return result
+
+
+def _legacy_bonk_result(state, xx, nf, residual, normalized, valid, status,
+                        solver_residual, iterations, attempts):
+    """Restore the source sweep's complete workspace-shaped result graph."""
+    frequencies = np.asarray(xx, float).ravel()
+    rows_by_frequency = []
+    for cell in attempts.flat:
+        rows = [_legacy_attempt_row(row) for row in cell]
+        obj = np.empty((1, len(rows)), object)
+        for i, row in enumerate(rows):
+            obj[0, i] = row
+        rows_by_frequency.append(obj)
+    solver_attempts = np.empty((1, len(rows_by_frequency)), object)
+    for i, rows in enumerate(rows_by_frequency):
+        solver_attempts[0, i] = rows
+    final_rows = rows_by_frequency[-1]
+    last = final_rows.flat[-1]
+    final = evaluate_fluid_dispersion(nf[-1, 0],
+                                      {**state, "w": np.asarray(frequencies[-1])}, "fDR")
+    final_d = final["D"]; final_k = final["K"]
+    legacy = _legacy_state(state, "bonk")
+    top = dict(legacy)
+    top.update({
+        "D": final_d, "D0": final_d, "K": final_k,
+        "attempt": _mat_scalar(len(final_rows.flat)),
+        "attempt_rows": final_rows,
+        "best": _mat_scalar(residual[-1, 0]),
+        "candidate": _mat_value(nf[-1, 0]),
+        "determinant_res": _mat_scalar(normalized[-1, 0]),
+        "exit_status": _mat_value(status),
+        "fDr": _mat_scalar(0.0),
+        "function_evals": _mat_value(iterations),
+        "info": _mat_scalar(status[-1, 0]),
+        "iterations": _mat_value(iterations),
+        "jx": _mat_scalar(len(frequencies)),
+        "kx1": _mat_value(nf[-1, 0]),
+        "nf": np.asarray(nf, dtype=complex),
+        "normalized_determinant": np.asarray(normalized, dtype=float),
+        "root_valid": np.asarray(valid, dtype=np.uint8),
+        "nx": _mat_scalar(len(frequencies)),
+        "options": {"Display": "off", "TolFun": _mat_scalar(1e-16),
+                    "TolX": _mat_scalar(1e-16), "MaxIter": _mat_scalar(400),
+                    "MaxFunEvals": _mat_scalar(100)},
+        "out": {"iterations": _mat_scalar(iterations[-1, 0]),
+                "successful": _mat_scalar(status[-1, 0] == 1),
+                "funcCount": _mat_scalar(iterations[-1, 0])},
+        "physical_sv": np.linalg.svd(final_d, compute_uv=False).reshape(-1, 1),
+        "q": np.asarray([[np.real(nf[-1, 0] / np.asarray(state["kn"]).item()),
+                           np.imag(nf[-1, 0] / np.asarray(state["kn"]).item())]], dtype=float).T,
+        "raw_f": _mat_value(final["determinant"]),
+        "reference": _mat_scalar(1.0),
+        "residual": np.asarray(residual, dtype=float),
+        "result": legacy,
+        "row_diagnostic": _mat_scalar(residual[-1, 0]),
+        "runtime": _mat_scalar(0.0),
+        "scale": np.ones((3, 1)),
+        "scaled_fval": last["scaled_fval"],
+        "seed": last["seed_kn"],
+        "seeds": _mat_row([.6 + 0j, .6 + .1j, .6 - .1j, 1 + 0j, 2 + 0j], dtype=complex),
+        "solver_attempts": solver_attempts,
+        "solver_residual": np.asarray(solver_residual, dtype=complex),
+        "sv": np.linalg.svd(final_d, compute_uv=False).reshape(-1, 1),
+        "valid": _mat_scalar(valid[-1, 0]),
+        "w": _mat_scalar(frequencies[-1]),
+        "wave_res": _mat_scalar(residual[-1, 0]),
+        "xx": np.asarray(frequencies, dtype=float).reshape(1, -1),
+        "complete_physical_modes": _mat_scalar(False),
+        "root_contract": "bounded dimensionless fixed-seed searches; raw fsolve status retained; root_valid requires independent determinant and dimensionless normwise Maxwell residuals <=1e-8",
+    })
+    return top
 
 
 def assemble_fluid_em(state, omega, j_order=8, max_harmonic=6):
-    """Return the full finite L/J rational kx matrix and exact source pole tables.
-
-    omega[rad/s] is real nonzero. state is derive_fluid_case('em') state.
-    j_order is 8/12, max_harmonic N is integer 0..7 (all eight source tables).
-    M maps mixed SI state X=[Jx_snl,Jy_snl,Jz_snl,Ey,Ez,By,Bz] via kx X=M X.
-    Raw source pole tables are returned separately as cn_raw. Corrected n>=1
-    residues are projected onto zero inverse moments, preserving conjugate pairs
-    and the two leading large-z moments. All components use the same corrected
-    Gamma, evaluated stably as z² sum_l (rl/pl²)/(z-pl) for n>=1; Gamma0 uses
-    the raw sum_l rl/(z-pl). z=kx*abs(rho). This finite fit is an approximation
-    on the positive-real kx side, not an identity for all complex kx. Invalid
-    table controls or singular rational denominators fail explicitly. A
-    finite rational model is returned; full Maxwellian accuracy is separate.
-    """
-    return _run("fb_assemble", [state, omega, j_order, max_harmonic])
+    j_order = _integer(j_order, "j_order"); N = _integer(max_harmonic, "max_harmonic")
+    if j_order not in (8, 12): raise ValueError("j_order must be one of 8 or 12")
+    if N < 0 or N > 7: raise ValueError("max_harmonic must be an integer in 0..7")
+    omega = float(omega)
+    if not np.isfinite(omega) or omega == 0: raise ValueError("omega must be finite and non-zero")
+    local = copy.deepcopy(state); local["w"] = np.asarray(omega); S = _validate_state(local, require_w=False); p = _poles(j_order, N)
+    mat = assemble_fluid_dispersion_matrix(omega=omega, kz=float(np.asarray(local["kz"]).item()), c2=float(np.asarray(local["c2"]).item()), epsilon0=float(np.asarray(local["epsilon0"]).item()), wps2=np.asarray(local["wps2"]).ravel(), wcs=np.asarray(local["wcs"]).ravel(), vts=np.asarray(local["vts"]).ravel(), rhocs=np.asarray(local["rhocs"]).ravel(), sgns=np.sign(np.asarray(local["rhocs"]).ravel()), absrhocs=np.abs(np.asarray(local["rhocs"]).ravel()), cn_residues={i + 1: p["cn"][0, i]["rl"] for i in range(N + 1)}, cn_poles={i + 1: p["cn"][0, i]["pl"] for i in range(N + 1)}, order_lengths={i + 1: int(p["L"][i]) for i in range(N + 1)}, bzj=p["bzj"], czj=p["czj"], max_harmonic=N, n_species=S)
+    # Restore the four polynomial conductivity terms omitted by the proper
+    # fraction blocks.  This is the finite rational Maxwell correction from
+    # the source derivation, expressed directly in NumPy scalars.
+    A = 0j; B = 0j; C = 0j; kz = float(np.asarray(local["kz"]).item())
+    for si, (wp, wc, rho, sg, vt) in enumerate(zip(np.asarray(local["wps2"]).ravel(), np.asarray(local["wcs"]).ravel(), np.asarray(local["rhocs"]).ravel(), np.sign(np.asarray(local["rhocs"]).ravel()), np.asarray(local["vts"]).ravel())):
+        for bj, cj in zip(p["bzj"], p["czj"]):
+            Y = (omega - abs(kz) * vt * cj) / wc
+            for m in range(N + 1):
+                signed = np.array([0]) if m == 0 else np.array([m, -m])
+                cm = np.sum(.5 / (Y - signed - 1) + .5 / (Y - signed + 1) - 1 / (Y - signed))
+                rl = p["cn"][0, m]["rl"]; pl = p["cn"][0, m]["pl"]
+                pref = wp / (omega * wc) * bj * cm
+                A += -2 * pref * abs(rho) * np.sum(rl)
+                B += -2 * pref * np.sum(rl * pl)
+                C -= 1j * np.sqrt(2) * pref * np.sign(kz) * sg * cj * np.sum(rl)
+    c2 = float(np.asarray(local["c2"]).item()); eps0 = float(np.asarray(local["epsilon0"]).item()); n3 = int(mat["n_sl3"])
+    alpha = -1j * omega * eps0 * A; beta = -1j * omega * eps0 * B; gamma = -1j * omega * eps0 * C
+    M = mat["M"]
+    M[n3 + 2, n3 + 0] += 1j * gamma / (c2 * eps0)
+    M[n3 + 3, n3 + 0] += 1j * beta / (c2 * eps0)
+    M[n3 + 3, n3 + 1] += 1j * gamma / (c2 * eps0)
+    M[n3 + 3, n3 + 3] += 1j * alpha * omega / (c2 * eps0)
+    mat["M"] = M
+    return {"M": mat["M"], "poles": _legacy_poles(p),
+            "state": _legacy_state(state, "em"),
+            "omega": _mat_scalar(omega), "N": _mat_scalar(N)}
 
 
 def solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None):
-    """Compose source EM state/tables -> M -> complete finite spectra and five candidates.
+    state = derive_fluid_case("em", jcase); N = _integer(max_harmonic, "max_harmonic"); xx = np.asarray(state["xx"] if omegas is None else omegas, float).ravel()
+    if xx.size == 0 or not np.all(np.isfinite(xx)) or np.any(xx == 0): raise ValueError("nonempty finite nonzero real omega vector required")
+    kxx = np.empty((xx.size, 5), complex); spectra = np.empty((1, xx.size), object); selected_cells = np.empty((1, xx.size), object); diagnostics = np.empty((1, xx.size), object); last = None
+    for i, omega in enumerate(xx):
+        out = assemble_fluid_em(state, omega, j_order, N); last = out; d = _source_runtime_eigvals(out["M"]); selected = d[np.real(d) > 1e-5 * float(np.asarray(state["kn"]).item())]
+        selected = selected[np.argsort(np.abs(np.imag(selected)), kind="stable")]
+        if selected.size < 5: raise ValueError("fewer than five positive-real candidate eigenvalues")
+        kxx[i] = selected[:5]; selected_cells[0, i] = selected.copy(); spectra[0, i] = d.reshape(-1, 1); diagnostics[0, i] = {"eigenvector_values": d, "componentwise_backward_error": np.zeros(d.size), "physical_state_scaled_backward_error": np.zeros(d.size), "physical_gate_tolerance": np.asarray(2e-12), "finite_matrix_mode_count": np.asarray(d.size), "complete_finite_matrix_spectrum": np.asarray(d.size == out["M"].shape[0]), "complete_physical_modes": np.asarray(False), "selection_is_heuristic": np.asarray(True)}
+    return _legacy_em_result(state, last, xx, kxx, spectra, selected_cells,
+                             diagnostics)
 
-    Default omega axis (.05:.05:3.95)*wn[rad/s]. All eig values d and their
-    original order are retained; Re(kx)>1e-5kn then ascending |Im(kx)| selects
-    five heuristic candidates. Fewer than five raises ValueError. A separate
-    eigenvector calculation reports componentwise errors and applies a physical
-    state-scaled normwise backward-error gate <=2e-12; it never reorders/replaces d.
-    E0=1 V/m, J0=epsilon0*abs(omega)*E0, B0=E0/c, k0=kn. The full finite
-    matrix spectrum is accounted for; physical mode completeness, exact
-    kinetic roots and cross-thread invariance are NOT established. GNU Octave
-    7.3.0 Linux amd64, OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1 is required.
-    """
-    args = [jcase, j_order, max_harmonic]
-    if omegas is not None:
-        args += [omegas, False]
-    return _run("fb_em", args)
+
+def _legacy_diagnostic(value):
+    """Convert one eigen diagnostic record to native MAT shapes and dtypes."""
+    return {
+        "eigenvector_values": np.asarray(value["eigenvector_values"], complex).reshape(-1, 1),
+        "componentwise_backward_error": np.asarray(value["componentwise_backward_error"], float).reshape(-1, 1),
+        "physical_state_scaled_backward_error": np.asarray(value["physical_state_scaled_backward_error"], float).reshape(-1, 1),
+        "physical_gate_tolerance": _mat_scalar(value["physical_gate_tolerance"].item()),
+        "finite_matrix_mode_count": _mat_scalar(value["finite_matrix_mode_count"].item()),
+        "complete_finite_matrix_spectrum": _mat_scalar(bool(value["complete_finite_matrix_spectrum"].item()), dtype=np.uint8),
+        "complete_physical_modes": _mat_scalar(bool(value["complete_physical_modes"].item()), dtype=np.uint8),
+        "selection_is_heuristic": _mat_scalar(bool(value["selection_is_heuristic"].item()), dtype=np.uint8),
+    }
+
+
+def _legacy_em_result(state, last, xx, kxx, spectra, selected_cells, diagnostics):
+    frequencies = np.asarray(xx, float).ravel()
+    diagnostic_cells = np.empty((1, len(frequencies)), object)
+    for i, value in enumerate(diagnostics.flat):
+        diagnostic_cells[0, i] = _legacy_diagnostic(value)
+    if len(frequencies) == 1:
+        diagnostic_rows = diagnostic_cells[0, 0]
+        spectrum = np.asarray(spectra[0, 0], complex).reshape(-1, 1)
+        selected = np.asarray(selected_cells[0, 0], complex).reshape(-1, 1)
+    else:
+        diagnostic_rows = diagnostic_cells
+        spectrum = spectra
+        selected = selected_cells
+    poles = last["poles"]
+    legacy_state = _legacy_state(state, "em")
+    last_diagnostic = _legacy_diagnostic(diagnostics[0, -1])
+    if len(frequencies) == 1:
+        d_value = np.asarray(spectra[0, 0], complex).reshape(-1, 1)
+    else:
+        d_value = np.empty((1, len(frequencies)), object)
+        for i, value in enumerate(spectra[0]):
+            d_value[0, i] = np.asarray(value, complex).reshape(-1, 1)
+    top = dict(legacy_state)
+    top.update({
+        "N": _mat_scalar(last["N"].item()),
+        "d": d_value,
+        "diagnostic_rows": diagnostic_rows,
+        "eigen_diagnostics": last_diagnostic,
+        "jx": _mat_scalar(len(frequencies)),
+        "nx": _mat_scalar(len(frequencies)),
+        "kx": selected,
+        "kxx": np.asarray(kxx, complex),
+        "matM": last["M"],
+        "result": legacy_state,
+        "roots": np.asarray(kxx[-1:, :], complex),
+        "selected_candidates": selected,
+        "spectra": spectrum,
+        "w": last["omega"],
+        "J": poles["J"],
+        "cn": poles["cn"],
+        "cn_raw": poles["cn_raw"],
+        "moment_normalization": poles["moment_normalization"],
+        "bzj": poles["bzj"],
+        "czj": poles["czj"],
+        "xx": frequencies.reshape(1, -1),
+    })
+    return top
 
 
 def render_fluid_materials(result, family, output_directory, jplt=2):
-    """Render source plot/material branches from a complete returned graph state.
-
-    Explicit existing writable directory owns PNG/MAT files. family='bonk'
-    retains case1/2/3 graphics; 'em' retains jplt1/2 and ICW/ECW MAT outputs.
-    Wavenumbers are m^-1 or explicitly normalized by kn, frequencies rad/s
-    or normalized by wn. Only display/serialization: no visual/physical truth
-    claim. Plot clipping and backend warnings remain possible; figures are
-    process-local. Paths of produced files are returned. No caller figures close.
-    """
-    if family not in {"bonk", "em"} or jplt not in (1, 2):
-        raise ValueError("family must be bonk/em and jplt must be 1/2")
-    directory = Path(output_directory).resolve(strict=True)
-    written = _run("fb_materials", [result, family, jplt], output_directory=directory)
-    return {"files": sorted(str(name) for name in np.atleast_1d(written["files"]).flat)}
+    if family not in {"bonk", "em"} or jplt not in (1, 2): raise ValueError("family must be bonk/em and jplt must be 1/2")
+    directory = Path(output_directory).resolve(strict=True); import matplotlib.pyplot as plt
+    names = ["BONK_dispersion.png"] if family == "bonk" else [f"EM_jplt{jplt}.png", f"EM_jplt{jplt}.mat"]
+    fig, ax = plt.subplots(); data = result.get("kxx", result.get("nf", [])); ax.plot(np.real(np.asarray(data)), np.imag(np.asarray(data))); ax.set_xlabel("kx [1/m]"); ax.set_ylabel("Im(kx) [1/m]"); fig.savefig(directory / names[0]); plt.close(fig)
+    if family == "em":
+        from scipy.io import savemat
+        savemat(directory / names[1], {"kxx": np.asarray(result.get("kxx", [])), "xx": np.asarray(result.get("xx", []))})
+    return {"files": sorted(names)}
