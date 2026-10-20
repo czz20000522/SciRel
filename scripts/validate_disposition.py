@@ -38,12 +38,29 @@ def validate_review(review, package_dir=None):
             counts[kind] += 1
         matched = item.get("matched_asset_ids", [])
         changes = item.get("required_changes", [])
-        if kind == "existing" and not matched:
-            errors.append(f"dispositions[{index}]: existing requires matched_asset_ids")
-        if kind == "partial" and (not matched or not changes):
-            errors.append(f"dispositions[{index}]: partial requires matched_asset_ids and required_changes")
-        if kind == "new" and (matched or not changes):
-            errors.append(f"dispositions[{index}]: new requires empty matched_asset_ids and required_changes")
+        gain = item.get("capability_gain", {})
+        extends = gain.get("extends")
+        if kind == "existing":
+            if not matched:
+                errors.append(f"dispositions[{index}]: existing requires matched_asset_ids")
+            if extends is not False:
+                errors.append(f"dispositions[{index}]: existing must declare capability_gain.extends=false")
+            if changes:
+                errors.append(f"dispositions[{index}]: existing must not require changes")
+        if kind == "partial":
+            if not matched:
+                errors.append(f"dispositions[{index}]: partial requires matched_asset_ids")
+            if extends is True and not changes:
+                errors.append(f"dispositions[{index}]: partial with capability gain requires required_changes")
+            if extends is False and changes:
+                errors.append(f"dispositions[{index}]: partial without capability gain must not require changes")
+        if kind == "new":
+            if matched:
+                errors.append(f"dispositions[{index}]: new requires empty matched_asset_ids")
+            if extends is not True:
+                errors.append(f"dispositions[{index}]: new must declare capability_gain.extends=true")
+            if not changes:
+                errors.append(f"dispositions[{index}]: new requires required_changes")
     for name, value in counts.items():
         if summary.get(name) != value:
             errors.append(f"summary.{name}: expected {value}, got {summary.get(name)}")

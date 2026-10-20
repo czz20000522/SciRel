@@ -22,14 +22,17 @@ def _review(**overrides):
         "dispositions": [
             {"incoming_asset_id": "acme.cap.a", "disposition": "existing",
              "matched_asset_ids": ["scirel.field.cap-a"], "overlap": "same relation",
+             "capability_gain": {"extends": False, "note": "library already provides the relation"},
              "differences": [], "required_changes": [], "evidence": ["contract diff"],
              "notes": "already covered"},
             {"incoming_asset_id": "acme.cap.b", "disposition": "partial",
              "matched_asset_ids": ["scirel.field.cap-b"], "overlap": "same kernel, different ports",
+             "capability_gain": {"extends": True, "note": "adds a new boundary case not covered today"},
              "differences": ["units"], "required_changes": ["widen port units"],
              "evidence": ["numeric comparison"], "notes": "merge into existing"},
             {"incoming_asset_id": "acme.cap.c", "disposition": "new",
              "matched_asset_ids": [], "overlap": "no counterpart",
+             "capability_gain": {"extends": True, "note": "no counterpart in the catalog"},
              "differences": [], "required_changes": ["rename", "add contract", "add tests"],
              "evidence": ["catalog search"], "notes": "import as new asset"},
         ],
@@ -79,3 +82,24 @@ def test_review_binds_to_d3_package(tmp_path):
     review["package"]["payload_digest"] = "b" * 64
     result = disposition.validate_review(review, package_dir=package)
     assert result["status"] == "PASS", result["errors"]
+
+
+def test_partial_without_capability_gain_must_not_change_the_library():
+    review = _review()
+    review["dispositions"][1]["capability_gain"] = {"extends": False, "note": "only conventions differ"}
+    result = disposition.validate_review(review)
+    assert result["status"] == "FAIL"
+    assert any("without capability gain" in e for e in result["errors"])
+    review["dispositions"][1]["required_changes"] = []
+    result = disposition.validate_review(review)
+    assert result["status"] == "PASS", result["errors"]
+
+
+def test_existing_must_not_claim_gain_or_changes():
+    review = _review()
+    review["dispositions"][0]["capability_gain"] = {"extends": True, "note": "claims gain"}
+    review["dispositions"][0]["required_changes"] = ["change"]
+    result = disposition.validate_review(review)
+    assert result["status"] == "FAIL"
+    assert any("existing must declare" in e for e in result["errors"])
+    assert any("existing must not require changes" in e for e in result["errors"])

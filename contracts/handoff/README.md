@@ -91,7 +91,7 @@ time, by an agent/reviewer. The outcome is one of:
 | disposition | meaning | receiver action |
 | --- | --- | --- |
 | `existing` | the library already provides this capability | record the duplicate and the matching asset(s); do not import |
-| `partial` | the library covers part of the capability or differs in ports, units, boundary or failure semantics | merge into the existing asset: reconcile contracts, tests and evidence; never add a second competing asset |
+| `partial` | the library covers part of the capability; a merge is worthwhile **only when the delivery extends capability** (new boundary, edge case, port, semantics, accuracy or coverage) | if `capability_gain.extends=true`, merge into the existing asset; if false, record the overlap like a duplicate and **do not change the library** |
 | `new` | the library has no counterpart | rename into the library namespace, relocate implementation/tests, add the contract, then regenerate the Chinese reader, manual projections and evidence bindings |
 
 This comparison is scientific judgment, not a mechanical diff: relation
@@ -99,6 +99,12 @@ identity, ports, units, axes, applicability, failure semantics and test evidence
 all matter. It is intentionally not automated. The review record for each asset
 should state the disposition, matched existing asset IDs, the overlap and the
 differences, the required changes, and the evidence behind the decision.
+
+A convention-only difference (different units, weights, names or failure wording
+with the same numerical relation and no new coverage) is **not** a capability
+gain. Such a delivery is recorded as `capability_gain.extends=false` and does
+not change the library, even if its disposition is `partial`. Only a declared
+extension makes a partial merge meaningful.
 
 Only `partial` and `new` dispositions lead to code or contract changes in the
 library; `existing` deliveries stay outside the repository.
