@@ -4,7 +4,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 import shutil
-from scirel.kinetic.dispersion import magnetized as m,workflows as g
+import _dispersion_workflows as g
+from scirel.kinetic.dispersion import magnetized as m
 import _dispersion_oracle as oracle
 
 F=json.loads((Path(__file__).resolve().parents[1]/'dispersion-holdout-fixtures.json').read_text())['cases'][0]

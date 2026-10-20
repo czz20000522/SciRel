@@ -398,9 +398,7 @@
      "assets": [
       "scirel.kinetic.electromagnetic-eigenmatrix",
       "scirel.kinetic.electrostatic-eigenmatrix",
-      "scirel.kinetic.frequency-eigensolve",
-      "scirel.kinetic.spectral-scan-workflow",
-      "scirel.kinetic.dispersion-workflow"
+      "scirel.kinetic.frequency-eigensolve"
      ]
     },
     {
@@ -418,8 +416,6 @@
      "introduction": "明确选根规则，再重新求解和归一化模态场；增长率排序本身不能证明跨点同一物理分支。",
      "assets": [
       "scirel.kinetic.magnetized-mode-fields",
-      "scirel.kinetic.polarization-workflow",
-      "scirel.kinetic.selected-fields-workflow",
       "scirel.kinetic.seed-mode-selection",
       "scirel.kinetic.selected-dispersion-interpolation",
       "scirel.kinetic.preset-mode-selection"
@@ -434,8 +430,7 @@
       "scirel.kinetic.rational-pole-table",
       "scirel.kinetic.rational-jpole-coefficients",
       "scirel.kinetic.rational-jpole-evaluate",
-      "scirel.kinetic.rational-jpole-grid-coordinates",
-      "scirel.kinetic.rational-jpole-generator"
+      "scirel.kinetic.rational-jpole-grid-coordinates"
      ]
     },
     {
@@ -447,8 +442,7 @@
       "scirel.kinetic.rational-equilibrium",
       "scirel.kinetic.rational-em-coordinates",
       "scirel.kinetic.rational-point-matrix",
-      "scirel.kinetic.rational-solve-matrix",
-      "scirel.kinetic.rational-ordered-spectrum"
+      "scirel.kinetic.rational-solve-matrix"
      ]
     },
     {
@@ -928,11 +922,7 @@
       "scirel.kinetic.multifluid-plot",
       "scirel.kinetic.parallel-em-plot",
       "scirel.kinetic.reference-table",
-      "scirel.kinetic.reference-overlay",
-      "scirel.kinetic.rendered-output-workflow",
-      "scirel.kinetic.preset-output-workflow",
-      "scirel.kinetic.stored-program-workflow",
-      "scirel.kinetic.rational-reassemble-original-program"
+      "scirel.kinetic.reference-overlay"
      ]
     }
    ]

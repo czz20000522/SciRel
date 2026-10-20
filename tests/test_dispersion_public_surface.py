@@ -21,14 +21,14 @@ import sys
 from types import ModuleType
 
 sys.path.insert(0, sys.argv[1])
-import scirel.kinetic.dispersion as pdrk
+import scirel.kinetic.dispersion as dispersion
 
 expected = [
     "magnetized", "multifluid", "parallel", "plotting",
-    "rational", "reference", "special", "workflows",
+    "rational", "reference", "special",
 ]
-assert pdrk.__all__ == expected
-assert sorted(name for name in pdrk.__all__ if name in dir(pdrk)) == expected
+assert dispersion.__all__ == expected
+assert sorted(name for name in dispersion.__all__ if name in dir(dispersion)) == expected
 assert not any(
     name.startswith("scirel.kinetic.dispersion.") for name in sys.modules
 )
@@ -175,7 +175,7 @@ assert "mpmath" in sys.modules
 
 
 def test_pdrk_catalog_modules_have_explicit_callable_exports() -> None:
-    from scirel.kinetic.dispersion import magnetized, rational, workflows
+    from scirel.kinetic.dispersion import magnetized, rational
 
     expected = {
         "magnetized": {
@@ -190,17 +190,10 @@ def test_pdrk_catalog_modules_have_explicit_callable_exports() -> None:
             "solve_matrix", "em_coordinates", "jpole_grid_coordinates",
             "jpole_evaluate", "jpole_coefficients",
         },
-        "workflows": {
-            "solve_dispersion", "scan_spectrum", "reconstruct_polarization",
-            "original_program", "selected_fields", "rendered_output",
-            "preset_output", "ordered_rational_spectrum", "regenerate_jpole",
-            "reassemble_rational_program",
-        },
     }
     modules = {
         "magnetized": magnetized,
         "rational": rational,
-        "workflows": workflows,
     }
     for name, module in modules.items():
         assert set(module.__all__) == expected[name]

@@ -1,8 +1,10 @@
 """Explicit task-graph entry points for PDRK scientific operations."""
 
-from . import _workflow_impl as _compositions
-from . import magnetized as _magnetized
-from . import rational as _rational
+"""Internal workflow cases retained for testing only; not a public capability."""
+
+import _dispersion_workflow_impl as _compositions
+from scirel.kinetic.dispersion import magnetized as _magnetized
+from scirel.kinetic.dispersion import rational as _rational
 
 __all__ = [
     "solve_dispersion",

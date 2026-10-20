@@ -1,6 +1,6 @@
 """Magnetized kinetic, parallel beam and multifluid dispersion capabilities.
 
-The PDRK implementation is split into focused modules so discovery does not
+The native dispersion implementation is split into focused modules so discovery does not
 import every numerical backend.  The module names below are the public entry
 points; each module keeps its own callable ``__all__`` and is loaded only when
 requested.  Scientific limits live in each callable contract.  Native
@@ -20,7 +20,6 @@ __all__ = [
     "rational",
     "reference",
     "special",
-    "workflows",
 ]
 
 _LAZY_MODULES = {name: f".{name}" for name in __all__}

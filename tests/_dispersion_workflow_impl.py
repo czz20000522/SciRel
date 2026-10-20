@@ -1,6 +1,6 @@
-"""Small Python compositions over the public magnetized PDRK operators."""
+"""Internal workflow cases retained for testing only; not a public capability."""
 
-from . import magnetized as _magnetized
+from scirel.kinetic.dispersion import magnetized as _magnetized
 
 
 def selected_fields(scan_state, seeds, *, rng_seed=None):

@@ -205,8 +205,8 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
                 "domain_count": 18,
                 "export_count": 249,
                 "nested_package_count": 1,
-                "nested_module_count": 8,
-                "nested_export_count": 47,
+                "nested_module_count": 7,
+                "nested_export_count": 37,
             },
             [],
         ),
@@ -219,7 +219,7 @@ def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.Mon
     assert receipt["extras"] == {}
     assert receipt["errors"] == []
     assert receipt["public_surface"]["export_count"] == 249
-    assert receipt["public_surface"]["nested_export_count"] == 47
+    assert receipt["public_surface"]["nested_export_count"] == 37
 
 
 def test_public_surface_resolves_current_installed_exports() -> None:
@@ -230,8 +230,8 @@ def test_public_surface_resolves_current_installed_exports() -> None:
     assert details["domain_count"] == 18
     assert details["export_count"] == 249
     assert details["nested_package_count"] == 1
-    assert details["nested_module_count"] == 8
-    assert details["nested_export_count"] == 47
+    assert details["nested_module_count"] == 7
+    assert details["nested_export_count"] == 37
 
 
 def test_public_surface_fails_closed_on_a_missing_export(monkeypatch: pytest.MonkeyPatch) -> None:
