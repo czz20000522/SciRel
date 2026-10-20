@@ -244,12 +244,6 @@ def test_dependency_must_resolve_to_a_canonical_document(tmp_path):
 
 
 def test_runtime_signatures_tests_and_examples_are_executable(tmp_path):
-    if (
-        platform.system() != "Linux"
-        or platform.machine().lower() not in {"x86_64", "amd64"}
-        or shutil.which("octave") is None
-    ):
-        pytest.skip("full catalog example execution requires Linux amd64 and GNU Octave")
     documents = copy_example_closure(tmp_path / "documents")
     completed = subprocess.run(
         [

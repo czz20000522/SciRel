@@ -1,21 +1,17 @@
 """Invalid accuracy controls cannot disable accepted-root residual gates."""
 import numpy as np
 import pytest
-import shutil
 from scirel.kinetic.dispersion import multifluid, parallel
 
-
-pytestmark = pytest.mark.skipif(
-    shutil.which("octave") is None,
-    reason="the kinetic dispersion formulation accuracy controls require GNU Octave",
-)
 
 @pytest.mark.parametrize('api',['fluid_solve_state','continue_em1d'])
 @pytest.mark.parametrize('criterion',[np.nan,np.inf,0.,-1.,np.longdouble('1e400')],
                          ids=['nan','infinity','zero','negative','finite_narrowing_overflow'])
 def test_invalid_accuracy_criterion_rejected_before_acceptance(api,criterion):
     if isinstance(criterion,np.longdouble):
-        assert np.isfinite(criterion) and not np.isfinite(float(criterion))
+        if not np.isfinite(criterion):
+            pytest.skip('platform longdouble has no wider finite range than float64')
+        assert not np.isfinite(float(criterion))
     if api=='fluid_solve_state':
         state=multifluid.fluid_equilibrium_si([[0.,1.,1.,0.,0.,0.,0.,0.,0.,0.]],B0=0.)
         with pytest.raises(ValueError,match='backward_tolerance'):

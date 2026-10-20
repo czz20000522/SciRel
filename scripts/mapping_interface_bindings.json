@@ -1,1055 +1,1055 @@
 {
-  "schema": "scirel.mapping-interface-bindings",
-  "records": [
+ "schema": "scirel.mapping-interface-bindings",
+ "records": [
+  {
+   "asset_id": "scirel.kinetic.multifluid-scan",
+   "callable": "scirel.kinetic.dispersion.multifluid.scan_fluid_corrected",
+   "ports": [
     {
-      "asset_id": "scirel.kinetic.multifluid-scan",
-      "callable": "scirel.kinetic.dispersion.multifluid.scan_fluid_corrected",
-      "ports": [
-        {
-          "name": "state",
-          "required": true
-        },
-        {
-          "name": "method",
-          "required": false,
-          "default": 2
-        },
-        {
-          "name": "state_scales",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "relativistic",
-          "required": false,
-          "default": false
-        },
-        {
-          "name": "grid_controls",
-          "required": false,
-          "default": {}
-        }
-      ],
-      "modules": {
-        "scirel.kinetic.dispersion.multifluid": "ca4551d29fda0d413dfa7e5882d011f03ab4e62c6f028605d3c9beb9a00bb7c4",
-        "scirel.kinetic.dispersion._fluid_parallel": "3070c396a8ed38b56d97a799b2a3e6c7bf4f5eaa67a96019e1c25b986dfb05fc"
-      },
-      "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
+     "name": "state",
+     "required": true
     },
     {
-      "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
-      "callable": "scirel.geometry.axisymmetric_equilibrium_grid_support.solve_axisymmetric_equilibrium_grid_mapping",
-      "ports": [
-        {
-          "name": "equilibrium",
-          "required": true
-        },
-        {
-          "name": "x_m",
-          "required": true
-        },
-        {
-          "name": "y_m",
-          "required": true
-        },
-        {
-          "name": "z_m",
-          "required": true
-        },
-        {
-          "name": "xpoint_half_length_m",
-          "required": true
-        },
-        {
-          "name": "pml_cells",
-          "required": true
-        },
-        {
-          "name": "pec_mask",
-          "required": true
-        }
-      ],
-      "modules": {
-        "scirel.geometry.axisymmetric_equilibrium_grid_support": "1218673f6e58d71a09c802580ed67c0bff6c0ae8b43b20961f6f49bb6a6f1157",
-        "scirel.geometry.axisymmetric_grid_mapping": "4a1e7d3cdc68184c8006394bda041b54762d38f33c0270d5e74fb4487e970915",
-        "scirel.geometry.material_support": "79f3f119e49b7515edbb330df9ce0285a2aa0f2e0b07acfb4f555d7552d54f7a"
-      },
-      "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to run_graph. run_graph requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry with read-only broadcast views, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
+     "name": "method",
+     "required": false,
+     "default": 2
     },
     {
-      "asset_id": "scirel.closures.mirror-quasineutral-closure",
-      "callable": "scirel.closures.mirror_quasineutral_closure.solve_mirror_quasineutral_closure",
-      "ports": [
-        {
-          "name": "b_t",
-          "required": true
-        },
-        {
-          "name": "psi",
-          "required": true
-        },
-        {
-          "name": "mass_kg",
-          "required": true
-        },
-        {
-          "name": "charge_c",
-          "required": true
-        },
-        {
-          "name": "density_ref_m3",
-          "required": true
-        },
-        {
-          "name": "temperature_parallel_j",
-          "required": true
-        },
-        {
-          "name": "temperature_perpendicular_ref_j",
-          "required": true
-        },
-        {
-          "name": "b_ref_t",
-          "required": true
-        },
-        {
-          "name": "electron_temperature_j",
-          "required": true
-        },
-        {
-          "name": "phi_ref_v",
-          "required": false,
-          "default": 0
-        },
-        {
-          "name": "b_plug_left_t",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "b_plug_right_t",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "phi_plug_left_v",
-          "required": false,
-          "default": 0
-        },
-        {
-          "name": "phi_plug_right_v",
-          "required": false,
-          "default": 0
-        },
-        {
-          "name": "loss_cone_refill",
-          "required": false,
-          "default": 0
-        },
-        {
-          "name": "quadrature_order",
-          "required": false,
-          "default": 32
-        },
-        {
-          "name": "electron_density_ref_m3",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "electron_phi_ref_v",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "potential_tolerance_v",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "quasineutral_tolerance",
-          "required": false,
-          "default": 1e-10
-        },
-        {
-          "name": "max_iterations",
-          "required": false,
-          "default": 100
-        },
-        {
-          "name": "initial_bracket_thermal",
-          "required": false,
-          "default": 8
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
-        "scirel.closures.boltzmann_quasineutrality": "07502497f8a10ea12dc8e61004c120d769075394d3dc2c45118a583677464835",
-        "scirel.closures.mirror_quasineutral_closure": "22b55ce55a23e2bad1759b514b9c03f54a35438aa496122779762fe525961623",
-        "scirel.closures.quasineutral_potential": "8e809efd7c640c2cccea6fab9ae090883823a049f18464e04467a6380d151605",
-        "scirel.closures.quasineutral_reference_density": "50a45fcc0c2d2d8fbe6f6026fccdd7ba3618845ac35dcbdcd682131dd191dd22",
-        "scirel.kinetic.mirror_constrained_moments": "f25d52991bb350855ddecbd99c71b380f5001c5f32dac1727c3060d46b1478b6",
-        "scirel.kinetic.mirror_total_pressure": "146cb7358aa4300554a267272084cdcd068260eb54f925e5530777e41f904b7a"
-      },
-      "review_basis": "compose merges mapping and keyword values; run_graph checks nine required values, forwards moment optional ports, derives electron reference density when omitted, and controls potential residual/tolerance/iterations explicitly. Optional mirror moment defaults come from the bound moment function; electron_phi_ref_v absence follows ion reference potential."
+     "name": "state_scales",
+     "required": false,
+     "default": null
     },
     {
-      "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
-      "callable": "scirel.equilibrium.axisymmetric_anisotropic_picard.solve_axisymmetric_anisotropic_picard",
-      "ports": [
-        {
-          "name": "r_grid",
-          "required": true
-        },
-        {
-          "name": "z_grid",
-          "required": true
-        },
-        {
-          "name": "psi_vac",
-          "required": true
-        },
-        {
-          "name": "g_psi",
-          "required": true
-        },
-        {
-          "name": "pressure_closure",
-          "required": true
-        },
-        {
-          "name": "tol",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "maxiter",
-          "required": false,
-          "default": 200
-        },
-        {
-          "name": "relax",
-          "required": false,
-          "default": 0.5
-        },
-        {
-          "name": "plasma_mask",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "minimum_field",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "minimum_firehose_margin",
-          "required": false,
-          "default": 0
-        },
-        {
-          "name": "compatibility_tol",
-          "required": false,
-          "default": 0.05
-        },
-        {
-          "name": "strict_compatibility",
-          "required": false,
-          "default": true
-        },
-        {
-          "name": "cell_edges",
-          "required": false,
-          "default": null
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
-        "scirel.equilibrium.anisotropic_force_balance": "5db10ba8812314c3936a2d07ce02405f2da5f1ad1684607f42dbee82e6c66b6a",
-        "scirel.equilibrium.axisymmetric_anisotropic_picard": "420ce32d801fb3021b79ee240fb96cf232f5dda091484870edf75dd5ba5754fa",
-        "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
-        "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
-      },
-      "review_basis": "run_graph requires R,Z,vacuum psi,Green and pressure callable; explicit scalar parsers define tolerance1e-8,maxiter200,relax0.5,minimumB1e-8,firehose0,compatibility0.05,strictTrue. Optional mask and cell_edges pass to the field/current feedback; terminal convergence uses the accepted fixed point residual."
+     "name": "relativistic",
+     "required": false,
+     "default": false
     },
     {
-      "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-      "callable": "scirel.equilibrium.free_boundary_anisotropic_picard.solve_free_boundary_anisotropic_picard",
-      "ports": [
-        {
-          "name": "r_grid",
-          "required": true
-        },
-        {
-          "name": "z_grid",
-          "required": true
-        },
-        {
-          "name": "psi_vac",
-          "required": true
-        },
-        {
-          "name": "br_vac",
-          "required": true
-        },
-        {
-          "name": "bz_vac",
-          "required": true
-        },
-        {
-          "name": "g_psi",
-          "required": true
-        },
-        {
-          "name": "g_br",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "g_bz",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "params",
-          "required": true
-        },
-        {
-          "name": "pressure_closure",
-          "required": true
-        },
-        {
-          "name": "tol",
-          "required": true
-        },
-        {
-          "name": "maxiter",
-          "required": true
-        },
-        {
-          "name": "relax",
-          "required": true
-        },
-        {
-          "name": "b0",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "plasma_mask",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "boundary_correction",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "cell_edges",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "compatibility_tol",
-          "required": false,
-          "default": 0.05
-        },
-        {
-          "name": "minimum_field",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "strict_compatibility",
-          "required": false,
-          "default": true
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
-        "scirel.diagnostics.picard_flux_residual": "37c70790c5e0c292b603789edefdfe090bee3b453eae203b8a1513a20234795e",
-        "scirel.equilibrium.anisotropic_picard_feedback": "54927bd56e1138d97afe743dbbcc0fdf8fc068e33e94673a402be2394570eb74",
-        "scirel.equilibrium.anisotropic_toroidal_current": "d8fd81f1f18bacce98fda40e53319b776a3ac142527c0c502deb6329ff88267e",
-        "scirel.equilibrium.free_boundary_anisotropic_picard": "c39380569c3a7aa15369dcb9c4fb520e9b1239c648876061929b00bae7cab910",
-        "scirel.field.ideal_conductor_boundary": "d966303dd1d15cd6e34d8f5311a9938943f32569bdf0b291310e38772bf982c9",
-        "scirel.field.poloidal_field_magnitude": "ea873e93a80c82f7af8d47427ccbd4726b9314947b6f1dfeace35a304ca583f7"
-      },
-      "review_basis": "run_graph requires grid,vacuum psi/Br/Bz,Green psi,params,pressure callable and tol/maxiter/relax. g_br/g_bz may be omitted; wall/current/full-state feedback uses existing accepted behavior. b0 can derive from initial field; mask/wall/cell_edges absent are None; compatibility/minimumB/strict defaults are explicit scalar parsers."
-    },
-    {
-      "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-      "callable": "scirel.equilibrium.kinetic_mirror_hall_equilibrium.solve_kinetic_mirror_hall_equilibrium",
-      "ports": [
-        {
-          "name": "r_grid",
-          "required": true
-        },
-        {
-          "name": "z_grid",
-          "required": true
-        },
-        {
-          "name": "psi_vac",
-          "required": true
-        },
-        {
-          "name": "g_psi",
-          "required": true
-        },
-        {
-          "name": "ion_mass_kg",
-          "required": true
-        },
-        {
-          "name": "ion_charge_c",
-          "required": true
-        },
-        {
-          "name": "kinetic_config",
-          "required": true
-        },
-        {
-          "name": "tol",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "maxiter",
-          "required": false,
-          "default": 200
-        },
-        {
-          "name": "relax",
-          "required": false,
-          "default": 0.5
-        },
-        {
-          "name": "minimum_field",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "minimum_firehose_margin",
-          "required": false,
-          "default": 0.0
-        },
-        {
-          "name": "plasma_mask",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "hall_multiplier",
-          "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "include_toroidal_inertia",
-          "required": false,
-          "default": true
-        },
-        {
-          "name": "hall_density_floor_fraction",
-          "required": false,
-          "default": 0.1
-        },
-        {
-          "name": "maximum_inertial_mach",
-          "required": false,
-          "default": 0.5
-        },
-        {
-          "name": "inertia_relax",
-          "required": false,
-          "default": 0.5
-        },
-        {
-          "name": "inertia_tolerance",
-          "required": false,
-          "default": 1e-10
-        },
-        {
-          "name": "inertia_max_iterations",
-          "required": false,
-          "default": 80
-        },
-        {
-          "name": "compatibility_tol",
-          "required": false,
-          "default": 0.05
-        },
-        {
-          "name": "ohm_tolerance",
-          "required": false,
-          "default": 0.05
-        },
-        {
-          "name": "strict_compatibility",
-          "required": false,
-          "default": true
-        },
-        {
-          "name": "kinetic_graph",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "hall_graph",
-          "required": false,
-          "default": null
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "f4a3c9bdc73392bcec9fb4405ef4ee2a0e4f45c9e0a5992e998f1e3c5cecc814",
-        "scirel.equilibrium.reduced_hall_anisotropic_picard": "4b724dd8bdb1c367593b2514c009d43a5000031293038a851fbad29159eb9a1f",
-        "scirel.kinetic.grid_mirror_kinetic_closure": "2aef03091227989b2a024d1daee4ffe0664e263d0a449a07a1850cd5c0386435"
-      },
-      "review_basis": "Wrapper exposes kinetic_graph/hall_graph dependency overrides explicitly. run_graph requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
-    },
-    {
-      "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-      "callable": "scirel.equilibrium.reduced_hall_anisotropic_picard.solve_reduced_hall_anisotropic_picard",
-      "ports": [
-        {
-          "name": "r_grid",
-          "required": true
-        },
-        {
-          "name": "z_grid",
-          "required": true
-        },
-        {
-          "name": "psi_vac",
-          "required": true
-        },
-        {
-          "name": "g_psi",
-          "required": true
-        },
-        {
-          "name": "pressure_closure",
-          "required": true
-        },
-        {
-          "name": "ion_mass_kg",
-          "required": true
-        },
-        {
-          "name": "ion_charge_c",
-          "required": true
-        },
-        {
-          "name": "tol",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "maxiter",
-          "required": false,
-          "default": 200
-        },
-        {
-          "name": "relax",
-          "required": false,
-          "default": 0.5
-        },
-        {
-          "name": "minimum_field",
-          "required": false,
-          "default": 1e-08
-        },
-        {
-          "name": "minimum_firehose_margin",
-          "required": false,
-          "default": 0.0
-        },
-        {
-          "name": "plasma_mask",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "hall_multiplier",
-          "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "include_toroidal_inertia",
-          "required": false,
-          "default": true
-        },
-        {
-          "name": "hall_density_floor_fraction",
-          "required": false,
-          "default": 0.1
-        },
-        {
-          "name": "maximum_inertial_mach",
-          "required": false,
-          "default": 0.5
-        },
-        {
-          "name": "inertia_relax",
-          "required": false,
-          "default": 0.5
-        },
-        {
-          "name": "inertia_tolerance",
-          "required": false,
-          "default": 1e-10
-        },
-        {
-          "name": "inertia_max_iterations",
-          "required": false,
-          "default": 80
-        },
-        {
-          "name": "compatibility_tol",
-          "required": false,
-          "default": 0.05
-        },
-        {
-          "name": "ohm_tolerance",
-          "required": false,
-          "default": 0.05
-        },
-        {
-          "name": "strict_compatibility",
-          "required": false,
-          "default": true
-        },
-        {
-          "name": "cell_edges",
-          "required": false,
-          "default": null
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
-        "scirel.closures.reduced_hall_drift": "c4c860fa85183bc66d14d967abdd8ea35e87b9887e12d09581ab3c71c3ef6aa0",
-        "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
-        "scirel.equilibrium.reduced_hall_anisotropic_picard": "4b724dd8bdb1c367593b2514c009d43a5000031293038a851fbad29159eb9a1f",
-        "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
-      },
-      "review_basis": "run_graph requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
-    },
-    {
-      "asset_id": "scirel.field.multi-coil-vacuum-field",
-      "callable": "scirel.field.multi_coil_vacuum_field.solve_multi_coil_vacuum_field",
-      "ports": [
-        {
-          "name": "r_grid",
-          "required": true
-        },
-        {
-          "name": "z_grid",
-          "required": true
-        },
-        {
-          "name": "rectangular_coils",
-          "required": true
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.field.circular_filament_green": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
-        "scirel.field.current_green_superposition": "572edcdf62cc4713dffcbe005f528881c25eb6c5cd172cbbe34bb2a7aa0aec85",
-        "scirel.field.multi_coil_vacuum_field": "b14bc898674940566c34a20190d1f591e7d44f38b5ef3b1a05c7ddf24bc0474f",
-        "scirel.field.rectangular_coil_filaments": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d"
-      },
-      "review_basis": "run_graph requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."
-    },
-    {
-      "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
-      "callable": "scirel.kinetic.frank_egedal_pressure_closure.solve_frank_egedal_pressure_closure",
-      "ports": [
-        {
-          "name": "psi",
-          "required": true
-        },
-        {
-          "name": "B",
-          "required": true
-        },
-        {
-          "name": "params",
-          "required": true
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.kinetic.frank_egedal_hot_ion_moments": "d9eca7dbd2be136f9d57a33af1fdbce6334044621c718d3b93ded7fe33ff1e96",
-        "scirel.kinetic.frank_egedal_pressure_closure": "6ad5b6bb2c1e6de8e23ea6b063938589895051f133c2f34872001913193ce514",
-        "scirel.kinetic.frank_egedal_pressure_state": "8938b9076461a299bbda846ccdf037b0566fc7e61aa7b2df9a7703845cb07550",
-        "scirel.kinetic.frank_egedal_radial_envelope": "ee628b0738a6026662419f05a8210707fe5cea784a868212929f8bfde0238741",
-        "scirel.kinetic.frank_egedal_source_projection": "8fed19eab2273305cd80a58c9f6479f6040fc30fa9c395df65b514e724f071e0",
-        "scirel.kinetic.loss_cone_spectrum": "646dbe60310f4da6ed9d08b5747ae07b5378a6cd2d52e97c3357541a2404b3bf"
-      },
-      "review_basis": "run_graph consumes psi,B,params and calls radial envelope,source projection with spectral solver,hot-ion moments,then pressure assembly. The document has exactly these three scientific ports; all deeper closure defaults remain inside params and bound dependencies."
-    },
-    {
-      "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
-      "callable": "scirel.kinetic.grid_mirror_kinetic_closure.solve_grid_mirror_kinetic_closure",
-      "ports": [
-        {
-          "name": "r_grid",
-          "required": true
-        },
-        {
-          "name": "z_grid",
-          "required": true
-        },
-        {
-          "name": "b_t",
-          "required": true
-        },
-        {
-          "name": "psi",
-          "required": true
-        },
-        {
-          "name": "mass_kg",
-          "required": true
-        },
-        {
-          "name": "charge_c",
-          "required": true
-        },
-        {
-          "name": "density_ref_m3",
-          "required": true
-        },
-        {
-          "name": "temperature_parallel_j",
-          "required": true
-        },
-        {
-          "name": "temperature_perpendicular_ref_j",
-          "required": true
-        },
-        {
-          "name": "electron_temperature_j",
-          "required": true
-        },
-        {
-          "name": "reference_z",
-          "required": true
-        },
-        {
-          "name": "plug_left_z",
-          "required": true
-        },
-        {
-          "name": "plug_right_z",
-          "required": true
-        },
-        {
-          "name": "electron_density_ref_m3",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "phi_ref_v",
-          "required": false,
-          "default": 0.0
-        },
-        {
-          "name": "phi_plug_left_v",
-          "required": false,
-          "default": 0.0
-        },
-        {
-          "name": "phi_plug_right_v",
-          "required": false,
-          "default": 0.0
-        },
-        {
-          "name": "plug_potential_mode",
-          "required": false,
-          "default": "prescribed"
-        },
-        {
-          "name": "loss_cone_refill",
-          "required": false,
-          "default": 0.0
-        },
-        {
-          "name": "quadrature_order",
-          "required": false,
-          "default": 32
-        },
-        {
-          "name": "ion_loss_refill",
-          "required": false,
-          "default": "loss_cone_refill if supplied, otherwise 0.0"
-        },
-        {
-          "name": "electron_loss_refill",
-          "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "potential_tolerance_v",
-          "required": false,
-          "default": 1e-06
-        },
-        {
-          "name": "current_tolerance",
-          "required": false,
-          "default": 1e-10
-        },
-        {
-          "name": "max_iterations",
-          "required": false,
-          "default": 100
-        },
-        {
-          "name": "initial_bracket_thermal",
-          "required": false,
-          "default": 8.0
-        },
-        {
-          "name": "confine_to_plug_planes",
-          "required": false,
-          "default": true
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.closures.mirror_ambipolar_potential": "a7fb57ba70b6a7a09a98228be11622ce924edc781a45551f3cf8fa56ed879194",
-        "scirel.closures.mirror_quasineutral_closure": "22b55ce55a23e2bad1759b514b9c03f54a35438aa496122779762fe525961623",
-        "scirel.geometry.flux_surface_profile": "a3b07c0b9dbe6ffe8e3fdda7fad65e61550b66af9d5bb1f201e0b5a4fa2a0779",
-        "scirel.kinetic.grid_mirror_kinetic_closure": "2aef03091227989b2a024d1daee4ffe0664e263d0a449a07a1850cd5c0386435"
-      },
-      "review_basis": "run_graph requires thirteen grid/species/reference/plug fields. It maps reference and plug surfaces; input defaults and delegated ambipolar controls are bound to the current functions. ion_loss_refill defaults to loss_cone_refill or0, mode prescribed,confineTrue. The displayed conditional default is metadata, not a Python literal signature default."
-    },
-    {
-      "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-      "callable": "scirel.diagnostics.equilibrium_synthesis_diagnostics.synthesize_equilibrium_diagnostics",
-      "ports": [
-        {
-          "name": "equilibrium",
-          "required": true
-        },
-        {
-          "name": "R",
-          "required": true
-        },
-        {
-          "name": "Z",
-          "required": true
-        },
-        {
-          "name": "observations",
-          "required": true
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.diagnostics.equilibrium_synthesis_diagnostics": "3ca6d28be2cfd29e1647e837a57f7b1bc8623923e398709cea32f3453e5ab434",
-        "scirel.geometry.bilinear_grid_sampling": "09abde96a068d73c9019168cf32983a17b518be97865e5bf32125905db80361d",
-        "scirel.diagnostics.observation_residuals": "281ac7b6df4d2f305951ab35c1aa06018264ab0cd7ad9e0593ebc724a0238d82"
-      },
-      "review_basis": "Port identity only; root scientific acceptance is separate. Current run_graph validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
-    },
-    {
-      "asset_id": "scirel.inference.direct-anisotropic-inversion",
-      "callable": "scirel.inference.direct_anisotropic_inversion.solve_direct_anisotropic_inversion",
-      "ports": [
-        {
-          "name": "initial_params",
-          "required": true
-        },
-        {
-          "name": "bounds",
-          "required": true
-        },
-        {
-          "name": "method",
-          "required": true
-        },
-        {
-          "name": "observations",
-          "required": true
-        },
-        {
-          "name": "solver_config",
-          "required": true
-        },
-        {
-          "name": "equilibrium_solver",
-          "required": true
-        },
-        {
-          "name": "diagnostic_evaluator",
-          "required": true
-        },
-        {
-          "name": "fit_keys",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "n_initial_samples",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "seed",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "failure_penalty",
-          "required": false,
-          "default": 1000000000000.0
-        },
-        {
-          "name": "max_evaluations",
-          "required": false,
-          "default": 200
-        }
-      ],
-      "modules": {
-        "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
-        "scirel.diagnostics.observation_residuals": "281ac7b6df4d2f305951ab35c1aa06018264ab0cd7ad9e0593ebc724a0238d82",
-        "scirel.inference.anisotropic_parameter_optimization": "0b5c3d0157f880e4052a5f8ffabdb25e1afadcb0a1071e0477b160eed7c8a588",
-        "scirel.inference.anisotropic_trial_evaluation": "e0c2b21263974a4ad2502eabcb9f81d657145ca9117c291af34fd0179ce6c3f8",
-        "scirel.inference.direct_anisotropic_inversion": "01824fb202db176bacf4f9f88625bfb44f53f8a520f8e8063cc855cc0b3427cf",
-        "scirel.inference.latin_hypercube_sampling": "8cd72a5366ff27fc7921e1e220631cc38577e83cf64625eed80661c82af3f2fb"
-      },
-      "review_basis": "Port identity only; root scientific acceptance is separate. Fixed standard observation layout supplies N to trial and optimizer; finite failure penalty and actual scientific call budget are explicit. Numerical failed trials are excluded from best, terminal parameters are freshly evaluated, optimizer/forward/identifiability states remain distinct."
-    },
-    {
-      "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-      "callable": "scirel.equilibrium.isotropic_pressure_flux.solve_isotropic_pressure_flux",
-      "ports": [
-        {
-          "name": "r_grid",
-          "required": true
-        },
-        {
-          "name": "z_grid",
-          "required": true
-        },
-        {
-          "name": "pressure_of_radius",
-          "required": true
-        },
-        {
-          "name": "psi_vac",
-          "required": true
-        },
-        {
-          "name": "g_psi",
-          "required": true
-        },
-        {
-          "name": "tol",
-          "required": true
-        },
-        {
-          "name": "maxiter",
-          "required": true
-        },
-        {
-          "name": "relax",
-          "required": true
-        },
-        {
-          "name": "plasma_mask",
-          "required": false,
-          "default": null
-        }
-      ],
-      "modules": {
-        "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
-        "scirel.equilibrium.isotropic_pressure_flux": "bd82bb7e7a5e8635aa6ffbd04870939e37f4ecabc6fd576fa886492bb8812f17",
-        "scirel.equilibrium.pressure_flux_state": "04e9a4d3b3d0191dabd002b6f3d6e419c3fca6df7ba8313e3aa0b0c74d6007d8",
-        "scirel.equilibrium.equilibrium_state": "eda95c6632cda07f7f2dbe8490dc95795754a70a93178ea9b024aeeda7b37380",
-        "scirel.equilibrium._pressure_current": "f8d3aa51b8da07a0f555031b27d21789db33ab44473df3c75f68f2b365749212"
-      },
-      "review_basis": "Port identity only: explicit mapping requires grids, pressure callable, vacuum flux, Green matrix and tol/maxiter/relax; optional boolean plasma_mask defaults to None. Named calls to the qualified shared solver and exact terminal serializer are source-bound. Feedback has one owner; no second adapter loop. Scientific qualification requires the separate exact successor receipt."
-    },
-    {
-      "asset_id": "scirel.kinetic.generalized-root-scans",
-      "callable": "scirel.kinetic.generalized_dispersion.scan_gpdf_roots",
-      "ports": [
-        {
-          "name": "kind",
-          "required": true
-        },
-        {
-          "name": "k_values",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "initial_guess",
-          "required": false,
-          "default": null
-        },
-        {
-          "name": "residual_tolerance",
-          "required": false,
-          "default": 1e-09
-        },
-        {
-          "name": "max_evaluations",
-          "required": false,
-          "default": 300
-        },
-        {
-          "name": "ion_temperature",
-          "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "ion_mass",
-          "required": false,
-          "default": 1836.0
-        },
-        {
-          "name": "beam_fraction",
-          "required": false,
-          "default": 0.1
-        },
-        {
-          "name": "beam_temperature",
-          "required": false,
-          "default": 1.0
-        },
-        {
-          "name": "beam_drift",
-          "required": false,
-          "default": 5.0
-        },
-        {
-          "name": "selector",
-          "required": false,
-          "default": 0
-        },
-        {
-          "name": "expression",
-          "required": false,
-          "default": "exp(-v.^2)/sqrt(pi)"
-        },
-        {
-          "name": "integration_mesh",
-          "required": false,
-          "default": null
-        }
-      ],
-      "modules": {
-        "scirel.kinetic.generalized_dispersion": "84cb437a50ba6041d8c899160e7ea99c62a82e2a0e4e0e5f88277170bb61fd81"
-      },
-      "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
+     "name": "grid_controls",
+     "required": false,
+     "default": {}
     }
-  ]
+   ],
+   "modules": {
+    "scirel.kinetic.dispersion.multifluid": "98d7ac279750d4073e1df233d5c2ab6491d8a9bcf728936bf0787e010f808d57",
+    "scirel.kinetic.dispersion._fluid_parallel": "3070c396a8ed38b56d97a799b2a3e6c7bf4f5eaa67a96019e1c25b986dfb05fc"
+   },
+   "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
+  },
+  {
+   "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
+   "callable": "scirel.geometry.axisymmetric_equilibrium_grid_support.solve_axisymmetric_equilibrium_grid_mapping",
+   "ports": [
+    {
+     "name": "equilibrium",
+     "required": true
+    },
+    {
+     "name": "x_m",
+     "required": true
+    },
+    {
+     "name": "y_m",
+     "required": true
+    },
+    {
+     "name": "z_m",
+     "required": true
+    },
+    {
+     "name": "xpoint_half_length_m",
+     "required": true
+    },
+    {
+     "name": "pml_cells",
+     "required": true
+    },
+    {
+     "name": "pec_mask",
+     "required": true
+    }
+   ],
+   "modules": {
+    "scirel.geometry.axisymmetric_equilibrium_grid_support": "1218673f6e58d71a09c802580ed67c0bff6c0ae8b43b20961f6f49bb6a6f1157",
+    "scirel.geometry.axisymmetric_grid_mapping": "4a1e7d3cdc68184c8006394bda041b54762d38f33c0270d5e74fb4487e970915",
+    "scirel.geometry.material_support": "79f3f119e49b7515edbb330df9ce0285a2aa0f2e0b07acfb4f555d7552d54f7a"
+   },
+   "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to run_graph. run_graph requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry with read-only broadcast views, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
+  },
+  {
+   "asset_id": "scirel.closures.mirror-quasineutral-closure",
+   "callable": "scirel.closures.mirror_quasineutral_closure.solve_mirror_quasineutral_closure",
+   "ports": [
+    {
+     "name": "b_t",
+     "required": true
+    },
+    {
+     "name": "psi",
+     "required": true
+    },
+    {
+     "name": "mass_kg",
+     "required": true
+    },
+    {
+     "name": "charge_c",
+     "required": true
+    },
+    {
+     "name": "density_ref_m3",
+     "required": true
+    },
+    {
+     "name": "temperature_parallel_j",
+     "required": true
+    },
+    {
+     "name": "temperature_perpendicular_ref_j",
+     "required": true
+    },
+    {
+     "name": "b_ref_t",
+     "required": true
+    },
+    {
+     "name": "electron_temperature_j",
+     "required": true
+    },
+    {
+     "name": "phi_ref_v",
+     "required": false,
+     "default": 0
+    },
+    {
+     "name": "b_plug_left_t",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "b_plug_right_t",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "phi_plug_left_v",
+     "required": false,
+     "default": 0
+    },
+    {
+     "name": "phi_plug_right_v",
+     "required": false,
+     "default": 0
+    },
+    {
+     "name": "loss_cone_refill",
+     "required": false,
+     "default": 0
+    },
+    {
+     "name": "quadrature_order",
+     "required": false,
+     "default": 32
+    },
+    {
+     "name": "electron_density_ref_m3",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "electron_phi_ref_v",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "potential_tolerance_v",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "quasineutral_tolerance",
+     "required": false,
+     "default": 1e-10
+    },
+    {
+     "name": "max_iterations",
+     "required": false,
+     "default": 100
+    },
+    {
+     "name": "initial_bracket_thermal",
+     "required": false,
+     "default": 8
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
+    "scirel.closures.boltzmann_quasineutrality": "07502497f8a10ea12dc8e61004c120d769075394d3dc2c45118a583677464835",
+    "scirel.closures.mirror_quasineutral_closure": "22b55ce55a23e2bad1759b514b9c03f54a35438aa496122779762fe525961623",
+    "scirel.closures.quasineutral_potential": "8e809efd7c640c2cccea6fab9ae090883823a049f18464e04467a6380d151605",
+    "scirel.closures.quasineutral_reference_density": "50a45fcc0c2d2d8fbe6f6026fccdd7ba3618845ac35dcbdcd682131dd191dd22",
+    "scirel.kinetic.mirror_constrained_moments": "f25d52991bb350855ddecbd99c71b380f5001c5f32dac1727c3060d46b1478b6",
+    "scirel.kinetic.mirror_total_pressure": "146cb7358aa4300554a267272084cdcd068260eb54f925e5530777e41f904b7a"
+   },
+   "review_basis": "compose merges mapping and keyword values; run_graph checks nine required values, forwards moment optional ports, derives electron reference density when omitted, and controls potential residual/tolerance/iterations explicitly. Optional mirror moment defaults come from the bound moment function; electron_phi_ref_v absence follows ion reference potential."
+  },
+  {
+   "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
+   "callable": "scirel.equilibrium.axisymmetric_anisotropic_picard.solve_axisymmetric_anisotropic_picard",
+   "ports": [
+    {
+     "name": "r_grid",
+     "required": true
+    },
+    {
+     "name": "z_grid",
+     "required": true
+    },
+    {
+     "name": "psi_vac",
+     "required": true
+    },
+    {
+     "name": "g_psi",
+     "required": true
+    },
+    {
+     "name": "pressure_closure",
+     "required": true
+    },
+    {
+     "name": "tol",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "maxiter",
+     "required": false,
+     "default": 200
+    },
+    {
+     "name": "relax",
+     "required": false,
+     "default": 0.5
+    },
+    {
+     "name": "plasma_mask",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "minimum_field",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "minimum_firehose_margin",
+     "required": false,
+     "default": 0
+    },
+    {
+     "name": "compatibility_tol",
+     "required": false,
+     "default": 0.05
+    },
+    {
+     "name": "strict_compatibility",
+     "required": false,
+     "default": true
+    },
+    {
+     "name": "cell_edges",
+     "required": false,
+     "default": null
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
+    "scirel.equilibrium.anisotropic_force_balance": "5db10ba8812314c3936a2d07ce02405f2da5f1ad1684607f42dbee82e6c66b6a",
+    "scirel.equilibrium.axisymmetric_anisotropic_picard": "420ce32d801fb3021b79ee240fb96cf232f5dda091484870edf75dd5ba5754fa",
+    "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
+    "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
+   },
+   "review_basis": "run_graph requires R,Z,vacuum psi,Green and pressure callable; explicit scalar parsers define tolerance1e-8,maxiter200,relax0.5,minimumB1e-8,firehose0,compatibility0.05,strictTrue. Optional mask and cell_edges pass to the field/current feedback; terminal convergence uses the accepted fixed point residual."
+  },
+  {
+   "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
+   "callable": "scirel.equilibrium.free_boundary_anisotropic_picard.solve_free_boundary_anisotropic_picard",
+   "ports": [
+    {
+     "name": "r_grid",
+     "required": true
+    },
+    {
+     "name": "z_grid",
+     "required": true
+    },
+    {
+     "name": "psi_vac",
+     "required": true
+    },
+    {
+     "name": "br_vac",
+     "required": true
+    },
+    {
+     "name": "bz_vac",
+     "required": true
+    },
+    {
+     "name": "g_psi",
+     "required": true
+    },
+    {
+     "name": "g_br",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "g_bz",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "params",
+     "required": true
+    },
+    {
+     "name": "pressure_closure",
+     "required": true
+    },
+    {
+     "name": "tol",
+     "required": true
+    },
+    {
+     "name": "maxiter",
+     "required": true
+    },
+    {
+     "name": "relax",
+     "required": true
+    },
+    {
+     "name": "b0",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "plasma_mask",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "boundary_correction",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "cell_edges",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "compatibility_tol",
+     "required": false,
+     "default": 0.05
+    },
+    {
+     "name": "minimum_field",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "strict_compatibility",
+     "required": false,
+     "default": true
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
+    "scirel.diagnostics.picard_flux_residual": "37c70790c5e0c292b603789edefdfe090bee3b453eae203b8a1513a20234795e",
+    "scirel.equilibrium.anisotropic_picard_feedback": "54927bd56e1138d97afe743dbbcc0fdf8fc068e33e94673a402be2394570eb74",
+    "scirel.equilibrium.anisotropic_toroidal_current": "d8fd81f1f18bacce98fda40e53319b776a3ac142527c0c502deb6329ff88267e",
+    "scirel.equilibrium.free_boundary_anisotropic_picard": "c39380569c3a7aa15369dcb9c4fb520e9b1239c648876061929b00bae7cab910",
+    "scirel.field.ideal_conductor_boundary": "d966303dd1d15cd6e34d8f5311a9938943f32569bdf0b291310e38772bf982c9",
+    "scirel.field.poloidal_field_magnitude": "ea873e93a80c82f7af8d47427ccbd4726b9314947b6f1dfeace35a304ca583f7"
+   },
+   "review_basis": "run_graph requires grid,vacuum psi/Br/Bz,Green psi,params,pressure callable and tol/maxiter/relax. g_br/g_bz may be omitted; wall/current/full-state feedback uses existing accepted behavior. b0 can derive from initial field; mask/wall/cell_edges absent are None; compatibility/minimumB/strict defaults are explicit scalar parsers."
+  },
+  {
+   "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
+   "callable": "scirel.equilibrium.kinetic_mirror_hall_equilibrium.solve_kinetic_mirror_hall_equilibrium",
+   "ports": [
+    {
+     "name": "r_grid",
+     "required": true
+    },
+    {
+     "name": "z_grid",
+     "required": true
+    },
+    {
+     "name": "psi_vac",
+     "required": true
+    },
+    {
+     "name": "g_psi",
+     "required": true
+    },
+    {
+     "name": "ion_mass_kg",
+     "required": true
+    },
+    {
+     "name": "ion_charge_c",
+     "required": true
+    },
+    {
+     "name": "kinetic_config",
+     "required": true
+    },
+    {
+     "name": "tol",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "maxiter",
+     "required": false,
+     "default": 200
+    },
+    {
+     "name": "relax",
+     "required": false,
+     "default": 0.5
+    },
+    {
+     "name": "minimum_field",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "minimum_firehose_margin",
+     "required": false,
+     "default": 0.0
+    },
+    {
+     "name": "plasma_mask",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "hall_multiplier",
+     "required": false,
+     "default": 1.0
+    },
+    {
+     "name": "include_toroidal_inertia",
+     "required": false,
+     "default": true
+    },
+    {
+     "name": "hall_density_floor_fraction",
+     "required": false,
+     "default": 0.1
+    },
+    {
+     "name": "maximum_inertial_mach",
+     "required": false,
+     "default": 0.5
+    },
+    {
+     "name": "inertia_relax",
+     "required": false,
+     "default": 0.5
+    },
+    {
+     "name": "inertia_tolerance",
+     "required": false,
+     "default": 1e-10
+    },
+    {
+     "name": "inertia_max_iterations",
+     "required": false,
+     "default": 80
+    },
+    {
+     "name": "compatibility_tol",
+     "required": false,
+     "default": 0.05
+    },
+    {
+     "name": "ohm_tolerance",
+     "required": false,
+     "default": 0.05
+    },
+    {
+     "name": "strict_compatibility",
+     "required": false,
+     "default": true
+    },
+    {
+     "name": "kinetic_graph",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "hall_graph",
+     "required": false,
+     "default": null
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "f4a3c9bdc73392bcec9fb4405ef4ee2a0e4f45c9e0a5992e998f1e3c5cecc814",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "4b724dd8bdb1c367593b2514c009d43a5000031293038a851fbad29159eb9a1f",
+    "scirel.kinetic.grid_mirror_kinetic_closure": "2aef03091227989b2a024d1daee4ffe0664e263d0a449a07a1850cd5c0386435"
+   },
+   "review_basis": "Wrapper exposes kinetic_graph/hall_graph dependency overrides explicitly. run_graph requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
+  },
+  {
+   "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
+   "callable": "scirel.equilibrium.reduced_hall_anisotropic_picard.solve_reduced_hall_anisotropic_picard",
+   "ports": [
+    {
+     "name": "r_grid",
+     "required": true
+    },
+    {
+     "name": "z_grid",
+     "required": true
+    },
+    {
+     "name": "psi_vac",
+     "required": true
+    },
+    {
+     "name": "g_psi",
+     "required": true
+    },
+    {
+     "name": "pressure_closure",
+     "required": true
+    },
+    {
+     "name": "ion_mass_kg",
+     "required": true
+    },
+    {
+     "name": "ion_charge_c",
+     "required": true
+    },
+    {
+     "name": "tol",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "maxiter",
+     "required": false,
+     "default": 200
+    },
+    {
+     "name": "relax",
+     "required": false,
+     "default": 0.5
+    },
+    {
+     "name": "minimum_field",
+     "required": false,
+     "default": 1e-08
+    },
+    {
+     "name": "minimum_firehose_margin",
+     "required": false,
+     "default": 0.0
+    },
+    {
+     "name": "plasma_mask",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "hall_multiplier",
+     "required": false,
+     "default": 1.0
+    },
+    {
+     "name": "include_toroidal_inertia",
+     "required": false,
+     "default": true
+    },
+    {
+     "name": "hall_density_floor_fraction",
+     "required": false,
+     "default": 0.1
+    },
+    {
+     "name": "maximum_inertial_mach",
+     "required": false,
+     "default": 0.5
+    },
+    {
+     "name": "inertia_relax",
+     "required": false,
+     "default": 0.5
+    },
+    {
+     "name": "inertia_tolerance",
+     "required": false,
+     "default": 1e-10
+    },
+    {
+     "name": "inertia_max_iterations",
+     "required": false,
+     "default": 80
+    },
+    {
+     "name": "compatibility_tol",
+     "required": false,
+     "default": 0.05
+    },
+    {
+     "name": "ohm_tolerance",
+     "required": false,
+     "default": 0.05
+    },
+    {
+     "name": "strict_compatibility",
+     "required": false,
+     "default": true
+    },
+    {
+     "name": "cell_edges",
+     "required": false,
+     "default": null
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
+    "scirel.closures.reduced_hall_drift": "c4c860fa85183bc66d14d967abdd8ea35e87b9887e12d09581ab3c71c3ef6aa0",
+    "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "4b724dd8bdb1c367593b2514c009d43a5000031293038a851fbad29159eb9a1f",
+    "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
+   },
+   "review_basis": "run_graph requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
+  },
+  {
+   "asset_id": "scirel.field.multi-coil-vacuum-field",
+   "callable": "scirel.field.multi_coil_vacuum_field.solve_multi_coil_vacuum_field",
+   "ports": [
+    {
+     "name": "r_grid",
+     "required": true
+    },
+    {
+     "name": "z_grid",
+     "required": true
+    },
+    {
+     "name": "rectangular_coils",
+     "required": true
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel.field.circular_filament_green": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
+    "scirel.field.current_green_superposition": "572edcdf62cc4713dffcbe005f528881c25eb6c5cd172cbbe34bb2a7aa0aec85",
+    "scirel.field.multi_coil_vacuum_field": "b14bc898674940566c34a20190d1f591e7d44f38b5ef3b1a05c7ddf24bc0474f",
+    "scirel.field.rectangular_coil_filaments": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d"
+   },
+   "review_basis": "run_graph requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."
+  },
+  {
+   "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
+   "callable": "scirel.kinetic.frank_egedal_pressure_closure.solve_frank_egedal_pressure_closure",
+   "ports": [
+    {
+     "name": "psi",
+     "required": true
+    },
+    {
+     "name": "B",
+     "required": true
+    },
+    {
+     "name": "params",
+     "required": true
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel.kinetic.frank_egedal_hot_ion_moments": "d9eca7dbd2be136f9d57a33af1fdbce6334044621c718d3b93ded7fe33ff1e96",
+    "scirel.kinetic.frank_egedal_pressure_closure": "6ad5b6bb2c1e6de8e23ea6b063938589895051f133c2f34872001913193ce514",
+    "scirel.kinetic.frank_egedal_pressure_state": "8938b9076461a299bbda846ccdf037b0566fc7e61aa7b2df9a7703845cb07550",
+    "scirel.kinetic.frank_egedal_radial_envelope": "ee628b0738a6026662419f05a8210707fe5cea784a868212929f8bfde0238741",
+    "scirel.kinetic.frank_egedal_source_projection": "8fed19eab2273305cd80a58c9f6479f6040fc30fa9c395df65b514e724f071e0",
+    "scirel.kinetic.loss_cone_spectrum": "646dbe60310f4da6ed9d08b5747ae07b5378a6cd2d52e97c3357541a2404b3bf"
+   },
+   "review_basis": "run_graph consumes psi,B,params and calls radial envelope,source projection with spectral solver,hot-ion moments,then pressure assembly. The document has exactly these three scientific ports; all deeper closure defaults remain inside params and bound dependencies."
+  },
+  {
+   "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
+   "callable": "scirel.kinetic.grid_mirror_kinetic_closure.solve_grid_mirror_kinetic_closure",
+   "ports": [
+    {
+     "name": "r_grid",
+     "required": true
+    },
+    {
+     "name": "z_grid",
+     "required": true
+    },
+    {
+     "name": "b_t",
+     "required": true
+    },
+    {
+     "name": "psi",
+     "required": true
+    },
+    {
+     "name": "mass_kg",
+     "required": true
+    },
+    {
+     "name": "charge_c",
+     "required": true
+    },
+    {
+     "name": "density_ref_m3",
+     "required": true
+    },
+    {
+     "name": "temperature_parallel_j",
+     "required": true
+    },
+    {
+     "name": "temperature_perpendicular_ref_j",
+     "required": true
+    },
+    {
+     "name": "electron_temperature_j",
+     "required": true
+    },
+    {
+     "name": "reference_z",
+     "required": true
+    },
+    {
+     "name": "plug_left_z",
+     "required": true
+    },
+    {
+     "name": "plug_right_z",
+     "required": true
+    },
+    {
+     "name": "electron_density_ref_m3",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "phi_ref_v",
+     "required": false,
+     "default": 0.0
+    },
+    {
+     "name": "phi_plug_left_v",
+     "required": false,
+     "default": 0.0
+    },
+    {
+     "name": "phi_plug_right_v",
+     "required": false,
+     "default": 0.0
+    },
+    {
+     "name": "plug_potential_mode",
+     "required": false,
+     "default": "prescribed"
+    },
+    {
+     "name": "loss_cone_refill",
+     "required": false,
+     "default": 0.0
+    },
+    {
+     "name": "quadrature_order",
+     "required": false,
+     "default": 32
+    },
+    {
+     "name": "ion_loss_refill",
+     "required": false,
+     "default": "loss_cone_refill if supplied, otherwise 0.0"
+    },
+    {
+     "name": "electron_loss_refill",
+     "required": false,
+     "default": 1.0
+    },
+    {
+     "name": "potential_tolerance_v",
+     "required": false,
+     "default": 1e-06
+    },
+    {
+     "name": "current_tolerance",
+     "required": false,
+     "default": 1e-10
+    },
+    {
+     "name": "max_iterations",
+     "required": false,
+     "default": 100
+    },
+    {
+     "name": "initial_bracket_thermal",
+     "required": false,
+     "default": 8.0
+    },
+    {
+     "name": "confine_to_plug_planes",
+     "required": false,
+     "default": true
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel.closures.mirror_ambipolar_potential": "a7fb57ba70b6a7a09a98228be11622ce924edc781a45551f3cf8fa56ed879194",
+    "scirel.closures.mirror_quasineutral_closure": "22b55ce55a23e2bad1759b514b9c03f54a35438aa496122779762fe525961623",
+    "scirel.geometry.flux_surface_profile": "a3b07c0b9dbe6ffe8e3fdda7fad65e61550b66af9d5bb1f201e0b5a4fa2a0779",
+    "scirel.kinetic.grid_mirror_kinetic_closure": "2aef03091227989b2a024d1daee4ffe0664e263d0a449a07a1850cd5c0386435"
+   },
+   "review_basis": "run_graph requires thirteen grid/species/reference/plug fields. It maps reference and plug surfaces; input defaults and delegated ambipolar controls are bound to the current functions. ion_loss_refill defaults to loss_cone_refill or0, mode prescribed,confineTrue. The displayed conditional default is metadata, not a Python literal signature default."
+  },
+  {
+   "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+   "callable": "scirel.diagnostics.equilibrium_synthesis_diagnostics.synthesize_equilibrium_diagnostics",
+   "ports": [
+    {
+     "name": "equilibrium",
+     "required": true
+    },
+    {
+     "name": "R",
+     "required": true
+    },
+    {
+     "name": "Z",
+     "required": true
+    },
+    {
+     "name": "observations",
+     "required": true
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel.diagnostics.equilibrium_synthesis_diagnostics": "3ca6d28be2cfd29e1647e837a57f7b1bc8623923e398709cea32f3453e5ab434",
+    "scirel.geometry.bilinear_grid_sampling": "09abde96a068d73c9019168cf32983a17b518be97865e5bf32125905db80361d",
+    "scirel.diagnostics.observation_residuals": "281ac7b6df4d2f305951ab35c1aa06018264ab0cd7ad9e0593ebc724a0238d82"
+   },
+   "review_basis": "Port identity only; root scientific acceptance is separate. Current run_graph validates nonempty explicit observation requests, source/profile units and psi-to-Wb convention before sampling. Shared channel vocabulary is source-bound; requested missing channels reject."
+  },
+  {
+   "asset_id": "scirel.inference.direct-anisotropic-inversion",
+   "callable": "scirel.inference.direct_anisotropic_inversion.solve_direct_anisotropic_inversion",
+   "ports": [
+    {
+     "name": "initial_params",
+     "required": true
+    },
+    {
+     "name": "bounds",
+     "required": true
+    },
+    {
+     "name": "method",
+     "required": true
+    },
+    {
+     "name": "observations",
+     "required": true
+    },
+    {
+     "name": "solver_config",
+     "required": true
+    },
+    {
+     "name": "equilibrium_solver",
+     "required": true
+    },
+    {
+     "name": "diagnostic_evaluator",
+     "required": true
+    },
+    {
+     "name": "fit_keys",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "n_initial_samples",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "seed",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "failure_penalty",
+     "required": false,
+     "default": 1000000000000.0
+    },
+    {
+     "name": "max_evaluations",
+     "required": false,
+     "default": 200
+    }
+   ],
+   "modules": {
+    "scirel._composition": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77",
+    "scirel.diagnostics.observation_residuals": "281ac7b6df4d2f305951ab35c1aa06018264ab0cd7ad9e0593ebc724a0238d82",
+    "scirel.inference.anisotropic_parameter_optimization": "0b5c3d0157f880e4052a5f8ffabdb25e1afadcb0a1071e0477b160eed7c8a588",
+    "scirel.inference.anisotropic_trial_evaluation": "e0c2b21263974a4ad2502eabcb9f81d657145ca9117c291af34fd0179ce6c3f8",
+    "scirel.inference.direct_anisotropic_inversion": "01824fb202db176bacf4f9f88625bfb44f53f8a520f8e8063cc855cc0b3427cf",
+    "scirel.inference.latin_hypercube_sampling": "8cd72a5366ff27fc7921e1e220631cc38577e83cf64625eed80661c82af3f2fb"
+   },
+   "review_basis": "Port identity only; root scientific acceptance is separate. Fixed standard observation layout supplies N to trial and optimizer; finite failure penalty and actual scientific call budget are explicit. Numerical failed trials are excluded from best, terminal parameters are freshly evaluated, optimizer/forward/identifiability states remain distinct."
+  },
+  {
+   "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
+   "callable": "scirel.equilibrium.isotropic_pressure_flux.solve_isotropic_pressure_flux",
+   "ports": [
+    {
+     "name": "r_grid",
+     "required": true
+    },
+    {
+     "name": "z_grid",
+     "required": true
+    },
+    {
+     "name": "pressure_of_radius",
+     "required": true
+    },
+    {
+     "name": "psi_vac",
+     "required": true
+    },
+    {
+     "name": "g_psi",
+     "required": true
+    },
+    {
+     "name": "tol",
+     "required": true
+    },
+    {
+     "name": "maxiter",
+     "required": true
+    },
+    {
+     "name": "relax",
+     "required": true
+    },
+    {
+     "name": "plasma_mask",
+     "required": false,
+     "default": null
+    }
+   ],
+   "modules": {
+    "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
+    "scirel.equilibrium.isotropic_pressure_flux": "b0afbfef632116294ea313a672856b3202237939d36058d09f3a8e478fb4c94f",
+    "scirel.equilibrium.pressure_flux_state": "04e9a4d3b3d0191dabd002b6f3d6e419c3fca6df7ba8313e3aa0b0c74d6007d8",
+    "scirel.equilibrium.equilibrium_state": "eda95c6632cda07f7f2dbe8490dc95795754a70a93178ea9b024aeeda7b37380",
+    "scirel.equilibrium._pressure_current": "f8d3aa51b8da07a0f555031b27d21789db33ab44473df3c75f68f2b365749212"
+   },
+   "review_basis": "Port identity only: explicit mapping requires grids, pressure callable, vacuum flux, Green matrix and tol/maxiter/relax; optional boolean plasma_mask defaults to None. Named calls to the qualified shared solver and exact terminal serializer are source-bound. Feedback has one owner; no second adapter loop. Scientific qualification requires the separate exact successor receipt."
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-root-scans",
+   "callable": "scirel.kinetic.generalized_dispersion.scan_gpdf_roots",
+   "ports": [
+    {
+     "name": "kind",
+     "required": true
+    },
+    {
+     "name": "k_values",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "initial_guess",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "residual_tolerance",
+     "required": false,
+     "default": 1e-09
+    },
+    {
+     "name": "max_evaluations",
+     "required": false,
+     "default": 300
+    },
+    {
+     "name": "ion_temperature",
+     "required": false,
+     "default": 1.0
+    },
+    {
+     "name": "ion_mass",
+     "required": false,
+     "default": 1836.0
+    },
+    {
+     "name": "beam_fraction",
+     "required": false,
+     "default": 0.1
+    },
+    {
+     "name": "beam_temperature",
+     "required": false,
+     "default": 1.0
+    },
+    {
+     "name": "beam_drift",
+     "required": false,
+     "default": 5.0
+    },
+    {
+     "name": "selector",
+     "required": false,
+     "default": 0
+    },
+    {
+     "name": "expression",
+     "required": false,
+     "default": "exp(-v.^2)/sqrt(pi)"
+    },
+    {
+     "name": "integration_mesh",
+     "required": false,
+     "default": null
+    }
+   ],
+   "modules": {
+    "scirel.kinetic.generalized_dispersion": "87a56aa9e052243796cc48e789556513ac2c441942ccb2e94d4dc5f2dc070869"
+   },
+   "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
+  }
+ ]
 }

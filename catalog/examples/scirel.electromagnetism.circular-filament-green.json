@@ -104,7 +104,7 @@
   ],
   "tests": [
    "tests/domain_contracts/geometry/test_geometry_fields.py",
-   "tests/domain_contracts/geometry/test_source_d2_regressions.py",
+   "tests/domain_contracts/geometry/test_geometry_regressions.py",
    "tests/operator_contracts/test_field_green_correction.py"
   ],
   "evidence_ceiling": "Named fixtures and declared API behavior only; no complete scientific correctness or interchangeability claim.",
