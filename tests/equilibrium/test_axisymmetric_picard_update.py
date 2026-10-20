@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux, update_axisymmetric_picard_flux as scientific_operator
+from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux, update_axisymmetric_picard_flux as scientific_function
 
 
 def _inputs(**overrides):
@@ -14,7 +14,7 @@ def _inputs(**overrides):
 
 
 def test_flux_relaxation_and_cell_area_follow_declared_source_order():
-    result = scientific_operator(**_inputs())
+    result = scientific_function(**_inputs())
     weights = np.outer([.25, .5, .25], [.25, .5, .25])
     np.testing.assert_allclose(result["plasma_cell_currents"], weights)
     np.testing.assert_allclose(result["psi_next"], .75 * (1.0 + weights))
@@ -23,7 +23,7 @@ def test_flux_relaxation_and_cell_area_follow_declared_source_order():
 
 def test_nonuniform_grid_uses_first_spacings_for_every_cell_current():
     r_grid, z_grid = np.meshgrid([0.0, 0.2, 0.7], [-0.5, -0.2, 0.6])
-    result = scientific_operator(
+    result = scientific_function(
         r_grid, z_grid, np.ones((3, 3)), np.zeros((3, 3)),
         np.zeros((3, 3)), np.eye(9), 0.0,
     )
@@ -35,8 +35,8 @@ def test_nonuniform_grid_uses_first_spacings_for_every_cell_current():
 
 def test_previous_currents_change_only_the_current_diagnostic():
     inputs = _inputs()
-    baseline = scientific_operator(**inputs)
-    repeated = scientific_operator(**inputs, previous_cell_currents=np.outer([.25, .5, .25], [.25, .5, .25]))
+    baseline = scientific_function(**inputs)
+    repeated = scientific_function(**inputs, previous_cell_currents=np.outer([.25, .5, .25], [.25, .5, .25]))
     for key in ("psi_next", "plasma_cell_currents", "relative_psi_change"):
         np.testing.assert_allclose(repeated[key], baseline[key])
     assert repeated["relative_current_change"] == 0.0
@@ -45,7 +45,7 @@ def test_previous_currents_change_only_the_current_diagnostic():
 
 def test_relax_one_is_rejected():
     with pytest.raises(ValueError, match="relax"):
-        scientific_operator(**_inputs(relax=1.0))
+        scientific_function(**_inputs(relax=1.0))
 
 
 def test_reviewed_relation_example():

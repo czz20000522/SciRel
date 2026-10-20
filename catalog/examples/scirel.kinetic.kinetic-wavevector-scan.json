@@ -360,11 +360,11 @@
    "Fluid native/local execution covers this asset."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "species_equilibrium_scales",
-    "kind": "operator",
+    "kind": "function",
     "description": "组分平衡尺度",
     "inputs": [
      "ms",
@@ -417,7 +417,7 @@
    },
    {
     "id": "kinetic_wavevector_roots",
-    "kind": "operator",
+    "kind": "function",
     "description": "动理学垂直波数求根",
     "inputs": [
      "B0",

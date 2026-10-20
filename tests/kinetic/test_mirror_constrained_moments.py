@@ -7,7 +7,7 @@ import sys
 import numpy as np
 import pytest
 
-from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments, evaluate_mirror_constrained_moments as scientific_operator
+from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments, evaluate_mirror_constrained_moments as scientific_function
 
 
 E = 1.602176634e-19
@@ -55,7 +55,7 @@ assert "scipy" in sys.modules
 
 def test_untruncated_moments_match_closed_form():
     b = np.array([1.0, 1.5, 2.0])
-    result = scientific_operator(b, np.zeros(3), 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
+    result = scientific_function(b, np.zeros(3), 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
     t_perp = b / ((b - 1.0) / (1200 * E) + 1.0 / (2400 * E))
     density = 2e18 * t_perp / (2400 * E)
     np.testing.assert_allclose(result['density_m3'], density)
@@ -64,7 +64,7 @@ def test_untruncated_moments_match_closed_form():
 
 
 def test_plugged_loss_cone_reduces_moments_without_negative_values():
-    result = scientific_operator(np.array([1.0, 2.0]), np.zeros(2), 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0, b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0, loss_cone_refill=0.0, quadrature_order=40)
+    result = scientific_function(np.array([1.0, 2.0]), np.zeros(2), 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0, b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0, loss_cone_refill=0.0, quadrature_order=40)
     assert np.all(result['density_pitch_integral'] < 1.0)
     assert np.all(result['density_m3'] > 0.0)
     assert np.all(result['p_parallel_pa'] >= 0.0)
@@ -72,14 +72,14 @@ def test_plugged_loss_cone_reduces_moments_without_negative_values():
 
 def test_plugged_default_is_the_source_empty_loss_cone_default():
     kwargs = dict(b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0)
-    default = scientific_operator(np.array([1.0]), np.zeros(1), 0.0, M, E, 2e18, 1200*E, 2400*E, 1.0, **kwargs)
-    explicit = scientific_operator(np.array([1.0]), np.zeros(1), 0.0, M, E, 2e18, 1200*E, 2400*E, 1.0, loss_cone_refill=0.0, **kwargs)
+    default = scientific_function(np.array([1.0]), np.zeros(1), 0.0, M, E, 2e18, 1200*E, 2400*E, 1.0, **kwargs)
+    explicit = scientific_function(np.array([1.0]), np.zeros(1), 0.0, M, E, 2e18, 1200*E, 2400*E, 1.0, loss_cone_refill=0.0, **kwargs)
     np.testing.assert_allclose(default['density_m3'], explicit['density_m3'])
 
 
 def test_single_plug_field_is_rejected():
     try:
-        scientific_operator(1.0, 0.0, 0.0, M, E, 1e18, E, E, 1.0, b_plug_left_t=4.0)
+        scientific_function(1.0, 0.0, 0.0, M, E, 1e18, E, E, 1.0, b_plug_left_t=4.0)
     except ValueError:
         return
     raise AssertionError('expected invalid one-sided plug contract to fail')
@@ -91,8 +91,8 @@ def test_refill_one_skips_plug_profiles_but_still_validates_quadrature_control()
     def unexpected_profile(_psi):
         raise AssertionError('refill-one branch must not evaluate plug profiles')
 
-    baseline = scientific_operator(*args)
-    restored = scientific_operator(
+    baseline = scientific_function(*args)
+    restored = scientific_function(
         *args, b_plug_left_t=unexpected_profile,
         b_plug_right_t=unexpected_profile,
         phi_plug_left_v=unexpected_profile,
@@ -103,30 +103,30 @@ def test_refill_one_skips_plug_profiles_but_still_validates_quadrature_control()
     np.testing.assert_allclose(restored['p_parallel_pa'], baseline['p_parallel_pa'])
     np.testing.assert_allclose(restored['p_perpendicular_pa'], baseline['p_perpendicular_pa'])
     with pytest.raises(ValueError, match='quadrature_order'):
-        scientific_operator(*args, quadrature_order=7.9)
+        scientific_function(*args, quadrature_order=7.9)
 
 
 def test_fractional_quadrature_order_uses_its_integer_part():
     args = (1.25, 0.0, 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
     plugs = dict(b_plug_left_t=4.0, b_plug_right_t=5.0,
                  phi_plug_left_v=800.0, phi_plug_right_v=-800.0)
-    integer = scientific_operator(*args, quadrature_order=16, **plugs)
-    fractional = scientific_operator(*args, quadrature_order=16.9, **plugs)
+    integer = scientific_function(*args, quadrature_order=16, **plugs)
+    fractional = scientific_function(*args, quadrature_order=16.9, **plugs)
     for field in ('density_pitch_integral', 'parallel_pitch_integral',
                   'perpendicular_pitch_integral'):
         np.testing.assert_array_equal(fractional[field], integer[field])
 
 
 def test_signed_negative_charge_is_supported_by_the_leaf():
-    result = scientific_operator(1.0, 0.0, 1.0, M, -E, 1e18, E, E, 1.0)
+    result = scientific_function(1.0, 0.0, 1.0, M, -E, 1e18, E, E, 1.0)
     np.testing.assert_allclose(result['density_m3'], 1e18 * np.e)
 
 
 def test_vectorized_psi_profile_matches_its_explicit_array_values():
     psi = np.array([0.0, 0.25, 0.5])
     density = lambda value: 2e18 * (1.0 + 0.2 * value)
-    callable_result = scientific_operator(np.ones(3), psi, 0.0, M, E, density, 1200 * E, 2400 * E, 1.0)
-    array_result = scientific_operator(np.ones(3), psi, 0.0, M, E, density(psi), 1200 * E, 2400 * E, 1.0)
+    callable_result = scientific_function(np.ones(3), psi, 0.0, M, E, density, 1200 * E, 2400 * E, 1.0)
+    array_result = scientific_function(np.ones(3), psi, 0.0, M, E, density(psi), 1200 * E, 2400 * E, 1.0)
     np.testing.assert_allclose(callable_result['density_m3'], array_result['density_m3'])
 
 

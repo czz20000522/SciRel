@@ -509,7 +509,7 @@
    "Public distribution licensing and expert recognition remain pending."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "state_grid",
@@ -559,7 +559,7 @@
    },
    {
     "id": "reference_density",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.closures.quasineutral-reference-density",
     "description": "Compute the default electron reference density Z_i*n_i_ref; runtime asset_loader names this operator with an underscored identity.",
     "inputs": [
@@ -614,7 +614,7 @@
    },
    {
     "id": "kinetic_moments",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.mirror-constrained-moments",
     "description": "Expand moment_inputs and evaluate the mirror ion mapping at each trial potential and once more at the final potential.",
     "inputs": [
@@ -628,7 +628,7 @@
    },
    {
     "id": "electron_response",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.closures.boltzmann-quasineutrality",
     "description": "Evaluate the Boltzmann electron mapping at trial and final potential; expose its logarithmic residual for the solver.",
     "inputs": [
@@ -646,7 +646,7 @@
    },
    {
     "id": "potential_solver",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.closures.quasineutral-potential",
     "description": "Bind the ion/electron evaluator as residual callback and run bounded bracket expansion and vectorized bisection.",
     "inputs": [
@@ -669,7 +669,7 @@
    },
    {
     "id": "pressure_assembly",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.mirror-total-pressure",
     "description": "Assemble final ion/electron mappings and add electron pressure to both ion pressure components.",
     "inputs": [

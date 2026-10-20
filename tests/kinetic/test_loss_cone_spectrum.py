@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum, solve_loss_cone_spectrum as scientific_operator
+from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum, solve_loss_cone_spectrum as scientific_function
 
 
 # 验证：最低正本征值、分数 degree 转换和 xi=0 归一化必须保持源码离散合同。
 def test_returns_ordered_normalized_loss_cone_modes():
-    result = scientific_operator(0.6, 3, grid_points=32)
+    result = scientific_function(0.6, 3, grid_points=32)
     assert result["xi"].shape == (32,)
     assert result["eigenfunctions"].shape == (32, 3)
     assert np.all(np.diff(result["eigenvalues"]) > 0.0)
@@ -15,7 +15,7 @@ def test_returns_ordered_normalized_loss_cone_modes():
 
 
 def test_hypergeometric_backend_accepts_paper_mode_count():
-    result = scientific_operator(np.sqrt(1.0 - 1.0 / 20.0), 14, backend="hypergeometric")
+    result = scientific_function(np.sqrt(1.0 - 1.0 / 20.0), 14, backend="hypergeometric")
     assert result["degrees"].shape == (14,)
     assert result["backend"] == "hypergeometric"
     assert np.all(np.diff(result["degrees"]) > 0.0)
@@ -23,14 +23,14 @@ def test_hypergeometric_backend_accepts_paper_mode_count():
 
 def test_rejects_unknown_backend():
     with pytest.raises(ValueError):
-        scientific_operator(0.6, 1, backend="unknown")
+        scientific_function(0.6, 1, backend="unknown")
 
 
 # 验证：损失锥端点和模式数不合法时必须 fail closed，而不是产生不受约束的谱。
 @pytest.mark.parametrize("xi_tp, mode_count", [(0.0, 1), (1.0, 1), (0.5, 0)])
 def test_rejects_invalid_loss_cone_domain(xi_tp, mode_count):
     with pytest.raises(ValueError):
-        scientific_operator(xi_tp, mode_count)
+        scientific_function(xi_tp, mode_count)
 
 
 def test_reviewed_relation_example():

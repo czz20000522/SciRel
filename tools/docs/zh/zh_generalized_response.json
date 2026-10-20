@@ -762,7 +762,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-root-scans",
-   "source_sha256": "835b6688f177ae525c833f7ade381dbc8a7a1ab40c16b36a96e81443999d551b",
+   "source_sha256": "e5e8066393f770b6e812f48782b4fc362e25c817e923c92ffa72b4a51cc180e4",
    "summary": "运行全部四类带初始种子的静电根扫描。",
    "definition": "各类网格为：Langmuir .1:.1:1 后接 2:1:10，固定相位种子 1-.1i；离子声波 1.1:-.05:.05，相位种子 .04-.02i；束流 .4:-.005:.05，相位种子 (1-.01i)*sqrt(2)*.4；generalized .1:.1:1 后接 1.5:.5:5，频率种子 1.5-.001i。离子声波和束流接续上一个相位，generalized 接续上一个频率。k 通过闭包绑定，不再作为无效的 fsolve 第四参数传递。求解使用 D/k² 或直接使用已资格化的 Maxwellian epsilon，并同时检查求解器成功、残差容差及函数求值预算。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -1883,7 +1883,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-landau",
-   "source_sha256": "6db270f080e7e68889105a6a40b541d5d9ba660639501ece7f7e2903dc37f529",
+   "source_sha256": "0c7d7764d29e6a21301cc6ac8aacc7774413c9eb82e0013cb5b813811d4cec01",
    "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",

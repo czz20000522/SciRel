@@ -162,7 +162,7 @@ def test_review_gate_rechecks_minimum_field_after_terminal_update():
         return field
 
     with pytest.raises(FloatingPointError, match="returned terminal state"):
-        composition.run_graph(_inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure), asset_loader=loader)
+        composition.run_composition(_inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure), asset_loader=loader)
     assert calls["field"] >= 2
     assert calls["closure"] == 2
 

@@ -85,7 +85,7 @@ def test_confinement_preserves_original_moments_and_endpoint_diagnostics():
 
 
 def test_endpoint_and_nested_failures_propagate_without_terminal_state():
-    from scirel.kinetic.grid_mirror_kinetic_closure import run_graph
+    from scirel.kinetic.grid_mirror_kinetic_closure import run_composition
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
     from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
 
@@ -106,21 +106,21 @@ def test_endpoint_and_nested_failures_propagate_without_terminal_state():
         }[asset_id]
 
     with pytest.raises(RuntimeError, match='endpoint failure'):
-        run_graph(_inputs(), asset_loader=loader(failed_endpoint),
-                  task_graph_loader=lambda _: failed_nested)
+        run_composition(_inputs(), asset_loader=loader(failed_endpoint),
+                  composition_loader=lambda _: failed_nested)
     assert calls == ['endpoint']
 
     calls.clear()
     with pytest.raises(RuntimeError, match='nested failure'):
-        run_graph(_inputs(), asset_loader=loader(solve_mirror_ambipolar_potential),
-                  task_graph_loader=lambda _: failed_nested)
+        run_composition(_inputs(), asset_loader=loader(solve_mirror_ambipolar_potential),
+                  composition_loader=lambda _: failed_nested)
     assert calls == ['nested']
 
 
 def test_yaml_declares_nested_composition_dependency():
     text = Path(__file__).with_name('composition.yaml').read_text(encoding='utf-8')
     assert 'kind: scientific_composition' in text
-    assert 'scirel.closures.graphs.mirror_quasineutral_closure' in text
+    assert 'scirel.closures.compositions.mirror_quasineutral_closure' in text
 
 
 def test_profile_port_is_evaluated_against_current_flux():

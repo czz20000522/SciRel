@@ -569,7 +569,7 @@
    "No expert scientific endorsement or public release follows from this numerical successor."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "loop_state",
@@ -597,7 +597,7 @@
    },
    {
     "id": "field",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.field.poloidal-field-from-flux",
     "description": "Derive B_R, B_Z and |B| from each current or terminal flux state.",
     "inputs": [
@@ -653,7 +653,7 @@
    },
    {
     "id": "hall",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.closures.reduced-hall-drift",
     "description": "Compute reduced-Hall current, local optional inertia and diagnostics on the active domain.",
     "inputs": [
@@ -682,7 +682,7 @@
    },
    {
     "id": "flux_update",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
     "description": "Apply dense Green response and flux relaxation during each update and recompute terminal raw cell currents.",
     "inputs": [

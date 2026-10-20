@@ -37,7 +37,7 @@ def _require_state(closure, magnetic, psi):
     result['p_parallel'], result['p_perpendicular'] = (parallel, perpendicular)
     return result
 
-def run_graph(inputs, *, asset_loader):
+def run_composition(inputs, *, asset_loader):
     """Run current-declared-order field -> closure -> div(P) -> flux feedback."""
     if not isinstance(inputs, Mapping):
         raise ValueError('inputs must be a mapping')
@@ -124,7 +124,7 @@ def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
         compatibility checks and explicit ``cell_edges``; keyword arguments
         are merged at the composition boundary.
     **kwargs
-        Named inputs merged with ``inputs`` by the TaskGraph composition
+        Named inputs merged with ``inputs`` by the composition
         boundary.
 
     Returns
@@ -149,5 +149,5 @@ def solve_axisymmetric_anisotropic_picard(inputs=None, **kwargs):
     from scirel.equilibrium.anisotropic_force_balance import compute_anisotropic_force_balance as _dependency_0
     from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux as _dependency_1
     from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux as _dependency_2
-    return compose(run_graph, inputs, kwargs, {'asset_loader': {'scirel.equilibrium.anisotropic_force_balance': _dependency_0, 'scirel.equilibrium.axisymmetric_picard_update': _dependency_1, 'scirel.field.poloidal_field_from_flux': _dependency_2}})
+    return compose(run_composition, inputs, kwargs, {'asset_loader': {'scirel.equilibrium.anisotropic_force_balance': _dependency_0, 'scirel.equilibrium.axisymmetric_picard_update': _dependency_1, 'scirel.field.poloidal_field_from_flux': _dependency_2}})
 __all__ = ['solve_axisymmetric_anisotropic_picard']

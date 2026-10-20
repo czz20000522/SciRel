@@ -15,7 +15,7 @@ def _coerce_pressure(parallel, perpendicular, psi):
         result.append(values)
     return tuple(result)
 
-def run_graph(inputs, *, asset_loader):
+def run_composition(inputs, *, asset_loader):
     """Iterate magnetic flux, caller-bound kinetic closure, and Hall current."""
     if not isinstance(inputs, dict):
         raise ValueError('inputs must be a mapping')
@@ -125,7 +125,7 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
         reduced-Hall inertia, active masks, firehose and generalized-Ohm gates,
         compatibility thresholds and explicit ``cell_edges``.
     **kwargs
-        Composition overrides passed to the public graph boundary.
+        Composition overrides passed to the public composition boundary.
 
     Returns
     -------
@@ -151,7 +151,7 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     Notes
     -----
     ``psi`` is interpreted by the caller closure in the same ``R A_phi``
-    convention as the dense Green response.  The outer graph recomputes and
+    convention as the dense Green response.  The outer composition recomputes and
     gates the terminal closure/current state; convergence is not a global
     equilibrium or identifiability guarantee.
     """
@@ -160,5 +160,5 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     from scirel.closures.reduced_hall_drift import close_reduced_hall_drift as _dependency_0
     from scirel.equilibrium.axisymmetric_picard_update import update_axisymmetric_picard_flux as _dependency_1
     from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux as _dependency_2
-    return compose(run_graph, inputs, kwargs, {'asset_loader': {'scirel.closures.reduced_hall_drift': _dependency_0, 'scirel.equilibrium.axisymmetric_picard_update': _dependency_1, 'scirel.field.poloidal_field_from_flux': _dependency_2}})
+    return compose(run_composition, inputs, kwargs, {'asset_loader': {'scirel.closures.reduced_hall_drift': _dependency_0, 'scirel.equilibrium.axisymmetric_picard_update': _dependency_1, 'scirel.field.poloidal_field_from_flux': _dependency_2}})
 __all__ = ['solve_reduced_hall_anisotropic_picard']

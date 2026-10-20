@@ -296,11 +296,11 @@
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "species_equilibrium_scales",
-    "kind": "operator",
+    "kind": "function",
     "description": "组分平衡尺度",
     "inputs": [
      "ms",
@@ -361,7 +361,7 @@
    },
    {
     "id": "kinetic_dispersion_sum_n",
-    "kind": "operator",
+    "kind": "function",
     "description": "常规谐波求和色散行列式",
     "inputs": [
      "B0",
@@ -392,7 +392,7 @@
    },
    {
     "id": "kinetic_dispersion_ronnmark",
-    "kind": "operator",
+    "kind": "function",
     "description": "Ronnmark 快速色散行列式",
     "inputs": [
      "B0",

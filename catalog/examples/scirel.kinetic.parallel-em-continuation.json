@@ -151,7 +151,10 @@
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]
  },
- "graph": {
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ],
+ "composition": {
   "nodes": [
    {
     "id": "continuation",
@@ -179,7 +182,7 @@
    },
    {
     "id": "response",
-    "kind": "operator",
+    "kind": "function",
     "description": "Causal isotropic kinetic EM residual at each trial omega/k.",
     "inputs": [
      "state",
@@ -441,8 +444,5 @@
     }
    ]
   }
- },
- "references": [
-  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
- ]
+ }
 }

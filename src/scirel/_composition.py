@@ -15,7 +15,7 @@ def compose(calculation, inputs, keywords, dependencies):
         def resolve(reference, attribute=None):
             function = functions[reference]
             if attribute is not None and attribute not in {
-                function.__name__, "scientific_operator", "latin_hypercube_samples"
+                function.__name__, "scientific_function", "latin_hypercube_samples"
             }:
                 raise KeyError(f"undeclared callable attribute: {attribute}")
             return function

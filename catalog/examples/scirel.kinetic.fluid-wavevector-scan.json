@@ -318,11 +318,11 @@
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "species_equilibrium_scales",
-    "kind": "operator",
+    "kind": "function",
     "description": "组分平衡尺度",
     "inputs": [
      "ms",
@@ -377,7 +377,7 @@
    },
    {
     "id": "gamma_lpole_coefficients",
-    "kind": "operator",
+    "kind": "function",
     "description": "L 极点系数表",
     "inputs": [
      "max_harmonic"
@@ -391,7 +391,7 @@
    },
    {
     "id": "z_pole_coefficients",
-    "kind": "operator",
+    "kind": "function",
     "description": "Z 极点留数与位置表",
     "inputs": [
      "j_order"
@@ -409,7 +409,7 @@
    },
    {
     "id": "fluid_dispersion_matrix",
-    "kind": "operator",
+    "kind": "function",
     "description": "流体色散矩阵组装",
     "inputs": [
      "omega",
@@ -443,7 +443,7 @@
    },
    {
     "id": "fluid_wavevector_eigensolve",
-    "kind": "operator",
+    "kind": "function",
     "description": "垂直波数本征求解",
     "inputs": [
      "matrix",

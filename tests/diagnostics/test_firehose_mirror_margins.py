@@ -1,12 +1,12 @@
 import numpy as np
 
-from scirel.diagnostics.firehose_mirror_margins import MU0, compute_firehose_mirror_margins, compute_firehose_mirror_margins as scientific_operator
+from scirel.diagnostics.firehose_mirror_margins import MU0, compute_firehose_mirror_margins, compute_firehose_mirror_margins as scientific_function
 
 
 # 验证：常压且非零场时，两个裕度须解析地等于 B²/mu0，并稳定为真。
 def test_constant_pressures_produce_positive_magnetic_margins():
     magnetic_field = np.array([1.0, 1.5, 2.0])
-    result = scientific_operator(np.ones(3), np.ones(3), magnetic_field, dp_perp_dB=0.0)
+    result = scientific_function(np.ones(3), np.ones(3), magnetic_field, dp_perp_dB=0.0)
     expected = magnetic_field * magnetic_field / MU0
     assert np.allclose(result["firehose_margin"], expected)
     assert np.allclose(result["mirror_margin"], expected)
@@ -15,7 +15,7 @@ def test_constant_pressures_produce_positive_magnetic_margins():
 
 # 验证：压强各向异性足够大时，firehose 判据必须反映负裕度。
 def test_firehose_instability_is_reported():
-    result = scientific_operator(np.array([1.0e8, 1.0e8]), np.zeros(2), np.ones(2), dp_perp_dB=0.0)
+    result = scientific_function(np.array([1.0e8, 1.0e8]), np.zeros(2), np.ones(2), dp_perp_dB=0.0)
     assert not result["firehose_stable"]
     assert result["min_firehose_margin"] < 0.0
 

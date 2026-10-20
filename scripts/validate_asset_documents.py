@@ -39,10 +39,10 @@ TOP_LEVEL_KEYS = {
     "version",
     "example",
     "verification",
-    "graph",
+    "composition",
     "references",
 }
-REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"graph", "references"}
+REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"composition", "references"}
 PORT_KEYS = {
     "name",
     "description",
@@ -332,9 +332,9 @@ def _has_cycle(nodes: set[str], edges: list[tuple[str, str]]) -> bool:
 def _validate_graph(
     value: Any, input_ports: set[str], output_ports: set[str], dependency_ids: set[str]
 ) -> None:
-    graph = _object(value, "graph")
+    graph = _object(value, "composition")
     graph_keys = {"nodes", "edges", "execution"}
-    _exact_keys(graph, graph_keys, graph_keys, "graph")
+    _exact_keys(graph, graph_keys, graph_keys, "composition")
     nodes = {}
     scientific_nodes = set()
     for index, raw in enumerate(_list(graph["nodes"], "graph.nodes", nonempty=True)):
@@ -347,10 +347,10 @@ def _validate_graph(
         if not node_id.isidentifier() or node_id in nodes:
             _fail(f"{location}.id", "must be a unique identifier")
         kind = node["kind"]
-        if kind not in {"operator", "task_graph", "controlled_glue", "caller_port"}:
+        if kind not in {"function", "composition", "controlled_glue", "caller_port"}:
             _fail(f"{location}.kind", "has an unsupported node kind")
         asset_id = node.get("asset_id")
-        if kind in {"operator", "task_graph"}:
+        if kind in {"function", "composition"}:
             if not isinstance(asset_id, str) or asset_id not in dependency_ids:
                 _fail(f"{location}.asset_id", "must name a declared dependency")
             scientific_nodes.add(asset_id)
@@ -518,8 +518,8 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     dependency_ids = _validate_version(item["version"])
     _validate_example(item["example"])
     _validate_verification(item["verification"])
-    if "graph" in item:
-        _validate_graph(item["graph"], input_ports, output_ports, dependency_ids)
+    if "composition" in item:
+        _validate_graph(item["composition"], input_ports, output_ports, dependency_ids)
     return item
 
 
@@ -722,7 +722,7 @@ def _validate_runtime_inputs(
     mapping = signature.parameters.get("inputs")
     accepts_keywords = any(parameter.kind is inspect.Parameter.VAR_KEYWORD
                            for parameter in signature.parameters.values())
-    if "graph" in document and mapping is not None:
+    if "composition" in document and mapping is not None:
         if function is None:
             _fail(document["asset_id"], "TaskGraph mapping requires its actual callable binding")
         bound_signature = _explicit_mapping_signature(document, function)
@@ -740,7 +740,7 @@ def _validate_runtime_inputs(
                    if parameter.default is inspect.Parameter.empty and name not in documented_names}
         if missing:
             _fail(document["asset_id"], f"required scientific inputs are undocumented: {sorted(missing)}")
-    elif "graph" in document and accepts_keywords:
+    elif "composition" in document and accepts_keywords:
         if function is None:
             _fail(document["asset_id"], "TaskGraph keywords require their actual callable binding")
         bound_signature = _explicit_mapping_signature(document, function)

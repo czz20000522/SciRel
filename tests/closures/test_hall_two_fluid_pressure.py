@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.closures.hall_two_fluid_pressure import close_hall_two_fluid_pressure, close_hall_two_fluid_pressure as scientific_operator
+from scirel.closures.hall_two_fluid_pressure import close_hall_two_fluid_pressure, close_hall_two_fluid_pressure as scientific_function
 
 
 def _law(b, psi):
@@ -11,7 +11,7 @@ def _law(b, psi):
 def test_callable_profiles_and_default_ion_pressure_decomposition():
     b = np.array([[1.0, 2.0]])
     psi = np.array([[0.2, 0.4]])
-    result = scientific_operator(b, psi, _law, lambda b, psi: 1.0e18 + psi, lambda b, psi: 1.0 + psi, 3.0)
+    result = scientific_function(b, psi, _law, lambda b, psi: 1.0e18 + psi, lambda b, psi: 1.0 + psi, 3.0)
     np.testing.assert_allclose(result["electron_density"], result["ion_density"])
     np.testing.assert_allclose(result["ion_p_parallel"], result["p_parallel"] - result["electron_pressure"])
     np.testing.assert_allclose(result["electron_p_perpendicular"], result["electron_pressure"])
@@ -19,7 +19,7 @@ def test_callable_profiles_and_default_ion_pressure_decomposition():
 
 def test_negative_derived_ion_moment_fails_closed():
     with pytest.raises(ValueError, match="negative moment"):
-        scientific_operator(np.ones((1, 2)), np.zeros((1, 2)), _law, 1.0, 100.0, 0.0)
+        scientific_function(np.ones((1, 2)), np.zeros((1, 2)), _law, 1.0, 100.0, 0.0)
 
 
 def test_reviewed_relation_example():

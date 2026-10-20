@@ -67,7 +67,7 @@ def test_the_module_publishes_only_the_two_momentum_scales():
     ]
     for name in HELD_OUT:
         assert not hasattr(momentum_scales, name), name
-    assert not hasattr(momentum_scales, "scientific_operator"), (
+    assert not hasattr(momentum_scales, "scientific_function"), (
         "the dispatcher is a routing string, not a scientific input"
     )
 

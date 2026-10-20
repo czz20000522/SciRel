@@ -27,7 +27,7 @@ def test_yaml_declares_picard_feedback_contract():
     contract = Path(__file__).with_name("composition.yaml").read_text(encoding="utf-8")
     assert "primary_pfm_node: N6" in contract
     assert "pressure_closure" in contract
-    assert "scirel.kinetic.graphs.frank_egedal_pressure_closure" not in contract
+    assert "scirel.kinetic.compositions.frank_egedal_pressure_closure" not in contract
     assert "to_input: psi_state" in contract
 
 

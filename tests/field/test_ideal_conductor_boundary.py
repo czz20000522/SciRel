@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux, correct_ideal_conductor_boundary_flux as scientific_operator
+from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux, correct_ideal_conductor_boundary_flux as scientific_function
 
 
 def _inputs():
@@ -17,7 +17,7 @@ def _inputs():
 
 # 验证：满秩墙 Green 矩阵时，采样边界磁通应由墙电流严格抵消。
 def test_cancels_boundary_flux_and_reports_rank():
-    result = scientific_operator(**_inputs())
+    result = scientific_function(**_inputs())
     assert np.allclose(result["residual"], 0.0)
     assert result["residual_norm"] == pytest.approx(0.0)
     assert result["effective_rank"] == 2
@@ -29,16 +29,16 @@ def test_cancels_boundary_flux_and_reports_rank():
 def test_honors_relative_svd_cutoff_and_rejects_invalid_cutoff():
     data = _inputs()
     data["green_boundary_to_boundary"] = np.diag([2.0, 1.0e-6])
-    result = scientific_operator(**data, rcond=1.0e-4)
+    result = scientific_function(**data, rcond=1.0e-4)
     assert result["effective_rank"] == 1
     with pytest.raises(ValueError):
-        scientific_operator(**_inputs(), rcond=-1.0)
+        scientific_function(**_inputs(), rcond=-1.0)
 
 
 def test_consistent_flux_rescaling_preserves_boundary_currents():
     data = _inputs()
-    per_radian = scientific_operator(**data)
-    full_flux = scientific_operator(
+    per_radian = scientific_function(**data)
+    full_flux = scientific_function(
         uncorrected_field_flux=2 * np.pi * data["uncorrected_field_flux"],
         boundary_sample_matrix=data["boundary_sample_matrix"],
         green_boundary_to_boundary=2 * np.pi * data["green_boundary_to_boundary"],

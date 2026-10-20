@@ -13,7 +13,7 @@ def _require_mapping(value, name):
 def _require_ports(inputs):
     for name in ('r_grid', 'z_grid', 'psi_vac', 'br_vac', 'bz_vac', 'g_psi', 'params', 'tol', 'maxiter', 'relax'):
         if name not in inputs:
-            raise ValueError(f'{name} is required by task_graph.yaml')
+            raise ValueError(f'{name} is required by composition.yaml')
     closure = inputs.get('pressure_closure')
     if not callable(closure):
         raise ValueError('pressure_closure must be a callable N4 closure port')
@@ -56,7 +56,7 @@ def _boundary_config(value):
         raise ValueError(f'boundary_correction missing keys: {missing}')
     return value
 
-def run_graph(inputs, *, asset_loader):
+def run_composition(inputs, *, asset_loader):
     """Iterate pressure/current/Green feedback until its full state closes.
 
     State comprises psi, BR, BZ and relaxed cell currents. Every iteration
@@ -215,7 +215,7 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
         ``plasma_mask``, wall ``boundary_correction``, explicit ``cell_edges``
         and compatibility/field-floor controls.
     **kwargs
-        Composition overrides passed to the public graph boundary.
+        Composition overrides passed to the public composition boundary.
 
     Returns
     -------
@@ -241,7 +241,7 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     -----
     The stopping test uses the unrelaxed terminal flux, field and current
     state, not only the relaxed flux increment.  ``maxiter=0`` returns a
-    nonconverged terminal evaluation.  The graph owns iteration and state
+    nonconverged terminal evaluation.  The composition owns iteration and state
     composition; it does not certify the physical wall model or a global
     equilibrium.
     """
@@ -252,5 +252,5 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     from scirel.equilibrium.anisotropic_toroidal_current import compute_anisotropic_toroidal_current as _dependency_2
     from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux as _dependency_3
     from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude as _dependency_4
-    return compose(run_graph, inputs, kwargs, {'asset_loader': {'scirel.diagnostics.picard_flux_residual': _dependency_0, 'scirel.equilibrium.anisotropic_picard_feedback': _dependency_1, 'scirel.equilibrium.anisotropic_toroidal_current': _dependency_2, 'scirel.field.ideal_conductor_boundary': _dependency_3, 'scirel.field.poloidal_field_magnitude': _dependency_4}})
+    return compose(run_composition, inputs, kwargs, {'asset_loader': {'scirel.diagnostics.picard_flux_residual': _dependency_0, 'scirel.equilibrium.anisotropic_picard_feedback': _dependency_1, 'scirel.equilibrium.anisotropic_toroidal_current': _dependency_2, 'scirel.field.ideal_conductor_boundary': _dependency_3, 'scirel.field.poloidal_field_magnitude': _dependency_4}})
 __all__ = ['solve_free_boundary_anisotropic_picard']

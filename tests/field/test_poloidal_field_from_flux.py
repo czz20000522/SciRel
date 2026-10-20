@@ -1,12 +1,12 @@
 import numpy as np
 
-from scirel.field.poloidal_field_from_flux import _source_hypot, poloidal_field_from_flux, poloidal_field_from_flux as scientific_operator
+from scirel.field.poloidal_field_from_flux import _source_hypot, poloidal_field_from_flux, poloidal_field_from_flux as scientific_function
 
 
 def test_uniform_axial_field_and_axis_regularization():
     r, z = np.linspace(0., .4, 7), np.linspace(-.5, .5, 9)
     R, Z = np.meshgrid(r, z)
-    result = scientific_operator(R, Z, .5 * 2.0 * R**2)
+    result = scientific_function(R, Z, .5 * 2.0 * R**2)
     np.testing.assert_allclose(result['B_R'], 0.0, atol=1e-12)
     np.testing.assert_allclose(result['B_Z'], 2.0, atol=1e-12)
 
@@ -14,7 +14,7 @@ def test_uniform_axial_field_and_axis_regularization():
 def test_nonuniform_grid_recovers_quadratic_flux_field():
     r_grid, z_grid = np.meshgrid([0.0, 0.06, 0.2, 0.4], [-0.5, -0.1, 0.25, 0.8])
     psi = 0.5 * r_grid**2 * (2.0 + z_grid)
-    result = scientific_operator(r_grid, z_grid, psi)
+    result = scientific_function(r_grid, z_grid, psi)
     np.testing.assert_allclose(result['B_R'], -0.5 * r_grid, atol=1e-12)
     np.testing.assert_allclose(result['B_Z'], 2.0 + z_grid, atol=1e-12)
 
@@ -22,8 +22,8 @@ def test_nonuniform_grid_recovers_quadratic_flux_field():
 def test_flux_input_rescaling_changes_recovered_field_by_same_factor():
     r_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])
     psi = r_grid**2
-    per_radian = scientific_operator(r_grid, z_grid, psi)
-    scaled = scientific_operator(r_grid, z_grid, (2.0 * np.pi) * psi)
+    per_radian = scientific_function(r_grid, z_grid, psi)
+    scaled = scientific_function(r_grid, z_grid, (2.0 * np.pi) * psi)
     np.testing.assert_allclose(per_radian['B_Z'], 2.0)
     np.testing.assert_allclose(scaled['B_Z'], (2.0 * np.pi) * per_radian['B_Z'])
 
@@ -33,7 +33,7 @@ def test_nonrectilinear_grid_is_rejected():
     R, Z = np.meshgrid(r, z)
     R[1, 1] += .01
     try:
-        scientific_operator(R, Z, np.zeros_like(R))
+        scientific_function(R, Z, np.zeros_like(R))
     except ValueError:
         return
     raise AssertionError('expected invalid mesh failure')

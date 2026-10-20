@@ -8,7 +8,7 @@ import numpy as np
 from .axisymmetric_grid_mapping import map_axisymmetric_equilibrium_to_cartesian_grid
 from .material_support import classify_material_support
 
-__all__ = ["run_graph", "solve_axisymmetric_equilibrium_grid_mapping"]
+__all__ = ["run_composition", "solve_axisymmetric_equilibrium_grid_mapping"]
 _REQUIRED_INPUTS = (
     "equilibrium", "x_m", "y_m", "z_m", "xpoint_half_length_m", "pml_cells", "pec_mask"
 )
@@ -39,7 +39,7 @@ def _classification_parameters(equilibrium):
         ) from exc
 
 
-def run_graph(
+def run_composition(
     inputs,
     *,
     equilibrium_grid_mapping=map_axisymmetric_equilibrium_to_cartesian_grid,
@@ -79,9 +79,9 @@ def run_graph(
 
 
 def solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs):
-    """Public task-graph entry point with injectable node implementations."""
+    """Public composition entry point with injectable node implementations."""
     mapping = kwargs.pop("equilibrium_grid_mapping", map_axisymmetric_equilibrium_to_cartesian_grid)
     classification = kwargs.pop("material_support_classification", classify_material_support)
     if kwargs:
         raise ValueError(f"unexpected composition keyword arguments: {sorted(kwargs)}")
-    return run_graph(inputs, equilibrium_grid_mapping=mapping, material_support_classification=classification)
+    return run_composition(inputs, equilibrium_grid_mapping=mapping, material_support_classification=classification)

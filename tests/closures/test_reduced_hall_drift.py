@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.closures.reduced_hall_drift import _source_hypot, close_reduced_hall_drift, close_reduced_hall_drift as scientific_operator
+from scirel.closures.reduced_hall_drift import _source_hypot, close_reduced_hall_drift, close_reduced_hall_drift as scientific_function
 
 
 M, E = 1.67262192595e-27, 1.602176634e-19
@@ -19,7 +19,7 @@ def _state(shape, pressure=20.0):
 
 def test_uniform_state_has_zero_hall_current_and_flows():
     R, Z, BR, BZ = _grid()
-    result = scientific_operator(R, Z, BR, BZ, np.full_like(R, 20.0), np.full_like(R, 20.0), _state(R.shape), np.ones_like(R, dtype=bool), M, E)
+    result = scientific_function(R, Z, BR, BZ, np.full_like(R, 20.0), np.full_like(R, 20.0), _state(R.shape), np.ones_like(R, dtype=bool), M, E)
     np.testing.assert_allclose(result['J_phi'], 0.0, atol=1e-12)
     np.testing.assert_allclose(result['ion_toroidal_velocity'], 0.0, atol=1e-12)
     assert result['generalized_ohm_error'] < 1e-12
@@ -28,7 +28,7 @@ def test_uniform_state_has_zero_hall_current_and_flows():
 def test_zero_hall_multiplier_keeps_pressure_current_and_no_inertia_runs_once():
     R, Z, BR, BZ = _grid()
     pressure = 20.0 + R
-    result = scientific_operator(
+    result = scientific_function(
         R, Z, BR, BZ, pressure, pressure, _state(R.shape),
         np.ones_like(R, dtype=bool), M, E,
         hall_multiplier=0.0, include_toroidal_inertia=False,
@@ -42,7 +42,7 @@ def test_local_inertia_budget_exhaustion_returns_no_state():
     R, Z, BR, BZ = _grid()
     pressure = 20.0 + R
     with pytest.raises(RuntimeError, match='inertia iteration did not converge'):
-        scientific_operator(
+        scientific_function(
             R, Z, BR, BZ, pressure, pressure, _state(R.shape),
             np.ones_like(R, dtype=bool), M, E,
             inertia_max_iterations=1, inertia_tolerance=1e-30,
@@ -53,7 +53,7 @@ def test_electron_gradient_drives_exact_generalized_ohm_drift():
     R, Z, BR, BZ = _grid()
     state = _state(R.shape, pressure=29.0)
     state['electron_pressure'] = 1.0 + R
-    result = scientific_operator(R, Z, BR, BZ, np.full_like(R, 30.0), np.full_like(R, 30.0), state, np.ones_like(R, dtype=bool), M, E, include_toroidal_inertia=False, maximum_inertial_mach=10.0)
+    result = scientific_function(R, Z, BR, BZ, np.full_like(R, 30.0), np.full_like(R, 30.0), state, np.ones_like(R, dtype=bool), M, E, include_toroidal_inertia=False, maximum_inertial_mach=10.0)
     assert np.max(np.abs(result['ion_toroidal_velocity'][:, 1:])) > 0.0
     assert result['generalized_ohm_error'] < 1e-12
     assert np.max(np.abs(result['momentum_residual_R'])) < 1e-12
@@ -62,7 +62,7 @@ def test_electron_gradient_drives_exact_generalized_ohm_drift():
 def test_mask_excludes_axis_and_vacuum_cells():
     R, Z, BR, BZ = _grid()
     mask = np.zeros_like(R, dtype=bool)
-    result = scientific_operator(R, Z, BR, BZ, np.full_like(R, 20.0), np.full_like(R, 20.0), _state(R.shape), mask, M, E)
+    result = scientific_function(R, Z, BR, BZ, np.full_like(R, 20.0), np.full_like(R, 20.0), _state(R.shape), mask, M, E)
     assert not np.any(result['hall_active_mask'])
     np.testing.assert_allclose(result['J_phi'], 0.0)
 
@@ -125,8 +125,8 @@ def test_review_gate_rejects_nonfinite_species_and_nonboolean_inertia_control():
         ion_mass_kg=M, ion_charge_c=E,
     )
     with pytest.raises(ValueError, match="ion_mass_kg"):
-        scientific_operator(**{**base, "ion_mass_kg": np.nan})
+        scientific_function(**{**base, "ion_mass_kg": np.nan})
     with pytest.raises(ValueError, match="ion_charge_c"):
-        scientific_operator(**{**base, "ion_charge_c": np.nan})
+        scientific_function(**{**base, "ion_charge_c": np.nan})
     with pytest.raises(ValueError, match="include_toroidal_inertia"):
-        scientific_operator(**{**base, "include_toroidal_inertia": 1})
+        scientific_function(**{**base, "include_toroidal_inertia": 1})

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import mpmath as mp
 
-from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green, build_mirror_plasma_flux_green as scientific_operator
+from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green, build_mirror_plasma_flux_green as scientific_function
 from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
 
 
@@ -31,7 +31,7 @@ def _direct_first_plane_response(r_grid, z_grid, source_r):
 
 def test_first_source_plane_matches_independent_circular_filament_formula():
     r_grid, z_grid = _grid()
-    result = scientific_operator(r_grid, z_grid)["g_psi"]
+    result = scientific_function(r_grid, z_grid)["g_psi"]
     for source_index, source_r in enumerate(r_grid[0]):
         expected = (
             np.zeros(r_grid.size)
@@ -43,7 +43,7 @@ def test_first_source_plane_matches_independent_circular_filament_formula():
 
 def test_shape_finiteness_and_axis_source_columns_follow_source_convention():
     r_grid, z_grid = _grid()
-    result = scientific_operator(r_grid, z_grid)["g_psi"]
+    result = scientific_function(r_grid, z_grid)["g_psi"]
     assert result.shape == (r_grid.size, r_grid.size)
     assert np.all(np.isfinite(result))
     for source_plane in range(r_grid.shape[0]):
@@ -55,7 +55,7 @@ def test_reflected_matrix_matches_direct_filament_columns_on_symmetric_grid():
     points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
     sources = np.column_stack((points, np.ones(points.shape[0])))
     direct = dense_axisymmetric_green_response(points, sources)["gpsi"]
-    reflected = scientific_operator(r_grid, z_grid)["g_psi"]
+    reflected = scientific_function(r_grid, z_grid)["g_psi"]
     np.testing.assert_allclose(reflected, direct, rtol=2e-14, atol=1e-30)
 
 
@@ -64,7 +64,7 @@ def test_rejects_non_symmetric_axial_grid():
     z_grid = z_grid.copy()
     z_grid[-1, :] = 0.5
     with pytest.raises(ValueError, match="axis-reflection-symmetric"):
-        scientific_operator(r_grid, z_grid)
+        scientific_function(r_grid, z_grid)
 
 
 def test_reviewed_relation_example():

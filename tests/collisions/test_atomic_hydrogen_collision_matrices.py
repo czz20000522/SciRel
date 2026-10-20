@@ -1,11 +1,11 @@
 # 测试结果：本文件由包级定向测试执行确认。
 # 工作目录：当前算子或任务图包目录。
-# 命令：python -m pytest -q -p no:cacheprovider test_scientific_operator.py。
+# 命令：python -m pytest -q -p no:cacheprovider test_scientific_function.py。
 # 环境变量：PYTHONDONTWRITEBYTECODE=1。
 # 结果：以本次固定 asset_runtime pytest 输出为准。
 # 对照依据：独立公式、不变量、边界行为或源码派生 fixture。
 # 源码对照状态：source_unavailable: source runtime is isolated。
-# 证据来源：test_scientific_operator.py 的断言与同包 scientific_operator.py。
+# 证据来源：test_scientific_function.py 的断言与同包 scientific_function.py。
 # 数值差异：以测试断言中的指标和容差为准。
 # 运行环境：固定 asset_runtime（Python、NumPy/SciPy；无源码挂载）。
 

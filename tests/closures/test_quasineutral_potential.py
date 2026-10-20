@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.closures.quasineutral_potential import solve_quasineutral_potential, solve_quasineutral_potential as scientific_operator
+from scirel.closures.quasineutral_potential import solve_quasineutral_potential, solve_quasineutral_potential as scientific_function
 
 ELEMENTARY_CHARGE = 1.602176634e-19
 
@@ -10,7 +10,7 @@ def test_monotone_log_charge_residual_reaches_known_root():
     def residual(potential):
         return {"logarithmic_charge_residual": 0.5 - np.asarray(potential)}
 
-    result = scientific_operator(
+    result = scientific_function(
         0.0,
         2.0 * ELEMENTARY_CHARGE,
         1.0 * ELEMENTARY_CHARGE,
@@ -25,7 +25,7 @@ def test_monotone_log_charge_residual_reaches_known_root():
 
 
 def test_inactive_surface_returns_reference_potential():
-    result = scientific_operator(17.0, 2.0, 1.0, 1.0, np.array([False]), lambda p: {"logarithmic_charge_residual": np.ones_like(p)})
+    result = scientific_function(17.0, 2.0, 1.0, 1.0, np.array([False]), lambda p: {"logarithmic_charge_residual": np.ones_like(p)})
     assert result["potential_v"].item() == 17.0
     assert result["converged"]
 
@@ -38,7 +38,7 @@ def test_all_inactive_surfaces_still_evaluate_the_returned_residual_once():
         return {"logarithmic_charge_residual": 0.5 - np.asarray(potential)}
 
     reference = np.array([17.0, 99.0])
-    result = scientific_operator(
+    result = scientific_function(
         reference, ELEMENTARY_CHARGE, ELEMENTARY_CHARGE,
         ELEMENTARY_CHARGE, [False, False], residual,
     )
@@ -53,7 +53,7 @@ def test_all_inactive_surfaces_still_evaluate_the_returned_residual_once():
 
 def test_invalid_residual_contract_fails_closed():
     with pytest.raises(ValueError, match="logarithmic_charge_residual"):
-        scientific_operator(0.0, 2.0, 1.0, 1.0, np.array([True]), lambda _: {})
+        scientific_function(0.0, 2.0, 1.0, 1.0, np.array([True]), lambda _: {})
 
 
 def test_reviewed_relation_example():

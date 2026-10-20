@@ -1,13 +1,13 @@
 import numpy as np
 
-from scirel.kinetic.mirror_invariant_distribution import evaluate_mirror_invariant_distribution, evaluate_mirror_invariant_distribution as scientific_operator
+from scirel.kinetic.mirror_invariant_distribution import evaluate_mirror_invariant_distribution, evaluate_mirror_invariant_distribution as scientific_function
 
 
 E, M = 1.602176634e-19, 1.67262192595e-27
 
 
 def _call(vpar, vperp, B, phi):
-    return scientific_operator(vpar, vperp, B, 0.0, phi, M, E, 2e18, 1200*E, 2400*E, 1.0)
+    return scientific_function(vpar, vperp, B, 0.0, phi, M, E, 2e18, 1200*E, 2400*E, 1.0)
 
 
 def test_distribution_is_invariant_at_equal_energy_and_magnetic_moment():
@@ -20,21 +20,21 @@ def test_distribution_is_invariant_at_equal_energy_and_magnetic_moment():
 
 
 def test_loss_cone_marks_unconfined_particle_with_refill():
-    result = scientific_operator(2e6, 1e5, 1., 0., 0., M, E, 2e18, 1200*E, 2400*E, 1., b_plug_left_t=4., b_plug_right_t=5., phi_plug_left_v=800., phi_plug_right_v=1000., loss_cone_refill=.1)
+    result = scientific_function(2e6, 1e5, 1., 0., 0., M, E, 2e18, 1200*E, 2400*E, 1., b_plug_left_t=4., b_plug_right_t=5., phi_plug_left_v=800., phi_plug_right_v=1000., loss_cone_refill=.1)
     assert result['occupation'] in {0.1, 1.0}
 
 
 def test_plugged_default_is_the_source_empty_loss_cone_default():
     kwargs = dict(b_plug_left_t=4., b_plug_right_t=5., phi_plug_left_v=800., phi_plug_right_v=1000.)
-    default = scientific_operator(2e6, 1e5, 1., 0., 0., M, E, 2e18, 1200*E, 2400*E, 1., **kwargs)
-    explicit = scientific_operator(2e6, 1e5, 1., 0., 0., M, E, 2e18, 1200*E, 2400*E, 1., loss_cone_refill=0., **kwargs)
+    default = scientific_function(2e6, 1e5, 1., 0., 0., M, E, 2e18, 1200*E, 2400*E, 1., **kwargs)
+    explicit = scientific_function(2e6, 1e5, 1., 0., 0., M, E, 2e18, 1200*E, 2400*E, 1., loss_cone_refill=0., **kwargs)
     assert default['occupation'] == explicit['occupation'] == 0.0
 
 
 def test_reference_profiles_are_evaluated_at_psi():
     psi = np.array([0., .5])
-    profiled = scientific_operator(np.ones(2), np.ones(2), np.ones(2), psi, 0., M, E, lambda x: 2e18*(1+x), 1200*E, 2400*E, 1.)
-    explicit = scientific_operator(np.ones(2), np.ones(2), np.ones(2), psi, 0., M, E, 2e18*(1+psi), 1200*E, 2400*E, 1.)
+    profiled = scientific_function(np.ones(2), np.ones(2), np.ones(2), psi, 0., M, E, lambda x: 2e18*(1+x), 1200*E, 2400*E, 1.)
+    explicit = scientific_function(np.ones(2), np.ones(2), np.ones(2), psi, 0., M, E, 2e18*(1+psi), 1200*E, 2400*E, 1.)
     np.testing.assert_allclose(profiled['f0_s3_m6'], explicit['f0_s3_m6'])
 
 
@@ -120,6 +120,6 @@ def test_review_gate_rejects_nonfinite_mass_and_charge():
         temperature_perpendicular_ref_j=2400.0 * E, b_ref_t=1.0,
     )
     with pytest.raises(ValueError, match="mass_kg"):
-        scientific_operator(**{**base, "mass_kg": np.nan})
+        scientific_function(**{**base, "mass_kg": np.nan})
     with pytest.raises(ValueError, match="charge_c"):
-        scientific_operator(**{**base, "charge_c": np.nan})
+        scientific_function(**{**base, "charge_c": np.nan})

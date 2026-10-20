@@ -34,7 +34,7 @@ def _charge_state(charge_c):
         raise ValueError('charge_c must produce a finite positive ion charge state')
     return value
 
-def run_graph(inputs, *, asset_loader):
+def run_composition(inputs, *, asset_loader):
     """Solve local quasineutrality by repeated calls to the emitted moment leaf."""
     if not isinstance(inputs, dict):
         raise ValueError('inputs must be a mapping')
@@ -115,7 +115,7 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
         catalog contract; keyword arguments are merged at the composition
         boundary.
     **kwargs
-        Named inputs merged with ``inputs`` by the TaskGraph composition
+        Named inputs merged with ``inputs`` by the composition
         boundary.
 
     Returns
@@ -140,5 +140,5 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
     from scirel.closures.quasineutral_reference_density import compute_reference_electron_density as _dependency_2
     from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments as _dependency_3
     from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure as _dependency_4
-    return compose(run_graph, inputs, kwargs, {'asset_loader': {'scirel.closures.boltzmann_quasineutrality': _dependency_0, 'scirel.closures.quasineutral_potential': _dependency_1, 'scirel.closures.quasineutral_reference_density': _dependency_2, 'scirel.kinetic.mirror_constrained_moments': _dependency_3, 'scirel.kinetic.mirror_total_pressure': _dependency_4}})
+    return compose(run_composition, inputs, kwargs, {'asset_loader': {'scirel.closures.boltzmann_quasineutrality': _dependency_0, 'scirel.closures.quasineutral_potential': _dependency_1, 'scirel.closures.quasineutral_reference_density': _dependency_2, 'scirel.kinetic.mirror_constrained_moments': _dependency_3, 'scirel.kinetic.mirror_total_pressure': _dependency_4}})
 __all__ = ['solve_mirror_quasineutral_closure']

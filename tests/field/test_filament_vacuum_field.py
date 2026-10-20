@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.field.filament_vacuum_field import integrate_filament_vacuum_field, integrate_filament_vacuum_field as scientific_operator
+from scirel.field.filament_vacuum_field import integrate_filament_vacuum_field, integrate_filament_vacuum_field as scientific_function
 from scirel.field.circular_filament_green import circular_filament_green_response
 
 
@@ -11,9 +11,9 @@ def _grid():
 
 def test_superposition_and_axis_boundary():
     r_grid, z_grid = _grid()
-    left = scientific_operator(r_grid, z_grid, np.array([[0.45, -0.1, 1500.0]]))
-    right = scientific_operator(r_grid, z_grid, np.array([[0.55, 0.15, -800.0]]))
-    combined = scientific_operator(r_grid, z_grid, np.array([[0.45, -0.1, 1500.0], [0.55, 0.15, -800.0]]))
+    left = scientific_function(r_grid, z_grid, np.array([[0.45, -0.1, 1500.0]]))
+    right = scientific_function(r_grid, z_grid, np.array([[0.55, 0.15, -800.0]]))
+    combined = scientific_function(r_grid, z_grid, np.array([[0.45, -0.1, 1500.0], [0.55, 0.15, -800.0]]))
     for name in ("psi", "b_r", "b_z"):
         np.testing.assert_allclose(combined[name], left[name] + right[name], rtol=2.0e-14, atol=1.0e-300)
     np.testing.assert_allclose(combined["b_r"][:, 0], 0.0, atol=0.0)
@@ -23,7 +23,7 @@ def test_superposition_and_axis_boundary():
 def test_axis_field_matches_circular_filament_analytic_limit():
     r_grid, z_grid = _grid()
     source_r, source_z, current_a = 0.45, -0.10, 1500.0
-    result = scientific_operator(r_grid, z_grid, np.array([[source_r, source_z, current_a]]))
+    result = scientific_function(r_grid, z_grid, np.array([[source_r, source_z, current_a]]))
     z_axis = z_grid[:, 0]
     expected_b_z = (
         4.0
@@ -40,7 +40,7 @@ def test_radial_flux_matches_psi_ra_phi_with_first_radius_reference():
     radial = np.linspace(0.0, 0.3, 301)
     r_grid, z_grid = np.meshgrid(radial, [-0.12, 0.08])
     source_r, source_z, current_a = 0.45, -0.02, 1200.0
-    result = scientific_operator(r_grid, z_grid, [[source_r, source_z, current_a]])
+    result = scientific_function(r_grid, z_grid, [[source_r, source_z, current_a]])
     point_green = circular_filament_green_response(
         [[source_r, source_z, 1.0]],
         np.column_stack((r_grid.ravel(), z_grid.ravel())),
@@ -54,7 +54,7 @@ def test_radial_flux_preserves_left_to_right_trapezoid_recurrence(transpose):
     r_grid, z_grid = _grid()
     if transpose:
         r_grid, z_grid = r_grid.T, z_grid.T
-    result = scientific_operator(r_grid, z_grid, [[0.45, -0.02, 1200.0]])
+    result = scientific_function(r_grid, z_grid, [[0.45, -0.02, 1200.0]])
     axis = 1 if r_grid.shape[1] > r_grid.shape[0] else 0
     radial = r_grid[0, :] if axis == 1 else r_grid[:, 0]
     spacing = float(radial[1] - radial[0])
@@ -76,7 +76,7 @@ def test_radial_flux_preserves_left_to_right_trapezoid_recurrence(transpose):
 
 def test_accepts_transposed_rectilinear_layout():
     r_grid, z_grid = _grid()
-    result = scientific_operator(r_grid.T, z_grid.T, np.array([[0.45, 0.0, 1000.0]]))
+    result = scientific_function(r_grid.T, z_grid.T, np.array([[0.45, 0.0, 1000.0]]))
     assert result["psi"].shape == r_grid.T.shape
     assert np.all(np.isfinite(result["b_z"]))
 
@@ -86,7 +86,7 @@ def test_rejects_non_rectilinear_radial_grid():
     r_grid = r_grid.copy()
     r_grid[1, 2] += 0.01
     with pytest.raises(ValueError, match="rectilinear radial"):
-        scientific_operator(r_grid, z_grid, np.array([[0.45, 0.0, 1000.0]]))
+        scientific_function(r_grid, z_grid, np.array([[0.45, 0.0, 1000.0]]))
 
 
 def test_reviewed_relation_example():

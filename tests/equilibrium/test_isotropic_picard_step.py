@@ -1,7 +1,7 @@
 import pytest
-from scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step, pressure_flux_picard_step as scientific_operator
+from scirel.equilibrium.isotropic_picard_step import pressure_flux_picard_step, pressure_flux_picard_step as scientific_function
 def test_rejects_incomplete_picard_state():
-    with pytest.raises((KeyError,ValueError,TypeError)): scientific_operator({})
+    with pytest.raises((KeyError,ValueError,TypeError)): scientific_function({})
 
 
 def test_reviewed_relation_example():

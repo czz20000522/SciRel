@@ -1,13 +1,13 @@
 import numpy as np
 
-from scirel.field.circular_filament_green import circular_filament_green_response, circular_filament_green_response as scientific_operator
+from scirel.field.circular_filament_green import circular_filament_green_response, circular_filament_green_response as scientific_function
 
 
 # 验证：轴上的 source filament 必须依源码约定跳过，且不污染其他有限响应。
 def test_skips_axis_filament_and_returns_finite_response():
     points = np.array([[0.2, -0.1], [0.3, 0.0], [0.4, 0.1]])
-    result = scientific_operator(np.array([[0.0, 0.0, 9.0], [0.25, 0.0, 1.0]]), points)
-    reference = scientific_operator(np.array([[0.25, 0.0, 1.0]]), points)
+    result = scientific_function(np.array([[0.0, 0.0, 9.0], [0.25, 0.0, 1.0]]), points)
+    reference = scientific_function(np.array([[0.25, 0.0, 1.0]]), points)
     for key in ("gpsi", "gBR", "gBZ"):
         assert result[key].shape == (3,)
         assert np.all(np.isfinite(result[key]))
@@ -17,9 +17,9 @@ def test_skips_axis_filament_and_returns_finite_response():
 # 验证：线性 Green 响应必须满足独立电流丝贡献的加和。
 def test_weighted_filament_response_is_linear():
     points = np.array([[0.2, -0.1], [0.3, 0.1]])
-    left = scientific_operator(np.array([[0.25, 0.0, 2.0]]), points)
-    right = scientific_operator(np.array([[0.35, 0.05, -0.5]]), points)
-    total = scientific_operator(np.array([[0.25, 0.0, 2.0], [0.35, 0.05, -0.5]]), points)
+    left = scientific_function(np.array([[0.25, 0.0, 2.0]]), points)
+    right = scientific_function(np.array([[0.35, 0.05, -0.5]]), points)
+    total = scientific_function(np.array([[0.25, 0.0, 2.0], [0.35, 0.05, -0.5]]), points)
     for key in ("gpsi", "gBR", "gBZ"):
         assert np.allclose(total[key], left[key] + right[key])
 

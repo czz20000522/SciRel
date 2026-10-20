@@ -238,7 +238,7 @@
    "Public distribution licensing remains pending a human decision."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "cylindrical_coordinates",
@@ -256,7 +256,7 @@
    },
    {
     "id": "equilibrium_grid_mapping",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
     "description": "Reconstruct the static field and poloidal flux on the solver grid and report coverage and clamping.",
     "inputs": [
@@ -287,7 +287,7 @@
    },
    {
     "id": "material_support_classification",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.geometry.material-support-classification",
     "description": "Classify material support from the reconstructed flux, the grid coordinates, and the caller's frame and conductor declarations.",
     "inputs": [

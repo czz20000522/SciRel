@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import pytest
 
-from scirel.equilibrium.pressure_flux_state import build_pressure_flux_state, build_pressure_flux_state as scientific_operator
+from scirel.equilibrium.pressure_flux_state import build_pressure_flux_state, build_pressure_flux_state as scientific_function
 
 
 def _case(**overrides):
@@ -25,7 +25,7 @@ def _case(**overrides):
 
 
 def test_builds_pressure_flux_state_from_exact_midplane():
-    result = scientific_operator(**_case())
+    result = scientific_function(**_case())
 
     assert result["limiter_index"] == 3
     np.testing.assert_allclose(result["psi_edge"], 0.8)
@@ -38,7 +38,7 @@ def test_builds_pressure_flux_state_from_exact_midplane():
 def test_masked_cells_have_no_pressure_driven_derivative():
     mask = np.zeros((3, 4), dtype=bool)
     mask[1, 2] = True
-    result = scientific_operator(**_case(plasma_mask=mask))
+    result = scientific_function(**_case(plasma_mask=mask))
 
     assert result["pressure_derivative"][6] == 0.0
     np.testing.assert_allclose(
@@ -50,11 +50,11 @@ def test_masked_cells_have_no_pressure_driven_derivative():
 def test_requires_exact_midplane_and_zero_pressure_boundary():
     values = _case(z_grid=np.full((3, 4), 0.1))
     with pytest.raises(ValueError, match="z_grid must contain exactly one complete zero midplane row"):
-        scientific_operator(**values)
+        scientific_function(**values)
 
     values = _case(pressure_of_radius=lambda radius: 1.0)
     with pytest.raises(ValueError, match="pressure boundary"):
-        scientific_operator(**values)
+        scientific_function(**values)
 
 
 def test_reviewed_relation_example():

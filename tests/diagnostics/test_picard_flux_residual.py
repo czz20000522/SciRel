@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.diagnostics.picard_flux_residual import compute_picard_flux_residual, compute_picard_flux_residual as scientific_operator
+from scirel.diagnostics.picard_flux_residual import compute_picard_flux_residual, compute_picard_flux_residual as scientific_function
 
 
 @pytest.mark.parametrize("previous,following,expected", [
@@ -22,19 +22,19 @@ def test_unrepresentable_residual_is_rejected():
 
 
 def test_returns_zero_for_unchanged_flux():
-    assert scientific_operator([[1.0]], [[1.0]])["residual"] == 0.0
+    assert scientific_function([[1.0]], [[1.0]])["residual"] == 0.0
 
 
 def test_returns_l2_relative_change():
-    result = scientific_operator([[3.0, 4.0]], [[6.0, 8.0]])
+    result = scientific_function([[3.0, 4.0]], [[6.0, 8.0]])
     assert np.isclose(result["residual"], 1.0)
 
 
 def test_rejects_mismatched_or_nonfinite_flux_states():
     with pytest.raises(ValueError, match="same-shape two-dimensional"):
-        scientific_operator([[1.0, 2.0]], [[1.0], [2.0]])
+        scientific_function([[1.0, 2.0]], [[1.0], [2.0]])
     with pytest.raises(ValueError, match="only finite values"):
-        scientific_operator([[1.0]], [[np.nan]])
+        scientific_function([[1.0]], [[np.nan]])
 
 
 def test_reviewed_relation_example():

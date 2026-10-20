@@ -134,7 +134,7 @@
 
    currents = np.full(len(points), 1000.0 / len(points))      # total 1000 A
    field = superpose_current_green_field(
-       currents, g["gpsi"].T, g["gBR"].T, g["gBZ"].T
+       currents, g["gpsi"], g["gBR"], g["gBZ"]
    )
    print("matrix shape:", g["gBZ"].shape)
    print("BZ 9-filament (T):", np.array2string(field["BZ"], precision=9))
@@ -150,7 +150,7 @@
    BZ 9-filament (T): [0.001811259 0.001774477 0.000330107]
    BZ single loop (T): [0.001800094 0.001795196 0.000322018]
 
-这里有一个必须注意的轴顺序：``dense_axisymmetric_green_response`` 返回的是 ``(target, source)`` 矩阵，而 ``superpose_current_green_field`` 要求第一个轴是源。所以代码显式写了 ``g["gBZ"].T``。如果矩阵是方阵，忘记转置可能不会报错，却会静默地按错误的轴收缩；这是比形状错误更危险的情形。
+``dense_axisymmetric_green_response`` 返回 ``(target, source)`` 矩阵，``superpose_current_green_field`` 使用同一个方向合同：第一轴是目标、第二轴是源，沿源列与电流向量收缩，输出保持目标顺序。因此这里不需要转置。若矩阵是方阵，目标轴与源轴长度相同，误把源放在第一轴不会报错，却会静默地按错误轴收缩；调用时始终按 target-row/source-column 解释矩阵。
 
 把电流摊到 ``R=0.29..0.41``、``Z=-0.06..0.06`` 后，轴上 ``B_Z`` 从 ``1.7952e-3 T`` 变成 ``1.7745e-3 T``，低约 1.2%；``(0.20,-0.10)`` 处高约 0.6%；``(0.35,0.30)`` 处高约 2.5%。这些差异不是“修正量”，而是两个不同的源模型：单环把所有电流放在一条丝上，丝束把同样的总电流摊开。
 
@@ -386,7 +386,7 @@
 
 - 只想要一个圆环或一小组加权丝在点上的响应：:doc:`../reference/generated/scirel.field.circular-filament-green`。
 - 想直接拿 ``compute_greens`` 的三元组响应（目标与正半径源完全重合时会抛错）：:doc:`../reference/generated/scirel.electromagnetism.circular-filament-green`。
-- 已经有丝位置和电流，想按源轴做矩阵收缩：:doc:`../reference/generated/scirel.field.current-green-superposition`；需要显式矩阵时用 :doc:`../reference/generated/scirel.field.dense-axisymmetric-green`。
+- 已经有丝位置和电流，想按源列做矩阵收缩：:doc:`../reference/generated/scirel.field.current-green-superposition`；需要显式矩阵时用 :doc:`../reference/generated/scirel.field.dense-axisymmetric-green`。
 - 只想把矩形截面变成有序点：:doc:`../reference/generated/scirel.field.rectangular-coil-filaments`；需要带电流和网格的源对象时用 :doc:`../reference/generated/scirel.electromagnetism.rectangular-coil`。
 - 想直接给一组矩形线圈记录并一次得到网格场：:doc:`../reference/generated/scirel.field.multi-coil-vacuum-field`。
 - 想按名字注册多个子源、共享网格并整体覆盖电流：:doc:`../reference/generated/scirel.electromagnetism.device`；任意点源用 :doc:`../reference/generated/scirel.electromagnetism.arbitrary-points`。
@@ -403,7 +403,7 @@
 
 - **单位**：``R,Z`` 用米。若把厘米当米传，场和磁通会差几个量级，而且不会报错。
 - **总电流与每丝电流**：``current`` 是每根丝（或每个子源）的电流；``weights`` 是无量纲权重。先决定总电流怎么分，再传电流。把总电流同时传给每根丝会放大总电流。
-- **轴顺序**：``dense_axisymmetric_green_response`` 和 ``green_response_matrices`` 是 ``(target, source)``；``superpose_current_green_field`` 要求源轴在前。方阵时忘记转置不会报错。
+- **轴顺序**：``dense_axisymmetric_green_response`` 和 ``green_response_matrices`` 都是 ``(target, source)``；``superpose_current_green_field`` 按第二轴（源列）与电流收缩并保留目标行。不要转置响应矩阵。
 - **零对角元**：``get_gpsi`` 和聚合入口的零自项是离散约定，不是有限导体的自感。不要用它算电感或近丝场。
 - **重合点**：``compute_greens`` 在目标与正半径源完全重合时抛 ``ValueError``；``circular_filament_green_response`` 把这种点当作零自项跳过。两者不是同一个失败约定。
 - **磁通零点**：直接 Green ``psi`` 与径向积分 ``psi`` 的参考点不同；先对齐零点，再比较。

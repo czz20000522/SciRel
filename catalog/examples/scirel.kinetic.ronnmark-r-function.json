@@ -46,12 +46,12 @@
  "outputs": [
   {
    "name": "R",
-   "description": "R(x,lambda)=RC(1,1)，即 Ronnmark 的 R 函数值。复数标量。单位：无量纲。有效性约束：在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_operator` 在该点仍返回有限值。",
+   "description": "R(x,lambda)=RC(1,1)，即 Ronnmark 的 R 函数值。复数标量。单位：无量纲。有效性约束：在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_function` 在该点仍返回有限值。",
    "units": "无量纲",
    "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_operator` 在该点仍返回有限值。"
+   "constraints": "在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_function` 在该点仍返回有限值。"
   },
   {
    "name": "dR_dlambda",

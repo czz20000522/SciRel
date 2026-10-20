@@ -19,12 +19,12 @@ def _target_points(r_grid, z_grid):
     return np.column_stack((r_grid.ravel(), z_grid.ravel()))
 
 
-def _stack_response_rows(responses):
-    """Turn one response mapping per coil into source-axis matrices."""
-    return {name: np.asarray([item[name] for item in responses]) for name in ("gpsi", "gBR", "gBZ")}
+def _stack_response_columns(responses):
+    """Turn one target-ordered response mapping per coil into source columns."""
+    return {name: np.column_stack([item[name] for item in responses]) for name in ("gpsi", "gBR", "gBZ")}
 
 
-def run_graph(inputs, *, asset_loader):
+def run_composition(inputs, *, asset_loader):
     """Expand coil records, evaluate local Green blocks, then contract currents."""
     if not isinstance(inputs, dict):
         raise ValueError("r_grid, z_grid, and rectangular_coils are required")
@@ -64,7 +64,7 @@ def run_graph(inputs, *, asset_loader):
     target_points = _target_points(r_grid, z_grid)
     green = asset_loader("scirel.field.circular_filament_green")
     responses = [green(block, target_points) for block in source_blocks]
-    stacked = _stack_response_rows(responses)
+    stacked = _stack_response_columns(responses)
     superpose = asset_loader("scirel.field.current_green_superposition")
     combined = superpose(np.asarray(currents), stacked["gpsi"], stacked["gBR"], stacked["gBZ"])
     return {
@@ -87,7 +87,7 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     from scirel.field.current_green_superposition import superpose_current_green_field
     from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
 
-    return compose(run_graph, inputs, kwargs, {"asset_loader": {
+    return compose(run_composition, inputs, kwargs, {"asset_loader": {
         "scirel.field.circular_filament_green": circular_filament_green_response,
         "scirel.field.current_green_superposition": superpose_current_green_field,
         "scirel.field.rectangular_coil_filaments": discretize_rectangular_coil,

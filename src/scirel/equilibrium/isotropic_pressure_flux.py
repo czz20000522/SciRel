@@ -1,4 +1,4 @@
-"""Task-graph boundary for the pressure-only equilibrium feedback solve."""
+"""Composition boundary for the pressure-only equilibrium feedback solve."""
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -19,8 +19,8 @@ def _required_inputs(inputs):
         raise ValueError(f"{missing[0]} is required")
 
 
-def run_graph(inputs):
-    """Validate graph ports and package the shared solver's terminal state."""
+def run_composition(inputs):
+    """Validate composition ports and package the shared solver's terminal state."""
     if not isinstance(inputs, Mapping):
         raise ValueError("inputs must be a mapping")
     _required_inputs(inputs)
@@ -95,4 +95,4 @@ def solve_isotropic_pressure_flux(inputs=None, **kwargs):
         raise ValueError("inputs must be a mapping")
     values = {} if inputs is None else dict(inputs)
     values.update(kwargs)
-    return run_graph(values)
+    return run_composition(values)

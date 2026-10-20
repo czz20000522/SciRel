@@ -158,7 +158,7 @@
    "Public distribution licensing remains pending a human decision."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "coil_iteration",
@@ -181,7 +181,7 @@
    },
    {
     "id": "rectangular_geometry",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.field.rectangular-coil-filaments",
     "description": "Discretize one rectangular coil section.",
     "inputs": [
@@ -225,7 +225,7 @@
    },
    {
     "id": "green_response",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.field.circular-filament-green",
     "description": "Evaluate one Green response row for the current coil block.",
     "inputs": [
@@ -257,7 +257,7 @@
    },
    {
     "id": "superposition",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.field.current-green-superposition",
     "description": "Contract coil currents with the stacked response rows.",
     "inputs": [

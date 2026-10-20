@@ -14,7 +14,7 @@ def _asset_loader(asset_ref):
     return _load_asset(asset_ref)
 
 def _run(inputs):
-    return composition.run_graph(inputs, asset_loader=_asset_loader)
+    return composition.run_composition(inputs, asset_loader=_asset_loader)
 
 
 def test_public_callable_documents_the_catalog_contract():

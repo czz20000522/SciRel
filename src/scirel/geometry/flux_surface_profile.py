@@ -33,4 +33,4 @@ def evaluate_flux_surface_profile(*, psi_samples, values, target, left=None, rig
     }
 
 
-scientific_operator = evaluate_flux_surface_profile
+scientific_function = evaluate_flux_surface_profile

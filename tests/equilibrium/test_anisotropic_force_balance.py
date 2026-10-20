@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.equilibrium.anisotropic_force_balance import _source_hypot, compute_anisotropic_force_balance, compute_anisotropic_force_balance as scientific_operator
+from scirel.equilibrium.anisotropic_force_balance import _source_hypot, compute_anisotropic_force_balance, compute_anisotropic_force_balance as scientific_function
 
 
 def _grid():
@@ -10,7 +10,7 @@ def _grid():
 
 def test_constant_isotropic_pressure_has_zero_force_and_current():
     r_grid, z_grid = _grid()
-    result = scientific_operator(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), np.full_like(r_grid, 2.0), np.full_like(r_grid, 2.0))
+    result = scientific_function(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), np.full_like(r_grid, 2.0), np.full_like(r_grid, 2.0))
     for name in ("force_R", "force_Z", "parallel_force", "J_phi"):
         np.testing.assert_allclose(result[name], 0.0, atol=1.0e-12)
     np.testing.assert_allclose(result["firehose_margin"], 1.0)
@@ -19,11 +19,11 @@ def test_constant_isotropic_pressure_has_zero_force_and_current():
 
 def test_axis_rule_and_mask_shape_are_enforced():
     r_grid, z_grid = _grid()
-    result = scientific_operator(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2)
+    result = scientific_function(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2)
     np.testing.assert_allclose(result["force_R"][:, 0], 0.0)
     np.testing.assert_allclose(result["J_phi"][:, 0], 0.0)
     with pytest.raises(ValueError, match="active_mask"):
-        scientific_operator(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2, np.ones((2, 2), dtype=bool))
+        scientific_function(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2, np.ones((2, 2), dtype=bool))
 
 
 def test_mask_affects_diagnostic_only_and_invalid_fields_fail():
@@ -31,16 +31,16 @@ def test_mask_affects_diagnostic_only_and_invalid_fields_fail():
     br = np.zeros_like(r_grid)
     bz = np.ones_like(r_grid)
     pressure = 2.0 + z_grid
-    all_cells = scientific_operator(r_grid, z_grid, br, bz, pressure, pressure)
-    no_cells = scientific_operator(r_grid, z_grid, br, bz, pressure, pressure, active_mask=np.zeros_like(r_grid, dtype=bool))
+    all_cells = scientific_function(r_grid, z_grid, br, bz, pressure, pressure)
+    no_cells = scientific_function(r_grid, z_grid, br, bz, pressure, pressure, active_mask=np.zeros_like(r_grid, dtype=bool))
     np.testing.assert_array_equal(no_cells["J_phi"], all_cells["J_phi"])
     assert no_cells["parallel_force_error"] == 0.0
     assert all_cells["parallel_force_error"] > 0.0
 
     with pytest.raises(ValueError, match="grid axes and pressures"):
-        scientific_operator(r_grid, z_grid, br, bz, -pressure, pressure)
+        scientific_function(r_grid, z_grid, br, bz, -pressure, pressure)
     with pytest.raises(ValueError, match="finite same-shape"):
-        scientific_operator(r_grid, z_grid, br, np.full_like(bz, np.nan), pressure, pressure)
+        scientific_function(r_grid, z_grid, br, np.full_like(bz, np.nan), pressure, pressure)
 
 
 def test_source_hypot_preserves_finite_subnormal_and_large_results():

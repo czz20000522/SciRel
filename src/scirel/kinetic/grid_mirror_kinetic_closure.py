@@ -26,7 +26,7 @@ def _confine_rows(value, left_index, right_index):
     result[right_index:][1:] = 0.0
     return result
 
-def run_graph(inputs, *, asset_loader, task_graph_loader):
+def run_composition(inputs, *, asset_loader, composition_loader):
     """Map reference/plug planes into a local nested kinetic closure.
 
     Endpoint current_balance_solved flags distinguish prescribed evaluation
@@ -86,7 +86,7 @@ def run_graph(inputs, *, asset_loader, task_graph_loader):
         raise RuntimeError('endpoint current balance has not been solved')
     phi_left = profile(psi_samples=psi_reference, values=left['potential_v'], target=psi)['values']
     phi_right = profile(psi_samples=psi_reference, values=right['potential_v'], target=psi)['values']
-    ambipolar = task_graph_loader('scirel.closures.graphs.mirror_quasineutral_closure')
+    ambipolar = composition_loader('scirel.closures.compositions.mirror_quasineutral_closure')
     raw_quadrature_order = inputs.get('quadrature_order', 32)
     if isinstance(raw_quadrature_order, (bool, np.bool_)) or not isinstance(raw_quadrature_order, (int, np.integer)) or raw_quadrature_order < 8:
         raise ValueError('quadrature_order must be an integer scalar >= 8')
@@ -119,7 +119,7 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
         potentials, ``plug_potential_mode``, refill fractions,
         ``quadrature_order``, endpoint tolerances and ``max_iterations``.
     **kwargs
-        Composition overrides passed to the public graph boundary.
+        Composition overrides passed to the public composition boundary.
 
     Returns
     -------
@@ -144,12 +144,12 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
         If an ``ambipolar_end_loss`` endpoint does not return both a converged
         state and ``current_balance_solved``.
     Exception
-        Profile, endpoint and nested graph exceptions propagate unchanged.
+        Profile, endpoint and nested composition exceptions propagate unchanged.
 
     Notes
     -----
     ``R`` and ``Z`` use ``[Z, R]`` array order.  ``psi`` is a caller-owned flux
-    coordinate and is not rescaled or converted by this graph.  The local
+    coordinate and is not rescaled or converted by this composition.  The local
     quasineutral convergence flag and the two endpoint current-balance flags
     describe separate calculations; neither establishes a self-consistent
     magnetic equilibrium.
@@ -159,5 +159,5 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
     from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential as _dependency_0
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile as _dependency_1
     from scirel.closures.mirror_quasineutral_closure import solve_mirror_quasineutral_closure as _dependency_2
-    return compose(run_graph, inputs, kwargs, {'asset_loader': {'scirel.closures.mirror_ambipolar_potential': _dependency_0, 'scirel.geometry.flux_surface_profile': _dependency_1}, 'task_graph_loader': {'scirel.closures.graphs.mirror_quasineutral_closure': _dependency_2}})
+    return compose(run_composition, inputs, kwargs, {'asset_loader': {'scirel.closures.mirror_ambipolar_potential': _dependency_0, 'scirel.geometry.flux_surface_profile': _dependency_1}, 'composition_loader': {'scirel.closures.compositions.mirror_quasineutral_closure': _dependency_2}})
 __all__ = ['solve_grid_mirror_kinetic_closure']

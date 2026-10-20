@@ -172,11 +172,14 @@
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
  },
- "graph": {
+ "references": [
+  "https://arxiv.org/html/2509.17288v4"
+ ],
+ "composition": {
   "nodes": [
    {
     "id": "radial_profile",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
     "description": "Evaluate the clipped flux-envelope array; runtime asset_loader uses the underscored identity.",
     "inputs": [
@@ -189,7 +192,7 @@
    },
    {
     "id": "loss_cone_spectrum_port",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.loss-cone-spectrum",
     "description": "Bind the public spectrum callable for source projection; its numerical invocation occurs only when legendre_degrees is absent.",
     "inputs": [],
@@ -199,7 +202,7 @@
    },
    {
     "id": "source_mode_projection",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.frank-egedal-source-projection",
     "description": "Select or generate Legendre degrees and source coefficients, retaining source and backend metadata.",
     "inputs": [
@@ -218,7 +221,7 @@
    },
    {
     "id": "hot_ion_moments",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
     "description": "Evaluate field-dependent hot moments and normalize them at b=1 using local quadrature.",
     "inputs": [
@@ -239,7 +242,7 @@
    },
    {
     "id": "pressure_assembly",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
     "description": "Apply caller scales and radial profile to hot moments and optional gas/electron contributions.",
     "inputs": [
@@ -758,8 +761,5 @@
    "failure_propagation": "Any leaf validation or numerical exception stops the call and propagates; no partial pressure mapping or fallback model is returned.",
    "feedback": []
   }
- },
- "references": [
-  "https://arxiv.org/html/2509.17288v4"
- ]
+ }
 }

@@ -6,7 +6,7 @@ from _review_bindings import load_asset as _load_asset, load_composition as _loa
 import numpy as np
 import pytest
 
-from scirel.field.multi_coil_vacuum_field import run_graph
+from scirel.field.multi_coil_vacuum_field import run_composition
 def _assets(asset_ref):
     return _load_asset(asset_ref)
 
@@ -28,8 +28,8 @@ def test_public_callable_documents_the_catalog_contract():
 
 
 def test_explicit_coil_current_scales_vacuum_field_linearly():
-    one = run_graph(_inputs(), asset_loader=_assets)
-    two = run_graph(_inputs(2000.0), asset_loader=_assets)
+    one = run_composition(_inputs(), asset_loader=_assets)
+    two = run_composition(_inputs(2000.0), asset_loader=_assets)
     for name in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(two[name], 2.0 * one[name], rtol=2.0e-14, atol=1.0e-300)
     assert one["filaments"].shape == (4, 3)
@@ -37,7 +37,7 @@ def test_explicit_coil_current_scales_vacuum_field_linearly():
 
 
 def test_current_is_one_set_drive_not_sum_divided_filament_current():
-    result = run_graph(_inputs(1000.0), asset_loader=_assets)
+    result = run_composition(_inputs(1000.0), asset_loader=_assets)
     geometry = _assets("scirel.field.rectangular_coil_filaments")
     green = _assets("scirel.field.circular_filament_green")
     points = geometry(0.45, 0.0, 2, 2, 0.04, 0.05, 0.0)
@@ -51,7 +51,7 @@ def test_rejects_missing_current_contract():
     values = _inputs()
     del values["rectangular_coils"][0]["current_a"]
     with pytest.raises(ValueError, match="current_a"):
-        run_graph(values, asset_loader=_assets)
+        run_composition(values, asset_loader=_assets)
 
 
 def test_review_gate_keeps_two_coil_source_blocks_and_currents_independent():
@@ -63,9 +63,9 @@ def test_review_gate_keeps_two_coil_source_blocks_and_currents_independent():
         "z_grid": first["z_grid"],
         "rectangular_coils": [first["rectangular_coils"][0], second["rectangular_coils"][0]],
     }
-    total = run_graph(combined, asset_loader=_assets)
-    one = run_graph(first, asset_loader=_assets)
-    two = run_graph(second, asset_loader=_assets)
+    total = run_composition(combined, asset_loader=_assets)
+    one = run_composition(first, asset_loader=_assets)
+    two = run_composition(second, asset_loader=_assets)
     for name in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(total[name], one[name] + two[name], rtol=2.0e-14, atol=1.0e-300)
     assert total["filaments"].shape == (8, 3)

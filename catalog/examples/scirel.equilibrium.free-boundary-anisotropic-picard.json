@@ -541,7 +541,7 @@
    "No expert scientific endorsement or public release follows from this numerical successor."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "initial_state",
@@ -579,7 +579,7 @@
    },
    {
     "id": "field",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.field.poloidal-field-magnitude",
     "description": "从当前 BR/BZ 求场强，在每次压力/电流求值前检查 minimum_field；初态另外求参考场中位数。",
     "inputs": [
@@ -605,7 +605,7 @@
    },
    {
     "id": "current_source",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
     "description": "Compute full, isotropic-comparison and difference current terms on the current field/pressure state.",
     "inputs": [
@@ -619,7 +619,7 @@
    },
    {
     "id": "current_feedback",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
     "description": "Clip current with the fixed mask, form and relax cell currents and project psi/BR/BZ through Green matrices.",
     "inputs": [
@@ -637,7 +637,7 @@
    },
    {
     "id": "wall_correction",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.field.ideal-conductor-boundary",
     "description": "When configured, solve the ideal-conductor linear boundary response for projected flux, then derive and add the field increment from that correction.",
     "inputs": [
@@ -666,7 +666,7 @@
    },
    {
     "id": "residual",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.diagnostics.picard-flux-residual",
     "description": "Measure relative psi change after optional wall correction.",
     "inputs": [

@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure, assemble_mirror_total_pressure as scientific_operator
+from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure, assemble_mirror_total_pressure as scientific_function
 
 
 def test_total_pressure_and_terminal_fields_are_assembled():
     ion = {"p_parallel_pa": [2.0, 3.0], "p_perpendicular_pa": [4.0, 5.0], "density_m3": [1.0, 2.0], "marker": "ion"}
     electron = {"electron_density_m3": [6.0, 7.0], "electron_pressure_pa": 1.5, "relative_charge_residual": [0.1, 0.2]}
-    result = scientific_operator(ion, electron)
+    result = scientific_function(ion, electron)
     np.testing.assert_allclose(result["p_parallel"], [3.5, 4.5])
     np.testing.assert_allclose(result["p_perpendicular"], [5.5, 6.5])
     assert result["kinetic_moments"] is ion
@@ -16,7 +16,7 @@ def test_total_pressure_and_terminal_fields_are_assembled():
 
 def test_missing_state_field_fails_closed():
     with pytest.raises(ValueError, match="missing required"):
-        scientific_operator({"p_parallel_pa": 1.0}, {"electron_pressure_pa": 1.0})
+        scientific_function({"p_parallel_pa": 1.0}, {"electron_pressure_pa": 1.0})
 
 
 def test_density_and_residual_are_unvalidated_pass_through_fields():
@@ -28,17 +28,17 @@ def test_density_and_residual_are_unvalidated_pass_through_fields():
 
     # Historical node ID: invalid physical species fields must fail closed.
     with pytest.raises(ValueError, match="ion density.*finite and nonnegative"):
-        scientific_operator(ion, electron)
+        scientific_function(ion, electron)
     ion["density_m3"] = np.array([1.0, 2.0])
     with pytest.raises(ValueError, match="electron density.*finite and nonnegative"):
-        scientific_operator(ion, electron)
+        scientific_function(ion, electron)
     electron["electron_density_m3"] = np.array([6.0, 7.0])
     with pytest.raises(ValueError, match="relative charge residual must be finite"):
-        scientific_operator(ion, electron)
+        scientific_function(ion, electron)
     # Finite nonzero residuals are observational fields, not neutrality proof.
     residual = np.array([.1, -.2])
     electron["relative_charge_residual"] = residual
-    result = scientific_operator(ion, electron)
+    result = scientific_function(ion, electron)
     assert result["relative_charge_residual"] is residual
     np.testing.assert_allclose(result["p_parallel"], [3.5, 4.5])
     np.testing.assert_allclose(result["p_perpendicular"], [5.5, 6.5])

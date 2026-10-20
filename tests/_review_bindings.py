@@ -46,17 +46,17 @@ _ASSETS = {
 }
 
 _COMPOSITIONS = {
-    'scirel.equilibrium.graphs.free_boundary_anisotropic_picard': ('scirel.equilibrium.free_boundary_anisotropic_picard', 'solve_free_boundary_anisotropic_picard'),
-    'scirel.equilibrium.graphs.isotropic_pressure_flux': ('scirel.equilibrium.isotropic_pressure_flux', 'solve_isotropic_pressure_flux'),
-    'scirel.diagnostics.graphs.equilibrium_synthesis_diagnostics': ('scirel.diagnostics.equilibrium_synthesis_diagnostics', 'synthesize_equilibrium_diagnostics'),
-    'scirel.closures.graphs.mirror_quasineutral_closure': ('scirel.closures.mirror_quasineutral_closure', 'solve_mirror_quasineutral_closure'),
-    'scirel.kinetic.graphs.grid_mirror_kinetic_closure': ('scirel.kinetic.grid_mirror_kinetic_closure', 'solve_grid_mirror_kinetic_closure'),
-    'scirel.equilibrium.graphs.axisymmetric_anisotropic_picard': ('scirel.equilibrium.axisymmetric_anisotropic_picard', 'solve_axisymmetric_anisotropic_picard'),
-    'scirel.inference.graphs.direct_anisotropic_inversion': ('scirel.inference.direct_anisotropic_inversion', 'solve_direct_anisotropic_inversion'),
-    'scirel.equilibrium.graphs.reduced_hall_anisotropic_picard': ('scirel.equilibrium.reduced_hall_anisotropic_picard', 'solve_reduced_hall_anisotropic_picard'),
-    'scirel.field.graphs.multi_coil_vacuum_field': ('scirel.field.multi_coil_vacuum_field', 'solve_multi_coil_vacuum_field'),
-    'scirel.kinetic.graphs.frank_egedal_pressure_closure': ('scirel.kinetic.frank_egedal_pressure_closure', 'solve_frank_egedal_pressure_closure'),
-    'scirel.equilibrium.graphs.kinetic_mirror_hall_equilibrium': ('scirel.equilibrium.kinetic_mirror_hall_equilibrium', 'solve_kinetic_mirror_hall_equilibrium'),
+    'scirel.equilibrium.compositions.free_boundary_anisotropic_picard': ('scirel.equilibrium.free_boundary_anisotropic_picard', 'solve_free_boundary_anisotropic_picard'),
+    'scirel.equilibrium.compositions.isotropic_pressure_flux': ('scirel.equilibrium.isotropic_pressure_flux', 'solve_isotropic_pressure_flux'),
+    'scirel.diagnostics.compositions.equilibrium_synthesis_diagnostics': ('scirel.diagnostics.equilibrium_synthesis_diagnostics', 'synthesize_equilibrium_diagnostics'),
+    'scirel.closures.compositions.mirror_quasineutral_closure': ('scirel.closures.mirror_quasineutral_closure', 'solve_mirror_quasineutral_closure'),
+    'scirel.kinetic.compositions.grid_mirror_kinetic_closure': ('scirel.kinetic.grid_mirror_kinetic_closure', 'solve_grid_mirror_kinetic_closure'),
+    'scirel.equilibrium.compositions.axisymmetric_anisotropic_picard': ('scirel.equilibrium.axisymmetric_anisotropic_picard', 'solve_axisymmetric_anisotropic_picard'),
+    'scirel.inference.compositions.direct_anisotropic_inversion': ('scirel.inference.direct_anisotropic_inversion', 'solve_direct_anisotropic_inversion'),
+    'scirel.equilibrium.compositions.reduced_hall_anisotropic_picard': ('scirel.equilibrium.reduced_hall_anisotropic_picard', 'solve_reduced_hall_anisotropic_picard'),
+    'scirel.field.compositions.multi_coil_vacuum_field': ('scirel.field.multi_coil_vacuum_field', 'solve_multi_coil_vacuum_field'),
+    'scirel.kinetic.compositions.frank_egedal_pressure_closure': ('scirel.kinetic.frank_egedal_pressure_closure', 'solve_frank_egedal_pressure_closure'),
+    'scirel.equilibrium.compositions.kinetic_mirror_hall_equilibrium': ('scirel.equilibrium.kinetic_mirror_hall_equilibrium', 'solve_kinetic_mirror_hall_equilibrium'),
 }
 
 def _resolve(table, ref, kind):
@@ -74,6 +74,6 @@ def load_composition(ref):
 
 def load_callable(ref, attribute=None):
     function = _resolve(_ASSETS, ref, 'asset')
-    if attribute is not None and attribute not in {function.__name__, 'scientific_operator', 'latin_hypercube_samples'}:
+    if attribute is not None and attribute not in {function.__name__, 'scientific_function', 'latin_hypercube_samples'}:
         raise KeyError(f"callable {attribute} is not exported by {ref}")
     return function

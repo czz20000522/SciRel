@@ -31,7 +31,7 @@ def test_public_callable_documents_the_catalog_contract():
 
 
 def test_no_plug_limit_matches_analytic_potential_and_neutrality():
-    result = composition.run_graph(_inputs(), asset_loader=_loader)
+    result = composition.run_composition(_inputs(), asset_loader=_loader)
     b = np.array([1.0, 1.4, 2.0])
     t_perp = b / ((b - 1.0) / (1200*E) + 1.0 / (2400*E))
     expected = np.log(t_perp / (2400*E)) / (E/(1200*E) + E/(600*E))
@@ -40,13 +40,13 @@ def test_no_plug_limit_matches_analytic_potential_and_neutrality():
 
 
 def test_loss_cone_closure_remains_neutral():
-    result = composition.run_graph(_inputs(b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0, loss_cone_refill=0.0, quadrature_order=40), asset_loader=_loader)
+    result = composition.run_composition(_inputs(b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0, loss_cone_refill=0.0, quadrature_order=40), asset_loader=_loader)
     assert np.all(result['kinetic_moments']['density_pitch_integral'] < 1.0)
     assert np.max(np.abs(result['relative_charge_residual'])) < 1e-9
 
 
 def test_zero_density_returns_reference_potential():
-    result = composition.run_graph(_inputs(density_ref_m3=0.0, phi_ref_v=15.0), asset_loader=_loader)
+    result = composition.run_composition(_inputs(density_ref_m3=0.0, phi_ref_v=15.0), asset_loader=_loader)
     np.testing.assert_allclose(result['electrostatic_potential'], 15.0)
     np.testing.assert_array_equal(result['ion_density'], 0.0)
     np.testing.assert_array_equal(result['electron_density'], 0.0)
@@ -71,7 +71,7 @@ def test_final_moments_and_electrons_are_reevaluated_after_potential_solve():
             return implementation(*args, **kwargs)
         return evaluate
 
-    result = composition.run_graph(_inputs(), asset_loader=tracing_loader)
+    result = composition.run_composition(_inputs(), asset_loader=tracing_loader)
 
     assert result['converged'] is True
     assert events[-4:] == [
@@ -99,7 +99,7 @@ def test_solver_failure_propagates_without_terminal_pressure_assembly():
         return _loader(asset_ref)
 
     with pytest.raises(RuntimeError) as caught:
-        composition.run_graph(_inputs(), asset_loader=failing_loader)
+        composition.run_composition(_inputs(), asset_loader=failing_loader)
     assert caught.value is failure
 
 
@@ -111,7 +111,7 @@ def test_supplied_electron_reference_density_skips_default_calculation():
             return unexpected
         return _loader(asset_ref)
 
-    result = composition.run_graph(
+    result = composition.run_composition(
         _inputs(electron_density_ref_m3=2e18), asset_loader=loader,
     )
     assert np.max(np.abs(result['relative_charge_residual'])) < 1e-10
@@ -120,8 +120,8 @@ def test_supplied_electron_reference_density_skips_default_calculation():
 def test_profile_ports_receive_current_psi_values():
     psi = np.array([0.0, 0.2, 0.4])
     density = lambda value: 2e18 * (1.0 + 0.1 * value)
-    callable_result = composition.run_graph(_inputs(psi=psi, density_ref_m3=density), asset_loader=_loader)
-    array_result = composition.run_graph(_inputs(psi=psi, density_ref_m3=density(psi)), asset_loader=_loader)
+    callable_result = composition.run_composition(_inputs(psi=psi, density_ref_m3=density), asset_loader=_loader)
+    array_result = composition.run_composition(_inputs(psi=psi, density_ref_m3=density(psi)), asset_loader=_loader)
     np.testing.assert_allclose(callable_result['ion_density'], array_result['ion_density'])
     assert np.max(np.abs(callable_result['relative_charge_residual'])) < 1e-10
 
@@ -130,7 +130,7 @@ def test_review_gate_propagates_invalid_quasineutral_iteration_budget():
     import pytest
 
     with pytest.raises(ValueError, match="at least 2"):
-        composition.run_graph(
+        composition.run_composition(
             _inputs(max_iterations=1, potential_tolerance_v=1.0e-30, quasineutral_tolerance=1.0e-30),
             asset_loader=_loader,
         )
@@ -140,4 +140,4 @@ def test_review_gate_rejects_fractional_max_iterations_without_truncation():
     import pytest
 
     with pytest.raises(ValueError, match="max_iterations must be an integer"):
-        composition.run_graph(_inputs(max_iterations=3.5), asset_loader=_loader)
+        composition.run_composition(_inputs(max_iterations=3.5), asset_loader=_loader)

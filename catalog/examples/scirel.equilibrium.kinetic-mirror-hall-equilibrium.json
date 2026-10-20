@@ -567,11 +567,11 @@
    "Licensing of the current implementation remains pending."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "kinetic_binding",
-    "kind": "task_graph",
+    "kind": "composition",
     "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
     "description": "Bind the nested kinetic callable; it is invoked later by Hall through pressure_closure for each current B and psi.",
     "inputs": [
@@ -597,7 +597,7 @@
    },
    {
     "id": "hall",
-    "kind": "task_graph",
+    "kind": "composition",
     "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
     "description": "Call the bound Hall graph once with its known inputs and the kinetic pressure callback; its own execution owns all feedback and terminal checks.",
     "inputs": [

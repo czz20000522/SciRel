@@ -695,7 +695,7 @@
    "Scientific validity is bounded by the tested numerical domain and applicability conditions."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "grid_selection",
@@ -739,7 +739,7 @@
    },
    {
     "id": "field_profile",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.geometry.flux-surface-profile",
     "description": "Interpolate reference and plug B rows and reference potential against caller psi before endpoint evaluation; repeated invocations of one bound operator.",
     "inputs": [
@@ -751,7 +751,7 @@
    },
    {
     "id": "end_loss",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.closures.mirror-ambipolar-potential",
     "description": "Run the end-loss operator once per side in evaluate mode for prescribed plug potentials or solve mode for ambipolar_end_loss.",
     "inputs": [
@@ -764,7 +764,7 @@
    },
    {
     "id": "endpoint_profile",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.geometry.flux-surface-profile",
     "description": "Map both endpoint potentials and flux/current diagnostics from reference-row psi onto full-grid psi.",
     "inputs": [
@@ -776,7 +776,7 @@
    },
    {
     "id": "local_quasineutral",
-    "kind": "task_graph",
+    "kind": "composition",
     "asset_id": "scirel.closures.mirror-quasineutral-closure",
     "description": "Solve the nested local quasineutral potential, ion/electron state and total pressure on the full grid.",
     "inputs": [

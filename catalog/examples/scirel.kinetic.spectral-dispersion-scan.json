@@ -525,11 +525,14 @@
    "Example output is a bounded runtime observation, not a universal scientific claim."
   ]
  },
- "graph": {
+ "references": [
+  "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
+ ],
+ "composition": {
   "nodes": [
    {
     "id": "initialize",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.spectral-plasma-state",
     "description": "Initialize the complete fresh state; state edge carries the whole returned mapping.",
     "inputs": [
@@ -571,7 +574,7 @@
    },
    {
     "id": "assemble",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.spectral-temporal-matrix",
     "description": "At each point assemble exact corrected M,A and owned state.",
     "inputs": [
@@ -585,7 +588,7 @@
    },
    {
     "id": "spectrum",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
     "description": "Compute same eigenvalue/vector path at every point and independent sorts.",
     "inputs": [
@@ -1464,8 +1467,5 @@
    "failure_propagation": "First invalid input, arithmetic, eigensolver or export failure propagates; no partial result dictionary.",
    "feedback": []
   }
- },
- "references": [
-  "H. S. Xie, Computer Physics Communications 185 (2014), 670-675."
- ]
+ }
 }

@@ -1,14 +1,14 @@
-"""Compose the Frank--Egedal pressure closure from its explicit SciRel graph dependencies."""
+"""Compose the Frank--Egedal pressure closure from its explicit SciRel composition dependencies."""
 from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-def run_graph(inputs, *, asset_loader):
-    """Resolve the N4 pipeline without graph-local numerical implementation."""
+def run_composition(inputs, *, asset_loader):
+    """Resolve the N4 pipeline without composition-local numerical implementation."""
     if not isinstance(inputs, dict):
         raise ValueError('inputs must be a mapping')
     if 'params' not in inputs:
-        raise ValueError('params is required by task_graph.yaml')
+        raise ValueError('params is required by composition.yaml')
     if not isinstance(inputs['params'], dict):
         raise ValueError('params must be a mapping')
     params = dict(inputs['params'])
@@ -20,7 +20,7 @@ def run_graph(inputs, *, asset_loader):
     return result
 
 def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
-    """Resolve the Frank--Egedal pressure-closure TaskGraph.
+    """Resolve the Frank--Egedal pressure-closure composition.
 
     Parameters
     ----------
@@ -30,7 +30,7 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
         pressure and optional density/electron-temperature controls described
         by the catalog contract.
     **kwargs
-        Named inputs merged with ``inputs`` by the TaskGraph composition
+        Named inputs merged with ``inputs`` by the composition
         boundary.
 
     Returns
@@ -55,5 +55,5 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
     from scirel.kinetic.frank_egedal_radial_envelope import evaluate_frank_egedal_radial_envelope as _dependency_2
     from scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes as _dependency_3
     from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum as _dependency_4
-    return compose(run_graph, inputs, kwargs, {'asset_loader': {'scirel.kinetic.frank_egedal_hot_ion_moments': _dependency_0, 'scirel.kinetic.frank_egedal_pressure_state': _dependency_1, 'scirel.kinetic.frank_egedal_radial_envelope': _dependency_2, 'scirel.kinetic.frank_egedal_source_projection': _dependency_3, 'scirel.kinetic.loss_cone_spectrum': _dependency_4}})
+    return compose(run_composition, inputs, kwargs, {'asset_loader': {'scirel.kinetic.frank_egedal_hot_ion_moments': _dependency_0, 'scirel.kinetic.frank_egedal_pressure_state': _dependency_1, 'scirel.kinetic.frank_egedal_radial_envelope': _dependency_2, 'scirel.kinetic.frank_egedal_source_projection': _dependency_3, 'scirel.kinetic.loss_cone_spectrum': _dependency_4}})
 __all__ = ['solve_frank_egedal_pressure_closure']

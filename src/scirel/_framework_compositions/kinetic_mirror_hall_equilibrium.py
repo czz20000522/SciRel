@@ -16,12 +16,12 @@ def compose_kinetic_mirror_hall_equilibrium(
     kinetic_graph: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_grid_mirror_kinetic_closure,
     hall_graph: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_reduced_hall_anisotropic_picard,
 ) -> Mapping[str, object]:
-    """Feed a kinetic pressure closure into the reduced Hall graph.
+    """Feed a kinetic pressure closure into the reduced Hall composition.
 
-    The kinetic graph receives a fresh mapping for every Hall pressure query,
+    The kinetic composition receives a fresh mapping for every Hall pressure query,
     while the Hall graph receives the original control inputs plus one explicit
     ``pressure_closure`` callable.  The composition owns wiring only; each
-    scientific graph retains its own validation and convergence semantics.
+    scientific composition retains its own validation and convergence semantics.
     """
     if not isinstance(inputs, Mapping):
         raise TypeError("inputs must be a mapping")

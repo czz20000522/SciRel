@@ -1,7 +1,7 @@
 import pytest
-from scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes, project_frank_egedal_source_modes as scientific_operator
+from scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes, project_frank_egedal_source_modes as scientific_function
 def test_rejects_incomplete_source_state():
-    with pytest.raises((KeyError,ValueError,TypeError)): scientific_operator({})
+    with pytest.raises((KeyError,ValueError,TypeError)): scientific_function({})
 
 
 def test_reviewed_relation_example():

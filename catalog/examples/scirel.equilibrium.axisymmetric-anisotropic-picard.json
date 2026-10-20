@@ -417,7 +417,7 @@
    "No expert scientific endorsement or public release follows from this numerical successor."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "initial_state",
@@ -433,7 +433,7 @@
    },
    {
     "id": "field",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.field.poloidal-field-from-flux",
     "description": "Derive poloidal magnetic components and magnitude on each current psi, including terminal reevaluation.",
     "inputs": [
@@ -489,7 +489,7 @@
    },
    {
     "id": "force",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.equilibrium.anisotropic-force-balance",
     "description": "Evaluate cylindrical div(P), J_phi and force/firehose diagnostics; active_mask selects the error metric but does not mask J_phi here.",
     "inputs": [
@@ -518,7 +518,7 @@
    },
    {
     "id": "flux_update",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
     "description": "Convert masked current density to raw cell currents, apply the dense Green matrix and relax flux.",
     "inputs": [

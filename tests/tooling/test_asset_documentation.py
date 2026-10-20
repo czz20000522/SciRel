@@ -71,7 +71,7 @@ def release_examples(tmp_path):
     assert all(path.read_bytes() == body for path, body in originals.items())
 
 
-def _task_graph_document():
+def _composition_document():
     return json.loads(
         (EXAMPLES / "scirel.field.multi-coil-vacuum-field.json").read_text(
             encoding="utf-8"
@@ -138,17 +138,17 @@ def test_contract_schemas_and_dependency_closed_examples_parse(tmp_path):
     assert len([doc for doc in documents if doc["asset_id"] not in ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(ASSET_IDS) - 1
     assert {doc["asset_id"] for doc in documents} >= ASSET_IDS
     assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [FAST_ION_ASSET_ID]
-    assert any("graph" in item for item in documents)
-    assert any("graph" not in item for item in documents)
+    assert any("composition" in item for item in documents)
+    assert any("composition" not in item for item in documents)
 
 
 def test_missing_units_and_private_governance_fields_fail_closed():
-    missing_units = _task_graph_document()
+    missing_units = _composition_document()
     del missing_units["inputs"][0]["units"]
     with pytest.raises(AssetDocumentError, match="missing fields: units"):
         validate_document(missing_units)
 
-    leaked = _task_graph_document()
+    leaked = _composition_document()
     leaked["identity"]["admission_ref"] = "private-owner-reference"
     with pytest.raises(AssetDocumentError, match="private governance fields"):
         validate_document(leaked)
@@ -174,9 +174,9 @@ def test_runtime_input_defaults_must_match_the_document():
         validate_runtime(document)
 
 
-def test_task_graph_ordinary_cycle_is_rejected_without_feedback_contract():
-    document = _task_graph_document()
-    document["graph"]["edges"].append(
+def test_composition_ordinary_cycle_is_rejected_without_feedback_contract():
+    document = _composition_document()
+    document["composition"]["edges"].append(
         {
             "from": {"node": "superposition", "port": "psi"},
             "to": {"node": "rectangular_geometry", "port": "r0"},
@@ -193,28 +193,28 @@ def test_task_graph_ordinary_cycle_is_rejected_without_feedback_contract():
 
 
 def test_distinct_feedback_loops_require_matching_contracts():
-    document = _task_graph_document()
-    document["graph"]["edges"].extend(
+    document = _composition_document()
+    document["composition"]["edges"].extend(
         (
             _feedback_edge("loop-a"),
             _feedback_edge("loop-b", source_port="BR", target_port="z0"),
         )
     )
-    document["graph"]["execution"]["feedback"] = [_feedback_contract("loop-a")]
+    document["composition"]["execution"]["feedback"] = [_feedback_contract("loop-a")]
 
     with pytest.raises(AssetDocumentError, match="missing contracts.*loop-b"):
         validate_document(document)
 
 
 def test_multiple_feedback_edges_can_share_one_bounded_loop_contract():
-    document = _task_graph_document()
-    document["graph"]["edges"].extend(
+    document = _composition_document()
+    document["composition"]["edges"].extend(
         (
             _feedback_edge("picard-loop"),
             _feedback_edge("picard-loop", source_port="BR", target_port="z0"),
         )
     )
-    document["graph"]["execution"]["feedback"] = [
+    document["composition"]["execution"]["feedback"] = [
         _feedback_contract("picard-loop")
     ]
 
@@ -222,8 +222,8 @@ def test_multiple_feedback_edges_can_share_one_bounded_loop_contract():
 
 
 def test_feedback_contract_without_an_edge_is_rejected():
-    document = _task_graph_document()
-    document["graph"]["execution"]["feedback"] = [_feedback_contract("orphan-loop")]
+    document = _composition_document()
+    document["composition"]["execution"]["feedback"] = [_feedback_contract("orphan-loop")]
 
     with pytest.raises(AssetDocumentError, match="contracts without feedback edges.*orphan-loop"):
         validate_document(document)
@@ -237,7 +237,7 @@ def test_dependency_must_resolve_to_a_canonical_document(tmp_path):
     previous_id = graph["version"]["dependencies"][0]["asset_id"]
     missing_id = "scirel.field.missing"
     graph["version"]["dependencies"][0]["asset_id"] = missing_id
-    for node in graph["graph"]["nodes"]:
+    for node in graph["composition"]["nodes"]:
         if node.get("asset_id") == previous_id:
             node["asset_id"] = missing_id
     graph_path.write_text(json.dumps(graph), encoding="utf-8")

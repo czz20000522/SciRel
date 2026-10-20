@@ -281,11 +281,11 @@
    "Public distribution licensing and SciRel expert recognition remain pending."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "closure_aware_equilibrium",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.equilibrium.compute-equilibrium",
     "description": "Own the only bounded pressure-current/Green feedback loop, with both residual gates and explicit terminal status.",
     "inputs": [
@@ -316,7 +316,7 @@
    },
    {
     "id": "terminal_pressure",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.equilibrium.pressure-flux-state",
     "description": "Serialize the valid terminal pressure spline without adding an iteration loop.",
     "inputs": [

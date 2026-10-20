@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
 
-from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual, compute_parallel_pressure_residual as scientific_operator
+from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual, compute_parallel_pressure_residual as scientific_function
 
 
 # 验证：p_parallel/B 为常数时 RHS 与 p_perp 都应为零，检查必须通过。
 def test_constant_parallel_to_field_ratio_satisfies_zero_perpendicular_pressure_relation():
     magnetic_field = np.array([[1.0, 1.3], [1.6, 2.0]])
-    result = scientific_operator(4.0 * magnetic_field, np.zeros_like(magnetic_field), magnetic_field, dp_parallel_dB=4.0)
+    result = scientific_function(4.0 * magnetic_field, np.zeros_like(magnetic_field), magnetic_field, dp_parallel_dB=4.0)
     assert result["passed"]
     assert np.allclose(result["rhs"], 0.0)
     assert result["max_relative_error"] < 1.0e-8
@@ -17,7 +17,7 @@ def test_constant_parallel_to_field_ratio_satisfies_zero_perpendicular_pressure_
 def test_strict_mode_raises_for_parallel_equilibrium_violation():
     magnetic_field = np.array([1.0, 1.5, 2.0])
     with pytest.raises(ValueError):
-        scientific_operator(magnetic_field, np.ones_like(magnetic_field), magnetic_field, strict=True, dp_parallel_dB=1.0)
+        scientific_function(magnetic_field, np.ones_like(magnetic_field), magnetic_field, strict=True, dp_parallel_dB=1.0)
 
 
 def test_reviewed_relation_example():

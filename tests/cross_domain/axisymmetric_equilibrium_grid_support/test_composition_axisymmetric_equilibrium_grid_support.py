@@ -154,7 +154,7 @@ def test_u1_c_t03_composition_is_a_pure_ordered_dag(candidate):
     }, imported
 
     # No run-time dependence on a source checkout, a YAML file, or any file.
-    for forbidden in ("open(", "yaml", "Path", "environ", "importlib", "asset_loader", "task_graph"):
+    for forbidden in ("open(", "yaml", "Path", "environ", "importlib", "asset_loader"):
         assert forbidden not in source, forbidden
     assert isinstance(
         inspect.signature(candidate["composition"]).parameters, type(inspect.signature(candidate["composition"]).parameters)
@@ -162,7 +162,7 @@ def test_u1_c_t03_composition_is_a_pure_ordered_dag(candidate):
     # The injected-dependency form is the documented SciRel composition convention:
     # every dependency is a keyword parameter with a default, and there is no
     # feedback parameter because the composition has no loop.
-    composition_signature = inspect.signature(candidate["composition"].__globals__["run_graph"])
+    composition_signature = inspect.signature(candidate["composition"].__globals__["run_composition"])
     parameters = composition_signature.parameters
     assert list(parameters) == [
         "inputs",
@@ -184,31 +184,31 @@ def test_u1_c_t04_declared_dependency_closure_is_exactly_two_assets(candidate):
     }
     bound = {
         node["asset_id"]
-        for node in document["graph"]["nodes"]
+        for node in document["composition"]["nodes"]
         if node.get("asset_id") is not None
     }
     assert bound == declared
     # Every declared composition input is consumed, and every declared output produced.
     consumed = {
         edge["to"]["port"]
-        for edge in document["graph"]["edges"]
+        for edge in document["composition"]["edges"]
         if edge["from"]["node"] == "$input"
     }
     assert consumed == {port["name"] for port in document["inputs"]}
     produced = {
         edge["to"]["port"]
-        for edge in document["graph"]["edges"]
+        for edge in document["composition"]["edges"]
         if edge["to"]["node"] == "$output"
     }
     assert produced == {port["name"] for port in document["outputs"]}
     # The composition has no feedback edge and declares no feedback contract.
-    assert document["graph"]["execution"]["feedback"] == []
-    assert all(edge["kind"] != "feedback" for edge in document["graph"]["edges"])
+    assert document["composition"]["execution"]["feedback"] == []
+    assert all(edge["kind"] != "feedback" for edge in document["composition"]["edges"])
     # Every node input is connected by an edge.
-    for node in document["graph"]["nodes"]:
+    for node in document["composition"]["nodes"]:
         connected = {
             edge["to"]["port"]
-            for edge in document["graph"]["edges"]
+            for edge in document["composition"]["edges"]
             if edge["to"]["node"] == node["id"]
         }
         assert connected == set(node["inputs"]), node["id"]
@@ -291,5 +291,5 @@ def test_u1_c_t07_public_signature_is_the_documented_one(candidate):
         "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)"
     )
     assert python_api["module"] == "scirel.geometry.axisymmetric_equilibrium_grid_support"
-    assert "graph" in document
+    assert "composition" in document
     assert document["asset_id"] == "scirel.geometry.axisymmetric-equilibrium-grid-support"

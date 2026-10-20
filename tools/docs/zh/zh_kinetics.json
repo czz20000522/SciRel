@@ -1056,7 +1056,7 @@
   },
   {
    "asset_id": "scirel.kinetic.molecular-alpha-contraction",
-   "source_sha256": "8a9e64edf78a417b8ee8c8c99fe568177219ec80c2c178fcd7ef29b5777568be",
+   "source_sha256": "45b3e2215ca2511f6ddf511737fc10fb5761f6105bd51d050144c96508e4f536",
    "summary": "逐空间单元将分子三类 SIG 碰撞矩阵与 Fortran 顺序展平的前态分布收缩为三个 Alpha 碰撞频率场；ni_correct 可按逐点 max(n−nHP,0) 修正离子密度。",
    "definition": "逐 k 的矩阵–向量收缩：每个家族用一个装配好的 (N,N) SIG 矩阵乘以某个前驱分布按 Fortran 顺序展平后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 家族携带 fHp_hat（以漂移 vxi 和温度 THP 为参数的 H2+ Maxwell 种子），按单元乘以 nHP[k]；H2-H 家族携带裸原子分布 fH；H2-P 家族携带质子种子 fi_hat，按 ni 缩放，其中 ni = n，或在设置 ni_correct 时按单元取 ni = max(n - nHP, 0)。",
    "model": "Fortran 顺序收缩，并包含保持顺序的最小 reshape 修复；维护回归测试在所声明的合法域内逐位复现。",
@@ -1338,7 +1338,7 @@
   },
   {
    "asset_id": "scirel.inference.direct-anisotropic-inversion",
-   "source_sha256": "048ba03e9a21c3e93f09b19ba16d971fd483372c3bb095f86b1bb9252a0e13dd",
+   "source_sha256": "27d8f1fff8ce7630c3f3efd6ef20a72bdb6da3f5bde013b4b11a101bfbd0dafb",
    "summary": "将真实各向异性前向求解、显式单位诊断和有界优化连接为单一调用入口，持续保持固定观测维数与有效终点。",
    "definition": "先按标准观测构造 N，再把 trial、严格残差和有界优化器组合起来。前向 solver_config 深复制并加入 params；未收敛时提前短路，失败的 trial 不参与有效最优。可选 LHS 与总预算在优化器中统一执行，最终参数、残差和状态绑定同一次新评估。当前验证同时包含解析制造的非零 Green 反馈和独立 Biot–Savart/张量散度参考的曲场恢复。",
    "model": "调用者指定物理闭合的直接反演组合，复用已资格化前向关系，不另造各向异性平衡方程",
@@ -1873,7 +1873,7 @@
   },
   {
    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
-   "source_sha256": "047c18bf237cb97a6672359b7f888f2ecce4421d49168241f88087a91a343ce0",
+   "source_sha256": "892339ac317437893b1f32f3673d368cdbb380e89d64202d8bb54d2ef22d4753",
    "summary": "在一次调用中，用有序 DAG 把轴对称平衡重构到笛卡尔求解网格，并对该网格分类材料支撑；组合了映射关系和材料支撑关系两个依赖。",
    "definition": "先重构静场与极向磁通，构造目标柱坐标，从平衡映射读取分界磁通与所选侧，再用这些参数和重构磁通分类支撑。",
    "model": "张量积平衡重构与几何材料分类的组合，不执行场求解。",
@@ -3667,7 +3667,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-   "source_sha256": "97fd4b59c76728bcfab2ab3d384cca7200e87fd4dbdd15873cd2c3fe3e159da8",
+   "source_sha256": "0a01fee9b06c90852cc646c9a5a5832de31494fa6e36bb2d83d32d69f563ba84",
    "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。",
    "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。",
    "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
@@ -7197,7 +7197,7 @@
   },
   {
    "asset_id": "scirel.kinetic.atomic-alpha-contraction",
-   "source_sha256": "22cdd0a495f13541446d058364244f7f411ebfce3f2b115f208183f7aab5420d",
+   "source_sha256": "86c42dbc4d2eb8d9fbc7d5939028e856469cd76da9101a167b1ae58551aaf873",
    "summary": "逐空间单元将原子氢四类已组装 SIG 矩阵与 Fortran 展平的输入分布收缩为 Alpha 碰撞频率。",
    "definition": "逐 k 的矩阵–向量收缩：每个族将一个已组装的 (N,N) SIG 矩阵乘以一个输入分布按 Fortran 顺序展平到 (nvr*nvx,) Work 缓冲后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 和 H-P 族携带按单元以 ni[k] 缩放的 fi_hat；H-H2 和 H-H 族携带裸分布 fH2 和 fH。",
    "model": "所声明合法域上逐 k 的原子四族 SIG 矩阵收缩。",

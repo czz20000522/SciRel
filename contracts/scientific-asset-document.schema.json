@@ -268,8 +268,8 @@
     }
    }
   },
-  "graph": {
-   "$ref": "#/$defs/graph"
+  "composition": {
+   "$ref": "#/$defs/composition"
   },
   "references": {
    "type": "array",
@@ -458,8 +458,8 @@
     },
     "kind": {
      "enum": [
-      "operator",
-      "task_graph",
+      "function",
+      "composition",
       "controlled_glue",
       "caller_port"
      ]
@@ -600,7 +600,7 @@
     }
    }
   },
-  "graph": {
+  "composition": {
    "type": "object",
    "additionalProperties": false,
    "required": [

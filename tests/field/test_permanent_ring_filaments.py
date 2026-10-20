@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 
-from scirel.field.permanent_ring_filaments import discretize_permanent_ring, discretize_permanent_ring as scientific_operator
+from scirel.field.permanent_ring_filaments import discretize_permanent_ring, discretize_permanent_ring as scientific_function
 
 
 # 验证：未旋转时必须保持两侧各 8 条、linspace Z 顺序和 source-default signs。
 def test_unrotated_source_layout_and_default_weight_signs():
-    result = scientific_operator(2.0, 3.0, 4.0, 2.0)
+    result = scientific_function(2.0, 3.0, 4.0, 2.0)
     expected_z = np.linspace(2.0, 4.0, 8)
     np.testing.assert_allclose(result["rz_pts"][:8, 0], 0.0)
     np.testing.assert_allclose(result["rz_pts"][8:, 0], 4.0)
@@ -18,7 +18,7 @@ def test_unrotated_source_layout_and_default_weight_signs():
 
 # 验证：90 degree 正角按 source row-vector 矩阵使左侧中点转到 centroid 上方（顺时针 R--Z 图约定）。
 def test_rotation_is_about_centroid_with_source_row_vector_direction():
-    result = scientific_operator(2.0, 3.0, 4.0, 2.0, mu_hat_deg=90.0)
+    result = scientific_function(2.0, 3.0, 4.0, 2.0, mu_hat_deg=90.0)
     # Original first point (0,2); relative vector (-2,-1) -> (-1,2) by row-vector matrix.
     np.testing.assert_allclose(result["rz_pts"][0], [1.0, 5.0], atol=1.0e-14)
     # The centroid remains invariant under rotation.
@@ -29,15 +29,15 @@ def test_rotation_is_about_centroid_with_source_row_vector_direction():
 @pytest.mark.parametrize("width,height", [(0.0, 1.0), (1.0, 0.0), (-1.0, 1.0)])
 def test_rejects_degenerate_or_negative_dimensions(width, height):
     with pytest.raises(ValueError):
-        scientific_operator(1.0, 0.0, width, height)
+        scientific_function(1.0, 0.0, width, height)
 
 
 def test_axis_crossing_is_rejected_and_nonzero_angle_rotates():
     with pytest.raises(ValueError, match="crosses the cylindrical axis"):
-        scientific_operator(0.1, 0.0, 1.0, 1.0)
+        scientific_function(0.1, 0.0, 1.0, 1.0)
 
-    reference = scientific_operator(3.0, 3.0, 4.0, 2.0)
-    near_zero = scientific_operator(3.0, 3.0, 4.0, 2.0, mu_hat_deg=5e-13)
+    reference = scientific_function(3.0, 3.0, 4.0, 2.0)
+    near_zero = scientific_function(3.0, 3.0, 4.0, 2.0, mu_hat_deg=5e-13)
     assert not np.array_equal(near_zero["rz_pts"], reference["rz_pts"])
     np.testing.assert_array_equal(near_zero["default_weights"], reference["default_weights"])
 

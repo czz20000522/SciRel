@@ -174,11 +174,11 @@
    "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "initialize",
-    "kind": "operator",
+    "kind": "function",
     "description": "initialize stage of the initial-value composition.",
     "inputs": [
      "Fn",
@@ -196,7 +196,7 @@
    },
    {
     "id": "evolve",
-    "kind": "operator",
+    "kind": "function",
     "description": "evolve stage of the initial-value composition.",
     "inputs": [
      "state"
@@ -208,7 +208,7 @@
    },
    {
     "id": "envelope",
-    "kind": "operator",
+    "kind": "function",
     "description": "envelope stage of the initial-value composition.",
     "inputs": [
      "dEt",
@@ -223,7 +223,7 @@
    },
    {
     "id": "diagnostic",
-    "kind": "operator",
+    "kind": "function",
     "description": "diagnostic stage of the initial-value composition.",
     "inputs": [
      "dEt",

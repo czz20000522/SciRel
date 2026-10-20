@@ -443,7 +443,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-scan",
-   "source_sha256": "cdeb47537bbd43696c93e48265964ee4ff34d8df663811d64c9da1bd8fd2a6e3",
+   "source_sha256": "7a5d8d8f4ba3b4e4ed3205c4d1a6e8725840416420231a9363e6ab40fb6f030e",
    "summary": "运行四个字面定义的流体扫描族，采用独立逐点求解、显式状态和标准轴序。默认方法 2 含 101 个物理点；方法 4 含 3750 个点。",
    "definition": "构造各方法字面规定的物理网格，在适用处映射 kx=k*sin(theta),kz=k*cos(theta)，独立求解每个点，并按标准轴序汇总经过核验的频谱。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -530,7 +530,7 @@
   },
   {
    "asset_id": "scirel.kinetic.parallel-em-continuation",
-   "source_sha256": "9647ea183489aecd3fce94f95034e58df41e913c4fc27c7fb53baa19ee39ec0c",
+   "source_sha256": "b0d94713307a3ddc08e67ed22e4fcfed7f4ac38576ca238fd6e691dbdcf82a93",
    "summary": "通过显式网格延续一个满足因果性的动理学根，以已接受种子反馈并记录诊断失败。失败的根或虚假成功的根不会向后传播。",
    "definition": "在每个 k 处，用 scipy.optimize.root(method=hybr) 求解 f/scale 的两个实分量。只有 solver.success、输出有限且满足声明的残差界时才接受。仅已接受的根会成为下一次初猜。",
    "model": "任意物种数的漂移各向同性 Maxwell 分布平行电磁响应。",

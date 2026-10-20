@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
-from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments, evaluate_frank_egedal_hot_ion_moments as scientific_operator
+from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments, evaluate_frank_egedal_hot_ion_moments as scientific_function
 def test_rejects_incomplete_moment_state():
-    with pytest.raises((KeyError,ValueError,TypeError)): scientific_operator({})
+    with pytest.raises((KeyError,ValueError,TypeError)): scientific_function({})
 
 
 def test_perpendicular_velocity_lower_accepts_full_moment_interval():
     mode = lambda degree, xi, terms: 1.0 + 0.0 * xi
-    critical = scientific_operator(
+    critical = scientific_function(
         [[1.0]],
         {"B0": 1.0, "mirror_ratio": 20.0, "vc_over_v0": 0.8, "velocity_nodes": 8, "pitch_nodes": 8},
         [0.5],
@@ -15,7 +15,7 @@ def test_perpendicular_velocity_lower_accepts_full_moment_interval():
         15,
         mode,
     )
-    full = scientific_operator(
+    full = scientific_function(
         [[1.0]],
         {"B0": 1.0, "mirror_ratio": 20.0, "vc_over_v0": 0.8, "perp_velocity_lower": 0.0, "velocity_nodes": 8, "pitch_nodes": 8},
         [0.5],

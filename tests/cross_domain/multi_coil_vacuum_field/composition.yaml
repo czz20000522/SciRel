@@ -44,7 +44,7 @@ outputs:
   units: m,m,dimensionless
 execution:
   mode: ordered_composition
-  order_policy: expand_each_rectangular_coil_then_evaluate_its_weighted_filament_green_response_then_stack_one_response_row_per_coil_then_superpose_with_each_coil_current
+  order_policy: expand_each_rectangular_coil_then_evaluate_its_weighted_filament_green_response_then_stack_one_response_column_per_coil_then_superpose_along_source_columns_with_each_coil_current
   state_policy: no hidden device object, cache, source path, or mutable current state
   failure_policy: invalid configuration or nonrectilinear grid fails before field evaluation
 nodes:
@@ -74,10 +74,10 @@ nodes:
   callable: scirel.field.circular_filament_green::circular_filament_green_response
   inputs: [rzw, target_points]
   outputs: [gpsi, gBR, gBZ]
-- id: response_row_stacking
-  name: 每线圈响应行堆叠
+- id: response_column_stacking
+  name: 每线圈响应列堆叠
   kind: controlled_glue
-  callable: glue:_stack_response_rows
+  callable: glue:_stack_response_columns
   inputs: [responses]
   outputs: [gpsi, gBR, gBZ]
 - id: current_weighted_superposition
@@ -120,17 +120,17 @@ edges:
   closure: controlled_glue
 - from: circular_green_response
   from_output: gpsi
-  to: response_row_stacking
+  to: response_column_stacking
   to_input: responses
   data: one response mapping per coil block
   condition: after each coil response is complete
-  transform: preserve one response row per coil
+  transform: preserve one target-ordered response column per coil
   closure: controlled_glue
-- from: response_row_stacking
+- from: response_column_stacking
   from_output: gpsi
   to: current_weighted_superposition
   to_input: gpsi
-  data: one response row per coil
+  data: one response column per coil, with target rows and source columns
   condition: after all coil blocks have been evaluated separately
   transform: stack only; no current multiplication
   closure: controlled_glue
@@ -138,7 +138,7 @@ edges:
   from_output: drive_current
   to: current_weighted_superposition
   to_input: currents
-  data: one current_a value per response row
+  data: one current_a value per response column
   condition: after all coil blocks have been evaluated separately
   transform: preserve caller coil order
   closure: controlled_glue

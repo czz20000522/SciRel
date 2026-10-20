@@ -155,7 +155,7 @@
    "历史许可状态仍待最终判断。"
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "requests",
@@ -173,7 +173,7 @@
    },
    {
     "id": "sampling",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.geometry.bilinear-grid-sampling",
     "description": "对每个明确请求字段调用同一双线性算子；请求未满足则失败。",
     "inputs": [

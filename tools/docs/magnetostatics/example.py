@@ -26,7 +26,7 @@ np.testing.assert_allclose(bz_single, analytic, rtol=2e-13, atol=1e-16)
 # Two equal loops: their separation equals their radius (Helmholtz geometry).
 responses = [circular_filament_green_response([[0.35, z0, 1.0]], points)
              for z0 in [-0.175, 0.175]]
-stacked = {key: np.stack([r[key] for r in responses]) for key in green}
+stacked = {key: np.column_stack([r[key] for r in responses]) for key in green}
 pair = superpose_current_green_field([1000.0, 1000.0], stacked['gpsi'], stacked['gBR'], stacked['gBZ'])
 opposed = superpose_current_green_field([1000.0, -1000.0], stacked['gpsi'], stacked['gBR'], stacked['gBZ'])
 bz_pair = pair['BZ']

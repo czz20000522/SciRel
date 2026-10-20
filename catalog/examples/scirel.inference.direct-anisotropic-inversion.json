@@ -357,7 +357,7 @@
    "许可与人工科学认可继续独立待决。"
   ]
  },
- "graph": {
+ "composition": {
   "nodes": [
    {
     "id": "observation_layout",
@@ -394,7 +394,7 @@
    },
    {
     "id": "residual_relation",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.diagnostics.observation-residuals",
     "description": "绑定固定布局、不漏通道的归一化残差算子。",
     "inputs": [],
@@ -404,7 +404,7 @@
    },
    {
     "id": "trial_relation",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.inference.anisotropic-trial-evaluation",
     "description": "绑定观测、固定 N、固定配置与端口；由优化器按试探执行，未收敛时短路诊断。",
     "inputs": [
@@ -422,7 +422,7 @@
    },
    {
     "id": "lhs_sampler",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.inference.latin-hypercube-sampling",
     "description": "启用样本数时绑定既有 LHS；优化器先核完整设计。",
     "inputs": [
@@ -434,7 +434,7 @@
    },
    {
     "id": "direct_optimizer",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.inference.anisotropic-parameter-optimization",
     "description": "验证有限边界与预算，只排序有效 trial；重新评估实际终点并分离停止与物理状态。",
     "inputs": [

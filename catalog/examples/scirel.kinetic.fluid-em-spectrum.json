@@ -27,7 +27,125 @@
   "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
   "runtime_failure": "Python numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
  },
- "graph": {
+ "identity": {
+  "assumptions": [
+   "No flow or temperature anisotropy.",
+   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+  ],
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+  "definition": "All finite matrix eigenvalues are returned. Selected5 are heuristic positive-real, least-|imaginary| candidates; physical-state similarity-scaled backward gate<=2e-12.",
+  "direction": "inverse: angular frequency to finite-model spectrum",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "relation": "finite rational EM wavevector spectra"
+ },
+ "inputs": [
+  {
+   "constraints": "Exactly EM case1 or2.",
+   "default": 2,
+   "description": "Source-defined case number.",
+   "dtype": "integer",
+   "name": "jcase",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Exactly 8 or 12.",
+   "default": 8,
+   "description": "Source J-pole approximation order.",
+   "dtype": "integer",
+   "name": "j_order",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Integer 0..7.",
+   "default": 6,
+   "description": "Finite L-table maximum harmonic.",
+   "dtype": "integer",
+   "name": "max_harmonic",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite real nonzero elements in the caller's order.",
+   "default": null,
+   "description": "Angular frequency axis; None selects the source frequency ladder.",
+   "dtype": "real array or None",
+   "name": "omegas",
+   "required": false,
+   "shape": "nonempty vector or None",
+   "units": "rad/s"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+   "description": "kxx[axis length,5] m^-1; all spectra and selection candidates per frequency, matrix, exact tables, source case state and independent eigen diagnostics.",
+   "dtype": "mapping",
+   "name": "result",
+   "required": true,
+   "shape": "mapping of MATLAB-shape arrays",
+   "units": "mixed SI and dimensionless as described"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_spectrum",
+   "signature": "solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_fluid_em",
+   "symbol": "solve_fluid_em"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Compose EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-waves",
+  "fluid-dispersion"
+ ],
+ "title": {
+  "en": "Corrected EM finite spectra and candidates",
+  "zh": "修正的 EM 有限谱及候选"
+ },
+ "verification": {
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "Pure-Python execution is tested on this host; native parity is not claimed."
+  ],
+  "scope": [
+   "Two cases, J8/J12, all eight N controls and source79-frequency default.",
+   "All finite spectra, original-order values, selection candidates and terminal matrices."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_full.py"
+  ]
+ },
+ "version": {
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.fluid-case-state"
+   },
+   {
+    "asset_id": "scirel.kinetic.fluid-em-matrix"
+   }
+  ],
+  "implementation_version": "0.1.0.dev11"
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ],
+ "composition": {
   "edges": [
    {
     "condition": "always within valid controls",
@@ -216,7 +334,7 @@
     "inputs": [
      "jcase"
     ],
-    "kind": "operator",
+    "kind": "function",
     "outputs": [
      "state"
     ]
@@ -230,7 +348,7 @@
      "controls",
      "omegas"
     ],
-    "kind": "operator",
+    "kind": "function",
     "outputs": [
      "matrices"
     ]
@@ -247,123 +365,5 @@
     ]
    }
   ]
- },
- "identity": {
-  "assumptions": [
-   "No flow or temperature anisotropy.",
-   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
-   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
-  ],
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "All finite matrix eigenvalues are returned. Selected5 are heuristic positive-real, least-|imaginary| candidates; physical-state similarity-scaled backward gate<=2e-12.",
-  "direction": "inverse: angular frequency to finite-model spectrum",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "relation": "finite rational EM wavevector spectra"
- },
- "inputs": [
-  {
-   "constraints": "Exactly EM case1 or2.",
-   "default": 2,
-   "description": "Source-defined case number.",
-   "dtype": "integer",
-   "name": "jcase",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Exactly 8 or 12.",
-   "default": 8,
-   "description": "Source J-pole approximation order.",
-   "dtype": "integer",
-   "name": "j_order",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Integer 0..7.",
-   "default": 6,
-   "description": "Finite L-table maximum harmonic.",
-   "dtype": "integer",
-   "name": "max_harmonic",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Finite real nonzero elements in the caller's order.",
-   "default": null,
-   "description": "Angular frequency axis; None selects the source frequency ladder.",
-   "dtype": "real array or None",
-   "name": "omegas",
-   "required": false,
-   "shape": "nonempty vector or None",
-   "units": "rad/s"
-  }
- ],
- "outputs": [
-  {
-   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-   "description": "kxx[axis length,5] m^-1; all spectra and selection candidates per frequency, matrix, exact tables, source case state and independent eigen diagnostics.",
-   "dtype": "mapping",
-   "name": "result",
-   "required": true,
-   "shape": "mapping of MATLAB-shape arrays",
-   "units": "mixed SI and dimensionless as described"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.fluid_spectrum",
-   "signature": "solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "solve_fluid_em",
-   "symbol": "solve_fluid_em"
-  }
- },
- "schema": "scirel.asset-document",
- "summary": "Compose EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence.",
- "taxonomy": [
-  "kinetic",
-  "plasma-waves",
-  "fluid-dispersion"
- ],
- "title": {
-  "en": "Corrected EM finite spectra and candidates",
-  "zh": "修正的 EM 有限谱及候选"
- },
- "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-  "known_limitations": [
-   "Source permissions remain NOT_ESTABLISHED; no public release.",
-   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
-   "Pure-Python execution is tested on this host; native parity is not claimed."
-  ],
-  "scope": [
-   "Two cases, J8/J12, all eight N controls and source79-frequency default.",
-   "All finite spectra, original-order values, selection candidates and terminal matrices."
-  ],
-  "tests": [
-   "tests/kinetic/test_fluid_spectrum_full.py"
-  ]
- },
- "version": {
-  "dependencies": [
-   {
-    "asset_id": "scirel.kinetic.fluid-case-state"
-   },
-   {
-    "asset_id": "scirel.kinetic.fluid-em-matrix"
-   }
-  ],
-  "implementation_version": "0.1.0.dev11"
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
- ]
+ }
 }

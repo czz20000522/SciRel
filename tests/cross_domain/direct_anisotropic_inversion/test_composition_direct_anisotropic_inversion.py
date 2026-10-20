@@ -93,8 +93,8 @@ def test_yaml_declares_explicit_cross_node_ports():
     assert "primary_pfm_node: N10" in contract
     assert "equilibrium_solver" in contract
     assert "diagnostic_evaluator" in contract
-    assert "scirel.equilibrium.graphs.free_boundary_anisotropic_picard" not in contract
-    assert "scirel.diagnostics.graphs.equilibrium_synthesis_diagnostics" not in contract
+    assert "scirel.equilibrium.compositions.free_boundary_anisotropic_picard" not in contract
+    assert "scirel.diagnostics.compositions.equilibrium_synthesis_diagnostics" not in contract
     assert "id: direct_optimizer" in contract
     assert "N6 required Picard convergence tolerance" in contract
     assert "N6 required Picard iteration limit" in contract
@@ -113,7 +113,7 @@ def test_latin_hypercube_is_deterministic_and_stratified():
 
 # 验证：zero-G 的合成 p_perp 观测可由显式 N6/N9 端口和 least_squares 恢复 p0。
 def test_recovers_synthetic_p0_with_zero_green_matrix():
-    result = composition.run_graph(_inputs(true_p0=4.0), operator_loader=_callable_loader)
+    result = composition.run_composition(_inputs(true_p0=4.0), asset_loader=_callable_loader)
     assert result["chi2"] < 1.0e-8
     assert result["best_parameters"]["p0"] == pytest.approx(4.0, rel=1.0e-4)
 
@@ -123,12 +123,12 @@ def test_invalid_method_records_failure_and_lhs_requires_finite_increasing_bound
     invalid_method = _inputs()
     invalid_method["method"] = "not_a_method"
     with pytest.raises(ValueError, match="method must be"):
-        composition.run_graph(invalid_method, operator_loader=_callable_loader)
+        composition.run_composition(invalid_method, asset_loader=_callable_loader)
     invalid_lhs = _inputs()
     invalid_lhs["bounds"] = {"p0": (1.0, 1.0)}
     invalid_lhs["n_initial_samples"] = 2
     with pytest.raises(ValueError):
-        composition.run_graph(invalid_lhs, operator_loader=_callable_loader)
+        composition.run_composition(invalid_lhs, asset_loader=_callable_loader)
 
 
 # 验证：任一端口调用异常必须成为单元素 1e12 residual，而非返回伪造 equilibrium。
@@ -136,21 +136,21 @@ def test_failed_port_evaluation_uses_source_penalty():
     inputs = _inputs()
     inputs["solver_config"] = {"r_grid": np.zeros((2, 2)), "z_grid": np.zeros((2, 2))}
     with pytest.raises((ValueError, KeyError)):
-        composition.run_graph(inputs, operator_loader=_callable_loader)
+        composition.run_composition(inputs, asset_loader=_callable_loader)
 
 
 def test_requires_explicit_cross_node_ports():
     inputs = _inputs()
     inputs.pop("equilibrium_solver")
     with pytest.raises(ValueError, match="equilibrium_solver"):
-        composition.run_graph(inputs, operator_loader=_callable_loader)
+        composition.run_composition(inputs, asset_loader=_callable_loader)
 
 
 def test_requires_explicit_method_contract():
     inputs = _inputs()
     inputs.pop("method")
     with pytest.raises(ValueError, match="method is required"):
-        composition.run_graph(inputs, operator_loader=_callable_loader)
+        composition.run_composition(inputs, asset_loader=_callable_loader)
 
 
 def test_public_solver_docstring_declares_contract():

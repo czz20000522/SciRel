@@ -145,7 +145,7 @@
   },
   {
    "asset_id": "scirel.kinetic.spectral-dispersion-scan",
-   "source_sha256": "7ce4e594bda5acff930e72626133d529b45df7b2a04dae9a63954c6ab787bb64",
+   "source_sha256": "9c027d7c85dcb92ff93bd2014b161903c6443230e2bf650db9b4b84e4e6d7b67",
    "summary": "用修正后的算子运行完整扫描族，并显式给出状态与限制。",
    "definition": "初始化一次；对每个按方法选定的 k 点组装修正矩阵并计算条件化本征谱；收集全部排序后的模式，并记录最后一点的 M、A、w1、w2、state。方法 2/3/4 分别采用默认的 101/196 个幅值点、51 个角度、50×75 笛卡尔网格，以及先 kz 后 kx 的行主序。单分支处理 0/1 及未知非负选择器。随后为 2/3/4 在 Agg 后端生成双面板 PNG；其他选择器保持零坐标轴。可选的 SI 位置返回前缀为 (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0)，各字段均有定义。",
    "model": "由新建状态、修正后的局域多流体矩阵和条件化谱组合而成；扫描网格遵循声明的方法默认值。",

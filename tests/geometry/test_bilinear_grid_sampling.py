@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field, sample_rectilinear_field as scientific_operator
+from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field, sample_rectilinear_field as scientific_function
 
 
 def _grid():
@@ -13,7 +13,7 @@ def _grid():
 def test_recovers_linear_field_at_interior_and_grid_points():
     r_grid, z_grid, quantity = _grid()
     points = np.array([[1.5, 0.0], [4.0, 1.0]])
-    result = scientific_operator(r_grid, z_grid, quantity, points)
+    result = scientific_function(r_grid, z_grid, quantity, points)
     assert np.allclose(result["samples"], [5.5, 11.0])
 
 
@@ -21,16 +21,16 @@ def test_recovers_linear_field_at_interior_and_grid_points():
 def test_rejects_outside_diagnostic_point():
     r_grid, z_grid, quantity = _grid()
     with pytest.raises(ValueError):
-        scientific_operator(r_grid, z_grid, quantity, np.array([[0.9, 0.0]]))
+        scientific_function(r_grid, z_grid, quantity, np.array([[0.9, 0.0]]))
 
 
 def test_empty_query_and_invalid_later_point():
     r_grid, z_grid, quantity = _grid()
-    result = scientific_operator(r_grid, z_grid, quantity, np.empty((0, 2)))
+    result = scientific_function(r_grid, z_grid, quantity, np.empty((0, 2)))
     assert result["samples"].shape == (0,)
 
     with pytest.raises(ValueError, match="outside the R-Z grid"):
-        scientific_operator(r_grid, z_grid, quantity, [[1.5, 0.0], [4.1, 0.0]])
+        scientific_function(r_grid, z_grid, quantity, [[1.5, 0.0], [4.1, 0.0]])
 
 
 def test_reviewed_relation_example():
@@ -74,5 +74,5 @@ def test_nonseparable_field_matches_independent_four_corner_oracle():
             + rf * zf * quantity[zi + 1, ri + 1]
         )
 
-    result = scientific_operator(r_grid, z_grid, quantity, points)
+    result = scientific_function(r_grid, z_grid, quantity, points)
     np.testing.assert_allclose(result["samples"], expected, rtol=0.0, atol=1e-14)

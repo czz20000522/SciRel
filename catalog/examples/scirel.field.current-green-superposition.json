@@ -5,7 +5,7 @@
   "en": "Current-weighted Green response superposition",
   "zh": "电流加权 Green 响应叠加"
  },
- "summary": "Contract a scalar or source-vector current with compatible Green response arrays.",
+ "summary": "Contract a scalar current or a source-vector current with Green responses ordered as target rows and source columns.",
  "taxonomy": [
   "field",
   "linear-superposition",
@@ -16,22 +16,22 @@
  ],
  "identity": {
   "relation": "Current-weighted Green contraction",
-  "direction": "currents and response arrays to psi, BR, and BZ target vectors",
-  "definition": "Use scalar multiplication for rank-one responses or a source-axis matrix product for rank-two responses.",
-  "model": "Linear superposition with no response reordering.",
-  "geometry": "Source and target axes are represented by response-array shape.",
+  "direction": "currents and target-row/source-column response arrays to psi, BR, and BZ target vectors",
+  "definition": "Use scalar multiplication for one-dimensional responses or a source-column matrix product for two-dimensional responses whose rows are targets and columns are sources.",
+  "model": "Linear superposition that preserves target rows and contracts source columns.",
+  "geometry": "Response rows index target points and response columns index source currents.",
   "coordinates": "Current amperes; psi Wb/rad; BR and BZ tesla.",
-  "boundary": "Ranks and source dimensions must match exactly; NumPy broadcasting is not used to repair mismatches.",
+  "boundary": "Ranks must match and the response column count must equal the current count; NumPy broadcasting is not used to repair mismatches.",
   "assumptions": [
    "All values are finite real arrays.",
    "The response arrays share one shape.",
-   "Vector currents align with response axis zero."
+   "Vector currents align with response columns (axis one)."
   ]
  },
  "inputs": [
   {
    "name": "currents",
-   "description": "One drive current or one current per response row.",
+   "description": "One drive current or one current per response source column.",
    "units": "A",
    "shape": "scalar or [N_source]",
    "dtype": "real array-like",
@@ -40,27 +40,27 @@
   },
   {
    "name": "gpsi",
-   "description": "Flux Green response.",
+   "description": "Flux Green response with target rows and source columns.",
    "units": "Wb/rad/A",
-   "shape": "[N_point] or [N_source,N_point]",
+   "shape": "[N_target] or [N_target,N_source]",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite and shape-compatible with currents and the other responses."
+   "constraints": "Finite and shape-compatible with currents and the other responses; the second axis must equal currents.size."
   },
   {
    "name": "gBR",
-   "description": "Radial field Green response.",
+   "description": "Radial field Green response with target rows and source columns.",
    "units": "T/A",
-   "shape": "[N_point] or [N_source,N_point]",
+   "shape": "[N_target] or [N_target,N_source]",
    "dtype": "real array-like",
    "required": true,
    "constraints": "Finite and same shape as gpsi."
   },
   {
    "name": "gBZ",
-   "description": "Axial field Green response.",
+   "description": "Axial field Green response with target rows and source columns.",
    "units": "T/A",
-   "shape": "[N_point] or [N_source,N_point]",
+   "shape": "[N_target] or [N_target,N_source]",
    "dtype": "real array-like",
    "required": true,
    "constraints": "Finite and same shape as gpsi."
@@ -71,28 +71,28 @@
    "name": "psi",
    "description": "Current-weighted flux.",
    "units": "Wb/rad",
-   "shape": "[N_point]",
+   "shape": "[N_target]",
    "dtype": "float64",
    "required": true,
-   "constraints": "Preserves target order."
+   "constraints": "Preserves target row order."
   },
   {
    "name": "BR",
    "description": "Current-weighted radial field.",
    "units": "T",
-   "shape": "[N_point]",
+   "shape": "[N_target]",
    "dtype": "float64",
    "required": true,
-   "constraints": "Preserves target order."
+   "constraints": "Preserves target row order."
   },
   {
    "name": "BZ",
    "description": "Current-weighted axial field.",
    "units": "T",
-   "shape": "[N_point]",
+   "shape": "[N_target]",
    "dtype": "float64",
    "required": true,
-   "constraints": "Preserves target order."
+   "constraints": "Preserves target row order."
   }
  ],
  "applicability": {
@@ -104,11 +104,11 @@
    "Scalar and vector current contractions, signed currents, and target-order preservation."
   ],
   "excluded": [
-   "Higher-rank currents, implicit reshaping, and physical equilibrium interpretation."
+   "Higher-rank currents, implicit reshaping or transposition, and physical equilibrium interpretation."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for nonfinite values, unsupported current rank, or incompatible response shapes.",
+  "invalid_input": "ValueError is raised for nonfinite values, unsupported current rank, or incompatible response shapes; for two-dimensional responses the second axis must equal the number of currents.",
   "runtime_failure": "No iterative runtime failure is defined; arithmetic errors propagate.",
   "nonconvergence": "Not applicable; this is a direct contraction.",
   "partial_results": "No output mapping is returned after validation failure."
@@ -127,15 +127,15 @@
   "dependencies": []
  },
  "example": {
-  "description": "Contract two signed currents with two response rows.",
-  "code": "import numpy as np\nfrom scirel.field import superpose_current_green_field\nresult = superpose_current_green_field([2.0, -1.0], [[1.0, 3.0], [4.0, 5.0]], [[2.0, 1.0], [0.0, 6.0]], [[-1.0, 2.0], [3.0, 4.0]])\nnp.testing.assert_allclose(result['psi'], [-2.0, 1.0])\nnp.testing.assert_allclose(result['BR'], [4.0, -4.0])\nnp.testing.assert_allclose(result['BZ'], [-5.0, 0.0])",
-  "expected": "The result is psi=[-2,1], BR=[4,-4], and BZ=[-5,0] in target order."
+  "description": "Contract two signed currents with two target rows and two source columns.",
+  "code": "import numpy as np\nfrom scirel.field import superpose_current_green_field\nresult = superpose_current_green_field([2.0, -1.0], [[1.0, 4.0], [3.0, 5.0]], [[2.0, 0.0], [1.0, 6.0]], [[-1.0, 3.0], [2.0, 4.0]])\nnp.testing.assert_allclose(result['psi'], [-2.0, 1.0])\nnp.testing.assert_allclose(result['BR'], [4.0, -4.0])\nnp.testing.assert_allclose(result['BZ'], [-5.0, 0.0])",
+  "expected": "The result is psi=[-2,1], BR=[4,-4], and BZ=[-5,0] in target-row order."
  },
  "verification": {
   "scope": [
    "Scalar scaling.",
-   "Vector source-axis contraction.",
-   "Wrong source-axis and nonfinite failure behavior."
+   "Vector source-column contraction.",
+   "Wrong source-column length and nonfinite failure behavior."
   ],
   "tests": [
    "tests/field/test_current_green_superposition.py"
@@ -143,7 +143,7 @@
   "evidence_ceiling": "Verifies the linear contraction and shape contract; it does not establish that the Green model supplying its input is scientifically applicable.",
   "known_limitations": [
    "Only scalar and one-dimensional current inputs are supported.",
-   "The operator does not infer or reorder source axes.",
+   "The operator contracts along the second (source) axis and does not infer, reorder, or transpose response axes.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

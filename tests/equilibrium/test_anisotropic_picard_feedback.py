@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from scirel.equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux, update_anisotropic_picard_flux as scientific_operator
+from scirel.equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux, update_anisotropic_picard_flux as scientific_function
 
 
 def _inputs(**overrides):
@@ -14,25 +14,25 @@ def _inputs(**overrides):
 
 
 def test_zero_green_keeps_vacuum_field_and_emits_cell_current():
-    result = scientific_operator(**_inputs())
+    result = scientific_function(**_inputs())
     np.testing.assert_allclose(result["psi"], _inputs()["psi_vac"])
     np.testing.assert_allclose(result["plasma_currents"], 0.01)
 
 
 def test_rejects_unpaired_field_green_matrices():
     with pytest.raises(ValueError, match="provided together"):
-        scientific_operator(**_inputs(g_br=np.eye(4)))
+        scientific_function(**_inputs(g_br=np.eye(4)))
 
 
 def test_full_old_state_retention_and_zero_initialization():
     old = np.array([0.2, 0.3, 0.4, 0.5])
-    retained = scientific_operator(**_inputs(currents_old=old, relax=1.0, g_psi=np.eye(4)))
+    retained = scientific_function(**_inputs(currents_old=old, relax=1.0, g_psi=np.eye(4)))
     np.testing.assert_allclose(retained["picard_current_state"], old)
     np.testing.assert_allclose(retained["plasma_currents"], 0.01)
     np.testing.assert_allclose(retained["psi"], _inputs()["psi_vac"] + old.reshape(2, 2))
     np.testing.assert_array_equal(retained["initial_picard_current_state"], np.zeros(4))
 
-    initialized = scientific_operator(**_inputs(currents_old=None, relax=1.0))
+    initialized = scientific_function(**_inputs(currents_old=None, relax=1.0))
     np.testing.assert_array_equal(initialized["picard_current_state"], np.zeros(4))
     np.testing.assert_allclose(initialized["plasma_currents"], 0.01)
 
@@ -101,22 +101,22 @@ def test_rejects_grids_where_one_cell_area_cannot_represent_all_cells(axis):
     if axis == [0.2, 0.4, 0.8]:
         # A nonuniform monotone axis is valid: trapezoid weights integrate
         # precisely the rectangle of width .6 and height .2, not .2*3*.2*2.
-        result = scientific_operator(**values)
+        result = scientific_function(**values)
         np.testing.assert_allclose(result["plasma_currents"],
             [[.01, .03, .02], [.01, .03, .02]])
         np.testing.assert_allclose(np.sum(result["plasma_currents"]), .12)
     else:
         with pytest.raises(ValueError, match="strictly monotone"):
-            scientific_operator(**values)
+            scientific_function(**values)
 
 
 @pytest.mark.parametrize("mask", [True, [True, False], [[1, 0], [0, 1]]])
 def test_rejects_broadcast_or_nonboolean_plasma_masks(mask):
     with pytest.raises(ValueError, match="boolean.*shape"):
-        scientific_operator(**_inputs(plasma_mask=mask))
+        scientific_function(**_inputs(plasma_mask=mask))
 
 
 def test_descending_uniform_axes_preserve_positive_cell_area():
     r, z = np.meshgrid([0.4, 0.2], [0.1, -0.1])
-    result = scientific_operator(**_inputs(r_grid=r, z_grid=z))
+    result = scientific_function(**_inputs(r_grid=r, z_grid=z))
     np.testing.assert_allclose(result["plasma_currents"], 0.01)

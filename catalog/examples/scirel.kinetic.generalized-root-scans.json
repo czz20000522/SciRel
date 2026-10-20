@@ -253,7 +253,10 @@
    }
   ]
  },
- "graph": {
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+ ],
+ "composition": {
   "nodes": [
    {
     "id": "prepare",
@@ -283,7 +286,7 @@
    },
    {
     "id": "residual",
-    "kind": "operator",
+    "kind": "function",
     "asset_id": "scirel.kinetic.generalized-residual",
     "description": "Evaluate the selected physical residual D; the solver adapter divides by k² or uses qualified Maxwellian epsilon directly.",
     "inputs": [
@@ -711,8 +714,5 @@
     }
    ]
   }
- },
- "references": [
-  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
- ]
+ }
 }

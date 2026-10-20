@@ -27,7 +27,105 @@
   "partial_results": "Operator errors return no result. A completed BONK axis may contain unverified candidates with root_valid false. No hidden partial output is represented as a complete result.",
   "runtime_failure": "Python numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
  },
- "graph": {
+ "identity": {
+  "assumptions": [
+   "No flow or temperature anisotropy.",
+   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+  ],
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+  "definition": "Fixed bounded dimensionless real/imaginary search at every angular frequency; root_valid requires independent determinant and normwise Maxwell null residual gates.",
+  "direction": "inverse: angular frequency to candidate wavevector",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "relation": "BONK wavevector root search"
+ },
+ "inputs": [
+  {
+   "constraints": "Exactly BONK case1,2 or3.",
+   "default": 1,
+   "description": "Source-defined case number.",
+   "dtype": "integer",
+   "name": "jcase",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite real nonzero elements in the caller's order.",
+   "default": null,
+   "description": "Angular frequency axis; None selects the source frequency ladder.",
+   "dtype": "real array or None",
+   "name": "omegas",
+   "required": false,
+   "shape": "nonempty vector or None",
+   "units": "rad/s"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
+   "description": "nf[m^-1], ordered xx[rad/s], root_valid, dual residuals, raw solver flags, iterations/evaluations, all attempts and complete source material state.",
+   "dtype": "mapping",
+   "name": "result",
+   "required": true,
+   "shape": "mapping of MATLAB-shape arrays",
+   "units": "mixed SI and dimensionless as described"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_spectrum",
+   "signature": "solve_fluid_bonk(jcase=1, omegas=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_fluid_bonk",
+   "symbol": "solve_fluid_bonk"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Compose complete BONK cases and ordered root searches with explicit verified-root and terminal-state diagnostics.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-waves",
+  "fluid-dispersion"
+ ],
+ "title": {
+  "en": "Corrected BONK bounded root search",
+  "zh": "修正的 BONK 有界根搜索"
+ },
+ "verification": {
+  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "known_limitations": [
+   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "Pure-Python execution is tested on this host; native parity is not claimed."
+  ],
+  "scope": [
+   "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
+   "Original solver tolerances; explicit bounded attempts and root verification."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_full.py"
+  ]
+ },
+ "version": {
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.fluid-case-state"
+   },
+   {
+    "asset_id": "scirel.kinetic.fluid-dispersion-response"
+   }
+  ],
+  "implementation_version": "0.1.0.dev11"
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ],
+ "composition": {
   "edges": [
    {
     "condition": "always within valid controls",
@@ -183,7 +281,7 @@
     "inputs": [
      "jcase"
     ],
-    "kind": "operator",
+    "kind": "function",
     "outputs": [
      "state"
     ]
@@ -213,109 +311,11 @@
      "kx",
      "state"
     ],
-    "kind": "operator",
+    "kind": "function",
     "outputs": [
      "response"
     ]
    }
   ]
- },
- "identity": {
-  "assumptions": [
-   "No flow or temperature anisotropy.",
-   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
-   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
-  ],
-  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
-  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "Fixed bounded dimensionless real/imaginary search at every angular frequency; root_valid requires independent determinant and normwise Maxwell null residual gates.",
-  "direction": "inverse: angular frequency to candidate wavevector",
-  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
-  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
-  "relation": "BONK wavevector root search"
- },
- "inputs": [
-  {
-   "constraints": "Exactly BONK case1,2 or3.",
-   "default": 1,
-   "description": "Source-defined case number.",
-   "dtype": "integer",
-   "name": "jcase",
-   "required": false,
-   "shape": "scalar",
-   "units": "dimensionless"
-  },
-  {
-   "constraints": "Finite real nonzero elements in the caller's order.",
-   "default": null,
-   "description": "Angular frequency axis; None selects the source frequency ladder.",
-   "dtype": "real array or None",
-   "name": "omegas",
-   "required": false,
-   "shape": "nonempty vector or None",
-   "units": "rad/s"
-  }
- ],
- "outputs": [
-  {
-   "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-   "description": "nf[m^-1], ordered xx[rad/s], root_valid, dual residuals, raw solver flags, iterations/evaluations, all attempts and complete source material state.",
-   "dtype": "mapping",
-   "name": "result",
-   "required": true,
-   "shape": "mapping of MATLAB-shape arrays",
-   "units": "mixed SI and dimensionless as described"
-  }
- ],
- "public_api": {
-  "python": {
-   "module": "scirel.kinetic.fluid_spectrum",
-   "signature": "solve_fluid_bonk(jcase=1, omegas=None)",
-   "canonical_module": "scirel.kinetic",
-   "canonical_symbol": "solve_fluid_bonk",
-   "symbol": "solve_fluid_bonk"
-  }
- },
- "schema": "scirel.asset-document",
- "summary": "Compose complete BONK cases and ordered root searches with explicit verified-root and terminal-state diagnostics.",
- "taxonomy": [
-  "kinetic",
-  "plasma-waves",
-  "fluid-dispersion"
- ],
- "title": {
-  "en": "Corrected BONK bounded root search",
-  "zh": "修正的 BONK 有界根搜索"
- },
- "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
-  "known_limitations": [
-   "Source permissions remain NOT_ESTABLISHED; no public release.",
-   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
-   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
-   "Pure-Python execution is tested on this host; native parity is not claimed."
-  ],
-  "scope": [
-   "Three complete cases and source default77-frequency axis; arbitrary valid finite supplied axes.",
-   "Original solver tolerances; explicit bounded attempts and root verification."
-  ],
-  "tests": [
-   "tests/kinetic/test_fluid_spectrum_full.py"
-  ]
- },
- "version": {
-  "dependencies": [
-   {
-    "asset_id": "scirel.kinetic.fluid-case-state"
-   },
-   {
-    "asset_id": "scirel.kinetic.fluid-dispersion-response"
-   }
-  ],
-  "implementation_version": "0.1.0.dev11"
- },
- "references": [
-  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
- ]
+ }
 }

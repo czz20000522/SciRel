@@ -109,7 +109,7 @@
   {
    "name": "Alpha_CX",
    "description": "H + H+ charge-exchange collision-frequency field: SIG_CX contracted with the Fortran-order flattened (fi_hat*ni) carrier, one (nvr,nvx) slice per spatial cell.",
-   "units": "s^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
+   "units": "m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
@@ -118,7 +118,7 @@
   {
    "name": "Alpha_H_H2",
    "description": "H-H2 elastic collision-frequency field: SIG_H_H2 contracted with the Fortran-order flattened fH2 slice.",
-   "units": "s^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
+   "units": "m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
@@ -127,7 +127,7 @@
   {
    "name": "Alpha_H_P",
    "description": "H-H+ elastic collision-frequency field: SIG_H_P contracted with the Fortran-order flattened (fi_hat*ni) carrier.",
-   "units": "s^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
+   "units": "m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
@@ -136,7 +136,7 @@
   {
    "name": "Alpha_H_H",
    "description": "H-H elastic collision-frequency field: SIG_H_H contracted with the Fortran-order flattened fH slice.",
-   "units": "s^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
+   "units": "m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,

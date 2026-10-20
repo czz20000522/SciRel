@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from scirel.closures.mirror_ambipolar_potential import ELEMENTARY_CHARGE_C, solve_mirror_ambipolar_potential, solve_mirror_ambipolar_potential as scientific_operator
+from scirel.closures.mirror_ambipolar_potential import ELEMENTARY_CHARGE_C, solve_mirror_ambipolar_potential, solve_mirror_ambipolar_potential as scientific_function
 
 
 PROTON_MASS_KG = 1.67262192595e-27
@@ -10,7 +10,7 @@ PROTON_MASS_KG = 1.67262192595e-27
 
 def test_balances_end_loss_current_on_every_flux_surface():
     psi = np.linspace(0.0, 0.1, 5)
-    result = scientific_operator(
+    result = scientific_function(
         np.ones_like(psi),
         np.full_like(psi, 4.0),
         psi,
@@ -29,7 +29,7 @@ def test_balances_end_loss_current_on_every_flux_surface():
 
 
 def test_zero_density_surfaces_return_the_reference_potential():
-    result = scientific_operator(
+    result = scientific_function(
         1.0,
         3.0,
         np.array([0.0, 1.0]),
@@ -47,7 +47,7 @@ def test_zero_density_surfaces_return_the_reference_potential():
 
 
 def test_joint_vacuum_solve_reports_one_update():
-    result = scientific_operator(
+    result = scientific_function(
         1.0, 3.0, np.array([0.0, 1.0]), PROTON_MASS_KG,
         ELEMENTARY_CHARGE_C, np.zeros(2), 1000.0 * ELEMENTARY_CHARGE_C,
         2000.0 * ELEMENTARY_CHARGE_C, 500.0 * ELEMENTARY_CHARGE_C,
@@ -60,7 +60,7 @@ def test_joint_vacuum_solve_reports_one_update():
 
 def test_rejects_an_empty_ion_loss_cone_for_ambipolar_solution():
     with pytest.raises(ValueError, match="ion_loss_refill"):
-        scientific_operator(
+        scientific_function(
             1.0, 3.0, 0.0, PROTON_MASS_KG, ELEMENTARY_CHARGE_C,
             2.0e18, 1000.0 * ELEMENTARY_CHARGE_C,
             2000.0 * ELEMENTARY_CHARGE_C, 500.0 * ELEMENTARY_CHARGE_C,
@@ -69,7 +69,7 @@ def test_rejects_an_empty_ion_loss_cone_for_ambipolar_solution():
 
 
 def test_prescribed_potential_evaluates_flux_without_solving():
-    result = scientific_operator(
+    result = scientific_function(
         np.ones(2), np.full(2, 4.0), np.array([0.0, 0.1]),
         PROTON_MASS_KG, ELEMENTARY_CHARGE_C, 2.0e18,
         1000.0 * ELEMENTARY_CHARGE_C, 2000.0 * ELEMENTARY_CHARGE_C,
@@ -89,8 +89,8 @@ def test_solve_ignores_prescribed_plug_potential():
         electron_temperature_j=500.0 * ELEMENTARY_CHARGE_C,
         ion_loss_refill=0.05,
     )
-    baseline = scientific_operator(**inputs)
-    with_ignored_potential = scientific_operator(**inputs, phi_plug_v=1.0e9)
+    baseline = scientific_function(**inputs)
+    with_ignored_potential = scientific_function(**inputs, phi_plug_v=1.0e9)
     for key in ("potential_v", "ion_particle_flux_m2_s", "electron_particle_flux_m2_s"):
         np.testing.assert_array_equal(with_ignored_potential[key], baseline[key])
     assert with_ignored_potential["iterations"] == baseline["iterations"]
@@ -99,12 +99,12 @@ def test_solve_ignores_prescribed_plug_potential():
 def test_vectorized_density_profile_matches_explicit_values():
     psi = np.array([0.0, 0.1, 0.2])
     density = lambda value: 2.0e18 * (1.0 - 0.2 * value)
-    callable_result = scientific_operator(
+    callable_result = scientific_function(
         np.ones(3), np.full(3, 4.0), psi, PROTON_MASS_KG, ELEMENTARY_CHARGE_C,
         density, 1000.0 * ELEMENTARY_CHARGE_C, 2000.0 * ELEMENTARY_CHARGE_C,
         500.0 * ELEMENTARY_CHARGE_C, mode="evaluate", phi_plug_v=-1000.0,
     )
-    array_result = scientific_operator(
+    array_result = scientific_function(
         np.ones(3), np.full(3, 4.0), psi, PROTON_MASS_KG, ELEMENTARY_CHARGE_C,
         density(psi), 1000.0 * ELEMENTARY_CHARGE_C, 2000.0 * ELEMENTARY_CHARGE_C,
         500.0 * ELEMENTARY_CHARGE_C, mode="evaluate", phi_plug_v=-1000.0,
@@ -192,8 +192,8 @@ def test_review_gate_rejects_nonfinite_and_noninteger_solver_controls():
         mode="evaluate", phi_plug_v=0.0,
     )
     with pytest.raises(ValueError, match="ion_mass_kg"):
-        scientific_operator(**{**base, "ion_mass_kg": np.nan})
+        scientific_function(**{**base, "ion_mass_kg": np.nan})
     with pytest.raises(ValueError, match="ion_charge_c"):
-        scientific_operator(**{**base, "ion_charge_c": np.nan})
+        scientific_function(**{**base, "ion_charge_c": np.nan})
     with pytest.raises(ValueError, match="max_iterations"):
-        scientific_operator(**{**base, "max_iterations": 2.0})
+        scientific_function(**{**base, "max_iterations": 2.0})
