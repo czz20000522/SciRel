@@ -9,7 +9,7 @@
   ],
   "preconditions": [
    "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
-   "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 the declared local Python runtime remains required.",
+   "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required.",
    "Finite integer harmonic orders for Gamma; parameter is required for Gamma and R, ignored for Z."
   ],
   "supported": [
