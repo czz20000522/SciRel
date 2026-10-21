@@ -20,8 +20,9 @@ from urllib.parse import parse_qs, urlsplit
 from packaging.version import InvalidVersion, Version
 
 from validate_asset_documents import load_document_set
-from build_scirel_sphinx import (LANGUAGE_TAGS, english_translation_gaps,
-                                handbook_english_skeleton, load_translations,
+from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
+                                english_guide_status, english_translation_gaps,
+                                load_english_handbook, load_translations,
                                 render_site)
 from build_capability_matrix import build_matrix, render_markdown
 
@@ -504,8 +505,12 @@ def build(documents: Path, output: Path, outline: Path | None = None,
             raise ValueError('English build does not consume Chinese reader bundles')
         translations = None
     book = handbook_document({d['asset_id'] for d in docs}, outline)
+    english_guides = None
     if language == 'en':
-        book = handbook_english_skeleton(book)
+        book = load_english_handbook(ROOT, book)
+        english_guides = english_guide_status(
+            ROOT, book['chapters'],
+            english_available_docs(ROOT, book, {d['asset_id'] for d in docs}, matrix=True))
     files = {}
     index = []
     for doc in docs:
@@ -573,6 +578,7 @@ def build(documents: Path, output: Path, outline: Path | None = None,
                 'files': {p: {'sha256': sha(b), 'bytes': len(b)} for p, b in sorted(files.items())}}
     if language == 'en':
         manifest['translation_gaps'] = english_translation_gaps(docs)
+        manifest['english_guides'] = english_guides
     manifest['snapshot_sha256'] = sha(encode(manifest))
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as tmp:

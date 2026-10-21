@@ -1,11 +1,13 @@
 """Render exact scientific records and reviewed prose with SciPy's theme.
 
 Two languages share one contract source.  The Chinese site projects the bound
-Chinese reader layer; the English site projects the English contract fields and
-uses identifier-only navigation until English guides are authored.  No
-scientific imports, autodoc execution, translation inference or example runs
-are performed; all generated reStructuredText is a projection of reviewed
-input documents.
+Chinese reader layer.  The English site projects the English contract fields,
+uses reviewed navigation from ``tools/docs/handbook.en.json``, and renders
+``tools/docs/manual/en/<chapter-id>.rst`` guides when authored; missing guides
+receive explicit English placeholders and Chinese guide prose is never used as
+a fallback.  No scientific imports, autodoc execution, translation inference or
+example runs are performed; all generated reStructuredText is a projection of
+reviewed input documents.
 """
 from __future__ import annotations
 
@@ -13,6 +15,7 @@ import hashlib
 from importlib.metadata import version
 import json
 from pathlib import Path
+import posixpath
 import re
 import shutil
 import subprocess
@@ -26,15 +29,24 @@ ENGLISH_GUIDE_PLACEHOLDER = (
     'English user-guide text for this chapter is not authored yet. Use the API '
     'reference for signatures, ports, failure behavior, applicability and examples.'
 )
+ENGLISH_GUIDE_SUBSET_PLACEHOLDER = (
+    'The English guide for this chapter is authored, but this reduced documentation '
+    'selection does not include every page it references. Use the full English '
+    'documentation or the API reference for the selected functions.'
+)
 _CJK = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]')
 
 
-def handbook_english_skeleton(book):
-    """Project the canonical navigation onto an English identifier-only skeleton.
+_ENGLISH_HANDBOOK = Path('tools/docs/handbook.en.json')
+_ENGLISH_MANUAL = Path('tools/docs/manual/en')
 
-    The English guide is not authored yet.  Chinese human-readable fields are
-    replaced by stable IDs and an explicit placeholder, never by machine
-    translation, so the English site can build without inventing prose.
+
+def handbook_english_placeholder(book):
+    """Return explicit English placeholders when the reviewed handbook is absent.
+
+    This fallback never copies Chinese guide prose into the English site.  It
+    is only used when ``tools/docs/handbook.en.json`` is missing; the identifier
+    and placeholder text make the missing review visible on every page.
     """
     chapters = []
     for chapter in book['chapters']:
@@ -58,9 +70,183 @@ def handbook_english_skeleton(book):
     return {
         'schema': book['schema'],
         'title': 'SciRel scientific handbook',
-        'introduction': ('English navigation is a skeleton: chapter and topic '
-                         'identifiers are shown until English guides are authored.'),
+        'introduction': ('English navigation is a placeholder: chapter and topic '
+                         'identifiers are shown until the reviewed English handbook '
+                         'is authored.'),
         'chapters': chapters,
+    }
+
+
+def _english_text(value, where):
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(where + ' must be a non-empty English string')
+    if _CJK.search(value):
+        raise ValueError(where + ' must be English, not Chinese')
+    return value
+
+
+def _validate_english_handbook(english, canonical):
+    """Validate structure and language of ``handbook.en.json`` against canonical."""
+    if not isinstance(english, dict) or english.get('schema') != 'scirel.handbook':
+        raise ValueError('invalid English handbook schema')
+    _english_text(english.get('title'), 'English handbook title')
+    _english_text(english.get('introduction'), 'English handbook introduction')
+    english_chapters = english.get('chapters')
+    canonical_chapters = canonical['chapters']
+    if not isinstance(english_chapters, list) or len(english_chapters) != len(canonical_chapters):
+        raise ValueError('English handbook chapter count differs from the canonical handbook')
+    for english_chapter, canonical_chapter in zip(english_chapters, canonical_chapters, strict=True):
+        chapter_id = canonical_chapter['id']
+        if not isinstance(english_chapter, dict) or english_chapter.get('id') != chapter_id:
+            raise ValueError('English handbook chapter order differs from the canonical handbook')
+        _english_text(english_chapter.get('title'), 'English chapter ' + chapter_id + ' title')
+        _english_text(english_chapter.get('introduction'),
+                      'English chapter ' + chapter_id + ' introduction')
+        discipline = english_chapter.get('discipline')
+        if not isinstance(discipline, list) or not discipline:
+            raise ValueError('English chapter ' + chapter_id + ' needs a discipline list')
+        for item in discipline:
+            _english_text(item, 'English chapter ' + chapter_id + ' discipline')
+        english_topics = english_chapter.get('topics')
+        canonical_topics = canonical_chapter['topics']
+        if not isinstance(english_topics, list) or len(english_topics) != len(canonical_topics):
+            raise ValueError('English handbook topic count differs for chapter ' + chapter_id)
+        for english_topic, canonical_topic in zip(english_topics, canonical_topics, strict=True):
+            topic_id = canonical_topic['id']
+            if not isinstance(english_topic, dict) or english_topic.get('id') != topic_id:
+                raise ValueError('English handbook topic order differs for ' + topic_id)
+            _english_text(english_topic.get('title'), 'English topic ' + topic_id + ' title')
+            _english_text(english_topic.get('introduction'),
+                          'English topic ' + topic_id + ' introduction')
+            if english_topic.get('assets') != canonical_topic['assets']:
+                raise ValueError('English handbook assets differ for topic ' + topic_id)
+
+
+def load_english_handbook(root, book):
+    """Project reviewed English navigation onto one exact document subset.
+
+    ``book`` is the canonical navigation already projected onto the selected
+    contracts.  When ``tools/docs/handbook.en.json`` exists it must mirror the
+    canonical chapter/topic identity and asset placement exactly; only the
+    reviewed English prose is taken from it.  When the file is absent, explicit
+    English identifiers and placeholders are returned instead of Chinese prose.
+    """
+    path = Path(root) / _ENGLISH_HANDBOOK
+    if not path.is_file():
+        return handbook_english_placeholder(book)
+    canonical_path = Path(root) / 'tools/docs/handbook.json'
+    if not canonical_path.is_file():
+        raise ValueError('canonical handbook is required to validate the English handbook')
+    english = json.loads(path.read_bytes())
+    canonical = json.loads(canonical_path.read_bytes())
+    _validate_english_handbook(english, canonical)
+    english_chapters = {chapter['id']: chapter for chapter in english['chapters']}
+    chapters = []
+    for chapter in book['chapters']:
+        english_chapter = english_chapters[chapter['id']]
+        english_topics = {topic['id']: topic for topic in english_chapter['topics']}
+        topics = []
+        for topic in chapter['topics']:
+            english_topic = english_topics[topic['id']]
+            topics.append({
+                'id': topic['id'],
+                'title': english_topic['title'],
+                'introduction': english_topic['introduction'],
+                'assets': list(topic['assets']),
+            })
+        chapters.append({
+            'id': chapter['id'],
+            'title': english_chapter['title'],
+            'discipline': list(english_chapter['discipline']),
+            'introduction': english_chapter['introduction'],
+            'topics': topics,
+        })
+    return {
+        'schema': english['schema'],
+        'title': english['title'],
+        'introduction': english['introduction'],
+        'chapters': chapters,
+    }
+
+
+def english_manual_chapter(root, chapter_id):
+    """Return one authored English guide, or ``None`` when it is not present.
+
+    Only ``tools/docs/manual/en/<chapter-id>.rst`` is considered.  Chinese
+    chapter files are never a fallback; a present file that still contains
+    Chinese fails closed instead of leaking Chinese prose into the English site.
+    """
+    path = Path(root) / _ENGLISH_MANUAL / (chapter_id + '.rst')
+    if not path.is_file():
+        return None
+    text = path.read_text(encoding='utf-8')
+    if not text.strip():
+        return None
+    if _CJK.search(text):
+        raise ValueError('English guide contains Chinese text: ' + str(path))
+    return text
+
+
+def _english_doc_refs(text):
+    """Return the targets of ``:doc:`` roles in one guide page."""
+    refs = []
+    for match in re.finditer(r':doc:`([^`]+)`', text):
+        target = match.group(1)
+        if '<' in target and target.endswith('>'):
+            target = target.rsplit('<', 1)[1][:-1]
+        refs.append(target.strip())
+    return refs
+
+
+def english_available_docs(root, book, asset_ids, *, matrix):
+    """Return the docnames present in one English documentation selection."""
+    available = {'index', 'user-guide/index', 'reference/index'}
+    for chapter in book['chapters']:
+        available.add('user-guide/' + chapter['id'])
+        available.add('reference/' + chapter['id'])
+        for topic in chapter['topics']:
+            for asset in topic['assets']:
+                if asset in asset_ids:
+                    available.add('reference/generated/' + asset)
+    if matrix is not None:
+        available.add('user-guide/capability-matrix')
+    canonical_path = Path(root) / 'tools/docs/handbook.json'
+    if canonical_path.is_file():
+        for chapter in json.loads(canonical_path.read_bytes())['chapters']:
+            for topic in chapter['topics']:
+                tutorial_id = topic.get('tutorial_id')
+                if tutorial_id:
+                    available.add('tutorials/' + tutorial_id)
+    return available
+
+
+def _english_guide_content(root, chapter_id, available):
+    """Return ``(text, status)`` for one English guide.
+
+    Status is ``authored`` when the guide exists and every ``:doc:`` target is
+    present in this selection, ``placeholder`` when no guide file exists, and
+    ``subset-placeholder`` when the authored guide references pages outside a
+    reduced selection.
+    """
+    text = english_manual_chapter(root, chapter_id)
+    if text is None:
+        return None, 'placeholder'
+    for target in _english_doc_refs(text):
+        if target.startswith('/'):
+            doc = target[1:]
+        else:
+            base = posixpath.dirname('user-guide/' + chapter_id)
+            doc = posixpath.normpath(posixpath.join(base, target))
+        if doc not in available:
+            return None, 'subset-placeholder'
+    return text, 'authored'
+
+
+def english_guide_status(root, chapters, available):
+    """Return each chapter's English guide status for this selection."""
+    return {
+        chapter['id']: _english_guide_content(root, chapter['id'], available)[1]
+        for chapter in chapters
     }
 
 
@@ -465,13 +651,16 @@ def _render_english_matrix_page(matrix):
 
 
 def _render_english_site(root, docs, book, *, matrix=None):
-    """Render the English skeleton site from English contract fields.
+    """Render the English site from reviewed glossary and guide inputs.
 
-    The user guide, navigation prose and tutorials are explicit skeletons: no
-    Chinese guide text is copied into English pages and no translation is
+    Navigation prose comes from ``tools/docs/handbook.en.json``.  A chapter is
+    rendered from its authored ``tools/docs/manual/en/<chapter-id>.rst`` file
+    when one exists, otherwise it receives an explicit English placeholder.
+    Chinese guide text is never copied into English pages and no translation is
     invented.  API pages, matrix and search are contract-derived.
     """
     by_id = {d['asset_id']: d for d in docs}
+    available_docs = english_available_docs(root, book, set(by_id), matrix=matrix)
     with tempfile.TemporaryDirectory(prefix='scirel-sphinx-en-') as temp:
         stage = Path(temp); source = stage/'source'; output = stage/'html'
         shutil.copytree(root/'tools/docs/sphinx', source,
@@ -488,6 +677,25 @@ def _render_english_site(root, docs, book, *, matrix=None):
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(text)
 
+        # English guide chapters may cross-reference the execution-backed
+        # tutorials.  The staged English site has no Chinese tutorial prose, so
+        # give those docnames explicit English placeholders rather than letting
+        # Sphinx fail on unresolved references.
+        tutorial_ids = []
+        canonical_path = Path(root) / 'tools/docs/handbook.json'
+        if canonical_path.is_file():
+            for chapter in json.loads(canonical_path.read_bytes())['chapters']:
+                for topic in chapter['topics']:
+                    tutorial_id = topic.get('tutorial_id')
+                    if tutorial_id and tutorial_id not in tutorial_ids:
+                        tutorial_ids.append(tutorial_id)
+        for tutorial_id in tutorial_ids:
+            write('tutorials/' + tutorial_id,
+                  title(tutorial_id.replace('-', ' ').title())
+                  + 'English tutorial text for this execution-backed case is not authored yet. '
+                    'The contract-derived API reference and the chapter guides are available; '
+                    'this page is an explicit placeholder so that guide cross-references remain valid.\n\n')
+
         home = title('SciRel documentation')
         home += ('SciRel is a Python library of scientific relations. Choose a single '
                  'scientific function for a well-defined problem, or compose several '
@@ -495,7 +703,7 @@ def _render_english_site(root, docs, book, *, matrix=None):
         home += '.. grid:: 1 2 2 2\n   :gutter: 3\n\n'
         cards = [
             ('User guide', 'user-guide/index',
-             'English guide chapters; identifiers are shown until English tutorials are authored.'),
+             'Reviewed English guide chapters; chapters still in progress show an explicit placeholder.'),
             ('API reference', 'reference/index',
              'Contract-derived signatures, ports, failure behavior, applicability and examples.'),
         ]
@@ -507,15 +715,18 @@ def _render_english_site(root, docs, book, *, matrix=None):
                      + '\n      :link-type: doc\n\n      ' + description + '\n\n')
         home += ('This is a development snapshot. Each function keeps its own implementation '
                  'version; use the applicability and evidence scope on its API page.\n\n')
-        home += toctree(['user-guide/index', 'reference/index'], hidden=True)
+        home += toctree(['user-guide/index', 'reference/index']
+                        + ['tutorials/' + tutorial_id for tutorial_id in tutorial_ids],
+                        hidden=True)
         write('index', home)
         guide_links = [c['id'] for c in book['chapters']]
         if matrix is not None:
             guide_links.append('capability-matrix')
         write('user-guide/index',
               title('User guide')
-              + ('English guide text is not authored yet. The chapter identifiers below link '
-                 'to the contract-derived API reference.\n\n')
+              + ('The English user guide is authored chapter by chapter. Chapters with an '
+                 'English guide are shown in full; the remaining chapters show a placeholder '
+                 'until their English text is added.\n\n')
               + toctree(guide_links))
         if matrix is not None:
             write('user-guide/capability-matrix',
@@ -527,11 +738,19 @@ def _render_english_site(root, docs, book, *, matrix=None):
                  'examples.\n\n')
               + toctree([c['id'] for c in book['chapters']], maxdepth=1))
         for c in book['chapters']:
-            write('user-guide/' + c['id'], title(c['id']) + ENGLISH_GUIDE_PLACEHOLDER + '\n\n')
-            ref = title(c['id']) + c['introduction'] + '\n\n'
+            authored, guide_status = _english_guide_content(root, c['id'], available_docs)
+            if authored is None:
+                placeholder = (ENGLISH_GUIDE_SUBSET_PLACEHOLDER
+                               if guide_status == 'subset-placeholder'
+                               else ENGLISH_GUIDE_PLACEHOLDER)
+                write('user-guide/' + c['id'], title(c['title']) + placeholder + '\n\n')
+            else:
+                write('user-guide/' + c['id'],
+                      authored if authored.endswith('\n') else authored + '\n')
+            ref = title(c['title']) + c['introduction'] + '\n\n'
             for topic in c['topics']:
                 records = [by_id[a] for a in topic['assets']]
-                ref += title(topic['id'], '-') + topic['introduction'] + '\n\n'
+                ref += title(topic['title'], '-') + topic['introduction'] + '\n\n'
                 ref += title('Functions', '~') + function_table(records, None, language='en')
                 ref += title('Model and conditions', '~')
                 for d in records:

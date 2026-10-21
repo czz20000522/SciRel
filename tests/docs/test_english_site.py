@@ -1,11 +1,11 @@
-"""English documentation skeleton.
+"""English documentation build.
 
 The English site is a language parameter over the same documentation builder:
-API pages project the English contract fields, navigation and guide pages are
-explicit identifier-only skeletons, search uses English contract text, and no
-Chinese reader layer is bound.  Chinese-site tests remain in
-``test_scirel_docs.py``; this file proves the English build path without
-translating contracts or guides.
+API pages project the English contract fields, navigation comes from
+``tools/docs/handbook.en.json``, guide pages come from
+``tools/docs/manual/en/<chapter-id>.rst`` when authored and otherwise show an
+explicit English placeholder, search uses English contract text, and no Chinese
+reader layer is bound.  Chinese-site tests remain in ``test_scirel_docs.py``.
 """
 import json
 import re
@@ -19,7 +19,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from scirel_docs import Documentation, LANGUAGES, build  # noqa: E402
-from build_scirel_sphinx import english_translation_gaps  # noqa: E402
+from build_scirel_sphinx import (ENGLISH_GUIDE_PLACEHOLDER,
+                                 ENGLISH_GUIDE_SUBSET_PLACEHOLDER,
+                                 english_manual_chapter,
+                                 english_translation_gaps,
+                                 load_english_handbook)  # noqa: E402
 from _document_fixtures import copy_example_closure, example_document_sources  # noqa: E402
 
 CJK = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]')
@@ -70,24 +74,87 @@ def test_english_api_page_is_contract_derived(english_snapshot):
     assert record['example']['code'].splitlines()[0] in text
 
 
-def test_english_navigation_and_guide_are_identifier_skeletons(english_snapshot):
+def test_english_handbook_uses_reviewed_navigation(english_snapshot):
     docs = Documentation(english_snapshot)
     book = docs.handbook()['document']
-    assert book['title'] == 'SciRel scientific handbook'
-    assert book['chapters']
-    for chapter in book['chapters']:
-        assert chapter['title'] == chapter['id']
-        assert not CJK.search(chapter['introduction'])
-        assert chapter['topics']
+    assert book['title'] == 'SciRel Scientific Handbook'
+    chapters = book['chapters']
+    topics = [topic for chapter in chapters for topic in chapter['topics']]
+    assets = [asset for topic in topics for asset in topic['assets']]
+    assert len(chapters) == 9
+    assert len(topics) == 69
+    assert len(assets) == len(set(assets)) == 248
+    assert set(assets) == docs.ids
+    for chapter in chapters:
+        assert chapter['title'] != chapter['id']
+        assert chapter['discipline']
+        assert not CJK.search(chapter['title'] + chapter['introduction']
+                              + ' '.join(chapter['discipline']))
         for topic in chapter['topics']:
-            assert topic['title'] == topic['id']
-            assert not CJK.search(topic['introduction'])
+            assert topic['title'] != topic['id']
+            assert not CJK.search(topic['title'] + topic['introduction'])
             assert 'tutorial_id' not in topic
-    guide = docs.read('web/user-guide/electromagnetism.html').decode()
-    assert 'not authored yet' in guide
-    assert not CJK.search(guide)
+    assert not CJK.search(json.dumps(book, ensure_ascii=False))
     reference = docs.read('web/reference/electromagnetism.html').decode()
+    assert chapters[0]['title'] in reference
     assert 'Functions' in reference and 'Model and conditions' in reference
+
+
+def test_english_guides_use_authored_files_or_explicit_placeholders(english_snapshot):
+    docs = Documentation(english_snapshot)
+    status = docs.manifest['english_guides']
+    chapters = docs.handbook()['document']['chapters']
+    assert set(status) == {chapter['id'] for chapter in chapters}
+    assert set(status.values()) <= {'authored', 'placeholder', 'subset-placeholder'}
+    for chapter in chapters:
+        page = docs.read('web/user-guide/' + chapter['id'] + '.html').decode()
+        assert not CJK.search(page)
+        if status[chapter['id']] == 'authored':
+            assert ENGLISH_GUIDE_PLACEHOLDER not in page
+            assert ENGLISH_GUIDE_SUBSET_PLACEHOLDER not in page
+        elif status[chapter['id']] == 'subset-placeholder':
+            assert ENGLISH_GUIDE_SUBSET_PLACEHOLDER in page
+        else:
+            assert ENGLISH_GUIDE_PLACEHOLDER in page
+
+
+def test_english_handbook_file_matches_canonical_structure():
+    canonical = json.loads((ROOT / 'tools/docs/handbook.json').read_text(encoding='utf-8'))
+    english = json.loads((ROOT / 'tools/docs/handbook.en.json').read_text(encoding='utf-8'))
+
+    def structure(book):
+        return [(chapter['id'], [topic['id'] for topic in chapter['topics']],
+                 [list(topic['assets']) for topic in chapter['topics']])
+                for chapter in book['chapters']]
+
+    assert structure(english) == structure(canonical)
+    assert len(english['chapters']) == 9
+    assert sum(len(chapter['topics']) for chapter in english['chapters']) == 69
+    assert len({asset for chapter in english['chapters']
+                for topic in chapter['topics'] for asset in topic['assets']}) == 248
+    assert not CJK.search(json.dumps(english, ensure_ascii=False))
+
+
+def test_english_handbook_falls_back_to_explicit_english_placeholders(tmp_path):
+    canonical = json.loads((ROOT / 'tools/docs/handbook.json').read_text(encoding='utf-8'))
+    target = tmp_path / 'tools/docs/handbook.json'
+    target.parent.mkdir(parents=True)
+    target.write_text(json.dumps(canonical), encoding='utf-8')
+    book = load_english_handbook(tmp_path, canonical)
+    assert book['title'] == 'SciRel scientific handbook'
+    assert all(chapter['title'] == chapter['id'] for chapter in book['chapters'])
+    assert not CJK.search(json.dumps(book, ensure_ascii=False))
+
+
+def test_english_manual_never_falls_back_to_chinese(tmp_path):
+    assert english_manual_chapter(tmp_path, 'electromagnetism') is None
+    guide = tmp_path / 'tools/docs/manual/en/electromagnetism.rst'
+    guide.parent.mkdir(parents=True)
+    guide.write_text('Reviewed English guide\n=======================\n', encoding='utf-8')
+    assert english_manual_chapter(tmp_path, 'electromagnetism').startswith('Reviewed English guide')
+    guide.write_text('中文指南\n========\n', encoding='utf-8')
+    with pytest.raises(ValueError, match='Chinese text'):
+        english_manual_chapter(tmp_path, 'electromagnetism')
 
 
 def test_english_search_uses_english_contract_text(english_snapshot):
@@ -145,3 +212,10 @@ def test_english_build_cli_accepts_language(tmp_path):
     assert manifest['reader_language'] == 'en-US'
     assert manifest['asset_count'] == len(subset)
     assert 'web/index.html' in manifest['files']
+    book = json.loads((output / 'handbook.json').read_text(encoding='utf-8'))
+    selected = [asset for chapter in book['chapters']
+                for topic in chapter['topics'] for asset in topic['assets']]
+    assert set(selected) == set(subset)
+    assert set(manifest['english_guides']) == {chapter['id'] for chapter in book['chapters']}
+    assert set(manifest['english_guides'].values()) <= {
+        'authored', 'placeholder', 'subset-placeholder'}

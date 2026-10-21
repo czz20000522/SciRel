@@ -1,7 +1,13 @@
 # 手写教程章节规范
 
-用户指南只接受 `tools/docs/manual/<chapter-id>.rst` 的手写教程；没有手写稿的章节在 HTML 中保持空白。
+用户指南只接受手写教程：中文为 `tools/docs/manual/<chapter-id>.rst`，英文为
+`tools/docs/manual/en/<chapter-id>.rst`。没有手写稿的章节在对应语言 HTML 中保持空白或显示明确占位。
 合同（`catalog/examples/*.json`）只提供 API 参考、签名、失败行为和可验证事实，不再被拼成教程正文。
+
+英文导航的章节标题与导读来自 `tools/docs/handbook.en.json`，其章节/主题/资产结构必须与
+`tools/docs/handbook.json` 一致。英文构建优先读取已存在的 `manual/en` 文件；缺失时显示英文占位，
+绝不回退中文；若英文指南仍含中文则构建失败关闭。缩减文档集（只选部分资产）中，指南若引用了
+集合外页面则显示英文 subset 占位，不静默改写作者正文。
 
 ## 参考样板
 
