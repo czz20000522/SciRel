@@ -1533,40 +1533,70 @@
    ]
   },
   "scirel.kinetic.generalized-dispersion": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "selector 5 is mass-incomplete and selector 6 uses a finite-cutoff normalization; piecewise lower-plane values are a real-contour transform, not an inferred analytic continuation; the Gaussian high-phase branch is independently checked, other custom densities are only covered by the restricted parser/quadrature envelope."
+    }
+   ]
   },
   "scirel.kinetic.generalized-expression-differentiation": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "the parser does not prove integrability, positivity, normalization or analytic continuation; arithmetic exceptions/nonfinite evaluations are not symbolic diagnoses."
+    }
+   ]
   },
   "scirel.kinetic.generalized-hilbert": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "the real-axis removable-point derivative uses a symmetric second-derivative estimate with no global error certificate; restricted parser; lower continuation only adds the declared residue term."
+    }
+   ]
   },
   "scirel.kinetic.generalized-residual": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "IAW/beam use the ordinary Faddeeva response and freeze the ion/beam parameters; extreme phase/temperature inputs can be unrepresentable; generalized-kind custom density quadrature is not interval-certified."
+    }
+   ]
   },
   "scirel.kinetic.generalized-root-scans": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "generic non-Maxwellian quadrature roots are not interval-certified and no quadrature error enters the acceptance gate; the default beam seed follows a damped branch and its preserved short-grid failure is a documented limitation, not a universal solver."
+    }
+   ]
   },
   "scirel.kinetic.generalized-small-k": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "the closed form is asymptotic: large-k finite outputs do not imply asymptotic validity; damping below float64 underflows to zero; exact k=0 is rejected."
+    }
+   ]
   },
   "scirel.kinetic.generation-accumulation-update": {
    "status": "pass-with-limits",
@@ -1718,16 +1748,26 @@
    ]
   },
   "scirel.kinetic.maxwellian-electrostatic-mode": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "epsilon_error is an estimate rather than a rigorous enclosure; finite inputs can have an unrepresentable complex response and no root is inferred from one evaluation."
+    }
+   ]
   },
   "scirel.kinetic.maxwellian-electrostatic-solver": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "the estimated error is not a rigorous enclosure; no uniqueness, least-damped-branch or global root-selection claim; supplied seeds select branches."
+    }
+   ]
   },
   "scirel.kinetic.mirror-constrained-moments": {
    "status": "pass-with-limits",
@@ -2118,10 +2158,15 @@
    ]
   },
   "scirel.kinetic.shifted-maxwellian-seed": {
-   "status": "not-audited",
-   "reason": "missing from D1-D5 domain audit",
-   "required_decision": "audit this asset before exposure",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/audit-d6.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "",
+     "residual_risk": "this is the pre-compensation seed, not the final compensated distribution; constants are fixed historical values; the -80 exponent floor is numerical (floored values carry no exponential resolution and must not be read as a physical Maxwellian); licensing pending."
+    }
+   ]
   },
   "scirel.kinetic.simple-charge-exchange-source": {
    "status": "pass-with-limits",
