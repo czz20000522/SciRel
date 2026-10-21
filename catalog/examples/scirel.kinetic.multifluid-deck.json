@@ -84,16 +84,16 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Blocked: the bound shared multifluid test file does not call fluid_deck(); the contract example only observes one fixture.",
+   "No direct shape/content/round-trip gate for the stored deck is bound."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Blocked: no direct asset-specific validation evidence is bound for fluid_deck(). The shared multifluid test file exercises other public symbols; it is not evidence for this fixture. The bounded example is a fixture observation, not validation. Reopen after a direct deck test (shape, finite SI fields, electron/ion role order and fixed constants) is bound, or withdraw the asset from release.",
   "known_limitations": [
-   "This is one attributed equilibrium fixture, not a plasma-parameter catalog.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Validation is blocked because the bound test file does not call fluid_deck().",
+   "This is one attributed equilibrium fixture, not a plasma-parameter catalog."
   ]
  },
  "references": [

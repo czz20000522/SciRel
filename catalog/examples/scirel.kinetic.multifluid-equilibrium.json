@@ -155,17 +155,17 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Direct analytic/manufactured gates for fluid_equilibrium_si: zero-field cold-frequency analytic modes, gyrotropic pressure rotation coefficient, zero-field anisotropy rejection, fixed-axis versus field-following pressure, complex-wavevector cold analytic holdout, and relativistic inertia against a finite-difference momentum derivative.",
+   "The bounded example is one two-species SI deck; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared SI multifluid equilibrium construction on the tested two-species decks and manufactured/analytic cases. The gate establishes the zero-field cold-mode state, gyrotropic pressure response, fixed-axis/field-following distinction, complex-wavevector construction and relativistic momentum derivative on those cases. It does not establish arbitrary deck/parameter parity, global force balance, or a physical closure.",
   "known_limitations": [
    "Fixed-axis and field-following pressure are distinct physical models.",
    "No global equilibrium force-balance proof is supplied.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The evidence is bounded to the tested manufactured decks; it is not a parameter-space or experimental calibration."
   ]
  },
  "references": [

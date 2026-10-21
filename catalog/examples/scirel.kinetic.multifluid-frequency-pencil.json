@@ -131,17 +131,17 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Direct analytic/manufactured gates for fluid_frequency_pencil: zero-field cold-frequency analytic modes, gyrotropic pressure tensor rotation, fixed-axis versus field-following anisotropy, complex-wavevector holdout, and relativistic inertia against a finite-difference momentum derivative.",
+   "The bounded example is one input case; it does not establish a general parameter envelope."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared multifluid frequency-pencil assembly on the tested two-species decks and manufactured analytic cases. The gate checks analytic cold modes, gyrotropic pressure response, fixed-axis/field-following anisotropy, a complex-wavevector holdout and relativistic inertia against a finite-difference derivative. It does not establish arbitrary-parameter parity, defective-eigenvalue completeness, mode identity or physical branch selection.",
   "known_limitations": [
    "Gyrotropic pressure closure is a declared local fluid model.",
    "Assembly does not select a physical branch or remove constraint modes.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Defective/repeated sectors can return an incomplete eigenbasis; no completeness claim is made."
   ]
  },
  "references": [

@@ -152,17 +152,17 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "test_vacuum_continuation_matches_analytic_branch_and_zero_residual checks the vacuum analytic branch (omega=0.2,0.21 on the two-point grid with zero scaled residual); test_parallel_rejects_complex_and_unrepresentable_wavevectors covers malformed k grids; the residual itself has the direct Hermite-quadrature gate in the same file.",
+   "The bounded example covers one representative continuation; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_parallel.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared continuation on the tested vacuum two-point branch and failure contract. The vacuum analytic branch is reproduced with zero scaled residual, malformed k grids are rejected, and the underlying residual has a direct Hermite-quadrature gate. It does not establish non-vacuum continuation accuracy, seed-independent branch selection, uniqueness or largest-growth behavior.",
   "known_limitations": [
+   "The analytic continuation check is a vacuum two-point case only; no non-vacuum accuracy claim is made.",
    "A continued root is seed-dependent; no uniqueness or largest-growth claim.",
-   "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1."
   ]
  },
  "references": [

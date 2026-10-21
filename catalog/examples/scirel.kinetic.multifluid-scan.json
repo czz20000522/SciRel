@@ -142,19 +142,18 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "External PDRF real-frequency reference points are covered by tests/kinetic/test_dispersion_multifluid_oracle.py."
+   "External PDRF gate: test_multifluid_scan_point_matches_external_pdrf_truth checks scan_fluid_corrected at four (kx,kz) points against the same 14 independent real frequencies used by the solve gate.",
+   "The bounded example is a representative case only."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_multifluid.py",
-   "tests/kinetic/test_dispersion_multifluid_oracle.py"
+   "tests/kinetic/test_dispersion_multifluid_oracle.py",
+   "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared multifluid scan over the tested point grid. The external PDRF gate checks scan_fluid_corrected at four (kx,kz) points against 14 independent real frequencies, and the underlying solve is gated separately. It does not establish arbitrary grid/parameter coverage, branch continuity (sorts are per point) or physical mode identity.",
   "known_limitations": [
    "Descending frequency sorts are per point and do not identify a continuous physical branch.",
    "Default method 4 is finite but substantially larger than bounded qualification grids.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The external truth covers four (kx,kz) points and real frequencies only."
   ]
  },
  "references": [

@@ -191,17 +191,17 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Blocked: no bound test calls fluid_equilibrium_relative_rates().",
+   "test_declared_relative_rate_variant_all_roles_and_permutation covers the pair-exchange dependency, not this wrapper's roles, equilibrium state or failure contract."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Blocked: no direct asset-specific validation evidence is bound for fluid_equilibrium_relative_rates(). The shared test exercises the underlying pair-exchange dependency; it does not establish the wrapper's public behavior. Reopen after a direct wrapper gate (species roles, returned equilibrium/state, relative-rate controls and failure paths) is bound, or withdraw from release.",
   "known_limitations": [
+   "Validation is blocked because the bound test file does not call fluid_equilibrium_relative_rates().",
    "Relative-pair and bath rates have different conservation properties.",
-   "Rates form a declared scientific variant; positive-rate growth is not reproduced.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Rates form a declared scientific variant; positive-rate growth is not reproduced."
   ]
  },
  "references": [

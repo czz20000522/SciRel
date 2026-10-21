@@ -151,18 +151,20 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "External PDRF gate: test_external_pdrf_two_species_spectrum_keeps_all_14_modes compares all 14 real frequencies of fluid_solve_state with independent PDRF reference values at four (kx,kz) points; rtol=2e-9, backward error <=1e-10, zero-structure multiplicities checked.",
+   "Analytic/manufactured gates cover zero-field cold modes, generalized nonidentity inertia and a complex-wavevector cold analytic holdout.",
+   "The bounded example is a representative case only."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_multifluid.py",
-   "tests/kinetic/test_dispersion_multifluid_oracle.py"
+   "tests/kinetic/test_dispersion_multifluid_oracle.py",
+   "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared fluid frequency solve on the tested two-species/PDRF decks. The primary gate compares all 14 real frequencies against independent PDRF values at four (kx,kz) points (rtol 2e-9) and requires backward errors <=1e-10; analytic/manufactured gates cover zero-field cold modes, nonidentity inertia and complex-wavevector holdouts. It does not establish arbitrary-parameter parity, branch uniqueness, imaginary growth rates (the PDRF imaginary floor is not physical), or a global model.",
   "known_limitations": [
    "Residual qualification is backward accuracy, not forward conditioning of a near-multiple root.",
    "No sparse selected-spectrum or branch-continuation semantics.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The PDRF oracle asserts real parts only; its imaginary-part floor (~1e-5..1e-4 s^-1) is not growth-rate evidence.",
+   "The historical AUDIT.md P0 reproducer at B0≈2.4e-3 T and k=0.05–0.15 m^-1 is not committed; add it as a regression before release closure."
   ]
  },
  "references": [

@@ -139,17 +139,18 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Direct independent gate: test_causal_signed_k_direct_velocity_integral compares em1d_parallel_residual with a direct 96/160-node Gauss-Hermite velocity integral at k=±0.3 and pm=±1; relative agreement <=1e-12 and reflected-sign symmetry are checked.",
+   "test_parallel_rejects_complex_and_unrepresentable_wavevectors covers the declared failure paths.",
+   "The bounded example is a representative case only."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_parallel.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared one-dimensional signed-wavevector causal parallel residual on the tested state. The direct Gauss-Hermite gate compares the public residual with an independent 96/160-node velocity integral at four signed k/pm points (relative <=1e-12), checks reflection symmetry, and rejects complex/unrepresentable k. It does not establish arbitrary-state/k coverage, root existence or a forward error bound; the near-cancellation scale is a normalization, not a conditioning estimate.",
   "known_limitations": [
+   "The direct quadrature comparison covers four signed k/pm points, not arbitrary state or k vectors.",
    "Near-cancellation scale is a residual normalization, not a root-condition estimate.",
-   "Lower-half-plane unrepresentable special-function values are rejected.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Lower-half-plane unrepresentable special-function values are rejected."
   ]
  },
  "references": [

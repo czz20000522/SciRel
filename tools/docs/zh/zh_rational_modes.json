@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.multifluid-deck",
-   "source_sha256": "20fb5afe5f9a03353eafa62cf5a45fb25d949e9687a1650607bfb412a8d34fb2",
+   "source_sha256": "721eed6e000908d9c7eaac5c40724ec26967a06c28cc7428df883e19e9bc2ff2",
    "summary": "返回随包多流体十列、双物种物理输入表的独立副本。",
    "definition": "读取双物种十列多流体 SI 字面数据表，不改变其中的物理数值。",
    "model": "固定的电子／质子流体输入数据。",
@@ -39,14 +39,14 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "Blocked：绑定的共享多流体测试文件没有调用 fluid_deck()；合同示例只观察一个 fixture。",
+     "未绑定任何针对存储 deck 的直接形状/内容/往返 gate。"
     ],
     "known_limitations": [
-     "这是一个有明确归属的平衡样例，不是等离子体参数目录。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "验证被阻塞：绑定测试文件没有调用 fluid_deck()。",
+     "这是一个有明确归属的平衡样例，不是等离子体参数目录。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "Blocked：未绑定 fluid_deck() 的逐资产验证证据。共享多流体测试文件覆盖其它公共符号，不构成本 fixture 的证据；有界示例只是 fixture 观察。补上直接 deck 测试（形状、有限 SI 字段、电子/离子角色顺序、固定常数）后再 reopen，或撤下该资产的发布声明。"
    },
    "example": {
     "description": "加载独立的随包数据。",
@@ -55,7 +55,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-equilibrium",
-   "source_sha256": "28727b23fcbee6c3d52dcd513a23729021ebbc50943aa8c0aa802ac7466cf331",
+   "source_sha256": "710773fc56e4f2fb8332b82b237312b8978ddf211cb9991dc5a7927c0a92a630",
    "summary": "用显式压力张量取向和守恒的成对动量交换初始化物理流体状态。零磁场下未定义的 beta 用 None 表示。",
    "definition": "rho_j=m_j n_j；P_parallel/perpendicular=rho_j cs_parallel/perpendicular^2/gamma_j；在 field_following 取向下 P=P_perp I+(P_parallel-P_perp)bb。L_ji=K_ji/rho_j；L_jj=-sum_i K_ji/rho_j-bath_j。",
    "model": "多物种非相对论平衡，可选守恒的成对动量交换与外部静止背景阻力。",
@@ -133,15 +133,15 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "fluid_equilibrium_si 的直接 analytic/manufactured gates：零场冷频率解析模态、回旋各向异性压力转动系数、零场各向异性拒绝、固定轴与随场取向压力、复波矢冷解析 holdout，以及相对论惯性对有限差分动量导数的对照。",
+     "有界示例仅为一个双物种 SI deck；不把适用范围扩展到所声明的前置条件之外。"
     ],
     "known_limitations": [
-     "固定轴压力与随磁场取向压力是不同的物理模型。",
-     "未提供全局平衡力平衡的证明。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "固定轴与随场取向压力是不同的物理模型。",
+     "不提供全局平衡力平衡证明。",
+     "证据仅覆盖受测的制造 deck，不是参数空间或实验标定。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "限定于所声明的 SI 多流体平衡构造，仅覆盖受测双物种 deck 与制造/解析算例。该 gate 在这些算例上确立零场冷模态状态、回旋各向异性压力响应、固定轴/随场取向区别、复波矢构造与相对论动量导数；不证明任意 deck/参数一致性、全局力平衡或物理闭合。"
    },
    "example": {
     "description": "用零碰撞初始化 SI 物种表。",
@@ -150,7 +150,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-frequency-pencil",
-   "source_sha256": "03c5d0fbd0ad74dafbf11d386f691c6d6faa3a7215928a168ea2e917f016d0a2",
+   "source_sha256": "749053d4875d2b25ba1de261d1e7ba2f75405265fd9acec0c04a076857699148",
    "summary": "组装修正后的 Maxwell–流体广义矩阵束，保留物理 SI 坐标与有符号复空间波矢。",
    "definition": "M X=lambda A X；omega=i lambda。连续性方程、Lorentz 力、回旋各向异性压力、已声明的速度碰撞及 Maxwell 方程均在原始 SI 状态坐标中组装。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -215,15 +215,15 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "fluid_frequency_pencil 的直接 analytic/manufactured gates：零场冷频率解析模态、回旋各向异性压力张量转动、固定轴与随场取向各向异性、复波矢 holdout，以及相对论惯性对有限差分动量导数的对照。",
+     "有界示例仅为一个输入算例；不建立一般参数包络。"
     ],
     "known_limitations": [
      "回旋各向异性压力闭合是显式声明的局部流体模型。",
      "组装本身不选择物理分支，也不剔除约束模态。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "亏损/重复扇区可能返回不完备本征基；不作完备性声明。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "限定于所声明的多流体频率矩阵束组装，仅覆盖受测双物种 deck 与制造解析算例。该 gate 检查解析冷模态、回旋各向异性压力响应、固定轴/随场取向各向异性、复波矢 holdout 与相对论惯性对有限差分导数的对照；不证明任意参数一致性、亏损本征值完备性、模态身份或物理分支选择。"
    },
    "example": {
     "description": "组装一个同时含垂直／平行分量的物理矩阵束。",
@@ -232,7 +232,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-frequency-solve",
-   "source_sha256": "ee2c40ecf20754bf99c50933f9f67b2dc4314f5b9c46ace3e786e85e0255478a",
+   "source_sha256": "9527995024a0c3be70b59761f10c6afb52f62b29b7ac8f7c1a89d51a514e37d6",
    "summary": "在物理坐标中计算完整流体谱，逐分量检查矩阵束残差，并显式提供亏损零本征值元数据；数值条件化不改变科学矩阵束。",
    "definition": "在缩放坐标中按支撑结构分块求解：惯性矩阵恰为单位阵的分块使用标准本征问题，其余分块使用广义 QZ；把存储的二进制系数视为精确有理数，通过矩阵幂的秩核对零本征值重数；必要时细化非零本征对，并针对组装的原始 M,A 检查每个本征对。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -309,18 +309,20 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "外部 PDRF gate：test_external_pdrf_two_species_spectrum_keeps_all_14_modes 在四个 (kx,kz) 点将 fluid_solve_state 的全部 14 个实频与独立 PDRF 参考值比较；rtol=2e-9、后向误差 <=1e-10，并核对零结构重数。",
+     "解析/制造 gates 覆盖零场冷模态、广义非单位惯性以及复波矢冷解析 holdout。",
+     "有界示例仅为一个代表算例。"
     ],
     "known_limitations": [
-     "残差资格表明后向精度，不表明近重根的前向条件性。",
-     "不提供稀疏选定谱或分支延续语义。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "残差限定是后向精度，不是近重根的前向条件化。",
+     "没有稀疏选中谱或分支延续语义。",
+     "PDRF oracle 只断言实部；其虚部 floor（约 1e-5..1e-4 s^-1）不是增长率证据。",
+     "历史 AUDIT.md P0 reproducer（B0≈2.4e-3 T，k=0.05–0.15 m^-1）未随仓库提交；发布关闭前须补回归。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。",
+    "evidence_ceiling": "限定于所声明的多流体频率求解，仅覆盖受测双物种/PDRF deck。主 gate 在四个 (kx,kz) 点将全部 14 个实频与独立 PDRF 值比较（rtol 2e-9），并要求后向误差 <=1e-10；解析/制造 gates 覆盖零场冷模态、非单位惯性与复波矢 holdout。不证明任意参数一致性、分支唯一性、虚部增长率（PDRF 虚部 floor 非物理）或全局模型。",
     "tests": [
-     "tests/kinetic/test_dispersion_multifluid.py",
-     "tests/kinetic/test_dispersion_multifluid_oracle.py"
+     "tests/kinetic/test_dispersion_multifluid_oracle.py",
+     "tests/kinetic/test_dispersion_multifluid.py"
     ]
    },
    "example": {
@@ -330,7 +332,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-relative-rate-equilibrium",
-   "source_sha256": "eedff4acf9e43eab8c474433b7bbc06c70344245e339613824953c9198b91299",
+   "source_sha256": "b7058151909e3b67d3a3972629d3af4e68c0eb814f4cfdb8f6ad967fb3a56538",
    "summary": "将五个显式定义的标量速率和声明的电子／离子类别转换为守恒动量交换平衡。这是声明的一种解释，不声称与含义不明的 nu 控制量等价。",
    "definition": "对每个无序物种对，K_ij=nu_relative*rho_i*rho_j/(rho_i+rho_j)。按类别定义的外部背景速率形成独立的对角阻力。两体相对速度以声明的 nu_relative 衰减。",
    "model": "多物种非相对论平衡，可选守恒的成对动量交换与外部静止背景阻力。",
@@ -430,15 +432,15 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "Blocked：没有绑定测试调用 fluid_equilibrium_relative_rates()。",
+     "test_declared_relative_rate_variant_all_roles_and_permutation 覆盖 pair-exchange 依赖，不是该 wrapper 的角色、平衡态或失败契约。"
     ],
     "known_limitations": [
-     "物种对相对速率与外部背景速率具有不同的守恒性质。",
-     "这些速率是声明的一种科学变体；不重现正速率导致的增长行为。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "验证被阻塞：绑定测试文件没有调用 fluid_equilibrium_relative_rates()。",
+     "相对对与背景阻力具有不同的守恒性质。",
+     "速率是显式声明的科学变体；不重现正速率增长。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "Blocked：未绑定 fluid_equilibrium_relative_rates() 的逐资产验证证据。共享测试只覆盖底层 pair-exchange 依赖；不确立 wrapper 的公共行为。补上直接 wrapper gate（物种角色、返回平衡态、相对速率控制与失败路径）后再 reopen，或撤下发布声明。"
    },
    "example": {
     "description": "声明一个电子－离子相对阻尼率。",
@@ -447,7 +449,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-scan",
-   "source_sha256": "0ffaea2f692156baa58b4d34e35acfc434824d1b65fc002e72a6ffaf369dfb6b",
+   "source_sha256": "73b9d14a67a0b26d8796d31669e6af62a9624a82f26d008f154df888ff971e95",
    "summary": "运行四个字面定义的流体扫描族，采用独立逐点求解、显式状态和标准轴序。默认方法 2 含 101 个物理点；方法 4 含 3750 个物理点。",
    "definition": "构造各方法字面规定的物理网格，在适用处映射 kx=k*sin(theta),kz=k*cos(theta)，独立求解每个点，并按标准轴序汇总经过核验的频谱。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -517,19 +519,18 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。",
-     "外部 PDRF 实频参考点由 tests/kinetic/test_dispersion_multifluid_oracle.py 覆盖。"
+     "外部 PDRF gate：test_multifluid_scan_point_matches_external_pdrf_truth 在四个 (kx,kz) 点将 scan_fluid_corrected 与同一组 14 个独立实频比较。",
+     "有界示例仅为一个代表算例。"
     ],
     "known_limitations": [
-     "频率降序排序在每个点独立进行，不能识别连续的物理分支。",
-     "默认方法 4 是有限计算，但其规模明显大于有界资格验证网格。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "降序频率排序是逐点的，不识别连续物理分支。",
+     "默认方法 4 有限，但明显大于有界资格网格。",
+     "外部真值仅覆盖四个 (kx,kz) 点与实频。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。",
+    "evidence_ceiling": "限定于所声明的多流体扫描，仅覆盖受测点网格。外部 PDRF gate 在四个 (kx,kz) 点将 scan_fluid_corrected 与 14 个独立实频比较，底层求解另有 gate。不证明任意网格/参数覆盖、分支连续性（排序是逐点的）或物理模态身份。",
     "tests": [
-     "tests/kinetic/test_dispersion_multifluid.py",
-     "tests/kinetic/test_dispersion_multifluid_oracle.py"
+     "tests/kinetic/test_dispersion_multifluid_oracle.py",
+     "tests/kinetic/test_dispersion_multifluid.py"
     ]
    },
    "example": {
@@ -539,7 +540,7 @@
   },
   {
    "asset_id": "scirel.kinetic.parallel-em-continuation",
-   "source_sha256": "71bc7c5a899959178d817e28092be5bb926e271ac4ed442f9f8131db74eff094",
+   "source_sha256": "745401562d4e116e1e3d5e5d645af3bf271440018b24340bf346a86a8c805581",
    "summary": "通过显式网格延续一个满足因果性的动理学根；接受的根会作为下一点的种子，并记录诊断失败。失败或虚假成功的根不会传递到后续点。",
    "definition": "在每个 k 处，用 scipy.optimize.root(method=hybr) 求解 f/scale 的两个实分量。只有 solver.success、输出有限且满足声明的残差界时才接受。只有被接受的根才会成为下一点的初始猜测。",
    "model": "任意物种数的漂移各向同性 Maxwellian 分布平行电磁响应。",
@@ -615,15 +616,15 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "test_vacuum_continuation_matches_analytic_branch_and_zero_residual 检查真空解析分支（两点网格上 omega=0.2,0.21，零 scaled residual）；test_parallel_rejects_complex_and_unrepresentable_wavevectors 覆盖非法 k 网格；残差本身在同一文件中有直接 Hermite 积分 gate。",
+     "有界示例覆盖一次代表延续；不扩展适用范围。"
     ],
     "known_limitations": [
-     "延续所得根依赖种子；不声称唯一性或最大增长率。",
-     "默认 50 点网格保留既有归一化，但要求调用者提供 cwp 和 wcs1。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "解析延续检查仅为真空两点评例；不声明非真空精度。",
+     "延续根依赖种子；不作唯一性或最大增长率声明。",
+     "默认 50 点网格保留来源归一化，但需要调用方提供 cwp 与 wcs1。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "限定于所声明的延续，仅覆盖受测真空两点分支与失败契约。真空解析分支以零 scaled residual 复现；非法 k 网格被拒绝；底层残差有直接 Hermite 积分 gate。不证明非真空延续精度、与种子无关的分支选择、唯一性或最大增长行为。"
    },
    "example": {
     "description": "延续一个小型零密度真空分支。",
@@ -632,7 +633,7 @@
   },
   {
    "asset_id": "scirel.kinetic.parallel-em-residual",
-   "source_sha256": "06216535992164585a0df16aeac9ed2135f229b8ff5989fc7c448379d784fb50",
+   "source_sha256": "f80202a6693559ca9a02e5b314e450f5531135074a008d2b260ac3a6cc89da32",
    "summary": "对任意物种和任一固定圆极化符号，求满足因果性的有符号波矢平行电磁残差。",
    "definition": "残差定义为 f=omega^2-c2*k^2+sum_s wps2_s*(omega-k*vds_s)/(|k|*vtzs_s)*Z((omega-k*vds_s+pm*wcs_s)/(|k|*vtzs_s))；其中 Z=i*sqrt(pi)*w，尺度为 scale=max(|omega^2|+|c2*k^2|+sum_s|物种项|,tiny)。",
    "model": "任意物种数的漂移各向同性 Maxwellian 分布平行电磁响应。",
@@ -702,15 +703,16 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
+     "直接独立 gate：test_causal_signed_k_direct_velocity_integral 在 k=±0.3、pm=±1 处将 em1d_parallel_residual 与 96/160 节点 Gauss–Hermite 直接速度积分比较；相对一致 <=1e-12，并检查反射符号对称。",
+     "test_parallel_rejects_complex_and_unrepresentable_wavevectors 覆盖声明的失败路径。",
+     "有界示例仅为一个代表算例。"
     ],
     "known_limitations": [
-     "近抵消时使用的尺度是残差归一化，不是根条件数估计。",
-     "拒绝下半平面中不可表示的特殊函数值。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "直接积分比较只覆盖四个有符号 k/pm 点，不是任意状态或 k。",
+     "近抵消尺度是残差归一化，不是根条件数估计。",
+     "拒绝下半平面中不可表示的特殊函数值。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "限定于所声明的一维有符号波矢因果平行残差（受测状态）。直接 Gauss–Hermite gate 在四个有符号 k/pm 点以 96/160 节点比较公共残差（相对 <=1e-12），检查反射对称并拒绝复/不可表示 k。不证明任意状态/k 覆盖、根存在或前向误差界；近抵消尺度只是归一化，不是条件数估计。"
    },
    "example": {
     "description": "计算一个有符号 k 响应。",
