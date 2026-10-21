@@ -63,3 +63,42 @@ This is treated as a SciRel capability defect, not a worker glue task.
 - Every asset has an audit status and evidence link.
 - A capability with a known limitation may pass only with that limitation in its
   contract and user-facing API documentation.
+
+## Prevention at ingestion
+
+The failures found by the audit are mostly ingestion-design failures, not isolated
+coding mistakes. The receiver must not accept a candidate merely because its
+submitted tests pass. Future intake requires:
+
+1. **Declared evidence envelope** — the candidate states the tested parameter
+   ranges, branches, grids, species/model regimes and known singular limits. A
+   test outside that envelope is a new claim, not a regression.
+2. **Oracle class** — every tier-A capability names one of: independent
+   analytic/high-precision, bounded source-method parity, or self-consistency
+   only. `self-consistency` is not an independent oracle and must be visible in
+   `verification.evidence_ceiling`.
+3. **Asset-specific direct evidence** — shared test files must state which
+   asset/feature they actually validate. A file that describes itself as a plan
+   or proposed gate cannot be bound as validation evidence.
+4. **Adversarial probes** — at least one scaling/limit/singular/defective-case
+   probe beyond the source example, plus one declared failure path. Tier A
+   requires this before acceptance; tier B requires it before release.
+5. **Roundoff/conditioning floor** — record the numerical floor and do not use a
+   tolerance below it as a pass criterion. Growth/zero-mode claims need a
+   separate precision argument.
+6. **Composition evidence** — when a composition binds the capability, intake
+   runs the composition as well as the leaf. Leaf tests cannot prove graph
+   wiring, ordering, units or failure propagation.
+7. **Independent intake rerun** — the receiver reruns the probe set in its own
+   environment and may add cases that the decomposer did not know about; this is
+   not a demand for receiver-specific behavior, only an adversarial test of the
+   declared scientific relation.
+8. **Verdict before admission** — tier A needs an audit verdict (`pass`,
+   `pass-with-limits`, `blocked`); no unresolved tier-A defect enters a release
+   candidate. A known limitation is allowed only when it is written into the
+   contract and user-facing API documentation.
+
+The decomposer still owns the source-faithful translation and its evidence. The
+receiver owns the independent acceptance test, the declared scope and the
+decision to admit. Neither side may use "tests pass" or "SciRel output matches
+itself" as the final proof.
