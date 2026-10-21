@@ -20,6 +20,7 @@ from urllib.parse import parse_qs, urlsplit
 from packaging.version import InvalidVersion, Version
 
 from validate_asset_documents import load_document_set
+from exposure import held_asset_ids
 from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
                                 english_guide_status, english_translation_gaps,
                                 load_english_handbook, load_translations,
@@ -481,6 +482,10 @@ def build(documents: Path, output: Path, outline: Path | None = None,
     if language not in LANGUAGES:
         raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
     docs = load_document_set(documents)
+    held = held_asset_ids()
+    docs = [document for document in docs if document['asset_id'] not in held]
+    if not docs:
+        raise ValueError('all documents are withheld by the exposure hold')
     if documentation_version is None:
         documentation_version = project_version()
     if not isinstance(documentation_version, str) or not documentation_version.strip():
@@ -499,7 +504,8 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT))
     if language == 'zh':
         translations = load_translations(ROOT, documents, docs,
-                                         translation_paths=translation_paths)
+                                         translation_paths=translation_paths,
+                                         excluded_ids=held)
     else:
         if translation_paths is not None:
             raise ValueError('English build does not consume Chinese reader bundles')
@@ -564,6 +570,7 @@ def build(documents: Path, output: Path, outline: Path | None = None,
     files.update(render_site(
         ROOT, docs, book, translations, chapter,
         figure_files=figure_files, matrix=matrix, language=language,
+        withheld_ids=held,
     ))
     if language == 'en':
         # The pydata theme ships a multilingual copybutton; its Chinese

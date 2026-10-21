@@ -19,6 +19,12 @@ from public_api_binding import (
     qualified_name,
 )
 from validate_asset_documents import load_document_set
+try:
+    from exposure import exposed_documents
+except ModuleNotFoundError:  # tests may load this file by spec without scripts/ on sys.path
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from exposure import exposed_documents
 
 
 CATALOG_SCHEMA = "scirel.catalog-release"
@@ -103,7 +109,8 @@ def build_catalog(
     source_root: Path | None = None,
     source_revision: str | None = None,
 ) -> dict[str, Any]:
-    documents = sorted(load_document_set(documents_dir), key=lambda item: item["asset_id"])
+    documents = sorted(exposed_documents(load_document_set(documents_dir)),
+                       key=lambda item: item["asset_id"])
     if output_dir.exists():
         raise FileExistsError(f"catalog output already exists: {output_dir}")
     if coverage_status not in {"partial", "complete"}:

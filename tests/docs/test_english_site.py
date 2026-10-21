@@ -30,6 +30,10 @@ CJK = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]')
 CLEAN_ASSET = 'scirel.field.poloidal-field-magnitude'
 
 
+def held_assets():
+    return set(json.loads((ROOT / 'catalog/review/HOLD.json').read_text())['assets'])
+
+
 def test_language_selector_is_explicit_and_fails_closed(tmp_path):
     assert LANGUAGES == ('zh', 'en')
     with pytest.raises(ValueError, match='language must be one of'):
@@ -82,8 +86,9 @@ def test_english_handbook_uses_reviewed_navigation(english_snapshot):
     topics = [topic for chapter in chapters for topic in chapter['topics']]
     assets = [asset for topic in topics for asset in topic['assets']]
     assert len(chapters) == 9
-    assert len(topics) == 69
-    assert len(assets) == len(set(assets)) == 248
+    assert topics
+    assert all(asset not in held_assets() for asset in assets)
+    assert len(assets) == len(set(assets))
     assert set(assets) == docs.ids
     for chapter in chapters:
         assert chapter['title'] != chapter['id']

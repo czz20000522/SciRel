@@ -15,6 +15,12 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+try:
+    from exposure import exposed_documents
+except ModuleNotFoundError:  # tests may load this file by spec without scripts/ on sys.path
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from exposure import exposed_documents
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CATALOG = ROOT / "catalog" / "examples"
@@ -132,6 +138,7 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     documents = [json.loads(path.read_text(encoding="utf-8"))
                  for path in sorted(args.catalog.glob("*.json"))]
+    documents = exposed_documents(documents)
     if not documents:
         print(f"no documents under {args.catalog}", file=sys.stderr)
         return 1

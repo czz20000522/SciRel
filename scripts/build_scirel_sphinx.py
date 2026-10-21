@@ -277,7 +277,7 @@ def english_translation_gaps(docs):
     return gaps
 
 
-def load_translations(root, documents, docs, translation_paths=None):
+def load_translations(root, documents, docs, translation_paths=None, excluded_ids=()):
     """Load one exact reader set; an explicit selection keeps all binding gates.
 
     The default repository handbook still consumes all repository reader bundles.
@@ -295,9 +295,13 @@ def load_translations(root, documents, docs, translation_paths=None):
             if item['asset_id'] in records:
                 raise ValueError('duplicate reader translation: ' + item['asset_id'])
             records[item['asset_id']] = item
+    excluded_ids = set(excluded_ids)
     ids = {doc['asset_id'] for doc in docs}
-    if set(records) != ids:
+    active_records = {asset: record for asset, record in records.items()
+                      if asset not in excluded_ids}
+    if set(active_records) != ids:
         raise ValueError('Chinese reader coverage differs from exact document set')
+    records = active_records
     for doc in docs:
         asset = doc['asset_id']; item = records[asset]
         digest = hashlib.sha256((documents / (asset + '.json')).read_bytes()).hexdigest()
@@ -804,7 +808,7 @@ def _render_english_site(root, docs, book, *, matrix=None):
 
 
 def render_site(root, docs, book, translations, chapter, *, figure_files=None, matrix=None,
-                language='zh'):
+                language='zh', withheld_ids=()):
     """Return only generated public site bytes; staging sources stay temporary."""
     if language == 'en':
         return _render_english_site(root, docs, book, matrix=matrix)
@@ -817,6 +821,12 @@ def render_site(root, docs, book, translations, chapter, *, figure_files=None, m
         shutil.copytree(root/'tools/docs/sphinx', source, ignore=shutil.ignore_patterns('requirements.txt'))
         def write(path, text):
             p = source/(path + '.rst'); p.parent.mkdir(parents=True, exist_ok=True); p.write_text(text)
+        # Held capabilities may still be linked from authored guides. Resolve
+        # those links to a review-state placeholder, without publishing the
+        # API, contract or scientific details.
+        for asset in withheld_ids:
+            write('reference/generated/' + asset,
+                  ':orphan:\n\n' + title('人工审核中') + '\n\n该能力暂不对外暴露，正在等待人工审核。\n')
         home = title('SciRel 中文文档')
         home += 'SciRel 是面向科学计算的 Python 关系库。按要解决的物理问题，选择单个科学函数，或使用组合多个关系的复合求解入口。\n\n'
         home += '.. grid:: 1 2 2 2\n   :gutter: 3\n\n'
