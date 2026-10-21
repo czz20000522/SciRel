@@ -113,7 +113,8 @@
   "scope": [
    "Agreement with numpy.linalg.pinv on square, tall and wide full-rank matrices.",
    "Rank-deficient thresholding and the M M^+ M = M projection identity.",
-   "Rejection of non-2-D and non-finite matrices and of non-positive or non-finite thresholds."
+   "Rejection of non-2-D and non-finite matrices and of non-positive or non-finite thresholds.",
+   "The zero matrix returns the zero pseudo-inverse, covered by tests/geometry/test_truncated_svd_inverse.py."
   ],
   "tests": [
    "tests/geometry/test_truncated_svd_inverse.py"

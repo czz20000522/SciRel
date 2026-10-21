@@ -50,3 +50,10 @@ def test_rcond_is_relative_to_the_largest_singular_value():
     np.testing.assert_allclose(
         inverse, np.linalg.pinv(matrix, rcond=1.0e-10), rtol=1e-14, atol=0.0
     )
+
+
+def test_zero_matrix_returns_zero_pseudo_inverse():
+    inverse = truncated_svd_inverse(np.zeros((3, 2)))
+    assert inverse.shape == (2, 3)
+    assert np.all(inverse == 0.0)
+    assert np.isfinite(inverse).all()

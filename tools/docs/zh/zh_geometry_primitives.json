@@ -2139,7 +2139,7 @@
   },
   {
    "asset_id": "scirel.numerics.truncated-svd-inverse",
-   "source_sha256": "8abbfb5878107236929823ca91de459d4d880f9944324976913752838c164b38",
+   "source_sha256": "6e18f3a8678f31c5fb7a87ee904b6006c93dfd96ec2acf746bd878ba160b77a9",
    "summary": "计算有限实矩阵的 Moore–Penrose 伪逆，并按相对阈值截断奇异值。",
    "definition": "对 M = U diag(s) V^T，返回 V diag(s ≥ rcond 时取 1/s，否则取 0) U^T。",
    "model": "稠密实矩阵的截断奇异值分解。",
@@ -2195,7 +2195,8 @@
     "scope": [
      "方阵、长矩阵与宽矩阵上与 numpy.linalg.pinv 的一致性。",
      "秩亏谱的阈值截断及 M M^+ M = M 投影恒等式。",
-     "二维形状、非有限元素与非正阈值的拒绝行为。"
+     "二维形状、非有限元素与非正阈值的拒绝行为。",
+     "全零矩阵返回零伪逆，见 tests/geometry/test_truncated_svd_inverse.py。"
     ],
     "known_limitations": [
      "不支持复矩阵与稀疏矩阵。",
