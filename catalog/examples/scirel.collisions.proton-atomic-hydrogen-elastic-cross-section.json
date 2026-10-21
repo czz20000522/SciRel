@@ -5,7 +5,7 @@
   "en": "H+-on-H elastic momentum-transfer cross section",
   "zh": "原子氢质子弹性动量转移截面"
  },
- "summary": "计算静止原子氢靶上的质子弹性动量传递截面；10 eV 使用低能多项式，修复 Python 翻译中的零洞。保留能域端点裁剪和领先单例输出轴。",
+ "summary": "Compute the elastic momentum-transfer cross section of a proton on a stationary atomic-hydrogen target; exactly 10 eV uses the low-energy polynomial, with no zero gap at the breakpoint. Endpoint clipping over the energy domain and the leading singleton output axis are preserved.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -23,55 +23,55 @@
  "identity": {
   "relation": "the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint",
   "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
-  "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E≤10 时使用七系数低能 log 多项式，E>10 时使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；输出增加一个领先单例轴。",
-  "model": "H+-on-H 动量传递的经验拟合；能量为静止靶参考系的弹丸能量。",
+  "definition": "The laboratory proton energy E is clipped to [0.001, 1.01e5] eV. E <= 10 uses a seven-coefficient low-energy log polynomial and E > 10 uses a two-coefficient high-energy polynomial; the cross section is exp(poly(log E))*1e-4 m^2. The two empirical fits are not forced to be continuous; the output gains one leading singleton axis.",
+  "model": "empirical H+-on-H momentum-transfer fit; the energy is the projectile energy in the stationary-target frame",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
-  "boundary": "输入有限非负实数；能域外取端点值，恰好 10 eV 使用低能分支。",
+  "boundary": "input must be a finite nonnegative real; values outside the energy domain take the endpoint value, and exactly 10 eV uses the low-energy branch",
   "assumptions": [
-   "低/高能拟合系数沿用冻结值；只修复原始 IDL le 10 被错误翻译为 <10 的断点空洞。",
-   "端点裁剪不代表域外实验精度；低高段可能有有限跳变，不进行无依据平滑。",
-   "输出保留一个领先单例轴；负能量、布尔、复数和字符串拒绝。"
+   "the low- and high-energy fit coefficients retain their declared frozen values; the breakpoint uses E <= 10 eV for the low-energy branch, so exactly 10 eV is not left in a zero-valued gap.",
+   "endpoint clipping does not imply experimental accuracy outside the domain; the low and high segments may have a finite jump, and no unsupported smoothing is applied.",
+   "the output retains one leading singleton axis; negative energies, booleans, complex numbers and strings are rejected."
   ]
  },
  "inputs": [
   {
    "name": "energy_ev",
-   "description": "质子弹丸在静止氢靶参考系的实验室能量。",
+   "description": "laboratory energy of the projectile proton in the stationary-hydrogen-target frame",
    "units": "eV",
    "shape": "any (scalar or array)",
-   "dtype": "实数标量或数组",
+   "dtype": "real scalar or array",
    "required": true,
-   "constraints": "有限非负；范围外取拟合端点。"
+   "constraints": "finite and nonnegative; values outside the range take the fit endpoints"
   }
  ],
  "outputs": [
   {
    "name": "cross_section_m2",
-   "description": "H+-H 弹性动量传递截面。",
+   "description": "H+-H elastic momentum-transfer cross section",
    "units": "m^2",
    "shape": "input shape with one extra leading axis of size 1",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限且正；形状比输入多一个领先单例轴。"
+   "constraints": "finite and positive; the shape has one more leading singleton axis than the input"
   }
  ],
  "applicability": {
   "preconditions": [
-   "使用声明的实验室弹丸能量和端点裁剪约定。"
+   "use the declared laboratory projectile energy and endpoint clipping convention"
   ],
   "supported": [
-   "标量或数组 H+-H 动量传递截面，包括恰好 10 eV。"
+   "scalar or array H+-H momentum-transfer cross sections, including exactly 10 eV"
   ],
   "excluded": [
-   "域外实验外推、完整碰撞频率或 Maxwell 平均；本函数只求截面。"
+   "experimental extrapolation outside the domain, a full collision frequency or a Maxwellian average; this function returns only the cross section"
   ]
  },
  "failure_semantics": {
-  "invalid_input": "非实数、非有限或负能量抛 ValueError。",
-  "runtime_failure": "合法截断区间求值返回有限正数。",
-  "nonconvergence": "不适用，无迭代。",
-  "partial_results": "不返回部分结果。"
+  "invalid_input": "raises ValueError for non-real, non-finite or negative energies",
+  "runtime_failure": "evaluation on a valid clipped interval returns a finite positive number",
+  "nonconvergence": "not applicable; no iteration",
+  "partial_results": "never returns partial results"
  },
  "public_api": {
   "python": {
@@ -87,25 +87,25 @@
   "dependencies": []
  },
  "example": {
-  "description": "检查 10 eV 断点与两侧的有限正截面。",
+  "description": "check the 10 eV breakpoint and the finite positive cross sections on both sides",
   "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))\nassert y.shape == (1, 3)\nassert np.isfinite(y).all() and (y > 0).all()\nnp.testing.assert_allclose(y[0, 0], y[0, 1], rtol=1e-14)\n",
-  "expected": "三个截面均有限正数；断点属于低能段，右侧可保留经验拟合的有限跳变。"
+  "expected": "all three cross sections are finite and positive; the breakpoint belongs to the low-energy segment, and the right side may retain a finite jump of the empirical fit"
  },
  "verification": {
   "scope": [
-   "先实跑 10 eV 返回零的反例，再依据原始 IDL 修复。",
-   "保留非断点拟合、输出轴、输入拒绝和端点裁剪的已有数值断言与容差。",
-   "后继原子碰撞矩阵与独立角积分使用修正后的分段定义。"
+   "the 10 eV breakpoint is probed directly; the zero-valued breakpoint failure is covered by a regression that exercises exactly 10 eV together with values immediately below and above it",
+   "existing numeric assertions and tolerances for non-breakpoint fits, the output axis, input rejection and endpoint clipping are retained",
+   "downstream atomic collision-matrix assembly and independent angular integration use the corrected piecewise definition"
   ],
   "tests": [
    "tests/collisions/test_hydrogen_proton_elastic_cross_section.py",
    "tests/collisions/test_atomic_hydrogen_collision_matrices.py",
    "tests/collisions/test_collision_physical_closure.py"
   ],
-  "evidence_ceiling": "证明声明分段拟合与原始断点定义一致，未建立新的实验截面普适精度；根接收、人认可及许可另记。",
+  "evidence_ceiling": "the declared piecewise fit and breakpoint behavior are established; no new universal experimental cross-section accuracy is established. Intake acceptance, human scientific approval and licensing are recorded separately",
   "known_limitations": [
-   "拟合端点裁剪和低高段不连续继承；不擅自平滑。",
-   "原来源资格撤回和许可待决仍保留；后继纠正不改写历史。"
+   "endpoint clipping and the discontinuity between the low- and high-energy segments are inherited; no unsupported smoothing is applied",
+   "a previous qualification withdrawal and pending licensing remain recorded; this correction does not rewrite that history"
   ]
  }
 }

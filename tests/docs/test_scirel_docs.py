@@ -17,19 +17,6 @@ from scirel_docs import Documentation, build, project_version, server
 from _document_fixtures import copy_example_closure, example_document_sources
 
 
-@pytest.fixture(scope='session')
-def built_snapshot(tmp_path_factory):
-    output = tmp_path_factory.mktemp('sphinx') / 'docs'
-    documents = copy_example_closure(tmp_path_factory.mktemp('reader-inputs') / 'documents')
-    build(documents, output)
-    return output
-
-
-@pytest.fixture
-def snapshot(tmp_path, built_snapshot):
-    return Path(shutil.copytree(built_snapshot, tmp_path / 'docs'))
-
-
 def test_queries_are_bounded_and_exact_records_unchanged(snapshot):
     docs = Documentation(snapshot)
     p = docs.search('equilibrium', limit=2)

@@ -166,6 +166,127 @@ def test_optional_inputs_require_structured_defaults():
         validate_document(default_on_required)
 
 
+def _discovery_block():
+    return {
+        "capability": [
+            "Rectangular coil vacuum field",
+            "Sum exact magnetostatic filament fields at caller-supplied points.",
+        ],
+        "operation": [
+            "superpose finite straight-filament Biot-Savart contributions",
+            "geometry and currents -> magnetic field",
+        ],
+        "model": "exact magnetostatic straight-filament Biot-Savart superposition.",
+        "geometry": "caller-supplied Cartesian points and rectangular filament loops.",
+        "boundary": "field is singular on a filament and decays outside the coil.",
+        "device_scope": "generic",
+    }
+
+
+def test_asset_schema_declares_the_optional_discovery_block():
+    schema = json.loads(
+        (ROOT / "contracts/scientific-asset-document.schema.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    assert "discovery" in schema["properties"]
+    assert "discovery" not in schema["required"]
+    discovery = schema["$defs"]["discovery"]
+    assert discovery["additionalProperties"] is False
+    assert set(discovery["properties"]) == {
+        "capability",
+        "operation",
+        "model",
+        "geometry",
+        "boundary",
+        "device_scope",
+    }
+    assert "ports" not in discovery["properties"]
+    assert "evidence" not in discovery["properties"]
+    assert discovery["properties"]["device_scope"]["enum"] == [
+        "generic",
+        "device-parameterized",
+        "device-bound",
+        "unclassified",
+    ]
+
+
+def test_current_contracts_validate_without_a_discovery_block(tmp_path):
+    documents = load_document_set(copy_example_closure(tmp_path / "documents"))
+
+    assert len(documents) == EXAMPLE_CLOSURE_COUNT
+    assert all("discovery" not in document for document in documents)
+
+
+def test_a_complete_discovery_block_is_valid():
+    document = _rectangular_coil_document()
+    document["discovery"] = _discovery_block()
+
+    assert validate_document(document) is document
+
+
+def test_a_partial_discovery_block_can_record_only_device_scope():
+    document = _rectangular_coil_document()
+    document["discovery"] = {"device_scope": "device-bound"}
+
+    assert validate_document(document) is document
+
+
+@pytest.mark.parametrize(
+    "scope",
+    ["generic", "device-parameterized", "device-bound", "unclassified"],
+)
+def test_every_device_scope_value_is_valid(scope):
+    document = _rectangular_coil_document()
+    document["discovery"] = {"device_scope": scope}
+
+    assert validate_document(document) is document
+
+
+def test_discovery_rejects_an_unknown_device_scope():
+    document = _rectangular_coil_document()
+    document["discovery"] = _discovery_block()
+    document["discovery"]["device_scope"] = "iter-bound"
+
+    with pytest.raises(AssetDocumentError, match="discovery.device_scope: must be one of"):
+        validate_document(document)
+
+
+def test_discovery_rejects_wrong_field_types():
+    document = _rectangular_coil_document()
+    document["discovery"] = _discovery_block()
+    document["discovery"]["capability"] = "rectangular coil vacuum field"
+    with pytest.raises(AssetDocumentError, match="discovery.capability: must be a nonempty array"):
+        validate_document(document)
+
+    document = _rectangular_coil_document()
+    document["discovery"] = _discovery_block()
+    document["discovery"]["model"] = ["exact superposition"]
+    with pytest.raises(AssetDocumentError, match="discovery.model: must be a nonempty string"):
+        validate_document(document)
+
+    document = _rectangular_coil_document()
+    document["discovery"] = _discovery_block()
+
+
+def test_discovery_rejects_unknown_keys_empty_blocks_and_duplicates():
+    document = _rectangular_coil_document()
+    document["discovery"] = {"ports": []}
+    with pytest.raises(AssetDocumentError, match="discovery: unknown fields: ports"):
+        validate_document(document)
+
+    document = _rectangular_coil_document()
+    document["discovery"] = {}
+    with pytest.raises(AssetDocumentError, match="must declare at least one discovery field"):
+        validate_document(document)
+
+    document = _rectangular_coil_document()
+    document["discovery"] = _discovery_block()
+    document["discovery"]["capability"] = ["same", "same"]
+    with pytest.raises(AssetDocumentError, match="discovery.capability: must not contain duplicates"):
+        validate_document(document)
+
+
 def test_runtime_input_defaults_must_match_the_document():
     document = _rectangular_coil_document()
     document["inputs"][-1]["default"] = 90.0

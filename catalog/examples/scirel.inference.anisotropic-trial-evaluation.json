@@ -5,7 +5,7 @@
   "en": "One anisotropic inversion trial",
   "zh": "单次各向异性反演试探"
  },
- "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
+ "summary": "Evaluate one forward equilibrium trial with a predetermined residual size, distinguishing valid, numerical-failure and nonconverged outcomes; contract errors are reported directly.",
  "taxonomy": [
   "inference",
   "anisotropic-equilibrium",
@@ -15,196 +15,196 @@
   "parameter-to-diagnostic-residual trial"
  ],
  "identity": {
-  "relation": "参数和相容物理端口到固定维数的有效性记录",
-  "direction": "params、observations、solver_config、三端口 → residuals、chi2、equilibrium、valid/status",
-  "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
-  "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
-  "geometry": "由 solver_config 和科学端口定义",
-  "coordinates": "r_grid/z_grid 原样深复制为诊断 R/Z；不做单位转换",
-  "boundary": "失败罚值是优化接口值，不是可接受的物理观测或可行性证明。参数范围由外层优化器与物理端口共同约束。",
+  "relation": "parameters and compatible physical ports to a fixed-size validity record",
+  "direction": "params, observations, solver_config, three ports -> residuals, chi2, equilibrium, valid/status",
+  "definition": "Before any scientific call, obtain N from the standard observation layout or from an explicitly supplied residual_size on a custom port. Deep-copy the call inputs and execute one equilibrium_solver; if it is not converged, immediately return an N-vector positive penalty without running diagnostics. When converged, run the diagnostic and reducer, and check residual shape/finiteness and chi2=r·r. ArithmeticError/RuntimeError is recorded as a numerical failure; contract errors such as ValueError/TypeError/KeyError propagate.",
+  "model": "validated composition of caller forward, diagnostic and residual ports with no built-in pressure closure",
+  "geometry": "defined by solver_config and the scientific ports",
+  "coordinates": "r_grid/z_grid are deep-copied unchanged as diagnostic R/Z; no unit conversion is performed",
+  "boundary": "The failure penalty is an optimizer-interface value, not an acceptable physical observation or a feasibility proof. Parameter ranges are constrained jointly by the outer optimizer and the physical ports.",
   "assumptions": [
-   "三个端口具有明确且相容的物理单位、网格和返回协议。",
-   "equilibrium.converged 必为布尔值；成功态不能同时给出 failure_reason。",
-   "自定义布局的 residual_size 由调用者在第一次试探前声明，不能按成功/失败改变。"
+   "The three ports have explicit and compatible physical units, grids and return protocols.",
+   "equilibrium.converged must be boolean; a successful state must not also carry failure_reason.",
+   "For a custom layout, the caller declares residual_size before the first trial; it must not change with success or failure."
   ]
  },
  "inputs": [
   {
    "name": "params",
-   "description": "本次完整参数映射；深复制后交给前向端口。",
-   "units": "按参数合同",
+   "description": "Complete parameter mapping for this trial; deep-copied before being passed to the forward port.",
+   "units": "per parameter contract",
    "shape": "mapping",
-   "dtype": "映射",
+   "dtype": "mapping",
    "required": true,
-   "constraints": "参数科学范围由前向关系及外层边界约束。"
+   "constraints": "The scientific parameter range is constrained by the forward relation and the outer bounds."
   },
   {
    "name": "observations",
-   "description": "诊断请求、观测值与不确定度。",
-   "units": "按通道合同",
+   "description": "Diagnostic request, observed values and uncertainties.",
+   "units": "per channel contract",
    "shape": "mapping",
-   "dtype": "映射",
+   "dtype": "mapping",
    "required": true,
-   "constraints": "未给 residual_size 时必须为已知非空标准布局；N 是所有请求 values 的总元素数。"
+   "constraints": "When residual_size is not supplied, this must be a known nonempty standard layout; N is the total number of elements in all requested values."
   },
   {
    "name": "solver_config",
-   "description": "固定前向配置，必须含 r_grid/z_grid；其中 params 在副本中替换。",
-   "units": "混合物理单位",
+   "description": "Fixed forward configuration, which must contain r_grid/z_grid; params is replaced in the copy.",
+   "units": "mixed physical units",
    "shape": "mapping",
-   "dtype": "映射",
+   "dtype": "mapping",
    "required": true,
-   "constraints": "输入深复制；不修改调用方嵌套映射或数组。"
+   "constraints": "Inputs are deep-copied; the caller's nested mappings or arrays are not modified."
   },
   {
    "name": "equilibrium_solver",
-   "description": "单参数映射入口的前向科学求解器。",
-   "units": "按前向合同",
+   "description": "Forward scientific solver with a single parameter-mapping entry point.",
+   "units": "per forward contract",
    "shape": "callable(payload) → mapping",
-   "dtype": "可调用对象",
+   "dtype": "callable",
    "required": true,
-   "constraints": "返回布尔 converged；False 立即短路诊断并记录原因。"
+   "constraints": "Returns a boolean converged; False immediately short-circuits diagnostics and records the reason."
   },
   {
    "name": "diagnostic_evaluator",
-   "description": "只在前向收敛后调用的诊断端口。",
-   "units": "与观测相同",
+   "description": "Diagnostic port called only after forward convergence.",
+   "units": "same as observations",
    "shape": "callable({equilibrium,R,Z,observations})",
-   "dtype": "可调用对象",
+   "dtype": "callable",
    "required": true,
-   "constraints": "必须提供所有请求的预测，必要时附单位。"
+   "constraints": "Must supply predictions for every request, with units where necessary."
   },
   {
    "name": "residual_reducer",
-   "description": "输出 residual_vector 与 chi2 的归一化关系。",
+   "description": "Normalized relation that outputs residual_vector and chi2.",
    "units": "dimensionless",
    "shape": "callable(*, predicted, observations)",
-   "dtype": "可调用对象",
+   "dtype": "callable",
    "required": true,
-   "constraints": "向量必须为 (N,) 且有限；chi2 有限非负，与内积的 rtol=1e-12、atol=0 一致。"
+   "constraints": "The vector must be (N,) and finite; chi2 must be finite and nonnegative and agree with the inner product at rtol=1e-12, atol=0."
   },
   {
    "name": "residual_size",
-   "description": "自定义观测端口的预声明维数；标准布局通常自动取得。",
+   "description": "Predetermined dimension for a custom observation port; the standard layout usually supplies it automatically.",
    "units": "count",
    "shape": "positive integer or None",
-   "dtype": "整数或 None",
+   "dtype": "integer or None",
    "required": false,
-   "constraints": "拒绝布尔、零和负值；本次调用维数不可变化。",
+   "constraints": "Rejects booleans, zero and negative values; the dimension cannot change within this call.",
    "default": null
   },
   {
    "name": "failure_penalty",
-   "description": "数值失败或前向不收敛时每个残差分量的正罚值。",
+   "description": "Positive penalty applied to each residual component on numerical failure or forward nonconvergence.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
    "required": false,
-   "constraints": "默认 1e12；有限正数且 N*penalty² 必须可表示。",
+   "constraints": "Default 1e12; finite and positive, and N*penalty^2 must be representable.",
    "default": 1000000000000.0
   }
  ],
  "outputs": [
   {
    "name": "params",
-   "description": "提交参数的深副本。",
-   "units": "按参数合同",
+   "description": "Deep copy of the submitted parameters.",
+   "units": "per parameter contract",
    "shape": "mapping",
    "dtype": "dict",
    "required": true,
-   "constraints": "不会被端口对副本的写入改变。"
+   "constraints": "Port writes to the copy do not change it."
   },
   {
    "name": "chi2",
-   "description": "成功向量的重新计算内积；失败时 N*penalty²。",
+   "description": "Recomputed inner product of the successful vector; N*penalty^2 on failure.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
    "required": true,
-   "constraints": "有限非负，不将失败 chi2 当作有效物理拟合。"
+   "constraints": "Finite and nonnegative; a failure chi2 is not treated as a valid physical fit."
   },
   {
    "name": "residuals",
-   "description": "成功残差或同维罚值向量。",
+   "description": "Successful residuals or a same-size penalty vector.",
    "units": "dimensionless",
    "shape": "[N]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "每条成功/失败路径均保持 N。"
+   "constraints": "N is preserved on every success/failure path."
   },
   {
    "name": "equilibrium",
-   "description": "已取得的前向状态；数值异常前未取得时为 None。",
-   "units": "混合",
+   "description": "Forward state obtained so far; None if none was obtained before a numerical exception.",
+   "units": "mixed",
    "shape": "mapping or None",
-   "dtype": "映射或 None",
+   "dtype": "mapping or None",
    "required": true,
-   "constraints": "失败记录可能保留未收敛状态，仅供诊断，不是合格解。"
+   "constraints": "A failure record may retain a nonconverged state for diagnostics only; it is not an acceptable solution."
   },
   {
    "name": "failure_reason",
-   "description": "明确的前向不收敛或数值异常原因；有效时为 None。",
+   "description": "Explicit reason for forward nonconvergence or a numerical exception; None when valid.",
    "units": "identifier",
    "shape": "string or None",
-   "dtype": "字符串或 None",
+   "dtype": "string or None",
    "required": true,
-   "constraints": "未收敛但无原因时补充通用说明。"
+   "constraints": "Supply a generic explanation when nonconverged without a reason."
   },
   {
    "name": "valid",
-   "description": "前向与残差合同全部满足。",
+   "description": "Forward and residual contracts are both satisfied.",
    "units": "boolean",
    "shape": "scalar",
    "dtype": "bool",
    "required": true,
-   "constraints": "只有 True 才可供优化器进行有效最优排序。"
+   "constraints": "Only True permits the optimizer to rank this trial as a valid best."
   },
   {
    "name": "status",
-   "description": "试探类别。",
+   "description": "Trial category.",
    "units": "identifier",
    "shape": "scalar",
    "dtype": "str",
    "required": true,
-   "constraints": "valid、forward_nonconvergence 或 numerical_failure。"
+   "constraints": "valid, forward_nonconvergence or numerical_failure."
   },
   {
    "name": "failed_port",
-   "description": "失败发生的端口。",
+   "description": "Port where the failure occurred.",
    "units": "identifier",
    "shape": "string or None",
-   "dtype": "字符串或 None",
+   "dtype": "string or None",
    "required": true,
-   "constraints": "equilibrium_solver、diagnostic_evaluator、residual_reducer；有效时 None。"
+   "constraints": "equilibrium_solver, diagnostic_evaluator, residual_reducer; None when valid."
   },
   {
    "name": "exception_type",
-   "description": "数值异常的实际类名。",
+   "description": "Actual class name of the numerical exception.",
    "units": "identifier",
    "shape": "string or None",
-   "dtype": "字符串或 None",
+   "dtype": "string or None",
    "required": true,
-   "constraints": "无异常的不收敛记录为 None。"
+   "constraints": "A nonconverged record without an exception is None."
   }
  ],
  "applicability": {
   "preconditions": [
-   "在第一次调用前明确 N、各端口合同和有限正罚值。"
+   "Before the first call, N, every port contract and a finite positive penalty are explicit."
   ],
   "supported": [
-   "深复制输入，收敛后才诊断，成功→失败→成功维数恒定。",
-   "数值失败与前向不收敛的带状态记录；残差内积一致性。"
+   "Deep-copy inputs, diagnose only after convergence, and keep a constant dimension across success -> failure -> success.",
+   "Stateful records for numerical failure and forward nonconvergence; inner-product consistency of residuals."
   ],
   "excluded": [
-   "将编程或合同异常隐藏为物理不可行。",
-   "以内置罚值证明模型有效或恢复未提供的物理闭合。"
+   "Hiding programming or contract exceptions as physical infeasibility.",
+   "Using a built-in penalty to prove model validity or to restore an unspecified physical closure."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "静态输入、端口、维数和罚值不合法时抛 ValueError；嵌套 ValueError/TypeError/KeyError 传播。",
-  "runtime_failure": "嵌套 ArithmeticError（含 FloatingPointError）或 RuntimeError 返回同 N 的 numerical_failure，保留失败端口和异常类。进程级异常不捕获。",
-  "nonconvergence": "前向 False 直接返回 forward_nonconvergence；绝不执行该状态的诊断。",
-  "partial_results": "保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
+  "invalid_input": "Raises ValueError for invalid static inputs, ports, dimensions or penalty; nested ValueError/TypeError/KeyError propagate.",
+  "runtime_failure": "A nested ArithmeticError (including FloatingPointError) or RuntimeError returns numerical_failure with the same N, preserving the failed port and exception class. Process-level exceptions are not caught.",
+  "nonconvergence": "A forward False returns forward_nonconvergence directly; diagnostics for that state are never executed.",
+  "partial_results": "Retains any actually obtained forward state for investigation with valid=False; the dimension is not lost and it does not participate in valid-best ranking."
  },
  "public_api": {
   "python": {
@@ -224,24 +224,24 @@
   ]
  },
  "example": {
-  "description": "两个观测的前向求解未收敛时，诊断不会调用，返回两个罚值。",
+  "description": "When a two-observation forward solve does not converge, diagnostics are not called and two penalties are returned.",
   "code": "import numpy as np\nfrom scirel.inference import evaluate_anisotropic_trial\nfrom scirel.diagnostics import reduce_observation_residuals\ncalls=[]\nr=evaluate_anisotropic_trial(params={'p':1.}, observations={'flux_loops':{'values':[1.,2.]}}, solver_config={'r_grid':[0.],'z_grid':[0.]}, equilibrium_solver=lambda _: {'converged':False,'failure_reason':'iteration limit'}, diagnostic_evaluator=lambda _:calls.append('unexpected'), residual_reducer=reduce_observation_residuals)\nassert not calls and not r['valid']\nnp.testing.assert_array_equal(r['residuals'],[1e12,1e12])\nassert r['chi2']==2e24 and r['status']=='forward_nonconvergence'",
-  "expected": "N=2 不变，chi2=2e24，状态明确不收敛；没有诊断调用。"
+  "expected": "N stays 2, chi2=2e24, and the state is explicitly nonconverged; no diagnostic is called."
  },
  "verification": {
   "scope": [
-   "成功/数值失败/再次成功的固定维数与端口记录。",
-   "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
-   "独立解析及曲场前向反演消费者。"
+   "Fixed dimension and port records across success/numerical failure/success.",
+   "Nonconvergence short-circuit, rejection of wrong residual shape/NaN/chi2, and deep non-modification of the caller.",
+   "Independent analytic and curved-field forward inversion consumer."
   ],
   "tests": [
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py"
   ],
-  "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
   "known_limitations": [
-   "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
-   "单次 trial 不判断参数可辨识性或最优性。"
+   "The scientific meaning of RuntimeError belongs to the caller's port; the failure record does not replace investigation of the original exception.",
+   "A single trial does not judge parameter identifiability or optimality."
   ]
  }
 }

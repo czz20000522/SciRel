@@ -25,6 +25,11 @@ from build_capability_matrix import build_matrix, render_markdown
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = 'scirel.documentation-snapshot'
+CAPABILITY_INDEX_SCHEMA = 'scirel.capability-index'
+CAPABILITY_QUERY_SCHEMA = 'scirel.capability-query-response'
+DEVICE_SCOPES = ('generic', 'device-parameterized', 'device-bound', 'unclassified')
+CAPABILITY_FILTER_ORDER = ('capability', 'operation', 'model', 'geometry',
+                           'device_scope', 'alias', 'q')
 NOTICE = ('开发文档 · 按每条资产的版本与证据范围使用。文档收录不代表人工批准、'
           '全项目通过或公开发行；此快照不是单一 wheel 的安装清单。')
 STATIC_FILES = {
@@ -241,6 +246,213 @@ def chapter_files(asset_ids, *, expected_source_revision=None,
     return files
 
 
+def _discovery(document):
+    """Return the optional reviewed discovery block.
+
+    Unknown keys inside the block are ignored: they are not projected and they
+    never change the derived view.  A non-object block is a contract error.
+    """
+    discovery = document.get('discovery')
+    if discovery is None:
+        return {}
+    if not isinstance(discovery, dict):
+        raise ValueError('discovery must be an object: ' + document['asset_id'])
+    return discovery
+
+
+def _discovery_text(discovery, field):
+    """Return one reviewed nonempty discovery text list, or ``None``."""
+    values = discovery.get(field)
+    if values is None:
+        return None
+    if not isinstance(values, list) or not values or any(
+            not isinstance(value, str) or not value.strip() for value in values):
+        raise ValueError('invalid discovery.' + field + ' list')
+    return [value.strip() for value in values]
+
+
+def _discovery_value(discovery, field, fallback):
+    """Return one reviewed discovery string, or the contract-derived fallback."""
+    value = discovery.get(field)
+    if value is None:
+        return fallback.strip()
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError('invalid discovery.' + field)
+    return value.strip()
+
+
+def _device_scope(document, discovery):
+    """Return ``(scope, source)``; absence always means ``unclassified``."""
+    if 'device_scope' not in discovery:
+        return 'unclassified', 'default-unclassified'
+    scope = discovery['device_scope']
+    if scope not in DEVICE_SCOPES:
+        raise ValueError('invalid discovery.device_scope: ' + document['asset_id'])
+    return scope, 'discovery'
+
+
+def _capability_port(port):
+    record = {
+        'name': port['name'],
+        'description': port['description'],
+        'units': port['units'],
+        'shape': port['shape'],
+        'dtype': port['dtype'],
+        'required': port.get('required', True),
+        'constraints': port['constraints'],
+    }
+    if 'default' in port:
+        record['default'] = port['default']
+    return record
+
+
+def capability_record(document):
+    """Project one contract into the read-only capability view.
+
+    Reviewed ``discovery`` text for capability/operation/model/geometry/
+    boundary/device_scope wins when present; otherwise the view derives from
+    ``title``/``identity``/``taxonomy``/ports/``verification``.  ``aliases``
+    always come from the top-level contract field (single recall truth), and
+    unknown discovery keys are ignored.  ``device_scope`` defaults to
+    ``unclassified`` and is never inferred from a name.
+    """
+    asset = document['asset_id']
+    identity = document['identity']
+    verification = document['verification']
+    tests = list(verification['tests'])
+    discovery = _discovery(document)
+    capability_terms = _discovery_text(discovery, 'capability')
+    operation_terms = _discovery_text(discovery, 'operation')
+    scope, scope_source = _device_scope(document, discovery)
+    return {
+        'asset_id': asset,
+        'symbol': document['public_api']['python']['symbol'],
+        'public_api': document['public_api'],
+        'capability': (capability_terms[0] if capability_terms
+                       else document['title']['en'].strip()),
+        'capability_summary': (' — '.join(capability_terms[1:])
+                               if capability_terms and len(capability_terms) > 1
+                               else document['summary']),
+        'summary': document['summary'],
+        'title_zh': document['title']['zh'],
+        'operation': (operation_terms[0] if operation_terms
+                      else identity['relation'].strip()),
+        'operation_direction': (' — '.join(operation_terms[1:])
+                                if operation_terms and len(operation_terms) > 1
+                                else identity['direction'].strip()),
+        'model': _discovery_value(discovery, 'model', identity['model']),
+        'geometry': _discovery_value(discovery, 'geometry', identity['geometry']),
+        'coordinates': identity['coordinates'].strip(),
+        'boundary': _discovery_value(discovery, 'boundary', identity['boundary']),
+        'device_scope': scope,
+        'device_scope_source': scope_source,
+        'aliases': list(document.get('aliases', [])),
+        'taxonomy': list(document.get('taxonomy', [])),
+        'ports': {
+            'inputs': [_capability_port(port) for port in document['inputs']],
+            'outputs': [_capability_port(port) for port in document['outputs']],
+        },
+        'contract_path': 'catalog/examples/' + asset + '.json',
+        'record_path': 'records/' + asset + '.json',
+        'docs_path': '/reference/generated/' + asset + '.html',
+        'evidence': {
+            'status': 'bounded' if tests else 'unvalidated',
+            'scope': list(verification['scope']),
+            'tests': tests,
+            'evidence_ceiling': verification['evidence_ceiling'],
+            'known_limitations': list(verification['known_limitations']),
+        },
+    }
+
+
+def capability_search_text(document, translation=None):
+    """Lexical recall text from the contract plus its bound Chinese reader.
+
+    The reviewed discovery fields are included except ``aliases``: the
+    top-level contract ``aliases`` list remains the only recall alias source,
+    so a stray ``discovery.aliases`` key cannot become a second truth.
+    """
+    identity = document['identity']
+    discovery = document.get('discovery')
+    reviewed = {}
+    if isinstance(discovery, dict):
+        reviewed = {field: discovery[field] for field in
+                    ('capability', 'operation', 'model', 'geometry',
+                     'boundary', 'device_scope')
+                    if field in discovery}
+    payload = [
+        document['asset_id'],
+        document['title']['en'],
+        document['title']['zh'],
+        document['summary'],
+        identity['relation'],
+        identity['direction'],
+        identity['definition'],
+        identity['model'],
+        identity['geometry'],
+        identity['coordinates'],
+        identity['boundary'],
+        identity['assumptions'],
+        reviewed,
+        document.get('aliases', []),
+        document.get('taxonomy', []),
+        [port['name'] for port in document['inputs']],
+        [port['name'] for port in document['outputs']],
+        [port['units'] for port in document['inputs']],
+        [port['units'] for port in document['outputs']],
+        document['applicability'],
+        document['verification'],
+    ]
+    if translation is not None:
+        payload.append([translation['summary'], translation['definition'],
+                        translation['model'], translation['boundary']])
+    return json.dumps(payload, ensure_ascii=False).lower()
+
+
+def build_capability_index(documents, *, source_revision, translations=None):
+    """Build the read-only capability index published inside a snapshot."""
+    records = sorted((capability_record(document) for document in documents),
+                     key=lambda item: item['asset_id'])
+    ids = [record['asset_id'] for record in records]
+    if len(ids) != len(set(ids)):
+        raise ValueError('duplicate capability index asset_id')
+    if translations is not None and set(translations) != set(ids):
+        raise ValueError('capability index translations differ from documents')
+    search_text = {}
+    for document in documents:
+        asset = document['asset_id']
+        search_text[asset] = capability_search_text(
+            document, None if translations is None else translations[asset])
+    return {
+        'schema': CAPABILITY_INDEX_SCHEMA,
+        'source_revision': source_revision,
+        'asset_count': len(records),
+        'derivation': {
+            'capability': ('discovery.capability when present (first entry is the '
+                           'name, remaining text is the summary); otherwise '
+                           'title.en + summary'),
+            'operation': ('discovery.operation when present; otherwise '
+                          'identity.relation + identity.direction'),
+            'model': 'discovery.model; otherwise identity.model',
+            'geometry': ('discovery.geometry; otherwise identity.geometry; '
+                         'identity.coordinates is always included'),
+            'boundary': 'discovery.boundary; otherwise identity.boundary',
+            'device_scope': ('discovery.device_scope when present; otherwise '
+                             'unclassified, never inferred as generic'),
+            'aliases': ('contract top-level aliases only; a discovery.aliases key '
+                        'is ignored so aliases never become a second truth'),
+            'ports': 'inputs + outputs',
+            'evidence': ('verification.scope/tests/evidence_ceiling/'
+                         'known_limitations; status is bounded when '
+                         'verification.tests is non-empty, else unvalidated'),
+            'paths': ('contract_path is repository-relative; record_path is the '
+                      'served exact contract; docs_path is the snapshot web route'),
+        },
+        'assets': records,
+        'search_text': search_text,
+    }
+
+
 def build(documents: Path, output: Path, outline: Path | None = None,
           translation_paths: list[Path] | None = None,
           *, source_revision: str | None = None,
@@ -280,6 +492,8 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         summary['search_text'] = json.dumps([doc, translations[asset]], ensure_ascii=False).lower()
         index.append(summary)
     files['index.json'] = encode(index)
+    files['capabilities.json'] = encode(build_capability_index(
+        docs, source_revision=source, translations=translations))
     files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
     files['handbook.html'] = (ROOT / 'tools/docs/handbook.html').read_bytes()
     files['handbook.json'] = encode(book)
@@ -368,8 +582,8 @@ class Documentation:
             raise ValueError('snapshot bytes changed; rebuild into a new directory')
         return data
 
-    def envelope(self, **items):
-        return {'schema': 'scirel.documentation-response',
+    def envelope(self, schema='scirel.documentation-response', **items):
+        return {'schema': schema,
                 'snapshot_sha256': self.manifest['snapshot_sha256'],
                 'source_commit': self.manifest['source_commit'],
                 'source_revision': self.manifest.get('source_revision', self.manifest['source_commit']),
@@ -391,6 +605,128 @@ class Documentation:
         page = [{k: v for k, v in x.items() if k != 'search_text'} for x in matches[offset:offset+limit]]
         return self.envelope(items=page, total=len(matches), offset=offset,
                              next_offset=offset+limit if offset+limit < len(matches) else None)
+
+    def capability_index(self):
+        """Read and verify the frozen capability index bound to this snapshot."""
+        if 'capabilities.json' not in self.manifest['files']:
+            raise KeyError('snapshot has no capability index; rebuild the snapshot')
+        index = json.loads(self.read('capabilities.json'))
+        if index.get('schema') != CAPABILITY_INDEX_SCHEMA:
+            raise ValueError('invalid capability index schema')
+        if index.get('source_revision') != self.manifest.get(
+                'source_revision', self.manifest['source_commit']):
+            raise ValueError('capability index source revision differs from snapshot')
+        assets = index.get('assets')
+        if not isinstance(assets, list) or index.get('asset_count') != len(assets):
+            raise ValueError('invalid capability index count')
+        ids = [asset.get('asset_id') if isinstance(asset, dict) else None for asset in assets]
+        if len(set(ids)) != len(ids) or set(ids) != self.ids:
+            raise ValueError('capability index differs from the document set')
+        search_text = index.get('search_text')
+        if not isinstance(search_text, dict) or set(search_text) != set(ids):
+            raise ValueError('capability index recall text differs from its assets')
+        return index
+
+    def capabilities(self, capability='', operation='', model='', geometry='',
+                     device_scope='', alias='', q='', offset=0, limit=20):
+        """Structured, read-only capability recall over the generated index.
+
+        Strict matches satisfy every supplied filter (AND).  Only when nothing
+        satisfies the whole query are partial matches returned as ``near_miss``
+        rows; an empty result is an explicit ``gap`` with a recall caveat.
+        ``device_scope`` filters the reviewed scope and defaults to
+        ``unclassified`` for contracts without a ``discovery`` block.
+        """
+        if not isinstance(q, str) or len(q) > 512 or offset < 0 or not 1 <= limit <= 100:
+            raise ValueError('q <= 512 characters, offset >= 0, limit 1..100 required')
+        filters = {'capability': capability, 'operation': operation, 'model': model,
+                   'geometry': geometry, 'device_scope': device_scope, 'alias': alias}
+        for name, value in filters.items():
+            if not isinstance(value, str):
+                raise ValueError(name + ' must be a string')
+            filters[name] = value.strip()
+            if len(filters[name]) > 1024:
+                raise ValueError(name + ' <= 1024 characters required')
+        if filters['device_scope'] and filters['device_scope'] not in DEVICE_SCOPES:
+            raise ValueError('device_scope must be one of: ' + ', '.join(DEVICE_SCOPES))
+        index = self.capability_index()
+        records = index['assets']
+        recall = index['search_text']
+        terms = q.casefold().split()
+        supplied = {name: value.casefold() for name, value in filters.items() if value}
+        order = {name: position for position, name in enumerate(CAPABILITY_FILTER_ORDER)}
+
+        def classify(record):
+            matched, missed = [], []
+            text = {
+                'capability': (record['capability'] + '\n' + record['capability_summary']).casefold(),
+                'operation': (record['operation'] + '\n' + record['operation_direction']).casefold(),
+                'model': record['model'].casefold(),
+                'geometry': (record['geometry'] + '\n' + record['coordinates']).casefold(),
+                'alias': '\n'.join(record['aliases']).casefold(),
+            }
+            for name in ('capability', 'operation', 'model', 'geometry', 'alias'):
+                if name in supplied:
+                    (matched if supplied[name] in text[name] else missed).append(name)
+            if 'device_scope' in supplied:
+                if supplied['device_scope'] == record['device_scope']:
+                    matched.append('device_scope')
+                else:
+                    missed.append('device_scope')
+            if terms:
+                haystack = recall[record['asset_id']]
+                if all(term in haystack for term in terms):
+                    matched.append('q')
+                else:
+                    missed.append('q')
+            matched.sort(key=order.get)
+            missed.sort(key=order.get)
+            return matched, missed
+
+        strict, partial = [], []
+        for record in records:
+            matched, missed = classify(record)
+            if not missed:
+                strict.append((record, matched, missed))
+            elif matched and any(name != 'q' for name in matched):
+                partial.append((record, matched, missed))
+        if strict:
+            status, candidates = 'match', strict
+        elif partial:
+            status = 'near_miss'
+            candidates = sorted(partial, key=lambda item: (-len(item[1]), item[0]['asset_id']))
+        else:
+            status, candidates = 'gap', []
+        total = len(candidates)
+        page = candidates[offset:offset+limit]
+        items = []
+        for record, matched, missed in page:
+            item = dict(record)
+            item['status'] = status
+            item['matched_filters'] = matched
+            item['missed_filters'] = missed
+            items.append(item)
+        result = self.envelope(
+            schema=CAPABILITY_QUERY_SCHEMA,
+            query={**filters, 'q': q, 'offset': offset, 'limit': limit},
+            status=status,
+            match_total=len(strict),
+            near_miss_total=len(partial) if status == 'near_miss' else 0,
+            total=total,
+            offset=offset,
+            next_offset=offset+limit if offset+limit < total else None,
+            items=items,
+        )
+        if status == 'gap':
+            result['gap'] = {
+                'reason': 'no asset matched every supplied filter',
+                'filters': {name: value for name, value in filters.items() if value},
+                'q': q,
+                'caveat': ('A zero lexical hit does not establish a scientific capability '
+                           'gap; applicability is decided by ports, units, model, '
+                           'geometry and evidence.'),
+            }
+        return result
 
     def asset(self, asset_id):
         if asset_id not in self.ids:
@@ -433,6 +769,13 @@ class Documentation:
                 if key in p:
                     p[key] = int(p[key])
             return self.search(**p)
+        if parsed.path == '/api/capabilities':
+            if set(p) - (set(CAPABILITY_FILTER_ORDER) | {'offset', 'limit'}):
+                raise ValueError('unknown capability query parameter')
+            for key in ('offset', 'limit'):
+                if key in p:
+                    p[key] = int(p[key])
+            return self.capabilities(**p)
         if parsed.path == '/api/asset' and set(p) == {'id'}:
             return self.asset(p['id'])
         if parsed.path == '/api/reader' and set(p) == {'id'}:
@@ -447,16 +790,24 @@ class Documentation:
             c = self.chapter('magnetostatics')['document']
             return self.envelope(items=[{k: c[k] for k in ('id', 'title', 'discipline', 'introduction')}])
         if parsed.path == '/api' and not p:
-            return self.envelope(endpoints={'search': '/api/search?q=&domain=&offset=0&limit=20',
-                                            'asset': '/api/asset?id=scirel.…',
-                                            'reader': '/api/reader?id=scirel.…',
-                                            'manifest': '/api/manifest',
-                                            'chapters': '/api/chapters',
-                                            'chapter': '/api/chapter?id=magnetostatics'},
+            endpoints = {'search': '/api/search?q=&domain=&offset=0&limit=20',
+                         'asset': '/api/asset?id=scirel.…',
+                         'reader': '/api/reader?id=scirel.…',
+                         'manifest': '/api/manifest',
+                         'chapters': '/api/chapters',
+                         'chapter': '/api/chapter?id=magnetostatics'}
+            # Older snapshots have no generated capability index; do not
+            # advertise an endpoint they cannot serve.
+            if 'capabilities.json' in self.manifest['files']:
+                endpoints['capabilities'] = ('/api/capabilities?capability=…&operation=…&'
+                                             'model=…&geometry=…&device_scope=…&'
+                                             'alias=…&q=…&offset=0&limit=20')
+            return self.envelope(endpoints=endpoints,
                                  handbook='/api/handbook', topic='/api/topic?id=…',
                                  topic_search='/api/search?topic=…&q=&offset=0&limit=20',
                                  operations='read-only; no callable execution',
-                                 discovery='lexical AND search, lowercase, whitespace separated; exact domain filter')
+                                 discovery=('lexical AND search, lowercase, whitespace separated; '
+                                            'exact domain filter; structured capability filters'))
         if parsed.path == '/api/manifest' and not p:
             return self.manifest
         raise KeyError('unknown endpoint')
@@ -513,6 +864,8 @@ def main():
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
             sub.add_argument('--q', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--reader'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
+            sub.add_argument('--capabilities', action='store_true', help='query the generated capability index instead of document search')
+            sub.add_argument('--capability', default=''); sub.add_argument('--operation', default=''); sub.add_argument('--model', default=''); sub.add_argument('--geometry', default=''); sub.add_argument('--device-scope', '--device_scope', dest='device_scope', default=''); sub.add_argument('--alias', default='')
         else:
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
@@ -525,7 +878,21 @@ def main():
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':
-        result = docs.reader(a.reader) if a.reader else (docs.handbook() if a.handbook else (docs.chapter(a.chapter) if a.chapter else (docs.asset(a.asset) if a.asset else docs.search(a.q, a.domain, a.offset, a.limit, a.topic))))
+        capability_query = any((a.capabilities, a.capability, a.operation, a.model,
+                                a.geometry, a.device_scope, a.alias))
+        if a.reader:
+            result = docs.reader(a.reader)
+        elif a.handbook:
+            result = docs.handbook()
+        elif a.chapter:
+            result = docs.chapter(a.chapter)
+        elif a.asset:
+            result = docs.asset(a.asset)
+        elif capability_query:
+            result = docs.capabilities(a.capability, a.operation, a.model, a.geometry,
+                                       a.device_scope, a.alias, a.q, a.offset, a.limit)
+        else:
+            result = docs.search(a.q, a.domain, a.offset, a.limit, a.topic)
         print(encode(result).decode()); return
     http = server(docs, a.port)
     print(f'SciRel documentation: http://127.0.0.1:{http.server_port}', flush=True)

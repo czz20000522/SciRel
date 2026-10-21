@@ -96,7 +96,14 @@ the reason:
 - Deliveries are self-contained; source checkout, private paths or receiver
   expectations must not become runtime dependencies.
 
-## 9. Storage and publication
+## 9. Outbound delivery
+
+- The single outbound entrypoint is `scirel-solving`; evolve it in place, never fork a parallel outbound skill.
+- Outbound workers see only public capability contracts/docs and the user request; not decomposition history, source identity, receiver roadmap or hidden oracle.
+- Capability discovery metadata lives in the contract `discovery` block and is maintained by the SciRel intake owner. No schema version labels; iterate directly.
+- Gaps are ordinary glue: explicit, testable, disclosed; final scientific acceptance belongs to the requester or a designated expert, not to the worker.
+
+## 10. Storage and publication
 
 - Mac checkout is the only source of truth. External project sources, runtime
   workspaces and generated release artifacts do not belong in Git.
@@ -106,7 +113,7 @@ the reason:
 - Delivery may be a cloud Git repo, archive or object store; SciRel evaluates the
   self-contained result and correctness evidence.
 
-## 10. Change process for meta-rules
+## 11. Change process for meta-rules
 
 When a new durable preference appears:
 

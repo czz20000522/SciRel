@@ -30,6 +30,7 @@ TOP_LEVEL_KEYS = {
     "summary",
     "taxonomy",
     "aliases",
+    "discovery",
     "identity",
     "inputs",
     "outputs",
@@ -42,7 +43,7 @@ TOP_LEVEL_KEYS = {
     "composition",
     "references",
 }
-REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"composition", "references"}
+REQUIRED_TOP_LEVEL_KEYS = TOP_LEVEL_KEYS - {"composition", "references", "discovery"}
 PORT_KEYS = {
     "name",
     "description",
@@ -63,6 +64,21 @@ IDENTITY_KEYS = {
     "coordinates",
     "boundary",
     "assumptions",
+}
+DISCOVERY_KEYS = {
+    "capability",
+    "operation",
+    "model",
+    "geometry",
+    "boundary",
+    "device_scope",
+    "aliases",
+}
+DEVICE_SCOPES = {
+    "generic",
+    "device-parameterized",
+    "device-bound",
+    "unclassified",
 }
 FORBIDDEN_PUBLIC_KEYS = {
     "admission_ref",
@@ -185,6 +201,36 @@ def _validate_identity(value: Any) -> None:
     for field in IDENTITY_KEYS - {"assumptions"}:
         _text(identity[field], f"identity.{field}")
     _validate_string_list(identity["assumptions"], "identity.assumptions")
+
+
+def _validate_discovery(value: Any) -> None:
+    """Validate optional reviewed discovery metadata.
+
+    Ports and evidence are intentionally absent: they are deterministic
+    projections of ``inputs``/``outputs`` and ``verification``. Fields inside
+    the block are independently optional so an intake review can record
+    ``device_scope`` before it authors the discovery prose; an absent
+    ``device_scope`` means ``unclassified`` for consumers.
+    """
+    discovery = _object(value, "discovery")
+    _exact_keys(discovery, set(), DISCOVERY_KEYS, "discovery")
+    if not discovery:
+        _fail("discovery", "must declare at least one discovery field")
+    for field in ("capability", "operation"):
+        if field in discovery:
+            _validate_string_list(
+                discovery[field], f"discovery.{field}", nonempty=True
+            )
+    for field in ("model", "geometry", "boundary"):
+        if field in discovery:
+            _text(discovery[field], f"discovery.{field}")
+    if "device_scope" in discovery:
+        scope = discovery["device_scope"]
+        if not isinstance(scope, str) or scope not in DEVICE_SCOPES:
+            _fail(
+                "discovery.device_scope",
+                "must be one of: " + ", ".join(sorted(DEVICE_SCOPES)),
+            )
 
 
 def _validate_applicability(value: Any) -> None:
@@ -508,6 +554,8 @@ def validate_document(document: Any, *, location: str = "document") -> dict[str,
     _validate_string_list(item["taxonomy"], f"{location}.taxonomy", nonempty=True)
     _validate_string_list(item["aliases"], f"{location}.aliases")
     _validate_identity(item["identity"])
+    if "discovery" in item:
+        _validate_discovery(item["discovery"])
     input_ports = _validate_ports(item["inputs"], f"{location}.inputs")
     output_ports = _validate_ports(item["outputs"], f"{location}.outputs", nonempty=True)
     _validate_applicability(item["applicability"])

@@ -5,7 +5,7 @@
   "en": "Normalized momentum on a grid",
   "zh": "网格归一化动量"
  },
- "summary": "将带符号无量纲网格映射为 p_n=x vnorm/clight；vnorm 与 clight 必须是同单位速度，不能将无量纲热速比直接传入。 中间溢出与最终不可表示性分别处理，避免可表示结果被错误拒绝或因中间下溢丢失。",
+ "summary": "Map a signed dimensionless grid to p_n = x*vnorm/clight; vnorm and clight must be velocities in the same unit, and a dimensionless thermal speed ratio must not be passed directly. Intermediate overflow and final non-representability are handled separately, so a representable result is neither falsely rejected nor lost to intermediate underflow.",
  "taxonomy": [
   "collisions",
   "momentum-scales",
@@ -20,16 +20,16 @@
  "identity": {
   "relation": "the normalized momentum profile p_n on a grid, from the grid, a velocity scale and the speed of light",
   "direction": "x, vnorm, clight -> p_n",
-  "definition": "逐元素返回无量纲 p_n=x×vnorm/clight；vnorm 与 clight 必须为相同单位的速度。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
-  "model": "独立闭式定义，不是拟合；在常规 binary64 运算之外对危险中间量作高精度求值，不包含单位自动转换。",
+  "definition": "Returns the dimensionless p_n = x*vnorm/clight elementwise; vnorm and clight must be velocities in the same unit. The ordinary region retains the original binary64 evaluation order; when an intermediate value overflows or becomes subnormal, the exact input floats are evaluated with 100-digit Decimal and the final result is rounded to binary64.",
+  "model": "an independent closed-form definition, not a fit; beyond ordinary binary64 arithmetic, dangerous intermediates are evaluated at high precision, with no automatic unit conversion",
   "geometry": "not applicable; an elementwise scaling of a one-dimensional grid",
   "coordinates": "not applicable; the grid is a caller-supplied dimensionless coordinate, not a spatial coordinate",
-  "boundary": "零速度尺度得到有符号零，映射对 x 为奇函数；中间乘积溢出不导致误拒绝。最终极小值按 binary64 舍入可成为有符号零，最终溢出仍拒绝。",
+  "boundary": "a zero velocity scale gives signed zero, and the map is odd in x; intermediate product overflow does not cause false rejection. A genuinely tiny final value may round to signed zero in binary64, while final overflow is still rejected",
   "assumptions": [
-   "x 为有符号无量纲一维网格；vnorm≥0、clight>0，且速度单位相同。实现不能自动核查单位。",
-   "两个叶入口独立。热速度比不能直接作为 vnorm；直接组合 divides by c twice，调用者需要先显式乘以光速换回速度。",
-   "常规区保留原浮点操作顺序，不承诺危险极值处与错误的旧操作逐位一致。",
-   "先检查形状与有限输入；可转换非实数值的既有 float() 行为保持，不新增物理含义。"
+   "x is a signed dimensionless one-dimensional grid; vnorm >= 0, clight > 0, and both velocities use the same unit. The implementation cannot verify units automatically.",
+   "the two leaf entries are independent. A thermal speed ratio must not be passed as vnorm; the direct composition divides by c twice, so the caller must first multiply it by the speed of light to recover a velocity.",
+   "the ordinary region retains the original floating-point operation order; bit-for-bit agreement with the erroneous earlier operation at dangerous extremes is not promised.",
+   "shapes and finite inputs are checked first; the existing float() behavior for convertible non-real values is preserved, without adding physical meaning."
   ]
  },
  "inputs": [
@@ -69,7 +69,7 @@
    "shape": "array",
    "dtype": "float",
    "required": true,
-   "constraints": "与 x 同形状的 float64 数组；保留符号且最终有限，极小真值可按浮点规则舍入为零。不能将中间浮点溢出误判为最终闭式不可表示。"
+   "constraints": "a float64 array with the same shape as x; signed and finally finite, while a genuinely tiny value may round to zero under floating-point rules. Intermediate floating-point overflow must not be misread as final closed-form non-representability"
   }
  ],
  "applicability": {
@@ -78,9 +78,9 @@
    "vnorm and clight are already expressed in the same velocity unit."
   ],
   "supported": [
-   "常规输入保留原科学关系及双精度运算顺序。",
-   "危险中间量使用精确输入 float 的 Decimal 后备求值；不缩小输入域、不放宽验证容差。",
-   "按参数名拒绝不合形状或不满足有限/符号合同的输入；最终溢出拒绝，不返回部分结果。"
+   "ordinary inputs retain the original scientific relation and double-precision operation order",
+   "dangerous intermediates use a Decimal fallback evaluated from the exact input floats; the input domain is not narrowed and verification tolerances are not relaxed",
+   "inputs with an invalid shape or a violated finiteness or sign contract are rejected by parameter name; final overflow is rejected and no partial result is returned"
   ],
   "excluded": [
    "Composition with scirel.collisions.thermal-electron-momentum: the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is not provided. A caller that wants the dimensionless grid momentum x * p_Te must convert the ratio to a velocity first, for example vnorm = p_Te * clight, and that conversion is the caller's step.",
@@ -88,12 +88,12 @@
    "Any statement of the speed of light or of any other physical constant; every constant is the caller's.",
    "Any requirement that the momentum be nonnegative, which belongs to the electron-ion leaf.",
    "The four Coulomb-log mappings of the same family: they are different relations and are not published with these two leaves.",
-   "最终结果超出 binary64 可表示范围时拒绝；中间结果溢出本身不在排除范围。"
+   "a final result outside the binary64 representable range is rejected; an overflowing intermediate result is not itself excluded"
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError when x is not a finite one-dimensional array, when vnorm or clight is not scalar-shaped, or when vnorm is negative or non-finite or clight is non-positive or non-finite, with a message naming the offending parameter.",
-  "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
+  "runtime_failure": "raises ValueError only when the final value is still non-finite after the fallback computation. Intermediate product or quotient overflow, underflow or subnormal precision loss triggers the high-precision fallback rather than directly rejecting the input.",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no profile."
  },
@@ -111,28 +111,28 @@
   "dependencies": []
  },
  "example": {
-  "description": "同时演示保留普通关系与修正中间量极值后的最终结果。",
+  "description": "demonstrate the retained ordinary relation together with the final result after correcting extreme intermediates",
   "code": "from scirel.collisions import normalized_momentum\nimport numpy as np\np = normalized_momentum(x=[-1e308,0.,1e308],vnorm=1e308,clight=1e308)\nassert np.array_equal(p,[-1e308,0.,1e308])\nsmall = normalized_momentum(x=[1e-300],vnorm=1e-100,clight=1e-200)\nassert small[0] > 0\nprint(p,small)",
-  "expected": "得到 [-1e308,0,1e308] 与约 [1.0000000000000001e-200]；中间乘积上/下溢不丢失最终可表示结果。"
+  "expected": "returns [-1e308, 0, 1e308] and approximately [1.0000000000000001e-200]; intermediate product overflow or underflow does not lose a final representable result"
  },
  "verification": {
   "scope": [
-   "保持普通区原数值断言、有效容差、输入形状和错误消息；常规结果逐位不变。",
-   "修复前 13 个新增极值检查有 7 个实际失败；它们包含有限大值误拒绝、中间下溢归零和符号保持。",
-   "200 位 Decimal 独立求值及真实非有限终值拒绝检验覆盖新行为；原热输入 1e308/511 的拒绝断言被实证纠正，原件保留。",
-   "外部历史比较不在本合同的证据范围内；本合同只绑定两个定义及其独立科学合同。"
+   "the ordinary-domain numeric assertions, effective tolerances, input shapes and error messages are retained; ordinary results are bit-identical",
+   "of the 13 added extreme-value checks, 7 failed before the correction; they cover false rejection of finite large values, intermediate underflow to zero and sign preservation",
+   "independent 200-digit Decimal evaluation and genuine non-finite final-value rejection exercise the new behavior; the earlier rejection assertion for the thermal input 1e308/511 was empirically corrected and now supersedes the earlier record",
+   "the earlier external comparison is outside this contract's evidence scope; this contract binds only the two definitions and their independent scientific contracts"
   ],
   "tests": [
    "tests/collisions/test_momentum_scales.py",
    "tests/collisions/test_momentum_intermediate_extremes.py"
   ],
-  "evidence_ceiling": "有限独立极值与普通闭式测试支持两个定义及其形状/表示性合同；不证明任意碰撞模型、调用者常数/单位、相对论适用性或完整来源项目。危险区采用 100 位 Decimal，输出仍为 binary64，不宣称任意精度结果。",
+  "evidence_ceiling": "finite independent extreme-value and ordinary closed-form tests support the two definitions and their shape and representability contract; they do not establish arbitrary collision models, caller constants or units, or relativistic validity. The dangerous region uses 100-digit Decimal while outputs remain binary64; arbitrary-precision results are not claimed",
   "known_limitations": [
-   "没有单位自动检查或换算；热速比直接作为速度会重复除以光速。",
-   "物理适用域仍由调用者确认，非相对论比例在极高温下只是定义而非相对论速度。",
-   "最终 binary64 舍入和极小网格结果下溢为零保持浮点意义，不表示物理量精确为零。",
-   "许可原件未给出来源整体再分发许可；当前仅内部授权技术整合，非人工科学认可或公开发行。",
-   "旧外部比较并未重放，也不由本次安装测试替代。"
+   "no automatic unit check or conversion exists; using a thermal speed ratio directly as a velocity divides by the speed of light twice",
+   "the physical applicability domain remains the caller's responsibility; at extremely high temperature the non-relativistic ratio is only a definition, not a relativistic velocity",
+   "final binary64 rounding and underflow of genuinely tiny grid results to zero retain floating-point meaning and do not mean the physical quantity is exactly zero",
+   "the license does not grant overall redistribution of the capability; current use is limited to internal authorized technical integration, not human scientific acceptance or public release",
+   "the earlier external comparison was not replayed, and the current installation tests do not replace it"
   ]
  }
 }

@@ -72,13 +72,30 @@ rebuilding docs; do not accept "the generator ran" as review.
 - `rcond` is relative to the largest singular value; non-finite rotate inputs
   are rejected; these implementation choices are contract truths with tests.
 
-## Capability discovery metadata and intake ownership (v0)
+## Capability discovery metadata and intake ownership
 
 A contract must let a consumer **find and select** a capability, not only call it.
-The discovery view uses nine fields. Eight are deterministic projections of existing
-contract fields; only `device_scope` has no schema slot yet (see below). The
-`asset_id` stays the only stable key, and `taxonomy` stays browsing classification:
-this section defines how to read the contract, it does not create a second one.
+The discovery view uses nine fields. `ports` and `evidence` are deterministic
+projections of `inputs`/`outputs` and `verification` and are deliberately **not**
+stored in the contract; six reviewed fields are carried by the optional top-level
+`discovery` block, and `aliases` stays the existing top-level list. Contracts are not
+backfilled yet, so most current assets still carry only the derived source fields.
+The `asset_id` stays the only stable key, and `taxonomy` stays browsing
+classification: this section defines how to read the contract, it does not create a
+second one.
+
+The `discovery` block is optional; its fields are independently optional so an
+intake review can record `device_scope` before it authors the prose:
+
+- `capability`, `operation`: non-empty arrays of strings (reusable short name plus
+  one-line summary; relation plus input→output direction).
+- `model`, `geometry`, `boundary`: strings; same meaning as the table below.
+- `device_scope`: one of `generic`, `device-parameterized`, `device-bound`,
+  `unclassified`. Absent means `unclassified`, never `generic`.
+
+The schema file is `contracts/scientific-asset-document.schema.json`; the exact-key
+validator in `scripts/validate_asset_documents.py` is the executable gate. Discovery
+must never gain `ports` or `evidence` copies.
 
 | discovery field | contract source | rule |
 | --- | --- | --- |
@@ -87,9 +104,9 @@ this section defines how to read the contract, it does not create a second one.
 | `model` | `identity.model` | equation/approximation and its level (analytic, empirical fit, iteration, interpolation) |
 | `geometry` | `identity.geometry`, `identity.coordinates` | axes, order, grid, units; state what is *not* reconstructed |
 | `boundary` | `identity.boundary`, `preconditions`/`excluded` | domain edges, boundary values, extrapolation or clamping; no invented support |
-| `device_scope` | no schema slot yet; see below | `generic`, `device-parameterized`, `device-bound` or `unclassified` |
-| `aliases` | `aliases` | recall synonyms, legacy symbols, device names only when truly bound |
+| `device_scope` | `discovery.device_scope` (optional; absent means `unclassified`) | `generic`, `device-parameterized`, `device-bound` or `unclassified` |
 | `ports` | `inputs`, `outputs` | `name`/`units`/`shape`/`required`/`default`/`constraints`; structural match key |
+| `aliases` | `aliases` | recall synonyms, legacy symbols, device names only when truly bound |
 | `evidence` | `verification.*` plus intake decision | verified scope, tests, ceiling, limitations and status |
 
 `evidence.status` is one of `bounded`, `partial`, `unvalidated`,
@@ -115,26 +132,21 @@ catalog assets.
   default for an unreviewed asset and must not be treated as `generic`.
 
 A device name is an alias and an applicability filter, never a retrieval primary
-key: it may appear in `aliases` or in a `device_scope` record, must not enter the
-`asset_id` of a reusable kernel, and must not boost or outweigh a ports/model match.
+key: it may appear in `aliases`, must not enter the `asset_id` of a reusable kernel,
+and must not boost or outweigh a ports/model match. `device_scope` records only the
+binding level; the named device and its binding evidence stay in the contract text
+and tests.
 
-The current exact-key schema and validator reject unknown top-level fields, so v0
-encodes scope in `identity.model`, `identity.boundary` and
-`applicability.excluded` wording, plus this transitional cache of confirmed
-`device-bound` assets:
-
-| asset | device binding |
-| --- | --- |
-| `scirel.electromagnetism.brb` | fixed BRB composition |
-| `scirel.electromagnetism.wham` | fixed WHAM composition |
-| `scirel.electromagnetism.trex-coil` | fixed TREX coil geometry |
-
-All other current assets are `unclassified` pending review; they must not be
-presented as `generic` until a SciRel intake review records that scope.
-`scirel.electromagnetism.device` is an ordered composition and is `unclassified`
-until reviewed.
-This table is a cache, not a second truth: when it conflicts with a contract the
-contract wins, and the table is deleted once `device_scope` becomes a schema field.
+The schema now carries `discovery.device_scope` directly, so device scope no longer
+needs an external table. No contract is backfilled yet: absent
+`discovery.device_scope` means `unclassified`, and consumers must not present it as
+`generic`. Intake still has to record the confirmed bindings in the contracts
+themselves; until then the known `device-bound` assets are
+`scirel.electromagnetism.brb` (fixed BRB composition),
+`scirel.electromagnetism.wham` (fixed WHAM composition) and
+`scirel.electromagnetism.trex-coil` (fixed TREX coil geometry). All other current
+assets are `unclassified` pending review, including the ordered composition
+`scirel.electromagnetism.device`.
 
 ### Ownership and information boundary
 
@@ -147,7 +159,7 @@ discovery fields, the `evidence.status` decision, the overlap record
 ask a decomposition worker for receiver-side tags, search keywords or device-scope
 judgements.
 
-### Retrieval order (v0)
+### Retrieval order
 
 1. Grep/full-text over contracts and the documentation snapshot `search_text`
    (currently the contract plus its Chinese sidecar). Use synonyms, symbols and
@@ -155,9 +167,10 @@ judgements.
 2. Browse filters: domain, taxonomy, handbook topic, asset kind.
 3. Read the exact contract. Applicability is decided by ports, units, model,
    geometry, boundary, device scope and evidence — never by a name.
-4. A structured index is a future **build artifact generated from contracts**
-   (source revision bound, diffable, not committed, never hand-edited). Do not
-   create one before the contract fields can carry it.
+4. A structured index is a **build artifact generated from contracts** (source
+   revision bound, diffable, not committed, never hand-edited). The schema's optional
+   `discovery` block carries the reviewed discovery fields, while `ports` and
+   `evidence` stay derived. Never hand-maintain the index or a second alias table.
 5. A device-name hit only prompts a device-scope/evidence check; a zero grep hit
    does not establish a capability gap.
 

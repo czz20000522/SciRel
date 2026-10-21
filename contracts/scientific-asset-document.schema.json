@@ -1,7 +1,7 @@
 {
  "$schema": "https://json-schema.org/draft/2020-12/schema",
- "$id": "https://scirel.dev/schemas/scientific-asset-document.v1.json",
- "title": "SciRel scientific asset document v1",
+ "$id": "https://scirel.dev/schemas/scientific-asset-document.json",
+ "title": "SciRel scientific asset document",
  "type": "object",
  "additionalProperties": false,
  "required": [
@@ -68,6 +68,9 @@
     "type": "string",
     "minLength": 1
    }
+  },
+  "discovery": {
+   "$ref": "#/$defs/discovery"
   },
   "identity": {
    "$ref": "#/$defs/identity"
@@ -295,6 +298,40 @@
    "items": {
     "type": "string",
     "minLength": 1
+   }
+  },
+  "discovery": {
+   "description": "Optional reviewed discovery metadata for capability selection. Ports and evidence are deliberately not repeated here; they are derived from inputs/outputs and verification.",
+   "type": "object",
+   "additionalProperties": false,
+   "minProperties": 1,
+   "properties": {
+    "capability": {
+     "$ref": "#/$defs/nonemptyStringArray"
+    },
+    "operation": {
+     "$ref": "#/$defs/nonemptyStringArray"
+    },
+    "model": {
+     "type": "string",
+     "minLength": 1
+    },
+    "geometry": {
+     "type": "string",
+     "minLength": 1
+    },
+    "boundary": {
+     "type": "string",
+     "minLength": 1
+    },
+    "device_scope": {
+     "enum": [
+      "generic",
+      "device-parameterized",
+      "device-bound",
+      "unclassified"
+     ]
+    }
    }
   },
   "identity": {

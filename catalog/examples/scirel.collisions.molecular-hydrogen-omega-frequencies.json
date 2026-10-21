@@ -5,7 +5,7 @@
   "en": "Molecular hydrogen elastic Omega aggregation",
   "zh": "分子氢弹性碰撞矩与局部松弛系数"
  },
- "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
+ "summary": "Reduce molecular-hydrogen elastic collision momentum and stress moments independently in each spatial cell, returning normalized coefficients Omega (m^-1), physical frequencies nu (s^-1) and their definedness. A zero denominator retains the collision moment and returns an explicitly undefined frequency; no artificial floor or positive clipping hides it.",
  "taxonomy": [
   "collisions",
   "molecular-hydrogen",
@@ -17,418 +17,418 @@
  ],
  "identity": {
   "relation": "molecular H2 elastic Omega_H2_P, Omega_H2_H and Omega_H2_H2 frequency aggregation",
-  "direction": "物理分布、密度、两路带符号 Alpha、自碰撞 SIG、速度积分权重与显式单元状态 → 碰撞矩、频率及状态",
-  "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
-  "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
+  "direction": "physical distribution, density, two signed Alpha channels, self-collision SIG, velocity integration weights and explicit cell state -> collision moments, frequencies and status",
+  "definition": "Let w_ij = Vr2pidVr_i*dVx_j, n = sum(w*f), u = sum(w*f*vx)/n, U = Vth*u, and K = vr^2 - 2*(vx - u)^2. The central state uses W = sum(w*f*K)/n; the target state uses W = sum(w*(f - M)*K)/n, where M must conserve the cell particle number, mean velocity and total kinetic energy. For the two mixed channels N = sum(w*f*Alpha)/n and d = (U - U_background)/Vth; for self-collision Alpha = SIG_self @ F(f), N = sum(w*f*Alpha)/n and d = W. Omega = N/d and nu = Vth*Omega, with no negative clipping and no floor. The mixed physical acceleration is moment_rate = -beta*Vth^2*N and the self-collision stress rate is -Vth^3*N; atomic beta = (1/2, 2/3) and molecular beta = (1/3, 1/3). When d = 0, Omega/nu = NaN and defined = False, while finite N and moment_rate are still returned. A disabled channel is exactly zero with status disabled. The total frequency is the sum of the three channels and propagates undefined values from enabled channels.",
+  "model": "a moment-matched BGK approximation for momentum and stress; it is not the full Boltzmann collision operator, and a single-point 0/0 does not determine a unique linearized rate",
   "geometry": "cylindrical (vr,vx) velocity carrier per spatial cell x, with N=nvr*nvx Fortran-order matrix indexing",
   "coordinates": "vr and vx are normalized by Vth; Vth, vxi and VxH share physical velocity units; no implicit conversion",
-  "boundary": "有限非负分布，正密度与积分权重，严格递增轴、正半径和 Vth；密度必须等于积分。target 状态按单元验证守恒。启用通道零分母不是输入异常，而是明确的未定义频率。",
+  "boundary": "finite nonnegative distributions, positive density and integration weights, strictly increasing axes, positive radii and Vth; the density must equal the integral. The target state is verified for conservation in each cell. A zero denominator in an enabled channel is not an input error but an explicitly undefined frequency",
   "assumptions": [
-   "所有速度使用同一 Vth；f 对无量纲速度体积积分得到 m⁻³，SIG 已含目标积分权重，Alpha 与 Omega 的量纲均为 m⁻¹。",
-   "两路 Alpha 必须由相同网格上的真实背景分布与对应 SIG 生成；背景流速必须与该分布一致。本函数无法仅从 Alpha 反推出背景分布。",
-   "原子、分子与离子属于相同 H 或 D 同位素，混合通道质量分数据此确定；不把 H/D 混合同位素碰撞当作已验证范围。",
-   "moment_state 为 central 或 target，可逐单元选择；target 分布非负，并在 64 个 binary64 eps 的积分舍入误差内保持密度、流速与动能。该误差只用于守恒检查，不作用于分母。",
-   "负比值保留并标为 negative_no_bgk_closure，表示该矩不能由非负 BGK 松弛率代表；它不是可直接使用的非负碰撞频率。",
-   "有限速度/角网格的 Maxwell 平衡可有应力残差；本函数保留该残差，不能以频率未定义掩盖离散误差。"
+   "All velocities use the same Vth; integrating f over the dimensionless velocity volume gives m^-3, SIG already includes the target integration weights, and both Alpha and Omega have units m^-1.",
+   "The two Alpha channels must be generated from real background distributions on the same grid and the corresponding SIG; the background flows must match those distributions. This function cannot recover the background distributions from Alpha alone.",
+   "The atom, molecule and ion belong to the same H or D isotope, and the mixed-channel mass fractions follow from this; H/D mixed-isotope collisions are not treated as a verified range.",
+   "moment_state is central or target and can be selected independently per cell; the target distribution is nonnegative and conserves density, flow velocity and kinetic energy to within 64 binary64 eps of integration roundoff. That tolerance applies only to the conservation check, not to the denominator.",
+   "Negative ratios are retained and marked negative_no_bgk_closure, meaning the moment cannot be represented by a nonnegative BGK relaxation rate; such a value is not a usable nonnegative collision frequency.",
+   "A Maxwell equilibrium on a finite velocity or angular grid may retain a stress residual; this function retains that residual and does not hide discretization error behind an undefined frequency."
   ]
  },
  "inputs": [
   {
    "name": "fH2",
-   "description": "分子中性粒子分布，对无量纲速度体积积分为密度。",
+   "description": "molecular neutral distribution; its integral over dimensionless velocity volume is the density",
    "units": "m^-3",
    "shape": "[nvr,nvx,nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "非空、有限、非负。"
+   "constraints": "nonempty, finite and nonnegative"
   },
   {
    "name": "nH2",
-   "description": "每个空间单元的粒子数密度。",
+   "description": "particle number density in each spatial cell",
    "units": "m^-3",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "正且有限；与 Σwf 在 64*eps 相对积分舍入范围内一致。"
+   "constraints": "positive and finite; consistent with sum(w*f) to within 64*eps relative integration roundoff"
   },
   {
    "name": "Alpha_H2_P",
-   "description": "由对应背景分布与带符号动量矩阵生成的 Alpha。",
+   "description": "Alpha generated from the corresponding background distribution and signed momentum matrix",
    "units": "m^-1",
    "shape": "[nvr,nvx,nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限且与分布同形；保留负值。"
+   "constraints": "finite and aligned with the distribution; negative values are retained"
   },
   {
    "name": "Alpha_H2_H",
-   "description": "由对应背景分布与带符号动量矩阵生成的 Alpha。",
+   "description": "Alpha generated from the corresponding background distribution and signed momentum matrix",
    "units": "m^-1",
    "shape": "[nvr,nvx,nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限且与分布同形；保留负值。"
+   "constraints": "finite and aligned with the distribution; negative values are retained"
   },
   {
    "name": "SIG_H2_H2",
-   "description": "含目标列积分权重的自碰撞应力矩阵；Fortran 速度排序。",
+   "description": "self-collision stress matrix including target-column integration weights; Fortran velocity ordering",
    "units": "m^2",
    "shape": "[N,N], N=nvr*nvx",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限、方阵，保留带符号元素。"
+   "constraints": "finite square matrix; signed entries are retained"
   },
   {
    "name": "Vr2pidVr",
-   "description": "圆柱径向速度积分权重。",
+   "description": "cylindrical radial velocity integration weights",
    "units": "dimensionless",
    "shape": "[nvr]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "finite and strictly positive"
   },
   {
    "name": "dVx",
-   "description": "轴向速度积分权重。",
+   "description": "axial velocity integration weights",
    "units": "dimensionless",
    "shape": "[nvx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "finite and strictly positive"
   },
   {
    "name": "vr",
-   "description": "径向归一化速度节点。",
+   "description": "radial normalized velocity nodes",
    "units": "v/Vth",
    "shape": "[nvr]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限、正、严格递增。"
+   "constraints": "finite, positive and strictly increasing"
   },
   {
    "name": "vx",
-   "description": "轴向归一化速度节点。",
+   "description": "axial normalized velocity nodes",
    "units": "v/Vth",
    "shape": "[nvx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限、严格递增；不要求跨零。"
+   "constraints": "finite and strictly increasing; not required to cross zero"
   },
   {
    "name": "Vth",
-   "description": "所有分布共享的热速度标度。",
+   "description": "thermal speed scale shared by all distributions",
    "units": "m/s",
    "shape": "scalar",
-   "dtype": "实数标量",
+   "dtype": "real scalar",
    "required": true,
-   "constraints": "有限且正。"
+   "constraints": "finite and positive"
   },
   {
    "name": "vxi",
-   "description": "生成第一路 Alpha 的离子背景平均速度。",
+   "description": "mean ion background velocity used to generate the first Alpha channel",
    "units": "m/s",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限且与背景分布的积分平均一致。"
+   "constraints": "finite and consistent with the integral mean of the background distribution"
   },
   {
    "name": "VxH",
-   "description": "生成第二路 Alpha 的中性背景平均速度。",
+   "description": "mean neutral background velocity used to generate the second Alpha channel",
    "units": "m/s",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限且与背景分布的积分平均一致。"
+   "constraints": "finite and consistent with the integral mean of the background distribution"
   },
   {
    "name": "moment_state",
-   "description": "各单元采用中央应力或显式目标分布的应力差。",
+   "description": "per cell, use the central stress or the stress difference against an explicit target distribution",
    "units": "dimensionless",
    "shape": "scalar or [nx]",
-   "dtype": "字符串或字符串数组",
+   "dtype": "string or string array",
    "required": false,
-   "constraints": "只接受 central/target。",
+   "constraints": "accepts only central/target",
    "default": "central"
   },
   {
    "name": "target_distribution",
-   "description": "自碰撞目标分布；只在显式 target 单元使用。",
+   "description": "self-collision target distribution; used only in cells explicitly marked target",
    "units": "m^-3",
    "shape": "[nvr,nvx,nx] or null",
-   "dtype": "实数组或 None",
+   "dtype": "real array or None",
    "required": false,
-   "constraints": "target 单元必需；非负有限，且逐单元守恒粒子数、平均速度和总动能；没有 target 单元时必须为 None。",
+   "constraints": "required for target cells; finite and nonnegative, conserving particle number, mean velocity and total kinetic energy in each target cell; must be None when no target cell is present",
    "default": null
   },
   {
    "name": "H2_P_EL",
-   "description": "是否启用对应弹性通道。",
+   "description": "whether the corresponding elastic channel is enabled",
    "units": "dimensionless",
    "shape": "scalar",
-   "dtype": "布尔标量",
+   "dtype": "boolean scalar",
    "required": false,
-   "constraints": "仅接受 bool；关闭后频率和碰撞矩精确为零，状态为 disabled。",
+   "constraints": "accepts only bool; when disabled, the frequency and collision moment are exactly zero and the status is disabled",
    "default": true
   },
   {
    "name": "H2_H_EL",
-   "description": "是否启用对应弹性通道。",
+   "description": "whether the corresponding elastic channel is enabled",
    "units": "dimensionless",
    "shape": "scalar",
-   "dtype": "布尔标量",
+   "dtype": "boolean scalar",
    "required": false,
-   "constraints": "仅接受 bool；关闭后频率和碰撞矩精确为零，状态为 disabled。",
+   "constraints": "accepts only bool; when disabled, the frequency and collision moment are exactly zero and the status is disabled",
    "default": true
   },
   {
    "name": "H2_H2_EL",
-   "description": "是否启用对应弹性通道。",
+   "description": "whether the corresponding elastic channel is enabled",
    "units": "dimensionless",
    "shape": "scalar",
-   "dtype": "布尔标量",
+   "dtype": "boolean scalar",
    "required": false,
-   "constraints": "仅接受 bool；关闭后频率和碰撞矩精确为零，状态为 disabled。",
+   "constraints": "accepts only bool; when disabled, the frequency and collision moment are exactly zero and the status is disabled",
    "default": true
   }
  ],
  "outputs": [
   {
    "name": "VxH2",
-   "description": "分子氢平均轴向速度。",
+   "description": "mean axial velocity of molecular hydrogen",
    "units": "m/s",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限，包括全部通道关闭的情况。"
+   "constraints": "finite, including when all channels are disabled"
   },
   {
    "name": "Wperp_paraH2",
-   "description": "选定的中央应力或相对目标分布的应力差。",
+   "description": "selected central stress or the stress difference against the target distribution",
    "units": "(v/Vth)^2",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限，可为负或零；不加下限。"
+   "constraints": "finite; may be negative or zero, with no floor"
   },
   {
    "name": "central_stress",
-   "description": "原分布的中央径向减两倍轴向二阶矩。",
+   "description": "central radial-minus-twice-axial second moment of the original distribution",
    "units": "(v/Vth)^2",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限，与所选 target 无关。"
+   "constraints": "finite and independent of the selected target"
   },
   {
    "name": "Omega_H2_P",
-   "description": "对应通道的归一化矩匹配系数。",
+   "description": "normalized moment-matched coefficient for this channel",
    "units": "m^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "可定义时有限且保留符号；启用且分母为零时 NaN；关闭为零。"
+   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
   },
   {
    "name": "nu_H2_P",
-   "description": "Omega 乘 Vth 后的物理矩匹配频率。",
+   "description": "physical moment-matched frequency, Omega multiplied by Vth",
    "units": "s^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "与 Omega 共享状态；负值不是可接受的非负 BGK 松弛。"
+   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
   },
   {
    "name": "moment_H2_P",
-   "description": "每粒子带符号碰撞矩分子 N；速度幂仍为归一化量。",
+   "description": "per-particle signed collision-moment numerator N; velocity powers remain normalized",
    "units": "m^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限；频率未定义时仍保留，关闭为零。"
+   "constraints": "finite; retained even where the frequency is undefined; exactly zero when disabled"
   },
   {
    "name": "moment_rate_H2_P",
-   "description": "由质量分数及 Vth 恢复的物理加速度。",
+   "description": "physical acceleration recovered from the mass fraction and Vth",
    "units": "m/s^2",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限、带符号，关闭为零。"
+   "constraints": "finite and signed; exactly zero when disabled"
   },
   {
    "name": "defined_H2_P",
-   "description": "对应频率是否可定义。",
+   "description": "whether this frequency is defined",
    "units": "dimensionless",
    "shape": "[nx]",
-   "dtype": "bool 数组",
+   "dtype": "bool array",
    "required": true,
-   "constraints": "关闭通道为 True；启用通道仅在非零分母时为 True。"
+   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
   },
   {
    "name": "status_H2_P",
-   "description": "明确区分关闭、有限非负、负比值及零分母。",
+   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
    "units": "dimensionless",
    "shape": "[nx]",
-   "dtype": "字符串数组",
+   "dtype": "string array",
    "required": true,
-   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator。"
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
   },
   {
    "name": "Omega_H2_H",
-   "description": "对应通道的归一化矩匹配系数。",
+   "description": "normalized moment-matched coefficient for this channel",
    "units": "m^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "可定义时有限且保留符号；启用且分母为零时 NaN；关闭为零。"
+   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
   },
   {
    "name": "nu_H2_H",
-   "description": "Omega 乘 Vth 后的物理矩匹配频率。",
+   "description": "physical moment-matched frequency, Omega multiplied by Vth",
    "units": "s^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "与 Omega 共享状态；负值不是可接受的非负 BGK 松弛。"
+   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
   },
   {
    "name": "moment_H2_H",
-   "description": "每粒子带符号碰撞矩分子 N；速度幂仍为归一化量。",
+   "description": "per-particle signed collision-moment numerator N; velocity powers remain normalized",
    "units": "m^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限；频率未定义时仍保留，关闭为零。"
+   "constraints": "finite; retained even where the frequency is undefined; exactly zero when disabled"
   },
   {
    "name": "moment_rate_H2_H",
-   "description": "由质量分数及 Vth 恢复的物理加速度。",
+   "description": "physical acceleration recovered from the mass fraction and Vth",
    "units": "m/s^2",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限、带符号，关闭为零。"
+   "constraints": "finite and signed; exactly zero when disabled"
   },
   {
    "name": "defined_H2_H",
-   "description": "对应频率是否可定义。",
+   "description": "whether this frequency is defined",
    "units": "dimensionless",
    "shape": "[nx]",
-   "dtype": "bool 数组",
+   "dtype": "bool array",
    "required": true,
-   "constraints": "关闭通道为 True；启用通道仅在非零分母时为 True。"
+   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
   },
   {
    "name": "status_H2_H",
-   "description": "明确区分关闭、有限非负、负比值及零分母。",
+   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
    "units": "dimensionless",
    "shape": "[nx]",
-   "dtype": "字符串数组",
+   "dtype": "string array",
    "required": true,
-   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator。"
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
   },
   {
    "name": "Omega_H2_H2",
-   "description": "对应通道的归一化矩匹配系数。",
+   "description": "normalized moment-matched coefficient for this channel",
    "units": "m^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "可定义时有限且保留符号；启用且分母为零时 NaN；关闭为零。"
+   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
   },
   {
    "name": "nu_H2_H2",
-   "description": "Omega 乘 Vth 后的物理矩匹配频率。",
+   "description": "physical moment-matched frequency, Omega multiplied by Vth",
    "units": "s^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "与 Omega 共享状态；负值不是可接受的非负 BGK 松弛。"
+   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
   },
   {
    "name": "moment_H2_H2",
-   "description": "每粒子带符号碰撞矩分子 N；速度幂仍为归一化量。",
+   "description": "per-particle signed collision-moment numerator N; velocity powers remain normalized",
    "units": "m^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限；频率未定义时仍保留，关闭为零。"
+   "constraints": "finite; retained even where the frequency is undefined; exactly zero when disabled"
   },
   {
    "name": "moment_rate_H2_H2",
-   "description": "由 Vth 恢复的中央应力物理变化率。",
+   "description": "physical rate of change of the central stress recovered from Vth",
    "units": "m^2/s^3",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "有限、带符号，关闭为零。"
+   "constraints": "finite and signed; exactly zero when disabled"
   },
   {
    "name": "defined_H2_H2",
-   "description": "对应频率是否可定义。",
+   "description": "whether this frequency is defined",
    "units": "dimensionless",
    "shape": "[nx]",
-   "dtype": "bool 数组",
+   "dtype": "bool array",
    "required": true,
-   "constraints": "关闭通道为 True；启用通道仅在非零分母时为 True。"
+   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
   },
   {
    "name": "status_H2_H2",
-   "description": "明确区分关闭、有限非负、负比值及零分母。",
+   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
    "units": "dimensionless",
    "shape": "[nx]",
-   "dtype": "字符串数组",
+   "dtype": "string array",
    "required": true,
-   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator。"
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
   },
   {
    "name": "Omega_EL",
-   "description": "三通道归一化系数之和。",
+   "description": "sum of the three normalized channel coefficients",
    "units": "m^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "启用通道的 NaN 显式传播，不忽略未定义项。"
+   "constraints": "NaNs from enabled channels propagate explicitly; undefined terms are not ignored"
   },
   {
    "name": "nu_EL",
-   "description": "三通道物理频率之和。",
+   "description": "sum of the three physical channel frequencies",
    "units": "s^-1",
    "shape": "[nx]",
-   "dtype": "float64 数组",
+   "dtype": "float64 array",
    "required": true,
-   "constraints": "Omega_EL*Vth；未定义状态显式传播。"
+   "constraints": "Omega_EL*Vth; undefined status propagates explicitly"
   },
   {
    "name": "defined_EL",
-   "description": "所有三通道的可定义性合取。",
+   "description": "conjunction of the defined masks of all three channels",
    "units": "dimensionless",
    "shape": "[nx]",
-   "dtype": "bool 数组",
+   "dtype": "bool array",
    "required": true,
-   "constraints": "任一启用通道未定义即为 False。"
+   "constraints": "False when any enabled channel is undefined"
   }
  ],
  "applicability": {
   "preconditions": [
-   "分布、背景 Alpha、背景平均速度与 SIG 使用同一同位素、网格、归一化和权重。",
-   "调用方必须检查 defined/status，不能将负系数或 NaN 当作非负 BGK 频率。"
+   "the distribution, background Alpha, background mean velocities and SIG use the same isotope, grid, normalization and weights",
+   "the caller must inspect defined/status and must not treat a negative coefficient or NaN as a nonnegative BGK frequency"
   ],
   "supported": [
-   "逐单元物理碰撞矩、中央/守恒目标应力差、显式未定义频率。",
-   "实际离散 Maxwell 分布、弱漂移与带符号应力；共同速度平移和空间分块不改变物理矩。"
+   "per-cell physical collision moments, central or conserved-target stress differences, and explicitly undefined frequencies",
+   "actual discrete Maxwell distributions, weak drift and signed stress; a common velocity shift and spatial partitioning do not change the physical moments"
   ],
   "excluded": [
-   "完整 Boltzmann 散射分布、自动反演背景分布、任意同位素混合、无指定扰动族的唯一平衡线性化频率。",
-   "截面拟合之外的实验普适性与自动空间/角网格收敛保证。"
+   "the full Boltzmann scattering distribution, automatic inversion of background distributions, arbitrary isotope mixing, and a unique equilibrium linearization frequency without a specified perturbation family",
+   "experimental universality beyond the cross-section fits and automatic space or angular grid convergence guarantees"
   ]
  },
  "failure_semantics": {
-  "invalid_input": "形状、实数有限性、分布非负性、密度/权重正性、轴顺序、布尔开关或目标守恒不满足时抛 ValueError。",
-  "runtime_failure": "碰撞矩或本应可定义的频率不可表示为有限 float64 时抛 ValueError。",
-  "nonconvergence": "本函数没有迭代；调用方负责速度和角网格收敛。",
-  "partial_results": "返回完整状态映射；启用零分母项的 NaN 是明确的未定义结果，其他有限矩保留，不是部分执行成功。"
+  "invalid_input": "raises ValueError when shapes, real finiteness, distribution nonnegativity, density or weight positivity, axis ordering, boolean flags or target conservation are not satisfied",
+  "runtime_failure": "raises ValueError when a collision moment or a frequency that should be defined is not representable as a finite float64",
+  "nonconvergence": "this function has no iteration; velocity and angular grid convergence are the caller's responsibility",
+  "partial_results": "a complete state mapping is returned; NaN in an enabled zero-denominator channel is an explicit undefined result while the other finite moments are retained, and this is not a partial successful execution"
  },
  "public_api": {
   "python": {
@@ -451,26 +451,26 @@
   ]
  },
  "example": {
-  "description": "用实际四通道矩阵和非负物理分布生成 Alpha，再查看局部矩和单位转换。",
+  "description": "generate Alpha from the actual four-channel matrices and a nonnegative physical distribution, then inspect the local moments and the unit conversion",
   "code": "import numpy as np\nfrom scirel.collisions import assemble_molecular_hydrogen_collision_matrices, assemble_molecular_hydrogen_omega_frequencies\nvr = np.array([0.5, 1.0]); vx = np.array([-1.0, 0.0, 1.0])\nwr = np.array([1.0, 2.0]); dx = np.ones(3); w = wr[:, None] * dx\nf = np.exp(-vr[:, None]**2 - (vx[None, :] - 0.2)**2)\nf *= 2e17 / np.sum(w * f)\nbg = np.exp(-vr[:, None]**2 - vx[None, :]**2)\nbg *= 3e17 / np.sum(w * bg)\ns = assemble_molecular_hydrogen_collision_matrices(vr, vx, wr, dx, 1.0, mu=2.0, n_theta=32)\nvth = float(np.sqrt(s['Vth2'][0])); ub = np.array([vth * np.sum(w * bg * vx) / np.sum(w * bg)])\nalphas = [(s[k] @ bg.ravel(order='F')).reshape(f.shape, order='F')[:, :, None] for k in ['SIG_H2_P', 'SIG_H2_H']]\nr = assemble_molecular_hydrogen_omega_frequencies(f[:, :, None], np.array([2e17]), *alphas, s['SIG_H2_H2'], wr, dx, vr, vx, vth, ub, ub)\nassert np.isfinite(r['moment_H2_P']).all()\nassert r['defined_H2_P'].all()\nnp.testing.assert_allclose(r['nu_H2_P'], vth * r['Omega_H2_P'], rtol=1e-14)\n",
-  "expected": "由实际 SIG 生成的混合碰撞矩有限；非零漂移通道可定义，nu 与 Vth*Omega 一致。"
+  "expected": "the mixed collision moments generated from the actual SIG are finite; channels with nonzero drift are defined and nu equals Vth*Omega"
  },
  "verification": {
   "scope": [
-   "已重现全空间状态哨兵、分子中央矩和共同速度平移、零分母丢弃有限矩的原失败；后继逐项回归。",
-   "独立标量双重求和、守恒目标、空间拆分、共同速度平移、负比值状态及未定义传播。",
-   "实际拟合矩阵和归一化 Maxwell 分布生成 Alpha；H/D 自适应角积分、带权交换关系、平衡动量和双侧弱漂移。"
+   "the earlier failures around a global state sentinel, molecular central moments with a common velocity shift, and a zero denominator dropping finite moments were reproduced; each is now covered by an item-by-item regression",
+   "independent scalar double summation, conservation targets, spatial partitioning, a common velocity shift, negative-ratio status and undefined propagation",
+   "Alpha generated from actual fit matrices and normalized Maxwell distributions; H/D adaptive angular integration, weighted exchange relations, equilibrium momentum and two-sided weak drift"
   ],
   "tests": [
    "tests/collisions/test_molecular_hydrogen_omega_frequencies.py",
    "tests/collisions/test_atomic_hydrogen_omega_frequencies.py",
    "tests/collisions/test_collision_physical_closure.py"
   ],
-  "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需独立接收；人工科学认可和公开发行另行决定。",
+  "evidence_ceiling": "supports physical consistency of the given moment model with the tested discrete inputs; it does not represent full project-level application acceptance, nonnegative BGK closure for arbitrary distributions or external experimental accuracy. The candidate asset still requires independent intake acceptance; human scientific approval and public release are decided separately",
   "known_limitations": [
-   "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
-   "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
-   "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。"
+   "the moment ratio may be ill-conditioned near a zero denominator; there is no arbitrary floor, and a unique equilibrium linearization rate is not invented from single-point data",
+   "a finite angular or velocity grid may produce a Maxwell stress residual; convergence must be checked for the application",
+   "the limitations of the cross-section fits, H/D scaling and the molecular-viscosity approximation are inherited; licensing remains to be determined"
   ]
  }
 }

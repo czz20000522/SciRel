@@ -753,7 +753,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-   "source_sha256": "9fb644ed3c229d6ea103ab5c83f07ab4e6adb53bec54be2bd7dbc8a66e017610",
+   "source_sha256": "a48e0119c7a8d75fac41349e9c035cb147c5c93a53c7e5c633b8bbfc456d4bbe",
    "summary": "在每个空间单元独立归约原子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -1338,7 +1338,7 @@
   },
   {
    "asset_id": "scirel.inference.direct-anisotropic-inversion",
-   "source_sha256": "27d8f1fff8ce7630c3f3efd6ef20a72bdb6da3f5bde013b4b11a101bfbd0dafb",
+   "source_sha256": "79cb2dee621ba34bc0df90ed4032eb7eeabc22087d5f43bae7a74c3aab41c08c",
    "summary": "将真实各向异性前向求解、显式单位诊断和有界优化连接为单一调用入口，持续保持固定观测维数与有效终点。",
    "definition": "先按标准观测构造 N，再把 trial、严格残差和有界优化器组合起来。前向 solver_config 深复制并加入 params；未收敛时提前短路，失败的 trial 不参与有效最优。可选 LHS 与总预算在优化器中统一执行，最终参数、残差和状态绑定同一次新评估。当前验证同时包含解析制造的非零 Green 反馈和独立 Biot–Savart/张量散度参考的曲场恢复。",
    "model": "调用者指定物理闭合的直接反演组合，复用已资格化前向关系，不另造各向异性平衡方程",
@@ -2124,7 +2124,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices",
-   "source_sha256": "a1e857e4bea0a5fdd462238b31b46eef0762ba5af2809e12c18daa6f852d303f",
+   "source_sha256": "00d5840055a5206a2e7258c2b87af721f94620f45c1305ad08d9c3416813d3db",
    "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。",
    "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>/8。Vth²=2Q*Tnorm/(mu*H_MASS)。分子 CX 拟合能量为 g²*2Tnorm/mu，H2-H 与 H2-P 为 g²*Tnorm/mu，自黏性为 g²*2Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
@@ -2281,7 +2281,7 @@
   },
   {
    "asset_id": "scirel.collisions.thermal-electron-momentum",
-   "source_sha256": "c0e1f5d2335bd82bd26d83dff9e940065739d408ca34d4db786199034852b67e",
+   "source_sha256": "347e6f43b387bc14bdcf2abe1f328f683f9a806a0914b6140ad8d6ac6a041f8e",
    "summary": "计算非相对论热电子归一化动量 p_Te=sqrt(2T/mc²)。它是无量纲速度比 v/c，不是 cm/s 速度，不能直接作为 normalized-momentum 的 vnorm。 中间溢出与最终不可表示性分别处理，避免可表示结果被错误拒绝或因中间下溢丢失。",
    "definition": "返回 sqrt(2×temperature_kev/restmkev) 的无量纲非相对论热速度比。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
    "model": "独立闭式定义，不是拟合；在常规 binary64 运算之外对危险中间量作高精度求值，不包含单位自动转换。",
@@ -3364,7 +3364,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
-   "source_sha256": "66e66345b02f1b06cfb05396952dd3e8a9d83675cd5cfcccdb82fc8ac36fa357",
+   "source_sha256": "72c6d1ccc41c1d8a129bf11a36b8b222571662aece609eb03ce38faaf5b8403a",
    "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -3667,7 +3667,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
-   "source_sha256": "0a01fee9b06c90852cc646c9a5a5832de31494fa6e36bb2d83d32d69f563ba84",
+   "source_sha256": "b4e791ff7a02d92a6365896e5474a8fa453fced83a405e941ac2899adc498c2a",
    "summary": "在同一 R–Z 网格上按明确单位采样磁通与所请求的压强、密度或电子温度；区分原始 psi 样本与完整圆环磁通。",
    "definition": "使用既有双线性采样器。flux_loops.quantity=raw_psi 时保留 equilibrium.psi_unit；quantity=magnetic_flux 时输出 Wb，仅对明确声明为 Wb/rad 的 psi 乘以 2π，Wb 输入不变。thomson 只采样明确请求且具有相同单位声明的实际 profile，不推算缺失通道。所有结果附 units。",
    "model": "平衡场的只读点采样；thomson 是历史命名空间，不是 Thomson 散射仪器模型",
@@ -3846,7 +3846,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.observation-residuals",
-   "source_sha256": "9d64d3e0d8e2a3a96aa47dcdfdfca8f3e257e2a14425159e91c551673393acd9",
+   "source_sha256": "5747cba13cdd36ef092f9f77ec1cc7c386fe80eeff083d824f8322c4a18fb66f",
    "summary": "对预先声明的每个观测通道计算固定顺序、固定维数的归一化残差；缺预测或单位不符均拒绝。",
    "definition": "首先验证观测布局，依次取 flux_loops、thomson.density、electron_temperature、p_parallel、p_perp。每个请求通道均要求预测与 values 精确同形；计算 (prediction-values)/sigma，按 NumPy C 顺序展平拼接，chi2=r·r。sigma 默认 1，可广播；绝不跳过缺少预测的通道。",
    "model": "对角 sigma 加权最小二乘，无协方差、自由度校正或仪器模型",
@@ -3921,7 +3921,7 @@
   },
   {
    "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
-   "source_sha256": "e02569f77116534fed4deac6690634068424c81255763e11603b1e7700bf8ec9",
+   "source_sha256": "ffb8f48fd90f9e560a27047772745e0a12c074e934b7790931b2b8350a1a7ae6",
    "summary": "计算静止原子氢靶上的质子弹性动量传递截面；10 eV 使用低能多项式，修复 Python 翻译中的零洞。保留能域端点裁剪和领先单例输出轴。",
    "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E≤10 时使用七系数低能 log 多项式，E>10 时使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；输出增加一个领先单例轴。",
    "model": "原始 IDL sigma_el_p_h 的 H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
@@ -4547,7 +4547,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
-   "source_sha256": "04e958e2322aa677c71d894164a6426a653c8b076a1e2506b060f37a176b34a2",
+   "source_sha256": "d0e3b85dfa30d9a441972575b2211b864d8292131b46455a6392eccb0ac0944d",
    "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。",
    "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>/8。Vth²=2Q*Tnorm/(mu*H_MASS)。原子 CX 和混合动量拟合能量为 g²*Tnorm/mu，自黏性为 g²*Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
@@ -6019,7 +6019,7 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-   "source_sha256": "2a24ca13ee9aca8d98f5a0330c01b284520018e8c09c1a21535d181c218ddf5c",
+   "source_sha256": "1b69b067212d60990246d4201d1355ae53fbae89dfe93b17e3faf1a5a2862fb4",
    "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
    "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
    "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
@@ -6660,7 +6660,7 @@
   },
   {
    "asset_id": "scirel.collisions.normalized-momentum",
-   "source_sha256": "5d7735739c212a62396a9ad11a576b52cb46c30948807cc7afb317394ac5ff8e",
+   "source_sha256": "2fbf0babc4a0715b2ad8988f351f5f7f2a8781bf8464c020a9b13d78c8e5e5f5",
    "summary": "将带符号无量纲网格映射为 p_n=x vnorm/clight；vnorm 与 clight 必须是同单位速度，不能将无量纲热速比直接传入。 中间溢出与最终不可表示性分别处理，避免可表示结果被错误拒绝或因中间下溢丢失。",
    "definition": "逐元素返回无量纲 p_n=x×vnorm/clight；vnorm 与 clight 必须为相同单位的速度。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
    "model": "独立闭式定义，不是拟合；在常规 binary64 运算之外对危险中间量作高精度求值，不包含单位自动转换。",
@@ -7529,7 +7529,7 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-   "source_sha256": "fbcacc79687c42b0ee88453f835ffdfb1d095d52e8c6f77016c39516fe313f23",
+   "source_sha256": "e42140fb888f96bbb16d665e9b854c7ef9a41021da0ddcbb07b96ed6086e7b3f",
    "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，返回实际终点的重新验证状态。",
    "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，只取有效样本作起点。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
    "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
