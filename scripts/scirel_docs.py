@@ -565,6 +565,20 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         ROOT, docs, book, translations, chapter,
         figure_files=figure_files, matrix=matrix, language=language,
     ))
+    if language == 'en':
+        # The pydata theme ships a multilingual copybutton; its Chinese
+        # locale would otherwise leak into an English page.
+        copy_path = 'web/_static/copybutton.js'
+        if copy_path in files:
+            copy_text = files[copy_path].decode('utf-8')
+            for source_text, english_text in (
+                ("'复制'", "'Copy'"),
+                ("'复制到剪贴板'", "'Copy to clipboard'"),
+                ("'复制成功!'", "'Copied!'"),
+                ("'复制失败'", "'Copy failed'"),
+            ):
+                copy_text = copy_text.replace(source_text, english_text)
+            files[copy_path] = copy_text.encode('utf-8')
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
                 'source_dirty': dirty,
                 'project_version': project_version(),

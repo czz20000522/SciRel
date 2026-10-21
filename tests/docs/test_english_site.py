@@ -219,3 +219,12 @@ def test_english_build_cli_accepts_language(tmp_path):
     assert set(manifest['english_guides']) == {chapter['id'] for chapter in book['chapters']}
     assert set(manifest['english_guides'].values()) <= {
         'authored', 'placeholder', 'subset-placeholder'}
+
+
+def test_english_web_assets_have_no_chinese_text(english_snapshot):
+    docs = Documentation(english_snapshot)
+    for path in docs.manifest['files']:
+        if not path.startswith('web/') or not path.endswith(('.html', '.js', '.css')):
+            continue
+        text = docs.read(path).decode('utf-8')
+        assert not re.search(r'[\u4e00-\u9fff]', text), path
