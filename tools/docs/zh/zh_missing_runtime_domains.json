@@ -266,7 +266,7 @@
     {
      "name": "matrix",
      "description": "具有 diagonal、above、below 属性的三对角矩阵，支持 to_dense() 和 matvec()",
-     "constraints": "有限三对角算子。",
+     "constraints": "有限；与网格匹配的声明算子/向量形状；不广播。",
      "dtype": "TriDiagonal",
      "shape": "N×N 算子",
      "units": "1/time"
@@ -274,13 +274,13 @@
     {
      "name": "forcing",
      "description": "与单元值无关的边界贡献",
-     "constraints": "有限实单元数组。",
+     "constraints": "有限；长度与算子行数匹配；不广播。",
      "dtype": "实数数值，转换为 float64",
      "shape": "N",
      "units": "Q/time"
     }
    ],
-   "source_sha256": "b61e2c668b81bca0e768191560da5c76333eb8e474a0ce8cc913fcd1b9814fd0",
+   "source_sha256": "21f33469feb6becfac71a8650aefe8d03febfa8f0e5096cab6063debefcab7bb",
    "summary": "将扩散通量散度组装为三对角算子与边界强迫。",
    "verification": {
     "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
@@ -474,7 +474,7 @@
     "expected": "返回的 float64 单元中心为 [1.0, 5.0, 9.0]。"
    },
    "failure_semantics": {
-    "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值或形状不合时抛出 ValueError。",
+    "invalid_input": "对布尔/字符串/复数/掩码或空输入、非有限值、畸形或不兼容形状抛出 ValueError；不接受虚构的奇异域。",
     "nonconvergence": "不适用；直接代数计算。",
     "partial_results": "失败后不返回部分结果。",
     "runtime_failure": "合法中点意外非有限时抛出 FloatingPointError；有限 float64 端点的中点可表示。"
@@ -500,7 +500,7 @@
      "units": "与输入相同"
     }
    ],
-   "source_sha256": "aa9af908ef027d6ac16368042fabd5e0fe821a7d03eab6663149bb3093a58066",
+   "source_sha256": "a916f3e92f162859bb4a0c4b204a4a87ac03c54e3eba502825505241855154a5",
    "summary": "将一维网格上相邻的面值转换为单元中点值。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
@@ -1219,7 +1219,8 @@
      "单元体积权重为 vpr*drho_norm。"
     ],
     "supported": [
-     "分别对三个压强通道做离散体积分并返回标量能量；接受有限有符号输入，物理储存热能要求非负压强。"
+     "声明标量/数组形状下的有限实压强与网格输入、正权重，以及分量能量和总能量。",
+     "对畸形、非有限、不匹配或非正权重输入以 ValueError 拒绝。"
     ]
    },
    "asset_id": "scirel.physics.thermal-energy",
@@ -1309,7 +1310,7 @@
      "units": "J"
     }
    ],
-   "source_sha256": "6fbdfded362d5f7d0ab0bbf637ebd3de226f3d8b9e949c3b91d5b9ad29c713eb",
+   "source_sha256": "73789c51ecb3c99d0613e0ee43a11e9fac8957924648de406bf4373a58abb93c",
    "summary": "分别积分电子、离子及总标量压强，得到储存热能。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
@@ -1359,7 +1360,7 @@
    "failure_semantics": {
     "invalid_input": "类型、形状不合，网格、位置参数或总量非有限，或权重非正时抛出 ValueError。通过这些检查后，宽度为零、NaN 或无穷时返回全 NaN 剖面。",
     "nonconvergence": "不适用；直接有限计算。",
-    "partial_results": "失败后不返回部分结果。",
+    "partial_results": "抛出异常后不返回部分剖面。",
     "runtime_failure": "有限输出溢出，或 float64 舍入后离散积分相对偏差超过 64 倍机器精度（绝对容差为零）时抛出 FloatingPointError。可忽略的尾部允许下溢为零。"
    },
    "inputs": [
@@ -1423,7 +1424,7 @@
      "units": "总量/m^3"
     }
    ],
-   "source_sha256": "972dc60209ac593d69e1f47e46dcef62b436fcd5d185f03d8ffcf52894fe0d2a",
+   "source_sha256": "a57ff85e8e04b13ff54aef23191a9059723a3bf763a9829f59794f611de40100",
    "summary": "在非均匀归一化半径网格上生成体积归一化指数源剖面。",
    "verification": {
     "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",

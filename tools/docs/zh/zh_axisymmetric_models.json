@@ -1143,7 +1143,7 @@
   },
   {
    "asset_id": "scirel.io.write-eqdsk",
-   "source_sha256": "00fa20ca2821f377e9f6977c6b8d30b95f7785e7b9a44a9b9db78a1b7fed2087",
+   "source_sha256": "397d4eb620fd473bd5fd3a59423a9414834401a16929928b8a05c263472ab7f5",
    "summary": "序列化一个已验证的扩展 EQDSK 映射。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
@@ -1163,7 +1163,7 @@
     {
      "name": "filename",
      "description": "EQDSK 路径。",
-     "constraints": "可读文本文件。",
+     "constraints": "可写文件系统路径；写入器在验证通过前不截断已有文件。",
      "dtype": "文件系统路径"
     }
    ],
@@ -1197,7 +1197,7 @@
     "invalid_input": "写入验证或读取畸形记录抛 EQDSKFormatError；写入验证发生在目标文件截断之前。",
     "runtime_failure": "文件系统错误传播；解析错误为 EQDSKFormatError。",
     "nonconvergence": "不适用。",
-    "partial_results": "读取失败时，类封装保持原映射。"
+    "partial_results": "不写入部分文件；验证错误发生在目标截断之前。"
    },
    "example": {
     "description": "序列化调用者提供的最小扩展 EQDSK 映射，并检查定宽头部。",

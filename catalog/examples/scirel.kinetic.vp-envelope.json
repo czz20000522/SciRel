@@ -21,7 +21,7 @@
   "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
   "geometry": "One velocity coordinate and one spatial Fourier mode.",
   "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-  "boundary": "Finite velocity window; endpoint-inclusive full-weight rectangle quadrature. Fn4 weak derivative deposits cutoff deltas; selected smooth variant omits them.",
+  "boundary": "Finite strictly increasing time history; log of the field magnitude; no root or branch inference.",
   "assumptions": [
    "Linear perturbations and homogeneous equilibrium.",
    "Velocity-window truncation and recurrence are separate from temporal integration error."
@@ -75,7 +75,7 @@
    "shape": "As described in output mapping or tuple.",
    "dtype": "dict",
    "required": true,
-   "constraints": "Finite result except documented log-zero -inf and absent theory/diagnostics."
+   "constraints": "Finite logs except documented zero-field -inf; theory envelope only when wi is supplied."
   }
  ],
  "applicability": {

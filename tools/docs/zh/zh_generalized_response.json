@@ -1341,11 +1341,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-diagnostic",
-   "source_sha256": "02749486fbb7df1e3a44ef1719e1ede335b5f909dcb1461f9aab840b7052a557",
+   "source_sha256": "99564b7cdcd7868bcb57ae91efa53d91591672b3cc06ed6b8f5426e72d07fdf9",
    "summary": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
    "definition": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "有限振荡历史；基于峰值的拟合；不做全局模式识别或理论断言。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -1388,7 +1388,7 @@
     {
      "name": "result",
      "description": "返回映射，含长度 P≥2 的 peak_indices、peak_times、peak_log_magnitudes，以及标量 omega、gamma 和 gammas；gammas 是 gamma 的别名。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "峰值足够时给出有限拟合的诊断映射；否则给出声明的状态。",
      "dtype": "字典",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -1431,11 +1431,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-distribution",
-   "source_sha256": "0a4f4f2e18c8f8afd9222044a65adea484180342a883163be4aed620dc557b49",
+   "source_sha256": "61a028b9f411d88df92102600014c845c3de3776c6f0339821b356e6a19808ff",
    "summary": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "definition": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "一维有限速度网格；Fn 选择固定平衡分布；弱 Fn4 截断要求均匀网格；不做时间演化。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -1486,7 +1486,7 @@
     {
      "name": "result",
      "description": "返回元组 (g,wr,wi)，其中 g 形状为 [N]；仅 Fn=2、kappa=1 时提供理论 wr=1、wi=-k sqrt(2)，其他情况理论值为 None。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "有限导数及可选理论频率组成的元组；不携带隐藏状态。",
      "dtype": "元组",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -1530,11 +1530,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-envelope",
-   "source_sha256": "5f9b6d192c64ab718616996991b40521c3c2f40c516f7fdcd8f2761bbde26821",
+   "source_sha256": "7bef3e2ecd0030100b21a8334bf769eaf1fb51e09d2131bddd0f311242d97e8f",
    "summary": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
    "definition": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "有限严格递增时间历史；场幅值的对数；不推断根或分支。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -1577,7 +1577,7 @@
     {
      "name": "result",
      "description": "返回映射，含 ttmp[T]、lndE[T]、lndEe[T] 或 None，以及 wr、wi。幅度精确为零时其对数为 -inf；输出包含全部样本。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "除已记录的零场 -inf 外为有限对数；仅当提供 wi 时给出理论包络。",
      "dtype": "字典",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -1620,11 +1620,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-evolve",
-   "source_sha256": "d326be6a5fe223b037c80ee69b073feb15c2bfa0b1c3d2336bccb461376f55d9",
+   "source_sha256": "2c73601181dd2e9820024b56dadb83445db10cad8aa0a3981698fa4bb18c8489",
    "summary": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "definition": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "固定网格/步长和有限步数；初始 Poisson 闭合；不做自适应步进。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -1643,7 +1643,7 @@
     {
      "name": "result",
      "description": "返回状态映射：Fn、kappa、nv、dt、nt、k、vmax、vmin、dv、TR；形状 [nv+1] 的 vv、df、df0dv；标量 dE；形状 [nt+1] 的 dEt、tt；wr、wi 为 kappa=1 的理论值或 None。场及数组独立持有，不修改输入；再次调用会从传入 df 开始新的局部时间历史。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "带有限场历史的复制状态；初始场满足闭合。",
      "dtype": "字典",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -1686,11 +1686,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-field",
-   "source_sha256": "d344642988b9512b5f75e796e94e3e415420c65941253b0b0227315117d4b527",
+   "source_sha256": "e6aa1fdc9d26f6781443c15fac35e44aacd1e191c119f045096c9a8554faf139",
    "summary": "Poisson 闭合关系为 E=i dv sum(df)/k。",
    "definition": "Poisson 闭合关系为 E=i dv sum(df)/k。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "单个 Fourier 模式；线性离散 Poisson 闭合；不做时间推进。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -1725,7 +1725,7 @@
     {
      "name": "result",
      "description": "满足 ikE=-dv sum(df) 的复标量电场。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "有限的复标量，等于离散 Poisson 场。",
      "dtype": "复数标量",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -1769,11 +1769,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-init",
-   "source_sha256": "847cb859621e58adb53869319eca710235b46539d2caf962f07d7dd1c7feb7bd",
+   "source_sha256": "535afe64433112d3536a2a2766863236f7f509797f5bd687693c6bd12a88dc58",
    "summary": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
    "definition": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "有限均匀速度窗口与离散 Poisson 闭合；固定离子背景；仅构造初始状态。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -1840,7 +1840,7 @@
     {
      "name": "result",
      "description": "返回状态映射：Fn、kappa、nv、dt、nt、k、vmax、vmin、dv、TR；形状 [nv+1] 的 vv、df、df0dv；标量 dE；形状 [nt+1] 的 dEt、tt；wr、wi 为 kappa=1 的理论值或 None。各场与数组均为独立副本。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "状态映射，含有限数组及满足离散 Poisson 闭合的初始场。",
      "dtype": "字典",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -1883,11 +1883,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-landau",
-   "source_sha256": "0c7d7764d29e6a21301cc6ac8aacc7774413c9eb82e0013cb5b813811d4cec01",
+   "source_sha256": "1985442b935e17a5eabdea95d7b4679fa0f99ad645fde4fb208f718ed6608f42",
    "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "平衡分布、初始化与演化组成的路径；有界时间窗；不声称收敛或物理验证。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -1954,7 +1954,7 @@
     {
      "name": "result",
      "description": "返回映射，含 state（完整 VP 状态）、envelope、diagnostic 和 diagnostic_status。nt=0 时包络和诊断为 None；峰值不足时仍返回演化结果，diagnostic=None 并给出原因。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "组合后的末态与诊断；不超出声明的时窗和网格作断言。",
      "dtype": "字典",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -1997,11 +1997,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-rhs",
-   "source_sha256": "99688b8ccc4c3f422091449933d56caaebb94872e9735d71a24b8ffd7c749cac",
+   "source_sha256": "98e31a8203429898474f55f0d254c57910ca34e472b4574bc15bedeb375c5bcd",
    "summary": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
    "definition": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "单个共享场下的线性 Vlasov 右端；固定离子背景；不做步进。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -2052,7 +2052,7 @@
     {
      "name": "result",
      "description": "返回形状 [N] 的复数时间导数向量；不修改输入。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "与分布同形状的有限复数组。",
      "dtype": "复数数组",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"
@@ -2096,11 +2096,11 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-rk4-step",
-   "source_sha256": "3a89c1ab710cbe295da8d82316772f2fe0006bc3f9a8010bab208376660b78dc",
+   "source_sha256": "c929c33468432f44d2fb648864e6b616b9696bd11a6180f98b4e28ee33495b28",
    "summary": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；各级均满足闭合。",
    "definition": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；各级均满足闭合。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
-   "boundary": "有限速度窗；采用包含端点且端点全权重的矩形求积。Fn4 弱导数把截断处的 delta 质量沉积到网格上；显式选择 smooth 变体时省略这些项。",
+   "boundary": "一次经典 RK4 步；入场必须满足离散 Poisson；有限速度窗口。",
    "assumptions": [
     "假设线性扰动及均匀平衡态。",
     "速度窗截断与采样复现应与时间积分误差分开评估。"
@@ -2167,7 +2167,7 @@
     {
      "name": "result",
      "description": "返回元组 (new_df,new_dE)，分别为形状 [N] 的复向量和满足闭合的复标量；不修改输入。",
-     "constraints": "结果有限；例外是已说明的零幅值对数 -inf，以及未提供的理论值或诊断。",
+     "constraints": "保持离散 Poisson 闭合的有限更新分布与场。",
      "dtype": "元组",
      "shape": "形状见输出映射或元组的说明。",
      "units": "无量纲"

@@ -61,7 +61,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape; no invented singular domain is accepted.",
   "runtime_failure": "Raises FloatingPointError if an accepted midpoint unexpectedly becomes nonfinite; finite float64 endpoint midpoints are representable.",
   "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
   "partial_results": "No output is returned after an exception."

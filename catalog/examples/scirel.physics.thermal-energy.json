@@ -109,7 +109,8 @@
    "Cell volume weights are vpr*drho_norm."
   ],
   "supported": [
-   "Independent Decimal/longdouble conservation and overflow/underflow checks, component independence and malformed inputs."
+   "Finite real pressure and grid inputs with positive weights; component energies and total energy for the declared scalar/array shapes.",
+   "Rejection of malformed, nonfinite, mismatched or nonpositive-weight inputs with ValueError."
   ],
   "excluded": [
    "No equation-of-state conversion from temperature or density.",

@@ -51,7 +51,7 @@
    "shape": "N by N operator",
    "dtype": "TriDiagonal",
    "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+   "constraints": "Finite; declared operator/vector shape matching the grid; no broadcasting."
   },
   {
    "name": "forcing",
@@ -60,7 +60,7 @@
    "shape": "N",
    "dtype": "real numeric converted to float64",
    "required": true,
-   "constraints": "Finite; equal explicit one-dimensional face shape; no broadcasting"
+   "constraints": "Finite; length matching the operator row count; no broadcasting."
   }
  ],
  "applicability": {

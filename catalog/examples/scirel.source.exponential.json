@@ -111,7 +111,7 @@
   "invalid_input": "Raises ValueError for malformed types/shapes, nonfinite grid, decay_start or total, or nonpositive weights. After those checks, a width of zero, NaN or either infinity returns an all-NaN profile.",
   "runtime_failure": "Raises FloatingPointError for overflowed finite output or when rounding the float64 profile loses the requested discrete integral beyond 64 float64 epsilons relative, with zero absolute tolerance. Negligible tails may underflow to zero.",
   "nonconvergence": "Not applicable; direct finite relation.",
-  "partial_results": "Unrepresentable finite result raises FloatingPointError."
+  "partial_results": "No partial profile is returned after a raised exception."
  },
  "public_api": {
   "python": {

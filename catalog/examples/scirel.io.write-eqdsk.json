@@ -45,7 +45,7 @@
    "shape": "path",
    "dtype": "filesystem path",
    "required": true,
-   "constraints": "Readable text file"
+   "constraints": "Writable filesystem path; the writer validates before truncating an existing file."
   }
  ],
  "outputs": [
@@ -79,9 +79,9 @@
  },
  "failure_semantics": {
   "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
-  "runtime_failure": "Filesystem errors propagate; parse errors are EQDSKFormatError.",
+  "runtime_failure": "Filesystem or formatting errors propagate; an existing destination is not truncated before validation succeeds.",
   "nonconvergence": "Not applicable.",
-  "partial_results": "Class wrapper preserves previous mapping when a read fails."
+  "partial_results": "No partial file is written; validation errors occur before destination truncation."
  },
  "public_api": {
   "python": {
