@@ -102,3 +102,22 @@ The decomposer still owns the source-faithful translation and its evidence. The
 receiver owns the independent acceptance test, the declared scope and the
 decision to admit. Neither side may use "tests pass" or "SciRel output matches
 itself" as the final proof.
+
+## Merge layers and exposure hold
+
+Candidate admission has three outcomes:
+
+- **auto-merge**: agent verdict is `pass` or `pass-with-limits`, no agent
+  disagreement remains, and the evidence is reproducible. The asset enters the
+  exposed catalog.
+- **human-review**: the agent cannot decide, agents disagree, or a model/source
+  attribution needs an owner decision. The contract/test evidence is preserved
+  but the asset is listed in `catalog/review/HOLD.json` and excluded from
+  documentation, capability index, query service and capability matrix.
+- **rejected**: a required check fails; record the failure and do not expose.
+
+A tier-A asset with only self-consistency evidence cannot auto-merge. An asset
+leaves the hold only after the owner records the decision and the missing
+evidence; then its contract is rebound and it can be exposed. The hold is not a
+second truth: the contract remains the single scientific truth while review is
+pending.
