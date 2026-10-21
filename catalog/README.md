@@ -71,3 +71,102 @@ rebuilding docs; do not accept "the generator ran" as review.
   text or a truthful "not computed/unsupported" statement.
 - `rcond` is relative to the largest singular value; non-finite rotate inputs
   are rejected; these implementation choices are contract truths with tests.
+
+## Capability discovery metadata and intake ownership (v0)
+
+A contract must let a consumer **find and select** a capability, not only call it.
+The discovery view uses nine fields. Eight are deterministic projections of existing
+contract fields; only `device_scope` has no schema slot yet (see below). The
+`asset_id` stays the only stable key, and `taxonomy` stays browsing classification:
+this section defines how to read the contract, it does not create a second one.
+
+| discovery field | contract source | rule |
+| --- | --- | --- |
+| `capability` | `title.en`, `summary` | reusable noun phrase; not the symbol, not a domain, no quality claims |
+| `operation` | `identity.relation`, `identity.direction` | what is done and input→output direction; never a title restatement |
+| `model` | `identity.model` | equation/approximation and its level (analytic, empirical fit, iteration, interpolation) |
+| `geometry` | `identity.geometry`, `identity.coordinates` | axes, order, grid, units; state what is *not* reconstructed |
+| `boundary` | `identity.boundary`, `preconditions`/`excluded` | domain edges, boundary values, extrapolation or clamping; no invented support |
+| `device_scope` | no schema slot yet; see below | `generic`, `device-parameterized`, `device-bound` or `unclassified` |
+| `aliases` | `aliases` | recall synonyms, legacy symbols, device names only when truly bound |
+| `ports` | `inputs`, `outputs` | `name`/`units`/`shape`/`required`/`default`/`constraints`; structural match key |
+| `evidence` | `verification.*` plus intake decision | verified scope, tests, ceiling, limitations and status |
+
+`evidence.status` is one of `bounded`, `partial`, `unvalidated`,
+`needs-device-binding`. `bounded` is the normal catalog status and never means
+"generally correct": always read it together with `evidence_ceiling`. A candidate
+without a direct test or independent oracle is `unvalidated`; a capability that
+needs named-device constants but has no device evidence is `needs-device-binding`.
+Neither may appear in `applicability.supported` as a generic claim. Unvalidated
+candidates may be kept in a submission, but they must not be published as callable
+catalog assets.
+
+### Device scope
+
+- `generic`: model-level relation, no built-in named-device constants. Device names
+  must not appear in `capability`, `identity.relation`, `identity.model` or
+  `supported`.
+- `device-parameterized`: accepts device-relevant parameters but ships no named
+  device constants.
+- `device-bound`: ships fixed named-device geometry/constants or is evidenced only
+  on one device. It must list the device name and binding evidence, and it must not
+  be described as generic.
+- `unclassified`: no device-scope review has been recorded. It is the only safe
+  default for an unreviewed asset and must not be treated as `generic`.
+
+A device name is an alias and an applicability filter, never a retrieval primary
+key: it may appear in `aliases` or in a `device_scope` record, must not enter the
+`asset_id` of a reusable kernel, and must not boost or outweigh a ports/model match.
+
+The current exact-key schema and validator reject unknown top-level fields, so v0
+encodes scope in `identity.model`, `identity.boundary` and
+`applicability.excluded` wording, plus this transitional cache of confirmed
+`device-bound` assets:
+
+| asset | device binding |
+| --- | --- |
+| `scirel.electromagnetism.brb` | fixed BRB composition |
+| `scirel.electromagnetism.wham` | fixed WHAM composition |
+| `scirel.electromagnetism.trex-coil` | fixed TREX coil geometry |
+
+All other current assets are `unclassified` pending review; they must not be
+presented as `generic` until a SciRel intake review records that scope.
+`scirel.electromagnetism.device` is an ordered composition and is `unclassified`
+until reviewed.
+This table is a cache, not a second truth: when it conflicts with a contract the
+contract wins, and the table is deleted once `device_scope` becomes a schema field.
+
+### Ownership and information boundary
+
+The decomposition side submits only a candidate: neutral description, model,
+geometry, boundary, ports, raw correctness evidence and unknowns. It does not write
+`asset_id`, SciRel `taxonomy`, final `aliases`, a `device_scope` decision or any
+acceptance conclusion. The SciRel intake owner is the sole author of the contract
+discovery fields, the `evidence.status` decision, the overlap record
+(`contracts/reception/`) and the generated discovery projection. Intake must not
+ask a decomposition worker for receiver-side tags, search keywords or device-scope
+judgements.
+
+### Retrieval order (v0)
+
+1. Grep/full-text over contracts and the documentation snapshot `search_text`
+   (currently the contract plus its Chinese sidecar). Use synonyms, symbols and
+   Chinese/English terms.
+2. Browse filters: domain, taxonomy, handbook topic, asset kind.
+3. Read the exact contract. Applicability is decided by ports, units, model,
+   geometry, boundary, device scope and evidence — never by a name.
+4. A structured index is a future **build artifact generated from contracts**
+   (source revision bound, diffable, not committed, never hand-edited). Do not
+   create one before the contract fields can carry it.
+5. A device-name hit only prompts a device-scope/evidence check; a zero grep hit
+   does not establish a capability gap.
+
+Before accepting a discovery metadata change, run the checks above and verify:
+`capability` derived and unique; `operation` not a title copy; `model` states its
+approximation level; `geometry` states axes/units and non-goals; `boundary` states
+edge conventions; `device_scope` consistent with devices and evidence; device names
+absent from reusable-kernel IDs and from `supported`; aliases unique and free of
+claims/other asset titles/source identity; ports match the runtime signature;
+`evidence` status matches tests and ceiling; no unvalidated claim in `supported`;
+and the projection regenerates identically from the contract (no second truth, no
+hand-maintained index or alias table).
