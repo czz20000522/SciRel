@@ -288,11 +288,11 @@
    "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
    "tests/cross_domain/test_legacy_six_absorption.py"
   ],
-  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
+  "evidence_ceiling": "Bounded to the bounded isotropic pressure-current feedback with flux-update and terminal current-closure residuals. Evidence: `test_composition_isotropic_pressure_flux.py` contains 10 test functions, none of which references `solve_isotropic_pressure_flux`, and is shared by 2 assets; `test_legacy_six_absorption.py` contains 18 test functions, 4 of which reference `solve_isotropic_pressure_flux`, and is shared by 8 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic fixtures and frozen source regressions in the bound files. It does not establish anisotropic pressure closure, unstructured/non-axisymmetric grids, or a guarantee that a finite iteration bound converges.",
   "known_limitations": [
    "Uses a dense square Green matrix and a pressure spline defined by an exact midplane and exact zero-pressure sample.",
    "No adaptive damping or physical-model selection is performed.",
-   "Public distribution licensing and SciRel expert recognition remain pending."
+   "The asset-private composition file has ten test functions and no direct symbol call; four direct tests live in the shared legacy file, covering zero-update/no-false-convergence, relax-one rejection and the nonzero manufactured-Green history."
   ]
  },
  "composition": {

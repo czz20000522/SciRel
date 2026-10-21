@@ -204,12 +204,12 @@
    "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
    "tests/cross_domain/test_legacy_six_absorption.py"
   ],
-  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
+  "evidence_ceiling": "Bounded to one relaxed plasma-cell current step through a supplied flux Green matrix and flux-change measurement. Evidence: `test_isotropic_picard_step.py` contains 2 test functions, 1 of which references `pressure_flux_picard_step`, and is bound only by this asset; `test_composition_isotropic_pressure_flux.py` contains 10 test functions, none of which references `pressure_flux_picard_step`, and is shared by 2 assets; `test_legacy_six_absorption.py` contains 18 test functions, 1 of which references `pressure_flux_picard_step`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic fixtures and frozen source regressions in the bound files. It does not establish an anisotropic pressure closure, a complete Picard solver/convergence decision, or a boundary-condition solve.",
   "known_limitations": [
    "The caller supplies pressure_derivative, g_psi, vacuum flux and the Picard iteration policy.",
    "A finite flux-update norm alone does not establish pressure-current closure; the full solver checks a second residual.",
    "The implementation does not enforce nonnegative radii or a Z=0 plane.",
-   "Public distribution licensing and SciRel expert recognition remain pending."
+   "The private file has two functions and one direct example; the shared composition file has no direct call, while the shared legacy file adds one direct nonfinite-state rejection test."
   ]
  }
 }

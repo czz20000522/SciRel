@@ -140,9 +140,9 @@
   "tests": [
    "tests/kinetic/test_cross_mesh_scalar_interpolation.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: okk selects xb in [min(xa), max(xa)]; the in-range block receives the scipy linear interpolation; out-of-range nodes are exactly zero; do_warn reproduces the source's boundary warnings without changing the output. Evidence: test_cross_mesh_scalar_interpolation.py (7 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Extrapolation outside the mesh_a range: out-of-range nodes are zero, never extrapolated; Two-dimensional or vector profiles.",
   "known_limitations": [
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  }
 }

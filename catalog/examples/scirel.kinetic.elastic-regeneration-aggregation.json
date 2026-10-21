@@ -117,9 +117,9 @@
   "tests": [
    "tests/kinetic/test_neutral_scattered_sources.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the dict iteration order defines the float summation order. Evidence: test_neutral_scattered_sources.py (11 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Mismatched key sets; empty channel sets; negative or non-finite fields; spatial-axis mismatches. Broadcastable but unequal velocity meshes; external physical validation.",
   "known_limitations": [
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_neutral_scattered_sources.py); no asset-specific failure/limit probe is recorded."
   ]
  }
 }

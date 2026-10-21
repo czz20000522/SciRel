@@ -202,12 +202,12 @@
    "tests/kinetic/test_mirror_total_pressure.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: Broadcast ion/electron pressure fields together with density, residual and optional potential shapes…. Evidence: test_mirror_total_pressure.py, test_mirror_kinetic_scientific_correction.py (21 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Computing ion moments, Boltzmann electron response, electrostatic potential or a quasineutral root; Certifying charge neutrality, potential units, array-axis alignment or the physical correctness of the supplied pressure model; finite nonnegative species density and pressure are nevertheless mandatory numerical input checks.",
   "known_limitations": [
    "The returned state is shallow and retains the caller kinetic mapping; later caller mutation can change referenced fields.",
    "Broadcasting is not coordinate alignment. A finite nonzero observational charge residual remains permitted.",
    "Public licensing and scientific human recognition are separate decisions.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
   ]
  }
 }

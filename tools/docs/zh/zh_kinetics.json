@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.neutral-generation-stopping",
-   "source_sha256": "706efd08b726e2e7a9d8d3e881989386115cfc9b700b562a1c25169e4cfa1140",
+   "source_sha256": "0d33b7f471f4f7f6b5b2081c3f003c65995c0a134d98e9728db1ccd65cc3b03c",
    "summary": "计算碰撞代的相对密度比 Δn，并判断是否还需下一代。",
    "definition": "delta=max(generation_density)/max(accumulated_density)，按严格截断或相对种子误差条件返回 done 与 reason。",
    "model": "逐代最大值比停止关系，并对非法输入域作显式失败关闭收紧。",
@@ -79,11 +79,11 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于逐碰撞代 Delta_n 收敛停止决策。证据：`test_convergence_accumulation.py` 含 18 个测试函数，其中 7 个引用 `evaluate_neutral_generation_stopping`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对冻结代比值序列的自洽/回归。不建立：非密度收敛判据或外部物理验证。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "四资产共享收敛文件中的七个直接函数覆盖 delta/status、truncate 路径、非正累计拒绝、种子相对严格边界、非法 truncate、种子控制顺序与非有限比值。",
+     "停止是报告式决策：返回 `done` 与 `reason`，外层迭代由调用者拥有。",
+     "示例是唯一记录的运行输出；没有测试绑定非密度收敛判据。"
     ]
    }
   },
@@ -162,7 +162,7 @@
   },
   {
    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
-   "source_sha256": "0e377e9f8c76a6232c952017c778ed35d125c38bc453af3beed7465d2dccf77a",
+   "source_sha256": "d1b8e47c8c506ced77f7a6cfe73c16438abe4974f83703379be0e4a793304691",
    "summary": "将轴对称 R–Z 平衡映射以张量积线性插值重构到笛卡尔求解网格，域外查询点裁到闭盒边界并报告覆盖与裁剪计数。",
    "definition": "求各笛卡尔点半径与轴坐标，逐坐标裁到闭映射盒，插值各场，再将径向场分解成横向笛卡尔分量；标记裁剪前位于闭盒内的点。",
    "model": "轴对称规则 R–Z 网格上的张量积双线性重构，查询坐标独立裁到闭盒边界。",
@@ -273,19 +273,19 @@
      "通过调用和导入检查确认此关系无分类参数。",
      "场、磁通、覆盖掩码和两个计数器都与独立重构精确一致。"
     ],
-    "evidence_ceiling": "确立所声明的张量积重构复现映射关系，并如实报告其裁剪行为。不证明平衡映射本身在物理上正确，也不证明双线性插值在任何特定网格分辨率下足够，亦不证明映射的坐标约定与任何具体装置相符。",
+    "evidence_ceiling": "限于所声明关系：求各笛卡尔点半径与轴坐标，逐坐标裁到闭映射盒，插值各场，再将径向场分解成横向笛卡尔分量；标记裁剪前位于闭盒内的点。证据：test_axisymmetric_grid_mapping.py, test_composition_axisymmetric_equilibrium_grid_support.py（记录 18 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不支持非轴对称或三维平衡；不外推，采用裁边。",
     "known_limitations": [
      "线性插值使粗映射得到分片双线性场，跨单元导数不连续。",
      "域外静默获得盒面值；忽略覆盖/裁剪报告的调用者不会察觉。",
      "只统计外映射半径之外的半径，这一不对称是关系的一部分；低于内映射半径的半径被裁剪，两个计数器都不计入。",
      "假设共享轴向坐标，目标轴原点不同会静默映射错误。",
-     "公开分发许可仍待人工决定。"
+     "独立解析对照不能替代外部实验参考。"
     ]
    }
   },
   {
    "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
-   "source_sha256": "c03a61e8b470e9d9dcde42c8961a3dcecc535d717641ecea9fe00c527d38a0c1",
+   "source_sha256": "0a9d26bd2a3e6b7f4b9fc0fdb677fd1d2f8a55c7301f92aa72ed95dc68c67ecd",
    "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。",
    "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。",
    "model": "带限复场的分片三线性重构。",
@@ -365,18 +365,18 @@
      "源轴、源形状与目标点的拒绝校验。",
      "空目标集合与源末尾轴保留。"
     ],
-    "evidence_ceiling": "独立参考建立三线性重构及域外报告合同，不证明特定场网格分辨率充分，也不给物理场插值误差界。",
+    "evidence_ceiling": "限于所声明关系：源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。证据：test_complex_rectilinear_interpolation.py（记录 12 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不外推超出容差扩展盒的点；不支持曲线、柱坐标或非结构源网格。",
     "known_limitations": [
      "仅三线性一阶重构，无高阶或保守方案。",
      "valid_mask只报告几何，不能当结果有限性检查。",
      "容差盒外返回nan，不提供裁边值或外推。",
-     "公开分发许可仍待人工决定。"
+     "独立解析对照不能替代外部实验参考。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.cross-mesh-scalar-interpolation",
-   "source_sha256": "b7dde6051e03f87a64032deff91420f813a5cb34c438ee90690f0f66236604b5",
+   "source_sha256": "50362886f7dca7630567c1c0509c35e852fb9e6f8369131d77042a120b3c8fbf",
    "summary": "将一维空间标量剖面线性插值到另一网格：域内节点线性插值，域外严格为零，并可报告边界警告；域内节点必须形成连续索引块，否则以具名合同错误拒绝。",
    "definition": "选择xb∈[min(xa),max(xa)]的节点，用SciPy线性插值填入连续索引块；域外值为零。do_warn只改变警告，不改变输出。",
    "model": "N5 的 H↔H2 接缝插值。",
@@ -450,15 +450,15 @@
      "do_warn仅改变警告，不改变输出。",
      "输入与失败合同。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：选择xb∈[min(xa),max(xa)]的节点，用SciPy线性插值填入连续索引块；域外值为零。do_warn只改变警告，不改变输出。证据：test_cross_mesh_scalar_interpolation.py（记录 7 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不做域外外推；域外始终为零；不支持二维或向量剖面。",
     "known_limitations": [
-     "科学有效性以受测数值域和适用条件为界。"
+     "独立解析对照不能替代外部实验参考。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.shifted-maxwellian-seed",
-   "source_sha256": "32d58b108f5a03b9049c9c35a2853cc948b39d9531e8ec793818c7e91a99a96c",
+   "source_sha256": "f133fff14259e901456fd571035ffc591a9330dc5ef065068719db4b20d4190a",
    "summary": "在圆柱 (vr, vx) 速度网格上给出矩补偿之前的归一化指数分布种子：每个轴向漂移对应一个温度，指数中含分子数因子，采用严格内部 −80 截断，并按调用者提供的圆柱单元体积归一化。它与圆柱速度求积组合使用，止于任何矩补偿步骤之前。",
    "definition": "取 m_H = 1.6726231e-27 kg（氢质量常数），vth = sqrt(2 e T_norm / (m m_H))。每个漂移的原始指数为 -(vr² + (vx - shift/vth)²) * molecule_count * T_norm / T_shift。原始种子在 -80 < argument < 0 时取 exp(argument)，其余情况（包括 argument = 0）一律取 exp(-80)：这是严格内部截断，因此恰好落在漂移峰上的网格节点也像远端尾部一样被压到下限，而返回的 exponent 仍报告原始值。分布按每个漂移和给定单元体积归一化：每个漂移满足 sum(volume * distribution) = 1。",
    "model": "显式网格上的漂移 Maxwell 指数种子；任何下游矩补偿步骤都刻意留在此叶函数之外。",
@@ -579,19 +579,19 @@
      "非空位移层、形状一致、实数有限、正温度/质量/Tnorm、整数molecule_count精确1或2及严格正体积门禁。",
      "对独立执行、以固定校验和锚定的参考实现做有界固定用例比较，在单分子和双分子留出输入上复现分布、指数和热速度，rtol 1e-15。该比较受环境门禁限制，不构成完整资格。"
     ],
-    "evidence_ceiling": "维护测试对照文件内独立公式确立种子关系、截断与远漂移极限、分子数缩放、输入合同，以及与求积和速率平均的组合链。另行执行的比较只在与参考实现比较过的留出样本上给出有界数值一致。没有测试证明：在没有矩补偿步骤时该补偿前种子对任何调用者用途在物理上充分，任何调用者网格或体积测度在物理上有效，或关系在所比较域之外正确。除这些比较外，不主张更广泛的验证。专家认可、版本级信任和分发许可仍待确定。",
+    "evidence_ceiling": "限于所声明关系：取 m_H = 1.6726231e-27 kg（氢质量常数），vth = sqrt(2 e T_norm / (m m_H))。每个漂移的原始指数为 -(vr² + (vx - shift/vth)²) * molecule_count * T_norm / T_shift。原始种子在 -80 < argument < 0 时取 exp(argument)，其余情况（包括 argument = 0）一律取 exp(-80)：这是严格内部截断，因此恰好落在漂移峰上的网格节点也像远端尾部一样被压到下限，而返回的…。证据：test_shifted_maxwellian_seed.py（记录 22 个测试函数；绑定文件覆盖；有界 source-method 对照）；合同 example 已运行。不建立的范围：任何下游矩补偿步骤：本叶函数只返回补偿前的种子；不提供非Maxwell/非指数种子或碰撞、场模型。",
     "known_limitations": [
      "该种子明确处于矩补偿之前：任何矩补偿步骤都在本叶函数之外，因此该分布不是最终补偿结果。",
      "常数是固定的既往数值，不是当前最佳估计；AMU_KG 指氢质量而非标准 amu，且不做换算。",
      "指数下限是数值装置；截断区不再解析指数，均匀极限不能解释成物理Maxwell分布。",
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。"
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "合同不建立：任何下游矩补偿步骤：本叶函数只返回补偿前的种子。。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.neutral-boltzmann-rhs",
-   "source_sha256": "e45c8eef5fafdf836214875acc2e6cf88acdef7d02bd3863cff46dbe44f77d26",
+   "source_sha256": "c2c57fdbc97ec7b857667b8e168005b905e8f41d122ff12432bc2f9156aaf741",
    "summary": "由各源项、碰撞频率和总分布组装显式中性粒子 Boltzmann 方程右端。",
    "definition": "带符号求和：rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum)。",
    "model": "显式 Boltzmann 右端项装配。",
@@ -679,17 +679,17 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于所声明关系：带符号求和：rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum)。证据：test_transport_step.py（记录 18 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不提供隐式/非线性 Boltzmann 求解器或外部碰撞模型；外部物理验证。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "仅绑定共享文件覆盖（test_transport_step.py）；未记录资产专属失败/边界探针。",
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "合同不建立：不提供隐式/非线性 Boltzmann 求解器或外部碰撞模型。。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
-   "source_sha256": "cc9e7120d5ff08f0f0b7e40240e6669adb68cfcbfd3ef806de4fea3e1fc73fd5",
+   "source_sha256": "856fbbc333faa54786e184d99537663b5e35b08c76d789ef5bfddadd6385c0a7",
    "summary": "按通道名聚合弹性再生源 Σ_q Ω_q[x]M_q(vr,vx,x)。",
    "definition": "频率与分布的键集合必须完全一致；每一项把 (nx,) 剖面乘入最后一轴；字典迭代顺序决定浮点求和顺序。",
    "model": "通道聚合关系。",
@@ -747,9 +747,9 @@
      "聚合结果等于按字典迭代顺序独立计算的通道加权和。",
      "核验键集合、实数值、共同网格、对齐、非负及有限输出的失败合同。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：频率与分布的键集合必须完全一致；每一项把 (nx,) 剖面乘入最后一轴；字典迭代顺序决定浮点求和顺序。证据：test_neutral_scattered_sources.py（记录 11 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：排除空/异键、负/非有限、空间不匹配及仅可广播但不相等的速度网格；外部物理验证。",
     "known_limitations": [
-     "科学有效性以受测数值域和适用条件为界。"
+     "仅绑定共享文件覆盖（test_neutral_scattered_sources.py）；未记录资产专属失败/边界探针。"
     ]
    }
   },
@@ -1058,7 +1058,7 @@
   },
   {
    "asset_id": "scirel.kinetic.molecular-alpha-contraction",
-   "source_sha256": "4b82a3a9f6cc8ccaa76dd1ae9617e79c9a15ed47b880d6a71ad73e772f5dccc9",
+   "source_sha256": "433e4be06c67880d1faf6232b12ddb71c6014b36bf3711283222c348613cd0b5",
    "summary": "逐空间单元将分子三类 SIG 碰撞矩阵与 Fortran 顺序展平的前态分布收缩为三个 Alpha 碰撞频率场；ni_correct 可按逐点 max(n−nHP,0) 修正离子密度。",
    "definition": "逐 k 的矩阵–向量收缩：每个家族用一个装配好的 (N,N) SIG 矩阵乘以某个前驱分布按 Fortran 顺序展平后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 家族携带 fHp_hat（以漂移 vxi 和温度 THP 为参数的 H2+ Maxwell 种子），按单元乘以 nHP[k]；H2-H 家族携带裸原子分布 fH；H2-P 家族携带质子种子 fi_hat，按 ni 缩放，其中 ni = n，或在设置 ni_correct 时按单元取 ni = max(n - nHP, 0)。",
    "model": "Fortran 顺序收缩，并包含保持顺序的最小 reshape 修复；维护回归测试在所声明的合法域内逐位复现。",
@@ -1173,13 +1173,13 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于所声明关系：逐 k 的矩阵–向量收缩：每个家族用一个装配好的 (N,N) SIG 矩阵乘以某个前驱分布按 Fortran 顺序展平后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 家族携带 fHp_hat（以漂移 vxi 和温度 THP 为参数的 H2+ Maxwell 种子），按单元乘以 nHP[k]；H2-H 家族携带裸原子分布 fH；H2-P 家族携带质子种子 fi_hat，按 ni 缩放，其中 ni = n，或在设置 ni_correct 时按单元取 ni = max(n - nHP, 0)。证据：test_alpha_contraction.py（记录 11 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不含原子四家族、Omega、门控、缓存或外部物理验证；外部物理验证。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
+     "仅绑定共享文件覆盖（test_alpha_contraction.py）；未记录资产专属失败/边界探针。",
      "相对原kinetic_h2.py的Alpha_CX reshape修复明确登记而非静默吸收，其科学解释仍待专家审查。",
      "弹性负单元及负密度原样复现或参与收缩，物理可接受性不由运行门禁判断。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "合同不建立：不含原子四家族、Omega、门控、缓存或外部物理验证。。"
     ]
    }
   },
@@ -1267,7 +1267,7 @@
   },
   {
    "asset_id": "scirel.kinetic.outer-convergence",
-   "source_sha256": "83e6550997158c1e54ccc56e4201b8e107606828f4990c7c74b52d1befdb8e43",
+   "source_sha256": "76ddaeacc0d84192060dd27c3b450e71bb965425b04b4ef96ef7f5f09d1589b1",
    "summary": "评估顶层外循环收敛：比较一次外循环前后的分子密度，相对变化超过 truncate 时重新进入。",
    "definition": "评估顶层外循环收敛：比较一次外循环前后的分子密度，相对变化超过 truncate 时重新进入。",
    "model": "带 truncate 阈值的顶层外循环最大值比关系，并显式收紧非法输入域。",
@@ -1330,11 +1330,11 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于顶层外遍分子密度再入决策。证据：`test_convergence_accumulation.py` 含 18 个测试函数，其中 1 个引用 `evaluate_outer_convergence`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对冻结外遍比值的自洽/回归。不建立：非密度收敛判据或外部物理验证。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "绑定文件由四个资产共享，一个直接函数检查字典/再入约定（`test_outer_convergence_returns_dict_with_reentry_flag`）。",
+     "该关系报告决策而不迭代；不进行密度剖面或外部物理验证。",
+     "示例是唯一记录的运行输出；没有测试绑定非密度收敛判据。"
     ]
    }
   },
@@ -1720,7 +1720,7 @@
   },
   {
    "asset_id": "scirel.kinetic.outer-seed-convergence",
-   "source_sha256": "3beca86bbbc5e0af88e187fdb4f48ee4d043976a127c518f056671e7f8108253",
+   "source_sha256": "1cb0156f5b375e213a83ec181e03e5ea0304dc1e2609cd530c24ef3b3a61a52d",
    "summary": "计算种子轮次的相对密度变化与 10×truncate 阈值，判断是否再次进入种子迭代。",
    "definition": "计算 seed_error 与 reentry_threshold=10×truncate；误差严格超过阈值时重新迭代。",
    "model": "带 10*truncate 阈值的内层种子轮次最大值比关系，并收紧非法输入与派生非有限值的拒绝。",
@@ -1783,11 +1783,11 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于内层种子遍误差比与 10*truncate 再入决策。证据：`test_convergence_accumulation.py` 含 18 个测试函数，其中 3 个引用 `evaluate_neutral_outer_seed_convergence`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对冻结种子比值的自洽/回归。不建立：非密度收敛判据或外部物理验证。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "四资产共享收敛文件中的三个直接函数覆盖字典/再入、最大值比与溢出阈值拒绝。",
+     "该关系报告种子遍决策而不迭代；不进行密度剖面或外部物理验证。",
+     "示例是唯一记录的运行输出；没有测试绑定非密度收敛判据。"
     ]
    }
   },
@@ -1875,7 +1875,7 @@
   },
   {
    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
-   "source_sha256": "8a98a9e92d12acf3da145a4271fffefab158a406a67d72dd311a91af8c4f1d82",
+   "source_sha256": "9b77f489cdaeff5f4cff9aa9cb7309a45fb7b49792ca46efd8b44d30214e41de",
    "summary": "在一次调用中，用有序 DAG 把轴对称平衡重构到笛卡尔求解网格，并对该网格分类材料支撑；组合了映射关系和材料支撑关系两个依赖。",
    "definition": "先重构静场与极向磁通，构造目标柱坐标，从平衡映射读取分界磁通与所选侧，再用这些参数和重构磁通分类支撑。",
    "model": "张量积平衡重构与几何材料分类的组合，不执行场求解。",
@@ -2018,18 +2018,18 @@
      "分类参数原样转发；改变参数可移动支撑而重构输出不变。",
      "坐标连接与重构覆盖掩码一致。"
     ],
-    "evidence_ceiling": "确立该组合复现两个依赖关系，且所声明的依赖闭包、连通性和纯函数性质成立。不证明任一依赖对具体装置在物理上充分，也不证明该组合适用于受测合同之外的网格或平衡。",
+    "evidence_ceiling": "限于所声明关系：先重构静场与极向磁通，构造目标柱坐标，从平衡映射读取分界磁通与所选侧，再用这些参数和重构磁通分类支撑。证据：test_composition_axisymmetric_equilibrium_grid_support.py（记录 16 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不求场、波传播或等离子体响应；不支持非轴对称平衡。",
     "known_limitations": [
      "继承两依赖限制，包括域外裁边及最小半径代理磁轴。",
      "两个诊断掩码是六个声明输出之外的附加项，按输出键集合比较的调用者必须把它们考虑在内。",
      "设计无反馈，需从重构场反求平衡的任务不在范围。",
-     "公开分发许可仍待人工决定。"
+     "未记录独立或外部 oracle；证据仅为自洽/回归。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.incoming-boundary-flux-normalization",
-   "source_sha256": "20350713ecf7c6eab4d35397c43943d37c5274aff3bea0757cff0679f331de99",
+   "source_sha256": "b802f335a81380d641b9c31980ac451cc3886a766e4026f6bfd58b4c0424e1b5",
    "summary": "将 H 或 H₂ 边界形状在正轴向速度半空间缩放到请求入射中性粒子通量，并返回缩放后的边界、缩放因子和缩放前通量积分。",
    "definition": "只有正 vx 半空间进入积分；返回分布在非正半空间精确为零；缩放取 abs(target)/flux 形式，因此等幅的正负目标得到相同缩放，零目标给出零缩放和零边界。",
    "model": "边界源归一化关系。",
@@ -2117,10 +2117,10 @@
      "负半轴精确为零，缩放系数符合 abs(target)/flux 形式。",
      "核验失败时拒绝返回的合同，包括实数有限输入、非负体积及有限派生输出；零目标仍给合法的零边界。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于将正半空间中性边界形状缩放到请求的入射通量。证据：`test_neutral_normalizations.py` 含 11 个测试函数，其中 8 个引用 `normalize_incoming_neutral_boundary`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对声明通量积分的自洽/回归。不建立：正半空间通量非正的形状、无正 vx 节点的网格，或非有限标量。",
     "known_limitations": [
      "可强制转换的非实数输入会被拒绝，求积与派生输出也强制有限。零目标是合法的，会产生零缩放，这与某些文档中“缩放为正”的措辞不同。",
-     "科学有效性以受测数值域和适用条件为界。"
+     "绑定文件由两个资产共享，含八个直接函数，覆盖正半空间缩放、零目标、非法/强制转换/非有限场、非零目标零缩放与非有限缩放分布。"
     ]
    }
   },
@@ -2365,7 +2365,7 @@
   },
   {
    "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
-   "source_sha256": "f6f10d0af87b1d1c0ff94ecc443ce0ae6c1fe123508cc2b16662a9a2ba8718ed",
+   "source_sha256": "f32b8f6a8d44ea8580b33c3fb856f0660280927abe8efbe62e4f1849777c53bb",
    "summary": "以所声明的常数，由成对电子密度和温度求原子氢 Saha 能级布居。",
    "definition": "对主量子数 n，按所声明的运算顺序计算 n_e×(3.310e-28 n_e)×n²×exp(13.6057/(n²T_e))/T_e^1.5。第二个 n_e 因子在模型假设 n_H⁺=n_e 下替代氢离子密度。常数是 Saha 因子和以 eV 为单位的电离能。",
    "model": "正有限科学分支上的闭式 Saha 平衡关系，氢离子密度取为电子密度；不含动态状态或非平衡动力学。",
@@ -2434,19 +2434,19 @@
      "核验一维成对形状、科学域界限、非法能级、转换拒绝与非有限结果门禁，含调用者np.errstate(all=raise)。",
      "用 CODATA 常数独立构造的 Saha 关系在代表性密度、温度和主量子数网格上以 1.5e-3 的相对容差复现该冻结常数关系。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于成对电子密度/温度下冻结常数的原子氢 Saha 能级布居。证据：`test_hydrogen_saha_equilibrium_population.py` 含 6 个测试函数，其中 6 个引用 `evaluate_h_saha_equilibrium_population`，仅由本资产绑定；本审计已执行有界示例。真值来源：未记录外部参照；绑定测试复述冻结公式及其能级缩放。不建立：非平衡/分子/离子布居、n_H+ 与 n_e 不同的混合态，或外部原子物理精度。",
     "known_limitations": [
      "Saha 平衡与 n_H⁺=n_e 各自需要依据。",
      "不支持标量/剖面读法；本合同遵循一维限制。",
-     "外部参考缺失及公开分发许可待定。",
-     "科学有效性以受测数值域和适用条件为界。",
+     "绑定文件为资产私有，含六个直接函数，覆盖冻结关系、整数能级缩放、非法/非实数/非有限拒绝与严格 NumPy 溢出；未绑定外部原子物理参照。",
+     "冻结前因子 `3.310e-28 m^3 eV^(3/2)` 与 Rydberg `13.6057 eV` 与 CODATA 相差最多 0.09%；1.5e-3 一致性界是常数精度限制，不是外部验证。",
      "冻结的前因子 3.310e-28 m^3 eV^(3/2) 与 13.6057 eV 的 Rydberg 值与当前 CODATA 值最多相差 0.09%；1.5e-3 的一致界是该资产的物理常数极限，n_H+ = n_e 假设仍然显式保留。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
-   "source_sha256": "8f16542e248811b218de36338ad79473fad2190b282e57da1f68c996054a6f80",
+   "source_sha256": "10ef48af0d0aacc725cfa120b375578b6b182d5681e5de735d0a7cc7711697ae",
    "summary": "按壁面源、电荷交换源、弹性源的顺序汇合分子散射源。",
    "definition": "按壁面、CX、弹性顺序做普通逐点相加；不对带符号值做钳制。",
    "model": "散射源聚合。",
@@ -2496,10 +2496,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "布尔、字符串、复数、非有限输入或三维形状失配引发 ValueError。",
-    "runtime_failure": "结果非有限时 ValueError；无回退。",
-    "nonconvergence": "不适用；没有迭代。",
-    "partial_results": "不返回部分结果。"
+    "invalid_input": "源值非实数/布尔/字符串/复数或非有限，或三个源不是同形三维数组时抛出 ValueError。",
+    "runtime_failure": "带符号总量非有限时抛出 ValueError；不裁剪、不丢弃通道、不回退。",
+    "nonconvergence": "不适用；该归约是直接逐点求和。",
+    "partial_results": "从不返回；被拒绝的调用不产生部分数组。"
    },
    "example": {
     "description": "按所声明顺序聚合三个分子源，并拒绝形状失配。",
@@ -2510,17 +2510,17 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于分子壁、电荷交换与弹性散射产生源按源顺序求和。证据：`test_neutral_scattered_sources.py` 含 11 个测试函数，其中 3 个引用 `reduce_molecular_scattered_sources`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对通道加权和的自洽/回归。不建立：未对齐网格或非有限源场。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "绑定文件由四个资产共享，含三个直接函数，覆盖冻结有限样本、源顺序带符号单元与形状/派生溢出拒绝。",
+     "三个输入必须是同形三维数组；带符号相加后非有限总量会抛出 ValueError，而不是裁剪或丢弃通道。",
+     "除保留的有限样本外，没有测试绑定通道键不匹配或非有限输入场；示例是唯一记录的运行输出。"
     ]
    }
   },
   {
    "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
-   "source_sha256": "546473d53c9cb5dc87f4263f106ca0260c4ed7ef661777d61218f9dcb6b43795",
+   "source_sha256": "f0db873d8e54652f2eea1929d7717387155661d4d528de4c2feaa4b787fea278",
    "summary": "计算相对论背景 Maxwell 分支所需的三个指数缩放修正 Bessel 量：exp(x)K₀(x)、exp(x)K₁(x) 与 K₂ 递推。关系直接求值，不再使用 Abramowitz–Stegun 分段近似，从而消除近似在 x = 2 分支边界处的 1.5e-3 相对不连续，并从公共合同中移除分支选择器、分支标签和各分支精度元数据。每次被接受的调用都返回三个有限浮点数；若某个合法自变量无法由双精度后端给出这些值，则拒绝该调用，而不是返回非有限值。",
    "definition": "bk0=scipy.special.kve(0,x)，bk1=kve(1,x)，bk2=bk0+2bk1/x；三量计算后统一检查有限性，任一失败则整次拒绝。",
    "model": "指数缩放的第二类修正 Bessel 函数；无可选近似分支，bk2 是恒等递推而非第三套近似。",
@@ -2607,14 +2607,14 @@
      "在宽范围对数扫描中，每次接受的调用均返回三个有限 Python 浮点数。维护测试覆盖 4000 个自变量，并将后端拒绝视为合法结果而非测试失败。",
      "缩放函数恒等关系、渐近形式以及 bk0、bk1 随 x 单调递减，由维护测试直接保护，不依赖上述任一路径的比较。"
     ],
-    "evidence_ceiling": "确立与分段近似及其边界不连续之间的实测距离，并确立差异在近似而不在关系。基于直接测试确立：闭包是零、一、二阶指数缩放修正 Bessel 函数；bk2 是递推；每次被接受的调用返回三个有限浮点数；以及后端不返回有限值时的响应。测试不依赖任何外部 checkout、候选目录或夹具载荷。本资产不确立闭包对任何分布、温度或相对论参数的物理准确性，不确立也不界定所安装后端可对关系求值的域，不确立被替换的 Abramowitz–Stegun 系数或 x = 2 切分是应当替换的正确选择，也不查阅任何独立的特殊函数表。",
+    "evidence_ceiling": "限于所声明关系：bk0=scipy.special.kve(0,x)，bk1=kve(1,x)，bk2=bk0+2bk1/x；三量计算后统一检查有限性，任一失败则整次拒绝。证据：test_relativistic_maxwellian_bessel.py（记录 15 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：针对某个分布、温度或相对论参数的物理精度声明；未缩放的 K_order(x)；它在关注范围内会下溢。",
     "known_limitations": [
      "关系通过 scipy.special.kve 求值，因此本资产在运行期依赖 SciPy。该依赖是刻意引入的，调用者需要承担。",
      "直接求值的可表示范围取决于所安装的 SciPy 构建和平台，并且比多项式近似更窄——后端无法给出有限值时，后者仍可能保持有限。本资产有意不为此声明界限：在某套构建上测得的界限会成为另一套构建上的错误合同。需要界限的调用者必须从自己的平台推导；在宽自变量范围上采样的调用者必须处理 BesselBackendEvaluationError。",
      "拒绝作用于整次调用，不提供部分结果；批量扫描自变量时，调用者需逐点决定是否跳过。",
      "不声明对任何分布的物理精度。这里确立的是特殊函数求值，而非其作为碰撞系数模型的充分性。",
      "被替换近似的系数、其 Abramowitz–Stegun 拟合选择以及 x = 2 的切分都按给定采纳；未为其中任何一项引用参考。",
-     "公开分发许可仍待人工决定。",
+     "独立解析对照不能替代外部实验参考。",
      "与分段近似以及替代表述的比较无法在本仓库复现：没有公共测试要求外部 checkout，这里的测试只保护自包含子集。",
      "布尔、字符串、字节、复数和更高秩数组自变量按非法输入拒绝，而不是转换；这一严格实数标量门禁是对保留路径 float() 强制转换的审计修复。"
     ]
@@ -2622,7 +2622,7 @@
   },
   {
    "asset_id": "scirel.kinetic.neutral-generation-propagation",
-   "source_sha256": "fe2d8f9d37a3f035aa6875ec34582ea1638c3ebd2b6ae387f889bb86fe1f83e8",
+   "source_sha256": "2a7e56480e201b32b732c2aa5a3212c3decdfff84f404b5bee523f5d7d22296c",
    "summary": "使用一阶迎风输运系数，沿空间网格双向推进一代中性粒子（首次飞行或散射代）。",
    "definition": "首次飞行使用正向边界、Fk 和反向 Gk；散射代使用正向 Bk 和反向 Dk 的源递推。负速度支右端起值为零。",
    "model": "双向一阶迎风传播。",
@@ -2733,11 +2733,11 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于所声明关系：首次飞行使用正向边界、Fk 和反向 Gk；散射代使用正向 Bk 和反向 Dk 的源递推。负速度支右端起值为零。证据：test_transport_step.py（记录 18 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不提供高阶输运或多物种耦合；外部物理验证。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "仅绑定共享文件覆盖（test_transport_step.py）；未记录资产专属失败/边界探针。",
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "合同不建立：不提供高阶输运或多物种耦合。。"
     ]
    }
   },
@@ -2862,7 +2862,7 @@
   },
   {
    "asset_id": "scirel.kinetic.elastic-frequency-channels",
-   "source_sha256": "e1af76466d3663d07aea94574201b7a734ce9dbf8e2480e1f94aaafcb46932b0",
+   "source_sha256": "57f3a95e847e99b38f189802bc87d3d4d9a8606b2948afd4b5af2c18e6183e5a",
    "summary": "按调用者顺序逐点相加恰好三个已归一化弹性频率通道。",
    "definition": "三个通道按调用者顺序从左到右相加（保持浮点求和顺序）；只接受恰好三个通道。",
    "model": "通道汇合关系。",
@@ -2915,9 +2915,9 @@
      "通道数、形状与有限性失败合同。",
      "溢出的通道求和会失败关闭（否则三个 1e308 通道会得到 inf）。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于三个已归一化弹性碰撞频率通道的逐点求和。证据：`test_neutral_frequency_assembly.py` 含 7 个测试函数，其中 3 个引用 `sum_elastic_frequency_channels`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立逐点加法对照。不建立：通道数不是三、形状不匹配或非有限值。",
     "known_limitations": [
-     "科学有效性以受测数值域和适用条件为界。"
+     "两资产共享 frequency-array 文件中的三个直接函数覆盖通道顺序/零通道、数量/形状/非有限总量拒绝与隐式实数拒绝。"
     ]
    }
   },
@@ -3029,7 +3029,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
-   "source_sha256": "e67d98c637e95db728a4e62b7aab170f93de7b57b92fb9dd06b48ddada8e3219",
+   "source_sha256": "8d03364042814cc66aac53b5fb919247e286e99f8bb49c69ec8eeec6a442b28f",
    "summary": "在共同速度域上，对明确定义的非负参考群体同时积分密度和平行/垂直压力。",
    "definition": "b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除 n(b=1)；先细化原始矩再除。零下限且 vc>0 时提取最小速度幂 q=min(β_mν(ν+1))，q>−3 可用 v^(2+q) Gauss–Jacobi 权重处理可积奇点。",
    "model": "有限模参考分布非负部分的数学矩，不宣称精确 Frank–Egedal 动力学解或实测群体。",
@@ -3166,12 +3166,12 @@
      "拒绝发散负beta密度，同时支持已证明可积的负beta用例。",
      "独立70位不完全Beta原始矩：degree2、beta=−0.1、−0.3、−0.4、−0.4999、0、0.5，含密度可积边界附近。"
     ],
-    "evidence_ceiling": "数学恒等式、明确失败回归与独立比较支持合同；不是实测等离子体正确性或普适稳定性定理。",
+    "evidence_ceiling": "限于所声明关系：b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除…。证据：test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py（记录 22 个测试函数；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：排除不能到达B0轨道上的未指定粒子群、任意回调特征发现、零归一化及发散/未解析积分；不宣称印刷Eq19b差异已由作者确认为勘误。",
     "known_limitations": [
      "有限模和的非负部分是修改模型，不证明动力学等价。",
      "有限求积细化不能发现任意未解析回调特征。",
      "共同域纠正改变设置旧垂直下限时的密度/平行值。",
-     "科学有效性以受测数值域和适用条件为界。"
+     "仅绑定共享文件覆盖（test_spectral_scientific_correction.py）；未记录资产专属失败/边界探针。"
     ]
    }
   },
@@ -3271,7 +3271,7 @@
   },
   {
    "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
-   "source_sha256": "b9d916152332492488324a050b7be70311bbc131de07f71377455993a4e10467",
+   "source_sha256": "708cccd074baedee95927f6d7c0010d3b6b3a79f0bb985ac13ad60623ab8a412",
    "summary": "组装空间推进所消费的中性总损失频率 alpha_c = 可选 Alpha_CX + 基础损失 + Omega_EL + 壁面损失（2 vr / D 在网格上广播）。",
    "definition": "按基础 + 弹性 + 壁面，再在启用时加 CX 的顺序装配；零管径在这些单元给出零壁面损失（这是所声明的语义，不是无限长管极限）；启用电荷交换却缺少对应场时失败关闭。",
    "model": "总损失频率装配。",
@@ -3359,11 +3359,11 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于所声明关系：按基础 + 弹性 + 壁面，再在启用时加 CX 的顺序装配；零管径在这些单元给出零壁面损失（这是所声明的语义，不是无限长管极限）；启用电荷交换却缺少对应场时失败关闭。证据：test_neutral_frequency_assembly.py（记录 7 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：排除负损失、负直径，以及启用却缺失的 CX 场；外部物理验证。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "仅绑定共享文件覆盖（test_neutral_frequency_assembly.py）；未记录资产专属失败/边界探针。",
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "未绑定奇异或极端极限探针；主张限于所列有限/普通输入。"
     ]
    }
   },
@@ -3988,7 +3988,7 @@
   },
   {
    "asset_id": "scirel.kinetic.thermal-speed-scale",
-   "source_sha256": "6827095d12af968d75d13cded1cf26fa174619a06e9c73e43c5a8f22ca017987",
+   "source_sha256": "16a83162d61c0fd36cf9d6229f91053deb4df320d7874ce35c71589251148cfb",
    "summary": "由中性物种的温度（eV）和相对氢质量的质量倍数，用固定常数（氢质量 1.6726231e-27 kg、基本电荷 1.602177e-19 J/eV）计算二阶矩热速度 sqrt(2 e T / m)。",
    "definition": "v = sqrt(2 * 1.602177e-19 * T_ev / (m_amu * 1.6726231e-27))；矩归约和边界通量关系使用同一 Vth 归一化。",
    "model": "显式标量关系。",
@@ -4047,17 +4047,17 @@
      "输入类型拒绝、中间量范围丢失的高精度恢复和真实最终溢出拒绝。",
      "在三个有限正标量点上做只读的固定用例比较。"
     ],
-    "evidence_ceiling": "维护测试确立固定常数公式以及所声明的输入/最终结果失败行为。较早的固定用例比较在三个普通有限正标量点上完全一致；它们不据此证明当前修正后极端数值范围内的行为。当前独立的 Decimal100 回归和精确有理数最终平方检查确立：可表示的热速度能在危险的中间下溢/溢出中存活，而真正不可表示的最终结果仍被拒绝；普通运算顺序不变。较早对下溢质量换算的拒绝已不再是合同。这不证明全输入数值一致、完整资格、全局物理适用性、专家认可或发布。",
+    "evidence_ceiling": "限于由 eV 温度与氢质量倍数计算显式二阶矩中性热速度 sqrt(2 e T/m)。证据：`test_thermal_speed_and_density_reduction.py` 含 11 个测试函数，其中 5 个引用 `compute_thermal_speed_m_s`，由 2 个资产共享; `test_legacy_admission_regressions.py` 含 9 个测试函数，其中 2 个引用 `compute_thermal_speed_m_s`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立冻结常数关系与 Decimal-100 可表示性检查。不建立：非有限/非正输入或非有限最终速度。",
     "known_limitations": [
-     "除所列直接测试外，不主张更广泛的验证。",
+     "两个文件绑定该关系：`test_thermal_speed_and_density_reduction.py` 的五个直接函数覆盖冻结公式、单调性、非法/非实数输入与下溢；`test_legacy_admission_regressions.py` 增加可表示性/溢出检查。",
      "参数名 mass_amu 表示氢质量倍数，而非标准 amu。非实数强制转换被拒绝；危险中间范围用更高精度求值。",
-     "公开分发许可仍待人工决定。"
+     "历史名称 `mass_amu` 表示氢质量倍数；危险中间范围用 100 位 Decimal 算术求值，而非现代 CODATA 换算。"
     ]
    }
   },
   {
    "asset_id": "scirel.geometry.material-support-classification",
-   "source_sha256": "a4d4ff739b65cc1b00663050896fc111cd6b00d9b67c1bb5f0e97908b5ee3e53",
+   "source_sha256": "1805a2dcaba84a25d9220d05f60de7f4b88e979c0f5982a6c91cbbff986ca1c7",
    "summary": "由已采样极向磁通、圆柱坐标、分界磁通及所选侧、PML厚度和PEC掩码分类冷等离子体材料支撑点。",
    "definition": "先在covered范围选择分界磁通指定侧，并加入极向半长度内最小网格半径段；随后排除求解盒六面PML边框和PEC，结果必须非空。",
    "model": "采样磁通上的纯几何材料分类，不求等离子体模型、场或重构磁面。",
@@ -4187,19 +4187,19 @@
      "全部参数拒绝门禁。",
      "在相同采样磁通和坐标下，与独立计算的支撑掩码精确一致。"
     ],
-    "evidence_ceiling": "确立所声明的分类复现支撑掩码、零厚度由显式前提拒绝，并记录最内半径段与覆盖掩码的交互。不证明分离面磁通的所选一侧在任何装置中就是约束区，也不证明最内网格半径与磁轴重合。",
+    "evidence_ceiling": "限于所声明关系：先在covered范围选择分界磁通指定侧，并加入极向半长度内最小网格半径段；随后排除求解盒六面PML边框和PEC，结果必须非空。证据：test_material_support.py（记录 8 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不插值或重构磁通；不推断哪侧受约束。",
     "known_limitations": [
      "磁轴被代理为最小网格半径；只有含原点才是r=0，否则标记最小半径细柱而非真实轴。",
      "最内半径段与覆盖掩码相交，因此当平衡映射的径向轴起点高于网格最小半径时不能加入点。这是所声明关系的一部分，不是缺陷修复。",
      "无PML网格被拒绝，需独立关系支持。",
      "仅按采样磁通做几何分类，不验证其为物理平衡。",
-     "公开分发许可仍待人工决定。"
+     "独立解析对照不能替代外部实验参考。"
     ]
    }
   },
   {
    "asset_id": "scirel.collisions.maxwellian-relative-speed-rate-average",
-   "source_sha256": "e965bb023ac31f75daa5bfa08d00290d1ae4bd6d6bfae3bdbbeeafe2474d7880",
+   "source_sha256": "64c6d7bac091d688a93e7c8fc4b960acdf0c6c16a6717b93508ae86f64f55397",
    "summary": "能量分辨速率系数 <σv>：沿轴向速度轴的单一能量粒子，经调用者提供的截面，与圆柱 (vr, vx) 速度网格上离散化的 Maxwell 靶平均，网格体积由调用者提供。碰撞能用粒子质量形成，而不是约化质量。非有限输入和不可表示的速率被拒绝。",
    "definition": "m_H=1.6726231e-27 kg，vth=sqrt(2e T_norm/(m_target m_H))。靶分布 exp[−(vr²+vx²)T_norm/T_target] 用给定体积归一化；v_px=sqrt(2eE/(m_particle m_H))/vth，v_rel=sqrt(vr²+(vx−v_px)²)，E_rel=0.5 m_particle m_H vth² v_rel²/e，速率为 vth×Σ(volume×σ(E_rel)×v_rel×f)。",
    "model": "圆柱网格离散 Maxwell 靶、轴向单能入射粒子及调用者提供的截面函数。",
@@ -4322,7 +4322,7 @@
      "本仓库不维护也不重放任何外部实现对照；维护测试只用仓内独立表述核验所声明关系，且仅在受测网格上覆盖所述拒绝与裁剪行为。",
      "模块常数 AMU_KG 与 ELEMENTARY_CHARGE_C 逐位等于所声明的值。"
     ],
-    "evidence_ceiling": "测试对照文件内独立公式确立离散关系、两个解析极限（达到网格收敛容差）、体积尺度不变性、输入与失败合同，以及消费图的组合合同。与仓内独立求值逐位一致只成立于所比较的常数和线性 sigma 域。没有测试证明粒子质量碰撞能约定是物理上正确的模型、任何调用者截面或网格在物理上有效，或所比较域之外的行为正确。公开分发许可仍待人工决定。",
+    "evidence_ceiling": "限于所声明关系：m_H=1.6726231e-27 kg，vth=sqrt(2e T_norm/(m_target m_H))。靶分布 exp[−(vr²+vx²)T_norm/T_target] 用给定体积归一化；v_px=sqrt(2eE/(m_particle m_H))/vth，v_rel=sqrt(vr²+(vx−v_px)²)，E_rel=0.5 m_particle m_H vth² v_rel²/e，速率为 vth×Σ(volume×σ(E_rel)×v_rel×f)。证据：test_maxwellian_relative_speed_rate_average.py（记录 20 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供仅温度的解析反应性拟合，如聚变<σv>(T)；其为不同模型；约化质量碰撞能；粒子质量约定保持不变，采用约化质量模型属于需要独立证据的科学变更。",
     "known_limitations": [
      "碰撞能使用粒子质量；约化质量模型是另一种关系，这里不提供。",
      "不含截面模型；错误截面也会给错误速率，只校验形状、有限和非负。",
@@ -4330,7 +4330,7 @@
      "准确性完全依赖网格；粗网格可能错解析尾部或束共振，运行时无收敛检查，解析极限只在加密域成立。",
      "非有限和非实数输入拒绝、有限输出拒绝以及碰撞能可表示性门禁都是本合同的显式前提：抛出 ValueError，而不是强制转换、传播非有限速率，或用从未声明的值调用回调。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
-     "公开分发许可仍待人工决定。"
+     "独立解析对照不能替代外部实验参考。"
     ]
    }
   },
@@ -4480,7 +4480,7 @@
   },
   {
    "asset_id": "scirel.kinetic.spatial-source-shape-normalization",
-   "source_sha256": "bb8adc0b5a978c4ca2bde276a27b2907a78efd27b7f4968abbdc1a37ebc381ef",
+   "source_sha256": "6581dd607701fe7808aa1724f93d78c96f665aed1713cff842fbfd3c0cc2909e",
    "summary": "以梯形积分把非负一维空间源归一为单位积分，同时返回原积分。",
    "definition": "在调用者坐标上使用 NumPy 梯形规则归一，并以 rtol=1e-12、atol=1e-14 复核单位积分；零剖面明确拒绝，绝不静默替换。",
    "model": "在梯形测度下对一维非负空间剖面做单位积分归一化。",
@@ -4544,11 +4544,11 @@
      "核验对齐、单调性、实数输入与正值要求的失败合同。",
      "在三个有限合法剖面上做只读的固定用例比较。"
     ],
-    "evidence_ceiling": "维护测试确立梯形归一化和所声明的失败行为。另行进行的只读比较在三个有限合法剖面上完全一致；强制转换行为按声明不同。这不证明所有输入上的一致性、经评审的资格、全局适用性、专家认可或发布。",
+    "evidence_ceiling": "限于非负一维空间源剖面在梯形测度下的单位积分归一化。证据：`test_neutral_normalizations.py` 含 11 个测试函数，其中 3 个引用 `normalize_spatial_source_shape`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对独立梯形归一化的有界源方法一致性。不建立：零/负剖面、非单调坐标或少于两个节点。",
     "known_limitations": [
      "本合同不携带任何经独立评审的、与外部实现一致性的资格；未经新的独立评审不能主张此类资格。",
      "较早的行为接受布尔和数值字符串强制转换，复数输入可能抛出 TypeError；SciRel 一律将其作为非法实数数组输入拒绝。",
-     "公开分发许可仍待人工决定。"
+     "绑定文件由两个资产共享，三个直接函数覆盖梯形归一化、非法剖面与非实数强制转换；三个有限剖面的一致性是回归检查，不是全局一致性。"
     ]
    }
   },
@@ -5096,7 +5096,7 @@
   },
   {
    "asset_id": "scirel.kinetic.axisymmetric-neutral-moments",
-   "source_sha256": "c2788460361c34d117e4ad3f19ce08db1e286c77120e3848e86b1d9d67f6ee99",
+   "source_sha256": "d66925a41c231d38b5d8dccb00a9e049ae7936cad647813a114d1f4a7672e283",
    "summary": "从 H/H₂ 的一维空间、轴对称二维速度分布恢复密度、通量、流速、压力、温度、对角应力和随机热通量。",
    "definition": "密度为 f 对速度的积分；axial_flux = Vth * integral(vx f)；flow = flux/density；压力与应力由围绕流速的中心二阶矩给出，单位 eV m⁻³；热通量由中心三阶矩给出，单位 W m⁻²；sigma_zz 作为 sigma_yy 的独立副本返回（所声明的柱对称识别）；可选的显式求积对必须精确重构 cylindrical_volume，并切换到所声明的逐切片求和顺序。",
    "model": "热速度归一化下，对单个分布做离散圆柱速度空间矩归约。",
@@ -5208,11 +5208,11 @@
      "sigma_zz 是 sigma_yy 的独立副本，两种空片策略按所声明的方式分歧。",
      "非有限速度轴和非实数强制转换在所声明的输入合同下失败关闭。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：密度为 f 对速度的积分；axial_flux = Vth * integral(vx f)；flow = flux/density；压力与应力由围绕流速的中心二阶矩给出，单位 eV m⁻³；热通量由中心三阶矩给出，单位 W m⁻²；sigma_zz 作为 sigma_yy 的独立副本返回（所声明的柱对称识别）；可选的显式求积对必须精确重构 cylindrical_volume，并切换到所声明的逐切片求和顺序。证据：test_axisymmetric_neutral_moments.py（记录 16 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不含其他几何、不重归一化调用者分布、不接受非正体积；外部物理验证。",
     "known_limitations": [
      "不提供独立的 zz 应力：sigma_zz = sigma_yy 的识别是所声明合同的一部分。该识别是否为预期的公开合同，仍是一个待专家判断的问题。",
      "在 source_default 下，零密度片报告所声明的中性值（流速 0 m/s、温度 1 eV），它们不是物理测量值。",
-     "科学有效性以受测数值域和适用条件为界。"
+     "独立解析对照不能替代外部实验参考。"
     ]
    }
   },
@@ -5442,7 +5442,7 @@
   },
   {
    "asset_id": "scirel.kinetic.mirror-invariant-distribution",
-   "source_sha256": "407c472418a95b72cd87830816740704ebeb7b0070fd66e75f79d0257a5d0d92",
+   "source_sha256": "6996ffb8dab4f4e9971ccf37594f5bec7faad11af238b8a15d5ddbc35e2a0bdd",
    "summary": "由能量和磁矩求参考双 Maxwell 相空间密度，可乘双端磁塞损失锥占据及部分回填。",
    "definition": "μ=mv_perp²/(2B)，E=mv_parallel²/2+μB+qφ，C=(B−B_ref)/T_parallel+B_ref/T_perp,ref。f=n_ref(m/2π)^1.5/(T_perp,ref sqrt(T_parallel))×exp[−(E−qφ_ref)/T_parallel−μB_ref(1/T_perp,ref−1/T_parallel)]×occupation。双塞时 occupation=refill+(1−refill)1[E<min(μB_left+qφ_left,μB_right+qφ_right)]，等于屏障归入耗尽支。归一化和指数/占据在对数域合成；以相对电势及缩放运算求 f/占据，不用大绝对 energy_j 中丢失的低位热能判断。",
    "model": "导引中心回旋对称不变量双 Maxwell 规定分布；不求解场或矩。",
@@ -5611,13 +5611,13 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于所声明关系：μ=mv_perp²/(2B)，E=mv_parallel²/2+μB+qφ，C=(B−B_ref)/T_parallel+B_ref/T_perp,ref。f=n_ref(m/2π)^1.5/(T_perp,ref sqrt(T_parallel))×exp[−(E−qφ_ref)/T_parallel−μB_ref(1/T_perp,ref−1/T_parallel)]×occupation。双塞时…。证据：test_mirror_invariant_distribution.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 41 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不自洽求电势、平衡、碰撞、输运或积分矩；不支持单侧塞、磁力线几何、磁通自动换算或证明给定状态物理充分性。",
     "known_limitations": [
      "必需不变量或输出不可表示时FloatingPointError；有限binary64结果不认证全域物理有效。",
      "严格屏障比较和零回填默认是源约定，不求陷获轨道。",
      "历史ψ标记Wb不证明与Wb/rad资产兼容。",
-     "公开分发许可及当前版本专家认可待决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "合同不建立：不自洽求电势、平衡、碰撞、输运或积分矩。。"
     ]
    },
    "source_conflicts": [
@@ -5815,7 +5815,7 @@
   },
   {
    "asset_id": "scirel.fusion.dd-neutron-lab-energy",
-   "source_sha256": "0d730a01f2122b965ffb2526e972d67a81a496fd009221366a8330e6cda3fd86",
+   "source_sha256": "a7e49189d69bbf054abe0a778877a3e2186e0f7fbd21ecc64117c6f3bebaaa81",
    "summary": "由两个氘核速度和一个探测器视线单位向量，按非相对论二体运动学计算 D(d,n)³He 的实验室系中子动能。调用只返回以 keV 为单位的能量。关系在代数等价的重排下求值，其中两项对任何物理输入都非负，因此结果不会舍入为负，也不需要截零；实验室能量为零时返回零，而不是代入其他值；双精度无法表示的有限输入被拒绝，而不是返回非有限值或静默返回零。",
    "definition": "求质心速度 (v1+v2)/2 和相对速度 v1−v2，把 DD 的 Q 值加到约化质量的相对动能上得到 E_avail，按中子/³He 质量比分配 E_avail 得到 E_cm，由质心速度构造平动能 E_boost，把方向余弦 c = v_cm_hat · d_hat 限在 [−1, 1]，返回 (sqrt(E_cm)−sqrt(E_boost))²+2sqrt(E_cm E_boost)(1+c)，单位 keV。该重排与 E_cm+E_boost+2sqrt(E_cm E_boost)c 代数相同。不施加角权重。",
    "model": "固定Q值的非相对论二体运动学，无各向异性因子。",
@@ -5905,7 +5905,7 @@
      "维护测试核验形状、非单位拒绝、1e−12绝对容差边界、输入非有限拒绝与仅关键字调用约定。",
      "维护测试确认不返回angular_weight，调用不加载各向异性模块。"
     ],
-    "evidence_ceiling": "测试确立二体实验室能量关系及其输入合同、返回值按构造非负、完全相消配置下零的精确性、无截零的普查、不可表示算术的失败，以及相对 E_cm+E_boost+2sqrt(E_cm E_boost)c 顺序的舍入界。测试不依赖任何外部 checkout、候选目录或夹具载荷。本资产不确立非相对论近似在任何能量下的准确性，也不对照任何独立测量确立质量常数、原子质量单位或 MeV/J 因子。",
+    "evidence_ceiling": "限于由两个氘核速度与探测方向计算非相对论两体 D(d,n)3He 实验室中子能量。证据：`test_dd_neutron_lab_energy.py` 含 19 个测试函数，其中 17 个引用 `calculate_dd_neutron_lab_energy_kev`，仅由本资产绑定；本审计已执行有界示例。真值来源：资产私有文件中由公布常数独立重推的两体运动学。不建立：相对论运动学、角分布/Brown-Jarmie 因子、其他反应道或中子输运。",
     "known_limitations": [
      "返回能量按不同于 E_cm+E_boost+2sqrt(E_cm E_boost)c 的顺序求值，因此与该顺序并非逐位相同。差异被断言在 E_cm+E_boost 的 8 个末位单位的实测舍入界内，但该界只是对采样输入尺度的断言，不是对整个接受域的证明。",
      "在两个相消速度上，返回值并非精确 0.0：它是 2.9996435921028974e-25 和 2.2132478772107012e-25 keV，因为那里 E_cm 与 E_boost 分别相差 1 和 3 个末位单位。两者都比关系的 1 keV 尺度低约二十二个数量级，且都不为负；但用精确零比较这两个输入的调用者会看到不同的值。",
@@ -5916,7 +5916,7 @@
      "不加角权重；调用者另乘因子属于外部角分布。",
      "非单位视线向量须调用者先归一化；单位范数前提没有放宽。",
      "一个单元测试遍历 ±4000 ulp 邻域需约 27 秒，因为关系被求值 8001 次。只求值本资产，不遍历相邻配置。",
-     "公开分发许可仍待人工决定。",
+     "绑定文件为资产私有，含 19 个测试函数；覆盖 ±4000 ulp 抵消普查、精确零配置与可表示性见证，但质量常数、Q 值与非相对论适用域仍是声明输入而非独立测量。",
      "本文档中的每条主张都由本仓库中的测试测量，或作为所声明关系的性质陈述。没有公共测试要求外部 checkout。"
     ]
    }
@@ -6029,7 +6029,7 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-   "source_sha256": "c3b5bab2b5067b2e76c8c24517c38d4bb58c8e93d68c9e3ea3b38a10efdd241a",
+   "source_sha256": "578ba9c572b43bf086a85fb91a60d5ee27bde90dd8dba96be0e0d4426a73c83b",
    "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
    "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
    "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
@@ -6170,7 +6170,7 @@
      "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
      "独立解析及曲场前向反演消费者。"
     ],
-    "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+    "evidence_ceiling": "限于单次前向平衡试验，显式区分有效、数值失败与未收敛结果。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `evaluate_anisotropic_trial`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：把合同/编程异常伪装为物理不可行，或用惩罚项证明模型有效。",
     "known_limitations": [
      "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
      "单次 trial 不判断参数可辨识性或最优性。"
@@ -6260,7 +6260,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generation-accumulation-update",
-   "source_sha256": "cae3833e6781cddd419ec3de4d475a5ad67af98460f8b655135d856c5e476ae5",
+   "source_sha256": "086c99da2e18dbdbeaca413b6840e5156040948494e7422a1cfd430f3e57f79c",
    "summary": "把一代分布和密度追加到累计状态，更新总量、逐代堆栈和完成代索引。",
    "definition": "向累计状态追加一代：累加分布、密度、逐代堆栈以及已完成代索引。",
    "model": "按所声明顺序做逐代累加，并显式校验调用者状态。",
@@ -6322,15 +6322,15 @@
     "scope": [
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：向累计状态追加一代：累加分布、密度、逐代堆栈以及已完成代索引。证据：test_convergence_accumulation.py（记录 18 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不执行传播、密度归约、停止决策或外部物理验证；外部物理验证。",
     "known_limitations": [
-     "科学有效性以受测数值域和适用条件为界。"
+     "仅绑定共享文件覆盖（test_convergence_accumulation.py）；未记录资产专属失败/边界探针。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
-   "source_sha256": "2cd78702edc3dc0479dcf5588986d3c2797a87164276daf4d436fc5197d6e1cf",
+   "source_sha256": "923afbce126bc40c454b36fe276d19fe01e153608d7e7ff73cc5f4be1435e6ec",
    "summary": "在同一速度空间网格上，把原子电荷交换和弹性散射代源分布逐点相加为 Beta_CX + OmegaM，保留带符号值。",
    "definition": "普通逐点相加；不对带符号值做钳制。",
    "model": "两个散射代源通道的逐点聚合。",
@@ -6374,10 +6374,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "布尔、字符串、复数、非有限输入或三维形状不匹配引发 ValueError。",
-    "runtime_failure": "结果非有限时引发 ValueError；无回退。",
-    "nonconvergence": "不适用；没有迭代。",
-    "partial_results": "不返回部分结果。"
+    "invalid_input": "源值非实数/布尔/字符串/复数或非有限，或两个源不是同形三维数组时抛出 ValueError。",
+    "runtime_failure": "逐点和非有限时抛出 ValueError；不裁剪、不回退。",
+    "nonconvergence": "不适用；该归约是直接逐点求和。",
+    "partial_results": "从不返回；被拒绝的调用不产生部分数组。"
    },
    "example": {
     "description": "计算包含相消的两源汇合，并检查形状失配拒绝。",
@@ -6388,15 +6388,15 @@
      "归约和等于独立逐点相加，并保留正负符号。",
      "核验对齐与有限值要求的失败合同。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于原子电荷交换加弹性散射产生源的逐点求和。证据：`test_neutral_scattered_sources.py` 含 11 个测试函数，其中 4 个引用 `reduce_atomic_scattered_sources`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立解析逐点加法对照。不建立：未对齐网格或非有限源场。",
     "known_limitations": [
-     "科学有效性以受测数值域和适用条件为界。"
+     "四资产共享 scattered-source 文件中的三个直接函数覆盖冻结样本、带符号原子求和与隐式实数拒绝；没有测试在形状/溢出检查之外绑定非有限总量。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-source-projection",
-   "source_sha256": "7d1dab3937138e51d2f3b04378b18ba2288f20358777531d9a4d832b9d15015c",
+   "source_sha256": "5f0a6fe67ada06fc8c064a5436dec29a269482148142154dd2dc331f8aadc0a6",
    "summary": "把点俯仰源投影到包含整数阶的正规偶角模，并用收敛求积求归一化。",
    "definition": "由镜比/turning_b 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。",
    "model": "规定点源的角模投影，不建立物理 NBI 群体。",
@@ -6489,17 +6489,17 @@
      "整数模的精确归一化和源系数。",
      "模值共用已独立核验的正则求值器。"
     ],
-    "evidence_ceiling": "数学恒等式、失败回归及独立比较支持合同；不证明测量等离子体适用性或一般稳定性定理。",
+    "evidence_ceiling": "限于所声明关系：由镜比/turning_b 得 ξ_tp=sqrt(max(0,1−1/max(R,1e-12)))。阶数显式给定或调用谱算子；计算系数 c_ν=u_ν(clip(cosθ_NBI,0,ξ_tp))/(4π∫u_ν²dξ)。正规偶初值解不排除整数阶、不截断多项式；Gauss–Legendre 节点逐次加倍，初始节点解析估计角振荡，归一积分相对一致性须达1e-10。证据：test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py（记录 18 个测试函数；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不认证调用者本征值，不含有限宽源或任意有限模和的物理正性；外部物理验证。",
     "known_limitations": [
      "把点源俯仰角裁剪到锥内是所声明的投影约定，不是有限宽度注入模型。",
      "显式阶数用作损失锥模时需独立本征值依据。",
-     "科学有效性以受测数值域和适用条件为界。"
+     "仅绑定共享文件覆盖（test_spectral_scientific_correction.py）；未记录资产专属失败/边界探针。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.generation-density-reduction",
-   "source_sha256": "0a9dbf95ee9ea609c86fe9bd0290ba8d48e828a7374aab2fafd6cdab5cb9b765",
+   "source_sha256": "2151ffec29e8e080045a4748b1f82de8cf9f83df3a11c9a95adc4da32e62a09f",
    "summary": "将 (nvr, nvx, nx) 中性代分布按柱坐标求积归约为各空间格密度：对两个速度轴求 weight * distribution * dvx 之和，并支持一维径向权重投影路径和列均匀路由。",
    "definition": "使用完整的 (nvr,nvx) 权重时，同时对两个轴求和；使用一维径向权重时，径向投影计算 sum_r w[r] * (sum_x f[r,x,:]*dvx[x])；各列全等的完整权重会被路由到径向路径。",
    "model": "圆柱求积下的离散速度空间密度积分。",
@@ -6565,16 +6565,16 @@
      "列均匀路由恒等式成立（两条路径在列均匀权重上一致）。",
      "核验对齐、实数输入、非负与有限输出要求的失败合同。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：使用完整的 (nvr,nvx) 权重时，同时对两个轴求和；使用一维径向权重时，径向投影计算 sum_r w[r] * (sum_x f[r,x,:]*dvx[x])；各列全等的完整权重会被路由到径向路径。证据：test_thermal_speed_and_density_reduction.py（记录 11 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：负权重或单元宽度；轴不匹配：均被拒绝；外部物理验证。",
     "known_limitations": [
      "实数输入拒绝和有限输出强制，与较早的强制转换和溢出行为不同。",
-     "科学有效性以受测数值域和适用条件为界。"
+     "仅绑定共享文件覆盖（test_thermal_speed_and_density_reduction.py）；未记录资产专属失败/边界探针。"
     ]
    }
   },
   {
    "asset_id": "scirel.diagnostics.species-absorption-fraction",
-   "source_sha256": "793e67daeead6027a98531cb56c6a1b0bd40ab0217ef8a9946ed18e34ea9de8a",
+   "source_sha256": "e32bef946334353e7ad10ee4e6ab2cc32ed91477ab8fa695a8b8073d32884660",
    "summary": "把四物种有符号吸收功率换算为按输入顺序排列的百分比；稳定处理相消和中间数值溢出，仅拒绝零总功率或无法表示的最终结果。",
    "definition": "先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。",
    "model": "在恰好四个物种之间分配吸收功率。",
@@ -6659,12 +6659,12 @@
      "合并后只暴露一个公共入口。",
      "部分和溢出但数学总和为零、相消间的小项、部分和溢出但最终有限、次正规百分比及最终不可表示拒绝。"
     ],
-    "evidence_ceiling": "独立有理数反例确立账本数值关系及其失败边界；普通断言继续有效。此处的证据不确立调用者提供的吸收功率在物理上正确。",
+    "evidence_ceiling": "限于所声明关系：先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。证据：test_species_absorption_fraction.py, test_legacy_admission_regressions.py（记录 18 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：总和恰为零的账本，此时百分比结果无定义；排除少于或多于四物种。",
     "known_limitations": [
      "固定四物种，不支持任意长度。",
      "零总和分支不可用，不能表示物理零吸收运行。",
      "可选的跨实现比较只在可访问外部实现时运行；不可访问时跳过，而不是静默通过。",
-     "公开分发许可仍待人工决定。"
+     "独立解析对照不能替代外部实验参考。"
     ]
    }
   },
@@ -6943,7 +6943,7 @@
   },
   {
    "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
-   "source_sha256": "b60cefdaf34f21d605d61cb9a596a589276deee7508c057d2d874a44ac6abe44",
+   "source_sha256": "e829fc16a9a979612b0dc23659e4ee78a41af68687cd5a7f1377cd469d755732",
    "summary": "为中性粒子的双向迎风输运生成 Ak、Bk、Fk、Ck、Dk、Gk。",
    "definition": "正 vx 支：Ak=(2vx−dx α_k)/(2vx+dx α_{k+1})，Bk=dx/(2vx+dx α_{k+1})，Fk=dx(source_{k+1}+source_k)/(2vx+dx α_{k+1})；负 vx 支按对应的反向关系生成 Ck、Dk、Gk。",
    "model": "前向和后向输运系数的一阶迎风梯形离散。",
@@ -7013,11 +7013,11 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于所声明关系：正 vx 支：Ak=(2vx−dx α_k)/(2vx+dx α_{k+1})，Bk=dx/(2vx+dx α_{k+1})，Fk=dx(source_{k+1}+source_k)/(2vx+dx α_{k+1})；负 vx 支按对应的反向关系生成 Ck、Dk、Gk。证据：test_transport_step.py（记录 18 个测试函数；仅共享文件覆盖；有界 source-method 对照）；合同 example 已运行。不建立的范围：不提供高阶离散、非均匀速度权重修正或保守通量修正；外部物理验证。",
     "known_limitations": [
      "本合同不携带任何经独立评审的、与外部实现一致性的资格；未经新的独立评审不能主张此类资格。",
-     "公开分发许可仍待人工决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "仅绑定共享文件覆盖（test_transport_step.py）；未记录资产专属失败/边界探针。",
+     "未记录独立或外部 oracle；证据仅为自洽/回归。"
     ]
    }
   },
@@ -7207,7 +7207,7 @@
   },
   {
    "asset_id": "scirel.kinetic.atomic-alpha-contraction",
-   "source_sha256": "0ea6e0a4f2c786ddc471b22ff9b91d1dacce79092bc529e7d909db2c6ff34def",
+   "source_sha256": "ab30d8d48a72ba961a80287cb63f0a53e97707dedb613af0d766a136a747a251",
    "summary": "逐空间单元将原子氢四类已组装 SIG 矩阵与 Fortran 展平的输入分布收缩为 Alpha 碰撞频率。",
    "definition": "逐 k 的矩阵–向量收缩：每个族将一个已组装的 (N,N) SIG 矩阵乘以一个输入分布按 Fortran 顺序展平到 (nvr*nvx,) Work 缓冲后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 和 H-P 族携带按单元以 ni[k] 缩放的 fi_hat；H-H2 和 H-H 族携带裸分布 fH2 和 fH。",
    "model": "所声明合法域上逐 k 的原子四族 SIG 矩阵收缩。",
@@ -7321,16 +7321,16 @@
     "scope": [
      "输入与失败合同。"
     ],
-    "evidence_ceiling": "仓库内的直接测试在受测输入上确立数值关系、输出结构和所声明的失败行为。证据以文档化的适用域为界，不确立未测试的物理区间、人工科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：逐 k 的矩阵–向量收缩：每个族将一个已组装的 (N,N) SIG 矩阵乘以一个输入分布按 Fortran 顺序展平到 (nvr*nvx,) Work 缓冲后的向量，并把乘积还原到 (nvr,nvx) 切片。CX 和 H-P 族携带按单元以 ni[k] 缩放的 fi_hat；H-H2 和 H-H 族携带裸分布 fH2 和 fH。证据：test_alpha_contraction.py（记录 11 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不含分子三家族、下游 Omega、Do_Alpha 门控、缓存或外部验证；外部物理验证。",
     "known_limitations": [
      "弹性族中的负单元和负密度按给定值复现或收缩；其物理可接受性是一个待专家判断的问题，而不是运行时门禁。",
-     "科学有效性以受测数值域和适用条件为界。"
+     "仅绑定共享文件覆盖（test_alpha_contraction.py）；未记录资产专属失败/边界探针。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.mirror-constrained-moments",
-   "source_sha256": "e081c228c275e64cf09eebc32f2ea57be2450adeb8711320fd18ed60fe455cfe",
+   "source_sha256": "03c474d2778077fd12a404d053db53c91ea023dcb500bc806224e97bad83258e",
    "summary": "计算不变量双 Maxwell 的局部密度和平行/垂直压力，并可用双端损失锥俯仰积分修正。",
    "definition": "C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分 e^(−x)P(1/2,y)、e^(−x)P(3/2,y)、x e^(−x)P(1/2,y)。回填后乘 n_full、n_fullT_parallel、n_fullT_perp,local。纯磁采用解析角积分，一般情形在 sqrt(x) 上分屏障段控误差求积；对数合成乘积，先取电势差并缩放避免中间溢出。",
    "model": "含规定双塞损失锥的回旋对称双 Maxwell 矩；不自洽求电势或平衡。",
@@ -7523,14 +7523,14 @@
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入/输出行为、数值检查和失败边界；不确立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布批准。",
+    "evidence_ceiling": "限于所声明关系：C=(B−B_ref)/T_parallel+B_ref/T_perp,ref，T_perp,local=B/C；n_full=exp[log(n_ref)+log(T_perp,local/T_perp,ref)−q(φ−φ_ref)/T_parallel]。令 x=μC，y=max(min(a_left x+b_left,a_right x+b_right),0)，a=(B_end−B)/(CT_parallel)，b=q(φ_end−φ)/T_parallel，分别积分…。证据：test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py（记录 46 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不单凭返回矩确定静电势、镜平衡或自洽分布；不提供单侧塞、磁通自动换算、任意磁力线几何或有限俯仰求积的误差估计。",
     "known_limitations": [
      "x>40尾界按声明处理；自适应误差估计非所有浮点组合的形式证明，近零比例采用绝对误差目标。",
      "回填是指定现象学；refill精确1时不求塞剖面；不可表示的小值下溢可变零。",
      "质量被验证但不进入矩公式；下游闭合可比此入口要求更窄的正离子电荷。",
      "历史ψ为Wb，其他场资产可能Wb/rad，未建立连接等价。",
-     "公开分发许可及当前版本专家认可待决定。",
-     "示例输出只是一次有限运行观察，不是普遍适用的科学结论。"
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "合同不建立：不单凭返回矩确定静电势、镜平衡或自洽分布。。"
     ]
    },
    "source_conflicts": [
@@ -7539,7 +7539,7 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-   "source_sha256": "5034f51b02224397ebedf4ffab7fec5739f8238649432d5db683201be6d31d4e",
+   "source_sha256": "1b74ab0a1bc273fc8c33f7e0c81ad827a190297a59a90b1c5b8aef07dfc0f372",
    "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，返回实际终点的重新验证状态。",
    "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，只取有效样本作起点。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
    "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
@@ -7739,7 +7739,7 @@
      "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
      "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。"
     ],
-    "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+    "evidence_ceiling": "限于带总科学调用预算、失败试验不得成为最优的有界局域各向异性参数拟合。证据：`test_inference_physical_closure.py` 含 20 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享; `test_anisotropic_inference_independent.py` 含 1 个测试函数，其中没有函数引用 `optimize_anisotropic_parameters`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定 inference 文件中的独立解析与离散参照比较。不建立：全局最优性、置信区间/可辨识性证明，或把失败/旧状态包装为优化器收敛。",
     "known_limitations": [
      "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
      "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",
@@ -7753,7 +7753,7 @@
   },
   {
    "asset_id": "scirel.kinetic.simple-charge-exchange-source",
-   "source_sha256": "186388efa7244bc455292768d7b6b85be67f2c34a9e9ac5b67da066b28d829a5",
+   "source_sha256": "3c14b4cabb9b4ac68732a581732cc63533959591d0ac9e20481e4d910d99f403",
    "summary": "逐空间单元把上一散射代与 CX 频率求积，再用该速率缩放目标分布，形成局部电荷交换散射源。",
    "definition": "单元局部的构造：速率收缩把上一代分布与 CX 场归约，目标形状按单元缩放；不发生跨单元输运。",
    "model": "Simple_CX 的逐代单元局部散射步骤。",
@@ -7830,10 +7830,10 @@
      "核验对齐与非负要求的失败合同。",
      "对固定校验和锚定的参考值做只读的合法输入比较；仅为有界证据。"
     ],
-    "evidence_ceiling": "维护测试确立所声明的运算顺序算术、带符号值和失败关闭合同。另行进行的只读比较可以把有界的有限实数输入与固定校验和锚定的参考值核对；它不确立畸形输入一致性、经独立评审的资格、专家认可、版本级信任或分发许可。",
+    "evidence_ceiling": "限于所声明关系：单元局部的构造：速率收缩把上一代分布与 CX 场归约，目标形状按单元缩放；不发生跨单元输运。证据：test_neutral_scattered_sources.py（记录 11 个测试函数；仅共享文件覆盖；有界 source-method 对照）；合同 example 已运行。不建立的范围：不接受网格失配、负频率/求积量或非有限场；外部物理验证。",
     "known_limitations": [
      "本合同不携带任何经独立评审的、与外部实现一致性的资格；未经新的独立评审不能主张此类资格。",
-     "公开分发许可仍待人工决定。"
+     "仅绑定共享文件覆盖（test_neutral_scattered_sources.py）；未记录资产专属失败/边界探针。"
     ]
    }
   },

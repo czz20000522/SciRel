@@ -150,13 +150,13 @@
   "tests": [
    "tests/kinetic/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the dimensionless k c/omega_pi and propagation-angle to SI perpendicular/parallel coordinate transform. Evidence: `test_dispersion_rational.py` contains 6 test functions, 1 of which references `em_coordinates`, and is shared by 10 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen coordinate values in the bound file. It does not establish an implicit alternate reference species or an implicit radian convention.",
   "known_limitations": [
-   "Original license unverified; MATLAB execution NOT_RUN.",
+   "One direct function in the ten-asset-shared rational file covers extended finite input rejection after binary64 narrowing; the other five functions do not reference `em_coordinates`.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-   "Human scientific and plot approval pending.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The relation is a finite scan-coordinate transform; no original-runtime execution or alternate reference species is bound.",
+   "No test binds a nonfinite or nonpositive-`cwp` case beyond the shared invalid-input contract."
   ]
  },
  "references": [

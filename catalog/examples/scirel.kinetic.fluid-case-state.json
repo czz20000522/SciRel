@@ -36,10 +36,10 @@
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
-  "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
-  "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
-  "runtime_failure": "Python numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
+  "invalid_input": "ValueError for unknown case labels, non-finite/incoherent deck controls, resonant poles, or an unrepresentable matrix response.",
+  "runtime_failure": "Python/NumPy numerical errors propagate with case context; no native, source-checkout or network fallback is selected.",
+  "nonconvergence": "No nonlinear search is exposed; precision/tail and eigen-selection failures are explicit ValueError.",
+  "partial_results": "No partial case state is returned; a failed case raises before output assembly."
  },
  "identity": {
   "assumptions": [
@@ -108,12 +108,12 @@
   "zh": "完整 SI 流体案例状态"
  },
  "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: vthermal=sqrt(2 kB T/m), signed rho=sqrt(kB T/m)/Omega, wn=min abs(Omega), kn=1/max abs(rho); temperatures are converted from eV to K with 1.6022e-19/kB. Evidence: test_fluid_spectrum_full.py (9 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: No arbitrary species model construction through case controls; Global charge-neutral or self-consistent background equilibrium proof for electron-only case2.",
   "known_limitations": [
-   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "Only shared-file coverage is bound (test_fluid_spectrum_full.py); no asset-specific failure/limit probe is recorded.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
    "Pure-Python execution is tested on this host; native parity is not claimed."
   ],
   "scope": [

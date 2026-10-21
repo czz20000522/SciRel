@@ -146,12 +146,12 @@
   "tests": [
    "tests/geometry/test_complex_rectilinear_interpolation.py"
   ],
-  "evidence_ceiling": "Establishes the declared trilinear reconstruction and out-of-domain reporting contract against an independent reference; it does not establish that a particular source field is adequately resolved by the supplied grid, nor does it bound the interpolation error for any physical field.",
+  "evidence_ceiling": "Bounded to the declared relation: Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box…. Evidence: test_complex_rectilinear_interpolation.py (12 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Extrapolation beyond the tolerance-expanded source box; Curvilinear, cylindrical, or unstructured source grids.",
   "known_limitations": [
    "Only trilinear (first-order) reconstruction is offered; no higher-order or conservative scheme is included.",
    "valid_mask reports geometry only and must not be used as a finiteness test on the returned values.",
    "No extrapolation is performed outside the tolerance-expanded box, so callers with points beyond the shell receive nan rather than a clamped edge value.",
-   "Public distribution licensing remains pending a human decision."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  }
 }

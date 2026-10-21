@@ -288,15 +288,16 @@
   "tests": [
    "tests/kinetic/test_mirror_invariant_distribution.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
-   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+   "tests/kinetic/test_independent_correction.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: mu=m*v_perpendicular^2/(2*B), E=m*v_parallel^2/2+mu*B+q*phi, C=(B-B_ref)/T_parallel+B_ref/T_perp,ref. The distribution is n_ref*(m/(2*pi))^(3/2)/(T_perp,ref*sqrt(T_parallel))*exp[-(E-q*phi_ref)/T_parallel-mu*B_ref*(1/T_perp,ref-1/T_parallel)]*occupation…. Evidence: test_mirror_invariant_distribution.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py (41 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Self-consistent potential, equilibrium, collision, transport or integrated moment solving; One-sided plugs, field-line geometry, automatic flux-unit conversion or proof of physical adequacy for a supplied source state.",
   "known_limitations": [
    "An unrepresentable required invariant or output raises FloatingPointError. Finite binary64 output is not an all-domain physical validity certificate.",
    "The strict barrier comparison and zero-refill default are source-defined conventions; no trapped-orbit trajectory is computed.",
    "Historical psi labeling is Wb but does not establish compatibility with Wb/rad assets.",
-   "Public distribution licensing and current-version expert recognition remain pending.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "The contract does not establish: Self-consistent potential, equilibrium, collision, transport or integrated moment solving.."
   ]
  }
 }

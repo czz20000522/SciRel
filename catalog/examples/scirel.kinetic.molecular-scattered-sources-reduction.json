@@ -95,10 +95,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for implicit boolean, string or complex conversion, non-finite inputs, or misaligned three-dimensional source fields.",
-  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
-  "nonconvergence": "Not applicable.",
-  "partial_results": "Never returned; a rejected call produces no result."
+  "invalid_input": "Raises ValueError for non-real/boolean/string/complex or nonfinite source values, or when the three sources are not aligned 3-D arrays.",
+  "runtime_failure": "Raises ValueError when the signed aggregate is not finite; no clipping, channel drop or fallback is applied.",
+  "nonconvergence": "Not applicable; the reduction is a direct pointwise sum.",
+  "partial_results": "Never returned; a rejected call produces no partial array."
  },
  "public_api": {
   "python": {
@@ -126,11 +126,11 @@
   "tests": [
    "tests/kinetic/test_neutral_scattered_sources.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the source-order sum of molecular wall, charge-exchange and elastic scattered-generation sources. Evidence: `test_neutral_scattered_sources.py` contains 11 test functions, 3 of which reference `reduce_molecular_scattered_sources`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against a channel-weighted sum in the bound file. It does not establish misaligned meshes or non-finite source fields.",
   "known_limitations": [
-   "Broader verification is not claimed beyond the listed direct tests.",
-   "Public distribution licensing remains pending a human decision.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The bound file is shared by four assets and has three direct functions covering frozen finite samples, source-order signed cells and shape/derived-overflow rejection.",
+   "The three inputs must be aligned 3-D arrays; a nonfinite aggregate after signed addition raises ValueError rather than clipping or dropping a channel.",
+   "No test binds a mismatched channel-key or nonfinite input field beyond the retained finite samples; the example is the only documented runtime output."
   ]
  }
 }

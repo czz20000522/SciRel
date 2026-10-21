@@ -577,11 +577,11 @@
    "tests/cross_domain/reduced_hall_anisotropic_picard/test_composition_reduced_hall_anisotropic_picard.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "evidence_ceiling": "Bounded to the bounded axisymmetric Picard feedback through a caller closure, reduced Hall drift and dense Green update. Evidence: `test_composition_reduced_hall_anisotropic_picard.py` contains 12 test functions, 1 of which references `solve_reduced_hall_anisotropic_picard`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `solve_reduced_hall_anisotropic_picard`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound composition and correction files. It does not establish a built-in kinetic pressure model, density evolution, free-boundary response, non-axisymmetric equilibrium, or convergence for arbitrary caller closures.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "No expert scientific endorsement or public release follows from this numerical successor."
+   "Only one direct function in the asset-private composition file references the solver by name (`test_public_solver_docstring_declares_contract`, a docstring check); the shared correction file contains no direct symbol call, so numerical branch evidence is composition-level."
   ]
  },
  "composition": {

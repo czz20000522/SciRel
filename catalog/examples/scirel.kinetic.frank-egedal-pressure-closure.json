@@ -177,13 +177,14 @@
    "The exact-document example exercises the real public composition API."
   ],
   "tests": [
-   "tests/cross_domain/test_spectral_scientific_correction.py"
+   "tests/cross_domain/test_spectral_scientific_correction.py",
+   "tests/cross_domain/frank_egedal_pressure_closure/test_composition_frank_egedal_pressure_closure.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: The radial operator forms r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha…. Evidence: test_spectral_scientific_correction.py, test_composition_frank_egedal_pressure_closure.py (25 recorded test functions; shared-file plus direct composition/test coverage; self-consistency/regression only); the contract example ran. Excluded scope: An exact kinetic solution, self-consistent force balance, measured-plasma validation or an author-confirmed interpretation of the Eq19b conflict; external physical validation.",
   "known_limitations": [
    "A common cutoff changes legacy parallel/density results as well as perpendicular pressure.",
    "This graph does not prove that a finite modal population solves the original physical kinetic equation.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_spectral_scientific_correction.py); no asset-specific failure/limit probe is recorded."
   ]
  },
  "references": [

@@ -126,10 +126,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for invalid, nonfinite or singular declared inputs.",
-  "runtime_failure": "Callback arithmetic failures propagate; nonrepresentable transform raises ValueError.",
-  "nonconvergence": "RuntimeError for Cauchy, real-axis or principal-value quadrature nonconvergence, or root nonconvergence.",
-  "partial_results": "No partial scientific result is returned after failure."
+  "invalid_input": "ValueError for an unsupported expression, non-finite phase/mesh, or malformed integration_mesh/continuation.",
+  "runtime_failure": "FloatingPointError for a non-finite continued transform and RuntimeError when quadrature fails; no fallback path is selected.",
+  "nonconvergence": "RuntimeError when real-axis/exterior quadrature fails or the declared removable-point estimate is not representable.",
+  "partial_results": "No partial Z/Zp pair is returned after a failed transform."
  },
  "verification": {
   "tests": [
@@ -144,9 +144,9 @@
   "known_limitations": [
    "Real-axis local removable-point evaluation of the derivative integrand uses a symmetric second-derivative estimate; no global error certificate is returned.",
    "Restricted parser supports finite real constants, pi, v, arithmetic, exp/log/sqrt/sin/cos/sinh/cosh/tanh.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
+  "evidence_ceiling": "Bounded to the declared relation: DensityExpression interprets the restricted AST and propagates analytic first derivatives by chain rules without eval or SymPy. Real-axis integrands subtract f(x)*exp(-(v-x)²), whose whole-line odd PV vanishes…. Evidence: test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py (25 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Piecewise or nonanalytic expression syntax; use distribution selectors; Automatic discovery of unresolved callback features."
  },
  "example": {
   "description": "Evaluate the analytic Lorentzian Hilbert/Cauchy transform on an explicit feature mesh.",

@@ -135,11 +135,11 @@
   "tests": [
    "tests/kinetic/test_transport_step.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: Forward branch (positive vx): Ak = (2*vx - dx*alpha_k)/(2*vx + dx*alpha_{k+1}), Bk = dx/(2*vx + dx*alpha_{k+1}), Fk = dx*(source_{k+1}+source_k)/(2*vx + dx*alpha_{k+1}). Backward branch (negative vx): Ck/Dk/Gk analogous. Evidence: test_transport_step.py (18 recorded test functions; shared-file coverage only; bounded source-method parity); the contract example ran. Excluded scope: Higher-order schemes; nonuniform velocity-axis weighting; conservative flux correction; external physical validation.",
   "known_limitations": [
    "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
-   "Public distribution licensing remains pending a human decision.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Only shared-file coverage is bound (test_transport_step.py); no asset-specific failure/limit probe is recorded.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
   ]
  }
 }

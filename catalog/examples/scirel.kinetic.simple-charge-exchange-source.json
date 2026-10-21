@@ -145,10 +145,10 @@
   "tests": [
    "tests/kinetic/test_neutral_scattered_sources.py"
   ],
-  "evidence_ceiling": "The maintained tests establish the declared operation-order arithmetic, signed-value and fail-closed contracts. A separate read-only comparison can check bounded finite real inputs against digest-pinned reference values; it does not establish malformed-input parity, independently reviewed qualification, expert recognition, version-level trust or distribution licensing.",
+  "evidence_ceiling": "Bounded to the declared relation: The cell-local construction: the rate contraction reduces the previous generation against the CX field, and the target shape is scaled per cell; no cross-cell transport enters. Evidence: test_neutral_scattered_sources.py (11 recorded test functions; shared-file coverage only; bounded source-method parity); the contract example ran. Excluded scope: Misaligned meshes; negative frequency, weight, or cell sizes; non-finite fields; external physical validation.",
   "known_limitations": [
    "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
-   "Public distribution licensing remains pending a human decision."
+   "Only shared-file coverage is bound (test_neutral_scattered_sources.py); no asset-specific failure/limit probe is recorded."
   ]
  }
 }

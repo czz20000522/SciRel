@@ -346,7 +346,7 @@
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py"
   ],
-  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
+  "evidence_ceiling": "Bounded to a bounded local anisotropic-parameter fit with a total scientific-call budget and a never-best failed trial rule. Evidence: `test_inference_physical_closure.py` contains 20 test functions, none of which references `optimize_anisotropic_parameters`, and is shared by 4 assets; `test_anisotropic_inference_independent.py` contains 1 test function, none of which references `optimize_anisotropic_parameters`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic and discrete-reference comparisons in the bound inference files. It does not establish global optimality, confidence intervals/identifiability proofs, or packaging a failed/old state as optimizer convergence.",
   "known_limitations": [
    "May stall near a constant penalty; finite LHS and local optimization do not guarantee finding a feasible point.",
    "No automatic covariance, Fisher-rank or confidence-interval report is provided; additional scientific design is required.",

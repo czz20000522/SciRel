@@ -39,10 +39,10 @@
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
-  "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
-  "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
-  "runtime_failure": "Python numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
+  "invalid_input": "ValueError for non-finite/unsupported b or integer order, or an unsupported derivative/selector request.",
+  "runtime_failure": "FloatingPointError/ValueError for an unrepresentable derivative or neighbor identity; SciPy execution errors propagate.",
+  "nonconvergence": "No iterative solve is exposed; the fixed Bessel relation has no convergence claim.",
+  "partial_results": "No partial Gamma_n or derivative output is returned after failure."
  },
  "identity": {
   "assumptions": [
@@ -120,12 +120,12 @@
   "zh": "特殊函数响应"
  },
  "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]. R=2Y/b sum_n>=1 n² Gamma_n/(Y²−n²); true poles fail. Evidence: test_fluid_spectrum_full.py (9 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: No execution or fidelity claim for the Taylor/asymptotic/integral selector; No certified entire-complex-plane precision claim.",
   "known_limitations": [
-   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "Only shared-file coverage is bound (test_fluid_spectrum_full.py); no asset-specific failure/limit probe is recorded.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "The independent analytic comparison does not replace an external experimental reference.",
    "Pure-Python execution is tested on this host; native parity is not claimed."
   ],
   "scope": [

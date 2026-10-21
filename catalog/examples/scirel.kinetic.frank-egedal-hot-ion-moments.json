@@ -230,14 +230,15 @@
    "Independent 70-digit incomplete-Beta raw-moment values for degree 2 and beta=-0.1,-0.3,-0.4,-0.4999,0,0.5, including near the density-integrability boundary."
   ],
   "tests": [
-   "tests/cross_domain/test_spectral_scientific_correction.py"
+   "tests/cross_domain/test_spectral_scientific_correction.py",
+   "tests/kinetic/test_frank_egedal_hot_ion_moments.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Let b=B/B0, xi_max=sqrt(max(0,1-b/R)), xi_min=sqrt(max(0,1-b)), and xi0=sqrt((xi^2-(1-b))/b). Only xi_min<=xi<=xi_max belongs to the population specified at B0; for b>=R moments are zero…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py (22 recorded test functions; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Unspecified populations on orbits that cannot reach B0, arbitrary callback feature discovery, zero normalizers and divergent or unresolved integrals; A claim that the printed Eq19b discrepancy has been confirmed as an author erratum.",
   "known_limitations": [
    "The positive part of a finite modal sum is an explicitly modified mathematical model; arbitrary mode truncation does not establish physical positivity or kinetic equivalence.",
    "Raw quadrature refinement is a finite numerical agreement test and cannot discover arbitrary unresolved caller-function features.",
    "The common-domain correction changes legacy density/parallel values when perp_velocity_lower was set.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_spectral_scientific_correction.py); no asset-specific failure/limit probe is recorded."
   ]
  },
  "references": [

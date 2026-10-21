@@ -109,9 +109,9 @@
   "tests": [
    "tests/kinetic/test_neutral_frequency_assembly.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the pointwise sum of exactly three already-normalized elastic collision-frequency channels. Evidence: `test_neutral_frequency_assembly.py` contains 7 test functions, 3 of which reference `sum_elastic_frequency_channels`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent pointwise-add comparison in the bound file. It does not establish fewer or more than three channels, mismatched shapes, or non-finite values.",
   "known_limitations": [
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Three direct functions in the two-asset-shared frequency-array file cover channel order/zero channel, count/shape/nonfinite-total rejection and implicit-real rejection."
   ]
  }
 }

@@ -145,11 +145,11 @@
   "tests": [
    "tests/kinetic/test_convergence_accumulation.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the per-generation Delta_n stopping decision for collision-generation convergence. Evidence: `test_convergence_accumulation.py` contains 18 test functions, 7 of which reference `evaluate_neutral_generation_stopping`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen generation ratios in the bound file. It does not establish non-density convergence criteria or external physical validation.",
   "known_limitations": [
-   "Broader verification is not claimed beyond the listed direct tests.",
-   "Public distribution licensing remains pending a human decision.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Seven direct functions in the four-asset-shared convergence file cover delta/status, truncate path, nonpositive accumulated rejection, seed-relative strict boundaries, invalid truncate, seed-control ordering and nonfinite ratio.",
+   "Stopping is a reported decision: `done` and `reason` are returned, while the caller owns the outer iteration.",
+   "The example is the only documented runtime output; no test binds a non-density convergence criterion."
   ]
  }
 }

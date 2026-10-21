@@ -244,12 +244,12 @@
   "tests": [
    "tests/cross_domain/axisymmetric_equilibrium_grid_support/test_composition_axisymmetric_equilibrium_grid_support.py"
   ],
-  "evidence_ceiling": "Establishes that the composition reproduces both dependency relations and that its declared dependency closure, connectivity, and purity hold. It does not establish that either dependency is physically adequate for a device, and it does not establish the composition's suitability for grids or equilibria outside the tested contracts.",
+  "evidence_ceiling": "Bounded to the declared relation: Reconstructs the static field and the poloidal flux on the solver grid, builds the cylindrical coordinates of that grid, reads the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping, and classifies material support from…. Evidence: test_composition_axisymmetric_equilibrium_grid_support.py (16 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Field solves, wave propagation, and plasma response; Non-axisymmetric equilibria.",
   "known_limitations": [
    "The composition inherits both dependencies' limitations, including the clamped out-of-box policy and the innermost-radius proxy for the magnetic axis.",
    "The two diagnostic masks are additions beyond the six declared outputs, so a caller comparing output key sets must account for them.",
    "The graph has no feedback loop by design, so an equilibrium that would need to be re-derived from the reconstructed field is out of scope.",
-   "Public distribution licensing remains pending a human decision."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
   ]
  },
  "composition": {

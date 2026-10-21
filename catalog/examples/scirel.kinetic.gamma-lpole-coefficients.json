@@ -137,11 +137,11 @@
   "tests": [
    "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: The fixed L-pole residues and positions approximate Bessel-Gamma terms by rational pole sums; table key is |n|+1. Evidence: test_fluid_spectrum_r43_fluid.py (9 recorded test functions; shared-file coverage only; bounded source-method parity); the contract example ran. Excluded scope: No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method; external physical validation.",
   "known_limitations": [
    "frozen tables cover |n|=0..7; requests beyond them fail",
-   "Public distribution license and expert review remain pending.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_fluid_spectrum_r43_fluid.py); no asset-specific failure/limit probe is recorded.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
   ]
  }
 }

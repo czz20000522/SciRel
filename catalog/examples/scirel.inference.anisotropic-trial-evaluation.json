@@ -252,7 +252,7 @@
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py"
   ],
-  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
+  "evidence_ceiling": "Bounded to one forward equilibrium trial with explicit valid, numerical-failure and nonconverged outcomes. Evidence: `test_inference_physical_closure.py` contains 20 test functions, none of which references `evaluate_anisotropic_trial`, and is shared by 4 assets; `test_anisotropic_inference_independent.py` contains 1 test function, none of which references `evaluate_anisotropic_trial`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic and discrete-reference comparisons in the bound inference files. It does not establish hiding contract/programming exceptions as physical infeasibility, or using a penalty to prove model validity.",
   "known_limitations": [
    "The scientific meaning of RuntimeError belongs to the caller's port; the failure record does not replace investigation of the original exception.",
    "A single trial does not judge parameter identifiability or optimality."

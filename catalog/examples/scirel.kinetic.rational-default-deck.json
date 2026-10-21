@@ -105,13 +105,13 @@
   "tests": [
    "tests/kinetic/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the packaged legacy species deck returned as a fresh numeric array. Evidence: `test_dispersion_rational.py` contains 6 test functions, none of which references `default_deck`, and is shared by 10 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only; the bound rational file contains no direct call. It does not establish a claim that the default fixture matches a user experiment.",
   "known_limitations": [
-   "Original license unverified; MATLAB execution NOT_RUN.",
+   "The bound `test_dispersion_rational.py` is shared by ten assets and contains no direct reference to `default_deck`; the asset is exercised only through composition fixtures.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-   "Human scientific and plot approval pending.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The fixture is package-local data; no checkout, network access or original-runtime execution is part of the evidence.",
+   "The legacy species fixture is not a claim that the default deck describes a user experiment."
   ]
  },
  "references": [

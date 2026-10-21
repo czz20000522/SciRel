@@ -274,11 +274,11 @@
    "tests/equilibrium/test_anisotropic_picard_feedback.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "evidence_ceiling": "Bounded to one masked toroidal-current feedback step with flux and optional field projection. Evidence: `test_anisotropic_picard_feedback.py` contains 8 test functions, 2 of which reference `update_anisotropic_picard_flux`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `update_anisotropic_picard_flux`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish automatic construction or physical validation of a Green response, or a complete equilibrium/wall solution.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "No expert scientific endorsement or public release follows from this numerical successor."
+   "The private file has eight functions with two direct references: the relation example and the grid-without-cell-area rejection; the shared correction file adds no direct symbol call."
   ]
  }
 }

@@ -128,12 +128,12 @@
   "tests": [
    "tests/kinetic/test_bessel_gamma.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Gamma_n=ive(n,x)*exp(-x+abs(Re(x))); Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x))). Here ive is the exponentially scaled modified Bessel I. For representable values this is exp(-x) I_n(x) and its derivative with respect to x. Evidence: test_bessel_gamma.py (4 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Noninteger Bessel orders or automatic interpretation of arbitrary x as a physical wave parameter; Harmonic truncation, Maxwellian dispersion tensor assembly and mode/root selection.",
   "known_limitations": [
    "Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.",
    "The source implementation accepted some noninteger orders implicitly; SciRel intentionally restricts n to exactly representable integers.",
-   "Public distribution license and expert scientific recognition remain open.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "Only 4 recorded test functions are bound; broader parameter coverage is not claimed."
   ]
  }
 }

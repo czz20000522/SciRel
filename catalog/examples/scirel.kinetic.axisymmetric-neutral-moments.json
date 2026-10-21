@@ -199,11 +199,11 @@
   "tests": [
    "tests/kinetic/test_axisymmetric_neutral_moments.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: density = integral of f over velocity; axial_flux = Vth * integral(vx f); flow = flux/density; pressure and stresses from the centered second moments about the flow in eV m^-3; heat flux from the centered third moment in W m^-2; sigma_zz is returned as an…. Evidence: test_axisymmetric_neutral_moments.py (16 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Distributions on other quadrature geometries; renormalization of caller distributions; nonpositive-volume meshes; external physical validation.",
   "known_limitations": [
    "An independent zz stress is not provided: the sigma_zz = sigma_yy identification is part of the declared contract. Whether that identification is the intended published contract remains an open expert question.",
    "Under 'source_default', zero-density slices report the declared neutral values (flow 0 m/s, temperature 1 eV), which are not physical measurements.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  }
 }

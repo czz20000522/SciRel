@@ -171,13 +171,14 @@
    "Mode values share the independently checked regular evaluator."
   ],
   "tests": [
-   "tests/cross_domain/test_spectral_scientific_correction.py"
+   "tests/cross_domain/test_spectral_scientific_correction.py",
+   "tests/kinetic/test_frank_egedal_source_projection.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Set xi_tp_mid=sqrt(max(0,1-1/max(R,1e-12))) from mirror_ratio or turning_b. Use caller-supplied degrees or a supplied spectrum operator. For computed coefficients, c_nu=u_nu(clip(cos(theta_NBI),0,xi_tp_mid))/(4*pi*integral_0^xi_tp_mid u_nu^2 dxi)…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_source_projection.py (18 recorded test functions; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Certification of caller-supplied eigenvalues, finite-width source distributions or physical positivity of an arbitrary truncated mode sum; external physical validation.",
   "known_limitations": [
    "Clipping the point-source pitch into the cone is the declared projection convention, not a finite-width injection model.",
    "Caller-supplied degrees need an independent eigenvalue justification if used as loss-cone modes.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_spectral_scientific_correction.py); no asset-specific failure/limit probe is recorded."
   ]
  },
  "references": [

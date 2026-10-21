@@ -107,7 +107,7 @@
   "tests": [
    "tests/kinetic/test_vlasov_poisson_dispersion.py"
   ],
-  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+  "evidence_ceiling": "Bounded to exactly nt ordered RK4 steps with stage-wise field feedback and O(nv+nt) memory. Evidence: `test_vlasov_poisson_dispersion.py` contains 14 test functions, 1 of which references `vp_evolve`, and is shared by 9 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent semidiscrete mathematical checks and selected scenario regressions in the bound file. It does not establish nonlinear or multidimensional evolution, or adaptive time stepping.",
   "known_limitations": [
    "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
    "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",

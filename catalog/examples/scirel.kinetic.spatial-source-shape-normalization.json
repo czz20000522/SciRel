@@ -125,11 +125,11 @@
   "tests": [
    "tests/kinetic/test_neutral_normalizations.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the trapezoidal normalization and declared failure behavior. A separate read-only comparison found exact agreement on three finite valid profiles; coercion behavior differs as declared. This does not prove parity on all inputs, reviewed qualification, global applicability, expert approval or release.",
+  "evidence_ceiling": "Bounded to unit-integral normalization of a nonnegative one-dimensional spatial source profile under the trapezoidal measure. Evidence: `test_neutral_normalizations.py` contains 11 test functions, 3 of which reference `normalize_spatial_source_shape`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity against the independent trapezoidal normalization in the bound file. It does not establish zero/negative profiles, non-monotonic coordinates, or fewer than two nodes.",
   "known_limitations": [
    "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
    "The earlier behavior accepts boolean and numeric-string coercions, and complex input may raise TypeError; SciRel consistently rejects these as invalid real-array inputs.",
-   "Public distribution licensing remains pending a human decision."
+   "The bound file is shared by two assets and three direct functions cover trapezoidal normalization, invalid profiles and non-real coercion; exact agreement at three finite profiles is a regression check, not global parity."
   ]
  }
 }

@@ -184,10 +184,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for invalid, nonfinite or singular declared inputs.",
-  "runtime_failure": "Callback arithmetic failures propagate; nonrepresentable transform raises ValueError.",
-  "nonconvergence": "RuntimeError for Cauchy, real-axis or principal-value quadrature nonconvergence, or root nonconvergence.",
-  "partial_results": "No partial scientific result is returned after failure."
+  "invalid_input": "ValueError for an unknown kind, non-finite x/k, or invalid selector/expression/mesh; named IAW/beam parameters must satisfy the declared domain.",
+  "runtime_failure": "FloatingPointError for a non-representable Faddeeva/generalized response; bound quadrature errors propagate.",
+  "nonconvergence": "RuntimeError only where a bound generalized quadrature fails; IAW/beam use closed Faddeeva values.",
+  "partial_results": "No partial dielectric residual is returned after rejection."
  },
  "verification": {
   "tests": [
@@ -199,9 +199,9 @@
   ],
   "known_limitations": [
    "IAW and beam use the ordinary Faddeeva response; extreme phase/temperature inputs can be unrepresentable.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
+  "evidence_ceiling": "Bounded to the declared relation: IAW D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti with q=x/sqrt(Ti/mi). Beam D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)] with q=x/sqrt(Tb)-vd. Generalized D=k²-Zp/2. Vacuum and susceptibility normalization match the frozen scripts. Evidence: test_generalized_dispersion_models.py (14 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Directly accepting a small absolute D as proof of a small-k mode; external physical validation."
  },
  "example": {
   "description": "Evaluate one Langmuir residual at a finite complex frequency.",

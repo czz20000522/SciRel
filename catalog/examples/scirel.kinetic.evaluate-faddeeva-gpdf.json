@@ -25,10 +25,10 @@
   "dependencies": []
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for nonfinite/empty phase points, invalid integer order or unsupported pole count.",
-  "nonconvergence": "Fixed approximation has no iterative convergence claim.",
-  "partial_results": "No partial result after a failed call.",
-  "runtime_failure": "FloatingPointError if continued result exceeds finite float64 range."
+  "invalid_input": "ValueError for non-finite/empty phase points, a nonpositive or out-of-range integer order, or an unsupported pole count.",
+  "runtime_failure": "FloatingPointError when the continued fraction or pole sum exceeds float64 range; no silent clamp is applied.",
+  "nonconvergence": "Fixed-order approximation has no iterative convergence claim; truncation error is bounded only on the tested envelopes.",
+  "partial_results": "No partial value is returned after a failed call."
  },
  "verification": {
   "scope": [
@@ -39,11 +39,11 @@
    "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
    "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Weideman rational FFT expansion with erfcx on imaginary axis. Evidence: test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py (9 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: A guaranteed global error bound; An arbitrary distribution response.",
   "known_limitations": [
    "Lower-plane exponential may exceed float64.",
    "Fixed truncation error depends on phase point and order.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_generalized_dispersion_faddeeva_variants.py); no asset-specific failure/limit probe is recorded."
   ]
  },
  "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",

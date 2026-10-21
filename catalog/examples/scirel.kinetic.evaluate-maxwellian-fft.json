@@ -41,11 +41,11 @@
    "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py",
    "tests/kinetic/test_generalized_dispersion_fft_scaling.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Weideman rational FFT expansion with erfcx on imaginary axis. Evidence: test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py, test_generalized_dispersion_fft_scaling.py (13 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: A guaranteed global error bound; An arbitrary distribution response.",
   "known_limitations": [
    "Lower-plane exponential may exceed float64.",
    "Fixed truncation error depends on phase point and order.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  },
  "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",

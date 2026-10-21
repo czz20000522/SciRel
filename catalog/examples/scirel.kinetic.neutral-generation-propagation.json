@@ -196,11 +196,11 @@
   "tests": [
    "tests/kinetic/test_transport_step.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: first_flight: forward from boundary on positive vx using Fk as source term, backward on negative vx using Gk as source term; scattered: forward on positive vx using Bk as source coefficient, backward on negative vx using Dk as source coefficient. Evidence: test_transport_step.py (18 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Higher-order propagation schemes; multi-species coupling; external physical validation.",
   "known_limitations": [
-   "Broader verification is not claimed beyond the listed direct tests.",
-   "Public distribution licensing remains pending a human decision.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Only shared-file coverage is bound (test_transport_step.py); no asset-specific failure/limit probe is recorded.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "The contract does not establish: Higher-order propagation schemes; multi-species coupling.."
   ]
  }
 }

@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
-   "source_sha256": "fc781c7c5374f366a4a9f1d2f1896e37b5ef6c5797de932e509883458ba729d5",
+   "source_sha256": "31569cfbe332f237374e344d7d675a1c13f4a3fd865ea3feb8bfd52dad8baa26",
    "summary": "按默认阶数求值 16 阶 Faddeeva 变体，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -62,10 +62,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-    "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
-    "nonconvergence": "采用固定近似，不声称迭代收敛。",
-    "partial_results": "调用失败后不返回部分结果。"
+    "invalid_input": "相位点非有限/为空、整数 order 非正或越界，或 pole 数不受支持时抛出 ValueError。",
+    "runtime_failure": "连分式或极点求和超出 float64 范围时抛出 FloatingPointError；不静默钳制。",
+    "nonconvergence": "固定阶近似没有迭代收敛主张；截断误差仅在受测包络上有界。",
+    "partial_results": "调用失败后不返回部分值。"
    },
    "example": {
     "description": "在上半平面取有限点求值。",
@@ -79,14 +79,14 @@
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_faddeeva_variants.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py（记录 9 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
-   "source_sha256": "717422dc5c620fff9a59e97e30a8d11be622eb656c1d92bdccde3978f7d63a3c",
+   "source_sha256": "a48eef06933056441718089ce536157dd08a9f6b7ccaa2f7de19f6e91768eefe",
    "summary": "按默认阶数求值 32 阶 Faddeeva 变体，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -144,10 +144,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-    "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
-    "nonconvergence": "采用固定近似，不声称迭代收敛。",
-    "partial_results": "调用失败后不返回部分结果。"
+    "invalid_input": "相位点非有限/为空、整数 order 非正或越界，或 pole 数不受支持时抛出 ValueError。",
+    "runtime_failure": "连分式或极点求和超出 float64 范围时抛出 FloatingPointError；不静默钳制。",
+    "nonconvergence": "固定阶近似没有迭代收敛主张；截断误差仅在受测包络上有界。",
+    "partial_results": "调用失败后不返回部分值。"
    },
    "example": {
     "description": "在上半平面取有限点求值。",
@@ -161,14 +161,14 @@
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_faddeeva_variants.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py（记录 9 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
-   "source_sha256": "acd30b6d0cead03d60c8ecf429249fc3eec337253709756fcc604c5fe51aeeaa",
+   "source_sha256": "782b30d9f93431df0e1e3397a1ce821945bd569f973ca281f8efb8ef40d914b1",
    "summary": "按默认阶数求值 FFT Maxwellian 色散近似，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -244,14 +244,14 @@
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "独立解析对照不能替代外部实验参考。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py, test_generalized_dispersion_fft_scaling.py（记录 13 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
    }
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
-   "source_sha256": "8d3929ad8c0fa566dd6e748081dd02e78bc29fc20bbe7e69852479796449323b",
+   "source_sha256": "272c110b2e153c2a5d8addcaba744761952e9560c60cd4fc78021e96da8d5829",
    "summary": "按默认阶数求值固定极点 Maxwellian 色散近似，并遵循所声明的失败语义。",
    "definition": "采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -309,10 +309,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非有限或空相位点、无效整数阶数或不支持的极点数引发 ValueError。",
-    "runtime_failure": "延拓结果超出 float64 有限范围时抛出 FloatingPointError。",
-    "nonconvergence": "采用固定近似，不声称迭代收敛。",
-    "partial_results": "调用失败后不返回部分结果。"
+    "invalid_input": "相位点非有限/为空，或 order 低于支持的 pole 数时抛出 ValueError。",
+    "runtime_failure": "极点求和超出有限 float64 范围时抛出 FloatingPointError；不回退到低阶求和。",
+    "nonconvergence": "固定 J-pole 近似没有迭代收敛主张；省略尾项界不是经过认证的全局误差。",
+    "partial_results": "调用失败后不返回部分值。"
    },
    "example": {
     "description": "在上半平面取有限点求值。",
@@ -326,14 +326,14 @@
     "known_limitations": [
      "下半平面指数项可能超出 float64。",
      "固定截断误差取决于相位点和阶数。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_faddeeva_variants.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。证据：test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py（记录 9 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不提供有保证的全局误差界；不提供任意分布的响应。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-dispersion",
-   "source_sha256": "b7d295d68bbe2bd8374825abeb4fabda7751678644016991e5f9d356f2bd2a04",
+   "source_sha256": "c246a9fa23f7a507ff512f445f30caaa1da46d2699a9c535cba26fe5a45be619",
    "summary": "求值七类原始广义分布选择器中的任意一类。",
    "definition": "选择器对应的密度为：delta(v)；在 [-0.5,0.5] 上恒为 1 的顶帽；max(0,1-|v|)；sqrt(2)/pi/(1+v²/2)²；H(v-0.1)exp(-v²)/sqrt(pi)；以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位于 a 的跳跃 J 对 Zp 贡献 J/(a-z)。已修正不一致的顶帽密度符号及不完整 Maxwellian 的截断跳跃。大相位处的 Gaussian 导数采用避免相消的原始极化率或矩展开，不减去已舍入的单位项。远场顶帽值使用收敛的逆幂级数；导数先分别计算分母的实部与虚部，再取倒数，以保留可表示的微小轮廓分量。中心附近的实响应使用实数 log1p，边缘附近使用 log-hypot 之差，轮廓相位使用单个 atan2；不使用复数 log1p。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -413,10 +413,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-    "partial_results": "失败后不返回部分科学结果。"
+    "invalid_input": "z 非数值或不可广播、selector 超出 0..6、selector 网格端点非正，或 expression/integration_mesh 不受支持时抛出 ValueError。",
+    "runtime_failure": "Z/Zp 非有限时抛出 FloatingPointError；实轴或外部求积不收敛时抛出 RuntimeError；不选择回退分支。",
+    "nonconvergence": "实轴或外部求积不收敛时抛出 RuntimeError；不返回未收敛值。",
+    "partial_results": "调用失败后不返回部分 Z/Zp 对。"
    },
    "example": {
     "description": "在上半平面点计算一个广义色散选择器。",
@@ -433,14 +433,14 @@
      "选择器 5 的质量归一化不完整（积分质量不为 1）；选择器 6 采用截断分布的有限截断归一化。",
      "分段分布的下半平面响应为实轮廓变换，不是推断的解析延拓。",
      "具名固定选择器沿用原始物理参数；本 API 不增加任意形状参数。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：选择器对应的密度为：delta(v)；在 [-0.5,0.5] 上恒为 1 的顶帽；max(0,1-|v|)；sqrt(2)/pi/(1+v²/2)²；H(v-0.1)exp(-v²)/sqrt(pi)；以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位于 a 的跳跃 J 对 Zp 贡献 J/(a-z)。已修正不一致的顶帽密度符号及不完整 Maxwellian 的截断跳跃。大相位处的 Gaussian…。证据：test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py（记录 25 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不支持任意符号表达式或可执行输入；不猜测不连续分布的解析延拓。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-expression-differentiation",
-   "source_sha256": "81dba99a982a0b2e417eacafdbe5c99fbf8a1469d6f8b1c841151ccb74631fec",
+   "source_sha256": "ed0aa5bdce7a996fb4e05f0e05986c2b08fdc1b7b5298394159e9bdb15f7c2b6",
    "summary": "把受限密度表达式编译为可分别求值和求解析一阶导数的可调用对象。",
    "definition": "解析有限实常量、pi、v、算术和已声明初等函数，并按精确解析链式法则传播（函数值，导数）对；解析前先规范化 MATLAB 逐元素运算符。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -485,10 +485,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-    "partial_results": "失败后不返回部分科学结果。"
+    "invalid_input": "不支持的 AST 节点、非有限常数、畸形表达式或非数值速度抛出 ValueError。",
+    "runtime_failure": "NumPy 溢出/非法算术向上传播；不做符号恢复或数值修补。",
+    "nonconvergence": "不适用；解析、求值与解析微分均为非迭代过程。",
+    "partial_results": "不返回部分值或导数；表达式在求值前完成解析。"
    },
    "example": {
     "description": "编译 Lorentzian 表达式，并把其值和导数与闭式结果比较。",
@@ -502,14 +502,14 @@
     "known_limitations": [
      "本解析器不证明可积性、正性、归一化或解析延拓有效性。",
      "算术异常及非有限表达式求值不会转换为符号诊断。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：解析有限实常量、pi、v、算术和已声明初等函数，并按精确解析链式法则传播（函数值，导数）对；解析前先规范化 MATLAB 逐元素运算符。证据：test_generalized_dispersion_models.py（记录 14 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不支持任意代码、属性访问、索引、比较和分段表达式；不提供符号化简或可积性保证。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-hilbert",
-   "source_sha256": "811c2a00b797fe5e73f5a3fb67e8cdeb81439c18784596a7e80b798241a54433",
+   "source_sha256": "f368562d7bcd1fcf48f976167d55fbce1503e02dfe704cea6c92ae2a4b490f2a",
    "summary": "计算受限解析表达式及其导数变换。",
    "definition": "DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数先减去 f(x)·exp(-(v-x)²)；该项与 1/(v-x) 相乘后为奇函数，其全实轴主值为零。边界值加上 i·pi·f(x)，可选下半平面延拓再加上 2·pi·i·f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v·fprime]/z，避免总质量为零的密度导数发生相消；绝对求积容差与相位模成反比。密度导数及其解析延拓不由已舍入的 Z 或 epsilon 重建。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -589,10 +589,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-    "partial_results": "失败后不返回部分科学结果。"
+    "invalid_input": "expression 不受支持、相位/网格非有限，或 integration_mesh/continuation 畸形时抛出 ValueError。",
+    "runtime_failure": "连续化变换非有限时抛出 FloatingPointError；求积失败时抛出 RuntimeError；不选择回退路径。",
+    "nonconvergence": "实轴/外部求积失败，或声明的可去点估计不可表示时抛出 RuntimeError。",
+    "partial_results": "变换失败后不返回部分 Z/Zp 对。"
    },
    "example": {
     "description": "在显式特征网格上计算解析 Lorentzian 的 Hilbert/Cauchy 变换。",
@@ -607,14 +607,14 @@
     "known_limitations": [
      "导数被积函数在实轴局部可去点的求值使用对称二阶导数估计；不返回全局误差证书。",
      "受限解析器支持有限实常量、pi、v、算术及 exp/log/sqrt/sin/cos/sinh/cosh/tanh。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数先减去 f(x)·exp(-(v-x)²)；该项与 1/(v-x) 相乘后为奇函数，其全实轴主值为零。边界值加上 i·pi·f(x)，可选下半平面延拓再加上 2·pi·i·f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v·fprime]/z，避免总质量为零的密度导数发生相消；绝对求积容差与相位模成反比。密度导数及其解析延拓不由已舍入的 Z 或…。证据：test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py（记录 25 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不支持分段或非解析表达式语法；此类模型应使用分布选择器；不自动发现未分辨的回调特征。"
    }
   },
   {
    "asset_id": "scirel.kinetic.generalized-residual",
-   "source_sha256": "90193fec6f66f31771783e1b9cbc0f66197ee3c2377300efdc43e03f875f8bee",
+   "source_sha256": "35735775a65fac6d61768231a5ffd651c62438ecf5971cba6b93d79d91c0e15b",
    "summary": "计算 Langmuir、离子声波、束流和广义分布残差。",
    "definition": "离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化沿用既定约定。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -739,10 +739,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-    "partial_results": "失败后不返回部分科学结果。"
+    "invalid_input": "kind 未知、x/k 非有限、selector/expression/mesh 非法，或具名 IAW/beam 参数超出声明域时抛出 ValueError。",
+    "runtime_failure": "Faddeeva/广义响应不可表示时抛出 FloatingPointError；绑定求积误差向上传播。",
+    "nonconvergence": "仅当绑定的广义求积失败时抛出 RuntimeError；IAW/beam 使用闭式 Faddeeva 值。",
+    "partial_results": "拒绝后不返回部分介电残差。"
    },
    "example": {
     "description": "在有限复频率处计算一个 Langmuir 残差。",
@@ -755,9 +755,9 @@
     ],
     "known_limitations": [
      "离子声波与束流使用普通 Faddeeva 响应；极端相位或温度输入可能导致不可表示结果。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_models.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于所声明关系：离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化沿用既定约定。证据：test_generalized_dispersion_models.py（记录 14 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不能直接把很小的绝对 D 值当作小 k 模已成立的证据；外部物理验证。"
    }
   },
   {
@@ -952,7 +952,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-small-k",
-   "source_sha256": "2a3538472972e653f2c6d5d032e89c96a78664ab62d03325ea9ab3340198a005",
+   "source_sha256": "801798bd14cbda8318d97031b492fc39e4934490411e36d661ed320b9003b2bf",
    "summary": "计算 Langmuir 频率与阻尼的小 k 渐近式。",
    "definition": "在对数域计算阻尼幅值，避免 k³ 下溢时直接表达式出现 0/0；精确 k=0 被拒绝。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -1002,10 +1002,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "声明输入无效、非有限或处于奇点时抛出 ValueError。",
-    "runtime_failure": "回调算术错误向上传播；变换值不可表示时抛出 ValueError。",
-    "nonconvergence": "Cauchy、实轴或主值求积不收敛，或根求解不收敛时，抛出 RuntimeError。",
-    "partial_results": "失败后不返回部分科学结果。"
+    "invalid_input": "`k` 为非实数、布尔、字符串、复数、空、非有限或非正时抛出 ValueError。",
+    "runtime_failure": "计算出的实频率或阻尼不能用有限 float64 表示时抛出 ValueError；无回调、求积或回退路径。",
+    "nonconvergence": "不适用；这是直接渐近求值，不是求根或求积。",
+    "partial_results": "从不返回；被拒绝的调用不产生结果映射。"
    },
    "example": {
     "description": "计算小 k 下的 Langmuir 频率和阻尼渐近式。",
@@ -1018,9 +1018,9 @@
     "known_limitations": [
      "大 k 处输出有限并不表示渐近式有效。",
      "小于浮点可表示范围的阻尼下溢为零。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "绑定文件由六个资产共享，有两个直接引用：小 k 残差/混合归一化与整数环绕情形；没有测试绑定精确有限 k 根或渐近余项。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于小 k 的 Langmuir 实频率与 Landau 阻尼渐近。证据：`test_generalized_dispersion_models.py` 含 14 个测试函数，其中 2 个引用 `evaluate_gpdf_small_k`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对冻结小 k 值的自洽/回归。不建立：精确有限 k 根或受控的全局渐近余项。"
    }
   },
   {
@@ -1141,7 +1141,7 @@
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
-   "source_sha256": "81daf2cfa5adf25c73d92f24e357bccc628d3742fd8efbb90280e20ad33220c7",
+   "source_sha256": "7430497b8104947eca6a513fbaa14330a758180c62dbbe4baa3e300c4ed9848b",
    "summary": "计算归一化 Maxwellian 介电响应，并避免大相速处的相消。",
    "definition": "epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 仅作为诊断量。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1215,9 +1215,9 @@
     "known_limitations": [
      "epsilon_error 只是估计，不是严格包络。",
      "有限输入仍可能有不可表示复响应；单次求值不表示找到根。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "仅绑定共享文件覆盖（test_generalized_dispersion_d2.py）；未记录资产专属失败/边界探针。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "限于所声明关系：epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 仅作为诊断量。证据：test_generalized_dispersion_d2.py, test_generalized_dispersion_d2_successor.py, test_generalized_dispersion_numerical_repair.py（记录 22 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不复现 MATLAB 行为、绘图、全局根扫描或任意解析延拓；外部物理验证。"
    },
    "example": {
     "description": "计算一个归一化 Maxwellian 静电残差。",
@@ -1620,7 +1620,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-evolve",
-   "source_sha256": "5dfcfbcc23e6648429ac880b4d5a2c9c383a0f4ea8ed3fde424039ce1af5b05d",
+   "source_sha256": "52f00c0848ee901e6ac96a38dfe7fb0556e5de2bf8b046bf5ad1ff1fdeab7cc4",
    "summary": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "definition": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1681,7 +1681,7 @@
      "Fn4 截断密度保持原有系数，截断后不重新归一化。",
      "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
     ],
-    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+    "evidence_ceiling": "限于恰好 nt 个有序 RK4 步、逐阶段场反馈与 O(nv+nt) 内存。证据：`test_vlasov_poisson_dispersion.py` 含 14 个测试函数，其中 1 个引用 `vp_evolve`，由 9 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立半离散数学检查与选定场景回归。不建立：非线性或多维演化，或自适应时间步进。"
    }
   },
   {
@@ -1883,7 +1883,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-landau",
-   "source_sha256": "ad985d0b54f64849e0aa06a02d01ff5c76483caa5235efa97f90c9582bf76f89",
+   "source_sha256": "bdbb6704130a356adab931d4f55453bebf6e42e43d6e94b9f4f9309445529e44",
    "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1992,7 +1992,7 @@
      "Fn4 截断密度保持原有系数，截断后不重新归一化。",
      "峰值诊断假设站立振荡；旋转复指数的幅度没有这类峰值。"
     ],
-    "evidence_ceiling": "证据为独立半离散数学验证和所选场景回归；实际运行及安装 wheel 的回执另行记录，不能由测试文件存在推断。"
+    "evidence_ceiling": "限于泊松闭合的 RK4 Vlasov 步进及全场包络/峰值诊断。证据：`test_vlasov_poisson_dispersion.py` 含 14 个测试函数，其中 1 个引用 `solve_vlasov_poisson`，由 9 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立半离散数学检查与选定场景回归。不建立：非线性或多维 Vlasov-Poisson 演化，或复现后的连续极限声明。"
    }
   },
   {

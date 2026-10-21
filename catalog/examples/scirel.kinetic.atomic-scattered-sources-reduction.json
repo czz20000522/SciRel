@@ -86,10 +86,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for implicit boolean, string or complex conversion, non-finite inputs, or misaligned three-dimensional source fields.",
-  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
-  "nonconvergence": "Not applicable.",
-  "partial_results": "Never returned; a rejected call produces no result."
+  "invalid_input": "Raises ValueError for non-real/boolean/string/complex or nonfinite source values, or when the two sources are not aligned 3-D arrays.",
+  "runtime_failure": "Raises ValueError when the pointwise sum is not finite; no clipping or fallback is applied.",
+  "nonconvergence": "Not applicable; the reduction is a direct pointwise sum.",
+  "partial_results": "Never returned; a rejected call produces no partial array."
  },
  "public_api": {
   "python": {
@@ -117,9 +117,9 @@
   "tests": [
    "tests/kinetic/test_neutral_scattered_sources.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the pointwise atomic charge-exchange plus elastic scattered-generation source sum. Evidence: `test_neutral_scattered_sources.py` contains 11 test functions, 4 of which reference `reduce_atomic_scattered_sources`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic pointwise-add comparison in the bound file. It does not establish misaligned meshes or non-finite source fields.",
   "known_limitations": [
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Three direct functions in the four-asset-shared scattered-source file cover frozen samples, signed atomic sums and implicit-real rejection; no test binds a nonfinite aggregate beyond the shape/overflow checks."
   ]
  }
 }

@@ -124,9 +124,9 @@
   "tests": [
    "tests/kinetic/test_convergence_accumulation.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index. Evidence: test_convergence_accumulation.py (18 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Generation propagation, density reduction, stop decisions and external physical validation; external physical validation.",
   "known_limitations": [
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_convergence_accumulation.py); no asset-specific failure/limit probe is recorded."
   ]
  }
 }

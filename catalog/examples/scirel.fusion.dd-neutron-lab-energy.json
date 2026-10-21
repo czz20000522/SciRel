@@ -152,7 +152,7 @@
   "tests": [
    "tests/fusion/test_dd_neutron_lab_energy.py"
   ],
-  "evidence_ceiling": "The tests establish the two-body lab-energy relation and its input contract, the non-negativity of the returned value by construction, the exactness of the zero at the complete-cancellation configuration, the census showing no clamp is applied, the failure of non-representable arithmetic, and the rounding bound against the ordering E_cm + E_boost + 2*sqrt(E_cm*E_boost)*c. The tests depend on no external checkout, candidate directory or fixture payload. This asset does not establish the accuracy of the non-relativistic approximation at any energy, and does not establish the mass constants, the atomic mass unit or the MeV-per-joule factor against any independent measurement.",
+  "evidence_ceiling": "Bounded to the non-relativistic two-body D(d,n)3He lab neutron energy from two deuteron velocities and a detector direction. Evidence: `test_dd_neutron_lab_energy.py` contains 19 test functions, 17 of which reference `calculate_dd_neutron_lab_energy_kev`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: independent two-body kinematics re-derived from the published constants in the asset-private file. It does not establish relativistic kinematics, an angular distribution/Brown-Jarmie factor, other reaction channels, or neutron transport.",
   "known_limitations": [
    "The returned energy is evaluated in a different order than E_cm + E_boost + 2*sqrt(E_cm*E_boost)*c, so it is not bit-identical to that ordering. The difference is asserted within a measured rounding bound of 8 units in the last place of E_cm + E_boost, but that bound is an assertion over the sampled input scales rather than a proof over the whole accepted domain.",
    "The returned value is not exactly 0.0 at the two cancellation speeds: it is 2.9996435921028974e-25 and 2.2132478772107012e-25 keV, because E_cm and E_boost differ by one and three units in the last place there. Both are twenty-two orders of magnitude below the 1 keV scale of the relation, and neither is negative, but a caller that compared against an exact zero at those two inputs would see a different value.",
@@ -163,7 +163,7 @@
    "No angular weighting is applied. A caller that multiplies the returned energy by an angular factor is applying a distribution this asset does not own.",
    "The detector unit-norm precondition is enforced rather than relaxed, so a caller holding a slightly non-unit line-of-sight vector must normalise it first.",
    "The single unit test that sweeps the +-4000 ulp neighbourhood takes about 27 seconds, because the relation is evaluated 8001 times. Only this asset is evaluated; the neighbouring configurations are not swept.",
-   "Public distribution licensing remains pending a human decision.",
+   "The bound file is asset-private with 19 test functions; the +/-4000-ulp cancellation census, exact-zero configuration and representability witnesses are covered, but the mass constants, Q value and non-relativistic domain remain declared inputs rather than independent measurements.",
    "Every claim in this document is either measured by the tests in this repository or stated as a property of the relation. No public test requires an external checkout."
   ]
  }

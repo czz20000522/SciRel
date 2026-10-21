@@ -129,11 +129,11 @@
   "zh": "Maxwellian 静电响应"
  },
  "verification": {
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: epsilon=1+chi with chi=(1+z Z(z))/k²; for large |z| the equivalent Gaussian moment expansion is used to avoid cancellation, and D=k²epsilon remains a diagnostic. Evidence: test_generalized_dispersion_d2.py, test_generalized_dispersion_d2_successor.py, test_generalized_dispersion_numerical_repair.py (22 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation; external physical validation.",
   "known_limitations": [
    "epsilon_error is an estimate rather than a rigorous enclosure.",
    "Finite inputs can have unrepresentable complex response; no root is inferred from an evaluation.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Only shared-file coverage is bound (test_generalized_dispersion_d2.py); no asset-specific failure/limit probe is recorded."
   ],
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",

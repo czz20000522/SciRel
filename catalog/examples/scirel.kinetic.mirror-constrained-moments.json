@@ -325,16 +325,17 @@
   "tests": [
    "tests/kinetic/test_mirror_constrained_moments.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
-   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py",
+   "tests/kinetic/test_independent_correction.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: Let C=(B-B_ref)/T_parallel+B_ref/T_perp,ref and T_perp,local=B/C. The untruncated density is exp(log(n_ref)+log(T_perp,local/T_perp,ref)-q*(phi-phi_ref)/T_parallel), without exponent clipping. With no plugs or refill=1 the three fractions are one…. Evidence: test_mirror_constrained_moments.py, test_mirror_kinetic_scientific_correction.py, test_mirror_gauge_scientific_correction.py, test_independent_correction.py (46 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Determining the electrostatic potential, mirror equilibrium or a self-consistent particle distribution from the returned moments alone; A one-sided plug model, automatic flux-unit conversion, arbitrary field-line geometry or an error estimate for finite pitch quadrature.",
   "known_limitations": [
    "The x>40 fraction tail is bounded as stated. Adaptive error estimates are not a formal proof for every floating-point parameter combination; fractions near zero have an absolute error target.",
    "Loss-cone refill is prescribed phenomenology. Plug profiles are not evaluated when refill is exactly one. Underflow may round an unrepresentable small result to zero.",
    "Mass is validated but not used in these moments; downstream closures may require positive-ion charge despite this callable accepting either sign.",
    "The historical psi unit is Wb, whereas other SciRel field assets may use Wb/rad; no connector equivalence is established.",
-   "Public distribution licensing and current-version expert recognition remain pending.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "The contract does not establish: Determining the electrostatic potential, mirror equilibrium or a self-consistent particle distribution from the returned moments alone.."
   ]
  }
 }

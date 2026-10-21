@@ -134,12 +134,12 @@
   "tests": [
    "tests/kinetic/test_hydrogen_saha_equilibrium_population.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the frozen-constant atomic-hydrogen Saha level population for paired electron density and temperature. Evidence: `test_hydrogen_saha_equilibrium_population.py` contains 6 test functions, 6 of which reference `evaluate_h_saha_equilibrium_population`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: no external oracle recorded; the bound tests replay the frozen formula and its level scaling. It does not establish non-equilibrium/molecular/ion populations, mixed states with n_H+ different from n_e, or external atomic-physics accuracy.",
   "known_limitations": [
    "Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.",
    "The scalar/profile reading is not supported; this contract follows the one-dimensional restriction.",
-   "Physical-reference validation_oracle_gap and pending public-distribution licensing remain.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "The bound file is asset-private with six direct functions covering the frozen relation, integral-level scaling, invalid/non-real/nonfinite rejection and strict-NumPy overflow; no external atomic-physics reference is bound.",
+   "The frozen prefactor `3.310e-28 m^3 eV^(3/2)` and Rydberg `13.6057 eV` differ from CODATA by up to 0.09%; the 1.5e-3 agreement bound is a constant-accuracy limit, not external validation.",
    "The frozen prefactor 3.310e-28 m^3 eV^(3/2) and the 13.6057 eV Rydberg differ from current CODATA values by at most 0.09%; the 1.5e-3 agreement bound is the physical-constant limit of this asset, and the n_H+ = n_e assumption remains explicit."
   ]
  }

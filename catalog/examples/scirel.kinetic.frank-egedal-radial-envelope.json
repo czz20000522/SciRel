@@ -120,12 +120,12 @@
    "tests/kinetic/test_frank_egedal_radial_envelope.py",
    "tests/kinetic/test_frank_egedal_radial_envelope_admitted.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Let u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1). Return [clip(1-u,0,infinity)]^alpha elementwise. psi_axis defaults to min(psi), psi_edge to max(psi), and alpha to 1.0…. Evidence: test_frank_egedal_radial_envelope.py, test_frank_egedal_radial_envelope_admitted.py (6 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Inferring a physically correct axis, edge, flux unit or pressure normalization from the grid; A full Frank-Egedal closure, magnetic-field calculation, coordinate conversion or extrapolation beyond the clipped interval.",
   "known_limitations": [
    "Reference flux levels and flux convention are supplied or inferred from grid extrema, not physically identified by this function.",
    "The historical Wb label and other SciRel Wb/rad flux conventions have no automatic conversion; the tested coupling requires axis/edge references to share the current psi coordinate.",
    "A zero exponent yields one even at the clipped edge; finite extrema can still trigger extreme arithmetic without a post-computation check.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  }
 }

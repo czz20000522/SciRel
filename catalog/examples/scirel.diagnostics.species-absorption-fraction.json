@@ -155,12 +155,12 @@
    "tests/diagnostics/test_species_absorption_fraction.py",
    "tests/cross_domain/test_legacy_admission_regressions.py"
   ],
-  "evidence_ceiling": "Independent rational counterexamples establish the numerical ledger relation and its failure boundaries; the ordinary assertions remain in force. No evidence here establishes that the caller supplied physically correct absorbed powers.",
+  "evidence_ceiling": "Bounded to the declared relation: Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction…. Evidence: test_species_absorption_fraction.py, test_legacy_admission_regressions.py (18 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Ledgers whose total is exactly zero, for which no percentage result is defined; Ledgers with fewer or more than four species.",
   "known_limitations": [
    "The species count is fixed at four; no general-length ledger is supported.",
    "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
    "The optional cross-implementation comparison runs only when an external implementation is reachable; it is skipped rather than silently passed when it is not.",
-   "Public distribution licensing remains pending a human decision."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  }
 }

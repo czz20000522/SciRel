@@ -128,10 +128,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for invalid, nonfinite or singular declared inputs.",
-  "runtime_failure": "Callback arithmetic failures propagate; nonrepresentable transform raises ValueError.",
-  "nonconvergence": "RuntimeError for Cauchy, real-axis or principal-value quadrature nonconvergence, or root nonconvergence.",
-  "partial_results": "No partial scientific result is returned after failure."
+  "invalid_input": "ValueError for non-numeric or non-broadcastable z, selector outside 0..6, a nonpositive selector-grid endpoint, or an unsupported expression/integration mesh.",
+  "runtime_failure": "FloatingPointError for a non-finite Z/Zp and RuntimeError when the real-axis or exterior quadrature does not converge; no fallback branch is selected.",
+  "nonconvergence": "RuntimeError when the real-axis or exterior quadrature fails to converge; no unconverged value is returned.",
+  "partial_results": "No partial Z/Zp pair is returned after a failed call."
  },
  "verification": {
   "tests": [
@@ -148,9 +148,9 @@
    "Selector 5 is mass-incomplete; selector 6 uses the finite-cutoff normalization of the truncated distribution.",
    "Piecewise lower-plane response is the real-contour transform, not an inferred analytic continuation.",
    "Named fixed selectors retain original physical parameters; this API does not add arbitrary shape parameters.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
+  "evidence_ceiling": "Bounded to the declared relation: Selector densities: delta(v); f=1 on [-.5,.5]; max(0,1-|v|); sqrt(2)/pi/(1+v²/2)²; H(v-.1)exp(-v²)/sqrt(pi); and 3sqrt(3)/(4pi)/(1+|v|³) on |v|<=4. For a jump J at a, Zp includes J/(a-z)…. Evidence: test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py (25 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Arbitrary symbolic expressions or executable input; Guessed analytic continuation of discontinuous distributions."
  },
  "example": {
   "description": "Evaluate one generalized dispersion selector at an upper-half-plane point.",

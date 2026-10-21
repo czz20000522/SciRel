@@ -164,11 +164,11 @@
   "tests": [
    "tests/kinetic/test_neutral_frequency_assembly.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: The assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the declared semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed. Evidence: test_neutral_frequency_assembly.py (7 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Negative loss contributions; negative diameters; enabled CX without a field; external physical validation.",
   "known_limitations": [
-   "Broader verification is not claimed beyond the listed direct tests.",
-   "Public distribution licensing remains pending a human decision.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Only shared-file coverage is bound (test_neutral_frequency_assembly.py); no asset-specific failure/limit probe is recorded.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "No singular or extreme-limit probe is bound; the claim is limited to the listed finite/ordinary inputs."
   ]
  }
 }

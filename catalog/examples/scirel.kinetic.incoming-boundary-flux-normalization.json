@@ -162,10 +162,10 @@
   "tests": [
    "tests/kinetic/test_neutral_normalizations.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to scaling of a positive-half-space neutral boundary shape to a requested incoming flux. Evidence: `test_neutral_normalizations.py` contains 11 test functions, 8 of which reference `normalize_incoming_neutral_boundary`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against the declared flux integral in the bound file. It does not establish shapes with nonpositive positive-half flux, meshes without a positive-vx node, or non-finite scalars.",
   "known_limitations": [
    "The historical function accepts some coercible non-real inputs and does not fully enforce finite quadrature or derived outputs; SciRel rejects them. A zero target is valid and produces zero scale, contrary to the intake document's positive-scale wording.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The bound file is shared by two assets and has eight direct functions covering positive-half scaling, zero target, invalid/coerced/nonfinite fields, zero nonzero-target scale and nonfinite scaled distribution."
   ]
  }
 }

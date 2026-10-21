@@ -206,13 +206,13 @@
   "tests": [
    "tests/kinetic/test_shifted_maxwellian_seed.py"
   ],
-  "evidence_ceiling": "The maintained tests establish the seed relation against an in-file independent formulation, the clamp and far-shift limits, the molecule-count scaling, the input contract, and the composition chain with the quadrature and the rate average. A separately executed comparison establishes bounded numerical agreement with a reference implementation on the compared holdouts only. No test establishes that the pre-compensation seed is physically adequate for any caller purpose without a moment-compensation step, that any caller mesh or volume measure is physically valid, or that the relation behaves correctly outside the compared domain. Broader verification is not claimed beyond these comparisons. Expert recognition, version-level trust and distribution licensing remain pending.",
+  "evidence_ceiling": "Bounded to the declared relation: With m_H = 1.6726231e-27 kg (the hydrogen mass constant), vth = sqrt(2 e T_norm / (m m_H)). The raw exponent is -(vr^2 + (vx - shift/vth)^2) * molecule_count * T_norm / T_shift per shift…. Evidence: test_shifted_maxwellian_seed.py (22 recorded test functions; bound-file coverage; bounded source-method parity); the contract example ran. Excluded scope: Any downstream moment-compensation step: this leaf returns the seed before compensation; Non-Maxwellian or non-exponential seeds, and any collision or field model.",
   "known_limitations": [
    "The seed is explicitly the pre-compensation stage: any moment-compensation step is outside this leaf, so this distribution is not the final compensated result.",
    "The constants are fixed historical values, not current best estimates; AMU_KG names the hydrogen mass rather than standard amu, and no conversion is performed.",
    "The exponent floor is a numerical device: distribution values in the floored region carry no exponential resolution, and the uniform-limit regime must not be read as a physical Maxwellian.",
-   "Broader verification is not claimed beyond the listed direct tests.",
-   "Public distribution licensing remains pending a human decision."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "The contract does not establish: Any downstream moment-compensation step: this leaf returns the seed before compensation.."
   ]
  }
 }

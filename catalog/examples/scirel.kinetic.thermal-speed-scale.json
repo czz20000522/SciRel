@@ -119,11 +119,11 @@
    "tests/kinetic/test_thermal_speed_and_density_reduction.py",
    "tests/cross_domain/test_legacy_admission_regressions.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the frozen-constant formula and declared input/final-result failures. Earlier digest-bound comparisons found exact agreement at three ordinary finite positive scalar points; they do not establish behavior across the current corrected extreme range. Current independent Decimal100 regressions and exact-rational final-square checks establish that representable thermal speeds survive dangerous intermediate underflow/overflow while genuinely unrepresentable final results are rejected; ordinary operation order is unchanged. An earlier rejection of underflowed mass conversion is no longer the contract. This does not prove all-input numerical parity, full qualification, global physical applicability, expert approval or release.",
+  "evidence_ceiling": "Bounded to the explicit second-moment neutral thermal speed sqrt(2 e T/m) from eV temperature and hydrogen-mass multiples. Evidence: `test_thermal_speed_and_density_reduction.py` contains 11 test functions, 5 of which reference `compute_thermal_speed_m_s`, and is shared by 2 assets; `test_legacy_admission_regressions.py` contains 9 test functions, 2 of which reference `compute_thermal_speed_m_s`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent frozen-constant relation and Decimal-100 representability checks in the bound files. It does not establish non-finite/nonpositive inputs or a non-finite final speed.",
   "known_limitations": [
-   "Broader verification is not claimed beyond the listed direct tests.",
+   "Two files bind the relation: `test_thermal_speed_and_density_reduction.py` has five direct functions covering the frozen formula, monotonicity, invalid/non-real inputs and underflow; `test_legacy_admission_regressions.py` adds representability/overflow checks.",
    "The historical mass_amu name denotes hydrogen-mass multiples, not standard amu. Non-real coercions are rejected; dangerous intermediate range is evaluated at higher precision.",
-   "Public distribution licensing remains pending a human decision."
+   "The historical `mass_amu` name means hydrogen-mass multiples; the dangerous intermediate range is evaluated by 100-digit Decimal arithmetic, not a modern CODATA conversion."
   ]
  }
 }

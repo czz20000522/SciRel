@@ -271,13 +271,13 @@
   "tests": [
    "tests/kinetic/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: I+K=2J; Mpq*pq=B matches source Taylor and inverse-power coefficients. Residue b=P(c)/Qprime(c).80/120-digit precision refinement and independent erfc response checks are separate from matrix conditioning…. Evidence: test_dispersion_rational.py (6 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Repeated/unresolved roots require a higher-order-pole representation; Finite-J Z accuracy must be checked in the requested domain.",
   "known_limitations": [
    "Redistribution permission for the reference material is unverified; MATLAB execution NOT_RUN.",
    "Finite-J/finite-N physics must be qualified for a new requested regime.",
    "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
-   "Human scientific and plot approval pending.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Only shared-file coverage is bound (test_dispersion_rational.py); no asset-specific failure/limit probe is recorded.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
   ]
  },
  "references": [

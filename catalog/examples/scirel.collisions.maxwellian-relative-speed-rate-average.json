@@ -206,7 +206,7 @@
   "tests": [
    "tests/collisions/test_maxwellian_relative_speed_rate_average.py"
   ],
-  "evidence_ceiling": "The tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts, and the composition contract of the consumer graph. Bit-exact agreement with the in-file independent evaluation holds on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that behaviour outside the compared domain is correct. Public distribution licensing remains pending.",
+  "evidence_ceiling": "Bounded to the declared relation: With m_H = 1.6726231e-27 kg, vth = sqrt(2 e T_norm / (m_target m_H)) is the target thermal speed at the normalization temperature. The target Maxwellian on the mesh is exp(-(vr^2 + vx^2) T_norm / T_target), normalized by the supplied cell volumes…. Evidence: test_maxwellian_relative_speed_rate_average.py (20 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Temperature-only analytic reactivity parameterizations, such as closed-form fusion <sigma v>(T) fits: a different model with different inputs, not a variant of this relation; A reduced-mass collision energy; the particle-mass convention is kept and a reduced-mass model would be a scientific change requiring its own evidence.",
   "known_limitations": [
    "The collision energy uses the particle mass; a reduced-mass model is a different relation and is not provided.",
    "No cross-section model is included. A caller whose callable is wrong gets a wrong rate with no warning; the asset checks only shape, finiteness and nonnegativity of the returned values.",
@@ -214,7 +214,7 @@
    "Quadrature accuracy is entirely the mesh's. Coarse meshes misresolve the Maxwellian tail and the beam resonance; no convergence check runs at runtime, and the analytic limits above hold only in the mesh-refined regime.",
    "Non-finite and non-real input rejection, finite-output rejection and the collision-energy representability gate are explicit preconditions of this contract: a ValueError is raised instead of coercing, propagating a non-finite rate or invoking the callback with values the asset never declared.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
-   "Public distribution licensing remains pending a human decision."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  }
 }

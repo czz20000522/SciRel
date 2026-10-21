@@ -125,11 +125,11 @@
   "tests": [
    "tests/kinetic/test_convergence_accumulation.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the top-level outer-pass molecular-density re-entry decision. Evidence: `test_convergence_accumulation.py` contains 18 test functions, 1 of which references `evaluate_outer_convergence`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen outer-pass ratios in the bound file. It does not establish non-density convergence criteria or external physical validation.",
   "known_limitations": [
-   "Broader verification is not claimed beyond the listed direct tests.",
-   "Public distribution licensing remains pending a human decision.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The bound file is shared by four assets and one direct function checks the dict/reentry contract (`test_outer_convergence_returns_dict_with_reentry_flag`).",
+   "The relation reports a decision and does not iterate; no density-profile or external-physics validation is performed.",
+   "The example is the only documented runtime output; no test binds a non-density convergence criterion."
   ]
  }
 }

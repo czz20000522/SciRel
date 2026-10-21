@@ -206,7 +206,7 @@
    "tests/closures/test_tabulated_pressure_closure.py",
    "tests/cross_domain/test_legacy_six_absorption.py"
   ],
-  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
+  "evidence_ceiling": "Bounded to interpolation of supplied parallel/perpendicular pressure tables at broadcast field and flux queries. Evidence: `test_tabulated_pressure_closure.py` contains 4 test functions, 2 of which reference `evaluate_tabulated_pressure`, and is bound only by this asset; `test_legacy_six_absorption.py` contains 18 test functions, 2 of which reference `evaluate_tabulated_pressure`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic fixtures and frozen source regressions in the bound files. It does not establish inferring tables from measurements, finding magnetic surfaces, or proving an extrapolated pressure law physically valid.",
   "known_limitations": [
    "No positive-B or coordinate-alignment check is performed, and the historical psi unit label must not be used to infer a Wb-to-Wb/rad conversion.",
    "Finite nonnegative tabulated values do not ensure nonnegative extrapolation; failing extrapolations raise instead of returning a physical pressure.",

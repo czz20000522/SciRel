@@ -182,14 +182,15 @@
    "Nonfinite psi and negative gas pressure are rejected in direct tests; the documented example checks a two-cell assembly."
   ],
   "tests": [
-   "tests/kinetic/test_frank_egedal_pressure_state.py"
+   "tests/kinetic/test_frank_egedal_pressure_state.py",
+   "tests/kinetic/test_frank_egedal_pressure_admitted.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the declared relation: Let r=radial_shape, h_parallel=hot_parallel_shape, h_perp=hot_perpendicular_shape and h_n=hot_density_shape. Select p_hot=hot_pressure_scale or p0 or 1 Pa, and p_gd=gas_dynamic_pressure or 0 Pa…. Evidence: test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py (8 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Computing a radial envelope, hot-ion moments, electron temperature, potential or equilibrium; Automatic flux-convention conversion, coordinate alignment, spatial interpolation, or proof that supplied scales describe a physically consistent plasma.",
   "known_limitations": [
    "psi values are validated but not used; the historical Wb label is not a checked connector to other SciRel Wb/rad flux assets.",
    "A configured electron temperature without either density scale returns an electron-energy grid but zero electron pressure and density=None.",
    "The function accepts nonnegative shape fields and scales but does not establish their scientific consistency or source-mode provenance.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The independent analytic comparison does not replace an external experimental reference."
   ]
  }
 }

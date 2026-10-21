@@ -188,11 +188,11 @@
    "tests/equilibrium/test_pressure_flux_state.py",
    "tests/cross_domain/test_legacy_six_absorption.py"
   ],
-  "evidence_ceiling": "Targeted source regressions, explicit analytic fixtures and a selected no-source installed-wheel replay cover this finite contract. No arbitrary physical-model suitability, continuum convergence, human scientific endorsement or redistribution permission is inferred.",
+  "evidence_ceiling": "Bounded to the exact-Z=0 radial pressure sample and increasing-flux-prefix spline state. Evidence: `test_pressure_flux_state.py` contains 5 test functions, 1 of which references `build_pressure_flux_state`, and is bound only by this asset; `test_legacy_six_absorption.py` contains 18 test functions, 4 of which reference `build_pressure_flux_state`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic fixtures and frozen source regressions in the bound files. It does not establish general magnetic-axis/limiter/flux-surface inference, anisotropic pressure closure, or a pressure-current equilibrium solve.",
   "known_limitations": [
    "Strict exact-zero tests for both midplane and pressure boundary do not tolerate near-zero samples.",
    "The prefix and spline are identical representations of the chosen interpolant; this does not prove the prescribed pressure law or extrapolation physically suitable.",
-   "Grid rectilinearity and pressure-profile physics are not validated; public distribution licensing and expert recognition remain pending."
+   "The private file has five functions and one direct example; the shared legacy file adds four direct tests covering fitted-prefix reconstruction, numeric-mask rejection, nonfinite spline derivative and descending radial storage."
   ]
  }
 }

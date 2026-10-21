@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-   "source_sha256": "e8e1ad84c26ccb5f2d32ec8618643199dc2ab3a3166cf043001af89c09189a6d",
+   "source_sha256": "14f6e94535fd5536cb42151e82282e5a02964240a0485c6e52874a30d52055a5",
    "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通和对应磁场导数共同更新，以全部未松弛反馈状态残差及平行力相容性决定收敛。",
    "definition": "当前 psi、BR、BZ 上重求确定性压力闭合与环向电流，按节点梯形或显式单元边界积分并松弛电流后投影 Green 场。缺少场 Green 对时对新增磁通求场导数，墙分支同步加墙磁通及离散场。判停要求 psi、BR、BZ 和电流的未松弛目标全部闭合，返回态再重求闭合、电流及力相容性；零步不声称收敛。",
    "model": "外供 N4 压力闭合和可选线性理想导体壁修正的轴对称旋磁压力 Picard 组合。",
@@ -335,11 +335,11 @@
      "解析秩一 Green 检查两步状态传递及 I²+I−K=0 终态；接近完全保留的松弛不能因小步幅提前退出。",
      "磁通不变而场和电流仍变化时不声称收敛；空场在压力回调前拒绝。"
     ],
-    "evidence_ceiling": "制造和解析离散检查仅支持所述极向模型及声明积分几何，不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。",
+    "evidence_ceiling": "限于带可选壁磁通与磁场导数的有界各向异性 Picard 反馈。证据：`test_composition_free_boundary_anisotropic_picard.py` 含 20 个测试函数，其中 1 个引用 `solve_free_boundary_anisotropic_picard`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `solve_free_boundary_anisotropic_picard`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定组合文件与修正文件中的独立制造解/解析离散检查。不建立：内置 Frank-Egedal 闭合、对调用者压力物理的独立验证，或物理边界/壁模型。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不约束离散误差或实验不确定度。",
-     "此数值后继不自动获得专家认可或公开发行资格。"
+     "资产私有组合文件中只有一个直接函数按名称引用求解器（`test_public_solver_docstring_declares_contract`，文档串检查）；共享修正文件没有直接调用，因此收敛与壁分支证据是组合级。"
     ],
     "tests": [
      "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
@@ -1610,7 +1610,7 @@
   },
   {
    "asset_id": "scirel.dielectric.cold-plasma-tensor",
-   "source_sha256": "269c40178f72a98f8629831731fdbab9107b9e1384fa857169a3462d41dbe0a3",
+   "source_sha256": "3cfc6e2d95a76241dafc3bb4a5e5bd8b4cdb9058ee5d4b968445883f54422e08",
    "summary": "由有限正频率、局部磁场数组和物种列表计算冷等离子体相对介电张量，只返回调用者笛卡尔基底中的矩阵。成功返回的元素均有限。列明的中间量不可表示或贡献物种发生精确无碰撞共振时整次拒绝；真正零磁场按各向同性响应求值，不与非零场数值下溢混淆。边界由浮点可表示性决定，不是人为幅值截断；未列明路径不在证据覆盖内。 最终组装分别计算平行、垂直投影，不先计算 P-S 再与 S 相加。平行权重由输入双精度场分量的精确有理比 B_i*B_j/sum(B_k²) 得到；垂直对角权重直接取另两分量平方之和，非对角权重为平行权重的相反数。Hall 项使用同一个场模。每个实部或虚部均为有理 a、b、q 构成的 a+b/sqrt(q)；异号项改写为 (a²*q-b²)/(sqrt(q)*(a*sqrt(q)-b))，分子精确保留、分母不发生相消。仅平方根与除法用80位 Decimal，最后舍入到双精度一次。真正不可表示的终值整次抛 ColdPlasmaOverflowError，返回前再检查有限性；此前的双精度 Stix 累加及保守门禁不变。",
    "definition": "按物种顺序用碰撞移频 omega+i*nu 累加 Stix S、D、P，再以 b 为单位磁场方向组装 S*I+(P-S)*b b+i*D*[b]x。仅当输入 density_m3 或 charge_c 恰为零时，在形成算术操作数和执行门禁前跳过该物种；其余必须贡献，不能因数值太小被静默丢弃。依次检查 n*q²、eps0*m、其商、|B|、有符号 q|B|/m、移频、Stix 分母及三次除法所用四种乘积：omega*denominator、cyclotron*wp2、wp2*shifted、omega*shifted。各项按其列明的有限性与非零规则判定，无容差/幅值界。真正零场允许 |B| 和回旋项为零；非零场的场模或回旋项坍缩到零则拒绝。贡献物种的 Stix 分母恰为零抛 ColdPlasmaResonanceError。 最终组装分别计算平行、垂直投影，不先计算 P-S 再与 S 相加。平行权重由输入双精度场分量的精确有理比 B_i*B_j/sum(B_k²) 得到；垂直对角权重直接取另两分量平方之和，非对角权重为平行权重的相反数。Hall 项使用同一个场模。每个实部或虚部均为有理 a、b、q 构成的 a+b/sqrt(q)；异号项改写为 (a²*q-b²)/(sqrt(q)*(a*sqrt(q)-b))，分子精确保留、分母不发生相消。仅平方根与除法用80位 Decimal，最后舍入到双精度一次。真正不可表示的终值整次抛 ColdPlasmaOverflowError，返回前再检查有限性；此前的双精度 Stix 累加及保守门禁不变。 四乘积门禁要求操作数有限，并拒绝两个非零因子相乘坍缩为零；乘积本身溢出为 infinity 留给后续累加检查，不应将这一细节误读为四乘积均须有限。",
    "model": "局部含碰撞阻尼的 Stix 冷等离子体介电响应，时间约定 exp(-i*omega*t)。",
@@ -1717,7 +1717,7 @@
      "最终组装：三轴有限 Stix 见证在缺少最终投影时失败；当前组装给出有限轴向和旋转张量，并在既定范数误差界内与 Decimal400/480 投影一致。另有两个含碰撞物种的见证：Stix 分量有限但最终矩阵元不可表示，单点及混合数组均整次拒绝。48 组任意场向和碰撞率对照独立笛卡尔3×3冷动量方程，以 Decimal400/480 Gauss-Jordan 求解，不使用 Stix/投影公式，比较容差不变。",
      "仅返回有限值的回退方案被三个保留的近共振轴向反例科学拒绝：应为 P=0.19999999999999996，却返回 0.25。当前最终组装通过同一 1e-14 相对断言，并以 Decimal400/480 独立正交场向基旋转核对 96 组近轴、尺度和碰撞情况，小对角元按自身尺度比较。另六组旋转含碰撞情况对很小的实部对称/Hall 相消残余逐分量用 1e-14 相对容差验证；36 组新增混合尺度情况对照独立笛卡尔 3×3 动量方程，补充未改的 48 组。近极点旋转参考绑定已经表示的 Stix 系数，只隔离检查最终组装，不证明上游近共振 Stix 算术获得新的精度保证。"
     ],
-    "evidence_ceiling": "须分开运行输入验证、测试测得的科学/数值包络与包络外已知行为。所测范围支持张量恒等式、电导形式等价、符号约定、Hermitian 结构、精确共振拒绝、返回基底及通过拒绝不可表示中间量保证有限输出；不证明所有可能遮罩 NaN/泄漏除零路径已关闭，也不证明全部中间量都有门禁。未确证某装置、频率或碰撞条件下冷模型足够，未刻画见证以外的完整可表示边界，更不描述共振动力学响应。接受域不声称最大：分子/商/共享分母/S 分子/回旋项坍缩时，即使精确贡献分别可为 2.7568972734915313e-16、0.14134361358724294、约 2.2045e-161、1.2351641146031161e-23、1.129409067373019e-131，也保守拒绝，均有对应直接回归。两个正次正规数之商不会舍入为零，不能据此虚构残余带。重新组合 wp2/omega² 并以独立高精度基准覆盖上下溢可能扩展范围，但本版未实现且不宣称有该基准。有限返回不等于处于科学有效域。 最终组装分别计算平行、垂直投影，不先计算 P-S 再与 S 相加。平行权重由输入双精度场分量的精确有理比 B_i*B_j/sum(B_k²) 得到；垂直对角权重直接取另两分量平方之和，非对角权重为平行权重的相反数。Hall 项使用同一个场模。每个实部或虚部均为有理 a、b、q 构成的 a+b/sqrt(q)；异号项改写为 (a²*q-b²)/(sqrt(q)*(a*sqrt(q)-b))，分子精确保留、分母不发生相消。仅平方根与除法用80位 Decimal，最后舍入到双精度一次。真正不可表示的终值整次抛 ColdPlasmaOverflowError，返回前再检查有限性；此前的双精度 Stix 累加及保守门禁不变。 最终组装证据受上述限制约束；独立复核与公开再分发是另行决定的事项。",
+    "evidence_ceiling": "限于所声明关系：按物种顺序用碰撞移频 omega+i*nu 累加 Stix S、D、P，再以 b 为单位磁场方向组装 S*I+(P-S)*b b+i*D*[b]x。仅当输入 density_m3 或 charge_c 恰为零时，在形成算术操作数和执行门禁前跳过该物种；其余必须贡献，不能因数值太小被静默丢弃。依次检查 n*q²、eps0*m、其商、|B|、有符号 q|B|/m、移频、Stix…。证据：test_cold_plasma_tensor.py, test_cold_plasma_tensor_assembly.py, test_cold_plasma_tensor_cancellation.py（记录 59 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不含动力学、温等离子体或有限回旋半径修正；不含相对论或非 Maxwell 分布效应。",
     "known_limitations": [
      "证据包络外，即使中间量可表示并返回有限数组，也不表示经过科学验证；未证明任意装置、频率或碰撞条件下冷模型充分。",
      "严格冷、局部模型，不含温等离子体或动力学修正。",
@@ -1730,7 +1730,7 @@
      "同一场以一维向量或网格一行输入可能约差 1 ulp，来自 NumPy 标量/数组复除路径差异；这来自 NumPy 的求值路径，而非本扩展引入。",
      "矩阵依赖基底，需要沿场表示时调用者自行旋转；资产不规定转换约定。",
      "第四种乘积 omega*shifted 使用相同门禁，但声明测试没有独立数值见证；规则不依赖某输入恰坍缩哪一种乘积。",
-     "公开分发许可仍待人工决定。",
+     "独立解析对照不能替代外部实验参考。",
      "最终投影不恢复未改双精度 Stix 系数中已经丢失的信息，也不扩展其保守可表示性边界。已舍入的笛卡尔矩阵在下游从大矩阵元提取很小的特征响应时仍可能病态；这与此次修复的组装过程中丢失可表示矩阵元不同。精确有理系数和稳定80位代数求值增加逐点计算成本，计时仅为有界实测，不作普适性能保证。极端见证证明算术行为，不证明人工物种下冷模型适用。"
     ],
     "tests": [
@@ -1742,7 +1742,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
-   "source_sha256": "ef2e88d63dfac56343621e083e3f38771775853fe0dee83c0ac580a5f386ba6a",
+   "source_sha256": "8f63d72e854ac134aa05783a4f97c63eb299b25d1b914e1bac656a09e2cd87df",
    "summary": "将环向电流密度按掩码和网格积分为单元电流，与旧电流松弛后投影到稠密格林磁通及可选磁场响应。",
    "definition": "默认复合梯形权重恰覆盖给定节点矩形域，边界为半间隔；显式 cell_edges 则定义包围中心的单元面积。电流不乘 2πR。非激活密度置零，I=(1−relax)I_raw+relax I_old。磁通用 G_psi；成对 G_BR/G_BZ 求场，缺失时对同一新增磁通求导，再加真空场。",
    "model": "使用调用者稠密线性格林响应的一次显式单元电流 Picard 反馈。",
@@ -1904,11 +1904,11 @@
      "显式单元均匀行为、非均匀节点域积分、双节点及降序轴支持。",
      "缺少场格林对时，以新增等离子体磁通的导数产生磁场增量，保留真空参考。"
     ],
-    "evidence_ceiling": "制造和解析离散检查仅支持声明模型和积分几何，不证明任意格林、闭合、实验适用性或发行。",
+    "evidence_ceiling": "限于单次带掩码的环向电流反馈步及磁通/可选场投影。证据：`test_anisotropic_picard_feedback.py` 含 8 个测试函数，其中 2 个引用 `update_anisotropic_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_anisotropic_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：Green 响应的自动构造或物理验证，或完整平衡/壁求解。",
     "known_limitations": [
      "外供闭合和格林需要独立证据及一致 Wb/rad 归一化。",
      "舍入包络不是离散误差或实验不确定度界。",
-     "数值后继不自动获得专家认可或发行资格。"
+     "私有文件有八个函数和两个直接引用：关系示例与无单元面积网格拒绝；共享修正文件没有直接符号调用。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_picard_feedback.py",
@@ -1918,7 +1918,7 @@
   },
   {
    "asset_id": "scirel.closures.reduced-hall-drift",
-   "source_sha256": "c1e1db7e376a8b422080a4cb2f9158c72ad388724d1ee4d47bd1d6160d3284d2",
+   "source_sha256": "3a50d86d34329096ae4a3c7591c9b80b10cb52a330cd087955d37e1ae1c69a81",
    "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。",
    "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。",
    "model": "约化轴对称 Hall 漂移与旋磁对称压强，可选局部环向惯性修正，不是无限制的双流体解。",
@@ -2355,11 +2355,11 @@
      "Hall 乘子为零仍保留压强投影电流；无惯性分支计一次；单步惯性预算耗尽不返回状态。",
      "近 1 的 inertia_relax 不能把有限未松弛残差伪装为收敛，保持步数上限并抛 RuntimeError；解析 Bz=1、P=10+R²、n=mi=qi=1 的未限幅正不动点为 J=R。"
     ],
-    "evidence_ceiling": "人工构造与解析离散检查仅支持所述极向模型和积分几何；任意 Green 矩阵、压强闭合、实测等离子体适用性及公开发行均未建立。",
+    "evidence_ceiling": "限于旋磁压力力到环向电流的投影及可选有界局部惯性修正。证据：`test_reduced_hall_drift.py` 含 9 个测试函数，其中 1 个引用 `close_reduced_hall_drift`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `close_reduced_hall_drift`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整平衡/双流体输运求解，或在低密度/近零场/firehose 不稳定区域的自动有效性。",
     "known_limitations": [
      "调用者物理闭合与 Green 响应须有独立依据，并一致采用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不界定离散化误差或实验不确定度。",
-     "此数值后继不构成专家科学认可或公开发行。"
+     "资产私有测试文件有九个函数和一个直接示例；共享修正文件没有直接调用，因此惯性收敛与漂移诊断在组合级取证。"
     ],
     "tests": [
      "tests/closures/test_reduced_hall_drift.py",
@@ -2374,7 +2374,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.pressure-flux-state",
-   "source_sha256": "98e6ab4279ed471175f1140e8289577f1fdc192e74d41f776fcf9702fe16b60c",
+   "source_sha256": "df89c61911522c5093f06601130853f93f2d06e51253021e0867c4fbcb2fec3c",
    "summary": "在严格 Z=0 的一行采样径向压力，将首个零压点之前含该点的递增磁通段拟合为压力样条，返回掩码截断后的压力导数和样条状态。",
    "definition": "只把唯一精确 Z=0 中平面索引按物理半径递增排序，并拒绝重复半径。逐点采样有限非负压力，用至第一个向外零压点的至少四点严格递增磁通前缀拟合；序列化同一前缀、样条节点、系数及三次阶数。在原 C 顺序网格求导，先拒绝非有限系数或导数，再按边界和真实布尔掩码置零。",
    "model": "按物理径向遍历、可精确重建的各向同性压力—磁通三次样条。",
@@ -2480,11 +2480,11 @@
      "内部零压边界只序列化实际四个拟合点，独立重建压力和导数。",
      "降序存储保留物理边界及输出顺序；数字掩码和非有限拟合/导数失败。"
     ],
-    "evidence_ceiling": "有针对性的回归、明确解析构造例和所选 wheel 的安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
+    "evidence_ceiling": "限于精确 Z=0 径向压力采样与递增磁通前缀样条状态。证据：`test_pressure_flux_state.py` 含 5 个测试函数，其中 1 个引用 `build_pressure_flux_state`，仅由本资产绑定; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 4 个引用 `build_pressure_flux_state`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：通用磁轴/限制器/磁面推断、各向异性压力闭合，或压力-电流平衡求解。",
     "known_limitations": [
      "中平面和压力边界都要求精确零，近零值不被接受。",
      "前缀与样条是同一插值关系的精确表示，不证明压力定律或外推物理适用性。",
-     "不验证直角网格或压力剖面物理；公开许可及专家认可仍待人工决定。"
+     "私有文件有五个函数和一个直接示例；共享 legacy 文件增加四个直接测试，覆盖拟合前缀重建、数值掩码拒绝、非有限样条导数与递减径向存储。"
     ],
     "tests": [
      "tests/equilibrium/test_pressure_flux_state.py",
@@ -3662,7 +3662,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-radial-envelope",
-   "source_sha256": "c5d5694ad585c23d9626c7d68fdd01022256d380580fc5a87a6438d7f157ab72",
+   "source_sha256": "fef36a4d456bb6155da573879abe6f384eb08fc30b8662191355c31e66b86a02",
    "summary": "在二维磁通网格上计算截断的幂律径向包络，由参数映射给出参考磁通与指数。",
    "definition": "令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。",
    "model": "Frank-Egedal 压强构造中由给定条件定义的径向乘子，不计算压强或平衡。",
@@ -3722,12 +3722,12 @@
      "两行网格的线性/二次闭式值、截断端点和反向磁通。",
      "磁通仿射重标度、默认极值、零指数、输入不修改及所选无效网格/参考值。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：令 u=clip((psi-psi_axis)/(psi_edge-psi_axis),0,1)，逐点返回 clip(1-u,0,infinity)^alpha。默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1。允许有限非零磁通区间的两种方向。按 NumPy 零次幂约定，alpha=0 时整个网格均为 1，包括外侧端点。证据：test_frank_egedal_radial_envelope.py, test_frank_egedal_radial_envelope_admitted.py（记录 6 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不从网格识别物理磁轴、边缘、磁通单位或压强归一化；不提供完整 Frank-Egedal 闭合、磁场计算、坐标转换或截断区间外的外推。",
     "known_limitations": [
      "参考磁通由调用者提供或取网格极值，此函数不作物理识别。",
      "Wb 与其他 SciRel Wb/rad 约定不自动转换；已测耦合要求轴/边缘参考值与当前 psi 坐标一致。",
      "零指数在截断边缘仍为 1；有限极值仍可能造成极端运算，且无输出复查。",
-     "当前版本专家认可与公开分发许可仍待完成。"
+     "独立解析对照不能替代外部实验参考。"
     ],
     "tests": [
      "tests/kinetic/test_frank_egedal_radial_envelope.py",
@@ -4595,7 +4595,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-   "source_sha256": "884f99c5d74cdcdf79d1ecb513ac90ef0c94a011b71a7ffd3d6d0eb4498eba2f",
+   "source_sha256": "f4f66965ee15f90531465b55a9cecbaa9e4d684ca0bcef865f08f4124000e14c",
    "summary": "通过唯一共享的轴对称压力电流求解器执行有界反馈，同时检查磁通更新和末态电流闭合残差，并序列化最终压力样条。",
    "definition": "委派给已维护的 compute_equilibrium：按物理半径向外构造压力样条，求目标电流、松弛电流及 Green 磁通，重建末态样条；同时检查归一化磁通变化和 ||I_new−I_target(psi_new)||₂/||I_target||₂。零目标且零误差取零，零目标而电流非零失败。只有实际更新后两项有限且不大于 tol 才收敛。适配入口不再维护第二迭代环，并返回精确拟合前缀。",
    "model": "复用共享双残差求解器的轴对称各向同性纯压力离散闭合。",
@@ -4765,11 +4765,11 @@
      "零 Green 松弛电流与零次更新的假收敛均被拒绝。",
      "非零对角 Green 构造解满足独立二次方程，电流、磁通及两项记录得到核对。"
     ],
-    "evidence_ceiling": "有针对性的回归、明确解析构造例和所选 wheel 的安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
+    "evidence_ceiling": "限于带磁通更新与终态电流闭合残差的有界各向同性压力-电流反馈。证据：`test_composition_isotropic_pressure_flux.py` 含 10 个测试函数，其中没有函数引用 `solve_isotropic_pressure_flux`，由 2 个资产共享; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 4 个引用 `solve_isotropic_pressure_flux`，由 8 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：各向异性压力闭合、非结构/非轴对称网格，或有限迭代必然收敛的保证。",
     "known_limitations": [
      "稠密方格林矩阵，压力样条要求精确中平面及精确零压样本。",
      "不做自适应阻尼或模型选择。",
-     "公开许可及专家认可仍待人工决定。"
+     "资产私有组合文件有十个测试函数且没有直接符号调用；共享 legacy 文件中有四个直接测试，覆盖零更新/不谎报收敛、拒绝 relax=1 以及非零制造 Green 历史。"
     ],
     "tests": [
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",
@@ -4779,7 +4779,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
-   "source_sha256": "24c96aa7d95a988b1406e72d1029e19e4b662133cc273615f642682f12e94a1a",
+   "source_sha256": "a4e14dbb155c6a633e4c0e0913e3ad3ef6f8ec3aa74b82294efe999b1898c0b4",
    "summary": "把径向包络、无量纲热离子矩形状与气体、密度、电子能量尺度组合成平行/垂直压强及可选密度和电子温度场。",
    "definition": "设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。热压强尺度取 hot_pressure_scale，缺键才回退 p0，再缺省为 1 Pa；气体压强尺度默认为 0。配置密度尺度时 n=r*n_gas+r*h_n*n_hot，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终 p_parallel=p_gd*r+p_e+p_hot*r*h_parallel，p_perp=p_gd*r+p_e+p_hot*r*h_perp。优先键显式为 None 时不会改用后备键。",
    "model": "从外部形状逐点组装 Frank-Egedal 压强状态，不计算源模态矩、径向包络或电子温度。",
@@ -4883,12 +4883,12 @@
      "无密度尺度用例验证 density=None、电子能量网格不变且电子压强为零。",
      "直接测试拒绝非有限 psi 与负气体压强；文档示例为两单元组装。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。热压强尺度取 hot_pressure_scale，缺键才回退 p0，再缺省为 1 Pa；气体压强尺度默认为 0。配置密度尺度时 n=r*n_gas+r*h_n*n_hot，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终…。证据：test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py（记录 8 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不计算径向包络、热离子矩、电子温度、电势或平衡；不自动转换磁通约定、对齐坐标或空间插值，也不证明尺度的物理自洽性。",
     "known_limitations": [
      "psi 数值只验证不参与计算；Wb 不是与 Wb/rad 资产之间经验证的连接约定。",
      "只配置电子温度而无密度尺度时，电子能量网格存在，但 density=None 且电子压强为零。",
      "接受非负形状和尺度不等于证明科学一致性或与既有模式同源。",
-     "公开分发许可与当前版本专家认可仍待完成。"
+     "独立解析对照不能替代外部实验参考。"
     ],
     "tests": [
      "tests/kinetic/test_frank_egedal_pressure_state.py"
@@ -4897,7 +4897,7 @@
   },
   {
    "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
-   "source_sha256": "21a0ad17856d54daab6a2cced3313cc56ce9941a1edf589de15fde05082ae051",
+   "source_sha256": "c8971e5b9825f8801984b39a48d51c0c1821c40dd7921a1bbf6c67cfeab0b0a0",
    "summary": "按 Bessel 阶数 |n|+1 索引返回固定有理留数和极点表。",
    "definition": "固定 L 极点留数/位置以有理极点和近似 Bessel-Gamma 项，表键为 |n|+1。",
    "model": "Maxwell 有限回旋半径项的有理近似。",
@@ -4970,11 +4970,11 @@
     "scope": [
      "声明的数值用例及相关失败边界。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：固定 L 极点留数/位置以有理极点和近似 Bessel-Gamma 项，表键为 |n|+1。证据：test_fluid_spectrum_r43_fluid.py（记录 9 个测试函数；仅共享文件覆盖；有界 source-method 对照）；合同 example 已运行。不建立的范围：不在所述数值方法之外推断模态身份或任意参数精度；外部物理验证。",
     "known_limitations": [
      "固定表覆盖 |n|=0..7，超范围请求失败。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_fluid_spectrum_r43_fluid.py）；未记录资产专属失败/边界探针。",
+     "未记录独立或外部 oracle；证据仅为自洽/回归。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
@@ -5195,7 +5195,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-force-balance",
-   "source_sha256": "9d334f9dea1d60f210d33e1a64785c7ab03bb122c49447cc7ee876c5eec4ab40",
+   "source_sha256": "cc9805dd76afaf05743599dbc0d2a22645ece8bc6077b8053e2f76513e864b3e",
    "summary": "在给定 R–Z 磁场网格上计算旋磁压力张量的柱坐标散度、垂直力对应的环向电流、平行力诊断和 firehose 裕度。",
    "definition": "P=p_perpendicular I+(p_parallel−p_perpendicular)bb。用差值形式二次模板求柱坐标散度；R=0 处光滑奇函数 P_RZ 给 force_Z 额外一个 ∂R P_RZ，规则轴上 force_R=J_phi=0；离轴 J_phi=(B_Z force_R−B_R force_Z)/B²。",
    "model": "轴对称旋磁压力张量及垂直力平衡电流投影。",
@@ -5367,11 +5367,11 @@
      "16 个常压网格保持零力，不误判兼容失败。",
      "可分辨的平行力不平衡仍被拒绝。"
     ],
-    "evidence_ceiling": "制造与解析离散检查仅支持所述极向模型及积分几何，不证明任意格林矩阵、闭合、实验适用性或公开发行。",
+    "evidence_ceiling": "限于旋磁压力张量的柱散度、其环向电流投影与 firehose 裕度。证据：`test_anisotropic_force_balance.py` 含 5 个测试函数，其中 1 个引用 `compute_anisotropic_force_balance`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `compute_anisotropic_force_balance`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整平衡求解器、平行力相容保证，或自动场下限/firehose 强制。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据及一致 Wb/rad 规范。",
      "浮点包络不是离散误差或实验不确定度界。",
-     "数值后继不自动获得专家认可或发行资格。"
+     "资产私有测试文件有五个函数和一个直接示例；共享修正文件没有直接符号调用，因此力平衡证据是示例加组合级检查。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_force_balance.py",
@@ -6135,7 +6135,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-   "source_sha256": "0d5c1ba1ef1e84dfb0784f37f5f5e517be200e59a16f69cadec52f23c11bf134",
+   "source_sha256": "f2143bdcc8d66c95bada32806db891437bf2f6b1380d229c0674ad19c5502dfa",
    "summary": "将调用者压强闭合、约化 Hall 漂移/电流和稠密 Green 更新连接为轴对称磁通迭代，重算终末状态并返回收敛与相容性诊断。",
    "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。停止条件为 relative_psi_change<=tol 或 maxiter，但输出还提供终末未松弛固定点残差门槛。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点的 firehose 裕度及可选的严格力/欧姆相容性。终末在调用闭合/Hall 之前检查场下限；图级非负压强检查仍不重复，Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
    "model": "由调用者闭合驱动的轴对称约化 Hall、旋磁对称压强 Picard 反馈。",
@@ -6483,11 +6483,11 @@
      "标量压强广播、错形拒绝、非有限/无效控制及关闭张力阈值。",
      "带插桩的终末闭合用例显示：终末场低于 minimum_field 时，在调用终末闭合之前抛错。"
     ],
-    "evidence_ceiling": "人工构造与解析离散检查仅支持所述极向模型及积分几何；不证明任意 Green/闭合、实验等离子体适用性或公开发行。",
+    "evidence_ceiling": "限于经调用者闭合、约化 Hall 漂移与稠密 Green 更新的有界轴对称 Picard 反馈。证据：`test_composition_reduced_hall_anisotropic_picard.py` 含 12 个测试函数，其中 1 个引用 `solve_reduced_hall_anisotropic_picard`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `solve_reduced_hall_anisotropic_picard`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定组合文件与修正文件中的独立制造解/解析离散检查。不建立：内置动理学压力模型、密度演化、自由边界响应、非轴对称平衡，或任意调用者闭合的收敛保证。",
     "known_limitations": [
      "调用者物理闭合与 Green 响应须有独立依据及一致 Wb/rad 磁通归一化。",
      "浮点舍入包络不界定离散化误差或实验不确定度。",
-     "此数值后继不构成专家科学认可或公开发行。"
+     "资产私有组合文件中只有一个直接函数按名称引用求解器（`test_public_solver_docstring_declares_contract`，文档串检查）；共享修正文件没有直接符号调用，因此数值分支证据是组合级。"
     ],
     "tests": [
      "tests/cross_domain/reduced_hall_anisotropic_picard/test_composition_reduced_hall_anisotropic_picard.py",
@@ -6657,7 +6657,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-picard-step",
-   "source_sha256": "844587bc0b8cd6553bb477692b7cb350f8151cdd1f327202445fd52e5681a7b9",
+   "source_sha256": "fd20326d5477a8745bf6f55fce6efe3271b1445275a769967830df96bd96f22c",
    "summary": "由压力导数构造松弛后的网格电流，用外供格林矩阵更新磁通，并计算一次 Picard 更新的磁通变化。",
    "definition": "按 C 顺序计算 I_target=R(dP/dpsi)dR dZ、I_new=(1−relax)I_target+relax I_old，再计算 Green 磁通和真空磁通之和。relax=1 明确保留旧电流，不计算未使用的目标。电流、Green 收缩、总磁通及 ||psi_next−psi_state||₂/|psi_edge| 任一非有限均失败，不静默置零；此接口只执行一步。",
    "model": "轴对称各向同性压力—磁通 Picard 网格电流更新，采用外供格林响应。",
@@ -6774,12 +6774,12 @@
      "拒绝不完整调用。",
      "有限输入导致电流、Green 收缩或总磁通溢出的真实失败回归。"
     ],
-    "evidence_ceiling": "有针对性的回归、明确解析构造例和所选 wheel 的安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
+    "evidence_ceiling": "限于单次经给定磁通 Green 矩阵的松弛等离子体单元电流步与磁通变化测量。证据：`test_isotropic_picard_step.py` 含 2 个测试函数，其中 1 个引用 `pressure_flux_picard_step`，仅由本资产绑定; `test_composition_isotropic_pressure_flux.py` 含 10 个测试函数，其中没有函数引用 `pressure_flux_picard_step`，由 2 个资产共享; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 1 个引用 `pressure_flux_picard_step`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：各向异性压力闭合、完整 Picard 求解器/收敛决策，或边界条件求解。",
     "known_limitations": [
      "压力导数、格林矩阵、真空磁通和迭代策略由调用者提供。",
      "有限磁通更新量不等于压力电流闭合；完整求解器另验闭合残差。",
      "不强制非负半径或 Z=0 平面。",
-     "公开许可及专家认可仍待人工决定。"
+     "私有文件有两个函数和一个直接示例；共享组合文件没有直接调用；共享 legacy 文件增加一个直接非有限状态拒绝测试。"
     ],
     "tests": [
      "tests/equilibrium/test_isotropic_picard_step.py",
@@ -7028,7 +7028,7 @@
   },
   {
    "asset_id": "scirel.kinetic.mirror-total-pressure",
-   "source_sha256": "0a5ac8a0cfe1620660b9eb46541074fefc5b4fa5dc3a5a79cec4a5276efbe37b",
+   "source_sha256": "34a65a4b26e45adf28c65799d27f7a7f4047726733aa455bd646f778978d93cb",
    "summary": "将外供各向同性电子压力同时加到两种离子压力上，组装保留密度、残差、可选势和离子矩的末态。",
    "definition": "将压力、密度、残差及可选势共同广播，要求物种密度/压力有限非负、残差/势有限；两离子压力分别加电子压力并拒绝非有限和。返回浅拷贝，保留原 kinetic_moments 映射及验证后的原密度/残差/势对象。残差只作观测，不证明准中性。",
    "model": "镜动力学离子态与外供各向同性电子压的末态组装，不求压力、电子响应或准中性。",
@@ -7143,12 +7143,12 @@
      "双单元压力和标量电子压的和，额外字段及原字典引用保留。",
      "缺字段 ValueError、指定势对象身份及缺势 None。"
     ],
-    "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
+    "evidence_ceiling": "限于所声明关系：将压力、密度、残差及可选势共同广播，要求物种密度/压力有限非负、残差/势有限；两离子压力分别加电子压力并拒绝非有限和。返回浅拷贝，保留原 kinetic_moments 映射及验证后的原密度/残差/势对象。残差只作观测，不证明准中性。证据：test_mirror_total_pressure.py, test_mirror_kinetic_scientific_correction.py（记录 21 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：计算离子矩、Boltzmann 响应、势或准中性根；不证明电荷中性、势单位、数组坐标对齐或外供压力模型正确性；物种密度和压力仍必须有限非负。",
     "known_limitations": [
      "浅态保留原矩映射，调用者后续修改可改变引用字段。",
      "广播不等于坐标对齐；允许有限非零观测电荷残差。",
      "公开许可及人工科学认可独立处理。",
-     "示例输出是有界的运行时观察，不是普适科学主张。"
+     "未记录独立或外部 oracle；证据仅为自洽/回归。"
     ],
     "tests": [
      "tests/kinetic/test_mirror_total_pressure.py",
@@ -7161,7 +7161,7 @@
   },
   {
    "asset_id": "scirel.closures.tabulated-pressure",
-   "source_sha256": "cfe1999686c059c2d3c3372f37a8308e1d522211c08b2ac14abea9c281b4393f",
+   "source_sha256": "be2ee8975e28909f63483fb5eb20fa518668db1c600b6a95cef50abd477cc6f6",
    "summary": "在广播后的磁场、磁通查询点插值平行与垂直压力表；一维磁通表返回各向同性压力，二维 (B,psi) 表分别插值两分量。",
    "definition": "B 与 psi 联合广播。无 b_grid 时用一维线性插值；若给出垂直表，转换为 float64 后必须与平行表逐项完全相等，否则拒绝而不丢弃差异。有 b_grid 时分别双线性插值两个分量。is_isotropic 表示完整分量表是否严格相等；table_dimension 独立记录 1 或 2 维。结果须有限非负；分量表相等不构成热力学证明。",
    "model": "给定各向同性/旋磁压力表的一维线性或二维双线性插值，不推导压力定律或求力平衡。",
@@ -7276,7 +7276,7 @@
      "一维各向同性极限、已审二维仿射例及部分非法填充/外推。",
      "拒绝近似相等却不同的一维分量表；二维完全相等表的标志与网格维数分离。"
     ],
-    "evidence_ceiling": "有针对性的回归、明确解析构造例和所选 wheel 的安装运行覆盖本有限合同；不推断任意物理模型适用性、连续体收敛、人工科学认可或再分发许可。",
+    "evidence_ceiling": "限于在广播磁场与磁通查询点上插值给定的平行/垂直压力表。证据：`test_tabulated_pressure_closure.py` 含 4 个测试函数，其中 2 个引用 `evaluate_tabulated_pressure`，仅由本资产绑定; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 2 个引用 `evaluate_tabulated_pressure`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：从测量反推压力表、寻找磁面，或证明外推压力律物理有效。",
     "known_limitations": [
      "不检查正 B 或坐标对齐，Wb 标签不能推导到 Wb/rad 的转换。",
      "非负表不保证外推非负，非法外推直接抛异常。",
@@ -7290,7 +7290,7 @@
   },
   {
    "asset_id": "scirel.kinetic.bessel-gamma",
-   "source_sha256": "3572a0860706a080643c95a70fb116a19466d3d7480d26a0e8ebbbe1cdcfe0f0",
+   "source_sha256": "c4ba118646a0065ef17c1c59379e4ad1ad90717d3276cd68d7778c9b83d50df7",
    "summary": "以可广播整数阶数和实/复自变量计算无量纲 Bessel-Gamma 谐波项及相邻阶组合导数。",
    "definition": "Gamma_n=ive(n,x)*exp(-x+abs(Re(x)))；Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x)))。ive 是指数缩放修正 Bessel I；可表示域内分别等于 exp(-x)*I_n(x) 及其对 x 的导数。",
    "model": "有限 Maxwell 回旋谐波求和使用的整数阶修正 Bessel 项。",
@@ -7356,12 +7356,12 @@
      "有限网格与修正 Bessel 定义比较、原点恒等式和复广播。",
      "与 98 点实自变量参考基准作只读比较。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：Gamma_n=ive(n,x)*exp(-x+abs(Re(x)))；Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x)))。ive 是指数缩放修正 Bessel I；可表示域内分别等于 exp(-x)*I_n(x) 及其对 x 的导数。证据：test_bessel_gamma.py（记录 4 个测试函数；绑定文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不支持非整数 Bessel 阶数，也不自动把任意 x 解释成物理波参数；不选择谐波截断、组装 Maxwell 色散张量或选择模态/根。",
     "known_limitations": [
      "极端输入可能受浮点下溢或不可表示输出限制，非有限结果会抛异常。",
      "既有表述曾隐式接受某些非整数阶，SciRel 有意只接受精确可表示整数 n。",
-     "公开分发许可与专家科学认可仍未完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "未记录独立或外部 oracle；证据仅为自洽/回归。",
+     "仅记录 4 个绑定测试函数；不主张更宽参数覆盖。"
     ],
     "tests": [
      "tests/kinetic/test_bessel_gamma.py"
@@ -7843,7 +7843,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
-   "source_sha256": "6a84168a8fd2b2399cd1b40e3ad5bcbe35001f7cca2aea061613b6a9d2752ca4",
+   "source_sha256": "5f085820d5efeb90fb24b3929ab91a40218cbc2074442e54b396d4b36d0c9487",
    "summary": "将轴对称旋磁压力力投影为环向电流，分离各向同性垂直压力贡献和各向异性余项。",
    "definition": "调用压力力投影两次：一次用实际 p_parallel、p_perp，一次将两压力都设为 p_perp。第二次电流为 gradp_term；总电流与它的差为 anisotropy_curvature_term。此分解由离散差定义，不是独立离散的曲率公式。",
    "model": "轴对称旋磁压力张量及垂直电流投影。",
@@ -7953,11 +7953,11 @@
      "旋转等幅场产生非零各向异性差。",
      "R=0 电流列为零并拒绝负压。"
     ],
-    "evidence_ceiling": "制造和解析离散检查仅支持所述极向模型及积分几何；任意格林、压力闭合、实验適用性及发行均未由此建立。",
+    "evidence_ceiling": "限于各向同性垂直压力电流与各向异性环向电流余项的分离。证据：`test_anisotropic_toroidal_current.py` 含 4 个测试函数，其中 1 个引用 `compute_anisotropic_toroidal_current`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `compute_anisotropic_toroidal_current`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：独立曲率公式或平行力证明、非轴对称/环向场几何，或完整平衡求解器。",
     "known_limitations": [
      "外供闭合和格林须自有证据及一致 Wb/rad 规范。",
      "舍入包络不约束离散误差或实验不确定度。",
-     "数值后继不自动获得专家认可或发行资格。"
+     "私有文件有四个函数和一个直接示例；共享修正文件没有直接调用；两次力平衡求值都按声明使用 `active_mask=None`。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_toroidal_current.py",
@@ -8573,7 +8573,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
-   "source_sha256": "6c1d63e8dd5a9aafe2f8526c45484e6bd7cb798595471f63de5f4148e0ea6a88",
+   "source_sha256": "89bc96d49c990459cf1494ac694a001ceb015be75cabf6d82db7dd5668226193",
    "summary": "把同一粒子群的显式热离子矩与径向包络和预设压强/密度尺度组合成闭合。",
    "definition": "径向算子计算 r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha。源算子使用给定 Legendre 阶数，或由损失锥谱算子求阶数，再选取或投影源系数。热离子算子在 b=B/B0 处积分，平行和垂直压强都以 b=1 的平行矩归一化，密度以其自身 b=1 矩归一化。压强算子加入气体项、可选 n*T_e 和相应热压强；图另附 closure_state。密度和两个热压强分量共同使用 velocity_lower（历史别名 perp_velocity_lower），默认 0；可达轨道、统一速度域和原始矩收敛遵循热离子算子。这修正了旧版只截断垂直项的做法，不宣称论文作者确认过勘误。",
    "model": "预设有限模态非负参考粒子群，加气体及可选电子压强；不求动力学演化，也不确证它是精确的物理 Frank-Egedal 分布。",
@@ -8662,11 +8662,11 @@
      "组合保留修正后的统一粒子群速度域及原始矩收敛状态。",
      "正式文档示例使用实际公共组合 API。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于所声明关系：径向算子计算 r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha。源算子使用给定 Legendre 阶数，或由损失锥谱算子求阶数，再选取或投影源系数。热离子算子在 b=B/B0 处积分，平行和垂直压强都以 b=1 的平行矩归一化，密度以其自身 b=1 矩归一化。压强算子加入气体项、可选 n*T_e 和相应热压强；图另附 closure_state。密度和两个热压强分量共同使用 velocity_lower（历史别名…。证据：test_spectral_scientific_correction.py, test_composition_frank_egedal_pressure_closure.py（记录 25 个测试函数；共享文件加直接组合/测试覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不提供精确动力学解、自洽力平衡、实测等离子体验证或作者确认的 Eq19b 冲突解释；外部物理验证。",
     "known_limitations": [
      "统一截断会同时改变旧版平行压强和密度，不仅改变垂直压强。",
      "此图不能证明有限模态粒子群满足原物理动力学方程。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "仅绑定共享文件覆盖（test_spectral_scientific_correction.py）；未记录资产专属失败/边界探针。"
     ],
     "tests": [
      "tests/cross_domain/test_spectral_scientific_correction.py"
@@ -9343,7 +9343,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-picard-update",
-   "source_sha256": "96866786309be86ea1d7771825f42bff12b5c4686da3e72bbf12293fe3cb361c",
+   "source_sha256": "7eb097471926c2fa8ef74e1f106ad4514c08186a34dd9cc12a32a224b07b8fc2",
    "summary": "将环向电流密度积分为单元电流，经稠密格林矩阵求磁通候选，再对旧磁通松弛，报告磁通与电流相对变化。",
    "definition": "默认复合梯形积分恰覆盖节点矩形域，边界权重为半间隔；显式 (radial_edges,axial_edges) 各有中心数加一项，有限、单调并包围中心，定义单元中心面积；不乘 2πR。 令 candidate=psi_vac+G_psi@I，psi_next=relax×psi_state+(1−relax)×candidate；返回松弛步变化、原始电流变化及未松弛固定点残差。",
    "model": "轴对称稠密格林单步 Picard，松弛对象是磁通而非电流。",
@@ -9471,11 +9471,11 @@
      "紧支撑多项式电流在非均匀网格收敛到 8/225 A。",
      "显式均匀单元边界复现完整中心面积约定。"
     ],
-    "evidence_ceiling": "制造和解析离散检查仅支持所述极向模型及声明积分几何，不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。",
+    "evidence_ceiling": "限于单次轴对称 Picard 磁通更新：环向电流经稠密单元电流 Green 矩阵。证据：`test_axisymmetric_picard_update.py` 含 5 个测试函数，其中 1 个引用 `update_axisymmetric_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_axisymmetric_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：完整收敛平衡、自动迭代次数选择、电流松弛或连 flux 转换。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不约束离散误差或实验不确定度。",
-     "此数值后继不自动获得专家认可或公开发行资格。"
+     "资产私有测试文件有五个函数和一个直接示例；共享修正文件没有直接符号调用，因此有限更新证据是示例加组合级修正检查。"
     ],
     "tests": [
      "tests/equilibrium/test_axisymmetric_picard_update.py",

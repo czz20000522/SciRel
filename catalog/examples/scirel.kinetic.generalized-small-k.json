@@ -92,10 +92,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for invalid, nonfinite or singular declared inputs.",
-  "runtime_failure": "Callback arithmetic failures propagate; nonrepresentable transform raises ValueError.",
-  "nonconvergence": "RuntimeError for Cauchy, real-axis or principal-value quadrature nonconvergence, or root nonconvergence.",
-  "partial_results": "No partial scientific result is returned after failure."
+  "invalid_input": "Raises ValueError for non-real, boolean, string, complex, empty, nonfinite or nonpositive `k`.",
+  "runtime_failure": "Raises ValueError when the computed real frequency or damping is not representable as finite float64; there is no callback, quadrature or fallback path.",
+  "nonconvergence": "Not applicable; this is a direct asymptotic evaluation, not a root or quadrature solve.",
+  "partial_results": "Never returned; a rejected call produces no result mapping."
  },
  "verification": {
   "tests": [
@@ -107,9 +107,9 @@
   "known_limitations": [
    "Finite outputs at large k do not imply asymptotic validity.",
    "Damping smaller than floating representation underflows to zero.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The bound file is shared by six assets and has two direct references: the small-k residual/mixture normalization and the integer-wrap case; no test binds an exact finite-k root or the asymptotic remainder."
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
+  "evidence_ceiling": "Bounded to the small-k Langmuir real frequency and Landau-damping asymptotic. Evidence: `test_generalized_dispersion_models.py` contains 14 test functions, 2 of which reference `evaluate_gpdf_small_k`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen small-k values in the bound file. It does not establish exact finite-k roots or a controlled global asymptotic remainder."
  },
  "example": {
   "description": "Evaluate the small-k Langmuir frequency and damping approximation.",

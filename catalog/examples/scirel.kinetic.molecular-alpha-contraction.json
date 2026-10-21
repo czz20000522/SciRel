@@ -202,13 +202,13 @@
   "tests": [
    "tests/kinetic/test_alpha_contraction.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the declared relation: The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one predecessor distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice…. Evidence: test_alpha_contraction.py (11 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Atomic four-family contraction, the Omega_* downstream aggregation inside fH2_iterate, Do_Alpha_* gating, KH2.Internal cache lifecycle, and external physical validation; external physical validation.",
   "known_limitations": [
-   "Broader verification is not claimed beyond the listed direct tests.",
+   "Only shared-file coverage is bound (test_alpha_contraction.py); no asset-specific failure/limit probe is recorded.",
    "The Alpha_CX reshape repair relative to the raw kinetic_h2.py source is registered, not silently absorbed; its scientific framing remains an expert-review item.",
    "Negative cells in the elastic families and negative densities are reproduced or contracted as given; their physical acceptability is an open expert question, not a runtime gate.",
-   "Public distribution licensing remains pending a human decision.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
+   "The contract does not establish: Atomic four-family contraction, the Omega_* downstream aggregation inside fH2_iterate, Do_Alpha_* gating, KH2.Internal cache lifecycle, and external physical validation.."
   ]
  }
 }
