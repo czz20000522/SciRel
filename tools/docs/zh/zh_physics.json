@@ -1134,7 +1134,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-wavevector-scan",
-   "source_sha256": "93e42df76cf8aaf5664f5430da6b1ef74a23e8102bf9ba211c555d7e89b197fa",
+   "source_sha256": "aae32b76aedc46971a9b14d9596d868cda058194e7a724580447e83d7e712b03",
    "summary": "从平衡状态导出频率阶梯，逐频点组装 L/J 极点矩阵并筛选流体 kx 分支。",
    "definition": "任务图由同一组分平衡导出 kn 和 wn，构造 (omega_scale:omega_step:omega_stop)*wn 与 kz_scale*kn，并在每个频点独立求解 kx X=M(omega,kz)X。",
    "model": "均匀磁化多组分 Maxwellian 流体极点模型",
@@ -1319,7 +1319,8 @@
    },
    "verification": {
     "scope": [
-     "直接任务图组合与范围受限的数值案例。"
+     "直接任务图组合与范围受限的数值案例。",
+     "近整数 colon 阶梯端点会被保留，见 tests/kinetic/test_dispersion_scan_axes.py。"
     ],
     "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
     "known_limitations": [
@@ -1328,7 +1329,8 @@
      "科学有效性受测试数值域和适用条件限制。"
     ],
     "tests": [
-     "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
+     "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
+     "tests/kinetic/test_dispersion_scan_axes.py"
     ]
    }
   },
@@ -6788,7 +6790,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "2add6d5a821eb9d669aaf739bf95801724131fb065d23122c626722ceb77749a",
+   "source_sha256": "8fe7bf2820a4b1fadefdebc278f4b8b757a12ebbf610a25236bc51be58b23500",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7005,7 +7007,8 @@
     "scope": [
      "声明的数值案例及相关失败边界。",
      "示例只执行一个有界代表性案例，不扩展声明的适用前提。",
-     "Python 示例已在本机运行；本地执行覆盖本资产。"
+     "Python 示例已在本机运行；本地执行覆盖本资产。",
+     "近整数 colon 阶梯端点会被保留，见 tests/kinetic/test_dispersion_scan_axes.py。"
     ],
     "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
     "known_limitations": [
@@ -7014,7 +7017,8 @@
      "本地执行覆盖本资产；未开展外部 Octave 对照。"
     ],
     "tests": [
-     "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
+     "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
+     "tests/kinetic/test_dispersion_scan_axes.py"
     ]
    },
    "source_conflicts": [
@@ -8671,7 +8675,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
-   "source_sha256": "cfd9e5ebae13fca8f32ad0c3bc3cf3c20869bd548ce54978310bbd615037b96a",
+   "source_sha256": "1e27cc1576c2815e57d0c79a8c61d4bce8fa1d08e14b97a82718852e8dae80f3",
    "summary": "将外供各向异性压力闭合与当前极向场、柱坐标压力力和稠密格林磁通更新迭代耦合，最后重新求值并检查返回的末状态。",
    "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上重算场、闭合、力及电流，按所声明顺序检查最小场、firehose 裕度和严格平行力相容性。",
    "model": "有界轴对称旋磁压力 Picard 组合，压力闭合由调用者提供。",
@@ -8907,7 +8911,7 @@
    },
    "failure_semantics": {
     "invalid_input": "缺失或非法网格、格林、控制、闭合、掩码抛 ValueError/TypeError；闭合映射、压力、掩码形状及依赖错误继续抛出。",
-    "runtime_failure": "迭代场低于下限在闭合前抛 FloatingPointError；末态先执行闭合、掩码及力，其失败可先于最小场门禁；末态低场或 firehose 裕度失败抛 FloatingPointError，严格平行不相容抛 ValueError；无备用路径。",
+    "runtime_failure": "当终态场低于 minimum_field 时，在 terminal pressure_closure、mask 或 force 求值之前抛出 FloatingPointError；迭代场在每次 closure 调用之前检查。",
     "nonconvergence": "到 maxiter 返回 converged=false 和记录；无自动重试或 failure_reason 字段。",
     "partial_results": "异常不返回映射；有界不收敛是完整末态结果，不是异常。"
    },
@@ -8917,7 +8921,7 @@
    },
    "verification": {
     "scope": [
-     "返回 psi 上重算末场及闭合；末最小场门禁晚于闭合和力。",
+     "在返回的 psi 上重算末态场与闭合；terminal 场下限检查先于 terminal closure、mask 和 force 求值。",
      "动态掩码在反馈前生效，标量压力广播不变。",
      "错压力形状、缺闭合及非法控制拒绝。",
      "制造线性各向同性压力给解析电流和末单元电流。",
@@ -9576,7 +9580,7 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "a80c51df3d8b3f3aaea8aec13587cce01c5cb5fdcd67729e62aaa68dafab14da",
+   "source_sha256": "b5a3afb9b3c49189182d68507927f1d6ebd925c5a9af2ba53cf2f6f7ee3779e2",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
    "definition": "对每个调用者线圈离散中心、附加权重、计算 Green 响应、收缩一个驱动电流，并重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
@@ -9660,13 +9664,18 @@
      "多个线圈的独立响应行。",
      "电流与电流丝权重的区分。",
      "缺失电流和非法网格的失败行为。",
-     "不可表示的近导线或大电流响应以失败闭合，而不是返回非有限场。"
+     "不可表示的近导线或大电流响应以失败闭合，而不是返回非有限场。",
+     "固定 Pleiades 双线圈参考值以及存在外部 truth artifact 时的完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 覆盖。"
     ],
     "evidence_ceiling": "验证针对声明的轴对称真空电流丝模型和已测输入合同，不证明材料线圈、等离子体响应或三维几何适用性。",
     "known_limitations": [
      "调用之间不保留场缓存或设备对象。",
      "不含反馈、优化或导体材料模型。",
      "公开分发许可仍待人工决定。"
+    ],
+    "tests": [
+     "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
+     "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
     ]
    }
   }

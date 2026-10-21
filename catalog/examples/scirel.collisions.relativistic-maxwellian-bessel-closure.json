@@ -106,7 +106,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises InvalidBesselArgumentError, a subclass of ValueError, when the argument is not strictly positive and finite, with a message naming the argument. The exception class is narrow so a caller can tell its own mistake from a backend failure.",
+  "invalid_input": "Raises InvalidBesselArgumentError, a subclass of ValueError, when the argument is not a strictly positive finite real scalar, including boolean, string, bytes, complex, higher-rank array and non-numeric inputs; the message names the argument. The exception class is narrow so a caller can tell its own mistake from a backend failure.",
   "runtime_failure": "Raises BesselBackendEvaluationError, also a subclass of ValueError, when the argument is valid and scipy.special.kve did not return three finite quantities for it. The message reports the argument and the three values produced. It states no domain bound and names no threshold, because the argument at which a given SciPy build stops returning finite values is a property of that build and platform rather than of the relation. The rejection is whole-call: a partially non-finite closure is not a usable scientific result.",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no mapping."
@@ -143,7 +143,7 @@
    "That the rejection message states the argument and the values produced and contains no domain bound, threshold or direction claim. Protected by the maintained tests, which read the message and assert the absence of every bound-shaped word.",
    "That the implementation carries no backend threshold: no such constant, attribute or measured literal appears in the module. The tests check the module's attributes and its source for the literals the removed branch option carried.",
    "That the two rejection classes are distinguishable and that both are ValueError subclasses, so a caller that only knows ValueError still catches everything the relation raises. Protected by the maintained tests directly.",
-   "The input contract, unchanged: a non-positive or non-finite argument raises the named message, and a non-numeric argument is a TypeError rather than either rejection class. Protected here directly against the public callable.",
+   "The input contract is a strict positive finite real scalar: non-positive or non-finite arguments raise the named message, and boolean, string, bytes, complex and higher-rank array inputs raise InvalidBesselArgumentError rather than being coerced. Protected here directly against the public callable; this strict guard is an audit repair, not the retained route's bare-float conversion.",
    "That every accepted call in a wide logarithmic sweep returns three finite Python floats. Protected by the maintained tests over 4000 arguments, which treat a backend rejection as a legitimate outcome rather than a failure.",
    "The rescaled-function identity and the asymptotic form, and the monotone decrease of bk0 and bk1 in x. Protected by the maintained tests directly, independently of either route."
   ],
@@ -158,7 +158,8 @@
    "No physical accuracy claim is made for any distribution. The closure is established as a special-function evaluation, not as an adequate collision-coefficient model.",
    "The replaced approximation's coefficients, its choice of Abramowitz-Stegun fits and its x = 2 split are taken as given; no reference is cited for any of them.",
    "Public distribution licensing remains pending a human decision.",
-   "The comparisons against a piecewise approximation and against alternative formulations are not replayable from this repository: no public test requires an external checkout, and the tests here protect the self-contained subset only."
+   "The comparisons against a piecewise approximation and against alternative formulations are not replayable from this repository: no public test requires an external checkout, and the tests here protect the self-contained subset only.",
+   "Boolean, string, bytes, complex and higher-rank array arguments are rejected as invalid rather than converted; this strict real-scalar guard is an audit repair of the retained route's float() coercion."
   ]
  }
 }

@@ -6,10 +6,18 @@ n=8.7e18 m^-3, csz=csp=4.631e5/9.360e3 m/s).  Only real parts are asserted:
 the external truth records an imaginary-part roundoff floor of order
 1e-5..1e-4 s^-1, which is not a physical growth-rate claim.
 """
+import math
+
 import numpy as np
 import pytest
 
-from scirel.kinetic.dispersion.multifluid import fluid_equilibrium_si, fluid_solve_state
+from scirel.kinetic.dispersion._fluid_parallel import fluid_frequency_pencil, fluid_state_scales
+from scirel.kinetic.dispersion.multifluid import (
+    fluid_equilibrium_si,
+    fluid_solve_state,
+    scan_fluid_corrected,
+)
+from scirel.kinetic.spectral_evolution import solve_temporal_spectrum
 
 
 _TRUTH = {
@@ -66,3 +74,34 @@ def test_external_pdrf_two_species_spectrum_keeps_all_14_modes(kx, kz):
     assert result["zero_structure"]["geometric_multiplicity"] == 2
     assert result["zero_structure"]["algebraic_multiplicity"] == 2
     assert not result["zero_structure"]["complete_eigenbasis_not_claimed"]
+
+
+@pytest.mark.parametrize("kx,kz", list(_TRUTH))
+def test_multifluid_scan_point_matches_external_pdrf_truth(kx, kz):
+    """The scan wrapper must not alter the per-point external-truth spectrum."""
+    state = _state()
+    kn = math.hypot(kx, kz)
+    theta = math.atan2(kx, kz)
+    result = scan_fluid_corrected(dict(
+        state=state,
+        method=1,
+        grid_controls={"wave_number": kn, "angle": theta},
+    ))
+    np.testing.assert_allclose(
+        result["w1"][0, 0].real, _TRUTH[(kx, kz)], rtol=2e-9, atol=1e-9
+    )
+
+
+@pytest.mark.parametrize("kx,kz", list(_TRUTH))
+@pytest.mark.parametrize("oldmethod", [1, 2])
+def test_spectral_temporal_spectrum_matches_external_pdrf_truth(kx, kz, oldmethod):
+    """Both documented temporal-spectrum paths retain the same low-frequency modes."""
+    state = _state()
+    pencil = fluid_frequency_pencil(state, kx, kz)
+    scales = fluid_state_scales(state)
+    result = solve_temporal_spectrum(
+        pencil["M"], pencil["A"], scales=scales, oldmethod=oldmethod
+    )
+    np.testing.assert_allclose(
+        result["w1"].real, _TRUTH[(kx, kz)], rtol=2e-9, atol=1e-9
+    )

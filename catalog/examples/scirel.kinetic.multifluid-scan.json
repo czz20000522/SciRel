@@ -143,10 +143,12 @@
  "verification": {
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "External PDRF real-frequency reference points are covered by tests/kinetic/test_dispersion_multifluid_oracle.py."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_multifluid.py"
+   "tests/kinetic/test_dispersion_multifluid.py",
+   "tests/kinetic/test_dispersion_multifluid_oracle.py"
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [

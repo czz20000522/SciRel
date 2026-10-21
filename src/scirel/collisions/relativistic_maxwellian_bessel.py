@@ -57,9 +57,11 @@ The exception hierarchy has exactly two members, because there are exactly two
 things a caller can do:
 
 ``InvalidBesselArgumentError``
-    ``x`` is not a positive finite scalar.  This is the retained route's guard and
-    its message, unchanged; V4 raises it as this class rather than as a bare
-    ``ValueError`` so a caller can tell its own mistakes apart from the backend's.
+    ``x`` is not a positive finite real scalar.  Booleans, strings, bytes,
+    complex values and higher-rank arrays are rejected rather than converted, and
+    a conversion failure is reported through this class rather than a bare
+    ``TypeError``/``ValueError`` so a caller can tell its own mistake apart from
+    the backend's.
 ``BesselBackendEvaluationError``
     ``x`` is a valid argument and ``scipy.special.kve`` did not return three finite
     quantities for it.
@@ -84,6 +86,8 @@ either, and no independent special-function table was consulted.
 from __future__ import annotations
 
 import math
+
+import numpy as np
 
 __all__ = [
     "BesselBackendEvaluationError",
@@ -117,6 +121,29 @@ class BesselBackendEvaluationError(ValueError):
     """
 
 
+def _positive_finite_scalar(x):
+    """Return ``x`` as a float after rejecting non-real coercions.
+
+    The public relation accepts a real scalar.  Booleans, strings, bytes and
+    complex values are not real scalars and are rejected rather than converted;
+    higher-rank arrays are rejected for the same reason.  A conversion failure is
+    reported as :class:`InvalidBesselArgumentError`, the same class the public
+    contract uses for an invalid argument.
+    """
+    if isinstance(x, (bool, np.bool_, str, bytes, complex)):
+        raise InvalidBesselArgumentError("x must be positive and finite")
+    if isinstance(x, np.ndarray):
+        if x.ndim != 0:
+            raise InvalidBesselArgumentError("x must be positive and finite")
+        if isinstance(x.item(), (bool, np.bool_, complex)):
+            raise InvalidBesselArgumentError("x must be positive and finite")
+        x = x.item()
+    try:
+        return float(x)
+    except (TypeError, ValueError, OverflowError) as error:
+        raise InvalidBesselArgumentError("x must be positive and finite") from error
+
+
 def _evaluate_closure(argument):
     """Evaluate the backend orders and the K2 recurrence once."""
     bk0 = float(kve(0, argument))
@@ -145,14 +172,14 @@ def relativistic_maxwellian_bessel(x):
     Raises
     ------
     InvalidBesselArgumentError
-        If ``x`` is not positive and finite.  This is the retained route's guard
-        and its message, unchanged; the class is narrowed, not the test.
+        If ``x`` is not a positive finite real scalar.  Boolean, string, bytes,
+        complex and higher-rank array inputs are rejected rather than coerced.
     BesselBackendEvaluationError
         If ``scipy.special.kve`` did not return finite values for a valid ``x``.
         The rejection is whole-call: a partially non-finite closure is not a usable
         scientific result.  No domain bound is stated or implied.
     """
-    value = float(x)
+    value = _positive_finite_scalar(x)
     if not math.isfinite(value) or value <= 0.0:
         raise InvalidBesselArgumentError("x must be positive and finite")
     bk0, bk1, bk2 = _evaluate_closure(value)

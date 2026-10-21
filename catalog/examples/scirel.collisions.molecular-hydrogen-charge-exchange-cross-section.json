@@ -131,7 +131,8 @@
    "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
    "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
-   "Public distribution licensing remains pending a human decision."
+   "Public distribution licensing remains pending a human decision.",
+   "The frozen high-energy branch is non-monotonic between about 978 and 8,291 eV: the cross section rises by about 27.7% there, with a maximum log-slope near 0.175. Monotonicity is not claimed, and no external oracle is bound that could justify changing the frozen fit."
   ]
  }
 }

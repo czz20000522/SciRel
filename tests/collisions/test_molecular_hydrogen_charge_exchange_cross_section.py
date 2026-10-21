@@ -111,3 +111,38 @@ def test_composition_with_maxwellian_rate_average():
     )
     assert rate.shape == (3,)
     assert np.all(np.isfinite(rate)) and np.all(rate > 0.0)
+
+
+# ---------------------------------------------------------------------------
+# AUDIT-B3: the frozen high-energy branch is not monotone.
+# ---------------------------------------------------------------------------
+# The nine-coefficient fit rises by about 27.7 % between ~978 and ~8,291 eV
+# (maximum log-slope about +0.175 on a dense grid).  This is a property of the
+# frozen fit, not of any reference data; there is no external oracle that could
+# justify replacing it.  The strict xfail keeps the defect visible and fails
+# (xpass) as soon as the fit becomes monotone, which is the signal to remove the
+# marker and tighten the contract.  The guard test below fails if the anomalous
+# band or its slope grows in the future.
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "AUDIT-B3: the frozen high-energy branch of the H2 charge-exchange fit "
+        "is non-monotonic between ~978 and ~8,291 eV; no external oracle is "
+        "bound to justify changing the fit"
+    ),
+)
+def test_cross_section_is_monotone_decreasing_on_fit_domain():
+    energy = np.geomspace(0.1, 2.01e4, 4000)
+    cross_section = evaluate_molecular_hydrogen_charge_exchange_cross_section(energy)
+    assert np.all(np.diff(cross_section) <= 0.0)
+
+
+def test_nonmonotonic_high_energy_band_is_bounded():
+    energy = np.geomspace(0.1, 2.01e4, 4000)
+    cross_section = evaluate_molecular_hydrogen_charge_exchange_cross_section(energy)
+    local_slope = np.diff(np.log(cross_section)) / np.diff(np.log(energy))
+    positive = np.flatnonzero(local_slope > 0.0)
+    assert positive.size > 0
+    assert energy[positive].min() >= 900.0
+    assert energy[positive].max() <= 8500.0
+    assert local_slope[positive].max() <= 0.18

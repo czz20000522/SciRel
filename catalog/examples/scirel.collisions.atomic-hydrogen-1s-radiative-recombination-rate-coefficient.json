@@ -107,7 +107,8 @@
   "scope": [
    "Six fixed reference values and an independent closed-form evaluation hold to a 1e-15 relative tolerance, including on a holdout grid.",
    "Direct tests cover monotonic temperature dependence on the sampled grid, clipping, scalar shape, invalid domain and non-real input rejection.",
-   "An optional external comparison test compares finite one- and two-dimensional carriers exactly and covers three rejection differences; it runs only when an external implementation root is configured."
+   "An optional external comparison test compares finite one- and two-dimensional carriers exactly and covers three rejection differences; it runs only when an external implementation root is configured.",
+   "Low- and high-temperature logarithmic slopes converge to the analytic -1/2 and -3/2 asymptotic limits within the audited temperature windows."
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py"

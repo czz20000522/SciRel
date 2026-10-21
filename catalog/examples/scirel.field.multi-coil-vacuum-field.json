@@ -161,10 +161,12 @@
    "Independent response rows for multiple coils.",
    "Current-versus-filament-weight semantics.",
    "Missing current and invalid grid failures.",
-   "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields."
+   "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields.",
+   "Fixed Pleiades two-coil reference values and, when the external truth artifact is present, the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py."
   ],
   "tests": [
-   "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py"
+   "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
+   "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
   ],
   "evidence_ceiling": "Verified for the declared axisymmetric vacuum-filament model and tested input contracts; it does not establish applicability to material coils, plasma response, or three-dimensional geometry.",
   "known_limitations": [

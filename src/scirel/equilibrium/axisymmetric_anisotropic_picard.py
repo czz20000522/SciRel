@@ -94,6 +94,8 @@ def run_composition(inputs, *, asset_loader):
             converged = True
             break
     magnetic = field(r_grid, z_grid, psi)
+    if np.any(magnetic['B'] < minimum_field):
+        raise FloatingPointError('magnetic field fell below minimum_field at the returned terminal state')
     state = _require_state(closure, magnetic, psi)
     active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
     if active.shape != psi.shape:
@@ -104,8 +106,6 @@ def run_composition(inputs, *, asset_loader):
     terminal_update=update(r_grid,z_grid,j_phi,psi,psi_vac,g_psi,0.,old_currents,cell_edges=inputs.get('cell_edges'))
     fixed_point_residual=terminal_update['fixed_point_residual']
     converged=bool(fixed_point_residual<=tol)
-    if np.any(magnetic['B'] < minimum_field):
-        raise FloatingPointError('magnetic field fell below minimum_field at the returned terminal state')
     if np.any(active & (force_state['firehose_margin'] <= minimum_firehose)):
         raise FloatingPointError('pressure closure crossed the firehose/tension singularity')
     if force_state['parallel_force_error'] > compatibility_tol and strict:

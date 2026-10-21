@@ -32,7 +32,8 @@ def scan_frequencies(*, omega_scale, omega_step, omega_stop, wn):
     expression fixes both the ladder and its length (``nx=length(xx)`` at line 84), so this
     adapter takes only the three written bounds and derives the point count from the colon
     rule (every point is a multiple of the step from the start): ``count`` is
-    ``floor((stop-start)/step)+1``.
+    ``floor((stop-start)/step)+1``, with an endpoint that differs from an exact
+    multiple only by binary rounding retained as a ladder point.
 
     Element ``k`` is the correctly rounded value of the exact rational ``start + k*step``,
     and only then is the whole ladder scaled by the equilibrium-derived ``wn``. A plain
@@ -56,11 +57,11 @@ def scan_frequencies(*, omega_scale, omega_step, omega_stop, wn):
     stop = Fraction(omega_stop)
     if stop < base:
         raise ValueError("omega_stop must not be smaller than omega_scale")
-    # The length follows the source runtime's own colon rule in double precision
-    # (floor((stop-start)/step)+1); the VALUES are then built as exact rationals so each
-    # point is the correctly rounded start+k*step before the single wn scaling. Using the
-    # exact rationals for the length too would drop the fluid ladder's last point.
-    count = int(math.floor((omega_stop - omega_scale) / omega_step)) + 1
+    # The endpoint belongs to the colon ladder when (stop-start)/step is an
+    # integer multiple up to binary rounding.  A plain floor drops endpoints for
+    # decimal inputs such as 0.1:0.1:0.3 and 0.1:0.05:0.3.
+    ratio = (omega_stop - omega_scale) / omega_step
+    count = int(math.floor(ratio + 1e-12 * max(1.0, abs(ratio)))) + 1
     if count < 1:
         raise ValueError("the derived colon ladder must contain at least one point")
     ladder = np.array([float(base + k * increment) for k in range(count)], dtype=np.float64)

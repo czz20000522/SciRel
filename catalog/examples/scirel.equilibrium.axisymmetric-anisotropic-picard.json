@@ -380,7 +380,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError/TypeError for missing or invalid grid, Green matrix, controls, pressure_closure or mask; invalid closure mapping/pressure values, wrong mask shape and dependency input failures propagate.",
-  "runtime_failure": "Raises FloatingPointError before pressure_closure when an iteration field is below minimum_field. At the terminal state, closure, mask and force failures can occur before the minimum-field gate; a low terminal field or active firehose margin raises FloatingPointError, and strict parallel-force incompatibility raises ValueError. Other callback and dependency failures propagate without fallback.",
+  "runtime_failure": "Raises FloatingPointError before the terminal pressure_closure, mask or force evaluation when the terminal field is below minimum_field; iteration fields are checked before each closure call.",
   "nonconvergence": "After maxiter steps, returns the last state with converged=false and the iteration history; there is no automatic retry or failure_reason field.",
   "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state result, not an exception."
  },
@@ -414,7 +414,7 @@
  },
  "verification": {
   "scope": [
-   "Final field and closure are recomputed at the returned psi; the terminal minimum-field gate follows closure and force evaluation.",
+   "Final field and closure are recomputed at the returned psi; the terminal minimum-field gate precedes terminal closure, mask and force evaluation.",
    "Dynamic inactive mask is applied before Green feedback and scalar pressures broadcast unchanged.",
    "Wrong pressure shape, missing closure and invalid controls fail closed.",
    "Manufactured isotropic linear pressure produces analytic J_phi and terminal cell currents.",

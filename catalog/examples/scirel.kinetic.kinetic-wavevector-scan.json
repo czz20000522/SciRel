@@ -362,10 +362,12 @@
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "Python preflight ran, but fluid native/local execution covers this asset."
+   "Python preflight ran, but fluid native/local execution covers this asset.",
+   "Near-integer colon-ladder endpoints are retained and covered by tests/kinetic/test_dispersion_scan_axes.py."
   ],
   "tests": [
-   "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
+   "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
+   "tests/kinetic/test_dispersion_scan_axes.py"
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [

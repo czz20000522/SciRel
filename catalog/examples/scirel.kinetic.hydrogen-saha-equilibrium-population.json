@@ -128,7 +128,8 @@
  "verification": {
   "scope": [
    "Frozen-constant formula and principal levels 1, 2 and 3 at 1e-15 relative tolerance, plus exact handling of integer levels 2^53+1 and 2^64.",
-   "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard, including under caller np.errstate(all='raise')."
+   "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard, including under caller np.errstate(all='raise').",
+   "An independent Saha evaluation built from CODATA constants reproduces the frozen-constant relation within a 1.5e-3 relative tolerance on representative density, temperature and principal-level grids."
   ],
   "tests": [
    "tests/kinetic/test_hydrogen_saha_equilibrium_population.py"
@@ -138,7 +139,8 @@
    "Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.",
    "The scalar/profile reading is not supported; this contract follows the one-dimensional restriction.",
    "Physical-reference validation_oracle_gap and pending public-distribution licensing remain.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "The frozen prefactor 3.310e-28 m^3 eV^(3/2) and the 13.6057 eV Rydberg differ from current CODATA values by at most 0.09%; the 1.5e-3 agreement bound is the physical-constant limit of this asset, and the n_H+ = n_e assumption remains explicit."
   ]
  }
 }

@@ -137,7 +137,7 @@ def test_review_gate_firehose_and_parallel_compatibility_fail_closed():
         })
 
 
-def test_review_gate_rechecks_minimum_field_after_terminal_update():
+def test_axisymmetric_terminal_floor_precedes_terminal_closure():
     from scirel.equilibrium import axisymmetric_anisotropic_picard as composition
 
     calls = {"field": 0, "closure": 0}
@@ -163,8 +163,10 @@ def test_review_gate_rechecks_minimum_field_after_terminal_update():
 
     with pytest.raises(FloatingPointError, match="returned terminal state"):
         composition.run_composition(_inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure), asset_loader=loader)
-    assert calls["field"] >= 2
-    assert calls["closure"] == 2
+    assert calls["field"] == 2
+    # The terminal field gate must run before the terminal closure evaluation;
+    # only the iteration closure may observe a field.
+    assert calls["closure"] == 1
 
 
 def test_review_gate_rejects_nonfinite_and_coerced_control_values():

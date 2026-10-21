@@ -569,7 +569,7 @@
   },
   {
    "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
-   "source_sha256": "584328387ea63bbb599a267871a082ae70dd268bcba94e5f3ef1fb352b928b1c",
+   "source_sha256": "dbd206253128fae84959e20cfd164699ee65020d49011a0e912e5b06782e910b",
    "summary": "求解时间模式并独立排序，保持成对的值与向量，并以实数精度做精化。",
    "definition": "lambda*A*X=M*X；omega=i*lambda。对两个矩阵先施加正对角物理相似变换，再做二进制相似平衡。先做双精度 eig；当分量残差 >1e-12 时，在私有克隆上下文中用 50 位十进制 mpmath 做实际求逆和 eig。最终全局残差或活动分量残差 >1e-10 时拒绝。转换为 complex128，并在不使未缩放幅值溢出的前提下归一化向量。排序按实部/虚部频率独立且稳定。",
    "model": "稠密线性广义本征问题，并以向后误差控制算术精化。",
@@ -730,7 +730,8 @@
    "verification": {
     "scope": [
      "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
-     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
+     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。",
+     "外部 PDRF 实频参考点由 tests/kinetic/test_dispersion_multifluid_oracle.py 覆盖。"
     ],
     "evidence_ceiling": "直接测试与有界示例只建立声明的输入/输出行为、数值检查和失败边界；不建立任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发行许可。",
     "known_limitations": [
@@ -741,7 +742,8 @@
      "示例输出只是一次有界运行时观测，不是普遍科学结论。"
     ],
     "tests": [
-     "tests/kinetic/test_spectral_evolution.py"
+     "tests/kinetic/test_spectral_evolution.py",
+     "tests/kinetic/test_dispersion_multifluid_oracle.py"
     ]
    }
   },

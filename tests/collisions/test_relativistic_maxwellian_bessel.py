@@ -236,17 +236,19 @@ def test_the_rejection_hierarchy_separates_input_errors_from_backend_failures():
         relativistic_maxwellian_bessel(0.0)
 
 
-def test_the_input_contract_is_the_retained_routes():
-    """The guard is unchanged; only the class it raises is narrowed."""
+def test_the_input_contract_requires_a_positive_finite_real_scalar():
+    """Booleans, strings, complex values and non-scalars are rejected, not coerced."""
     for bad in (0.0, -1.0, float("nan"), float("inf"), -float("inf")):
         with pytest.raises(ValueError, match="positive and finite"):
             relativistic_maxwellian_bessel(bad)
         with pytest.raises(InvalidBesselArgumentError, match="positive and finite"):
             relativistic_maxwellian_bessel(bad)
-    # A non-numeric argument is still a TypeError from float(), as in the retained
-    # route, and is not converted into either rejection class.
-    with pytest.raises(TypeError):
-        relativistic_maxwellian_bessel(None)
+    # AUDIT-B3: the stricter real-scalar contract also rejects non-real coercions
+    # (previously ``None`` leaked a bare TypeError and ``True``/``"1.0"`` were
+    # silently converted by float()).
+    for bad in (None, True, "1.0", 1 + 0j, [1.0], np.array([1.0])):
+        with pytest.raises(InvalidBesselArgumentError, match="positive and finite"):
+            relativistic_maxwellian_bessel(bad)
 
 
 def test_every_accepted_call_returns_three_finite_floats():
@@ -310,3 +312,21 @@ def test_the_closure_is_monotone_decreasing_in_x():
             assert result["bk0"] < previous["bk0"]
             assert result["bk1"] < previous["bk1"]
         previous = result
+
+
+# ---------------------------------------------------------------------------
+# AUDIT-B3: fail-closed validation must reject non-real coercions.
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize("bad", [
+    True,
+    False,
+    "1.0",
+    b"1.0",
+    1 + 0j,
+    [1.0],
+    np.array([1.0]),
+])
+def test_non_real_coercions_are_rejected_as_invalid_arguments(bad):
+    """Boolean, string, complex and non-scalar inputs are not positive scalars."""
+    with pytest.raises(InvalidBesselArgumentError):
+        relativistic_maxwellian_bessel(bad)

@@ -28,3 +28,10 @@ def test_parallel_rejects_complex_and_unrepresentable_wavevectors():
     with pytest.raises(ValueError):em1d_parallel_residual(STATE,np.clongdouble('1e400'),.3)
     for k in [[],[0],[.1+1j]]:
         with pytest.raises(ValueError):continue_em1d(dict(state=STATE,k_grid=k))
+
+
+def test_vacuum_continuation_matches_analytic_branch_and_zero_residual():
+    state = dict(wps2=[0.0], vds=[0.0], vtzs=[1.0], wcs=[0.0], c2=1.0)
+    result = continue_em1d(dict(state=state, k_grid=[0.2, 0.21], initial_guess=0.2 + 0j))
+    np.testing.assert_allclose(result["omega"], [0.2, 0.21], rtol=0, atol=1e-15)
+    assert all(record["scaled_residual"] == 0.0 for record in result["records"])
