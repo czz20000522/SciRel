@@ -14,6 +14,17 @@ Agent 查询
 
 查询结果保留快照身份、精确资产 ID 和实现版本。中文检索覆盖经过审阅的中文说明；API 名称和原合同关键词也可检索。
 
+结构化能力查询
+------------------
+
+.. code-block:: bash
+
+   curl 'http://127.0.0.1:8765/api/capabilities?capability=equilibrium&geometry=axisymmetric&limit=5'
+   curl 'http://127.0.0.1:8765/api/capabilities?device_scope=device-parameterized&q=coil&limit=5'
+   python scripts/scirel_docs.py query --snapshot /实际快照路径 --capabilities --capability equilibrium --limit 5
+
+``capabilities`` 从合同投影出 capability、operation、model、geometry、boundary、device_scope；过滤条件是 AND，``q`` 仍做词法召回。响应区分 ``match`` / ``near_miss`` / ``gap``：零词法命中不等同于科学能力缺口。未记录 device_scope 的资产返回 ``unclassified``，不得当作 ``generic``。返回中的 contract_path/docs_path 指回同一快照的正式合同和页面。
+
 完整合同与中文说明
 ----------------------
 
