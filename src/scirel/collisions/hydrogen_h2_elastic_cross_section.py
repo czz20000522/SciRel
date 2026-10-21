@@ -35,6 +35,11 @@ residual as ``validation_oracle_gap``.
 """
 from __future__ import annotations
 
+# HELD: human-review exposure guard
+from scirel._hold import require_review_import
+require_review_import(__name__)
+
+
 import numpy as np
 
 from ._energy_input import clipped_energy, log_polynomial

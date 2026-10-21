@@ -34,6 +34,11 @@ convergence studies. These model assumptions are retained, not hidden quirks.
 """
 from __future__ import annotations
 
+# HELD: human-review exposure guard
+from scirel._hold import require_review_import
+require_review_import(__name__)
+
+
 import numpy as np
 
 from .molecular_hydrogen_charge_exchange_cross_section import evaluate_molecular_hydrogen_charge_exchange_cross_section

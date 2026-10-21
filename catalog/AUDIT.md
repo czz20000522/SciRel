@@ -153,3 +153,37 @@ These are process behaviours, tested independently of capability count:
   mismatch, numerical/applicability limit, or implementation failure. Do not
   call a representation/API mismatch "invalid physics", and do not call valid
   data outside a numerical envelope "invalid user data".
+
+## Final quarantine architecture and merge chain reaction
+
+The import guard is a transitional stopgap. The target architecture separates
+three trees:
+
+- `src/scirel/` — only merged, admitted code; nothing held is installed or
+  importable;
+- `catalog/examples/` — only admitted contracts and public evidence;
+- `catalog/review/` (and an optional external review tree) — candidate contracts,
+  candidate code, audit verdicts and human-review records; never installed.
+
+A candidate moves in this order:
+
+1. stage it in the review tree, outside the package and public catalog;
+2. run its contract, direct tests, adversarial probes and import-surface check
+   in a review harness;
+3. record the verdict; unresolved disagreement or missing owner decision keeps
+   it staged;
+4. on approval, merge in dependency order (leaf capability before composition);
+5. regenerate the public export manifest and docs; run the dependency closure;
+6. remove the staged copy only after the merged copy is green.
+
+Avoiding a merge chain reaction:
+
+- derive public exports, docs and capability index from the admitted manifest,
+  not from a filesystem glob or hand-maintained `__all__`;
+- compute the reverse-dependency closure from contract dependencies and Python
+  imports before merging; a merge is a batch, never a partial file move;
+- require the closure's tests, docs build and import-surface check to pass;
+- if one member of a composition is held or fails, the composition is not
+  exposed; do not ship a partially wired chain;
+- package/wheel checks must prove that held modules and symbols are absent, not
+  merely guarded at runtime.

@@ -19,7 +19,12 @@ def _load_export(name):
     globals()[name] = value
     return value
 
+_HELD = frozenset({"calculate_log_lambda_ii"})
+
 def __getattr__(name):
+    if name in _HELD:
+        from scirel._hold import require_review_call
+        require_review_call(name)
     if name in _LAZY_EXPORTS:
         return _load_export(name)
     if name in _LAZY_MODULES:

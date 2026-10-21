@@ -1,5 +1,10 @@
 """Standalone orchestration of the current SciRel anisotropic Picard solver."""
 from __future__ import annotations
+
+# HELD: human-review exposure guard
+from scirel._hold import require_review_import
+require_review_import(__name__)
+
 from scirel._validation import finite_scalar as _require_finite_scalar, integer_scalar as _require_integer_scalar, bool_scalar as _require_bool_scalar
 from collections.abc import Mapping
 import numpy as np

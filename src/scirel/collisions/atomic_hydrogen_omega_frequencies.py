@@ -14,6 +14,11 @@ collision moments are returned. No floor, positivity clipping or equilibrium
 linearization is inferred. The original the neutral-transport formulation model is a moment-matched BGK
 approximation; finite-grid quadrature does not guarantee exact Maxwell balance.
 """
+
+# HELD: human-review exposure guard
+from scirel._hold import require_review_import
+require_review_import(__name__)
+
 from ._elastic_moments import reduce_elastic_moments
 
 __all__ = ['assemble_atomic_hydrogen_omega_frequencies']

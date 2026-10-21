@@ -6,6 +6,11 @@ Maxwellian integration of the separate molecular charge-exchange cross section.
 
 from __future__ import annotations
 
+# HELD: human-review exposure guard
+from scirel._hold import require_review_import
+require_review_import(__name__)
+
+
 import numpy as np
 
 from ._energy_input import bivariate_log_fit, finite_nonnegative_energy, positive_real_array

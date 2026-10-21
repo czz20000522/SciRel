@@ -75,6 +75,8 @@ def calculate_log_lambda_ei(T_e, n_e):
 
 def calculate_log_lambda_ii(T_i, n_i, Z_i):
     """Return ``30 - .5 ln(n_i) + 1.5 ln(1000*T_i) - 3 ln(Z_i)``."""
+    from scirel._hold import require_review_call
+    require_review_call("calculate_log_lambda_ii")
     T, n, z = _positive_broadcast(("T_i", T_i), ("n_i", n_i), ("Z_i", Z_i))
     with np.errstate(over="ignore", invalid="ignore"):
         result = (

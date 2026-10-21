@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import os
 import sys
+
+# Tests are the review harness and may import held implementations; the default
+# package remains non-importable for held capabilities.
+os.environ.setdefault("SCIREL_REVIEW_HOLD", "1")
 from pathlib import Path
 
 import pytest
