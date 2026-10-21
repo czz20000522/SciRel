@@ -14,7 +14,7 @@
   ],
   "supported": [
    "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
-   "Z(z) Weideman64, with erfcx on the imaginary axis; explicit overflow failure.",
+   "Z(z)=i*sqrt(pi)*wofz(z) via scipy.special; explicit overflow failure.",
    "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
   ]
  },
@@ -116,7 +116,7 @@
   ],
   "scope": [
    "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
-   "Z(z) Weideman64, with erfcx on the imaginary axis; explicit overflow failure.",
+   "Z(z)=i*sqrt(pi)*wofz(z) via scipy.special; explicit overflow failure.",
    "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
   ],
   "tests": [

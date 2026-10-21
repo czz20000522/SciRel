@@ -41,20 +41,11 @@
  ],
  "outputs": [
   {
-   "name": "bzj",
-   "description": "Ordered complex residues.",
-   "units": "dimensionless",
-   "shape": "(1,J)",
-   "dtype": "complex128",
-   "required": true,
-   "constraints": "Accessible in returned operator result.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
-  },
-  {
-   "name": "czj",
-   "description": "Ordered lower-half-plane complex poles.",
-   "units": "dimensionless",
-   "shape": "(1,J)",
-   "dtype": "complex128",
+   "name": "state",
+   "description": "J-pole table object; access J, bzj and czj through result.state.",
+   "units": "mixed (J dimensionless, bzj/czj complex coefficients)",
+   "shape": "object with a mapping state",
+   "dtype": "object",
    "required": true,
    "constraints": "Accessible in returned operator result.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
   }
@@ -90,7 +81,7 @@
  "example": {
   "description": "Return a pure-Python J-pole table and inspect its moments.",
   "code": "from scirel.kinetic.dispersion import magnetized\nr = magnetized.pole_coefficients(8)\nassert r.state['bzj'].size == 8",
-  "expected": "PASS: .venv/bin/python returns the declared table without the declared local Python runtime."
+  "expected": "The call returns a state object whose bzj table has J entries; the example executes locally without an external runtime."
  },
  "verification": {
   "scope": [

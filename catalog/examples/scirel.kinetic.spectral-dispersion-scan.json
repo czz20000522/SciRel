@@ -17,7 +17,7 @@
  "identity": {
   "relation": "Complete bounded effective multi-fluid spectrum scan and terminal projection",
   "direction": "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting",
-  "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. Then produce a two-panel PNG in Agg for2/3/4; other selectors retain zero axes. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
+  "definition": "Initialize once; for each source-selected k point assemble the corrected matrix and compute the conditioned eigenspectrum; collect every sorted mode and retain the last-point M,A,w1,w2,state. Methods2/3/4 retain defaults101/196 magnitude points,51 angles,50x75 Cartesian mesh and row-major kz then kx order. Single branch handles0/1 and unknown nonnegative selectors. No image is rendered by the current implementation; graphics metadata is returned, and plot_png is an empty compatibility payload. Optional SI positional return is (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0) prefix, all defined.",
   "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; the scan grids follow the declared method defaults",
   "geometry": "x-z wavevector scans; B0 along z",
   "coordinates": "Scan axes precede mode axis; Cartesian shape [kz_index,kx_index,mode]",
@@ -182,12 +182,12 @@
   },
   {
    "name": "plot_path",
-   "description": "Explicit optional PNG export destination.",
+   "description": "Optional compatibility path; current implementation does not render an image.",
    "units": "filesystem path",
    "shape": "scalar or null",
    "dtype": "path-like or None",
    "required": false,
-   "constraints": "Only methods2/3/4; Agg generates PNG in memory and writes this path if supplied.",
+   "constraints": "Accepted by the signature; no PNG is produced by the current implementation.",
    "default": null
   },
   {
@@ -449,12 +449,12 @@
   },
   {
    "name": "plot_png",
-   "description": "Computed PNG bytes.",
-   "units": "PNG bytes",
+   "description": "Empty bytes in the current implementation; retained for signature compatibility.",
+   "units": "bytes",
    "shape": "bytes or absent",
    "dtype": "bytes",
    "required": false,
-   "constraints": "Methods2/3/4 only; requested file mirrors these bytes.",
+   "constraints": "Empty payload; no image is rendered.",
    "default": null
   }
  ],
@@ -477,7 +477,7 @@
   "invalid_input": "ValueError for invalid units, shape, nonfinite data, physical signs, rates, selectors, or a numerically unrepresentable state. The matrix rejects rel=1 at or above c.",
   "runtime_failure": "Native NumPy/SciPy/mpmath or file export failures propagate; ArithmeticError rejects residual or eigenvector failure.",
   "nonconvergence": "No physical iteration. Numerical eigensolver failure propagates; no result is claimed on failure.",
-  "partial_results": "No result dictionary is returned after failure; an explicitly requested PNG is a caller-directed file side effect."
+  "partial_results": "No result dictionary is returned after failure; no PNG side effect is produced by the current implementation."
  },
  "public_api": {
   "python": {

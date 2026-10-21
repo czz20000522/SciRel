@@ -18,7 +18,7 @@
   "model": "Bounded analytic empirical tokamak fit",
   "geometry": "Caller-supplied axisymmetric tokamak face data",
   "coordinates": "rho normalized radius; psi total flux Wb",
-  "boundary": "First current face at magnetic axis exactly zero; other gradients explicit",
+  "boundary": "Coefficient evaluation only; no current assembly and no magnetic-axis zeroing are performed.",
   "assumptions": [
    "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
   ]

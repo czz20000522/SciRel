@@ -1807,7 +1807,7 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-z-poles",
-   "source_sha256": "0cd02d2a7d5f5999eb2de467a684fccc8af4a05f92c8acf8d365aa9a25b365ac",
+   "source_sha256": "210963c684f645e9b4360c5fd09e9cf4c242f39649bed0dbfea009126778d7c4",
    "summary": "返回有序 J4/J8 表，或精度修正后的 J12/I16/K8 极点－留数表。",
    "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j])；成对系数表在 binary64 精度内满足 sum b=-1,sum bc=0,sum bc^2=-1/2。J12 以 80 位精度重新生成所规定的 Padé 关系，并在舍入为 binary64 前与 120 位构造核对；J4/J8 表值按给定值保留。",
    "model": "用于磁化动理学响应的显式有理近似或双高斯表示。",
@@ -1826,16 +1826,10 @@
    ],
    "outputs": [
     {
-     "name": "bzj",
-     "description": "有序复留数。",
-     "dtype": "complex128 数组",
-     "constraints": "可从返回的算子结果 state 字段访问；科学含义只适用于兼容且已完成的先前结果。非活动的空数组原样保留。"
-    },
-    {
-     "name": "czj",
-     "description": "有序的下半平面复极点。",
-     "dtype": "complex128 数组",
-     "constraints": "可从返回的算子结果 state 字段访问；科学含义只适用于兼容且已完成的先前结果。非活动的空数组原样保留。"
+     "name": "state",
+     "description": "J 极点表对象；通过 result.state 读取 J、bzj 和 czj。",
+     "constraints": "通过返回对象的 state 访问；仅当兼容的前置计算完成时具有科学意义；未激活数组保持为空。",
+     "dtype": "对象（含映射 state）"
     }
    ],
    "applicability": {

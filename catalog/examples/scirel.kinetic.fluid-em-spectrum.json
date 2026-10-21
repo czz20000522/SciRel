@@ -35,7 +35,7 @@
   ],
   "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
   "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "All finite matrix eigenvalues are returned. Selected5 are heuristic positive-real, least-|imaginary| candidates; physical-state similarity-scaled backward gate<=2e-12.",
+  "definition": "All finite matrix eigenvalues are returned. Selected5 are heuristic positive-real, least-|imaginary| candidates. The current diagnostic error fields are zero placeholders; the claimed 2e-12 physical gate is not computed.",
   "direction": "inverse: angular frequency to finite-model spectrum",
   "geometry": "uniform background B along z; wavevector (kx,0,kz)",
   "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
