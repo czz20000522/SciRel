@@ -98,7 +98,8 @@ the reason:
 
 ## 9. Outbound delivery
 
-- The single outbound entrypoint is `scirel-solving`; evolve it in place, never fork a parallel outbound skill.
+- The single outbound entrypoint is `scirel-solving`; it has no version suffix and is overwritten in place, never forked into a parallel outbound skill.
+- An old examination/sample is a source of physical requirements, not a package-version or acceptance baseline. The reference answer uses the current SciRel capability set plus explicit glue.
 - Outbound workers see only public capability contracts/docs and the user request; not decomposition history, source identity, receiver roadmap or hidden oracle.
 - Capability discovery metadata lives in the contract `discovery` block and is maintained by the SciRel intake owner. No schema version labels; iterate directly.
 - Gaps are ordinary glue: explicit, testable, disclosed; final scientific acceptance belongs to the requester or a designated expert, not to the worker.
