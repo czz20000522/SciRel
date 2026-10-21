@@ -249,7 +249,37 @@ def render_tutorial(chapter):
     return out
 
 
-def render_site(root, docs, book, translations, chapter, *, figure_files):
+def render_matrix_page(matrix):
+    """Render the capability matrix as a Sphinx page linked to function pages."""
+    out = title('能力矩阵')
+    out += (f"本快照收录 **{matrix['total_assets']}** 个能力，分布在 **{matrix['total_domains']}** 个领域。"
+            "矩阵是 catalog 的派生视图，用于观察领域覆盖和函数入口；它不是缺口清单，也不代表人工批准。\n\n")
+    out += ('`下载 capability-matrix.json </capability-matrix.json>`_ · '
+            '`下载 CAPABILITY_MATRIX.md </CAPABILITY_MATRIX.md>`_\n\n')
+    out += title('领域覆盖', '-') + '.. list-table::\n   :header-rows: 1\n\n   * - 领域\n     - 能力数\n     - 代表函数\n'
+    assets = {a['asset_id']: a for a in matrix['assets']}
+    for group in matrix['domains']:
+        symbols = [assets[a]['symbol'] for a in group['assets'][:4]]
+        out += f"   * - ``{group['domain']}``\n     - {group['count']}\n     - {', '.join('``'+s+'``' for s in symbols)}\n"
+    out += '\n' + title('能力清单', '-')
+    for group in matrix['domains']:
+        out += title(group['domain'] + f"（{group['count']}）", '~')
+        out += ('.. list-table::\n   :header-rows: 1\n   :widths: 25 30 35 10\n\n'
+                '   * - 函数\n     - 中文能力\n     - 端口\n     - 测试数\n')
+        for asset_id in group['assets']:
+            a = assets[asset_id]
+            ports = a['ports'].replace('|', '\\|')
+            if len(ports) > 110:
+                ports = ports[:107] + '…'
+            out += (f"   * - {doclink(a['symbol'], api_path(asset_id))}\n"
+                    f"     - {plain(a['title_zh'] or a['title_en'])}\n"
+                    f"     - {plain(ports)}\n"
+                    f"     - {len(a['tests'])}\n")
+        out += '\n'
+    return out
+
+
+def render_site(root, docs, book, translations, chapter, *, figure_files, matrix=None):
     """Return only generated public site bytes; staging sources stay temporary."""
     # Sphinx otherwise silently builds a Chinese search index of Latin words only.
     jieba_version = version('jieba')
@@ -274,14 +304,22 @@ def render_site(root, docs, book, translations, chapter, *, figure_files):
             for relative, digest in bound_paths.items():
                 if hashlib.sha256((root/relative).read_bytes()).hexdigest() != digest:
                     raise ValueError('kinetic tutorial execution binding changed: ' + relative)
-        for label, target, description in [('用户指南','user-guide/index','从科学概念与输入约定入手，阅读领域导读和完整计算案例。'),('API 参考','reference/index','按科学领域查询调用签名、参数、返回值、失败行为、适用范围及示例。'),('开始使用','getting-started','了解精确安装包、单位约定，以及如何选择并验证一个科学关系。'),('Agent 查询','agent','按主题或精确资产标识读取与页面绑定的正式合同及中文说明。')]:
+        cards = [('用户指南','user-guide/index','从科学概念与输入约定入手，阅读领域导读和完整计算案例。'),('API 参考','reference/index','按科学领域查询调用签名、参数、返回值、失败行为、适用范围及示例。'),('开始使用','getting-started','了解精确安装包、单位约定，以及如何选择并验证一个科学关系。'),('Agent 查询','agent','按主题或精确资产标识读取与页面绑定的正式合同及中文说明。')]
+        if matrix is not None:
+            cards.insert(2, ('能力矩阵','user-guide/capability-matrix','按领域查看当前能力覆盖、函数入口、端口和测试数量。'))
+        for label, target, description in cards:
             home += '   .. grid-item-card:: ' + label + '\n      :link: ' + target + '\n      :link-type: doc\n\n      ' + description + '\n\n'
         home += '当前为开发文档。各函数保留自己的实现版本；请按 API 页的适用范围和具体安装包使用。\n\n'
         home += toctree(['getting-started','user-guide/index','reference/index','agent'], hidden=True)
         write('index', home)
         write('getting-started', (root/'tools/docs/sphinx/getting-started.rst').read_text())
         write('agent', (root/'tools/docs/sphinx/agent.rst').read_text())
-        write('user-guide/index', title('用户指南') + '用户指南解释科学问题、模型选择与组合方式。函数的完整参数、单位和失败行为见 API 参考。\n\n' + toctree([c['id'] for c in book['chapters']]) + title('完整计算案例','-') + toctree(['/tutorials/magnetostatics'] + (['/tutorials/kinetic-initial-value'] if any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']) else [])))
+        guide_links = [c['id'] for c in book['chapters']]
+        if matrix is not None:
+            guide_links.append('capability-matrix')
+        write('user-guide/index', title('用户指南') + '用户指南解释科学问题、模型选择与组合方式。函数的完整参数、单位和失败行为见 API 参考。\n\n' + toctree(guide_links) + title('完整计算案例','-') + toctree(['/tutorials/magnetostatics'] + (['/tutorials/kinetic-initial-value'] if any(t.get('tutorial_id') == 'kinetic-initial-value' for c in book['chapters'] for t in c['topics']) else [])))
+        if matrix is not None:
+            write('user-guide/capability-matrix', render_matrix_page(matrix))
         write('reference/index', title('API 参考') + '按科学领域查阅功能函数。选择左侧领域，在正文中按问题浏览函数及用途，点击函数名查看参数、返回值、适用范围与示例。\n\n' + toctree([c['id'] for c in book['chapters']], maxdepth=1))
         manual_root = root / 'tools/docs/manual'
         for c in book['chapters']:

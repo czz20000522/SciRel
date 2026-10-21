@@ -279,7 +279,7 @@
    "description": "各频点退出标志是否为正，即 the reference runtime 是否判定收敛",
    "units": "不适用",
    "shape": "(F,) 一维频点轴布尔数组",
-   "dtype": "real numeric",
+   "dtype": "bool",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },

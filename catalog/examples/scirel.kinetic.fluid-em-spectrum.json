@@ -7,7 +7,7 @@
    "No claim that every auxiliary eigenvalue is a kinetic physical mode; no infinite-mode completeness or cross-thread invariance."
   ],
   "preconditions": [
-   "Pinned Linux amd64 the declared local Python runtime7.3.0 runtime; OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1.",
+   "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
    "SciRel declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; Linux amd64 the declared local Python runtime remains required."
   ],
   "supported": [

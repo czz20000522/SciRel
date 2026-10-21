@@ -42,3 +42,11 @@ def test_rejects_nonfinite_matrix_and_bad_threshold():
         truncated_svd_inverse(np.eye(2), rcond=0.0)
     with pytest.raises(ValueError, match="rcond"):
         truncated_svd_inverse(np.eye(2), rcond=float("inf"))
+
+
+def test_rcond_is_relative_to_the_largest_singular_value():
+    matrix = np.diag([1.0e-11, 1.0e-6])
+    inverse = truncated_svd_inverse(matrix, rcond=1.0e-10)
+    np.testing.assert_allclose(
+        inverse, np.linalg.pinv(matrix, rcond=1.0e-10), rtol=1e-14, atol=0.0
+    )

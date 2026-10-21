@@ -4,35 +4,35 @@
  "records": [
   {
    "asset_id": "scirel.basis.basis-matrix",
-   "source_sha256": "5d4374a5697e110eca1b0636ddf7470170aea77ceab75f2838235feb4d8d8718",
-   "summary": "将选定基函数按样本-基函数设计矩阵的列求值。",
+   "source_sha256": "65df53fb6fff58873740a2421b9631dc6fbd2815ac2041662fb0fc5e69ff728a",
+   "summary": "将选定基函数求值为设计矩阵的列；矩阵行对应样本，列对应基函数。",
    "definition": "将选定基函数求值为设计矩阵的列。",
-   "model": "构造过程委托给明确的基函数工厂。",
-   "boundary": "沿用底层样条的端点和外插规则。",
+   "model": "构造委托给显式的基函数工厂。",
+   "boundary": "沿用底层样条的端点规则与外推约定。",
    "assumptions": [
-    "构造样本有限，并满足边界专用假设。",
-    "多项式系数按升幂列排列；poly_deg 默认 3 表示三个基函数。",
+    "用于构造的样本有限，并满足各边界条件的特定假设。",
+    "多项式基的列按升幂排列；poly_deg 默认 3 表示三个基函数。",
     "样条关键字默认 n_knots=5、domain=(0,1)；给定的 xdata/ydata 数组必须匹配。"
    ],
    "inputs": [
     {
      "name": "basis",
      "description": "基函数选择器。",
-     "constraints": "与 build_basis 的选择合同一致。",
+     "constraints": "与 build_basis 的基函数选择约定一致。",
      "dtype": "字符串"
     }
    ],
    "outputs": [
     {
      "name": "matrix",
-     "description": "求值时返回基函数值矩阵的对象。",
+     "description": "求值后返回基函数值矩阵的可调用对象。",
      "constraints": "调用者提供一维自变量序列；矩阵行按输入次序、列按基函数次序。",
      "dtype": "Python 可调用对象"
     }
    ],
    "applicability": {
     "preconditions": [
-     "构造样本有限，并满足边界专用假设。",
+     "用于构造的样本有限，并满足各边界条件的特定假设。",
      "多项式系数按升幂排列；poly_deg 默认 3 表示三个基函数。",
      "样条关键字默认 n_knots=5、domain=(0,1)；给定的 xdata/ydata 数组必须匹配。"
     ],
@@ -45,14 +45,14 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对不支持的基函数选择器、非有限或不匹配样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；线性系统失败向上传播。",
-    "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常从求值向上传播。",
+    "invalid_input": "对不支持的基函数选择器、非有限或不匹配的样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；线性系统求解失败会向上传播。",
+    "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常会在求值时向上传播。",
     "nonconvergence": "不适用；基函数构造和求值是直接计算，不声明迭代收敛。",
     "partial_results": "构造失败时不返回求值器；样条在节点区间外查询遵循实现的置零行为。"
    },
    "verification": {
     "scope": [
-     "公共可调用签名及文档化的有限输入行为。",
+     "公共可调用签名及已文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
      "本合同所载可执行示例。"
     ],
@@ -63,41 +63,41 @@
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。"
    },
    "example": {
-    "description": "在两个样本上求值默认多项式基，并检查行/列顺序。",
+    "description": "在两个样本上计算默认多项式基的设计矩阵，并检查行/列顺序。",
     "expected": "返回设计矩阵形状为 (2, 3)，值为 [[1, 0, 0], [1, 1, 1]]。"
    }
   },
   {
    "asset_id": "scirel.basis.build-basis",
-   "source_sha256": "a96fb48a969276ce5997690d3c6bfac17f58faf3e2e14353e785ac482182bfc2",
+   "source_sha256": "773ccd21dcbfe22486bd6d62ab0e0b52c9c9ad973628b55adce95c2e2479aa64",
    "summary": "构造可调用的升幂多项式或三次样条基函数。",
    "definition": "构造升幂多项式或三次样条求值器列表。",
-   "model": "基函数映射选择，默认 poly_deg=3 或 n_knots=5。",
+   "model": "按映射选择基函数；多项式默认 poly_deg=3，样条默认 n_knots=5。",
    "boundary": "各样条选择器继承其精确端点规则。",
    "assumptions": [
-    "构造样本有限，并满足边界专用假设。",
-    "多项式系数按升幂列排列；poly_deg 默认 3 表示三个基函数。",
+    "用于构造的样本有限，并满足各边界条件的特定假设。",
+    "多项式基的列按升幂排列；poly_deg 默认 3 表示三个基函数。",
     "样条关键字默认 n_knots=5、domain=(0,1)；给定的 xdata/ydata 数组必须匹配。"
    ],
    "inputs": [
     {
      "name": "basis",
      "description": "基函数选择器，默认 poly。",
-     "constraints": "poly 或三次样条选择名称；转为小写。",
+     "constraints": "poly 或三次样条选择器；不区分大小写。",
      "dtype": "字符串"
     }
    ],
    "outputs": [
     {
      "name": "basis_fns",
-     "description": "独立基函数求值器列表，数值单位由调用者定义。",
+     "description": "独立的基函数求值器列表，数值单位由调用者决定。",
      "constraints": "列表中的元素为多项式或样条可调用对象。",
      "dtype": "列表"
     }
    ],
    "applicability": {
     "preconditions": [
-     "构造样本有限，并满足边界专用假设。",
+     "用于构造的样本有限，并满足各边界条件的特定假设。",
      "多项式系数按升幂排列；poly_deg 默认 3 表示三个基函数。",
      "样条关键字默认 n_knots=5、domain=(0,1)；给定的 xdata/ydata 数组必须匹配。"
     ],
@@ -128,7 +128,7 @@
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性或实验验证。"
    },
    "example": {
-    "description": "构造默认升幂多项式求值器，并在 x=0.5 处求值三个求值器。",
+    "description": "构造默认升幂多项式求值器，并计算三个求值器在 x=0.5 处的值。",
     "expected": "返回三个求值器；它们在 0.5 处的值为 [1.0, 0.5, 0.25]。"
    }
   },
@@ -136,31 +136,31 @@
    "asset_id": "scirel.basis.clamped-cubic-spline",
    "source_sha256": "38d29409ed4ec6dbc25bb0afb70bec8d92b6cfc50cb517b0ddd4b31cc3c7ec16",
    "summary": "使用两端指定一阶导数的分段三次 Hermite 插值。",
-   "definition": "使用边界专用斜率线性系统进行分段三次 Hermite 插值。",
-   "model": "二阶连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
+   "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
+   "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
    "boundary": "两端均显式指定一阶导数。",
    "assumptions": [
     "匹配的一维节点和值有限、严格递增，且 N>=3。",
-    "数值资格声明仅覆盖节点域内 deriv=0/1/2。"
+    "数值验证声明仅覆盖节点域内 deriv=0/1/2。"
    ],
    "inputs": [
     {
      "name": "x_data",
      "description": "插值节点。",
      "constraints": "有限、严格递增且 N≥3。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "y_data",
      "description": "节点函数值。",
      "constraints": "有限，与 x_data 长度相同。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "yp",
      "description": "左右端点斜率，默认 [0,0]。",
      "constraints": "两个有限斜率，单位为函数值单位／坐标单位。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -174,14 +174,14 @@
    "applicability": {
     "preconditions": [
      "匹配的一维节点和值有限、严格递增，且 N>=3。",
-     "数值资格声明仅覆盖节点域内 deriv=0/1/2。"
+     "数值验证声明仅覆盖节点域内 deriv=0/1/2。"
     ],
     "supported": [
      "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。"
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。"
     ]
    },
    "failure_semantics": {
@@ -197,8 +197,8 @@
      "本合同所载可执行示例。"
     ],
     "known_limitations": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。"
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。"
    },
@@ -211,12 +211,12 @@
    "asset_id": "scirel.basis.first-clamped-cubic-spline",
    "source_sha256": "ff78708a1805b93b1aff2df78f49f2441c4c5b571c316b43296dbeeba5610cf9",
    "summary": "使用左端指定一阶导数和柱坐标右端方程的分段三次 Hermite 插值。",
-   "definition": "使用边界专用斜率线性系统进行分段三次 Hermite 插值。",
-   "model": "二阶连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
+   "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
+   "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
    "boundary": "左端一阶导数为 yp，右端满足 fdd+fd/x-m²f/x²=0。",
    "assumptions": [
     "匹配的一维节点和值有限、严格递增，且 N>=3。",
-    "数值资格声明仅覆盖节点域内 deriv=0/1/2。",
+    "数值验证声明仅覆盖节点域内 deriv=0/1/2。",
     "x_data[-1]>0。"
    ],
    "inputs": [
@@ -224,97 +224,25 @@
      "name": "x_data",
      "description": "插值节点。",
      "constraints": "有限、严格递增且 N≥3。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "y_data",
      "description": "节点函数值。",
      "constraints": "有限，与 x_data 长度相同。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "yp",
      "description": "左端斜率，默认 0。",
      "constraints": "有限，单位为函数值单位／坐标单位。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "m",
      "description": "柱坐标 Robin 方程系数，默认 0。",
      "constraints": "有限、无量纲；不赋予物理模态解释。",
-     "dtype": "float64（数据类型）"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "spline",
-     "description": "保留 x_data、y_data、k 并支持 deriv=0／1／2 求值的样条对象。",
-     "constraints": "保留查询数组形状；节点区间外置零，导数单位按坐标幂次换算。",
-     "dtype": "Python 可调用对象"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "构造样本有限，并满足边界专用假设。",
-     "多项式系数按升幂排列；poly_deg 默认 3 表示三个基函数。",
-     "样条关键字默认 n_knots=5、domain=(0,1)；给定的 xdata/ydata 数组必须匹配。"
-    ],
-    "supported": [
-     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
-    ],
-    "excluded": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。",
-     "物理柱坐标磁拟合边界的解释仍未解决。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "对不支持的基函数选择器、非有限或不匹配样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；线性系统失败向上传播。",
-    "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常从求值向上传播。",
-    "nonconvergence": "不适用；基函数构造和求值是直接计算，不声明迭代收敛。",
-    "partial_results": "构造失败时不返回求值器；样条在节点区间外查询遵循实现的置零行为。"
-   },
-   "verification": {
-    "scope": [
-     "公共可调用签名及文档化的有限输入行为。",
-     "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
-    ],
-    "known_limitations": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。",
-     "物理柱坐标磁拟合边界的解释仍未解决。"
-    ],
-    "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性或实验验证。"
-   },
-   "example": {
-    "description": "用默认边界参数构造左端钳制柱坐标样条。",
-    "expected": "可调用对象在内部节点处返回 0.2，并保留单元素查询形状。"
-   }
-  },
-  {
-   "asset_id": "scirel.basis.natural-cubic-spline",
-   "source_sha256": "d58f5d71d7d5ef85dc53e37282ead38f41ec90af042998f3797d4e7c0aeb74bd",
-   "summary": "使用两端二阶导数为零的分段三次 Hermite 插值。",
-   "definition": "使用边界专用斜率线性系统进行分段三次 Hermite 插值。",
-   "model": "二阶连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
-   "boundary": "两端二阶导数均为零。",
-   "assumptions": [
-    "匹配的一维节点和值有限、严格递增，且 N>=3。",
-    "数值资格声明仅覆盖节点域内 deriv=0/1/2。"
-   ],
-   "inputs": [
-    {
-     "name": "x_data",
-     "description": "插值节点。",
-     "constraints": "有限、严格递增且 N≥3。",
-     "dtype": "float64（数据类型）"
-    },
-    {
-     "name": "y_data",
-     "description": "节点函数值。",
-     "constraints": "有限，与 x_data 长度相同。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -328,14 +256,16 @@
    "applicability": {
     "preconditions": [
      "匹配的一维节点和值有限、严格递增，且 N>=3。",
-     "数值资格声明仅覆盖节点域内 deriv=0/1/2。"
+     "数值验证声明仅覆盖节点域内 deriv=0/1/2。",
+     "x_data[-1]>0。"
     ],
     "supported": [
      "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。"
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。",
+     "物理柱坐标磁拟合边界的解释仍未解决。"
     ]
    },
    "failure_semantics": {
@@ -351,46 +281,40 @@
      "本合同所载可执行示例。"
     ],
     "known_limitations": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。"
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。",
+     "物理柱坐标磁拟合边界的解释仍未解决。"
     ],
-    "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。"
+    "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性或实验验证。"
    },
    "example": {
-    "description": "构造自然三次样条，并在给定内部节点处求值。",
-    "expected": "可调用对象在内部节点处返回 0.2，输出形状为 (1,)。"
+    "description": "用默认边界参数构造左端钳制的柱坐标样条。",
+    "expected": "可调用对象在内部节点处返回 0.2，并保留单元素查询形状。"
    }
   },
   {
-   "asset_id": "scirel.basis.second-clamped-cubic-spline",
-   "source_sha256": "391e4a082c1a331e7d33e53258ce1b60fdced75d3ae38febbfe2e339b2797b1d",
-   "summary": "使用指定原点行和柱坐标右端方程的分段三次 Hermite 插值。",
-   "definition": "使用边界专用斜率线性系统进行分段三次 Hermite 插值。",
-   "model": "二阶连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
-   "boundary": "原点方程，右端满足 fdd+fd/x-m²f/x²=0。",
+   "asset_id": "scirel.basis.natural-cubic-spline",
+   "source_sha256": "d58f5d71d7d5ef85dc53e37282ead38f41ec90af042998f3797d4e7c0aeb74bd",
+   "summary": "使用两端二阶导数为零的分段三次 Hermite 插值。",
+   "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
+   "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
+   "boundary": "两端二阶导数均为零。",
    "assumptions": [
     "匹配的一维节点和值有限、严格递增，且 N>=3。",
-    "数值资格声明仅覆盖节点域内 deriv=0/1/2。",
-    "x_data[0]=y_data[0]=0 且 x_data[-1]>0。"
+    "数值验证声明仅覆盖节点域内 deriv=0/1/2。"
    ],
    "inputs": [
     {
      "name": "x_data",
      "description": "插值节点。",
      "constraints": "有限、严格递增且 N≥3。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "y_data",
      "description": "节点函数值。",
      "constraints": "有限，与 x_data 长度相同。",
-     "dtype": "float64（数据类型）"
-    },
-    {
-     "name": "m",
-     "description": "柱坐标 Robin 方程系数，默认 1。",
-     "constraints": "有限、无量纲；不赋予物理模态解释。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -403,17 +327,93 @@
    ],
    "applicability": {
     "preconditions": [
-     "构造样本有限，并满足边界专用假设。",
-     "多项式系数按升幂排列；poly_deg 默认 3 表示三个基函数。",
-     "样条关键字默认 n_knots=5、domain=(0,1)；给定的 xdata/ydata 数组必须匹配。"
+     "匹配的一维节点和值有限、严格递增，且 N>=3。",
+     "数值验证声明仅覆盖节点域内 deriv=0/1/2。"
     ],
     "supported": [
      "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
     ],
     "excluded": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。",
-     "源左端方程不是自然边界，不能用于任意非零首节点或首值。",
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "对不支持的基函数选择器、非有限或不匹配样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；线性系统失败向上传播。",
+    "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常从求值向上传播。",
+    "nonconvergence": "不适用；基函数构造和求值是直接计算，不声明迭代收敛。",
+    "partial_results": "构造失败时不返回求值器；样条在节点区间外查询遵循实现的置零行为。"
+   },
+   "verification": {
+    "scope": [
+     "公共可调用签名及文档化的有限输入行为。",
+     "verification.tests 列出的直接回归样例。",
+     "本合同所载可执行示例。"
+    ],
+    "known_limitations": [
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。"
+    ],
+    "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。"
+   },
+   "example": {
+    "description": "构造自然三次样条，并在给定内部节点处求值。",
+    "expected": "可调用对象在内部节点处返回 0.2，输出形状为 (1,)。"
+   }
+  },
+  {
+   "asset_id": "scirel.basis.second-clamped-cubic-spline",
+   "source_sha256": "391e4a082c1a331e7d33e53258ce1b60fdced75d3ae38febbfe2e339b2797b1d",
+   "summary": "使用指定原点行和柱坐标右端方程的分段三次 Hermite 插值。",
+   "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
+   "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
+   "boundary": "原点方程，右端满足 fdd+fd/x-m²f/x²=0。",
+   "assumptions": [
+    "匹配的一维节点和值有限、严格递增，且 N>=3。",
+    "数值验证声明仅覆盖节点域内 deriv=0/1/2。",
+    "x_data[0]=y_data[0]=0 且 x_data[-1]>0。"
+   ],
+   "inputs": [
+    {
+     "name": "x_data",
+     "description": "插值节点。",
+     "constraints": "有限、严格递增且 N≥3。",
+     "dtype": "float64"
+    },
+    {
+     "name": "y_data",
+     "description": "节点函数值。",
+     "constraints": "有限，与 x_data 长度相同。",
+     "dtype": "float64"
+    },
+    {
+     "name": "m",
+     "description": "柱坐标 Robin 方程系数，默认 1。",
+     "constraints": "有限、无量纲；不赋予物理模态解释。",
+     "dtype": "float64"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "spline",
+     "description": "保留 x_data、y_data、k 并支持 deriv=0／1／2 求值的样条对象。",
+     "constraints": "保留查询数组形状；节点区间外置零，导数单位按坐标幂次换算。",
+     "dtype": "Python 可调用对象"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "匹配的一维节点和值有限、严格递增，且 N>=3。",
+     "数值验证声明仅覆盖节点域内 deriv=0/1/2。",
+     "x_data[0]=y_data[0]=0 且 x_data[-1]>0。"
+    ],
+    "supported": [
+     "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
+    ],
+    "excluded": [
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。",
+     "左端方程不是自然边界，不适用于首节点或首值任意非零的情形。",
      "物理柱坐标磁拟合边界的解释仍未解决。"
     ]
    },
@@ -430,15 +430,15 @@
      "本合同所载可执行示例。"
     ],
     "known_limitations": [
-     "域外置零及 deriv 除 1/2 外返回函数值是兼容约定。",
-     "重复、未排序或非有限节点不在数值资格内。",
+     "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
+     "重复、未排序或非有限节点不在数值验证范围内。",
      "左端方程不是任意非零首节点或首值的自然边界。",
      "物理柱坐标磁拟合边界的解释仍未解决。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性或实验验证。"
    },
    "example": {
-    "description": "用默认右端边界参数构造原点自然柱坐标样条。",
+    "description": "用默认右端边界参数构造原点自然的柱坐标样条。",
     "expected": "可调用对象在内部节点处返回 0.2，并保留单元素查询形状。"
    }
   },
@@ -450,7 +450,7 @@
    "model": "基于相邻顶点累计距离的直接有限差分导数。",
    "boundary": "不推断周期闭合；端点使用单边模板。",
    "assumptions": [
-    "顶点和值有限且匹配，且 N>=3。",
+    "顶点和值有限且数量匹配，N>=3。",
     "相邻顶点彼此不同。",
     "该导数遵循调用者给出的顶点顺序。"
    ],
@@ -459,21 +459,21 @@
      "name": "vertices",
      "description": "有序平面顶点，形状 (N,2)，长度单位一致。",
      "constraints": "有限且相邻不同。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "values",
      "description": "顶点处标量采样值，形状 (N,)。",
      "constraints": "有限且与顶点数 N 匹配。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
     {
      "name": "derivative",
-     "description": "含端点的一阶导数，形状 (N,)，单位为数值单位／长度。",
+     "description": "含端点的一阶导数，形状 (N,)。",
      "constraints": "导数沿声明的顶点次序。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -514,10 +514,10 @@
    "source_sha256": "f808981019384fce7ae645048186e443b1612a7fde83bc8ee43f9ce1cf89dfc8",
    "summary": "对有序平面边界顶点拟合非周期参数样条。",
    "definition": "使用 s=0 拟合 SciPy 参数样条，并在 200 个参数值上采样。",
-   "model": "非周期二次 splprep 拟合的默认合同。",
+   "model": "默认使用非周期二次 splprep 拟合。",
    "boundary": "不推断周期闭合或交点唯一性。",
    "assumptions": [
-    "输入有限，并包含足够的不同点以进行 splprep。",
+    "输入有限，且包含足够的不同点供 splprep 拟合。",
     "存储样本为 200 个拟合点。",
     "对象公开 tck、u、verts 和 interpolate。"
    ],
@@ -526,7 +526,7 @@
      "name": "vertices",
      "description": "有序边界顶点。",
      "constraints": "有限有序点，足以进行默认二次 splprep 拟合（至少三个不同点）。",
-     "dtype": "float64（有限双精度浮点数）"
+     "dtype": "有限 float64"
     }
    ],
    "outputs": [
@@ -550,7 +550,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "不支持的顶点会向上传播底层数组或 SciPy 样条校验错误。",
+    "invalid_input": "顶点不受支持时，底层数组或 SciPy 样条校验错误会向上传播。",
     "runtime_failure": "插值异常向上传播。",
     "nonconvergence": "不适用；拟合是直接的样条构造。",
     "partial_results": "构造失败时不返回边界对象。"
@@ -572,14 +572,14 @@
   {
    "asset_id": "scirel.fieldline.contour-points",
    "source_sha256": "87694cf2ad029a2430ed12fca2d07b8d0cf113aecd1bce9c79823ed0f5d1a539",
-   "summary": "将每个 contour level 映射为拟合的 FieldLine 对象列表。",
+   "summary": "将每个等值级别映射为拟合后的 FieldLine 对象列表。",
    "definition": "对每个等值级别，在对应的 allsegs 条目中为每条线段构造一个 FieldLine。",
    "model": "直接构造集合，不重建场。",
    "boundary": "每条线段都必须能被该 FieldLine 样条构造器接受。",
    "assumptions": [
     "轮廓对象公开 levels 和 allsegs。",
-    "保留线段顺序和等级顺序。",
-    "场诊断稍后在每条返回的场线上执行。"
+    "保留线段顺序和级别顺序。",
+    "场诊断由调用者在返回的每条场线上另行执行。"
    ],
    "inputs": [
     {
@@ -594,19 +594,19 @@
      "name": "collection",
      "description": "按级别分组的目标场线对象列表。",
      "constraints": "键和线段列表遵循 contourset.levels/allsegs；每个值都是构造出的场线列表。",
-     "dtype": "Python 对象。"
+     "dtype": "Python 对象"
     }
    ],
    "applicability": {
     "preconditions": [
      "轮廓对象公开 levels 和 allsegs。",
-     "保留线段顺序和等级顺序。"
+     "保留线段顺序和级别顺序。"
     ],
     "supported": [
      "有限轮廓集合和具名 FieldLine 构造案例。"
     ],
     "excluded": [
-     "不涵盖轮廓拓扑修复、场重建或物理磁通面资格验证。"
+     "不涵盖轮廓拓扑修复、场重建或物理磁通面验证。"
     ]
    },
    "failure_semantics": {
@@ -620,14 +620,14 @@
      "仅覆盖明确声明的有限输入域和直接测试样例。"
     ],
     "known_limitations": [
-     "交点限于拟合参数区间，未找到／多根均拒绝；切触和根完备性未验证。",
-     "任意轮廓拓扑、磁轴极限和物理稳定性未验证。",
+     "交点搜索限于拟合参数区间；无交点或多根的情况均被拒绝，切触情况与根的完备性尚未验证。",
+     "任意轮廓拓扑、磁轴极限和物理稳定性均未验证。",
      "get_kappa_n_2 要求均匀 xy 网格和非零磁通梯度。"
     ],
     "evidence_ceiling": "仅针对具名样例的数值证据；不建立任意输入正确性或实验物理验证。"
    },
    "example": {
-    "description": "从一个轮廓等级和一条线段构造 FieldLine 集合。",
+    "description": "从一个等值级别和一条线段构造 FieldLine 集合。",
     "expected": "返回字典含键 0.2，其中有一条包含 1000 个拟合顶点的 FieldLine。"
    }
   },
@@ -642,7 +642,7 @@
     "场曲率需要有限非零的 B 和非零切向投影。",
     "磁通梯度曲率需要有限可分离均匀网格和非零梯度。"
    ],
-   "boundary": "交点搜索仅限拟合参数区间，并拒绝零个或多个交点。",
+   "boundary": "交点搜索只在拟合参数区间内进行，并拒绝无交点或多个交点的情况。",
    "inputs": [
     {
      "name": "psi",
@@ -654,7 +654,7 @@
      "name": "verts",
      "description": "轮廓顶点。",
      "constraints": "有限有序点，足以进行默认二次 splprep 拟合；相邻拟合样本必须保持不同。",
-     "dtype": "float64（有限双精度浮点数）"
+     "dtype": "有限 float64"
     }
    ],
    "outputs": [
@@ -662,7 +662,7 @@
      "name": "line",
      "description": "公开 verts、tck、u 以及弧长/场诊断的对象。",
      "constraints": "get_ds 返回第一段长度，不保证均匀步长。",
-     "dtype": "Python 对象。"
+     "dtype": "Python 对象"
     }
    ],
    "applicability": {
@@ -680,41 +680,41 @@
    "failure_semantics": {
     "invalid_input": "曲率支持未定义、顶点重复、通量网格无效或插值结果非有限时抛出 ValueError；其他 SciPy 错误向上传播。",
     "runtime_failure": "底层插值、线性代数和浮点异常向上传播。",
-    "nonconvergence": "找不到唯一的拟合区间交点时交点方法抛出 ValueError；有限多起点搜索不证明根的完备性。",
+    "nonconvergence": "在拟合区间内找不到唯一交点时，交点方法抛出 ValueError；有限多起点搜索不能证明根已穷尽。",
     "partial_results": "仅在两个交点都成功后，apply_boundary 才更新两个边界；构造失败时不返回线对象。"
    },
    "verification": {
     "scope": [
      "仅覆盖明确声明的有限输入域和指定直接试验、独立安装样例。",
      "具名样例采用 13×9 仿射梯度输入和绝对误差 4e-9 判据，两种入口的记录最大误差均不超过 1.3323e-15。圆形案例采用 401 点及空间网格 40／80／160，场曲率向量误差依次为 1.1787063e-5、1.3972100e-6、1.6021077e-7，满足两级缩减比 >3.4 和末级误差 <.004。这些观测不构成普遍收敛率保证。",
-     "保留样例采用 71×83 非等距网格和 257 点椭圆，同时核对下降坐标、磁场反向及顶点反向，记录最大分量误差不超过 1.329318e-7。边界样例拒绝域外、重复顶点、非有限场及真实场零点；有符号 1e-180／1e180 场强和几何平移样例通过原有限判据，不推及任意动态范围。"
+     "留出样例采用 71×83 非等距网格和 257 点椭圆，同时核对下降坐标、磁场反向及顶点反向，记录最大分量误差不超过 1.329318e-7。边界样例拒绝域外、重复顶点、非有限场及真实场零点；有符号 1e-180／1e180 场强和几何平移样例通过原有的有限判据，不推及任意动态范围。"
     ],
     "known_limitations": [
-     "交点仅搜索拟合参数区间，未找到交点或找到多个根均拒绝；切触和根的完备性尚未验证。",
-     "未认可任意轮廓拓扑、磁轴极限或物理稳定性。",
+     "交点仅搜索拟合参数区间，未找到交点或找到多个根均拒绝；切触情况与根的完备性尚未验证。",
+     "未验证任意轮廓拓扑、磁轴极限或物理稳定性。",
      "get_kappa_n_2 要求均匀 xy 网格及非零磁通梯度。",
      "极坐标投影由单独入口提供，显式给定角度并拒绝原点；磁轴极限仍未验证。",
      "在固定插值场上加密路径采样不保证物理曲率误差单调减小；四项固定插值加密案例仍记录为失败，与空间网格加密判据分开。",
      "局部四次场曲率导数要求足够光滑的真实磁场线；公开 d_ds 保留折线弧长上的三点合同，两者均不保证普遍曲率误差。"
     ],
-    "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或人工认可。"
+    "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或发行批准。"
    },
    "example": {
-    "description": "用三个有序顶点拟合一条开放 FieldLine。",
+    "description": "用三个有序顶点拟合一条开放的 FieldLine。",
     "expected": "默认构造器生成 verts 形状为 (1000,2) 的场线。"
    }
   },
   {
    "asset_id": "scirel.fieldline.fieldline-set",
    "source_sha256": "d006f042c74f4a9bc9cdff46946b807751f189e8e79db85a1c11b640b5a00ff6",
-   "summary": "构造按等值级别存储拟合 FieldLine 列表的 FieldLineSet。",
+   "summary": "构造按等值级别存储拟合后 FieldLine 列表的 FieldLineSet。",
    "definition": "为每条线段构造 FieldLine 实例，并存入 flset 映射。",
    "model": "直接构造集合，并转发 FieldLine 关键字参数。",
    "boundary": "每条线段都必须能被该 FieldLine 构造器接受。",
    "assumptions": [
     "轮廓对象公开相匹配的 levels 和 allsegs。",
     "可选 kwargs 转发给每个 FieldLine。",
-    "保留等级和线段顺序。"
+    "保留级别和线段顺序。"
    ],
    "inputs": [
     {
@@ -728,8 +728,8 @@
     {
      "name": "collection",
      "description": "按级别分组的目标场线对象列表。",
-     "constraints": "flset 映射以轮廓等级为键并保留线段顺序。",
-     "dtype": "Python 对象。"
+     "constraints": "flset 映射以轮廓级别为键并保留线段顺序。",
+     "dtype": "Python 对象"
     }
    ],
    "applicability": {
@@ -741,7 +741,7 @@
      "有限轮廓集合、关键字转发的采样以及具名 FieldLine 构造案例。"
     ],
     "excluded": [
-     "不涵盖轮廓拓扑修复、场重建或物理磁通面资格验证。"
+     "不涵盖轮廓拓扑修复、场重建或物理磁通面验证。"
     ]
    },
    "failure_semantics": {
@@ -755,27 +755,27 @@
      "仅覆盖明确声明的有限输入域和直接测试样例。"
     ],
     "known_limitations": [
-     "交点限于拟合参数区间，未找到／多根均拒绝；切触和根完备性未验证。",
+     "交点搜索限于拟合参数区间，无交点或多根的情况均被拒绝；切触情况与根的完备性未经验证。",
      "任意轮廓拓扑、磁轴极限和物理稳定性未验证。",
      "get_kappa_n_2 要求均匀 xy 网格和非零磁通梯度。"
     ],
     "evidence_ceiling": "仅针对具名样例的数值证据；不建立任意输入正确性或实验物理验证。"
    },
    "example": {
-    "description": "从一个轮廓等级和一条线段构造 FieldLineSet。",
+    "description": "从一个轮廓级别和一条线段构造 FieldLineSet。",
     "expected": "flset[0.2] 含有一条包含 1000 个拟合顶点的 FieldLine。"
    }
   },
   {
    "asset_id": "scirel.fieldline.helper-contour-points",
    "source_sha256": "f661af2245a2e9549db4061c30e8b430f6c18cd8a7c4ee51603c200b2c693d9c",
-   "summary": "将每个等值级别映射为拟合的 HelperFieldLine 对象列表。",
+   "summary": "将每个等值级别映射为拟合后的 HelperFieldLine 对象列表。",
    "definition": "对每个等值级别，在 allsegs 中为每条线段构造一个 HelperFieldLine。",
    "model": "直接构造集合，不重建场。",
    "boundary": "每条线段都必须能被该 HelperFieldLine 样条构造器接受。",
    "assumptions": [
     "轮廓对象公开 levels 和 allsegs。",
-    "保留线段和 level 的顺序。",
+    "保留线段和级别的顺序。",
     "HelperFieldLine 诊断由调用者稍后求值。"
    ],
    "inputs": [
@@ -791,19 +791,19 @@
      "name": "collection",
      "description": "按级别分组的目标场线对象列表。",
      "constraints": "键和线段列表遵循 contourset.levels/allsegs；每个值都是构造出的场线列表。",
-     "dtype": "Python 对象。"
+     "dtype": "Python 对象"
     }
    ],
    "applicability": {
     "preconditions": [
      "轮廓对象公开 levels 和 allsegs。",
-     "保留线段和 level 的顺序。"
+     "保留线段和级别的顺序。"
     ],
     "supported": [
      "有限轮廓集合和具名辅助线构造案例。"
     ],
     "excluded": [
-     "不涵盖轮廓拓扑修复、磁通重建或物理场线资格验证。"
+     "不涵盖轮廓拓扑修复、磁通重建或物理场线验证。"
     ]
    },
    "failure_semantics": {
@@ -817,14 +817,14 @@
      "仅覆盖明确声明的有限输入域和直接测试样例。"
     ],
     "known_limitations": [
-     "交点限于拟合参数区间，未找到／多根均拒绝；切触和根完备性未验证。",
+     "交点搜索限于拟合参数区间，无交点或多根的情况均被拒绝；切触情况与根的完备性未经验证。",
      "任意轮廓拓扑、磁轴极限和物理稳定性未验证。",
      "HelperFieldLine 没有磁通梯度曲率入口，此集合仅继承基于磁场的曲率方法。"
     ],
     "evidence_ceiling": "仅针对具名样例的数值证据；不建立任意输入正确性或实验物理验证。"
    },
    "example": {
-    "description": "从一个轮廓等级和一条线段构造 HelperFieldLine 集合。",
+    "description": "从一个轮廓级别和一条线段构造 HelperFieldLine 集合。",
     "expected": "返回字典含键 0.2，其中有一条包含 1000 个拟合顶点的 HelperFieldLine。"
    }
   },
@@ -832,14 +832,14 @@
    "asset_id": "scirel.fieldline.helper-fieldline",
    "source_sha256": "606b26c4a3ddede3050a0cfeb8d2cbefd09ed0309d87e0544c2a35064c661515",
    "summary": "拟合轮廓路径，并提供辅助插值、弧长、梯度、场曲率和有界交点诊断。",
-   "definition": "拟合有序参数线；辅助插值保留查询值非有限时的行为，同时场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
+   "definition": "拟合有序参数线；辅助插值保留查询值为非有限时的原有行为，同时场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "固定为 1000 点的二次默认样条，支持选择 linear、nearest 或 cubic 插值及局部多项式曲率导数。",
    "assumptions": [
     "有限顶点足以进行 splprep 拟合，且相邻拟合样本保持不同。",
     "场曲率需要有限非零的 B 和非零切向投影。",
     "查询点应位于所提供场的有限插值支持范围内。"
    ],
-   "boundary": "交点搜索仅限拟合参数区间，并拒绝零个或多个交点。",
+   "boundary": "交点搜索只在拟合参数区间内进行，并拒绝无交点或多个交点的情况。",
    "inputs": [
     {
      "name": "psi",
@@ -851,7 +851,7 @@
      "name": "verts",
      "description": "轮廓顶点。",
      "constraints": "有限有序点，足以进行默认二次 splprep 拟合；相邻拟合样本必须保持不同。",
-     "dtype": "float64（有限双精度浮点数）"
+     "dtype": "有限 float64"
     }
    ],
    "outputs": [
@@ -859,7 +859,7 @@
      "name": "line",
      "description": "公开 verts、tck、u 以及弧长/场诊断的对象。",
      "constraints": "get_ds 返回第一段长度，不保证均匀步长。",
-     "dtype": "Python 对象。"
+     "dtype": "Python 对象"
     }
    ],
    "applicability": {
@@ -884,20 +884,20 @@
     "scope": [
      "仅覆盖明确声明的有限输入域和指定直接试验、独立安装样例。",
      "具名样例采用 13×9 仿射梯度输入和绝对误差 4e-9 判据，两种入口的记录最大误差均不超过 1.3323e-15。圆形案例采用 401 点及空间网格 40／80／160，场曲率向量误差依次为 1.1787063e-5、1.3972100e-6、1.6021077e-7，满足两级缩减比 >3.4 和末级误差 <.004。这些观测不构成普遍收敛率保证。",
-     "保留样例采用 71×83 非等距网格和 257 点椭圆，同时核对下降坐标、磁场反向及顶点反向，记录最大分量误差不超过 1.329318e-7。边界样例拒绝域外、重复顶点、非有限场及真实场零点；有符号 1e-180／1e180 场强和几何平移样例通过原有限判据，不推及任意动态范围。"
+     "留出样例采用 71×83 非等距网格和 257 点椭圆，同时核对下降坐标、磁场反向及顶点反向，记录最大分量误差不超过 1.329318e-7。边界样例拒绝域外、重复顶点、非有限场及真实场零点；有符号 1e-180／1e180 场强和几何平移样例通过原有的有限判据，不推及任意动态范围。"
     ],
     "known_limitations": [
-     "交点仅搜索拟合参数区间，未找到交点或找到多个根均拒绝；切触和根的完备性尚未验证。",
-     "未认可任意轮廓拓扑、磁轴极限或物理稳定性。",
+     "交点仅搜索拟合参数区间，未找到交点或找到多个根均拒绝；切触情况与根的完备性尚未验证。",
+     "未验证任意轮廓拓扑、磁轴极限或物理稳定性。",
      "极坐标投影由单独入口提供，显式给定角度并拒绝原点；磁轴极限仍未验证。",
      "HelperFieldLine 只提供基于磁场的曲率；磁通梯度曲率属于独立 FieldLine 变体。采样及梯度／曲率消费遵从显式方法选择。",
      "在固定插值场上加密路径采样不保证物理曲率误差单调减小；四项固定插值加密案例仍记录为失败，与空间网格加密判据分开。",
      "局部四次场曲率导数要求足够光滑的真实磁场线；公开 d_ds 保留折线弧长上的三点合同，两者均不保证普遍曲率误差。"
     ],
-    "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或人工认可。"
+    "evidence_ceiling": "本仓库自身测试的具名样例技术证据；不建立任意输入正确性、实验验证或发行批准。"
    },
    "example": {
-    "description": "用三个有序顶点拟合一条开放 HelperFieldLine。",
+    "description": "用三个有序顶点拟合一条开放的 HelperFieldLine。",
     "expected": "默认构造器生成 verts 形状为 (1000,2) 的辅助场线。"
    }
   },
@@ -907,7 +907,7 @@
    "summary": "在柱坐标 R、Z 平面旋转行向量。",
    "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
    "model": "二维 R、Z 平面。",
-   "boundary": "点和二分量旋转中心有限。",
+   "boundary": "点和旋转中心都必须是有限的二分量值。",
    "assumptions": [
     "点数组有限且末轴长度为 2。"
    ],
@@ -921,7 +921,7 @@
     {
      "name": "angle",
      "description": "旋转角，单位度。",
-     "constraints": "有限角度。",
+     "constraints": "有限的角度值。",
      "dtype": "浮点数"
     },
     {
@@ -968,7 +968,7 @@
     "evidence_ceiling": "仅限具名有限几何案例；不主张场求解器、实验或发行结论。"
    },
    "example": {
-    "description": "按文档规定的顺时针为正旋转 90 度，旋转一个 R-Z 行向量。",
+    "description": "按文档规定的“顺时针为正”约定，将一条 R-Z 行向量旋转 90 度。",
     "expected": "形状保持不变，顺时针为正的结果为 [[0.0, -1.0]]。"
    }
   },
@@ -977,7 +977,7 @@
    "source_sha256": "75b255c88a6f1254a40e0b1484df5ed748c07dc2d1b2fdfcc6b0dc2f04bb9fd6",
    "summary": "在每个内部横坐标处对局部二次多项式求导。",
    "definition": "在每个内部横坐标处对局部二次多项式求导。",
-   "model": "三点不等间距多项式算子。几何按具体声明为一维或平面采样；采用 x 坐标单位及 y 值单位。",
+   "model": "三点不等间距多项式算子。采用 x 坐标单位及 y 值单位。",
    "boundary": "不虚构端点值。",
    "assumptions": [
     "x、y 为有限、匹配的一维数组，N>=3。",
@@ -988,13 +988,13 @@
      "name": "x",
      "description": "严格递增的横坐标。",
      "constraints": "有限，N>=3。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "y",
      "description": "采样值。",
      "constraints": "有限，长度同为 N。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -1002,13 +1002,13 @@
      "name": "d_one",
      "description": "内点一阶导数。",
      "constraints": "对二次多项式精确。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "d_two",
      "description": "内点二阶导数。",
      "constraints": "对二次多项式精确。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1020,7 +1020,7 @@
      "有限且严格递增的一维数组，至少包含一个内部点。"
     ],
     "excluded": [
-     "周期端点、含噪数据推断及极端条件数尚无资格。"
+     "周期端点、含噪数据推断及极端病态条件未经验证。"
     ]
    },
    "failure_semantics": {
@@ -1041,7 +1041,7 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "周期端点、含噪数据推断及极端条件数尚无资格。"
+     "周期端点、含噪数据推断及极端病态条件未经验证。"
     ]
    }
   },
@@ -1049,8 +1049,8 @@
    "asset_id": "scirel.sampling.meridional-polar-forward",
    "source_sha256": "5d72976cff06e69754caad8aa6828754a4540a0b4dd78fe5f8e4796a8c7a9f36",
    "summary": "将柱坐标子午面位置及矢量分量映射为 r、theta 及其正交单位基分量。",
-   "definition": "正变换按 r、theta 及四个矢量分量的显式公式计算；theta 从 +Z 朝 +rho 方向以弧度计。修正后的角度和正交基保留位置、范数及逆映射。",
-   "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度/矢量单位，theta 以弧度计。",
+   "definition": "正变换使用显式公式计算 r、theta、u_r、u_theta；theta 从 +Z 朝 +rho 方向以弧度计。修正后的角度和正交基保留位置、范数及逆映射。",
+   "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度与矢量单位，theta 以弧度计。",
    "boundary": "原点没有极坐标矢量基，因而拒绝；轴上的非零点有效。",
    "assumptions": [
     "输入为有限实数且可广播。",
@@ -1118,7 +1118,7 @@
      "独立投影、有符号象限、范数及逆变换往返。",
      "原点/非有限输入拒绝。"
     ],
-    "evidence_ceiling": "坐标/向量恒等性；不构成物理场资格验证。",
+    "evidence_ceiling": "坐标/向量恒等性；不构成物理场验证。",
     "known_limitations": [
      "坐标原点处未定义。",
      "长度和矢量单位沿用调用者提供的单位。"
@@ -1129,8 +1129,8 @@
    "asset_id": "scirel.sampling.meridional-polar-inverse",
    "source_sha256": "9bf8747a897eb63fcc0195136b387b802e53ac9f755337bc0169f159d7766f14",
    "summary": "将正 r、theta 及极坐标矢量分量映射到子午面 rho、Z 分量。",
-   "definition": "逆变换按 rho、z 及两个矢量分量的显式公式计算；theta 从 +Z 朝 +rho 方向以弧度计。它确定正向约定并保留矢量范数。",
-   "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度/矢量单位，theta 以弧度计。",
+   "definition": "逆变换使用显式公式计算 rho、z、u_rho、u_z；theta 从 +Z 朝 +rho 方向以弧度计。它确定正向约定并保留矢量范数。",
+   "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度与矢量单位，theta 以弧度计。",
    "boundary": "原点没有极坐标矢量基，因而拒绝；轴上的非零点有效。",
    "assumptions": [
     "输入为有限实数且可广播。",
@@ -1198,7 +1198,7 @@
      "独立投影、有符号象限、范数及逆变换往返。",
      "原点/非有限输入拒绝。"
     ],
-    "evidence_ceiling": "坐标/向量恒等性；不构成物理场资格验证。",
+    "evidence_ceiling": "坐标/向量恒等性；不构成物理场验证。",
     "known_limitations": [
      "坐标原点处未定义。",
      "长度和矢量单位沿用调用者提供的单位。"
@@ -1210,7 +1210,7 @@
    "source_sha256": "940135ceef0d9b25284f0728f02caeccff0a0a8455bbec48a16a5f989a2b7aba",
    "summary": "用共享的非均匀二次多项式算子返回内点一阶导数。",
    "definition": "用共享的非均匀二次多项式算子返回内点一阶导数。",
-   "model": "已吸收的有限差分实现。几何按具体声明为一维或平面采样；采用通用且一致的坐标/值单位。",
+   "model": "内置的有限差分实现。采用通用且一致的坐标/值单位。",
    "boundary": "没有端点值。",
    "assumptions": [
     "x、y 为有限、匹配的一维数组，N>=3。",
@@ -1221,13 +1221,13 @@
      "name": "x",
      "description": "横坐标。",
      "constraints": "严格递增且有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "y",
      "description": "样本值。",
      "constraints": "有限且长度同为 N。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -1235,7 +1235,7 @@
      "name": "derivative",
      "description": "内点一阶导数。",
      "constraints": "对二次多项式精确。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1247,7 +1247,7 @@
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "周期端点、含噪数据推断及极端条件数尚无资格。"
+     "周期端点、含噪数据推断及极端病态条件未经验证。"
     ]
    },
    "failure_semantics": {
@@ -1268,7 +1268,7 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "周期端点、含噪数据推断及极端条件数尚无资格。"
+     "周期端点、含噪数据推断及极端病态条件未经验证。"
     ]
    }
   },
@@ -1277,7 +1277,7 @@
    "source_sha256": "869e239d6f6d17431e77421a13dea3f564615d7ae98f23054d38bce26510c25e",
    "summary": "循环移位至最近起点，按有符号多边形检验定向，并保留所选终止顶点。",
    "definition": "循环移位至最近起点，按有符号多边形检验定向，并保留所选终止顶点。",
-   "model": "源轮廓解析，并修正为包含终点。几何按具体声明为一维或平面采样；平面坐标采用长度单位。",
+   "model": "沿用原实现的轮廓解析，并修正端点的包含规则。平面坐标采用长度单位。",
    "boundary": "默认保留全部顶点；显式指定最近终点时包含该点。",
    "assumptions": [
     "有限平面线段，且多边形方向有意义。"
@@ -1287,25 +1287,25 @@
      "name": "flpoints",
      "description": "有序平面路径顶点。",
      "constraints": "提供的顺序有限有效。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "start_coord",
-     "description": "选择最近顶点作为起始坐标。",
+     "description": "用作起始位置的坐标，按最近顶点选取。",
      "constraints": "精确选择最近顶点。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "end_coord",
-     "description": "输出包含的最近终止坐标。",
+     "description": "输出中包含的终止坐标，按最近顶点选取。",
      "constraints": "保留终止顶点；不插值求穿越点。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "clockwise",
      "description": "期望的有符号多边形方向。",
-     "constraints": "采用源中类似鞋带公式的有符号检验。",
-     "dtype": "bool（数据类型）"
+     "constraints": "采用原实现中类似鞋带公式的有符号检验。",
+     "dtype": "布尔"
     }
    ],
    "outputs": [
@@ -1313,7 +1313,7 @@
      "name": "segment",
      "description": "有序的所选顶点。",
      "constraints": "不合成端点，也不省略默认端点。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1334,7 +1334,7 @@
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
    },
    "example": {
-    "description": "解析四顶点轮廓线段并保留顺时针顶点顺序。",
+    "description": "解析四顶点轮廓线段，并保留其顺时针顶点顺序。",
     "expected": "返回四个输入顶点，顺序和形状 (4, 2) 保持不变。"
    },
    "verification": {
@@ -1354,7 +1354,7 @@
    "source_sha256": "5b70ba448c4f972f61735bc2a5fda61ac625031ae59cbafaf850e90d218e68ee",
    "summary": "从零开始累积相邻顶点间的欧几里得距离。",
    "definition": "从零开始累积相邻顶点间的欧几里得距离。",
-   "model": "精确的多边形弦长。几何按具体声明为一维或平面采样；平面坐标对采用一致的长度单位。",
+   "model": "精确的多边形弦长。平面坐标对采用一致的长度单位。",
    "boundary": "从零开始；不隐含闭合线段。",
    "assumptions": [
     "有限有序平面顶点。"
@@ -1364,7 +1364,7 @@
      "name": "flpoints",
      "description": "有序平面路径顶点。",
      "constraints": "提供的顺序有限有效。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -1372,7 +1372,7 @@
      "name": "distance",
      "description": "累积路径距离。",
      "constraints": "非递减；重复顶点给出零增量。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1413,7 +1413,7 @@
    "source_sha256": "c0c87ac764dd0fddc95ca82f024ce7565873b28a00e896e66cb7ae5cb9bdd7d7",
    "summary": "选择展平后坐标距离平方最小的点。",
    "definition": "选择展平后坐标距离平方最小的点。",
-   "model": "在任意匹配的平面数组上选取几何最近样本。几何按具体声明为一维或平面采样；X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
+   "model": "在任意匹配的平面数组上选取几何最近样本。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
    "boundary": "不合成支持范围外的插值。",
    "assumptions": [
     "平面采样数组和场有限且匹配。",
@@ -1424,25 +1424,25 @@
      "name": "X",
      "description": "点的 x 坐标。",
      "constraints": "对矩形最近点方案，X[0,:] 为 x 轴。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Y",
      "description": "点的 y 坐标。",
      "constraints": "对矩形最近点方案，Y[:,0] 为 y 轴。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Q",
      "description": "采样场。",
      "constraints": "有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "coord_list",
      "description": "期望的坐标对。",
      "constraints": "查询有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -1450,7 +1450,7 @@
      "name": "values",
      "description": "采样值。",
      "constraints": "保持原列表/数组返回形式。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1462,8 +1462,8 @@
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "不宣称矩形与几何最近点方案对不规则输入等价。",
-     "支持范围外及非有限场案例尚无资格。"
+     "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
+     "支持范围外及非有限场案例未经验证。"
     ]
    },
    "failure_semantics": {
@@ -1484,8 +1484,8 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "不宣称矩形与几何最近点方案对不规则输入等价。",
-     "支持范围外及非有限场案例尚无资格。"
+     "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
+     "支持范围外及非有限场案例未经验证。"
     ]
    }
   },
@@ -1494,7 +1494,7 @@
    "source_sha256": "5bb5a676cffeed41d54a285a402bada01f62a260f953f4c809c5510cd90ca926",
    "summary": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
    "definition": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
-   "model": "显式 SVD 伪逆。几何按具体声明为一维或平面采样；x、y 为通用样本单位，系数单位为 y/x**power。",
+   "model": "显式 SVD 伪逆。x、y 为通用样本单位，系数单位为 y 除以 x 的幂。",
    "boundary": "无边界模型；超定/欠定系统使用同一截断。",
    "assumptions": [
     "x、y 为有限且匹配的一维数组。",
@@ -1505,19 +1505,19 @@
      "name": "x",
      "description": "采样坐标。",
      "constraints": "有限且匹配。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "y",
      "description": "采样值。",
      "constraints": "有限且匹配。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "order",
      "description": "多项式最高幂。",
      "constraints": "非负整数。",
-     "dtype": "int（数据类型）"
+     "dtype": "整数"
     }
    ],
    "outputs": [
@@ -1525,13 +1525,13 @@
      "name": "basis_fns",
      "description": "升幂求值函数。",
      "constraints": "函数保留各自的指数。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "coefficients",
      "description": "最小范数系数。",
      "constraints": "丢弃低于 1e-10 的奇异值。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1543,7 +1543,7 @@
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "源绝对截断不是尺度不变的统计秩策略。",
+     "该绝对截断不是尺度不变的统计秩策略。",
      "不保证不确定度、置信度或病态条件下的表现。"
     ]
    },
@@ -1565,7 +1565,7 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "源绝对截断不是尺度不变的统计秩策略。",
+     "该绝对截断不是尺度不变的统计秩策略。",
      "不保证不确定度、置信度或病态条件下的表现。"
     ]
    }
@@ -1575,7 +1575,7 @@
    "source_sha256": "7b6fd7cee425f4857d55cdaff056b7089d34c3de3a04d17af49659019aa6dbb4",
    "summary": "分别选择距每个查询最近的 x 列及 y 行。",
    "definition": "分别选择距每个查询最近的 x 列及 y 行。",
-   "model": "可分离 xy 网格按轴最近邻采样。几何按具体声明为一维或平面采样；X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
+   "model": "可分离 xy 网格按轴最近邻采样。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
    "boundary": "不合成支持范围外的插值。",
    "assumptions": [
     "平面采样数组和场有限且匹配。",
@@ -1586,25 +1586,25 @@
      "name": "X",
      "description": "点的 x 坐标。",
      "constraints": "对矩形最近点方案，X[0,:] 为 x 轴。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Y",
      "description": "点的 y 坐标。",
      "constraints": "对矩形最近点方案，Y[:,0] 为 y 轴。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Q",
      "description": "采样场。",
      "constraints": "有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "coord_list",
      "description": "期望的坐标对。",
      "constraints": "查询有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -1612,7 +1612,7 @@
      "name": "values",
      "description": "采样值。",
      "constraints": "保持原列表/数组返回形式。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1624,8 +1624,8 @@
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "不宣称矩形与几何最近点方案对不规则输入等价。",
-     "支持范围外及非有限场案例尚无资格。"
+     "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
+     "支持范围外及非有限场案例未经验证。"
     ]
    },
    "failure_semantics": {
@@ -1646,8 +1646,8 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "不宣称矩形与几何最近点方案对不规则输入等价。",
-     "支持范围外及非有限场案例尚无资格。"
+     "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
+     "支持范围外及非有限场案例未经验证。"
     ]
    }
   },
@@ -1656,36 +1656,36 @@
    "source_sha256": "340c85e75a15a1b46119e05962cfb034e5a6bf2d3ae5f78d35bac18a0fb82b3c",
    "summary": "在有序路径顶点处求双三次矩形场插值。",
    "definition": "在有序路径顶点处求双三次矩形场插值。",
-   "model": "采用源默认次数和光滑度的矩形双三次样条；使用行列网格及平面路径。",
-   "boundary": "具备资格的结果要求查询位于网格支持范围内。",
+   "model": "采用原实现默认次数和平滑度的矩形双三次样条；使用行列网格及平面路径。",
+   "boundary": "只有查询位于网格支持范围内，结果才在验证范围内。",
    "assumptions": [
     "有限可分离 xy 网格，每轴至少四个不同点。",
-    "Q 有限，查询坐标位于内部。"
+    "Q 有限，查询坐标位于网格内部。"
    ],
    "inputs": [
     {
      "name": "Rho",
      "description": "矩形径向 x 网格。",
      "constraints": "Rho[0,:] 严格递增。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Z",
      "description": "矩形轴向 y 网格。",
      "constraints": "Z[:,0] 严格递增。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Q",
      "description": "矩形场。",
      "constraints": "有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "flpoints",
      "description": "有序平面路径顶点。",
      "constraints": "提供的顺序有限有效。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -1693,7 +1693,7 @@
      "name": "values",
      "description": "沿路径插值的场。",
      "constraints": "次序遵循 flpoints。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1705,7 +1705,7 @@
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "网格外样条外推及任意非线性插值误差尚无资格。"
+     "网格外样条外推及任意非线性插值误差未经验证。"
     ]
    },
    "failure_semantics": {
@@ -1726,7 +1726,7 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "网格外样条外推及任意非线性插值误差尚无资格。"
+     "网格外样条外推及任意非线性插值误差未经验证。"
     ]
    }
   },
@@ -1735,7 +1735,7 @@
    "source_sha256": "632a38185f62224e9957268c368f2a0b6bf9a537e7d1687013b06ff2dda2eb15",
    "summary": "将标量场插值到提供的网格或生成的 ij 索引网格。",
    "definition": "将标量场插值到提供的网格或生成的 ij 索引网格。",
-   "model": "使用 SciPy 的线性网格插值，默认网格大小为 200×200；输出轴按 ij 次序生成。",
+   "model": "使用 SciPy 的线性插值，默认生成 200×200 网格；输出轴按 ij 次序生成。",
    "boundary": "显式 xi、yi 共同覆盖生成网格。",
    "assumptions": [
     "平面采样数组和场有限且匹配。",
@@ -1746,13 +1746,13 @@
      "name": "xx",
      "description": "样本 x 坐标。",
      "constraints": "有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "yy",
      "description": "样本 y 坐标。",
      "constraints": "有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "values",
@@ -1766,7 +1766,7 @@
      "name": "grid_and_fields",
      "description": "包含 xi、yi 及插值标量场的元组。",
      "constraints": "保留原字段次序。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1806,9 +1806,9 @@
   {
    "asset_id": "scirel.sampling.scalar-reflection",
    "source_sha256": "2c52e44589d5cf6dfaea77518a81f22d3d792e7735b6c9f381b8c8023e977534",
-   "summary": "将 R 关于零反射，复制 Z 及偶对称标量，且不重复零列。",
-   "definition": "将 R 关于零反射，复制 Z 及偶对称标量，且不重复零列。",
-   "model": "既有 hstack 约定，并提供具名 quantities 替代方式。几何按具体声明为一维或平面采样；Rho、Z 为按径向列排列的平面网格。",
+   "summary": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
+   "definition": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
+   "model": "沿用原实现的 hstack 约定，并提供具名 quantities 替代方式。Rho、Z 为按径向列排列的平面网格。",
    "boundary": "首个径向列为零；其余列按逆序反射。",
    "assumptions": [
     "Rho、Z 及标量场形状匹配且有限。",
@@ -1819,13 +1819,13 @@
      "name": "Rho",
      "description": "非负径向网格。",
      "constraints": "径向首列为零。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Z",
      "description": "轴向网格。",
      "constraints": "匹配。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "quantities",
@@ -1839,7 +1839,7 @@
      "name": "reflected",
      "description": "反射后的 Rho、Z 及标量场组成的元组。",
      "constraints": "零列只出现一次。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1861,7 +1861,7 @@
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
    },
    "example": {
-    "description": "关于 R=0 反射标量径向网格且不重复零列。",
+    "description": "将标量径向网格关于 R=0 镜像，且不重复零列。",
     "expected": "反射后的坐标数组和标量数组形状均为 (2, 5)。"
    },
    "verification": {
@@ -1879,9 +1879,9 @@
   {
    "asset_id": "scirel.sampling.scattered-linear",
    "source_sha256": "35318239d939ae04ce0dddacbb7899b0fb16075847e8fdf36587dcc2bc849925",
-   "summary": "在查询坐标对处插值求场。",
-   "definition": "在查询坐标对处插值求场。",
-   "model": "SciPy griddata，默认为 linear。几何按具体声明为一维或平面采样；X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
+   "summary": "在给定坐标对处插值求场值。",
+   "definition": "在给定坐标对处插值求场值。",
+   "model": "SciPy griddata，默认使用 linear 方法。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
    "boundary": "不合成支持范围外的插值。",
    "assumptions": [
     "平面采样数组和场有限且匹配。",
@@ -1892,25 +1892,25 @@
      "name": "X",
      "description": "点的 x 坐标。",
      "constraints": "对矩形最近点方案，X[0,:] 为 x 轴。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Y",
      "description": "点的 y 坐标。",
      "constraints": "对矩形最近点方案，Y[:,0] 为 y 轴。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Q",
      "description": "采样场。",
      "constraints": "有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "coord_list",
      "description": "期望的坐标对。",
      "constraints": "查询有限。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -1918,7 +1918,7 @@
      "name": "values",
      "description": "采样值。",
      "constraints": "保持原列表/数组返回形式。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -1930,8 +1930,8 @@
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "不宣称矩形与几何最近点方案对不规则输入等价。",
-     "支持范围外及非有限场案例尚无资格。"
+     "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
+     "支持范围外及非有限场案例未经验证。"
     ]
    },
    "failure_semantics": {
@@ -1952,17 +1952,17 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "不宣称矩形与几何最近点方案对不规则输入等价。",
-     "支持范围外及非有限场案例尚无资格。"
+     "不宣称矩形网格与几何最近点两种方案在非规则输入上等价。",
+     "支持范围外及非有限场案例未经验证。"
     ]
    }
   },
   {
    "asset_id": "scirel.sampling.select-fieldline",
    "source_sha256": "c22a845ab6fa3b4b17d179ee84f897fb71e952b89c9f922596a0481a70762b08",
-   "summary": "在精确轮廓等值处选顶点数最多的线段，并解析其方向/端点。",
-   "definition": "在精确轮廓等值处选顶点数最多的线段，并解析其方向/端点。",
-   "model": "源轮廓线段选择；idx_check 是被忽略的兼容参数。几何按具体声明为一维或平面采样；采用平面线段顶点及精确等值标签。",
+   "summary": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
+   "definition": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
+   "model": "沿用原实现的轮廓线段选择；idx_check 是为兼容而保留、会被忽略的参数。采用平面线段顶点及精确等值标签。",
    "boundary": "采用 parse_segment 的最近端点约定。",
    "assumptions": [
     "请求的等值精确出现在 contourset.levels 中。",
@@ -1973,35 +1973,35 @@
      "name": "contourset",
      "description": "提供 levels 和 allsegs 的对象。",
      "constraints": "每个 allsegs 项包含有限平面线段。",
-     "dtype": "类轮廓对象"
+     "dtype": "类似等值线的对象"
     },
     {
      "name": "level",
      "description": "请求的轮廓等值。",
-     "constraints": "精确成员关系。",
-     "dtype": "float64（数据类型）"
+     "constraints": "必须精确出现在 contourset.levels 中。",
+     "dtype": "float64"
     },
     {
      "name": "start_coord",
-     "description": "选择最近顶点作为起始坐标。",
+     "description": "用作起始位置的坐标，按最近顶点选取。",
      "constraints": "精确选择最近顶点。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "end_coord",
-     "description": "输出包含的最近终止坐标。",
+     "description": "输出中包含的终止坐标，按最近顶点选取。",
      "constraints": "保留终止顶点；不插值求穿越点。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "clockwise",
      "description": "期望的有符号多边形方向。",
-     "constraints": "采用源中类似鞋带公式的有符号检验。",
-     "dtype": "bool（数据类型）"
+     "constraints": "采用原实现中类似鞋带公式的有符号检验。",
+     "dtype": "布尔"
     },
     {
      "name": "idx_check",
-     "description": "未使用的源兼容参数。",
+     "description": "为兼容而保留、未使用的参数。",
      "constraints": "对数值选择无影响。",
      "dtype": "列表"
     }
@@ -2011,7 +2011,7 @@
      "name": "segment",
      "description": "选中并解析的顶点。",
      "constraints": "根据原始点数选最大的线段。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -2033,7 +2033,7 @@
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
    },
    "example": {
-    "description": "在精确等级处选择可用轮廓线段并返回其顶点。",
+    "description": "在精确等值级别处选择可用轮廓线段并返回其顶点。",
     "expected": "选定轮廓形状为 (4, 2)，并保留四个顶点。"
    },
    "verification": {
@@ -2051,9 +2051,9 @@
   {
    "asset_id": "scirel.sampling.weighted-line-integral",
    "source_sha256": "8ed769bcc3fe962d6f803fdba714b6c50e55433da636ea3fbf72503f9b70310b",
-   "summary": "计算 ∫(1/B ds)，或在给定 Q 时计算 ∫(Q/B ds)/∫(1/B ds)。",
-   "definition": "计算 ∫(1/B ds)，或在给定 Q 时计算 ∫(Q/B ds)/∫(1/B ds)。",
-   "model": "源矩形样条采样及折线梯形求积。几何按具体声明为一维或平面采样；采用 xy 矩形网格及具有显式弦弧长的平面路径。",
+   "summary": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
+   "definition": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
+   "model": "沿用原实现的矩形样条采样和折线梯形求积。采用 xy 矩形网格及具有显式弦长的平面路径。",
    "boundary": "不闭合路径，也不引入环向几何因子。",
    "assumptions": [
     "有限内部路径上 B 有限且为正。",
@@ -2065,25 +2065,25 @@
      "name": "Rho",
      "description": "矩形径向 x 网格。",
      "constraints": "Rho[0,:] 严格递增。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Z",
      "description": "矩形轴向 y 网格。",
      "constraints": "Z[:,0] 严格递增。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "B",
      "description": "正的权重场。",
      "constraints": "在采样路径上有限且为正。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "flpoints",
      "description": "有序平面路径顶点。",
      "constraints": "提供的顺序有限有效。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     },
     {
      "name": "Q",
@@ -2097,7 +2097,7 @@
      "name": "reduction",
      "description": "标量加权积分或平均。",
      "constraints": "没有外部闭合关系时，不作每单位磁通体积解释。",
-     "dtype": "float64（数据类型）"
+     "dtype": "float64"
     }
    ],
    "applicability": {
@@ -2110,7 +2110,7 @@
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "物理磁通体积归一化/闭合曲面解释尚无资格。",
+     "物理磁通体积归一化/闭合曲面解释未经验证。",
      "B 为零/非有限或查询位于支持范围外，不在声明范围内。"
     ]
    },
@@ -2121,8 +2121,8 @@
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
    },
    "example": {
-    "description": "对恒定单位场和直线路径计算 B 加权线归约。",
-    "expected": "加权归约结果为标量 1.0。"
+    "description": "对恒定单位场和直线路径计算 B 加权线积分约化。",
+    "expected": "加权线积分约化结果为标量 1.0。"
    },
    "verification": {
     "scope": [
@@ -2132,7 +2132,7 @@
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "物理磁通体积归一化/闭合曲面解释尚无资格。",
+     "物理磁通体积归一化/闭合曲面解释未经验证。",
      "B 为零/非有限或查询位于支持范围外，不在声明范围内。"
     ]
    }
@@ -2206,7 +2206,7 @@
    },
    "example": {
     "description": "对一个秩亏 2×2 矩阵和矩形矩阵求截断伪逆。",
-    "expected": "秩亏例与 numpy.linalg.pinv 一致，矩形例返回 (n,m) 形状。"
+    "expected": "秩亏用例与 numpy.linalg.pinv 一致，矩形用例返回 (n,m) 形状。"
    }
   }
  ]

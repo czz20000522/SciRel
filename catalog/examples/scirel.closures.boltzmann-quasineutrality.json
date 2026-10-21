@@ -167,7 +167,7 @@
  "example": {
   "description": "Evaluate a supplied state at one electron thermal voltage above its reference.",
   "code": "import numpy as np\nfrom scirel.closures import compute_boltzmann_electron_state\ne=1.602176634e-19\nr=compute_boltzmann_electron_state(np.log(2.0),e,3.0,0.0,3.0,2.0)\nnp.testing.assert_allclose(r['electron_density_m3'],6.0)\nnp.testing.assert_allclose(r['electron_pressure_pa'],6.0*e)\nnp.testing.assert_allclose(r['logarithmic_charge_residual'],0.0,atol=1e-14)\nnp.testing.assert_allclose(r['charge_residual_m3'],0.0,atol=1e-14)",
-  "expected": "Electron density is 6 m^-3, pressure is 6e Pa, and the displayed neutrality residuals are zero within floating-point tolerance."
+  "expected": "Electron density is 6 m^-3, pressure is about 9.613059804e-19 Pa, and the displayed neutrality residuals are zero within floating-point tolerance."
  },
  "verification": {
   "scope": [

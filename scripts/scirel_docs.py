@@ -21,6 +21,7 @@ from packaging.version import InvalidVersion, Version
 
 from validate_asset_documents import load_document_set
 from build_scirel_sphinx import load_translations, render_site
+from build_capability_matrix import build_matrix, render_markdown
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = 'scirel.documentation-snapshot'
@@ -300,10 +301,14 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         expected_wheel_sha256=expected_wheel_sha256,
     ))
     chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
+    matrix = build_matrix(docs, revision=source)
+    files['capability-matrix.json'] = encode(matrix)
+    files['CAPABILITY_MATRIX.md'] = render_markdown(matrix).encode('utf-8')
     files.update(render_site(
         ROOT, docs, book, translations, chapter,
         figure_files={name: files['chapters/magnetostatics/' + name]
                       for name in ('single.svg', 'pair.svg', 'rectangle.svg')},
+        matrix=matrix,
     ))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
                 'source_dirty': dirty,

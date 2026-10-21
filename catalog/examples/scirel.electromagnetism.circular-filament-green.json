@@ -93,7 +93,7 @@
  "example": {
   "description": "Evaluate one weighted filament at two targets and contract its axial response with an independent current vector.",
   "code": "import numpy as np\nfrom scirel.electromagnetism import compute_greens\npsi, br, bz = compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.2, 0.3], [0.4, -0.2]]))\nassert psi.shape == br.shape == bz.shape == (2,)",
-  "expected": "The response arrays have shape (2,); the first target has zero psi and the contracted BZ values are finite."
+  "expected": "The response arrays have shape (2,); the first target psi is about 1.113e-8 Wb/rad and the BZ values are finite; the example does not perform a BZ contraction."
  },
  "verification": {
   "scope": [

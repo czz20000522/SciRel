@@ -7,7 +7,7 @@
    "source_sha256": "d89e6538d510b6d7f0f935256fba91581a3f24f148e3a680800eab58d44a34da",
    "summary": "计算碰撞代的相对密度比 Δn，并判断是否还需下一代。",
    "definition": "delta=max(generation_density)/max(accumulated_density)，按严格截断或相对种子误差条件返回 done 与 reason。",
-   "model": "逐代最大值比停止关系，并显式收紧非法输入拒绝。",
+   "model": "逐代最大值比停止关系，并对非法输入域作显式失败关闭收紧。",
    "assumptions": [
     "关系采用最大值之比以及严格的 truncate 与种子相对比较。SciRel 在提前返回 truncate 之前校验种子控制，并拒绝实数值强制转换和非有限派生 delta。",
     "未绑定外部原子物理参考；该缺口记录为 validation_oracle_gap。"
@@ -48,7 +48,7 @@
    "outputs": [
     {
      "name": "result",
-     "description": "delta、done、reason 三元组。",
+     "description": "delta 为相对密度比；done 表示是否无需下一代；reason 为 'truncate'、'seed_relative' 或 'continue'。",
      "constraints": "delta 有限，done 为 Python bool，reason 为状态字符串。",
      "dtype": "元组(float, bool, str)"
     }
@@ -65,14 +65,14 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "空/非法实数/非有限/负/失配密度，非正累计最大值，无效truncate、非布尔开关或缺失/错置/非法seed_error引发 ValueError。",
+    "invalid_input": "空、非实数、非有限、负值或形状不匹配的密度数组，非正累计最大值，非实数/非有限/非正的 truncate，非布尔开关，或缺失、错置、非法的 seed_error 均引发 ValueError。",
     "runtime_failure": "有限输入的比值溢出时 ValueError。",
     "nonconvergence": "此关系报告收敛判据，不自行迭代。",
     "partial_results": "不返回部分结果。"
    },
    "example": {
     "description": "以已知密度比检查停止条件。",
-    "expected": "delta为两最大值之比；delta<truncate时done=True、reason=truncate，否则通常continue。"
+    "expected": "第一种情形返回 delta=0.1、done=False、reason='continue'；第二种返回 delta=5e-06、done=True、reason='truncate'。"
    },
    "verification": {
     "scope": [
@@ -90,7 +90,7 @@
   {
    "asset_id": "scirel.collisions.janev-electron-impact-ionization-rate",
    "source_sha256": "1de19d497c059261372b6a7dacf0b8cd8f5ba34417ab20bb1efdbac111a47ee1",
-   "summary": "由电子温度求 H 与 H₂ 各自的 Maxwell 电子碰撞电离速率拟合。",
+   "summary": "由电子温度求 H 与 H₂ 各自 Maxwell 分布的电子碰撞电离速率拟合。",
    "definition": "将严格正的电子温度截断至 [0.1, 2.01e4] eV，再用所选 H 或 H₂ 分支的升幂九系数 Janev 表计算 exp(polyval(log(T), a_species))×1e-6 m³/s，保持输入形状和 NumPy 多项式求值顺序。",
    "model": "Janev 的 H 与 H₂ Maxwell 电离速率拟合，不是运行时的截面积分。",
    "assumptions": [
@@ -102,7 +102,7 @@
    "inputs": [
     {
      "name": "electron_temperature_ev",
-     "description": "电子 Maxwell 分布温度，单位 eV。",
+     "description": "所选 Maxwell 电离拟合的电子温度（eV）。",
      "constraints": "有限且>0；正值超出 [0.1, 2.01e4] 时截断。",
      "dtype": "实数标量或类数组"
     },
@@ -141,7 +141,7 @@
    },
    "example": {
     "description": "求两物种分支并检查截断端点。",
-    "expected": "三个正 H 速率在两端精确截断，且与 H₂ 速率不同。"
+    "expected": "三个 H 速率均为正，两端精确取截断端点值，且与 H₂ 速率不同。"
    },
    "verification": {
     "scope": [
@@ -161,14 +161,14 @@
   {
    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
    "source_sha256": "1cc75e0fb2d41575438e874e4056117763250d8b8b2a51fe4e1d70025472df33",
-   "summary": "将轴对称R–Z平衡映射以张量积线性插值重构到笛卡尔求解网格，域外裁边并报告覆盖与裁剪。",
+   "summary": "将轴对称 R–Z 平衡映射以张量积线性插值重构到笛卡尔求解网格，域外查询点裁到闭盒边界并报告覆盖与裁剪计数。",
    "definition": "求各笛卡尔点半径与轴坐标，逐坐标裁到闭映射盒，插值各场，再将径向场分解成横向笛卡尔分量；标记裁剪前位于闭盒内的点。",
-   "model": "轴对称直角R–Z映射的双线性重构，查询坐标独立裁边。",
+   "model": "轴对称规则 R–Z 网格上的张量积双线性重构，查询坐标独立裁到闭盒边界。",
    "assumptions": [
     "平衡轴对称，只依赖半径和轴坐标，无环向模结构。",
     "映射轴严格递增，每个裁后点所属单元明确。",
     "映射场有限，避免非有限源污染插值。",
-    "原文将径向分量称为R–Z平面极向场模；其横向分解为br×(x,y)/r，在轴上未定义。",
+    "径向分量即 R–Z 平面内的极向场大小；其横向分解为 br×(x,y)/r，在轴上未定义。",
     "调用者拥有映射与网格；算子无状态，不读文件。"
    ],
    "boundary": "域为映射轴张成闭盒，域外取最近盒面值而非拒绝或外推，并报告裁边。",
@@ -176,7 +176,7 @@
     {
      "name": "equilibrium",
      "description": "含r_m、z_m、psi_wb_per_rad、br_t、bz_t的平衡映射。",
-     "constraints": "必须映射；两轴有限一维严格递增且各至少5点；三场有限[Nr,Nz]。其他键不读取，不含磁面分类参数。",
+     "constraints": "必须为映射；两轴为有限、严格递增的一维数组且各至少 5 点；三个场为有限 [N_r, N_z] 数组。其他键一律不读取，因此磁面分类参数不属于本关系。",
      "dtype": "类数组的Python映射"
     },
     {
@@ -213,19 +213,19 @@
     },
     {
      "name": "covered_mask",
-     "description": "裁前位于闭映射盒的网格点。",
+     "description": "裁剪前位于映射轴闭盒内的网格点。",
      "constraints": "半径和轴向均在两轴闭区间内；原径向轴通常正，因此r=0通常未覆盖。",
      "dtype": "布尔值（bool）"
     },
     {
      "name": "radially_clamped_point_count",
-     "description": "半径超过外边界并被裁剪的点数。",
-     "constraints": "只统计超过外映射半径的半径，与所声明的关系一致；低于内映射半径的半径同样被裁剪，但两个计数器都不计入。",
+     "description": "半径超过外映射半径并被裁到边界的点数。",
+     "constraints": "只统计超过外映射半径的半径，与所声明的关系一致；低于内映射半径的半径同样被裁，但两个裁剪计数都不统计它们。",
      "dtype": "整数（int）"
     },
     {
      "name": "axially_clamped_point_count",
-     "description": "轴坐标位于映射域外的裁剪点数。",
+     "description": "轴坐标位于映射轴范围外并被裁到盒面的点数。",
      "constraints": "统计低于首点及高于末点。",
      "dtype": "整数（int）"
     }
@@ -258,7 +258,7 @@
    },
    "example": {
     "description": "将合成平衡重构到9×9×7网格，检查形状、覆盖点和轴上横向分量。",
-    "expected": "有限[9,9,7,3]静场和[9,9,7]磁通，560覆盖点，无计数裁剪，轴上横向场严格零。"
+    "expected": "有限 [9,9,7,3] 静场和 [9,9,7] 磁通，560 个覆盖点，两个裁剪计数均为 0，轴上横向场严格为零。"
    },
    "verification": {
     "scope": [
@@ -284,7 +284,7 @@
   {
    "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
    "source_sha256": "7571f946b48aeae5b6baf4a7a2b5378aeadfbd6bc0553ef525ac67749cf84d78",
-   "summary": "在三个递增直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展域外返回nan+nanj。",
+   "summary": "在三个严格递增的直角坐标轴上三线性插值复数场，返回几何有效掩码；容差扩展盒外返回 nan+nanj。",
    "definition": "源值按[Nx,Ny,Nz]排列，按[x,y,z]可分三线性插值。闭盒外扩tol内的点裁到闭盒采样；扩展盒外返回nan+nanj与False。",
    "model": "带限复场的分片三线性重构。",
    "assumptions": [
@@ -316,7 +316,7 @@
    "outputs": [
     {
      "name": "interpolated_values",
-     "description": "每目标复场值，保留源末尾轴。",
+     "description": "每个目标点一个复场值，保留源数组的末尾轴。",
      "constraints": "无效位置nan+nanj；只有所触及源有限时，几何有效点才保证有限。",
      "dtype": "双精度复数（complex128）"
     },
@@ -350,7 +350,7 @@
    },
    "example": {
     "description": "分别采样盒内、容差壳和扩展域外点，展示几何掩码及有限源结果。",
-    "expected": "长度3复值向量前两项有限，掩码[True,True,False]。"
+    "expected": "返回长度 3 的复值向量：前两项有限，第三项为 nan+nanj；valid_mask 为 [True, True, False]。"
    },
    "verification": {
     "scope": [
@@ -466,7 +466,7 @@
     "AMU_KG = 1.6726231e-27 kg 是氢质量常数，不是标准原子质量单位；该参数名为兼容而沿用。ELEMENTARY_CHARGE_C = 1.602177e-19 C 同样固定在既往数值上。两者都不是当前 CODATA 估计。",
     "molecule_count 是本关系的约定：相对原子氢，指数对分子氢多乘一个因子 2。"
    ],
-   "boundary": "a=0 也降至 exp(−80)；种子始终正；molecule_count 只能1或2；合法输出有限。",
+   "boundary": "argument=0 也降至 exp(−80)（严格内部钳制）；种子始终为正；molecule_count 只能为 1 或 2；合法输出有限。",
    "inputs": [
     {
      "name": "vr",
@@ -513,7 +513,7 @@
     {
      "name": "cylindrical_volume",
      "description": "圆柱速度体积，行径向列轴向。",
-     "constraints": "有限正值，形状 (nvr,nvx)。",
+     "constraints": "有限且严格为正，形状 (nvr,nvx)。",
      "dtype": "实数类数组"
     }
    ],
@@ -590,7 +590,7 @@
   {
    "asset_id": "scirel.kinetic.neutral-boltzmann-rhs",
    "source_sha256": "05c6fea7314e726ba90a21a0566210cbaa08cc51f062b4c0279b28a0d91adb14",
-   "summary": "由源、损失频率和总分布组装显式中性粒子 Boltzmann 方程右端。",
+   "summary": "由各源项、碰撞频率和总分布组装显式中性粒子 Boltzmann 方程右端。",
    "definition": "带符号求和：rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum)。",
    "model": "显式 Boltzmann 右端项装配。",
    "assumptions": [
@@ -670,7 +670,7 @@
    },
    "example": {
     "description": "用均匀单位场组装右端。",
-    "expected": "带符号和乘 Vth；示例结果15000，NaN热速度被拒绝。"
+    "expected": "右端按带符号和再乘 Vth；单位源场且 Vth=5000 m/s 时 rhs[0,0,0]=15000.0，NaN 热速度引发 ValueError。"
    },
    "verification": {
     "scope": [
@@ -1046,7 +1046,7 @@
      "独立标量双重求和、守恒目标、空间拆分、共同速度平移、负比值状态及未定义传播。",
      "实际拟合矩阵和归一化 Maxwell 分布生成 Alpha；H/D 自适应角积分、带权交换关系、平衡动量和双侧弱漂移。"
     ],
-    "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需独立接收；人工科学认可和公开发行另行决定。",
+    "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者提交的候选实现仍需独立接收；人工科学认可和公开发行另行决定。",
     "known_limitations": [
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
@@ -1077,14 +1077,14 @@
     },
     {
      "name": "SIG_H2_H",
-     "description": "含轴向差的 H₂–H 弹性 SIG。",
-     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；保留给定符号。",
+     "description": "带符号 vx_vx 因子的 H₂–H 弹性 SIG。",
+     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；含由带符号 vx_vx 因子产生的有界负值，原样保留。",
      "dtype": "实数类数组"
     },
     {
      "name": "SIG_H2_P",
      "description": "装配好的 H2-H+ 弹性碰撞矩阵：sigma_el_p_h（两个能量分支）乘以权重 Vr2pidVr*dVx 和带符号的 vx_vx 因子，位于同一 Fortran 顺序速度载体上。",
-     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；保留给定符号。",
+     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；含由带符号 vx_vx 因子产生的有界负值，原样保留。",
      "dtype": "实数类数组"
     },
     {
@@ -1119,7 +1119,7 @@
     },
     {
      "name": "ni_correct",
-     "description": "选择 ni=max(n−nHP,0)，否则 ni=n。",
+     "description": "按真值选择修正分支：为真时 ni=max(n−nHP,0)，否则 ni=n。",
      "constraints": "按真值选择；默认 False。",
      "dtype": "布尔标量"
     }
@@ -1164,7 +1164,7 @@
    },
    "example": {
     "description": "用单位矩阵检查三家族载体，并切换 ni_correct。",
-    "expected": "CX=fHp_hat×nHP；H₂–P=fi_hat×n，修正后为 fi_hat×max(n−nHP,0)。"
+    "expected": "CX=fHp_hat×nHP；H₂–H=fH；H₂–P=fi_hat×n，修正后为 fi_hat×max(n−nHP,0)。"
    },
    "verification": {
     "scope": [
@@ -1234,14 +1234,14 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非实数、非有限或负能量引发指出 energy_ev 的 ValueError。复数、布尔值及数字字符串不会隐式转换。 非零维 viscosity 引发指出该参数的 ValueError。",
-    "runtime_failure": "在声明的截断正能量区间上求值，不发生迭代；合法输入得到有限结果。",
+    "invalid_input": "非实数、非有限或负能量引发指明 energy_ev 的 ValueError；复数、布尔值和数字字符串不做隐式转换。viscosity 不是零维标量时引发指明该参数的 ValueError。",
+    "runtime_failure": "在声明域内不可达：两个拟合只在截断后的正区间求值，合法输入必得有限正结果；无迭代、无状态、无部分结果。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
    "example": {
     "description": "比较两分支，检查截断及负能量/数组选择器拒绝。",
-    "expected": "两种正截面不同；端点重复；非法输入引发 ValueError。"
+    "expected": "两个分支的截面均有限且严格为正但数值不同；拟合范围外精确重复端点值；负能量与数组选择器分别引发指明参数的 ValueError。"
    },
    "verification": {
     "scope": [
@@ -1297,7 +1297,7 @@
    "outputs": [
     {
      "name": "result",
-     "description": "误差、阈值、再次迭代开关及原因。",
+     "description": "含 seed_error（相对变化）、reentry_threshold（=truncate）、should_reiterate（bool）和 reason（'reiterate' 或 'converged'）的映射。",
      "constraints": "seed_error有限，reentry_threshold=truncate，should_reiterate为Python bool。",
      "dtype": "标量与布尔值映射"
     }
@@ -1321,7 +1321,7 @@
    },
    "example": {
     "description": "评估顶层外循环收敛。",
-    "expected": "返回误差、阈值、开关与原因；误差超过truncate时再次进入。"
+    "expected": "current=[100.05] 时 seed_error=0.0004997501249375028、should_reiterate=False；current=[120] 时 seed_error=0.16666666666666666、should_reiterate=True。"
    },
    "verification": {
     "scope": [
@@ -1545,7 +1545,7 @@
      "9 观测的独立 Biot–Savart 环积分、独立圆柱张量散度和 root 离散解，恢复 gradient=4800、anisotropy=1100，且各向异性实际改变电流。",
      "在精选安装包上以断网、普通 venv、不含外部工作区的方式做用户调用。"
     ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+    "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [
      "独立曲场参考验证当前有限网格的离散方程，不是连续极限误差证明；Green 的同点零自作用约定保留，非有限线径自场。",
      "制造模型只在所列参数范围内可辨识；通用输出仍为 not_established。",
@@ -1602,8 +1602,8 @@
    "outputs": [
     {
      "name": "mesh",
-     "description": "构造网格及派生索引。",
-     "constraints": "vx 对称，vr 为有限严格递增正半轴；tnorm 为选取总体均值；ix/ir 为最后能量索引。",
+     "description": "返回 (vx, vr, tnorm, ix, ir)：对称轴向网格、正径向半轴、归一化温度及最后请求能量节点的索引。",
+     "constraints": "vx 关于零对称，vr 为有限严格递增的正半轴；tnorm 为所选总体的均值；ix/ir 为最后请求能量节点在 vx/vr 中的索引位置。",
      "dtype": "元组 (vx, vr, tnorm, ix, ir)"
     }
    ],
@@ -1750,7 +1750,7 @@
    "outputs": [
     {
      "name": "result",
-     "description": "相对误差、阈值、再次迭代开关和原因。",
+     "description": "含 seed_error（相对变化）、reentry_threshold（10×truncate）、should_reiterate（bool）和 reason（'reiterate' 或 'converged'）的映射。",
      "constraints": "seed_error有限，阈值为10×truncate，should_reiterate为Python bool。",
      "dtype": "标量与布尔值映射"
     }
@@ -1774,7 +1774,7 @@
    },
    "example": {
     "description": "检查种子轮次的再次进入条件。",
-    "expected": "返回误差、十倍阈值、开关和原因；较大密度下降可触发再次迭代。"
+    "expected": "第一种情形返回 seed_error=0.0024937655860349127、reentry_threshold=1.0、不再迭代；第二种返回 seed_error=4.5、should_reiterate=True。"
    },
    "verification": {
     "scope": [
@@ -1841,8 +1841,8 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非实数、非有限或负能量引发指出 energy_ev 的 ValueError。复数、布尔值及数字字符串不会隐式转换。 freeman 为数组时也抛出指出该参数的 ValueError。",
-    "runtime_failure": "在声明的截断正能量区间上求值，不发生迭代；合法输入得到有限结果。",
+    "invalid_input": "非实数、非有限或负能量引发指明 energy_ev 的 ValueError；复数、布尔值和数字字符串不做隐式转换。freeman 为数组时引发指明该参数的 ValueError。",
+    "runtime_failure": "在声明域内不可达：两个拟合只在截断后的正区间求值，合法输入必得有限正结果；无迭代、无分支状态、无部分结果。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
@@ -1887,7 +1887,7 @@
    "inputs": [
     {
      "name": "equilibrium",
-     "description": "含场数组及separatrix_flux_wb_per_rad/closed_flux_side的平衡映射。",
+     "description": "含映射数组 r_m、z_m、psi_wb_per_rad、br_t、bz_t 及分类参数 separatrix_flux_wb_per_rad、closed_flux_side 的平衡映射。",
      "constraints": "必须映射；场满足重构合同，分类参数满足材料支撑合同。",
      "dtype": "Python映射"
     },
@@ -1943,13 +1943,13 @@
     },
     {
      "name": "material_support_mask",
-     "description": "冷等离子体支撑点。",
+     "description": "承载冷等离子体材料的网格点。",
      "constraints": "保证非空，空分类使整调用失败。",
      "dtype": "布尔值（bool）"
     },
     {
      "name": "covered_mask",
-     "description": "映射轴闭盒内的目标点。",
+     "description": "裁剪前位于映射轴闭盒内的网格点。",
      "constraints": "重构关系生成后原样传递。",
      "dtype": "布尔值（bool）"
     },
@@ -1967,13 +1967,13 @@
     },
     {
      "name": "closed_flux_mask",
-     "description": "排除PML/导体前的分界所选侧覆盖点。",
+     "description": "尚未排除 PML 和导体前，位于分界磁通所选侧的覆盖点。",
      "constraints": "新增诊断，是covered_mask子集，用于归因磁面选择。",
      "dtype": "布尔值（bool）"
     },
     {
      "name": "axis_segment_mask",
-     "description": "排除PML/导体前半长度内最小半径覆盖点。",
+     "description": "尚未排除 PML 和导体前，极向半长度内最内半径处的覆盖点。",
      "constraints": "新增诊断；源径向起点高于目标最小半径时为空。",
      "dtype": "布尔值（bool）"
     }
@@ -1998,7 +1998,7 @@
    },
    "failure_semantics": {
     "invalid_input": "inputs非映射、七个所需输入缺失、equilibrium非映射或缺两分类参数时ValueError；依赖验证错误原样传播，由责任关系指出失败参数。",
-    "runtime_failure": "依赖失败立即中止传播，不替换实现、不重试。",
+    "runtime_failure": "依赖失败会立即中止并向上传播，不替换实现、不重试。",
     "nonconvergence": "有序DAG，没有反馈循环。",
     "partial_results": "节点失败不返回部分结果。"
    },
@@ -2100,14 +2100,14 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非法类型/形状、非有限/负形状体积、非正热速、无入射半空间或通量非正时 ValueError。",
+    "invalid_input": "非法类型或形状、非有限或负的形状/体积、非正热速、无正 vx 节点或正半通量非正时引发 ValueError。",
     "runtime_failure": "通量/缩放/边界非有限，或非零目标缩放下溢零时 ValueError。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
    "example": {
     "description": "将边界形状归一到目标通量并检查正半空间及拒绝。",
-    "expected": "正半空间通量为目标绝对值，负半空间零；无入射半空间被拒绝。"
+    "expected": "正半空间通量为目标绝对值，负半空间为零；没有正 vx 节点的网格被拒绝。"
    },
    "verification": {
     "scope": [
@@ -2499,7 +2499,7 @@
    },
    "example": {
     "description": "按所声明顺序聚合三个分子源，并拒绝形状失配。",
-    "expected": "结果等于规定顺序的三源和。"
+    "expected": "结果等于按 wall + charge_exchange + elastic 顺序的逐点三源和；形状失配的三维场引发 ValueError。"
    },
    "verification": {
     "scope": [
@@ -2721,7 +2721,7 @@
    },
    "example": {
     "description": "用均匀入射边界计算首次飞行分布。",
-    "expected": "得到有限且形状正确的推进结果。"
+    "expected": "首次飞行示例返回形状 (2,2,3) 的有限代分布；正、负速度支分别推进。"
    },
    "verification": {
     "scope": [
@@ -2744,7 +2744,7 @@
    "model": "终态分子离子代数状态归约，速率表由调用者提供。",
    "assumptions": [
     "调用者负责11通道反应表及全部剖面；此入口不组装碰撞系数、不生成H₂⁺Maxwell分布、不迭代终态反馈。",
-    "仅零起始列7:11参与解离；前7列改变不影响输出。",
+    "仅列切片 7:11（即零起始索引 7–10）参与解离；前 7 列改变不影响输出。",
     "输入名 ionization_rate_s_inv 和 reaction_rate_table_s_inv 沿用既有接口命名，但乘以中性密度后，其物理量纲仍未解决。数值公式和既有标签予以保留，等待专家复核单位。",
     "维护的实数数值合同排除布尔、复数和数值字符串强制转换。"
    ],
@@ -2808,7 +2808,7 @@
     },
     {
      "name": "dissociation_frequency_s_inv",
-     "description": "中性密度乘反应列7至10之和。",
+     "description": "中性密度乘以反应列切片 7:11（零起始索引 7–10）之和。",
      "constraints": "有限非负。",
      "dtype": "float64 数组"
     },
@@ -2923,7 +2923,7 @@
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，并遵循所声明的逐格矩阵–向量和径向归约顺序。中心化归一化速度平方为 vr[i]^2+(vx[j]-flux/(density*Vth))^2。压力为其加权分布积分乘以 2*mass_ratio*1.6726231e-27*Vth^2/(3*1.602177e-19)；温度为压力/密度。每个空间格的密度必须严格为正，但单个权重可以为零。",
    "model": "终态 H₂ 中心矩诊断，质量比和热速度由调用者提供。",
    "assumptions": [
-    "正权重、相同热速度且molecularity=2时，与九矩关系对应字段相符；本关系允许零权重且不算应力或热流。",
+    "权重为正、热速度与 scirel.kinetic.axisymmetric-neutral-moments 导出的热速度相同且 molecularity=2 时，本关系的压力与温度与其对应字段相符；本关系允许零权重且不计算应力或热流。",
     "质量比乘以固定的氢质量常数，而不是标准原子质量单位；H₂ 压力使用该质量的两倍。",
     "该可调用对象既不确立上游终态分布，也不验证完整终态闭合。维护的实数数值合同排除布尔、复数和数值字符串强制转换。"
    ],
@@ -3177,7 +3177,7 @@
    "definition": "每空间格按矩阵向量乘及径向加和顺序计算 n=Σ_i w_iΣ_j f_ijk dvx_j，Γ=VthΣ_i w_iΣ_j vx_j f_ijk dvx_j，u=Γ/n。单元权重可零，但每格积分密度必须正。",
    "model": "终态 H₂ 诊断，热速度由调用者提供。",
    "assumptions": [
-    "正求积权重且热速度一致时，与axisymmetric-neutral-moments对应字段相符；九矩算子还要求vr、温度、质量、严格正体积权重及高阶矩，因此两者输入/失败合同不同。",
+    "求积权重为正且热速度与 scirel.kinetic.axisymmetric-neutral-moments 导出的热速度一致时，本关系的通量与平均速度与其对应字段相符；九矩算子还要求 vr、温度、质量、严格正体积权重及高阶矩，因此两者的输入/失败合同不同。",
     "该可调用对象不推断终态代、不推进状态、不验证上游分布的生成者，也不宣称完整终态闭合。",
     "把布尔或数值字符串输入强制转换为浮点，不属于当前维护的实数数值合同。"
    ],
@@ -3657,7 +3657,7 @@
      "独立标量双重求和、守恒目标、空间拆分、共同速度平移、负比值状态及未定义传播。",
      "实际拟合矩阵和归一化 Maxwell 分布生成 Alpha；H/D 自适应角积分、带权交换关系、平衡动量和双侧弱漂移。"
     ],
-    "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者候选仍需独立接收；人工科学认可和公开发行另行决定。",
+    "evidence_ceiling": "支持给定矩模型与已测离散输入的物理一致性；不代表完整项目级应用验收、任意分布的非负 BGK 闭合或外部实验精度。作者提交的候选实现仍需独立接收；人工科学认可和公开发行另行决定。",
     "known_limitations": [
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
@@ -3748,7 +3748,7 @@
      "线性制造 profile 的内部点/边界采样、单位与非修改性。",
      "漏通道/未知请求/不支持的匝数与参考环字段拒绝；真实 Picard 反演消费者。"
     ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+    "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [
      "双线性插值存在离散插值误差；节点位置可直接验证解析值。",
      "单位标签无法证明调用者的实际数据已正确标度。",
@@ -3763,7 +3763,7 @@
   {
    "asset_id": "scirel.geometry.bilinear-grid-sampling",
    "source_sha256": "00bd02acf3d2c7a1f5f99af18a0e86a57b10e49b7cf873d8de50f163d51f8eba",
-   "summary": "在直角柱坐标R–Z网格内，对有限实数标量场进行逐单元双线性点采样。",
+   "summary": "在规则的柱坐标 R–Z 网格内，对有限实数标量场进行逐单元双线性点采样。",
    "definition": "在包围查询点的单元内，按R和Z分数权重混合四个[Z,R]角点值；按查询顺序返回。",
    "model": "不包含场方程的分片双线性标量插值。",
    "assumptions": [
@@ -3775,13 +3775,13 @@
     {
      "name": "r_grid",
      "description": "各行共享R轴的径向网格。",
-     "constraints": "有限直角网格，径向严格递增且至少两列；与z_grid和quantity同形。",
+     "constraints": "有限规则网格，径向严格递增且至少两列；与 z_grid 和 quantity 同形。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "z_grid",
      "description": "各列共享Z轴的竖直网格。",
-     "constraints": "有限直角网格，竖直严格递增且至少两行；与r_grid和quantity同形。",
+     "constraints": "有限规则网格，竖直严格递增且至少两行；与 r_grid 和 quantity 同形。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
@@ -3811,7 +3811,7 @@
      "调用者选定有意义的物理量及一致长度单位。"
     ],
     "supported": [
-     "严格有序直角R–Z网格上的域内实数标量点采样。"
+     "严格有序的规则 R–Z 网格上的域内实数标量点采样。"
     ],
     "excluded": [
      "不外推或裁剪域外点。",
@@ -3820,7 +3820,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "网格维度/形状非法、非有限、轴不足/非单调、非直角坐标、点形状非法或任一点域外时ValueError。",
+    "invalid_input": "网格维度/形状非法、非有限、轴不足/非单调、网格非规则、点形状非法或任一点域外时引发 ValueError。",
     "runtime_failure": "未预期NumPy算术错误传播；没有单独拒绝计算样本溢出的门禁。",
     "nonconvergence": "无迭代。",
     "partial_results": "任一查询失败不返回部分样本字典。"
@@ -3836,7 +3836,7 @@
      "R×Z双线性场及输出顺序的直接回归。",
      "空[0,2]查询返回空向量；后续查询非法则整体拒绝。"
     ],
-    "evidence_ceiling": "小直角网格直接测试建立插值算术与所列边界，不验证输入量物理性或专家认可。",
+    "evidence_ceiling": "小规则网格上的直接测试建立插值算术与所列边界，不验证输入量的物理性或专家认可。",
     "known_limitations": [
      "每次只采样一个实数标量。",
      "不换坐标单位或外推。",
@@ -3908,7 +3908,7 @@
      "混合磁通与 Thomson 请求缺任一通道时拒绝；单位冲突与空值拒绝。",
      "固定维数 trial 与真实前向反演组合。"
     ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+    "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [
      "unit 为声明匹配，不自动转换单位，也不验证仪器校准。",
      "chi2 只表示该对角权重下的代数平方和，不能单独解释为统计显著性。"
@@ -3970,11 +3970,11 @@
    },
    "verification": {
     "scope": [
-     "先实跑 10 eV 返回零的反例，再依据原始 IDL 修复。",
+     "先复现 10 eV 返回零的反例，再据此修复低能分支的断点。",
      "保留非断点拟合、输出轴、输入拒绝和端点裁剪的已有数值断言与容差。",
-     "后继原子碰撞矩阵与独立角积分使用修正后的分段定义。"
+     "后续原子碰撞矩阵与独立角积分使用修正后的分段定义。"
     ],
-    "evidence_ceiling": "证明声明分段拟合与原始断点定义一致，未建立新的实验截面普适精度；根接收、人认可及许可另记。",
+    "evidence_ceiling": "证明所声明的分段拟合与原始断点定义一致，未建立新的实验截面普适精度；根级接收、人工科学认可及许可另行记录。",
     "known_limitations": [
      "拟合端点裁剪和低高段不连续继承；不擅自平滑。",
      "公开分发许可仍待人工决定。"
@@ -4092,13 +4092,13 @@
     {
      "name": "separatrix_flux_wb_per_rad",
      "description": "分界每弧度极向磁通。",
-     "constraints": "有限，不要求位于样本范围；原文称范围外可能使所选侧空并触发非空门禁。",
+     "constraints": "有限，不要求位于样本范围内；范围外可能使所选侧为空并触发非空门禁。",
      "dtype": "实数"
     },
     {
      "name": "closed_flux_side",
      "description": "分界磁通哪一侧受约束。",
-     "constraints": "精确less_than或greater_than，其他值拒绝不默认。",
+     "constraints": "精确为 less_than 或 greater_than；其他值拒绝，不设默认。",
      "dtype": "字符串"
     },
     {
@@ -4883,7 +4883,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非实数、非有限或负能量引发指出 energy_ev 的 ValueError。复数、布尔值及数字字符串不会隐式转换。 非布尔/整数标量 viscosity 也引发 ValueError。",
+    "invalid_input": "非实数、非有限或负能量引发指明 energy_ev 的 ValueError；复数、布尔值和数字字符串不做隐式转换。viscosity 不是布尔或整数标量时也引发 ValueError。",
     "runtime_failure": "在声明的截断正能量区间上求值，不发生迭代；合法输入得到有限结果。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
@@ -4927,13 +4927,13 @@
    "inputs": [
     {
      "name": "r_grid",
-     "description": "直角柱坐标径向网格。",
-     "constraints": "有限，列方向严格递增，在NumPy allclose容差内直角；两轴至少4点。非负半径是物理前提而非实现校验。",
+     "description": "柱坐标径向网格（R 轴）。",
+     "constraints": "有限，列方向严格递增，在 NumPy allclose 容差内为规则网格；两轴至少 4 点。非负半径是物理前提而非实现校验。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "z_grid",
-     "description": "直角竖直坐标网格。",
+     "description": "柱坐标轴向网格（Z 轴）。",
      "constraints": "有限，行方向严格递增、各列相同，与r_grid同形。",
      "dtype": "转为 float64 的实数类数组"
     },
@@ -4972,7 +4972,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "有限递增直角网格各轴至少4点；物理柱坐标需调用者提供非负半径。",
+     "有限递增的规则网格各轴至少 4 点；物理柱坐标需调用者提供非负半径。",
      "离散路径在网格内且非退化，插值B严格正。"
     ],
     "supported": [
@@ -4985,7 +4985,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "错误形状、非有限、非直角/过小网格、网格或插值B非正、域外/重复点、dl_B非正/非有限时ValueError。",
+    "invalid_input": "错误形状、非有限、非规则或过小网格、网格或插值 B 非正、域外或重复点、dl_B 非正或非有限时引发 ValueError。",
     "runtime_failure": "SciPy插值/求积错误传播；插值标量或加权平均非有限时ValueError。",
     "nonconvergence": "插值和求积无迭代收敛判据。",
     "partial_results": "失败无部分映射；quantity=None省略平均是正常行为。"
@@ -5018,7 +5018,7 @@
    "model": "单一所声明的截面拟合；不插值外部数据，无替代分支，也不对速率做积分。",
    "assumptions": [
     "Janev 系数是所声明的拟合值，按所声明的表达式求值，不从任何外部参考重新推导。",
-    "原子H+H⁺属于另一物理系统，其拟合与分子拟合不一致，不可互换。",
+    "原子 H + H⁺ 属于另一物理系统，其拟合与分子拟合不一致，不可互换。",
     "端点截断是所声明的行为：在拟合范围外很远处求值的调用者会静默得到端点值。",
     "未绑定外部物理截面参考；该缺口保持开放。"
    ],
@@ -5050,7 +5050,7 @@
     ],
     "excluded": [
      "不在此做Maxwell平均；可把本入口作为scirel.collisions.maxwellian-relative-speed-rate-average的cross_section_m2端口。",
-     "原子H+H⁺是另一拟合资产，不是本关系变体。",
+     "原子 H + H⁺ 是另一拟合资产，不是本关系变体。",
      "弹性动量转移或解离通道是本入口不提供的其他关系。",
      "速率系数或碰撞频率是下游调用者负责的量。",
      "不提供经外部原子物理基准验证的截面模型；未绑定此类基准。"
@@ -5613,13 +5613,13 @@
     ]
    },
    "source_conflicts": [
-    "输入约束称 v_parallel、v_perpendicular、b_t、psi、potential 未做显式有限性检查或未拒绝 NaN；同文的 failure_semantics 与 verification.scope 却记录这些局部量的非有限拒绝及回归。中文分别标明两种叙述，该矛盾尚待统一。"
+    "输入约束声称 v_parallel、v_perpendicular、b_t、psi、potential 未做显式有限性检查或未拒绝 NaN；但同一合同的 failure_semantics 与 verification.scope 又记录了这些局部量非有限值的拒绝及回归测试。两种叙述并存，尚待统一。"
    ]
   },
   {
    "asset_id": "scirel.kinetic.loss-cone-spectrum",
    "source_sha256": "9e143b91b662d25963571dac346aef3814531456d0d1184e5e0131a1e6dac892",
-   "summary": "计算最低的若干有序偶角向本征模，在出现整数阶时返回该整数阶，并使用正规初值解。",
+   "summary": "计算最低的若干有序偶宇称角向本征模，在出现整数阶时返回该整数阶，并使用正规初值问题解。",
    "definition": "求解 −[(1−ξ²)u′]′=λu，u(0)=1、u′(0)=0、u(ξ_tp)=0。通过连续 Sturm 相位 θ′=sqrt(λ)[cos²θ/(1−ξ²)+sin²θ]、θ(0)=π/2 排根，目标为 θ(ξ_tp)=(j+1)π。由 p(ξ)≤1 得到 Rayleigh 界，为每个根提供括区。通过一个独立的缩放线性初值方程求 u；它就是正规偶 ₂F₁(−ν/2,(ν+1)/2;1/2;ξ²)，λ=ν(ν+1)。阶数一般不是整数；当某个根恰好与整数阶重合时，返回该整数。不存在有限多项式截断。",
    "model": "正规自伴 Neumann/Dirichlet 角向 Sturm–Liouville 问题，不求分布演化。",
    "assumptions": [
@@ -5918,7 +5918,7 @@
    "definition": "对每个空间格 k，density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j]，particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j]，使用所声明的逐格矩阵–向量和径向顺序。令 u=particle_flux/density、c_x=vx-u/Vth、c_squared=vr^2+c_x^2、m=2*mass_ratio*1.6726231e-27 kg。随机通量为 0.5*m*Vth^3 乘以 c_squared*c_x*f 的加权积分。压力为 m*Vth^2/(3*1.602177e-19) 乘以 c_squared*f 的加权积分，轴向应力为 m*Vth^2/1.602177e-19 乘以 c_x^2*f 的加权积分再减去压力。总通量为 (0.5*density*m*u^2+2.5*pressure*1.602177e-19)*u+1.602177e-19*axial_stress*u+random_flux。在有限精确算术下，它等于原始动能通量 0.5*m*Vth^3 乘以 (vr^2+vx^2)*vx*f 的加权积分。",
    "model": "终态 H₂ 能量矩热通量诊断，质量比和热速度由调用者提供。",
    "assumptions": [
-    "正权重、热速度相同及molecularity=2时随机能流与九矩关系相符；总能流是额外字段，本关系允许零权重、不暴露中间压力或应力。",
+    "权重为正、热速度与 scirel.kinetic.axisymmetric-neutral-moments 导出的热速度相同且 molecularity=2 时，随机能流与其对应字段相符；总能流是额外字段，本关系允许零权重、不暴露中间压力或应力。",
     "质量比乘以所声明的氢质量常数，而不是标准原子质量单位；H₂ 质量使用该因子的两倍。",
     "该可调用对象既不确立上游终态分布，也不验证完整终态闭合。维护的实数数值合同排除布尔、复数和数值字符串强制转换。"
    ],
@@ -6160,7 +6160,7 @@
      "非收敛短路、错误残差形状/NaN/chi2 拒绝、调用方深层非修改。",
      "独立解析及曲场前向反演消费者。"
     ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+    "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [
      "RuntimeError 的科学含义由调用者端口负责；错误状态不能替代原异常调查。",
      "单次 trial 不判断参数可辨识性或最优性。"
@@ -6756,7 +6756,7 @@
     "上下游须使用同一归一化速度单位。",
     "虚拟面遵循所声明的半单元外推约定；若调用者的格式期望不同的面位置，不得在未经审查的情况下复用该测度。",
     "环形面积用精确面差，不是 vr 中点近似。",
-    "非有限网格点被拒绝。较早的行为只检查单调性和尺寸，并静默传播 NaN，尽管其文档声明了失败关闭的有限合同；这是唯一记录的修复。"
+    "非有限网格点被拒绝。此前实现只检查单调性和尺寸并静默传播 NaN，与自身声明的有限性失败关闭合同不符；这是已记录的修复。"
    ],
    "boundary": "内径面为零，外面半单元外推，幽灵壳全零；vx 须同时有严格正负值。",
    "inputs": [
@@ -7224,14 +7224,14 @@
     },
     {
      "name": "SIG_H_H2",
-     "description": "带有符号轴向差的 H–H₂ 矩阵。",
-     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；保留给定符号。",
+     "description": "带符号 vx_vx 因子的 H–H₂ 弹性矩阵。",
+     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；含由带符号 vx_vx 因子产生的有界负值，原样保留。",
      "dtype": "实数类数组"
     },
     {
      "name": "SIG_H_P",
-     "description": "带有符号轴向差和两能量分支的 H–H⁺ 矩阵。",
-     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；保留给定符号。",
+     "description": "带符号 vx_vx 因子和两能量分支的 H–H⁺ 弹性矩阵。",
+     "constraints": "有限 N×N 方阵，N=nvr*nvx；按 Fortran 速度布局；含由带符号 vx_vx 因子产生的有界负值，原样保留。",
      "dtype": "实数类数组"
     },
     {
@@ -7468,7 +7468,7 @@
     {
      "name": "density_pitch_integral",
      "description": "无量纲密度俯仰份额。",
-     "constraints": "数值精度内在 [0,1]；绝对2e-13/相对2e-11误差目标，物理误差随归一化放大。",
+     "constraints": "数值精度内应在 [0,1]；绝对 2e-13、相对 2e-11 误差目标，物理误差随归一化放大。",
      "dtype": "float64 数组"
     },
     {
@@ -7495,7 +7495,7 @@
     ],
     "excluded": [
      "不单凭返回矩确定静电势、镜平衡或自洽分布。",
-     "不提供单侧塞、磁通自动换算或任意磁力线几何；原本条另称不提供有限俯仰求积误差估计，与同文有误差控制的积分及误差输出冲突。"
+     "不提供单侧塞、磁通自动换算、任意磁力线几何或有限俯仰求积的误差估计。"
     ]
    },
    "failure_semantics": {
@@ -7524,7 +7524,7 @@
     ]
    },
    "source_conflicts": [
-    "原applicability.excluded[1]称不提供有限俯仰求积误差估计；同文identity、输出、失败与验证范围却声明误差控制积分和误差估计。此处保留原条目的排除说明并标注冲突，不取消现有误差输出合同。"
+    "合同内部矛盾：applicability.excluded[1] 声称不提供有限俯仰求积的误差估计，但同一合同的身份、输出、失败语义与验证范围又声明了误差控制的积分与误差目标。本页保留该排除条目的原文并在此标注冲突，不取消现有误差输出合同。"
    ]
   },
   {
@@ -7729,7 +7729,7 @@
      "非法控制零科学调用、失败零 chi2 不可 best、固定维数、预算/终点状态同一性。",
      "真实 Picard 的双参数解析恢复与独立曲场离散参考恢复。"
     ],
-    "evidence_ceiling": "作者在确切环境完成回归、独立解析及独立离散参考比较和精选 wheel 用户调用；仅支持所列合同与算例。根独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
+    "evidence_ceiling": "作者在指定环境中完成了回归、独立解析、独立离散参考比较，以及精选 wheel 的用户调用；仅支持所列合同与算例。根级独立接收、人工科学认可、再分发许可和公开发行分别决定，不据此扩张为任意闭合、装置或全局可辨识性证明。",
     "known_limitations": [
      "常量罚值附近可能停滞；有限 LHS 和局部优化不保证找出可行点。",
      "没有自动协方差、Fisher 秩或置信区间报告；需要额外科学设计。",

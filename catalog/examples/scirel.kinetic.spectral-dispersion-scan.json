@@ -505,7 +505,7 @@
  "example": {
   "description": "Complete two-point magnitude scan.",
   "code": "from scirel.kinetic import evaluate_spectral_dispersion\nr = evaluate_spectral_dispersion(method=2, k_grid=[0, .1])\nassert r['ww1'].shape == (2, 14) and r['graphics']['axes_count'] == 2",
-  "expected": "The normalized two-point scan returned ww1 with shape (2,14), graphics axes_count=2 and mode_count=5, and an in-memory PNG of 23674 bytes in this run."
+  "expected": "The normalized two-point scan returned ww1 with shape (2,14), graphics axes_count=2 and mode_count=5, and the current implementation returns an empty PNG payload (0 bytes) while reporting graphics metadata."
  },
  "verification": {
   "scope": [

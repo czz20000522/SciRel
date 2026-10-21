@@ -33,6 +33,6 @@ def truncated_svd_inverse(mat, rcond=1e-10):
         raise ValueError("rcond must be a positive finite scalar")
     u, singular, vt = np.linalg.svd(matrix, full_matrices=False)
     inverse = np.zeros_like(singular)
-    keep = singular >= threshold
+    keep = singular >= threshold * singular.max() if singular.size else singular.astype(bool)
     inverse[keep] = 1.0 / singular[keep]
     return (vt.T * inverse) @ u.T

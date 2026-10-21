@@ -31,14 +31,14 @@
    "outputs": [
     {
      "name": "psi",
-     "description": "目标行、源列的 R A_phi 磁通响应。",
+     "description": "目标行、源列的每安培 R A_φ 磁通响应。",
      "constraints": "有限；精确重合离散置零。",
      "dtype": "float64（双精度浮点数）"
     },
     {
      "name": "BR",
      "description": "目标行、源列的径向场响应。",
-     "constraints": "保持有符号权重及实际高度差。",
+     "constraints": "含符号权重；使用目标相对源的有符号高度差。",
      "dtype": "float64（双精度浮点数）"
     },
     {
@@ -72,7 +72,7 @@
    },
    "verification": {
     "scope": [
-     "非对称坐标独立方位角积分。",
+     "对非对称坐标做独立方位角积分对照。",
      "混合符号、非单位电流及独立换序。",
      "默认单位源、轴极限、精确自项及非法输入。"
     ],
@@ -86,7 +86,7 @@
   {
    "asset_id": "scirel.electromagnetism.loop-flux-matrix",
    "source_sha256": "b359b30af8688ee0643e0eccf8ab0138b14f93697ad2b67edc9109380eef2113",
-   "summary": "构造 R、Z 节点网格上的稠密实际坐标磁通矩阵。",
+   "summary": "构造 R、Z 节点网格上的稠密坐标空间磁通矩阵。",
    "definition": "按 C 顺序展平匹配的 R、Z 数组，计算每个实际目标/源点对。",
    "model": "带有活跃源节点零对角的轴对称理想圆电流丝磁通。",
    "boundary": "轴上行和零半径源列为零；重复正半径节点拒绝。",
@@ -141,8 +141,8 @@
    },
    "verification": {
     "scope": [
-     "原不规则坐标及不变均匀域。",
-     "独立非对称留出角积分及换序检验。",
+     "原始不规则几何与未改动的均匀几何。",
+     "独立非对称留出案例的积分对照与换序检验。",
      "轴极限、奇点和复数拒绝行为。"
     ],
     "evidence_ceiling": "具名案例的独立数值关系和不变量，不是一般极端尺度或导体模型资格。",
@@ -155,7 +155,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.circular-filament-green",
-   "source_sha256": "198b4c832c668debca07ae15715318cd3ed50f2b84004eb2ce50a7e247aa0687",
+   "source_sha256": "021b452c2c62cec37f5d669b20212140680e166264b23a9f0f72f270605b7e14",
    "summary": "计算有序圆电流丝在柱坐标目标点的磁通和磁场响应。",
    "definition": "对每个源行 (R,Z,weight)，返回每安培加权响应 psi=R A_phi、BR 和 BZ。",
    "model": "使用小模数超几何分支和互补椭圆积分分支的轴对称理想圆电流丝核。",
@@ -182,7 +182,7 @@
    "outputs": [
     {
      "name": "response",
-     "description": "psi、BR、BZ 元组；列表输入时，每个集合各返回一条目标轴。",
+     "description": "psi、BR、BZ 元组；列表输入时，每个源集合沿目标维度分别返回一个数组。",
      "constraints": "返回有限响应；否则抛出 FloatingPointError。",
      "dtype": "float64（双精度浮点数）"
     }
@@ -206,15 +206,15 @@
     "partial_results": "源求值失败时不返回响应元组。"
    },
    "example": {
-    "description": "计算一个加权电流丝在两个目标点的响应，并用独立电流向量收缩轴向响应。",
-    "expected": "响应数组形状为 (2,)；第一目标的 psi 为零，收缩后的 BZ 值有限。"
+    "description": "计算一个加权电流丝在两个目标点的磁通与磁场响应。",
+    "expected": "psi、BR、BZ 数组形状均为 (2,)；第一目标的 psi 约为 1.11e-8（非零），所有响应有限。"
    },
    "verification": {
     "scope": [
      "有界的 Green 对照用例。",
      "轴极限及导数回归。",
      "显式奇点和生命周期测试。",
-     "独立 70/140 位角积分检验近丝 BZ 及 m=0.5 两侧连续响应，保持原容差；验证极小正半径、轴上 BZ 与不可表示算术失败。"
+     "以独立 70/140 位精度角向积分检验近丝 BZ 及 m=0.5 两侧连续响应，保持原容差；并验证极小正半径、轴上 BZ 与不可表示算术失败。"
     ],
     "evidence_ceiling": "仅支持具名案例及所声明 API 行为，不宣称全连续域正确性或入口可互换。",
     "known_limitations": [

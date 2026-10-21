@@ -325,7 +325,7 @@
    },
    "example": {
     "description": "常量各向同性压力及零格林响应一步保持真空磁通和场。",
-    "expected": "一步收敛、真空磁通不变、环向电流为零，不作壁修正。"
+    "expected": "一步收敛，真空磁通与场保持不变，环向电流为零，未执行壁修正。"
    },
    "verification": {
     "scope": [
@@ -487,7 +487,7 @@
    },
    "example": {
     "description": "为均匀各向同性压强显式给零导数，验证固定磁通关系。",
-    "expected": "预期：残差为零，不从恒定磁场样本虚构导数。"
+    "expected": "残差为零；未从恒定磁场样本臆造导数。"
    },
    "verification": {
     "scope": [
@@ -612,8 +612,8 @@
     "partial_results": "发生异常后不返回部分结果映射。"
    },
    "example": {
-    "description": "求解一个对角复本征问题，只保留实部为正的分支。",
-    "expected": "观察到 PASS：对角见证同时暴露两个本征值，并恰好选出一个实部为正的分支。"
+    "description": "求解对角复本征问题，只保留实部为正的分支。",
+    "expected": "对角样例给出两个本征值，恰好选出一个实部为正的分支。"
    },
    "verification": {
     "scope": [
@@ -893,14 +893,14 @@
     "partial_results": "无部分结果；通过终末有限性检查后才一并返回张量与行列式。"
    },
    "example": {
-    "description": "在一个已声明案例波点组装单电子张量；Python 路径在本机运行，Octave 对照在 macOS 主机上未运行。",
-    "expected": "Python 预检返回有限的 3×3 复数 K、D 张量；行列式为 1184249.3244493138 + 4322451.286160805j。Octave 对照未运行。"
+    "description": "在一个已声明的案例波点组装单电子张量；示例已在本机运行。",
+    "expected": "示例返回有限的 3×3 复数 K、D 张量，行列式为 1184249.3244493138 + 4322451.286160805j。"
    },
    "verification": {
     "scope": [
      "本合同的 SciRel 实现与仓库测试覆盖所声明的公共端口和数值关系。",
      "示例只运行一个有界代表案例，不把适用范围扩展到声明前提之外。",
-     "Python 预检已运行，但本机 macOS 上的 Octave 对照未运行（未运行）。"
+     "Python 示例已在本机运行；本地执行覆盖本资产。"
     ],
     "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
     "known_limitations": [
@@ -909,7 +909,7 @@
      "在较大的 kx*rho 下，有限截断可能不足，调用者须独立评估。",
      "本关系的局部张量测试不能证明终末矩阵输出经完整流水线端到端闭合。",
      "分发许可与专家认可仍未解决。",
-     "Octave 对照在本机未运行（未运行）。"
+     "本地执行覆盖本资产；未开展外部 Octave 对照。"
     ],
     "tests": [
      "tests/kinetic/test_kinetic_dispersion_sum_n.py"
@@ -1030,7 +1030,7 @@
    },
    "example": {
     "description": "求解一个包含两个采样点的满秩边界修正。",
-    "expected": "修正磁通为 [0,0.125,-0.125]，effective_rank 为 2，采样残差在浮点容差内为零。"
+    "expected": "修正磁通为 [0, 0.125, −0.125]，effective_rank 为 2，采样残差在浮点容差内为零。"
    },
    "verification": {
     "scope": [
@@ -1315,7 +1315,7 @@
    },
    "example": {
     "description": "运行一个单点归一化流体扫描并检查其终态映射。",
-    "expected": "观察到 PASS：有界扫描产生一个频率样本、一个谱项，并遵循声明的七节点图顺序。"
+    "expected": "有界扫描产生一个频率样本、一个谱项，并按声明的七个节点顺序执行任务图。"
    },
    "verification": {
     "scope": [
@@ -1394,8 +1394,8 @@
     "partial_results": "异常后不返回部分映射。"
    },
    "example": {
-    "description": "求值一个有界数值用例。",
-    "expected": "预期：断言结果符合所述输出合同。"
+    "description": "在 z=0 处计算 Weideman 近似。",
+    "expected": "示例返回 Z(0)=i√π≈1.77245385i、w(0)=1，method='erfc'，all_purely_imaginary=True。"
    },
    "verification": {
     "scope": [
@@ -1589,7 +1589,7 @@
    },
    "example": {
     "description": "由派生物种尺度构建一个零谐波流体矩阵并检查其有限形状。",
-    "expected": "观察到 PASS：单物种零谐波见证返回有限的 40×40 复矩阵及声明的尺寸/布局元数据。"
+    "expected": "单物种零谐波示例返回有限的 40×40 复矩阵，以及 matrix_size=40、n_sl=12、n_sl3=36 等尺寸/布局元数据。"
    },
    "verification": {
     "scope": [
@@ -1685,7 +1685,7 @@
    },
    "example": {
     "description": "电子-质子轴向场示例检查独立张量返回、形状、有限性、无碰撞 Hermitian 与贡献碰撞的破坏；验证精确共振处零密度物种跳过、真零场各向同性和空物种真空张量，再示范非法频率/场与中间溢出或坍缩的命名异常。",
-    "expected": "预期：有限 complex128 的 (3,3) 张量，横向对角 S、轴向 P、纯虚反对称非对角；无碰撞 max|eps-eps^H|=0，贡献碰撞 1e6 s^-1 时大于零。零密度共振项等效空物种；真零场有限各向同性、非对角恰零，空物种为单位阵。NaN、两种无穷、非正频率及错误末轴抛 ValueError；1e308 Hz 或 [5e-324,0,0] T 抛 ColdPlasmaOverflowError。"
+    "expected": "有限 complex128 的 (3,3) 张量，横向对角 S、轴向 P、纯虚反对称非对角；无碰撞 max|eps-eps^H|=0，贡献碰撞 1e6 s^-1 时大于零。零密度共振项等效空物种；真零场有限各向同性、非对角恰零，空物种为单位阵。NaN、两种无穷、非正频率及错误末轴抛 ValueError；1e308 Hz 或 [5e-324,0,0] T 抛 ColdPlasmaOverflowError。"
    },
    "verification": {
     "scope": [
@@ -2189,7 +2189,7 @@
     },
     {
      "name": "firehose_margin",
-     "description": "局部消防水龙带裕度 1-mu0*(p_parallel-p_perpendicular)/max(|B|²,tiny)。",
+     "description": "局部 firehose 裕度 1-mu0*(p_parallel-p_perpendicular)/max(|B|²,tiny)。",
      "constraints": "仅诊断，此叶算子不据此拒绝。",
      "dtype": "float64 数组"
     },
@@ -2331,7 +2331,7 @@
     ],
     "excluded": [
      "不求完整平衡、一般双流体输运或物种热力学演化。",
-     "不自动证明低密度、近零磁场、消防水龙带不稳定或高 Mach 区域的物理有效性。",
+     "不自动证明低密度、近零磁场、firehose 不稳定或高 Mach 区域的物理有效性。",
      "不含非轴对称或环向场压强几何。"
     ]
    },
@@ -2343,7 +2343,7 @@
    },
    "example": {
     "description": "均匀轴向场中采用均匀各向同性压强与电势。",
-    "expected": "预期：环向电流和离子环向速度为零，局部惯性计算报告收敛。"
+    "expected": "环向电流和离子环向速度为零，局部惯性计算报告收敛。"
    },
    "verification": {
     "scope": [
@@ -2373,7 +2373,7 @@
   {
    "asset_id": "scirel.equilibrium.pressure-flux-state",
    "source_sha256": "b3971912750f7e5d1f12820f05d35f8918937bea51037729e133f9f36d9db92b",
-   "summary": "在严格 Z=0 的一行采样径向压力，将首个零压点之前含该点的递增磁通段拟合为压力样条，返回截断后的压力导数和样条状态。",
+   "summary": "在严格 Z=0 的一行采样径向压力，将首个零压点之前含该点的递增磁通段拟合为压力样条，返回掩码截断后的压力导数和样条状态。",
    "definition": "只把唯一精确 Z=0 中平面索引按物理半径递增排序，并拒绝重复半径。逐点采样有限非负压力，用至第一个向外零压点的至少四点严格递增磁通前缀拟合；序列化同一前缀、样条节点、系数及三次阶数。在原 C 顺序网格求导，先拒绝非有限系数或导数，再按边界和真实布尔掩码置零。",
    "model": "按物理径向遍历、可精确重建的各向同性压力—磁通三次样条。",
    "assumptions": [
@@ -2468,7 +2468,7 @@
    },
    "example": {
     "description": "拟合线性下降的中平面压力，并掩去一个导数单元。",
-    "expected": "未掩蔽 dP/dpsi 为 −1 Pa/(Wb/rad)，选中单元和电流向量为零，首零压边界 psi_edge=0.8 Wb/rad。"
+    "expected": "未掩蔽 dP/dpsi 为 −1 Pa/(Wb/rad)；选中单元和电流向量为零，首个零压边界 psi_edge=0.8 Wb/rad。"
    },
    "verification": {
     "scope": [
@@ -2622,7 +2622,7 @@
    },
    "example": {
     "description": "在复平面原点计算解析函数。",
-    "expected": "预期：w(0)=1，Z(0)=i*sqrt(pi)，均无量纲。"
+    "expected": "w(0)=1，Z(0)=i√π≈1.77245385i，均无量纲。"
    },
    "verification": {
     "scope": [
@@ -2710,7 +2710,7 @@
    },
    "example": {
     "description": "对单样本和无序数组计算逐点裕度，全程不求导或产生标志。",
-    "expected": "预期：单样本直接给代数值；无序数组精确复现组合诊断的 firehose_margin，结果无 mirror、minimum 或 stable 字段。 两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力。"
+    "expected": "单样本直接给出代数裕度；无序数组精确复现组合诊断的 firehose_margin，结果不含 mirror、minimum 或 stable 字段。两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力。"
    },
    "verification": {
     "scope": [
@@ -2802,8 +2802,8 @@
     "partial_results": "异常后不返回部分映射。"
    },
    "example": {
-    "description": "求值一个有界数值用例。",
-    "expected": "预期：断言结果符合所述输出合同。"
+    "description": "在 (x, λ)=(0.5, 0.25) 处计算 Ronnmark R 函数。",
+    "expected": "示例返回 R≈−0.550443+0j、dR/dλ≈−0.449557+0j，分支为 RTAY(AL<4)，并给出 2×2 伴随矩阵 RC。"
    },
    "verification": {
     "scope": [
@@ -3116,7 +3116,7 @@
    },
    "example": {
     "description": "在三个无磁塞样本上求准中性电势并组装压强。",
-    "expected": "预期：与解析电势相差不超过 2e-8 V，相对电荷残差小于 1e-10，总压强与 psi 同形。"
+    "expected": "与解析电势相差不超过 2e-8 V，相对电荷残差小于 1e-10，总压强与 psi 同形。"
    },
    "verification": {
     "scope": [
@@ -3240,7 +3240,7 @@
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
    "source_sha256": "de0c6b7c3498361fe699a908e88173a6e2e2ef6d45695942f1b67b8afdfe05ca",
-   "summary": "按默认 15 阶谐波截断计算介电张量和色散张量的全部九个分量。",
+   "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
    "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项由 K 形成 D，并用显式六项展开式计算其行列式。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
    "boundary": "默认 lmx=15；与常规求和路径不同，不对近零 kz 钳位。",
@@ -3408,7 +3408,7 @@
    },
    "example": {
     "description": "计算一个有界的单物种介电张量案例并检查张量形状。",
-    "expected": "观察到 PASS：案例返回有限的 3×3 K、D 张量、有限行列式，以及 lmx=15 的声明中间尺度。"
+    "expected": "示例返回有限的 3×3 K、D 张量、有限行列式，以及声明的 lmx=15 中间尺度。"
    },
    "verification": {
     "scope": [
@@ -3428,7 +3428,7 @@
   {
    "asset_id": "scirel.field.poloidal-field-from-flux",
    "source_sha256": "1c702a182c3b652b069ac85d41b7e98c0b43cbcb45958f0a084b6497ee75cdb5",
-   "summary": "在直角柱坐标网格上由 psi=R A_phi 恢复 BR、BZ 及其大小。",
+   "summary": "在柱坐标 R–Z 直角网格上由 psi=R A_phi 恢复 BR、BZ 及其大小。",
    "definition": "在直角网格上对 psi 求导并除以 R；包含 R=0 时使用偶对称磁通轴规则。",
    "model": "柱坐标 R-Z 网格上的稳定局部有限差分梯度。",
    "assumptions": [
@@ -3637,7 +3637,7 @@
    },
    "example": {
     "description": "对一个激活面求递减残差根，并保留另一非激活参考势。",
-    "expected": "激活电势约 0.5 V；非激活仍 17 V，并保留非中性残差 −16.5。"
+    "expected": "激活电势约 0.5 V；非激活仍为 17 V，并保留非中性残差 −16.5。"
    },
    "verification": {
     "scope": [
@@ -3713,7 +3713,7 @@
    },
    "example": {
     "description": "在含区间内外磁通值的网格上施加二次包络。",
-    "expected": "预期：[[1,1,0.25],[0,0,0]]，形状与输入相同。"
+    "expected": "二次包络返回 [[1,1,0.25],[0,0,0]]，形状与输入相同。"
    },
    "verification": {
     "scope": [
@@ -3735,7 +3735,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-   "source_sha256": "98e02b8f934a3eb9a581b344d92039cc9104464aacab6c4f789d939c2ed8661b",
+   "source_sha256": "537e97dac256d0cc7d14ac0526a868e3702b5d48e7bd32a70e6e2c4c7407c397",
    "summary": "对输入的每个角频率，均从同一个固定初值求解 Ronnmark 行列式的复数 kx 零点。",
    "definition": "每个频点独立从 kx_start 开始，用复数信赖域 dogleg 算法求解 det(D)=0，并限制迭代和函数求值次数。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3927,20 +3927,20 @@
     "partial_results": "发生异常后不返回部分结果映射。"
    },
    "example": {
-    "description": "计算一个有界案例；Python 预检已在本机运行，Octave 对照在 macOS 主机上未运行。",
-    "expected": "Python 预检返回一个收敛根 6.01073715e-13 + 1315.20499512j，残差约为 1.14e-13 - 2.86e-17j，退出标志为 1；Octave 对照为 未运行。"
+    "description": "计算一个有界求根案例；示例已在本机运行。",
+    "expected": "示例返回一个收敛根 6.01073715e-13 + 1315.20499512j，残差约为 −1.14e-13 − 2.86e-17j，退出标志为 1，迭代 44 次、函数求值 87 次。"
    },
    "verification": {
     "scope": [
      "声明的数值案例及相关失败边界。",
      "示例只执行一个有界代表性案例，不扩展声明的适用前提。",
-     "Python 预检已在本机运行，但本 macOS 主机上的 Octave 对照为 未运行。"
+     "Python 示例已在本机运行；本地执行覆盖本资产。"
     ],
     "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
     "known_limitations": [
      "可能存在多个带符号的根；保留退出标志和残差表示不收敛，不通过镜像变换根的符号。",
      "公开分发许可与专家审查仍待完成。",
-     "Octave 对照在本机未运行（未运行）。"
+     "本地执行覆盖本资产；未开展外部 Octave 对照。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
@@ -3948,14 +3948,15 @@
    },
    "source_conflicts": [
     "kx_start 的端口描述使用“延续求根”，但定义与 omegas 描述明确说明各频点独立重复同一初值，不进行频点间延续；本页提示该矛盾。",
-    "residuals 的约束引用 last_updates，但当前 outputs 清单未声明该返回键；不据此承诺未声明的公开输出。"
+    "residuals 的约束引用 last_updates，但当前 outputs 清单未声明该返回键；不据此承诺未声明的公开输出。",
+    "example.expected 把残差实部写成 +1.14e-13，实际运行结果为 −1.14e-13；本页中文按实测值给出。"
    ]
   },
   {
    "asset_id": "scirel.field.poloidal-field-magnitude",
    "source_sha256": "2ade2f3f90c3c80c5935580d4843255d7db260f777bb74edc0b23a759c6c1bb1",
    "summary": "计算带下限的极向场大小及其由中位数得到的参考值。",
-   "definition": "计算 hypot(BR,BZ)，将每个值下限截为 1e-30，并用先差值后取中点的方式返回中位数。",
+   "definition": "计算 hypot(BR,BZ)，将每个值下限截为 1e-30，并用相邻样本先求差、再取中点的方式返回中位数。",
    "model": "带有限正下限的逐点欧氏大小。",
    "assumptions": [
     "输入是相同二维形状的有限实数数组。",
@@ -4011,7 +4012,7 @@
    },
    "example": {
     "description": "计算一个 3-4-5 场点和一个零分量点。",
-    "expected": "B=[[5,1e-30]] T，B0_default 为 2.5 T。"
+    "expected": "B=[[5, 1e-30]] T，B0_default 为 2.5 T。"
    },
    "verification": {
     "scope": [
@@ -4030,7 +4031,7 @@
   {
    "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
    "source_sha256": "2664515a06f1423bd49ea8c1697f84206adef3a5bd055df74e6fb8b0f8af5c21",
-   "summary": "把网格镜动力学闭合绑定到约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
+   "summary": "将网格镜动力学闭合接入约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
    "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代及终末动力学重算。",
    "model": "轴对称网格镜端损失/准中性动力学闭合与约化 Hall 各向异性 Picard 反馈的组合。",
    "assumptions": [
@@ -4108,7 +4109,7 @@
     },
     {
      "name": "minimum_firehose_margin",
-     "description": "终末活跃点消防水龙带/张力裕度下限。",
+     "description": "终末活跃点 firehose/张力裕度下限。",
      "constraints": "默认 0；非负时 margin<=阈值抛 FloatingPointError，负值关闭此检查。",
      "dtype": "有限实数标量"
     },
@@ -4175,7 +4176,7 @@
     {
      "name": "strict_compatibility",
      "description": "终末相容性超限是否拒绝。",
-     "constraints": "默认 True，实际布尔；不关闭单独的消防水龙带检查。",
+     "constraints": "默认 True，实际布尔；不关闭单独的 firehose 检查。",
      "dtype": "bool 布尔值"
     },
     {
@@ -4326,7 +4327,7 @@
     },
     {
      "name": "firehose_margin",
-     "description": "终末 Hall 消防水龙带/张力裕度。",
+     "description": "终末 Hall firehose/张力裕度。",
      "constraints": "仅在阈值非负时检查终末活跃点。",
      "dtype": "float64 数组"
     },
@@ -4366,7 +4367,7 @@
    },
    "example": {
     "description": "使用显式测试替身检查公共绑定合同；此示例不验证默认科学耦合。",
-    "expected": "预期：模拟 Hall 调用绑定闭合，后者接收当前 B、psi 和外层网格，模拟结果原样传出。"
+    "expected": "模拟的 Hall 图调用所绑定的压力闭合，后者接收当前 B、psi 和外层网格，模拟结果原样传出。"
    },
    "verification": {
     "scope": [
@@ -4464,7 +4465,7 @@
   },
   {
    "asset_id": "scirel.field.filament-coil-green-field",
-   "source_sha256": "609ef9d6bf487e4d36a21c752a5152b214683fa6581f9b885c370e41239c9b87",
+   "source_sha256": "e2cd9f3a2a485de008d12ddfc23f448309f2eaa677cc81d0b879ff73378ddf12",
    "summary": "根据调用者提供的椭圆积分值，计算对齐圆线圈的闭式 psi、BR 和 BZ 响应。",
    "definition": "对对齐线圈数组应用标量闭式 Green 表达式，并累加每个线圈项。",
    "model": "使用给定 K(m)、E(m) 的闭式轴对称圆线圈响应。",
@@ -4570,7 +4571,7 @@
    },
    "example": {
     "description": "计算一对镜像线圈，并以加倍电流重复计算。",
-    "expected": "中平面上镜像对抵消 BR；电流加倍使三个标量响应均加倍；位于源环上的奇异点抛出 ValueError。"
+    "expected": "中平面上镜像对抵消 BR；电流加倍使磁通和 BZ 加倍。"
    },
    "verification": {
     "scope": [
@@ -4587,7 +4588,10 @@
      "目标在线圈上时的奇异几何拒绝是显式合同：该配置抛出错误而非返回 NaN 响应。",
      "公开分发许可仍待人工决定。"
     ]
-   }
+   },
+   "source_conflicts": [
+    "example.expected 声称源环奇异点会抛 ValueError，但示例代码未调用该分支；本页中文只描述示例实际覆盖的行为。"
+   ]
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
@@ -4871,7 +4875,7 @@
    },
    "example": {
     "description": "为两个网格单元组装气体、热离子和电子项，比较两个压强分量。",
-    "expected": "预期：密度为径向包络的 63 倍，平行/垂直压强为其 1088/1093 倍 Pa，电子能量在两点均为 17 J。"
+    "expected": "密度为径向包络的 63 倍；平行、垂直压强分别为其 1088、1093 倍（单位 Pa）；电子能量在两点均为 17 J。"
    },
    "verification": {
     "scope": [
@@ -4960,7 +4964,7 @@
    },
    "example": {
     "description": "返回一阶 L-极点表并检查合同声明的长度。",
-    "expected": "观察到 PASS：max_harmonic=0 返回阶数 1、12 个留数/极点及对应表元数据。"
+    "expected": "max_harmonic=0 返回阶数 1、12 个留数/极点及对应的表元数据。"
    },
    "verification": {
     "scope": [
@@ -4980,7 +4984,7 @@
   {
    "asset_id": "scirel.closures.hall-two-fluid-pressure",
    "source_sha256": "7968c1c8837a5d4d86d66ac61e02d2c016662671295233159341a80c3a8c2054",
-   "summary": "将外供总旋磁压力定律、准中性离子/电子密度、电子压力分量及静电势组装为约化 Hall 闭合所需的广播双流体状态。",
+   "summary": "按默认离子代数压力拆分组装广播 Hall 状态。",
    "definition": "联合广播 B、psi 并求总压力，再广播各剖面；令电子密度等于离子密度。电子两分量缺省等于 electron_pressure，离子分量缺省为总压减电子压。默认 independent_fit 保留独立指定的总压与物种压，并显式报告两方向总压−离子压−电子压的残余应力；不是新物种。species_sum 要求两个残差在局部压力尺度的 64ε 内为零，否则拒绝。两种模式都报告数值组分一致性；不检查总压力正性。",
    "model": "给定旋磁总应力和物种分解，可含独立拟合残余应力；不是自洽双流体平衡。下游总力已包含残余应力，离子矩仍仅属离子。",
    "assumptions": [
@@ -5165,7 +5169,7 @@
    },
    "example": {
     "description": "以默认离子代数压力拆分组装广播 Hall 状态。",
-    "expected": "总平行压 [[6.2,7.4]] Pa；默认物种分量之和等于总压，两物种密度数组相等。"
+    "expected": "总平行压为 [[6.2, 7.4]] Pa；默认物种分量之和等于总压，两物种密度数组相等。"
    },
    "verification": {
     "scope": [
@@ -5192,7 +5196,7 @@
   {
    "asset_id": "scirel.equilibrium.anisotropic-force-balance",
    "source_sha256": "4cd0b5273793120f01941a8dd5b36c8be1089f67ef6a2f7244072bc0585a1260",
-   "summary": "在给定 R–Z 磁场网格上计算旋磁压力张量的柱坐标散度、垂直力对应的环向电流、平行力诊断和火管裕度。",
+   "summary": "在给定 R–Z 磁场网格上计算旋磁压力张量的柱坐标散度、垂直力对应的环向电流、平行力诊断和 firehose 裕度。",
    "definition": "P=p_perpendicular I+(p_parallel−p_perpendicular)bb。用差值形式二次模板求柱坐标散度；R=0 处光滑奇函数 P_RZ 给 force_Z 额外一个 ∂R P_RZ，规则轴上 force_R=J_phi=0；离轴 J_phi=(B_Z force_R−B_R force_Z)/B²。",
    "model": "轴对称旋磁压力张量及垂直力平衡电流投影。",
    "assumptions": [
@@ -5343,7 +5347,7 @@
     ],
     "excluded": [
      "完整平衡求解或平行力兼容性保证。",
-     "自动场下限或火管失败门禁；由外层任务图负责。",
+     "自动场下限或 firehose 失败门禁；由外层任务图负责。",
      "非轴对称、标量压力广播或 B_phi 贡献。"
     ]
    },
@@ -5355,7 +5359,7 @@
    },
    "example": {
     "description": "均匀轴场中的常量各向同性压力不产生压力力或电流。",
-    "expected": "在声明容差内力和环向电流为零，火管裕度为 1。"
+    "expected": "在声明容差内，压力力和环向电流为零，firehose 裕度为 1。"
    },
    "verification": {
     "scope": [
@@ -5536,7 +5540,7 @@
    },
    "example": {
     "description": "在一个有界波点计算有限谐波 Maxwell 分布张量。",
-    "expected": "观察到 PASS：有限谐波案例返回有限的 3×3 K、D 张量、行列式、物种尺度及 lmx=5。"
+    "expected": "有限谐波案例返回有限的 3×3 K、D 张量、行列式、物种尺度及 lmx=5。"
    },
    "verification": {
     "scope": [
@@ -5976,7 +5980,7 @@
    },
    "example": {
     "description": "在小型 R-Z 网格计算两端电势和准中性压强。",
-    "expected": "预期：形状 [7,5]，左端映射电势为负，局部相对电荷残差很小。"
+    "expected": "压力场形状为 [7,5]，映射到左端的电势为负，局部相对电荷残差小于 1e-9。"
    },
    "verification": {
     "scope": [
@@ -6003,7 +6007,7 @@
   },
   {
    "asset_id": "scirel.closures.boltzmann-quasineutrality",
-   "source_sha256": "f3bb2a5ab6423622fb4be202cc35c6735aa6e06735b3891623447ca29abc2a87",
+   "source_sha256": "e5ff2dafd4df66d565c4b13b76a6828619c99a5f09a0af62df540ebcaa492d32",
    "summary": "在对数空间计算不截断指数的 Boltzmann 电子响应，并与给定正离子密度比较。",
    "definition": "正参考电子密度时 L_e=log(n_ref)+e(phi−phi_ref)/T_e，正离子时 L_i=log(n_i)+log(Z_i)，e=1.602176634e-19 C。返回 exp(L_e)、exp(L_e+log T_e)、Z_i n_i−n_e、L_i−L_e 和 tanh((L_i−L_e)/2)。单一物种精确缺失时用绝对值至少 1 的有符号有限对数代理及精确 ±1 相对残差，双真空残差零。先形成势差，结合尾数/指数缩放和范围边缘精确回退，避免绝对能量分别舍入及过早溢出/下溢。",
    "model": "给定温度下逐点 Boltzmann 电子响应，不是自洽电势求解。",
@@ -6104,7 +6108,7 @@
    },
    "example": {
     "description": "在高于参考值一个电子热电压的给定状态求值。",
-    "expected": "电子密度 6 m⁻³、压力 6e Pa，所列中性残差在浮点容差内为零。"
+    "expected": "电子密度为 6 m⁻³，电子压力为 6×1.602176634×10⁻¹⁹ ≈ 9.613×10⁻¹⁹ Pa，所列中性残差在浮点容差内为零。"
    },
    "verification": {
     "scope": [
@@ -6124,13 +6128,16 @@
      "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
      "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
     ]
-   }
+   },
+   "source_conflicts": [
+    "example.expected 把电子压力写成 6e Pa；按 6 m⁻³ 与 e=1.602176634×10⁻¹⁹ C 计算应为约 9.613×10⁻¹⁹ Pa，本页中文按实际值给出。"
+   ]
   },
   {
    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
    "source_sha256": "0c60c7a60796f19a891fd904787036d66295470001972a4f5baf52c51269a657",
    "summary": "将调用者压强闭合、约化 Hall 漂移/电流和稠密 Green 更新连接为轴对称磁通迭代，重算终末状态并返回收敛与相容性诊断。",
-   "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。停止条件为 relative_psi_change<=tol 或 maxiter，但输出还提供终末未松弛固定点残差门槛。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点消防水龙带及可选严格力/欧姆相容性。终末不重复场下限和图级非负压强检查；Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
+   "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。停止条件为 relative_psi_change<=tol 或 maxiter，但输出还提供终末未松弛固定点残差门槛。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点的 firehose 裕度及可选的严格力/欧姆相容性。终末不重复场下限和图级非负压强检查；Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
    "model": "由调用者闭合驱动的轴对称约化 Hall、旋磁对称压强 Picard 反馈。",
    "assumptions": [
     "压强闭合须将 psi 解释为 R A_phi、单位 Wb/rad，并给出物理相容状态及 Hall 必需密度、电子压强与电势。",
@@ -6208,7 +6215,7 @@
     },
     {
      "name": "minimum_firehose_margin",
-     "description": "终末活跃点消防水龙带/张力裕度下限。",
+     "description": "终末活跃点 firehose/张力裕度下限。",
      "constraints": "默认 0；非负时 margin<=阈值抛 FloatingPointError，负值关闭此检查。",
      "dtype": "有限实数标量"
     },
@@ -6275,7 +6282,7 @@
     {
      "name": "strict_compatibility",
      "description": "终末相容性超限是否拒绝。",
-     "constraints": "默认 True，实际布尔；不关闭单独的消防水龙带检查。",
+     "constraints": "默认 True，实际布尔；不关闭单独的 firehose 检查。",
      "dtype": "bool 布尔值"
     },
     {
@@ -6420,7 +6427,7 @@
     },
     {
      "name": "firehose_margin",
-     "description": "终末 Hall 消防水龙带/张力裕度。",
+     "description": "终末 Hall firehose/张力裕度。",
      "constraints": "仅在阈值非负时检查终末活跃点。",
      "dtype": "float64 数组"
     },
@@ -6460,13 +6467,13 @@
    },
    "failure_semantics": {
     "invalid_input": "缺口、无效网格/Green/回调/控制/掩码或状态抛 ValueError/TypeError，叶与回调异常传播。终末只重复压强形状处理，叶仍拒绝非有限及无效组分；图级网格未拒负 R，但场/Hall 叶会拒绝。",
-    "runtime_failure": "迭代场低于 minimum_field 时在其闭合调用前抛 FloatingPointError。终末活跃消防水龙带裕度处于或低于非负 minimum_firehose_margin 时抛 FloatingPointError。终末严格平行力或广义欧姆阈值超限抛 ValueError。Hall 局部惯性不收敛抛 RuntimeError；其他回调或依赖异常继续传播。终末场还会对照 minimum_field 检查。",
+    "runtime_failure": "迭代场低于 minimum_field 时在其闭合调用前抛 FloatingPointError。终末活跃 firehose 裕度处于或低于非负 minimum_firehose_margin 时抛 FloatingPointError。终末严格平行力或广义欧姆阈值超限抛 ValueError。Hall 局部惯性不收敛抛 RuntimeError；其他回调或依赖异常继续传播。终末场还会对照 minimum_field 检查。",
     "nonconvergence": "达到外层 maxiter 后仍终末重算与检查，可返回 converged=False、最后 psi 与记录；局部惯性失败则抛 RuntimeError。",
     "partial_results": "异常后不返回映射；外层有界未收敛可返回通过终末门禁的完整最后状态。"
    },
    "example": {
     "description": "均匀轴向真空场、常量各向同性物种状态与零 Green 响应。",
-    "expected": "预期：磁通不变、终末 Hall 电流为零、一次外层更新后收敛。"
+    "expected": "磁通不变、终末 Hall 电流为零、一次外层更新后收敛。"
    },
    "verification": {
     "scope": [
@@ -6557,7 +6564,7 @@
    },
    "example": {
     "description": "比较单源改权重后的响应以及空源集。",
-    "expected": "每个非空响应形状为 (2,1)，乘以 -2.5 的缩放在断言内精确成立；空源结果形状为 (2,0)。"
+    "expected": "每个非空响应的形状为 (2,1)，加权响应恰为 −2.5 倍单位响应；空源响应形状为 (2,0)。"
    },
    "verification": {
     "scope": [
@@ -6758,7 +6765,7 @@
    },
    "example": {
     "description": "对四个网格单元使用单位响应矩阵，检查松弛电流及残差。",
-    "expected": "C 顺序电流为 [4,11,12,22] A；psi=[[5,12],[13,23]] Wb/rad；残差 sqrt(867)/2。"
+    "expected": "C 顺序电流为 [4,11,12,22] A；psi=[[5,12],[13,23]] Wb/rad；残差为 sqrt(867)/2≈14.7224。"
    },
    "verification": {
     "scope": [
@@ -6783,7 +6790,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "2ec7e98f530c02f6bd23d8b39337db7fc1fea0b74b74395d8aad597368938723",
+   "source_sha256": "28cf28d2816af7d26548ca1c828c28017649eb6d7595e03e117f57ce8a49ff95",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -6993,20 +7000,20 @@
     "partial_results": "发生异常后不返回部分结果映射。"
    },
    "example": {
-    "description": "计算一个有界任务图案例；Python 预检已在本机运行，Octave 对照在 macOS 主机上未运行。",
-    "expected": "Python 预检返回 count=1、根约为 -0.17247987 - 0.12372616j，且该有界点 converged=False；Octave 对照为 未运行。"
+    "description": "计算一个有界任务图案例；示例已在本机运行。",
+    "expected": "示例返回 count=1、根约为 -0.17247987 - 0.12372616j，且该有界点 converged=False（退出标志 0）。"
    },
    "verification": {
     "scope": [
      "声明的数值案例及相关失败边界。",
      "示例只执行一个有界代表性案例，不扩展声明的适用前提。",
-     "Python 预检已在本机运行，但本 macOS 主机上的 Octave 对照为 未运行。"
+     "Python 示例已在本机运行；本地执行覆盖本资产。"
     ],
     "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
     "known_limitations": [
      "允许零 kz；根保留符号，非正退出标志保持可见。",
      "公开分发许可与专家审查仍待完成。",
-     "Octave 对照在本机未运行（未运行）。"
+     "本地执行覆盖本资产；未开展外部 Octave 对照。"
     ],
     "tests": [
      "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
@@ -7126,8 +7133,8 @@
     "partial_results": "验证或转换失败无结果；成功返回全部命名字段及未被覆盖的原离子字段。"
    },
    "example": {
-    "description": "向两离子压力数组加入标量电子压，并保留原离子映射及缺失电势。",
-    "expected": "总平行/垂直压为 [3.5,4.5] 和 [5.5,6.5] Pa；原离子映射原样传递，缺势为 None。"
+    "description": "向两种离子压力数组加入标量电子压力，并保留原离子映射及缺失电势。",
+    "expected": "总平行/垂直压为 [3.5,4.5] 和 [5.5,6.5] Pa；原离子映射原样传递，电势为 None。"
    },
    "verification": {
     "scope": [
@@ -7340,7 +7347,7 @@
    },
    "example": {
     "description": "在原点求零阶项及导数。",
-    "expected": "预期：Gamma_0(0)=1、Gamma_prime_0(0)=-1，均为零维 complex128 数组。"
+    "expected": "Gamma_0(0)=1、Gamma_prime_0(0)=-1，均为零维 complex128 数组。"
    },
    "verification": {
     "scope": [
@@ -7544,7 +7551,7 @@
    },
    "example": {
     "description": "在零平行波数处计算 J=8 的 Ronnmark 张量。",
-    "expected": "观察到 PASS：零 kz 案例返回有限的 3×3 K、D 张量、行列式、J=8 极点表及张量约定。"
+    "expected": "零 kz 案例返回有限的 3×3 K、D 张量、行列式、J=8 极点表及张量约定。"
    },
    "verification": {
     "scope": [
@@ -7568,7 +7575,7 @@
    "asset_id": "scirel.diagnostics.firehose-mirror-margins",
    "source_sha256": "761854d62fd139ca5f0cb2499a1527a7b64df09b24bde037ac3d8244c1951e87",
    "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。",
-   "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp_dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
+   "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp/dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
    "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
    "assumptions": [
     "B 是 T 单位正磁场模，两个压强用 Pa。",
@@ -7629,7 +7636,7 @@
    "outputs": [
     {
      "name": "firehose_margin",
-     "description": "逐点消防水龙带裕度，单位 Pa。",
+     "description": "逐点 firehose 裕度，单位 Pa。",
      "constraints": "成功时有限。",
      "dtype": "float64 数组"
     },
@@ -7641,7 +7648,7 @@
     },
     {
      "name": "firehose_stable",
-     "description": "所有消防水龙带裕度是否严格正。",
+     "description": "所有 firehose 裕度是否严格正。",
      "constraints": "样本汇总标志，不是空间稳定场或充分物理稳定定理。",
      "dtype": "bool 布尔值"
     },
@@ -7653,7 +7660,7 @@
     },
     {
      "name": "min_firehose_margin",
-     "description": "样本消防水龙带裕度最小值，单位 Pa。",
+     "description": "样本 firehose 裕度最小值，单位 Pa。",
      "constraints": "成功时有限。",
      "dtype": "float 浮点数"
     },
@@ -7715,8 +7722,8 @@
     "partial_results": "无部分结果；与 margin API 同时提供的可选平行平衡值会原样转发，不经独立验证。"
    },
    "example": {
-    "description": "显式各向异性双 Maxwell 局部状态不满足镜模条件，但保留正消防水龙带张力。",
-    "expected": "预期：消防水龙带裕度 2、镜模裕度 -3；导数符号与显式总压强导数及动力学阈值一致。 两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力；组合入口据此保持严格正值标志。"
+    "description": "显式各向异性双 Maxwell 局部状态不满足镜模条件，但保留正 firehose 张力。",
+    "expected": "firehose 裕度为 2、镜模裕度为 −3；导数符号与显式总压强导数及动力学阈值一致。两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力；组合入口据此保持严格正值标志。"
    },
    "verification": {
     "scope": [
@@ -7743,7 +7750,7 @@
   {
    "asset_id": "scirel.field.filament-vacuum-field",
    "source_sha256": "b1aa016a196fec80c0e260549a51dd9141d55be9d5e3e2d403a217a2af88ec70",
-   "summary": "在均匀直角 R-Z 网格上计算理想圆电流丝场，并从第一个径向节点积分径向磁通。",
+   "summary": "在均匀 R–Z 直角网格上计算理想圆电流丝场，并从第一个径向节点起积分径向磁通。",
    "definition": "在网格点计算 Green 核，并用径向梯形递推积分 R*BZ。",
    "model": "不带近轴截断的理想圆电流丝真空场。",
    "assumptions": [
@@ -7935,7 +7942,7 @@
    },
    "example": {
     "description": "均匀 2 T 轴场中，沿 R 线性增加的各向同性压力给出解析电流。",
-    "expected": "完整及各向同性比较电流均为 0.5 A/m²，各向异性差在容差内为零。"
+    "expected": "完整电流与各向同性比较电流均为 0.5 A/m²，各向异性差在容差内为零。"
    },
    "verification": {
     "scope": [
@@ -8162,7 +8169,7 @@
    },
    "example": {
     "description": "在给定端塞势检查零镜斜率半空间势垒积分。",
-    "expected": "离子势垒因子为 exp(−1/2)；+1 V 下电子单向通量无势垒；evaluate 为零次迭代且不宣称电流平衡。"
+    "expected": "离子势垒因子为 exp(−1/2)；+1 V 下电子单向通量无势垒；evaluate 模式为零次迭代，且不宣称电流平衡。"
    },
    "verification": {
     "scope": [
@@ -8265,7 +8272,7 @@
    },
    "example": {
     "description": "离散未旋转的永久环截面并检查顺序和符号。",
-    "expected": "结果含 16 个 [R,Z] 点：前 8 个 R=0，后 8 个 R=4；默认权重为先八个 -1、后八个 +1。"
+    "expected": "结果含 16 个 [R,Z] 点：前 8 个 R=0，后 8 个 R=4；默认权重为先八个 −1、后八个 +1。"
    },
    "verification": {
     "scope": [
@@ -8372,8 +8379,8 @@
     "partial_results": "完成验证和计算后才返回字典，无部分结果。"
    },
    "example": {
-    "description": "调用者完成 SI 转换后，计算 3-4-5 笛卡尔波矢。",
-    "expected": "预期：kx=[3]、kz=[4]、k=[5]，单位 m^-1，theta_rad=None。"
+    "description": "由已转换为 m⁻¹ 的 3、4 分量计算 5 m⁻¹ 的波矢模长。",
+    "expected": "kx=[3]、kz=[4]、k=[5]，单位 m⁻¹，theta_rad=None。"
    },
    "verification": {
     "scope": [
@@ -8545,8 +8552,8 @@
     "partial_results": "异常后不返回部分映射。"
    },
    "example": {
-    "description": "求值一个有界数值用例。",
-    "expected": "预期：断言结果符合所述输出合同。"
+    "description": "返回 J=8 的 Z 函数极点系数表。",
+    "expected": "示例返回 8 个留数 bzj 与 8 个极点 czj，j_order=8、half_order=4，sum_bzj≈−1、sum_bzcj=0、sum_bzcj2≈−0.5。"
    },
    "verification": {
     "scope": [
@@ -8646,7 +8653,7 @@
    },
    "example": {
     "description": "使用显式非整数阶数求 2×2 预设闭合，并检查中间状态，不调用谱求解器。",
-    "expected": "预期：有限的 2×2 平行/垂直压强；可选密度/电子能量缺省；closure_state 标明阶数来自调用者。"
+    "expected": "有限 2×2 平行/垂直压强；可选密度和电子温度缺省；closure_state 标明阶数来自调用者。"
    },
    "verification": {
     "scope": [
@@ -8668,7 +8675,7 @@
    "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
    "source_sha256": "cbd91bffe5c3da26d1348542f4160665f7e0c82a834a7fa99b4f2880f97f2d7b",
    "summary": "将外供各向异性压力闭合与当前极向场、柱坐标压力力和稠密格林磁通更新迭代耦合，最后重新求值并检查返回的末状态。",
-   "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上重算场、闭合、力及电流，按所声明顺序检查最小场、火管裕度和严格平行力相容性。",
+   "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上重算场、闭合、力及电流，按所声明顺序检查最小场、firehose 裕度和严格平行力相容性。",
    "model": "有界轴对称旋磁压力 Picard 组合，压力闭合由调用者提供。",
    "assumptions": [
     "闭合解释当前 Wb/rad 的 psi 并返回有物理依据的 Pa 压力。",
@@ -8740,7 +8747,7 @@
     },
     {
      "name": "minimum_firehose_margin",
-     "description": "末态激活单元火管/张力裕度下限。",
+     "description": "末态激活单元 firehose/张力裕度下限。",
      "constraints": "末态裕度不高于此值时抛 FloatingPointError。",
      "dtype": "有限实标量"
     },
@@ -8862,7 +8869,7 @@
     },
     {
      "name": "firehose_margin",
-     "description": "末态旋磁火管/张力裕度。",
+     "description": "末态旋磁 firehose/张力裕度。",
      "constraints": "仅在末态激活单元对 minimum_firehose_margin 检查。",
      "dtype": "float64 双精度浮点数"
     },
@@ -8902,7 +8909,7 @@
    },
    "failure_semantics": {
     "invalid_input": "缺失或非法网格、格林、控制、闭合、掩码抛 ValueError/TypeError；闭合映射、压力、掩码形状及依赖错误继续抛出。",
-    "runtime_failure": "迭代场低于下限在闭合前抛 FloatingPointError；末态先执行闭合、掩码及力，其失败可先于最小场门禁；末态低场或火管裕度失败抛 FloatingPointError，严格平行不相容抛 ValueError；无备用路径。",
+    "runtime_failure": "迭代场低于下限在闭合前抛 FloatingPointError；末态先执行闭合、掩码及力，其失败可先于最小场门禁；末态低场或 firehose 裕度失败抛 FloatingPointError，严格平行不相容抛 ValueError；无备用路径。",
     "nonconvergence": "到 maxiter 返回 converged=false 和记录；无自动重试或 failure_reason 字段。",
     "partial_results": "异常不返回映射；有界不收敛是完整末态结果，不是异常。"
    },
@@ -8916,7 +8923,7 @@
      "动态掩码在反馈前生效，标量压力广播不变。",
      "错压力形状、缺闭合及非法控制拒绝。",
      "制造线性各向同性压力给解析电流和末单元电流。",
-     "末态火管、兼容性和最小场检查。"
+     "末态 firehose、兼容性和最小场检查。"
     ],
     "evidence_ceiling": "制造和解析离散检查仅支持所述极向模型及声明积分几何，不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。",
     "known_limitations": [
@@ -9103,7 +9110,7 @@
    },
    "example": {
     "description": "在同一派生波点计算两条动理学色散路径。",
-    "expected": "观察到 PASS：组合图同时返回有限谐波和 Ronnmark 行列式、各自的 3×3 K/D 张量，以及派生的 omega、kx 和 f。"
+    "expected": "组合入口同时返回有限谐波与 Ronnmark 行列式、各自的 3×3 K/D 张量，以及派生的 omega、kx 和 f。"
    },
    "verification": {
     "scope": [
@@ -9313,7 +9320,7 @@
    },
    "example": {
     "description": "使用参考值求单电子物种尺度。",
-    "expected": "预期：电子回旋频率与回旋半径为负，扫描尺度按绝对值/倒数约定为正。"
+    "expected": "电子回旋频率与回旋半径为负；扫描尺度按绝对值/倒数约定为正。"
    },
    "verification": {
     "scope": [
@@ -9552,7 +9559,7 @@
    },
    "example": {
     "description": "将两个有符号电流与两行响应收缩。",
-    "expected": "结果为 psi=[-2,1]、BR=[4,-4]、BZ=[-5,0]，并保持目标顺序。"
+    "expected": "结果为 psi=[−2,1]、BR=[4,−4]、BZ=[−5,0]，并保持目标顺序。"
    },
    "verification": {
     "scope": [
@@ -9571,7 +9578,7 @@
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
    "source_sha256": "a0630688d0506effa4245c90df0d1a79f736c5699ae770c7b9427cd27eee8bfc",
-   "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈响应并叠加驱动电流。",
+   "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
    "definition": "对每个调用者线圈离散中心、附加权重、计算 Green 响应、收缩一个驱动电流，并重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
    "assumptions": [
@@ -9646,7 +9653,7 @@
    },
    "example": {
     "description": "在 2×2 目标网格上展开一个 2×2 矩形线圈并计算真空场。",
-    "expected": "三个场数组形状为 (2,2)，返回电流丝表形状为 (4,3)，且 b_z_vac 有限。"
+    "expected": "三个场数组形状为 (2,2)，返回的电流丝表形状为 (4,3)，且 b_z_vac 有限。"
    },
    "verification": {
     "scope": [

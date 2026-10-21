@@ -181,7 +181,7 @@
  "example": {
   "description": "Evaluate a mirrored pair of coils and repeat with doubled current.",
   "code": "import numpy as np\nfrom scirel.field import (\n    compute_axisymmetric_coil_modulus,\n    evaluate_complete_elliptic_integrals,\n    evaluate_filament_coil_green_field,\n)\nradius, modulus, _ = compute_axisymmetric_coil_modulus(\n    0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]))\nk, e = evaluate_complete_elliptic_integrals(modulus)\nflux, br, bz = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([10.0, 10.0]), np.array([2.0, 2.0]), modulus, k, e)\nassert abs(br) < 1e-18\nflux2, br2, bz2 = evaluate_filament_coil_green_field(\n    radius, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]),\n    np.array([20.0, 20.0]), np.array([2.0, 2.0]), modulus, k, e)\nassert flux2 == 2.0 * flux and bz2 == 2.0 * bz",
-  "expected": "The mirrored pair cancels BR on the midplane; doubling current doubles all three scalar responses; a singular ring raises ValueError."
+  "expected": "The mirrored pair cancels BR on the midplane; doubling current doubles the flux and axial response."
  },
  "verification": {
   "scope": [

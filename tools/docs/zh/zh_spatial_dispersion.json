@@ -28,11 +28,11 @@
     }
    ],
    "example": {
-    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
-    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
+    "description": "派生 BONK 算例 3 的完整状态映射。",
+    "expected": "返回包含 B0=6 T、S=3、jcase=3 以及 ms、ns0、qs 等 (1,3) 数组的状态映射。"
    },
    "asset_id": "scirel.kinetic.fluid-case-state",
-   "source_sha256": "f742c6298f20a5258883eab39e75401961e41e3b6b4e96c1e32f6c71cdc7d814",
+   "source_sha256": "7e4eecade1299fb06d97514a9a6db172185b6764f98f64369e2bebe0f3e72781",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -42,8 +42,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
     ],
     "supported": [
      "BONK 的三个算例与 EM 的两个算例，包含完整固定常量及状态。"
@@ -56,7 +56,7 @@
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
     "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "nonconvergence": "不适用；本入口只派生固定算例状态，不含迭代、求根或本征求解。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
    "verification": {
@@ -71,7 +71,10 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
-   }
+   },
+   "source_conflicts": [
+    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
+   ]
   },
   {
    "summary": "计算 Gamma、Z 函数与完整 R 响应合同；四个既有 R 方法名共用同一修正谐波求值器。",
@@ -105,11 +108,11 @@
     }
    ],
    "example": {
-    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
-    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
+    "description": "用 RTAY 方法计算 Y=2、b=0 的 2×2 R 响应。",
+    "expected": "返回 2×2 complex128 矩阵，元素约为 [[0.6667, 0.6667], [-1.1111, -1.1111]]。"
    },
    "asset_id": "scirel.kinetic.fluid-special-functions",
-   "source_sha256": "81b097edf5a18b56fc0224a1f1040a026dd095d6b97e5bb2b2e96c967edceab8",
+   "source_sha256": "bdcb75f472d36e388a862810bef207f5e88d847d2b2a74bf12ef3211473e722f",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -119,13 +122,13 @@
    ],
    "applicability": {
     "preconditions": [
-     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。",
+     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。",
      "Gamma 的谐波阶数必须是有限整数；Gamma 和 R 必须提供 parameter，Z 忽略该参数。"
     ],
     "supported": [
      "对整数 n 计算 Gamma_n=exp(−b) I_n(b) 及邻阶恒等式导数，b 可为有限标量或数组。",
-     "Z(z) 使用 Weideman 64 阶算法，虚轴使用 erfcx；溢出明确报错。",
+     "Z(z) 使用 SciPy 的 Faddeeva 函数 w(z)（wofz）；非有限输入或不可表示输出明确报错。",
      "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
     ],
     "excluded": [
@@ -136,13 +139,13 @@
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
     "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "nonconvergence": "不适用；本入口直接求值 Gamma、Z 和 R 响应，不含迭代、求根或本征求解。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
    "verification": {
     "scope": [
      "对整数 n 计算 Gamma_n=exp(−b) I_n(b) 及邻阶恒等式导数，b 可为有限标量或数组。",
-     "Z(z) 使用 Weideman 64 阶算法，虚轴使用 erfcx；溢出明确报错。",
+     "Z(z) 使用 SciPy 的 Faddeeva 函数 w(z)（wofz）；非有限输入或不可表示输出明确报错。",
      "复数标量 Y、b 的完整 R 响应，检查尾项与浮点相消，最多 65536 项；b=0 与 Y=0 使用解析极限。"
     ],
     "known_limitations": [
@@ -153,7 +156,11 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
-   }
+   },
+   "source_conflicts": [
+    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。",
+    "applicability.supported 与 verification.scope 原称 Z(z) 使用 Weideman 64 阶算法并在虚轴使用 erfcx；当前实现 zfun 直接调用 SciPy 的 Faddeeva 函数 wofz。本页已按实现改写该条，合同待修订。"
+   ]
   },
   {
    "summary": "从显式 SI 状态计算行列式、介电张量 K、Maxwell 色散张量 D 与未改动的状态，并覆盖带符号及零波矢极限。",
@@ -187,11 +194,11 @@
     }
    ],
    "example": {
-    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
-    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
+    "description": "在 BONK 算例 2 上取 w=0.63wn，用 fD 方法计算 kx=0 的响应。",
+    "expected": "返回包含 determinant≈2086.26、3×3 K 与 D，以及未修改 state_after 的映射。"
    },
    "asset_id": "scirel.kinetic.fluid-dispersion-response",
-   "source_sha256": "9019681cee820372b9d613399b7d48d7234f36cecf82c2e14bdb76e04864f126",
+   "source_sha256": "645422f743b2604e437d56568d4ae85f5c9157df9ff3ffa3a2e771b12408159e",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -201,8 +208,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
     ],
     "supported": [
      "一致的 SI 状态、复数 kx、有符号或为零的 kz，以及非共振 kx=0 的解析极限。",
@@ -215,7 +222,7 @@
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
     "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "nonconvergence": "不适用；本入口直接组装响应，不含迭代、求根或本征求解。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
    "verification": {
@@ -231,7 +238,10 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
-   }
+   },
+   "source_conflicts": [
+    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
+   ]
   },
   {
    "summary": "组装完整的有限 L/J 矩阵，恢复电导多项式并对原始表矩施加约束。",
@@ -271,11 +281,11 @@
     }
    ],
    "example": {
-    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
-    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
+    "description": "在 EM 算例 2 上取 omega=0.83wn，以 J8 和 max_harmonic=0 组装有限矩阵。",
+    "expected": "返回 M 为 40×40、N=0 的映射，并含 poles、state 与 omega。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "d56799e901d85a083267402de345a061bc04e3fe0f303125752a52e63cedb26b",
+   "source_sha256": "d4823e3c3cc8b872e7cb8d08533410bdc67ceeaf1ae20958f126a096efa427db",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -285,8 +295,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
     ],
     "supported": [
      "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及原始数据表。",
@@ -299,7 +309,7 @@
    "failure_semantics": {
     "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
     "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
+    "nonconvergence": "不适用；本入口直接组装有限矩阵，不含迭代、求根或本征求解。",
     "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
    },
    "verification": {
@@ -315,7 +325,10 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
-   }
+   },
+   "source_conflicts": [
+    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
+   ]
   },
   {
    "summary": "组合完整 BONK 算例与有序根搜索，显式给出已核验根和末端状态诊断。",
@@ -343,11 +356,11 @@
     }
    ],
    "example": {
-    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
-    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
+    "description": "在 BONK 算例 2 上对一个频率点求解并核验根。",
+    "expected": "返回完整诊断映射；root_valid 为 [[True]]，nf≈-7.67e-12+1304.24j m^-1，xx≈1.108e11 rad/s。"
    },
    "asset_id": "scirel.kinetic.fluid-bonk-search",
-   "source_sha256": "9c3d27469fb18f096e53dbcc9e17fd92d15e9c44128a1a29bd5db17b13095bad",
+   "source_sha256": "4229c9c817115dc6e0c72fa791ed8f520fbfb012250f9aa8b1187fe250d8f38d",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -357,8 +370,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
     ],
     "supported": [
      "三个完整算例及默认的 77 个频率；也允许任意符合合同的有限频率轴。",
@@ -387,11 +400,14 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
-   }
+   },
+   "source_conflicts": [
+    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
+   ]
   },
   {
    "summary": "组合 EM 算例、修正后的有限矩阵与按原始次序排列的谱，并附带有限的数值证据。",
-   "definition": "返回全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，物理状态相似缩放后的后向误差门槛不超过 2e-12。",
+   "definition": "返回全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，物理状态相似缩放后的后向误差容差常量为 2e-12。",
    "inputs": [
     {
      "name": "jcase",
@@ -427,11 +443,11 @@
     }
    ],
    "example": {
-    "description": "纯 Python/NumPy 实现；在 macOS 上无需 Octave 即可执行。",
-    "expected": "PASS：示例在本机直接运行，并返回声明的输出结构。"
+    "description": "在 EM 算例 2 上对一个频率点计算有限矩阵谱并选取五个候选。",
+    "expected": "返回 kxx 形状为 (1,5) 的谱映射，并含 roots、matM、spectra 与 eigen_diagnostics。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "ffbc9d259bbc8eebf8df4f31a887fa5548e7318bdf0a1dda56c886d74cc0a1fe",
+   "source_sha256": "dc8016f9bce60598c7ec42a972bd931609e09ceae1c39b19459214ef57616eab",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -441,8 +457,8 @@
    ],
    "applicability": {
     "preconditions": [
-     "Linux amd64 上使用固定的 GNU Octave 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
-     "使用 SciRel 声明的 Python、NumPy 与 SciPy 运行环境；这些入口仍需 Linux amd64 GNU Octave 7.3.0。"
+     "合同要求在 Linux amd64 上固定本地运行时 7.3.0；OPENBLAS_NUM_THREADS 与 OMP_NUM_THREADS 均为 1。",
+     "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
     ],
     "supported": [
      "两个算例、J8/J12、全部八个 N 控制和默认 79 个频率。",
@@ -471,7 +487,11 @@
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
     "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
-   }
+   },
+   "source_conflicts": [
+    "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。",
+    "definition 原称物理状态相似缩放后的后向误差门槛不超过 2e-12；当前实现的 eigen_diagnostics 将该误差硬编码为零，只保留 2e-12 阈值常量，并未实际计算该后向误差。合同与实现待核对。"
+   ]
   }
  ]
 }

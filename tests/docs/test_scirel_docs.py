@@ -362,6 +362,19 @@ def test_all_reference_pages_exist_and_use_bound_chinese_prose(snapshot):
     assert '<math ' in wave and '<msub>' in wave and 'aria-label=' in wave
 
 
+def test_capability_matrix_is_published_with_the_handbook(snapshot):
+    docs = Documentation(snapshot)
+    matrix = json.loads(docs.read('capability-matrix.json'))
+    assert matrix['schema'] == 'scirel.capability-matrix'
+    assert matrix['total_assets'] == len(docs.ids)
+    assert matrix['total_domains'] == 18
+    page = docs.read('web/user-guide/capability-matrix.html').decode()
+    assert '能力矩阵' in page and 'capability-matrix.json' in page
+    assert docs.read('CAPABILITY_MATRIX.md').startswith(b'# SciRel capability matrix')
+    home = docs.read('web/index.html').decode()
+    assert 'capability-matrix' in home
+
+
 def test_inline_scientific_math_and_code_do_not_execute_rest():
     from build_scirel_sphinx import plain
     value = plain(r'张量 $K_{ij}=\delta_{ij}$；调用 `evaluate`。')

@@ -5,7 +5,7 @@
   {
    "asset_id": "scirel.electromagnetism.arbitrary-points",
    "source_sha256": "c3ee2a7bb94a8de77e8e86e1956655de87531973dd38099fd51bb894d5d0da30",
-   "summary": "构造有限个带符号权重的圆电流丝源点，并计算其依赖目标网格的场。",
+   "summary": "构造有限个带符号权重的圆电流丝源点，并计算依赖目标网格的场。",
    "definition": "有限个 (R,Z) 点共用一个电流标量，并带有无量纲有符号权重。",
    "model": "用 Green 核计算的轴对称理想圆电流丝。",
    "boundary": "目标点若与活动的正半径电流丝重合，则响应奇异。",
@@ -71,19 +71,19 @@
     "scope": [
      "有界刚体几何和坐标不变量。",
      "有序电流投影和源对象生命周期。",
-     "完整的 BRB／WHAM 配置在有限目标点上的组合。"
+     "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
-     "不宣称装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "不声称科学、实验或发行许可。"
+     "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
+     "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
+     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
+     "不主张科学正确性、实验验证或发行批准。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅限具名的几何、生命周期和配置样例；不主张任意输入的科学正确性或发行批准。"
    },
    "example": {
-    "description": "在一个单点网格上构造一个带权源，并检查返回磁通的形状。",
+    "description": "在单点网格上构造一个带权重的源，并检查返回磁通的形状。",
     "expected": "构造器成功，psi() 返回一个有限值，形状为 (1,)。"
    }
   },
@@ -130,27 +130,27 @@
     "scope": [
      "有界刚体几何和坐标不变量。",
      "有序电流投影和源对象生命周期。",
-     "完整的 BRB／WHAM 配置在有限目标点上的组合。"
+     "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
-     "不宣称装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "不声称科学、实验或发行许可。"
+     "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
+     "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
+     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
+     "不主张科学正确性、实验验证或发行批准。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅限具名的几何、生命周期和配置样例；不主张任意输入的科学正确性或发行批准。"
    },
    "example": {
-    "description": "构造 BRB，并检查合同指定的子源数量。",
-    "expected": "装置注册 40 个子源，hh_n 含有 88 个电流丝点。"
+    "description": "构造 BRB，并检查具名子源的数量。",
+    "expected": "装置注册 40 个子源，且 hh_n 含 88 个电流丝点。"
    }
   },
   {
    "asset_id": "scirel.electromagnetism.device",
    "source_sha256": "701efeb75299e2f599415b47ddd17158e29e0460358cc0a108e3b33bf67fc7fd",
-   "summary": "组合有序圆电流丝源，并用标量电流或逐子源电流收缩各自的 Green 响应。",
-   "definition": "Device 按赋值顺序保存 CurrentFilamentSet 子源，并收缩它们的 Green 矩阵。",
+   "summary": "组合有序的圆电流丝源，并用标量电流或逐子源电流对各自的 Green 响应做线性组合。",
+   "definition": "Device 按赋值顺序保存 CurrentFilamentSet 子源，并对其 Green 矩阵做线性组合。",
    "model": "轴对称理想圆电流丝响应的线性叠加。",
    "boundary": "调用场方法时，网格和电流向量必须与已注册子源兼容。",
    "assumptions": [
@@ -161,15 +161,15 @@
    "inputs": [
     {
      "name": "mesh",
-     "description": "可选目标网格；额外 **kwargs 名称通过属性赋值注册 CurrentFilamentSet 子源。",
-     "constraints": "可由网格转换接受；坐标单位 m。",
+     "description": "可选目标网格；作为 CurrentFilamentSet 实例的额外关键字属性会按赋值顺序注册为子源，其他关键字属性只是普通属性。",
+     "constraints": "可由网格转换接受；非子源关键字属性作为普通属性保存。",
      "dtype": "有限 float64"
     }
    ],
    "outputs": [
     {
      "name": "source",
-     "description": "Device 对象；psi／BR／BZ 返回 (Nt,) 叠加磁通 Wb/rad 和径向／轴向场 T。提供有序迭代、current、rzw 和逐子源 gpsi／gBR／gBZ；场方法接受 current=None、mesh=None。",
+     "description": "Device 对象；psi／BR／BZ 返回 (Nt,) 叠加磁通 Wb/rad 和径向／轴向场 T。提供有序迭代以及 current、rzw 属性和逐子源的 gpsi／gBR／gBZ 矩阵；场方法接受 current=None、mesh=None。",
      "constraints": "场方法要求已配置或显式提供目标网格；几何与生命周期属性由所构造的对象决定。",
      "dtype": "Device"
     }
@@ -180,7 +180,7 @@
      "标量电流覆盖所有子源，向量按子源顺序对应。"
     ],
     "supported": [
-     "子源注册/替换/删除、网格传播、逐子源电流收缩及空装置形状。"
+     "子源的注册、替换与删除、网格传播、逐子源电流缩并及空装置形状。"
     ],
     "excluded": [
      "绘图、持久扫描和不支持的源操作。"
@@ -189,23 +189,23 @@
    "failure_semantics": {
     "invalid_input": "网格、电流覆盖、缺失网格或子核奇异时抛出 ValueError；重复注册子源抛出 AttributeError。",
     "runtime_failure": "子源 Green 核的 FloatingPointError 向上传播。",
-    "nonconvergence": "不适用；组合是直接矩阵收缩。",
+    "nonconvergence": "不适用；组合是直接矩阵缩并。",
     "partial_results": "子源赋值失败时保持已有注册集合；场调用失败不返回场向量。"
    },
    "verification": {
     "scope": [
      "有界刚体几何和坐标不变量。",
      "有序电流投影和源对象生命周期。",
-     "完整的 BRB／WHAM 配置在有限目标点上的组合。"
+     "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
-     "不宣称装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "不声称科学、实验或发行许可。"
+     "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
+     "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
+     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
+     "不主张科学正确性、实验验证或发行批准。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅限具名的几何、生命周期和配置样例；不主张任意输入的科学正确性或发行批准。"
    },
    "example": {
     "description": "在单点网格上注册一个 ArbitraryPoints 子源，并计算组合装置。",
@@ -239,13 +239,13 @@
     },
     {
      "name": "width",
-     "description": "径向宽度，单位 m，默认 .01。",
+     "description": "径向宽度，单位 m，默认 0.01。",
      "constraints": "正值。",
      "dtype": "有限 float64"
     },
     {
      "name": "height",
-     "description": "轴向高度，单位 m，默认 .01。",
+     "description": "轴向高度，单位 m，默认 0.01。",
      "constraints": "正值。",
      "dtype": "有限 float64"
     },
@@ -277,7 +277,7 @@
    "outputs": [
     {
      "name": "source",
-     "description": "MagnetRing 对象；rz_pts 为 (N,2) 电流丝中心 m，total_current 为带权总电流 A。",
+     "description": "MagnetRing 对象；rz_pts 为 (N,2) 电流丝中心，单位 m；total_current 为加权总电流，单位 A。",
      "constraints": "场方法要求已配置或显式提供目标网格；几何与生命周期属性由所构造的对象决定。",
      "dtype": "MagnetRing"
     }
@@ -304,16 +304,16 @@
     "scope": [
      "有界刚体几何和坐标不变量。",
      "有序电流投影和源对象生命周期。",
-     "完整的 BRB／WHAM 配置在有限目标点上的组合。"
+     "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
-     "不宣称装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "不声称科学、实验或发行许可。"
+     "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
+     "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
+     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
+     "不主张科学正确性、实验验证或发行批准。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅限具名的几何、生命周期和配置样例；不主张任意输入的科学正确性或发行批准。"
    },
    "example": {
     "description": "构造默认的有符号磁环源。",
@@ -323,7 +323,7 @@
   {
    "asset_id": "scirel.electromagnetism.rectangular-coil",
    "source_sha256": "f4a875f0b8944fa808191fa95de7a6136f60f469ff9b04b5a925e1d6dfc76bf2",
-   "summary": "构造有序矩形圆电流丝阵列，支持可选旋转以及继承的电流/权重控制。",
+   "summary": "构造有序的矩形圆电流丝阵列，支持可选旋转，并继承电流与权重控制。",
    "definition": "生成 nr×nz 个中心点，径向索引在外、轴向索引在内。",
    "model": "轴对称理想圆电流丝源阵列。",
    "boundary": "生成的点必须保持非负柱坐标半径。",
@@ -335,13 +335,13 @@
    "inputs": [
     {
      "name": "r0",
-     "description": "中心半径 m，默认 1。",
+     "description": "中心半径，单位 m，默认 1。",
      "constraints": "R≥0。",
      "dtype": "有限 float64"
     },
     {
      "name": "z0",
-     "description": "中心高度 m，默认 0。",
+     "description": "中心高度，单位 m，默认 0。",
      "constraints": "有限。",
      "dtype": "有限 float64"
     },
@@ -359,13 +359,13 @@
     },
     {
      "name": "dr",
-     "description": "径向间距 m，默认 .1。",
+     "description": "径向间距，单位 m，默认 0.1。",
      "constraints": "正值。",
      "dtype": "有限 float64"
     },
     {
      "name": "dz",
-     "description": "轴向间距 m，默认 .1。",
+     "description": "轴向间距，单位 m，默认 0.1。",
      "constraints": "正值。",
      "dtype": "有限 float64"
     },
@@ -377,7 +377,7 @@
     },
     {
      "name": "current",
-     "description": "共同电流 A，默认 1。",
+     "description": "共同电流，单位 A，默认 1。",
      "constraints": "有限标量。",
      "dtype": "有限 float64"
     },
@@ -424,16 +424,16 @@
     "scope": [
      "有界刚体几何和坐标不变量。",
      "有序电流投影和源对象生命周期。",
-     "完整的 BRB／WHAM 配置在有限目标点上的组合。"
+     "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
-     "不宣称装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "不声称科学、实验或发行许可。"
+     "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
+     "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
+     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
+     "不主张科学正确性、实验验证或发行批准。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅限具名的几何、生命周期和配置样例；不主张任意输入的科学正确性或发行批准。"
    },
    "example": {
     "description": "构造含两个径向电流丝点的矩形线圈。",
@@ -455,7 +455,7 @@
    "inputs": [
     {
      "name": "z0",
-     "description": "轴向参考平面 m，默认 1.1。",
+     "description": "轴向参考平面，单位 m，默认 1.1。",
      "constraints": "有限。",
      "dtype": "有限 float64"
     },
@@ -502,22 +502,22 @@
     "invalid_input": "z0、电流、权重或网格无效，或与活动电流丝重合时抛出 ValueError；直接赋值 rz_pts 抛出 NotImplementedError。",
     "runtime_failure": "Green 响应的 FloatingPointError 向上传播。",
     "nonconvergence": "不适用；几何和场计算均为直接操作。",
-    "partial_results": "构造器失败不返回源；原子化更新保持先前状态。"
+    "partial_results": "构造或更新失败时不返回新源，并保留先前的有效几何。"
    },
    "verification": {
     "scope": [
      "有界刚体几何和坐标不变量。",
      "有序电流投影和源对象生命周期。",
-     "完整的 BRB／WHAM 配置在有限目标点上的组合。"
+     "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
-     "不宣称装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "不声称科学、实验或发行许可。"
+     "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
+     "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
+     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
+     "不主张科学正确性、实验验证或发行批准。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅限具名的几何、生命周期和配置样例；不主张任意输入的科学正确性或发行批准。"
    },
    "example": {
     "description": "构造 TREX 线圈并平移它，读取参考平面坐标。",
@@ -558,28 +558,28 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "固定配置或子源场计算沿用子源的 ValueError/FloatingPointError 语义；排除的扩展抛出 NotImplementedError。",
-    "runtime_failure": "子源 Green 核数值失败向上传播。",
+    "invalid_input": "构造或场计算中的子源 ValueError 以及活动电流丝的奇异性失败会向上传播。",
+    "runtime_failure": "子源的 Green 核 FloatingPointError 向上传播。",
     "nonconvergence": "不适用；配置是直接的有序组合。",
-    "partial_results": "构造失败不返回可用配置；子源注册由构造器完成。"
+    "partial_results": "构造失败时不返回可用的装置对象。"
    },
    "verification": {
     "scope": [
      "有界刚体几何和坐标不变量。",
      "有序电流投影和源对象生命周期。",
-     "完整的 BRB／WHAM 配置在有限目标点上的组合。"
+     "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
-     "不宣称装置常数、导体面积代理或材料磁化的实验验证。",
-     "几何／权重数组可直接改动，缓存检测内容变化；使参数化几何与参数脱节的改动不在支持合同内。",
-     "继承接口可能容许未知 **kwargs，不赋予任意关键词语义。",
-     "绘图／patch、简化／克隆、多进程、电极和持久扫描被排除或尚未解决。",
-     "不声称科学、实验或发行许可。"
+     "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
+     "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
+     "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",
+     "绘图与 patch、简化与克隆、多进程、电极以及持久扫描均被排除或尚未解决。",
+     "不主张科学正确性、实验验证或发行批准。"
     ],
-    "evidence_ceiling": "仅限指定几何、生命周期和配置样例，不宣称任意输入的科学正确性或发行资格。"
+    "evidence_ceiling": "仅限具名的几何、生命周期和配置样例；不主张任意输入的科学正确性或发行批准。"
    },
    "example": {
-    "description": "构造固定 WHAM 装置并检查各子源点数。",
+    "description": "构造固定 WHAM 装置，并检查各子源的点数。",
     "expected": "四个电流集合按顺序包含 [32, 32, 10, 10] 个点。"
    }
   },
@@ -668,7 +668,7 @@
     },
     {
      "name": "z0",
-     "description": "固定轴向坐标，单位 m，默认 0。",
+     "description": "固定轴向坐标，单位 m，默认 0.0。",
      "constraints": "有限。",
      "dtype": "有限 float64"
     }
@@ -728,13 +728,13 @@
    "inputs": [
     {
      "name": "rmin",
-     "description": "最小半径 m，默认 0。",
+     "description": "最小半径，单位 m，默认 0。",
      "constraints": "R≥0。",
      "dtype": "有限 float64"
     },
     {
      "name": "rmax",
-     "description": "最大半径 m，默认 1。",
+     "description": "最大半径，单位 m，默认 1。",
      "constraints": "rmax≥rmin。",
      "dtype": "有限 float64"
     },
@@ -746,13 +746,13 @@
     },
     {
      "name": "zmin",
-     "description": "最小轴向坐标 m，默认 −.5。",
+     "description": "最小轴向坐标，单位 m，默认 -0.5。",
      "constraints": "zmin≤zmax。",
      "dtype": "有限 float64"
     },
     {
      "name": "zmax",
-     "description": "最大轴向坐标 m，默认 .5。",
+     "description": "最大轴向坐标，单位 m，默认 0.5。",
      "constraints": "zmax≥zmin。",
      "dtype": "有限 float64"
     },
@@ -884,13 +884,13 @@
    "inputs": [
     {
      "name": "tpts",
-     "description": "极角。",
-     "constraints": "有限的度数。",
+     "description": "极角，单位度。",
+     "constraints": "有限的角度值。",
      "dtype": "有限 float64"
     },
     {
      "name": "r0",
-     "description": "固定球半径。",
+     "description": "固定球半径，单位 m，默认 1。",
      "constraints": "有限半径。",
      "dtype": "有限 float64"
     }
@@ -898,7 +898,7 @@
    "outputs": [
     {
      "name": "mesh",
-     "description": "构造的 ThetaChord 对象。可用属性/方法：R 为柱半径 [m]，长度 N；Z 为轴向坐标 [m]，长度 N。",
+     "description": "构造的 ThetaChord 对象；R 为长度 N 的柱半径，单位 m；Z 为长度 N 的轴向坐标，单位 m。",
      "constraints": "属性提供生成的坐标；场方法要求已配置或显式提供目标网格。",
      "dtype": "ThetaChord"
     }
@@ -941,7 +941,7 @@
    "source_sha256": "bb5d56c6b9d2d2ae604886853a89617d65a53bbef6e31bae3f764666435a7a30",
    "summary": "在固定 R 上随 Z 变化的一组点。",
    "definition": "Z 坐标变化，R 保持不变。",
-   "model": "柱坐标弦，采用柱坐标 R-Z。",
+   "model": "柱坐标弦。",
    "boundary": "R 非负。",
    "assumptions": [
     "轴向坐标有限。"
@@ -949,21 +949,21 @@
    "inputs": [
     {
      "name": "zpts",
-     "description": "轴向坐标。",
+     "description": "轴向坐标，单位 m。",
      "constraints": "有限。",
      "dtype": "有限 float64"
     },
     {
      "name": "r0",
-     "description": "固定径向坐标。",
-     "constraints": "R >= 0。",
+     "description": "固定径向坐标，单位 m，默认 0.0。",
+     "constraints": "R≥0。",
      "dtype": "有限 float64"
     }
    ],
    "outputs": [
     {
      "name": "mesh",
-     "description": "构造的 ZChord 对象。可用属性/方法：R 为径向坐标 [m]，长度 N；Z 为轴向坐标 [m]，长度 N。",
+     "description": "构造的 ZChord 对象；R 为长度 N 的径向坐标，单位 m；Z 为长度 N 的轴向坐标，单位 m。",
      "constraints": "属性提供生成的坐标；场方法要求已配置或显式提供目标网格。",
      "dtype": "ZChord"
     }
@@ -1060,7 +1060,7 @@
      "往返读写、定宽词法、畸形输入及类状态测试。",
      "非零原点拒绝、失败时目标不变、不透明标量保持。"
     ],
-    "evidence_ceiling": "仅有结构性 I/O 边界；不赋予物理解释或发行许可。",
+    "evidence_ceiling": "仅有结构性 I/O 边界；不主张物理解释或发行批准。",
     "known_limitations": [
      "不是标准 EFIT gEQDSK。",
      "没有单位/COCOS。",
@@ -1074,7 +1074,7 @@
    "summary": "解析一份已验证的扩展 EQDSK 文本文件。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
-   "boundary": "与官方 EFIT G-EQDSK 不同：此方言采用 48 字符标题加四个整数、nnr/nnz/nnv，且没有磁轴标量合同。",
+   "boundary": "与官方 EFIT G-EQDSK 不同：此方言采用 48 字符标题加四个整数、nnr/nnz/nnv，且没有磁轴标量的合同约定。",
    "assumptions": [
     "记录维度严格符合声明。",
     "实数值有限，坐标字段定宽。",
@@ -1133,9 +1133,9 @@
     "scope": [
      "往返读写、定宽词法、畸形输入及类状态测试。"
     ],
-    "evidence_ceiling": "仅有结构性 I/O 边界；不赋予物理解释或发行许可。",
+    "evidence_ceiling": "仅有结构性 I/O 边界；不主张物理解释或发行批准。",
     "known_limitations": [
-     "此读取器不选择或写入原始轮廓；该写入器是独立合同。",
+     "此读取器不负责原始轮廓的选择或写入；那属于独立的写入器合同。",
      "不是标准 EFIT gEQDSK。",
      "没有单位/COCOS。"
     ]
@@ -1208,7 +1208,7 @@
      "往返读写、定宽词法、畸形输入及类状态测试。",
      "非零原点拒绝、失败时目标不变、不透明标量保持。"
     ],
-    "evidence_ceiling": "仅有结构性 I/O 边界；不赋予物理解释或发行许可。",
+    "evidence_ceiling": "仅有结构性 I/O 边界；不主张物理解释或发行批准。",
     "known_limitations": [
      "不是标准 EFIT gEQDSK。",
      "没有单位/COCOS。",

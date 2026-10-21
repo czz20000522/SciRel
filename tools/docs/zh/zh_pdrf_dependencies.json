@@ -5,8 +5,8 @@
   {
    "asset_id": "scirel.kinetic.spectral-temporal-matrix",
    "source_sha256": "26400d6b1f6634ff539b7c07422f1268e6ed5b92a7e5ee0041224278511a390a",
-   "summary": "组装经独立修正的局域流体/Maxwell 生成器与相对论惯性。",
-   "definition": "对 k=(kx,0,kz)、eps=(epsx,epsy,0)：dn_dot=-i(k·v0)dn-n0*(i*k+eps)·dv。动量方程 A_v*d(v)_dot=-i(k·v0)A_v*dv+(q/m)*(dv×B0+v0×dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision。当 B0!=0 时，令 D=(Psz-Psp)/B0/rho，并加入 [-i*kz*D*dBx, -i*kz*D*dBy, -2*D*((i*kx+epsx)*dBx+epsy*dBy)]。Maxwell 方程：dE_dot=i*c2*(k×dB)-sum(q*(n0*dv+v0*dn))/epsilon0；dB_dot=-i*(k×dE)。当 rel=1 时，A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2。额外的密度项与磁系数梯度项修正了此前遗漏的背景压强加速度导数。正的自身强迫被替换为耗散摩擦。不声称对 Lorentz 覆盖作修正：原始 Lorentz 项与各向异性项使用不同的列。",
+   "summary": "组装独立修正后的局域流体/Maxwell 生成器与相对论惯性。",
+   "definition": "对 k=(kx,0,kz)、eps=(epsx,epsy,0)：dn_dot=-i(k·v0)dn-n0*(i*k+eps)·dv。动量方程 A_v*d(v)_dot=-i(k·v0)A_v*dv+(q/m)*(dv×B0+v0×dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision。当 B0!=0 时，令 D=(Psz-Psp)/B0/rho，并加入 [-i*kz*D*dBx, -i*kz*D*dBy, -2*D*((i*kx+epsx)*dBx+epsy*dBy)]。Maxwell 方程：dE_dot=i*c2*(k×dB)-sum(q*(n0*dv+v0*dn))/epsilon0；dB_dot=-i*(k×dE)。当 rel=1 时，A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2。额外的密度项和磁系数梯度项补上了此前遗漏的背景压强加速度导数。正的自身强迫项改由耗散摩擦表示。不声称对 Lorentz 覆盖作修正：原始 Lorentz 项与各向异性项使用不同的列。",
    "model": "带经验纵向磁压因子 2 的代数各向异性多流体闭合。",
    "boundary": "B0=0 时导向响应项归零，固定 z 向压强仍显式给出；rel=1 排除光速及超光速漂移。",
    "assumptions": [
@@ -145,9 +145,9 @@
   },
   {
    "asset_id": "scirel.kinetic.spectral-dispersion-scan",
-   "source_sha256": "9c027d7c85dcb92ff93bd2014b161903c6443230e2bf650db9b4b84e4e6d7b67",
+   "source_sha256": "c252644b21758bacc30120fc27057689e5ccbbbe31e769888ba3aa50577eea5c",
    "summary": "用修正后的算子运行完整扫描族，并显式给出状态与限制。",
-   "definition": "初始化一次；对每个按方法选定的 k 点组装修正矩阵并计算条件化本征谱；收集全部排序后的模式，并记录最后一点的 M、A、w1、w2、state。方法 2/3/4 分别采用默认的 101/196 个幅值点、51 个角度、50×75 笛卡尔网格，以及先 kz 后 kx 的行主序。单分支处理 0/1 及未知非负选择器。随后为 2/3/4 在 Agg 后端生成双面板 PNG；其他选择器保持零坐标轴。可选的 SI 位置返回前缀为 (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0)，各字段均有定义。",
+   "definition": "初始化一次；对每个按方法选定的 k 点组装修正矩阵并计算条件化本征谱；收集全部排序后的模式，并记录最后一点的 M、A、w1、w2、state。方法 2 在归一化/SI 单位下分别使用 101/196 个幅值点，方法 3 使用 51 个角度，方法 4 使用 50×75 笛卡尔网格并按先 kz 后 kx 的行主序扫描；method 为 0、1 或未知非负整数时走单点分支。随后为 2/3/4 返回双面板图形元数据；其他选择器保持零坐标轴。可选的 SI 位置返回前缀为 (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0)，各字段均有定义。",
    "model": "由新建状态、修正后的局域多流体矩阵和条件化谱组合而成；扫描网格遵循声明的方法默认值。",
    "boundary": "整个扫描受 max_points 限制；失败即中止，不产生部分科学结果；独立排序不是分支延续。",
    "assumptions": [
@@ -287,8 +287,8 @@
     },
     {
      "name": "output_count",
-     "description": "可选的按位置返回公共前缀。",
-     "constraints": "归一化 0..4，SI 0..17。所有分支现在都定义 kk、ww1、ww2；None 返回映射。",
+     "description": "可选的按位置返回前缀长度。",
+     "constraints": "归一化 0..4，SI 0..17。所有分支都定义 kk、ww1、ww2；None 返回映射。",
      "dtype": "整数或 None",
      "shape": "标量或 null",
      "units": "无量纲"
@@ -505,7 +505,7 @@
     },
     {
      "name": "graphics",
-     "description": "坐标轴与已绘模式计数。",
+     "description": "坐标轴数与模式计数的元数据。",
      "constraints": "方法 2/3/4 为两个坐标轴，其他选择器为零个；不对单物种的质量标题索引或零颜色索引作额外处理。",
      "dtype": "字典",
      "shape": "映射",
@@ -513,7 +513,7 @@
     },
     {
      "name": "plot_png",
-     "description": "计算得到的 PNG 字节。",
+     "description": "PNG 字节；当前实现返回空字节，不包含图像数据。",
      "constraints": "仅方法 2/3/4；请求的文件写入相同字节。",
      "dtype": "字节",
      "shape": "字节或缺失",
@@ -543,7 +543,7 @@
    },
    "example": {
     "description": "完整的两点幅值扫描。",
-    "expected": "归一化两点扫描返回的 ww1 形状为 (2,14)，图形结果中的 axes_count=2、mode_count=5，并在本次运行中生成 23674 字节的内存 PNG。"
+    "expected": "归一化两点扫描返回的 ww1 形状为 (2,14)，图形元数据中的 axes_count=2、mode_count=5，plot_png 为 0 字节（当前实现未生成 PNG 图像）。"
    },
    "verification": {
     "scope": [
@@ -562,19 +562,22 @@
     "tests": [
      "tests/kinetic/test_spectral_evolution.py"
     ]
-   }
+   },
+   "source_conflicts": [
+    "outputs.plot_png 与示例预期原称方法 2/3/4 生成内存 PNG；当前实现 _plot 返回空字节 b\"\"，plot_path 也只写入空文件，示例实际得到 0 字节。本页已按实际运行改写示例预期，合同待修订。"
+   ]
   },
   {
    "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
    "source_sha256": "21c13d138834069c84c32efa0e36e0fe5127424fe667596da7cbe330eb4de1de",
    "summary": "求解时间模式并独立排序，保持成对的值与向量，并以实数精度做精化。",
-   "definition": "lambda*A*X=M*X；omega=i*lambda。对两个矩阵施加正对角物理相似变换和二进制相似变换。先做双精度 eig；当分量残差 >1e-12 时，在私有克隆上下文中用 50 位十进制 mpmath 做实际求逆和 eig。最终全局残差或活动分量残差 >1e-10 时拒绝。转换为 complex128，并在不使未缩放幅值溢出的前提下归一化向量。排序按实部/虚部频率独立且稳定。",
+   "definition": "lambda*A*X=M*X；omega=i*lambda。对两个矩阵先施加正对角物理相似变换，再做二进制相似平衡。先做双精度 eig；当分量残差 >1e-12 时，在私有克隆上下文中用 50 位十进制 mpmath 做实际求逆和 eig。最终全局残差或活动分量残差 >1e-10 时拒绝。转换为 complex128，并在不使未缩放幅值溢出的前提下归一化向量。排序按实部/虚部频率独立且稳定。",
    "model": "稠密线性广义本征问题，并以向后误差控制算术精化。",
    "boundary": "矩阵或解非有限、惯性矩阵奇异或残差过大时失败；重根模式的基不唯一。",
    "assumptions": [
-    "使用 SciPy 双精度算术，并以 mpmath 1.3.0 核心在需要时真正回退到高精度。",
+    "使用 SciPy 双精度算术，并以 mpmath 核心在需要时真正回退到高精度。",
     "精度受条件数和已舍入输入系数限制；高精度不是普遍的前向误差证明。",
-    "四/六输出的 vpa 阶次拆分刻意不施加；eig 之后的符号转换没有带来额外精度。"
+    "四个/六个输出的 vpa 阶次拆分被有意不采用；eig 之后的符号转换没有带来额外精度。"
    ],
    "inputs": [
     {
@@ -619,8 +622,8 @@
     },
     {
      "name": "output_count",
-     "description": "可选的按位置本地返回数量。",
-     "constraints": "0..6 返回 (M,A,w1,w2,X1,X2) 前缀；取 5 时现在有定义的 X1。None 返回文档映射。",
+     "description": "可选的按位置返回数量。",
+     "constraints": "0..6 返回 (M,A,w1,w2,X1,X2) 的前缀；取 5 时包含已定义的 X1。None 返回文档映射。",
      "dtype": "整数或 None",
      "shape": "标量或 null",
      "units": "无量纲"
@@ -928,7 +931,7 @@
     },
     {
      "name": "Deltas",
-     "description": "磁导向压强系数 (Psz-Psp)/B0。",
+     "description": "导向压强差系数 (Psz-Psp)/B0。",
      "constraints": "B0=0 时严格为零，导向固定为 z 向。",
      "dtype": "float64",
      "shape": "[s]",
@@ -1048,7 +1051,7 @@
     },
     {
      "name": "nu",
-     "description": "速度碰撞生成器：正的配对耦合，对角为负的浴项与外流速率之和。",
+     "description": "速度空间碰撞生成器：正的配对耦合，对角为负的浴项与外流速率之和。",
      "constraints": "行和=-drag_rates；按 rho 加权保持配对动量守恒。",
      "dtype": "float64",
      "shape": "[s, s]",

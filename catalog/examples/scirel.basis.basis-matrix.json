@@ -20,7 +20,7 @@
   "model": "Construction delegates to the explicit source basis factory",
   "geometry": "one-dimensional scalar abscissa and ordinate samples",
   "coordinates": "Rows follow input domain; columns follow basis order",
-  "boundary": "Underlying spline endpoint/extrapolation rules",
+  "boundary": "Spline evaluation is zero outside the finite knot interval; no extrapolation is performed.",
   "assumptions": [
    "Finite constructor samples and boundary-specific assumptions",
    "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
@@ -64,10 +64,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
+  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
-  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
+  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval return zero."
  },
  "public_api": {
   "python": {

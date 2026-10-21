@@ -311,7 +311,7 @@
  "example": {
   "description": "Evaluate one bounded case. Python preflight ran locally; local execution covers this asset.",
   "code": "from scirel.kinetic import solve_kinetic_wavevector_roots\nr=solve_kinetic_wavevector_roots(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],omegas=[1e11],kz=0,kx_start=8000); assert len(r['roots'])==1",
-  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about 1.14e-13 - 2.86e-17j and exit flag 1. local execution covers this asset."
+  "expected": "Python preflight returned one converged root 6.01073715e-13 + 1315.20499512j with residual about -1.14e-13 - 2.86e-17j and exit flag 1. local execution covers this asset."
  },
  "verification": {
   "scope": [

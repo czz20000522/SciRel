@@ -5,8 +5,8 @@
   {
    "asset_id": "scirel.kinetic.multifluid-deck",
    "source_sha256": "75691a29a3323bcbae3cf75e2a0e52fcafcd5655d3aed37bc3f0fa38648f92a6",
-   "summary": "返回随包 随包多流体十列、双物种物理输入表的独立副本。",
-   "definition": "读取双物种十列 多流体 SI 字面数据表，不改变其中的物理数值。",
+   "summary": "返回随包多流体十列、双物种物理输入表的独立副本。",
+   "definition": "读取双物种十列多流体 SI 字面数据表，不改变其中的物理数值。",
    "model": "固定的电子／质子流体输入数据。",
    "boundary": "已存储的局部平衡输入；不由此推断任何解。",
    "assumptions": [
@@ -27,7 +27,7 @@
      "输入须有限，且满足所声明的单位和形状。"
     ],
     "supported": [
-     "包内局部输入数据；无需代码检出或网络。"
+     "包内局部输入数据；无需源码检出或网络。"
     ],
     "excluded": []
    },
@@ -56,8 +56,8 @@
   {
    "asset_id": "scirel.kinetic.multifluid-equilibrium",
    "source_sha256": "db2622fe090dffba1e195711292ef67fc89a6925de888dddc6b56974ca1f4bb6",
-   "summary": "用显式压力坐标框架和守恒的成对动量交换初始化物理流体状态。零磁场下未定义的 beta 用 None 表示。",
-   "definition": "rho_j=m_j n_j；P_parallel/perpendicular=rho_j cs_parallel/perpendicular^2/gamma_j；随磁场转动时 P=P_perp I+(P_parallel-P_perp)bb。L_ji=K_ji/rho_j；L_jj=-sum_i K_ji/rho_j-bath_j。",
+   "summary": "用显式压力张量取向和守恒的成对动量交换初始化物理流体状态。零磁场下未定义的 beta 用 None 表示。",
+   "definition": "rho_j=m_j n_j；P_parallel/perpendicular=rho_j cs_parallel/perpendicular^2/gamma_j；在 field_following 取向下 P=P_perp I+(P_parallel-P_perp)bb。L_ji=K_ji/rho_j；L_jj=-sum_i K_ji/rho_j-bath_j。",
    "model": "多物种非相对论平衡，可选守恒的成对动量交换与外部静止背景阻力。",
    "boundary": "局部 Fourier 扰动；不求解有限区域边界问题。",
    "assumptions": [
@@ -75,13 +75,13 @@
     {
      "name": "B0",
      "description": "沿 z 轴的均匀有符号平衡磁场。",
-     "dtype": "float64 数组",
-     "constraints": "数值有限；零磁场时随磁场转动的压力必须各向同性。"
+     "dtype": "float64 标量",
+     "constraints": "数值有限；零磁场时随磁场取向的压力必须各向同性。"
     },
     {
      "name": "gamma",
      "description": "各物种的压力闭合指数。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量或 (S,)",
      "constraints": "有限且严格为正。"
     },
     {
@@ -100,7 +100,7 @@
      "name": "pressure_frame",
      "description": "压力张量的取向模型。",
      "dtype": "字符串（str）",
-     "constraints": "'field_following' 使旋转对称压力随 B 转动；'fixed_z' 固定其轴向，并将磁场引起的压力转动项置零。"
+     "constraints": "'field_following' 使回旋各向异性压力随 B 取向；'fixed_z' 固定其轴向，并将磁场引起的压力转动项置零。"
     }
    ],
    "outputs": [
@@ -121,7 +121,7 @@
      "零 B 下的各向同性，以及另行声明的零 B 固定轴各向异性。"
     ],
     "excluded": [
-     "不支持 B0=0 时随磁场转动的各向异性压力。",
+     "不支持 B0=0 时随磁场取向的各向异性压力。",
      "不支持隐式碰撞频率含义，也不自动强制准电中性。"
     ]
    },
@@ -137,7 +137,7 @@
      "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
     ],
     "known_limitations": [
-     "固定轴压力与随磁场转动压力是不同的物理模型。",
+     "固定轴压力与随磁场取向压力是不同的物理模型。",
      "未提供全局平衡力平衡的证明。",
      "示例输出是有界的运行时观察结果，不是普适的科学结论。"
     ],
@@ -151,12 +151,12 @@
   {
    "asset_id": "scirel.kinetic.multifluid-frequency-pencil",
    "source_sha256": "df272e132acad59c97622021a86695c5e20b3af2991907c09d5add4a29d06801",
-   "summary": "组装修正后的 Maxwell–流体广义矩阵铅笔，保留物理 SI 坐标与有符号复空间波矢。",
-   "definition": "M X=lambda A X；omega=i lambda。连续性方程、Lorentz 力、旋转对称压力、已声明的速度碰撞及 Maxwell 方程均在原始 SI 状态坐标中组装。",
+   "summary": "组装修正后的 Maxwell–流体广义矩阵束，保留物理 SI 坐标与有符号复空间波矢。",
+   "definition": "M X=lambda A X；omega=i lambda。连续性方程、Lorentz 力、回旋各向异性压力、已声明的速度碰撞及 Maxwell 方程均在原始 SI 状态坐标中组装。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
    "boundary": "局部 Fourier 模态 exp(i k.r-i omega t)。",
    "assumptions": [
-    "压力转动的 Bx 贡献直接使用已声明压力张量的散度。",
+    "压力张量转动产生的 Bx 贡献直接使用已声明压力张量的散度。",
     "相对论惯性 gamma I+gamma^3 vv^T/c^2 不包含非相对论碰撞生成矩阵。",
     "流体常数配置为 c2=(2.9979e8 m/s)^2，epsilon0=8.854e-12 F/m，mu0=1/(c2*epsilon0)，gamma 默认 5/3。电荷与质量是物种表中的显式 SI 输入；随包默认值为 q=+/-1.602e-19 C、me=9.109e-31 kg、mp=1.673e-27 kg。声速直接输入，不使用 kB，也不进行温度到速度的换算。这与当前动理学初始化使用的 epsilon0=8.8542e-12 F/m 不同。"
    ],
@@ -170,14 +170,14 @@
     {
      "name": "kx",
      "description": "有符号的 x 波矢分量。",
-     "dtype": "complex128 数组",
-     "constraints": "数值有限；流体矩阵铅笔支持复空间波矢。"
+     "dtype": "complex128 标量",
+     "constraints": "数值有限；流体矩阵束支持复空间波矢。"
     },
     {
      "name": "kz",
      "description": "有符号的 z 波矢分量。",
-     "dtype": "complex128 数组",
-     "constraints": "数值有限；流体矩阵铅笔支持复空间波矢。"
+     "dtype": "complex128 标量",
+     "constraints": "数值有限；流体矩阵束支持复空间波矢。"
     },
     {
      "name": "relativistic",
@@ -189,7 +189,7 @@
    "outputs": [
     {
      "name": "pencil",
-     "description": "时间生成算子的广义矩阵铅笔 M X=lambda A X，其中 lambda=-i omega；另含有符号 wcs 与非负 wps。",
+     "description": "时间生成算子的广义矩阵束 M X=lambda A X，其中 lambda=-i omega；另含有符号 wcs 与非负 wps。",
      "dtype": "字典（dict[str, complex128 或 float64 数组]）",
      "constraints": "各物种的 X=(dn,dvx,dvy,dvz)，其后为 Ex,Ey,Ez,Bx,By,Bz。M_ab 的单位是 (unit X_a)/(s*unit X_b)，A_ab 的单位是 (unit X_a)/(unit X_b)。矩阵保留原始物理状态单位。"
     }
@@ -219,26 +219,26 @@
      "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
     ],
     "known_limitations": [
-     "旋转对称压力闭合是显式声明的局部流体模型。",
+     "回旋各向异性压力闭合是显式声明的局部流体模型。",
      "组装本身不选择物理分支，也不剔除约束模态。",
      "示例输出是有界的运行时观察结果，不是普适的科学结论。"
     ],
     "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
    },
    "example": {
-    "description": "组装一个同时含垂直／平行分量的物理矩阵铅笔。",
-    "expected": "该 SI 点产生有限的广义矩阵铅笔 M 与 A，形状均为 (14,14)。"
+    "description": "组装一个同时含垂直／平行分量的物理矩阵束。",
+    "expected": "该 SI 点产生有限的广义矩阵束 M 与 A，形状均为 (14,14)。"
    }
   },
   {
    "asset_id": "scirel.kinetic.multifluid-frequency-solve",
    "source_sha256": "7fe4da4b8146dedfbb492056931a4724d971ad5eccaac8701aaa6d7dc8781590",
-   "summary": "在物理坐标中计算完整流体谱，逐分量检查矩阵铅笔残差，并显式提供缺陷零本征值元数据；数值调理不改变科学矩阵铅笔。",
-   "definition": "在缩放坐标中按支撑结构分解并求解 QZ；通过对已存储二进制系数作精确有理数矩阵幂秩计算，核对零本征值重数；必要时细化非零本征对，并针对组装的原始 M,A 检查每个本征对。",
+   "summary": "在物理坐标中计算完整流体谱，逐分量检查矩阵束残差，并显式提供亏损零本征值元数据；数值条件化不改变科学矩阵束。",
+   "definition": "在缩放坐标中按支撑结构分解并求解 QZ；把存储的二进制系数视为精确有理数，通过矩阵幂的秩核对零本征值重数；必要时细化非零本征对，并针对组装的原始 M,A 检查每个本征对。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
    "boundary": "局部 Fourier 模态 exp(i k.r-i omega t)。",
    "assumptions": [
-    "压力转动的 Bx 贡献直接使用已声明压力张量的散度。",
+    "压力张量转动产生的 Bx 贡献直接使用已声明压力张量的散度。",
     "相对论惯性 gamma I+gamma^3 vv^T/c^2 不包含非相对论碰撞生成矩阵。",
     "流体常数配置为 c2=(2.9979e8 m/s)^2，epsilon0=8.854e-12 F/m，mu0=1/(c2*epsilon0)，gamma 默认 5/3。电荷与质量是物种表中的显式 SI 输入；随包默认值为 q=+/-1.602e-19 C、me=9.109e-31 kg、mp=1.673e-27 kg。声速直接输入，不使用 kB，也不进行温度到速度的换算。这与当前动理学初始化使用的 epsilon0=8.8542e-12 F/m 不同。"
    ],
@@ -252,14 +252,14 @@
     {
      "name": "kx",
      "description": "有符号的 x 波矢分量。",
-     "dtype": "complex128 数组",
-     "constraints": "数值有限；流体矩阵铅笔支持复空间波矢。"
+     "dtype": "complex128 标量",
+     "constraints": "数值有限；流体矩阵束支持复空间波矢。"
     },
     {
      "name": "kz",
      "description": "有符号的 z 波矢分量。",
-     "dtype": "complex128 数组",
-     "constraints": "数值有限；流体矩阵铅笔支持复空间波矢。"
+     "dtype": "complex128 标量",
+     "constraints": "数值有限；流体矩阵束支持复空间波矢。"
     },
     {
      "name": "relativistic",
@@ -269,23 +269,23 @@
     },
     {
      "name": "state_scales",
-     "description": "仅用于数值调理的正对角状态坐标缩放。",
+     "description": "仅用于数值条件化的正对角状态坐标缩放。",
      "dtype": "float64 数组或 None",
      "constraints": "各项有限且为正。None 选择物理密度／速度／电场／磁场尺度；本征向量返回原始坐标。"
     },
     {
      "name": "backward_tolerance",
      "description": "原始单位中允许的最大逐分量后向误差。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限且为正。"
     }
    ],
    "outputs": [
     {
      "name": "solution",
-     "description": "矩阵铅笔、已排序的频谱／本征向量，以及完整原始单位后向误差和经过核验的零本征结构元数据。",
+     "description": "矩阵束、已排序的频谱／本征向量，以及完整原始单位后向误差和经过核验的零本征结构元数据。",
      "dtype": "字典（dict[str, 数值数组或结构化元数据]）",
-     "constraints": "w1 按实部降序，w2 按虚部降序；X1/X2 的列与之对应。误差使用原求解器次序。重复的缺陷零本征值不意味着存在完备本征基或 Jordan 链。"
+     "constraints": "w1 按实部降序，w2 按虚部降序；X1/X2 的列与之对应。误差使用原求解器次序。重复的亏损零本征值不意味着存在完备本征基或 Jordan 链。"
     }
    ],
    "applicability": {
@@ -297,14 +297,14 @@
      "双精度细化不足时，使用 mpmath 进行有界高精度细化。"
     ],
     "excluded": [
-     "不保证缺陷本征值处存在完备本征基。",
+     "不保证亏损本征值处存在完备本征基。",
      "不凭 binary64 公共输出声称具有 80 位前向精度。"
     ]
    },
    "failure_semantics": {
     "invalid_input": "ValueError 或必需映射键缺失会拒绝非法输入。",
     "runtime_failure": "依赖、数值库或原生运行时错误向上传播；不会静默改用其他提供方。",
-    "nonconvergence": "若有限次有界细化仍不能满足未放宽的原始矩阵铅笔容差，则抛出 ArithmeticError。",
+    "nonconvergence": "若有限次有界细化仍不能满足未放宽的原始矩阵束容差，则抛出 ArithmeticError。",
     "partial_results": "任意本征对核验失败时，都不返回成功解映射。"
    },
    "verification": {
@@ -352,49 +352,49 @@
     {
      "name": "B0",
      "description": "沿 z 轴的均匀有符号平衡磁场。",
-     "dtype": "float64 数组",
-     "constraints": "数值有限；零磁场时随磁场转动的压力必须各向同性。"
+     "dtype": "float64 标量",
+     "constraints": "数值有限；零磁场时随磁场取向的压力必须各向同性。"
     },
     {
      "name": "gamma",
      "description": "各物种的压力闭合指数。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量或 (S,)",
      "constraints": "有限且严格为正。"
     },
     {
      "name": "pressure_frame",
      "description": "压力张量的取向模型。",
      "dtype": "字符串（str）",
-     "constraints": "'field_following' 使旋转对称压力随 B 转动；'fixed_z' 固定其轴向，并将磁场引起的压力转动项置零。"
+     "constraints": "'field_following' 使回旋各向异性压力随 B 取向；'fixed_z' 固定其轴向，并将磁场引起的压力转动项置零。"
     },
     {
      "name": "electron_bath_rate",
      "description": "电子类别相对于外部静止背景的阻力。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限、非负的静止背景速度阻尼率；零值关闭此通道。"
     },
     {
      "name": "ion_bath_rate",
      "description": "离子类别相对于外部静止背景的阻力。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限、非负的静止背景速度阻尼率；零值关闭此通道。"
     },
     {
      "name": "electron_pair_relative_rate",
      "description": "每个电子／电子对的相对速度阻尼。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限且非负的相对阻尼率；零值关闭此通道。"
     },
     {
      "name": "ion_pair_relative_rate",
      "description": "每个离子／离子对的相对速度阻尼。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限且非负的相对阻尼率；零值关闭此通道。"
     },
     {
      "name": "electron_ion_relative_rate",
      "description": "每个电子／离子对的相对速度阻尼。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限且非负的相对阻尼率；零值关闭此通道。"
     }
    ],
@@ -431,7 +431,7 @@
     ],
     "known_limitations": [
      "物种对相对速率与外部背景速率具有不同的守恒性质。",
-     "这些速率是声明的新科学变体；不重现正速率导致增长的行为。",
+     "这些速率是声明的一种科学变体；不重现正速率导致的增长行为。",
      "示例输出是有界的运行时观察结果，不是普适的科学结论。"
     ],
     "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
@@ -444,12 +444,12 @@
   {
    "asset_id": "scirel.kinetic.multifluid-scan",
    "source_sha256": "7a5d8d8f4ba3b4e4ed3205c4d1a6e8725840416420231a9363e6ab40fb6f030e",
-   "summary": "运行四个字面定义的流体扫描族，采用独立逐点求解、显式状态和标准轴序。默认方法 2 含 101 个物理点；方法 4 含 3750 个点。",
+   "summary": "运行四个字面定义的流体扫描族，采用独立逐点求解、显式状态和标准轴序。默认方法 2 含 101 个物理点；方法 4 含 3750 个物理点。",
    "definition": "构造各方法字面规定的物理网格，在适用处映射 kx=k*sin(theta),kz=k*cos(theta)，独立求解每个点，并按标准轴序汇总经过核验的频谱。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
    "boundary": "局部 Fourier 模态 exp(i k.r-i omega t)。",
    "assumptions": [
-    "压力转动的 Bx 贡献直接使用已声明压力张量的散度。",
+    "压力张量转动产生的 Bx 贡献直接使用已声明压力张量的散度。",
     "相对论惯性 gamma I+gamma^3 vv^T/c^2 不包含非相对论碰撞生成矩阵。",
     "流体常数配置为 c2=(2.9979e8 m/s)^2，epsilon0=8.854e-12 F/m，mu0=1/(c2*epsilon0)，gamma 默认 5/3。电荷与质量是物种表中的显式 SI 输入；默认值为 q=+/-1.602e-19 C、me=9.109e-31 kg、mp=1.673e-27 kg。声速直接输入，不使用 kB，也不进行温度到速度的换算。这与当前动理学初始化使用的 epsilon0=8.8542e-12 F/m 不同。"
    ],
@@ -468,7 +468,7 @@
     },
     {
      "name": "state_scales",
-     "description": "仅用于数值调理的正对角状态坐标缩放。",
+     "description": "仅用于数值条件化的正对角状态坐标缩放。",
      "dtype": "float64 数组或 None",
      "constraints": "各项有限且为正。None 选择物理密度／速度／电场／磁场尺度；本征向量返回原始坐标。"
     },
@@ -531,10 +531,10 @@
   {
    "asset_id": "scirel.kinetic.parallel-em-continuation",
    "source_sha256": "b0d94713307a3ddc08e67ed22e4fcfed7f4ac38576ca238fd6e691dbdcf82a93",
-   "summary": "通过显式网格延续一个满足因果性的动理学根，以已接受种子反馈并记录诊断失败。失败的根或虚假成功的根不会向后传播。",
-   "definition": "在每个 k 处，用 scipy.optimize.root(method=hybr) 求解 f/scale 的两个实分量。只有 solver.success、输出有限且满足声明的残差界时才接受。仅已接受的根会成为下一次初猜。",
-   "model": "任意物种数的漂移各向同性 Maxwell 分布平行电磁响应。",
-   "boundary": "从 Im(omega)>0 延拓的推迟 Landau 解析延拓。",
+   "summary": "通过显式网格延续一个满足因果性的动理学根；接受的根会作为下一点的种子，并记录诊断失败。失败或虚假成功的根不会传递到后续点。",
+   "definition": "在每个 k 处，用 scipy.optimize.root(method=hybr) 求解 f/scale 的两个实分量。只有 solver.success、输出有限且满足声明的残差界时才接受。只有被接受的根才会成为下一点的初始猜测。",
+   "model": "任意物种数的漂移各向同性 Maxwellian 分布平行电磁响应。",
+   "boundary": "从 Im(omega)>0 出发的推迟 Landau 解析延拓。",
    "assumptions": [
     "高斯速度积分使两个因果分母均为 |k|*vt，同时保留有符号 k*vd。",
     "不替换为各向异性或损失锥模型。",
@@ -543,7 +543,7 @@
    "inputs": [
     {
      "name": "state",
-     "description": "显式初始化的各向同性漂移 Maxwell 分布动理学状态。",
+     "description": "显式初始化的各向同性漂移 Maxwellian 分布动理学状态。",
      "dtype": "映射 mapping[str,numeric array or scalar]",
      "constraints": "wps2 非负，vtzs 为正，c2 有限。可选 Tzs,Tps 必须相等，alphas 必须为 1。延续默认值还要求 cwp[m] 和 wcs1[rad/s]。"
     },
@@ -568,7 +568,7 @@
     {
      "name": "residual_tolerance",
      "description": "每个已接受点必须满足的缩放色散残差。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限且为正；默认 1e-10。"
     },
     {
@@ -626,7 +626,7 @@
    "source_sha256": "071e436d03dd476ca649174af19fbe5aca3dea741570c1ca797b37b18edbbaf4",
    "summary": "对任意物种和任一固定圆极化符号，求满足因果性的有符号波矢平行电磁残差。",
    "definition": "残差定义为 f=omega^2-c2*k^2+sum_s wps2_s*(omega-k*vds_s)/(|k|*vtzs_s)*Z((omega-k*vds_s+pm*wcs_s)/(|k|*vtzs_s))；其中 Z=i*sqrt(pi)*w，尺度为 scale=max(|omega^2|+|c2*k^2|+sum_s|物种项|,tiny)。",
-   "model": "任意物种数的漂移各向同性 Maxwell 分布平行电磁响应。",
+   "model": "任意物种数的漂移各向同性 Maxwellian 分布平行电磁响应。",
    "boundary": "从 Im(omega)>0 延拓的推迟 Landau 解析延拓。",
    "assumptions": [
     "高斯速度积分使两个因果分母均为 |k|*vt，同时保留有符号 k*vd。",
@@ -636,20 +636,20 @@
    "inputs": [
     {
      "name": "state",
-     "description": "显式初始化的各向同性漂移 Maxwell 分布动理学状态。",
+     "description": "显式初始化的各向同性漂移 Maxwellian 分布动理学状态。",
      "dtype": "映射 mapping[str,numeric array or scalar]",
      "constraints": "wps2 非负，vtzs 为正，c2 有限。可选 Tzs,Tps 必须相等，alphas 必须为 1。延续默认值还要求 cwp[m] 和 wcs1[rad/s]。"
     },
     {
      "name": "omega",
      "description": "复时间频率。",
-     "dtype": "complex128 数组",
+     "dtype": "complex128 标量",
      "constraints": "在收窄为 binary64 前后均为有限标量。"
     },
     {
      "name": "k",
      "description": "有符号的平行波矢。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "在收窄为 binary64 前后均为实数、有限且非零。"
     },
     {
@@ -663,13 +663,13 @@
     {
      "name": "f",
      "description": "未归一化的复色散残差，为元组第一项。",
-     "dtype": "complex128 数组",
+     "dtype": "complex128 标量",
      "constraints": "有限且可表示的结果。"
     },
     {
      "name": "scale",
      "description": "各项模之和构成的正尺度，为元组第二项。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "有限且为正；abs(f)/scale 是验收残差。"
     }
    ],
@@ -712,7 +712,7 @@
    "asset_id": "scirel.kinetic.rational-default-deck",
    "source_sha256": "ad1a896fcd3d082c84aa369b79323bf62536824a9b655cf3bafc14cf603d4f72",
    "summary": "将随包、对应具体模型的原始物种表读入新的数值数组。",
-   "definition": "不会隐式读取代码检出。物种表是具有模型专用列和单位的声明科学样例；调用数据访问器本身不验证物理应用。",
+   "definition": "不会隐式读取本地源码目录。物种表是具有模型专用列和单位的声明科学样例；调用数据访问器本身不验证物理应用。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
    "assumptions": [
@@ -730,7 +730,7 @@
    "outputs": [
     {
      "name": "deck",
-     "description": "新的物种数组，使用显式、模型专用的旧实现单位约定。",
+     "description": "新的物种数组，使用显式、模型专用的历史单位约定。",
      "dtype": "实数数组",
      "constraints": "有限且可用所声明的数值类型表示。"
     }
@@ -740,7 +740,7 @@
      "组成输入须有限且能由已声明的数值端口表示。"
     ],
     "supported": [
-     "随包的原始旧实现物种样例。"
+     "随包的历史物种样例。"
     ],
     "excluded": [
      "不自动声称默认样例描述了用户实验。"
@@ -748,7 +748,7 @@
    },
    "failure_semantics": {
     "invalid_input": "未知模型触发 ValueError；随包数据表的读取／解析错误向上传播。",
-    "runtime_failure": "随包文件 I/O 错误向上传播；不启动 Octave 进程，也不产生原生回执。",
+    "runtime_failure": "随包文件 I/O 错误向上传播；不启动参考运行时进程，也不产生原生回执。",
     "nonconvergence": "不是迭代或本征求解操作。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
@@ -758,10 +758,10 @@
      "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
     ],
     "known_limitations": [
-     "参考材料的再分发许可未核实；MATLAB 执行状态为 NOT_RUN。",
+     "原始许可未核实；MATLAB 执行状态为 NOT_RUN。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
      "示例输出是有界的运行时观察结果，不是普适的科学结论。"
     ],
     "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
@@ -818,13 +818,13 @@
     {
      "name": "k",
      "description": "有符号径向参数 kj/cwp；不是所返回分量的非负范数。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "由声明的有限输入通过 float64 算术导出；除法后不另行检查输出是否有限。"
     },
     {
      "name": "theta",
      "description": "输入 theta_degrees 转为弧度，不进行角度回绕。",
-     "dtype": "float64 数组",
+     "dtype": "float64 标量",
      "constraints": "由声明的有限输入通过 float64 算术导出；除法后不另行检查输出是否有限。"
     }
    ],
@@ -851,10 +851,10 @@
      "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。"
     ],
     "known_limitations": [
-     "参考材料的再分发许可未核实；MATLAB 执行状态为 NOT_RUN。",
+     "原始许可未核实；MATLAB 执行状态为 NOT_RUN。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
      "示例输出是有界的运行时观察结果，不是普适的科学结论。"
     ],
     "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
@@ -867,9 +867,9 @@
   {
    "asset_id": "scirel.kinetic.rational-equilibrium",
    "source_sha256": "65308b73ff3bf1b92a1473927a5f330d6124bc1814573ec058691d79d2f8d2f6",
-   "summary": "将声明的旧实现物种表换算为热速度、Debye、等离子体及有符号回旋尺度；保留显式 ES 与 EM 单位约定。",
-   "definition": "ES1D 归一化尺度为 vts=sqrt(2T/m),lambdaDs=sqrt(T/(n q²)),kDs=1/lambdaDs,wps=sqrt(n q²/m)。ES3D 在这些尺度中使用 Tparallel，Omega=B0*q/m，rho=sqrt(Tperp/m)/abs(Omega)；B0 是默认 1 的有符号归一化输入，不以特斯拉标注。EM 常数严格为 qe=1.6022e-19 C、me=9.1094e-31 kg、c=2.9979e8 m/s、epsilon0=8.8542e-12 F/m、kB=1.3807e-23 J/K；c2=c²，mu0=1/(c² epsilon0)。EM 中 q=deck_q*qe,m=deck_m*me,Tz/p[K]=deck_Tz/p[eV]*qe/kB,vd=deck_vd*c。继而 vtz=sqrt(2 kB Tz/m),lambdaD=sqrt(epsilon0 kB Tz/(n q²)),wp=sqrt(n q²/(m epsilon0))，有符号 Omega=B0*q/m，有符号 rho=sqrt(kB Tp/m)/Omega。归一化量明确使用 wci=abs(Omega_second),wpi=sqrt(n_first*q_second²/(m_second*epsilon0)),cwp=c/wpi，以及上述 mu0；不会静默换成其他参考物种。输出还包括 beta_z/p=2mu0*n*kB*Tz/p/B0²,vA=B0/sqrt(mu0 sum m*n),cS=sqrt(2min(kB*Tz)/max(m)),vAwp=vA/wci。这种归一化的 ES／SI EM 解析方式与八列 m/mp 损失锥初始化和持续维护的固定频率流体波矢关系不同。",
-   "model": "ES1D 或 ES3D 归一化高斯物种，或使用明确列出的旧实现常数的 EM SI 漂移双 Maxwell 物种；不暗示损失锥分支。",
+   "summary": "将声明的历史物种表换算为热速度、Debye、等离子体及有符号回旋尺度；保留显式 ES 与 EM 单位约定。",
+   "definition": "ES1D 归一化尺度为 vts=sqrt(2T/m),lambdaDs=sqrt(T/(n q²)),kDs=1/lambdaDs,wps=sqrt(n q²/m)。ES3D 在这些尺度中使用 Tparallel，Omega=B0*q/m，rho=sqrt(Tperp/m)/abs(Omega)；B0 是有符号归一化输入，ES3D 下默认取 1，不以特斯拉标注。EM 常数严格为 qe=1.6022e-19 C、me=9.1094e-31 kg、c=2.9979e8 m/s、epsilon0=8.8542e-12 F/m、kB=1.3807e-23 J/K；c2=c²，mu0=1/(c² epsilon0)。EM 中 q=deck_q*qe,m=deck_m*me,Tz/p[K]=deck_Tz/p[eV]*qe/kB,vd=deck_vd*c。继而 vtz=sqrt(2 kB Tz/m),lambdaD=sqrt(epsilon0 kB Tz/(n q²)),wp=sqrt(n q²/(m epsilon0))，有符号 Omega=B0*q/m，有符号 rho=sqrt(kB Tp/m)/Omega。归一化量明确使用 wci=abs(Omega_second),wpi=sqrt(n_first*q_second²/(m_second*epsilon0)),cwp=c/wpi，以及上述 mu0；不会静默换成其他参考物种。输出还包括 beta_z/p=2mu0*n*kB*Tz/p/B0²,vA=B0/sqrt(mu0 sum m*n),cS=sqrt(2min(kB*Tz)/max(m)),vAwp=vA/wci。这种 ES／SI EM 归一化解析方式不同于八列 m/mp 损失锥初始化，也不同于持续维护的固定频率流体波矢关系。",
+   "model": "ES1D 或 ES3D 归一化高斯物种，或使用明确列出的历史常数的 EM SI 漂移双 Maxwellian 物种；不暗示损失锥分支。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
    "assumptions": [
     "各模型的物种表约定均显式说明。",
@@ -890,7 +890,7 @@
     },
     {
      "name": "B0",
-     "description": "沿 z 轴的有符号背景场；None 选择 ES3D 的 1 或 EM 的 100e-9。ES1D 不含磁场。",
+     "description": "沿 z 轴的有符号背景场；None 对 ES3D 选择 1，对 EM 选择 1e-7（即 100e-9）。ES1D 不含磁场。",
      "dtype": "实数或 None",
      "constraints": "所需磁化场有限且非零；不推断无磁替代模型。ES3D 中 Omega_s=B0*q_s/m_s。"
     }
@@ -898,13 +898,13 @@
    "outputs": [
     {
      "name": "state",
-     "description": "具名尺度：ES1D 为 S,qs,ms,ns0,Ts,vs0,vts,lambdaDs,kDs,wps；ES3D 使用 Tzs,Tps,vtzs，并增加有符号 wcs 与绝对值 rhocs。EM 还保留原物种表量、wps2,lmdT,betasz,betasp,vA,cS,wci,wpi,cwp,vAwp,c2,epsilon0,mu0,kB。原生物种数组保持binary64 行形状。",
+     "description": "具名尺度：ES1D 为 S,qs,ms,ns0,Ts,vs0,vts,lambdaDs,kDs,wps；ES3D 使用 Tzs,Tps,vtzs，并增加有符号 wcs 与绝对值 rhocs。EM 还保留原始物种表数值、wps2,lmdT,betasz,betasp,vA,cS,wci,wpi,cwp,vAwp,c2,epsilon0,mu0,kB。binary64 数组保持原物种表的行形状。",
      "dtype": "映射",
-     "constraints": "binary64 数组保持binary64 行形状；应使用具名字段，不推断位置尺度。"
+     "constraints": "binary64 数组保持原物种表的行形状；应使用具名字段，不推断位置尺度。"
     },
     {
      "name": "receipt",
-     "description": "已执行原生关系的不可变 Python 执行回执；执行元数据与科学有效性分开记录。",
+     "description": "已执行纯 Python 算子后生成的不可变 Python 执行回执；执行来源信息与科学有效性分开记录。",
      "dtype": "Python 执行回执 对象",
      "constraints": "执行记录本身不能证明科学有效性。"
     }
@@ -914,7 +914,7 @@
      "组成输入须有限且能由已声明的数值端口表示。"
     ],
     "supported": [
-     "正值双 Maxwell 物种；含平行漂移。",
+     "正值双 Maxwellian 物种；含平行漂移。",
      "ES3D／EM 的有符号磁化场。"
     ],
     "excluded": [
@@ -923,7 +923,7 @@
    },
    "failure_semantics": {
     "invalid_input": "非法模型／物种表、非物理电荷／质量／密度／温度、磁化 B0=0 或不可表示的 float64 输入触发 ValueError。",
-    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到源运行时、代码检出目录或网络。",
+    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到来源运行时、本地源码目录或网络。",
     "nonconvergence": "派生平衡尺度非有限时触发 FloatingPointError；不使用求根器。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
@@ -931,26 +931,26 @@
     "scope": [
      "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
      "示例仅运行一个有界代表用例，不把适用范围扩展到所声明的前置条件之外。",
-     "纯 Python 执行需要 Linux amd64 上的 Octave（不再需要）（不再需要）（不再需要）；本机状态为 NOT_RUN。"
+     "纯 Python 实现可直接在 macOS 上运行，无需所声明的本地 Python 运行时。"
     ],
     "known_limitations": [
-     "参考材料的再分发许可未核实；MATLAB 执行状态为 NOT_RUN。",
+     "原始许可未核实；MATLAB 执行状态为 NOT_RUN。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
-     "本机上的原生 GNU Octave（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）/Linux 执行状态为 NOT_RUN。"
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
+     "来源运行时执行不在本纯 Python 实现范围内。"
     ],
-    "evidence_ceiling": "直接测试在其实际运行的范围内确立所声明的合同；由于本 macOS 主机上没有 Linux amd64 的 GNU Octave（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）（不再需要），原生示例与原生验收仍为 NOT_RUN。不由此推断发布许可或人工科学认可。"
+    "evidence_ceiling": "直接测试在其实际运行范围内确立所声明的合同；纯 Python 示例与有界验收在本次 macOS 主机上运行。不由此推断发布许可或人工科学认可。"
    },
    "example": {
     "description": "通过纯 Python 平衡算子转换代表性物种表。",
-    "expected": "通过：使用 .venv/bin/python 在 macOS 计算声明的状态，不需要 GNU Octave。"
+    "expected": "通过：使用 .venv/bin/python 在 macOS 计算所声明的状态，无需所声明的本地 Python 运行时。"
    }
   },
   {
    "asset_id": "scirel.kinetic.rational-jpole-coefficients",
    "source_sha256": "0fd3430df788e5c18750306ea8d1a4159901bb78836e529c9e357f8d3bd179a2",
-   "summary": "在声明的十进制精度下求解 Maxwell 分布的 Taylor／渐近匹配方程，细化单根并计算留数。",
+   "summary": "在声明的十进制精度下求解 Maxwellian 分布的 Taylor／渐近匹配方程，细化单根并计算留数。",
    "definition": "I+K=2J；Mpq*pq=B 匹配 Taylor 系数与逆幂系数。留数 b=P(c)/Qprime(c)。80/120 位精度细化及独立 erfc 响应检查与矩阵调理分别记录。数值端口仍为 complex128；构造字符串保留更高精度。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
@@ -983,103 +983,103 @@
      "name": "J",
      "description": "单极点数量。",
      "dtype": "整数（int）",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "I",
      "description": "Taylor 匹配方程数量。",
      "dtype": "整数（int）",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "K",
      "description": "逆幂匹配方程数量 2*J-I。",
      "dtype": "整数（int）",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "precision_digits",
      "description": "构造系数与根时使用的十进制精度。",
      "dtype": "整数（int）",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "bzj",
      "description": "按细化后极点次序排列的单极点留数。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "czj",
      "description": "细化后的单极点，以 binary64 表示。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "p",
      "description": "按多项式降幂排列的分子系数。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "q",
      "description": "按多项式降幂排列的分母系数。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "pq",
      "description": "降幂重排前，已求解的双侧系数向量。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "Mpq",
      "description": "双侧匹配线性系统矩阵。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "B",
      "description": "匹配系统右端项。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "moments",
      "description": "以 binary64 计算的和 sum(b),sum(b*c),sum(b*c*c)。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "high_precision_linear_residual",
      "description": "归一化匹配系统残差，以十进制字符串给出。",
      "dtype": "字符串（str）",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "high_precision_root_residual",
      "description": "每个细化极点的归一化多项式残差。字符串保留构造精度，独立于 binary64 数值端口。",
      "dtype": "字符串列表 list[str]",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "high_precision_poles",
      "description": "具有声明十进制精度的复细化极点。字符串保留构造精度，独立于 binary64 数值端口。",
      "dtype": "字符串列表 list[str]",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "high_precision_residues",
      "description": "具有声明十进制精度的复单极点留数。字符串保留构造精度，独立于 binary64 数值端口。",
      "dtype": "字符串列表 list[str]",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "precision_claim",
      "description": "构造精度与另行给出的近似适用性限制。",
      "dtype": "字符串（str）",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     }
    ],
    "applicability": {
@@ -1109,8 +1109,8 @@
     "known_limitations": [
      "参考材料的再分发许可未核实；MATLAB 执行状态为 NOT_RUN。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
      "示例输出是有界的运行时观察结果，不是普适的科学结论。"
     ],
     "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
@@ -1178,22 +1178,22 @@
    },
    "verification": {
     "scope": [
-     "在没有代码检出的环境中安装自身科学包；具有精确的包／资源闭包。",
-     "全部 12 个 API，以及独立标准样例和独立留出响应、坐标轴与有符号波矢门禁。",
-     "完整垂直 ES3D N10/J8 原始默认 50 点，含独立弱系数与 Decimal 偏移检查。"
+     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
+     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
+     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
     ],
     "known_limitations": [
-     "参考材料的再分发授权仍未解决；原生 MATLAB/Octave 执行状态为 NOT_RUN。",
+     "参考材料的再分发授权仍未解决；原生 MATLAB／参考运行时执行为 NOT_RUN。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
-     "原生示例与完整原生路径的资格验证需要 Linux amd64 上的 Octave；本机未运行。"
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
+     "原生示例与完整原生路径的资格验证需要 Linux amd64 上声明的本地 Python 运行时；本机（macOS）未运行。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；原生执行需要 Linux amd64 上的 GNU Octave，在本次 macOS 检出中状态为 NOT_RUN。"
+    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；原生参考运行时执行需要 Linux amd64 上声明的本地 Python 运行时，在本次 macOS 检出中为 NOT_RUN。"
    },
    "example": {
     "description": "在复自变量处计算一个有限单极点有理项。",
-    "expected": "通过：使用 .venv/bin/python 运行完成；对单极点样例，ZJ 精确等于 -1/(1+2j)。该样例只验证单极点情形，不证明 Maxwell 近似的精度。"
+    "expected": "通过：使用 .venv/bin/python 运行完成；对单极点样例，ZJ 精确等于 -1/(1+2j)。该样例只验证单极点情形，不证明 Maxwellian 近似的精度。"
    }
   },
   {
@@ -1213,11 +1213,11 @@
      "name": "state",
      "description": "无量纲 x,y,z 数组，各为 (101,101)：由 x=-5:0.1:5 与 y=-3:0.08:5 构成 ndgrid，z=x+1i*y。第一索引沿实 x 变化，第二索引沿虚 y 变化。",
      "dtype": "映射",
-     "constraints": "保留完整的原生 ndgrid 方向。此历史诊断网格不是声明的近似有效域。"
+     "constraints": "保留完整的 NumPy ndgrid 方向。此历史诊断网格不是声明的近似有效域。"
     },
     {
      "name": "receipt",
-     "description": "已执行原生关系的不可变 Python 执行回执；执行元数据与科学有效性分开记录。",
+     "description": "已执行纯 Python 算子后生成的不可变 Python 执行回执；执行来源信息与科学有效性分开记录。",
      "dtype": "Python 执行回执 对象",
      "constraints": "执行记录本身不能证明科学有效性。"
     }
@@ -1234,25 +1234,25 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "没有调用者科学输入；随包原生网格执行错误仍可观察。",
-    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到源运行时、代码检出目录或网络。",
+    "invalid_input": "没有调用者科学输入；随包网格构造错误仍可观察。",
+    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到来源运行时、本地源码目录或网络。",
     "nonconvergence": "不执行收敛迭代，也不声称近似有效。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
    "verification": {
     "scope": [
-     "在没有代码检出的环境中安装自身科学包；具有精确的包／资源闭包。",
-     "全部 12 个 API，以及独立标准样例和独立留出响应、坐标轴与有符号波矢门禁。",
-     "完整垂直 ES3D N10/J8 原始默认 50 点，含独立弱系数与 Decimal 偏移检查。"
+     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
+     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
+     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
     ],
     "known_limitations": [
-     "参考材料的再分发授权仍未解决；原生 MATLAB/Octave（不再需要）（不再需要）（不再需要） 执行状态为 NOT_RUN。",
+     "参考材料的再分发授权仍未解决；纯 Python 实现不执行来源运行时。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
-     "原生示例与完整纯 Python 路径的资格验证需要 Linux amd64 上的 Octave（不再需要）（不再需要）（不再需要）；本机未运行。"
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
+     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行需要 Linux amd64 上的 GNU Octave（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）（不再需要），在本次 macOS 检出中直接运行。"
+    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 实现在本次 macOS 检出中已验证。"
    },
    "example": {
     "description": "使用 NumPy 构造声明的 101x101 诊断网格。",
@@ -1262,7 +1262,7 @@
   {
    "asset_id": "scirel.kinetic.rational-point-matrix",
    "source_sha256": "947de36821598db1c6fb44d9a30eb1a1fe72130db7af24e0651e2701f6ed113a",
-   "summary": "组装 ES1D 频率矩阵、修正后的 ES3D 有限 Harris 描述子系数，或具有因果有符号波矢与精确轴极限的 EM Maxwell 矩阵铅笔。",
+   "summary": "组装 ES1D 频率矩阵、修正后的 ES3D 有限 Harris 描述子系数，或具有因果有符号波矢与精确轴极限的 EM Maxwell 矩阵束。",
    "definition": "ES3D 中 D(omega)=a+sum B/(omega-C)；既有普通本征问题 a*diag(C)-B*ones 的本征值缩放错误。EM 精确垂直响应包含完整 Maxwell 常数；均匀零波矢冷回旋响应在解析上不依赖谐波截断。负 k/kz 选择满足因果性的 Z 极点。压缩极点铅笔保留 E/B 可观测量；辅助变量别名不是物理波。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
@@ -1313,11 +1313,11 @@
      "name": "state",
      "description": "模型专用科学数值状态，含具名物理尺度或系数字段。",
      "dtype": "映射",
-     "constraints": "binary64 数组保持binary64 行形状；应使用具名字段，不推断位置尺度。"
+     "constraints": "binary64 数组保持原物种表的行形状；应使用具名字段，不推断位置尺度。"
     },
     {
      "name": "receipt",
-     "description": "原生 ES1D／ES3D 和斜传播 EM 路径返回 Python 执行回执；解析精确垂直或均匀 EM 分派返回元数据映射。",
+     "description": "纯 Python 的 ES1D／ES3D 与斜传播 EM 路径返回 Python 执行回执；解析精确垂直或均匀 EM 分派返回元数据映射。",
      "dtype": "Python 执行回执 | 映射",
      "constraints": "执行记录本身不能证明科学有效性。"
     }
@@ -1337,34 +1337,34 @@
    },
    "failure_semantics": {
     "invalid_input": "非法模型、缺少分支必需标量、非有限／不可表示坐标、非整数／负 N、ES1D k=0 或 ES3D 总零波矢触发 ValueError；不完整状态可触发 KeyError。",
-    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到源运行时、代码检出目录或网络。",
+    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到来源运行时、本地源码目录或网络。",
     "nonconvergence": "组装／辅助计算的算术错误向上传播；此操作不求解根，也不认证根。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
    "verification": {
     "scope": [
-     "在没有代码检出的环境中安装自身科学包；具有精确的包／资源闭包。",
-     "全部 12 个 API，以及独立标准样例和独立留出响应、坐标轴与有符号波矢门禁。",
-     "完整垂直 ES3D N10/J8 原始默认 50 点，含独立弱系数与 Decimal 偏移检查。"
+     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
+     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
+     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
     ],
     "known_limitations": [
-     "参考材料的再分发授权仍未解决；原生 MATLAB/Octave（不再需要）（不再需要）（不再需要） 执行状态为 NOT_RUN。",
+     "参考材料的再分发授权仍未解决；纯 Python 实现不执行来源运行时。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
-     "原生示例与完整纯 Python 路径的资格验证需要 Linux amd64 上的 Octave（不再需要）（不再需要）（不再需要）；本机未运行。"
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
+     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行需要 Linux amd64 上的 GNU Octave（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）（不再需要），在本次 macOS 检出中直接运行。"
+    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行在本次 macOS 检出中运行，无需所声明的本地 Python 运行时。"
    },
    "example": {
     "description": "通过纯 Python 算子组装代表性的 ES1D 频率矩阵。",
-    "expected": "通过：使用 .venv/bin/python 在 macOS 组装有界矩阵，不需要 GNU Octave。"
+    "expected": "通过：使用 .venv/bin/python 在 macOS 组装有界矩阵，无需所声明的本地 Python 运行时。"
    }
   },
   {
    "asset_id": "scirel.kinetic.rational-pole-table",
    "source_sha256": "4f13a75a3524d586f813323c11bbe597e3f639f4ed3c983fa819788c3991eb31",
-   "summary": "使用纯 Python 选择显式的极点表族与变体；J12 使用对双侧 Padé 方程的高精度重构。",
+   "summary": "选择显式的极点表族与变体；J12 使用对双侧 Padé 方程的高精度重构。",
    "definition": "Z_J(z)=sum_j b_j/(z-c_j)。低阶族沿用其声明的系数表次序；重新生成的 J12 是有意的数值修正，不是历史数值的逐值复制。",
    "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
    "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
@@ -1375,13 +1375,13 @@
    "inputs": [
     {
      "name": "model",
-     "description": "用于选择旧实现表族的模型。",
+     "description": "用于选择历史表族的模型。",
      "dtype": "字符串（str）",
      "constraints": "取 es1d、es3d、em 之一；选择对应的显式家族系数表。"
     },
     {
      "name": "J",
-     "description": "Maxwell 分布的有理极点数量。",
+     "description": "Maxwellian 分布的有理极点数量。",
      "dtype": "整数",
      "constraints": "ES1D 支持 J=2,3,4,8,12；ES3D 与 EM 支持 J=4,8,12。不支持的阶数直接失败，不回退。"
     },
@@ -1395,13 +1395,13 @@
    "outputs": [
     {
      "name": "state",
-     "description": "无量纲状态：J 是原生 (1,1) 标量；bzj 和 czj 是按所选表次序排列的复数 (1,J) 行。",
+     "description": "无量纲状态：J 是 binary64 的 (1,1) 标量；bzj 和 czj 是按所选表次序排列的复数 (1,J) 行。",
      "dtype": "映射",
-     "constraints": "保留binary64 行形状。选择系数表本身不证明近似误差或物理模态正确。"
+     "constraints": "保留 binary64 行形状。选择系数表本身不证明近似误差或物理模态正确。"
     },
     {
      "name": "receipt",
-     "description": "已执行原生关系的不可变 Python 执行回执；执行元数据与科学有效性分开记录。",
+     "description": "已执行纯 Python 算子后生成的不可变 Python 执行回执；执行来源信息与科学有效性分开记录。",
      "dtype": "Python 执行回执 对象",
      "constraints": "执行记录本身不能证明科学有效性。"
     }
@@ -1421,28 +1421,28 @@
    },
    "failure_semantics": {
     "invalid_input": "非法模型、不支持的 J 或非法 ES1D opt 触发 ValueError。",
-    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到源运行时、代码检出目录或网络。",
+    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到来源运行时、本地源码目录或网络。",
     "nonconvergence": "不进行迭代系数构造；访问固定系数表不证明近似精度。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
    "verification": {
     "scope": [
-     "在没有代码检出的环境中安装自身科学包；具有精确的包／资源闭包。",
-     "全部 12 个 API，以及独立标准样例和独立留出响应、坐标轴与有符号波矢门禁。",
-     "完整垂直 ES3D N10/J8 原始默认 50 点，含独立弱系数与 Decimal 偏移检查。"
+     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
+     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
+     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
     ],
     "known_limitations": [
-     "参考材料的再分发授权仍未解决；原生 MATLAB/Octave（不再需要）（不再需要）（不再需要） 执行状态为 NOT_RUN。",
+     "参考材料的再分发授权仍未解决；纯 Python 实现不执行来源运行时。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
-     "原生示例与完整纯 Python 路径的资格验证需要 Linux amd64 上的 Octave（不再需要）（不再需要）（不再需要）；本机未运行。"
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
+     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行需要 Linux amd64 上的 GNU Octave（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）（不再需要），在本次 macOS 检出中直接运行。"
+    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 实现在本次 macOS 检出中已验证。"
    },
    "example": {
     "description": "通过纯 Python 算子选择声明的 Maxwell 极点表。",
-    "expected": "通过：使用 .venv/bin/python 在 macOS 运行，不需要 GNU Octave。"
+    "expected": "通过：使用 .venv/bin/python 在 macOS 运行，无需所声明的本地 Python 运行时。"
    }
   },
   {
@@ -1493,7 +1493,7 @@
      "name": "omega",
      "description": "ES1D／EM 的原始 d 别名；一般 ES3D 为按增长率排序的已接受根；垂直 ES3D 为舍入成 binary64 的实根。",
      "dtype": "complex128 数组",
-     "constraints": "成功完成后返回；此诊断本身不独立证明物理适用性。"
+     "constraints": "成功完成后返回；该输出本身不独立证明物理适用性。"
     },
     {
      "name": "d",
@@ -1534,7 +1534,7 @@
     {
      "name": "wg",
      "description": "增长率优先的根 w[0]；即使稠密求解也返回。",
-     "dtype": "complex128 数组",
+     "dtype": "complex128 标量",
      "constraints": "仅 ES1D／EM 提供；原始本征对诊断使用 d/V 列次序，不使用增长率排序次序。"
     },
     {
@@ -1576,7 +1576,7 @@
     {
      "name": "constant",
      "description": "系数验证后的无量纲常数。",
-     "dtype": "complex128 数组",
+     "dtype": "complex128 标量",
      "constraints": "一般 ES3D 描述子／常数分支提供；精确垂直 ES3D 不提供。"
     },
     {
@@ -1781,24 +1781,24 @@
    },
    "failure_semantics": {
     "invalid_input": "非法模型、非方阵／非有限 ES1D／EM 矩阵、不支持的 sp、非法稀疏 nw 或移位触发 ValueError；ES3D 要求完整的系数／载体状态。",
-    "runtime_failure": "SciPy eig/eigs 与 Python 依赖错误向上传播；此操作不产生原生回执。",
+    "runtime_failure": "SciPy eig/eigs 与 Python 依赖错误向上传播；此操作返回 Python 执行回执。",
     "nonconvergence": "后向残差或描述子／交错资格检查失败时抛出 ArithmeticError。一般 ES3D 的有限模态被拒绝时，错误附带诊断。不静默接受失败模态。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
    "verification": {
     "scope": [
-     "在没有代码检出的环境中安装自身科学包；具有精确的包／资源闭包。",
-     "全部 12 个 API，以及独立标准样例和独立留出响应、坐标轴与有符号波矢门禁。",
-     "完整垂直 ES3D N10/J8 原始默认 50 点，含独立弱系数与 Decimal 偏移检查。"
+     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
+     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
+     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
     ],
     "known_limitations": [
-     "参考材料的再分发授权仍未解决；原生 MATLAB/Octave（不再需要）（不再需要）（不再需要） 执行状态为 NOT_RUN。",
+     "参考材料的再分发授权仍未解决；纯 Python 实现不执行来源运行时。",
      "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍保留为失败记录；精确轴／直接响应门禁另行取得资格。",
-     "人工科学认可与绘图认可仍待完成。",
-     "原生示例与完整纯 Python 路径的资格验证需要 Linux amd64 上的 Octave（不再需要）（不再需要）（不再需要）；本机未运行。"
+     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "人工科学认可与绘图验收仍待完成。",
+     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行需要 Linux amd64 上的 GNU Octave（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）（不再需要），在本次 macOS 检出中直接运行。"
+    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 实现在本次 macOS 检出中已验证。"
    },
    "example": {
     "description": "通过纯 Python 算子求解代表性的有理描述子。",
@@ -1809,7 +1809,7 @@
    "asset_id": "scirel.kinetic.rational-z-poles",
    "source_sha256": "0cd02d2a7d5f5999eb2de467a684fccc8af4a05f92c8acf8d365aa9a25b365ac",
    "summary": "返回有序 J4/J8 表，或精度修正后的 J12/I16/K8 极点－留数表。",
-   "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j])；成对系数表在原生精度内满足 sum b=-1,sum bc=0,sum bc^2=-1/2。J12 以 80 位精度重新生成所规定的 Padé 关系，并在舍入为 binary64 前与 120 位构造核对；J4/J8 表值按给定值保留。",
+   "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j])；成对系数表在 binary64 精度内满足 sum b=-1,sum bc=0,sum bc^2=-1/2。J12 以 80 位精度重新生成所规定的 Padé 关系，并在舍入为 binary64 前与 120 位构造核对；J4/J8 表值按给定值保留。",
    "model": "用于磁化动理学响应的显式有理近似或双高斯表示。",
    "boundary": "均匀或局部的平面波响应；不求解空间边值问题或非线性饱和。",
    "assumptions": [
@@ -1829,13 +1829,13 @@
      "name": "bzj",
      "description": "有序复留数。",
      "dtype": "complex128 数组",
-     "constraints": "可从返回的 算子结果.state 访问；科学含义只适用于兼容且已完成的前驱。非活动空数组原样保留。"
+     "constraints": "可从返回的算子结果 state 字段访问；科学含义只适用于兼容且已完成的先前结果。非活动的空数组原样保留。"
     },
     {
      "name": "czj",
      "description": "有序的下半平面复极点。",
      "dtype": "complex128 数组",
-     "constraints": "可从返回的 算子结果.state 访问；科学含义只适用于兼容且已完成的前驱。非活动空数组原样保留。"
+     "constraints": "可从返回的算子结果 state 字段访问；科学含义只适用于兼容且已完成的先前结果。非活动的空数组原样保留。"
     }
    ],
    "applicability": {
@@ -1851,7 +1851,7 @@
    },
    "failure_semantics": {
     "invalid_input": "声明的 Python 检查抛出 ValueError；不支持的 J 会直接拒绝，不回退到其他表。",
-    "runtime_failure": "纯 Python 数值错误带上下文传播；不启动 Octave 或源运行时进程。",
+    "runtime_failure": "纯 Python 数值错误带上下文传播；不调用参考运行时或来源运行时进程。",
     "nonconvergence": "固定表查找不执行迭代求根；J12 构造由独立的纯 mpmath Padé 算子验证。",
     "partial_results": "校验或表读取失败时不返回部分结果。"
    },
@@ -1865,13 +1865,13 @@
      "有限谐波 N 与有理极点 J 近似在进入新的物理参数区间时，需要独立的收敛性检查。",
      "通过有限范围内的响应、状态和后向误差测试，不代表物理模态跟踪唯一、全部根的前向精度合格或视觉验收通过。",
      "下半平面极点定义一种有理近似；有界上半平面响应测试不能证明其全局强阻尼精度。",
-     "原生示例与完整纯 Python 路径的资格验证需要 Linux amd64 上的 Octave（不再需要）（不再需要）（不再需要）；本机未运行。"
+     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行需要 Linux amd64 上的 GNU Octave（不再需要）（不再需要）（不再需要）（不再需要）（不再需要）（不再需要），在本次 macOS 检出中直接运行。"
+    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 执行在本次 macOS 检出中运行，无需所声明的本地 Python 运行时。"
    },
    "example": {
     "description": "返回纯 Python J-pole 表并检查其矩。",
-    "expected": "通过：使用 .venv/bin/python 返回声明的表，不需要 GNU Octave。"
+    "expected": "通过：使用 .venv/bin/python 返回声明的表，无需所声明的本地 Python 运行时。"
    }
   }
  ]
