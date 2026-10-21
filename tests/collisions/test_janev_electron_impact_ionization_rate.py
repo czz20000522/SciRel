@@ -64,3 +64,17 @@ def test_nonreal_temperature_fails_closed(temperature):
 def test_invalid_target_fails_closed(target_species):
     with pytest.raises(ValueError, match="target_species"):
         evaluate_janev_electron_impact_ionization_rate(10.0, target_species)
+
+
+def test_fit_peak_locations_are_documented_limitations():
+    """AUDIT-D5: the fits have single maxima; pin their positions.
+
+    Peak locations are fit properties, not independently validated thresholds.
+    """
+    temperature = np.geomspace(0.1, 2.01e4, 2000)
+    for species, expected in (("H", 137.0), ("H2", 155.0)):
+        rate = evaluate_janev_electron_impact_ionization_rate(temperature, species)
+        peak = float(temperature[int(np.argmax(rate))])
+        assert abs(peak - expected) <= 3.0
+        assert np.count_nonzero(
+            (rate[1:-1] > rate[:-2]) & (rate[1:-1] > rate[2:])) == 1

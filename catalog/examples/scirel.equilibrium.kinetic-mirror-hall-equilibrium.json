@@ -163,10 +163,10 @@
    "description": "Fixed or state-dependent Hall active-cell policy.",
    "units": "boolean",
    "shape": "[N_Z,N_R], callable(B,psi)->[N_Z,N_R], or null",
-   "dtype": "boolean array-like, callable or None",
+   "dtype": "boolean array, callable returning boolean array, or None",
    "required": false,
    "default": null,
-   "constraints": "Null selects all cells; fixed and callable masks must match the grid."
+   "constraints": "Null selects all cells; fixed/callable masks must match the grid shape and use true boolean dtype; integer/float masks are rejected without coercion."
   },
   {
    "name": "hall_multiplier",

@@ -294,6 +294,13 @@ class FirstClampedCubicSpline(CubicSpline):
 
     def __init__(self, x_data, y_data, yp=0, m=0):
         CubicSpline.__init__(self, x_data, y_data)
+        if not np.isfinite(yp) or not np.isfinite(m):
+            raise ValueError("yp and m must be finite")
+        if not self.x_data[-1] > 0.0:
+            raise ValueError(
+                "x_data[-1] must be positive: the cylindrical Robin boundary "
+                "divides by the last knot"
+            )
         h = self.d_x
         delta = self.d_y
         x_last = self.x_data[-1]

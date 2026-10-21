@@ -208,3 +208,26 @@ def test_reduced_hall_terminal_floor_precedes_terminal_closure():
         )
     assert calls['field'] == 2
     assert calls['closure'] == 1
+
+
+def test_reduced_hall_rejects_nonboolean_fixed_and_callable_masks():
+    with pytest.raises(ValueError, match='boolean array'):
+        composition.run_composition(
+            _inputs(plasma_mask=np.ones((7, 7), dtype=int)), asset_loader=_loader
+        )
+
+    def nonboolean_callable(_b, psi):
+        return np.ones_like(psi, dtype=int)
+
+    with pytest.raises(ValueError, match='callable plasma_mask.*boolean'):
+        composition.run_composition(
+            _inputs(plasma_mask=nonboolean_callable, maxiter=1), asset_loader=_loader
+        )
+
+    def boolean_callable(_b, psi):
+        return np.ones_like(psi, dtype=bool)
+
+    result = composition.run_composition(
+        _inputs(plasma_mask=boolean_callable, maxiter=1), asset_loader=_loader
+    )
+    assert result['J_phi'].shape == (7, 7)

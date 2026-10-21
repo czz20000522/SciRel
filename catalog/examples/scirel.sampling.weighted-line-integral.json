@@ -67,7 +67,7 @@
    "shape": "same as Rho",
    "dtype": "float64",
    "required": true,
-   "constraints": "Finite and positive on sampled path"
+   "constraints": "Finite and strictly positive on the sampled path; nonpositive or nonfinite interpolated values are rejected before quadrature"
   },
   {
    "name": "flpoints",
@@ -115,7 +115,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; nonpositive or nonfinite interpolated B and nonfinite Q are rejected before quadrature; no input repair is inferred.",
   "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
@@ -149,7 +149,8 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Rejection of nonpositive or nonfinite B before quadrature."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py"

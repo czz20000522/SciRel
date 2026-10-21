@@ -1105,13 +1105,14 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "f625130dd89f455a83865782eeae5d633723e50ed5002c610eb93c8500ec1299",
+   "source_sha256": "d50a489516e1f21f34fd3c1348d86e5bcdcfb4baa584e537afc53dd814c9295a",
    "summary": "离子-离子库仑对数估计。",
    "verification": {
-    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
+    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。NRL 归属未获独立验证；独立转写相差 lnΛ 常数 +0.4388，仅记录供 owner 复核，不改变公式。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
-     "仅覆盖 Sauter/NRL 代数和声明的数值边界。"
+     "仅覆盖 Sauter/NRL 代数和声明的数值边界。",
+     "该表达式标注为 Sauter/NRL，但未绑定参考。独立转写的 NRL 2013 Eq. c 在 (T, n, Z) 探针上相差 lnΛ 常数 +0.4388。它究竟是另一种已文档化近似，还是 NRL 归属需要更正，属于 owner 决策；本合同的公式保持不变。"
     ],
     "scope": [
      "以独立 60 位 Decimal 对数覆盖温度、密度、电荷的最小次正规数至最大 float64，并检查电荷缩放恒等式。",

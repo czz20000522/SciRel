@@ -230,6 +230,8 @@ def test_review_gate_rejects_invalid_closure_fields_and_mask_shape():
     values = _inputs()
     with pytest.raises(ValueError, match="plasma_mask.*same shape"):
         _run({**values, "plasma_mask": np.ones((2, 2), dtype=bool)})
+    with pytest.raises(ValueError, match="plasma_mask.*boolean array"):
+        _run({**values, "plasma_mask": np.ones(values["r_grid"].shape, dtype=int)})
 
 
 def test_review_gate_terminal_outputs_share_the_returned_state():

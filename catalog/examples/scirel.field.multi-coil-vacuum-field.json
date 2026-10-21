@@ -162,7 +162,8 @@
    "Current-versus-filament-weight semantics.",
    "Missing current and invalid grid failures.",
    "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields.",
-   "Fixed Pleiades two-coil reference values and, when the external truth artifact is present, the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py."
+   "Fixed Pleiades two-coil reference values and, when the external truth artifact is present, the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py.",
+   "scripts/build_pleiades_truth.py regenerates the same external Pleiades truth from a caller-supplied source checkout; the fixed reference constants remain resident and the full-array comparison skips when the generated artifact is absent."
   ],
   "tests": [
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",

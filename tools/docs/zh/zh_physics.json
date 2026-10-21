@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-   "source_sha256": "bf2a4bb5398585fee78df8f7bb400dc61077dce48100a3e386c9af0c9b11e044",
+   "source_sha256": "e8e1ad84c26ccb5f2d32ec8618643199dc2ab3a3166cf043001af89c09189a6d",
    "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通和对应磁场导数共同更新，以全部未松弛反馈状态残差及平行力相容性决定收敛。",
    "definition": "当前 psi、BR、BZ 上重求确定性压力闭合与环向电流，按节点梯形或显式单元边界积分并松弛电流后投影 Green 场。缺少场 Green 对时对新增磁通求场导数，墙分支同步加墙磁通及离散场。判停要求 psi、BR、BZ 和电流的未松弛目标全部闭合，返回态再重求闭合、电流及力相容性；零步不声称收敛。",
    "model": "外供 N4 压力闭合和可选线性理想导体壁修正的轴对称旋磁压力 Picard 组合。",
@@ -318,7 +318,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺端口、非法网格/掩码/控制/参数/闭合输出或不完整壁配置抛 ValueError；依赖错误继续抛出；此实现先验证网格和掩码再检查必要端口；位置参数非映射时组合层抛 TypeError。",
+    "invalid_input": "缺端口、非法网格/非布尔或错形掩码/控制/参数/闭合输出或不完整壁配置抛 ValueError；依赖错误继续抛出；此实现先验证网格和掩码再检查必要端口；位置参数非映射时组合层抛 TypeError。",
     "runtime_failure": "回调及依赖错误传播；初态、中间态和返回态均在每次闭合/电流求值前检查 B>=minimum_field，违例抛 FloatingPointError；strict_compatibility=true 的返回平行力不相容抛 ValueError。物理 Green/墙模型须另有依据。",
     "nonconvergence": "最多 maxiter 更新后若完整固定点或力相容性未通过，返回 converged=false 和明确原因；最后允许更新恰通过仍可 converged=true。零步末态评估后 residual=inf、空记录且不声称收敛。",
     "partial_results": "异常不返回映射；有界不收敛返回完整末态，不抛异常。"
@@ -1918,7 +1918,7 @@
   },
   {
    "asset_id": "scirel.closures.reduced-hall-drift",
-   "source_sha256": "19615da668fa9809a831461edb9c91fac3cb31107f2e9b16d0779ab9894c4753",
+   "source_sha256": "c1e1db7e376a8b422080a4cb2f9158c72ad388724d1ee4d47bd1d6160d3284d2",
    "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。",
    "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。",
    "model": "约化轴对称 Hall 漂移与旋磁对称压强，可选局部环向惯性修正，不是无限制的双流体解。",
@@ -1974,7 +1974,7 @@
     {
      "name": "plasma_mask",
      "description": "电流与 Hall 支持区掩码。",
-     "constraints": "同网格；掩码外 J_phi=0，Hall 还排除轴、低密度及不可解析场。",
+     "constraints": "同网格且必须是真正的布尔 dtype；掩码外 J_phi=0；整数/浮点数组直接拒绝、不做转换。Hall 还排除轴、低密度及不可解析场。",
      "dtype": "布尔数组"
     },
     {
@@ -2338,7 +2338,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "无效质量、电荷或标量控制、非布尔惯性开关、错误 R-Z 网格、非有限或不匹配的场/压强数组、错误形状掩码、缺失或非有限必需 closure_state 字段、负密度或负电子/可选离子压强分量时抛出 ValueError。部分格式错误的可选状态数组可能传播 NumPy 广播错误。负主总压强或不一致的 species_sum 状态会被拒绝。",
+    "invalid_input": "无效质量、电荷或标量控制、非布尔惯性开关、错误 R-Z 网格、非有限或不匹配的场/压强数组、错误形状或非布尔掩码、缺失或非有限必需 closure_state 字段、负密度或负电子/可选离子压强分量时抛出 ValueError。部分格式错误的可选状态数组可能传播 NumPy 广播错误。负主总压强或不一致的 species_sum 状态会被拒绝。",
     "runtime_failure": "惯性超出步数上限抛 RuntimeError，其他运算/转换异常传播；极端有限输入不保证诊断仍有限。",
     "nonconvergence": "启用惯性时未达到未松弛映射残差门槛就抛 RuntimeError，不返回部分状态。",
     "partial_results": "异常不返回映射；成功返回 inertia_converged=True，包括不启用惯性的分支。"
@@ -4032,7 +4032,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-   "source_sha256": "b7cc62cc9dfab86c8d8d2e14a133ffc2574548c9b98ffa57c9480e35af03ef46",
+   "source_sha256": "798a7ff1d2ff8d4fd35a987e7b9f43f7c322a8d6e96d449390474126259f6e96",
    "summary": "将网格镜动力学闭合接入约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
    "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代，并在终末动力学闭合前检查场下限，然后重算终末动力学状态。",
    "model": "轴对称网格镜端损失/准中性动力学闭合与约化 Hall 各向异性 Picard 反馈的组合。",
@@ -4118,8 +4118,8 @@
     {
      "name": "plasma_mask",
      "description": "Hall 固定或状态相关活跃网格策略。",
-     "constraints": "默认 None 选全网格；固定或 callable(B,psi) 返回掩码须同网格。",
-     "dtype": "布尔数组、callable 或 None"
+     "constraints": "默认 None 选全网格；固定或 callable(B,psi) 返回掩码须同网格且为真正 bool；整数/浮点掩码直接拒绝、不做转换。",
+     "dtype": "布尔数组、返回布尔数组的 callable 或 None"
     },
     {
      "name": "hall_multiplier",
@@ -6135,7 +6135,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-   "source_sha256": "baff958d2dd7252c8137abe8fb08314bfb6bb520a938b2c9355b65a7314fc737",
+   "source_sha256": "0d5c1ba1ef1e84dfb0784f37f5f5e517be200e59a16f69cadec52f23c11bf134",
    "summary": "将调用者压强闭合、约化 Hall 漂移/电流和稠密 Green 更新连接为轴对称磁通迭代，重算终末状态并返回收敛与相容性诊断。",
    "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。停止条件为 relative_psi_change<=tol 或 maxiter，但输出还提供终末未松弛固定点残差门槛。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点的 firehose 裕度及可选的严格力/欧姆相容性。终末在调用闭合/Hall 之前检查场下限；图级非负压强检查仍不重复，Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
    "model": "由调用者闭合驱动的轴对称约化 Hall、旋磁对称压强 Picard 反馈。",
@@ -6222,8 +6222,8 @@
     {
      "name": "plasma_mask",
      "description": "固定活跃网格或随 B、psi 改变的掩码策略。",
-     "constraints": "默认 None 选全网格；数组或回调结果同形；Hall 漂移另外排除轴、低密度、不可解析场。",
-     "dtype": "布尔数组、Python callable 或 None"
+     "constraints": "默认 None 选全网格；固定数组须精确同形且 dtype 为 bool，回调结果须精确同形且 dtype 为 bool；整数/浮点数组不会被静默转换。Hall 漂移另外排除轴、低密度、不可解析场。",
+     "dtype": "布尔数组、返回布尔数组的 callable 或 None"
     },
     {
      "name": "hall_multiplier",
@@ -6466,7 +6466,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺口、无效网格/Green/回调/控制/掩码或状态抛 ValueError/TypeError，叶与回调异常传播。终末只重复压强形状处理，叶仍拒绝非有限及无效组分；图级网格未拒负 R，但场/Hall 叶会拒绝。",
+    "invalid_input": "缺口、无效网格/Green/回调/控制/非布尔或错形掩码或状态抛 ValueError/TypeError，叶与回调异常传播。终末只重复压强形状处理，叶仍拒绝非有限及无效组分；图级网格未拒负 R，但场/Hall 叶会拒绝。",
     "runtime_failure": "迭代场低于 minimum_field 时在其闭合调用前抛 FloatingPointError。终末活跃 firehose 裕度处于或低于非负 minimum_firehose_margin 时抛 FloatingPointError。终末严格平行力或广义欧姆阈值超限抛 ValueError。Hall 局部惯性不收敛抛 RuntimeError；其他回调或依赖异常继续传播。终末场在调用终末闭合前对照 minimum_field 检查。",
     "nonconvergence": "达到外层 maxiter 后仍终末重算与检查，可返回 converged=False、最后 psi 与记录；局部惯性失败则抛 RuntimeError。",
     "partial_results": "异常后不返回映射；外层有界未收敛可返回通过终末门禁的完整最后状态。"
@@ -9580,7 +9580,7 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "b5a3afb9b3c49189182d68507927f1d6ebd925c5a9af2ba53cf2f6f7ee3779e2",
+   "source_sha256": "5d16011b02095b6ab564ca8f10640a4c2da32ac8a9a234e6eaffa15ee57b0083",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
    "definition": "对每个调用者线圈离散中心、附加权重、计算 Green 响应、收缩一个驱动电流，并重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
@@ -9665,7 +9665,8 @@
      "电流与电流丝权重的区分。",
      "缺失电流和非法网格的失败行为。",
      "不可表示的近导线或大电流响应以失败闭合，而不是返回非有限场。",
-     "固定 Pleiades 双线圈参考值以及存在外部 truth artifact 时的完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 覆盖。"
+     "固定 Pleiades 双线圈参考值以及存在外部 truth artifact 时的完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 覆盖。",
+     "scripts/build_pleiades_truth.py 用调用者提供的外部 Pleiades source checkout 重新生成同一 truth；固定参考常量仍常驻，artifact 缺失时完整数组测试跳过。"
     ],
     "evidence_ceiling": "验证针对声明的轴对称真空电流丝模型和已测输入合同，不证明材料线圈、等离子体响应或三维几何适用性。",
     "known_limitations": [

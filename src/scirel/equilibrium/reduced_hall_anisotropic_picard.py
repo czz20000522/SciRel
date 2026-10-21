@@ -15,6 +15,15 @@ def _coerce_pressure(parallel, perpendicular, psi):
         result.append(values)
     return tuple(result)
 
+def _active_mask(mask_port, fixed_mask, b, psi):
+    """Return the validated active-cell array for one closure evaluation."""
+    if not callable(mask_port):
+        return fixed_mask
+    active = np.asarray(mask_port(b, psi))
+    if active.shape != psi.shape or active.dtype != np.dtype(bool):
+        raise ValueError('callable plasma_mask must return a boolean array with the same shape as the R-Z grid')
+    return active
+
 def run_composition(inputs, *, asset_loader):
     """Iterate magnetic flux, caller-bound kinetic closure, and Hall current."""
     if not isinstance(inputs, dict):
@@ -57,9 +66,14 @@ def run_composition(inputs, *, asset_loader):
     if minimum_field <= 0.0 or not 0.0 <= relax < 1.0 or hall_multiplier < 0.0 or (not 0.0 <= hall_density_floor_fraction < 1.0) or (maximum_inertial_mach <= 0.0) or (not 0.0 <= inertia_relax < 1.0) or (inertia_tolerance <= 0.0) or (compatibility_tol < 0.0) or (ohm_tol <= 0.0):
         raise ValueError('Hall Picard controls are invalid')
     mask_port = inputs.get('plasma_mask')
-    fixed_mask = np.ones_like(r_grid, dtype=bool) if mask_port is None else None if callable(mask_port) else np.asarray(mask_port, dtype=bool)
-    if fixed_mask is not None and fixed_mask.shape != r_grid.shape:
-        raise ValueError('plasma_mask must match the R-Z grid')
+    if mask_port is None:
+        fixed_mask = np.ones_like(r_grid, dtype=bool)
+    elif callable(mask_port):
+        fixed_mask = None
+    else:
+        fixed_mask = np.asarray(mask_port)
+        if fixed_mask.shape != r_grid.shape or fixed_mask.dtype != np.dtype(bool):
+            raise ValueError('plasma_mask must be a boolean array with the same shape as r_grid')
     field = asset_loader('scirel.field.poloidal_field_from_flux')
     drift = asset_loader('scirel.closures.reduced_hall_drift')
     flux_update = asset_loader('scirel.equilibrium.axisymmetric_picard_update')
@@ -76,9 +90,7 @@ def run_composition(inputs, *, asset_loader):
         p_parallel, p_perpendicular = _coerce_pressure(state['p_parallel'], state['p_perpendicular'], psi)
         if not np.all(np.isfinite(p_parallel)) or not np.all(np.isfinite(p_perpendicular)) or np.any(p_parallel < 0.0) or np.any(p_perpendicular < 0.0):
             raise ValueError('pressure_closure returned invalid pressure')
-        active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
-        if active.shape != psi.shape:
-            raise ValueError('callable plasma_mask returned the wrong shape')
+        active = _active_mask(mask_port, fixed_mask, magnetic['B'], psi)
         hall = drift(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], p_parallel, p_perpendicular, state, active, ion_mass, ion_charge, hall_multiplier=hall_multiplier, include_toroidal_inertia=include_toroidal_inertia, hall_density_floor_fraction=hall_density_floor_fraction, maximum_inertial_mach=maximum_inertial_mach, inertia_relax=inertia_relax, inertia_tolerance=inertia_tolerance, inertia_max_iterations=inertia_max_iterations)
         update = flux_update(r_grid, z_grid, hall['J_phi'], psi, psi_vac, g_psi, relax, old_currents, cell_edges=inputs.get('cell_edges'))
         next_psi = update['psi_next']
@@ -95,7 +107,7 @@ def run_composition(inputs, *, asset_loader):
         raise FloatingPointError('Hall terminal magnetic field vanished')
     state = closure(magnetic['B'], psi)
     p_parallel, p_perpendicular = _coerce_pressure(state['p_parallel'], state['p_perpendicular'], psi)
-    active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
+    active = _active_mask(mask_port, fixed_mask, magnetic['B'], psi)
     hall = drift(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], p_parallel, p_perpendicular, state, active, ion_mass, ion_charge, hall_multiplier=hall_multiplier, include_toroidal_inertia=include_toroidal_inertia, hall_density_floor_fraction=hall_density_floor_fraction, maximum_inertial_mach=maximum_inertial_mach, inertia_relax=inertia_relax, inertia_tolerance=inertia_tolerance, inertia_max_iterations=inertia_max_iterations)
     final_update = flux_update(r_grid, z_grid, hall['J_phi'], psi, psi_vac, g_psi, relax, old_currents, cell_edges=inputs.get('cell_edges'))
     cell_currents = final_update['plasma_cell_currents']

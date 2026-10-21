@@ -209,7 +209,7 @@
   },
   {
    "asset_id": "scirel.basis.first-clamped-cubic-spline",
-   "source_sha256": "7b683554822045d512fafba7391fb0cab7cc5eb3906c3aad894ac879dfdce1f1",
+   "source_sha256": "700f6a85b9abd5c137476206b2ac37d3187fe96d6d3cb8610b63dfa38125488a",
    "summary": "使用左端指定一阶导数和柱坐标右端方程的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -223,7 +223,7 @@
     {
      "name": "x_data",
      "description": "插值节点。",
-     "constraints": "有限、严格递增且 N≥3。",
+     "constraints": "有限、严格递增且 N≥3；x_data[-1] 必须为正。",
      "dtype": "float64"
     },
     {
@@ -257,7 +257,7 @@
     "preconditions": [
      "匹配的一维节点和值有限、严格递增，且 N>=3。",
      "数值验证声明仅覆盖节点域内 deriv=0/1/2。",
-     "x_data[-1]>0。"
+     "x_data[-1]>0；非正末端节点在装配边界系统前以 ValueError 拒绝。"
     ],
     "supported": [
      "scirel.geometry.basis 已实现的有限多项式和样条基函数选择。"
@@ -269,7 +269,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对不支持的基函数选择器、非有限或不匹配样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；线性系统失败向上传播。",
+    "invalid_input": "对不支持的基函数选择器、非有限或不匹配样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；非正末端节点 x_data[-1] 在装配边界系统前以 ValueError 拒绝；线性系统失败向上传播。",
     "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常从求值向上传播。",
     "nonconvergence": "不适用；基函数构造和求值是直接计算，不声明迭代收敛。",
     "partial_results": "构造失败时不返回求值器；样条在节点区间外查询遵循实现的置零行为。"
@@ -278,7 +278,8 @@
     "scope": [
      "公共可调用签名及文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
+     "本合同所载可执行示例。",
+     "非正末端节点在边界装配前被拒绝。"
     ],
     "known_limitations": [
      "域外置零，以及 deriv 取 1/2 之外时仍返回值，都属于兼容性约定。",
@@ -1653,11 +1654,11 @@
   },
   {
    "asset_id": "scirel.sampling.rectangular-spline",
-   "source_sha256": "798c1f9586bb432338a3e83946e154b96ddc15d0b58d76cb281bad35b9e1c9ef",
+   "source_sha256": "a8177cf3c7c33fd7afdda51734835f55babc4786ef1ad46c5cb295a677bcb412",
    "summary": "在有序路径顶点处求双三次矩形场插值。",
    "definition": "在有序路径顶点处求双三次矩形场插值。",
    "model": "采用原实现默认次数和平滑度的矩形双三次样条；使用行列网格及平面路径。",
-   "boundary": "只有查询位于网格支持范围内，结果才在验证范围内。",
+   "boundary": "查询必须位于闭合网格支撑内；网格外或非有限查询点被拒绝，而不是外推。",
    "assumptions": [
     "有限可分离 xy 网格，每轴至少四个不同点。",
     "Q 有限，查询坐标位于网格内部。"
@@ -1684,7 +1685,7 @@
     {
      "name": "flpoints",
      "description": "有序平面路径顶点。",
-     "constraints": "提供的顺序有限有效。",
+     "constraints": "提供的顺序有限有效；每个查询点必须位于闭合网格支撑内。",
      "dtype": "float64"
     }
    ],
@@ -1699,17 +1700,17 @@
    "applicability": {
     "preconditions": [
      "有限可分离 xy 网格，每轴至少有四个不同点。",
-     "Q 有限，查询坐标位于内部。"
+     "Q 有限，且查询坐标位于闭合网格支撑内。"
     ],
     "supported": [
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
     ],
     "excluded": [
-     "网格外样条外推及任意非线性插值误差未经验证。"
+     "不提供网格外样条外推（外部查询被拒绝）；任意非线性插值误差未经验证。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；不推断输入修复。",
+    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；网格外或非有限查询点以 ValueError 拒绝，而不是外推；不推断输入修复。",
     "runtime_failure": "数值、插值或可选依赖异常从直接计算向上传播。",
     "nonconvergence": "不适用；该关系使用直接有限差分、插值、选择或求积操作。",
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
@@ -1722,11 +1723,12 @@
     "scope": [
      "公共可调用签名及文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
+     "本合同所载可执行示例。",
+     "闭合支撑内拒绝网格外及非有限查询点。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
-     "网格外样条外推及任意非线性插值误差未经验证。"
+     "网格外查询被拒绝；任意非线性插值误差仍未经验证。"
     ]
    }
   },
@@ -1805,7 +1807,7 @@
   },
   {
    "asset_id": "scirel.sampling.scalar-reflection",
-   "source_sha256": "117b762c96393fd19d8a925cf6fa10a3e654599e6172d5bbd911ea7274c845b0",
+   "source_sha256": "404537ac64b8c485d1689d1edc5e020ae3f52ac82a36ca04bb4fe0649d44381f",
    "summary": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
    "definition": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
    "model": "沿用原实现的 hstack 约定，并提供具名 quantities 替代方式。Rho、Z 为按径向列排列的平面网格。",
@@ -1818,19 +1820,19 @@
     {
      "name": "Rho",
      "description": "非负径向网格。",
-     "constraints": "径向首列为零。",
+     "constraints": "径向首列为零；至少两个径向列。",
      "dtype": "float64"
     },
     {
      "name": "Z",
      "description": "轴向网格。",
-     "constraints": "匹配。",
+     "constraints": "匹配的有限二维形状。",
      "dtype": "float64"
     },
     {
      "name": "quantities",
      "description": "具名标量/偶对称场；可替代位置字段参数。",
-     "constraints": "不得与位置字段参数同时使用。",
+     "constraints": "提供时有限且形状匹配；不得与位置字段参数同时使用。",
      "dtype": "列表或 None"
     }
    ],
@@ -1845,7 +1847,7 @@
    "applicability": {
     "preconditions": [
      "Rho、Z 及标量场形状匹配且有限。",
-     "首个径向列为零；提供的场关于径向反射为偶对称。"
+     "首个径向列为零、至少存在两个径向列，且提供的场关于径向反射为偶对称。"
     ],
     "supported": [
      "满足可调用对象专用形状、支持域和边界条件的有限输入。"
@@ -1855,7 +1857,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；不推断输入修复。",
+    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；非零首径向列、少于两个径向列、形状不匹配或非有限数组以 ValueError 拒绝；不推断输入修复。",
     "runtime_failure": "数值、插值或可选依赖异常从直接计算向上传播。",
     "nonconvergence": "不适用；该关系使用直接有限差分、插值、选择或求积操作。",
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
@@ -1868,7 +1870,8 @@
     "scope": [
      "公共可调用签名及文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
+     "本合同所载可执行示例。",
+     "以 ValueError 拒绝非零首列、非有限及形状非法输入。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
@@ -2050,7 +2053,7 @@
   },
   {
    "asset_id": "scirel.sampling.weighted-line-integral",
-   "source_sha256": "63bf22b441d762177db7e4bb1c8903f9d32699a7ac24a68f7e1c0fecde7e4428",
+   "source_sha256": "adc97008768669854e6bbc4e9bc0f4d208419f5bba124c896e204e733537b390",
    "summary": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "definition": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "model": "沿用原实现的矩形样条采样和折线梯形求积。采用 xy 矩形网格及具有显式弦长的平面路径。",
@@ -2076,7 +2079,7 @@
     {
      "name": "B",
      "description": "正的权重场。",
-     "constraints": "在采样路径上有限且为正。",
+     "constraints": "在采样路径上有限且严格为正；求积前拒绝非正或非有限插值。",
      "dtype": "float64"
     },
     {
@@ -2115,7 +2118,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；不推断输入修复。",
+    "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；求积前拒绝非正或非有限插值 B 及非有限 Q；不推断输入修复。",
     "runtime_failure": "数值、插值或可选依赖异常从直接计算向上传播。",
     "nonconvergence": "不适用；该关系使用直接有限差分、插值、选择或求积操作。",
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
@@ -2128,7 +2131,8 @@
     "scope": [
      "公共可调用签名及文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
+     "本合同所载可执行示例。",
+     "求积前拒绝非正或非有限 B。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [

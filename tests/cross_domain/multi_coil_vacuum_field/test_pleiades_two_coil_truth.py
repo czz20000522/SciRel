@@ -1,10 +1,13 @@
 """Repeatable Pleiades external-truth probe for the multi-coil field/green path.
 
 The generated ``dist/reference-truth/simple-two-coil`` artifact is not tracked
-in Git.  The fixed reference constants below are copied from that independent
-Pleiades truth (``TRUTH.json`` grid/coils and ``truth.npz`` spot values) so the
-field and Green paths always have an external numeric anchor; when the artifact
-is present, the full arrays are compared as well.
+in Git.  It can be regenerated explicitly with
+``scripts/build_pleiades_truth.py --source-root <external Pleiades checkout>``;
+the script never vendors Pleiades source.  The fixed reference constants below
+are copied from that independent truth (``TRUTH.json`` grid/coils and
+``truth.npz`` spot values) so the field and Green paths always have an external
+numeric anchor; when the artifact is present, the full arrays are compared as
+well, and that full-array test skips when it is absent.
 """
 from pathlib import Path
 

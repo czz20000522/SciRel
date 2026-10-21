@@ -41,3 +41,10 @@ def test_reviewed_relation_example():
             pass
         else:
             raise AssertionError("非法样本数或边界必须失败")
+
+
+def test_boolean_sample_count_is_rejected_as_value_error():
+    import pytest
+
+    with pytest.raises(ValueError, match="positive integer n_samples"):
+        sample_latin_hypercube(bounds={"a": (0.0, 1.0)}, n_samples=True)

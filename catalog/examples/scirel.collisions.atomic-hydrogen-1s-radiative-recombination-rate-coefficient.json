@@ -107,18 +107,19 @@
   "scope": [
    "Six fixed reference values and an independent closed-form evaluation hold to a 1e-15 relative tolerance, including on a holdout grid.",
    "Direct tests cover monotonic temperature dependence on the sampled grid, clipping, scalar shape, invalid domain and non-real input rejection.",
-   "An optional external comparison test compares finite one- and two-dimensional carriers exactly and covers three rejection differences; it runs only when an external implementation root is configured.",
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
    "Low- and high-temperature logarithmic slopes converge to the analytic -1/2 and -3/2 asymptotic limits within the audited temperature windows."
   ],
   "tests": [
    "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py"
   ],
-  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with an independent implementation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
+  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with the in-file independent evaluation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
   "known_limitations": [
    "No external physical-reference oracle is bound; this gap remains open.",
    "Ry=13.58 eV is the fit constant and is not replaced with a modern re-derived value.",
    "Out-of-fit-range positive temperatures silently repeat endpoint rates.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests."
   ]
  }
 }

@@ -112,9 +112,9 @@
    "description": "Cells used for current and Hall-drift support.",
    "units": "boolean",
    "shape": "[N_Z,N_R]",
-   "dtype": "boolean array-like",
+   "dtype": "boolean array",
    "required": true,
-   "constraints": "Exactly grid-shaped; J_phi is zero outside it. Hall drift additionally excludes R=0, low density and unresolved field cells."
+   "constraints": "Exactly grid-shaped and true boolean dtype; J_phi is zero outside it. Integer/float arrays are rejected without coercion. Hall drift additionally excludes R=0, low density and unresolved field cells."
   },
   {
    "name": "ion_mass_kg",
@@ -655,7 +655,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for invalid mass, charge or scalar controls; a nonboolean inertia flag; malformed R-Z grid; nonfinite/mismatched field or pressure arrays; wrong-shaped mask; absent or nonfinite required closure_state fields; or negative density/electron and optional ion pressure components. Some malformed optional state arrays may propagate NumPy broadcasting errors. Negative primary total pressure or inconsistent species_sum state is rejected.",
+  "invalid_input": "Raises ValueError for invalid mass, charge or scalar controls; a nonboolean inertia flag; malformed R-Z grid; nonfinite/mismatched field or pressure arrays; wrong-shaped or nonboolean mask; absent or nonfinite required closure_state fields; or negative density/electron and optional ion pressure components. Some malformed optional state arrays may propagate NumPy broadcasting errors. Negative primary total pressure or inconsistent species_sum state is rejected.",
   "runtime_failure": "A local inertia fixed point that exceeds inertia_max_iterations raises RuntimeError. Other NumPy arithmetic and conversion failures propagate; extreme finite inputs are not guaranteed to produce finite diagnostics.",
   "nonconvergence": "The local inertia loop is bounded; when enabled and its unrelaxed current-map residual threshold is not reached, RuntimeError is raised instead of returning a partial state.",
   "partial_results": "No result mapping is returned after an exception. A returned mapping has inertia_converged=true, including the no-inertia branch."

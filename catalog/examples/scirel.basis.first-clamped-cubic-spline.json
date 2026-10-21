@@ -49,7 +49,7 @@
    "shape": "(N,)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Finite strictly increasing N>=3"
+   "constraints": "Finite strictly increasing N>=3; x_data[-1] must be positive"
   },
   {
    "name": "y_data",
@@ -96,7 +96,7 @@
   "preconditions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
    "In-domain deriv=0/1/2 for the qualified numerical claim",
-   "x_data[-1]>0"
+   "x_data[-1]>0; a nonpositive last knot is rejected with ValueError before boundary assembly"
   ],
   "supported": [
    "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
@@ -108,7 +108,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
+  "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; a nonpositive last knot x_data[-1] is rejected with ValueError before the boundary system is assembled; linear-system failures propagate.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
   "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
@@ -135,7 +135,8 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Rejection of a nonpositive last knot before boundary assembly."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py",

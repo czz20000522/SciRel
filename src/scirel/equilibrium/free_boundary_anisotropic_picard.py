@@ -84,6 +84,7 @@ def run_composition(inputs, *, asset_loader):
     r_axis, z_axis = (r_grid[0, :], z_grid[:, 0])
     if not np.allclose(r_grid, r_axis[np.newaxis, :]) or not np.allclose(z_grid, z_axis[:, np.newaxis]) or np.any(np.diff(r_axis) <= 0.0) or np.any(np.diff(z_axis) <= 0.0) or r_axis[0]<0.:
         raise ValueError('r_grid and z_grid must be finite, strictly increasing tensor-product grids with nonnegative R')
+    plasma_mask = None
     if inputs.get('plasma_mask') is not None:
         plasma_mask = np.asarray(inputs['plasma_mask'])
         if plasma_mask.shape != r_grid.shape or plasma_mask.dtype != np.dtype(bool):
@@ -127,7 +128,7 @@ def run_composition(inputs, *, asset_loader):
         return corrected, wall
 
     def target_state(parts):
-        target = feedback(parts['j_phi'],r_grid,z_grid,inputs.get('plasma_mask'),None,0.,
+        target = feedback(parts['j_phi'],r_grid,z_grid,plasma_mask,None,0.,
             inputs['g_psi'],inputs.get('g_br'),inputs.get('g_bz'),inputs['psi_vac'],
             inputs['br_vac'],inputs['bz_vac'],cell_edges=inputs.get('cell_edges'))
         return apply_boundary(target)[0]
@@ -169,7 +170,7 @@ def run_composition(inputs, *, asset_loader):
         if iterations > 0 and max(state_residuals(target,psi,br,bz,currents_old)) <= tol:
             break
         psi_previous = psi
-        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], inputs.get('plasma_mask'), currents_old, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'], cell_edges=inputs.get('cell_edges'))
+        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], plasma_mask, currents_old, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'], cell_edges=inputs.get('cell_edges'))
         step, boundary_result = apply_boundary(step)
         psi, br, bz = (step['psi'], step['BR'], step['BZ'])
         if boundary_result is not None:
@@ -184,17 +185,17 @@ def run_composition(inputs, *, asset_loader):
     profiles = _profiles(pressure_closure, psi, field['B'], params)
     current_parts = current(inputs['r_grid'], inputs['z_grid'], br, bz, profiles['p_parallel'], profiles['p_perp'])
     terminal_j_phi = np.asarray(current_parts['j_phi'], dtype=float)
-    if inputs.get('plasma_mask') is not None:
-        terminal_j_phi = np.where(np.asarray(inputs['plasma_mask'], dtype=bool), terminal_j_phi, 0.0)
+    if plasma_mask is not None:
+        terminal_j_phi = np.where(plasma_mask, terminal_j_phi, 0.0)
     if currents_old is None:
-        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], inputs.get('plasma_mask'), None, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'], cell_edges=inputs.get('cell_edges'))
+        step = feedback(current_parts['j_phi'], inputs['r_grid'], inputs['z_grid'], plasma_mask, None, relax, inputs['g_psi'], inputs.get('g_br'), inputs.get('g_bz'), inputs['psi_vac'], inputs['br_vac'], inputs['bz_vac'], cell_edges=inputs.get('cell_edges'))
         currents_old = step['initial_picard_current_state']
     terminal_cell_currents = terminal_j_phi * cell_areas(r_grid,z_grid,inputs.get('cell_edges'))
     target = target_state(current_parts)
     flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual = state_residuals(target,psi,br,bz,currents_old)
     fixed_point_residual = max(flux_fixed_point_residual,field_fixed_point_residual,current_fixed_point_residual)
     force_diagnostics = current_parts['force_diagnostics']
-    active = np.ones_like(r_grid,dtype=bool) if inputs.get('plasma_mask') is None else np.asarray(inputs['plasma_mask'],dtype=bool)
+    active = np.ones_like(r_grid,dtype=bool) if plasma_mask is None else plasma_mask
     from ._anisotropic_numerics import residual_metrics
     compatibility = residual_metrics(force_diagnostics['parallel_force'], np.hypot(force_diagnostics['force_R'],force_diagnostics['force_Z']), force_diagnostics['parallel_force_roundoff'],active)
     compatible = compatibility['error']<=compatibility_tol

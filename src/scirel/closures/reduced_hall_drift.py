@@ -102,9 +102,9 @@ def close_reduced_hall_drift(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicul
         raise ValueError('Hall fields and pressures must be finite and match the R-Z grid')
     if np.any(p_parallel<0.) or np.any(p_perpendicular<0.):
         raise ValueError('Hall primary pressure must be nonnegative')
-    plasma_mask = np.asarray(plasma_mask, dtype=bool)
-    if plasma_mask.shape != shape:
-        raise ValueError('plasma_mask must match the R-Z grid')
+    plasma_mask = np.asarray(plasma_mask)
+    if plasma_mask.shape != shape or plasma_mask.dtype != np.dtype(bool):
+        raise ValueError('plasma_mask must be a boolean array with the same shape as the R-Z grid')
     ion_density = _state_array(closure_state, 'ion_density', shape)
     electron_pressure = _state_array(closure_state, 'electron_pressure', shape)
     electron_parallel = np.broadcast_to(np.asarray(closure_state.get('electron_p_parallel', electron_pressure), dtype=float), shape)

@@ -118,17 +118,19 @@
   "scope": [
    "Fixed reference values and independent polyval2d reevaluation verify the molecular coefficient direction and fit on ordinary samples; the double-upper-endpoint corner is checked against the declared-order value.",
    "Direct tests cover molecular-vs-atomic difference, clipping, scalar shape, invalid domain and non-real input rejection.",
-   "An optional external comparison test compares finite one- and two-dimensional carriers exactly and covers three rejection differences; it runs only when an external implementation root is configured."
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."
   ],
   "tests": [
    "tests/collisions/test_hydrogen2_charge_exchange_rate.py"
   ],
-  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with an independent implementation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
+  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with the in-file independent evaluation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
   "known_limitations": [
    "No external atomic-physics oracle is bound; the fit is not independently validated as a physical rate model.",
    "Out-of-fit-range values silently repeat endpoint rates rather than extrapolating or failing.",
    "The fitted rate is not derived at runtime from the separate molecular cross-section asset or the mesh rate-average asset.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
+   "The frozen bivariate fit is non-monotonic in impact energy: at 1000 eV, over 500 logarithmically spaced energies in [0.1, 2.01e4] eV, its log-derivative changes sign four times and its minimum/maximum ratio is about 0.28. This is a fit property, not a validated physical threshold; callers must not assume a monotone rate."
   ]
  }
 }

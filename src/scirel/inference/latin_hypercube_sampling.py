@@ -14,9 +14,12 @@ def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
     for the optimizer graph and contains no hidden parameters.
 
     Raises ``ValueError`` for malformed bounds or a non-positive sample count.
+    A boolean ``n_samples`` is rejected explicitly instead of leaking a
+    ``TypeError`` from NumPy array allocation.
     """
-    if not isinstance(bounds, dict) or not isinstance(n_samples, int) or n_samples < 1:
-        raise ValueError("bounds mapping and positive n_samples required")
+    if (not isinstance(bounds, dict) or isinstance(n_samples, (bool, np.bool_))
+            or not isinstance(n_samples, int) or n_samples < 1):
+        raise ValueError("bounds mapping and positive integer n_samples required")
     keys = list(bounds) if fit_keys is None else list(fit_keys)
     rng = np.random.default_rng(seed)
     lower = np.empty(len(keys), dtype=float)

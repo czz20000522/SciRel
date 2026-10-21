@@ -497,7 +497,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for missing required ports, invalid grid, mask, controls, params mapping, closure output or incomplete wall config; dependency validation errors propagate. The maintained implementation validates grid and mask before required ports, unlike the pending intake source. Non-mapping positional inputs are rejected by the composition layer with TypeError.",
+  "invalid_input": "Raises ValueError for missing required ports, invalid grid, nonboolean/wrong-shaped mask, controls, params mapping, closure output or incomplete wall config; dependency validation errors propagate. The maintained implementation validates grid and mask before required ports, unlike the pending intake source. Non-mapping positional inputs are rejected by the composition layer with TypeError.",
   "runtime_failure": "Pressure-closure callback and dependency errors propagate. Before every closure/current evaluation, B<minimum_field raises FloatingPointError; with strict_compatibility=true, terminal parallel-force incompatibility raises ValueError. The physical consistency of the Green and wall matrices must be independently justified by the caller.",
   "nonconvergence": "After at most maxiter updates, if the returned state's full fixed-point residual or force compatibility does not pass, return converged=false with an explicit failure reason. A final allowed update that happens to pass may still return converged=true. maxiter=0 skips updates and, after terminal evaluation, returns residual=inf with an empty history and does not claim convergence.",
   "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state mapping, not an exception."

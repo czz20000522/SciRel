@@ -221,7 +221,7 @@ When the forward does not converge, neither the diagnostics nor the residual red
 Fitting inside a bounded box from stratified initial values
 -----------------------------------------------------------
 
-The optimizer needs a starting point. ``sample_latin_hypercube`` draws one point from each stratum of each parameter and then combines them with random permutations, so the initial values do not all cluster in the middle of the box.
+The optimizer needs a starting point. ``sample_latin_hypercube`` draws one point from each stratum of each parameter and then combines them with random permutations, so the initial values do not all cluster in the middle of the box. ``n_samples`` must be a positive integer; a boolean raises ``ValueError`` instead of leaking a NumPy ``TypeError``.
 
 .. code-block:: python
 

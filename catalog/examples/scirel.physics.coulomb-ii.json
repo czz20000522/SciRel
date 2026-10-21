@@ -126,10 +126,11 @@
   "tests": [
    "tests/cross_domain/test_algebra_grid.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration. The NRL attribution is not independently validated; an independent NRL transcription differs by a constant +0.4388 in ln Lambda, recorded for owner review without changing the formula.",
   "known_limitations": [
    "No external calibration or collision-frequency composition is claimed.",
-   "Only the Sauter/NRL algebra and declared numerical boundaries are covered."
+   "Only the Sauter/NRL algebra and declared numerical boundaries are covered.",
+   "The Sauter/NRL attribution is not bound to a reference. An independent transcription of NRL 2013 Eq. c differs by a constant +0.4388 in ln Lambda across (T, n, Z) probes. Whether this asset is a different documented approximation or the NRL attribution needs correction is an owner decision; the formula is unchanged in this contract."
   ]
  }
 }

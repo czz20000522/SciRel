@@ -200,20 +200,20 @@
    "The finite-output contract: a finite 1e305-scale cross section whose product overflows the rate is rejected rather than returned as an infinity.",
    "The callback-order contract: an extreme-but-finite particle energy (1e308 eV overflows the collision-energy arithmetic) is rejected with a ValueError before the cross-section callable is invoked; a recording callable observes nothing. Ordinary finite inputs produce unchanged numbers.",
    "The composition contract of the single-node consumer graph: a caller-side mesh snapshot feeds the operator by port name, is consumed unmodified, and the returned rate lands in a caller-side energy-resolved table without reshaping.",
-   "Bit-exact agreement with an independent implementation for constant and linear cross sections at rtol 1e-14, together with the rejection witness for a NaN mesh point; the comparison runs only when an external implementation root is configured.",
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
    "The module constants AMU_KG and ELEMENTARY_CHARGE_C equal the declared values bit for bit."
   ],
   "tests": [
    "tests/collisions/test_maxwellian_relative_speed_rate_average.py"
   ],
-  "evidence_ceiling": "The tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts, and the composition contract of the consumer graph. Bit-exact agreement with an independent implementation holds on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that behaviour outside the compared domain is correct. Public distribution licensing remains pending.",
+  "evidence_ceiling": "The tests establish the discrete relation against an in-file independent formulation, the two analytic limits to mesh-converged tolerances, the volume-scale invariance, the input and failure contracts, and the composition contract of the consumer graph. Bit-exact agreement with the in-file independent evaluation holds on the compared constant- and linear-sigma domain only. No test establishes that the particle-mass collision-energy convention is the physically correct model, that any caller cross section or mesh is physically valid, or that behaviour outside the compared domain is correct. Public distribution licensing remains pending.",
   "known_limitations": [
    "The collision energy uses the particle mass; a reduced-mass model is a different relation and is not provided.",
    "No cross-section model is included. A caller whose callable is wrong gets a wrong rate with no warning; the asset checks only shape, finiteness and nonnegativity of the returned values.",
    "The asset does not enforce that vr is a nonnegative radial axis or that the volume weights follow the vr-weighted cylindrical measure; a mismatched measure silently misweights the quadrature. Only proportionality of the measure is required and a constant factor is irrelevant.",
    "Quadrature accuracy is entirely the mesh's. Coarse meshes misresolve the Maxwellian tail and the beam resonance; no convergence check runs at runtime, and the analytic limits above hold only in the mesh-refined regime.",
    "Non-finite and non-real input rejection, finite-output rejection and the collision-energy representability gate are explicit preconditions of this contract: a ValueError is raised instead of coercing, propagating a non-finite rate or invoking the callback with values the asset never declared.",
-   "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

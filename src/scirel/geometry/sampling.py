@@ -118,19 +118,36 @@ def poly_fit(x, y, order=3):
 
 
 def reflect_and_hstack(Rho, Z, *args, quantities=None):
-    """Reflect R-Z arrays through the first column and concatenate them."""
+    """Reflect R-Z arrays through the first column and concatenate them.
+
+    The first radial column is the symmetry plane and must be exactly zero;
+    the remaining columns are reflected in reverse order.  Invalid shapes,
+    nonfinite values and a nonzero symmetry column are rejected.
+    """
     if quantities is not None:
         if args:
             raise ValueError("supply fields either positionally or through quantities")
         args = tuple(quantities)
-    rho = np.asarray(Rho)
-    z = np.asarray(Z)
-    reflected_rho = np.hstack((-rho[:, -1:0:-1], rho))
-    reflected_z = np.hstack((z[:, -1:0:-1], z))
+    rho = np.asarray(Rho, dtype=float)
+    z = np.asarray(Z, dtype=float)
+    if rho.ndim != 2 or z.shape != rho.shape:
+        raise ValueError("Rho and Z must be matching two-dimensional arrays")
+    if rho.shape[1] < 2:
+        raise ValueError("Rho must contain at least two radial columns to reflect")
+    if not np.all(np.isfinite(rho)) or not np.all(np.isfinite(z)):
+        raise ValueError("Rho and Z must contain only finite values")
+    if not np.all(rho[:, 0] == 0.0):
+        raise ValueError("the first radial column must be zero (symmetry plane)")
     fields = []
     for field in args:
-        assert field.shape == rho.shape
-        fields.append(np.hstack((field[:, -1:0:-1], field)))
+        values = np.asarray(field, dtype=float)
+        if values.shape != rho.shape:
+            raise ValueError("supplied fields must match the Rho/Z shape")
+        if not np.all(np.isfinite(values)):
+            raise ValueError("supplied fields must contain only finite values")
+        fields.append(np.hstack((values[:, -1:0:-1], values)))
+    reflected_rho = np.hstack((-rho[:, -1:0:-1], rho))
+    reflected_z = np.hstack((z[:, -1:0:-1], z))
     return (reflected_rho, reflected_z, *fields)
 
 
@@ -252,22 +269,48 @@ def get_fieldline_distance(flpoints):
 
 
 def interp(Rho, Z, Q, flpoints):
-    """Evaluate a separable rectangular field at paired line points."""
+    """Evaluate a separable rectangular field at paired line points inside the grid."""
     from scipy.interpolate import RectBivariateSpline
-    points = np.asarray(flpoints)
-    spline = RectBivariateSpline(np.asarray(Z)[:, 0].squeeze(), np.asarray(Rho)[0, :].squeeze(), Q)
+    rho = np.asarray(Rho, dtype=float)
+    z = np.asarray(Z, dtype=float)
+    quantity = np.asarray(Q, dtype=float)
+    points = np.asarray(flpoints, dtype=float)
+    if rho.ndim != 2 or z.shape != rho.shape or quantity.shape != rho.shape:
+        raise ValueError("Rho, Z and Q must be equal-shape two-dimensional arrays")
+    if points.ndim != 2 or points.shape[1] != 2:
+        raise ValueError("flpoints must have shape (n_points, 2)")
+    if not np.all(np.isfinite(points)):
+        raise ValueError("query points must be finite and lie inside the closed grid support")
+    r_axis = rho[0, :]
+    z_axis = z[:, 0]
+    inside = (
+        (points[:, 0] >= r_axis[0]) & (points[:, 0] <= r_axis[-1])
+        & (points[:, 1] >= z_axis[0]) & (points[:, 1] <= z_axis[-1])
+    )
+    if not np.all(inside):
+        raise ValueError("query points must lie inside the closed grid support")
+    spline = RectBivariateSpline(z_axis, r_axis, quantity)
     return np.asarray(spline(points[:, 1], points[:, 0], grid=False), dtype=float)
 
 
 def flux_surface_avg(Rho, Z, B, flpoints, Q=None):
-    """Compute ``integral(ds/B)`` or its Q-weighted average."""
+    """Compute ``integral(ds/B)`` or its Q-weighted average.
+
+    The interpolated field must stay finite and strictly positive along the
+    sampled path; nonpositive or nonfinite B is rejected before quadrature.
+    """
     import scipy.integrate
     field = interp(Rho, Z, B, flpoints)
+    if not np.all(np.isfinite(field)) or np.any(field <= 0.0):
+        raise ValueError("interpolated B must be finite and positive along the sampled path")
     distance = get_fieldline_distance(flpoints)
     denominator = scipy.integrate.trapezoid(y=1.0 / field, x=distance)
     if Q is None:
         return denominator
-    return scipy.integrate.trapezoid(y=interp(Rho, Z, Q, flpoints) / field, x=distance) / denominator
+    quantity = interp(Rho, Z, Q, flpoints)
+    if not np.all(np.isfinite(quantity)):
+        raise ValueError("interpolated Q must be finite along the sampled path")
+    return scipy.integrate.trapezoid(y=quantity / field, x=distance) / denominator
 
 
 def diff_central(x, y):

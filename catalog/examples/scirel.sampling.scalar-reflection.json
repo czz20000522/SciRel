@@ -48,7 +48,7 @@
    "shape": "(Nz,Nr)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Radial first column zero"
+   "constraints": "Radial first column zero; at least two radial columns"
   },
   {
    "name": "Z",
@@ -57,7 +57,7 @@
    "shape": "same as Rho",
    "dtype": "float64",
    "required": true,
-   "constraints": "Matching"
+   "constraints": "Matching finite two-dimensional shape"
   },
   {
    "name": "quantities",
@@ -66,7 +66,7 @@
    "shape": "list of grids or None",
    "dtype": "list or None",
    "required": false,
-   "constraints": "Do not combine with positional fields",
+   "constraints": "Finite and shape-matched when supplied; do not combine with positional fields",
    "default": null
   }
  ],
@@ -84,7 +84,7 @@
  "applicability": {
   "preconditions": [
    "Matching finite Rho,Z and scalar field shapes",
-   "First radial column is zero; supplied fields are even under radial reflection"
+   "First radial column is zero, at least two radial columns are present, and supplied fields are even under radial reflection"
   ],
   "supported": [
    "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
@@ -94,7 +94,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; a nonzero first radial column, fewer than two radial columns, mismatched shapes or nonfinite arrays are rejected with ValueError; no input repair is inferred.",
   "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
@@ -121,7 +121,8 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "ValueError rejection of nonzero first-column, nonfinite and shape-invalid inputs."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py"

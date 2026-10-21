@@ -84,3 +84,18 @@ def test_invalid_domain_fails_closed(temperature, energy):
 def test_nonreal_input_fails_closed(temperature, energy):
     with pytest.raises(ValueError, match="real"):
         evaluate_atomic_hydrogen_charge_exchange_rate(temperature, energy)
+
+
+def test_fit_is_nonmonotonic_in_impact_energy_at_1000_ev():
+    """AUDIT-D5: the frozen bivariate fit is not monotone; pin that limitation.
+
+    The contract now documents the non-monotonicity; this regression fails if the
+    behavior changes without the limitation being revisited.
+    """
+    energy = np.geomspace(0.1, 2.01e4, 500)
+    rate = evaluate_atomic_hydrogen_charge_exchange_rate(
+        np.full(energy.shape, 1000.0), energy)
+    sign = np.sign(np.diff(np.log(rate)))
+    sign_changes = int(np.sum(np.diff(sign) != 0))
+    assert sign_changes >= 6
+    assert float(rate.min() / rate.max()) < 0.70

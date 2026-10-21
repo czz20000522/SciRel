@@ -118,17 +118,19 @@
   "scope": [
    "Fixed reference values verify both species-specific coefficient tables at six temperatures, including both fit endpoints.",
    "Direct tests cover branch distinction, clipping, scalar shape, invalid target species, invalid temperature and non-real coercion rejection.",
-   "An optional external comparison test compares finite two-dimensional carriers exactly for both branches and covers three rejection differences; it runs only when an external implementation root is configured."
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."
   ],
   "tests": [
    "tests/collisions/test_janev_electron_impact_ionization_rate.py"
   ],
-  "evidence_ceiling": "The tests establish the discrete two-branch fit, clipping and failure contract on tested samples. Bit-exact agreement with an independent implementation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates either fit; public distribution licensing is absent.",
+  "evidence_ceiling": "The tests establish the discrete two-branch fit, clipping and failure contract on tested samples. Bit-exact agreement with the in-file independent evaluation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates either fit; public distribution licensing is absent.",
   "known_limitations": [
    "No external physical-reference oracle is bound; this gap remains open.",
    "Out-of-fit-range positive temperatures silently repeat endpoint rates rather than extrapolating or failing.",
    "A rate coefficient is not a complete source or sink without caller-supplied density and state contracts.",
-   "Public distribution licensing remains pending."
+   "Public distribution licensing remains pending.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
+   "The ionization fit has a single maximum in electron temperature, at about 137 eV for H and 156 eV for H2; the peak locations are fit properties, not independently validated thresholds, and the rate is not monotone on either side of them."
   ]
  }
 }

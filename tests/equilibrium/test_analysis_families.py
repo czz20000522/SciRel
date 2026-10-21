@@ -112,6 +112,15 @@ def test_clamped_reference_and_spline_refinement():
     for d in [0,1,2]:np.testing.assert_allclose(fit(q,deriv=d),ref(q,nu=d),rtol=0,atol=2e-12)
 
 
+def test_first_clamped_rejects_nonpositive_last_knot():
+    for knots in (
+        np.array([-2.0, -1.0, 0.0]),
+        np.array([-3.0, -2.0, -1.0]),
+    ):
+        with pytest.raises(ValueError, match="x_data\\[-1\\]"):
+            basis.FirstClampedCubicSpline(knots, np.array([0.0, 1.0, 2.0]))
+
+
 def test_clamped_cubic_spline_public_docstring_declares_contract():
     doc = inspect.getdoc(basis.ClampedCubicSpline)
     assert doc is not None
@@ -212,7 +221,21 @@ def test_reflection_is_scalar_even_and_endpoint_unique():
     rr,zz,qq=sampling.reflect_and_hstack(r,z,q)
     np.testing.assert_array_equal(rr[0],[-.8,-.3,0,.3,.8])
     np.testing.assert_allclose(qq,rr*rr+zz,rtol=0,atol=2e-15)
-    with pytest.raises(AssertionError):sampling.reflect_and_hstack(r,z,q[:1])
+    with pytest.raises(ValueError, match="shape"):
+        sampling.reflect_and_hstack(r,z,q[:1])
+
+
+def test_reflection_rejects_nonzero_first_column_and_invalid_shapes():
+    z=np.zeros((1,3))
+    with pytest.raises(ValueError, match="first radial column"):
+        sampling.reflect_and_hstack(np.array([[0.2,0.4,0.8]]), z, np.ones((1,3)))
+    good=np.array([[0.0,0.4,0.8]])
+    with pytest.raises(ValueError, match="shape"):
+        sampling.reflect_and_hstack(good, z, np.ones((1,2)))
+    with pytest.raises(ValueError, match="shape"):
+        sampling.reflect_and_hstack(good, z, np.ones(3))
+    with pytest.raises(ValueError, match="two radial columns|shape"):
+        sampling.reflect_and_hstack(np.zeros((2,1)), np.zeros((2,1)))
 
 
 def test_flux_weighted_integral_analytic_and_refinement():
@@ -232,6 +255,24 @@ def test_flux_weighted_integral_analytic_and_refinement():
     assert errors[2]<errors[1]/3.99
     p=np.array([[0.,0.],[3.,0.],[3.,4.]])
     np.testing.assert_array_equal(sampling.get_fieldline_distance(p),[0,3,7])
+
+
+def test_weighted_line_integral_rejects_nonpositive_field():
+    r,z=np.meshgrid(np.linspace(0,1,6),np.linspace(-.2,.2,6))
+    path=np.column_stack([np.linspace(0,1,11),np.zeros(11)])
+    for b in (np.zeros((6,6)), -np.ones((6,6))):
+        with pytest.raises(ValueError, match="positive"):
+            sampling.flux_surface_avg(r,z,b,path)
+
+
+def test_rectangular_spline_rejects_outside_queries():
+    r,z=np.meshgrid(np.linspace(0,1,6),np.linspace(0,1,6))
+    q=3*r-2*z+0.4
+    np.testing.assert_allclose(sampling.interp(r,z,q,np.array([[.2,.3]])),
+                               3*.2-2*.3+.4,rtol=0,atol=2e-14)
+    for point in ([[1.2,0.5]], [[0.5,-0.1]], [[np.nan,0.5]]):
+        with pytest.raises(ValueError, match="inside"):
+            sampling.interp(r,z,q,np.array(point))
 
 
 

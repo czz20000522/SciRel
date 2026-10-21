@@ -114,7 +114,7 @@
    "That the fit equals an independent evaluation of the coefficient set on the clipped domain to a relative tolerance of 1e-15, on in-domain and holdout grids.",
    "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
    "The input contract: non-finite and negative energies are rejected with messages naming the quantity; a negative energy raises rather than being silently clipped.",
-   "Bit-exact agreement with an independent implementation of the same fit expressions on one- and two-dimensional grids, together with the rejection witness; the comparison runs only when an external implementation root is configured."
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."
   ],
   "tests": [
    "tests/collisions/test_hydrogen2_proton_elastic_cross_section.py",
@@ -126,7 +126,7 @@
    "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
    "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
-   "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
    "Public distribution licensing remains pending a human decision."
   ]
  }

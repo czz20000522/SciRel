@@ -64,3 +64,23 @@ def test_invalid_temperature_fails_closed(temperature):
 def test_nonreal_temperature_fails_closed(temperature):
     with pytest.raises(ValueError, match="real"):
         evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)
+
+
+def test_analytic_asymptotic_slopes_are_bound_to_this_test_file():
+    """AUDIT-D5: the -1/2 / -3/2 slope evidence is bound by the contract.
+
+    The contract previously pointed at an unbound audit file for these slopes;
+    this test puts the evidence in the contract-bound direct test file.
+    """
+    temperature = np.geomspace(0.1, 2.01e4, 400)
+    rate = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)
+
+    def slope(low, high):
+        idx = np.searchsorted(temperature, [low, high])
+        return float(
+            (np.log(rate[idx[1]]) - np.log(rate[idx[0]]))
+            / (np.log(temperature[idx[1]]) - np.log(temperature[idx[0]]))
+        )
+
+    assert -0.52 <= slope(0.15, 0.45) <= -0.49
+    assert -1.52 <= slope(1.0e3, 1.8e4) <= -1.46

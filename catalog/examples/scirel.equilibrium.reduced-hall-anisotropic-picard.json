@@ -164,10 +164,10 @@
    "description": "Fixed active cells or caller policy evaluated at each B,psi.",
    "units": "boolean",
    "shape": "[N_Z,N_R], callable(B,psi)->[N_Z,N_R], or null",
-   "dtype": "boolean array-like, Python callable or None",
+   "dtype": "boolean array, callable returning boolean array, or None",
    "required": false,
    "default": null,
-   "constraints": "Null selects all cells; fixed/callable masks must match the grid shape. Hall drift further excludes axis, low-density and unresolved-field cells."
+   "constraints": "Null selects all cells; fixed arrays must have exact grid shape and bool dtype; callable results must have exact grid shape and bool dtype. Integer/float arrays are not silently converted. Hall drift further excludes axis, low-density and unresolved-field cells."
   },
   {
    "name": "hall_multiplier",
@@ -532,7 +532,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError/TypeError for missing ports, malformed/nonfinite grid or Green response, noncallable closure, invalid controls, wrong-shaped mask or bad iteration pressure/state; bound leaf and callback exceptions propagate. The terminal path coerces pressure shape without repeating the graph-level nonnegative check, but the Hall leaf still rejects nonfinite primary pressure and invalid optional ion pressure. The graph's own grid check does not reject negative R, but the bound field/Hall leaves do.",
+  "invalid_input": "Raises ValueError/TypeError for missing ports, malformed/nonfinite grid or Green response, noncallable closure, invalid controls, wrong-shaped or nonboolean mask or bad iteration pressure/state; bound leaf and callback exceptions propagate. The terminal path coerces pressure shape without repeating the graph-level nonnegative check, but the Hall leaf still rejects nonfinite primary pressure and invalid optional ion pressure. The graph's own grid check does not reject negative R, but the bound field/Hall leaves do.",
   "runtime_failure": "An iteration field below minimum_field raises FloatingPointError before its closure call. Terminal active firehose margin at/below a nonnegative minimum_firehose_margin raises FloatingPointError. Strict terminal parallel-force or generalized-Ohm threshold exceedance raises ValueError. A Hall local inertia nonconvergence raises RuntimeError; other callback/dependency failures propagate. The terminal field is checked against minimum_field before the terminal closure call.",
   "nonconvergence": "At maxiter without meeting the outer flux threshold, reevaluate and gate the terminal state, then return converged=false with last psi and history. Local Hall inertia nonconvergence instead raises RuntimeError.",
   "partial_results": "No mapping is returned after an exception. Outer bounded nonconvergence is a complete last-state mapping if terminal evaluation and gates succeed."

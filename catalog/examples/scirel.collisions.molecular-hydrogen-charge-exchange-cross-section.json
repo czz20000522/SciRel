@@ -117,7 +117,7 @@
    "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
    "That the molecular fit materially differs from the atomic-hydrogen sibling asset's Janev branch.",
    "The input contract: non-finite and negative energies are rejected with messages naming the quantity. A negative energy raises rather than being silently clipped.",
-   "Bit-exact agreement with an independent implementation of the same fit expressions on one- and two-dimensional grids, together with the witness that a negative energy is rejected where the comparison implementation returns the clipped endpoint; the comparison runs only when an external implementation root is configured.",
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
    "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
   ],
   "tests": [
@@ -130,7 +130,7 @@
    "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
    "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
-   "The optional cross-implementation comparison runs only in an environment that supplies an external implementation root; it is skipped otherwise and covers only the compared grids.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
    "Public distribution licensing remains pending a human decision.",
    "The frozen high-energy branch is non-monotonic between about 978 and 8,291 eV: the cross section rises by about 27.7% there, with a maximum log-slope near 0.175. Monotonicity is not claimed, and no external oracle is bound that could justify changing the frozen fit."
   ]

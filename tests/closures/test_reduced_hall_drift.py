@@ -130,3 +130,16 @@ def test_review_gate_rejects_nonfinite_species_and_nonboolean_inertia_control():
         scientific_function(**{**base, "ion_charge_c": np.nan})
     with pytest.raises(ValueError, match="include_toroidal_inertia"):
         scientific_function(**{**base, "include_toroidal_inertia": 1})
+
+
+def test_reduced_hall_drift_rejects_nonboolean_plasma_mask():
+    R, Z, BR, BZ = _grid()
+    base = dict(
+        r_grid=R, z_grid=Z, b_r=BR, b_z=BZ,
+        p_parallel=np.full_like(R, 20.0), p_perpendicular=np.full_like(R, 20.0),
+        closure_state=_state(R.shape), ion_mass_kg=M, ion_charge_c=E,
+    )
+    with pytest.raises(ValueError, match='plasma_mask.*boolean'):
+        scientific_function(**base, plasma_mask=np.ones_like(R, dtype=int))
+    with pytest.raises(ValueError, match='plasma_mask.*boolean'):
+        scientific_function(**base, plasma_mask=np.ones_like(R, dtype=float))

@@ -374,7 +374,7 @@
     "scirel.diagnostics.picard_flux_residual": "37c70790c5e0c292b603789edefdfe090bee3b453eae203b8a1513a20234795e",
     "scirel.equilibrium.anisotropic_picard_feedback": "54927bd56e1138d97afe743dbbcc0fdf8fc068e33e94673a402be2394570eb74",
     "scirel.equilibrium.anisotropic_toroidal_current": "d8fd81f1f18bacce98fda40e53319b776a3ac142527c0c502deb6329ff88267e",
-    "scirel.equilibrium.free_boundary_anisotropic_picard": "7ca82637f9c71538fbea953b181a57c9154553b7a0f9d60d8e900d73f8dc523d",
+    "scirel.equilibrium.free_boundary_anisotropic_picard": "57d92fbf78d602a1ef664649829ff477047a46d7f40fb147c681361985a87f00",
     "scirel.field.ideal_conductor_boundary": "d966303dd1d15cd6e34d8f5311a9938943f32569bdf0b291310e38772bf982c9",
     "scirel.field.poloidal_field_magnitude": "ea873e93a80c82f7af8d47427ccbd4726b9314947b6f1dfeace35a304ca583f7"
    },
@@ -506,7 +506,7 @@
    "modules": {
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
     "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "9290751b5fc483dd391895a3f38723bbae32fbcd41803b0c6112730c61ae6d2f",
-    "scirel.equilibrium.reduced_hall_anisotropic_picard": "89e194cafbd0c1260401c639847b7e6e5689a2e51e4fca77f7b05c09f2659c3f",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "0b45151359aab2d2faba28014561de3c83802553ae09ec22f1cd3613fa717571",
     "scirel.kinetic.grid_mirror_kinetic_closure": "84a54db506ac9011abdde1aacb4f226c6c6e5609b2610a3e3ffc7c72540ab674"
    },
    "review_basis": "Wrapper exposes kinetic_composition/hall_composition dependency overrides explicitly. run_composition requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
@@ -632,9 +632,9 @@
    "modules": {
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
     "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
-    "scirel.closures.reduced_hall_drift": "c4c860fa85183bc66d14d967abdd8ea35e87b9887e12d09581ab3c71c3ef6aa0",
+    "scirel.closures.reduced_hall_drift": "ecbcc6e454d92d2cc70667f11627ee4ce075bd6d32eeaf6e8a07732595360072",
     "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
-    "scirel.equilibrium.reduced_hall_anisotropic_picard": "89e194cafbd0c1260401c639847b7e6e5689a2e51e4fca77f7b05c09f2659c3f",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "0b45151359aab2d2faba28014561de3c83802553ae09ec22f1cd3613fa717571",
     "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
    },
    "review_basis": "run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
@@ -922,7 +922,7 @@
     "scirel.inference.anisotropic_parameter_optimization": "0b5c3d0157f880e4052a5f8ffabdb25e1afadcb0a1071e0477b160eed7c8a588",
     "scirel.inference.anisotropic_trial_evaluation": "e0c2b21263974a4ad2502eabcb9f81d657145ca9117c291af34fd0179ce6c3f8",
     "scirel.inference.direct_anisotropic_inversion": "bef7ca846e2201066e5be3c7590642ca980637c5544ef4f3d73dfa4ea1ab74f4",
-    "scirel.inference.latin_hypercube_sampling": "8cd72a5366ff27fc7921e1e220631cc38577e83cf64625eed80661c82af3f2fb"
+    "scirel.inference.latin_hypercube_sampling": "ce887075bf13a80e868ac27870e14d3ed814b6176e7449e1ef6bb098412f9569"
    },
    "review_basis": "Port identity only; root scientific acceptance is separate. Fixed standard observation layout supplies N to trial and optimizer; finite failure penalty and actual scientific call budget are explicit. Numerical failed trials are excluded from best, terminal parameters are freshly evaluated, optimizer/forward/identifiability states remain distinct."
   },
