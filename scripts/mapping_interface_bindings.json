@@ -506,7 +506,7 @@
    "modules": {
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
     "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "9290751b5fc483dd391895a3f38723bbae32fbcd41803b0c6112730c61ae6d2f",
-    "scirel.equilibrium.reduced_hall_anisotropic_picard": "5b689784d665ffb10cb8312711510c63552d57d226f1bd15c114ca515b34ba24",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "89e194cafbd0c1260401c639847b7e6e5689a2e51e4fca77f7b05c09f2659c3f",
     "scirel.kinetic.grid_mirror_kinetic_closure": "84a54db506ac9011abdde1aacb4f226c6c6e5609b2610a3e3ffc7c72540ab674"
    },
    "review_basis": "Wrapper exposes kinetic_composition/hall_composition dependency overrides explicitly. run_composition requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
@@ -634,7 +634,7 @@
     "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
     "scirel.closures.reduced_hall_drift": "c4c860fa85183bc66d14d967abdd8ea35e87b9887e12d09581ab3c71c3ef6aa0",
     "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
-    "scirel.equilibrium.reduced_hall_anisotropic_picard": "5b689784d665ffb10cb8312711510c63552d57d226f1bd15c114ca515b34ba24",
+    "scirel.equilibrium.reduced_hall_anisotropic_picard": "89e194cafbd0c1260401c639847b7e6e5689a2e51e4fca77f7b05c09f2659c3f",
     "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
    },
    "review_basis": "run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
@@ -659,7 +659,7 @@
    "modules": {
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
     "scirel.field.circular_filament_green": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
-    "scirel.field.current_green_superposition": "541c146319025914fbce76ff41134524228f741d21d7cf1ac113c4f830892aed",
+    "scirel.field.current_green_superposition": "7505b1dc85ec968bbe6e3b1531d603d3289bd2de4fe1912de0cc3afa0980ca5c",
     "scirel.field.multi_coil_vacuum_field": "7233291b594729b323140f7d7974e2f94467cad59ecb568ac723a263d5b599a3",
     "scirel.field.rectangular_coil_filaments": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d"
    },

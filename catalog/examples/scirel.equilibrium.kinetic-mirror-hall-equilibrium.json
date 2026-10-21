@@ -33,7 +33,7 @@
  "identity": {
   "relation": "grid mirror kinetic pressure state to reduced-Hall magnetic-flux feedback",
   "direction": "R-Z mesh, vacuum flux, Green response, ion properties and kinetic configuration -> terminal Hall equilibrium mapping",
-  "definition": "Copy kinetic_config, then bind a pressure_closure(B,psi) which calls the grid mirror kinetic TaskGraph with the current Hall B and psi and with the outer r_grid/z_grid overriding any same-named kinetic_config entries. Remove kinetic_config from the Hall payload, replace any supplied pressure_closure with the bound closure, and return the reduced-Hall TaskGraph result unchanged. The outer wrapper performs no magnetic update itself; the nested Hall graph owns its bounded Picard and optional Hall-inertia iterations and reevaluates the kinetic closure at its terminal state.",
+  "definition": "Copy kinetic_config, then bind a pressure_closure(B,psi) which calls the grid mirror kinetic TaskGraph with the current Hall B and psi and with the outer r_grid/z_grid overriding any same-named kinetic_config entries. Remove kinetic_config from the Hall payload, replace any supplied pressure_closure with the bound closure, and return the reduced-Hall TaskGraph result unchanged. The outer wrapper performs no magnetic update itself; the nested Hall graph owns its bounded Picard and optional Hall-inertia iterations, checks the terminal field floor before the final kinetic closure, and reevaluates that closure at its terminal state.",
   "model": "axisymmetric grid mirror end-loss/quasineutral kinetic closure coupled to reduced-Hall anisotropic Picard feedback",
   "geometry": "rectilinear cylindrical R-Z grid accepted by both nested graphs; the bound Hall graph requires at least three nodes on each axis",
   "coordinates": "fields use [Z,R] array indexing; nested Hall supplies psi=R A_phi in Wb/rad and the dense Green matrix follows its C-order cell-current convention. The outer binding passes that psi without conversion to the kinetic flux-profile coordinate.",
@@ -146,7 +146,7 @@
    "dtype": "finite real scalar",
    "required": false,
    "default": 1e-08,
-   "constraints": "Strictly positive; checked during updates, not repeated at terminal reevaluation."
+   "constraints": "Strictly positive; checked during updates and before the terminal kinetic closure."
   },
   {
    "name": "minimum_firehose_margin",
@@ -342,7 +342,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
    "required": true,
-   "constraints": "The Hall graph does not repeat minimum_field at this terminal evaluation."
+   "constraints": "The Hall graph checks minimum_field before the terminal kinetic closure call."
   },
   {
    "name": "p_parallel",
@@ -533,7 +533,7 @@
  },
  "failure_semantics": {
   "invalid_input": "The outer wrapper rejects missing/non-dict kinetic_config or missing required outer keys with ValueError. Nonmapping positional inputs raise TypeError in compose. Nested graph validation then rejects malformed grids, Green response, species data, kinetic controls and pressure state; errors propagate without wrapper repair.",
-  "runtime_failure": "Any kinetic, Hall, field, end-loss, quadrature, local-inertia or compatibility exception propagates; no alternate pressure model or partial equilibrium is returned.",
+  "runtime_failure": "Any kinetic, Hall, field, end-loss, quadrature, local-inertia or compatibility exception propagates; no alternate pressure model or partial equilibrium is returned. A sub-minimum terminal Hall field raises FloatingPointError before the terminal kinetic closure call, and that exception propagates.",
   "nonconvergence": "The Hall outer graph can return converged=false at maxiter after successful terminal checks. A nested ambipolar/end-loss or Hall local-inertia failure may raise instead; the outer wrapper does not retry.",
   "partial_results": "No partial mapping is returned after an exception. A successful Hall result is passed through unchanged, including converged=false when applicable."
  },

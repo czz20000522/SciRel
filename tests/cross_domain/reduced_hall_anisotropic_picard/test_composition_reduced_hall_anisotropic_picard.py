@@ -175,3 +175,36 @@ def test_review_gate_rejects_nonfinite_hall_grid_state():
     values["psi_vac"][0, 0] = np.nan
     with pytest.raises(ValueError, match="must be finite"):
         composition.run_composition(values, asset_loader=_loader)
+
+
+def test_reduced_hall_terminal_floor_precedes_terminal_closure():
+    calls = {'field': 0, 'closure': 0}
+
+    def instrumented_closure(B, psi):
+        calls['closure'] += 1
+        return _closure(B, psi)
+
+    def loader(reference):
+        asset = _load_asset(reference)
+        if reference != 'scirel.field.poloidal_field_from_flux':
+            return asset
+
+        def field(_r_grid, _z_grid, psi):
+            calls['field'] += 1
+            level = 2.0 if calls['field'] == 1 else 0.5
+            shape = np.asarray(psi).shape
+            return {
+                'B_R': np.zeros(shape),
+                'B_Z': np.full(shape, level),
+                'B': np.full(shape, level),
+            }
+
+        return field
+
+    with pytest.raises(FloatingPointError, match='terminal magnetic field vanished'):
+        composition.run_composition(
+            _inputs(pressure_closure=instrumented_closure, minimum_field=1.0, maxiter=1),
+            asset_loader=loader,
+        )
+    assert calls['field'] == 2
+    assert calls['closure'] == 1

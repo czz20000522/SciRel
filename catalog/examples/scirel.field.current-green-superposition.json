@@ -123,7 +123,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError is raised for nonfinite values, unsupported current rank, or incompatible response shapes; for two-dimensional responses the second axis must equal the number of currents.",
-  "runtime_failure": "No iterative runtime failure is defined; arithmetic errors propagate.",
+  "runtime_failure": "FloatingPointError is raised when the scalar or matrix contraction is not representable as finite float64; no partial mapping is returned.",
   "nonconvergence": "Not applicable; this is a direct contraction.",
   "partial_results": "No output mapping is returned after validation failure."
  },
@@ -149,7 +149,8 @@
   "scope": [
    "Scalar scaling.",
    "Vector source-column contraction.",
-   "Wrong source-column length and nonfinite failure behavior."
+   "Wrong source-column length and nonfinite failure behavior.",
+   "An unrepresentable scalar or matrix contraction fails closed with FloatingPointError."
   ],
   "tests": [
    "tests/field/test_current_green_superposition.py"

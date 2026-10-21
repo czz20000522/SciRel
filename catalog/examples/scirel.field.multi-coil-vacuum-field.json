@@ -123,7 +123,7 @@
  },
  "failure_semantics": {
   "invalid_input": "ValueError is raised for missing or malformed grids, empty/nonmapping coils, invalid geometry, weights, or currents.",
-  "runtime_failure": "Dependency ValueError/FloatingPointError propagates; no fallback or retry is performed.",
+  "runtime_failure": "Dependency ValueError/FloatingPointError propagates before any field is returned, including a nonrepresentable current-weighted Green contraction; no fallback or retry is performed.",
   "nonconvergence": "Not applicable; the graph has no feedback loop.",
   "partial_results": "No field or filament output is returned after a failed graph stage."
  },
@@ -160,7 +160,8 @@
    "Linear scaling with coil drive current.",
    "Independent response rows for multiple coils.",
    "Current-versus-filament-weight semantics.",
-   "Missing current and invalid grid failures."
+   "Missing current and invalid grid failures.",
+   "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields."
   ],
   "tests": [
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py"

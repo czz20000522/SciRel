@@ -1,10 +1,10 @@
 {
  "schema": "scirel.chapter-execution",
- "source_commit": "47bfcf1069d8750d4e8ed3f94c366b4985f01813",
- "source_identity_note": "Chapter implementation, example and figures were rerun from the current SciRel source tree at commit 47bfcf1069d8750d4e8ed3f94c366b4985f01813; this development replay is source-bound and does not establish a release wheel receipt.",
+ "source_commit": "c2da73947e7c573c16ad3f07f0c28ad184381488",
+ "source_identity_note": "Chapter implementation, example and results were replayed from the SciRel working tree based on commit c2da73947e7c573c16ad3f07f0c28ad184381488 (including the task-30 fail-closed current-weighted contraction change); this development replay is source-bound and does not establish a release wheel receipt.",
  "files": {
   "src/scirel/field/circular_filament_green.py": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
-  "src/scirel/field/current_green_superposition.py": "541c146319025914fbce76ff41134524228f741d21d7cf1ac113c4f830892aed",
+  "src/scirel/field/current_green_superposition.py": "7505b1dc85ec968bbe6e3b1531d603d3289bd2de4fe1912de0cc3afa0980ca5c",
   "src/scirel/field/rectangular_coil_filaments.py": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d",
   "src/scirel/field/multi_coil_vacuum_field.py": "7233291b594729b323140f7d7974e2f94467cad59ecb568ac723a263d5b599a3",
   "src/scirel/_composition.py": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
@@ -12,7 +12,7 @@
  },
  "scope": "Current development magnetostatics example; bounded technical validation.",
  "example_sha256": "4327bf16926a337f25698747bd2608708f60d7c44b82b5491cd9952ab621cf78",
- "results_sha256": "93541b672e985b39225a0367bc9ef1595df2beca4d54b79c5adcbe2b14673a80",
+ "results_sha256": "61fa9d80af163c62fa4163186a1c24858cd858984598e182fc5f8966f6a77a65",
  "wheel_sha256": null,
  "wheel_version": "0.1.0.dev11",
  "runtime": "CPython3.14.7/NumPy2.5.4/SciPy1.18.1/Matplotlib3.11.2",
@@ -28,11 +28,11 @@
  "plot_runtime": "Existing figures remain bound to the checked chapter results; this development replay did not rebuild a release wheel.",
  "document_files": {
   "catalog/examples/scirel.field.circular-filament-green.json": "eb915d7f140c420eacc58a6bc0b8007cf504f5f0624bc784a81e5da1a419a724",
-  "catalog/examples/scirel.field.current-green-superposition.json": "fd31db7da778a20a2a6fb18308d28061284901e9ff5adbbcaa68c16c970c6103",
+  "catalog/examples/scirel.field.current-green-superposition.json": "2330fc2dbadb8ee167198a47ce70ba1cc038b84e928ba5f17b295c7e54739a17",
   "catalog/examples/scirel.field.rectangular-coil-filaments.json": "ea8561d0d6f747a48a7be40dae668db7b627f0dacfd6391fa21f8a0b0f32fa05",
-  "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "d9c6815e13a2541c390fb5fdb62441d5859b7cf035a8de64156c594b6583e202",
+  "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "a80c51df3d8b3f3aaea8aec13587cce01c5cb5fdcd67729e62aaa68dafab14da",
   "catalog/examples/scirel.electromagnetism.circular-filament-green.json": "25746cc7c070faf881543269379b5544fbe7fe468973b83afc1bd26c4134de60"
  },
- "previous_execution_sha256": "78bf105864bf14cb5cb2cd752fc21be275fe6c6ea8938f6e12396c9e802a4fcc",
+ "previous_execution_sha256": "2fbafe2c94561666643bcd7e158b48420df2227377adecd506061f31b22bc6a6",
  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; example and plot rerun from source"
 }

@@ -4030,9 +4030,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.kinetic-mirror-hall-equilibrium",
-   "source_sha256": "09afe976ed5910625b07f493cc103559f50c11c77d8478e1eaaadc80abedd01a",
+   "source_sha256": "b7cc62cc9dfab86c8d8d2e14a133ffc2574548c9b98ffa57c9480e35af03ef46",
    "summary": "将网格镜动力学闭合接入约化 Hall 各向异性 Picard 图的压强入口，在每次磁更新前用当前场和磁通求动力学状态。",
-   "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代及终末动力学重算。",
+   "definition": "复制 kinetic_config，构造 pressure_closure(B,psi)，向网格镜动力学图传入当前 Hall 的 B、psi，并用外层 r_grid/z_grid 覆盖配置同名项。Hall 载荷中移除 kinetic_config，以新闭合覆盖原 pressure_closure，原样返回 Hall 图结果。此封装本身不更新磁场；嵌套 Hall 图负责有限 Picard/可选惯性迭代，并在终末动力学闭合前检查场下限，然后重算终末动力学状态。",
    "model": "轴对称网格镜端损失/准中性动力学闭合与约化 Hall 各向异性 Picard 反馈的组合。",
    "assumptions": [
     "kinetic_config 补齐动力学端口，且与外层 Hall 离子参数科学相容；所有 psi 剖面须理解 R A_phi、单位 Wb/rad。",
@@ -4104,7 +4104,7 @@
     {
      "name": "minimum_field",
      "description": "Hall 更新场下限，单位 T。",
-     "constraints": "严格为正；在更新时检查，终末重算不重复。",
+     "constraints": "严格为正；在更新及终末动力学闭合前检查。",
      "dtype": "有限实数标量"
     },
     {
@@ -4226,7 +4226,7 @@
     {
      "name": "B",
      "description": "最后一次动力学求值所用终末极向场模，单位 T。",
-     "constraints": "Hall 图在此终末求值时不重复检查 minimum_field。",
+     "constraints": "Hall 图在终末动力学闭合前检查 minimum_field。",
      "dtype": "float64 数组"
     },
     {
@@ -4361,7 +4361,7 @@
    },
    "failure_semantics": {
     "invalid_input": "缺失/非字典 kinetic_config 或外层必需键抛 ValueError；compose 非映射位置输入抛 TypeError。嵌套图拒绝无效网格、Green、物种、控制和压强状态，封装不修补。",
-    "runtime_failure": "动力学、Hall、磁场、端损失、积分、局部惯性或相容性异常都传播，不回退其他压强模型或部分平衡。",
+    "runtime_failure": "动力学、Hall、磁场、端损失、积分、局部惯性或相容性异常都传播，不回退其他压强模型或部分平衡。终末 Hall 场低于 minimum_field 时，在终末动力学闭合前抛 FloatingPointError 并传播。",
     "nonconvergence": "Hall 外层可在 maxiter 后通过终末门禁返回 converged=False；嵌套端损失或 Hall 局部惯性失败则可抛异常，封装不重试。",
     "partial_results": "异常不返回部分映射；成功 Hall 结果原样传出，包括允许的 converged=False。"
    },
@@ -4388,9 +4388,7 @@
      "tests/framework_compositions/test_kinetic_mirror_hall_equilibrium.py"
     ]
    },
-   "source_conflicts": [
-    "本资产 inputs.minimum_field 与 outputs.B 称终末不重查场下限；所绑定 reduced-hall-anisotropic-picard 的 applicability 和 failure_semantics 则声明终末检查，文档间不一致。"
-   ]
+   "source_conflicts": []
   },
   {
    "asset_id": "scirel.closures.quasineutral-reference-density",
@@ -6135,9 +6133,9 @@
   },
   {
    "asset_id": "scirel.equilibrium.reduced-hall-anisotropic-picard",
-   "source_sha256": "bdd2278f084a877a61e2fe2f7cd5de9c074a1d48969b0bc9136a18d3348cc032",
+   "source_sha256": "baff958d2dd7252c8137abe8fb08314bfb6bb520a938b2c9355b65a7314fc737",
    "summary": "将调用者压强闭合、约化 Hall 漂移/电流和稠密 Green 更新连接为轴对称磁通迭代，重算终末状态并返回收敛与相容性诊断。",
-   "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。停止条件为 relative_psi_change<=tol 或 maxiter，但输出还提供终末未松弛固定点残差门槛。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点的 firehose 裕度及可选的严格力/欧姆相容性。终末不重复场下限和图级非负压强检查；Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
+   "definition": "从 psi_vac 副本及零初始单元电流开始，每步由 psi 求 B，检查场下限，调用 pressure_closure(B,psi)，核对并广播压强，选活跃点，求约化 Hall 电流/漂移，再执行磁通松弛 Green 更新。停止条件为 relative_psi_change<=tol 或 maxiter，但输出还提供终末未松弛固定点残差门槛。返回 psi 上重新计算磁场、闭合、压强形状、Hall 状态和单元电流，再检查活跃点的 firehose 裕度及可选的严格力/欧姆相容性。终末在调用闭合/Hall 之前检查场下限；图级非负压强检查仍不重复，Hall 叶仍验证自身输入。每次 Hall 计算可含独立有限惯性迭代。",
    "model": "由调用者闭合驱动的轴对称约化 Hall、旋磁对称压强 Picard 反馈。",
    "assumptions": [
     "压强闭合须将 psi 解释为 R A_phi、单位 Wb/rad，并给出物理相容状态及 Hall 必需密度、电子压强与电势。",
@@ -6210,7 +6208,7 @@
     {
      "name": "minimum_field",
      "description": "可接受极向场下限，单位 T。",
-     "constraints": "严格为正；每次迭代在调用压强闭合前检查 B。终末重算不重复此门禁。",
+     "constraints": "严格为正；每次迭代及终末都在调用压强闭合前检查 B。",
      "dtype": "有限实数标量"
     },
     {
@@ -6326,7 +6324,7 @@
     {
      "name": "B",
      "description": "终末极向场模，单位 T。",
-     "constraints": "终末重算不独立检查 minimum_field。",
+     "constraints": "终末场在调用闭合/Hall 前对照 minimum_field 检查。",
      "dtype": "float64 数组"
     },
     {
@@ -6458,7 +6456,7 @@
     ],
     "supported": [
      "有限的轴对称约化 Hall 磁反馈，旋磁对称压强及调用者闭合/掩码策略。",
-     "终末重算场、闭合、Hall 漂移和磁通映射后，在返回前拒绝低于 minimum_field 的场；更早的回调或依赖异常仍传播。"
+     "终末场导出后，在调用终末压力闭合、Hall 漂移和磁通映射前，拒绝低于 minimum_field 的场；更早的回调或依赖异常仍传播。"
     ],
     "excluded": [
      "不内置动力学压强模型、密度演化、自由边界响应或非轴对称平衡。",
@@ -6467,7 +6465,7 @@
    },
    "failure_semantics": {
     "invalid_input": "缺口、无效网格/Green/回调/控制/掩码或状态抛 ValueError/TypeError，叶与回调异常传播。终末只重复压强形状处理，叶仍拒绝非有限及无效组分；图级网格未拒负 R，但场/Hall 叶会拒绝。",
-    "runtime_failure": "迭代场低于 minimum_field 时在其闭合调用前抛 FloatingPointError。终末活跃 firehose 裕度处于或低于非负 minimum_firehose_margin 时抛 FloatingPointError。终末严格平行力或广义欧姆阈值超限抛 ValueError。Hall 局部惯性不收敛抛 RuntimeError；其他回调或依赖异常继续传播。终末场还会对照 minimum_field 检查。",
+    "runtime_failure": "迭代场低于 minimum_field 时在其闭合调用前抛 FloatingPointError。终末活跃 firehose 裕度处于或低于非负 minimum_firehose_margin 时抛 FloatingPointError。终末严格平行力或广义欧姆阈值超限抛 ValueError。Hall 局部惯性不收敛抛 RuntimeError；其他回调或依赖异常继续传播。终末场在调用终末闭合前对照 minimum_field 检查。",
     "nonconvergence": "达到外层 maxiter 后仍终末重算与检查，可返回 converged=False、最后 psi 与记录；局部惯性失败则抛 RuntimeError。",
     "partial_results": "异常后不返回映射；外层有界未收敛可返回通过终末门禁的完整最后状态。"
    },
@@ -6480,7 +6478,8 @@
      "关闭 Hall 时的各向同性电流与真空磁通回归。",
      "关闭 Hall 的人工用例连接圆丝真空磁通、镜等离子体 Green 及单个活跃电流单元，核对非零磁通增量和离源点磁场。",
      "非零 Green 响应和两步有界运行中的反馈。",
-     "标量压强广播、错形拒绝、非有限/无效控制及关闭张力阈值。"
+     "标量压强广播、错形拒绝、非有限/无效控制及关闭张力阈值。",
+     "带插桩的终末闭合用例显示：终末场低于 minimum_field 时，在调用终末闭合之前抛错。"
     ],
     "evidence_ceiling": "人工构造与解析离散检查仅支持所述极向模型及积分几何；不证明任意 Green/闭合、实验等离子体适用性或公开发行。",
     "known_limitations": [
@@ -6494,7 +6493,6 @@
     ]
    },
    "source_conflicts": [
-    "identity.definition、inputs.minimum_field.constraints、outputs.B.constraints 称终末不重复场下限检查，applicability.supported/preconditions 和 failure_semantics.runtime_failure 则明确要求终末检查。",
     "identity.definition 称按松弛后的 relative_psi_change 停止，但 outputs.converged/fixed_point_residual 要求终末未松弛映射残差通过 tol；outputs.converged 还引用本图未定义的“自由边界力相容性”。"
    ]
   },
@@ -9483,7 +9481,7 @@
   },
   {
    "asset_id": "scirel.field.current-green-superposition",
-   "source_sha256": "fd31db7da778a20a2a6fb18308d28061284901e9ff5adbbcaa68c16c970c6103",
+   "source_sha256": "2330fc2dbadb8ee167198a47ce70ba1cc038b84e928ba5f17b295c7e54739a17",
    "summary": "将标量或源向量电流与形状兼容的 Green 响应数组收缩。",
    "definition": "秩一响应使用标量乘法，秩二响应沿源轴执行矩阵乘法。",
    "model": "不重排响应的线性叠加。",
@@ -9553,7 +9551,7 @@
    },
    "failure_semantics": {
     "invalid_input": "值非有限、电流秩不支持或响应形状不兼容时抛出 ValueError。",
-    "runtime_failure": "没有迭代运行时失败；算术错误会传播。",
+    "runtime_failure": "标量或矩阵收缩无法表示为有限 float64 时抛出 FloatingPointError；不返回部分映射。",
     "nonconvergence": "不适用；这是直接收缩。",
     "partial_results": "验证失败后不返回输出映射。"
    },
@@ -9565,7 +9563,8 @@
     "scope": [
      "标量缩放。",
      "向量源轴收缩。",
-     "错误源轴及非有限输入的失败行为。"
+     "错误源轴及非有限输入的失败行为。",
+     "标量或矩阵收缩不可表示时以 FloatingPointError 失败闭合。"
     ],
     "evidence_ceiling": "验证线性收缩和形状合同，不证明提供输入的格林模型在物理上适用。",
     "known_limitations": [
@@ -9577,7 +9576,7 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "d9c6815e13a2541c390fb5fdb62441d5859b7cf035a8de64156c594b6583e202",
+   "source_sha256": "a80c51df3d8b3f3aaea8aec13587cce01c5cb5fdcd67729e62aaa68dafab14da",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
    "definition": "对每个调用者线圈离散中心、附加权重、计算 Green 响应、收缩一个驱动电流，并重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
@@ -9647,7 +9646,7 @@
    },
    "failure_semantics": {
     "invalid_input": "缺失或格式错误的网格、空/非映射线圈、非法几何、权重或电流时抛出 ValueError。",
-    "runtime_failure": "依赖产生的 ValueError/FloatingPointError 会传播；不执行回退或重试。",
+    "runtime_failure": "依赖产生的 ValueError/FloatingPointError 会在返回任何场之前传播，包括不可表示的电流加权 Green 收缩；不执行回退或重试。",
     "nonconvergence": "不适用；图没有反馈环。",
     "partial_results": "任一步骤失败后不返回场或电流丝输出。"
    },
@@ -9660,7 +9659,8 @@
      "驱动电流的线性缩放。",
      "多个线圈的独立响应行。",
      "电流与电流丝权重的区分。",
-     "缺失电流和非法网格的失败行为。"
+     "缺失电流和非法网格的失败行为。",
+     "不可表示的近导线或大电流响应以失败闭合，而不是返回非有限场。"
     ],
     "evidence_ceiling": "验证针对声明的轴对称真空电流丝模型和已测输入合同，不证明材料线圈、等离子体响应或三维几何适用性。",
     "known_limitations": [

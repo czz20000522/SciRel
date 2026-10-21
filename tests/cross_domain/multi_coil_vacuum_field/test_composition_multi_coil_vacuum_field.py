@@ -54,6 +54,22 @@ def test_rejects_missing_current_contract():
         run_composition(values, asset_loader=_assets)
 
 
+def test_unrepresentable_vacuum_field_fails_closed():
+    r_grid = np.array([[0.0, 0.47 + 1e-16], [0.0, 0.47 + 1e-16]])
+    z_grid = np.array([[0.0, 0.0], [0.025, 0.025]])
+    values = {
+        "r_grid": r_grid,
+        "z_grid": z_grid,
+        "rectangular_coils": [{
+            "r0_m": 0.45, "z0_m": 0.0, "nr": 2, "nz": 2,
+            "dr_m": 0.04, "dz_m": 0.05, "current_a": 1e308,
+        }],
+    }
+
+    with pytest.raises(FloatingPointError, match="not representable"):
+        run_composition(values, asset_loader=_assets)
+
+
 def test_review_gate_keeps_two_coil_source_blocks_and_currents_independent():
     first = _inputs(700.0)
     second = _inputs(-300.0)

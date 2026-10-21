@@ -91,6 +91,8 @@ def run_composition(inputs, *, asset_loader):
             converged = True
             break
     magnetic = field(r_grid, z_grid, psi)
+    if np.any(magnetic['B'] < minimum_field):
+        raise FloatingPointError('Hall terminal magnetic field vanished')
     state = closure(magnetic['B'], psi)
     p_parallel, p_perpendicular = _coerce_pressure(state['p_parallel'], state['p_perpendicular'], psi)
     active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
@@ -99,8 +101,6 @@ def run_composition(inputs, *, asset_loader):
     cell_currents = final_update['plasma_cell_currents']
     fixed_point_residual=final_update['fixed_point_residual']
     converged=bool(fixed_point_residual<=tol)
-    if np.any(magnetic['B']<minimum_field):
-        raise FloatingPointError('Hall terminal magnetic field vanished')
     if minimum_firehose >= 0.0 and np.any(active & (hall['firehose_margin'] <= minimum_firehose)):
         raise FloatingPointError('Hall pressure closure crossed firehose/tension singularity')
     compatibility_tol = compatibility_tol

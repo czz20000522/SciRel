@@ -33,7 +33,7 @@
  "identity": {
   "relation": "caller-supplied pressure state and reduced Hall current to axisymmetric Green-feedback magnetic flux",
   "direction": "R-Z grid, vacuum flux, dense Green response, pressure_closure and ion properties -> terminal flux, Hall state, field, pressure and diagnostics",
-  "definition": "Starting from a copy of psi_vac and zero prior cell currents, each outer step derives B from the current psi, checks the step field floor, calls pressure_closure(B,psi), validates and broadcasts the primary pressures, selects active cells, computes reduced-Hall J_phi and drifts, then applies a flux-relaxed Green update. The outer loop stops at relative_psi_change <= tol or maxiter. On the returned psi it repeats field, closure, pressure shape coercion, Hall and cell-current evaluation, then applies active-cell firehose and optional strict parallel-force/generalized-Ohm compatibility checks. The terminal path does not repeat the step field-floor or graph-level pressure nonnegativity gate; the Hall leaf still checks pressure finiteness and its optional ion-pressure state. The Hall Operator may run its own bounded local inertia iteration inside each evaluation.",
+  "definition": "Starting from a copy of psi_vac and zero prior cell currents, each outer step derives B from the current psi, checks the step field floor, calls pressure_closure(B,psi), validates and broadcasts the primary pressures, selects active cells, computes reduced-Hall J_phi and drifts, then applies a flux-relaxed Green update. The outer loop stops at relative_psi_change <= tol or maxiter. On the returned psi it derives the field, checks the terminal field floor before invoking the terminal closure, repeats closure, pressure shape coercion, Hall and cell-current evaluation, then applies active-cell firehose and optional strict parallel-force/generalized-Ohm compatibility checks. The terminal path still does not repeat the graph-level pressure nonnegativity gate; the Hall leaf checks pressure finiteness and its optional ion-pressure state. The Hall Operator may run its own bounded local inertia iteration inside each evaluation.",
   "model": "axisymmetric reduced Hall and gyrotropic-pressure Picard feedback with caller-bound closure",
   "geometry": "rectilinear cylindrical R-Z mesh, at least three nodes on each axis",
   "coordinates": "arrays indexed [Z,R]; dense Green response follows the bound Picard update's C-order cell-current convention",
@@ -147,7 +147,7 @@
    "dtype": "finite real scalar",
    "required": false,
    "default": 1e-08,
-   "constraints": "Strictly positive; each iteration checks B before invoking the pressure closure. The terminal reevaluation does not repeat this gate."
+   "constraints": "Strictly positive; each iteration and the terminal reevaluation check B before invoking the pressure closure."
   },
   {
    "name": "minimum_firehose_margin",
@@ -333,7 +333,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
    "required": true,
-   "constraints": "Terminal recomputation does not independently check minimum_field."
+   "constraints": "Terminal field is checked against minimum_field before the terminal closure/Hall reevaluation."
   },
   {
    "name": "p_parallel",
@@ -524,7 +524,7 @@
   ],
   "supported": [
    "Bounded axisymmetric reduced-Hall magnetic feedback with selected gyrotropic pressure and an explicit caller-controlled closure and mask policy.",
-   "After terminal field, pressure closure, Hall drift and flux-map reevaluation, reject a terminal field below minimum_field before returning; earlier callback or dependency failures still propagate."
+   "After the terminal field is derived, reject a terminal field below minimum_field before the terminal pressure closure, Hall drift and flux-map reevaluation; earlier callback or dependency failures still propagate."
   ],
   "excluded": [
    "A built-in kinetic pressure model, density evolution, free-boundary response or non-axisymmetric equilibrium.",
@@ -533,7 +533,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError/TypeError for missing ports, malformed/nonfinite grid or Green response, noncallable closure, invalid controls, wrong-shaped mask or bad iteration pressure/state; bound leaf and callback exceptions propagate. The terminal path coerces pressure shape without repeating the graph-level nonnegative check, but the Hall leaf still rejects nonfinite primary pressure and invalid optional ion pressure. The graph's own grid check does not reject negative R, but the bound field/Hall leaves do.",
-  "runtime_failure": "An iteration field below minimum_field raises FloatingPointError before its closure call. Terminal active firehose margin at/below a nonnegative minimum_firehose_margin raises FloatingPointError. Strict terminal parallel-force or generalized-Ohm threshold exceedance raises ValueError. A Hall local inertia nonconvergence raises RuntimeError; other callback/dependency failures propagate. The terminal field is also checked against minimum_field.",
+  "runtime_failure": "An iteration field below minimum_field raises FloatingPointError before its closure call. Terminal active firehose margin at/below a nonnegative minimum_firehose_margin raises FloatingPointError. Strict terminal parallel-force or generalized-Ohm threshold exceedance raises ValueError. A Hall local inertia nonconvergence raises RuntimeError; other callback/dependency failures propagate. The terminal field is checked against minimum_field before the terminal closure call.",
   "nonconvergence": "At maxiter without meeting the outer flux threshold, reevaluate and gate the terminal state, then return converged=false with last psi and history. Local Hall inertia nonconvergence instead raises RuntimeError.",
   "partial_results": "No mapping is returned after an exception. Outer bounded nonconvergence is a complete last-state mapping if terminal evaluation and gates succeed."
  },
@@ -570,7 +570,8 @@
    "Hall-disabled isotropic current and vacuum-flux regression.",
    "A Hall-disabled manufactured graph input joins a circular-filament vacuum psi, mirror-plasma Green matrix and one active current cell; it checks the nonzero flux increment against direct filament response and the returned off-source field against direct filament fields.",
    "Nonzero Green response and previous-state feedback over a bounded two-step run.",
-   "Scalar-pressure broadcast, wrong-shape rejection, nonfinite/invalid controls and disabled firehose threshold."
+   "Scalar-pressure broadcast, wrong-shape rejection, nonfinite/invalid controls and disabled firehose threshold.",
+   "An instrumented terminal closure shows that a sub-minimum terminal field raises before the terminal closure is called."
   ],
   "tests": [
    "tests/cross_domain/reduced_hall_anisotropic_picard/test_composition_reduced_hall_anisotropic_picard.py",
@@ -626,19 +627,20 @@
    {
     "id": "field_gate",
     "kind": "controlled_glue",
-    "description": "Reject a sub-minimum field before each iteration closure; terminal reevaluation bypasses this comparison.",
+    "description": "Reject a sub-minimum field before each iteration and terminal closure; no terminal bypass.",
     "inputs": [
      "magnetic",
      "minimum_field"
     ],
     "outputs": [
-     "step_magnetic"
+     "step_magnetic",
+     "terminal_magnetic"
     ]
    },
    {
     "id": "pressure_closure",
     "kind": "caller_port",
-    "description": "Call the caller-owned pressure_closure(B,psi) on each step and terminal state.",
+    "description": "Call the caller-owned pressure_closure(B,psi) on each step and terminal state after the field floor gate.",
     "inputs": [
      "pressure_closure",
      "magnetic",
@@ -721,7 +723,7 @@
    {
     "id": "terminal",
     "kind": "controlled_glue",
-    "description": "Use terminal reevaluation of field, closure, Hall and raw currents; apply active firehose and optional strict compatibility checks, then expose the exact returned mapping.",
+    "description": "Derive and gate the terminal field, then reevaluate closure, Hall and raw currents; apply active firehose and optional strict compatibility checks, then expose the exact returned mapping.",
     "inputs": [
      "psi_state",
      "magnetic",
@@ -877,8 +879,8 @@
      "node": "field_gate",
      "port": "magnetic"
     },
-    "description": "Step field magnitude for minimum gate.",
-    "condition": "Outer iteration only.",
+    "description": "Field magnitude for the iteration and terminal minimum gate.",
+    "condition": "Each iteration and terminal reevaluation.",
     "transform": "Inspect B.",
     "kind": "data",
     "required": true
@@ -892,8 +894,8 @@
      "node": "field_gate",
      "port": "minimum_field"
     },
-    "description": "Step field floor.",
-    "condition": "Outer iteration; default 1e-8 T.",
+    "description": "Iteration and terminal field floor.",
+    "condition": "Each iteration and terminal reevaluation; default 1e-8 T.",
     "transform": "Identity or default.",
     "kind": "control",
     "required": false
@@ -907,22 +909,22 @@
      "node": "pressure_closure",
      "port": "magnetic"
     },
-    "description": "Gated B for step closure; terminal field bypasses this gate.",
-    "condition": "Each step, with ungated terminal reevaluation.",
+    "description": "Gated B for step and terminal closure; no ungated terminal path.",
+    "condition": "Each step and terminal reevaluation.",
     "transform": "Extract B magnitude.",
     "kind": "data",
     "required": true
    },
    {
     "from": {
-     "node": "field",
-     "port": "magnetic"
+     "node": "field_gate",
+     "port": "terminal_magnetic"
     },
     "to": {
      "node": "pressure_closure",
      "port": "magnetic"
     },
-    "description": "Ungated terminal B for the final closure call.",
+    "description": "Gated terminal B for the final closure call.",
     "condition": "Terminal reevaluation only.",
     "transform": "Extract B magnitude.",
     "kind": "data",
@@ -2218,7 +2220,7 @@
      "node": "terminal",
      "port": "minimum_field"
     },
-    "description": "Explicit minimum_field binding.",
+    "description": "Explicit minimum_field binding for the terminal gate; the gate runs before terminal closure.",
     "condition": "When the bound stage executes.",
     "transform": "Identity.",
     "kind": "data",
@@ -2227,7 +2229,7 @@
   ],
   "execution": {
    "mode": "bounded_picard_feedback_with_nested_bounded_hall_inertia",
-   "ordering": "Validate geometry and controls; per step derive field, reject sub-minimum B, invoke/normalize caller closure, select active cells, compute reduced-Hall state, apply Green flux update and record diagnostics. After stopping, derive field, invoke closure, compute Hall state and raw cell currents again, then check active firehose and optional strict compatibility. A terminal minimum-field comparison is also required. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
+   "ordering": "Validate geometry and controls; per step derive field, reject sub-minimum B, invoke/normalize caller closure, select active cells, compute reduced-Hall state, apply Green flux update and record diagnostics. After stopping, derive field, reject sub-minimum B before invoking the terminal closure, then invoke closure, compute Hall state and raw cell currents again, and check active firehose and optional strict compatibility. The terminal minimum-field comparison is therefore applied before the terminal closure. Terminal reevaluation computes the unrelaxed flux-map residual on the returned field/closure state; it determines converged independently of a small relaxed step.",
    "branches": [
     "plasma_mask is a fixed grid, callable(B,psi), or all-active default.",
     "A negative minimum_firehose_margin disables its terminal gate.",
@@ -2235,7 +2237,7 @@
     "strict_compatibility=false returns compatibility_messages instead of raising for parallel-force/Ohm threshold exceedance."
    ],
    "state_ownership": "The graph owns a copy of evolving psi, previous raw cell currents, outer count and history. The Hall leaf owns each bounded local inertia fixed point. The caller owns pressure_closure, Green response, original inputs and optional mask policy.",
-   "failure_propagation": "Invalid graph, callback or leaf inputs abort. Iteration field floor, terminal firehose, optional strict compatibility and Hall local nonconvergence follow their documented exception paths; outer nonconvergence alone returns last state.",
+   "failure_propagation": "Iteration and terminal field floors, terminal firehose, optional strict compatibility and Hall local nonconvergence follow their documented exception paths; outer nonconvergence alone returns last state.",
    "feedback": [
     {
      "id": "hall_picard",

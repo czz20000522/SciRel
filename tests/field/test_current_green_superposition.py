@@ -42,6 +42,13 @@ def test_rejects_wrong_green_source_axis():
                             [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
 
 
+def test_unrepresentable_contraction_fails_closed():
+    with pytest.raises(FloatingPointError, match="not representable"):
+        scientific_function([1e308], [[-3.6e9]], [[0.0]], [[0.0]])
+    with pytest.raises(FloatingPointError, match="not representable"):
+        scientific_function(1e308, [-3.6e9], [0.0], [0.0])
+
+
 def test_reviewed_relation_example():
     currents = np.array([2.0, -1.0])
     gpsi = np.array([[1.0, 4.0], [3.0, 5.0]])
