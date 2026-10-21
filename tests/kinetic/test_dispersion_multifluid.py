@@ -10,6 +10,8 @@ import mpmath as mp
 from scipy.optimize import linear_sum_assignment
 from scirel.kinetic.dispersion import _fluid_parallel as c
 from scirel.kinetic.dispersion.multifluid import fluid_deck
+from scirel.kinetic.dispersion import parallel_continuation
+from scirel.kinetic.dispersion.parallel_continuation import continue_em1d
 
 
 def test_faddeeva_independent_80_digit_definition():
@@ -95,9 +97,9 @@ def test_plot_units_require_explicit_scales_and_round_trip():
 
 def test_false_convergence_is_rejected_before_seed_update(monkeypatch):
     from types import SimpleNamespace
-    monkeypatch.setattr(c,'root',lambda *a,**kw:SimpleNamespace(success=True,status=1,x=np.array([9.,0.])))
+    monkeypatch.setattr(parallel_continuation,'root',lambda *a,**kw:SimpleNamespace(success=True,status=1,x=np.array([9.,0.])))
     state=dict(wps2=np.zeros(4),vds=np.zeros(4),vtzs=np.ones(4),wcs=np.ones(4),c2=4.,cwp=1.,wcs1=1.)
-    with pytest.raises(c.ContinuationFailure)as caught:c.continue_em1d(state,k_grid=[1.,2.],initial_guess=2.)
+    with pytest.raises(c.ContinuationFailure)as caught:continue_em1d(dict(state=state, k_grid=[1., 2.], initial_guess=2.))
     assert caught.value.record['accepted_prefix']==()and caught.value.record['guess']==2
     assert caught.value.record['scaled_residual']>1e-10
 

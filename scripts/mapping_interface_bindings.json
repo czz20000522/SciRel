@@ -32,7 +32,7 @@
    ],
    "modules": {
     "scirel.kinetic.dispersion.multifluid": "98d7ac279750d4073e1df233d5c2ab6491d8a9bcf728936bf0787e010f808d57",
-    "scirel.kinetic.dispersion._fluid_parallel": "e357a0bd6646f27f37b3a93ef65a754daabd6e74ac2e37f6ca8c3489369c8eb6"
+    "scirel.kinetic.dispersion._fluid_parallel": "739c1990e5f40c160f8ac5241f2ccf4f50508ed5423812b4f8a0703194c405be"
    },
    "review_basis": "The adapter copies inputs, pops grid_controls with {}, forwards outer ports and unpacked grid to _fluid_parallel.scan_fluid_corrected. Grid entries are documented nested scientific controls, not additional top-level document ports. Duplicate/unrecognized keywords preserve Python TypeError."
   },

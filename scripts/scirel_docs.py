@@ -117,6 +117,9 @@ def handbook_document(asset_ids, outline=None):
         catalog = ROOT / 'catalog/examples'
         if catalog.is_dir():
             available_assets = {path.stem for path in catalog.glob('*.json')}
+            review_catalog = ROOT / 'catalog/review/examples'
+            if review_catalog.is_dir():
+                available_assets |= {path.stem for path in review_catalog.glob('*.json')}
         else:
             available_assets = requested
         unknown_canonical = canonical_assets - available_assets

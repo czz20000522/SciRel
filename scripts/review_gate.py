@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HOLD = ROOT / 'catalog' / 'review' / 'HOLD.json'
 VERDICTS = ROOT / 'catalog' / 'review' / 'VERDICTS.json'
 CATALOG = ROOT / 'catalog' / 'examples'
+REVIEW_CATALOG = ROOT / 'catalog' / 'review' / 'examples'
 ALLOWED = {'pass', 'pass-with-limits', 'human-review', 'blocked'}
 
 
@@ -27,7 +28,8 @@ def check() -> list[str]:
     if verdicts.get('schema') != 'scirel.audit-verdicts':
         errors.append('invalid verdict schema')
     entries = verdicts.get('assets', {})
-    catalog = {path.stem for path in CATALOG.glob('*.json')}
+    catalog = {path.stem for path in CATALOG.glob('*.json')} | {
+        path.stem for path in REVIEW_CATALOG.glob('*.json')}
     if set(entries) != catalog:
         errors.append(f'verdict coverage mismatch: missing={sorted(catalog-set(entries))[:5]} extra={sorted(set(entries)-catalog)[:5]}')
     for asset, record in entries.items():

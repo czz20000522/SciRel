@@ -2,13 +2,13 @@
 
 from importlib import import_module as _import_module
 
-__all__ = ["calculate_stored_thermal_energy", "calculate_main_ion_dilution_factor", "calculate_log_lambda_ee", "calculate_log_lambda_ei", "calculate_log_lambda_ii"]
+__all__ = ["calculate_stored_thermal_energy", "calculate_main_ion_dilution_factor", "calculate_log_lambda_ee", "calculate_log_lambda_ei"]
 _LAZY_EXPORTS = {
     "calculate_stored_thermal_energy": ("thermal_energy", "calculate_stored_thermal_energy"),
     "calculate_main_ion_dilution_factor": ("dilution", "calculate_main_ion_dilution_factor"),
     "calculate_log_lambda_ee": ("coulomb_logs", "calculate_log_lambda_ee"),
     "calculate_log_lambda_ei": ("coulomb_logs", "calculate_log_lambda_ei"),
-    "calculate_log_lambda_ii": ("coulomb_logs", "calculate_log_lambda_ii"),
+    "calculate_log_lambda_ii": ("coulomb_logs_ii", "calculate_log_lambda_ii"),
 }
 _LAZY_MODULES = frozenset(module for module, _ in _LAZY_EXPORTS.values())
 

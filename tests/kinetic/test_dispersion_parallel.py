@@ -2,7 +2,8 @@
 import numpy as np
 import pytest
 from scipy.special import roots_hermite
-from scirel.kinetic.dispersion.parallel import em1d_parallel_residual,continue_em1d
+from scirel.kinetic.dispersion.parallel import em1d_parallel_residual
+from scirel.kinetic.dispersion.parallel_continuation import continue_em1d
 
 STATE=dict(wps2=np.array([1.,2.,.4]),vds=np.array([.2,-.1,.3]),vtzs=np.array([.7,1.1,.5]),wcs=np.array([.4,-.7,.2]),c2=9.,cwp=1.,wcs1=1.)
 

@@ -1,5 +1,10 @@
 """Composition orchestration for direct anisotropic parameter inversion."""
 from __future__ import annotations
+
+# HELD: human-review exposure guard
+from scirel._hold import require_review_import
+require_review_import(__name__)
+
 from functools import partial
 from scirel.diagnostics.observation_residuals import _observation_layout
 

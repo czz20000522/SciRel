@@ -1,7 +1,8 @@
 """Invalid accuracy controls cannot disable accepted-root residual gates."""
 import numpy as np
 import pytest
-from scirel.kinetic.dispersion import multifluid, parallel
+from scirel.kinetic.dispersion import multifluid
+from scirel.kinetic.dispersion import parallel_continuation as parallel
 
 
 @pytest.mark.parametrize('api',['fluid_solve_state','continue_em1d'])

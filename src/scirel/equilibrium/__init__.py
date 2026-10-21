@@ -24,7 +24,6 @@ __all__ = [
     "compute_anisotropic_force_balance",
     "solve_free_boundary_anisotropic_picard",
     "solve_isotropic_pressure_flux",
-    "solve_axisymmetric_anisotropic_picard",
     "solve_reduced_hall_anisotropic_picard",
     "solve_kinetic_mirror_hall_equilibrium",
     "EquilibriumResult",

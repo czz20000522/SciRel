@@ -52,8 +52,9 @@ generation path and a skip/fixture rule.
 ## Review candidates
 
 Candidate code and contracts that are not admitted belong in the review tree
-(`catalog/review/candidates/` or an external review tree), never in
-`src/scirel/` or `catalog/examples/`. After merge, the staged copy is removed
+(`catalog/review/candidates/`, `catalog/review/examples/`, or an external review
+tree), never in `src/scirel/` or `catalog/examples/`. The review tree may be
+Git-tracked as review evidence; it is never installed or exposed. After merge, the staged copy is removed
 only after the merged closure is green; the verdict record remains.
 
 ## Closing checklist

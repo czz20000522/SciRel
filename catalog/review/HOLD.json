@@ -91,6 +91,11 @@
    "status": "human-review",
    "reason": "The formula is a Sauter 1999 ion-ion fit, not NRL 2013 Eq. c; the model attribution and the +0.4388 ln Lambda difference require a scientific owner decision.",
    "required_decision": "Owner chooses the model (Sauter fit or NRL 2013 Eq. c) and records the reference; formula/attribution must match before exposure."
+  },
+  "scirel.inference.direct-anisotropic-inversion": {
+   "status": "human-review",
+   "reason": "Exposed composition depends on the held axisymmetric anisotropic Picard capability; a chain with a held member cannot be exposed.",
+   "required_decision": "Owner must either release the axisymmetric capability with its mask policy or replace the dependency; then rebind and re-audit this composition."
   }
  }
 }

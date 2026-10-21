@@ -9,6 +9,19 @@ import sys
 os.environ.setdefault("SCIREL_REVIEW_HOLD", "1")
 from pathlib import Path
 
+_REVIEW_SRC = Path(__file__).resolve().parents[1] / "catalog" / "review" / "candidates" / "src"
+if _REVIEW_SRC.is_dir():
+    import scirel.collisions as _collisions
+    import scirel.equilibrium as _equilibrium
+    import scirel.inference as _inference
+    import scirel.physics as _physics
+    import scirel.kinetic.dispersion as _dispersion
+    _collisions.__path__.append(str(_REVIEW_SRC / "scirel" / "collisions"))
+    _equilibrium.__path__.append(str(_REVIEW_SRC / "scirel" / "equilibrium"))
+    _inference.__path__.append(str(_REVIEW_SRC / "scirel" / "inference"))
+    _physics.__path__.append(str(_REVIEW_SRC / "scirel" / "physics"))
+    _dispersion.__path__.append(str(_REVIEW_SRC / "scirel" / "kinetic" / "dispersion"))
+
 import pytest
 
 # Domain fixtures live next to their domain. The geometry axisymmetric-grid

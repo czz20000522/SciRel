@@ -1118,15 +1118,10 @@
    ]
   },
   "scirel.inference.direct-anisotropic-inversion": {
-   "status": "pass-with-limits",
-   "evidence": [
-    {
-     "report": "/tmp/audit-d4.csv",
-     "verdict": "pass-with-limits",
-     "oracle": "independent-analytic",
-     "residual_risk": "The independent curved-field reference validates the discrete equations on the current finite grid, not a continuum-limit error proof; the same-point zero self-action convention for Green is retained rather than a finite-wire self-field. | The manufactured model is identifiable only within the listed parameter range; the general output remains not_established. Flags: template-copied-contract-text, all-tests-in-shared-files"
-    }
-   ]
+   "status": "human-review",
+   "reason": "Exposed composition depends on the held axisymmetric anisotropic Picard capability; a chain with a held member cannot be exposed.",
+   "required_decision": "Owner must either release the axisymmetric capability with its mask policy or replace the dependency; then rebind and re-audit this composition.",
+   "evidence": []
   },
   "scirel.inference.latin-hypercube-sampling": {
    "status": "pass-with-limits",

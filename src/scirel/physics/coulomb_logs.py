@@ -18,7 +18,6 @@ import numpy as np
 __all__ = [
     "calculate_log_lambda_ee",
     "calculate_log_lambda_ei",
-    "calculate_log_lambda_ii",
 ]
 
 
@@ -71,18 +70,3 @@ def calculate_log_lambda_ei(T_e, n_e):
     with np.errstate(over="ignore", invalid="ignore"):
         result = 31.3 + np.log(1000.0) + np.log(T) - 0.5 * np.log(n)
     return _finite_result(result, "electron-ion Coulomb logarithm")
-
-
-def calculate_log_lambda_ii(T_i, n_i, Z_i):
-    """Return ``30 - .5 ln(n_i) + 1.5 ln(1000*T_i) - 3 ln(Z_i)``."""
-    from scirel._hold import require_review_call
-    require_review_call("calculate_log_lambda_ii")
-    T, n, z = _positive_broadcast(("T_i", T_i), ("n_i", n_i), ("Z_i", Z_i))
-    with np.errstate(over="ignore", invalid="ignore"):
-        result = (
-            30.0
-            + 1.5 * (np.log(1000.0) + np.log(T))
-            - 0.5 * np.log(n)
-            - 3.0 * np.log(z)
-        )
-    return _finite_result(result, "ion-ion Coulomb logarithm")

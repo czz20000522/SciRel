@@ -2,7 +2,7 @@
 
 from importlib import import_module as _import_module
 
-__all__ = ["sample_latin_hypercube", "optimize_anisotropic_parameters", "evaluate_anisotropic_trial", "solve_direct_anisotropic_inversion"]
+__all__ = ["sample_latin_hypercube", "optimize_anisotropic_parameters", "evaluate_anisotropic_trial"]
 _LAZY_EXPORTS = {
     "sample_latin_hypercube": ("latin_hypercube_sampling", "sample_latin_hypercube"),
     "optimize_anisotropic_parameters": ("anisotropic_parameter_optimization", "optimize_anisotropic_parameters"),
