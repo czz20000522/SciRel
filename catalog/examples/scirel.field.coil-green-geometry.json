@@ -155,13 +155,13 @@
   "tests": [
    "tests/field/test_filament_coil_green.py"
   ],
-  "evidence_ceiling": "The direct tests establish the regularized radius, per-coil moduli and distance denominators against an independent recomputation (exact float equality on the offset, rtol=1e-15 on the closed forms), the (0, 1] modulus range on admissible geometry, axis-point admissibility through the axis offset, and the fail-closed input contracts. No test establishes the geometry against an external physics reference; the relation is a direct closed-form contract. The extreme underflow regression establishes rejection of one finite positive geometry whose computed modulus rounds to zero.",
+  "evidence_ceiling": "Bounded to source-regularized axisymmetric coil modulus and distance geometry. Evidence: `test_filament_coil_green.py` contains 13 test functions, 6 of which reference `compute_axisymmetric_coil_modulus`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic recomputation of the regularized geometry. It does not establish coil-field evaluation, singular response handling, or overflow behavior outside validated float64.",
   "known_limitations": [
    "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
    "Declared input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the axis offset.",
    "Declared output hardening: finite but extreme input magnitudes (e.g. r0 = rl = 1e308) that overflow the squared geometry sums are rejected with ValueError instead of handing a non-finite modulus or distance to the response operator.",
    "A modulus of exactly 1 (observation point on a filament ring) is an admissible output; consumers must reject it (the response operator does).",
-   "Public distribution licensing remains pending a human decision.",
+   "The independent oracle recomputes the regularized geometry but does not bind an external code comparison.",
    "A zero modulus caused by floating-point underflow is rejected here, an explicit boundary of this contract."
   ]
  }

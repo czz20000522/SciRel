@@ -263,10 +263,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "The first invalid graph control or dependency input raises ValueError; no partial result mapping is returned.",
-  "runtime_failure": "Dependency numerical errors propagate without fallback; solver diagnostics remain observable where returned.",
-  "nonconvergence": "No graph feedback loop is exposed.",
-  "partial_results": "No partial mapping is returned after an exception."
+  "invalid_input": "Raises ValueError from `derive_species_equilibrium_scales`, `probe_frequency`/`probe_wavenumber` (nonfinite fractions, nonpositive `wn`/`kn`) or nonfinite `kz`; argument or `lmx` errors from the kinetic sum propagate.",
+  "runtime_failure": "Numerical errors from `evaluate_fluid_kinetic_dispersion_sum` or `evaluate_kinetic_dispersion_ronnmark` propagate; no fallback determinant is returned.",
+  "nonconvergence": "Both determinant paths are direct evaluations with no iteration, so nonconvergence is not a returned state.",
+  "partial_results": "No partial mapping is returned if either determinant path fails."
  },
  "public_api": {
   "python": {
@@ -303,11 +303,11 @@
   "tests": [
    "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to both kinetic determinant paths over one shared equilibrium snapshot. Evidence: `test_fluid_spectrum_r43_compositions.py` contains 4 test functions, 2 of which reference `evaluate_kinetic_dispersion_relation`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity. It does not establish mode identification, root finding, or accuracy outside the tested finite-harmonic/rational-pole approximation.",
   "known_limitations": [
    "the conventional sum clamps |kz|<1e-10 to +1e-10; Ronnmark keeps zero kz",
-   "Public distribution license and expert review remain pending.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "`probe_frequency`/`probe_wavenumber` reject nonfinite fractions and nonpositive `wn`/`kn`, and `kz` must be finite; zero-`kz` limits belong to the sibling sum/Ronnmark contracts, not this relation.",
+   "The two determinant paths are returned separately and are not reconciled into one physical branch; no external kinetic oracle is bound."
   ]
  },
  "composition": {

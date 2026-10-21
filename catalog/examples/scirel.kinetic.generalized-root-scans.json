@@ -250,9 +250,9 @@
    "The default beam seed follows a damped high-frequency branch; an explicit frequency-informed phase seed can find an unstable branch.",
    "The default beam seed fails on the custom short grid [.3,.295]; this failure is preserved.",
    "Generic non-Maxwellian quadrature roots are not interval-certified; no estimated quadrature error is included in their acceptance gate.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The independent oracle covers three seeded cases (Langmuir/IAW/beam) against 50-digit `mpmath` equations; it does not certify every family/grid point or select the most unstable branch."
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights."
+  "evidence_ceiling": "Bounded to the four complete Langmuir/IAW/beam/generalized root-scan grids with explicit seeds. Evidence: `test_generalized_dispersion_models.py` contains 14 test functions, 6 of which reference `scan_gpdf_roots`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent 50-digit `mpmath` equations in `test_roots_against_independent_high_precision_equations`, plus frozen scan values. It does not establish root uniqueness, an exhaustive spectrum or automatic branch selection."
  },
  "example": {
   "description": "Scan two nearby beam wavenumbers and verify the returned roots by their residuals.",

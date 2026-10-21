@@ -175,12 +175,12 @@
   "zh": "自适应 Cauchy 变换"
  },
  "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to finite-interval and feature-mesh whole-line Cauchy transforms with component error reporting. Evidence: `test_generalized_dispersion_d2.py` contains 4 test functions, 2 of which reference `evaluate_cauchy_transform`, and is shared by 3 assets; `test_generalized_dispersion_d2_successor.py` contains 7 test functions, 5 of which reference `evaluate_cauchy_transform`, and is shared by 3 assets; `test_generalized_dispersion_numerical_repair.py` contains 11 test functions, none of which references `evaluate_cauchy_transform`, and is shared by 3 assets; `test_cauchy_kernel_resolution.py` contains 6 test functions, none of which references `evaluate_cauchy_transform`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: independent analytic finite-interval identities and Faddeeva references. It does not establish callback-only whole-line support discovery or source-MATLAB behavior.",
   "known_limitations": [
    "A finite interval truncates any tail not represented by caller bounds; whole-line mode requires caller-supplied mesh/support resolution and assumes integrable tails.",
    "Component indicators include quadrature and floating accumulation estimates but exclude callback, analytic-extension and finite-domain truncation errors; they are not global certificates.",
    "Analytic continuation requires an explicit analytic callback matching the density.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The bound direct tests cover Gaussian/Faddeeva identities and finite-support continuation, but no full-line callback-only support or quadrature-certificate case is bound."
   ],
   "scope": [
    "Independent analytic finite-interval identities and component error reporting.",

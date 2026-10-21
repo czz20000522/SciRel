@@ -143,9 +143,9 @@
   "tests": [
    "tests/kinetic/test_adaptive_neutral_velocity_mesh.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the deterministic uniform/stretched neutral velocity mesh with exact requested-energy insertion and cap truncation. Evidence: `test_adaptive_neutral_velocity_mesh.py` contains 11 test functions, 11 of which reference `create_adaptive_neutral_velocity_mesh`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: analytic uniform/stretched mesh formulas and exact insertion checks. It does not establish charged-species gyrophase/3V meshes, or adaptation to a downstream solver.",
   "known_limitations": [
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "Eleven direct functions in the asset-private file cover uniform/quadratic meshes, cap/negative-energy handling, insertion order and invalid inputs; no charged-species/3V mesh or external mesh oracle is bound."
   ]
  }
 }

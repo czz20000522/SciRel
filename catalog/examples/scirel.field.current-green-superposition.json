@@ -155,11 +155,11 @@
   "tests": [
    "tests/field/test_current_green_superposition.py"
   ],
-  "evidence_ceiling": "Verifies the linear contraction and shape contract; it does not establish that the Green model supplying its input is scientifically applicable.",
+  "evidence_ceiling": "Bounded to scalar/vector current superposition over Green response columns. Evidence: `test_current_green_superposition.py` contains 6 test functions, 1 of which references `superpose_current_green_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish higher-rank currents, implicit reshaping/transposition, or equilibrium interpretation.",
   "known_limitations": [
    "Only scalar and one-dimensional current inputs are supported.",
    "The operator contracts along the second (source) axis and does not infer, reorder, or transpose response axes.",
-   "Public distribution licensing remains pending a human decision."
+   "The reviewed example is the only direct numerical case; no test binds the nonfinite-contraction `FloatingPointError` path."
   ]
  }
 }

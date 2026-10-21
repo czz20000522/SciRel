@@ -169,11 +169,11 @@
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
    "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
   ],
-  "evidence_ceiling": "Verified for the declared axisymmetric vacuum-filament model and tested input contracts; it does not establish applicability to material coils, plasma response, or three-dimensional geometry.",
+  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response rows with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` contains 6 test functions, 1 of which references `solve_multi_coil_vacuum_field`, and is bound only by this asset; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: fixed Pleiades external reference constants; the full-array comparison is skipped when the gitignored `dist/reference-truth/simple-two-coil` artifact is absent. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists.",
   "known_limitations": [
    "No field cache or device object is kept between calls.",
    "No feedback, optimization, or conductor-material model is included.",
-   "Public distribution licensing remains pending a human decision."
+   "The fixed Pleiades spot references always run; the full-array comparison is skipped when the gitignored `dist/reference-truth/simple-two-coil` artifact is absent, and malformed/empty coil lists remain excluded."
   ]
  },
  "composition": {

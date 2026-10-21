@@ -235,13 +235,13 @@
    "tests/kinetic/test_positive_conservative_remap.py",
    "tests/kinetic/test_cylindrical_velocity_quadrature.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to positive conservative three-moment cross-mesh distribution interpolation and its infeasibility failures. Evidence: `test_cross_mesh_distribution.py` contains 14 test functions, 14 of which reference `interp_distribution_across_mesh`, and is bound only by this asset; `test_positive_conservative_remap.py` contains 11 test functions, none of which references `interp_distribution_across_mesh`, and is bound only by this asset; `test_cylindrical_velocity_quadrature.py` contains 17 test functions, none of which references `interp_distribution_across_mesh`, and is shared by 2 assets; the bounded example was executed by this audit. Oracle: analytic convex-hull infeasibility proof plus frozen construction values. It does not establish a physically unrealizable moment target, higher-moment/shape preservation, or entropy conservation.",
   "known_limitations": [
    "Finite destination nodes can make requested moments unrealizable; the caller must provide a feasible grid or handle InfeasibleMomentsError.",
    "The entropy prior includes a 1e-12 cell-volume mixture and may populate zero-overlap cells. Higher moments and fine distribution shape are not conserved by the three-moment constraints.",
    "Binary64 conditioning, very near hull faces and unrepresentable intermediates can cause explicit numerical failure; the iteration budget is not a universal convergence guarantee.",
    "correct=0 is algebraic compatibility only and does not carry the default branch physical guarantees.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The correction stops on scaled moment residual `<=32 eps` and requires the actual output three-moment postcondition within `128 eps`; exhausting `max_correction_iterations` raises `MomentCorrectionConvergenceError` without a partial distribution."
   ]
  },
  "references": [

@@ -291,14 +291,14 @@
   "tests": [
    "tests/kinetic/test_kinetic_dispersion_sum_n.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to one or more homogeneous magnetized Maxwellian species with finite harmonic sums and analytic Z values. Evidence: `test_kinetic_dispersion_sum_n.py` contains 4 test functions, 4 of which reference `evaluate_kinetic_dispersion_sum`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: independent analytic/high-precision Z-function references plus frozen fluid-BW values. It does not establish kx=0/kz=0 limits, complex roots, drift/loss-cone distributions, or automatic harmonic convergence.",
   "known_limitations": [
    "The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
    "No near-zero kz clamping is inherited from the source path.",
    "The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
    "This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.",
-   "Distribution license and expert recognition remain open.",
-   "local execution covers this asset."
+   "The bound tests compare frozen fluid-BW determinants and analytic Z-based terms; no external kinetic code or full-parameter-space oracle is bound.",
+   "The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed."
   ]
  }
 }

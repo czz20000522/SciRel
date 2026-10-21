@@ -109,12 +109,12 @@
   "zh": "修正的 BONK 有界根搜索"
  },
  "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the three bounded BONK cases plus caller-supplied finite frequency axes. Evidence: `test_fluid_spectrum_full.py` contains 9 test functions, 1 of which references `solve_fluid_bonk`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish branch tracking, complete mode enumeration or unconditional convergence.",
   "known_limitations": [
-   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "BONK returns every attempted row and an unverified row with `root_valid=false` when no root passes the declared residual gate; that row is a search candidate, not a physical root.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "The bound file `test_fluid_spectrum_full.py` is shared by six assets and one direct function exercises `solve_fluid_bonk`; no independent BONK reference is bound.",
    "Pure-Python execution is tested on this host; native parity is not claimed."
   ],
   "scope": [

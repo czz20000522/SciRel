@@ -142,11 +142,11 @@
    "tests/field/test_circular_filament_green.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Verified for the maintained axisymmetric circular-filament relation and tested finite points; not an independent validation of arbitrary coil geometries or singular self-fields.",
+  "evidence_ceiling": "Bounded to axis-source-skipping circular-filament Green response with weighted-source linearity. Evidence: `test_circular_filament_green.py` contains 3 test functions, 1 of which references `circular_filament_green_response`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `circular_filament_green_response`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: independent analytic recomputation and the axis-limit BZ check. It does not establish finite-wire self-fields, arbitrary-input qualification, or persistent field blocks.",
   "known_limitations": [
    "Targets exactly on a filament are not a resolved self-field model.",
-   "Public distribution licensing remains pending a human decision.",
-   "The aggregate-sum entry and the per-source matrix entry keep different shape and empty-source interfaces; shared-kernel reuse does not merge their public contracts."
+   "The example covers axis-source skip and weighted-source linearity; no test binds the nonfinite summed-response `FloatingPointError`.",
+   "The aggregate-sum entry and the per-source matrix entry keep different shape and empty-source interfaces; shared-kernel reuse does not merge those public contracts."
   ]
  }
 }

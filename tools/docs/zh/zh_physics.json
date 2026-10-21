@@ -510,7 +510,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
-   "source_sha256": "6b6cc9cad35ba9a5263540ce69e5de5e1cefb4a0c7cb6cea4f1f276c3a750908",
+   "source_sha256": "8b311f4b30b46fab7dea0e97783e546f46eebad6669a1bfa61bf99d22b4073f7",
    "summary": "求解一般复数流体本征矩阵，筛选实部为正且按衰减大小排序的 kx 分支。",
    "definition": "用通用复数 LAPACK zgeev 求解 kx X=M X；保留 Re(kx)>real_floor_scale*kn 的值，再按 |Im(kx)| 作稳定排序。",
    "model": "线性化流体极点色散本征问题",
@@ -619,11 +619,11 @@
     "scope": [
      "声明的数值案例及相关失败边界。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于一般复流体本征矩阵与正实最小阻尼 kx 分支选择。证据：`test_fluid_spectrum_r43_fluid.py` 含 9 个测试函数，其中 3 个引用 `solve_fluid_wavevector_eigenproblem`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：模身份或任意参数精度。",
     "known_limitations": [
      "筛选排除非传播模，最多返回 keep 个分支。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "三个直接函数覆盖本征选择、非传播模下限与整数分支数拒绝；`test_domain_import_boundaries.py` 只检查 LAPACK 惰性加载。",
+     "本征求解最多返回 `keep` 个最小阻尼正实分支；不证明模身份或任意参数精度。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
@@ -632,7 +632,7 @@
   },
   {
    "asset_id": "scirel.field.rectangular-coil-filaments",
-   "source_sha256": "ea8561d0d6f747a48a7be40dae668db7b627f0dacfd6391fa21f8a0b0f32fa05",
+   "source_sha256": "b8ab77d237143e406f62e362f085601267dc8e14c991215479be9f4f3a9464f3",
    "summary": "将矩形线圈截面离散为有序的柱坐标电流丝中心，并可绕质心旋转。",
    "definition": "生成 nr 个径向位置和 nz 个轴向位置，径向为外层顺序、轴向为内层顺序；可按既有行向量旋转约定绕 (r0,z0) 旋转。",
    "model": "由理想圆电流丝位置表示的有限矩形中心格点。",
@@ -722,17 +722,17 @@
      "90° 旋转约定。",
      "非法计数、间距及跨轴输入的失败行为。"
     ],
-    "evidence_ceiling": "既有验证针对有限轴对称矩形截面的 SciRel 合同，不验证真实绕组或磁场解。",
+    "evidence_ceiling": "限于带源排序与九十度旋转的矩形线圈细丝离散。证据：`test_rectangular_coil_filaments.py` 含 4 个测试函数，其中 1 个引用 `discretize_rectangular_coil`，仅由本资产绑定；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：电流分配、有限线截面或材料响应。",
     "known_limitations": [
      "只支持均匀中心间距。",
      "旋转限于 R–Z 截面。",
-     "公开分发许可仍待人工决定。"
+     "返回的中心保持外层径向、内层轴向顺序；不附加通量/场权重或导体截面。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
-   "source_sha256": "bd33d58314239ceaafaa18040fb8b08d99b42deeeacf2f985101d5fe8a9cf43a",
+   "source_sha256": "3209d96c7d38d590cc591eda56910785ce69780d8d0caeb4b4c0713514834406",
    "summary": "使用有限回旋谐波求和，为磁化 Maxwellian 多组分等离子体组装 x-z 平面的动力学介电张量、Maxwell 色散张量及其行列式。",
    "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(kz*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。",
    "model": "均匀磁化 Maxwellian 多组分等离子体的截断常规回旋谐波求和；使用 SciRel 解析 Faddeeva Z，而非有限阶 Weideman 实现。",
@@ -902,14 +902,14 @@
      "示例只运行一个有界代表案例，不把适用范围扩展到声明前提之外。",
      "Python 示例已在本机运行；本地执行覆盖本资产。"
     ],
-    "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
+    "evidence_ceiling": "限于一个或多个均匀磁化麦克斯韦种类，采用有限谐波和与解析 Z 值。证据：`test_kinetic_dispersion_sum_n.py` 含 4 个测试函数，其中 4 个引用 `evaluate_kinetic_dispersion_sum`，仅由本资产绑定；本审计已执行有界示例。真值来源：独立解析/高精度 Z 函数参照加冻结 fluid-BW 值。不建立：kx=0/kz=0 极限、复根、漂移/损失锥分布或自动谐波收敛。",
     "known_limitations": [
      "x-z 平面的实数波点合同不包含垂直或平行零波数极限，也不包含复数求根输入。",
      "未继承既有路径对近零 kz 的钳位。",
      "在较大的 kx*rho 下，有限截断可能不足，调用者须独立评估。",
      "本关系的局部张量测试不能证明终末矩阵输出经完整流水线端到端闭合。",
-     "分发许可与专家认可仍未解决。",
-     "本地执行覆盖本资产；未开展外部 Octave 对照。"
+     "绑定测试比较冻结 fluid-BW 行列式与基于解析 Z 的项；未绑定外部动理学代码或全参数空间参照。",
+     "模型使用解析 SciRel `Z` 值而非有限阶 Weideman 特殊函数实现，因此不声称跨代码绝对一致。"
     ],
     "tests": [
      "tests/kinetic/test_kinetic_dispersion_sum_n.py"
@@ -1051,7 +1051,7 @@
   },
   {
    "asset_id": "scirel.field.circular-filament-green",
-   "source_sha256": "eb915d7f140c420eacc58a6bc0b8007cf504f5f0624bc784a81e5da1a419a724",
+   "source_sha256": "66daec3e64835415e74bc38e9047f3ede6eab884aed351028e604fceea4d6fc3",
    "summary": "在柱坐标目标点累加有序加权圆电流丝响应。",
    "definition": "按源顺序将每个源行的权重乘以圆电流丝 Green 响应并求和。",
    "model": "含零半径、零权重和精确自作用约定的轴对称理想圆电流丝核。",
@@ -1124,17 +1124,17 @@
      "中平面对称性及轴上 BZ 解析值。",
      "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。"
     ],
-    "evidence_ceiling": "既有验证覆盖所列轴对称圆电流丝关系及测试有限点，不独立验证任意线圈几何或奇异自场。",
+    "evidence_ceiling": "限于轴源跳过、加权源线性的圆细丝 Green 响应。证据：`test_circular_filament_green.py` 含 3 个测试函数，其中 1 个引用 `circular_filament_green_response`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `circular_filament_green_response`，由 5 个资产共享；本审计已执行有界示例。真值来源：独立解析重算与轴极限 BZ 检查。不建立：有限线自场、任意输入资格或持久场块。",
     "known_limitations": [
      "目标恰在电流丝上时，不是已分辨的自场模型。",
-     "公开分发许可仍待人工决定。",
-     "聚合求和与逐源矩阵入口保留不同形状和空源接口，共用核不合并合同。"
+     "示例覆盖轴源跳过与加权源线性；没有测试绑定非有限求和响应的 `FloatingPointError`。",
+     "聚合求和与逐源矩阵入口保留不同形状和空源接口；共用核不合并这些公共合同。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.fluid-wavevector-scan",
-   "source_sha256": "aae32b76aedc46971a9b14d9596d868cda058194e7a724580447e83d7e712b03",
+   "source_sha256": "cc7ed766099800fd0c769387682fb4b464013790f70cf71aa98260e6703d7790",
    "summary": "从平衡状态导出频率阶梯，逐频点组装 L/J 极点矩阵并筛选流体 kx 分支。",
    "definition": "任务图由同一组分平衡导出 kn 和 wn，构造 (omega_scale:omega_step:omega_stop)*wn 与 kz_scale*kn，并在每个频点独立求解 kx X=M(omega,kz)X。",
    "model": "均匀磁化多组分 Maxwellian 流体极点模型",
@@ -1308,10 +1308,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "首次遇到无效的图控制量或依赖输入时抛出 ValueError，不返回部分结果映射。",
-    "runtime_failure": "依赖的数值异常直接传播，不作回退；返回结果中的求解器诊断保持可见。",
-    "nonconvergence": "该入口不提供任务图反馈循环。",
-    "partial_results": "发生异常后不返回部分结果映射。"
+    "invalid_input": "`scan_frequencies`、`scan_wavenumber` 或 `derive_species_equilibrium_scales` 对非有限/非正边界、`omega_stop < omega_scale`、空阶梯、非正 `kn` 或导出轴含精确零频抛出 ValueError。",
+    "runtime_failure": "`assemble_fluid_dispersion_matrix` 或 `solve_fluid_wavevector_eigenproblem` 的错误（ValueError 或 NumPy `LinAlgError`）传播；不替换回退谱。",
+    "nonconvergence": "本征问题为直接求解；LAPACK 不收敛以 `LinAlgError` 传播，`keep` 限制每个频率的分支选择。",
+    "partial_results": "异常后不返回部分扫描数组；失败前已完成的频率不会暴露。"
    },
    "example": {
     "description": "运行一个单点归一化流体扫描并检查其终态映射。",
@@ -1322,11 +1322,11 @@
      "直接任务图组合与范围受限的数值案例。",
      "近整数 colon 阶梯端点会被保留，见 tests/kinetic/test_dispersion_scan_axes.py。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于导出的流体频率阶梯与逐频波数本征谱。证据：`test_fluid_spectrum_r43_compositions.py` 含 4 个测试函数，其中 1 个引用 `scan_fluid_wavevectors`，由 3 个资产共享; `test_dispersion_scan_axes.py` 含 1 个测试函数，其中没有函数引用 `scan_fluid_wavevectors`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：未请求的模身份或精度保证。",
     "known_limitations": [
      "J 只能为 8 或 12；L 极点表只覆盖到谐波 7；每个频率均须非零。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "`scan_frequencies` 只在精确有理比值与整数的偏差不超过 `1e-12*max(1,|ratio|)` 时保留终点；随后会拒绝包含精确零频的扫描轴。",
+     "扫描对每个频率调用 `assemble_fluid_dispersion_matrix` 与 `solve_fluid_wavevector_eigenproblem`；`keep` 限制分支数，且不跨频率追踪同一模。"
     ],
     "tests": [
      "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
@@ -1415,7 +1415,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
-   "source_sha256": "a979bd2431246425bc28611fb6da67d40b1a6adcb212eef390dcbc6643b12b03",
+   "source_sha256": "e7a8566e5f7040752792ee0938453a2d07b94b07874d81b9d484034520fdf3a7",
    "summary": "给定角频率和平行波数，组装稠密的一阶流体本征矩阵。",
    "definition": "按 [vx_snl,vy_snl,vz_snl,Ey,Ez,By,Bz] 的状态顺序组装 kx X=M X 中的 M；维数为 3*S*sum(L)+4。",
    "model": "均匀磁化多组分 Maxwellian 流体极点展开",
@@ -1597,11 +1597,11 @@
     "scope": [
      "声明的数值案例及相关失败边界。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于固定角频率与平行波数下的稠密一阶流体本征矩阵。证据：`test_fluid_spectrum_r43_fluid.py` 含 9 个测试函数，其中 4 个引用 `assemble_fluid_dispersion_matrix`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：物理模身份或任意参数精度。",
     "known_limitations": [
      "omega 须有限且非零，回旋频率非零，极点半径为正且系数轴匹配；共振分母不得为零，组装矩阵须保持有限。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "共享流体文件中的四个直接函数覆盖块/本征选择、非有限共振、分数维数与分数系数索引拒绝。",
+     "矩阵组装不是本征求解，也不识别物理模；其余输入有限但源共振奇异时由组装拒绝。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
@@ -3144,7 +3144,7 @@
   },
   {
    "asset_id": "scirel.field.coil-green-geometry",
-   "source_sha256": "bdf5c94c9093c096dc251949254f075214468ea82a5d7eaeffe7feaff9c9708e",
+   "source_sha256": "af903e4ff0a351e2acaa62a767c23f55d42c728aa0dbd50f3d98da5b6cab1656",
    "summary": "计算线圈电流丝 Green 表达式所需的观测半径偏移、椭圆模平方和距离。",
    "definition": "应用固定的 1e-8 m 观测半径偏移，并逐元素计算模平方 m 与距离分母。",
    "model": "对齐圆线圈的标量观测几何。",
@@ -3228,20 +3228,20 @@
      "输入及失败合同。",
      "在响应求值前拒绝模数下溢为零的极端有限几何。"
     ],
-    "evidence_ceiling": "直接测试对偏移要求浮点值精确相等，对闭式量使用 rtol=1e-15，并检查模数范围、轴点和失败边界；这是直接闭式合同及一个下溢回归，不是外部物理参考验证。",
+    "evidence_ceiling": "限于源正则化轴对称线圈模数与距离几何。证据：`test_filament_coil_green.py` 含 13 个测试函数，其中 6 个引用 `compute_axisymmetric_coil_modulus`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：正则化几何的独立解析重算。不建立：线圈场求值、奇异响应处理或已验证 float64 范围外的溢出行为。",
     "known_limitations": [
      "本合同不绑定外部跨实现比较；只有本仓库测试建立其行为。",
      "声明式输入硬化：原始观测半径在 (-1e-8,0) 内一律拒绝，不能靠轴偏移静默变正。",
      "声明式输出硬化：有限但极端的输入幅值（如 r0=rl=1e308）使平方和溢出时抛出 ValueError，而不是向下游响应算子传递非有限模数或距离。",
      "m=1 是合法几何输出，但响应消费者必须拒绝其奇异性。",
-     "公开分发许可仍待人工决定。",
+     "独立参照重算正则化几何，但不绑定外部代码对照。",
      "模数因浮点下溢为零时在此拒绝，这是本合同的明确边界。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "275e7fef1f422d23b7c3f161284f1a3accc23293cba96ab25265fff9baeec72a",
+   "source_sha256": "6b9532417b5fe10fa26627b7e1dab764ac6c555a1f7063e9cc60f053795e76b5",
    "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
    "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项由 K 形成 D，并用显式六项展开式计算其行列式。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3416,11 +3416,11 @@
     "scope": [
      "声明的数值案例及相关失败边界。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于源默认 15 谐波下的九个介电/色散张量分量。证据：`test_fluid_spectrum_r43_kinetic.py` 含 12 个测试函数，其中 5 个引用 `evaluate_kinetic_dielectric_tensor`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：模身份、任意参数精度或独立完整动理学张量。",
     "known_limitations": [
      "默认 lmx=15；与常规求和路径不同，不对近零 kz 钳位。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "四资产共享动理学文件中的五个直接函数覆盖 15 谐波/六项行列式、非法种类控制、星号导入面与 SciPy 惰性加载；未绑定独立 Bessel 求和张量参照。",
+     "SciPy 惰性加载与张量精度分开测试；导入边界测试通过不构成张量参照。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
@@ -3737,7 +3737,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-roots",
-   "source_sha256": "b4fc954fa4ec6961a18ea89ed976c1410e201a724dfc40d3c34b1a087d3154b1",
+   "source_sha256": "c03929617128de8f676b7af5d88f32b14388e92493e4d3005e90e47960de3eba",
    "summary": "对输入的每个角频率，均从同一个固定初值求解 Ronnmark 行列式的复数 kx 零点。",
    "definition": "每个频点独立从 kx_start 开始，用复数信赖域 dogleg 算法求解 det(D)=0，并限制迭代和函数求值次数。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -3938,11 +3938,11 @@
      "示例只执行一个有界代表性案例，不扩展声明的适用前提。",
      "Python 示例已在本机运行；本地执行覆盖本资产。"
     ],
-    "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
+    "evidence_ceiling": "限于每个给定频率下由固定种子求解的 Ronnmark 行列式复 kx 根。证据：`test_fluid_spectrum_r43_kinetic.py` 含 12 个测试函数，其中 2 个引用 `solve_kinetic_wavevector_roots`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：超出声明数值方法的模身份或任意参数精度。",
     "known_limitations": [
      "可能存在多个带符号的根；保留退出标志和残差表示不收敛，不通过镜像变换根的符号。",
-     "公开分发许可与专家审查仍待完成。",
-     "本地执行覆盖本资产；未开展外部 Octave 对照。"
+     "四资产共享文件 `test_fluid_spectrum_r43_kinetic.py` 中的两个直接函数覆盖复根符号/退出标志与非法控制；未绑定延拓种子策略或全局根扫描。",
+     "已审查示例是唯一绑定输出可表示性检查的测试；两个直接函数覆盖根符号/退出标志与非法控制。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
@@ -4465,7 +4465,7 @@
   },
   {
    "asset_id": "scirel.field.filament-coil-green-field",
-   "source_sha256": "a126199dab6b473c35f994f0103c7e5fcaee22dc80cbb128e82eada0428fffaf",
+   "source_sha256": "687ada17aebf45d4b60aca67d8d32148ef0d6d2591cbb065f381d27f1b26b104",
    "summary": "根据调用者提供的椭圆积分值，计算对齐圆线圈的闭式 psi、BR 和 BZ 响应。",
    "definition": "对对齐线圈数组应用标量闭式 Green 表达式，并累加每个线圈项。",
    "model": "使用给定 K(m)、E(m) 的闭式轴对称圆线圈响应。",
@@ -4579,14 +4579,14 @@
      "相同椭圆积分值下与基线 SciPy 电流丝关系比较。",
      "奇异几何拒绝及输入失败合同。"
     ],
-    "evidence_ceiling": "既有测试涵盖闭式精确浮点重算、电流线性、镜像对中平面抵消及拒绝合同；使用相同 SciPy K/E 时，在测试几何上与基线 scirel.field.circular-filament-green 响应达 rtol=1e-12。改用多项式—对数近似时测试集响应偏差可达约 1e-5，来自约 1e-8 K/E 误差的放大；均为采样，不是连续界或外部物理验证。",
+    "evidence_ceiling": "限于调用者给定椭圆值的闭式细丝线圈 Green 场。证据：`test_filament_coil_green.py` 含 13 个测试函数，其中 7 个引用 `evaluate_filament_coil_green_field`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：独立闭式重算与 SciPy 椭圆基线一致性。不建立：错位几何、内部重算椭圆积分或任意极端尺度保证。",
     "known_limitations": [
      "本合同不绑定外部跨实现比较；只有本仓库测试建立其行为。",
      "这是 circular-filament-green 的声明关系变体，不能静默合并其外供 K/E、单目标、轴偏移和奇异拒绝边界。",
      "声明式输入硬化链（按族文档）：几何端拒绝原始负半径，响应端拒绝零间距或 m=1 奇异几何；这两处边界在此均不会被静默接受。",
      "声明式输出硬化：有限但极端的电流/匝数使组合响应因子溢出时抛出 ValueError，而不是返回 Inf/NaN。",
      "目标在线圈上时的奇异几何拒绝是显式合同：该配置抛出错误而非返回 NaN 响应。",
-     "公开分发许可仍待人工决定。"
+     "闭式变体根据调用者提供的椭圆值求值；算符内部不进行独立 SciPy 重算。"
     ]
    },
    "source_conflicts": [
@@ -5381,7 +5381,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
-   "source_sha256": "0d7b30d680440d04c604c69fc6de216c2ac675ffd356ef946dddf06701d5f6bc",
+   "source_sha256": "141b9724995350dfec7c1baf1e294ac30b52593c6e23ccb0f2d29328e8244aa4",
    "summary": "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。",
    "definition": "使用缩放 Bessel Gamma 项和 N=64 Weideman Z，对 -lmx 至 lmx 的谐波求和；在 K 中加入 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
@@ -5546,11 +5546,11 @@
     "scope": [
      "声明的数值案例及相关失败边界。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于带正近零 kz 截断的有限回旋谐波求和麦克斯韦 3x3 动理学张量。证据：`test_fluid_spectrum_r43_variants.py` 含 6 个测试函数，其中 3 个引用 `evaluate_fluid_kinetic_dispersion_sum`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：超出已测有限谐波近似的模身份、求根或精度。",
     "known_limitations": [
      "在所有共振除法前，将 abs(kz)<1e-10 替换为 +1e-10。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "有限谐波和采用解析 SciRel `Z` 值；不声称与有限阶 Weideman 特殊函数一致。",
+     "有限谐波截断 `lmx` 由调用者给定；绑定测试不建立更大 `kx*rho` 下的充分性，也不涉及求根/模身份。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_variants.py"
@@ -5559,7 +5559,7 @@
   },
   {
    "asset_id": "scirel.kinetic.grid-mirror-kinetic-closure",
-   "source_sha256": "c969cab6bdb8c022440ff5194c5e21a8d938542a6d7318c64992ba6f5e10368b",
+   "source_sha256": "fec5c6e41f51f06f0c85daf519d4ca8187aa46ce0a2a5f0217d8094116bd8932",
    "summary": "在 R-Z 网格选择参考面与两个磁塞面，经磁通剖面插值连接端损失和局部准中性闭合，并按需限制指定输出场。",
    "definition": "以所给 z 坐标的首个最近网格点确定左、参考、右三行，要求索引严格递增。把三行 B 及参考行 phi_ref 作为 psi 剖面插值到全网格。端算子默认求值给定磁塞电势，也可在 ambipolar_end_loss 模式分别求两端单向离子/电子电流平衡，再把参考行端电势按 psi 映射到全网格。嵌套镜准中性图求局部电势和压强；父图添加端诊断及旧版别名。可选限制只把磁塞行外指定顶层密度、压强、相对电荷残差置零。要求求端平衡时，未置 current_balance_solved 的端状态被拒绝。局部 converged 单独表示经终末残差验证的准中性结果。",
    "model": "单一正离子的双温镜矩闭合、预设温度的 Boltzmann 电子，以及独立端损失通量平衡。端电流平衡与局部准中性是不同计算，均不等于自洽 R-Z 磁平衡。",
@@ -5991,13 +5991,13 @@
      "端或嵌套失败不返回状态；覆盖可调用密度及二维参考电势、非直角/非有限网格、数值布尔、过小或非整数积分阶数的拒绝。",
      "注入仅求值却冒充已求端平衡的状态，在嵌套闭合前被拒绝。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于单一正离子情形下相对电荷残差低于 1e-9 的网格镜像端点闭合。证据：`test_composition_grid_mirror_kinetic_closure.py` 含 13 个测试函数，其中 2 个引用 `solve_grid_mirror_kinetic_closure`，仅由本资产绑定; `test_mirror_kinetic_scientific_correction.py` 含 15 个测试函数，其中 1 个引用 `solve_grid_mirror_kinetic_closure`，由 8 个资产共享；本审计已执行有界示例。真值来源：独立解析/高精度端点平衡与冻结组合值。不建立：通用 R-Z 平衡求解、磁场构造或空间分辨动理学输运。",
     "known_limitations": [
      "输入 YAML 对固定全网格参考剖面的描述宽于实际端算子加嵌套调用链；共享剖面须同时适用于一维和二维 psi。",
      "仅指定顶层字段受限制；嵌套矩、原矩字段、温度、电势、俯仰积分和端诊断仍覆盖全网格。",
      "最近面可能偏离请求坐标，剖面插值沿用排序、去重及常值端点延拓。",
-     "两个端求解与局部非线性求解没有联合收敛证书；许可与当前版本专家认可仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "端点与嵌套非线性求解各自使用有限迭代预算，均不提供联合收敛证书；因此只覆盖声明相对电荷残差低于 `1e-9` 的正离子情形。",
+     "绑定组合文件为资产私有并含两个直接函数；共享修正文件增加一个端点平衡测试，但一维端点调用下的任意全网格参考剖面仍被排除。"
     ],
     "tests": [
      "tests/cross_domain/grid_mirror_kinetic_closure/test_composition_grid_mirror_kinetic_closure.py",
@@ -6500,7 +6500,7 @@
   },
   {
    "asset_id": "scirel.field.dense-axisymmetric-green",
-   "source_sha256": "5cf75b056a841d8049ae9d5fa2bc14f07d7677923c368bc578af611755cd61f9",
+   "source_sha256": "d45d640ba015cd96eb8293823822db1a806ff98f3f6875bb74a0ae629547156e",
    "summary": "为 psi、BR 和 BZ 构建稠密的目标行/源列圆电流丝响应矩阵。",
    "definition": "按调用者顺序对每个源列计算圆电流丝响应。",
    "model": "含零半径、零权重和精确自作用约定的轴对称理想圆电流丝核。",
@@ -6575,10 +6575,10 @@
      "非法半径及源形状的拒绝。",
      "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。"
     ],
-    "evidence_ceiling": "验证范围是既有理想电流丝格林列和测试的轴上、权重情形；这些证据不代表项目全部完成或专家认可。",
+    "evidence_ceiling": "限于保留独立源列的稠密轴对称 Green 响应。证据：`test_dense_axisymmetric_green.py` 含 9 个测试函数，其中 1 个引用 `dense_axisymmetric_green_response`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `dense_axisymmetric_green_response`，由 5 个资产共享；本审计已执行有界示例。真值来源：解析轴向场极限与逐列圆细丝核一致性。不建立：有限线自场、任意极端尺度精度或平衡声明。",
     "known_limitations": [
      "结果保留独立源列，不求和。",
-     "公开分发许可仍待人工决定。"
+     "资产私有测试文件有九个函数但仅一个直接示例；`test_field_green_correction.py` 由五个资产共享且没有直接调用，因此非有限响应路径仅为合同声明。"
     ]
    }
   },
@@ -6790,7 +6790,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
-   "source_sha256": "8fe7bf2820a4b1fadefdebc278f4b8b757a12ebbf610a25236bc51be58b23500",
+   "source_sha256": "9a29c76c6b40bb11cd3cfe042c457c4816fcbf3e160264dd3d9e8393d075714a",
    "summary": "导出频率阶梯与固定初值，然后逐频点求解保留符号的 Ronnmark 复数 kx 根。",
    "definition": "任务图由 wn 导出有序频率阶梯，并确定唯一初值 kx_start=kx_scale*kn；有界求根器在每个频点独立重复使用该初值。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -6994,10 +6994,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "首次遇到无效的图控制量或依赖输入时抛出 ValueError，不返回部分结果映射。",
-    "runtime_failure": "依赖的数值异常直接传播，不作回退；返回结果中的求解器诊断保持可见。",
-    "nonconvergence": "求根退出标志保留在结果中。",
-    "partial_results": "发生异常后不返回部分结果映射。"
+    "invalid_input": "`scan_frequencies`/`seed_wavenumber` 对非有限边界、非正 `wn`/`kn`/`omega_step`、`omega_stop < omega_scale`、空阶梯或非有限 `kz` 抛出 ValueError；非法平衡控制会在根图导入前由 `derive_species_equilibrium_scales` 失败。",
+    "runtime_failure": "根求解器的数值失败从 `solve_kinetic_wavevector_roots` 传播；不替换回退根、钳制或重试。",
+    "nonconvergence": "每个逐频根字典保留 `exit_flag` 与残差（及非正根标志）；未收敛项可被观察，不被静默替换。",
+    "partial_results": "根图抛出异常时不返回部分扫描映射；已完成的扫描仍可能包含逐频未收敛项。"
    },
    "example": {
     "description": "计算一个有界任务图案例；示例已在本机运行。",
@@ -7010,11 +7010,11 @@
      "Python 示例已在本机运行；本地执行覆盖本资产。",
      "近整数 colon 阶梯端点会被保留，见 tests/kinetic/test_dispersion_scan_axes.py。"
     ],
-    "evidence_ceiling": "直接测试和有界示例仅覆盖声明的输入/输出行为、数值检查与失败边界；不确立任意参数等价性、分支唯一性、全局物理有效性、人类科学认可或发行资格。",
+    "evidence_ceiling": "限于单一平衡快照上的确定冒号频率阶梯与带符号复 Ronnmark kx 根。证据：`test_fluid_spectrum_r43_compositions.py` 含 4 个测试函数，其中 1 个引用 `scan_kinetic_wavevectors`，由 3 个资产共享; `test_dispersion_scan_axes.py` 含 1 个测试函数，其中没有函数引用 `scan_kinetic_wavevectors`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：未请求的模身份或精度保证。",
     "known_limitations": [
      "允许零 kz；根保留符号，非正退出标志保持可见。",
-     "公开分发许可与专家审查仍待完成。",
-     "本地执行覆盖本资产；未开展外部 Octave 对照。"
+     "冒号阶梯点数按 `floor((stop-start)/step + 1e-12*max(1,|ratio|)) + 1` 计算；终点相对精确步长倍数偏差超过该相对容差时不会成为阶梯点。",
+     "扫描的根诊断（`exit_flag`、残差）是逐频的；不提供聚合收敛标志或原生/参考运行时一致性。"
     ],
     "tests": [
      "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
@@ -7370,7 +7370,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
-   "source_sha256": "be07b6127db7dcdd95cec99d3d8f5f665592ff6801d8e23434fad32a4317fa54",
+   "source_sha256": "dd01080f4769011bd84d7106405220b512fc82fcf994a2aab9bd95d23d5a6d3a",
    "summary": "计算 J=8 有理极点形式的 3×3 动力学张量和色散行列式，允许复数 kx 与零 kz。",
    "definition": "用 J=8 共振极点和 Ronnmark R 函数替代 Z 与谐波响应，加入 Maxwell 旋度项后计算 det(D)。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -7559,11 +7559,11 @@
     "scope": [
      "声明的数值案例及相关失败边界。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于J=8 有理极点动理学 3x3 张量及行列式，包括复 kx 与零 kz。证据：`test_fluid_spectrum_r43_kinetic.py` 含 12 个测试函数，其中 3 个引用 `evaluate_kinetic_dispersion_ronnmark`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：超出已测有理极点近似的求根或精度。",
     "known_limitations": [
      "允许 kz=0，不采用常规求和路径的正向钳位。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "共享动理学文件中的三个直接函数覆盖复波点、零 `kz` 与双种类冻结源一致性；不测试求根或模身份声明。",
+     "有限 J=8 有理极点截断只与冻结源值比较；未绑定独立完整动理学 Bessel 求和。"
     ],
     "tests": [
      "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
@@ -7751,7 +7751,7 @@
   },
   {
    "asset_id": "scirel.field.filament-vacuum-field",
-   "source_sha256": "37aceb8c43c83b5bedb8d12d1d13056c2cd89fe1df806be07f43b601825d766b",
+   "source_sha256": "d8c4145d7baacb39f3483d6527f0b1c8965ff69eccd02f4e1c58c654180da820",
    "summary": "在均匀 R–Z 直角网格上计算理想圆电流丝场，并从第一个径向节点起积分径向磁通。",
    "definition": "在网格点计算 Green 核，并用径向梯形递推积分 R*BZ。",
    "model": "不带近轴截断的理想圆电流丝真空场。",
@@ -7832,11 +7832,11 @@
      "转置网格布局及非法径向网格。",
      "独立 70/80 位精度圆环关系检查极小正半径、近轴非零 BR、近丝及公式求值分支；保持原断言和容差，区分精确自项约定与算术失败。"
     ],
-    "evidence_ceiling": "既有回归涵盖所选叠加、轴场、径向积分，以及扣除首半径参考后的细网格格林核比较；不证明任意网格积分精度、整项目完成或专家认可。",
+    "evidence_ceiling": "限于细丝电流叠加、首网格点 psi 参考与径向求积。证据：`test_filament_vacuum_field.py` 含 7 个测试函数，其中 1 个引用 `integrate_filament_vacuum_field`，仅由本资产绑定; `test_field_green_correction.py` 含 9 个测试函数，其中没有函数引用 `integrate_filament_vacuum_field`，由 5 个资产共享；本审计已执行有界示例。真值来源：远离源处的解析圆细丝 psi=R A_phi 值。不建立：非正交网格、有限线自场或连续极限收敛。",
     "known_limitations": [
      "磁通以首径向点为参考，不含 2π 因子。",
      "理想源重合时奇异，拒绝活跃源重合目标。",
-     "公开分发许可仍待人工决定。",
+     "资产私有文件有七个函数和一个直接示例；共享修正文件没有直接调用，因此非有限积分场路径仅为合同声明。",
      "psi 径向梯形误差需网格加密验证；解析磁场不意味着离散 psi 等于解析 R A_phi。"
     ]
    }
@@ -8405,7 +8405,7 @@
   },
   {
    "asset_id": "scirel.field.complete-elliptic-integrals-approx",
-   "source_sha256": "ceb55555d59656d1e7bce498a37b6bdfea5e9130e047f2a29c8fe8216da3d2af",
+   "source_sha256": "4a107264f6b115fd18bc29fdef82cbac9c350018659406f756dbd4c3648401f4",
    "summary": "在 0<=m<=1 的数组上计算完全椭圆积分 K(m) 和 E(m) 的多项式-对数近似。",
    "definition": "逐元素计算固定的多项式-对数近似，并赋予 K(1)=+Inf、E(1)=1。",
    "model": "椭圆参数 m 上的分段数值近似。",
@@ -8465,12 +8465,12 @@
      "逐元素解析端点极限以及不变的非法输入拒绝。",
      "对 SciPy ellipk、ellipe 的采样精度。"
     ],
-    "evidence_ceiling": "内点算术保持精确数组相等；200001 点采样对 SciPy 的相对误差界仍为 K<1e-8、E<2e-8。解析端点恒等式 K(1)=+Inf、E(1)=1 逐元素成立，与相邻数组元素无关；物理场消费者仍拒绝重合丝线。端点极限逐元素施加，因此混合数组不会继承批量级哨兵。这不是连续域误差证明或全输入一致性。",
+    "evidence_ceiling": "限于源多项式-对数完全椭圆近似及解析端点。证据：`test_filament_coil_green.py` 含 13 个测试函数，其中 8 个引用 `evaluate_complete_elliptic_integrals`，由 3 个资产共享; `test_legacy_admission_regressions.py` 含 9 个测试函数，其中 1 个引用 `evaluate_complete_elliptic_integrals`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：独立源多项式重算与 SciPy `ellipk`/`ellipe` 一致性。不建立：m 超出 [0,1]、复数值或已测近似之外的误差保证。",
     "known_limitations": [
      "本合同不绑定外部跨实现比较；只有本仓库测试建立其行为。",
      "近似精度低于库特殊函数，较高精度应采用基线 SciPy 椭圆积分关系。",
      "端点值取解析极限而非受保护替代量；不能将 K(1) 视作有限磁场。",
-     "公开分发许可仍待人工决定。"
+     "近似只在 `[0,1]` 内的实 `m` 上求值；不提供解析延拓或复模数路径。"
     ]
    }
   },
@@ -8941,7 +8941,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
-   "source_sha256": "a328bf07cb3b61158b72e45db5f6adf6b5f772fe6bf78603f4fd9a53ee88e2e7",
+   "source_sha256": "b79a58f8d5ac94446a3d4f57cf5a4f7b25aa9fb7d6bf6a45b9fc515246e9452f",
    "summary": "在同一个由平衡状态导出的波点，分别计算常规有限谐波求和与 Ronnmark 色散行列式。",
    "definition": "任务图导出 omega=omega_frac*wn、kx=kx_frac*kn 和 f=omega/(2*pi)，随后用同一 SI 组分状态计算 Weideman 求和路径与 Ronnmark 路径。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -9105,10 +9105,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "首次遇到无效的图控制量或依赖输入时抛出 ValueError，不返回部分结果映射。",
-    "runtime_failure": "依赖的数值异常直接传播，不作回退；返回结果中的求解器诊断保持可见。",
-    "nonconvergence": "该入口不提供任务图反馈循环。",
-    "partial_results": "发生异常后不返回部分结果映射。"
+    "invalid_input": "`derive_species_equilibrium_scales`、`probe_frequency`/`probe_wavenumber`（非有限分数、非正 `wn`/`kn`）或非有限 `kz` 抛出 ValueError；动理学求和的参数或 `lmx` 错误传播。",
+    "runtime_failure": "`evaluate_fluid_kinetic_dispersion_sum` 或 `evaluate_kinetic_dispersion_ronnmark` 的数值错误传播；不返回回退行列式。",
+    "nonconvergence": "两条行列式路径都是直接求值、无迭代，因此不收敛不是返回状态。",
+    "partial_results": "任一行列式路径失败时不返回部分映射。"
    },
    "example": {
     "description": "在同一派生波点计算两条动理学色散路径。",
@@ -9118,11 +9118,11 @@
     "scope": [
      "直接任务图组合与范围受限的数值案例。"
     ],
-    "evidence_ceiling": "直接仓库测试确立测试输入上的数值关系、输出结构和声明的失败行为。证据受文档适用域限制，不确立未测试物理状态、人类科学认可或再分发权利。",
+    "evidence_ceiling": "限于同一平衡快照上的两条动理学行列式路径。证据：`test_fluid_spectrum_r43_compositions.py` 含 4 个测试函数，其中 2 个引用 `evaluate_kinetic_dispersion_relation`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：有界源方法一致性（非独立真值）。不建立：模式识别、求根或超出已测有限谐波/有理极点近似的精度。",
     "known_limitations": [
      "常规求和将 |kz|<1e-10 钳位为 +1e-10；Ronnmark 保留零 kz。",
-     "公开分发许可与专家审查仍待完成。",
-     "科学有效性受测试数值域和适用条件限制。"
+     "`probe_frequency`/`probe_wavenumber` 拒绝非有限分数与非正 `wn`/`kn`，且 `kz` 必须有限；零 `kz` 极限属于姊妹求和/Ronnmark 合同，而非本关系。",
+     "两条行列式路径分别返回，不合并为单一物理分支；未绑定外部动理学参照。"
     ],
     "tests": [
      "tests/cross_domain/test_fluid_spectrum_r43_compositions.py"
@@ -9485,7 +9485,7 @@
   },
   {
    "asset_id": "scirel.field.current-green-superposition",
-   "source_sha256": "2330fc2dbadb8ee167198a47ce70ba1cc038b84e928ba5f17b295c7e54739a17",
+   "source_sha256": "cd5b76fbfba705f956d92f4d01f123bc9d7bbf3332f02dadfb78e0632c4720e3",
    "summary": "将标量或源向量电流与形状兼容的 Green 响应数组收缩。",
    "definition": "秩一响应使用标量乘法，秩二响应沿源轴执行矩阵乘法。",
    "model": "不重排响应的线性叠加。",
@@ -9570,17 +9570,17 @@
      "错误源轴及非有限输入的失败行为。",
      "标量或矩阵收缩不可表示时以 FloatingPointError 失败闭合。"
     ],
-    "evidence_ceiling": "验证线性收缩和形状合同，不证明提供输入的格林模型在物理上适用。",
+    "evidence_ceiling": "限于Green 响应列上的标量/矢量电流叠加。证据：`test_current_green_superposition.py` 含 6 个测试函数，其中 1 个引用 `superpose_current_green_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：更高秩电流、隐式重塑/转置或平衡解释。",
     "known_limitations": [
      "只支持标量或一维电流。",
      "不推断或重新排列源轴。",
-     "公开分发许可仍待人工决定。"
+     "已审查示例是唯一直接数值情形；没有测试绑定非有限收缩的 `FloatingPointError` 路径。"
     ]
    }
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "5d16011b02095b6ab564ca8f10640a4c2da32ac8a9a234e6eaffa15ee57b0083",
+   "source_sha256": "01c0db8e51a18471dec834815a01e59b6835c44e6d4eca96f5659546abb114a7",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
    "definition": "对每个调用者线圈离散中心、附加权重、计算 Green 响应、收缩一个驱动电流，并重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
@@ -9668,11 +9668,11 @@
      "固定 Pleiades 双线圈参考值以及存在外部 truth artifact 时的完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 覆盖。",
      "scripts/build_pleiades_truth.py 用调用者提供的外部 Pleiades source checkout 重新生成同一 truth；固定参考常量仍常驻，artifact 缺失时完整数组测试跳过。"
     ],
-    "evidence_ceiling": "验证针对声明的轴对称真空电流丝模型和已测输入合同，不证明材料线圈、等离子体响应或三维几何适用性。",
+    "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应行。证据：`test_composition_multi_coil_vacuum_field.py` 含 6 个测试函数，其中 1 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定; `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：固定 Pleiades 外部参考常数；当被 gitignore 的 `dist/reference-truth/simple-two-coil` 工件缺失时跳过全数组比较。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。",
     "known_limitations": [
      "调用之间不保留场缓存或设备对象。",
      "不含反馈、优化或导体材料模型。",
-     "公开分发许可仍待人工决定。"
+     "固定 Pleiades 点值参照始终运行；当被 gitignore 的 `dist/reference-truth/simple-two-coil` 工件缺失时跳过全数组比较，畸形/空线圈列表仍被排除。"
     ],
     "tests": [
      "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",

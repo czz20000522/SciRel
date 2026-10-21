@@ -198,7 +198,7 @@
     "expected": "返回包含 determinant≈2086.26、3×3 K 与 D，以及未修改 state_after 的映射。"
    },
    "asset_id": "scirel.kinetic.fluid-dispersion-response",
-   "source_sha256": "384752f4c0b6783dca11da0eac87688eb6b00be26f5057ce61dd7f4f10cc2a8b",
+   "source_sha256": "7c1c8e2808ac2ba7d9d787065681dd732eb221b9bf82807feb0a0531a3fb2840",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -220,10 +220,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "不适用；本入口直接组装响应，不含迭代、求根或本征求解。",
-    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+    "invalid_input": "非法单位/状态形状、非有限数据、物理符号或速率、`rel=1` 达到或超过 `c`，或数值不可表示的响应抛出 ValueError。",
+    "runtime_failure": "NumPy/SciPy 算术错误传播；不替换回退分支。",
+    "nonconvergence": "该响应不进行迭代求解；数值失败是异常，不是返回标志。",
+    "partial_results": "失败后不返回结果映射；零波数情形返回声明的有限带符号反射，而不是部分分支。"
    },
    "verification": {
     "scope": [
@@ -231,13 +231,13 @@
      "输出合同区分有限 5/15 谐波模型与完整谐波 J8 模型。"
     ],
     "known_limitations": [
-     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
+     "六资产共享文件 `test_fluid_spectrum_full.py` 中的直接函数覆盖零波数有限带符号反射与零权谐波边界；零 `kz` 处真实非零留数回旋极点仍是声明的排除分支。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "科学有效性受已测试数值域和适用条件限制。",
+     "该响应是使用声明历史常数的局部代数 SI 计算；不证明未磁化/零温度/零密度/静频极限。",
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
-    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于复/零 kz 下的相干 SI 流体色散，包括 kx=0 极限与 J8/J15 选择。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 2 个引用 `evaluate_fluid_dispersion`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：零 kz 处真实非零留数回旋极点，或未磁化/零温度/零密度/静频极限。"
    },
    "source_conflicts": [
     "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
@@ -285,7 +285,7 @@
     "expected": "返回 M 为 40×40、N=0 的映射，并含 poles、state 与 omega。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "dfdf90f49e65d3b84b6300fd5fc922b836149c82a61a6e16cb2756236b05a46b",
+   "source_sha256": "b2fecfe48f2f9217b82b3fdb18731d15186f1fcd85afb58e3bacd02bdb5ad852",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -307,10 +307,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "不适用；本入口直接组装有限矩阵，不含迭代、求根或本征求解。",
-    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+    "invalid_input": "未定义 L 极点表、非法 `j_order`/谐波控制、非有限状态或奇异源共振分母抛出 ValueError。",
+    "runtime_failure": "组装算术错误传播；不返回回退拟合矩阵。",
+    "nonconvergence": "不进行迭代或本征求解；未定义表或奇异共振抛出异常，而不是返回部分矩阵。",
+    "partial_results": "异常后不返回矩阵映射。"
    },
    "verification": {
     "scope": [
@@ -318,13 +318,13 @@
      "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
     ],
     "known_limitations": [
-     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
+     "六资产共享文件中的三个直接函数覆盖有理矩阵恢复、未定义表拒绝与显式控制优先级；奇异源共振会被拒绝而不是拟合。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "科学有效性受已测试数值域和适用条件限制。",
+     "有限拟合响应不等同于精确 Bessel/Z 动理学介电张量；该等价性被明确排除。",
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
-    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于N0..N7 及源表上的稠密 J8/J12 流体电磁本征矩阵。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 3 个引用 `assemble_fluid_em`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：有限拟合响应与精确 Bessel/Z 动理学介电张量之间的等同。"
    },
    "source_conflicts": [
     "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
@@ -360,7 +360,7 @@
     "expected": "返回完整诊断映射；root_valid 为 [[True]]，nf≈-7.67e-12+1304.24j m^-1，xx≈1.108e11 rad/s。"
    },
    "asset_id": "scirel.kinetic.fluid-bonk-search",
-   "source_sha256": "54c21b9e9dbc52a856900b72531af77e604e48140881b7c28a26afeee8927696",
+   "source_sha256": "afcd54fff8dd359966f08c01f4438584cf5fb5bb698aeb96e402ac9fdbfd40e4",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -393,13 +393,13 @@
      "沿用求解器原有容差，并显式记录有界尝试与根核验。"
     ],
     "known_limitations": [
-     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
+     "BONK 返回每次尝试的行；若无根通过声明的残差门限，会返回 `root_valid=false` 的未验证行；该行是搜索候选而非物理根。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "科学有效性受已测试数值域和适用条件限制。",
+     "绑定文件 `test_fluid_spectrum_full.py` 由六个资产共享，仅一个直接函数调用 `solve_fluid_bonk`；未绑定独立 BONK 参照。",
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
-    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于三个有界 BONK 情形及调用者提供的有限频率轴。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 1 个引用 `solve_fluid_bonk`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：分支追踪、完整模枚举或无条件收敛。"
    },
    "source_conflicts": [
     "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。"
@@ -447,7 +447,7 @@
     "expected": "返回 kxx 形状为 (1,5) 的谱映射，并含 roots、matM、spectra 与 eigen_diagnostics。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "7aa83aa51f1a9307e9d5c84b9b46ba6491f5fb3bd636e7a3622566c694795acb",
+   "source_sha256": "77cd8d74f28a7cba592c2f3aaecbdcd041beb8ed20a4892d00e999700f17250d",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -469,10 +469,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "未知控制参数、非有限或物理上不一致的输入、真正的极点及不可表示的响应触发 ValueError。",
-    "runtime_failure": "Python 数值错误连带操作上下文传播；不回退到原生运行时、源码 checkout 或网络。",
-    "nonconvergence": "本入口不使用非线性候选根语义。精度或尾项判据失败明确触发 ValueError；涉及本征计算时，残差超限或候选不足也明确触发 ValueError。",
-    "partial_results": "异常不返回结果，不把失败或部分执行作为成功输出。"
+    "invalid_input": "未知控制、非有限/不自洽 SI 状态、真实非零留数极点或不可表示谱/矩阵抛出 ValueError。",
+    "runtime_failure": "NumPy/SciPy 数值错误带操作上下文传播；不选择原生运行时、源检出或网络回退。",
+    "nonconvergence": "EM 求解不进行非线性搜索；求解失败是显式 ValueError，而不是收敛标志。",
+    "partial_results": "异常后不返回结果映射；返回的 EM 谱仅含 `status` 与有限数组。"
    },
    "verification": {
     "scope": [
@@ -480,13 +480,13 @@
      "全部有限谱、按原始次序排列的值、候选及末端矩阵。"
     ],
     "known_limitations": [
-     "再分发许可仍为 NOT_ESTABLISHED，尚未公开发布。",
+     "直接绑定的函数是六资产共享文件 `test_fluid_spectrum_full.py` 中的 `test_status_and_complete_finite_spectrum_are_explicit` 与 `test_multifrequency_em_preserves_each_nested_diagnostic_array`；不存在单独的 EM 测试文件。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
-     "科学有效性受已测试数值域和适用条件限制。",
+     "EM 分支使用固定历史常数 `c2=2.99792458e8**2`、`epsilon0=8.854187817e-12` 与 `kB=1.38064852e-23`；不做单位换算或现代 CODATA 替换。",
      "纯 Python 实现已在本机测试；不声称与原生运行时逐位一致。"
     ],
-    "evidence_ceiling": "直接仓库测试建立已测试输入上的数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于带全部八个 N 控制与源默认频率轴的 J8/J12 电磁谱。证据：`test_fluid_spectrum_full.py` 含 9 个测试函数，其中 2 个引用 `solve_fluid_em`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：每个辅助本征值都是动理学物理模，或无限模完备性。"
    },
    "source_conflicts": [
     "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。",

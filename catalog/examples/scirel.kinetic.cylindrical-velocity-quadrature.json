@@ -285,13 +285,13 @@
   "tests": [
    "tests/kinetic/test_cylindrical_velocity_quadrature.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the eighteen-field cylindrical velocity quadrature on caller-supplied vr/vx meshes. Evidence: `test_cylindrical_velocity_quadrature.py` contains 17 test functions, 4 of which reference `make_cylindrical_velocity_quadrature`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: hand-derived analytic quadrature oracle on a different mesh from the reference case. It does not establish mesh generation/adaptation or any distribution/collision model.",
   "known_limitations": [
    "The outer faces use the declared half-cell extrapolation (mirror the last node); schemes expecting different face placements must not reuse the measure unreviewed.",
    "The asset performs no unit conversion: the meshes and every output share the caller's normalized velocity unit, and the physical thermal-speed scale is the caller's.",
    "Non-finite and non-real mesh rejection are documented repairs beyond the original behavior: a caller who relied on the earlier behavior sees a ValueError where it previously saw coercion, an unrelated TypeError or a silently corrupted quadrature. The same holds for the nonnegative radial domain and the output representability check: a negative or float64-ceiling mesh that the earlier behavior accepted with negative or non-finite measures is rejected here.",
    "The nonnegative radial domain makes the positive-radial-speed convention explicit; a caller that believes a signed radial axis is meaningful is looking at a different relation.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The bound file is shared by two assets and its hand-derived oracle checks an eighteen-field mesh on a four-point axial axis; output-representability and negative-radial rejection branches are contract-only."
   ]
  }
 }

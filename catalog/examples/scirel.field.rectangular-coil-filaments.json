@@ -164,11 +164,11 @@
   "tests": [
    "tests/field/test_rectangular_coil_filaments.py"
   ],
-  "evidence_ceiling": "Verified against the maintained SciRel contract for finite axisymmetric rectangular sections; this does not validate a physical winding or field solution.",
+  "evidence_ceiling": "Bounded to rectangular-coil filament discretization with source ordering and ninety-degree rotation. Evidence: `test_rectangular_coil_filaments.py` contains 4 test functions, 1 of which references `discretize_rectangular_coil`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish current assignment, finite-wire cross-sections, or material response.",
   "known_limitations": [
    "Only uniform center spacing is supported.",
    "Rotation is confined to the R-Z cross-section.",
-   "Public distribution licensing remains pending a human decision."
+   "The returned centres preserve outer radial and inner axial ordering; no flux/field weighting or conductor cross-section is attached."
   ]
  }
 }

@@ -190,11 +190,11 @@
   "tests": [
    "tests/cross_domain/test_spectral_scientific_correction.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the lowest ordered angular modes, including integer-root and small loss-cone cases. Evidence: `test_spectral_scientific_correction.py` contains 16 test functions, 2 of which reference `solve_loss_cone_spectrum`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish physical population validation, transport, or global equilibrium.",
   "known_limitations": [
    "Numerical residual checks are finite precision; the endpoint xi_tp=1 is excluded by the singular differential operator.",
    "The legacy backend names no longer request a truncated approximation.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "The two direct functions cover the integer ground mode and narrow-cone Rayleigh bounds; no test exercises the large-mode-count performance or backend-name compatibility branch."
   ]
  },
  "references": [

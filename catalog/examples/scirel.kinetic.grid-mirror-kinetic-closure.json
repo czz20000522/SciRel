@@ -700,13 +700,13 @@
    "tests/cross_domain/grid_mirror_kinetic_closure/test_composition_grid_mirror_kinetic_closure.py",
    "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the grid-aware mirror endpoint closure for one positive-ion case with relative charge residual below 1e-9. Evidence: `test_composition_grid_mirror_kinetic_closure.py` contains 13 test functions, 2 of which reference `solve_grid_mirror_kinetic_closure`, and is bound only by this asset; `test_mirror_kinetic_scientific_correction.py` contains 15 test functions, 1 of which references `solve_grid_mirror_kinetic_closure`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent analytic/high-precision endpoint balance and frozen composition values. It does not establish a general R-Z equilibrium solve, magnetic-field construction, or spatially resolved kinetic transport.",
   "known_limitations": [
    "Input YAML describes fixed full-grid reference profiles more broadly than the actual endpoint-plus-nested call chain supports; the shared profile must work on both one-dimensional and two-dimensional psi.",
    "Confinement masks only selected top-level fields; the nested kinetic mapping, original moment-named values, temperatures, potentials, pitch integrals and endpoint diagnostics stay full-grid.",
    "Nearest-plane selection can differ from the requested physical coordinate and the flux-profile operator uses source-defined sorting, deduplication and constant endpoint extension.",
-   "Independent endpoint and nested nonlinear solves expose no combined convergence certificate; source licensing and current-version expert recognition remain pending.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The endpoint and nested nonlinear solves each use their own finite iteration budget; neither exposes a combined convergence certificate, so only the declared positive-ion case with relative charge residual below `1e-9` is covered.",
+   "The bound composition file is asset-private with two direct functions; the shared correction file adds one endpoint-balance test, but arbitrary full-grid reference profiles at the one-dimensional endpoint call remain excluded."
   ]
  },
  "composition": {

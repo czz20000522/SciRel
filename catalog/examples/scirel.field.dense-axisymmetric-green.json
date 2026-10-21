@@ -144,10 +144,10 @@
    "tests/field/test_dense_axisymmetric_green.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete external-reference closure or expert approval.",
+  "evidence_ceiling": "Bounded to the dense axisymmetric Green response preserving separate source columns. Evidence: `test_dense_axisymmetric_green.py` contains 9 test functions, 1 of which references `dense_axisymmetric_green_response`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `dense_axisymmetric_green_response`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: analytic axial-field limit and columnwise circular-filament kernel equality. It does not establish finite-wire self-fields, arbitrary extreme-scale accuracy, or equilibrium claims.",
   "known_limitations": [
    "The result preserves separate source columns and does not sum them.",
-   "Public distribution licensing remains pending a human decision."
+   "The asset-private test file has nine functions but one direct example; `test_field_green_correction.py` is shared by five assets and contains no direct call, so the nonfinite-response path is contract-only."
   ]
  }
 }

@@ -119,12 +119,12 @@
    "tests/field/test_filament_coil_green.py",
    "tests/cross_domain/test_legacy_admission_regressions.py"
   ],
-  "evidence_ceiling": "The tests establish exact interior polynomial-log arithmetic and unchanged sampled relative bounds 1e-8 for K and 2e-8 for E against SciPy on 200001 points. The analytic endpoint identities K(1)=+Inf and E(1)=1 hold elementwise, independently of neighboring array elements, and the physical field consumer still rejects coincident geometry. The endpoint limit is applied per element, so a mixed array does not inherit a batch-level sentinel. This is not all-input parity or a continuous approximation-error bound.",
+  "evidence_ceiling": "Bounded to the source polynomial-log complete-elliptic approximation and analytic endpoints. Evidence: `test_filament_coil_green.py` contains 13 test functions, 8 of which reference `evaluate_complete_elliptic_integrals`, and is shared by 3 assets; `test_legacy_admission_regressions.py` contains 9 test functions, 1 of which references `evaluate_complete_elliptic_integrals`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent source-polynomial recomputation and SciPy `ellipk`/`ellipe` parity. It does not establish m outside [0,1], complex values, or an error guarantee outside the tested approximation.",
   "known_limitations": [
    "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
    "The approximation is less accurate than library special functions (~1e-8 relative sampled); consumers needing higher accuracy should use the baseline scipy-elliptic filament relation instead.",
    "The endpoint value is the analytic limit rather than a guarded surrogate; K(1) must not be treated as a finite magnetic field.",
-   "Public distribution licensing remains pending a human decision."
+   "The approximation is evaluated only on real `m` in `[0,1]`; no analytic continuation or complex-modulus path is provided."
   ]
  }
 }

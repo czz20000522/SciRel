@@ -235,13 +235,13 @@
    "tests/kinetic/test_spectral_evolution.py",
    "tests/kinetic/test_dispersion_multifluid_oracle.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the dense generalized temporal eigenproblem with ordered real/imaginary sorts and backward residuals. Evidence: `test_spectral_evolution.py` contains 12 test functions, 2 of which reference `solve_temporal_spectrum`, and is shared by 4 assets; `test_dispersion_multifluid_oracle.py` contains 4 test functions, 1 of which references `solve_temporal_spectrum`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression plus one fixed external PDRF truth case. It does not establish universal forward eigenvalue accuracy, unique degenerate polarizations, or mode tracking.",
   "known_limitations": [
    "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
    "No branch tracking or unique phase/degenerate basis.",
    "No source/physical species model is inferred from arbitrary matrix inputs.",
-   "Local evaluation under the declared authorization only; redistribution of the source material or the paper is NOT_ESTABLISHED.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Two direct functions in the shared spectral file plus one fixed external PDRF truth test cover the solve; the truth file is shared by three assets and binds one oracle case.",
+   "No external matrix-level oracle beyond the fused PDRF truth case is bound; the numerical floor is the backward residual, not a forward eigenvalue error bar."
   ]
  },
  "references": [

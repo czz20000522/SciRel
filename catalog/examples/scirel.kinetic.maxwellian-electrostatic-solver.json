@@ -177,11 +177,11 @@
   "zh": "种子 Maxwellian 静电模态"
  },
  "verification": {
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to finite positive real k and representable complex frequency for the Maxwellian electrostatic mode. Evidence: `test_generalized_dispersion_d2.py` contains 4 test functions, 1 of which references `solve_maxwellian_electrostatic_mode`, and is shared by 3 assets; `test_generalized_dispersion_d2_successor.py` contains 7 test functions, 1 of which references `solve_maxwellian_electrostatic_mode`, and is shared by 3 assets; `test_generalized_dispersion_numerical_repair.py` contains 11 test functions, none of which references `solve_maxwellian_electrostatic_mode`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish global root scans or arbitrary analytic continuation.",
   "known_limitations": [
    "The estimated error is not a rigorous enclosure.",
    "No uniqueness, least-damped branch or global root selection claim; supplied seeds select branches.",
-   "Example output is a bounded runtime observation, not a universal scientific claim."
+   "Only two direct functions exist across the three shared generalized-dispersion files (`test_maxwellian_root_checks_residual` and `test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected`); the eleven-test repair file contains no direct call."
   ],
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",

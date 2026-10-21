@@ -206,14 +206,14 @@
   "tests": [
    "tests/field/test_filament_coil_green.py"
   ],
-  "evidence_ceiling": "The direct tests establish the three responses against an independent closed-form recomputation (exact float equality), linear superposition in current, midplane B_r cancellation of a mirrored pair, and the fail-closed input contracts including the singular-geometry rejection. With identical scipy-evaluated K and E the closed form agrees with the baseline scirel.field.circular-filament-green response to rtol 1e-12 on probed geometries (same physics, different arrangement); feeding the polynomial-log approximation instead shifts responses by up to ~1e-5 relative on the probed set, consistent with the approximation's documented ~1e-8 K/E error amplified by the closed form -- sampled evidence over probed geometries, not a continuous bound. No test establishes the responses against an external physics reference beyond the shared closed form.",
+  "evidence_ceiling": "Bounded to the closed-form filament-coil Green field with caller-supplied elliptic values. Evidence: `test_filament_coil_green.py` contains 13 test functions, 7 of which reference `evaluate_filament_coil_green_field`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent closed-form recomputation and SciPy-elliptic baseline parity. It does not establish misaligned geometry, internally recomputed elliptic integrals, or arbitrary extreme-scale guarantees.",
   "known_limitations": [
    "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
    "This asset is a declared relation variant of scirel.field.circular-filament-green, not a new Green capability; the variant boundary (caller-supplied elliptic values, scalar target, source regularization, fail-closed singulars) must not be collapsed by silent unification.",
    "Declared input hardening chain (documented for the family): the geometry operator rejects raw negative observation radii, and this operator rejects zero-separation/modulus-1 singular geometry; neither boundary is silently accepted here.",
    "Declared output hardening: finite but extreme current/turns magnitudes that overflow the combined response factor raise ValueError instead of returning Inf/NaN.",
    "The singular-geometry rejection (observation point on a filament ring) is an explicit contract: that configuration raises rather than returning NaN responses.",
-   "Public distribution licensing remains pending a human decision."
+   "The closed-form variant is evaluated from caller-supplied elliptic values; no independent SciPy recomputation occurs inside the operator."
   ]
  }
 }

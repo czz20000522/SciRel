@@ -153,11 +153,11 @@
    "tests/field/test_filament_vacuum_field.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Direct regressions cover selected ideal-filament superposition, axial field, radial quadrature and a fine-grid comparison with the circular-filament psi kernel after subtracting the first-radius reference. They do not establish arbitrary-grid quadrature accuracy, complete external-reference closure or expert approval.",
+  "evidence_ceiling": "Bounded to filament-current superposition, first-grid-point psi reference and radial quadrature. Evidence: `test_filament_vacuum_field.py` contains 7 test functions, 1 of which references `integrate_filament_vacuum_field`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `integrate_filament_vacuum_field`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: analytic circular-filament psi=R A_phi values away from the source. It does not establish nonrectilinear grids, finite-wire self-fields, or continuum convergence.",
   "known_limitations": [
    "The returned flux uses the first radial grid point as reference and omits a 2-pi flux factor.",
    "The ideal source is singular at coincident targets, which are rejected.",
-   "Public distribution licensing remains pending a human decision.",
+   "The asset-private file has seven functions and one direct example; the shared correction file contains no direct call, so the nonfinite integrated-field path is contract-only.",
    "The radial trapezoidal error in psi must be verified by grid refinement; even when the magnetic field uses the analytic relation, the discrete psi is not claimed to equal the analytic R*A_phi."
   ]
  }

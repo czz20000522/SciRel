@@ -336,11 +336,11 @@
   "tests": [
    "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
   ],
-  "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
+  "evidence_ceiling": "Bounded to the Ronnmark determinant complex-kx root at each supplied frequency from one fixed seed. Evidence: `test_fluid_spectrum_r43_kinetic.py` contains 12 test functions, 2 of which reference `solve_kinetic_wavevector_roots`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish mode identity or arbitrary-parameter accuracy beyond the declared numerical method.",
   "known_limitations": [
    "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
-   "Public distribution license and expert review remain pending.",
-   "local execution covers this asset."
+   "Two direct functions in the four-asset-shared `test_fluid_spectrum_r43_kinetic.py` cover complex-root sign/exit-flag and invalid controls; no continuation seed policy or global root scan is bound.",
+   "The reviewed example is the only test that binds the output-representability check; the two direct functions cover root sign/exit-flag and invalid controls."
   ]
  }
 }

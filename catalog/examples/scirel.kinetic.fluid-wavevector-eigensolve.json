@@ -193,11 +193,11 @@
   "tests": [
    "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to a general complex fluid eigenmatrix and positive-real least-damped kx branch selection. Evidence: `test_fluid_spectrum_r43_fluid.py` contains 9 test functions, 3 of which reference `solve_fluid_wavevector_eigenproblem`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity. It does not establish mode identity or arbitrary-parameter accuracy.",
   "known_limitations": [
    "selection rejects nonpropagating modes and returns at most keep branches",
-   "Public distribution license and expert review remain pending.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The three direct functions cover eigen selection, the nonpropagating-mode floor and integer branch-count rejection; `test_domain_import_boundaries.py` only checks lazy LAPACK loading.",
+   "The eigensolve returns at most `keep` least-damped positive-real branches; it does not certify mode identity or arbitrary-parameter accuracy."
   ]
  }
 }

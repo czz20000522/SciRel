@@ -762,7 +762,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-root-scans",
-   "source_sha256": "a401c070ee882d3fb5b5b1f1df7484a619f2364ecb18035192dc111ff19d0e4b",
+   "source_sha256": "41ae37748071a45aba8cb2304b8ecc8cc2acdb37d1032f32969a1daa7477e45c",
    "summary": "运行全部四类带初始种子的静电根扫描。",
    "definition": "各类网格为：Langmuir .1:.1:1 后接 2:1:10，固定相位种子 1-.1i；离子声波 1.1:-.05:.05，相位种子 .04-.02i；束流 .4:-.005:.05，相位种子 (1-.01i)*sqrt(2)*.4；广义分布 .1:.1:1 后接 1.5:.5:5，频率种子 1.5-.001i。离子声波和束流分支接续上一个相位，广义分布分支接续上一个频率。k 通过闭包绑定，避免作为无效的 fsolve 第四参数传入。求解使用 D/k² 或直接使用经过验证的 Maxwellian epsilon，并同时检查求解器成功、残差容差及函数求值预算。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -945,9 +945,9 @@
      "默认束流种子跟随阻尼高频分支；基于频率信息显式设置的相位种子可以找到不稳定分支。",
      "默认束流种子在自定义短网格 [.3,.295] 上失败；这一失败行为保持不变。",
      "通用非 Maxwellian 求积根未经区间认证；其接受门禁未包含求积误差估计。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "独立参照仅覆盖三个带种子情形（Langmuir/IAW/束）对 50 位 `mpmath` 方程的对照；不证明每个族/网格点，也不自动选择最不稳定分支。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于四组完整 Langmuir/IAW/束/广义根扫描网格及显式种子。证据：`test_generalized_dispersion_models.py` 含 14 个测试函数，其中 6 个引用 `scan_gpdf_roots`，由 6 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：`test_roots_against_independent_high_precision_equations` 中的独立 50 位 `mpmath` 方程，加上冻结扫描值。不建立：根唯一性、穷尽谱或自动分支选择。"
    }
   },
   {
@@ -1025,7 +1025,7 @@
   },
   {
    "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-   "source_sha256": "3da131dab0f48735682b4d4b9ca54458616a892a9a55fffba44c4443797e382d",
+   "source_sha256": "a40c4b0c5d48ac47b4814f91c41101b04685159a4a855d094d55b116d233b694",
    "summary": "对调用者给定的密度特征求 Cauchy 变换，并针对近实轴核峰使用专门求积。",
    "definition": "G(z)=∫ density(v)/(v-z) dv。对 z=x+i·y，邻近投影的有限面板采用 v=x+abs(y)·sinh(t)，使被积核为 density(v)·(tanh(t)+i·sign(y)·sech(t))。变换后的有界面板可分辨已知核峰与长尾；平滑远面板和无穷尾部使用实坐标求积。仅按声明的支撑约定增加显式解析延拓。",
    "model": "一维广义等离子体响应。",
@@ -1130,9 +1130,9 @@
      "有限区间会截去 bounds 未覆盖的尾部；全实轴模式须提供已分辨的网格与支撑，并假定尾部可积。",
      "分量指标包含求积与浮点累加估计，不包含回调、解析延拓与有限区间截断误差，不是全局认证。",
      "解析延拓须显式提供与密度一致的解析回调。",
-     "科学有效性受已测试数值域和适用条件限制。"
+     "绑定直接测试覆盖高斯/Faddeeva 恒等式与有限支撑延拓，但未绑定仅回调全线支撑或求积证书情形。"
     ],
-    "evidence_ceiling": "直接仓库测试建立数值关系、输出结构和声明的失败行为；证据受文档适用域限制，不证明未测试物理状态、人工科学认可或再分发权利。"
+    "evidence_ceiling": "限于有限区间与特征网格全线 Cauchy 变换及分量误差报告。证据：`test_generalized_dispersion_d2.py` 含 4 个测试函数，其中 2 个引用 `evaluate_cauchy_transform`，由 3 个资产共享; `test_generalized_dispersion_d2_successor.py` 含 7 个测试函数，其中 5 个引用 `evaluate_cauchy_transform`，由 3 个资产共享; `test_generalized_dispersion_numerical_repair.py` 含 11 个测试函数，其中没有函数引用 `evaluate_cauchy_transform`，由 3 个资产共享; `test_cauchy_kernel_resolution.py` 含 6 个测试函数，其中没有函数引用 `evaluate_cauchy_transform`，仅由本资产绑定；本审计已执行有界示例。真值来源：独立解析有限区间恒等式与 Faddeeva 参照。不建立：仅回调的全线支撑发现或源 MATLAB 行为。"
    },
    "example": {
     "description": "用显式有限特征网格积分归一化 Gaussian。",
@@ -1226,7 +1226,7 @@
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
-   "source_sha256": "080372361c026e06bf154f7d06f86a6522b749157589438db5d2b0554890db5f",
+   "source_sha256": "25c89cb4e4aaec5c56da69d462d79446dd12480fa0b7c68627da1fa76a030248",
    "summary": "从显式复种子求一个 Maxwellian 模态，并检查残差与误差。",
    "definition": "用两个实分量求解 epsilon(omega,k)=0，再进行不依赖 k² 缩放的归一化残差与估计误差门禁。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1330,9 +1330,9 @@
     "known_limitations": [
      "估计误差不是严格包络。",
      "不承诺唯一根、最弱阻尼分支或全局选根；种子决定分支。",
-     "示例输出是有界的运行时观察结果，不是普适的科学结论。"
+     "三个共享广义色散文件中只有两个直接函数（`test_maxwellian_root_checks_residual` 与 `test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected`）；含十一个测试的修复文件没有任何直接调用。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "限于有限正实 k 与可表示复频率下的麦克斯韦静电模。证据：`test_generalized_dispersion_d2.py` 含 4 个测试函数，其中 1 个引用 `solve_maxwellian_electrostatic_mode`，由 3 个资产共享; `test_generalized_dispersion_d2_successor.py` 含 7 个测试函数，其中 1 个引用 `solve_maxwellian_electrostatic_mode`，由 3 个资产共享; `test_generalized_dispersion_numerical_repair.py` 含 11 个测试函数，其中没有函数引用 `solve_maxwellian_electrostatic_mode`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：全局根扫描或任意解析延拓。"
    },
    "example": {
     "description": "求解一个由种子指定的 Maxwellian 模态。",

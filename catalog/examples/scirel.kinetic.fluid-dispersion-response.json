@@ -36,10 +36,10 @@
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
-  "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
-  "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
-  "runtime_failure": "Python numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
+  "invalid_input": "Raises ValueError for invalid units/state shapes, nonfinite data, physical signs or rates, `rel=1` at or above `c`, or a numerically unrepresentable response.",
+  "nonconvergence": "This response performs no iterative solve; numerical failures are errors, not returned flags.",
+  "partial_results": "No result mapping is returned after failure; zero-wavenumber cases return the declared finite signed reflection, not a partial branch.",
+  "runtime_failure": "NumPy/SciPy arithmetic errors propagate; no fallback branch is substituted."
  },
  "identity": {
   "assumptions": [
@@ -117,12 +117,12 @@
   "zh": "Maxwell 色散响应"
  },
  "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to coherent SI fluid dispersion at complex/zero kz, including kx=0 limits and J8/J15 selections. Evidence: `test_fluid_spectrum_full.py` contains 9 test functions, 2 of which reference `evaluate_fluid_dispersion`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish genuine nonzero-residue cyclotron poles at zero kz, or unmagnetized/zero-temperature/density/static-frequency limits.",
   "known_limitations": [
-   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "The direct functions cover zero-wavenumber finite signed reflection and a zero-weight harmonic boundary inside the six-asset-shared `test_fluid_spectrum_full.py`; genuine nonzero-residue cyclotron poles at zero `kz` remain the declared excluded branch.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "The response is a local algebraic SI evaluation using the declared historical constants; no unmagnetized/zero-temperature/density/static-frequency limit is certified.",
    "Pure-Python execution is tested on this host; native parity is not claimed."
   ],
   "scope": [

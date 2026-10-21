@@ -275,11 +275,11 @@
   "tests": [
    "tests/kinetic/test_fluid_spectrum_r43_variants.py"
   ],
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the positive near-zero kz clamp. Evidence: `test_fluid_spectrum_r43_variants.py` contains 6 test functions, 3 of which reference `evaluate_fluid_kinetic_dispersion_sum`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity. It does not establish mode identity, root finding, or accuracy outside the tested finite-harmonic approximation.",
   "known_limitations": [
    "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
-   "Public distribution license and expert review remain pending.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions."
+   "The finite harmonic sum uses analytic SciRel `Z` values; no finite-order Weideman special-function parity is claimed.",
+   "The finite harmonic cutoff `lmx` is caller-supplied; adequacy at larger `kx*rho` and root finding/mode identity are not established by the bound tests."
   ]
  }
 }

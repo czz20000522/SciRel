@@ -36,10 +36,10 @@
   "expected": "PASS: the example runs locally and returns the declared output structure."
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for unknown controls, nonfinite/incoherent physical inputs, genuine poles or unrepresentable scientific response.",
-  "nonconvergence": "No nonlinear search candidate semantics in this API. Precision/tail failures are explicit ValueError; EM eigen residual and insufficient-selection failures are explicit ValueError where applicable.",
-  "partial_results": "Errors return no result; no failed or partial execution is presented as a successful output.",
-  "runtime_failure": "Python numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
+  "invalid_input": "Raises ValueError for unknown controls, nonfinite/incoherent SI state, genuine nonzero-residue poles, or an unrepresentable spectrum/matrix.",
+  "nonconvergence": "The EM solve performs no nonlinear search; solve failures are explicit ValueError rather than a convergence flag.",
+  "partial_results": "No result mapping is returned after an error; a returned EM spectrum carries `status` and finite arrays only.",
+  "runtime_failure": "NumPy/SciPy numerical errors propagate with operation context; no native runtime, source checkout or network fallback is selected."
  },
  "identity": {
   "assumptions": [
@@ -129,12 +129,12 @@
   "zh": "修正的 EM 有限谱及候选"
  },
  "verification": {
-  "evidence_ceiling": "Direct repository tests establish the numerical relation, output structure, and declared failure behavior for the tested inputs. Evidence is bounded by the documented applicability domain; it does not establish untested physical regimes, human scientific endorsement, or redistribution rights.",
+  "evidence_ceiling": "Bounded to the J8/J12 EM spectra with all eight N controls and the source-default frequency axis. Evidence: `test_fluid_spectrum_full.py` contains 9 test functions, 2 of which reference `solve_fluid_em`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish that every auxiliary eigenvalue is a kinetic physical mode, or infinite-mode completeness.",
   "known_limitations": [
-   "Source permissions remain NOT_ESTABLISHED; no public release.",
+   "The bound direct functions are `test_status_and_complete_finite_spectrum_are_explicit` and `test_multifrequency_em_preserves_each_nested_diagnostic_array` inside the six-asset-shared `test_fluid_spectrum_full.py`; no separate EM test file exists.",
    "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
    "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
-   "Scientific validity is bounded by the tested numerical domain and applicability conditions.",
+   "The EM branch uses the fixed historical constants `c2=2.99792458e8**2`, `epsilon0=8.854187817e-12` and `kB=1.38064852e-23`; no unit conversion or modern CODATA substitution is performed.",
    "Pure-Python execution is tested on this host; native parity is not claimed."
   ],
   "scope": [
