@@ -14,6 +14,20 @@
  "aliases": [
   "vp_distribution"
  ],
+ "discovery": {
+  "capability": [
+   "Distribution derivative and cutoff jumps",
+   "g=f0_prime, including A/(|v|^3+vt^3) cutoff jump masses for Fn=4."
+  ],
+  "operation": [
+   "evaluate the equilibrium distribution derivative and cutoff jumps",
+   "equilibrium controls -> f0'(v) and cutoff jump masses"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; weak Fn4 cutoff requires a uniform grid; no time evolution.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "g=f0_prime, including A/(|v|^3+vt^3) cutoff jump masses for Fn=4.",
   "direction": "Inputs to vp_distribution -> result",

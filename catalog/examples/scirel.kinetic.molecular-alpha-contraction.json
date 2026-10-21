@@ -15,6 +15,20 @@
  "aliases": [
   "contract_molecular_hydrogen_alpha_frequencies"
  ],
+ "discovery": {
+  "capability": [
+   "Molecular alpha collision frequency contraction",
+   "Per spatial cell, contract the molecular three-family assembled SIG collision matrices (CX, H2-H, H2-H+) with the Fortran-order flattened predecessor distributions to three (nvr,nvx,nx) Alpha collision-frequency fields; ni_correct selects the source's max(n - nHP, 0) ion-density correction."
+  ],
+  "operation": [
+   "contract molecular SIG collision matrices into Alpha frequency fields",
+   "three assembled SIG collision matrices + explicit predecessor distributions and densities (fH, fHp_hat, fi_hat, n, nHP) -> three Alpha collision-frequency fields (Alpha_CX, Alpha_H2_H, Alpha_H2_P)"
+  ],
+  "model": "the Fortran-order contraction with the minimal order-preserving reshape repair; reproduced bit for bit on the declared legal domain by the maintained regression tests",
+  "geometry": "per spatial cell k: an (nvr,nvx) cylindrical velocity slice Fortran-order flattened to an (N,) carrier (N = nvr*nvx), contracted against an (N,N) assembled collision matrix, restored to (nvr,nvx); iterated over nx slices",
+  "boundary": "finite aligned inputs of the declared shapes; negative or zero densities are not rejected at runtime -- every finite density profile is contracted as given (the ni_correct branch clamps n - nHP at zero cell-wise, which is a source-defined density correction, not a positivity gate); bounded negative output cells inherited from the signed elastic SIG families (vx_vx factors) are reproduced as-is, never clamped",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Alpha_CX[:,:,k] = F^-1(SIG_CX @ F(fHp_hat[:,:,k]*nHP[k])), Alpha_H2_H[:,:,k] = F^-1(SIG_H2_H @ F(fH[:,:,k])), Alpha_H2_P[:,:,k] = F^-1(SIG_H2_P @ F(fi_hat[:,:,k]*ni[k])), with ni = n, or ni = max(n - nHP, 0) when ni_correct is set; F/F^-1 are the source's legacy Fortran-order (order='F') flatten/restore between the (nvr,nvx) slice and the (nvr*nvx,) Work carrier.",
   "direction": "three assembled SIG collision matrices + explicit predecessor distributions and densities (fH, fHp_hat, fi_hat, n, nHP) -> three Alpha collision-frequency fields (Alpha_CX, Alpha_H2_H, Alpha_H2_P)",

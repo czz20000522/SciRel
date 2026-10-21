@@ -14,6 +14,20 @@
  "aliases": [
   "MagnetRing surface filaments"
  ],
+ "discovery": {
+  "capability": [
+   "Permanent-ring surface filament discretization",
+   "Discretize a rectangular permanent-ring cross-section into two ordered eight-point filament faces with opposite weights."
+  ],
+  "operation": [
+   "signed ideal-filament geometry approximation",
+   "section geometry -> ordered point and default-weight arrays"
+  ],
+  "model": "Signed ideal-filament geometry approximation.",
+  "geometry": "Rectangular cross-section optionally rotated about its centroid.",
+  "boundary": "Rotated points must remain at nonnegative cylindrical radius.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Permanent-ring filament discretization",
   "direction": "section geometry to ordered point and default-weight arrays",

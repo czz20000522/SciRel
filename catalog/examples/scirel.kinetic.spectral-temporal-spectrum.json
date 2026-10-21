@@ -14,6 +14,20 @@
  "aliases": [
   "solve_temporal_spectrum"
  ],
+ "discovery": {
+  "capability": [
+   "Conditioned temporal eigenspectrum",
+   "Solve and independently sort temporal modes with coherent arity and real precision refinement."
+  ],
+  "operation": [
+   "solve the conditioned temporal eigenspectrum",
+   "M,A,selectors,scales -> sorted frequencies and optional polarizations"
+  ],
+  "model": "Dense linear generalized eigenproblem, with backward-error controlled arithmetic refinement",
+  "geometry": "No additional geometry; matrix contract carries physical meaning",
+  "boundary": "Nonfinite matrices/solutions, singular inertia or excessive residuals fail; repeated modes have arbitrary basis",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Finite generalized temporal eigenspectrum and corresponding polarizations",
   "direction": "M,A,selectors,scales -> sorted frequencies and optional polarizations",

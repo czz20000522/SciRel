@@ -20,6 +20,20 @@
   "sigma_el_p_hh",
   "H2-H+ elastic momentum-transfer cross section"
  ],
+ "discovery": {
+  "capability": [
+   "H2-on-H+ elastic momentum-transfer cross section",
+   "H2-on-H+ elastic momentum-transfer cross section in m^2 from collision energy in eV."
+  ],
+  "operation": [
+   "Evaluate the H2-on-H+ elastic momentum-transfer cross section",
+   "collision energies -> cross section per energy"
+  ],
+  "model": "Single declared five-coefficient logarithmic-polynomial fit; no external-data interpolation and no rate integration.",
+  "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
+  "boundary": "Energies must be finite and nonnegative; values outside the [0.03, 1.01e4] eV fit range clip to the endpoints.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the H2-on-H+ elastic momentum-transfer cross section as a function of collision energy",
   "direction": "collision energies -> cross section per energy",

@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_qh2_total_conservation_diagnostic"
  ],
+ "discovery": {
+  "capability": [
+   "Terminal molecular total-energy conservation diagnostic",
+   "Compare the axial difference of a caller-owned total H2 heat-flux profile with the adjacent-cell mean of a caller-owned total energy-transfer profile."
+  ],
+  "operation": [
+   "evaluate the terminal total-energy conservation residual",
+   "axial positions, total H2 heat flux and total H2 energy transfer -> dimensionless nodal error profile"
+  ],
+  "model": "Terminal H2 total-energy profile diagnostic on caller-owned incident profiles",
+  "geometry": "one-dimensional axial spatial mesh; one result per supplied node",
+  "boundary": "at least two finite aligned nodes; each adjacent represented spacing is finite and nonzero; signed flux and transfer are allowed; finite positive global normalization",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "source-defined normalized axial total-energy balance residual",
   "direction": "axial positions, total H2 heat flux and total H2 energy transfer -> dimensionless nodal error profile",

@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_atomic_scattered_sources"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic scattered-source two-channel reduction",
+   "The pointwise sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values."
+  ],
+  "operation": [
+   "sum the atomic scattered-generation source channels",
+   "two aligned source fields -> their pointwise sum"
+  ],
+  "model": "Pointwise aggregation of the two scattered-generation source channels",
+  "geometry": "two velocity dimensions over one spatial axis",
+  "boundary": "two finite aligned three-dimensional fields; signed values preserved",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Beta = Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
   "direction": "two aligned source fields -> their pointwise sum",

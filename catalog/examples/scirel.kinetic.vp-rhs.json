@@ -14,6 +14,20 @@
  "aliases": [
   "vp_rhs"
  ],
+ "discovery": {
+  "capability": [
+   "Linear Vlasov right-hand side",
+   "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE."
+  ],
+  "operation": [
+   "evaluate the linear Vlasov right-hand side",
+   "distribution, field perturbation and k -> time derivative"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "Linear Vlasov right-hand side at one shared field; fixed ion background; no stepping.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "df_dt=-ikv*df+dE*df0dv, with one shared scalar dE.",
   "direction": "Inputs to vp_rhs -> result",

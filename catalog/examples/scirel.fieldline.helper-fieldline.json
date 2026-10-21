@@ -13,6 +13,20 @@
  "aliases": [
   "HelperFieldLine"
  ],
+ "discovery": {
+  "capability": [
+   "Helper field-line geometry and diagnostics",
+   "Fit a contour path and provide helper interpolation, arclength, gradient, field-curvature and bounded-intersection diagnostics."
+  ],
+  "operation": [
+   "contour label and vertices to a fitted helper diagnostic line",
+   "psi contour label and ordered planar vertices -> fitted helper line object with geometry and field-based diagnostics"
+  ],
+  "model": "Fixed 1000-point quadratic default spline with selectable linear, nearest or cubic interpolation and a local polynomial field-curvature derivative; flux-gradient curvature is not provided.",
+  "geometry": "Open paths preserve order and closed paths use periodic splprep; planar R,Z in caller length units with psi as a contour label.",
+  "boundary": "Intersections search only fitted parameter intervals and reject zero or multiple crossings; arbitrary topology, magnetic-axis limits and universal error bounds are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "HelperFieldLine geometry and diagnostics",
   "direction": "contour label and vertices to a fitted helper diagnostic object",

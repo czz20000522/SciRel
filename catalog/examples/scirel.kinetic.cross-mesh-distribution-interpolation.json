@@ -16,6 +16,20 @@
  "aliases": [
   "interp_fvrvxx"
  ],
+ "discovery": {
+  "capability": [
+   "Cross-mesh distribution interpolation",
+   "Remap a cylindrical velocity distribution between two phase-space meshes. The default branch preserves nonnegativity and spatially interpolated discrete density, axial momentum density and squared-speed energy density through a constrained relative-entropy projection; unrealizable destination moments fail explicitly."
+  ],
+  "operation": [
+   "remap a velocity distribution between phase-space meshes",
+   "nonnegative distribution and two normalized cylindrical phase-space meshes -> conservative destination distribution, or a typed infeasibility/convergence failure"
+  ],
+  "model": "stateless two-velocity/one-spatial-axis cell-overlap remap followed by a nonnegative relative-entropy projection; a corrected AN/BN projection, not a reproduction of the defective branch",
+  "geometry": "two velocity dimensions over one spatial axis, per phase-space mesh",
+  "boundary": "finite real strictly increasing axes with at least two nodes; nonnegative radial axes and two-sided axial axes; declared velocity-node and spatial overlap checks; finite positive Tnorm and representable scale ratio; aligned finite fa, nonnegative for correct=1; target mean velocity/energy must lie in the destination-node convex hull and the binary64 calculation must meet its return postcondition",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "nonnegative finite-grid remap with three extensive-moment constraints",
   "direction": "nonnegative distribution and two normalized cylindrical phase-space meshes -> conservative destination distribution, or a typed infeasibility/convergence failure",

@@ -14,6 +14,20 @@
  "aliases": [
   "transform_to_rtheta"
  ],
+ "discovery": {
+  "capability": [
+   "Meridional polar position and vector projection",
+   "Map cylindrical meridional position and vector components to polar radius, angle and orthonormal components."
+  ],
+  "operation": [
+   "forward meridional polar transformation",
+   "rho, z and their vector components -> r, theta and orthonormal vector components"
+  ],
+  "model": "Euclidean meridional coordinate transformation with theta measured in radians from +Z toward +rho; no magnetic-field model is included.",
+  "geometry": "Planar signed rho,Z coordinates with positive distance from the origin; caller-coherent length and vector units.",
+  "boundary": "The origin has no polar vector basis and is rejected; nonzero axis points are valid, and no physical field-null convention is inferred.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "r=hypot(rho,z); theta=atan2(rho,z); u_r=u_rho sin(theta)+u_z cos(theta); u_theta=u_rho cos(theta)-u_z sin(theta).",
   "direction": "rho,z,u_rho,u_z to r,theta,u_r,u_theta",

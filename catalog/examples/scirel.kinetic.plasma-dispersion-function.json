@@ -15,6 +15,20 @@
   "Fried-Conte Z function",
   "Faddeeva plasma dispersion function"
  ],
+ "discovery": {
+  "capability": [
+   "Analytic plasma dispersion function",
+   "Evaluate the Faddeeva function and its plasma-dispersion scaling for an already dimensionless complex argument."
+  ],
+  "operation": [
+   "evaluate the analytic plasma dispersion function",
+   "z -> w(z), Z(z)"
+  ],
+  "model": "Analytic Maxwellian plasma dispersion special function, without a selected thermal-speed or drift normalization",
+  "geometry": "No spatial geometry; pointwise complex function evaluation",
+  "boundary": "Finite input arguments are accepted only where both complex128 outputs remain finite and representable.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Dimensionless complex phase argument to analytic Faddeeva and plasma dispersion values",
   "direction": "z -> w(z), Z(z)",

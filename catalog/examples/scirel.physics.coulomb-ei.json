@@ -14,6 +14,20 @@
  "aliases": [
   "calculate_log_lambda_ei"
  ],
+ "discovery": {
+  "capability": [
+   "Electron-ion Coulomb logarithm",
+   "Wesson Coulomb logarithm ln Lambda for electron-ion collisions from temperature in keV and density in m^-3."
+  ],
+  "operation": [
+   "Evaluate the Wesson electron-ion Coulomb logarithm",
+   "temperature and density -> dimensionless logarithm"
+  ],
+  "model": "Wesson Coulomb-log relation ln Lambda = 31.3 - 0.5 ln(n_e) + ln(1000 T_e) with explicit numeric boundary checks.",
+  "geometry": "Homogeneous plasma point with broadcast T_e and n_e arrays; no spatial geometry is inferred.",
+  "boundary": "T_e in keV and n_e in m^-3 must be finite and strictly positive.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "lnΛ=31.3-0.5 ln(n_e)+ln(1000*T_e)",
   "direction": "temperature and density -> dimensionless logarithm",

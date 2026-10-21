@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Bounded multifluid frequency solve",
+   "Compute full fluid spectra in physical coordinates with componentwise pencil residual checks and explicit defective-zero metadata; numerical conditioning does not change the scientific pencil."
+  ],
+  "operation": [
+   "solve the Maxwell-fluid spectral frequencies",
+   "generalized pencil and controls -> frequencies and right eigenvectors"
+  ],
+  "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
+  "geometry": "k=(kx,0,kz), B0 along z.",
+  "boundary": "Local Fourier modes exp(i k.r-i omega t).",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Generalized Maxwell-fluid pencil to frequencies and right eigenvectors",
   "direction": "generalized spectral solve",

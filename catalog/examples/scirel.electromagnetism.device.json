@@ -41,6 +41,20 @@
  "aliases": [
   "Device"
  ],
+ "discovery": {
+  "capability": [
+   "Ordered filament device composition",
+   "Compose ordered circular-filament sources and contract their Green responses with scalar or per-child currents."
+  ],
+  "operation": [
+   "ordered linear source composition",
+   "registered child sources and currents -> summed fields"
+  ],
+  "model": "Linear superposition of axisymmetric ideal circular-filament responses.",
+  "geometry": "Ordered child source geometries on a shared target mesh.",
+  "boundary": "A field call needs a mesh and a current vector compatible with the registered children.",
+  "device_scope": "unclassified"
+ },
  "identity": {
   "relation": "Ordered linear source composition",
   "direction": "registered child sources and currents to summed fields",

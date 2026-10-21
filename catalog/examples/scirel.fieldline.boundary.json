@@ -13,6 +13,20 @@
  "aliases": [
   "Boundary"
  ],
+ "discovery": {
+  "capability": [
+   "Parametric boundary interpolation",
+   "Fit a nonperiodic parametric spline to ordered planar boundary vertices."
+  ],
+  "operation": [
+   "ordered boundary vertices to an interpolable boundary object",
+   "ordered planar boundary vertices -> boundary object with stored 200 fitted samples"
+  ],
+  "model": "Nonperiodic quadratic splprep parametric spline with smoothing s=0; stored samples are 200 fitted points.",
+  "geometry": "Ordered planar boundary path; vertex coordinates are in caller length units.",
+  "boundary": "No periodic closure, polygon-interior test, crossing selection or intersection uniqueness is inferred.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Parametric boundary spline",
   "direction": "ordered boundary vertices to an interpolable boundary object",

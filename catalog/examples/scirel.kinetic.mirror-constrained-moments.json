@@ -15,6 +15,20 @@
   "mirror-constrained bi-Maxwellian moments",
   "two-plug loss-cone pressure moments"
  ],
+ "discovery": {
+  "capability": [
+   "Bi-Maxwellian mirror-constrained moments",
+   "Evaluate local density and gyrotropic pressure moments of an invariant bi-Maxwellian, optionally reducing them by two-plug loss-cone pitch integrals."
+  ],
+  "operation": [
+   "evaluate mirror-constrained bi-Maxwellian moments",
+   "(b_t, psi, potential_v, species and reference profiles, optional two-plug state) -> local density, parallel/perpendicular pressures and pitch factors"
+  ],
+  "model": "Invariant gyrotropic bi-Maxwellian with optional source-defined two-end-plug loss-cone depletion; not a self-consistent potential or equilibrium solve",
+  "geometry": "Local magnetic-field magnitude and two named mirror-plug field magnitudes; no spatial metric or field-line geometry is computed",
+  "boundary": "Both left and right plug magnetic fields must be supplied together. With no plug fields, or refill exactly one, there is no loss-cone reduction; the active plug branch integrates a source-defined pitch variable only through x=40. The discarded dimensionless tail beyond x=40 is bounded by 41*exp(-40)<1.75e-16 for every fraction.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Reference bi-Maxwellian and local field/potential state to mirror-constrained density and pressure moments",
   "direction": "(b_t, psi, potential_v, species and reference profiles, optional two-plug state) -> local density, parallel/perpendicular pressures and pitch factors",

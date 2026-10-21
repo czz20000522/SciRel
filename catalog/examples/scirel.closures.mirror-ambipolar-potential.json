@@ -16,6 +16,20 @@
   "mirror end-loss current balance",
   "ambipolar plug potential"
  ],
+ "discovery": {
+  "capability": [
+   "Mirror ambipolar end-loss potential",
+   "Evaluate source-equivalent one-way end-loss fluxes at a prescribed plug potential, or solve their charge-weighted balance on each flux surface."
+  ],
+  "operation": [
+   "bounded bracket expansion and bisection of the charge-weighted ion/electron end-loss flux balance",
+   "reference and plug fields, flux labels, ion properties, reference populations and solver controls -> plug potential, one-way fluxes and current-balance diagnostics"
+  ],
+  "model": "One magnetized positive-ion species and an electron half-space mirror/electrostatic end-loss model with caller-supplied reference populations and phenomenological loss-refill fractions; not a full collisional transport or self-consistent equilibrium model.",
+  "geometry": "Independent caller-defined flux surfaces with reference and plug magnetic magnitudes; scalar or array values share one NumPy broadcast shape.",
+  "boundary": "Reference potential fixes the voltage origin; in solve mode reference densities must be simultaneously positive or zero per surface and a joint vacuum keeps the reference potential, while evaluate mode requires a prescribed plug potential and imposes no current balance.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Single-ion mirror end-loss fluxes and ambipolar plug potential relative to a reference surface",
   "direction": "(reference/plug fields, psi, ion mass/charge, reference densities, ion/electron thermal energies, potentials, refill and solver controls) -> plug potential, one-way particle fluxes and current-balance diagnostics",

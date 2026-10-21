@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Kinetic complex-wavenumber scan",
+   "Derive the frequency ladder and fixed seed, then solve a signed complex Ronnmark kx root at every frequency."
+  ],
+  "operation": [
+   "scan complex kinetic kx roots over the frequency ladder",
+   "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous magnetized plasma",
+  "boundary": "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots",
   "direction": "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots",

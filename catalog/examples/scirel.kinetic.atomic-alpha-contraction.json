@@ -15,6 +15,20 @@
  "aliases": [
   "contract_atomic_hydrogen_alpha_frequencies"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic alpha collision frequency contraction",
+   "Per spatial cell, contract the atomic four-family assembled SIG collision matrices (CX, H-H2, H-P, H-H) with the Fortran-order flattened input distributions to four (nvr,nvx,nx) Alpha collision-frequency fields."
+  ],
+  "operation": [
+   "contract atomic SIG collision matrices into Alpha frequency fields",
+   "four assembled SIG collision matrices + explicit predecessor distributions (fi_hat, ni, fH2, fH) -> four Alpha collision-frequency fields (Alpha_CX, Alpha_H_H2, Alpha_H_P, Alpha_H_H)"
+  ],
+  "model": "Per-k atomic four-family SIG matrix contraction on the declared legal domain",
+  "geometry": "per spatial cell k: an (nvr,nvx) cylindrical velocity slice Fortran-order flattened to an (N,) carrier (N = nvr*nvx), contracted against an (N,N) assembled collision matrix, restored to (nvr,nvx); iterated over nx slices",
+  "boundary": "finite aligned inputs of the declared shapes; negative or zero densities are not rejected at runtime -- every finite density profile is contracted as given; bounded negative output cells inherited from the signed elastic SIG families (vx_vx / vr2_vx2 factors) are reproduced as-is, never clamped",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Alpha_CX[:,:,k] = F^-1(SIG_CX @ F(fi_hat[:,:,k]*ni[k])), Alpha_H_H2[:,:,k] = F^-1(SIG_H_H2 @ F(fH2[:,:,k])), Alpha_H_P[:,:,k] = F^-1(SIG_H_P @ F(fi_hat[:,:,k]*ni[k])), Alpha_H_H[:,:,k] = F^-1(SIG_H_H @ F(fH[:,:,k])), where F/F^-1 are the source's legacy Fortran-order (order='F') flatten/restore between the (nvr,nvx) slice and the (nvr*nvx,) Work carrier.",
   "direction": "four assembled SIG collision matrices + explicit predecessor distributions (fi_hat, ni, fH2, fH) -> four Alpha collision-frequency fields (Alpha_CX, Alpha_H_H2, Alpha_H_P, Alpha_H_H)",

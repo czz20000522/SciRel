@@ -13,6 +13,20 @@
  "aliases": [
   "get_fieldlines"
  ],
+ "discovery": {
+  "capability": [
+   "Contour field-line selection",
+   "Select the largest-vertex-count contour segment at an exact level and parse its orientation and endpoints."
+  ],
+  "operation": [
+   "exact-level contour segment selection",
+   "contour set, exact level and optional endpoint/orientation controls -> selected parsed vertices"
+  ],
+  "model": "Contour-segment selection with the nearest-endpoint convention from segment parsing; idx_check is an ignored compatibility argument and no field is reconstructed.",
+  "geometry": "Planar contour-set segments with ordered vertices in caller length units and exact level labels in caller flux-label units.",
+  "boundary": "The requested level must exactly appear in the contour levels and at least one finite segment must exist; unique physical flux surfaces and connections between separate segments are not established.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Contour field-line selection",
   "direction": "Declared inputs to Selected parsed vertices",

@@ -14,6 +14,20 @@
  "aliases": [
   "R-Z bilinear field sampler"
  ],
+ "discovery": {
+  "capability": [
+   "Rectilinear R-Z bilinear sampling",
+   "Sample a scalar field at caller-chosen points inside a rectilinear cylindrical R-Z grid."
+  ],
+  "operation": [
+   "cellwise bilinear interpolation without a field equation",
+   "R-Z grid and field plus [R,Z] query points -> ordered samples"
+  ],
+  "model": "Piecewise bilinear scalar interpolation.",
+  "geometry": "Two-dimensional rectilinear cylindrical R-Z grid; grid arrays are indexed [Z,R] and query points are ordered [R,Z].",
+  "boundary": "Points on the closed grid boundary are accepted; points outside the grid are rejected rather than clamped or extrapolated.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "real scalar field on a rectilinear R-Z grid to point samples",
   "direction": "R-Z grids, field and [R,Z] query points -> ordered samples",

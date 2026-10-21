@@ -13,6 +13,20 @@
  "aliases": [
   "BasisMatrix"
  ],
+ "discovery": {
+  "capability": [
+   "Basis design matrix",
+   "Evaluate the selected polynomial or cubic-spline basis as columns of a sample-by-basis design matrix."
+  ],
+  "operation": [
+   "basis selection to sampled design matrix",
+   "basis selector, sample abscissa and constructor options -> matrix of basis values"
+  ],
+  "model": "Caller-selected ascending-power polynomial or C2 cubic-spline basis; construction delegates to the explicit basis factory.",
+  "geometry": "One-dimensional scalar abscissa and ordinate samples; rows follow the input domain and columns follow the basis order. No multidimensional geometry is reconstructed.",
+  "boundary": "Spline basis evaluation is zero outside the finite knot interval with no extrapolation; unsupported quartic and special-function selections are rejected.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Basis design matrix",
   "direction": "Declared inputs to Evaluator yielding matrix of basis values",

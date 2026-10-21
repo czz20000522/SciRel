@@ -15,6 +15,20 @@
   "Frank-Egedal hot-ion pressure profile",
   "loss-cone anisotropic pressure closure"
  ],
+ "discovery": {
+  "capability": [
+   "Frank-Egedal anisotropic pressure closure",
+   "Compose explicit common-population hot-ion moments with a radial envelope and prescribed pressure/density scales."
+  ],
+  "operation": [
+   "compose the Frank-Egedal anisotropic pressure closure",
+   "(poloidal-flux grid, magnetic-field magnitude grid, closure parameters) -> parallel/perpendicular pressure, optional density/electron energy fields and closure state"
+  ],
+  "model": "A prescribed finite-mode nonnegative reference-population closure, with gas-dynamic and optional electron pressure. It does not solve kinetic evolution or establish an exact physical Frank-Egedal distribution.",
+  "geometry": "A caller-aligned two-dimensional [Z,R] grid of flux labels and strictly positive local magnetic-field magnitudes; radial dependence is a clipped function of the supplied flux label only.",
+  "boundary": "The source loss-cone endpoint is xi_tp_mid=sqrt(1-1/mirror_ratio) for a finite mirror_ratio greater than one; pitch/velocity integration is finite and the local pitch interval vanishes when B/B0 reaches the mirror ratio. The radial envelope clips beyond the caller's axis and edge flux labels. For b<1, only orbits reaching B0 are supplied; their local pitch lower bound is sqrt(1-b).",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Prescribed Frank-Egedal loss-cone hot-ion moments and radial profile to total gyrotropic pressure fields",
   "direction": "(poloidal-flux grid, magnetic-field magnitude grid, closure parameters) -> parallel/perpendicular pressure, optional density/electron energy fields and closure state",

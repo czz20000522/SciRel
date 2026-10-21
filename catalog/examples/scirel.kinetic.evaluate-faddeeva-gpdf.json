@@ -1,6 +1,20 @@
 {
  "schema": "scirel.asset-document",
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "32-term Faddeeva variant",
+   "Evaluate the 32-term Faddeeva variant with its default order and declared failure contract."
+  ],
+  "operation": [
+   "evaluate the 32-term Faddeeva function",
+   "z,order -> w,order"
+  ],
+  "model": "One-dimensional Maxwellian plasma response",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Real axis is accepted; exponential continuation overflow raises.",
+  "device_scope": "generic"
+ },
  "taxonomy": [
   "kinetic",
   "plasma-wave",

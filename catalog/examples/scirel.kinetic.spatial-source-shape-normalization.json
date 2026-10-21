@@ -14,6 +14,20 @@
  "aliases": [
   "normalize_spatial_source_shape"
  ],
+ "discovery": {
+  "capability": [
+   "Spatial source-shape normalization",
+   "Normalize a nonnegative one-dimensional spatial source profile to unit integral under the trapezoidal measure, returning the unit-integral shape and the original integral."
+  ],
+  "operation": [
+   "normalize a spatial source shape to unit integral",
+   "source profile plus coordinates -> unit-integral shape and original integral"
+  ],
+  "model": "Unit-integral normalization of a one-dimensional nonnegative spatial profile under the trapezoidal measure",
+  "geometry": "one-dimensional space",
+  "boundary": "aligned finite one-dimensional profile and strictly increasing coordinates with at least two nodes; nonnegative source; finite positive integral",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "shape = source / integral(source, x) with the trapezoidal measure; the normalized shape re-integrates to 1 within the declared tolerance",
   "direction": "source profile plus coordinates -> unit-integral shape and original integral",

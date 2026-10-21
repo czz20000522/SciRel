@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Weideman finite-harmonic kinetic dispersion",
+   "Assemble the Maxwellian 3x3 kinetic tensor by finite cyclotron-harmonic sum with the source's positive near-zero kz clamp."
+  ],
+  "operation": [
+   "assemble the fluid finite-harmonic kinetic tensor",
+   "SI species and wavepoint to dielectric and dispersion tensors and determinant"
+  ],
+  "model": "homogeneous magnetized Maxwellian plasma",
+  "geometry": "homogeneous plasma",
+  "boundary": "abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "SI species and wavepoint to dielectric and dispersion tensors and determinant",
   "direction": "SI species and wavepoint to dielectric and dispersion tensors and determinant",

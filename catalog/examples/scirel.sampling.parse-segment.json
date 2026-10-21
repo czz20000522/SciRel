@@ -13,6 +13,20 @@
  "aliases": [
   "parse_segment"
  ],
+ "discovery": {
+  "capability": [
+   "Contour segment orientation and endpoints",
+   "Roll a contour segment to the nearest start, orient it by a signed polygon test, and retain the selected terminal vertex."
+  ],
+  "operation": [
+   "contour segment orientation and endpoint parsing",
+   "ordered planar vertices plus optional start/end and clockwise choice -> oriented selected vertices"
+  ],
+  "model": "Discrete contour parsing with a signed polygon orientation test and a corrected inclusive endpoint; no contour reconstruction.",
+  "geometry": "Planar contour vertices in caller length units; orientation is inferred from the polygon rather than from a field.",
+  "boundary": "Default retains all vertices and the explicit nearest end is inclusive; open-curve closure, repeated endpoints and general topology policies are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Contour segment orientation and endpoints",
   "direction": "Declared inputs to Ordered selected vertices",

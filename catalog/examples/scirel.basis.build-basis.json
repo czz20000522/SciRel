@@ -13,6 +13,20 @@
  "aliases": [
   "build_basis"
  ],
+ "discovery": {
+  "capability": [
+   "Basis evaluator factory",
+   "Construct a list of callable ascending-power polynomial or cubic-spline basis functions."
+  ],
+  "operation": [
+   "basis selection to independent evaluators",
+   "basis selector and constructor options -> list of callable basis functions"
+  ],
+  "model": "Caller-selected ascending-power polynomial or C2 cubic-spline basis; defaults are polynomial degree 3 and five knot intervals.",
+  "geometry": "One-dimensional scalar abscissa and ordinate samples; the returned evaluators are agnostic to the caller's coherent coordinate and ordinate units.",
+  "boundary": "Spline evaluation is zero outside the finite knot interval with no extrapolation; unsupported factory selections are rejected rather than approximated.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Basis evaluator factory",
   "direction": "Declared inputs to List of independent basis evaluators",

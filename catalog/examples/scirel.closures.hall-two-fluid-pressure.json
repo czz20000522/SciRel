@@ -15,6 +15,20 @@
  "aliases": [
   "Hall two-fluid pressure decomposition"
  ],
+ "discovery": {
+  "capability": [
+   "Hall two-fluid pressure state closure",
+   "Assemble a caller-supplied total gyrotropic pressure law, quasineutral species densities, pressure components and potential into a broadcast two-fluid state."
+  ],
+  "operation": [
+   "explicit two-fluid pressure and density bookkeeping from caller-supplied profiles",
+   "magnetic field, flux, pressure law, ion density, electron pressure and potential -> total, ion and electron pressures and densities"
+  ],
+  "model": "Prescribed gyrotropic total stress and species bookkeeping with an optional independent fitted residual stress; not a self-consistent two-fluid equilibrium.",
+  "geometry": "Caller-supplied scalar or broadcast magnetic-field magnitude and flux coordinates; no R-Z mesh is constructed.",
+  "boundary": "No physical boundary condition is applied; the default species split fails on a negative ion component, and explicit ion pressures override it without an equality check.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Total gyrotropic pressure and prescribed species profiles to an explicit two-fluid pressure and density state",
   "direction": "(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, optional species pressure components) -> total, ion and electron pressures, equal ion/electron number densities, and electrostatic potential",

@@ -1,5 +1,19 @@
 {
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Adaptive Cauchy transform",
+   "Evaluate a Cauchy transform with kernel-aware near-axis quadrature and caller-resolved density features."
+  ],
+  "operation": [
+   "evaluate the adaptive Cauchy transform",
+   "(z,density,bounds|integration_mesh)->G"
+  ],
+  "model": "One-dimensional generalized plasma response",
+  "geometry": "Velocity space",
+  "boundary": "Real-axis poles are rejected.",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "Callback-only whole-line support discovery (fails closed because it is information-limited).",

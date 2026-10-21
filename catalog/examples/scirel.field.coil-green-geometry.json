@@ -15,6 +15,20 @@
  "aliases": [
   "compute_axisymmetric_coil_modulus"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric coil Green geometry and elliptic modulus",
+   "Compute the source-offset radius, elliptic modulus squared and distance used by the filament-coil Green expression."
+  ],
+  "operation": [
+   "scalar axisymmetric coil observation geometry",
+   "observation point and coil centres -> regularized radius, modulus squared and distance"
+  ],
+  "model": "Scalar observation geometry for aligned circular coils.",
+  "geometry": "One observation point paired with one-dimensional coil-centre arrays.",
+  "boundary": "Raw observation radius must be nonnegative; underflow, overflow and nonfinite geometry raise ValueError.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Axisymmetric coil observation geometry",
   "direction": "observation point and coil centers to regularized Green geometry",

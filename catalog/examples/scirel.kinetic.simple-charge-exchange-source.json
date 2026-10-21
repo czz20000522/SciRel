@@ -15,6 +15,20 @@
  "aliases": [
   "assemble_simple_charge_exchange_source"
  ],
+ "discovery": {
+  "capability": [
+   "Simple charge-exchange scattered-generation source",
+   "The cell-local charge-exchange scattered-generation source: the target distribution scaled per spatial cell by the quadrature contraction of the CX frequency field with the previous generation's distribution."
+  ],
+  "operation": [
+   "evaluate the cell-local charge-exchange source",
+   "target, CX frequency, previous generation and quadrature -> the scattered source"
+  ],
+  "model": "Simple_CX per-generation cell-local scattering step",
+  "geometry": "two velocity dimensions over one spatial axis; cell-local in space",
+  "boundary": "finite aligned three-dimensional target/frequency/previous fields; finite nonnegative (nvr,nvx) weight and (nvx) dvx; nonnegative frequency, weight, and dvx",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "source[vr,vx,x] = target[vr,vx,x] * rate[x] with rate[x] = sum over (vr,vx) of W(vr,vx) * alpha[vr,vx,x] * previous[vr,vx,x] * dvx[vx]",
   "direction": "target, CX frequency, previous generation and quadrature -> the scattered source",

@@ -14,6 +14,20 @@
  "aliases": [
   "vp_diagnostic"
  ],
+ "discovery": {
+  "capability": [
+   "Oscillation-peak damping diagnostic",
+   "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes."
+  ],
+  "operation": [
+   "fit oscillation frequency and damping from field peaks",
+   "peak times and peak magnitudes -> omega and gamma"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "Finite oscillatory history; peak-based fit; no global mode identification or theory claim.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "omega=pi/mean(diff(peak_times)); gamma=least-squares slope of log peak magnitudes.",
   "direction": "Inputs to vp_diagnostic -> result",

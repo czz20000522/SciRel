@@ -17,6 +17,20 @@
   "cylindrical velocity weights",
   "N1 quadrature"
  ],
+ "discovery": {
+  "capability": [
+   "Cylindrical velocity-space quadrature",
+   "From strictly increasing normalized radial-speed and axial-velocity meshes, build the ghost-extended half-cell faces, the annular radial measure, the (nvr, nvx) cylindrical cell volumes, the ghosted finite-volume difference coefficients, the speed squared, and the positive/negative axial index ranges. This is the N1 preparation relation whose volume output is the cylindrical_volume port consumed by the Maxwellian relative-speed rate average."
+  ],
+  "operation": [
+   "build the cylindrical velocity-space quadrature",
+   "vr, vx -> radial_measure, radial_four_pi_measure, dvx, vr_left, vr_right, vx_left, vx_right, volume, inv_dvx_ghost, vx_over_dvx_ghost, vr_over_dvr_ghost, speed_squared, positive/negative vx index ranges"
+  ],
+  "model": "discrete finite-volume construction on the declared ghost-face convention; no distribution, collision model or field model is evaluated",
+  "geometry": "velocity space, cylindrical: radial speed vr (inner face at zero) and axial velocity vx; the azimuthal angle is integrated out into the pi*(r_right^2 - r_left^2) measure",
+  "boundary": "the innermost radial face is exactly zero; the outermost faces are midpoints between the last node and its mirrored ghost; the ghosted coefficient arrays are exactly zero on their boundary shell; vx must contain both strictly negative and strictly positive entries",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the cylindrical velocity-space quadrature of a normalized (vr, vx) mesh: ghost-extended cell faces, annular radial measure, cell volumes, ghosted finite-volume coefficients, speed squared and axial sign index ranges",
   "direction": "vr, vx -> radial_measure, radial_four_pi_measure, dvx, vr_left, vr_right, vx_left, vx_right, volume, inv_dvx_ghost, vx_over_dvx_ghost, vr_over_dvr_ghost, speed_squared, positive/negative vx index ranges",

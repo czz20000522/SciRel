@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Parallel EM continuation",
+   "Continue a single causal kinetic root through an explicit grid with accepted-seed feedback and diagnostic failure records. Failed or false-success roots never propagate."
+  ],
+  "operation": [
+   "continue one parallel EM kinetic root",
+   "state, polarization and k grid -> continued kinetic root with diagnostics"
+  ],
+  "model": "Arbitrary-species drifting isotropic Maxwellian parallel electromagnetic response.",
+  "geometry": "Real nonzero k along signed z; equilibrium magnetic field along z.",
+  "boundary": "Retarded Landau analytic continuation from Im(omega)>0.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Ordered parallel wavevector grid to a continued kinetic root",
   "direction": "bounded stateful root continuation",

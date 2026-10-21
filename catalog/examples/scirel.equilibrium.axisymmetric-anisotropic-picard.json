@@ -15,6 +15,20 @@
  "aliases": [
   "gyrotropic pressure-flux Picard equilibrium"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric anisotropic Picard equilibrium",
+   "Iterate a caller-provided anisotropic pressure closure against the poloidal field, pressure force and a dense Green flux update."
+  ],
+  "operation": [
+   "bounded axisymmetric gyrotropic-pressure Picard composition with caller-bound pressure closure",
+   "vacuum flux, Green response and pressure closure -> terminal equilibrium state and iteration diagnostics"
+  ],
+  "model": "Bounded axisymmetric gyrotropic-pressure Picard composition with externally supplied pressure closure.",
+  "geometry": "Rectilinear cylindrical R-Z grid with at least three nodes per axis; state arrays indexed [Z,R] with C-order Green axes.",
+  "boundary": "Nonnegative R including an axis is allowed and the field must stay above minimum_field in iteration and terminal states; no separate free boundary is solved.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "vacuum flux, dense cell-current Green response and caller pressure closure to a bounded anisotropic axisymmetric equilibrium state",
   "direction": "R-Z grid, psi_vac, g_psi, pressure_closure and controls -> final psi, magnetic/pressure/force fields, cell currents and iteration diagnostics",

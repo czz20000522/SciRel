@@ -14,6 +14,20 @@
  "aliases": [
   "parallel pressure relation check"
  ],
+ "discovery": {
+  "capability": [
+   "Parallel-pressure equilibrium residual",
+   "Evaluate local gyrotropic parallel-pressure compatibility from parallel pressure, perpendicular pressure and field samples."
+  ],
+  "operation": [
+   "gyrotropic parallel-pressure compatibility residual for an explicit fixed-flux law",
+   "parallel and perpendicular pressures plus field samples -> expected perpendicular pressure, error metrics and pass flag"
+  ],
+  "model": "Gyrotropic parallel-pressure compatibility for an explicitly specified fixed-flux law; not a spatial force-balance residual.",
+  "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
+  "boundary": "An explicit derivative may be scalar, broadcastable or callable(B,psi); otherwise B must be strictly monotone along each constant-psi line, and constant-field data require explicit derivative information.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Parallel pressure and magnetic-field samples to an expected perpendicular pressure and residual",
   "direction": "(p_parallel, p_perp, B) -> rhs, error, relative_error, aggregate errors, passed",

@@ -2,6 +2,20 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.generalized-small-k",
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Langmuir small-k asymptotics",
+   "Evaluate source Langmuir frequency and damping asymptotics."
+  ],
+  "operation": [
+   "evaluate the Langmuir small-k asymptotics",
+   "small wave numbers k -> real frequency and damping rate"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "device_scope": "generic"
+ },
  "taxonomy": [
   "kinetic",
   "plasma-wave",

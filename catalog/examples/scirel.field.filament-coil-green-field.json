@@ -14,6 +14,20 @@
  "aliases": [
   "evaluate_filament_coil_green_field"
  ],
+ "discovery": {
+  "capability": [
+   "Filament-coil Green field response",
+   "Evaluate the closed-form psi, BR and BZ response of aligned circular coils from caller-supplied elliptic values."
+  ],
+  "operation": [
+   "closed-form filament-coil Green response",
+   "regularized observation geometry, coil vectors and elliptic values -> summed flux and fields"
+  ],
+  "model": "Closed-form axisymmetric circular-coil response using supplied K(m) and E(m).",
+  "geometry": "One observation point paired with one-dimensional coil arrays.",
+  "boundary": "Observation on a source ring is singular and rejected; the observation-radius offset is not repeated.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Closed-form filament-coil Green response",
   "direction": "regularized observation geometry and coil vectors to summed flux and fields",

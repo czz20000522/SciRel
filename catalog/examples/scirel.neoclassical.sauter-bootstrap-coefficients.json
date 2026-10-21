@@ -11,6 +11,20 @@
   "bootstrap"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Sauter bootstrap coefficients",
+   "Dimensionless Sauter bootstrap fit coefficients from explicit face collisionalities."
+  ],
+  "operation": [
+   "Evaluate Sauter bootstrap fit coefficients",
+   "explicit face collisionalities and profiles -> dimensionless coefficients"
+  ],
+  "model": "Bounded analytic empirical tokamak fit (Sauter PoP 1999 Eqs. 14-17).",
+  "geometry": "Caller-supplied axisymmetric tokamak face data on normalized radius rho and total flux psi (Wb); no device geometry is built in.",
+  "boundary": "Coefficient evaluation only; no current assembly and no magnetic-axis zeroing are performed.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Sauter PoP 1999 Eqs.14-17",
   "direction": "Explicit inputs to fit coefficients/current",

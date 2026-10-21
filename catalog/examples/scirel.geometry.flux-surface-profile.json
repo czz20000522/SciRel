@@ -14,6 +14,20 @@
  "aliases": [
   "flux-surface scalar profile extension"
  ],
+ "discovery": {
+  "capability": [
+   "Scalar profile on a flux coordinate",
+   "Sort, deduplicate and linearly interpolate paired scalar samples on a flux coordinate."
+  ],
+  "operation": [
+   "one-dimensional linear interpolation on a caller-supplied flux coordinate",
+   "psi samples and values plus target and endpoint policy -> interpolated profile and normalized samples"
+  ],
+  "model": "One-dimensional linear interpolation in a caller-supplied flux coordinate.",
+  "geometry": "Sampled scalar relation indexed by flux; no spatial flux surface is reconstructed.",
+  "boundary": "Default endpoint values are the first and last normalized samples; finite caller-supplied left/right scalars override them.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "paired scalar profile samples on a flux coordinate to values at target flux coordinates",
   "direction": "psi_samples, values, target and endpoint policy -> interpolated values and normalized samples",

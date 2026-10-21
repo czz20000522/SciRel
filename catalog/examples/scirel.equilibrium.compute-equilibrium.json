@@ -12,6 +12,20 @@
   "numerical-iteration"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Bounded axisymmetric pressure current feedback",
+   "Iteratively update plasma current from a pressure-versus-radius spline and a supplied Green matrix with explicit terminal status."
+  ],
+  "operation": [
+   "pressure-versus-radius feedback with spline fitting and a caller-supplied Green matrix",
+   "rectangular R-Z grids, pressure law, vacuum flux and Green matrix -> updated flux and current state"
+  ],
+  "model": "Pressure-versus-radius feedback using an interpolated univariate spline and a caller-supplied Green matrix.",
+  "geometry": "Finite rectangular uniformly spaced two-dimensional R-Z arrays with an exact Z=0 midplane.",
+  "boundary": "The pressure edge is the first exact zero traversed outward in physical radius and flux must strictly increase from the axis to it; descending storage coordinates reorder only the midplane fit indices while Green axes, currents and results keep caller order.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "I_target=R (dP/dpsi) abs(dR*dZ); I_new=(1-relax) I_target+relax I_old; psi_new=psi_vac+G I_new. P is re-fitted from the prescribed midplane P(R).",
   "direction": "rectangular R,Z grids, pressure law, vacuum flux and Green matrix to updated flux/current state",

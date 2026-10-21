@@ -16,6 +16,20 @@
  "aliases": [
   "kinetic mirror Hall composition"
  ],
+ "discovery": {
+  "capability": [
+   "Kinetic mirror reduced-Hall equilibrium",
+   "Bind the grid mirror kinetic closure to the reduced-Hall anisotropic Picard graph for every Hall field and flux state."
+  ],
+  "operation": [
+   "composition of a grid mirror end-loss and quasineutral kinetic closure with reduced-Hall anisotropic Picard feedback",
+   "R-Z mesh, vacuum flux, Green response, ion properties and kinetic configuration -> terminal Hall equilibrium mapping"
+  ],
+  "model": "Axisymmetric grid mirror end-loss and quasineutral kinetic closure coupled to reduced-Hall anisotropic Picard feedback.",
+  "geometry": "Rectilinear cylindrical R-Z grid accepted by both nested graphs; fields indexed [Z,R], with psi passed without conversion to the kinetic flux-profile coordinate.",
+  "boundary": "Caller supplies vacuum flux, dense Green response, plug-plane positions and kinetic reference data; the composition adds no free-boundary response or coordinate conversion.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "grid mirror kinetic pressure state to reduced-Hall magnetic-flux feedback",
   "direction": "R-Z mesh, vacuum flux, Green response, ion properties and kinetic configuration -> terminal Hall equilibrium mapping",

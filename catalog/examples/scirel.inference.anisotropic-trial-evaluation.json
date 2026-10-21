@@ -14,6 +14,20 @@
  "aliases": [
   "parameter-to-diagnostic-residual trial"
  ],
+ "discovery": {
+  "capability": [
+   "One anisotropic inversion trial",
+   "Evaluate one forward equilibrium trial with a fixed-size residual protocol, distinguishing valid, numerical-failure and nonconverged outcomes."
+  ],
+  "operation": [
+   "Evaluate one anisotropic inversion trial",
+   "parameters and compatible physical ports -> residuals, chi2, equilibrium and valid/status"
+  ],
+  "model": "Validated composition of caller forward, diagnostic and residual ports with no built-in pressure closure.",
+  "geometry": "Defined by solver_config and the scientific ports; diagnostic R/Z are deep-copied unchanged with no unit conversion.",
+  "boundary": "The failure penalty is an optimizer-interface value, not a physical observation or feasibility proof; parameter ranges are constrained jointly by the outer optimizer and the physical ports.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "parameters and compatible physical ports to a fixed-size validity record",
   "direction": "params, observations, solver_config, three ports -> residuals, chi2, equilibrium, valid/status",

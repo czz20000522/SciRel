@@ -14,6 +14,20 @@
  "aliases": [
   "legacy.pole_table"
  ],
+ "discovery": {
+  "capability": [
+   "Maxwellian rational pole table",
+   "Select an explicit pole-table family and variant; J12 uses the high-precision reconstruction of the two-sided Padé equations."
+  ],
+  "operation": [
+   "select the Maxwellian rational pole table",
+   "model, pole count and option -> pole-table state and receipt"
+  ],
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Maxwellian rational pole table",
   "direction": "Declared inputs to named scientific outputs.",

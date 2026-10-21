@@ -2,6 +2,20 @@
  "aliases": [
   "solve_fluid_bonk"
  ],
+ "discovery": {
+  "capability": [
+   "Corrected BONK bounded root search",
+   "Compose complete BONK cases and ordered root searches with explicit verified-root and terminal-state diagnostics."
+  ],
+  "operation": [
+   "search BONK wavevector roots from an angular frequency",
+   "inverse: angular frequency to candidate wavevector"
+  ],
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "No branch tracking, complete physical-mode enumeration or unconditional convergence."

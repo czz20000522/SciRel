@@ -14,6 +14,20 @@
  "aliases": [
   "equilibrium flux-loop and Thomson-like sampling"
  ],
+ "discovery": {
+  "capability": [
+   "Equilibrium synthetic point diagnostics",
+   "Sample flux and explicitly requested pressure, density or electron-temperature profiles on an R-Z grid with explicit units."
+  ],
+  "operation": [
+   "read-only point sampling of an equilibrium field at requested R-Z observations",
+   "equilibrium, R, Z and observations -> flux-loop and profile samples with units"
+  ],
+  "model": "Read-only point sampling of an equilibrium field; the legacy Thomson namespace is not a Thomson-scattering instrument model.",
+  "geometry": "Rectangular R-Z grid in cylindrical coordinates; fields indexed [Z,R] and observation points ordered [R,Z].",
+  "boundary": "Bilinear sampling inside the closed grid boundary with no extrapolation; empty or unknown requests, empty point sets, missing fields and unit conflicts are rejected.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "equilibrium field and explicit observation conventions to physical-quantity samples at requested points",
   "direction": "equilibrium, R, Z, observations -> flux_loops / thomson and units",

@@ -15,6 +15,20 @@
  "aliases": [
   "assemble_neutral_upwind_transport_coefficients"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral upwind spatial transport coefficients",
+   "Assemble the source forward/backward trapezoidal transport coefficients Ak/Bk/Fk/Ck/Dk/Gk from spatial nodes, velocity axis, collision frequency and source distribution."
+  ],
+  "operation": [
+   "assemble the neutral upwind transport coefficients",
+   "spatial nodes, velocity axis, collision frequency, source -> Ak/Bk/Fk/Ck/Dk/Gk + branch indices"
+  ],
+  "model": "First-order upwind trapezoidal discretization of the forward and backward transport coefficients",
+  "geometry": "one spatial dimension with two velocity branches (positive/negative vx)",
+  "boundary": "x strictly increasing with >= 2 nodes and finite positive spatial steps, vx one-dimensional with no zero node, alpha/source finite 3-D aligned shapes, alpha nonnegative, vx must contain both positive and negative branches",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "source forward/backward trapezoidal transport coefficients for bidirectional neutral propagation",
   "direction": "spatial nodes, velocity axis, collision frequency, source -> Ak/Bk/Fk/Ck/Dk/Gk + branch indices",

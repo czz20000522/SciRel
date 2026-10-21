@@ -15,6 +15,20 @@
   "mirror total pressure state",
   "ion-electron mirror pressure assembly"
  ],
+ "discovery": {
+  "capability": [
+   "Mirror ion-electron total-pressure assembly",
+   "Add a supplied isotropic electron pressure to both broadcast ion pressure components and assemble a terminal state with pass-through densities, residual, optional potential and ion-moment fields."
+  ],
+  "operation": [
+   "assemble the mirror ion-electron total pressure",
+   "(kinetic_moments, electron_state) -> p_parallel, p_perpendicular and merged ion-electron state"
+  ],
+  "model": "Terminal state assembly for a mirror kinetic-ion state with an externally supplied isotropic electron pressure; not a pressure, electron-response or quasineutrality solver",
+  "geometry": "No geometry is computed; the caller supplies aligned ion and electron states for the same mirror-plasma samples.",
+  "boundary": "No spatial or kinetic boundary is evaluated. The potential is taken from electron_state when present and otherwise recorded as None.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Ion kinetic-moment state and electron response to two total-pressure components and a merged terminal state",
   "direction": "(kinetic_moments, electron_state) -> p_parallel, p_perpendicular and merged ion-electron state",

@@ -2,6 +2,20 @@
  "aliases": [
   "solve_fluid_em"
  ],
+ "discovery": {
+  "capability": [
+   "Corrected EM finite spectra and candidates",
+   "Compose EM cases, corrected finite matrices and original-order spectra with bounded numerical evidence."
+  ],
+  "operation": [
+   "compute finite rational EM wavevector spectra",
+   "inverse: angular frequency to finite-model spectrum"
+  ],
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "No claim that every auxiliary eigenvalue is a kinetic physical mode; no infinite-mode completeness or cross-thread invariance."

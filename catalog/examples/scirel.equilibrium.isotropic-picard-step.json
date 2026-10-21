@@ -14,6 +14,20 @@
  "aliases": [
   "pressure-flux Picard step"
  ],
+ "discovery": {
+  "capability": [
+   "Isotropic pressure-flux Picard step",
+   "Form relaxed cell currents from a pressure derivative and apply a supplied flux Green matrix in one Picard update."
+  ],
+  "operation": [
+   "single isotropic pressure-flux Picard cell-current update",
+   "prior flux and current state, pressure derivative, Green matrix and old currents -> updated state and residual"
+  ],
+  "model": "Historical axisymmetric isotropic pressure-flux Picard cell-current update using a caller-supplied Green response.",
+  "geometry": "Uniform rectilinear cylindrical R-Z tensor-product grid; R and Z in metres with [Z,R] arrays and C-order cell vectors.",
+  "boundary": "Caller supplies the fixed vacuum flux and a finite nonzero boundary flux for residual normalization; no boundary condition is imposed on the updated flux.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "isotropic pressure derivative and previous cell currents to relaxed cell currents, updated flux and normalized flux residual",
   "direction": "current flux state, pressure derivative, Green matrix and old currents -> one updated current-flux state and residual",

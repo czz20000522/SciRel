@@ -15,6 +15,20 @@
  "aliases": [
   "sum_elastic_frequency_channels"
  ],
+ "discovery": {
+  "capability": [
+   "Elastic collision-frequency channel sum",
+   "The pointwise sum of exactly three already-normalized elastic collision-frequency channels into the transport total elastic frequency, preserving the caller's channel order."
+  ],
+  "operation": [
+   "sum three elastic collision-frequency channels",
+   "three caller-ordered channel profiles -> one total profile"
+  ],
+  "model": "the channel confluence",
+  "geometry": "none; a pointwise reduction over caller-declared shapes",
+  "boundary": "exactly three non-empty finite equal-shape profiles",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Omega_total = Omega_1 + Omega_2 + Omega_3 pointwise over equal-shape channel profiles",
   "direction": "three caller-ordered channel profiles -> one total profile",

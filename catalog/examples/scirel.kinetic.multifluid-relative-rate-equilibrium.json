@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Relative-rate multifluid equilibrium",
+   "Convert five explicitly defined scalar rates and declared electron/ion classes into a conservative momentum-exchange equilibrium. This is a declared interpretation, not a claim of equivalence to the ambiguous nu controls."
+  ],
+  "operation": [
+   "initialize the relative-rate multifluid equilibrium",
+   "deck, species classes, rates and B0 -> conservative momentum-exchange equilibrium"
+  ],
+  "model": "Multi-species nonrelativistic equilibrium with optional conservative pair momentum exchange and bath drag.",
+  "geometry": "Uniform field along z; local transverse density gradients may be supplied.",
+  "boundary": "Local Fourier perturbations; no finite-domain boundary solve.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Physical species deck to cold/gyrotropic fluid equilibrium",
   "direction": "forward initialization",

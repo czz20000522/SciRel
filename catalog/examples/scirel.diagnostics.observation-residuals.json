@@ -14,6 +14,20 @@
  "aliases": [
   "flux-first inversion residual vector"
  ],
+ "discovery": {
+  "capability": [
+   "Normalized observation residual reduction",
+   "Compute fixed-order, fixed-size normalized residuals for each predeclared observation channel."
+  ],
+  "operation": [
+   "diagonal sigma-weighted least-squares residual reduction",
+   "fully matched predictions and observations -> residual vector and squared sum"
+  ],
+  "model": "Diagonal sigma-weighted least squares with no covariance, degrees-of-freedom correction or instrument model.",
+  "geometry": "No geometry computation; the caller aligns observation and prediction locations.",
+  "boundary": "Values must be nonempty and finite, sigma finite and positive, residuals and chi2 representable, and an explicit unit must match predicted.units.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "fully matched predictions and observations to normalized residuals and a squared sum",
   "direction": "predicted, observations -> residual_vector, chi2",

@@ -15,6 +15,20 @@
   "tabulated pressure closure",
   "B-psi pressure lookup"
  ],
+ "discovery": {
+  "capability": [
+   "Tabulated magnetic-field and flux pressure interpolation",
+   "Interpolate supplied pressure tables at broadcast magnetic-field and flux queries, returning isotropic or gyrotropic components."
+  ],
+  "operation": [
+   "linear one-dimensional or bilinear two-dimensional interpolation of supplied pressure tables",
+   "magnetic field, flux, tables and bounds policy -> parallel and perpendicular pressure components with dimension flags"
+  ],
+  "model": "Prescribed tabulated isotropic or gyrotropic pressure law with linear or bilinear interpolation; no pressure law is derived and no force balance is solved.",
+  "geometry": "No spatial geometry reconstructed; query arrays are NumPy-broadcast with the first table axis b_grid and the second psi_grid.",
+  "boundary": "A query outside either supplied axis raises by default; bounds_error=False uses a finite nonnegative fill value, and fill_value=None requests extrapolation whose result is still checked for finiteness and nonnegativity.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Caller-supplied pressure tables and magnetic-field/flux query values to interpolated gyrotropic pressure components",
   "direction": "(magnetic_field, psi, psi_grid, p_parallel_table, optional p_perpendicular_table, optional b_grid) -> p_parallel, p_perpendicular, is_isotropic, table_dimension",

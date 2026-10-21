@@ -14,6 +14,20 @@
  "aliases": [
   "direct anisotropic residual fitting"
  ],
+ "discovery": {
+  "capability": [
+   "Bounded anisotropic trial parameter optimization",
+   "Local bounded fit within a fixed scientific-call budget, returning the revalidated state at the actual terminal point."
+  ],
+  "operation": [
+   "Optimize bounded anisotropic trial parameters",
+   "initial_params, bounds, method, trial_evaluator and budget -> parameters, residuals, forward/optimization state and log"
+  ],
+  "model": "Bounded local numerical optimization; no equilibrium equation, global search or statistical identifiability proof.",
+  "geometry": "Defined by the trial evaluator; no fixed spatial grid is assumed.",
+  "boundary": "All bounds finite and strictly increasing with initial values inside them; a wrong method, wrong left-hand side or invalid control is rejected directly with no out-of-bounds fallback.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "bounded parameters and a fixed-size trial to a local fit record validated by a fresh call",
   "direction": "initial_params, bounds, method, trial_evaluator and budget -> parameters, residuals, forward/optimization state and log",

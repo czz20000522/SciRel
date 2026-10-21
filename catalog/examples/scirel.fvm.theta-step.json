@@ -11,6 +11,20 @@
   "finite-volume"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Linear finite-volume theta step",
+   "Advance a single channel with separately supplied old and new linear operators under the theta scheme."
+  ],
+  "operation": [
+   "Advance one finite-volume channel by a theta step",
+   "explicit cell/face data and old/new operators -> updated state"
+  ],
+  "model": "One-dimensional conservative finite-volume discretization with the theta time-stepping linear combination.",
+  "geometry": "Explicit one-dimensional face grid; caller coordinate X increases in the positive direction; homogeneous unit cross-section unless metrics are supplied.",
+  "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; no hidden extrapolation.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "u_t=C(t)u+c(t)",
   "direction": "Explicit cell/face data to spatial operator or state update",

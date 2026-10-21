@@ -14,6 +14,20 @@
  "aliases": [
   "coarse CAD grid material support composition"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric equilibrium to solver-grid material support",
+   "Reconstruct an equilibrium on a Cartesian grid and classify its cold-plasma material support in one ordered composition."
+  ],
+  "operation": [
+   "ordered composition of equilibrium reconstruction and geometric material-support classification",
+   "equilibrium, solver-grid points, separatrix data and PEC mask -> field, flux and support masks"
+  ],
+  "model": "Composed tensor-product equilibrium reconstruction followed by geometric material-support classification; no field solve.",
+  "geometry": "Axisymmetric R-Z equilibrium map reconstructed on a rectilinear Cartesian solver box, then classified in that box.",
+  "boundary": "Union of the two dependency boundaries: out-of-map points are clamped and counted, and an empty material-support mask fails the call.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "an axisymmetric equilibrium mapping and a Cartesian solver grid to the static field, the poloidal flux, the material support mask, and the mapping's coverage and clamping diagnostics",
   "direction": "equilibrium, x_m, y_m, z_m, xpoint_half_length_m, pml_cells, pec_mask -> magnetic_flux_density_t, poloidal_flux_wb_per_rad, material_support_mask, covered_mask, radially_clamped_point_count, axially_clamped_point_count, closed_flux_mask, axis_segment_mask",

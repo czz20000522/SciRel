@@ -31,6 +31,20 @@
  "aliases": [
   "ThetaChord"
  ],
+ "discovery": {
+  "capability": [
+   "Polar-angle chord",
+   "Generate points varying polar angle at a fixed spherical radius, stored as cylindrical R,Z."
+  ],
+  "operation": [
+   "polar-angle coordinate map",
+   "tpts and r0 -> cylindrical R,Z points"
+  ],
+  "model": "Polar-angle coordinate map.",
+  "geometry": "Polar angle varied at fixed spherical radius; output stored in cylindrical R-Z.",
+  "boundary": "Angles are degrees.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Polar angle coordinate relation",
   "direction": "tpts,r0 to cylindrical R,Z",

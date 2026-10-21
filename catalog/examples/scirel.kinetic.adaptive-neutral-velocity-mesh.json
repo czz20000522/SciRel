@@ -15,6 +15,20 @@
  "aliases": [
   "create_vr_vx_mesh"
  ],
+ "discovery": {
+  "capability": [
+   "Adaptive neutral velocity mesh",
+   "Build the symmetric cylindrical velocity mesh (vx, vr) for a neutral species from its ion temperatures and requested discharge energies: a uniform vmax=3.5 mesh when the temperature spread is small, quadratic stretching otherwise, with requested positive energies inserted as exact nodes and the normalization temperature returned."
+  ],
+  "operation": [
+   "construct the adaptive symmetric cylindrical velocity mesh",
+   "node count, ion temperatures, requested energies, optional cap -> vx, vr, Tnorm, energy indices"
+  ],
+  "model": "the symmetric cylindrical velocity-mesh construction",
+  "geometry": "one radial half-mesh mirrored into a symmetric axial mesh",
+  "boundary": "nv >= 1; temperatures nonempty finite positive one-dimensional; requested energies finite one-dimensional; cap finite nonnegative scalar; selected population nonempty and positive; final mesh finite and strictly increasing",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the adaptive symmetric cylindrical velocity mesh: uniform base v in [0, 3.5] when (Tmax - Tmin) <= 0.1*Tmax, otherwise quadratic stretching from ratio = sqrt(Tmin/Tmax); requested positive energies inserted as exact nodes with axial symmetry preserved; Tnorm = mean of the selected population",
   "direction": "node count, ion temperatures, requested energies, optional cap -> vx, vr, Tnorm, energy indices",

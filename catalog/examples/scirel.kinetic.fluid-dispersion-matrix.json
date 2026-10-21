@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "L/J-pole fluid dispersion matrix",
+   "Assemble the dense first-order fluid eigenmatrix for fixed angular frequency and parallel wavenumber."
+  ],
+  "operation": [
+   "assemble the L/J-pole fluid dispersion matrix",
+   "species scales and L/J pole tables to a complex kx eigenmatrix"
+  ],
+  "model": "homogeneous magnetized multi-species Maxwellian fluid pole expansion",
+  "geometry": "no physical spatial grid",
+  "boundary": "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes; source resonance denominators must not vanish and the assembled matrix must remain finite",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "species scales and L/J pole tables to a complex kx eigenmatrix",
   "direction": "species scales and L/J pole tables to a complex kx eigenmatrix",

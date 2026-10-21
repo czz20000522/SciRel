@@ -44,6 +44,20 @@
  "aliases": [
   "MagnetRing"
  ],
+ "discovery": {
+  "capability": [
+   "Magnet ring filament approximation",
+   "Construct a signed two-face, sixteen-filament approximation of a rectangular permanent-ring cross-section."
+  ],
+  "operation": [
+   "signed magnet-ring filament approximation",
+   "ring geometry parameters -> weighted source object"
+  ],
+  "model": "Axisymmetric ideal circular filaments used as a geometry approximation.",
+  "geometry": "Rectangular cross-section in cylindrical R,Z coordinates with optional centroid rotation.",
+  "boundary": "Resulting filament radii must remain nonnegative; active source/target coincidence remains singular.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Signed magnet-ring filament approximation",
   "direction": "ring geometry parameters to a weighted source object",

@@ -14,6 +14,20 @@
  "aliases": [
   "fluid species equilibrium scales"
  ],
+ "discovery": {
+  "capability": [
+   "Magnetized species equilibrium scales",
+   "Derive SI thermal, cyclotron, plasma-frequency, gyroradius and Debye scales for a nonempty species mixture from reference density and temperature."
+  ],
+  "operation": [
+   "derive magnetized species equilibrium scales",
+   "(m_s, q_s, n_s/n00, T_s/T00, B0, n00, T00) -> SI species scales and scan-normalization scales"
+  ],
+  "model": "Magnetized Maxwellian species equilibrium using the declared thermal-speed and signed-gyroradius conventions",
+  "geometry": "Local homogeneous equilibrium; no spatial grid or wavevector is an input",
+  "boundary": "All derived scales must remain finite and representable; no zero magnetic field, charge, density, mass or temperature is allowed.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Species masses, charges, reference factors and magnetic field to equilibrium plasma scales",
   "direction": "(m_s, q_s, n_s/n00, T_s/T00, B0, n00, T00) -> SI species scales and scan-normalization scales",

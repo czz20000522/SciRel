@@ -14,6 +14,20 @@
  "aliases": [
   "legacy.point_matrix"
  ],
+ "discovery": {
+  "capability": [
+   "Kinetic frequency relation assembly",
+   "Assemble ES1D frequency matrix, corrected ES3D finite-Harris descriptor coefficients, or EM Maxwell pencil with causal signed wavevectors and exact axes."
+  ],
+  "operation": [
+   "assemble the kinetic frequency relation",
+   "model, state, wavevector and harmonic count -> frequency matrix state and receipt"
+  ],
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Kinetic frequency relation assembly",
   "direction": "Declared inputs to named scientific outputs.",

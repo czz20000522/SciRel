@@ -44,6 +44,20 @@
  "aliases": [
   "RectangularCoil"
  ],
+ "discovery": {
+  "capability": [
+   "Rectangular filament coil",
+   "Construct an ordered rectangular array of circular filaments with optional rotation and inherited current and weight controls."
+  ],
+  "operation": [
+   "parameterized rectangular filament geometry",
+   "coil parameters -> ordered source object"
+  ],
+  "model": "Axisymmetric ideal circular-filament source array.",
+  "geometry": "Rectangular R,Z centre lattice rotated about its centroid when requested.",
+  "boundary": "Generated points must retain nonnegative cylindrical radius.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Parameterized rectangular filament geometry",
   "direction": "coil parameters to ordered source object",

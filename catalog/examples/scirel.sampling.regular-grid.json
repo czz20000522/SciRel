@@ -13,6 +13,20 @@
  "aliases": [
   "regular_grid"
  ],
+ "discovery": {
+  "capability": [
+   "Scattered-to-regular grid sampling",
+   "Interpolate scalar fields from scattered planar samples onto supplied or generated ij-indexed regular grids."
+  ],
+  "operation": [
+   "scattered planar fields to regular-grid samples",
+   "scattered xx,yy and matching fields plus optional target grids -> generated or supplied grid coordinates and interpolated fields"
+  ],
+  "model": "SciPy griddata linear interpolation with default nx=ny=200 when target grids are generated.",
+  "geometry": "Planar scattered samples and a generated regular grid; generated output axes use ij order and supplied xi,yi jointly override them.",
+  "boundary": "Queries beyond the convex support are excluded and no outside-hull values are synthesized; no nonlinear interpolation accuracy claim is made.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Scattered-to-regular grid sampling",
   "direction": "Declared inputs to Tuple xi,yi and interpolated scalar fields",

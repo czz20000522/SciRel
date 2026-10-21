@@ -16,6 +16,20 @@
   "material support mask",
   "cold plasma support classification"
  ],
+ "discovery": {
+  "capability": [
+   "Closed-flux and magnetic-axis material support classification",
+   "Classify solver-grid points carrying cold-plasma material support from sampled poloidal flux and separatrix data."
+  ],
+  "operation": [
+   "geometric support classification on sampled flux values and solver-box coordinates",
+   "poloidal flux, grid coordinates, separatrix flux, PML thickness and PEC mask -> support, closed-flux and axis-segment masks"
+  ],
+  "model": "Geometric material-support classification; no plasma model, field solve or flux-surface reconstruction.",
+  "geometry": "Sampled poloidal flux on a solver grid with cylindrical radii, axial coordinates and discrete solver-box indices.",
+  "boundary": "The PML frame is the set of points within pml_cells of a solver-box face; a zero thickness is rejected rather than treated as an empty frame.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "a sampled poloidal flux, the cylindrical coordinates of the sampling grid, a separatrix flux with a selected side, a PML frame thickness, and a PEC mask to the set of grid points with cold-plasma material support",
   "direction": "poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask -> material_support_mask, closed_flux_mask, axis_segment_mask",

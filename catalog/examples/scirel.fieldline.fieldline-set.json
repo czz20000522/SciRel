@@ -13,6 +13,20 @@
  "aliases": [
   "FieldLineSet"
  ],
+ "discovery": {
+  "capability": [
+   "Contour field-line set collection",
+   "Construct a field-line set storing fitted field-line lists keyed by contour level."
+  ],
+  "operation": [
+   "contour levels and segments to an ordered field-line set",
+   "contour object and optional line keywords -> ordered level-keyed collection object"
+  ],
+  "model": "Direct collection construction with FieldLine keyword forwarding; no field reconstruction.",
+  "geometry": "Planar contour segments and level labels; segment vertices use caller length units and levels use caller flux-label units.",
+  "boundary": "Every segment must be accepted by the FieldLine constructor; topology repair and physical flux-surface qualification are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Contour segment to FieldLineSet",
   "direction": "contour levels and segments to an ordered collection object",

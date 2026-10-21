@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.electromagnetism.green-response-matrices",
-   "source_sha256": "47399aeb98bdf8e68a5b44beace134b9ba8ed9e206e1aa91a91d08ff3fb4014b",
+   "source_sha256": "81450a21dc96b114903ec300b34a2f2c9f2173f48ebdf803e4e158efd6c91632",
    "summary": "构造按调用者顺序排列的圆电流丝磁通、BR 和 BZ 响应矩阵，行对应目标、列对应源。",
    "definition": "按调用者顺序在每个目标点计算每个源列；源权重只应用一次。",
    "model": "带显式零自项的轴对称理想圆电流丝响应。",
@@ -85,7 +85,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.loop-flux-matrix",
-   "source_sha256": "b359b30af8688ee0643e0eccf8ab0138b14f93697ad2b67edc9109380eef2113",
+   "source_sha256": "24d1791adbeee1d9947b4cfd75271d43e6b8ca40455335329302c99e1e442bae",
    "summary": "构造 R、Z 节点网格上的稠密坐标空间磁通矩阵。",
    "definition": "按 C 顺序展平匹配的 R、Z 数组，计算每个实际目标/源点对。",
    "model": "带有活跃源节点零对角的轴对称理想圆电流丝磁通。",
@@ -155,7 +155,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.circular-filament-green",
-   "source_sha256": "021b452c2c62cec37f5d669b20212140680e166264b23a9f0f72f270605b7e14",
+   "source_sha256": "a875f8801dea9d8955ce3b1a9be9e99966a7be34cb2be1912439186afd762443",
    "summary": "计算有序圆电流丝在柱坐标目标点的磁通和磁场响应。",
    "definition": "对每个源行 (R,Z,weight)，返回每安培加权响应 psi=R A_phi、BR 和 BZ。",
    "model": "使用小模数超几何分支和互补椭圆积分分支的轴对称理想圆电流丝核。",

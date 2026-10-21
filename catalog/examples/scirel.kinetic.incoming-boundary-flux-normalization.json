@@ -15,6 +15,20 @@
  "aliases": [
   "normalize_incoming_neutral_boundary"
  ],
+ "discovery": {
+  "capability": [
+   "Incoming neutral boundary-flux normalization",
+   "Scale a caller-owned H or H2 boundary shape distribution on the positive axial-velocity half space to a requested incoming neutral particle flux, returning the scaled boundary distribution, the applied scale, and the pre-scale flux integral."
+  ],
+  "operation": [
+   "normalize an incoming neutral boundary flux",
+   "boundary shape plus axes, volume, thermal speed and target flux -> scaled boundary, scale, incoming flux"
+  ],
+  "model": "the boundary source normalization",
+  "geometry": "one radial dimension times the axial velocity axis",
+  "boundary": "finite nonnegative (nvr,nvx) shape and volume, finite positive thermal speed, finite target flux, at least one positive vx node, strictly positive positive-half flux; evaluated outputs must be finite",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the positive-half flux normalization: incoming_flux = Vth * sum(volume * shape * vx) over vx > 0; scale = abs(target_flux) / incoming_flux",
   "direction": "boundary shape plus axes, volume, thermal speed and target flux -> scaled boundary, scale, incoming flux",

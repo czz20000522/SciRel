@@ -14,6 +14,20 @@
  "aliases": [
   "vp_rk4_step"
  ],
+ "discovery": {
+  "capability": [
+   "Poisson-closed RK4 step",
+   "f_new=P4(dt*A)f; A=-ik diag(v)+(i dv/k)g 1^T. Closure at all stages."
+  ],
+  "operation": [
+   "apply one Poisson-closed RK4 step",
+   "one state and dt -> one Poisson-closed RK4 state"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "One classical RK4 step; incoming field must satisfy discrete Poisson; finite velocity window.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "f_new=P4(dt*A)f; A=-ik diag(v)+(i dv/k)g 1^T. Closure at all stages.",
   "direction": "Inputs to vp_rk4_step -> result",

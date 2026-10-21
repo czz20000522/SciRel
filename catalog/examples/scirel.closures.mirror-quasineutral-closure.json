@@ -15,6 +15,20 @@
   "mirror ambipolar pressure closure",
   "two-temperature mirror quasineutral solve"
  ],
+ "discovery": {
+  "capability": [
+   "Bi-Maxwellian mirror quasineutral closure",
+   "Compose mirror-constrained ion moments, a Boltzmann electron response and a bounded potential bisection, then assemble total pressures."
+  ],
+  "operation": [
+   "local quasineutral potential solve over positive-ion mirror moments and Boltzmann electrons",
+   "magnetic field, flux label, ion and electron reference states, optional plug profiles and solver controls -> quasineutral potential, terminal moments and total pressures"
+  ],
+  "model": "One positive-ion invariant bi-Maxwellian with optional two-plug loss-cone reduction paired with prescribed-temperature Boltzmann electrons; local logarithmic neutrality solve, not an equilibrium field solve.",
+  "geometry": "Local mirror magnetic-field magnitudes and optional left/right plug fields; no field-line geometry, spatial metric or flux-surface reconstruction.",
+  "boundary": "Both plug fields are supplied together for the loss-cone branch, reference densities must be simultaneously positive or zero at each sample, and the bisection bracket must contain the root after the finite expansion budget.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Positive-ion mirror kinetic moments and Boltzmann electrons closed by local quasineutral potential",
   "direction": "(magnetic field, flux label, ion and electron reference states, optional plug profiles, solver controls) -> quasineutral potential, terminal moments and total pressures",

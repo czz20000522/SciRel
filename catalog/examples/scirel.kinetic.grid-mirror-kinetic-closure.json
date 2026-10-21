@@ -16,6 +16,20 @@
   "grid mirror end-loss closure",
   "R-Z mirror kinetic pressure assembly"
  ],
+ "discovery": {
+  "capability": [
+   "Grid-aware mirror kinetic and ambipolar closure",
+   "Select reference and plug planes on a rectilinear R-Z grid, interpolate their magnetic and potential profiles in flux, evaluate two end-loss states, run a nested local mirror quasineutral closure, and optionally mask selected returned density and pressure fields outside the plugs."
+  ],
+  "operation": [
+   "compose the grid-aware mirror kinetic and ambipolar closure",
+   "(R-Z grid, B, psi, reference and plug planes, ion/electron state and controls) -> grid closure state, mapped end diagnostics and selected aliases"
+  ],
+  "model": "One positive-ion two-temperature mirror-moment closure with prescribed-temperature Boltzmann electrons and separate source-defined end-loss flux balance. Endpoint flux balance and local quasineutrality are different calculations; neither constitutes a self-consistent R-Z magnetic equilibrium.",
+  "geometry": "Caller-supplied rectilinear nonnegative-R, increasing-Z [N_Z,N_R] tensor grid with N_Z,N_R >= 2, positive B and three ordered nearest plane indices. Flux-surface interpolation assumes each selected row is representable as a single-valued scalar function of psi; the profile operator sorts and deduplicates samples with constant endpoint extension.",
+  "boundary": "Nearest selected left/reference/right indices must satisfy left < reference < right. Prescribed mode uses caller plug potentials or zero defaults; ambipolar_end_loss solves each endpoint independently and requires positive ion_loss_refill. Default confinement zeroes selected top-level fields outside the inclusive plug interval but leaves potentials, endpoint diagnostics, nested kinetic_moments, original moment-named fields and pitch integrals unmasked.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Rectilinear mirror grid and reference/plug planes to end-loss-coupled local quasineutral pressure state",
   "direction": "(R-Z grid, B, psi, reference and plug planes, ion/electron state and controls) -> grid closure state, mapped end diagnostics and selected aliases",

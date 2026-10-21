@@ -14,6 +14,20 @@
  "aliases": [
   "legacy.equilibrium"
  ],
+ "discovery": {
+  "capability": [
+   "Species equilibrium scales",
+   "Convert the declared legacy species deck into thermal, Debye, plasma and signed gyro scales; preserve explicit ES and EM unit conventions."
+  ],
+  "operation": [
+   "derive species equilibrium scales from a deck",
+   "model, deck and B0 -> species state and receipt"
+  ],
+  "model": "ES1D or ES3D normalized Gaussian species, or EM SI drifting bi-Maxwellian species using the exact listed legacy constants; no loss-cone branch implied.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Species equilibrium scales",
   "direction": "Declared inputs to named scientific outputs.",

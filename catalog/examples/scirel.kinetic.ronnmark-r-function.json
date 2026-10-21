@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Ronnmark R function and companion columns",
+   "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
+  ],
+  "operation": [
+   "evaluate the Ronnmark R function and companion matrix",
+   "dimensionless x and lambda to selected R branch and companion matrix"
+  ],
+  "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
+  "geometry": "no physical spatial grid",
+  "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "dimensionless x and lambda to selected R branch and companion matrix",
   "direction": "dimensionless x and lambda to selected R branch and companion matrix",

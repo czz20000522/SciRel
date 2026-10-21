@@ -14,6 +14,20 @@
  "aliases": [
   "current Green contraction"
  ],
+ "discovery": {
+  "capability": [
+   "Current-weighted Green response superposition",
+   "Contract a scalar or source-vector current with Green responses ordered as target rows and source columns."
+  ],
+  "operation": [
+   "linear superposition that preserves target rows and contracts source columns",
+   "currents and response arrays -> psi, BR and BZ target vectors"
+  ],
+  "model": "Linear superposition that preserves target rows and contracts source columns.",
+  "geometry": "Response rows index target points and response columns index source currents.",
+  "boundary": "Ranks must match and the response column count must equal the current count; NumPy broadcasting is not used to repair mismatches.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Current-weighted Green contraction",
   "direction": "currents and target-row/source-column response arrays to psi, BR, and BZ target vectors",

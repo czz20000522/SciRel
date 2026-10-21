@@ -14,6 +14,20 @@
  "aliases": [
   "poloidal field from psi"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric poloidal field from flux",
+   "Recover BR, BZ and their magnitude from psi = R A_phi on a rectilinear cylindrical grid."
+  ],
+  "operation": [
+   "stable local finite-difference flux gradients on a cylindrical R-Z grid",
+   "R, Z and psi grids -> BR, BZ and B arrays"
+  ],
+  "model": "Stable local finite-difference gradients on a cylindrical R-Z grid.",
+  "geometry": "Two-dimensional rectilinear grid with increasing R and Z axes.",
+  "boundary": "At R=0, BR is set to zero and BZ uses the documented one-sided axis formula.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Axisymmetric field recovery from poloidal flux",
   "direction": "R,Z,psi grids to BR, BZ, and B arrays",

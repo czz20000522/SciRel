@@ -15,6 +15,20 @@
   "loss-cone Legendre modes",
   "fractional Legendre angular spectrum"
  ],
+ "discovery": {
+  "capability": [
+   "Loss-cone fractional Legendre spectrum",
+   "Compute the lowest ordered even angular eigenmodes, returning integer degrees where they occur, with a regular initial-value solution."
+  ],
+  "operation": [
+   "compute the loss-cone Legendre angular eigenmodes",
+   "(xi_tp, mode_count, grid_points, backend) -> xi, degrees, eigenvalues, eigenfunctions, backend"
+  ],
+  "model": "Regular self-adjoint Neumann/Dirichlet angular Sturm-Liouville problem; no distribution or kinetic evolution is solved.",
+  "geometry": "One-dimensional pitch-cosine interval from the symmetry endpoint xi=0 toward a loss-cone boundary at xi_tp",
+  "boundary": "u(0)=1, u′(0)=0 and a numerically checked endpoint residual |u(xi_tp)|<=2e-8. The returned grid includes zero and excludes xi_tp.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Loss-cone pitch-cosine boundary and requested mode count to fractional Legendre angular eigenpairs",
   "direction": "(xi_tp, mode_count, grid_points, backend) -> xi, degrees, eigenvalues, eigenfunctions, backend",

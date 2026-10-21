@@ -16,6 +16,20 @@
   "Frank-Egedal NBI angular source coefficients",
   "fractional-Legendre source projection"
  ],
+ "discovery": {
+  "capability": [
+   "Frank-Egedal source-mode projection",
+   "Project a point-pitch source onto integer-regular even angular modes with converged normalization quadrature."
+  ],
+  "operation": [
+   "project a point-pitch source onto angular modes",
+   "(params, optional spectrum_operator) -> degrees, source_coefficients, degree_source, legendre controls, xi_tp_mid and fractional_mode callable"
+  ],
+  "model": "Angular point-source projection with caller-specified or numerically generated modes; it does not establish a physical NBI population.",
+  "geometry": "One-dimensional pitch-cosine interval from xi=0 to the mirror-ratio-derived turning boundary xi_tp_mid",
+  "boundary": "Regular modes satisfy u(0)=1 and u′(0)=0. Caller-supplied degrees are not automatically loss-cone eigenvalues. A nonpositive derived cone returns the existing inactive empty result.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Mirror-ratio loss-cone state and NBI source configuration to fractional Legendre degrees and source coefficients",
   "direction": "(params, optional spectrum_operator) -> degrees, source_coefficients, degree_source, legendre controls, xi_tp_mid and fractional_mode callable",

@@ -1,7 +1,11 @@
-"""Render exact scientific records and bound Chinese prose with SciPy's theme.
+"""Render exact scientific records and reviewed prose with SciPy's theme.
 
-No scientific imports, autodoc execution, translation inference, or example runs.
-All generated reStructuredText is a projection of reviewed input documents.
+Two languages share one contract source.  The Chinese site projects the bound
+Chinese reader layer; the English site projects the English contract fields and
+uses identifier-only navigation until English guides are authored.  No
+scientific imports, autodoc execution, translation inference or example runs
+are performed; all generated reStructuredText is a projection of reviewed
+input documents.
 """
 from __future__ import annotations
 
@@ -16,6 +20,75 @@ import sys
 import tempfile
 import tomllib
 import xml.etree.ElementTree as ET
+
+LANGUAGE_TAGS = {'zh': 'zh-CN', 'en': 'en-US'}
+ENGLISH_GUIDE_PLACEHOLDER = (
+    'English user-guide text for this chapter is not authored yet. Use the API '
+    'reference for signatures, ports, failure behavior, applicability and examples.'
+)
+_CJK = re.compile(r'[\u3400-\u4dbf\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]')
+
+
+def handbook_english_skeleton(book):
+    """Project the canonical navigation onto an English identifier-only skeleton.
+
+    The English guide is not authored yet.  Chinese human-readable fields are
+    replaced by stable IDs and an explicit placeholder, never by machine
+    translation, so the English site can build without inventing prose.
+    """
+    chapters = []
+    for chapter in book['chapters']:
+        topics = []
+        for topic in chapter['topics']:
+            topics.append({
+                'id': topic['id'],
+                'title': topic['id'],
+                'introduction': ('English user-guide text for this topic is not '
+                                 'authored yet; the identifier is shown until it is.'),
+                'assets': list(topic['assets']),
+            })
+        chapters.append({
+            'id': chapter['id'],
+            'title': chapter['id'],
+            'discipline': [chapter['id']],
+            'introduction': ('English user-guide text for this chapter is not '
+                             'authored yet; the identifier is shown until it is.'),
+            'topics': topics,
+        })
+    return {
+        'schema': book['schema'],
+        'title': 'SciRel scientific handbook',
+        'introduction': ('English navigation is a skeleton: chapter and topic '
+                         'identifiers are shown until English guides are authored.'),
+        'chapters': chapters,
+    }
+
+
+def english_translation_gaps(docs):
+    """Return English contract fields that still contain CJK, per asset.
+
+    The English site is built from the contracts, so a non-English contract
+    field leaks into an English page.  The build records those gaps instead of
+    hiding or rewriting them; ``title.zh`` is the only allowed Chinese field.
+    """
+    gaps = {}
+    for document in docs:
+        paths = []
+
+        def walk(value, path=''):
+            if isinstance(value, dict):
+                for key, item in value.items():
+                    walk(item, f'{path}.{key}' if path else key)
+            elif isinstance(value, list):
+                for index, item in enumerate(value):
+                    walk(item, f'{path}[{index}]')
+            elif isinstance(value, str) and path != 'title.zh' and _CJK.search(value):
+                paths.append(path)
+
+        walk(document)
+        if paths:
+            gaps[document['asset_id']] = sorted(set(paths))
+    return gaps
 
 
 def load_translations(root, documents, docs, translation_paths=None):
@@ -142,8 +215,16 @@ def doclink(label, path):
     return ':doc:`' + label.replace('`', '') + ' <' + path + '>`'
 
 
-def function_table(records, translations):
-    """One linked callable and its bound Chinese purpose per row."""
+def function_table(records, translations, *, language='zh'):
+    """One linked callable and its bound purpose per row."""
+    if language == 'en':
+        out = ('.. list-table::\n   :header-rows: 1\n   :widths: 40 60\n'
+               '   :class: scirel-api-summary\n\n   * - Function\n     - Purpose\n')
+        for doc in records:
+            label = doc['public_api']['python']['symbol']
+            purpose = plain(doc['summary'])
+            out += '   * - ' + doclink(label, api_path(doc['asset_id'])) + '\n     - ' + purpose + '\n'
+        return out + '\n'
     out = '.. list-table::\n   :header-rows: 1\n   :widths: 40 60\n   :class: scirel-api-summary\n\n   * - 函数\n     - 用途\n'
     for doc in records:
         label = doc['public_api']['python']['symbol']
@@ -152,7 +233,20 @@ def function_table(records, translations):
     return out + '\n'
 
 
-def ports(doc, translated, side):
+def ports(doc, translated, side, *, language='zh'):
+    if language == 'en':
+        out = ''
+        for original in doc[side]:
+            name = original['name']; typ = plain(original['dtype'])
+            optional = ' (optional)' if not original.get('required', True) else ''
+            out += '``' + name + '`` : ' + typ + optional + '\n'
+            out += '    ' + plain(original['description']) + '\n\n'
+            out += '    Units: ' + plain(str(original['units'])) + '; shape: ' + plain(str(original['shape'])) + '.\n\n'
+            if 'default' in original:
+                out += '    Default: ``' + str(original['default']) + '``.\n\n'
+            out += '    ' + plain(original['constraints']) + '\n\n'
+        label = 'Parameters' if side == 'inputs' else 'Returns'
+        return ':' + label + ':\n' + ''.join('    ' + line + '\n' if line else '\n' for line in out.splitlines()) + '\n'
     out = ''
     for original, zh in zip(doc[side], translated[side], strict=True):
         name = original['name']; typ = plain(zh['dtype'])
@@ -167,7 +261,9 @@ def ports(doc, translated, side):
     return ':' + label + ':\n' + ''.join('    ' + line + '\n' if line else '\n' for line in out.splitlines()) + '\n'
 
 
-def render_api(doc, zh, related):
+def render_api(doc, zh, related, *, language='zh'):
+    if language == 'en':
+        return _render_english_api(doc, related)
     py = doc['public_api']['python']; asset = doc['asset_id']
     out = plain(doc['title']['zh']) + '。' + plain(zh['summary']) + '\n\n'
     if zh.get('source_conflicts'):
@@ -213,6 +309,58 @@ def render_api(doc, zh, related):
     return heading + '.. py:function:: ' + py['signature'] + '\n   :no-index-entry:\n\n' + ''.join('   ' + line + '\n' if line else '\n' for line in out.splitlines())
 
 
+def _render_english_api(doc, related):
+    """Render one API page from the English contract fields only."""
+    py = doc['public_api']['python']; asset = doc['asset_id']
+    identity = doc['identity']; verification = doc['verification']
+    out = plain(doc['title']['en']) + '. ' + plain(doc['summary']) + '\n\n'
+    out += 'Implementation version: ``' + doc['version']['implementation_version'] + '``. '
+    out += 'Scientific relation function.\n\n'
+    out += (ports(doc, None, 'inputs', language='en')
+            + ports(doc, None, 'outputs', language='en'))
+    out += title('Exceptions and failure behavior', '-')
+    for key, label in [('invalid_input', 'Invalid input'),
+                       ('runtime_failure', 'Runtime failure'),
+                       ('nonconvergence', 'Non-convergence'),
+                       ('partial_results', 'Partial results')]:
+        out += '**' + label + '**\n    ' + plain(doc['failure_semantics'][key]) + '\n\n'
+    out += title('Description', '-') + plain(identity['definition']) + '\n\n'
+    out += '**Model:** ' + plain(identity['model']) + '\n\n'
+    out += '**Boundary convention:** ' + plain(identity['boundary']) + '\n\n'
+    out += bullets(identity['assumptions'])
+    out += title('Applicability', '-')
+    out += '**Preconditions**\n\n' + bullets(doc['applicability']['preconditions'])
+    out += '**Supported**\n\n' + bullets(doc['applicability']['supported'])
+    out += '**Excluded**\n\n' + bullets(doc['applicability']['excluded'])
+    out += title('Related functions', '-')
+    if related:
+        out += ''.join('* ' + doclink(d['public_api']['python']['symbol'], api_path(d['asset_id']))
+                       + ' — ' + plain(d['title']['en']) + '\n' for d in related) + '\n'
+    else:
+        out += ('Return to the domain API reference and choose another relation by '
+                'scientific problem.\n\n')
+    out += title('Example', '-') + plain(doc['example']['description']) + '\n\n'
+    out += code(doc['example']['code'])
+    out += '**Expected behavior:** ' + plain(doc['example']['expected']) + '\n\n'
+    out += ('The code above is the exact contract example; expected behavior and executed '
+            'results are recorded separately.\n\n')
+    out += title('Verification and limitations', '-') + plain(verification['evidence_ceiling']) + '\n\n'
+    out += '**Verified scope**\n\n' + bullets(verification['scope'])
+    out += '**Known limitations**\n\n' + bullets(verification['known_limitations'])
+    out += title('References', '-')
+    for ref in doc.get('references', []):
+        out += '* ' + plain(json.dumps(ref, ensure_ascii=False) if isinstance(ref, dict) else ref) + '\n'
+    out += '\n`Read the exact contract JSON </api/asset?id=' + asset + '>`_\n\n'
+    for label in ('Exceptions and failure behavior', 'Description', 'Applicability',
+                  'Related functions', 'Example', 'Verification and limitations', 'References'):
+        out = out.replace(title(label, '-'), '.. rubric:: ' + label + '\n\n')
+    heading = ('.. raw:: html\n\n   <p class="scirel-module">' + py['module'] + '.</p>\n\n'
+               + title(py['symbol']))
+    return (heading + '.. py:function:: ' + py['signature']
+            + '\n   :no-index-entry:\n\n'
+            + ''.join('   ' + line + '\n' if line else '\n' for line in out.splitlines()))
+
+
 def render_tutorial(chapter):
     c = chapter; r = c['results']
     out = title(c['title']) + c['introduction'] + '\n\n' + c['prerequisites'] + '\n\n'
@@ -249,8 +397,10 @@ def render_tutorial(chapter):
     return out
 
 
-def render_matrix_page(matrix):
+def render_matrix_page(matrix, *, language='zh'):
     """Render the capability matrix as a Sphinx page linked to function pages."""
+    if language == 'en':
+        return _render_english_matrix_page(matrix)
     out = title('能力矩阵')
     out += (f"本快照收录 **{matrix['total_assets']}** 个能力，分布在 **{matrix['total_domains']}** 个领域。"
             "矩阵是 catalog 的派生视图，用于观察领域覆盖和函数入口；它不是缺口清单，也不代表人工批准。\n\n")
@@ -279,8 +429,167 @@ def render_matrix_page(matrix):
     return out
 
 
-def render_site(root, docs, book, translations, chapter, *, figure_files, matrix=None):
+def _render_english_matrix_page(matrix):
+    """Render the capability matrix as an English Sphinx page."""
+    out = title('Capability matrix')
+    out += (f"This snapshot contains **{matrix['total_assets']}** capabilities across "
+            f"**{matrix['total_domains']}** domains. The matrix is a derived catalog view "
+            "for domain coverage and function entry points; it is not a gap inventory and "
+            "does not represent human approval.\n\n")
+    out += ('`Download capability-matrix.json </capability-matrix.json>`_ · '
+            '`Download CAPABILITY_MATRIX.md </CAPABILITY_MATRIX.md>`_\n\n')
+    out += (title('Domain coverage', '-')
+            + '.. list-table::\n   :header-rows: 1\n\n'
+              '   * - Domain\n     - Capabilities\n     - Representative functions\n')
+    assets = {a['asset_id']: a for a in matrix['assets']}
+    for group in matrix['domains']:
+        symbols = [assets[a]['symbol'] for a in group['assets'][:4]]
+        out += (f"   * - ``{group['domain']}``\n     - {group['count']}\n"
+                f"     - {', '.join('``'+s+'``' for s in symbols)}\n")
+    out += '\n' + title('Capability list', '-')
+    for group in matrix['domains']:
+        out += title(group['domain'] + f" ({group['count']})", '~')
+        out += ('.. list-table::\n   :header-rows: 1\n   :widths: 25 30 35 10\n\n'
+                '   * - Function\n     - Capability\n     - Ports\n     - Tests\n')
+        for asset_id in group['assets']:
+            a = assets[asset_id]
+            port_text = a['ports'].replace('|', '\\|')
+            if len(port_text) > 110:
+                port_text = port_text[:107] + '...'
+            out += (f"   * - {doclink(a['symbol'], api_path(asset_id))}\n"
+                    f"     - {plain(a['title_en'] or a['title_zh'])}\n"
+                    f"     - {plain(port_text)}\n"
+                    f"     - {len(a['tests'])}\n")
+        out += '\n'
+    return out
+
+
+def _render_english_site(root, docs, book, *, matrix=None):
+    """Render the English skeleton site from English contract fields.
+
+    The user guide, navigation prose and tutorials are explicit skeletons: no
+    Chinese guide text is copied into English pages and no translation is
+    invented.  API pages, matrix and search are contract-derived.
+    """
+    by_id = {d['asset_id']: d for d in docs}
+    with tempfile.TemporaryDirectory(prefix='scirel-sphinx-en-') as temp:
+        stage = Path(temp); source = stage/'source'; output = stage/'html'
+        shutil.copytree(root/'tools/docs/sphinx', source,
+                        ignore=shutil.ignore_patterns('requirements.txt'))
+        shutil.rmtree(source/'tutorials', ignore_errors=True)
+        # The Chinese getting-started/agent pages are not part of the English
+        # skeleton; remove them from the staged source instead of copying or
+        # machine-translating their prose.
+        for name in ('getting-started.rst', 'agent.rst'):
+            (source/name).unlink(missing_ok=True)
+
+        def write(path, text):
+            p = source/(path + '.rst')
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text(text)
+
+        home = title('SciRel documentation')
+        home += ('SciRel is a Python library of scientific relations. Choose a single '
+                 'scientific function for a well-defined problem, or compose several '
+                 'relations after checking their contracts.\n\n')
+        home += '.. grid:: 1 2 2 2\n   :gutter: 3\n\n'
+        cards = [
+            ('User guide', 'user-guide/index',
+             'English guide chapters; identifiers are shown until English tutorials are authored.'),
+            ('API reference', 'reference/index',
+             'Contract-derived signatures, ports, failure behavior, applicability and examples.'),
+        ]
+        if matrix is not None:
+            cards.insert(1, ('Capability matrix', 'user-guide/capability-matrix',
+                             'Domain coverage, function entry points, ports and test counts.'))
+        for label, target, description in cards:
+            home += ('   .. grid-item-card:: ' + label + '\n      :link: ' + target
+                     + '\n      :link-type: doc\n\n      ' + description + '\n\n')
+        home += ('This is a development snapshot. Each function keeps its own implementation '
+                 'version; use the applicability and evidence scope on its API page.\n\n')
+        home += toctree(['user-guide/index', 'reference/index'], hidden=True)
+        write('index', home)
+        guide_links = [c['id'] for c in book['chapters']]
+        if matrix is not None:
+            guide_links.append('capability-matrix')
+        write('user-guide/index',
+              title('User guide')
+              + ('English guide text is not authored yet. The chapter identifiers below link '
+                 'to the contract-derived API reference.\n\n')
+              + toctree(guide_links))
+        if matrix is not None:
+            write('user-guide/capability-matrix',
+                  render_matrix_page(matrix, language='en'))
+        write('reference/index',
+              title('API reference')
+              + ('Choose a scientific domain, then browse functions by problem. Each function '
+                 'page gives signature, parameters, returns, failure behavior, applicability and '
+                 'examples.\n\n')
+              + toctree([c['id'] for c in book['chapters']], maxdepth=1))
+        for c in book['chapters']:
+            write('user-guide/' + c['id'], title(c['id']) + ENGLISH_GUIDE_PLACEHOLDER + '\n\n')
+            ref = title(c['id']) + c['introduction'] + '\n\n'
+            for topic in c['topics']:
+                records = [by_id[a] for a in topic['assets']]
+                ref += title(topic['id'], '-') + topic['introduction'] + '\n\n'
+                ref += title('Functions', '~') + function_table(records, None, language='en')
+                ref += title('Model and conditions', '~')
+                for d in records:
+                    ref += ('**' + plain(d['title']['en']) + '**\n\n'
+                            + plain(d['identity']['definition']) + '\n\n'
+                            + plain(d['identity']['boundary']) + '\n\n')
+                    ref += bullets(d['applicability']['preconditions'])
+                    ref += ('See ' + doclink(d['public_api']['python']['symbol'],
+                                             api_path(d['asset_id']))
+                            + ' for parameters, outputs and failure behavior.\n\n')
+                ref += title('Verification and boundaries', '~')
+                for d in records:
+                    ref += ('**' + plain(d['title']['en']) + '**\n\n'
+                            + plain(d['verification']['evidence_ceiling']) + '\n\n')
+                    ref += bullets(d['verification']['known_limitations'])
+                ref += toctree(['generated/' + d['asset_id'] for d in records],
+                               hidden=True, maxdepth=1)
+                for d in records:
+                    related_ids = [x['asset_id'] for x in records if x['asset_id'] != d['asset_id']]
+                    for dependency in d['version'].get('dependencies', []):
+                        dependency_id = dependency['asset_id']
+                        if dependency_id not in related_ids:
+                            related_ids.append(dependency_id)
+                    write('reference/generated/' + d['asset_id'],
+                          render_api(d, None, [by_id[a] for a in related_ids], language='en'))
+            write('reference/' + c['id'], ref)
+        result = subprocess.run(
+            [sys.executable, '-m', 'sphinx', '-b', 'html', '-W', '--keep-going', '-q',
+             '-D', 'language=en', '-D', 'html_search_language=en',
+             '-D', 'html_title=SciRel documentation', str(source), str(output)],
+            capture_output=True, text=True)
+        if result.returncode:
+            raise RuntimeError('Sphinx English build failed:\n' + result.stdout + result.stderr)
+        files = {'web/' + str(p.relative_to(output)): p.read_bytes()
+                 for p in output.rglob('*')
+                 if p.is_file() and '.doctrees' not in p.parts and p.name != '.buildinfo'}
+        renderer = {
+            'sphinx': version('Sphinx'),
+            'pydata_sphinx_theme': version('pydata-sphinx-theme'),
+            'sphinx_copybutton': version('sphinx-copybutton'),
+            'sphinx_design': version('sphinx-design'),
+            'pygments': version('Pygments'),
+            'latex2mathml': version('latex2mathml'),
+            'language': LANGUAGE_TAGS['en'], 'warnings_as_errors': True,
+            'science_imports': False,
+            'reference': 'https://docs.scipy.org/doc/scipy/',
+            'source_documents': len(docs),
+        }
+        files['renderer.json'] = (json.dumps(renderer, ensure_ascii=False, indent=2) + '\n').encode()
+        return files
+
+
+def render_site(root, docs, book, translations, chapter, *, figure_files=None, matrix=None,
+                language='zh'):
     """Return only generated public site bytes; staging sources stay temporary."""
+    if language == 'en':
+        return _render_english_site(root, docs, book, matrix=matrix)
+    assert figure_files is not None, 'Chinese site needs the chapter figures'
     # Sphinx otherwise silently builds a Chinese search index of Latin words only.
     jieba_version = version('jieba')
     by_id = {d['asset_id']: d for d in docs}

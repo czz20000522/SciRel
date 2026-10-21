@@ -13,6 +13,20 @@
  "aliases": [
   "FirstClampedCubicSpline"
  ],
+ "discovery": {
+  "capability": [
+   "Left-clamped cylindrical spline",
+   "Callable piecewise-cubic Hermite interpolation with a prescribed left first derivative and a cylindrical right boundary equation."
+  ],
+  "operation": [
+   "left-clamped cylindrical C2 cubic-spline interpolation",
+   "strictly increasing knots, matched values, left slope and cylindrical mode m -> callable spline with deriv=0/1/2 evaluation"
+  ],
+  "model": "C2 piecewise-cubic Hermite spline with a left prescribed first derivative and the right cylindrical equation fdd+fd/x-m^2 f/x^2=0.",
+  "geometry": "One-dimensional strictly increasing scalar knots and ordinate values with a positive last knot; coordinate units are caller-defined and no spatial fitting is reconstructed.",
+  "boundary": "The left first derivative is prescribed and the right boundary enforces the cylindrical equation; x_data[-1]>0 is required, and the physical magnetic-fitting interpretation remains unresolved.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Left-clamped cylindrical spline",
   "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",

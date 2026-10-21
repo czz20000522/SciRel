@@ -11,6 +11,20 @@
   "finite-volume"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Conservative finite-volume diffusion",
+   "Assemble the diffusion flux divergence +d/dx(D du/dx) = M u + b as a tridiagonal operator plus boundary forcing."
+  ],
+  "operation": [
+   "Assemble conservative finite-volume diffusion",
+   "explicit cell/face data -> spatial operator or state update"
+  ],
+  "model": "One-dimensional conservative finite-volume discretization with a tridiagonal diffusion operator and boundary forcing.",
+  "geometry": "Explicit one-dimensional face grid; caller coordinate X increases in the positive direction; homogeneous unit cross-section unless metrics are supplied.",
+  "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; no hidden extrapolation.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "+d/dx(D du/dx)=M u+b",
   "direction": "Explicit cell/face data to spatial operator or state update",

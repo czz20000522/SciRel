@@ -40,6 +40,20 @@
  "aliases": [
   "ArbitraryPoints"
  ],
+ "discovery": {
+  "capability": [
+   "Arbitrary filament source points",
+   "Construct finite weighted circular-filament source points and evaluate their mesh-dependent fields."
+  ],
+  "operation": [
+   "weighted circular-filament source construction",
+   "source geometry, current and weights plus target mesh -> mesh-dependent field responses"
+  ],
+  "model": "Axisymmetric ideal circular filaments evaluated by the Green kernel.",
+  "geometry": "Finite cylindrical source points with mutable coordinates and weights.",
+  "boundary": "A target coincident with an active positive-radius filament is singular.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Weighted circular-filament source construction",
   "direction": "source geometry and weights to mesh-dependent field responses",

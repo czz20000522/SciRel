@@ -15,6 +15,20 @@
   "Boltzmann electron response",
   "logarithmic charge residual"
  ],
+ "discovery": {
+  "capability": [
+   "Boltzmann electron state and quasineutral residuals",
+   "Evaluate an unclipped log-space Boltzmann electron response and compare it with a supplied positive-ion density."
+  ],
+  "operation": [
+   "prescribed-temperature pointwise Boltzmann electron response with neutrality residuals",
+   "potential, electron thermal energy, reference state and ion density -> electron density, pressure and charge residuals"
+  ],
+  "model": "Prescribed-temperature pointwise Boltzmann electron response; not a self-consistent potential solve.",
+  "geometry": "No geometry imposed; each broadcast cell is evaluated independently.",
+  "boundary": "Zero reference density gives zero electron density and pressure; underflow to zero is permitted and unrepresentable required finite outputs raise, with no physical exponent clipping.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Boltzmann electron density, pressure and residuals against a supplied positive-ion state",
   "direction": "potential, electron thermal energy, reference density and potential, ion density and charge multiplier -> electron density, pressure and three neutrality residuals",

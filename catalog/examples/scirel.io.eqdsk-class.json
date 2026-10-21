@@ -14,6 +14,20 @@
  "aliases": [
   "EQDSK"
  ],
+ "discovery": {
+  "capability": [
+   "Equilibrium EQDSK mutable wrapper",
+   "Mutable mapping wrapper that reads and writes the extended EQDSK dialect."
+  ],
+  "operation": [
+   "Read and write extended EQDSK records",
+   "extended EQDSK text <-> validated dictionary/class state"
+  ],
+  "model": "Extended EQDSK text dialect with fixed-width record blocks and a declared grid-origin convention.",
+  "geometry": "nnr by nnz grid reconstructed as R = linspace(0, rbox) and Z = linspace(-zbox/2, zbox/2); R/Z values follow the source convention with units and COCOS unspecified.",
+  "boundary": "Strict mode rejects trailing records; non-strict mode permits trailing records after the complete declared sections.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Deterministic text serialization/deserialization of extended EQDSK records",
   "direction": "extended EQDSK text and validated dictionary/class state",

@@ -16,6 +16,20 @@
   "complex trilinear sampling",
   "RF solver-grid field resampling"
  ],
+ "discovery": {
+  "capability": [
+   "Complex rectilinear field interpolation",
+   "Trilinearly interpolate a complex field sampled on three increasing rectilinear axes, with a per-point validity mask."
+  ],
+  "operation": [
+   "piecewise-trilinear reconstruction of a band-limited complex field",
+   "source axes, complex values and target points -> interpolated values and validity mask"
+  ],
+  "model": "Piecewise-trilinear interpolation on a tensor-product rectilinear grid with no uniform-spacing assumption.",
+  "geometry": "Rectilinear tensor-product grid with caller-declared Cartesian axes in metres, indexed [x, y, z].",
+  "boundary": "Closed source box expanded by tol = 32 * eps * max(1, max axis span); outside the expansion no extrapolation is performed.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "complex field samples on three rectilinear axes to interpolated values at arbitrary target points",
   "direction": "source axes plus complex values plus target points -> interpolated_values, valid_mask",

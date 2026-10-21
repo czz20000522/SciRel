@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Fluid perpendicular-wavenumber scan",
+   "Derive the equilibrium frequency ladder, assemble one L/J-pole matrix per frequency, and select fluid kx branches."
+  ],
+  "operation": [
+   "scan fluid kx branches over the frequency ladder",
+   "SI equilibrium controls and dimensionless ladder bounds to fluid kx spectra"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species fluid pole model",
+  "geometry": "homogeneous magnetized plasma",
+  "boundary": "J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "SI equilibrium controls and dimensionless ladder bounds to fluid kx spectra",
   "direction": "SI equilibrium controls and dimensionless ladder bounds to fluid kx spectra",

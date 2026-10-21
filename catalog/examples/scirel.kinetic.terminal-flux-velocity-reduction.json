@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_terminal_molecular_flux_velocity"
  ],
+ "discovery": {
+  "capability": [
+   "Terminal molecular axial flux and velocity",
+   "Reduce a terminal H2 distribution to axial flux and mean velocity using an explicitly supplied thermal speed and radial/axial quadrature. This narrow variant accepts zero-weight cells with positive integrated density and does not compute higher moments."
+  ],
+  "operation": [
+   "reduce terminal axial flux and mean velocity",
+   "terminal (vr,vx,x) distribution, normalized axial nodes, explicit thermal speed and quadrature -> two x profiles"
+  ],
+  "model": "terminal H2 diagnostic with a caller-supplied thermal speed",
+  "geometry": "one-dimensional x profile over a cylindrical (vr,vx) velocity carrier; radial nodes themselves are not required",
+  "boundary": "finite, nonnegative nonempty three-dimensional distribution; finite one-dimensional vx, radial weights and axial widths with aligned sizes; radial weights and widths may be zero; finite positive thermal speed and strictly positive integrated density per x cell",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "terminal H2 axial flux and mean-velocity reduction",
   "direction": "terminal (vr,vx,x) distribution, normalized axial nodes, explicit thermal speed and quadrature -> two x profiles",

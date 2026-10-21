@@ -12,6 +12,20 @@
   "discrete-response"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Ordered per-filament response matrices",
+   "Build target-row/source-column matrices for ordered circular-filament psi, BR and BZ responses."
+  ],
+  "operation": [
+   "per-source Green response-matrix construction",
+   "target points and optional source rows -> response matrices"
+  ],
+  "model": "Axisymmetric ideal circular-filament response with explicit zero-self entries.",
+  "geometry": "Targets and sources may be different finite cylindrical point tables.",
+  "boundary": "Exact source-target coincidence is zeroed for each matrix entry; zero-radius or zero-weight sources contribute zero.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Ordered per-source Green response matrices",
   "direction": "target points and optional source rows to response matrices",

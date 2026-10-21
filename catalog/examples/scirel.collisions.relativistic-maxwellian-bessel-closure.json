@@ -16,6 +16,20 @@
   "cfpmodbe closure",
   "rescaled modified Bessel K0 K1 K2"
  ],
+ "discovery": {
+  "capability": [
+   "Relativistic Maxwellian modified-Bessel closure",
+   "Exponentially rescaled modified Bessel quantities exp(x)K_0(x), exp(x)K_1(x) and the K_2 recurrence for relativistic Maxwellian closures."
+  ],
+  "operation": [
+   "Evaluate the rescaled modified Bessel quantities K0, K1 and K2",
+   "Bessel argument x -> bk0, bk1, bk2"
+  ],
+  "model": "Exact rescaled modified Bessel functions of the second kind; no approximation and no branch.",
+  "geometry": "Not applicable; scalar special-function evaluation with no spatial axis.",
+  "boundary": "As x approaches zero from above, bk0 tends to -log(x/2) - gamma, bk1 grows as 1/x and bk2 as 2/x^2; as x grows all three decay as sqrt(pi/(2x)).",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the Bessel argument to the exponentially rescaled modified Bessel quantities of orders zero, one and two",
   "direction": "x -> bk0, bk1, bk2",

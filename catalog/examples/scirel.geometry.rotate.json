@@ -32,6 +32,20 @@
  "aliases": [
   "rotate"
  ],
+ "discovery": {
+  "capability": [
+   "Planar cylindrical rotation",
+   "Rotate row-vectors in the cylindrical R,Z plane about a pivot."
+  ],
+  "operation": [
+   "rigid planar rotation relation",
+   "points, angle and pivot -> rotated points"
+  ],
+  "model": "Two-dimensional rigid rotation in the R,Z plane.",
+  "geometry": "Two-dimensional R,Z plane.",
+  "boundary": "Finite 2-vector pivot and finite points.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Rigid planar rotation relation",
   "direction": "points and angle to rotated points",

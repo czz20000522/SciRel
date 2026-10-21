@@ -14,6 +14,20 @@
  "aliases": [
   "relative psi Picard change"
  ],
+ "discovery": {
+  "capability": [
+   "Relative Picard flux-state residual",
+   "Measure the Euclidean change between successive two-dimensional flux states relative to the previous state."
+  ],
+  "operation": [
+   "discrete relative L2 flux-state change for a Picard stopping criterion",
+   "previous and next flux states -> relative residual"
+  ],
+  "model": "Discrete relative L2 flux-state change for a Picard stopping criterion.",
+  "geometry": "Caller-defined co-located two-dimensional flux grid with no interpretation of physical spacings.",
+  "boundary": "All grid entries participate equally; no spatial boundary or active-cell mask is used.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "previous and next flux states to a relative Euclidean change diagnostic",
   "direction": "psi_previous, psi_next -> residual",

@@ -15,6 +15,20 @@
  "aliases": [
   "evaluate_neutral_generation_stopping"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral generation stopping criterion",
+   "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary."
+  ],
+  "operation": [
+   "evaluate the neutral generation stopping criterion",
+   "current and accumulated generation density profiles plus stop controls -> (delta, done, reason)"
+  ],
+  "model": "the per-generation ratio-of-max stopping relation with explicit fail-closed domain tightenings",
+  "geometry": "one spatial axis for two aligned density profiles",
+  "boundary": "nonempty finite nonnegative 1-D density arrays of one shape; accumulated density has a positive maximum; finite positive real truncate; boolean seed_iteration_enabled and a finite nonnegative real seed_error exactly when enabled; derived delta finite",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Evaluate the source Delta_n stopping criterion for collision-generation convergence: returns the relative generation density ratio and whether the next generation is unnecessary.",
   "direction": "current and accumulated generation density profiles plus stop controls -> (delta, done, reason)",

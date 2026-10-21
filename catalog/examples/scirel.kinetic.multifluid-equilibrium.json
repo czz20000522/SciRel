@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "SI multifluid equilibrium",
+   "Initialize physical fluid state with an explicit pressure frame and momentum-conserving pair exchange. Undefined zero-field beta is represented by None."
+  ],
+  "operation": [
+   "initialize the SI multifluid equilibrium",
+   "SI deck, B0, gamma, exchange and pressure frame -> cold/gyrotropic fluid equilibrium"
+  ],
+  "model": "Multi-species nonrelativistic equilibrium with optional conservative pair momentum exchange and bath drag.",
+  "geometry": "Uniform field along z; local transverse density gradients may be supplied.",
+  "boundary": "Local Fourier perturbations; no finite-domain boundary solve.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Physical species deck to cold/gyrotropic fluid equilibrium",
   "direction": "forward initialization",

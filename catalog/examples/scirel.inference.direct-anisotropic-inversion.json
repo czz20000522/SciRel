@@ -14,6 +14,20 @@
  "aliases": [
   "anisotropic equilibrium diagnostic fit"
  ],
+ "discovery": {
+  "capability": [
+   "Direct anisotropic parameter inversion",
+   "Single entry point connecting a real anisotropic forward solve, unit-explicit diagnostics and bounded optimization with a fixed observation size."
+  ],
+  "operation": [
+   "Invert anisotropic parameters directly",
+   "initial_params, bounds, observations, solver_config, forward/diagnostic ports and controls -> fit result and separated state"
+  ],
+  "model": "Direct inversion composition with caller-specified physical closure, reusing the qualified forward relation and not inventing another anisotropic equilibrium equation.",
+  "geometry": "Defined by the forward port; the validated case is an axisymmetric purely poloidal R-Z equilibrium with grid [Z, R].",
+  "boundary": "The forward port owns the physical state, pressure closure, boundary and convergence; the graph owns unit-compatible observation connections, the fixed residual protocol and valid parameter control.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "parameterized forward equilibrium and observations to an anisotropic fit validated at the actual terminal point",
   "direction": "initial_params, bounds, observations, solver_config, forward/diagnostic ports and controls -> fit result and separated state",

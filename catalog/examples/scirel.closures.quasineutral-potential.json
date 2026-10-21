@@ -15,6 +15,20 @@
   "ambipolar potential bisection",
   "logarithmic charge residual root"
  ],
+ "discovery": {
+  "capability": [
+   "Quasineutral potential by vectorized bisection",
+   "Find an active-surface potential by bounded bracket expansion and vectorized bisection of a caller-supplied logarithmic charge residual."
+  ],
+  "operation": [
+   "bracketed vectorized bisection of a caller-owned decreasing logarithmic residual",
+   "reference potential, thermal energies, ion charge, active mask and residual evaluator -> potential, final residual, iteration count and convergence flag"
+  ],
+  "model": "Caller-owned decreasing residual with positive values below the root and negative values above it; the operator brackets and bisects but computes neither density.",
+  "geometry": "No geometry imposed; broadcast elements represent independent surfaces with one shared vectorized stopping decision.",
+  "boundary": "Inactive surfaces skip bracketing and stopping checks but their final residual is evaluated; the lower endpoint residual must be nonnegative and the upper nonpositive after bounded expansion.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "root of a caller-supplied logarithmic ion-electron charge residual as a function of potential",
   "direction": "reference potential, ion and electron thermal energies, ion charge, active mask, residual evaluator and controls -> potential, final residual, iteration count and convergence flag",

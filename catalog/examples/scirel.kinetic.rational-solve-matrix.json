@@ -14,6 +14,20 @@
  "aliases": [
   "legacy.solve_matrix"
  ],
+ "discovery": {
+  "capability": [
+   "Qualified frequency spectrum",
+   "Solve the frequency matrix or Harris descriptor with explicit residual, cancellation and infinite-mode taxonomy; retain complete near-pole carriers."
+  ],
+  "operation": [
+   "solve the qualified frequency spectrum",
+   "frequency matrix, model and solve controls -> qualified spectra and diagnostics"
+  ],
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Qualified frequency spectrum",
   "direction": "Declared inputs to named scientific outputs.",

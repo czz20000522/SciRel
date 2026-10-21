@@ -14,6 +14,20 @@
  "aliases": [
   "compute_greens"
  ],
+ "discovery": {
+  "capability": [
+   "Circular-filament Green kernel",
+   "Evaluate ordered circular-filament flux and magnetic-field responses at cylindrical target points."
+  ],
+  "operation": [
+   "circular-filament Green response using small-modulus hypergeometric and complementary elliptic-integral branches",
+   "weighted source rings and target points -> psi, BR and BZ"
+  ],
+  "model": "Axisymmetric ideal circular-filament kernel using the small-modulus hypergeometric branch and complementary elliptic-integral branch.",
+  "geometry": "Cylindrical source rings and target points.",
+  "boundary": "Axis targets use the analytic limit; an active positive-radius source/target coincidence is rejected.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Circular-filament Green response",
   "direction": "weighted source rings and target points to psi, BR, and BZ",

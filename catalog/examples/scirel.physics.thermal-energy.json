@@ -12,6 +12,20 @@
   "profiles"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Stored thermal energy from pressure profiles",
+   "Integrate electron, ion and total scalar pressure profiles with the 3/2 factor over a normalized radial cell grid."
+  ],
+  "operation": [
+   "Integrate stored thermal energy from pressure profiles",
+   "(p_el, p_ion, p_tot, vpr, drho_norm) -> (W_el, W_ion, W_tot)"
+  ],
+  "model": "Nonrelativistic isotropic-gas internal energy density u = 3p/2; signed finite inputs are accepted as algebraic compatibility.",
+  "geometry": "Normalized radial cell grid with explicit volume metric and quadrature weights; rho_norm is a dimensionless normalized radius.",
+  "boundary": "Discrete cell-volume sum with no extrapolation or hidden endpoint reconstruction; volume and radial-weight inputs carry the grid convention.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "W = 3/2 integral(p dV) for each supplied pressure profile",
   "direction": "(p_el,p_ion,p_tot,vpr,drho_norm) -> (W_el,W_ion,W_tot)",

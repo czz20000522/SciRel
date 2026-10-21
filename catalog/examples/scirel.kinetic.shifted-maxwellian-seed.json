@@ -17,6 +17,20 @@
   "shifted Maxwellian seed",
   "N1 seed leaf"
  ],
+ "discovery": {
+  "capability": [
+   "Shifted-Maxwellian discrete seed",
+   "The normalized exponential distribution on a cylindrical (vr, vx) velocity mesh before any moment compensation: one temperature per axial shift, the molecule-count factor in the exponent, a strict-interior -80 clamp, and normalization by the caller-supplied cylindrical cell volumes. Composes with the cylindrical velocity quadrature and stops before any moment-compensation step."
+  ],
+  "operation": [
+   "evaluate the normalized shifted-Maxwellian seed",
+   "vr, vx, normalization temperature, axial shifts in m/s, per-shift temperatures, mass, molecule count and cell volumes -> per-shift normalized distribution, thermal speed and raw exponent"
+  ],
+  "model": "discretized shifted Maxwellian exponential seed on an explicit mesh; any downstream moment-compensation step is deliberately outside this leaf",
+  "geometry": "velocity space, cylindrical: radial speed vr and axial velocity vx; the axial shift is applied to the vx axis",
+  "boundary": "argument == 0 is floored to exp(-80) like the far tail (strict interior clamp); the distribution is never exactly zero; molecule_count must be exactly 1 or 2; every accepted call returns finite distributions",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the normalized exponential seed of the shifted-Maxwellian relation on a cylindrical velocity mesh, before moment compensation",
   "direction": "vr, vx, normalization temperature, axial shifts in m/s, per-shift temperatures, mass, molecule count and cell volumes -> per-shift normalized distribution, thermal speed and raw exponent",

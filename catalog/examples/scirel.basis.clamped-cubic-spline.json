@@ -13,6 +13,20 @@
  "aliases": [
   "ClampedCubicSpline"
  ],
+ "discovery": {
+  "capability": [
+   "Clamped cubic spline",
+   "Callable piecewise-cubic Hermite interpolation with prescribed first derivatives at both endpoints."
+  ],
+  "operation": [
+   "boundary-clamped C2 cubic-spline interpolation",
+   "strictly increasing knots, matched values and two endpoint slopes -> callable spline with deriv=0/1/2 evaluation"
+  ],
+  "model": "C2 piecewise-cubic Hermite spline with a boundary-specific linear slope system for two prescribed endpoint first derivatives.",
+  "geometry": "One-dimensional strictly increasing scalar knots and ordinate values in arbitrary coherent coordinate units; no spatial reconstruction is performed.",
+  "boundary": "Both endpoint first derivatives are prescribed; in-domain deriv selectors 0, 1 and 2 are qualified, while extrapolation and other selectors remain compatibility conventions.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Clamped cubic spline",
   "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",

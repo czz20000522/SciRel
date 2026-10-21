@@ -2,6 +2,20 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.generalized-expression-differentiation",
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Safe analytic density differentiation",
+   "Compile a restricted density expression into value and analytic first-derivative callables."
+  ],
+  "operation": [
+   "compile an analytic density and its derivative callable",
+   "expression -> callable density and derivative"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Only the restricted analytic expression syntax is supported.",
+  "device_scope": "generic"
+ },
  "taxonomy": [
   "kinetic",
   "plasma-wave",

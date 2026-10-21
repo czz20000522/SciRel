@@ -15,6 +15,20 @@
  "aliases": [
   "propagate_neutral_generation"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral generation propagation",
+   "Propagate one neutral generation (first-flight or scattered) bidirectionally through the spatial grid using the first-order upwind transport coefficients."
+  ],
+  "operation": [
+   "propagate one neutral generation by first-order upwind transport",
+   "vx, Ak/Bk/Fk/Ck/Dk/Gk, generation_kind, incoming_boundary or scattered_source -> generation distribution"
+  ],
+  "model": "the bidirectional first-order upwind propagation",
+  "geometry": "one spatial dimension, two velocity branches",
+  "boundary": "vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "bidirectional spatial propagation of one neutral generation using first-order upwind transport coefficients",
   "direction": "vx, Ak/Bk/Fk/Ck/Dk/Gk, generation_kind, incoming_boundary or scattered_source -> generation distribution",

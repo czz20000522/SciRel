@@ -14,6 +14,20 @@
  "aliases": [
   "mirror plasma flux Green matrix"
  ],
+ "discovery": {
+  "capability": [
+   "Reflection-symmetric plasma-cell flux Green matrix",
+   "Build the dense flux-response matrix for a uniformly spaced, Z-reflection-symmetric cylindrical grid."
+  ],
+  "operation": [
+   "mirror-symmetric plasma-grid flux-matrix construction",
+   "symmetric R-Z grid -> target-row/source-column flux response"
+  ],
+  "model": "Axisymmetric ideal circular-filament flux with symmetry-required grid validation.",
+  "geometry": "Rectilinear R-Z grid shared by target and source nodes.",
+  "boundary": "R is nonnegative and increasing; Z is increasing, uniform and symmetric about zero; axis-source columns and self entries are zero.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Mirror-symmetric plasma-grid flux matrix",
   "direction": "symmetric R,Z grid to target-row/source-column psi response",

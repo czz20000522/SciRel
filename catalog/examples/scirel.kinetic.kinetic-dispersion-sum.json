@@ -15,6 +15,20 @@
   "fluid conventional sum-n dispersion",
   "magnetized Maxwellian harmonic-sum determinant"
  ],
+ "discovery": {
+  "capability": [
+   "Finite-harmonic Maxwellian kinetic dispersion tensor",
+   "Assemble the x-z-plane kinetic dielectric tensor, Maxwell dispersion tensor and determinant for a magnetized Maxwellian species mixture using a finite cyclotron-harmonic sum."
+  ],
+  "operation": [
+   "assemble the finite-harmonic Maxwellian kinetic tensor",
+   "(B0, q_s, m_s, n_s, T_s, f, k_z, k_x, lmx) -> K, D, det(D) and derived scales"
+  ],
+  "model": "Truncated conventional cyclotron-harmonic sum for a homogeneous magnetized Maxwellian species mixture; analytic SciRel Faddeeva Z rather than a finite Weideman implementation",
+  "geometry": "Uniform background field along z with a real wavevector in the x-z plane; tensor axes are x, y, z",
+  "boundary": "Nonzero B0, f, kz and kx are required; all derived terms and the final tensors/determinant must be finite and representable. The harmonic cutoff is finite and caller-selected.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "SI species equilibrium and one real wave point to a complex kinetic dispersion tensor and determinant",
   "direction": "(B0, q_s, m_s, n_s, T_s, f, k_z, k_x, lmx) -> K, D, det(D) and derived scales",

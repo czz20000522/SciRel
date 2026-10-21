@@ -13,6 +13,20 @@
  "aliases": [
   "diff_12_central"
  ],
+ "discovery": {
+  "capability": [
+   "Nonuniform interior first and second derivatives",
+   "Differentiate a local quadratic at each interior abscissa of a nonuniform one-dimensional grid."
+  ],
+  "operation": [
+   "three-point unequal-spacing derivative operator",
+   "strictly increasing abscissa and matched values -> interior first and second derivatives"
+  ],
+  "model": "Three-point unequal-spacing local quadratic finite-difference operator.",
+  "geometry": "One-dimensional nonuniform abscissa and ordinate samples; only interior points are returned and no endpoint values are fabricated.",
+  "boundary": "N>=3 and strictly increasing finite x are required; endpoints, periodic stencils and noisy-data inference are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Nonuniform interior first and second derivatives",
   "direction": "Declared inputs to Interior first derivative",

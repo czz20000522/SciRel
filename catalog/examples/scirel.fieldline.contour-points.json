@@ -13,6 +13,20 @@
  "aliases": [
   "contour_points"
  ],
+ "discovery": {
+  "capability": [
+   "Contour field-line collection",
+   "Map each contour level to a list of fitted field-line objects."
+  ],
+  "operation": [
+   "contour levels and segments to a level-keyed line collection",
+   "contour object exposing levels and allsegs -> dictionary mapping each level to fitted field-line objects"
+  ],
+  "model": "Direct collection construction; no field reconstruction or contour topology repair.",
+  "geometry": "Planar contour segments and level labels; segment vertices use caller length units and levels use caller flux-label units.",
+  "boundary": "Each segment must be accepted by the FieldLine spline constructor; topology repair and physical flux-surface qualification are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Contour segment to FieldLine collection",
   "direction": "contour levels and segments to a level-keyed dictionary",

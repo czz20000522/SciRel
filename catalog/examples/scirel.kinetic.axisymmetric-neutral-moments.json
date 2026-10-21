@@ -16,6 +16,20 @@
  "aliases": [
   "reduce_axisymmetric_neutral_moments"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric neutral velocity-space moment reduction",
+   "Recover the density, axial flux and flow speed, pressure, temperature, diagonal stresses and random heat flux of an H or H2 one-dimensional-space, two-dimensional-axisymmetric velocity distribution, with the declared constants, cylindrical sigma_zz = sigma_yy identification, and empty-slice policies."
+  ],
+  "operation": [
+   "reduce an axisymmetric velocity distribution to its moments",
+   "distribution plus axes, volume, normalization and species scalars -> nine moment profiles"
+  ],
+  "model": "Discrete cylindrical velocity-space moment reduction of one distribution under thermal-speed normalization",
+  "geometry": "one-dimensional space, two-dimensional axisymmetric velocity space",
+  "boundary": "finite 3-D distribution aligned to the axes; finite positive volume; positive normalization temperature and mass; molecularity in {1, 2}; empty_slice_policy in {reject, source_default}",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the cylindrical velocity-space moment integrals of one distribution with thermal-speed normalization Vth = sqrt(2 e T_norm / (m_amu m_H))",
   "direction": "distribution plus axes, volume, normalization and species scalars -> nine moment profiles",

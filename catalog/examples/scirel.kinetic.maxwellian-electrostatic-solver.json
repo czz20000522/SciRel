@@ -1,5 +1,19 @@
 {
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Seeded Maxwellian electrostatic mode",
+   "Solve one complex Maxwellian mode with a residual-checked bounded root graph."
+  ],
+  "operation": [
+   "solve one seeded Maxwellian electrostatic mode",
+   "(k,initial_omega,controls)->mode"
+  ],
+  "model": "Same normalized Maxwellian electrostatic response as the companion operator",
+  "geometry": "Electrostatic one-dimensional wave",
+  "boundary": "Only the branch reached from the supplied seed is claimed.",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."

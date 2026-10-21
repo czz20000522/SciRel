@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_terminal_molecular_energy_transfer"
  ],
+ "discovery": {
+  "capability": [
+   "Terminal molecular energy-transfer reduction",
+   "Reduce a caller-supplied terminal H2 distribution, signed collision RHS and external molecular source to loss, thermal, momentum and total transfer profiles."
+  ],
+  "operation": [
+   "reduce terminal energy-transfer profiles",
+   "terminal (vr,vx,x) distribution, signed RHS and external source, normalized velocity nodes, mass, speed and quadrature -> four x profiles"
+  ],
+  "model": "Terminal H2 loss, momentum and energy-transfer diagnostic on an explicit collision RHS with an external molecular source",
+  "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
+  "boundary": "finite nonnegative nonempty three-dimensional terminal distribution; finite signed RHS of the same shape and signed external source [nx]; finite aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio, thermal speed and integrated density in every x cell",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "terminal H2 loss, momentum and energy-transfer reduction from an explicit RHS",
   "direction": "terminal (vr,vx,x) distribution, signed RHS and external source, normalized velocity nodes, mass, speed and quadrature -> four x profiles",

@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_generation_density"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral generation-density reduction",
+   "Reduce a (nvr, nvx, nx) neutral generation distribution to per-spatial-cell densities by the cylindrical quadrature sum of weight * distribution * dvx over both velocity axes, with the one-dimensional radial-weight projection path and uniform-column routing."
+  ],
+  "operation": [
+   "reduce a generation distribution to per-cell densities",
+   "one generation distribution plus cylindrical quadrature -> (nx,) densities"
+  ],
+  "model": "Discrete velocity-space density integral over the cylindrical quadrature",
+  "geometry": "zero-dimensional spatial cells with a 2-D cylindrical velocity quadrature",
+  "boundary": "distribution finite 3-D; weight finite nonnegative, one- or two-dimensional and aligned; dvx finite nonnegative aligned to the velocity axis",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "per-cell generation density: n[x] = sum over (vr, vx) of W(vr,vx) * f(vr,vx,x) * dvx[vx]",
   "direction": "one generation distribution plus cylindrical quadrature -> (nx,) densities",

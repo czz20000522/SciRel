@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.electromagnetism.arbitrary-points",
-   "source_sha256": "c3ee2a7bb94a8de77e8e86e1956655de87531973dd38099fd51bb894d5d0da30",
+   "source_sha256": "a1f2890e0f1a9cecf082db8aced3f844a8fe842e3c923f0962852fb2d65f8c55",
    "summary": "构造有限个带符号权重的圆电流丝源点，并计算依赖目标网格的场。",
    "definition": "有限个 (R,Z) 点共用一个电流标量，并带有无量纲有符号权重。",
    "model": "用 Green 核计算的轴对称理想圆电流丝。",
@@ -89,7 +89,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.brb",
-   "source_sha256": "e0ec4b7ed40ffb1bb87b657c919fefeb622fddfe4af34141876e3e1bd83935eb",
+   "source_sha256": "6dfdb60e4c4a3793e6f0eae396d9d23c30d3ce6ea3f919def4f3e1367298ac6c",
    "summary": "构造固定的 BRB 源组合：两组 88 点 TREX 线圈、两组 130 点矩形线圈，以及 36 个带符号的 16 点磁环。",
    "definition": "BRB 按属性顺序注册两组 TREXCoil、两组 RectangularCoil 和 36 个 MagnetRing 子对象。",
    "model": "采用声明常数的轴对称理想圆电流丝几何。",
@@ -148,7 +148,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.device",
-   "source_sha256": "701efeb75299e2f599415b47ddd17158e29e0460358cc0a108e3b33bf67fc7fd",
+   "source_sha256": "0f45380c64e8fa42963446b63b634ab9cb62cb1242cb34e12ee83e4419c02156",
    "summary": "组合有序的圆电流丝源，并用标量电流或逐子源电流对各自的 Green 响应做线性组合。",
    "definition": "Device 按赋值顺序保存 CurrentFilamentSet 子源，并对其 Green 矩阵做线性组合。",
    "model": "轴对称理想圆电流丝响应的线性叠加。",
@@ -214,7 +214,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.magnet-ring",
-   "source_sha256": "b7b56ef09ed927cf17200628e341e1c70236abe09315fcc554bbb3a9446e6c65",
+   "source_sha256": "9343e485a4bab81bbf7b1db42594275075dfc3b7f146007927d9a715bf365a86",
    "summary": "构造矩形永磁环截面的有符号双面 16 丝近似。",
    "definition": "两个径向面各放置 8 个轴向电流丝点，并使用相反的默认权重。",
    "model": "用轴对称理想圆电流丝近似几何。",
@@ -322,7 +322,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.rectangular-coil",
-   "source_sha256": "f4a875f0b8944fa808191fa95de7a6136f60f469ff9b04b5a925e1d6dfc76bf2",
+   "source_sha256": "133021b45369cf07261e42ee1f2a91c6bdb28c497ad669b22308c1e97c2f0d0f",
    "summary": "构造有序的矩形圆电流丝阵列，支持可选旋转，并继承电流与权重控制。",
    "definition": "生成 nr×nz 个中心点，径向索引在外、轴向索引在内。",
    "model": "轴对称理想圆电流丝源阵列。",
@@ -442,7 +442,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.trex-coil",
-   "source_sha256": "b7afe1589ba1a97a0fc61afa0493a671a05144340b241c4e62d699c2b0af7123",
+   "source_sha256": "0221c90305a4e4fe67ce126a587e6af49a404b9c7c479468bb0da54619f122fe",
    "summary": "构造固定的 88 点 TREX 线圈几何，并继承电流、权重、网格和场方法。",
    "definition": "五个径向列各含 16 个轴向点，第六列含 8 个轴向中点。",
    "model": "采用声明几何常数的轴对称理想圆电流丝点云。",
@@ -526,7 +526,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.wham",
-   "source_sha256": "48fc0f10af45cb321b26434300369d19b2c275c7534d591255916e72c5338cc6",
+   "source_sha256": "ef6f94b987437b23e30b8a55ac70cf67a2c7a00615eb54025c7bcf5cd0b2b035",
    "summary": "构造有序 WHAM 装置：四个矩形线圈依次含 32、32、10、10 条电流丝。",
    "definition": "WHAM 按 hts1、hts2、cc1、cc2 顺序注册四个矩形线圈子源。",
    "model": "轴对称理想圆电流丝几何。",
@@ -585,7 +585,7 @@
   },
   {
    "asset_id": "scirel.geometry.points-mesh",
-   "source_sha256": "60fd843068c41d9840f35b29a4a3ef32432ff649c1e5d6fee9a835c7aad1a13c",
+   "source_sha256": "44cda5482b9102bb7626781325ffa14a68925b338aeec032e1c5b55f57b57c45",
    "summary": "有限的非结构柱坐标点集。",
    "definition": "每对 rpts、zpts 值定义一个点。",
    "model": "非结构有限点集。",
@@ -651,7 +651,7 @@
   },
   {
    "asset_id": "scirel.geometry.r-chord",
-   "source_sha256": "5acddd55d836a81b0a1633e3e853cbfe9c59cfa6956a5b499aa0323aec3c3b44",
+   "source_sha256": "31001a6ed587852abcab543a4b127f065d30d11b55436377e7198ed839ece4b7",
    "summary": "在固定 Z 位置沿 R 变化的点列。",
    "definition": "径向坐标改变，轴向坐标保持常数。",
    "model": "柱坐标弦。",
@@ -715,7 +715,7 @@
   },
   {
    "asset_id": "scirel.geometry.rect-mesh",
-   "source_sha256": "365c08126adcf8781a3f1117d0a3f64e950284f2cfd6e8f12e92e087368bfbbf",
+   "source_sha256": "618581b20daf6ac13741680a7a81a2dbf6e48a5ea2226b094bfbf22dc2409be5",
    "summary": "柱坐标 R、Z 上的规则矩形网格。",
    "definition": "对独立 R、Z 边界构造 meshgrid。",
    "model": "规则矩形网格。",
@@ -808,7 +808,7 @@
   },
   {
    "asset_id": "scirel.geometry.spherical-r-chord",
-   "source_sha256": "7a274920e9d64b6431872b3307afdef69dcb5e70f1193350f3b2ca2616cf9d28",
+   "source_sha256": "863516717f293d84ea282228ad7e8e8a1d34ef0d3d13dedd4989bf56ccc79f1e",
    "summary": "在固定角度处改变球半径得到点列。",
    "definition": "按 R=r sinθ、Z=r cosθ 将球坐标输入映射为柱坐标。",
    "model": "球坐标到柱坐标的映射。",
@@ -873,7 +873,7 @@
   },
   {
    "asset_id": "scirel.geometry.theta-chord",
-   "source_sha256": "2233055c785a3808d51de1c13319b94100ed6ba6a620122ab5e56e2954e28d56",
+   "source_sha256": "4774f65e064ccd2c99134e584933132eb7370951006314caa769910d3d747b7a",
    "summary": "在固定球半径上随极角变化的一组点。",
    "definition": "R=r0 sin(theta)，Z=r0 cos(theta)。",
    "model": "极角坐标映射；由输入角度生成并以柱坐标保存。",
@@ -938,7 +938,7 @@
   },
   {
    "asset_id": "scirel.geometry.z-chord",
-   "source_sha256": "bb5d56c6b9d2d2ae604886853a89617d65a53bbef6e31bae3f764666435a7a30",
+   "source_sha256": "cbda87ec89d4911b4c3086d573242a5cc964e1d05fcc3bfd3daeddfe19d96343",
    "summary": "在固定 R 上随 Z 变化的一组点。",
    "definition": "Z 坐标变化，R 保持不变。",
    "model": "柱坐标弦。",
@@ -1002,7 +1002,7 @@
   },
   {
    "asset_id": "scirel.io.eqdsk-class",
-   "source_sha256": "aa9d0971422adf0647a1fa52eeda10f53a3c6267f8a72dbdd127f78b7ae320b2",
+   "source_sha256": "66c634fa0e1ee65fe882adf6bd23c7587abbcbe9f0f56d5c8f684dd619f4b294",
    "summary": "读写扩展 EQDSK 方言的可变映射封装。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
@@ -1070,7 +1070,7 @@
   },
   {
    "asset_id": "scirel.io.read-eqdsk",
-   "source_sha256": "891b8fa38d72e2613322ac47547938819a92489faab0ed7030cfe88dca41da22",
+   "source_sha256": "7fe24f029c6bbe7d1fa47ea25502dfb34c61d395477088da5de4e8ce4ae329eb",
    "summary": "解析一份已验证的扩展 EQDSK 文本文件。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
@@ -1143,7 +1143,7 @@
   },
   {
    "asset_id": "scirel.io.write-eqdsk",
-   "source_sha256": "397d4eb620fd473bd5fd3a59423a9414834401a16929928b8a05c263472ab7f5",
+   "source_sha256": "8f11b602111c8bf70aa99c5be386c5a4f78657c32ad06a8b9ec630a6b8f525ac",
    "summary": "序列化一个已验证的扩展 EQDSK 映射。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",

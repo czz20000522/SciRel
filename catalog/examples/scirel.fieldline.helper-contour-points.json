@@ -13,6 +13,20 @@
  "aliases": [
   "helper_contour_points"
  ],
+ "discovery": {
+  "capability": [
+   "Helper contour field-line collection",
+   "Map each contour level to a list of fitted helper field-line objects."
+  ],
+  "operation": [
+   "contour levels and segments to a level-keyed helper line collection",
+   "contour object exposing levels and allsegs -> dictionary mapping each level to fitted helper field-line objects"
+  ],
+  "model": "Direct collection construction without field reconstruction; helper lines expose interpolation and field-based curvature only.",
+  "geometry": "Planar contour segments and level labels; segment vertices use caller length units and levels use caller flux-label units.",
+  "boundary": "Each segment must be accepted by the HelperFieldLine spline constructor; topology repair, flux-gradient curvature and physical field-line qualification are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Contour segment to HelperFieldLine collection",
   "direction": "contour levels and segments to a level-keyed helper dictionary",

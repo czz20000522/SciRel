@@ -15,6 +15,20 @@
  "aliases": [
   "assemble_neutral_total_collision_frequency"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral total-loss collision frequency assembly",
+   "Assemble the neutral total-loss frequency alpha_c = optional Alpha_CX + base loss + Omega_EL + wall loss (2 vr / D broadcast over the grid) consumed by the spatial advance."
+  ],
+  "operation": [
+   "assemble the neutral total-loss collision frequency",
+   "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency"
+  ],
+  "model": "the total-loss assembly",
+  "geometry": "one radial and one axial velocity dimension over one spatial axis",
+  "boundary": "finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "alpha_c[vr,vx,x] = optional CX[vr,vx,x] + base[x] + elastic[x] + wall[vr,x], with wall = 2 vr / D[x] where D[x] > 0 and zero where D[x] = 0",
   "direction": "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency",

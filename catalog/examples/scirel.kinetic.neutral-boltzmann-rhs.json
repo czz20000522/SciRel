@@ -15,6 +15,20 @@
  "aliases": [
   "assemble_neutral_boltzmann_rhs"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral Boltzmann RHS assembly",
+   "Assemble the explicit neutral Boltzmann RHS: Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall) from the source terms, collision frequency, and total distribution."
+  ],
+  "operation": [
+   "assemble the neutral Boltzmann right-hand side",
+   "thermal speed plus six aligned 3-D fields -> Boltzmann RHS"
+  ],
+  "model": "the explicit Boltzmann RHS assembly",
+  "geometry": "two velocity dimensions over one spatial axis",
+  "boundary": "thermal speed finite and positive; all six fields finite 3-D arrays with one common shape",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall) on a shared 3-D mesh",
   "direction": "thermal speed plus six aligned 3-D fields -> Boltzmann RHS",

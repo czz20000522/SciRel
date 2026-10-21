@@ -15,6 +15,20 @@
  "aliases": [
   "anisotropic Picard current feedback"
  ],
+ "discovery": {
+  "capability": [
+   "Cell-current Picard relaxation with Green feedback",
+   "Mask a toroidal current-density grid, relax cell currents and project flux and field responses through caller-supplied dense Green matrices."
+  ],
+  "operation": [
+   "one explicit cell-current Picard feedback step using caller-provided dense linear Green responses",
+   "j_phi, grid, mask, prior current state, relax and Green matrices -> relaxed flux, field and current state"
+  ],
+  "model": "One explicit cell-current Picard feedback step with caller-provided dense linear Green responses.",
+  "geometry": "Strictly monotone rectilinear R-Z tensor grid with at least two nodes per axis; fields indexed [Z,R] with C-order Green row and column flattening.",
+  "boundary": "No wall or free-boundary condition is solved; supplied vacuum fields are the additive reference state.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "toroidal current density and prior cell-current state to relaxed Green-response flux and poloidal field",
   "direction": "j_phi, R-Z grid, mask, old currents, relaxation, Green matrices and vacuum state -> new psi, BR, BZ and current state",

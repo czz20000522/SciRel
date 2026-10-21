@@ -11,6 +11,20 @@
   "bootstrap"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Analytic parallel bootstrap current",
+   "Parallel current density from explicit pressure and logarithmic gradients with Sauter or Redl fit coefficients."
+  ],
+  "operation": [
+   "Evaluate the analytic parallel bootstrap current",
+   "explicit face profiles, gradients and fit coefficients -> parallel current density"
+  ],
+  "model": "Bounded analytic empirical tokamak fit (Sauter PoP 1999 Eq. 12 or Redl PoP 2021 Eq. 5); not a first-principles neoclassical solve.",
+  "geometry": "Caller-supplied axisymmetric tokamak face data on normalized radius rho and total flux psi (Wb); no device geometry is built in.",
+  "boundary": "The first current face at the magnetic axis is exactly zero and all other gradients are explicit; coefficients are evaluated for the supplied faces only.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Sauter PoP1999 Eq12 / Redl PoP2021 Eq5",
   "direction": "Explicit inputs to fit coefficients/current",

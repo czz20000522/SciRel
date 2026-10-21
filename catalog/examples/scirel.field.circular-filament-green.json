@@ -14,6 +14,20 @@
  "aliases": [
   "circular loop Green response"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric circular-filament Green response",
+   "Sum ordered weighted circular-filament responses at cylindrical target points."
+  ],
+  "operation": [
+   "weighted circular-filament Green superposition",
+   "source rows and target rows -> per-target psi, BR and BZ"
+  ],
+  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight and exact self conventions.",
+  "geometry": "Finite cylindrical source and target point tables.",
+  "boundary": "Exact positive-radius source/target coincidence is skipped as a discrete zero-self entry; axis targets retain analytic limits.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Weighted circular-filament Green superposition",
   "direction": "source rows and target rows to per-target psi, BR, and BZ",

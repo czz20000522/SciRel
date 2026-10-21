@@ -15,6 +15,20 @@
   "firehose tension margin",
   "mirror pressure-gradient margin"
  ],
+ "discovery": {
+  "capability": [
+   "Firehose and mirror pressure margins",
+   "Evaluate local gyrotropic firehose and mirror margins with an explicitly supplied fixed-flux derivative."
+  ],
+  "operation": [
+   "local gyrotropic no-flow tension and long-wavelength total-pressure-slope criteria",
+   "anisotropic pressures, magnetic-field samples and derivative information -> firehose and mirror margins with stability flags"
+  ],
+  "model": "Local gyrotropic no-flow tension and long-wavelength total-pressure-slope criteria; no author-confirmed erratum is asserted for the printed derivative-sign conflict.",
+  "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
+  "boundary": "An explicit derivative may be scalar, broadcastable or callable(B,psi); otherwise B must be strictly monotone along each constant-psi line with at least two samples, and constant-field data require explicit derivative information.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Anisotropic pressures and magnetic-field samples to two sampled margin criteria",
   "direction": "(p_parallel, p_perp, B, mu0) -> firehose_margin, mirror_margin, minima and positivity flags",

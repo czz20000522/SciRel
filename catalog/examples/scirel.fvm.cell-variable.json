@@ -11,6 +11,20 @@
   "finite-volume"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Cell variable and face reconstruction",
+   "Immutable one-dimensional cell samples with an explicit face grid and boundary data."
+  ],
+  "operation": [
+   "Construct cell samples and face reconstruction",
+   "explicit cell/face data -> spatial operator or state update"
+  ],
+  "model": "One-dimensional conservative finite-volume discretization with cell centers at arithmetic face midpoints.",
+  "geometry": "Explicit one-dimensional face grid; caller coordinate X increases in the positive direction; homogeneous unit cross-section unless metrics are supplied.",
+  "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; no hidden extrapolation.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Cell/face staggered reconstruction",
   "direction": "Explicit cell/face data to spatial operator or state update",

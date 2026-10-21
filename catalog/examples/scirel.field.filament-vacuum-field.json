@@ -14,6 +14,20 @@
  "aliases": [
   "filament vacuum field radial quadrature"
  ],
+ "discovery": {
+  "capability": [
+   "Circular-filament vacuum field on a cylindrical grid",
+   "Evaluate ideal circular-filament fields on a uniform rectilinear R-Z grid and integrate radial flux from the first radial node."
+  ],
+  "operation": [
+   "filament vacuum-field evaluation with radial flux integration",
+   "grid coordinates and filament currents -> psi, BR and BZ grids"
+  ],
+  "model": "Ideal circular-filament vacuum field with no near-axis cutoff.",
+  "geometry": "Rectilinear grid with the radial coordinate varying along exactly one array axis.",
+  "boundary": "The first radial node is the psi reference and the axis radial field is zero; source-target coincidence remains singular.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Filament vacuum field and radial flux integration",
   "direction": "grid coordinates and filament currents to psi, BR, and BZ grids",

@@ -11,6 +11,20 @@
   "bootstrap"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Redl bootstrap coefficients",
+   "Dimensionless Redl bootstrap fit coefficients from explicit face collisionalities."
+  ],
+  "operation": [
+   "Evaluate Redl bootstrap fit coefficients",
+   "explicit face collisionalities and profiles -> dimensionless coefficients"
+  ],
+  "model": "Bounded analytic empirical tokamak fit (Redl PoP 2021 Eqs. 10-16, 19-21).",
+  "geometry": "Caller-supplied axisymmetric tokamak face data on normalized radius rho and total flux psi (Wb); no device geometry is built in.",
+  "boundary": "Coefficient evaluation only; no current assembly and no magnetic-axis zeroing are performed.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Redl PoP2021 Eqs.10-16,19-21",
   "direction": "Explicit inputs to fit coefficients/current",

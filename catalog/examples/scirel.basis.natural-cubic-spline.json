@@ -13,6 +13,20 @@
  "aliases": [
   "NaturalCubicSpline"
  ],
+ "discovery": {
+  "capability": [
+   "Natural cubic spline",
+   "Callable piecewise-cubic Hermite interpolation with zero second derivatives at both endpoints."
+  ],
+  "operation": [
+   "natural-boundary C2 cubic-spline interpolation",
+   "strictly increasing knots and matched values -> callable spline with deriv=0/1/2 evaluation"
+  ],
+  "model": "C2 piecewise-cubic Hermite spline with vanishing second derivatives at both endpoints.",
+  "geometry": "One-dimensional strictly increasing scalar knots and ordinate values in arbitrary coherent coordinate units; no spatial reconstruction is performed.",
+  "boundary": "Second derivatives vanish at both endpoints; extrapolation and deriv selectors other than 0/1/2 remain compatibility conventions.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Natural cubic spline",
   "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",

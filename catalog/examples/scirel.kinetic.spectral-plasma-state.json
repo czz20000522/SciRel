@@ -14,6 +14,20 @@
  "aliases": [
   "initialize_plasma_state"
  ],
+ "discovery": {
+  "capability": [
+   "Effective multi-fluid plasma state",
+   "Derive a fresh state, diagnostics and dissipative reciprocal collision matrix."
+  ],
+  "operation": [
+   "derive the effective multifluid plasma state",
+   "species,unit,cfg -> species and plasma diagnostics"
+  ],
+  "model": "Effective local multi-fluid algebraic thermal state with externally supported background",
+  "geometry": "B0 along z; fixed z thermal director at B0=0",
+  "boundary": "Positive mass/density; B0 may be zero, beta then null; state is recreated independently of prior",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Primary multi-fluid data to a freshly derived plasma state and reciprocal collision generator",
   "direction": "species,unit,cfg -> species and plasma diagnostics",

@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Complex kinetic perpendicular-wavenumber roots",
+   "Solve the Ronnmark determinant for complex kx at each supplied angular frequency from one fixed seed."
+  ],
+  "operation": [
+   "solve the Ronnmark determinant for complex kx roots",
+   "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "boundary": "multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",
   "direction": "angular-frequency sequence and fixed kx seed to signed complex roots and exit diagnostics",

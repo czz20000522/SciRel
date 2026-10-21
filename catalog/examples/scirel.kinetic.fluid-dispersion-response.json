@@ -2,6 +2,20 @@
  "aliases": [
   "evaluate_fluid_dispersion"
  ],
+ "discovery": {
+  "capability": [
+   "Maxwell dispersion response",
+   "Evaluate determinant, dielectric K, Maxwell D and unchanged explicit state, with signed/zero-wavevector limits."
+  ],
+  "operation": [
+   "evaluate the Maxwell dispersion response",
+   "kx, state and method -> determinant, dielectric K, Maxwell D and explicit state"
+  ],
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "Genuine nonzero-residue cyclotron poles at zero kz; unmagnetized/zero-temperature/density/static-frequency limits."

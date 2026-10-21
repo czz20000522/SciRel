@@ -15,6 +15,20 @@
  "aliases": [
   "assemble_molecular_hydrogen_omega_frequencies"
  ],
+ "discovery": {
+  "capability": [
+   "Molecular hydrogen elastic Omega aggregation",
+   "Reduce molecular-hydrogen elastic momentum and stress moments per spatial cell into Omega coefficients, collision frequencies and definedness."
+  ],
+  "operation": [
+   "Aggregate molecular-hydrogen elastic Omega and collision frequencies",
+   "physical distribution, density, two signed Alpha channels, self-collision SIG, velocity weights and cell state -> collision moments, frequencies and status"
+  ],
+  "model": "Moment-matched BGK approximation for momentum and stress; not the full Boltzmann collision operator.",
+  "geometry": "Cylindrical (vr, vx) velocity carrier per spatial cell x with N = nvr*nvx Fortran-order matrix indexing; vr and vx normalized by Vth, with Vth, vxi and VxH in physical velocity units and no implicit conversion.",
+  "boundary": "Distributions finite and nonnegative, density and integration weights positive, axes strictly increasing, radii and Vth positive, and the density must equal the integral; a zero denominator in an enabled channel is reported through the returned status rather than silently replaced.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "molecular H2 elastic Omega_H2_P, Omega_H2_H and Omega_H2_H2 frequency aggregation",
   "direction": "physical distribution, density, two signed Alpha channels, self-collision SIG, velocity integration weights and explicit cell state -> collision moments, frequencies and status",

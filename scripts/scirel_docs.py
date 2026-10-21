@@ -20,7 +20,9 @@ from urllib.parse import parse_qs, urlsplit
 from packaging.version import InvalidVersion, Version
 
 from validate_asset_documents import load_document_set
-from build_scirel_sphinx import load_translations, render_site
+from build_scirel_sphinx import (LANGUAGE_TAGS, english_translation_gaps,
+                                handbook_english_skeleton, load_translations,
+                                render_site)
 from build_capability_matrix import build_matrix, render_markdown
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +34,11 @@ CAPABILITY_FILTER_ORDER = ('capability', 'operation', 'model', 'geometry',
                            'device_scope', 'alias', 'q')
 NOTICE = ('开发文档 · 按每条资产的版本与证据范围使用。文档收录不代表人工批准、'
           '全项目通过或公开发行；此快照不是单一 wheel 的安装清单。')
+NOTICE_EN = ('Development documentation · Use each asset according to its version and '
+             'evidence scope. Inclusion does not imply human approval, project-wide '
+             'acceptance or public release; this snapshot is not an installation '
+             'manifest for a single wheel.')
+LANGUAGES = tuple(LANGUAGE_TAGS)
 STATIC_FILES = {
     'presentation.js': 'text/javascript; charset=utf-8',
     'code.css': 'text/css; charset=utf-8',
@@ -365,13 +372,20 @@ def capability_record(document):
     }
 
 
-def capability_search_text(document, translation=None):
-    """Lexical recall text from the contract plus its bound Chinese reader.
+def capability_search_text(document, translation=None, *, language='zh'):
+    """Lexical recall text from the contract plus its bound reader layer.
 
+    The Chinese site also recalls the Chinese reader prose and the Chinese
+    title. The English site uses the English contract fields only (it has no
+    English reader layer), so Chinese queries do not match English pages.
     The reviewed discovery fields are included except ``aliases``: the
     top-level contract ``aliases`` list remains the only recall alias source,
     so a stray ``discovery.aliases`` key cannot become a second truth.
     """
+    if language not in LANGUAGES:
+        raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
+    if language == 'en' and translation is not None:
+        raise ValueError('English recall text does not consume a reader layer')
     identity = document['identity']
     discovery = document.get('discovery')
     reviewed = {}
@@ -383,7 +397,6 @@ def capability_search_text(document, translation=None):
     payload = [
         document['asset_id'],
         document['title']['en'],
-        document['title']['zh'],
         document['summary'],
         identity['relation'],
         identity['direction'],
@@ -403,14 +416,18 @@ def capability_search_text(document, translation=None):
         document['applicability'],
         document['verification'],
     ]
+    if language == 'zh':
+        payload.insert(2, document['title']['zh'])
     if translation is not None:
         payload.append([translation['summary'], translation['definition'],
                         translation['model'], translation['boundary']])
     return json.dumps(payload, ensure_ascii=False).lower()
 
 
-def build_capability_index(documents, *, source_revision, translations=None):
+def build_capability_index(documents, *, source_revision, translations=None, language='zh'):
     """Build the read-only capability index published inside a snapshot."""
+    if language not in LANGUAGES:
+        raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
     records = sorted((capability_record(document) for document in documents),
                      key=lambda item: item['asset_id'])
     ids = [record['asset_id'] for record in records]
@@ -422,7 +439,8 @@ def build_capability_index(documents, *, source_revision, translations=None):
     for document in documents:
         asset = document['asset_id']
         search_text[asset] = capability_search_text(
-            document, None if translations is None else translations[asset])
+            document, None if translations is None else translations[asset],
+            language=language)
     return {
         'schema': CAPABILITY_INDEX_SCHEMA,
         'source_revision': source_revision,
@@ -457,7 +475,10 @@ def build(documents: Path, output: Path, outline: Path | None = None,
           translation_paths: list[Path] | None = None,
           *, source_revision: str | None = None,
           source_dirty: bool | None = None,
-          documentation_version: str | None = None):
+          documentation_version: str | None = None,
+          language: str = 'zh'):
+    if language not in LANGUAGES:
+        raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
     docs = load_document_set(documents)
     if documentation_version is None:
         documentation_version = project_version()
@@ -475,30 +496,42 @@ def build(documents: Path, output: Path, outline: Path | None = None,
     dirty = source_dirty
     if dirty is None:
         dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT))
-    translations = load_translations(ROOT, documents, docs, translation_paths=translation_paths)
+    if language == 'zh':
+        translations = load_translations(ROOT, documents, docs,
+                                         translation_paths=translation_paths)
+    else:
+        if translation_paths is not None:
+            raise ValueError('English build does not consume Chinese reader bundles')
+        translations = None
     book = handbook_document({d['asset_id'] for d in docs}, outline)
+    if language == 'en':
+        book = handbook_english_skeleton(book)
     files = {}
     index = []
     for doc in docs:
         asset = doc['asset_id']
         files[f'records/{asset}.json'] = (documents / (asset + '.json')).read_bytes()
-        files[f'readers/{asset}.json'] = encode(translations[asset])
         summary = {k: doc[k] for k in ('asset_id', 'title', 'summary', 'taxonomy', 'aliases', 'version')}
         summary['public_api'] = doc['public_api']
-        summary['summary_zh'] = translations[asset]['summary']
         summary['evidence_ceiling'] = doc['verification']['evidence_ceiling']
         summary['known_limitations'] = doc['verification']['known_limitations']
-        # Lexical retrieval of existing scientific text, never generated semantics.
-        summary['search_text'] = json.dumps([doc, translations[asset]], ensure_ascii=False).lower()
+        if language == 'zh':
+            files[f'readers/{asset}.json'] = encode(translations[asset])
+            summary['summary_zh'] = translations[asset]['summary']
+            # Lexical retrieval of existing scientific text, never generated semantics.
+            summary['search_text'] = json.dumps([doc, translations[asset]], ensure_ascii=False).lower()
+        else:
+            summary['search_text'] = capability_search_text(doc, language='en')
         index.append(summary)
     files['index.json'] = encode(index)
     files['capabilities.json'] = encode(build_capability_index(
-        docs, source_revision=source, translations=translations))
-    files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
-    files['handbook.html'] = (ROOT / 'tools/docs/handbook.html').read_bytes()
+        docs, source_revision=source, translations=translations, language=language))
+    if language == 'zh':
+        files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
+        files['handbook.html'] = (ROOT / 'tools/docs/handbook.html').read_bytes()
+        for path in STATIC_FILES:
+            files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
     files['handbook.json'] = encode(book)
-    for path in STATIC_FILES:
-        files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
     expected_wheel_sha256 = None
     if bound_source is not None:
         current_path = ROOT / 'release/CURRENT.json'
@@ -508,31 +541,38 @@ def build(documents: Path, output: Path, outline: Path | None = None,
                 expected_wheel_sha256 = (
                     current.get('wheel', {}).get('artifact', {}).get('sha256')
                 )
-    files.update(chapter_files(
-        {d['asset_id'] for d in docs},
-        expected_source_revision=bound_source,
-        expected_project_version=project_version(),
-        expected_wheel_sha256=expected_wheel_sha256,
-    ))
-    chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
+    chapter = None
+    figure_files = None
+    if language == 'zh':
+        files.update(chapter_files(
+            {d['asset_id'] for d in docs},
+            expected_source_revision=bound_source,
+            expected_project_version=project_version(),
+            expected_wheel_sha256=expected_wheel_sha256,
+        ))
+        chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
+        figure_files = {name: files['chapters/magnetostatics/' + name]
+                        for name in ('single.svg', 'pair.svg', 'rectangle.svg')}
     matrix = build_matrix(docs, revision=source)
     files['capability-matrix.json'] = encode(matrix)
     files['CAPABILITY_MATRIX.md'] = render_markdown(matrix).encode('utf-8')
     files.update(render_site(
         ROOT, docs, book, translations, chapter,
-        figure_files={name: files['chapters/magnetostatics/' + name]
-                      for name in ('single.svg', 'pair.svg', 'rectangle.svg')},
-        matrix=matrix,
+        figure_files=figure_files, matrix=matrix, language=language,
     ))
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
                 'source_dirty': dirty,
                 'project_version': project_version(),
                 'documentation_version': documentation_version,
-                'asset_count': len(docs), 'notice': NOTICE,
-                'reader_language': 'zh-CN', 'human_renderer': 'sphinx-pydata',
+                'asset_count': len(docs),
+                'notice': NOTICE if language == 'zh' else NOTICE_EN,
+                'reader_language': LANGUAGE_TAGS[language],
+                'human_renderer': 'sphinx-pydata',
                 'validation': {'schema_and_dependency_closure': True,
                                'scientific_runtime_revalidated': False},
                 'files': {p: {'sha256': sha(b), 'bytes': len(b)} for p, b in sorted(files.items())}}
+    if language == 'en':
+        manifest['translation_gaps'] = english_translation_gaps(docs)
     manifest['snapshot_sha256'] = sha(encode(manifest))
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as tmp:
@@ -590,7 +630,7 @@ class Documentation:
                 'documentation_version': self.manifest.get(
                     'documentation_version', self.manifest.get('project_version')
                 ),
-                'notice': NOTICE, **items}
+                'notice': self.manifest.get('notice', NOTICE), **items}
 
     def search(self, q='', domain='', offset=0, limit=20, topic=''):
         if len(q) > 512 or offset < 0 or not 1 <= limit <= 100:
@@ -734,6 +774,8 @@ class Documentation:
         return self.envelope(document=json.loads(self.read(f'records/{asset_id}.json')))
 
     def reader(self, asset_id):
+        if f'readers/{asset_id}.json' not in self.manifest['files']:
+            raise KeyError('snapshot has no Chinese reader layer')
         result = self.asset(asset_id)
         result['translation'] = json.loads(self.read(f'readers/{asset_id}.json'))
         if result['translation']['source_sha256'] != sha(self.read(f'records/{asset_id}.json')):
@@ -792,10 +834,12 @@ class Documentation:
         if parsed.path == '/api' and not p:
             endpoints = {'search': '/api/search?q=&domain=&offset=0&limit=20',
                          'asset': '/api/asset?id=scirel.…',
-                         'reader': '/api/reader?id=scirel.…',
-                         'manifest': '/api/manifest',
-                         'chapters': '/api/chapters',
-                         'chapter': '/api/chapter?id=magnetostatics'}
+                         'manifest': '/api/manifest'}
+            if any(path.startswith('readers/') for path in self.manifest['files']):
+                endpoints['reader'] = '/api/reader?id=scirel.…'
+            if any(path.startswith('chapters/') for path in self.manifest['files']):
+                endpoints['chapters'] = '/api/chapters'
+                endpoints['chapter'] = '/api/chapter?id=magnetostatics'
             # Older snapshots have no generated capability index; do not
             # advertise an endpoint they cannot serve.
             if 'capabilities.json' in self.manifest['files']:
@@ -859,7 +903,7 @@ def server(docs, port):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     subs = parser.add_subparsers(dest='command', required=True)
-    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable'); b.add_argument('--source-revision', help='explicit full Git commit id for an archived source tree'); b.add_argument('--source-dirty', action='store_true', help='mark an explicitly bound source tree as dirty'); b.add_argument('--documentation-version', help='documentation editorial version on the compatible wheel release line')
+    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--language', choices=LANGUAGES, default='zh', help='site language: zh projects the Chinese reader layer; en projects the English contract fields with a skeleton guide'); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable'); b.add_argument('--source-revision', help='explicit full Git commit id for an archived source tree'); b.add_argument('--source-dirty', action='store_true', help='mark an explicitly bound source tree as dirty'); b.add_argument('--documentation-version', help='documentation editorial version on the compatible wheel release line')
     for name in ('query', 'serve'):
         sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
         if name == 'query':
@@ -874,7 +918,8 @@ def main():
         result = build(a.documents, a.output, a.outline, a.translations,
                        source_revision=a.source_revision,
                        source_dirty=bound_dirty,
-                       documentation_version=a.documentation_version)
+                       documentation_version=a.documentation_version,
+                       language=a.language)
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':

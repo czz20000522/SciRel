@@ -13,6 +13,20 @@
  "aliases": [
   "locs_to_vals_griddata"
  ],
+ "discovery": {
+  "capability": [
+   "Linear scattered field query",
+   "Interpolate a planar scalar field at query coordinate pairs with SciPy griddata linear interpolation."
+  ],
+  "operation": [
+   "linear scattered-data field interpolation",
+   "scattered planar samples, field values and query points -> interpolated field values"
+  ],
+  "model": "SciPy griddata with the linear method; no uncertainty model.",
+  "geometry": "Planar scattered samples and query points; coordinates use x column and y row or matched scattered arrays.",
+  "boundary": "No out-of-support interpolation is synthesized; queries inside the convex/interpolation support are required, and equivalence with nearest schemes on irregular grids is not asserted.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Field query SciPy griddata with linear default",
   "direction": "Declared inputs to Sampled values",

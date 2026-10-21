@@ -19,6 +19,20 @@
   "H-H elastic momentum-transfer cross section",
   "H-H viscosity cross section"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic-hydrogen elastic cross section",
+   "H-on-H momentum-transfer or viscosity elastic cross section in m^2 from collision energy in eV."
+  ],
+  "operation": [
+   "Evaluate the H-on-H elastic cross section",
+   "collision energies and branch selector -> cross section per energy"
+  ],
+  "model": "Two independent empirical five-coefficient fits (momentum transfer by default, viscosity under viscosity=True); no external-data interpolation and no rate integration.",
+  "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
+  "boundary": "Energies must be finite and nonnegative; values outside the fit range clip to the endpoints; the selector must be a zero-dimensional scalar; both fits are strictly positive and finite on their clipped domains.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the H-on-H elastic cross section (momentum-transfer or viscosity fit) as a function of collision energy",
   "direction": "collision energies and branch selector -> cross section per energy",

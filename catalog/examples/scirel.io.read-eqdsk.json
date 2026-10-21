@@ -14,6 +14,20 @@
  "aliases": [
   "read_eqdsk"
  ],
+ "discovery": {
+  "capability": [
+   "Read extended EQDSK",
+   "Parse one validated extended EQDSK text file into the class mapping."
+  ],
+  "operation": [
+   "Parse extended EQDSK text",
+   "extended EQDSK text -> validated dictionary/class state"
+  ],
+  "model": "Extended EQDSK text dialect with fixed-width record blocks and a declared grid-origin convention.",
+  "geometry": "nnr by nnz grid reconstructed as R = linspace(0, rbox) and Z = linspace(-zbox/2, zbox/2); R/Z values follow the source convention with units and COCOS unspecified.",
+  "boundary": "Unlike official EFIT G-EQDSK, this dialect has a 48-character title plus four integers, nnr/nnz/nnv, and no magnetic-axis scalar contract; strict/non-strict trailing-record handling applies.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Deterministic text serialization/deserialization of extended EQDSK records",
   "direction": "extended EQDSK text and validated dictionary/class state",

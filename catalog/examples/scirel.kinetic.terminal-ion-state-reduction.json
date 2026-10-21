@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_terminal_molecular_ion_state"
  ],
+ "discovery": {
+  "capability": [
+   "Terminal molecular-ion density and temperature",
+   "Reduce caller-supplied H2 and neutral densities, ion temperature and rate profiles to terminal H2+ density, temperature, dissociation and energy-exchange profiles."
+  ],
+  "operation": [
+   "reduce the terminal molecular-ion state",
+   "aligned x profiles and an eleven-channel reaction table -> four x profiles"
+  ],
+  "model": "terminal molecular-ion algebraic state reduction with caller-supplied rate table",
+  "geometry": "one-dimensional spatial cell profiles; no velocity-grid input or iteration",
+  "boundary": "finite aligned nonempty profiles; nonnegative molecular and neutral densities, ionization and loss rates, and eleven reaction channels; strictly positive ion temperature and mass ratio; both computed denominators finite and strictly positive",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "terminal H2+ density and temperature from explicit density, temperature and rate profiles",
   "direction": "aligned x profiles and an eleven-channel reaction table -> four x profiles",

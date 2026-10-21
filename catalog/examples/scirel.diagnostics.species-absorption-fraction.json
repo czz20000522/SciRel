@@ -16,6 +16,20 @@
   "Wdot species fractions",
   "E-star-dot-J species fractions"
  ],
+ "discovery": {
+  "capability": [
+   "Species absorption fraction closure",
+   "Close a four-species signed absorbed-power ledger into ordered percentage shares with exact rational evaluation."
+  ],
+  "operation": [
+   "stable signed summation and exact rational closure of a four-species power ledger",
+   "four absorbed-power values -> total power, ordered species percentages, fraction-sum residual and branch"
+  ],
+  "model": "Absorbed-power split across exactly four species.",
+  "geometry": "Not applicable; the relation is a per-ledger scalar closure with no spatial dependence.",
+  "boundary": "The mathematical total must be nonzero and its returned binary64 value finite; all returned percentages and their reported sum must be finite, and severe signed cancellation may make the returned sum differ from 100 percent.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "four-species absorbed-power ledger to caller-ordered percentage shares and the closure residual",
   "direction": "species_power_values -> total_power, species_fraction_percent, total_fraction_percent, fraction_sum_residual_percent, branch",

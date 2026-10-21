@@ -16,6 +16,20 @@
   "atomic SIG assembly",
   "assemble_atomic_hydrogen_collision_matrices"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic hydrogen four-family collision matrices",
+   "Assemble charge-exchange, two momentum-transfer and self-collision stress matrices on a cylindrical normalized velocity grid."
+  ],
+  "operation": [
+   "Assemble the four-family atomic-hydrogen collision matrices",
+   "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and accompanying geometry"
+  ],
+  "model": "Axisymmetric velocity-space integration kernels; momentum-transfer and viscosity cross sections use different isotope scalings.",
+  "geometry": "Cylindrical velocity space with a uniform midpoint azimuthal average (five points by default, n_theta explicitly increaseable); vr and vx are dimensionless v/Vth and source/target pairs flatten in Fortran order.",
+  "boundary": "vr positive and strictly increasing, vx strictly increasing, radial weights nonnegative, axial weights positive, Tnorm and mu positive and finite; vx need not cross zero; n_theta must be a positive integer; elastic matrices retain their sign.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "atomic H four-family normalized collision-kernel matrix assembly",
   "direction": "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and the accompanying geometry",

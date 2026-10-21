@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_molecular_scattered_sources"
  ],
+ "discovery": {
+  "capability": [
+   "Molecular scattered-source three-channel reduction",
+   "The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values."
+  ],
+  "operation": [
+   "sum the molecular scattered-generation source channels",
+   "three aligned source fields -> their pointwise sum in the declared order"
+  ],
+  "model": "the scattered-source aggregation",
+  "geometry": "two velocity dimensions over one spatial axis",
+  "boundary": "three finite aligned three-dimensional fields; signed values preserved",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Beta = Swall + Beta_CX + OmegaM pointwise on one (nvr,nvx,nx) mesh",
   "direction": "three aligned source fields -> their pointwise sum in the declared order",

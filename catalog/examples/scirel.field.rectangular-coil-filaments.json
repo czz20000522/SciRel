@@ -14,6 +14,20 @@
  "aliases": [
   "rectangular coil filaments"
  ],
+ "discovery": {
+  "capability": [
+   "Rectangular coil filament discretization",
+   "Discretize a rectangular coil section into ordered cylindrical filament centres with optional centroid rotation."
+  ],
+  "operation": [
+   "finite rectangular centre lattice represented by ideal circular-filament locations",
+   "coil centre, counts, spacings and angle -> ordered R,Z points"
+  ],
+  "model": "Finite rectangular centre lattice represented by ideal circular-filament locations.",
+  "geometry": "R-Z centre lattice optionally rotated about (r0,z0).",
+  "boundary": "Any generated radius below zero is rejected.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Rectangular coil filament discretization",
   "direction": "coil center, counts, spacings, and angle to ordered R,Z points",

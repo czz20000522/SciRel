@@ -14,6 +14,20 @@
  "aliases": [
   "vp_envelope"
  ],
+ "discovery": {
+  "capability": [
+   "Complex electric-field magnitude envelope",
+   "lndE=log(abs(E)); optional lndEe=log(abs(E[0]))+wi*(t-t0)."
+  ],
+  "operation": [
+   "compute the electric-field log-amplitude envelope",
+   "electric-field history and time base -> log-amplitude envelope"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "Finite strictly increasing time history; log of the field magnitude; no root or branch inference.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "lndE=log(abs(E)); optional lndEe=log(abs(E[0]))+wi*(t-t0).",
   "direction": "Inputs to vp_envelope -> result",

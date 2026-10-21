@@ -15,6 +15,20 @@
  "aliases": [
   "aggregate_elastic_regeneration_source"
  ],
+ "discovery": {
+  "capability": [
+   "Elastic regeneration-source channel aggregation",
+   "The channel-keyed elastic regeneration sum sum_q Omega_q[x] * M_q(vr,vx,x): each named channel contributes its one-dimensional frequency profile multiplied into its three-dimensional regenerated distribution."
+  ],
+  "operation": [
+   "aggregate elastic regeneration-source channels",
+   "named channel frequency profiles plus regenerated distributions -> one aggregated source"
+  ],
+  "model": "the channel aggregation",
+  "geometry": "two velocity dimensions over one spatial axis, one term per declared channel",
+  "boundary": "matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions on one shared velocity and spatial mesh",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Beta_EL = sum over channels q of Omega_q[x] * M_q[vr,vx,x]",
   "direction": "named channel frequency profiles plus regenerated distributions -> one aggregated source",

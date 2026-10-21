@@ -2,6 +2,20 @@
  "aliases": [
   "assemble_fluid_em"
  ],
+ "discovery": {
+  "capability": [
+   "Corrected finite rational EM matrix",
+   "Assemble the complete finite L/J matrix with restored conductivity polynomials and constrained source-table moments."
+  ],
+  "operation": [
+   "assemble the finite rational EM matrix",
+   "state, omega, pole order and harmonic cutoff -> finite rational EM kx eigenmatrix"
+  ],
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "No identity between finite fitted response and exact Bessel/Z kinetic dielectric."

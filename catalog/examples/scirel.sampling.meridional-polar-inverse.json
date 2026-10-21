@@ -14,6 +14,20 @@
  "aliases": [
   "transform_to_rhoz"
  ],
+ "discovery": {
+  "capability": [
+   "Inverse meridional polar projection",
+   "Map positive polar radius, angle and polar vector components to meridional rho, z and components."
+  ],
+  "operation": [
+   "inverse meridional polar transformation",
+   "r, theta and polar vector components -> rho, z and meridional vector components"
+  ],
+  "model": "Euclidean meridional coordinate transformation inverse to the forward basis, with theta in radians from +Z toward +rho and no magnetic-field model.",
+  "geometry": "Planar signed rho,Z coordinates with positive radius; caller-coherent length and vector units.",
+  "boundary": "The origin has no polar vector basis and is rejected; nonzero axis points are valid, and no physical field-null convention is inferred.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "rho=r sin(theta); z=r cos(theta); u_rho=u_r sin(theta)+u_theta cos(theta); u_z=u_r cos(theta)-u_theta sin(theta).",
   "direction": "r,theta,u_r,u_theta to rho,z,u_rho,u_z",

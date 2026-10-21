@@ -14,6 +14,20 @@
  "aliases": [
   "evaluate_spectral_dispersion"
  ],
+ "discovery": {
+  "capability": [
+   "Effective multi-fluid dispersion scan",
+   "Run the complete scan family through corrected operators with explicit state and limits."
+  ],
+  "operation": [
+   "run the effective multifluid dispersion scan",
+   "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting"
+  ],
+  "model": "Composition of fresh state, corrected local multi-fluid matrix and conditioned spectrum; the scan grids follow the declared method defaults",
+  "geometry": "x-z wavevector scans; B0 along z",
+  "boundary": "Entire scan bounded by max_points; failure aborts without partial scientific results; independent sorting is not branch continuation",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Complete bounded effective multi-fluid spectrum scan and terminal projection",
   "direction": "species,selectors,grids -> complete scan spectra, last-point matrices/state, plotting",

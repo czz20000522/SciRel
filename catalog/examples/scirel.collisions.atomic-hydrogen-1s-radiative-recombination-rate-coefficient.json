@@ -17,6 +17,20 @@
   "sigmav_rec_h1s",
   "H+ radiative recombination to H(1s)"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic-hydrogen 1s radiative recombination rate coefficient",
+   "Analytic H+ + e -> H(1s) + hv rate coefficient evaluated from electron temperature in eV."
+  ],
+  "operation": [
+   "Evaluate the H+ + e -> H(1s) radiative recombination rate coefficient",
+   "electron temperature in eV -> rate coefficient in m^3/s"
+  ],
+  "model": "Level-1 Storey-type analytic fit with fixed constants; no external-data interpolation or runtime cross-section integral.",
+  "geometry": "None; pointwise scalar or array material samples with no spatial axis inferred (coordinate: electron temperature in eV).",
+  "boundary": "Temperature must be finite and strictly positive; out-of-range values clip to the fit endpoints and the represented output must be finite and positive.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "H+ + e -> H(1s) + hv radiative recombination rate coefficient as a function of electron temperature",
   "direction": "electron temperature in eV -> rate coefficient in m^3/s",

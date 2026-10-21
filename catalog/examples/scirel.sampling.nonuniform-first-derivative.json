@@ -13,6 +13,20 @@
  "aliases": [
   "diff_central"
  ],
+ "discovery": {
+  "capability": [
+   "Nonuniform interior first derivative",
+   "Return the first interior derivative on a strictly increasing nonuniform one-dimensional grid."
+  ],
+  "operation": [
+   "shared quadratic nonuniform first-derivative operator",
+   "strictly increasing x and matched y -> interior first derivatives"
+  ],
+  "model": "Three-point unequal-spacing local quadratic finite-difference operator.",
+  "geometry": "One-dimensional nonuniform abscissa and ordinate samples with generic coherent coordinate and value units; only interior points are returned.",
+  "boundary": "N>=3 and strictly increasing finite x are required, with no fabricated endpoint values; periodic endpoints and noise inference are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Nonuniform interior first derivative",
   "direction": "Declared inputs to First interior derivative",

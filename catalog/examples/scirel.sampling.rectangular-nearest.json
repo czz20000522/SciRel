@@ -13,6 +13,20 @@
  "aliases": [
   "locs_to_vals"
  ],
+ "discovery": {
+  "capability": [
+   "Separable rectangular-grid nearest query",
+   "Choose the x column and y row independently nearest each query on a separable rectangular grid."
+  ],
+  "operation": [
+   "separable axis nearest-neighbor field query",
+   "separable planar grid, field values and query points -> sampled field values"
+  ],
+  "model": "Separable x/y axis nearest-neighbor selection; no interpolation.",
+  "geometry": "Planar separable rectangular grid with x column and y row coordinates; queries are ordered coordinate pairs.",
+  "boundary": "No out-of-support interpolation is synthesized; finite matched samples and in-support queries are required, and equivalence with geometric nearest on irregular grids is not asserted.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Field query Separable xy grid axis nearest-neighbor sampling",
   "direction": "Declared inputs to Sampled values",

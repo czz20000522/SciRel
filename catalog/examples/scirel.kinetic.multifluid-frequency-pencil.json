@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Multifluid frequency pencil",
+   "Assemble the corrected Maxwell-fluid generalized pencil, retaining physical SI coordinates and signed complex spatial wavevectors."
+  ],
+  "operation": [
+   "assemble the Maxwell-fluid frequency pencil",
+   "fluid equilibrium and wavevector -> generalized time-generator pencil"
+  ],
+  "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
+  "geometry": "k=(kx,0,kz), B0 along z.",
+  "boundary": "Local Fourier modes exp(i k.r-i omega t).",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Fluid equilibrium and wavevector to a generalized time-generator pencil",
   "direction": "forward assembly",

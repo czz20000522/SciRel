@@ -15,6 +15,20 @@
  "aliases": [
   "interp_scalarx"
  ],
+ "discovery": {
+  "capability": [
+   "Cross-mesh scalar interpolation",
+   "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings. The in-range mesh_b nodes must form one contiguous block; a non-contiguous selection fails closed with a named contract error."
+  ],
+  "operation": [
+   "interpolate a scalar profile onto another spatial mesh",
+   "profile and mesh_a nodes plus mesh_b nodes -> interpolated profile on mesh_b"
+  ],
+  "model": "the N5 H<->H2 seam interpolation",
+  "geometry": "one-dimensional spatial meshes",
+  "boundary": "finite real one-dimensional arrays; xa has at least two strictly increasing nodes and is aligned to fa; at least one in-range xb node; finite output. The in-range mesh_b nodes must form one contiguous block.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the interp_scalarx handoff: fb[k0:k1+1] = interp1d(xa, fa)(xb[okk]) with okk the mesh_b nodes inside the mesh_a range and zeros elsewhere",
   "direction": "profile and mesh_a nodes plus mesh_b nodes -> interpolated profile on mesh_b",

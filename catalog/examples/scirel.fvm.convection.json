@@ -11,6 +11,20 @@
   "finite-volume"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Conservative power-law convection",
+   "Assemble the power-law convection operator -d/dx(v u) = M u + b with selectable boundary flux conventions."
+  ],
+  "operation": [
+   "Assemble conservative power-law convection",
+   "explicit cell/face data -> spatial operator or state update"
+  ],
+  "model": "One-dimensional conservative finite-volume discretization with selectable power-law convection and boundary flux conventions.",
+  "geometry": "Explicit one-dimensional face grid; caller coordinate X increases in the positive direction; homogeneous unit cross-section unless metrics are supplied.",
+  "boundary": "One scalar Dirichlet value or positive-coordinate Neumann gradient at each end; no hidden extrapolation.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "-d/dx(v u)=M u+b",
   "direction": "Explicit cell/face data to spatial operator or state update",

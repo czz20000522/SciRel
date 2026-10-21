@@ -16,6 +16,20 @@
  "aliases": [
   "reduced Hall magnetic feedback"
  ],
+ "discovery": {
+  "capability": [
+   "Reduced Hall anisotropic Picard equilibrium",
+   "Iterate an axisymmetric flux through a caller-owned pressure closure, reduced Hall relation and dense Green update."
+  ],
+  "operation": [
+   "axisymmetric reduced Hall and gyrotropic-pressure Picard feedback with caller-bound closure",
+   "R-Z grid, vacuum flux, Green response, pressure closure and ion properties -> terminal flux, Hall state and diagnostics"
+  ],
+  "model": "Axisymmetric reduced Hall and gyrotropic-pressure Picard feedback with caller-bound closure.",
+  "geometry": "Rectilinear cylindrical R-Z mesh with at least three nodes per axis; arrays indexed [Z,R] with the bound Picard update's C-order cell-current convention.",
+  "boundary": "The field operator applies axis and one-sided grid-derivative rules; no free-boundary reconstruction is performed and vacuum flux and Green response are caller supplied.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "caller-supplied pressure state and reduced Hall current to axisymmetric Green-feedback magnetic flux",
   "direction": "R-Z grid, vacuum flux, dense Green response, pressure_closure and ion properties -> terminal flux, Hall state, field, pressure and diagnostics",

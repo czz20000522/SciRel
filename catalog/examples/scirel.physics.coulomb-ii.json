@@ -14,6 +14,20 @@
  "aliases": [
   "calculate_log_lambda_ii"
  ],
+ "discovery": {
+  "capability": [
+   "Ion-ion Coulomb logarithm",
+   "Sauter/NRL ion-ion Coulomb logarithm from ion temperature in keV, ion density in m^-3 and charge state."
+  ],
+  "operation": [
+   "Evaluate the Sauter/NRL ion-ion Coulomb logarithm",
+   "ion temperature, density and charge -> dimensionless logarithm"
+  ],
+  "model": "Sauter/NRL Coulomb-log relation ln Lambda = 30 - 0.5 ln(n_i) + 1.5 ln(1000 T_i) - 3 ln(Z_i) with explicit numeric boundary checks.",
+  "geometry": "Homogeneous plasma point with all three input arrays broadcast; no spatial geometry is inferred.",
+  "boundary": "T_i in keV, n_i in m^-3 and Z_i must be finite and strictly positive.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "lnΛ=30-0.5 ln(n_i)+1.5 ln(1000*T_i)-3 ln(Z_i)",
   "direction": "ion temperature, density and charge -> dimensionless logarithm",

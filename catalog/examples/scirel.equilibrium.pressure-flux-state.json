@@ -15,6 +15,20 @@
  "aliases": [
   "midplane pressure spline state"
  ],
+ "discovery": {
+  "capability": [
+   "Exact-midplane pressure-flux state",
+   "Sample radial pressure on the exact Z=0 row, fit it against the increasing flux prefix and return a clipped derivative and spline state."
+  ],
+  "operation": [
+   "axisymmetric isotropic cubic pressure-flux construction with physical radial traversal",
+   "R-Z grid, psi and P(R) -> pressure-of-psi representation, flattened derivative and zero-current state"
+  ],
+  "model": "Axisymmetric isotropic cubic pressure-flux construction with an exactly reconstructible fit.",
+  "geometry": "Two-dimensional cylindrical R-Z sample arrays with one complete exact Z=0 row; arrays indexed [Z,R] and output vectors flattened in C order.",
+  "boundary": "The first exact zero P(R) sample is the limiter and sets psi_edge; the derivative is zero beyond psi_edge and at true plasma-mask entries, and the spline uses zero extrapolation.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "midplane pressure P(R) and flux psi(R,Z) to pressure-flux spline and dP/dpsi",
   "direction": "R-Z grid, psi and P(R) -> pressure-of-psi representation, flattened derivative and zero-current state",

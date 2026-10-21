@@ -19,6 +19,20 @@
   "H2-H2+ charge-exchange cross section",
   "molecular Janev charge-exchange fit"
  ],
+ "discovery": {
+  "capability": [
+   "Molecular-hydrogen charge-exchange cross section",
+   "H2 + H2+ charge-exchange cross section in m^2 from collision energy in eV."
+  ],
+  "operation": [
+   "Evaluate the H2 + H2+ charge-exchange cross section",
+   "collision energies -> cross section per energy"
+  ],
+  "model": "Single declared Janev nine-coefficient logarithmic-polynomial fit; no alternative branch, external-data interpolation or rate integration.",
+  "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
+  "boundary": "Energies must be finite and nonnegative; values outside the [0.1, 2.01e4] eV fit range clip to the endpoints; the fit is strictly positive and finite on its clipped domain.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the H2 + H2+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4",
   "direction": "collision energies -> cross section per energy",

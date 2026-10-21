@@ -15,6 +15,20 @@
   "Frank-Egedal hot-ion moments",
   "loss-cone hot-ion pressure shapes"
  ],
+ "discovery": {
+  "capability": [
+   "Frank-Egedal hot-ion velocity and pitch moments",
+   "Integrate one explicitly defined nonnegative reference population over a common speed domain for density and both pressure moments."
+  ],
+  "operation": [
+   "integrate hot-ion reference-population moments",
+   "(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode) -> normalized_field, xi_tp_mid, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, quadrature"
+  ],
+  "model": "Mathematical moments of the stated nonnegative part of a finite-mode reference distribution. It is not an independently established exact Frank-Egedal kinetic solution or measured plasma population.",
+  "geometry": "A positive two-dimensional local magnetic-field magnitude on caller-supplied [Z,R] samples; no field-line geometry or spatial metric is computed.",
+  "boundary": "Common s_min=velocity_lower, falling back to legacy perp_velocity_lower, then zero; 0<=s_min<1. For b<1, inaccessible reference orbits xi<sqrt(1-b) carry zero supplied population, instead of clipping imaginary xi0 to zero. For vc=0,s_min=0 a nonzero nonnegative density diverges logarithmically and is rejected.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Local magnetic-field magnitude and source angular modes to normalized hot-ion density and pressure shapes",
   "direction": "(magnetic_field, params, degrees, source_coefficients, legendre_terms, fractional_mode) -> normalized_field, xi_tp_mid, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, quadrature",

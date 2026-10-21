@@ -14,6 +14,20 @@
  "aliases": [
   "flux-surface inverse-field average"
  ],
+ "discovery": {
+  "capability": [
+   "Inverse-field path measure and weighted mean",
+   "Integrate dl/B along a caller-supplied R-Z polyline and optionally average a scalar with the same weight."
+  ],
+  "operation": [
+   "trapezoidal inverse-field quadrature with optional weighted scalar average",
+   "R-Z field grid, positive B magnitude, path points and optional quantity -> dl/B and optional weighted mean"
+  ],
+  "model": "Two-dimensional sampled-field interpolation and discrete inverse-B path quadrature.",
+  "geometry": "Ordered R-Z polyline inside a rectilinear cylindrical grid; path order is supplied by the caller.",
+  "boundary": "Path points lie inside the closed grid rectangle and adjacent points differ; no automatic closure or periodic wrap is applied.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "R-Z magnetic-field grid and ordered polyline to inverse-field path measure and optional weighted scalar mean",
   "direction": "rectilinear R-Z grids, positive B magnitude, path points and optional quantity -> dl_B and optional flux_surface_average",

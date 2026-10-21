@@ -31,6 +31,20 @@
  "aliases": [
   "SphericalRChord"
  ],
+ "discovery": {
+  "capability": [
+   "Spherical radial chord",
+   "Generate points varying spherical radius at a fixed polar angle, stored as cylindrical R,Z."
+  ],
+  "operation": [
+   "spherical-to-cylindrical coordinate map",
+   "rpts and theta0 -> cylindrical R,Z points"
+  ],
+  "model": "Spherical-to-cylindrical coordinate map.",
+  "geometry": "Spherical radius varied at fixed angle; output stored in cylindrical R-Z.",
+  "boundary": "Angles are degrees.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Spherical radial coordinate relation",
   "direction": "rpts,theta0 to cylindrical R,Z",

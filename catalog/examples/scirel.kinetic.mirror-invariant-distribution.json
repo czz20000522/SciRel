@@ -15,6 +15,20 @@
   "invariant guiding-centre distribution",
   "two-plug bi-Maxwellian loss-cone distribution"
  ],
+ "discovery": {
+  "capability": [
+   "Mirror invariant bi-Maxwellian distribution",
+   "Evaluate a reference bi-Maxwellian phase-space density from energy and magnetic moment, optionally multiplying by a two-plug loss-cone occupation with fractional refill."
+  ],
+  "operation": [
+   "evaluate the mirror invariant bi-Maxwellian distribution",
+   "(v_parallel, v_perpendicular, B, psi, phi, species/reference profiles, optional two-plug state) -> f0, energy, magnetic moment, occupation"
+  ],
+  "model": "Invariant guiding-centre gyrotropic bi-Maxwellian with a source-defined two-plug loss-cone occupation; it evaluates a prescribed distribution and does not solve fields or moments.",
+  "geometry": "Local positive magnetic-field magnitude and optional positive left/right plug magnitudes; no field-line trajectory or spatial metric is reconstructed.",
+  "boundary": "Both plug fields must be supplied together. No plugs give full occupation regardless of refill; with plugs the lower of the two energy barriers determines the strict trapped condition. The default refill is zero, an empty loss cone for particles at or above the barrier.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Local velocity, field and potential with a reference bi-Maxwellian state to invariant distribution and particle invariants",
   "direction": "(v_parallel, v_perpendicular, B, psi, phi, species/reference profiles, optional two-plug state) -> f0, energy, magnetic moment, occupation",

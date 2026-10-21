@@ -2,6 +2,20 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.generalized-hilbert",
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Analytic expression Hilbert transforms",
+   "Evaluate a safe analytic expression and its derivative transforms."
+  ],
+  "operation": [
+   "evaluate analytic expression Hilbert transforms",
+   "analytic expression, density and integration mesh, z -> Z(z) and Z'(z)"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "device_scope": "generic"
+ },
  "taxonomy": [
   "kinetic",
   "plasma-wave",

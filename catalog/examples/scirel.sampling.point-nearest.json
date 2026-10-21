@@ -13,6 +13,20 @@
  "aliases": [
   "locs_to_vals1D"
  ],
+ "discovery": {
+  "capability": [
+   "Geometric nearest field query",
+   "Choose the flattened sample with minimum squared coordinate distance to each query point."
+  ],
+  "operation": [
+   "geometric nearest-sample field query",
+   "matched planar sample arrays, field values and query points -> sampled field values"
+  ],
+  "model": "Geometric nearest-neighbor selection in matched planar coordinates; no interpolation.",
+  "geometry": "Planar matched sample points with x column and y row coordinates, or matched scattered arrays; queries are ordered coordinate pairs.",
+  "boundary": "No out-of-support interpolation is synthesized; finite matched samples and queries inside the convex/interpolation support are required, and equivalence with the rectangular scheme on irregular grids is not asserted.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Field query Geometric nearest sample on any matching planar arrays",
   "direction": "Declared inputs to Sampled values",

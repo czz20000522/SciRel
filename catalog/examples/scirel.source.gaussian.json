@@ -12,6 +12,20 @@
   "radial"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Volume-normalized Gaussian profile",
+   "Discrete volume-normalized Gaussian source profile on a nonuniform normalized-radius cell grid."
+  ],
+  "operation": [
+   "Build a volume-normalized Gaussian radial profile",
+   "(rho_norm, vpr, drho_norm, center, width, total) -> profile"
+  ],
+  "model": "Discrete normalized radial source shape with denominator floor max(2 width^2, float64 tiny) and exact supplied-volume normalization; extended intermediate arithmetic.",
+  "geometry": "Normalized radial cell grid with explicit volume metric and quadrature weights; rho_norm is a dimensionless normalized radius.",
+  "boundary": "Discrete cell-volume sum with no extrapolation or hidden endpoint reconstruction; the supplied total sets the volume normalization.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Discrete Gaussian source with denominator floor max(2 width^2, float64 tiny) and exact supplied-volume normalization",
   "direction": "(rho_norm,vpr,drho_norm,center,width,total) -> profile",

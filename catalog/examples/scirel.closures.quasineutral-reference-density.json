@@ -15,6 +15,20 @@
   "n_e,ref = Z_i n_i,ref",
   "electron reference density"
  ],
+ "discovery": {
+  "capability": [
+   "Quasineutral reference electron density",
+   "Multiply a positive-ion reference number density by its charge-state multiplier to obtain the electron reference density."
+  ],
+  "operation": [
+   "single positive-ion quasineutral reference relation",
+   "ion reference number density and charge-state multiplier -> electron reference number density"
+  ],
+  "model": "Single positive-ion quasineutral reference relation; no kinetic moment or potential solve.",
+  "geometry": "No geometry imposed; each broadcast cell is evaluated independently.",
+  "boundary": "Finite nonnegative ion density and finite positive charge-state multiplier; zero density is valid and a nonfinite product fails.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "single positive-ion reference electron number density from ion number density and charge state",
   "direction": "ion reference number density and charge-state multiplier -> electron reference number density",

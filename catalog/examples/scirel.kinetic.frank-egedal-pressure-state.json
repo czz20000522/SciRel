@@ -15,6 +15,20 @@
   "Frank-Egedal pressure assembly",
   "anisotropic hot-ion pressure state"
  ],
+ "discovery": {
+  "capability": [
+   "Frank-Egedal pressure and density state assembly",
+   "Combine a radial envelope, dimensionless hot-ion moment shapes and supplied gas, density and electron-energy scales into parallel/perpendicular pressures and optional density and electron-temperature fields."
+  ],
+  "operation": [
+   "assemble the Frank-Egedal pressure and density state",
+   "(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, params) -> p_parallel, p_perp, density, electron_temperature"
+  ],
+  "model": "Pointwise Frank-Egedal pressure-state assembly from externally computed shape fields; it does not calculate the source-mode moments, radial envelope or electron temperature.",
+  "geometry": "Aligned two-dimensional [Z,R] sample fields; no field or spatial geometry is reconstructed.",
+  "boundary": "No boundary condition is evaluated. Every shape field must exactly match psi, without NumPy broadcasting or spatial interpolation.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Aligned radial and hot-ion shape fields plus physical scales to anisotropic pressure, density and electron-energy state",
   "direction": "(psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, params) -> p_parallel, p_perp, density, electron_temperature",

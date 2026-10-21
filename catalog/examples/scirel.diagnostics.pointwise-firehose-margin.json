@@ -15,6 +15,20 @@
   "pointwise firehose discriminant",
   "firehose margin without mirror branch"
  ],
+ "discovery": {
+  "capability": [
+   "Pointwise firehose pressure margin",
+   "Calculate the pointwise firehose margin B^2/mu0 + p_perp - p_parallel for anisotropic pressure and magnetic-field samples."
+  ],
+  "operation": [
+   "elementwise local fluid firehose discriminant in pressure units",
+   "parallel and perpendicular pressures plus magnetic-field samples -> pointwise firehose margin"
+  ],
+  "model": "Local fluid (CGL-ordering) firehose discriminant in pressure units; not a stability label, a complete firehose criterion or a mirror-instability statement.",
+  "geometry": "No spatial grid geometry is used; array dimensions preserve sample layout only.",
+  "boundary": "Empty samples are rejected; the exact relation is evaluated before final float64 rounding and unrepresentable margins fail, with no cross-sample duplicate-B rule.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Anisotropic pressures and magnetic-field samples to the pointwise firehose margin only",
   "direction": "(p_parallel, p_perp, B, mu0) -> firehose_margin",

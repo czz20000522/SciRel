@@ -14,6 +14,20 @@
  "aliases": [
   "isotropic pressure-flux fixed point"
  ],
+ "discovery": {
+  "capability": [
+   "Isotropic pressure-flux Picard equilibrium",
+   "Solve bounded axisymmetric isotropic pressure-current feedback with flux and terminal current-closure residuals."
+  ],
+  "operation": [
+   "shared bounded dual-residual Picard solver for isotropic pressure-current feedback",
+   "midplane radial pressure, vacuum flux and Green response -> flux, cell currents and P(psi) representation"
+  ],
+  "model": "Axisymmetric isotropic pressure-only discrete closure using the shared bounded dual-residual solver.",
+  "geometry": "Uniform rectilinear cylindrical R-Z grid with one complete exact Z=0 row; [Z,R] arrays and C-order Green row and column order.",
+  "boundary": "The first exact zero of the radial midplane pressure samples defines the pressure edge, and the pressure spline extrapolates to zero outside its sampled flux interval.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "midplane radial pressure, vacuum flux and cell-current Green response to an isotropic pressure-driven flux state",
   "direction": "R-Z grid, P(R), vacuum flux, Green matrix and Picard controls -> flux, cell currents, P(psi) representation and convergence diagnostics",

@@ -13,6 +13,20 @@
  "aliases": [
   "flux_surface_avg"
  ],
+ "discovery": {
+  "capability": [
+   "B-weighted line reduction",
+   "Return integral(1/B ds), or integral(Q/B ds)/integral(1/B ds) when a quantity is supplied."
+  ],
+  "operation": [
+   "field-weighted polyline integral and weighted average",
+   "rectangular R-Z grids, positive B, ordered path vertices and optional Q -> scalar inverse-field integral or Q-weighted average"
+  ],
+  "model": "Rectangular-spline sampling along the path plus trapezoidal polygonal quadrature over explicit chord arclength.",
+  "geometry": "Planar rectangular R-Z grid and ordered planar path; coordinates are xy grid axes with explicit chord arclength, and no line closing or toroidal geometric factor is applied.",
+  "boundary": "Finite positive B along a finite interior path and matching finite Q when supplied are required; zero or nonfinite B and outside-support queries are excluded, and physical flux-volume or closed-surface interpretation is unqualified.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "B-weighted line reduction",
   "direction": "Declared inputs to Scalar weighted integral or average",

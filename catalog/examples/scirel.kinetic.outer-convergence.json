@@ -15,6 +15,20 @@
  "aliases": [
   "evaluate_outer_convergence"
  ],
+ "discovery": {
+  "capability": [
+   "Top-level outer convergence",
+   "Evaluate the top-level outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate."
+  ],
+  "operation": [
+   "evaluate the top-level outer convergence test",
+   "previous and current outer-pass molecular density profiles plus truncate -> top-level reentry decision"
+  ],
+  "model": "the top-level outer-pass ratio-of-max relation with truncate threshold and fail-closed domain tightenings",
+  "geometry": "one spatial axis for two aligned density profiles",
+  "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Evaluate the top-level outer-pass convergence: compares molecular density before/after an outer pass, re-enters while relative change exceeds truncate.",
   "direction": "previous and current outer-pass molecular density profiles plus truncate -> top-level reentry decision",

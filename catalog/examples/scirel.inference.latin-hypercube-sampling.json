@@ -14,6 +14,20 @@
  "aliases": [
   "stratified inversion initial design"
  ],
+ "discovery": {
+  "capability": [
+   "Seeded Latin-hypercube parameter samples",
+   "One independently permuted stratum per fitted parameter, returned as bounded parameter dictionaries for inversion initialization."
+  ],
+  "operation": [
+   "Generate seeded Latin-hypercube parameter samples",
+   "bounds, n_samples, seed and fit_keys -> initial_samples"
+  ],
+  "model": "Independent-coordinate Latin-hypercube initialization, not a posterior or uncertainty model.",
+  "geometry": "Rectangular continuous parameter domain; each fit key is one independent parameter axis and no spatial geometry is assumed.",
+  "boundary": "Every selected interval must have finite low < high; samples lie at or above low and below high under ordinary finite arithmetic.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "parameter intervals and sample count to a stratified initial parameter design",
   "direction": "bounds, n_samples, seed and fit_keys -> initial_samples",

@@ -44,6 +44,20 @@
  "aliases": [
   "WHAM"
  ],
+ "discovery": {
+  "capability": [
+   "WHAM filament geometry",
+   "Fixed WHAM device with four rectangular coils containing 32, 32, 10 and 10 filaments."
+  ],
+  "operation": [
+   "Construct the fixed WHAM source composition",
+   "configuration constructor -> ordered child sources"
+  ],
+  "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
+  "geometry": "Four rectangular source lattices in cylindrical R,Z coordinates; R,Z in metres, currents in amperes and weights dimensionless.",
+  "boundary": "Fixed geometry only; it does not calibrate the experimental device.",
+  "device_scope": "device-bound"
+ },
  "identity": {
   "relation": "Fixed WHAM source composition",
   "direction": "configuration constructor to ordered child sources",

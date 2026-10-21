@@ -14,6 +14,20 @@
  "aliases": [
   "calculate_main_ion_dilution_factor"
  ],
+ "discovery": {
+  "capability": [
+   "Main-ion dilution factor",
+   "Main-ion dilution fraction for one main and one impurity charge state."
+  ],
+  "operation": [
+   "Evaluate the main-ion dilution factor",
+   "charge states -> dimensionless main-ion density fraction"
+  ],
+  "model": "Main-ion dilution relation d = (Z_impurity - Z_eff)/(Z_i (Z_impurity - Z_i)) with explicit numeric boundary checks.",
+  "geometry": "Charge-state composition with broadcast impurity and effective-charge arrays and a scalar main charge; no spatial geometry.",
+  "boundary": "Zi and Zimp must be finite and strictly positive and distinct, with Zeff between the two charge states.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "d=(Z_impurity-Z_eff)/(Z_i*(Z_impurity-Z_i))",
   "direction": "charge states -> dimensionless main-ion density fraction",

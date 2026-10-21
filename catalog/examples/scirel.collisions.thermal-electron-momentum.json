@@ -17,6 +17,20 @@
   "thermal electron momentum scale",
   "sqrt(2T/mc2)"
  ],
+ "discovery": {
+  "capability": [
+   "Thermal electron normalized momentum",
+   "Non-relativistic thermal-electron normalized momentum p_Te = sqrt(2T/mc^2), a dimensionless speed ratio rather than a velocity."
+  ],
+  "operation": [
+   "Evaluate the thermal-electron normalized momentum",
+   "temperature_kev, restmkev -> p_Te"
+  ],
+  "model": "Independent closed-form definition, not a fit; dangerous intermediates are evaluated at high precision beyond binary64, with no automatic unit conversion.",
+  "geometry": "Not applicable; scalar algebraic evaluation with no spatial axis.",
+  "boundary": "The positive temperature-to-rest-energy ratio may underflow before the square root; the fallback preserves a representable positive root, and only a final value outside the binary64 range is rejected.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the thermal-electron normalized momentum p_Te as a function of the electron temperature and the electron rest energy",
   "direction": "temperature_kev, restmkev -> p_Te",

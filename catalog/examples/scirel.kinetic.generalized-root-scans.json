@@ -2,6 +2,20 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.generalized-root-scans",
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Seeded electrostatic root scans",
+   "Run all four seeded electrostatic root scans."
+  ],
+  "operation": [
+   "run seeded electrostatic root scans",
+   "seeded guesses and k values -> converged electrostatic roots"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "device_scope": "generic"
+ },
  "taxonomy": [
   "kinetic",
   "plasma-wave",

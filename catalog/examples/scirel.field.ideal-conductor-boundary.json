@@ -14,6 +14,20 @@
  "aliases": [
   "boundary Green flux cancellation"
  ],
+ "discovery": {
+  "capability": [
+   "Ideal-conductor boundary flux correction",
+   "Solve a truncated-SVD boundary-source system and add its Green correction to field-point flux."
+  ],
+  "operation": [
+   "finite-dimensional ideal-conductor boundary correction",
+   "uncorrected field flux and Green matrices -> corrected flux and solve diagnostics"
+  ],
+  "model": "Reduced-SVD linear least-squares correction.",
+  "geometry": "Finite field and boundary sample axes with explicit matrix shape compatibility.",
+  "boundary": "Rank truncation controls the residual; incompatible or rank-deficient systems may retain a nonzero residual.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Finite-dimensional ideal-conductor boundary correction",
   "direction": "uncorrected field flux and Green matrices to corrected flux and solve diagnostics",

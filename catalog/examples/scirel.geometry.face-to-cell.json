@@ -14,6 +14,20 @@
  "aliases": [
   "face_to_cell"
  ],
+ "discovery": {
+  "capability": [
+   "Face-to-cell midpoint average",
+   "Average adjacent one-dimensional face values to cell centres."
+  ],
+  "operation": [
+   "cell[i] = (face[i] + face[i+1]) / 2",
+   "finite face vector -> cell vector"
+  ],
+  "model": "Midpoint-averaging relation with explicit numeric boundary checks.",
+  "geometry": "One-dimensional cell/face grid; no coordinate values are consumed.",
+  "boundary": "Finite real one-dimensional face vector with at least two entries.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "cell[i]=(face[i]+face[i+1])/2",
   "direction": "finite face vector -> cell vector",

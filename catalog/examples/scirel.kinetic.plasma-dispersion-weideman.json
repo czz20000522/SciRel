@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Fixed N=64 Weideman plasma dispersion",
+   "Evaluate the source-method N=64 rational Faddeeva approximation and its branch labels."
+  ],
+  "operation": [
+   "evaluate the fixed N=64 Weideman dispersion function",
+   "dimensionless complex z to approximate w(z), Z(z) and method flags"
+  ],
+  "model": "homogeneous Maxwellian plasma dispersion special function",
+  "geometry": "homogeneous plasma",
+  "boundary": "finite representable arguments outside numerical poles of the rational approximation",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "dimensionless complex z to approximate w(z), Z(z) and method flags",
   "direction": "dimensionless complex z to approximate w(z), Z(z) and method flags",

@@ -14,6 +14,20 @@
  "aliases": [
   "dense three-component filament Green response"
  ],
+ "discovery": {
+  "capability": [
+   "Dense axisymmetric circular-filament Green matrices",
+   "Build dense target-row/source-column circular-filament response matrices for psi, BR and BZ."
+  ],
+  "operation": [
+   "dense axisymmetric Green-matrix construction",
+   "target points and weighted source rows -> response matrices"
+  ],
+  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight and exact self conventions.",
+  "geometry": "Independent finite target and source point tables.",
+  "boundary": "Exact source-target entries are zeroed and zero-radius sources contribute zero; positive radii must be nonnegative.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Dense axisymmetric Green matrices",
   "direction": "target points and weighted source rows to response matrices",

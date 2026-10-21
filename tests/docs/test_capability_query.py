@@ -148,6 +148,9 @@ def test_capability_index_is_a_deterministic_contract_projection():
 def test_discovery_fields_are_consumed_and_unknown_keys_ignored():
     document = json.loads(json.dumps(next(iter(
         load_document_set(ROOT / 'catalog/examples')))))
+    # The canonical contracts now carry reviewed discovery blocks; exercise the
+    # derived fallback on a copy that removes it, then inject reviewed values.
+    document.pop('discovery', None)
     fallback = capability_record(document)
     assert fallback['capability'] == document['title']['en'].strip()
     assert fallback['operation'] == document['identity']['relation'].strip()

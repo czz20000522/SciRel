@@ -14,6 +14,20 @@
  "aliases": [
   "assemble_spectral_matrix"
  ],
+ "discovery": {
+  "capability": [
+   "Effective multi-fluid temporal matrix",
+   "Assemble the independently corrected local fluid/Maxwell generator and relativistic inertia."
+  ],
+  "operation": [
+   "assemble the effective multifluid temporal matrix",
+   "plasma state,kx,kz,rel -> M,A,state,physical scales"
+  ],
+  "model": "Algebraic anisotropic multi-fluid closure with empirical longitudinal magnetic-pressure factor two",
+  "geometry": "B0=(0,0,B0), k=(kx,0,kz), grad(log n0)=(epsx,epsy,0)",
+  "boundary": "B0=0 sets director-response terms to zero and retains explicit fixed-z pressure; rel=1 excludes luminal/superluminal drift",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Local effective multi-fluid Maxwell temporal matrix",
   "direction": "plasma state,kx,kz,rel -> M,A,state,physical scales",

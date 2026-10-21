@@ -14,6 +14,20 @@
  "aliases": [
   "get_gpsi"
  ],
+ "discovery": {
+  "capability": [
+   "Actual-coordinate loop flux matrix",
+   "Build the dense actual-coordinate flux matrix for an R,Z node grid."
+  ],
+  "operation": [
+   "dense loop flux-matrix construction",
+   "matching R,Z grids -> target-row/source-column psi response"
+  ],
+  "model": "Axisymmetric ideal circular-filament flux with zero diagonal for active source nodes.",
+  "geometry": "Finite rectilinear or irregular two-dimensional coordinate arrays.",
+  "boundary": "Axis rows and zero-radius source columns are zero, and duplicate positive-radius nodes are rejected.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Actual-coordinate loop flux matrix",
   "direction": "matching R,Z grids to target-row/source-column psi response",

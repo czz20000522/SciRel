@@ -19,6 +19,20 @@
   "Janev charge-exchange fit",
   "Freeman-Jones charge-exchange fit"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic-hydrogen charge-exchange cross section",
+   "H + H+ charge-exchange cross section in m^2 from collision energy in eV, using Janev or Freeman-Jones fits."
+  ],
+  "operation": [
+   "Evaluate the H + H+ charge-exchange cross section",
+   "collision energies and branch selector -> cross section per energy"
+  ],
+  "model": "Two independent declared cross-section fits (Janev nine-coefficient logarithmic polynomial by default; Freeman-Jones analytic form under freeman=True); no external-data interpolation and no rate integration.",
+  "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
+  "boundary": "Energies must be finite and nonnegative; values outside a branch's fit range clip to the range endpoints; the branch selector must be scalar; both fits are strictly positive and finite on their clipped domains.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the H + H+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4 with the Freeman-Jones analytic form 1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2 / (1 + 0.1112e-14 E^3.3) as the alternative branch",
   "direction": "collision energies and branch selector -> cross section per energy",

@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Stored two-species SI fluid deck",
+   "Return an independent copy of the packaged ten-column two-species fluid input table."
+  ],
+  "operation": [
+   "read the packaged two-species fluid deck",
+   "no inputs -> packaged ten-column two-species fluid deck"
+  ],
+  "model": "Fixed electron/proton fluid input data.",
+  "geometry": "Uniform background, zero drift and zero density gradient.",
+  "boundary": "Declared local equilibrium input; no solution is inferred.",
+  "device_scope": "unclassified"
+ },
  "identity": {
   "relation": "Packaged fluid input data to an SI fluid deck",
   "direction": "data read",

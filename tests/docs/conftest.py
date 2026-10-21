@@ -31,3 +31,16 @@ def built_snapshot(tmp_path_factory):
 @pytest.fixture
 def snapshot(tmp_path, built_snapshot):
     return Path(shutil.copytree(built_snapshot, tmp_path / 'docs'))
+
+
+@pytest.fixture(scope='session')
+def built_english_snapshot(tmp_path_factory):
+    output = tmp_path_factory.mktemp('sphinx-en') / 'docs'
+    documents = copy_example_closure(tmp_path_factory.mktemp('english-inputs') / 'documents')
+    build(documents, output, language='en')
+    return output
+
+
+@pytest.fixture
+def english_snapshot(tmp_path, built_english_snapshot):
+    return Path(shutil.copytree(built_english_snapshot, tmp_path / 'docs-en'))

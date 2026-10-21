@@ -14,6 +14,20 @@
  "aliases": [
   "write_eqdsk_fromdict"
  ],
+ "discovery": {
+  "capability": [
+   "Write extended EQDSK",
+   "Serialize one validated extended EQDSK mapping back to text."
+  ],
+  "operation": [
+   "Serialize extended EQDSK records to text",
+   "validated dictionary/class state -> extended EQDSK text"
+  ],
+  "model": "Extended EQDSK text dialect with fixed-width record blocks and a declared grid-origin convention.",
+  "geometry": "nnr by nnz grid reconstructed as R = linspace(0, rbox) and Z = linspace(-zbox/2, zbox/2); R/Z values follow the dialect convention with units and COCOS unspecified.",
+  "boundary": "Strict mode rejects trailing records; non-strict mode permits trailing records after the complete declared sections.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Deterministic text serialization/deserialization of extended EQDSK records",
   "direction": "extended EQDSK text and validated dictionary/class state",

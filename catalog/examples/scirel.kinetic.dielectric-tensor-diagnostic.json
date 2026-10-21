@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Full kinetic dielectric tensor diagnostic",
+   "Evaluate all nine dielectric and dispersion tensor components using the source's default 15 harmonics."
+  ],
+  "operation": [
+   "evaluate the full kinetic dielectric tensor",
+   "SI species and wavepoint to full K, D and six-term determinant"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "boundary": "default lmx=15; unlike the conventional sum, no near-zero kz clamp is applied",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "SI species and wavepoint to full K, D and six-term determinant",
   "direction": "SI species and wavepoint to full K, D and six-term determinant",

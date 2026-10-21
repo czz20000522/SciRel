@@ -15,6 +15,20 @@
  "aliases": [
   "flux-relaxed axisymmetric Picard step"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric Picard Green flux update",
+   "Convert toroidal current density to cell currents, apply a dense Green matrix and relax the resulting flux."
+  ],
+  "operation": [
+   "one dense-Green Picard flux-relaxation update",
+   "R-Z grid, J_phi, prior and vacuum flux, Green matrix and relax -> next flux, cell currents and relative changes"
+  ],
+  "model": "One axisymmetric dense-Green Picard step with flux relaxation, not current relaxation.",
+  "geometry": "Rectilinear cylindrical R-Z grid with at least three nodes per axis; [Z,R] arrays and C-order Green flattening.",
+  "boundary": "Quadrature uses the declared input node domain or explicit cell boundaries; no implicit exterior support is invented.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "toroidal current-density grid and dense Green response to one relaxed axisymmetric flux update",
   "direction": "R-Z grid, J_phi, previous/vacuum flux, Green matrix and relax -> psi_next, cell currents and relative changes",

@@ -17,6 +17,20 @@
   "sigmav_cx_h0",
   "atomic-H CX Maxwellian rate"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic-hydrogen charge-exchange Maxwellian rate coefficient",
+   "Maxwellian H + H+ charge-exchange rate coefficient from paired temperature and impact-energy samples in eV."
+  ],
+  "operation": [
+   "Evaluate the atomic-H charge-exchange Maxwellian rate coefficient",
+   "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s"
+  ],
+  "model": "Nine-by-nine bivariate logarithmic rate fit; not a velocity-mesh Maxwellian integral.",
+  "geometry": "None; paired scalar or array material samples with no spatial or velocity axis inferred (coordinates: temperature and impact energy in eV).",
+  "boundary": "Inputs must be finite and identically shaped with strictly positive temperature and nonnegative impact energy; both dimensions clip at the fit endpoints and the output must be finite and positive.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "atomic-H charge-exchange Maxwellian rate coefficient from a bivariate logarithmic fit",
   "direction": "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s",

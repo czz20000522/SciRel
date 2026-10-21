@@ -11,6 +11,20 @@
   "numerics"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Truncated SVD pseudo-inverse",
+   "Compute the Moore-Penrose pseudo-inverse of a finite real matrix, discarding singular values below a relative threshold."
+  ],
+  "operation": [
+   "thresholded Moore-Penrose inversion",
+   "dense real matrix and relative rcond -> pseudo-inverse with truncated singular values"
+  ],
+  "model": "Truncated singular-value decomposition of a dense real matrix: V diag(1/s for s>=rcond else 0) U^T.",
+  "geometry": "Dense real matrix with no spatial geometry; matrix entries are dimensionless and rcond is a relative scalar threshold.",
+  "boundary": "Singular values below rcond are discarded; non-2-D, nonfinite or non-positive-threshold inputs are rejected, and complex or sparse matrices and iterative or weighted least-squares semantics are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "thresholded Moore-Penrose pseudo-inverse",
   "direction": "real matrix M -> pseudo-inverse M^+",

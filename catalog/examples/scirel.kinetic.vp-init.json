@@ -14,6 +14,20 @@
  "aliases": [
   "vp_init"
  ],
+ "discovery": {
+  "capability": [
+   "Poisson-consistent initialization",
+   "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k."
+  ],
+  "operation": [
+   "initialize a Poisson-consistent perturbation",
+   "velocity window, mode count and k -> Poisson-closed df and E"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "Finite uniform velocity window and discrete Poisson closure; fixed ion background; state construction only.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k.",
   "direction": "Inputs to vp_init -> result",

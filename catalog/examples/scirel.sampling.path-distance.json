@@ -13,6 +13,20 @@
  "aliases": [
   "get_fieldline_distance"
  ],
+ "discovery": {
+  "capability": [
+   "Cumulative polyline distance",
+   "Accumulate Euclidean adjacent-vertex chord lengths from zero along an ordered planar polyline."
+  ],
+  "operation": [
+   "cumulative polyline distance accumulation",
+   "ordered planar vertices -> cumulative chord-length distance"
+  ],
+  "model": "Exact polygonal chord lengths, not a smooth-curve arclength.",
+  "geometry": "Planar ordered vertices in coherent length units; only adjacent-vertex distances are accumulated.",
+  "boundary": "Distance starts at zero and no implicit closing segment is added; finite ordered planar vertices are required.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Cumulative polyline distance",
   "direction": "Declared inputs to Cumulative path distance",

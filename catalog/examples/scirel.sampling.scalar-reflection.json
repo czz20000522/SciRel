@@ -13,6 +13,20 @@
  "aliases": [
   "reflect_and_hstack"
  ],
+ "discovery": {
+  "capability": [
+   "Scalar half-plane reflection",
+   "Reflect R across zero and duplicate Z and even scalar quantities without duplicating the zero column."
+  ],
+  "operation": [
+   "radial half-plane reflection of scalar grids",
+   "Rho, Z and optional matching scalar grids -> reflected Rho, Z and scalar grids with width 2*Nr-1"
+  ],
+  "model": "Explicit hstack convention for a scalar radial symmetry with a named-quantities alternative; no physical field model.",
+  "geometry": "Planar R-Z grids with radial column order; the first radial column must be zero and the remaining columns are reflected in reverse order.",
+  "boundary": "Supplied fields must be even under radial reflection; vector-component parity and signed-radius physical-field interpretations are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Scalar half-plane reflection",
   "direction": "Declared inputs to Tuple reflected Rho,Z and scalar fields",

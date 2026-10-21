@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Bounded physical multifluid scan",
+   "Run the four literal fluid scan families with independent point solves, explicit state and canonical axis order. Default method 2 contains 101 physical points; method 4 contains 3750."
+  ],
+  "operation": [
+   "scan bounded physical multifluid spectra",
+   "state, method and grid controls -> bounded frequency spectra"
+  ],
+  "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
+  "geometry": "k=(kx,0,kz), B0 along z.",
+  "boundary": "Local Fourier modes exp(i k.r-i omega t).",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Finite fluid wavevector-grid controls to full frequency spectra",
   "direction": "bounded independent point scan",

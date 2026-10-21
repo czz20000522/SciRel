@@ -12,6 +12,20 @@
   "examples"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Parallel Maxwellian EM residual",
+   "Evaluate the causal, signed-wavevector parallel electromagnetic residual for arbitrary species and either fixed circular-polarization sign."
+  ],
+  "operation": [
+   "evaluate the parallel EM kinetic residual",
+   "state, omega, k and polarization -> kinetic residual and scale"
+  ],
+  "model": "Arbitrary-species drifting isotropic Maxwellian parallel electromagnetic response.",
+  "geometry": "Real nonzero k along signed z; equilibrium magnetic field along z.",
+  "boundary": "Retarded Landau analytic continuation from Im(omega)>0.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Parallel isotropic kinetic electromagnetic dispersion residual",
   "direction": "forward residual evaluation",

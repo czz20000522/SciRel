@@ -14,6 +14,20 @@
  "aliases": [
   "evaluate_complete_elliptic_integrals"
  ],
+ "discovery": {
+  "capability": [
+   "Complete elliptic integrals K(m) and E(m) approximation",
+   "Evaluate polynomial-logarithmic approximations to complete K(m) and E(m) on arrays with 0<=m<=1."
+  ],
+  "operation": [
+   "piecewise numerical approximation in the elliptic parameter m",
+   "modulus squared -> K and E arrays"
+  ],
+  "model": "Piecewise numerical approximation in the elliptic parameter m.",
+  "geometry": "Elementwise over any NumPy-compatible numeric shape.",
+  "boundary": "Only finite m in [0,1] is accepted; m=1 uses the mathematical endpoint limits.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Complete elliptic-integral approximation",
   "direction": "modulus squared to K and E arrays",

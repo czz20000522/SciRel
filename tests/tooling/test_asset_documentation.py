@@ -211,11 +211,11 @@ def test_asset_schema_declares_the_optional_discovery_block():
     ]
 
 
-def test_current_contracts_validate_without_a_discovery_block(tmp_path):
+def test_current_contracts_validate_with_or_without_discovery(tmp_path):
     documents = load_document_set(copy_example_closure(tmp_path / "documents"))
 
     assert len(documents) == EXAMPLE_CLOSURE_COUNT
-    assert all("discovery" not in document for document in documents)
+    assert all(validate_document(document) is document for document in documents)
 
 
 def test_a_complete_discovery_block_is_valid():

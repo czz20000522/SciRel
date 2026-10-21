@@ -14,6 +14,20 @@
  "aliases": [
   "poloidal B magnitude"
  ],
+ "discovery": {
+  "capability": [
+   "Poloidal magnetic-field magnitude",
+   "Compute a floored poloidal-field magnitude and its median reference value from BR and BZ arrays."
+  ],
+  "operation": [
+   "pointwise Euclidean magnitude with a finite lower floor",
+   "radial and axial field arrays -> B and B0_default"
+  ],
+  "model": "Pointwise Euclidean magnitude with a finite lower floor.",
+  "geometry": "Matching nonempty two-dimensional caller arrays.",
+  "boundary": "Nonfinite inputs, shape mismatch, empty arrays and unrepresentable magnitudes are rejected.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Poloidal-field magnitude and reference",
   "direction": "radial and axial field arrays to B and B0_default",

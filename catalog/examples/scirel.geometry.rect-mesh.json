@@ -32,6 +32,20 @@
  "aliases": [
   "RectMesh"
  ],
+ "discovery": {
+  "capability": [
+   "Rectangular R-Z mesh",
+   "Build a regular rectangular mesh from bounds and counts in cylindrical coordinates."
+  ],
+  "operation": [
+   "regular-grid construction",
+   "bounds and positive integer counts -> mesh arrays"
+  ],
+  "model": "Regular rectangular grid.",
+  "geometry": "Regular rectangular grid in cylindrical R-Z.",
+  "boundary": "Finite ordered bounds and positive integer counts.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Rectangular grid relation",
   "direction": "bounds and counts to mesh arrays",

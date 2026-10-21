@@ -15,6 +15,20 @@
  "aliases": [
   "evaluate_neutral_outer_seed_convergence"
  ],
+ "discovery": {
+  "capability": [
+   "Outer seed convergence relation",
+   "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate."
+  ],
+  "operation": [
+   "evaluate the outer seed re-entry criterion",
+   "previous and current seed-pass density profiles plus truncate -> inner reentry decision"
+  ],
+  "model": "the inner seed-pass ratio-of-max relation with 10*truncate threshold and fail-closed domain tightenings",
+  "geometry": "one spatial axis for two aligned density profiles",
+  "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error and 10*truncate threshold",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate.",
   "direction": "previous and current seed-pass density profiles plus truncate -> inner reentry decision",

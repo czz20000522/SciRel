@@ -13,6 +13,20 @@
  "aliases": [
   "SecondClampedCubicSpline"
  ],
+ "discovery": {
+  "capability": [
+   "Origin-natural cylindrical spline",
+   "Callable piecewise-cubic Hermite interpolation with the prescribed origin row and a cylindrical right boundary equation."
+  ],
+  "operation": [
+   "origin-row cylindrical C2 cubic-spline interpolation",
+   "strictly increasing knots, matched values and cylindrical mode m -> callable spline with deriv=0/1/2 evaluation"
+  ],
+  "model": "C2 piecewise-cubic Hermite spline with the origin row x_data[0]=y_data[0]=0 and the right cylindrical equation fdd+fd/x-m^2 f/x^2=0.",
+  "geometry": "One-dimensional strictly increasing scalar knots and ordinate values with the origin row fixed and a positive last knot; coordinate units are caller-defined.",
+  "boundary": "The origin row and right cylindrical equation are imposed; x_data[-1]>0 is required, and the physical magnetic-fitting interpretation remains unresolved.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Origin-natural cylindrical spline",
   "direction": "Declared inputs to Callable spline retaining x_data,y_data,k and deriv=0/1/2 evaluation",

@@ -2,6 +2,20 @@
  "schema": "scirel.asset-document",
  "asset_id": "scirel.kinetic.generalized-residual",
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Electrostatic dispersion residuals",
+   "Evaluate Langmuir, ion-acoustic, beam and generalized residuals."
+  ],
+  "operation": [
+   "evaluate electrostatic dispersion residuals",
+   "density family, k and x -> dispersion residuals"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "device_scope": "generic"
+ },
  "taxonomy": [
   "kinetic",
   "plasma-wave",

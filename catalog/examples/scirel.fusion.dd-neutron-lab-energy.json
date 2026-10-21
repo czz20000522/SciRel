@@ -15,6 +15,20 @@
   "DD neutron lab energy",
   "get_dd_neutron_energy"
  ],
+ "discovery": {
+  "capability": [
+   "DD neutron laboratory-frame energy",
+   "Laboratory-frame neutron kinetic energy of D(d,n)3He from two deuteron velocities and a detector line-of-sight unit vector."
+  ],
+  "operation": [
+   "Evaluate the DD neutron laboratory-frame energy",
+   "reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector -> neutron_energy_kev"
+  ],
+  "model": "Non-relativistic two-body kinematics with a fixed Q value; no anisotropy factor.",
+  "geometry": "The detector vector is a direction from the reaction point to the detector in the same Cartesian frame as the velocities; three-component vectors with no frame transformation.",
+  "boundary": "Stationary reactants collapse the boost to the mass-partition energy 2450.47589941598 keV; the returned value is non-negative for every accepted input.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "two deuteron velocities and a detector direction to the laboratory-frame neutron energy of the D(d,n)3He reaction",
   "direction": "reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector -> neutron_energy_kev",

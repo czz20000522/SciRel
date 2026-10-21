@@ -15,6 +15,20 @@
  "aliases": [
   "compute_thermal_speed_m_s"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral species thermal-speed scale",
+   "The explicit second-moment thermal speed sqrt(2 e T / m) of a neutral species from its temperature in eV and a mass factor relative to the hydrogen mass, using frozen constants (hydrogen mass 1.6726231e-27 kg, elementary charge 1.602177e-19 J/eV)."
+  ],
+  "operation": [
+   "evaluate the neutral thermal-speed scale",
+   "temperature and mass -> one thermal-speed scalar"
+  ],
+  "model": "the explicit scalar relation",
+  "geometry": "none; a scalar material scale",
+  "boundary": "Both input scalars are finite and strictly positive; the final thermal speed must be finite and positive. Intermediate conversion underflow does not exclude a representable result.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the second-moment thermal speed scale v = sqrt(2 e T_ev / (m_amu m_H)) with frozen constants",
   "direction": "temperature and mass -> one thermal-speed scalar",

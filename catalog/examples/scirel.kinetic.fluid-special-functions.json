@@ -2,6 +2,20 @@
  "aliases": [
   "evaluate_fluid_special"
  ],
+ "discovery": {
+  "capability": [
+   "Special-function responses",
+   "Evaluate the complete Gamma, Z and full R response contracts; four historical R method names share the corrected harmonic evaluator."
+  ],
+  "operation": [
+   "evaluate Gamma, Z and R special-function responses",
+   "method, argument and parameter -> scaled Gamma, Z and R responses"
+  ],
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "No execution or fidelity claim for the Taylor/asymptotic/integral selector.",

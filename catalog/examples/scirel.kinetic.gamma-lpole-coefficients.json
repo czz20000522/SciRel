@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Bessel-Gamma L-pole coefficients",
+   "Return fixed rational residue and pole tables indexed by Bessel order |n|+1."
+  ],
+  "operation": [
+   "return Bessel-Gamma L-pole coefficient tables",
+   "maximum harmonic N to residue and pole tables for orders 0..N"
+  ],
+  "model": "rational approximation of Maxwellian finite-Larmor-radius terms",
+  "geometry": "no physical spatial grid",
+  "boundary": "frozen tables cover |n|=0..7; requests beyond them fail",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "maximum harmonic N to residue and pole tables for orders 0..N",
   "direction": "maximum harmonic N to residue and pole tables for orders 0..N",

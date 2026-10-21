@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Two-path kinetic dispersion relation",
+   "Evaluate conventional finite-harmonic and Ronnmark determinants at the same derived equilibrium wavepoint."
+  ],
+  "operation": [
+   "evaluate conventional and Ronnmark kinetic determinants",
+   "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous magnetized plasma",
+  "boundary": "the conventional sum clamps |kz|<1e-10 to +1e-10; Ronnmark keeps zero kz",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors",
   "direction": "SI equilibrium controls and dimensionless probe ratios to two kinetic dispersion tensors",

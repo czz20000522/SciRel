@@ -14,6 +14,20 @@
  "aliases": [
   "x-z wavevector projection"
  ],
+ "discovery": {
+  "capability": [
+   "Planar real wavevector projection",
+   "Convert between wavevector magnitude/angle and x-z components for a background field along z."
+  ],
+  "operation": [
+   "Euclidean wavevector projection without a dispersion model",
+   "k and theta_rad -> kx, kz, k; or paired kx and kz -> components and magnitude"
+  ],
+  "model": "Euclidean wavevector geometry without a dispersion or resonance model.",
+  "geometry": "Real wavevector in the x-z plane with the background field along z.",
+  "boundary": "Magnitude is nonnegative; zero magnitude keeps the supplied polar angle, while Cartesian mode returns no angle.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Real x-z plane wavevector declaration to perpendicular and parallel components and magnitude",
   "direction": "k and theta_rad -> kx, kz, k; or paired kx and kz -> kx, kz, k",

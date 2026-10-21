@@ -15,6 +15,20 @@
   "Gamma_n Bessel term",
   "fluid Gamman and Gammapn"
  ],
+ "discovery": {
+  "capability": [
+   "Exponentially scaled Bessel-Gamma terms",
+   "Evaluate the dimensionless modified-Bessel harmonic term Gamma_n(x) and its neighbor-combination derivative with broadcast integer order and real or complex argument."
+  ],
+  "operation": [
+   "evaluate scaled modified-Bessel Gamma terms",
+   "(n, x) -> Gamma_n(x), Gamma_prime_n(x)"
+  ],
+  "model": "Integer-order modified-Bessel terms used in a finite Maxwellian cyclotron-harmonic sum",
+  "geometry": "No spatial geometry; elementwise special-function evaluation",
+  "boundary": "Arguments and outputs must be finite and representable as complex128; orders must be exactly representable integers of magnitude at most 2^53.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Integer cyclotron harmonic order and dimensionless argument to Bessel-Gamma term and derivative",
   "direction": "(n, x) -> Gamma_n(x), Gamma_prime_n(x)",

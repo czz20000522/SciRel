@@ -15,6 +15,20 @@
  "aliases": [
   "cold Stix dielectric tensor"
  ],
+ "discovery": {
+  "capability": [
+   "Local cold-plasma dielectric tensor",
+   "Local cold-plasma relative dielectric tensor from frequency, magnetic field and plasma species in the caller's Cartesian basis."
+  ],
+  "operation": [
+   "Evaluate the local cold-plasma relative dielectric tensor",
+   "frequency_hz, magnetic_flux_density_t, species -> epsilon_r"
+  ],
+  "model": "Local cold-plasma (Stix) dielectric response with collisional damping; time convention exp(-i omega t).",
+  "geometry": "The returned matrix represents the coordinate-free operator S I + (P - S) b b + i D [b]x in the caller-supplied Cartesian basis; the field is a Cartesian vector in the last array axis and no basis change is performed.",
+  "boundary": "A zero magnetic field collapses the tensor to the isotropic scalar P times the identity with the off-diagonal term exactly zero; every accepted call returns a finite tensor.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "frequency, local magnetic field, and plasma species to the local cold-plasma relative dielectric tensor",
   "direction": "frequency_hz, magnetic_flux_density_t, species -> epsilon_r",

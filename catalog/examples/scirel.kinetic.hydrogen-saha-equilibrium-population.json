@@ -18,6 +18,20 @@
   "Saha equation population",
   "equilibrium excited-level population"
  ],
+ "discovery": {
+  "capability": [
+   "Atomic-hydrogen Saha equilibrium population density",
+   "Evaluate the declared atomic-hydrogen Saha level population from paired electron density and temperature using the implementation constants."
+  ],
+  "operation": [
+   "evaluate the Saha level population density",
+   "electron density in m^-3, electron temperature in eV, principal level -> population density in m^-3 per sample"
+  ],
+  "model": "Closed Saha equilibrium relation on its positive finite scientific branch with hydrogen-ion density identified with electron density; no dynamic state or non-equilibrium kinetics",
+  "geometry": "No spatial geometry; elementwise paired material samples",
+  "boundary": "Non-empty, same-shape one-dimensional real arrays, finite and strictly between zero and 1e32; scalar integral level >= 1; finite positive represented result. The source's 1e32 sentinel is never returned.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Saha equilibrium population density of atomic-hydrogen principal level n from paired electron density and temperature",
   "direction": "electron density in m^-3, electron temperature in eV, principal level -> population density in m^-3 per sample",

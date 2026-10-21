@@ -41,6 +41,20 @@
  "aliases": [
   "TREXCoil"
  ],
+ "discovery": {
+  "capability": [
+   "TREXCoil filament geometry",
+   "Fixed 88-point TREX coil geometry with inherited current, weight, mesh and field methods."
+  ],
+  "operation": [
+   "Construct the fixed TREX coil geometry",
+   "reference-plane coordinate z0 -> ordered source object"
+  ],
+  "model": "Axisymmetric ideal circular-filament point cloud with declared geometry constants.",
+  "geometry": "Ordered cylindrical R,Z points translated by z0; R,Z,z0 in metres, current in amperes and weights dimensionless.",
+  "boundary": "The point cloud changes through z0 or inherited rigid transforms; active target coincidence remains singular.",
+  "device_scope": "device-bound"
+ },
  "identity": {
   "relation": "Fixed TREX filament geometry",
   "direction": "reference-plane coordinate to ordered source object",

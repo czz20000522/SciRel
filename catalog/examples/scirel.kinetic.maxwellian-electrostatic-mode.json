@@ -1,5 +1,19 @@
 {
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Maxwellian electrostatic response",
+   "Evaluate normalized Maxwellian dielectric with cancellation-free large-phase response."
+  ],
+  "operation": [
+   "evaluate the Maxwellian electrostatic response",
+   "(omega,k)->(epsilon,D,z)"
+  ],
+  "model": "One-dimensional homogeneous Maxwellian with normalized unit plasma response",
+  "geometry": "Electrostatic one-dimensional wave",
+  "boundary": "k is positive and omega finite; no global branch selection is performed.",
+  "device_scope": "generic"
+ },
  "applicability": {
   "excluded": [
    "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."

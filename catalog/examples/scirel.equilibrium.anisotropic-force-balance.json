@@ -15,6 +15,20 @@
  "aliases": [
   "gyrotropic div(P) current closure"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric gyrotropic pressure force balance",
+   "Evaluate the cylindrical divergence of a gyrotropic pressure tensor, its toroidal-current projection, parallel force and firehose margin on an R-Z grid."
+  ],
+  "operation": [
+   "cylindrical divergence and perpendicular projection of an axisymmetric gyrotropic pressure tensor",
+   "R-Z B field and parallel/perpendicular pressures -> force components, J_phi and diagnostics"
+  ],
+  "model": "Axisymmetric gyrotropic pressure tensor with perpendicular force-balance current projection; not an equilibrium solve.",
+  "geometry": "Rectilinear cylindrical R-Z grid with at least three nodes per axis; arrays indexed [Z,R] with nonnegative, strictly increasing R.",
+  "boundary": "Second-order one-sided differences; the regular-axis limit is documented, and zero or tiny B follows numerical zero conventions without gyrotropic physical qualification.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "R-Z poloidal magnetic field and parallel/perpendicular pressure to cylindrical pressure force and toroidal current density",
   "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular -> force_R, force_Z, parallel_force, J_phi and diagnostics",

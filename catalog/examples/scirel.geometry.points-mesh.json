@@ -31,6 +31,20 @@
  "aliases": [
   "PointsMesh"
  ],
+ "discovery": {
+  "capability": [
+   "Finite unstructured cylindrical point set",
+   "Build a mesh object from caller-supplied cylindrical point coordinates."
+  ],
+  "operation": [
+   "unstructured point-set construction",
+   "rpts and zpts -> mesh object"
+  ],
+  "model": "Unstructured finite point set.",
+  "geometry": "Unstructured finite point set in cylindrical R-Z.",
+  "boundary": "R must be nonnegative.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Point coordinate relation",
   "direction": "points to R,Z arrays",

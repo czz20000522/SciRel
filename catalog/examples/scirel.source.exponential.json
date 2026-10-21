@@ -12,6 +12,20 @@
   "radial"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Volume-normalized exponential profile",
+   "Discrete volume-normalized exponential source profile on a nonuniform normalized-radius cell grid."
+  ],
+  "operation": [
+   "Build a volume-normalized exponential radial profile",
+   "(rho_norm, vpr, drho_norm, decay_start, width, total) -> profile"
+  ],
+  "model": "Discrete normalized radial source shape with a signed float64-tiny width floor and supplied-volume normalization; extended intermediate arithmetic.",
+  "geometry": "Normalized radial cell grid with explicit volume metric and quadrature weights; rho_norm is a dimensionless normalized radius.",
+  "boundary": "Discrete cell-volume sum with no extrapolation or hidden endpoint reconstruction; the supplied total sets the volume normalization.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Discrete exponential source with signed float64-tiny width floor and supplied-volume normalization",
   "direction": "(rho_norm,vpr,drho_norm,decay_start,width,total) -> profile",

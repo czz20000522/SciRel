@@ -17,6 +17,20 @@
   "grid to momentum map",
   "x vnorm over clight"
  ],
+ "discovery": {
+  "capability": [
+   "Normalized momentum on a grid",
+   "Map a signed dimensionless grid to p_n = x*vnorm/clight without automatic unit conversion."
+  ],
+  "operation": [
+   "Map a signed dimensionless grid to normalized momentum",
+   "x, vnorm, clight -> p_n"
+  ],
+  "model": "Independent closed-form definition, not a fit; dangerous intermediates are evaluated at high precision beyond binary64, with no automatic unit conversion.",
+  "geometry": "Not applicable; an elementwise scaling of a caller-supplied one-dimensional dimensionless grid, not a spatial coordinate.",
+  "boundary": "A zero velocity scale returns signed zero and the map is odd in x; intermediate overflow does not cause false rejection; a genuinely tiny final value may round to signed zero, while final overflow is rejected.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the normalized momentum profile p_n on a grid, from the grid, a velocity scale and the speed of light",
   "direction": "x, vnorm, clight -> p_n",

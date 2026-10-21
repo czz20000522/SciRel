@@ -15,6 +15,20 @@
  "aliases": [
   "update_neutral_generation_accumulation"
  ],
+ "discovery": {
+  "capability": [
+   "Neutral generation accumulation state update",
+   "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index."
+  ],
+  "operation": [
+   "append one neutral generation to the accumulated state",
+   "prior state or None plus one generation distribution and density -> new accumulated state"
+  ],
+  "model": "Generation accumulation in the declared order with explicit caller-state validation",
+  "geometry": "two velocity axes and one spatial axis for distributions, one spatial axis for densities",
+  "boundary": "finite real 3-D generation distribution (signed cells allowed), aligned finite nonnegative 1-D generation density, and either None or a complete finite internally consistent prior accumulation state",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.",
   "direction": "prior state or None plus one generation distribution and density -> new accumulated state",

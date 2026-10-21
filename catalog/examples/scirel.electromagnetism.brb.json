@@ -50,6 +50,20 @@
  "aliases": [
   "BRB"
  ],
+ "discovery": {
+  "capability": [
+   "BRB filament geometry",
+   "Fixed BRB source composition: two 88-point TREX coils, two 130-point rectangular coils and 36 signed 16-point rings."
+  ],
+  "operation": [
+   "Construct the fixed BRB source composition",
+   "configuration constructor -> ordered child sources"
+  ],
+  "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
+  "geometry": "Ordered child source geometries in cylindrical R,Z coordinates; R,Z in metres, currents in amperes, ring weights dimensionless and angles in degrees.",
+  "boundary": "A geometry composition only; it does not calibrate an experimental device or material response.",
+  "device_scope": "device-bound"
+ },
  "identity": {
   "relation": "Fixed BRB source composition",
   "direction": "configuration constructor to ordered child sources",

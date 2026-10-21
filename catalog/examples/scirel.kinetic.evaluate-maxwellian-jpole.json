@@ -1,6 +1,20 @@
 {
  "schema": "scirel.asset-document",
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Fixed-pole Maxwellian dispersion approximation",
+   "Evaluate the fixed-pole Maxwellian dispersion approximation with its default order and declared failure contract."
+  ],
+  "operation": [
+   "evaluate the fixed-pole Maxwellian dispersion function",
+   "z,order -> Z,order"
+  ],
+  "model": "One-dimensional Maxwellian plasma response",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Real axis is accepted; exponential continuation overflow raises.",
+  "device_scope": "generic"
+ },
  "taxonomy": [
   "kinetic",
   "plasma-wave",

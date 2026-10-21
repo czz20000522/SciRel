@@ -15,6 +15,20 @@
  "aliases": [
   "reduce_terminal_molecular_heat_flux"
  ],
+ "discovery": {
+  "capability": [
+   "Terminal molecular random and total heat flux",
+   "Reduce a terminal H2 distribution to random and total axial energy-flux profiles with a caller-supplied thermal speed, mass ratio and cylindrical velocity quadrature."
+  ],
+  "operation": [
+   "reduce terminal random and total heat flux",
+   "terminal (vr,vx,x) distribution, normalized velocity nodes, explicit mass and thermal speed, quadrature -> two x profiles"
+  ],
+  "model": "Terminal H2 energy-moment heat-flux diagnostic with caller-supplied mass ratio and thermal speed",
+  "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
+  "boundary": "finite nonnegative nonempty three-dimensional distribution; finite one-dimensional aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio and thermal speed; positive integrated density in every x cell",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "terminal H2 random and total axial heat-flux reduction",
   "direction": "terminal (vr,vx,x) distribution, normalized velocity nodes, explicit mass and thermal speed, quadrature -> two x profiles",

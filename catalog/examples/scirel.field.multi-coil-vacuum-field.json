@@ -14,6 +14,20 @@
  "aliases": [
   "multi-coil vacuum synthesis"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric multi-coil vacuum field",
+   "Expand rectangular coil records into weighted filaments, evaluate each coil response and superpose the drive currents."
+  ],
+  "operation": [
+   "ordered acyclic multi-coil vacuum-field composition",
+   "rectangular-coil records and target grid -> vacuum fields and filament table"
+  ],
+  "model": "Ordered acyclic composition of rectangular geometry, circular Green response and current contraction.",
+  "geometry": "Matching rectilinear target grid and nonempty ordered coil list.",
+  "boundary": "Input validation or any dependency failure aborts the call without a fallback or partial field.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Ordered multi-coil vacuum-field composition",
   "direction": "rectangular-coil records and target grid to vacuum fields and filament table",

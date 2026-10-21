@@ -14,6 +14,20 @@
  "aliases": [
   "vp_field"
  ],
+ "discovery": {
+  "capability": [
+   "Poisson electric-field closure",
+   "E=i dv sum(df)/k."
+  ],
+  "operation": [
+   "apply the Poisson electric-field closure",
+   "velocity-space perturbation and k -> electric field"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "One Fourier mode; linear discrete Poisson closure; no time advance.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "E=i dv sum(df)/k.",
   "direction": "Inputs to vp_field -> result",

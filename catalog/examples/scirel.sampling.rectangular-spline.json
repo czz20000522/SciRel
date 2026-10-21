@@ -13,6 +13,20 @@
  "aliases": [
   "interp"
  ],
+ "discovery": {
+  "capability": [
+   "Rectangular spline field query",
+   "Evaluate bicubic rectangular field interpolation at ordered path vertices."
+  ],
+  "operation": [
+   "bicubic rectangular-grid field interpolation",
+   "separable grid, field values and ordered planar path vertices -> interpolated field samples"
+  ],
+  "model": "SciPy RectBivariateSpline with default degrees and smoothing.",
+  "geometry": "Planar separable rectangular grid and ordered planar path points; coordinates use xy row/column order.",
+  "boundary": "Queries must lie inside the grid support for a qualified result; out-of-grid spline extrapolation and arbitrary nonlinear interpolation errors are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Rectangular spline field query",
   "direction": "Declared inputs to Interpolated field along path",

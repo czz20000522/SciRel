@@ -13,6 +13,20 @@
  "aliases": [
   "d_ds_arclength"
  ],
+ "discovery": {
+  "capability": [
+   "Actual-arclength first derivative",
+   "Differentiate sampled values with respect to cumulative polyline chord arclength."
+  ],
+  "operation": [
+   "unequal-spacing arclength differentiation",
+   "ordered planar vertices and matched values -> endpoint-inclusive derivative in value per length"
+  ],
+  "model": "Direct three-point unequal-spacing finite differences, with one-sided quadratic stencils at both endpoints.",
+  "geometry": "Ordered planar polyline; vertices and values are one-dimensional and matched. No smooth-curve arclength or periodic closure is reconstructed.",
+  "boundary": "Endpoints use one-sided stencils; N>=3, finite matched inputs and distinct adjacent vertices are required, while periodic closure and noise statistics are excluded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Unequal-spacing polyline arclength derivative",
   "direction": "ordered vertices and values to endpoint-inclusive derivative",

@@ -15,6 +15,20 @@
   "Frank-Egedal pressure-source envelope",
   "normalized-flux radial profile"
  ],
+ "discovery": {
+  "capability": [
+   "Frank-Egedal radial envelope",
+   "Evaluate a clipped power-law envelope on a normalized two-dimensional flux grid, with reference fluxes and exponent supplied in a parameter mapping."
+  ],
+  "operation": [
+   "evaluate the clipped Frank-Egedal radial envelope",
+   "(psi, params) -> radial envelope array with the shape of psi"
+  ],
+  "model": "Source-defined radial multiplier for a Frank-Egedal pressure construction; it does not compute a pressure or equilibrium",
+  "geometry": "Caller-supplied two-dimensional axisymmetric flux samples; no radial coordinate or magnetic geometry is reconstructed",
+  "boundary": "The normalized coordinate is clipped to [0,1], so the envelope is constant outside the interval. Reversing psi_axis and psi_edge reverses its orientation. No spatial boundary condition is solved.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "Flux grid and radial profile controls to a dimensionless pressure-source envelope",
   "direction": "(psi, params) -> radial envelope array with the shape of psi",

@@ -16,6 +16,20 @@
   "equilibrium to solver grid mapping",
   "coarse CAD grid equilibrium mapping"
  ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric equilibrium map to Cartesian solver grid",
+   "Reconstruct static field and poloidal flux of an axisymmetric equilibrium on a rectilinear Cartesian solver grid."
+  ],
+  "operation": [
+   "tensor-product bilinear interpolation of an equilibrium map onto a Cartesian solver grid",
+   "equilibrium map arrays plus query points -> magnetic flux density, poloidal flux, coverage and clamping diagnostics"
+  ],
+  "model": "Tensor-product bilinear interpolation of an axisymmetric equilibrium map on a rectilinear R-Z grid with independent coordinate clamping; no field solve.",
+  "geometry": "Axisymmetric equilibrium sampled on an R-Z map, evaluated on a rectilinear Cartesian x-y-z solver grid with C-order ij indexing.",
+  "boundary": "Defined on the closed map box; query points outside are clamped onto the nearest box face, the clamping is counted, and no extrapolation is performed.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "an axisymmetric equilibrium map in cylindrical coordinates and a rectilinear Cartesian solver grid to the static field, the poloidal flux, and the coverage of that grid by the map",
   "direction": "equilibrium map arrays plus x_m, y_m, z_m -> magnetic_flux_density_t, poloidal_flux_wb_per_rad, covered_mask, radially_clamped_point_count, axially_clamped_point_count",

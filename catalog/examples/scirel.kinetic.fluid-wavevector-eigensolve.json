@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Fluid perpendicular-wavenumber eigenbranches",
+   "Solve a general complex fluid eigenmatrix and select positive-real least-damped kx branches."
+  ],
+  "operation": [
+   "solve the fluid eigenmatrix for leading kx branches",
+   "complex square matrix and kn to full spectrum and filtered leading branches"
+  ],
+  "model": "linearized fluid pole dispersion eigenproblem",
+  "geometry": "no physical spatial grid",
+  "boundary": "selection rejects nonpropagating modes and returns at most keep branches",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "complex square matrix and kn to full spectrum and filtered leading branches",
   "direction": "complex square matrix and kn to full spectrum and filtered leading branches",

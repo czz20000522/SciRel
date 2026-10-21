@@ -14,6 +14,20 @@
  "aliases": [
   "pole_coefficients"
  ],
+ "discovery": {
+  "capability": [
+   "Rational plasma-dispersion poles",
+   "Return ordered J4/J8 tables or the precision-corrected J12/I16/K8 pole-residue table."
+  ],
+  "operation": [
+   "return rational plasma-dispersion poles",
+   "J -> bzj,czj"
+  ],
+  "model": "Explicit rational approximation or two-Gaussian representation for magnetized kinetic response.",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Rational plasma-dispersion poles",
   "direction": "J -> bzj,czj",

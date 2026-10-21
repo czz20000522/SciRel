@@ -15,6 +15,20 @@
  "aliases": [
   "anisotropic N4-N6-N7 Picard composition"
  ],
+ "discovery": {
+  "capability": [
+   "Anisotropic free-boundary Picard equilibrium",
+   "Run a bounded Picard feedback of anisotropic pressure, current and Green fields with an optional ideal-conductor wall correction."
+  ],
+  "operation": [
+   "bounded axisymmetric gyrotropic-pressure Picard composition with optional linear wall correction",
+   "R-Z grid, vacuum state, Green matrices and pressure closure -> terminal equilibrium state and convergence diagnostics"
+  ],
+  "model": "Axisymmetric gyrotropic-pressure Picard composition with caller-owned pressure closure and optional linear ideal-conductor wall correction.",
+  "geometry": "Finite, strictly increasing, nonnegative-R rectilinear tensor grid with at least three nodes per axis; nonuniform axes are supported and fields are indexed [Z,R].",
+  "boundary": "Wall flux corrections carry their discrete poloidal-field derivative; caller matrices must describe compatible boundary sampling, and the operator does not validate physical conductor geometry or eliminate a truncated-SVD residual.",
+  "device_scope": "device-parameterized"
+ },
  "identity": {
   "relation": "vacuum flux and field, dense cell-current Green responses and caller pressure closure to a bounded anisotropic R-Z equilibrium state",
   "direction": "R-Z grid, vacuum state, Green matrices, pressure closure and controls -> final flux/field/pressure/current state and iteration diagnostics",

@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Z-function pole coefficients",
+   "Return the fixed J=8 or J=12 complex residue and pole tables with conjugate completion."
+  ],
+  "operation": [
+   "return Z-function pole coefficient tables",
+   "integer pole count J to residues and complex pole positions"
+  ],
+  "model": "rational approximation of the Maxwellian plasma dispersion function",
+  "geometry": "homogeneous plasma",
+  "boundary": "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "integer pole count J to residues and complex pole positions",
   "direction": "integer pole count J to residues and complex pole positions",

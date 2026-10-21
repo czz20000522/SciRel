@@ -15,6 +15,20 @@
  "aliases": [
   "reduced Hall drift and current closure"
  ],
+ "discovery": {
+  "capability": [
+   "Reduced Hall toroidal drift closure",
+   "Project gyrotropic pressure force to toroidal current, apply an optional bounded local inertia correction and report drifts and scale diagnostics."
+  ],
+  "operation": [
+   "reduced axisymmetric Hall drift with gyrotropic pressure and optional local toroidal-inertia correction",
+   "R-Z field, pressures, closure state, mask and ion properties -> J_phi, species toroidal velocities and diagnostics"
+  ],
+  "model": "Reduced axisymmetric Hall drift with gyrotropic pressure and optional local toroidal-inertia correction.",
+  "geometry": "Rectilinear cylindrical R-Z grid with at least three nodes per axis; R nonnegative and both axes strictly increasing with arrays indexed [Z,R].",
+  "boundary": "Second-order one-sided gradient stencils at grid ends and zero radial pressure force and initial projection at an included R=0 axis; the inertia iteration does not reapply the axis rule, and Hall drift is inactive on the axis and outside the selected mask.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "R-Z field, ion pressure, electrostatic potential and species closure state to reduced Hall toroidal current and drifts",
   "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perpendicular, closure_state, plasma_mask and ion properties -> J_phi, toroidal species velocities and diagnostics",

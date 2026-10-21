@@ -15,6 +15,20 @@
  "aliases": [
   "anisotropic J_phi pressure-force decomposition"
  ],
+ "discovery": {
+  "capability": [
+   "Gyrotropic-pressure toroidal current decomposition",
+   "Project axisymmetric gyrotropic pressure force onto toroidal current and separate isotropic and anisotropic contributions."
+  ],
+  "operation": [
+   "perpendicular projection of axisymmetric gyrotropic pressure force onto toroidal current",
+   "R-Z B field and pressures -> J_phi, gradient-pressure term, anisotropy-curvature term and B"
+  ],
+  "model": "Axisymmetric gyrotropic pressure tensor and perpendicular current projection; not a complete equilibrium.",
+  "geometry": "Rectilinear cylindrical R-Z grid with at least three nodes per axis; arrays indexed [Z,R].",
+  "boundary": "The bound force kernel uses regular-axis tensor limits and reports parallel force separately; the toroidal projection alone is not a complete equilibrium.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "R-Z poloidal field and gyrotropic pressures to toroidal current density and two additive contributions",
   "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perp -> j_phi, gradp_term, anisotropy_curvature_term, B",

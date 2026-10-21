@@ -11,6 +11,20 @@
   "plasma-wave"
  ],
  "aliases": [],
+ "discovery": {
+  "capability": [
+   "Ronnmark kinetic dispersion",
+   "Evaluate the J=8 rational-pole kinetic 3x3 tensor and dispersion determinant, including complex kx and zero kz."
+  ],
+  "operation": [
+   "evaluate the Ronnmark kinetic dispersion tensor",
+   "SI species and wavepoint to Ronnmark K, D and determinant"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "boundary": "zero kz is allowed without the conventional sum's positive clamp",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "SI species and wavepoint to Ronnmark K, D and determinant",
   "direction": "SI species and wavepoint to Ronnmark K, D and determinant",

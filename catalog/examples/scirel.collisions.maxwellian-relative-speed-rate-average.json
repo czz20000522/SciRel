@@ -18,6 +18,20 @@
   "relative-speed rate average",
   "<sigma v>"
  ],
+ "discovery": {
+  "capability": [
+   "Maxwellian relative-speed rate average",
+   "Energy-resolved <sigma v> from a caller cross section averaged over a discretized Maxwellian target on a cylindrical velocity mesh."
+  ],
+  "operation": [
+   "Average a caller-supplied cross section over a discretized Maxwellian target",
+   "particle energies and mass, target temperature and mass, normalization temperature, velocity mesh and volume weights, cross-section callable -> one rate coefficient per particle energy"
+  ],
+  "model": "Discretized Maxwellian target on a cylindrical velocity mesh with caller-supplied cell volumes; monoenergetic particle along the axial axis; the cross-section law is entirely the caller callable.",
+  "geometry": "Cylindrical velocity space (radial speed vr, axial velocity vx) with the azimuthal measure carried by the volume weights; vr and vx are in units of the target thermal speed sqrt(2 e T_norm/(m_target m_H)).",
+  "boundary": "Zero particle energy is accepted as a particle at rest; temperatures and masses must be positive; sampled cross sections must be finite and nonnegative; a non-representable rate is rejected rather than rounded.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "the energy-resolved rate coefficient obtained by averaging a caller-supplied cross section over the relative speed between a monoenergetic axial particle and a discretized Maxwellian target",
   "direction": "particle energies and mass, target temperature and mass, normalization temperature, cylindrical velocity mesh and volume weights, cross-section callable -> one rate coefficient per particle energy",

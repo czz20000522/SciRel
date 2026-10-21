@@ -14,6 +14,20 @@
  "aliases": [
   "legacy.jpole_coefficients"
  ],
+ "discovery": {
+  "capability": [
+   "Two-sided Padé coefficient construction",
+   "Solve the source Maxwellian Taylor/asymptotic matching equations at declared decimal precision, refine simple roots and compute residues."
+  ],
+  "operation": [
+   "construct two-sided Padé coefficients",
+   "pole counts and precision -> Padé residues, poles and residuals"
+  ],
+  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
+  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
+  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Two-sided Padé coefficient construction",
   "direction": "Declared inputs to named scientific outputs.",

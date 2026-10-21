@@ -13,6 +13,20 @@
  "aliases": [
   "poly_fit"
  ],
+ "discovery": {
+  "capability": [
+   "Ascending-power SVD polynomial fit",
+   "Compute minimum-norm ascending-power coefficients with an absolute singular-value cutoff of 1e-10."
+  ],
+  "operation": [
+   "ascending-power polynomial fit with SVD truncation",
+   "matched one-dimensional samples and polynomial order -> basis evaluators and coefficients"
+  ],
+  "model": "Explicit SVD pseudo-inverse fit to ascending-power polynomial columns with an absolute singular cutoff of 1e-10.",
+  "geometry": "One-dimensional sample coordinates and ordinates in generic units; coefficients scale as y/x**power.",
+  "boundary": "No boundary model; over- and underdetermined systems use the same cutoff, and the cutoff is not a scale-invariant statistical rank policy.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Ascending-power SVD polynomial fit",
   "direction": "Declared inputs to Ascending power evaluators",

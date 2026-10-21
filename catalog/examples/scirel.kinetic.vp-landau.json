@@ -14,6 +14,20 @@
  "aliases": [
   "solve_vlasov_poisson"
  ],
+ "discovery": {
+  "capability": [
+   "Vlasov–Poisson initial-value composition",
+   "Initialize Poisson-closed df,E; run nt ordered RK4 steps; compute full field magnitude envelope and peak diagnostic."
+  ],
+  "operation": [
+   "compose the linear Vlasov-Poisson initial-value solve",
+   "initial controls -> field envelope, peaks and damping diagnostic"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "Composed equilibrium, initialization and evolution path; bounded time window; no convergence or physical validation.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "Initialize Poisson-closed df,E; run nt ordered RK4 steps; compute full field magnitude envelope and peak diagnostic.",
   "direction": "Inputs to solve_vlasov_poisson -> result",

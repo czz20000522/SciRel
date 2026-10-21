@@ -19,6 +19,20 @@
   "sigmav_ion_hh",
   "Janev H/H2 ionization rate"
  ],
+ "discovery": {
+  "capability": [
+   "Janev electron-impact ionization rate for H and H2",
+   "Species-specific Maxwellian electron-impact ionization rate coefficients for H and H2 from electron temperature in eV."
+  ],
+  "operation": [
+   "Evaluate the Janev H or H2 electron-impact ionization rate coefficient",
+   "electron temperature in eV and target species H or H2 -> ionization rate coefficient in m^3/s"
+  ],
+  "model": "Janev species-specific logarithmic-polynomial Maxwellian rate fits; not a runtime cross-section integral.",
+  "geometry": "None; pointwise scalar or array temperature samples with no spatial axis inferred (coordinate: electron temperature in eV).",
+  "boundary": "Temperature must be finite and strictly positive; the target species must be exactly H or H2; out-of-range temperatures clip to the fit endpoints and the output must be finite and positive.",
+  "device_scope": "generic"
+ },
  "identity": {
   "relation": "H or H2 electron-impact Maxwellian ionization rate coefficient from a species-specific logarithmic polynomial",
   "direction": "electron temperature in eV and target species H or H2 -> ionization rate coefficient in m^3/s",
