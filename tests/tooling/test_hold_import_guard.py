@@ -16,20 +16,20 @@ def _run(code: str) -> subprocess.CompletedProcess:
 
 def test_held_symbol_is_not_importable_by_default():
     completed = _run(
-        "from scirel.physics import calculate_log_lambda_ii;"
-        "calculate_log_lambda_ii(3., 2e19, 2.)")
+        "from scirel.collisions import assemble_atomic_hydrogen_collision_matrices;"
+        "assemble_atomic_hydrogen_collision_matrices")
     assert completed.returncode != 0
     assert "human review" in completed.stderr or "No module named" in completed.stderr
 
 
 def test_held_symbol_is_review_importable():
-    env = dict(os.environ, SCIREL_REVIEW_HOLD="1")
     code = (
         "import sys; sys.path.insert(0, 'src');"
-        "import scirel.physics as p;"
-        "p.__path__.append('catalog/review/candidates/src/scirel/physics');"
-        "print(p.calculate_log_lambda_ii(3., 2e19, 2.))")
+        "import scirel.collisions as c;"
+        "c.__path__.append('catalog/review/candidates/src/scirel/collisions');"
+        "from scirel.collisions import assemble_atomic_hydrogen_collision_matrices;"
+        "print(callable(assemble_atomic_hydrogen_collision_matrices))")
     completed = subprocess.run(
-        [sys.executable, "-c", code],
-        cwd=ROOT, capture_output=True, text=True, env=env)
+        [sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True,
+        env=dict(os.environ, SCIREL_REVIEW_HOLD="1"))
     assert completed.returncode == 0, completed.stderr

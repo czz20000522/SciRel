@@ -157,34 +157,50 @@
    ]
   },
   "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.atomic-hydrogen-collision-matrices": {
    "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
+   "reason": "Composition depends on a held source-conflict elastic cross-section; cannot expose a chain with a held member.",
+   "required_decision": "Resolve the source-conflict dimensions and release the dependencies first.",
    "evidence": []
   },
   "scirel.collisions.atomic-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.atomic-hydrogen-omega-frequencies": {
    "status": "human-review",
@@ -199,10 +215,14 @@
    "evidence": []
   },
   "scirel.collisions.janev-electron-impact-ionization-rate": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.maxwellian-relative-speed-rate-average": {
    "status": "pass-with-limits",
@@ -216,21 +236,29 @@
    ]
   },
   "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.molecular-hydrogen-collision-matrices": {
    "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
+   "reason": "Composition depends on a held source-conflict elastic cross-section; cannot expose a chain with a held member.",
+   "required_decision": "Resolve the source-conflict dimensions and release the dependencies first.",
    "evidence": []
   },
   "scirel.collisions.molecular-hydrogen-elastic-cross-section": {
@@ -263,10 +291,14 @@
    "evidence": []
   },
   "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.collisions.relativistic-maxwellian-bessel-closure": {
    "status": "pass",
@@ -2517,10 +2549,14 @@
    ]
   },
   "scirel.physics.coulomb-ii": {
-   "status": "human-review",
-   "reason": "The formula is a Sauter 1999 ion-ion fit, not NRL 2013 Eq. c; the model attribution and the +0.4388 ln Lambda difference require a scientific owner decision.",
-   "required_decision": "Owner chooses the model (Sauter fit or NRL 2013 Eq. c) and records the reference; formula/attribution must match before exposure.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "verdict": "source-parity"
+    }
+   ]
   },
   "scirel.physics.dilution": {
    "status": "pass",

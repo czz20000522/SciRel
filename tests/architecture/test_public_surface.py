@@ -156,6 +156,7 @@ def test_algebra_grid_exports_keep_domain_callables():
         "calculate_main_ion_dilution_factor": dilution.calculate_main_ion_dilution_factor,
         "calculate_log_lambda_ee": coulomb_logs.calculate_log_lambda_ee,
         "calculate_log_lambda_ei": coulomb_logs.calculate_log_lambda_ei,
+        "calculate_log_lambda_ii": coulomb_logs.calculate_log_lambda_ii,
     }
     assert set(physics.__all__) == set(expected)
     assert all(getattr(physics, name) is function for name, function in expected.items())

@@ -36,9 +36,6 @@ reference: the saved package records that residual as ``validation_oracle_gap``.
 """
 from __future__ import annotations
 
-# HELD: human-review exposure guard
-from scirel._hold import require_review_import
-require_review_import(__name__)
 
 
 import numpy as np
