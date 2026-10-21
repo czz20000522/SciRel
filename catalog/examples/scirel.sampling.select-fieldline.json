@@ -125,7 +125,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
-  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "runtime_failure": "Unknown contour levels raise ValueError; numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
   "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
   "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
  },
@@ -155,7 +155,8 @@
   "scope": [
    "Public callable signature and documented finite-input behavior",
    "The direct regression fixtures listed in verification.tests",
-   "The executable example stored in this contract"
+   "The executable example stored in this contract",
+   "Unknown contour levels raise ValueError; direct regression test_select_fieldline_rejects_unknown_level_with_value_error binds this behavior."
   ],
   "tests": [
    "tests/equilibrium/test_analysis_families.py"

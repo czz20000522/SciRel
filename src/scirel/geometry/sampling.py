@@ -215,7 +215,8 @@ def locs_to_vals1D(X, Y, Q, coord_list):
 
 def get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True, idx_check=[]):
     """Return the longest contour segment at ``level`` in requested order."""
-    assert level in list(contourset.levels), f"level: {level} not found in contourset"
+    if level not in list(contourset.levels):
+        raise ValueError(f"level: {level} not found in contourset")
     index = list(contourset.levels).index(level)
     segments = contourset.allsegs[index]
     longest = max(segments, key=lambda segment: segment.shape[0])

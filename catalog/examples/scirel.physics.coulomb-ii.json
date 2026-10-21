@@ -5,7 +5,7 @@
   "en": "Ion-ion Coulomb logarithm",
   "zh": "离子-离子库仑对数"
  },
- "summary": "Sauter/NRL ion-ion Coulomb logarithm estimate.",
+ "summary": "Sauter ion-ion Coulomb logarithm estimate.",
  "taxonomy": [
   "physics",
   "collisions",
@@ -16,12 +16,12 @@
  ],
  "discovery": {
   "capability": [
-   "Ion-ion Coulomb logarithm",
-   "Sauter/NRL ion-ion Coulomb logarithm from ion temperature in keV, ion density in m^-3 and charge state."
+   "Sauter ion-ion Coulomb logarithm estimate.",
+   "Evaluate the Sauter ion-ion weak-coupling Coulomb logarithm from temperature, density and charge state."
   ],
   "operation": [
-   "Evaluate the Sauter/NRL ion-ion Coulomb logarithm",
-   "ion temperature, density and charge -> dimensionless logarithm"
+   "evaluate the Sauter ion-ion Coulomb logarithm",
+   "ion temperature/density/charge -> dimensionless ln Lambda"
   ],
   "model": "Sauter/NRL Coulomb-log relation ln Lambda = 30 - 0.5 ln(n_i) + 1.5 ln(1000 T_i) - 3 ln(Z_i) with explicit numeric boundary checks.",
   "geometry": "Homogeneous plasma point with all three input arrays broadcast; no spatial geometry is inferred.",
@@ -31,8 +31,8 @@
  "identity": {
   "relation": "lnΛ=30-0.5 ln(n_i)+1.5 ln(1000*T_i)-3 ln(Z_i)",
   "direction": "ion temperature, density and charge -> dimensionless logarithm",
-  "definition": "30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i). Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
-  "model": "Sauter/NRL Coulomb-log relation with explicit SciRel numeric boundary checks",
+  "definition": "Sauter 1999 ion-ion weak-coupling fit 30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i), not NRL 2013 Eq. c. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
+  "model": "Sauter ion-ion Coulomb-log relation with explicit SciRel numeric boundary checks",
   "geometry": "homogeneous plasma point",
   "coordinates": "broadcast all three input arrays",
   "boundary": "strictly positive finite T_i in keV, n_i in m^-3, Z_i dimensionless",
@@ -119,18 +119,18 @@
  },
  "verification": {
   "scope": [
-   "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
+   "Independent 60-digit Decimal logarithms verify the declared Sauter fit over temperature/density/charge scales, including smallest subnormal and largest float64; transformation/scaling identities.",
    "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
    "Agreement with the canonical SciRel callers and dependencies of this relation."
   ],
   "tests": [
    "tests/cross_domain/test_algebra_grid.py"
   ],
-  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration. The NRL attribution is not independently validated; an independent NRL transcription differs by a constant +0.4388 in ln Lambda, recorded for owner review without changing the formula.",
+  "evidence_ceiling": "Maintained tests establish the declared Sauter 1999 ion-ion fit, shapes and numerical boundaries only. They do not establish global physical calibration or NRL 2013 Eq. c; an independent NRL transcription differs by +0.4388 in ln Lambda.",
   "known_limitations": [
    "No external calibration or collision-frequency composition is claimed.",
-   "Only the Sauter/NRL algebra and declared numerical boundaries are covered.",
-   "The Sauter/NRL attribution is not bound to a reference. An independent transcription of NRL 2013 Eq. c differs by a constant +0.4388 in ln Lambda across (T, n, Z) probes. Whether this asset is a different documented approximation or the NRL attribution needs correction is an owner decision; the formula is unchanged in this contract."
+   "Only the declared Sauter 1999 ion-ion fit algebra and numerical boundaries are covered; this is not a general Coulomb-log model.",
+   "This relation is not NRL 2013 Eq. c. An independent transcription of NRL 2013 Eq. c differs by a constant +0.4388 in ln Lambda on probes; the Sauter formula is retained and must not be cited as NRL 2013 Eq. c."
   ]
  }
 }

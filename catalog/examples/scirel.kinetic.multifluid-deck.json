@@ -84,16 +84,16 @@
  },
  "verification": {
   "scope": [
-   "Blocked: the bound shared multifluid test file does not call fluid_deck(); the contract example only observes one fixture.",
-   "No direct shape/content/round-trip gate for the stored deck is bound."
+   "Direct gate: test_packaged_fluid_deck_is_loaded_directly binds fluid_deck() shape, finite SI fields and the fixed electron/proton rows.",
+   "The contract example and direct test both load the packaged table; no external calibration is claimed."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Blocked: no direct asset-specific validation evidence is bound for fluid_deck(). The shared multifluid test file exercises other public symbols; it is not evidence for this fixture. The bounded example is a fixture observation, not validation. Reopen after a direct deck test (shape, finite SI fields, electron/ion role order and fixed constants) is bound, or withdraw the asset from release.",
+  "evidence_ceiling": "Bounded to the packaged ten-column two-species table: direct test checks shape, finite values, electron/proton rows and conversion into fluid_equilibrium_si. It does not establish arbitrary deck correctness or experimental calibration.",
   "known_limitations": [
-   "Validation is blocked because the bound test file does not call fluid_deck().",
-   "This is one attributed equilibrium fixture, not a plasma-parameter catalog."
+   "This is one attributed equilibrium fixture, not a plasma-parameter catalog.",
+   "No independent experimental or external-deck comparison is claimed."
   ]
  },
  "references": [

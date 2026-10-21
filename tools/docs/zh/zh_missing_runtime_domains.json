@@ -1057,7 +1057,7 @@
     "电荷为正标量或可广播场，不代表多物种混合。"
    ],
    "boundary": "T_i、n_i、Z_i 均为正有限值，温度以 keV、密度以 m^-3 输入。",
-   "definition": "30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i)。用 ln(1000)+ln(T) 计算温度项，避免中间乘法上溢或下溢。",
+   "definition": "Sauter 1999 离子-离子弱耦合拟合 30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i)，不是 NRL 2013 Eq. c；用 ln(1000)+ln(T) 避免中间溢出/下溢。",
    "example": {
     "description": "计算有限温度和密度下的库仑对数。",
     "expected": "得到有限无量纲对数。"
@@ -1094,7 +1094,7 @@
      "units": "无量纲"
     }
    ],
-   "model": "Sauter/NRL 库仑对数关系，并带有显式的数值边界检查。",
+   "model": "带 SciRel 数值边界检查的 Sauter 离子-离子库仑对数关系",
    "outputs": [
     {
      "name": "result",
@@ -1105,17 +1105,17 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "d50a489516e1f21f34fd3c1348d86e5bcdcfb4baa584e537afc53dd814c9295a",
-   "summary": "离子-离子库仑对数估计。",
+   "source_sha256": "7e12e19f86225aca920ca8bc454bf338b12321db1551ac46e8e902501c549ac2",
+   "summary": "Sauter 离子-离子库仑对数估计。",
    "verification": {
-    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。NRL 归属未获独立验证；独立转写相差 lnΛ 常数 +0.4388，仅记录供 owner 复核，不改变公式。",
+    "evidence_ceiling": "维护测试只建立声明的 Sauter 1999 离子-离子拟合、形状和数值边界；不建立全局物理标定或 NRL 2013 Eq. c，独立 NRL 转写相差 +0.4388 ln Lambda。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
-     "仅覆盖 Sauter/NRL 代数和声明的数值边界。",
-     "该表达式标注为 Sauter/NRL，但未绑定参考。独立转写的 NRL 2013 Eq. c 在 (T, n, Z) 探针上相差 lnΛ 常数 +0.4388。它究竟是另一种已文档化近似，还是 NRL 归属需要更正，属于 owner 决策；本合同的公式保持不变。"
+     "只覆盖声明的 Sauter 1999 离子-离子拟合代数和数值边界；不是通用库仑对数模型。",
+     "本关系不是 NRL 2013 Eq. c。独立转写 NRL 2013 Eq. c 在探针上相差 ln Lambda 常数 +0.4388；保留 Sauter 公式，不得引用为 NRL 2013 Eq. c。"
     ],
     "scope": [
-     "以独立 60 位 Decimal 对数覆盖温度、密度、电荷的最小次正规数至最大 float64，并检查电荷缩放恒等式。",
+     "使用独立 60 位 Decimal 对数在温度/密度/电荷尺度（含最小次正规数和最大 float64）上核验声明的 Sauter 拟合；覆盖变换/缩放恒等式。",
      "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
      "与本关系的规范 SciRel 调用者及依赖一致。"
     ],

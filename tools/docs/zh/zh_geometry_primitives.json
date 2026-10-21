@@ -1962,7 +1962,7 @@
   },
   {
    "asset_id": "scirel.sampling.select-fieldline",
-   "source_sha256": "f868e133b4b8fb3641257fce4fd9082497f11891d476c61797a099707b0343f3",
+   "source_sha256": "28055f36e9f5056a87aff695b01e500b6996cd5e143b9fa6291a60b7eb3cfa19",
    "summary": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
    "definition": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
    "model": "沿用原实现的轮廓线段选择；idx_check 是为兼容而保留、会被忽略的参数。采用平面线段顶点及精确等值标签。",
@@ -2031,7 +2031,7 @@
    },
    "failure_semantics": {
     "invalid_input": "对非有限、不匹配、未排序、域外或格式错误的输入抛出 ValueError 或底层 NumPy/SciPy 异常；不推断输入修复。",
-    "runtime_failure": "数值、插值或可选依赖异常从直接计算向上传播。",
+    "runtime_failure": "未知 contour level 抛出 ValueError；数值、插值或可选依赖异常从直接计算传播。",
     "nonconvergence": "不适用；该关系使用直接有限差分、插值、选择或求积操作。",
     "partial_results": "输入校验或底层数值操作失败时不承诺部分结果。"
    },
@@ -2043,7 +2043,8 @@
     "scope": [
      "公共可调用签名及文档化的有限输入行为。",
      "verification.tests 列出的直接回归样例。",
-     "本合同所载可执行示例。"
+     "本合同所载可执行示例。",
+     "未知 contour level 抛出 ValueError；直接回归 test_select_fieldline_rejects_unknown_level_with_value_error 绑定该行为。"
     ],
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [

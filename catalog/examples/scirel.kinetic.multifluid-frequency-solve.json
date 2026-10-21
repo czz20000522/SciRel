@@ -163,8 +163,7 @@
   "known_limitations": [
    "Residual qualification is backward accuracy, not forward conditioning of a near-multiple root.",
    "No sparse selected-spectrum or branch-continuation semantics.",
-   "The PDRF oracle asserts real parts only; its imaginary-part floor (~1e-5..1e-4 s^-1) is not growth-rate evidence.",
-   "The historical AUDIT.md P0 reproducer at B0≈2.4e-3 T and k=0.05–0.15 m^-1 is not committed; add it as a regression before release closure."
+   "The PDRF oracle asserts real parts only; its imaginary-part floor (~1e-5..1e-4 s^-1) is not growth-rate evidence."
   ]
  },
  "references": [

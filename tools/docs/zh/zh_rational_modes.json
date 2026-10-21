@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.multifluid-deck",
-   "source_sha256": "721eed6e000908d9c7eaac5c40724ec26967a06c28cc7428df883e19e9bc2ff2",
+   "source_sha256": "a557d1feb5c2be3ff8d9167ae734a0d7e3b94ba9b958977e1e881433cf4dd076",
    "summary": "返回随包多流体十列、双物种物理输入表的独立副本。",
    "definition": "读取双物种十列多流体 SI 字面数据表，不改变其中的物理数值。",
    "model": "固定的电子／质子流体输入数据。",
@@ -39,14 +39,14 @@
    },
    "verification": {
     "scope": [
-     "Blocked：绑定的共享多流体测试文件没有调用 fluid_deck()；合同示例只观察一个 fixture。",
-     "未绑定任何针对存储 deck 的直接形状/内容/往返 gate。"
+     "直接 gate：test_packaged_fluid_deck_is_loaded_directly 绑定 fluid_deck() 的形状、有限 SI 字段和固定电子/质子行。",
+     "合同示例和直接测试都加载打包表；不声称外部标定。"
     ],
     "known_limitations": [
-     "验证被阻塞：绑定测试文件没有调用 fluid_deck()。",
-     "这是一个有明确归属的平衡样例，不是等离子体参数目录。"
+     "这是一个有归属的平衡态 fixture，不是等离子体参数目录。",
+     "不声称独立实验或外部 deck 对照。"
     ],
-    "evidence_ceiling": "Blocked：未绑定 fluid_deck() 的逐资产验证证据。共享多流体测试文件覆盖其它公共符号，不构成本 fixture 的证据；有界示例只是 fixture 观察。补上直接 deck 测试（形状、有限 SI 字段、电子/离子角色顺序、固定常数）后再 reopen，或撤下该资产的发布声明。"
+    "evidence_ceiling": "限定于打包的十列双物种表：直接测试检查形状、有限值、电子/质子行以及到 fluid_equilibrium_si 的转换；不建立任意 deck 正确性或实验标定。"
    },
    "example": {
     "description": "加载独立的随包数据。",
@@ -232,7 +232,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-frequency-solve",
-   "source_sha256": "9527995024a0c3be70b59761f10c6afb52f62b29b7ac8f7c1a89d51a514e37d6",
+   "source_sha256": "747d17a93862a8ff0f444db043eb52b67f208313fccd2f004ced4baa85eb6a5e",
    "summary": "在物理坐标中计算完整流体谱，逐分量检查矩阵束残差，并显式提供亏损零本征值元数据；数值条件化不改变科学矩阵束。",
    "definition": "在缩放坐标中按支撑结构分块求解：惯性矩阵恰为单位阵的分块使用标准本征问题，其余分块使用广义 QZ；把存储的二进制系数视为精确有理数，通过矩阵幂的秩核对零本征值重数；必要时细化非零本征对，并针对组装的原始 M,A 检查每个本征对。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
@@ -316,8 +316,7 @@
     "known_limitations": [
      "残差限定是后向精度，不是近重根的前向条件化。",
      "没有稀疏选中谱或分支延续语义。",
-     "PDRF oracle 只断言实部；其虚部 floor（约 1e-5..1e-4 s^-1）不是增长率证据。",
-     "历史 AUDIT.md P0 reproducer（B0≈2.4e-3 T，k=0.05–0.15 m^-1）未随仓库提交；发布关闭前须补回归。"
+     "PDRF oracle 只断言实部；其虚部 floor（约 1e-5..1e-4 s^-1）不是增长率证据。"
     ],
     "evidence_ceiling": "限定于所声明的多流体频率求解，仅覆盖受测双物种/PDRF deck。主 gate 在四个 (kx,kz) 点将全部 14 个实频与独立 PDRF 值比较（rtol 2e-9），并要求后向误差 <=1e-10；解析/制造 gates 覆盖零场冷模态、非单位惯性与复波矢 holdout。不证明任意参数一致性、分支唯一性、虚部增长率（PDRF 虚部 floor 非物理）或全局模型。",
     "tests": [
@@ -332,7 +331,7 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-relative-rate-equilibrium",
-   "source_sha256": "b7058151909e3b67d3a3972629d3af4e68c0eb814f4cfdb8f6ad967fb3a56538",
+   "source_sha256": "bbd1417621f26fb1df27a8fafde239035d702d4b97880aaa7bed4f9ba9e7b5cd",
    "summary": "将五个显式定义的标量速率和声明的电子／离子类别转换为守恒动量交换平衡。这是声明的一种解释，不声称与含义不明的 nu 控制量等价。",
    "definition": "对每个无序物种对，K_ij=nu_relative*rho_i*rho_j/(rho_i+rho_j)。按类别定义的外部背景速率形成独立的对角阻力。两体相对速度以声明的 nu_relative 衰减。",
    "model": "多物种非相对论平衡，可选守恒的成对动量交换与外部静止背景阻力。",
@@ -432,15 +431,16 @@
    },
    "verification": {
     "scope": [
-     "Blocked：没有绑定测试调用 fluid_equilibrium_relative_rates()。",
-     "test_declared_relative_rate_variant_all_roles_and_permutation 覆盖 pair-exchange 依赖，不是该 wrapper 的角色、平衡态或失败契约。"
+     "直接 gate：test_relative_rate_wrapper_binds_roles_and_collision_state 绑定 wrapper、显式角色、对称交换、bath drag 和碰撞态合同。",
+     "解析 pair-exchange 恒等式和置换协变性由同一测试模块覆盖。",
+     "有界示例仅作代表。"
     ],
     "known_limitations": [
-     "验证被阻塞：绑定测试文件没有调用 fluid_equilibrium_relative_rates()。",
-     "相对对与背景阻力具有不同的守恒性质。",
-     "速率是显式声明的科学变体；不重现正速率增长。"
+     "相对对与 bath 速率具有不同的守恒性质。",
+     "速率是声明的科学变体；不重现正速率增长。",
+     "不声称外部实验标定。"
     ],
-    "evidence_ceiling": "Blocked：未绑定 fluid_equilibrium_relative_rates() 的逐资产验证证据。共享测试只覆盖底层 pair-exchange 依赖；不确立 wrapper 的公共行为。补上直接 wrapper gate（物种角色、返回平衡态、相对速率控制与失败路径）后再 reopen，或撤下发布声明。"
+    "evidence_ceiling": "限定于打包双物种 fixture 上的五个声明相对/bath 控制：直接测试覆盖角色、交换对称性、bath drag、碰撞态合同和 pair-exchange 恒等式；不建立任意多物种速率拟合或与含糊旧控制量的等价性。"
    },
    "example": {
     "description": "声明一个电子－离子相对阻尼率。",

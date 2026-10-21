@@ -191,17 +191,18 @@
  },
  "verification": {
   "scope": [
-   "Blocked: no bound test calls fluid_equilibrium_relative_rates().",
-   "test_declared_relative_rate_variant_all_roles_and_permutation covers the pair-exchange dependency, not this wrapper's roles, equilibrium state or failure contract."
+   "Direct gate: test_relative_rate_wrapper_binds_roles_and_collision_state binds the wrapper, explicit roles, symmetric exchange, bath drag and collision-state contract.",
+   "Analytic pair-exchange identities and permutation covariance are covered by the same test module.",
+   "The bounded example is representative only."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_multifluid.py"
   ],
-  "evidence_ceiling": "Blocked: no direct asset-specific validation evidence is bound for fluid_equilibrium_relative_rates(). The shared test exercises the underlying pair-exchange dependency; it does not establish the wrapper's public behavior. Reopen after a direct wrapper gate (species roles, returned equilibrium/state, relative-rate controls and failure paths) is bound, or withdraw from release.",
+  "evidence_ceiling": "Bounded to the five declared relative/bath controls on the packaged two-species fixture: direct tests cover roles, exchange symmetry, bath drag, collision-state contract and the pair-exchange identities. It does not establish arbitrary multi-species rate fits or equivalence to ambiguous legacy controls.",
   "known_limitations": [
-   "Validation is blocked because the bound test file does not call fluid_equilibrium_relative_rates().",
    "Relative-pair and bath rates have different conservation properties.",
-   "Rates form a declared scientific variant; positive-rate growth is not reproduced."
+   "Rates form a declared scientific variant; positive-rate growth is not reproduced.",
+   "No external experimental calibration is claimed."
   ]
  },
  "references": [

@@ -105,3 +105,16 @@ def test_spectral_temporal_spectrum_matches_external_pdrf_truth(kx, kz, oldmetho
     np.testing.assert_allclose(
         result["w1"].real, _TRUTH[(kx, kz)], rtol=2e-9, atol=1e-9
     )
+
+
+def test_historical_p0_reproducer_keeps_all_fourteen_modes_without_exception():
+    """Named closure for the original AUDIT.md P0: no exception/duplicate/missing mode."""
+    state = _state()
+    for kx, kz in [(0.05, 0.05), (0.05, 0.15), (0.15, 0.05), (0.15, 0.15)]:
+        result = fluid_solve_state(state, kx, kz)
+        assert result["w1"].shape == (14,)
+        real = result["w1"].real
+        assert np.sum(np.abs(real) < 1.0) == 2
+        assert len(np.unique(np.round(real[np.abs(real) >= 1.0], 6))) == 12
+        assert np.isfinite(result["w1"]).all()
+        assert np.max(result["componentwise_backward_errors"]) <= 1e-10

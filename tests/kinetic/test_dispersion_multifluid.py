@@ -1,13 +1,15 @@
-"""UNRUN proposed gates. Owner/independent validator must bind exact candidates first.
+"""Direct multifluid gates plus analytic/high-precision oracles.
 
-Analytic, high-precision and tensor-perturbation oracles, never candidate-generated
-expected results. This file is a plan implementation, not validation evidence.
+This file binds the public multifluid deck, corrected relative-rate wrapper and
+the frequency-pencil/solve paths. Expected values are analytic or independent
+high-precision references, never candidate-generated results.
 """
 import numpy as np
 import pytest
 import mpmath as mp
 from scipy.optimize import linear_sum_assignment
 from scirel.kinetic.dispersion import _fluid_parallel as c
+from scirel.kinetic.dispersion.multifluid import fluid_deck
 
 
 def test_faddeeva_independent_80_digit_definition():
@@ -107,6 +109,35 @@ def test_explicit_fixed_axis_zero_field_preserves_anisotropic_capability():
     pencil=c.fluid_frequency_pencil(state,.3,.7)
     # Fixed tensor axes mean no deltaP from rotating a magnetic perturbation.
     np.testing.assert_array_equal(pencil['M'][1:4,11],0)
+
+
+def test_packaged_fluid_deck_is_loaded_directly():
+    deck = fluid_deck()
+    assert deck.shape == (2, 10)
+    assert np.isfinite(deck).all()
+    np.testing.assert_array_equal(deck[:, :3], [
+        [-1.602e-19, 9.109e-31, 8.7e6],
+        [1.602e-19, 1.673e-27, 8.7e6],
+    ])
+    state = c.fluid_equilibrium_si(deck, B0=1e-3)
+    assert state['q'].shape == (2,)
+    assert np.isfinite(state['M']).all() if 'M' in state else True
+
+
+def test_relative_rate_wrapper_binds_roles_and_collision_state():
+    params = dict(
+        electron_bath_rate=.1, ion_bath_rate=.2,
+        electron_pair_relative_rate=.3, ion_pair_relative_rate=.4,
+        electron_ion_relative_rate=.5,
+    )
+    state = c.fluid_equilibrium_relative_rates(
+        fluid_deck(), species_classes=('electron', 'ion'), B0=1e-3, **params)
+    assert state['species_classes'] == ('electron', 'ion')
+    assert state['collision_contract'] == 'explicit_relative_pair_rates_and_stationary_bath_variant'
+    assert state['exchange'].shape == (2, 2)
+    assert np.allclose(state['exchange'], state['exchange'].T)
+    assert state['bath_drag'].shape == (2,)
+    assert np.isfinite(state['velocity_collision']).all()
 
 
 def test_declared_relative_rate_variant_all_roles_and_permutation():

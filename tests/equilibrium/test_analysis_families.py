@@ -340,3 +340,13 @@ def test_closed_circle_flux_curvature_refinement():
     assert errors[2]<errors[1]/3.4
     assert errors[2]<.004
 
+
+
+def test_select_fieldline_rejects_unknown_level_with_value_error():
+    contourset = SimpleNamespace(
+        levels=[0.2, 0.5],
+        allsegs=[[np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]])],
+                 [np.array([[0.0, 0.0], [0.5, 0.0], [0.5, 0.5]])]],
+    )
+    with pytest.raises(ValueError, match="not found in contourset"):
+        sampling.get_fieldlines(contourset, 0.7)
