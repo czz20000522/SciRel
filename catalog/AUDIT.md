@@ -187,3 +187,12 @@ Avoiding a merge chain reaction:
   exposed; do not ship a partially wired chain;
 - package/wheel checks must prove that held modules and symbols are absent, not
   merely guarded at runtime.
+
+## Complex-case replication direction (recorded, not started)
+
+A future complex-case track is to replicate the full functionality of a
+decomposed project using the current SciRel capability layer as the starting
+point. That is a software-engineering workflow (dependency closure, staged
+candidates, integration tests, external truth), not a single capability audit.
+It is recorded as a direction, not a release gate; no coverage claim is made
+until the workflow and its acceptance evidence exist.
