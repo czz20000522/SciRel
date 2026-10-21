@@ -1,5 +1,10 @@
 # Project meta-rules
 
+The cross-project version of these rules lives in the global `agentic-development`
+skill: `references/durable-rules-and-handoff.md` (durable placement, single truth,
+generated-is-not-reviewed, information boundaries, handoff). This file is the
+SciRel-specific overlay; project paths and schemas stay here.
+
 This file records how SciRel work is **governed**, not just what one feature does.
 It exists so a later human or agent can understand our preferences and continue
 without replaying chat history. If a rule matters, it must live in a canonical
