@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.compute-equilibrium",
-   "source_sha256": "83b53db7ea07be51e4da0e8e63f099d5c58762afb09b44bfceb4557b8d4d35fe",
+   "source_sha256": "e445998cf28a2d0cdd289976f5555d8b639aee7374609b43fc884f926b778be1",
    "summary": "在给定真空磁通与 Green 矩阵下执行有界轴对称压力—电流反馈，并返回显式终态。",
    "definition": "压力闭合为 j_phi=R dP/dpsi，其中 psi=R A_phi。更新残差为 ||psi_new-psi_old||_2/abs(edge_new)。闭合残差为 ||I_new-I_target(psi_new,新拟合)||_2/||I_target||_2：目标为零且误差为零时取零；目标为零但电流非零时残差为无穷，并给出非有限终态。只有两个残差同时不超过 tol 才算收敛。状态只在本次调用内有效；依次计算拟合导数、应用掩膜、更新松弛电流、做 Green 收缩、更新磁通与边界/拟合，并求两个残差，在收敛、状态无效或达到 maxiter 时停止。",
    "model": "基于压力—半径反馈，使用 InterpolatedUnivariateSpline 和调用者提供的 Green 矩阵。",

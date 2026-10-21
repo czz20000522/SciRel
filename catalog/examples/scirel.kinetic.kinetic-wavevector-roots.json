@@ -40,252 +40,252 @@
  "inputs": [
   {
    "name": "B0",
-   "description": "背景磁场强度，经色散行列式进入回旋频率",
+   "description": "Background magnetic-field strength, entering the cyclotron frequency through the dispersion determinant",
    "units": "T",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零。"
+   "constraints": "Finite and nonzero."
   },
   {
    "name": "qs",
-   "description": "各组分电荷，决定回旋频率符号",
+   "description": "Species charges, setting the sign of the cyclotron frequency",
    "units": "C",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限，元素数与其余组分数组一致。"
+   "constraints": "Finite; element count matches the other species arrays."
   },
   {
    "name": "ms",
-   "description": "各组分质量，进入热速度与回旋频率",
+   "description": "Species masses, entering the thermal speed and the cyclotron frequency",
    "units": "kg",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "ns0",
-   "description": "各组分绝对数密度，进入等离子体频率",
+   "description": "Species absolute number densities, entering the plasma frequency",
    "units": "m^-3",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "Ts0",
-   "description": "各组分温度，已按声明的约定换算为开尔文",
+   "description": "Species temperatures, already converted to kelvin under the declared convention",
    "units": "K",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "omegas",
-   "description": "待求根的角频率序列；各频点独立求根并重复使用同一 `kx_start` 初值，不作频率间延续",
+   "description": "Angular-frequency sequence whose roots are sought; each frequency point is solved independently with the same `kx_start` initial value, with no continuation between frequencies",
    "units": "rad/s",
-   "shape": "`(F,)` 一维频点轴",
+   "shape": "`(F,)` one-dimensional frequency axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "非空有限数组且元素非零，因为频率出现在共振分母中。"
+   "constraints": "Non-empty finite array with nonzero elements, because the frequency appears in the resonance denominator."
   },
   {
    "name": "kz",
-   "description": "波矢平行磁场分量，固定不变并进入平行共振宗量",
+   "description": "Wavevector component parallel to the magnetic field, held fixed and entering the parallel resonance argument",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限；允许为零（算例 2 取 `kz=0.0`），此时平行共振宗量退化为 $\\omega/\\omega_{cs}$。"
+   "constraints": "Finite; zero is allowed (case 2 uses `kz=0.0`), in which case the parallel resonance argument reduces to $\\omega/\\omega_{cs}$."
   },
   {
    "name": "kx_start",
-   "description": "延续求根的起始复初值 `x01=(0.6+0.0i)*kn`",
+   "description": "Starting complex initial value for continuation root finding, `x01=(0.6+0.0i)*kn`",
    "units": "1/m",
-   "shape": "标量复数",
+   "shape": "scalar complex",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限；只影响收敛到哪个根，不影响根本身的存在性。"
+   "constraints": "Finite; it only affects which root is converged to, not the existence of the root itself."
   },
   {
    "name": "tol_fun",
-   "description": "对应 the reference runtime `TolFun` 的残差相对收敛阈值",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Relative residual convergence tolerance corresponding to the reference runtime `TolFun`",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "有限且严格为正，默认 `1e-16`（`optimset` 取值）。",
+   "constraints": "Finite and strictly positive; defaults to `1e-16` (the reference solver default).",
    "default": 1e-16
   },
   {
    "name": "tol_x",
-   "description": "对应 the reference runtime `Tolx` 的变量相对步长收敛阈值",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Relative variable-step convergence tolerance corresponding to the reference runtime `Tolx`",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "有限且严格为正，默认 `1e-16`（`optimset` 取值）。",
+   "constraints": "Finite and strictly positive; defaults to `1e-16` (the reference solver default).",
    "default": 1e-16
   },
   {
    "name": "max_iterations",
-   "description": "对应 the reference runtime `MaxIter` 的每个频点最大迭代次数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Maximum iterations per frequency point, corresponding to the reference runtime `MaxIter`",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": false,
-   "constraints": "不小于 1，默认 400（the reference runtime 默认值）。",
+   "constraints": "At least 1; defaults to 400 (the reference runtime default).",
    "default": 400
   },
   {
    "name": "max_function_evals",
-   "description": "对应 the reference runtime `MaxFunEvals` 的每个频点最大目标函数求值次数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Maximum objective-function evaluations per frequency point, corresponding to the reference runtime `MaxFunEvals`",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": false,
-   "constraints": "不小于 1，默认 100（the reference runtime 对标量未知量取 `100*numel(x0)`）。",
+   "constraints": "At least 1; defaults to 100 (the reference runtime uses `100*numel(x0)` for a scalar unknown).",
    "default": 100
   }
  ],
  "outputs": [
   {
    "name": "roots",
-   "description": "逐频点求得的复垂直波数根",
+   "description": "Complex perpendicular-wavenumber root obtained at each frequency point",
    "units": "1/m",
-   "shape": "`(F,)` 一维频点轴复数组",
+   "shape": "`(F,)` one-dimensional frequency-axis complex array",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数。"
+   "constraints": "Finite complex."
   },
   {
    "name": "residuals",
-   "description": "各根处的色散行列式残差 $\\mathcal{D}$",
-   "units": "无量纲",
-   "shape": "`(F,)` 一维频点轴复数组",
+   "description": "Dispersion-determinant residual $\\mathcal{D}$ at each root",
+   "units": "dimensionless",
+   "shape": "`(F,)` one-dimensional frequency-axis complex array",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数；根的质量须由该残差与 `last_updates` 共同判断。"
+   "constraints": "Finite complex; the quality of the root must be judged from this residual together with `last_updates`."
   },
   {
    "name": "determinant_scale",
-   "description": "各根处介电张量元素的模最大值，用作该频点行列式残差的抵消量级基准",
-   "units": "无量纲",
-   "shape": "`(F,)` 一维频点轴浮点数组",
+   "description": "Maximum modulus of the dielectric-tensor elements at each root, used as the cancellation scale of the determinant residual at that frequency point",
+   "units": "dimensionless",
+   "shape": "`(F,)` one-dimensional frequency-axis floating-point array",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "非负有限；`abs(residuals)/determinant_scale` 即该根的相对零点质量。"
+   "constraints": "Nonnegative finite; `abs(residuals)/determinant_scale` is the relative zero quality of that root."
   },
   {
    "name": "exit_flags",
-   "description": "各频点的 the reference runtime `fsolve` 退出标志（`1` 残差达标、`2` 步长达标、`3` 残差下降达标、`-2` 雅可比退化、`-3` 信赖域收缩到无意义、`0` 达到迭代或求值上限）",
-   "units": "不适用",
-   "shape": "`(F,)` 一维频点轴整数数组",
+   "description": "The reference runtime `fsolve` exit flag at each frequency point (`1` residual met, `2` step met, `3` residual decrease met, `-2` Jacobian degenerate, `-3` trust region shrank to meaninglessness, `0` iteration or evaluation limit reached)",
+   "units": "not applicable",
+   "shape": "`(F,)` one-dimensional frequency-axis integer array",
    "dtype": "integer",
    "required": true,
-   "constraints": "取值限于 `{1,2,3,0,-2,-3}`。"
+   "constraints": "Restricted to `{1,2,3,0,-2,-3}`."
   },
   {
    "name": "iterations",
-   "description": "各频点实际使用的迭代次数",
-   "units": "无量纲",
-   "shape": "`(F,)` 一维频点轴整数数组",
+   "description": "Iteration count actually used at each frequency point",
+   "units": "dimensionless",
+   "shape": "`(F,)` one-dimensional frequency-axis integer array",
    "dtype": "integer",
    "required": true,
-   "constraints": "不超过 `max_iterations`。"
+   "constraints": "Does not exceed `max_iterations`."
   },
   {
    "name": "function_evals",
-   "description": "各频点实际的目标函数求值次数",
-   "units": "无量纲",
-   "shape": "`(F,)` 一维频点轴整数数组",
+   "description": "Objective-evaluation count actually used at each frequency point",
+   "units": "dimensionless",
+   "shape": "`(F,)` one-dimensional frequency-axis integer array",
    "dtype": "integer",
    "required": true,
-   "constraints": "不超过 `max_function_evals`。"
+   "constraints": "Does not exceed `max_function_evals`."
   },
   {
    "name": "converged",
-   "description": "各频点退出标志是否为正（即 the reference runtime 判定收敛）",
-   "units": "不适用",
-   "shape": "`(F,)` 一维频点轴布尔数组",
+   "description": "Whether the exit flag is positive at each frequency point (that is, the reference runtime judged convergence)",
+   "units": "not applicable",
+   "shape": "`(F,)` one-dimensional frequency-axis boolean array",
    "dtype": "bool",
    "required": true,
-   "constraints": "为假时根仍是行列式的数值驻点或未收敛点，调用者须按 `residuals` 与 `determinant_scale` 自行判定是否接受。"
+   "constraints": "When false, the root is still a numerical stationary point or an unconverged point of the determinant; the caller must decide acceptance from `residuals` and `determinant_scale`."
   },
   {
    "name": "omegas",
-   "description": "本次实际使用的角频率序列，回显输入",
+   "description": "Angular-frequency sequence actually used in this call, echoing the input",
    "units": "rad/s",
-   "shape": "`(F,)` 一维频点轴",
+   "shape": "`(F,)` one-dimensional frequency axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "与 `roots` 等长。"
+   "constraints": "Same length as `roots`."
   },
   {
    "name": "kz",
-   "description": "本次求根使用的平行波数，回显输入",
+   "description": "Parallel wavenumber used in this root finding, echoing the input",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "与输入一致。"
+   "constraints": "Matches the input."
   },
   {
    "name": "kx_start",
-   "description": "本次求根使用的起始初值，回显输入",
+   "description": "Starting initial value used in this root finding, echoing the input",
    "units": "1/m",
-   "shape": "标量复数",
+   "shape": "scalar complex",
    "dtype": "complex128",
    "required": true,
-   "constraints": "与输入一致。"
+   "constraints": "Matches the input."
   },
   {
    "name": "tol_fun",
-   "description": "本次使用的残差阈值，回显输入",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Residual threshold used in this call, echoing the input",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "与输入一致。"
+   "constraints": "Matches the input."
   },
   {
    "name": "tol_x",
-   "description": "本次使用的变量阈值，回显输入",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Variable threshold used in this call, echoing the input",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "与输入一致。"
+   "constraints": "Matches the input."
   },
   {
    "name": "max_iterations",
-   "description": "本次使用的迭代上限，回显输入",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Iteration limit used in this call, echoing the input",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": true,
-   "constraints": "与输入一致。"
+   "constraints": "Matches the input."
   },
   {
    "name": "max_function_evals",
-   "description": "本次使用的求值上限，回显输入",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Evaluation limit used in this call, echoing the input",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": true,
-   "constraints": "与输入一致。"
+   "constraints": "Matches the input."
   },
   {
    "name": "solver",
-   "description": "求根算法的文字标识，供调用者核对所用的数值路径",
-   "units": "不适用",
-   "shape": "字符串",
+   "description": "Text label for the root-finding algorithm, so the caller can check the numerical path used",
+   "units": "not applicable",
+   "shape": "string",
    "dtype": "string",
    "required": true,
-   "constraints": "固定为 `octave_fsolve_dogleg_on_fDR`。"
+   "constraints": "Fixed at `reference_fsolve_dogleg_on_fDR`."
   }
  ],
  "applicability": {

@@ -40,7 +40,7 @@
   "assumptions": [
    "relax is the weight of the previous flux, not a mixer for current values.",
    "Default composite-trapezoid weights integrate exactly over the supplied node-domain rectangle; boundary nodes have half-interval weights. Explicit cell_edges=(radial_edges,axial_edges), each with center_count+1 monotone finite entries enclosing its centers, instead define cell-center areas. No 2*pi*R factor multiplies toroidal filament current.",
-   "psi与Green磁通响应均使用RAphi的Wb/rad约定；实际圆环方程未含2π，真空场/叠加链旧Wb标签已纠正，不修改数值。"
+   "Both psi and the Green flux response use the R A_phi convention in Wb/rad; the actual toroidal equation does not include 2*pi, the legacy Wb labels in the vacuum-field/superposition chain are corrected, and no numerical value is changed."
   ]
  },
  "inputs": [

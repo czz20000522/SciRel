@@ -43,51 +43,51 @@
  "inputs": [
   {
    "name": "rz_pts",
-   "description": "按调用者顺序给出的目标R,Z。",
+   "description": "Target R,Z coordinates in caller order.",
    "units": "m",
    "shape": "(Ntarget,2)",
    "dtype": "finite real",
    "required": true,
-   "constraints": "半径非负；拒绝复数。"
+   "constraints": "Nonnegative radius; complex values are rejected."
   },
   {
    "name": "rzw",
-   "description": "有序源R,Z和可选有符号权重；None使用目标为单位权重源。",
+   "description": "Ordered source R,Z and optional signed weights; None uses the targets as unit-weight sources.",
    "units": "m,m,dimensionless",
    "shape": "(Nsource,2) or (Nsource,3) or None",
    "dtype": "finite real or None",
    "required": false,
    "default": null,
-   "constraints": "源半径非负，省略第三列时权重1。"
+   "constraints": "Nonnegative source radius; the weight is 1 when the third column is omitted."
   }
  ],
  "outputs": [
   {
    "name": "psi",
-   "description": "目标行、源列的磁通响应。",
+   "description": "Flux response indexed by target row and source column.",
    "units": "Wb/rad/A",
    "shape": "(Ntarget,Nsource)",
    "dtype": "float64",
    "required": true,
-   "constraints": "有限；精确重合离散置零。"
+   "constraints": "Finite; an exact coincidence is set to zero by the discrete convention."
   },
   {
    "name": "BR",
-   "description": "目标行、源列的径向场响应。",
+   "description": "Radial-field response indexed by target row and source column.",
    "units": "T/A",
    "shape": "(Ntarget,Nsource)",
    "dtype": "float64",
    "required": true,
-   "constraints": "保留有符号权重和实际高度差。"
+   "constraints": "Signed weights and the actual height difference are retained."
   },
   {
    "name": "BZ",
-   "description": "目标行、源列的轴向场响应。",
+   "description": "Axial-field response indexed by target row and source column.",
    "units": "T/A",
    "shape": "(Ntarget,Nsource)",
    "dtype": "float64",
    "required": true,
-   "constraints": "轴上目标使用解析极限。"
+   "constraints": "Axis targets use the analytic limit."
   }
  ],
  "applicability": {
@@ -132,17 +132,17 @@
  },
  "verification": {
   "scope": [
-   "非对称坐标的独立方位角积分。",
-   "混合符号、非单位电流、独立源目标换序。",
-   "默认单位源、轴上解析极限、精确自项和非法输入。"
+   "Independent azimuthal integration at asymmetric coordinates.",
+   "Mixed signs, non-unit currents, and independent source/target reordering.",
+   "Default unit sources, the analytic axis limit, the exact self term, and invalid inputs."
   ],
   "tests": [
    "tests/geometry/test_green_response_matrices.py"
   ],
-  "evidence_ceiling": "具名域的独立数值关系与组合验证，非实验或有限导体资格。",
+  "evidence_ceiling": "Independent numerical relations and composition checks for the named domain; not experimental or finite-conductor qualification.",
   "known_limitations": [
-   "dense O(Ntarget*Nsource)工作和存储。",
-   "离散零自项不描述导体自场。"
+   "Dense O(Ntarget*Nsource) work and storage.",
+   "The discrete zero-self entry does not describe a conductor self-field."
   ]
  }
 }

@@ -33,7 +33,7 @@
   "model": "Pressure-versus-radius feedback with InterpolatedUnivariateSpline and a supplied Green matrix",
   "geometry": "Finite rectangular uniformly spaced 2-D R,Z arrays with exact Z=0 midplane",
   "coordinates": "Caller must supply coherent units and Green/pressure convention. The pressure-only SI interpretation is R,Z in m, P in Pa, psi=R A_phi in Wb/rad, I in A; arbitrary supplied G is not a verified physical equilibrium Green operator.",
-  "boundary": "压力边界为沿物理半径向外遍历时的第一个精确零点；从轴侧至边界的磁通须严格增加。下降的存储坐标先仅将中平面拟合索引按R排序，Green双轴、电流及结果均保留调用者次序。",
+  "boundary": "The pressure boundary is the first exact zero encountered while traversing outward along physical radius; the flux from the axis side to the boundary must strictly increase. When the stored coordinate decreases, only the midplane fit indices are sorted by R; the Green axes, currents and results retain the caller's order.",
   "assumptions": [
    "Finite real arrays",
    "Green matrix shape is (R.size,R.size)",

@@ -136,7 +136,7 @@
    "Axis-source skip convention.",
    "Weighted-source linearity.",
    "Midplane symmetry and analytic axis BZ check.",
-   "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
   ],
   "tests": [
    "tests/field/test_circular_filament_green.py",
@@ -146,7 +146,7 @@
   "known_limitations": [
    "Targets exactly on a filament are not a resolved self-field model.",
    "Public distribution licensing remains pending a human decision.",
-   "聚合求和入口与逐源矩阵入口保留不同形状/空源接口；共同核复用不合并公共合同。"
+   "The aggregate-sum entry and the per-source matrix entry keep different shape and empty-source interfaces; shared-kernel reuse does not merge their public contracts."
   ]
  }
 }

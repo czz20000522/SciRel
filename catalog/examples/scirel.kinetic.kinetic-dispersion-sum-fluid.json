@@ -40,195 +40,195 @@
  "inputs": [
   {
    "name": "B0",
-   "description": "背景磁场强度，决定回旋频率",
+   "description": "Background magnetic-field strength, setting the cyclotron frequency",
    "units": "T",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零，回旋频率正比于 B0。"
+   "constraints": "Finite and nonzero; the cyclotron frequency is proportional to B0."
   },
   {
    "name": "qs",
-   "description": "各组分电荷，决定回旋频率符号",
+   "description": "Charge of each species, setting the sign of the cyclotron frequency",
    "units": "C",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限，元素数与其余组分数组一致。"
+   "constraints": "Finite; element count matches the other species arrays."
   },
   {
    "name": "ms",
-   "description": "各组分质量，进入热速度与回旋频率",
+   "description": "Mass of each species, entering the thermal speed and cyclotron frequency",
    "units": "kg",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "ns0",
-   "description": "各组分绝对数密度，进入等离子体频率",
+   "description": "Absolute number density of each species, entering the plasma frequency",
    "units": "m^-3",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "Ts0",
-   "description": "各组分温度，已按源码约定换算为开尔文",
+   "description": "Temperature of each species, already converted to kelvin under the source convention",
    "units": "K",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "f",
-   "description": "电磁波频率，转换为角频率后进入共振分母与归一化折射率",
+   "description": "Electromagnetic wave frequency, converted to angular frequency and then entering the resonance denominators and normalized refractive index",
    "units": "Hz",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零，omega 作除法。"
+   "constraints": "Finite and nonzero; omega is used as a divisor."
   },
   {
    "name": "kz",
-   "description": "波矢平行磁场分量，进入平行共振宗量与 Maxwell 旋度项",
+   "description": "Wavevector component parallel to the magnetic field, entering the parallel-resonance argument and the Maxwell curl term",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限；冻结源码在除法前把 `abs(kz)<1e-10`（包括 `kz=0`）钳位到 `+1e-10`。"
+   "constraints": "Finite; before division the frozen source implementation clamps `abs(kz)<1e-10` (including `kz=0`) to `+1e-10`."
   },
   {
    "name": "kx",
-   "description": "波矢垂直磁场分量，给出贝塞尔宗量与折射率",
+   "description": "Wavevector component perpendicular to the magnetic field, giving the Bessel argument and the refractive index",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "lmx",
-   "description": "贝塞尔谐波截断阶数，求和范围为 $|n|\\le$ `lmx`",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Bessel harmonic truncation order; the sum range is $|n|\\le$ `lmx`",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": false,
-   "constraints": "可选，默认 5（与源码 frozen source 一致），必须为非负整数。",
+   "constraints": "Optional, default 5 (matching the frozen source implementation); must be a nonnegative integer.",
    "default": 5
   }
  ],
  "outputs": [
   {
    "name": "K",
-   "description": "介电张量，按约定 $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(\\mathrm{i}\\omega\\varepsilon_0)$",
-   "units": "无量纲",
-   "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
+   "description": "Dielectric tensor under the convention $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(\\mathrm{i}\\omega\\varepsilon_0)$",
+   "units": "dimensionless",
+   "shape": "`(3, 3)` complex matrix with component axis order x, y, z",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，非对角反对称对满足 $K_{yx}=-K_{xy}$、$K_{zy}=-K_{yz}$。"
+   "constraints": "Finite complex numbers; the off-diagonal antisymmetric pairs satisfy $K_{yx}=-K_{xy}$ and $K_{zy}=-K_{yz}$."
   },
   {
    "name": "D",
-   "description": "加入 Maxwell 旋度项的色散张量，即色散关系所在的矩阵",
-   "units": "无量纲",
-   "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
+   "description": "Dispersion tensor including the Maxwell curl term, that is, the matrix in which the dispersion relation is expressed",
+   "units": "dimensionless",
+   "shape": "`(3, 3)` complex matrix with component axis order x, y, z",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，$D_{xx}=K_{xx}-n_z^2$、$D_{yy}=K_{yy}-(n_x^2+n_z^2)$、$D_{zz}=K_{zz}-n_x^2$、$D_{xz}=D_{zx}=K_{xz}+n_xn_z$。"
+   "constraints": "Finite complex numbers; $D_{xx}=K_{xx}-n_z^2$, $D_{yy}=K_{yy}-(n_x^2+n_z^2)$, $D_{zz}=K_{zz}-n_x^2$, $D_{xz}=D_{zx}=K_{xz}+n_xn_z$."
   },
   {
    "name": "determinant",
-   "description": "色散行列式 $\\mathcal{D}=\\det D$，其零点给出本征模",
-   "units": "无量纲",
-   "shape": "标量复数",
+   "description": "Dispersion determinant $\\mathcal{D}=\\det D$; its zeros give the eigenmodes",
+   "units": "dimensionless",
+   "shape": "complex scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数。"
+   "constraints": "Finite complex numbers."
   },
   {
    "name": "omega",
-   "description": "由输入频率换算的角频率",
+   "description": "Angular frequency converted from the input frequency",
    "units": "rad/s",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零。"
+   "constraints": "Finite and nonzero."
   },
   {
    "name": "nx",
-   "description": "垂直折射率 $c k_\\perp/\\omega$",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Perpendicular refractive index $c k_\\perp/\\omega$",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "nz",
-   "description": "平行折射率 $c k_\\parallel/\\omega$",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Parallel refractive index $c k_\\parallel/\\omega$",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "vts",
-   "description": "各组分热速度 $\\sqrt{2k_BT_s/m_s}$",
+   "description": "Thermal speed of each species $\\sqrt{2k_BT_s/m_s}$",
    "units": "m/s",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "严格为正。"
+   "constraints": "Strictly positive."
   },
   {
    "name": "wcs",
-   "description": "各组分含符号回旋频率",
+   "description": "Signed cyclotron frequency of each species",
    "units": "rad/s",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "非零，符号随 qs。"
+   "constraints": "Nonzero, with the sign following qs."
   },
   {
    "name": "wps2",
-   "description": "各组分等离子体频率平方",
+   "description": "Plasma-frequency squared of each species",
    "units": "rad^2/s^2",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "严格为正。"
+   "constraints": "Strictly positive."
   },
   {
    "name": "b",
-   "description": "各组分贝塞尔宗量 $b_s=(k_\\perp\\rho_{cs})^2$",
-   "units": "无量纲",
+   "description": "Bessel argument of each species $b_s=(k_\\perp\\rho_{cs})^2$",
+   "units": "dimensionless",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "非负。"
+   "constraints": "Nonnegative."
   },
   {
    "name": "lmx",
-   "description": "本次实际使用的谐波截断阶数，回显输入",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Harmonic truncation order actually used, echoing the input",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "非负整数。"
+   "constraints": "Nonnegative integer."
   },
   {
    "name": "tensor_convention",
-   "description": "张量约定的文字标识，供调用者核对符号",
-   "units": "不适用",
-   "shape": "字符串",
+   "description": "Text label of the tensor convention, for the caller to check the sign convention",
+   "units": "not applicable",
+   "shape": "string",
    "dtype": "string",
    "required": true,
-   "constraints": "固定为 `K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)`。"
+   "constraints": "Fixed to `K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)`."
   }
  ],
  "applicability": {

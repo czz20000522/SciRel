@@ -40,115 +40,115 @@
  "inputs": [
   {
    "name": "matrix",
-   "description": "待求本征的复方阵，通常是流体色散矩阵",
-   "units": "与矩阵组装约定一致",
-   "shape": "`(NN, NN)` 复方阵",
+   "description": "Complex square matrix whose eigenproblem is solved, usually the fluid dispersion matrix",
+   "units": "Consistent with the matrix-assembly convention",
+   "shape": "`(NN, NN)` complex square matrix",
    "dtype": "complex128",
    "required": true,
-   "constraints": "非空方阵且元素有限。"
+   "constraints": "Nonempty square matrix with finite entries."
   },
   {
    "name": "kn",
-   "description": "波数归一尺度，用于把实部阈值化为绝对阈值",
+   "description": "Wavenumber normalization scale used to turn the real-part threshold into an absolute threshold",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "real_floor_scale",
-   "description": "非传播本征值的实部相对阈值",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Relative real-part threshold for non-propagating eigenvalues",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "有限且非负，默认 `1e-5`。",
+   "constraints": "Finite and nonnegative, default `1e-5`.",
    "default": 1e-05
   },
   {
    "name": "keep",
-   "description": "返回的前导本征值个数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Number of leading eigenvalues to return",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": false,
-   "constraints": "不小于 1，默认 5。",
+   "constraints": "At least 1, default 5.",
    "default": 5
   }
  ],
  "outputs": [
   {
    "name": "eigenvalues",
-   "description": "全部本征值，即完整 $k_\\perp$ 谱",
+   "description": "All eigenvalues, that is, the complete $k_\\perp$ spectrum",
    "units": "1/m",
-   "shape": "长度 `NN` 的复数组",
+   "shape": "Complex array of length `NN`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数。"
+   "constraints": "Finite complex numbers."
   },
   {
    "name": "selected",
-   "description": "实部超过阈值的本征值，已按 $|\\operatorname{Im}|$ 升序排列",
+   "description": "Eigenvalues whose real part exceeds the threshold, sorted in ascending $|\\operatorname{Im}|$ order",
    "units": "1/m",
-   "shape": "长度 `selected_count` 的复数组",
+   "shape": "Complex array of length `selected_count`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "是 `eigenvalues` 的子集。"
+   "constraints": "A subset of `eigenvalues`."
   },
   {
    "name": "head",
-   "description": "前 `keep` 个已排序的物理本征值",
+   "description": "First `keep` sorted physical eigenvalues",
    "units": "1/m",
-   "shape": "长度不超过 `keep` 的复数组",
+   "shape": "Complex array of length at most `keep`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "当存活本征值不足 `keep` 个时返回全部存活值。"
+   "constraints": "When fewer than `keep` eigenvalues survive, returns every surviving value."
   },
   {
    "name": "eigenvalue_count",
-   "description": "本征值总数，等于矩阵阶数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Total number of eigenvalues, equal to the matrix order",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "等于 `matrix` 的行数。"
+   "constraints": "Equal to the number of rows of `matrix`."
   },
   {
    "name": "selected_count",
-   "description": "通过实部阈值的本征值个数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Number of eigenvalues passing the real-part threshold",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "不大于 `eigenvalue_count`。"
+   "constraints": "At most `eigenvalue_count`."
   },
   {
    "name": "returned_count",
-   "description": "`head` 的长度",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Length of `head`",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "等于 `min(keep, selected_count)`。"
+   "constraints": "Equal to `min(keep, selected_count)`."
   },
   {
    "name": "real_floor",
-   "description": "实际使用的绝对实部阈值",
+   "description": "Absolute real-part threshold actually used",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "等于 `real_floor_scale*kn`。"
+   "constraints": "Equal to `real_floor_scale*kn`."
   },
   {
    "name": "sort_key",
-   "description": "排序依据标识",
-   "units": "不适用",
-   "shape": "字符串",
+   "description": "Sort-key label",
+   "units": "not applicable",
+   "shape": "string",
    "dtype": "string",
    "required": true,
-   "constraints": "固定为 `ascending_abs_imag`。"
+   "constraints": "Fixed to `ascending_abs_imag`."
   }
  ],
  "applicability": {

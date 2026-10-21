@@ -40,99 +40,99 @@
  "inputs": [
   {
    "name": "ms",
-   "description": "各组分质量，进入热速度与回旋频率",
+   "description": "Mass of each species, entering the thermal speed and cyclotron frequency",
    "units": "kg",
-   "shape": "(S,) 一维组分轴",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive masses, one value per species."
   },
   {
    "name": "qs",
-   "description": "各组分电荷，决定回旋频率符号与耦合项符号",
+   "description": "Charge of each species, setting the sign of the cyclotron frequency and coupling terms",
    "units": "C",
-   "shape": "(S,) 一维组分轴",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite nonzero charges, one value per species."
   },
   {
    "name": "ns_unit",
-   "description": "各组分密度相对参考密度的倍数",
-   "units": "无量纲",
-   "shape": "(S,) 一维组分轴",
+   "description": "Density of each species relative to the reference density",
+   "units": "dimensionless",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive density ratios matching the species axis."
   },
   {
    "name": "Ts_unit",
-   "description": "各组分温度相对参考温度的倍数",
-   "units": "无量纲",
-   "shape": "(S,) 一维组分轴",
+   "description": "Temperature of each species relative to the reference temperature",
+   "units": "dimensionless",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive temperature ratios matching the species axis."
   },
   {
    "name": "B0",
-   "description": "背景磁场强度，标定回旋频率并进入极点共振宗量",
+   "description": "Background magnetic-field strength, setting the cyclotron frequency and entering the pole-resonance argument",
    "units": "T",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite nonzero background field."
   },
   {
    "name": "n00",
-   "description": "参考数密度，把相对密度换算为绝对密度",
+   "description": "Reference number density, converting relative to absolute density",
    "units": "m^-3",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive reference density."
   },
   {
    "name": "T00",
-   "description": "参考温度，把相对温度换算为绝对温度",
+   "description": "Reference temperature, converting relative to absolute temperature",
    "units": "eV",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive reference temperature in eV."
   },
   {
    "name": "omega_frac",
-   "description": "角频率相对本图内部导出的 wn 的倍数（源码写作 w=wf(p)*wcn）；调用方给无量纲比例，绝对角频率由本图自行导出",
-   "units": "无量纲",
-   "shape": "标量 scalar",
+   "description": "Angular frequency as a multiple of the wn derived internally by this graph (the source implementation writes w=wf(p)*wcn); the caller supplies a dimensionless ratio and this graph derives the absolute angular frequency",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite ratio producing nonzero angular frequency."
   },
   {
    "name": "kz",
-   "description": "波矢平行磁场分量，进入平行共振宗量",
+   "description": "Wavevector component parallel to the magnetic field, entering the parallel-resonance argument",
    "units": "1/m",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite absolute parallel wavenumber; zero is supported by the kinetic paths."
   },
   {
    "name": "kx_frac",
-   "description": "垂直波数相对本图内部导出的 kn 的倍数（源码写作 kx=kxf(p)*kn）；调用方给无量纲比例，绝对垂直波数由本图自行导出",
-   "units": "无量纲",
-   "shape": "标量 scalar",
+   "description": "Perpendicular wavenumber as a multiple of the kn derived internally by this graph (the source implementation writes kx=kxf(p)*kn); the caller supplies a dimensionless ratio and this graph derives the absolute perpendicular wavenumber",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite perpendicular-wavenumber ratio."
   },
   {
    "name": "lmx",
-   "description": "常规谐波求和的贝塞尔截断阶数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Bessel truncation order for the conventional harmonic sum",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": false,
    "constraints": "Non-negative integer harmonic truncation.",
@@ -142,108 +142,108 @@
  "outputs": [
   {
    "name": "scales",
-   "description": "由平衡输入导出的逐组分尺度，两条色散路径共用同一状态快照",
-   "units": "混合（各键自带单位）",
-   "shape": "映射 dict",
+   "description": "Per-species scales derived from the equilibrium inputs, shared by both dispersion paths from the same state snapshot",
+   "units": "mixed (each key carries its own unit)",
+   "shape": "mapping/dict",
    "dtype": "mapping",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "determinant_sum_n",
-   "description": "常规谐波截断求和路径的色散行列式",
-   "units": "无量纲",
-   "shape": "标量复数",
+   "description": "Dispersion determinant of the conventional truncated-harmonic-sum path",
+   "units": "dimensionless",
+   "shape": "complex scalar",
    "dtype": "complex128 array",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "determinant_ronnmark",
-   "description": "Ronnmark 快速路径的色散行列式",
-   "units": "无量纲",
-   "shape": "标量复数",
+   "description": "Dispersion determinant of the Ronnmark fast path",
+   "units": "dimensionless",
+   "shape": "complex scalar",
    "dtype": "complex128 array",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "K_sum_n",
-   "description": "常规求和路径的介电张量",
-   "units": "无量纲",
-   "shape": "(3, 3) 复数矩阵",
+   "description": "Dielectric tensor of the conventional sum path",
+   "units": "dimensionless",
+   "shape": "(3, 3) complex matrix",
    "dtype": "complex128 array",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "D_sum_n",
-   "description": "常规求和路径的色散张量",
-   "units": "无量纲",
-   "shape": "(3, 3) 复数矩阵",
+   "description": "Dispersion tensor of the conventional sum path",
+   "units": "dimensionless",
+   "shape": "(3, 3) complex matrix",
    "dtype": "complex128 array",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "K_ronnmark",
-   "description": "Ronnmark 路径的介电张量",
-   "units": "无量纲",
-   "shape": "(3, 3) 复数矩阵",
+   "description": "Dielectric tensor of the Ronnmark path",
+   "units": "dimensionless",
+   "shape": "(3, 3) complex matrix",
    "dtype": "complex128 array",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "D_ronnmark",
-   "description": "Ronnmark 路径的色散张量",
-   "units": "无量纲",
-   "shape": "(3, 3) 复数矩阵",
+   "description": "Dispersion tensor of the Ronnmark path",
+   "units": "dimensionless",
+   "shape": "(3, 3) complex matrix",
    "dtype": "complex128 array",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "branches",
-   "description": "Ronnmark 路径每个 (组分, 极点) 组合所选的方法分支标签",
-   "units": "不适用",
-   "shape": "(S*J,) 字符串序列",
+   "description": "Method-branch label selected for each (species, pole) combination on the Ronnmark path",
+   "units": "not applicable",
+   "shape": "(S*J,) string sequence",
    "dtype": "string sequence",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "omega",
-   "description": "由本图从 omega_frac 与内部 wn 导出的绝对角频率",
+   "description": "Absolute angular frequency derived by this graph from omega_frac and the internal wn",
    "units": "rad/s",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "kx",
-   "description": "由本图从 kx_frac 与内部 kn 导出的绝对垂直波数",
+   "description": "Absolute perpendicular wavenumber derived by this graph from kx_frac and the internal kn",
    "units": "1/m",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "f",
-   "description": "由绝对角频率换算得到的频率",
+   "description": "Frequency converted from the absolute angular frequency",
    "units": "Hz",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "graph_order",
-   "description": "本图的固定执行顺序标签",
-   "units": "不适用",
-   "shape": "(6,) 字符串序列",
+   "description": "Fixed execution-order labels of this graph",
+   "units": "not applicable",
+   "shape": "(6,) string sequence",
    "dtype": "string sequence",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
@@ -315,7 +315,7 @@
    {
     "id": "species_equilibrium_scales",
     "kind": "function",
-    "description": "组分平衡尺度",
+    "description": "Species equilibrium scales",
     "inputs": [
      "ms",
      "qs",
@@ -341,7 +341,7 @@
    {
     "id": "probe_frequency",
     "kind": "controlled_glue",
-    "description": "探针角频率标定",
+    "description": "Probe angular-frequency calibration",
     "inputs": [
      "omega_frac",
      "wn"
@@ -353,7 +353,7 @@
    {
     "id": "probe_wavenumber",
     "kind": "controlled_glue",
-    "description": "探针垂直波数标定",
+    "description": "Probe perpendicular-wavenumber calibration",
     "inputs": [
      "kx_frac",
      "kn"
@@ -365,7 +365,7 @@
    {
     "id": "omega_to_frequency",
     "kind": "controlled_glue",
-    "description": "角频率到频率换算",
+    "description": "Angular-frequency to frequency conversion",
     "inputs": [
      "omega"
     ],
@@ -376,7 +376,7 @@
    {
     "id": "kinetic_dispersion_sum_n",
     "kind": "function",
-    "description": "常规谐波求和色散行列式",
+    "description": "Conventional harmonic-sum dispersion determinant",
     "inputs": [
      "B0",
      "qs",
@@ -407,7 +407,7 @@
    {
     "id": "kinetic_dispersion_ronnmark",
     "kind": "function",
-    "description": "Ronnmark 快速色散行列式",
+    "description": "Ronnmark fast dispersion determinant",
     "inputs": [
      "B0",
      "qs",
@@ -458,7 +458,7 @@
      "node": "probe_frequency",
      "port": "wn"
     },
-    "description": "探针角频率按本图导出的参考频率 wn 缩放，探针与平衡态必须同源",
+    "description": "The probe angular frequency is scaled by the reference frequency wn derived by this graph; the probe and the equilibrium must be sourced from the same state",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -473,7 +473,7 @@
      "node": "probe_wavenumber",
      "port": "kn"
     },
-    "description": "探针垂直波数按本图导出的参考波数 kn 缩放，探针与平衡态必须同源",
+    "description": "The probe perpendicular wavenumber is scaled by the reference wavenumber kn derived by this graph; the probe and the equilibrium must be sourced from the same state",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -488,7 +488,7 @@
      "node": "omega_to_frequency",
      "port": "omega"
     },
-    "description": "探针角频率进入单位换算，两条路径共用同一频率",
+    "description": "The probe angular frequency enters the unit conversion; both paths share the same frequency",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -503,7 +503,7 @@
      "node": "kinetic_dispersion_sum_n",
      "port": "ns0"
     },
-    "description": "绝对数密度进入等离子体频率，两条路径必须共用同一次密度换算",
+    "description": "The absolute number density enters the plasma frequency; both paths must share the same density conversion",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -518,7 +518,7 @@
      "node": "kinetic_dispersion_sum_n",
      "port": "Ts0"
     },
-    "description": "开尔文温度进入热速度与贝塞尔宗量，必须与密度同源",
+    "description": "Kelvin temperature enters the thermal speed and Bessel argument and must be consistent with the density",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -533,7 +533,7 @@
      "node": "kinetic_dispersion_ronnmark",
      "port": "ns0"
     },
-    "description": "绝对数密度进入等离子体频率，Ronnmark 路径须与常规路径同源",
+    "description": "The absolute number density enters the plasma frequency; the Ronnmark path must use the same density conversion as the conventional path",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -548,7 +548,7 @@
      "node": "kinetic_dispersion_ronnmark",
      "port": "Ts0"
     },
-    "description": "开尔文温度进入热速度与极点共振宗量",
+    "description": "Kelvin temperature enters the thermal speed and the pole-resonance argument",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -563,7 +563,7 @@
      "node": "kinetic_dispersion_sum_n",
      "port": "f"
     },
-    "description": "两条色散路径都以频率为自变量，角频率必须按同一约定换算",
+    "description": "Both dispersion paths take frequency as the independent variable, so the angular frequency must be converted with the same convention",
     "condition": "always",
     "transform": "unit_conversion",
     "kind": "data",
@@ -578,7 +578,7 @@
      "node": "kinetic_dispersion_ronnmark",
      "port": "f"
     },
-    "description": "Ronnmark 路径与常规路径共用同一次角频率到频率的换算",
+    "description": "The Ronnmark path and the conventional path share the same angular-frequency-to-frequency conversion",
     "condition": "always",
     "transform": "unit_conversion",
     "kind": "data",

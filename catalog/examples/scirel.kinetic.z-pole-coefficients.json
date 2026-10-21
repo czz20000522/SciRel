@@ -40,77 +40,77 @@
  "inputs": [
   {
    "name": "j_order",
-   "description": "极点阶数 J，选定一组固定留数与位置，并决定返回数组长度与每组分极点块大小",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Pole order J, selecting one fixed residue/position table and fixing the returned array length and the pole-block size of each species",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": true,
-   "constraints": "只能取 8 或 12，分别对应源码的 8 极点表与 12 极点表，其他阶数在源码中无表因而必须失败关闭。"
+   "constraints": "Only 8 or 12 is allowed, corresponding to the source's 8-pole and 12-pole tables; other orders have no table in the source and must fail closed."
   }
  ],
  "outputs": [
   {
    "name": "bzj",
-   "description": "各极点的留数，矩阵按极点轴加权共振项",
-   "units": "无量纲",
-   "shape": "`(J,)` 一维极点轴",
+   "description": "Pole residues used by the matrix to weight the resonance term along the pole axis",
+   "units": "dimensionless",
+   "shape": "`(J,)` one-dimensional pole axis",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，后半段必须等于前半段的复共轭。"
+   "constraints": "Finite complex; the second half must equal the conjugate of the first half."
   },
   {
    "name": "czj",
-   "description": "各极点位置，给出复共振偏移并进入共振宗量分母",
-   "units": "无量纲",
-   "shape": "`(J,)` 一维极点轴",
+   "description": "Pole positions giving the complex resonance offsets and entering the denominator of the resonance argument",
+   "units": "dimensionless",
+   "shape": "`(J,)` one-dimensional pole axis",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，后半段必须等于前半段复共轭的相反数。"
+   "constraints": "Finite complex; the second half must equal the negative conjugate of the first half."
   },
   {
    "name": "j_order",
-   "description": "本次实际使用的极点阶数，回显输入以便调用者核对矩阵分块",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Pole order actually used in this call, echoing the input so the caller can check the matrix blocking",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": true,
-   "constraints": "取值 8 或 12。"
+   "constraints": "Takes the value 8 or 12."
   },
   {
    "name": "half_order",
-   "description": "源码写定的前半段极点个数 `J/2`，用于核对共轭补齐边界",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Number of first-half poles `J/2` fixed by the source, used to check the conjugate-completion boundary",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": true,
-   "constraints": "等于 `j_order//2`。"
+   "constraints": "Equals `j_order//2`."
   },
   {
    "name": "sum_bzj",
-   "description": "留数总和，用于核对零阶矩条件",
-   "units": "无量纲",
-   "shape": "标量复数",
+   "description": "Sum of residues, used to check the zeroth-moment condition",
+   "units": "dimensionless",
+   "shape": "scalar complex",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限，理想值 -1。"
+   "constraints": "Finite; ideal value -1."
   },
   {
    "name": "sum_bzcj",
-   "description": "留数与极点位置乘积的总和，用于核对一阶矩条件",
-   "units": "无量纲",
-   "shape": "标量复数",
+   "description": "Sum of residue-pole-position products, used to check the first-moment condition",
+   "units": "dimensionless",
+   "shape": "scalar complex",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限，理想值 0。"
+   "constraints": "Finite; ideal value 0."
   },
   {
    "name": "sum_bzcj2",
-   "description": "留数与极点位置平方乘积的总和，用于核对二阶矩条件",
-   "units": "无量纲",
-   "shape": "标量复数",
+   "description": "Sum of residue-pole-position-squared products, used to check the second-moment condition",
+   "units": "dimensionless",
+   "shape": "scalar complex",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限，理想值 -1/2。"
+   "constraints": "Finite; ideal value -1/2."
   }
  ],
  "applicability": {

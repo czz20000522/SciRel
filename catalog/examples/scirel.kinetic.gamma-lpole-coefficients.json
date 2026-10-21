@@ -40,59 +40,59 @@
  "inputs": [
   {
    "name": "max_harmonic",
-   "description": "调用者将要组装的贝塞尔最大阶数 $N$",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Maximum Bessel order $N$ that the caller will assemble",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "非负整数，且 `max_harmonic+1` 不超过冻结表的最大系数序号 8。"
+   "constraints": "Nonnegative integer, and `max_harmonic+1` does not exceed 8, the largest coefficient order in the frozen table."
   }
  ],
  "outputs": [
   {
    "name": "orders",
-   "description": "返回的系数序号列表，即 $|n|+1$ 从 1 到 `max_harmonic+1`",
-   "units": "无量纲",
-   "shape": "长度 `max_harmonic+1` 的整数列表",
+   "description": "Returned coefficient-order list, that is, $|n|+1$ from 1 to `max_harmonic+1`",
+   "units": "dimensionless",
+   "shape": "Integer list of length `max_harmonic+1`",
    "dtype": "integer",
    "required": true,
-   "constraints": "升序且连续。"
+   "constraints": "Ascending and contiguous."
   },
   {
    "name": "order_lengths",
-   "description": "每个系数序号的极点个数 $L(|n|+1)$",
-   "units": "无量纲",
-   "shape": "以序号为键的字典",
+   "description": "Number of poles at each coefficient order, $L(|n|+1)$",
+   "units": "dimensionless",
+   "shape": "Mapping keyed by order",
    "dtype": "mapping",
    "required": true,
-   "constraints": "取值来自冻结表。"
+   "constraints": "Values come from the frozen table."
   },
   {
    "name": "residues",
-   "description": "每个序号的留数数组 $r_l$",
-   "units": "无量纲",
-   "shape": "以序号为键，值为长度 `order_lengths[序号]` 的复数组",
+   "description": "Residue array $r_l$ at each order",
+   "units": "dimensionless",
+   "shape": "Mapping keyed by order whose values are complex arrays of length `order_lengths[order]`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数。"
+   "constraints": "Finite complex numbers."
   },
   {
    "name": "poles",
-   "description": "每个序号的极点数组 $p_l$",
-   "units": "无量纲",
-   "shape": "以序号为键，值为长度 `order_lengths[序号]` 的复数组",
+   "description": "Pole array $p_l$ at each order",
+   "units": "dimensionless",
+   "shape": "Mapping keyed by order whose values are complex arrays of length `order_lengths[order]`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，极点成对共轭出现。"
+   "constraints": "Finite complex numbers; poles appear in complex-conjugate pairs."
   },
   {
    "name": "total_poles",
-   "description": "返回的全部极点总数 $\\sum_{|n|\\le N}L(|n|+1)$",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Total number of poles returned, $\\sum_{|n|\\le N}L(|n|+1)$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "等于色散矩阵每组分速度块的维数。"
+   "constraints": "Equal to the velocity-block dimension per species in the dispersion matrix."
   }
  ],
  "applicability": {

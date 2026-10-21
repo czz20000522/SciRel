@@ -167,7 +167,7 @@
   "tests": [
    "tests/geometry/test_flux_surface_profile.py"
   ],
-  "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or source-project completeness.",
+  "evidence_ceiling": "Direct tests establish the maintained interpolation and endpoint contract on finite examples, not the physical validity of any caller-supplied flux-profile data or external-reference completeness.",
   "known_limitations": [
    "Conflicting values at duplicate flux coordinates are reduced by the first occurrence after NumPy sorting; original-input tie order is not guaranteed and no physical reconciliation is performed.",
    "The callable does not construct a flux surface, choose a flux normalization or convert between Wb/rad and Wb.",

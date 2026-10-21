@@ -159,7 +159,7 @@
   "tests": [
    "tests/geometry/test_flux_surface_inverse_field_average.py"
   ],
-  "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove source-project completeness.",
+  "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove external-reference completeness.",
   "known_limitations": [
    "The callable does not trace field lines or close a flux surface; its output name retains the historical relation name.",
    "Negative radius coordinates are not rejected by the implementation and are outside the physical cylindrical interpretation.",

@@ -40,59 +40,59 @@
  "inputs": [
   {
    "name": "x",
-   "description": "Ronnmark 自变量 Y，在 frozen source 中为 (omega-kz*vt*czj)/wcs。实数或复数标量。单位：无量纲（归一化频率）。有效性约束：须为有限值（不含 `NaN`/`inf`）；实数输入走实双精度算术，复数输入走复双精度算术（两者舍入不同，见「行为与边界」）；本算子只接受标量，数组输入须由调用方逐元素循环。",
-   "units": "无量纲",
+   "description": "Ronnmark argument Y, equal to (omega-kz*vt*czj)/wcs in the frozen source. Real or complex scalar. Units: dimensionless (normalized frequency). Validity constraint: must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller.",
+   "units": "dimensionless",
    "shape": "scalar",
    "dtype": "real or complex numeric",
    "required": true,
-   "constraints": "须为有限值（不含 `NaN`/`inf`）；实数输入走实双精度算术，复数输入走复双精度算术（两者舍入不同，见「行为与边界」）；本算子只接受标量，数组输入须由调用方逐元素循环。"
+   "constraints": "Must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller."
   },
   {
    "name": "lambda_",
-   "description": "AL=lambda=(k_perp*rho_c)^2，Ronnmark 展开参数（源码 frozen source）。形状/轴序：标量（实数或复数；复 kx 平面上带非零虚部）。单位：无量纲。有效性约束：须有限；实 kx 时为非负实数，复 kx 时为复数；lambda=0 会使 RINT 的 C=YR/AL 与 XO 发散，属源码本身未定义域。",
-   "units": "无量纲",
+   "description": "AL=lambda=(k_perp*rho_c)^2, the Ronnmark expansion parameter (frozen source). Shape/axis order: scalar (real or complex; with a nonzero imaginary part on the complex kx plane). Units: dimensionless. Validity constraint: must be finite; nonnegative real for real kx and complex for complex kx; lambda=0 makes RINT's C=YR/AL and XO diverge and lies in the source's own undefined domain.",
+   "units": "dimensionless",
    "shape": "scalar",
    "dtype": "real or complex numeric",
    "required": true,
-   "constraints": "须有限；实 kx 时为非负实数，复 kx 时为复数；lambda=0 会使 RINT 的 C=YR/AL 与 XO 发散，属源码本身未定义域。"
+   "constraints": "Must be finite; nonnegative real for real kx and complex for complex kx; lambda=0 makes RINT's C=YR/AL and XO diverge and lies in the source's own undefined domain."
   }
  ],
  "outputs": [
   {
    "name": "R",
-   "description": "R(x,lambda)=RC(1,1)，即 Ronnmark 的 R 函数值。复数标量。单位：无量纲。有效性约束：在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_function` 在该点仍返回有限值。",
-   "units": "无量纲",
+   "description": "R(x,lambda)=RC(1,1), the Ronnmark R-function value. Complex scalar. Units: dimensionless. Validity constraint: on the RTAY Y^2=I^2 pole (e.g. x=12, lambda=9) this branch returns `NaN`; the public selector follows the frozen source through RINT for the same parameters, so `scientific_function` still returns a finite value there.",
+   "units": "dimensionless",
    "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "在 RTAY 的 Y^2=I^2 极点（如 x=12、lambda=9）上该分支返回 `NaN`；公共选择器对同一组参数按 frozen source 走 RINT，故 `scientific_function` 在该点仍返回有限值。"
+   "constraints": "On the RTAY Y^2=I^2 pole (e.g. x=12, lambda=9) this branch returns `NaN`; the public selector follows the frozen source through RINT for the same parameters, so `scientific_function` still returns a finite value there."
   },
   {
    "name": "dR_dlambda",
-   "description": "RC(1,2) 列，即 frozen source 读取的 `dRsj`。复数标量。单位：无量纲。有效性约束：与 `R` 同一分支计算；按源码级数展开可解析验证，该列等于 d(lambda*R)/dlambda = R + lambda*dR/dlambda，而非 dR/dlambda 本身（frozen source 中 PN_I 正比于 lambda^(I-1) 而累加权重为 I，故 RC(1,2) = R + lambda*dR/dlambda）。",
-   "units": "无量纲",
+   "description": "RC(1,2) column, the `dRsj` read by the frozen source. Complex scalar. Units: dimensionless. Validity constraint: computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda).",
+   "units": "dimensionless",
    "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "与 `R` 同一分支计算；按源码级数展开可解析验证，该列等于 d(lambda*R)/dlambda = R + lambda*dR/dlambda，而非 dR/dlambda 本身（frozen source 中 PN_I 正比于 lambda^(I-1) 而累加权重为 I，故 RC(1,2) = R + lambda*dR/dlambda）。"
+   "constraints": "Computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda)."
   },
   {
    "name": "branch",
-   "description": "字符串，标识实际选中的分支；形状/轴序：标量字符串（枚举标签，无数组轴），取值之一：`'RTAY(AL<4)'`、`'RTAY(|Y|^2>75*AL)'`、`'RTAY(|Y|>40+AL/3)'`、`'RASY'`、`'RINT'`。单位：无量纲（枚举标签）。有效性约束：五个字符串之一，与 frozen source 的判据一一对应。",
-   "units": "无量纲",
+   "description": "String identifying the branch actually selected; shape/axis order: scalar string (enumeration label, no array axis), one of `'RTAY(AL<4)'`, `'RTAY(|Y|^2>75*AL)'`, `'RTAY(|Y|>40+AL/3)'`, `'RASY'`, `'RINT'`. Units: dimensionless (enumeration label). Validity constraint: one of the five strings, corresponding one-to-one to the frozen source criteria.",
+   "units": "dimensionless",
    "shape": "scalar",
    "dtype": "string",
    "required": true,
-   "constraints": "五个字符串之一，与 frozen source 的判据一一对应。"
+   "constraints": "One of the five strings, corresponding one-to-one to the frozen source criteria."
   },
   {
    "name": "RC",
-   "description": "完整的 2x2 复矩阵（complex128，按 the reference runtime 列主序理解）。单位：无量纲。有效性约束：`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，frozen source 未使用。",
-   "units": "无量纲",
+   "description": "Full 2x2 complex matrix (complex128, understood in the reference runtime's column-major order). Units: dimensionless. Validity constraint: `RC[0,0]==R` and `RC[0,1]==dR_dlambda`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source.",
+   "units": "dimensionless",
    "shape": "(2,2)",
    "dtype": "complex128",
    "required": true,
-   "constraints": "`RC[0,0]==R` 且 `RC[0,1]==dR_dlambda`；`RC[1,0]`、`RC[1,1]` 为同一分支计算出的伴随列，frozen source 未使用。"
+   "constraints": "`RC[0,0]==R` and `RC[0,1]==dR_dlambda`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source."
   }
  ],
  "applicability": {

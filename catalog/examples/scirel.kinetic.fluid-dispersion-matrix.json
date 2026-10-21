@@ -40,221 +40,221 @@
  "inputs": [
   {
    "name": "omega",
-   "description": "固定角频率，进入共振分母与 Maxwell 旋度项",
+   "description": "Fixed angular frequency entering the resonance denominators and the Maxwell curl term",
    "units": "rad/s",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零。"
+   "constraints": "Finite and nonzero."
   },
   {
    "name": "kz",
-   "description": "平行波数，进入平行共振与旋度项",
+   "description": "Parallel wavenumber entering the parallel resonance and curl term",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "c2",
-   "description": "真空光速平方",
+   "description": "Speed of light squared in vacuum",
    "units": "m^2/s^2",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "epsilon0",
-   "description": "真空介电常数",
+   "description": "Vacuum permittivity",
    "units": "F/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "wps2",
-   "description": "各组分等离子体频率平方",
+   "description": "Plasma-frequency squared of each species",
    "units": "rad^2/s^2",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "wcs",
-   "description": "各组分含符号回旋频率",
+   "description": "Signed cyclotron frequency of each species",
    "units": "rad/s",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零。"
+   "constraints": "Finite and nonzero."
   },
   {
    "name": "vts",
-   "description": "各组分热速度",
+   "description": "Thermal speed of each species",
    "units": "m/s",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "rhocs",
-   "description": "各组分含符号回旋半径",
+   "description": "Signed gyroradius of each species",
    "units": "m",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "sgns",
-   "description": "回旋半径符号",
-   "units": "无量纲",
+   "description": "Gyroradius sign",
+   "units": "dimensionless",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "取值为 `±1`。"
+   "constraints": "Takes values `±1`."
   },
   {
    "name": "absrhocs",
-   "description": "回旋半径绝对值",
+   "description": "Absolute gyroradius",
    "units": "m",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "cn_residues",
-   "description": "L 极点留数表，按系数序号 1..`max_harmonic+1` 索引",
-   "units": "无量纲",
-   "shape": "字典，值为复数组",
+   "description": "L-pole residue table indexed by coefficient order 1..`max_harmonic+1`",
+   "units": "dimensionless",
+   "shape": "Mapping whose values are complex arrays",
    "dtype": "complex128",
    "required": true,
-   "constraints": "覆盖全部所需序号且有限。"
+   "constraints": "Covers every required order and is finite."
   },
   {
    "name": "cn_poles",
-   "description": "L 极点位置表，索引同 `cn_residues`",
-   "units": "无量纲",
-   "shape": "字典，值为复数组",
+   "description": "L-pole location table indexed like `cn_residues`",
+   "units": "dimensionless",
+   "shape": "Mapping whose values are complex arrays",
    "dtype": "complex128",
    "required": true,
-   "constraints": "覆盖全部所需序号且有限。"
+   "constraints": "Covers every required order and is finite."
   },
   {
    "name": "order_lengths",
-   "description": "各序号极点个数",
-   "units": "无量纲",
-   "shape": "字典",
+   "description": "Number of poles at each order",
+   "units": "dimensionless",
+   "shape": "Mapping",
    "dtype": "mapping",
    "required": true,
-   "constraints": "与 `cn_residues`/`cn_poles` 的数组长度一致。"
+   "constraints": "Array lengths match `cn_residues`/`cn_poles`."
   },
   {
    "name": "bzj",
-   "description": "Z 极点近似的留数",
-   "units": "无量纲",
-   "shape": "`(J,)` 一维极点轴",
+   "description": "Residues of the Z-pole approximation",
+   "units": "dimensionless",
+   "shape": "`(J,)` one-dimensional pole axis",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限且非空。"
+   "constraints": "Finite and nonempty."
   },
   {
    "name": "czj",
-   "description": "Z 极点近似的极点位置",
-   "units": "无量纲",
-   "shape": "`(J,)`，与 `bzj` 等长",
+   "description": "Pole locations of the Z-pole approximation",
+   "units": "dimensionless",
+   "shape": "`(J,)`, the same length as `bzj`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "max_harmonic",
-   "description": "贝塞尔最大谐波阶数 $N$",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Maximum Bessel harmonic order $N$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "非负整数。"
+   "constraints": "Nonnegative integer."
   },
   {
    "name": "n_species",
-   "description": "组分数 $S$",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Number of species $S$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "不小于 1。"
+   "constraints": "At least 1."
   }
  ],
  "outputs": [
   {
    "name": "M",
-   "description": "待求本征矩阵",
-   "units": "混合量纲（分块各按自身物理量归一）",
-   "shape": "`(3*NSL+4, 3*NSL+4)` 复方阵，`NSL=n_species*sum(order_lengths)`",
+   "description": "Eigenmatrix to solve",
+   "units": "Mixed dimensions (each block normalized to its own physical quantity)",
+   "shape": "`(3*NSL+4, 3*NSL+4)` complex square matrix, `NSL=n_species*sum(order_lengths)`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数。"
+   "constraints": "Finite complex numbers."
   },
   {
    "name": "n_sl",
-   "description": "每组分的速度展开维数 $\\sum_l L(l)$",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Velocity-expansion dimension of each species $\\sum_l L(l)$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "正整数。"
+   "constraints": "Positive integer."
   },
   {
    "name": "n_sl3",
-   "description": "三个速度分量块的总维数 $3\\,NSL$",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Total dimension of the three velocity-component blocks $3\\,NSL$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "正整数。"
+   "constraints": "Positive integer."
   },
   {
    "name": "matrix_size",
-   "description": "矩阵阶数 $3\\,NSL+4$",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Matrix order $3\\,NSL+4$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "与 `M` 的行数一致。"
+   "constraints": "Matches the number of rows of `M`."
   },
   {
    "name": "n_l",
-   "description": "每组分在全部谐波上的极点总数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Total number of poles per species over all harmonics",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "正整数。"
+   "constraints": "Positive integer."
   },
   {
    "name": "nonzero_entries",
-   "description": "矩阵非零元个数，用于结构核对",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Number of nonzero matrix entries, for structural checks",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "不大于矩阵元素总数。"
+   "constraints": "At most the total number of matrix entries."
   },
   {
    "name": "state_layout",
-   "description": "状态向量分块顺序",
-   "units": "不适用",
-   "shape": "长度为 7 的字符串列表",
+   "description": "State-vector block order",
+   "units": "not applicable",
+   "shape": "String list of length 7",
    "dtype": "string",
    "required": true,
-   "constraints": "固定为 `vx_snl, vy_snl, vz_snl, Ey, Ez, By, Bz`。"
+   "constraints": "Fixed to `vx_snl, vy_snl, vz_snl, Ey, Ez, By, Bz`."
   }
  ],
  "applicability": {

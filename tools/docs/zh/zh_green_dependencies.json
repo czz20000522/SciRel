@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.electromagnetism.green-response-matrices",
-   "source_sha256": "81450a21dc96b114903ec300b34a2f2c9f2173f48ebdf803e4e158efd6c91632",
+   "source_sha256": "ee746e6003fec51adc8605f19b2498058f5be462109aa398539c113312115601",
    "summary": "构造按调用者顺序排列的圆电流丝磁通、BR 和 BZ 响应矩阵，行对应目标、列对应源。",
    "definition": "按调用者顺序在每个目标点计算每个源列；源权重只应用一次。",
    "model": "带显式零自项的轴对称理想圆电流丝响应。",
@@ -155,7 +155,7 @@
   },
   {
    "asset_id": "scirel.electromagnetism.circular-filament-green",
-   "source_sha256": "a875f8801dea9d8955ce3b1a9be9e99966a7be34cb2be1912439186afd762443",
+   "source_sha256": "25746cc7c070faf881543269379b5544fbe7fe468973b83afc1bd26c4134de60",
    "summary": "计算有序圆电流丝在柱坐标目标点的磁通和磁场响应。",
    "definition": "对每个源行 (R,Z,weight)，返回每安培加权响应 psi=R A_phi、BR 和 BZ。",
    "model": "使用小模数超几何分支和互补椭圆积分分支的轴对称理想圆电流丝核。",
@@ -214,7 +214,7 @@
      "有界的 Green 对照用例。",
      "轴极限及导数回归。",
      "显式奇点和生命周期测试。",
-     "以独立 70/140 位精度角向积分检验近丝 BZ 及 m=0.5 两侧连续响应，保持原容差；并验证极小正半径、轴上 BZ 与不可表示算术失败。"
+     "以独立 70 位精度角向积分检验近丝 BZ 及 m=0.5 两侧连续响应，保持原容差；并验证极小正半径、轴上 BZ 与不可表示算术失败。"
     ],
     "evidence_ceiling": "仅支持具名案例及所声明 API 行为，不宣称全连续域正确性或入口可互换。",
     "known_limitations": [

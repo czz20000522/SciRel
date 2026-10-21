@@ -138,13 +138,13 @@
    "Circular-filament analytic axial-field limit.",
    "Columnwise equality with the separately maintained circular-filament flux and field kernel.",
    "Invalid radius and source-shape rejection.",
-   "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
   ],
   "tests": [
    "tests/field/test_dense_axisymmetric_green.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete source-project closure or expert approval.",
+  "evidence_ceiling": "Validated for the maintained ideal-filament Green columns and tested axis/weight cases; historical candidate evidence does not establish complete external-reference closure or expert approval.",
   "known_limitations": [
    "The result preserves separate source columns and does not sum them.",
    "Public distribution licensing remains pending a human decision."

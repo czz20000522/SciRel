@@ -40,126 +40,126 @@
  "inputs": [
   {
    "name": "ms",
-   "description": "各组分质量，进入热速度与回旋频率",
+   "description": "Mass of each species, entering the thermal speed and cyclotron frequency",
    "units": "kg",
-   "shape": "(S,) 一维组分轴",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive masses, one value per species."
   },
   {
    "name": "qs",
-   "description": "各组分电荷，决定回旋频率符号与耦合项符号",
+   "description": "Charge of each species, setting the sign of the cyclotron frequency and coupling terms",
    "units": "C",
-   "shape": "(S,) 一维组分轴",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite nonzero charges, one value per species."
   },
   {
    "name": "ns_unit",
-   "description": "各组分密度相对参考密度的倍数",
-   "units": "无量纲",
-   "shape": "(S,) 一维组分轴",
+   "description": "Density of each species relative to the reference density",
+   "units": "dimensionless",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive density ratios matching the species axis."
   },
   {
    "name": "Ts_unit",
-   "description": "各组分温度相对参考温度的倍数",
-   "units": "无量纲",
-   "shape": "(S,) 一维组分轴",
+   "description": "Temperature of each species relative to the reference temperature",
+   "units": "dimensionless",
+   "shape": "(S,) one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive temperature ratios matching the species axis."
   },
   {
    "name": "B0",
-   "description": "背景磁场强度，标定回旋频率尺度",
+   "description": "Background magnetic-field strength, setting the cyclotron-frequency scale",
    "units": "T",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite nonzero background field."
   },
   {
    "name": "n00",
-   "description": "参考数密度",
+   "description": "Reference number density",
    "units": "m^-3",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive reference density."
   },
   {
    "name": "T00",
-   "description": "参考温度",
+   "description": "Reference temperature",
    "units": "eV",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite positive reference temperature in eV."
   },
   {
    "name": "omega_scale",
-   "description": "扫描频率阶梯的起始比例（源码 0.05），乘以本图内部导出的 wn 得绝对起始频率",
-   "units": "无量纲",
-   "shape": "标量 scalar",
+   "description": "Start fraction of the scan frequency ladder (0.05 in the source implementation); multiplied by the wn derived internally by this graph to give the absolute start frequency",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite scan start; every derived angular frequency must be nonzero."
   },
   {
    "name": "omega_step",
-   "description": "扫描频率阶梯的等步长比例（源码 0.05），乘以本图内部导出的 wn 得绝对步长",
-   "units": "无量纲",
-   "shape": "标量 scalar",
+   "description": "Equal-step fraction of the scan frequency ladder (0.05 in the source implementation); multiplied by the wn derived internally by this graph to give the absolute step",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite strictly positive scan step."
   },
   {
    "name": "omega_stop",
-   "description": "扫描频率阶梯的终点倍数（源码 3.95），与起点、步长一起写定源码的冒号表达式，扫描频点数即由此导出",
-   "units": "无量纲",
-   "shape": "标量 scalar",
+   "description": "Stop multiple of the scan frequency ladder (3.95 in the source implementation); together with the start and step it defines the source's colon expression, from which the number of scan frequencies follows",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite scan endpoint not below the start."
   },
   {
    "name": "kz_scale",
-   "description": "平行波数相对 kn 的比例，给出扫描用的 kz",
-   "units": "无量纲",
-   "shape": "标量 scalar",
+   "description": "Parallel wavenumber relative to kn, giving the kz used by the scan",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "Finite parallel-wavenumber ratio."
   },
   {
    "name": "max_harmonic",
-   "description": "贝塞尔最大谐波阶数 N，决定矩阵分块数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Maximum Bessel harmonic order N, setting the number of matrix blocks",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
    "constraints": "Integer from 0 through 7, limited by the frozen L-pole tables."
   },
   {
    "name": "j_order",
-   "description": "Z 极点阶数 J，选定极点表并决定每组分极点块大小",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Z-pole order J, selecting the pole table and setting each species' pole-block size",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
    "constraints": "Integer 8 or 12, selecting a frozen Z-pole table."
   },
   {
    "name": "keep",
-   "description": "每个频点返回的前导分支个数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Number of leading branches returned per frequency",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": false,
    "constraints": "Positive integer branch count.",
@@ -169,52 +169,52 @@
  "outputs": [
   {
    "name": "scales",
-   "description": "由平衡输入导出的逐组分尺度，被组装与本征求解共同消费",
-   "units": "混合（各键自带单位）",
-   "shape": "映射 dict",
+   "description": "Per-species scales derived from the equilibrium inputs and consumed by both assembly and the eigensolve",
+   "units": "mixed (each key carries its own unit)",
+   "shape": "mapping/dict",
    "dtype": "mapping",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "kn",
-   "description": "本图内部导出的波数归一尺度 kn=1/max|rho_cs|，作为端物理量返回",
+   "description": "Wavenumber normalization scale derived internally by this graph, kn=1/max|rho_cs|, returned as a top-level physical quantity",
    "units": "1/m",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "wn",
-   "description": "本图内部导出的频率归一尺度 wn=min|w_cs|，作为端物理量返回",
+   "description": "Frequency normalization scale derived internally by this graph, wn=min|w_cs|, returned as a top-level physical quantity",
    "units": "rad/s",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "omegas",
-   "description": "本图内部导出的扫描角频率轴 xx=(omega_scale:omega_step:omega_stop)*wn，即源码保存的 xx",
+   "description": "Scan angular-frequency axis derived internally by this graph, xx=(omega_scale:omega_step:omega_stop)*wn, which is the xx vector stored by the source implementation",
    "units": "rad/s",
-   "shape": "(F,) 一维频点轴",
+   "shape": "(F,) one-dimensional frequency axis",
    "dtype": "real numeric",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "count",
-   "description": "由源码冒号阶梯 (omega_scale:omega_step:omega_stop) 导出的频点个数",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Number of frequencies derived from the source's colon-style (omega_scale:omega_step:omega_stop) ladder",
+   "units": "dimensionless",
+   "shape": "integer scalar",
    "dtype": "integer",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "kx_spectra",
-   "description": "每个频点的完整 kx 谱",
+   "description": "Complete kx spectrum at each frequency",
    "units": "1/m",
    "shape": "(F,) object array of full complex spectra",
    "dtype": "object array",
@@ -223,7 +223,7 @@
   },
   {
    "name": "kx_selected",
-   "description": "每个频点通过实部阈值并按 |Im| 升序排列的分支",
+   "description": "Branches at each frequency that pass the real-part threshold, sorted in ascending |Im| order",
    "units": "1/m",
    "shape": "(F,) object array of variable-length complex branches",
    "dtype": "object array",
@@ -232,7 +232,7 @@
   },
   {
    "name": "kx_head",
-   "description": "每个频点前 keep 个分支，构成扫描曲线",
+   "description": "First keep branches at each frequency, forming the scan curves",
    "units": "1/m",
    "shape": "(F,) object array of variable-length complex branches",
    "dtype": "object array",
@@ -241,17 +241,17 @@
   },
   {
    "name": "kz",
-   "description": "本次扫描实际使用的平行波数",
+   "description": "Parallel wavenumber actually used by this scan",
    "units": "1/m",
-   "shape": "标量 scalar",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
   },
   {
    "name": "matrix_sizes",
-   "description": "每个频点的矩阵阶数与非零元个数",
-   "units": "无量纲",
+   "description": "Matrix order and number of nonzero entries at each frequency",
+   "units": "dimensionless",
    "shape": "(F,) object array of (matrix order, nonzero count) tuples",
    "dtype": "object array",
    "required": true,
@@ -259,9 +259,9 @@
   },
   {
    "name": "graph_order",
-   "description": "本图的执行顺序",
-   "units": "不适用",
-   "shape": "(7,) 字符串数组",
+   "description": "Execution order of this graph",
+   "units": "not applicable",
+   "shape": "(7,) string array",
    "dtype": "string sequence",
    "required": true,
    "constraints": "The returned value follows the stated shape and physical normalization."
@@ -337,7 +337,7 @@
    {
     "id": "species_equilibrium_scales",
     "kind": "function",
-    "description": "组分平衡尺度",
+    "description": "Species equilibrium scales",
     "inputs": [
      "ms",
      "qs",
@@ -365,7 +365,7 @@
    {
     "id": "scan_wavenumber",
     "kind": "controlled_glue",
-    "description": "扫描平行波数标定",
+    "description": "Scan parallel-wavenumber calibration",
     "inputs": [
      "kz_scale",
      "kn"
@@ -377,7 +377,7 @@
    {
     "id": "scan_frequencies",
     "kind": "controlled_glue",
-    "description": "扫描频率阶梯",
+    "description": "Scan frequency ladder",
     "inputs": [
      "omega_scale",
      "omega_step",
@@ -392,7 +392,7 @@
    {
     "id": "gamma_lpole_coefficients",
     "kind": "function",
-    "description": "L 极点系数表",
+    "description": "L-pole coefficient table",
     "inputs": [
      "max_harmonic"
     ],
@@ -406,7 +406,7 @@
    {
     "id": "z_pole_coefficients",
     "kind": "function",
-    "description": "Z 极点留数与位置表",
+    "description": "Z-pole residue and location table",
     "inputs": [
      "j_order"
     ],
@@ -424,7 +424,7 @@
    {
     "id": "fluid_dispersion_matrix",
     "kind": "function",
-    "description": "流体色散矩阵组装",
+    "description": "Fluid dispersion matrix assembly",
     "inputs": [
      "omega",
      "kz",
@@ -458,7 +458,7 @@
    {
     "id": "fluid_wavevector_eigensolve",
     "kind": "function",
-    "description": "垂直波数本征求解",
+    "description": "Perpendicular-wavenumber eigensolve",
     "inputs": [
      "matrix",
      "kn",
@@ -519,7 +519,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "c2"
     },
-    "description": "光速平方进入 Maxwell 旋度项",
+    "description": "Speed of light squared enters the Maxwell curl term",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -534,7 +534,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "epsilon0"
     },
-    "description": "真空介电常数进入安培定律源项",
+    "description": "Vacuum permittivity enters the Ampere-law source term",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -549,7 +549,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "wps2"
     },
-    "description": "等离子体频率平方是全部耦合项的公共因子",
+    "description": "Plasma-frequency squared is a common factor of all coupling terms",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -564,7 +564,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "wcs"
     },
-    "description": "含符号回旋频率进入共振分母",
+    "description": "Signed cyclotron frequency enters the resonance denominator",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -579,7 +579,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "vts"
     },
-    "description": "热速度进入平行共振宗量",
+    "description": "Thermal speed enters the parallel-resonance argument",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -594,7 +594,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "rhocs"
     },
-    "description": "含符号回旋半径与极点缩放共同确定速度块",
+    "description": "Signed gyroradius and pole scaling together determine the velocity blocks",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -609,7 +609,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "sgns"
     },
-    "description": "回旋半径符号进入 xz 与 yz 耦合项",
+    "description": "The gyroradius sign enters the xz and yz coupling terms",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -624,7 +624,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "absrhocs"
     },
-    "description": "回旋半径绝对值缩放 L 极点系数",
+    "description": "The absolute gyroradius scales the L-pole coefficients",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -639,7 +639,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "cn_residues"
     },
-    "description": "L 极点留数给出贝塞尔项的有理权重",
+    "description": "L-pole residues give the rational weights of the Bessel terms",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -654,7 +654,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "cn_poles"
     },
-    "description": "L 极点位置给出贝塞尔项的有理分母",
+    "description": "L-pole locations give the rational denominators of the Bessel terms",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -669,7 +669,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "order_lengths"
     },
-    "description": "每阶极点个数决定速度块维数",
+    "description": "The number of poles at each order sets the velocity-block dimension",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -684,7 +684,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "bzj"
     },
-    "description": "Z 极点留数决定共振权重",
+    "description": "Z-pole residues set the resonance weights",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -699,7 +699,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "czj"
     },
-    "description": "Z 极点位置决定共振位置",
+    "description": "Z-pole locations set the resonance locations",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -714,7 +714,7 @@
      "node": "fluid_wavevector_eigensolve",
      "port": "matrix"
     },
-    "description": "本征问题只对完整组装出的矩阵定义",
+    "description": "The eigenproblem is defined only for the fully assembled matrix",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -729,7 +729,7 @@
      "node": "fluid_wavevector_eigensolve",
      "port": "kn"
     },
-    "description": "实部阈值以扫描波数归一尺度表达",
+    "description": "The real-part threshold is expressed in the scan wavenumber normalization scale",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -744,7 +744,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "kz"
     },
-    "description": "扫描平行波数由同一归一尺度标定后进入共振宗量与 Maxwell 旋项",
+    "description": "The scan parallel wavenumber is scaled by the same normalization scale and then enters the resonance argument and the Maxwell curl term",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -759,7 +759,7 @@
      "node": "scan_frequencies",
      "port": "wn"
     },
-    "description": "扫描频率轴按平衡态导出的 wn 缩放；轴由本图导出而非调用者提供",
+    "description": "The scan frequency axis is scaled by wn derived from the equilibrium; the axis is derived by this graph rather than supplied by the caller",
     "condition": "always",
     "transform": "identity",
     "kind": "data",
@@ -774,7 +774,7 @@
      "node": "fluid_dispersion_matrix",
      "port": "omega"
     },
-    "description": "逐频点扫描轴进入矩阵组装；每个频点独立组装，轴是源码保存的 xx",
+    "description": "The per-frequency scan axis enters matrix assembly; each frequency is assembled independently, and the axis is the xx vector stored by the source implementation",
     "condition": "always",
     "transform": "identity",
     "kind": "data",

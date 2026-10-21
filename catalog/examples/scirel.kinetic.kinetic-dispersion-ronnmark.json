@@ -40,232 +40,232 @@
  "inputs": [
   {
    "name": "B0",
-   "description": "背景磁场强度，决定回旋频率并进入极点共振宗量",
+   "description": "Background magnetic-field strength, setting the cyclotron frequency and entering the pole-resonance argument",
    "units": "T",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零，回旋频率正比于 B0。"
+   "constraints": "Finite and nonzero; the cyclotron frequency is proportional to B0."
   },
   {
    "name": "qs",
-   "description": "各组分电荷，决定回旋频率符号与耦合项符号",
+   "description": "Species charges, setting the signs of the cyclotron frequency and the coupling terms",
    "units": "C",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限，元素数与其余组分数组一致。"
+   "constraints": "Finite; element count matches the other species arrays."
   },
   {
    "name": "ms",
-   "description": "各组分质量，进入热速度与回旋频率",
+   "description": "Species masses, entering the thermal speed and the cyclotron frequency",
    "units": "kg",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "ns0",
-   "description": "各组分绝对数密度，进入等离子体频率",
+   "description": "Species absolute number densities, entering the plasma frequency",
    "units": "m^-3",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "Ts0",
-   "description": "各组分温度，已按源码约定换算为开尔文",
+   "description": "Species temperatures, already converted to kelvin under the source convention",
    "units": "K",
-   "shape": "`(S,)` 一维组分轴",
+   "shape": "`(S,)` one-dimensional species axis",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且严格为正。"
+   "constraints": "Finite and strictly positive."
   },
   {
    "name": "f",
-   "description": "电磁波频率，转换为角频率后进入共振宗量",
+   "description": "Electromagnetic-wave frequency, converted to angular frequency and then entering the resonance argument",
    "units": "Hz",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "有限且非零。",
+   "constraints": "Finite and nonzero.",
    "default": null
   },
   {
    "name": "omega",
-   "description": "直接给定的角频率，可替代 `f` 进入共振宗量（保留源码运行期的原始角频率 token，避免 `2*pi*f` 往返舍入）",
+   "description": "Directly supplied angular frequency that can replace `f` in the resonance argument (preserving the source runtime's original angular-frequency token and avoiding the round trip through `2*pi*f`)",
    "units": "rad/s",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": false,
-   "constraints": "可选关键字参数，缺省 `None`；`omega` 与 `f` 二者恰好提供一个；给出 `omega` 时其值直接作为 $\\omega$ 并忽略 `f`，且须有限非零。",
+   "constraints": "Optional keyword argument, default `None`; exactly one of `omega` and `f` must be supplied; when `omega` is given its value is used directly as $\\omega$ and `f` is ignored, and it must be finite and nonzero.",
    "default": null
   },
   {
    "name": "kz",
-   "description": "波矢平行磁场分量，进入共振宗量并与热速度相乘",
+   "description": "Wavevector component parallel to the magnetic field, entering the resonance argument and multiplying the thermal speed",
    "units": "1/m",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限；允许为零（源码算例 2 取 `kz=0.0`），此时 $n_z=0$ 且平行共振宗量退化为 $\\omega/\\omega_{cs}$。"
+   "constraints": "Finite; zero is allowed (source case 2 uses `kz=0.0`), in which case $n_z=0$ and the parallel resonance argument reduces to $\\omega/\\omega_{cs}$."
   },
   {
    "name": "kx",
-   "description": "波矢垂直磁场分量，给出 $b=(k_\\perp\\rho_{cs})^2$ 与折射率",
+   "description": "Wavevector component perpendicular to the magnetic field, giving $b=(k_\\perp\\rho_{cs})^2$ and the refractive index",
    "units": "1/m",
-   "shape": "标量（实数或复数）",
+   "shape": "scalar (real or complex)",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限；复数值对应源码 fsolve 在复 kx 平面求根，此时 $b$ 带虚部。"
+   "constraints": "Finite; complex values correspond to the source fsolve solving in the complex kx plane, where $b$ has an imaginary part."
   }
  ],
  "outputs": [
   {
    "name": "K",
-   "description": "介电张量，按约定 $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(\\mathrm{i}\\omega\\varepsilon_0)$",
-   "units": "无量纲",
-   "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
+   "description": "Dielectric tensor, with the convention $K_{ij}=\\delta_{ij}-\\sigma_{ij}/(\\mathrm{i}\\omega\\varepsilon_0)$",
+   "units": "dimensionless",
+   "shape": "`(3, 3)` complex matrix with component-axis order x, y, z",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，反对称对满足 $K_{yx}=-K_{xy}$、$K_{zy}=-K_{yz}$。"
+   "constraints": "Finite complex; antisymmetric pairs satisfy $K_{yx}=-K_{xy}$ and $K_{zy}=-K_{yz}$."
   },
   {
    "name": "D",
-   "description": "加入 Maxwell 旋度项的色散张量",
-   "units": "无量纲",
-   "shape": "`(3, 3)` 复数矩阵，分量轴序为 x、y、z",
+   "description": "Dispersion tensor including the Maxwell curl term",
+   "units": "dimensionless",
+   "shape": "`(3, 3)` complex matrix with component-axis order x, y, z",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，$D_{xx}=K_{xx}-n_z^2$、$D_{yy}=K_{yy}-(n_x^2+n_z^2)$、$D_{zz}=K_{zz}-n_x^2$、$D_{xz}=D_{zx}=K_{xz}+n_xn_z$。"
+   "constraints": "Finite complex; $D_{xx}=K_{xx}-n_z^2$, $D_{yy}=K_{yy}-(n_x^2+n_z^2)$, $D_{zz}=K_{zz}-n_x^2$, $D_{xz}=D_{zx}=K_{xz}+n_xn_z$."
   },
   {
    "name": "determinant",
-   "description": "色散行列式 $\\mathcal{D}=\\det D$，其零点给出本征模",
-   "units": "无量纲",
-   "shape": "标量复数",
+   "description": "Dispersion determinant $\\mathcal{D}=\\det D$, whose zeros give the eigenmodes",
+   "units": "dimensionless",
+   "shape": "scalar complex",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数。"
+   "constraints": "Finite complex."
   },
   {
    "name": "omega",
-   "description": "由输入频率换算的角频率",
+   "description": "Angular frequency converted from the input frequency",
    "units": "rad/s",
-   "shape": "标量",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限且非零。"
+   "constraints": "Finite and nonzero."
   },
   {
    "name": "nx",
-   "description": "垂直折射率 $c k_\\perp/\\omega$",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Perpendicular refractive index $c k_\\perp/\\omega$",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "nz",
-   "description": "平行折射率 $c k_\\parallel/\\omega$",
-   "units": "无量纲",
-   "shape": "标量",
+   "description": "Parallel refractive index $c k_\\parallel/\\omega$",
+   "units": "dimensionless",
+   "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限。"
+   "constraints": "Finite."
   },
   {
    "name": "vts",
-   "description": "各组分热速度 $\\sqrt{2k_BT_s/m_s}$",
+   "description": "Species thermal speeds $\\sqrt{2k_BT_s/m_s}$",
    "units": "m/s",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "严格为正。"
+   "constraints": "Strictly positive."
   },
   {
    "name": "wcs",
-   "description": "各组分含符号回旋频率",
+   "description": "Species signed cyclotron frequencies",
    "units": "rad/s",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "非零，符号随 qs。"
+   "constraints": "Nonzero; sign follows qs."
   },
   {
    "name": "wps2",
-   "description": "各组分等离子体频率平方",
+   "description": "Squared species plasma frequencies",
    "units": "rad^2/s^2",
    "shape": "`(S,)`",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "严格为正。"
+   "constraints": "Strictly positive."
   },
   {
    "name": "as",
-   "description": "各组分 $a_s=k_\\perp\\rho_{cs}$，即极点耦合项 $\\sqrt2 a_s c_j/x_{sj}$ 的尺度",
-   "units": "无量纲",
+   "description": "Species $a_s=k_\\perp\\rho_{cs}$, the scale of the pole-coupling term $\\sqrt2 a_s c_j/x_{sj}$",
+   "units": "dimensionless",
    "shape": "`(S,)`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限；实 kx 时可正可负，复 kx 时为复数且不定义正负。"
+   "constraints": "Finite; can be positive or negative for real kx, and is complex for complex kx with no sign order defined."
   },
   {
    "name": "b",
-   "description": "各组分 Ronnmark 参数 $\\lambda_s=(k_\\perp\\rho_{cs})^2$",
-   "units": "无量纲",
+   "description": "Species Ronnmark parameter $\\lambda_s=(k_\\perp\\rho_{cs})^2$",
+   "units": "dimensionless",
    "shape": "`(S,)`",
    "dtype": "complex128",
    "required": true,
-   "constraints": "实 kx 时为非负实数；复 kx 时可为复数，不定义非负序。"
+   "constraints": "Nonnegative real for real kx; complex for complex kx, with no nonnegativity order defined."
   },
   {
    "name": "bzj",
-   "description": "$J=8$ 极点留数，权重每个极点的共振项",
-   "units": "无量纲",
-   "shape": "`(8,)` 一维极点轴",
+   "description": "$J=8$ pole residues weighting the resonance term of each pole",
+   "units": "dimensionless",
+   "shape": "`(8,)` one-dimensional pole axis",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，后半段为前半段的复共轭。"
+   "constraints": "Finite complex; the second half is the conjugate of the first half."
   },
   {
    "name": "czj",
-   "description": "$J=8$ 极点位置，给出复共振偏移",
-   "units": "无量纲",
-   "shape": "`(8,)` 一维极点轴",
+   "description": "$J=8$ pole positions giving the complex resonance offsets",
+   "units": "dimensionless",
+   "shape": "`(8,)` one-dimensional pole axis",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限复数，后半段为前半段复共轭的相反数。"
+   "constraints": "Finite complex; the second half is the negative conjugate of the first half."
   },
   {
    "name": "j_order",
-   "description": "极点阶数，回显以便核对共振块大小",
-   "units": "无量纲",
-   "shape": "标量整数",
+   "description": "Pole order, echoed so the resonance-block size can be checked",
+   "units": "dimensionless",
+   "shape": "scalar integer",
    "dtype": "integer",
    "required": true,
-   "constraints": "固定为 8。"
+   "constraints": "Fixed at 8."
   },
   {
    "name": "branches",
-   "description": "每个 (组分, 极点) 组合所走的 Ronnmark 分支标签，用于核对方法选择器覆盖",
-   "units": "不适用",
-   "shape": "`(S*J,)` 字符串序列",
+   "description": "Ronnmark branch label taken by each (species, pole) combination, used to check method-selector coverage",
+   "units": "not applicable",
+   "shape": "`(S*J,)` string sequence",
    "dtype": "string",
    "required": true,
-   "constraints": "逐元素属于 `RTAY(AL<4)`、`RTAY(|Y|^2>75*AL)`、`RTAY(|Y|>40+AL/3)`、`RASY`、`RINT`。"
+   "constraints": "Each element belongs to `RTAY(AL<4)`, `RTAY(|Y|^2>75*AL)`, `RTAY(|Y|>40+AL/3)`, `RASY`, `RINT`."
   },
   {
    "name": "tensor_convention",
-   "description": "张量约定的文字标识",
-   "units": "不适用",
-   "shape": "字符串",
+   "description": "Text label for the tensor convention",
+   "units": "not applicable",
+   "shape": "string",
    "dtype": "string",
    "required": true,
-   "constraints": "固定为 `K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)`。"
+   "constraints": "Fixed at `K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)`."
   }
  ],
  "applicability": {

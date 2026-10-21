@@ -115,11 +115,11 @@
  },
  "verification": {
   "scope": [
-   "第一源平面逐列对照80位独立椭圆积分表达；原binary64 checker消差被独立高精度证明并修复，rtol2e-14保持。",
+   "The first source plane is compared column by column with an independent 80-digit elliptic-integral expression; the original binary64 checker cancellation was proven by independent high precision and repaired, and the rtol=2e-14 gate is retained.",
    "Whole-matrix equality with direct dense filament columns on a symmetric grid.",
    "Square shape, finite output and axis-source zero-column convention.",
    "Rejection of an axially nonsymmetric grid and reflection-block relation.",
-   "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
   ],
   "tests": [
    "tests/field/test_mirror_plasma_green.py",
@@ -130,7 +130,7 @@
    "The result is a dense O((N_Z*N_R)^2) matrix and may be costly on large grids.",
    "Current contraction and cell-area factors are caller responsibilities.",
    "Public distribution licensing and SciRel expert recognition remain pending.",
-   "专用镜像入口仍限定均匀对称Z张量网格；一般不规则坐标请使用electromagnetism领域的实际坐标矩阵接口。"
+   "The dedicated mirror entry remains limited to uniform, symmetric Z tensor grids; for general irregular coordinates use the actual-coordinate matrix entry in the electromagnetism domain."
   ]
  }
 }

@@ -147,18 +147,18 @@
    "Radial quadrature increment and first-grid-point reference.",
    "Comparison with independent circular-filament psi=R A_phi Green values away from the source.",
    "Transposed rectilinear layout and invalid radial grid.",
-   "独立70/80位精度理想圆环关系核对极小正半径、近轴非零BR、近丝和公式求值分支，保持原数值断言与容差；精确离散自项与算术失败分别处理。"
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
   ],
   "tests": [
    "tests/field/test_filament_vacuum_field.py",
    "tests/cross_domain/test_field_green_correction.py"
   ],
-  "evidence_ceiling": "Direct regressions cover selected ideal-filament superposition, axial field, radial quadrature and a fine-grid comparison with the circular-filament psi kernel after subtracting the first-radius reference. They do not establish arbitrary-grid quadrature accuracy, complete source-project closure or expert approval.",
+  "evidence_ceiling": "Direct regressions cover selected ideal-filament superposition, axial field, radial quadrature and a fine-grid comparison with the circular-filament psi kernel after subtracting the first-radius reference. They do not establish arbitrary-grid quadrature accuracy, complete external-reference closure or expert approval.",
   "known_limitations": [
    "The returned flux uses the first radial grid point as reference and omits a 2-pi flux factor.",
    "The ideal source is singular at coincident targets, which are rejected.",
    "Public distribution licensing remains pending a human decision.",
-   "psi的径向梯形误差需由网格加密验证；即便磁场按解析关系计算，离散psi也不宣称等于解析RAphi。"
+   "The radial trapezoidal error in psi must be verified by grid refinement; even when the magnetic field uses the analytic relation, the discrete psi is not claimed to equal the analytic R*A_phi."
   ]
  }
 }

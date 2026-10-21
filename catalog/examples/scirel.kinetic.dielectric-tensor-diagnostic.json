@@ -40,213 +40,213 @@
  "inputs": [
   {
    "name": "B0",
-   "description": "背景磁场强度；标量；单位 T（特斯拉）；须为非零有限实数（`B0=0` 会使 `wcs`、`rhocs` 退化，直接报错）。",
+   "description": "Background magnetic-field strength; scalar; unit T (tesla); must be a finite nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly).",
    "units": "T",
    "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "为非零有限实数（`B0=0` 会使 `wcs`、`rhocs` 退化，直接报错）。"
+   "constraints": "Must be a finite nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly)."
   },
   {
    "name": "qs",
-   "description": "各成分电荷；标量或长度 `S` 的一维数组；单位 C（库仑）；须有限、非零（电荷为 0 会使 `wps2=0` 且 `wcs=0`），符号决定回旋方向。",
+   "description": "Charge of each species; scalar or one-dimensional array of length `S`; unit C (coulomb); must be finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction.",
    "units": "C",
    "shape": "scalar or (S,) species array",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "有限、非零（电荷为 0 会使 `wps2=0` 且 `wcs=0`），符号决定回旋方向。"
+   "constraints": "Finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction."
   },
   {
    "name": "ms",
-   "description": "各成分质量；标量或长度 `S` 的一维数组；单位 kg；须严格为正且有限。",
+   "description": "Mass of each species; scalar or one-dimensional array of length `S`; unit kg; must be strictly positive and finite.",
    "units": "kg",
    "shape": "scalar or (S,) species array",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "严格为正且有限。"
+   "constraints": "Strictly positive and finite."
   },
   {
    "name": "ns0",
-   "description": "各成分数密度；标量或长度 `S` 的一维数组；单位 m^-3；须严格为正且有限。",
+   "description": "Number density of each species; scalar or one-dimensional array of length `S`; unit m^-3; must be strictly positive and finite.",
    "units": "m^-3",
    "shape": "scalar or (S,) species array",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "严格为正且有限。"
+   "constraints": "Strictly positive and finite."
   },
   {
    "name": "Ts0",
-   "description": "各成分温度；标量或长度 `S` 的一维数组；单位 K（开尔文，**不是** eV）；须严格为正且有限；调用方自行把 eV 乘 `1.6022e-19/kB` 换算（frozen source 的注释即此约定）。",
+   "description": "Temperature of each species; scalar or one-dimensional array of length `S`; unit K (kelvin, **not** eV); must be strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen source comment states this convention).",
    "units": "K",
    "shape": "scalar or (S,) species array",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "严格为正且有限；调用方自行把 eV 乘 `1.6022e-19/kB` 换算（frozen source 的注释即此约定）。"
+   "constraints": "Strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen source comment states this convention)."
   },
   {
    "name": "f",
-   "description": "电磁波频率；标量；单位 Hz；须非零有限实数（`w=2*pi*f=0` 会除零）；内部取 `w=2*pi*f`（frozen source）。",
+   "description": "Electromagnetic wave frequency; scalar; unit Hz; must be a finite nonzero real number (`w=2*pi*f=0` divides by zero); internally uses `w=2*pi*f` (frozen source).",
    "units": "Hz",
    "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "非零有限实数（`w=2*pi*f=0` 会除零）；内部取 `w=2*pi*f`（frozen source）。"
+   "constraints": "Finite nonzero real number (`w=2*pi*f=0` divides by zero); internally uses `w=2*pi*f` (frozen source)."
   },
   {
    "name": "kz",
-   "description": "平行波数；标量；单位 rad/m；须非零有限实数（`z0`、`zn` 均除以 `kz`，frozen source）。",
+   "description": "Parallel wavenumber; scalar; unit rad/m; must be a finite nonzero real number (`z0` and `zn` are both divided by `kz`, frozen source).",
    "units": "rad/m",
    "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "非零有限实数（`z0`、`zn` 均除以 `kz`，frozen source）。"
+   "constraints": "Finite nonzero real number (`z0` and `zn` are both divided by `kz`, frozen source)."
   },
   {
    "name": "kx",
-   "description": "垂直波数；标量；单位 rad/m；须有限，可为实数或复数（源码 `fsolve` 扫描即复数 `kx`）；`kx=0` 时 `as=0`，`Xsn_xz/Xsn_zz` 会出现 `NaN`（源码同此行为，本算子不掩盖）。",
+   "description": "Perpendicular wavenumber; scalar; unit rad/m; must be finite and may be real or complex (the source `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and `Xsn_xz/Xsn_zz` become `NaN` (the source implementation behaves the same way; this operator does not mask it).",
    "units": "rad/m",
    "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "有限，可为实数或复数（源码 `fsolve` 扫描即复数 `kx`）；`kx=0` 时 `as=0`，`Xsn_xz/Xsn_zz` 会出现 `NaN`（源码同此行为，本算子不掩盖）。"
+   "constraints": "Finite and may be real or complex (the source `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and `Xsn_xz/Xsn_zz` become `NaN` (the source implementation behaves the same way; this operator does not mask it)."
   },
   {
    "name": "lmx",
-   "description": "Bessel 谐波求和截断上限；标量整数；无量纲；须为非负整数，默认 `15`（frozen source）；增大可检查收敛。",
+   "description": "Bessel harmonic-sum truncation limit; integer scalar; dimensionless; must be a nonnegative integer, default `15` (frozen source); increase it to check convergence.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "integer",
    "required": false,
-   "constraints": "为非负整数，默认 `15`（frozen source）；增大可检查收敛。",
+   "constraints": "Nonnegative integer, default `15` (frozen source); increase it to check convergence.",
    "default": 15
   }
  ],
  "outputs": [
   {
    "name": "K",
-   "description": "动力学介电张量 `K_ij`；`(3,3)` 复数 `numpy.ndarray`（轴 0 为行 i，轴 1 为列 j）；无量纲；初始为 `diag(1,1,1)`，`kx=0` 或 `kz` 近零时部分分量可为 `NaN`/`inf`，与源码一致不做替换。",
+   "description": "Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is column j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some components may be `NaN`/`inf`, matching the source implementation without replacement.",
    "units": "dimensionless",
    "shape": "(3,3)",
    "dtype": "complex128 array",
    "required": true,
-   "constraints": "动力学介电张量 `K_ij`；`(3,3)` 复数 `numpy.ndarray`（轴 0 为行 i，轴 1 为列 j）；无量纲；初始为 `diag(1,1,1)`，`kx=0` 或 `kz` 近零时部分分量可为 `NaN`/`inf`，与源码一致不做替换。"
+   "constraints": "Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is column j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some components may be `NaN`/`inf`, matching the source implementation without replacement."
   },
   {
    "name": "D",
-   "description": "色散张量 `D_ij`；`(3,3)` 复数 `numpy.ndarray`；无量纲；由 `K` 叠加 `nx^2`、`nz^2`、`nx*nz` 得到，`K` 为 `NaN` 时对应分量也为 `NaN`。",
+   "description": "Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`.",
    "units": "dimensionless",
    "shape": "(3,3)",
    "dtype": "complex128 array",
    "required": true,
-   "constraints": "色散张量 `D_ij`；`(3,3)` 复数 `numpy.ndarray`；无量纲；由 `K` 叠加 `nx^2`、`nz^2`、`nx*nz` 得到，`K` 为 `NaN` 时对应分量也为 `NaN`。"
+   "constraints": "Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`."
   },
   {
    "name": "det_D",
-   "description": "色散行列式 `det(D)`；复数标量；无量纲；按六项展开式计算，与 `numpy.linalg.det(D)` 在浮点误差内一致（实/虚部量级差极大时允许约 1e-9 的相对偏离）。",
+   "description": "Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of about 1e-9 is allowed when the real and imaginary magnitudes differ greatly).",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "色散行列式 `det(D)`；复数标量；无量纲；按六项展开式计算，与 `numpy.linalg.det(D)` 在浮点误差内一致（实/虚部量级差极大时允许约 1e-9 的相对偏离）。"
+   "constraints": "Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of about 1e-9 is allowed when the real and imaginary magnitudes differ greatly)."
   },
   {
    "name": "w",
-   "description": "角频率；实数标量；单位 rad/s；等于 `2*pi*f`，仅当 `f` 非零时有定义。",
+   "description": "Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined only when `f` is nonzero.",
    "units": "rad/s",
    "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "角频率；实数标量；单位 rad/s；等于 `2*pi*f`，仅当 `f` 非零时有定义。"
+   "constraints": "Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined only when `f` is nonzero."
   },
   {
    "name": "vts",
-   "description": "各成分热速度 `sqrt(2*kB*Ts0/ms)`；形状 `(S,)` 的实数数组；单位 m/s；须严格为正。",
+   "description": "Thermal speed `sqrt(2*kB*Ts0/ms)` of each species; real array of shape `(S,)`; unit m/s; must be strictly positive.",
    "units": "m/s",
    "shape": "(S,) species array",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "严格为正。"
+   "constraints": "Strictly positive."
   },
   {
    "name": "wcs",
-   "description": "各成分回旋频率 `qs*B0/ms`；形状 `(S,)` 的实数数组；单位 rad/s；带电荷符号，`B0` 非零时非零。",
+   "description": "Cyclotron frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the charge sign and is nonzero when `B0` is nonzero.",
    "units": "rad/s",
    "shape": "(S,) species array",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "各成分回旋频率 `qs*B0/ms`；形状 `(S,)` 的实数数组；单位 rad/s；带电荷符号，`B0` 非零时非零。"
+   "constraints": "Cyclotron frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the charge sign and is nonzero when `B0` is nonzero."
   },
   {
    "name": "wps2",
-   "description": "各成分等离子体频率平方 `ns0*qs^2/ms/epsilon0`；形状 `(S,)` 的实数数组；单位 s^-2；非负。",
+   "description": "Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit s^-2; nonnegative.",
    "units": "s^-2",
    "shape": "(S,) species array",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "各成分等离子体频率平方 `ns0*qs^2/ms/epsilon0`；形状 `(S,)` 的实数数组；单位 s^-2；非负。"
+   "constraints": "Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit s^-2; nonnegative."
   },
   {
    "name": "rhocs",
-   "description": "各成分回旋半径 `sqrt(kB*Ts0/ms)/wcs`；形状 `(S,)` 的实数数组；单位 m；带符号，`wcs` 非零时有定义。",
+   "description": "Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero.",
    "units": "m",
    "shape": "(S,) species array",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "各成分回旋半径 `sqrt(kB*Ts0/ms)/wcs`；形状 `(S,)` 的实数数组；单位 m；带符号，`wcs` 非零时有定义。"
+   "constraints": "Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero."
   },
   {
    "name": "nx",
-   "description": "垂直折射率 `sqrt(c2)*kx/w`；复数标量；无量纲；`w` 非零时有定义，`kx` 为复数时同样为复数。",
+   "description": "Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and complex whenever `kx` is complex.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "垂直折射率 `sqrt(c2)*kx/w`；复数标量；无量纲；`w` 非零时有定义，`kx` 为复数时同样为复数。"
+   "constraints": "Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and complex whenever `kx` is complex."
   },
   {
    "name": "nz",
-   "description": "平行折射率 `sqrt(c2)*kz/w`；复数标量；无量纲；`w` 非零时为实数标量。",
+   "description": "Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is nonzero.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "complex128",
    "required": true,
-   "constraints": "平行折射率 `sqrt(c2)*kz/w`；复数标量；无量纲；`w` 非零时为实数标量。"
+   "constraints": "Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is nonzero."
   },
   {
    "name": "as",
-   "description": "各成分 `kx*rhocs`；形状 `(S,)` 的复数数组；无量纲；`kx` 为实数时退化为实数。",
+   "description": "`kx*rhocs` of each species; complex array of shape `(S,)`; dimensionless; reduces to real when `kx` is real.",
    "units": "dimensionless",
    "shape": "(S,) species array",
    "dtype": "complex128 array",
    "required": true,
-   "constraints": "各成分 `kx*rhocs`；形状 `(S,)` 的复数数组；无量纲；`kx` 为实数时退化为实数。"
+   "constraints": "`kx*rhocs` of each species; complex array of shape `(S,)`; dimensionless; reduces to real when `kx` is real."
   },
   {
    "name": "bs",
-   "description": "各成分 `as.^2`；形状 `(S,)` 的复数数组；无量纲；`bs=0`（即 `kx=0`）时 `Gamman(l,b)/b` 出现 `NaN`，与源码一致。",
+   "description": "`as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0` (that is, `kx=0`) `Gamman(l,b)/b` becomes `NaN`, matching the source implementation.",
    "units": "dimensionless",
    "shape": "(S,) species array",
    "dtype": "complex128 array",
    "required": true,
-   "constraints": "各成分 `as.^2`；形状 `(S,)` 的复数数组；无量纲；`bs=0`（即 `kx=0`）时 `Gamman(l,b)/b` 出现 `NaN`，与源码一致。"
+   "constraints": "`as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0` (that is, `kx=0`) `Gamman(l,b)/b` becomes `NaN`, matching the source implementation."
   },
   {
    "name": "z0s",
-   "description": "各成分的 `z0=w/(kz*vts)`；形状 `(S,)` 的复数数组；无量纲；仅用于诊断，不参与后续累加。",
+   "description": "`z0=w/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated downstream.",
    "units": "dimensionless",
    "shape": "(S,) species array",
    "dtype": "complex128 array",
    "required": true,
-   "constraints": "各成分的 `z0=w/(kz*vts)`；形状 `(S,)` 的复数数组；无量纲；仅用于诊断，不参与后续累加。"
+   "constraints": "`z0=w/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated downstream."
   },
   {
    "name": "lmx",
-   "description": "本次实际使用的谐波截断上限；整数标量；无量纲；等于传入的 `lmx`，便于复现求和范围。",
+   "description": "Harmonic truncation limit actually used; integer scalar; dimensionless; equals the supplied `lmx` so the summation range can be reproduced.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "integer",
    "required": true,
-   "constraints": "本次实际使用的谐波截断上限；整数标量；无量纲；等于传入的 `lmx`，便于复现求和范围。"
+   "constraints": "Harmonic truncation limit actually used; integer scalar; dimensionless; equals the supplied `lmx` so the summation range can be reproduced."
   }
  ],
  "applicability": {

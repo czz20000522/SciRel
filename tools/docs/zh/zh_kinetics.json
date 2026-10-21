@@ -4914,7 +4914,7 @@
   },
   {
    "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
-   "source_sha256": "c6ced920a51b06896d2e40f7df6e73a38c5a6dd04166dbfc294f54ac93c4f3c3",
+   "source_sha256": "6b5396f1a51e67f62532509a6dd6ecfa126143b140cfffd8799d2f8aa06adf4d",
    "summary": "沿给定R–Z折线插值正磁场模，以梯形求积计算∫dl/B，并可计算同权标量平均。",
    "definition": "用三次RectBivariateSpline在路径点插值B及可选quantity；累计R–Z欧氏线段长度，梯形积分1/B；可选平均为∫quantity/B dl除以∫1/B dl。",
    "model": "二维采样场插值及离散逆磁场路径求积。",
@@ -7095,7 +7095,7 @@
   },
   {
    "asset_id": "scirel.geometry.flux-surface-profile",
-   "source_sha256": "9e9a80cf179891696b740e043d0ac15d4f808a944252d8c73c6949d7199f6f8a",
+   "source_sha256": "33f7deba75135a24fa42cdaabb175010111ffca53426a714fedd89a00f0b002c",
    "summary": "对成对磁通坐标样本排序去重，线性插值标量剖面，并在两端以明确常数延拓。",
    "definition": "展平成对样本后用NumPy argsort按磁通排序；重复坐标保留排序后第一次出现值；唯一点间线性插值，域外用left/right常数。并不保证重复值维持原输入先后顺序。",
    "model": "调用者磁通坐标中的一维线性插值。",

@@ -40,50 +40,50 @@
  "inputs": [
   {
    "name": "z",
-   "description": "待求的复变量取值。可为标量、任意形状的实数或复数 `array_like`；轴含义由调用方决定，本算子不解释物理轴。单位：无量纲（归一化相速度 z = omega/(k*vt)）。有效性约束：元素须为有限值（不含 `NaN`/`inf`），实部为 0 的元素走精确 erfc 分支，实部非 0 且虚部为负的元素走共轭反射分支。",
-   "units": "无量纲",
+   "description": "Values of the complex variable to evaluate. May be a scalar or a real or complex `array_like` of any shape; axis meaning is caller-defined and this operator does not interpret physical axes. Units: dimensionless (normalized phase velocity z = omega/(k*vt)). Validity constraint: elements must be finite (no `NaN`/`inf`); elements with zero real part use the exact erfc branch, and elements with nonzero real part and negative imaginary part use the conjugate-reflection branch.",
+   "units": "dimensionless",
    "shape": "scalar or nonempty array",
    "dtype": "real or complex numeric",
    "required": true,
-   "constraints": "元素须为有限值（不含 `NaN`/`inf`），实部为 0 的元素走精确 erfc 分支，实部非 0 且虚部为负的元素走共轭反射分支。"
+   "constraints": "Elements must be finite (no `NaN`/`inf`); elements with zero real part use the exact erfc branch, and elements with nonzero real part and negative imaginary part use the conjugate-reflection branch."
   }
  ],
  "outputs": [
   {
    "name": "Z",
-   "description": "等离子体色散函数值 Z(z)=1i*sqrt(pi)*w(z)。形状与 `z` 完全一致（标量输入得 0 维数组），复数值 `ndarray`（complex128）。单位：无量纲。有效性约束：仅在 `z` 各元素有限且未落在展开式极点附近时数值有效；实部为 0 的实参数点给出纯虚结果。",
-   "units": "无量纲",
+   "description": "Plasma dispersion function value Z(z)=1i*sqrt(pi)*w(z). Shape exactly matches `z` (a scalar input gives a 0-d array), complex-valued `ndarray` (complex128). Units: dimensionless. Validity constraint: numerically valid only when all `z` elements are finite and away from the expansion poles; real points with zero real part give purely imaginary results.",
+   "units": "dimensionless",
    "shape": "same shape as z; scalar gives a zero-dimensional array",
    "dtype": "complex128",
    "required": true,
-   "constraints": "仅在 `z` 各元素有限且未落在展开式极点附近时数值有效；实部为 0 的实参数点给出纯虚结果。"
+   "constraints": "Numerically valid only when all `z` elements are finite and away from the expansion poles; real points with zero real part give purely imaginary results."
   },
   {
    "name": "w",
-   "description": "Faddeeva 函数 w(z)=exp(-z^2)*erfc(-1i*z)。形状与 `z` 一致，复数值 `ndarray`。单位：无量纲。有效性约束：虚部为负且实部非 0 的输入返回的是共轭反射后的下半平面值，而非上半平面解析延拓值。",
-   "units": "无量纲",
+   "description": "Faddeeva function w(z)=exp(-z^2)*erfc(-1i*z). Shape matches `z`; complex-valued `ndarray`. Units: dimensionless. Validity constraint: inputs with negative imaginary part and nonzero real part return the conjugated lower-half-plane value rather than the upper-half-plane analytic continuation.",
+   "units": "dimensionless",
    "shape": "same shape as z; scalar gives a zero-dimensional array",
    "dtype": "complex128",
    "required": true,
-   "constraints": "虚部为负且实部非 0 的输入返回的是共轭反射后的下半平面值，而非上半平面解析延拓值。"
+   "constraints": "Inputs with negative imaginary part and nonzero real part return the conjugated lower-half-plane value rather than the upper-half-plane analytic continuation."
   },
   {
    "name": "method",
-   "description": "逐元素字符串标记，取 `'erfc'`（real(z)==0）或 `'rational'`（其余）。形状与 `z` 一致，`object` 数组。单位：无量纲（枚举标签）。有效性约束：取值必为这两个字符串之一。",
-   "units": "无量纲",
+   "description": "Elementwise string label, `'erfc'` (real(z)==0) or `'rational'` (otherwise). Shape matches `z`; `object` array. Units: dimensionless (enumeration label). Validity constraint: must be one of these two strings.",
+   "units": "dimensionless",
    "shape": "same shape as z; scalar gives a zero-dimensional array",
    "dtype": "object array of string labels",
    "required": true,
-   "constraints": "取值必为这两个字符串之一。"
+   "constraints": "Must be one of these two strings."
   },
   {
    "name": "all_purely_imaginary",
-   "description": "布尔标量，为 True 表示 `z` 全部元素满足 real(z)==0，即触发源码 frozen source 的提前返回。单位：无量纲（布尔）。有效性约束：与 `method` 全为 `'erfc'` 互为充要条件。",
-   "units": "无量纲",
+   "description": "Boolean scalar; True means every `z` element satisfies real(z)==0, triggering the frozen source's early return. Units: dimensionless (boolean). Validity constraint: necessary and sufficient for `method` to be entirely `'erfc'`.",
+   "units": "dimensionless",
    "shape": "scalar",
    "dtype": "bool",
    "required": true,
-   "constraints": "与 `method` 全为 `'erfc'` 互为充要条件。"
+   "constraints": "Necessary and sufficient for `method` to be entirely `'erfc'`."
   }
  ],
  "applicability": {
