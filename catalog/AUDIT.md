@@ -196,3 +196,15 @@ point. That is a software-engineering workflow (dependency closure, staged
 candidates, integration tests, external truth), not a single capability audit.
 It is recorded as a direction, not a release gate; no coverage claim is made
 until the workflow and its acceptance evidence exist.
+
+## Outbound acceptance S1-S6 (exposed 229)
+
+- S1 fillable gap: PASS; |B| ratio via glue matched Pleiades truth exactly.
+- S2 unfillable gap: PASS; parametric/bounded CX rate, no user handoff.
+- S3 held capability: PASS; independent Coulomb-log formula with checks, no held import.
+- S4 input failure: PASS; negative density classified as user-data invalid, not a capability failure.
+- S5 success chain: PASS; B0/peak matched Pleiades truth.
+- S6 held dependency: PASS-WITH-LIMITS; held axisymmetric Picard replaced by exposed free-boundary chain with a disclosed claim ceiling.
+
+The exposed outbound chain is usable; held capabilities remain in-flow gaps to fill
+or bound, not user handoffs. The capability count is not the acceptance metric.
