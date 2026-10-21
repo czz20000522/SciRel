@@ -121,3 +121,12 @@ leaves the hold only after the owner records the decision and the missing
 evidence; then its contract is rebound and it can be exposed. The hold is not a
 second truth: the contract remains the single scientific truth while review is
 pending.
+
+
+## Verdict registry and gate
+
+`catalog/review/VERDICTS.json` records one verdict per catalog asset. The gate
+(`scripts/review_gate.py --check`) fails when an asset is missing, an exposed
+asset is not `pass`/`pass-with-limits`, or a held asset is not `human-review`.
+`not-audited` and `blocked` are never exposed. The verdict registry is a review
+state, not a second scientific truth.
