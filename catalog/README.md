@@ -1,3 +1,5 @@
+> Meta-rules for recording, reviewing and handing off work: [`../RULES.md`](../RULES.md).
+
 # Asset contracts: single truth, audit and change rules
 
 Every public capability is defined by one `catalog/examples/<asset-id>.json`
