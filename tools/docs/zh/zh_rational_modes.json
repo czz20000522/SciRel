@@ -232,9 +232,9 @@
   },
   {
    "asset_id": "scirel.kinetic.multifluid-frequency-solve",
-   "source_sha256": "f70225e81ac9d33072283ec14f817f5722e6a5c36cc9dabd64bd261d0da02277",
+   "source_sha256": "ee2c40ecf20754bf99c50933f9f67b2dc4314f5b9c46ace3e786e85e0255478a",
    "summary": "在物理坐标中计算完整流体谱，逐分量检查矩阵束残差，并显式提供亏损零本征值元数据；数值条件化不改变科学矩阵束。",
-   "definition": "在缩放坐标中按支撑结构分解并求解 QZ；把存储的二进制系数视为精确有理数，通过矩阵幂的秩核对零本征值重数；必要时细化非零本征对，并针对组装的原始 M,A 检查每个本征对。",
+   "definition": "在缩放坐标中按支撑结构分块求解：惯性矩阵恰为单位阵的分块使用标准本征问题，其余分块使用广义 QZ；把存储的二进制系数视为精确有理数，通过矩阵幂的秩核对零本征值重数；必要时细化非零本征对，并针对组装的原始 M,A 检查每个本征对。",
    "model": "线性多物种暖流体电磁模型，可选相对论惯性。",
    "boundary": "局部 Fourier 模态 exp(i k.r-i omega t)。",
    "assumptions": [
@@ -317,7 +317,11 @@
      "不提供稀疏选定谱或分支延续语义。",
      "示例输出是有界的运行时观察结果，不是普适的科学结论。"
     ],
-    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。"
+    "evidence_ceiling": "直接测试与有界示例只确立所声明的输入／输出行为、数值检查和失败边界；不证明任意参数下的一致性、分支唯一性、全局物理有效性、人工科学认可或发布许可。",
+    "tests": [
+     "tests/kinetic/test_dispersion_multifluid.py",
+     "tests/kinetic/test_dispersion_multifluid_oracle.py"
+    ]
    },
    "example": {
     "description": "求解一个物理 SI 点。",

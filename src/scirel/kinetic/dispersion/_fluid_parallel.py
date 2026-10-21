@@ -192,13 +192,15 @@ def _positive_finite_tolerance(value, name):
     return narrowed
 
 def solve_frequency_pencil(M, A, *, state_scales=None, backward_tolerance=1e-10):
-    """Numerical correction: generalized QZ eigenproblem, same path for values/vectors.
+    """Numerical correction: support-decomposed generalized eigenproblem.
 
-    Explicit positive state_scales implements simultaneous D^-1 M D and D^-1 A D;
-    returns eigenvectors in caller's original state units. No symbolic-eig path,
-    no promise of 16 digits from double inputs, no hidden matrix inverse.
-    Residual qualification is backward error only, not a forward accuracy proof
-    for ill-conditioned or repeated modes. Acceptance also needs independent gates.
+    Identity-inertia blocks are solved as standard eigenproblems; other blocks
+    use QZ.  Explicit positive state_scales implements simultaneous D^-1 M D and
+    D^-1 A D; returns eigenvectors in caller's original state units. No
+    symbolic-eig path, no promise of 16 digits from double inputs, no hidden
+    matrix inverse. Residual qualification is backward error only, not a forward
+    accuracy proof for ill-conditioned or repeated modes. Acceptance also needs
+    independent gates.
     """
     backward_tolerance = _positive_finite_tolerance(backward_tolerance, 'backward_tolerance')
     M = np.asarray(M, dtype=complex)
@@ -231,7 +233,15 @@ def solve_frequency_pencil(M, A, *, state_scales=None, backward_tolerance=1e-10)
     offset = 0
     for component in components:
         ix = np.array(component)
-        (values, vectors) = eig(Ms[np.ix_(ix, ix)], As[np.ix_(ix, ix)])
+        M_block = Ms[np.ix_(ix, ix)]
+        A_block = As[np.ix_(ix, ix)]
+        if np.array_equal(A[np.ix_(ix, ix)], np.eye(len(ix), dtype=A.dtype)):
+            # Identity inertia makes the generalized pencil a standard
+            # eigenproblem.  QZ on this badly scaled nonnormal block loses the
+            # low-frequency modes; the standard path retains them.
+            (values, vectors) = eig(M_block)
+        else:
+            (values, vectors) = eig(M_block, A_block)
         vals[offset:offset + len(ix)] = values
         U[np.ix_(ix, np.arange(offset, offset + len(ix)))] = vectors
         offset += len(ix)

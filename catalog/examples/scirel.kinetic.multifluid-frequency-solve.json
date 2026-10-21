@@ -29,7 +29,7 @@
  "identity": {
   "relation": "Generalized Maxwell-fluid pencil to frequencies and right eigenvectors",
   "direction": "generalized spectral solve",
-  "definition": "Solve support-decomposed QZ in scaled coordinates, verify zero multiplicities by exact rational rank powers of stored binary coefficients, refine nonzero pairs when needed, and check every pair against the assembled original M,A.",
+  "definition": "Solve each support block in scaled coordinates: a block whose inertia matrix is exactly identity uses the standard eigenproblem, other blocks use generalized QZ; verify zero multiplicities by exact rational rank powers of stored binary coefficients, refine nonzero pairs when needed, and check every pair against the assembled original M,A.",
   "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
   "geometry": "k=(kx,0,kz), B0 along z.",
   "coordinates": "Cartesian fields; species density and velocity blocks followed by E and B.",
@@ -155,7 +155,8 @@
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
   ],
   "tests": [
-   "tests/kinetic/test_dispersion_multifluid.py"
+   "tests/kinetic/test_dispersion_multifluid.py",
+   "tests/kinetic/test_dispersion_multifluid_oracle.py"
   ],
   "evidence_ceiling": "Direct tests and the bounded example establish only the declared input/output behavior, numerical checks and failure boundaries; they do not establish arbitrary-parameter parity, branch uniqueness, global physical validity, human scientific endorsement or release approval.",
   "known_limitations": [
