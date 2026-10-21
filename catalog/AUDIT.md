@@ -130,3 +130,26 @@ pending.
 asset is not `pass`/`pass-with-limits`, or a held asset is not `human-review`.
 `not-audited` and `blocked` are never exposed. The verdict registry is a review
 state, not a second scientific truth.
+
+## Exposure hold is not an outbound handoff
+
+Holding an asset means only that it is not exposed as a catalog capability. It
+does not authorize the outbound worker to stop a user's request or to ask the
+user to obtain a human review/decomposition. During a real request a held or
+missing capability is a gap: mark it, try an independent public-science glue or
+substitute, verify it, and continue; if that is impossible, state the concrete
+missing input/fact and deliver the bounded result that remains. Never read or
+import the held implementation as a hidden shortcut.
+
+## Outbound gap and input-failure policy
+
+These are process behaviours, tested independently of capability count:
+
+- a missing/held/near-miss capability is an in-flow **gap**, not a user handoff;
+  fill it with a public formula/exposed composition or report the concrete
+  missing input and a bounded result;
+- do not import/read a held implementation as a shortcut;
+- classify a failure before acting: user-data/domain invalid, interface/contract
+  mismatch, numerical/applicability limit, or implementation failure. Do not
+  call a representation/API mismatch "invalid physics", and do not call valid
+  data outside a numerical envelope "invalid user data".
