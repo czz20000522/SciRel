@@ -7,7 +7,6 @@ _LAZY_EXPORTS = {
     "sample_latin_hypercube": ("latin_hypercube_sampling", "sample_latin_hypercube"),
     "optimize_anisotropic_parameters": ("anisotropic_parameter_optimization", "optimize_anisotropic_parameters"),
     "evaluate_anisotropic_trial": ("anisotropic_trial_evaluation", "evaluate_anisotropic_trial"),
-    "solve_direct_anisotropic_inversion": ("direct_anisotropic_inversion", "solve_direct_anisotropic_inversion"),
 }
 _LAZY_MODULES = frozenset(module for module, _ in _LAZY_EXPORTS.values())
 
