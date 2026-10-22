@@ -1,4 +1,8 @@
-"""Standard-library consumer adapter; distributed as tools/query.py."""
+"""Query the public SciRel runtime with Python's standard library.
+
+Run ``describe`` first, then pass the returned snapshot and wheel hashes to
+subsequent commands. CLI and MCP calls use the same read-only dispatcher.
+"""
 from __future__ import annotations
 
 import argparse
@@ -8,10 +12,12 @@ from pathlib import Path, PurePosixPath
 import re
 import sys
 
+sys.dont_write_bytecode = True
+
 from capability_query import (FILTER_ORDER, REQUEST_SCHEMA, RESPONSE_SCHEMA,
                               query_capabilities, validate_capability_index)
 
-MANIFEST_SCHEMA = 'scirel.pure-consumption'
+RUNTIME_SCHEMA = 'scirel.consumer-runtime'
 RESPONSE = 'scirel.consumer-response'
 
 
@@ -26,39 +32,38 @@ def sha(data):
 class Consumer:
     def __init__(self, root):
         self.root = Path(root).resolve()
-        path = self.root / 'manifest.json'
+        path = self.root / 'runtime.json'
         if path.is_symlink():
-            raise ValueError('manifest may not be a symlink')
-        self.manifest = json.loads(path.read_bytes())
-        if not isinstance(self.manifest, dict):
-            raise ValueError('manifest must be an object')
-        if (any(not isinstance(self.manifest.get(key), str) or
-                not re.fullmatch(r'[0-9a-f]{64}', self.manifest[key])
-                for key in ('manifest_sha256', 'snapshot_id')) or
-                not isinstance(self.manifest.get('source_revision'), str) or
-                not re.fullmatch(r'[0-9a-f]{40}', self.manifest['source_revision']) or
-                type(self.manifest.get('asset_count')) is not int or self.manifest['asset_count'] < 0 or
-                not isinstance(self.manifest.get('runtime'), dict) or
-                not isinstance(self.manifest['runtime'].get('wheel_sha256'), str) or
-                not re.fullmatch(r'[0-9a-f]{64}', self.manifest['runtime']['wheel_sha256']) or
-                not isinstance(self.manifest.get('retrieval'), dict) or
-                not isinstance(self.manifest.get('files'), dict)):
-            raise ValueError('invalid manifest identity/runtime/files fields')
-        for relative, member in self.manifest['files'].items():
+            raise ValueError('runtime identity may not be a symlink')
+        self.identity = json.loads(path.read_bytes())
+        if not isinstance(self.identity, dict):
+            raise ValueError('runtime identity must be an object')
+        if (not isinstance(self.identity.get('snapshot_sha256'), str) or
+                not re.fullmatch(r'[0-9a-f]{64}', self.identity['snapshot_sha256']) or
+                not isinstance(self.identity.get('source_revision'), str) or
+                not re.fullmatch(r'[0-9a-f]{40}', self.identity['source_revision']) or
+                type(self.identity.get('asset_count')) is not int or self.identity['asset_count'] < 0 or
+                not isinstance(self.identity.get('runtime'), dict) or
+                not isinstance(self.identity['runtime'].get('wheel_sha256'), str) or
+                not re.fullmatch(r'[0-9a-f]{64}', self.identity['runtime']['wheel_sha256']) or
+                not isinstance(self.identity.get('retrieval'), dict) or
+                not isinstance(self.identity.get('files'), dict)):
+            raise ValueError('invalid runtime identity/runtime/files fields')
+        for relative, member in self.identity['files'].items():
             if (not isinstance(relative, str) or not isinstance(member, dict) or
                     not isinstance(member.get('sha256'), str) or
                     not re.fullmatch(r'[0-9a-f]{64}', member['sha256']) or
                     type(member.get('bytes')) is not int or member['bytes'] < 0):
-                raise ValueError('invalid manifest member metadata')
-        unsigned = {k: v for k, v in self.manifest.items() if k != 'manifest_sha256'}
-        if (self.manifest.get('schema') != MANIFEST_SCHEMA or
-                sha(encode(unsigned)) != self.manifest.get('manifest_sha256')):
-            raise ValueError('invalid manifest identity')
+                raise ValueError('invalid runtime member metadata')
+        unsigned = {k: v for k, v in self.identity.items() if k != 'snapshot_sha256'}
+        if (self.identity.get('schema') != RUNTIME_SCHEMA or
+                sha(encode(unsigned)) != self.identity['snapshot_sha256']):
+            raise ValueError('invalid runtime identity')
         self.index = json.loads(self.read('catalog/capability-index.json'))
         validate_capability_index(self.index,
-                                 expected_source_revision=self.manifest['source_revision'])
-        if self.index['asset_count'] != self.manifest['asset_count']:
-            raise ValueError('manifest/index count differs')
+                                 expected_source_revision=self.identity['source_revision'])
+        if self.index['asset_count'] != self.identity['asset_count']:
+            raise ValueError('runtime/index count differs')
         self.assets = {x['asset_id']: x for x in self.index['assets']}
 
     def read(self, relative):
@@ -70,9 +75,9 @@ class Consumer:
         if (not path.resolve().is_relative_to(self.root) or
                 any(p.is_symlink() for p in [path, *path.parents] if p != self.root.parent)):
             raise ValueError('member path escapes root or uses a symlink')
-        expected = self.manifest['files'].get(relative)
+        expected = self.identity['files'].get(relative)
         if not expected:
-            raise ValueError('member is not manifest-bound: ' + relative)
+            raise ValueError('member is not runtime-bound: ' + relative)
         data = path.read_bytes()
         if len(data) != expected['bytes'] or sha(data) != expected['sha256']:
             raise ValueError('member bytes changed: ' + relative)
@@ -80,19 +85,17 @@ class Consumer:
 
     def envelope(self, command, **values):
         return dict(schema=RESPONSE, command=command,
-                    snapshot_id=self.manifest['snapshot_id'],
-                    manifest_sha256=self.manifest['manifest_sha256'],
-                    snapshot_sha256=self.manifest['manifest_sha256'],
-                    wheel_sha256=self.manifest['runtime']['wheel_sha256'],
-                    source_revision=self.manifest['source_revision'], **values)
+                    snapshot_sha256=self.identity['snapshot_sha256'],
+                    wheel_sha256=self.identity['runtime']['wheel_sha256'],
+                    source_revision=self.identity['source_revision'], **values)
 
     def describe(self):
         tutorials = json.loads(self.read('catalog/tutorial-index.json'))
         return self.envelope('describe', outcome='ok', asset_count=len(self.assets),
                              commands=['describe', 'browse', 'search', 'get', 'get_tutorial'],
                              filters=list(FILTER_ORDER), default_limit=5, maximum_limit=100,
-                             retrieval=self.manifest['retrieval'],
-                             runtime=self.manifest['runtime'],
+                             retrieval=self.identity['retrieval'],
+                             runtime=self.identity['runtime'],
                              collections=['capabilities', 'tutorials'],
                              tutorial_count=len(tutorials['chapters']),
                              schemas={'request': REQUEST_SCHEMA, 'response': RESPONSE_SCHEMA})
@@ -102,7 +105,7 @@ class Consumer:
                                     ranked=command == 'search')
         outcome = 'no_candidates' if result['status'] == 'gap' else result['status']
         return self.envelope(command, outcome=outcome, result=result,
-                             retrieval=self.manifest['retrieval'])
+                             retrieval=self.identity['retrieval'])
 
     def get(self, asset, language='en'):
         if asset not in self.assets:
@@ -115,18 +118,18 @@ class Consumer:
         return self.envelope('get', outcome='ok', asset_id=asset,
                              document=document, markdown=self.read(markdown).decode(),
                              paths={'contract': contract, 'markdown': markdown},
-                             digests={p: self.manifest['files'][p]['sha256']
+                             digests={p: self.identity['files'][p]['sha256']
                                       for p in [contract, markdown]})
 
     def verify(self):
-        for relative in self.manifest['files']:
+        for relative in self.identity['files']:
             self.read(relative)
         actual = {p.relative_to(self.root).as_posix() for p in self.root.rglob('*')
                   if p.is_file()}
         if any(p.is_symlink() for p in self.root.rglob('*')):
-            raise ValueError('delivery contains symlinks')
-        if actual != set(self.manifest['files']) | {'manifest.json'}:
-            raise ValueError('delivery has missing or extra members')
+            raise ValueError('runtime contains symlinks')
+        if actual != set(self.identity['files']) | {'runtime.json'}:
+            raise ValueError('runtime has missing or extra members')
         return self.envelope('verify', outcome='ok', files_verified=len(actual),
                              scientific_runtime_revalidated=False)
 
@@ -146,7 +149,7 @@ class Consumer:
         return self.envelope('get_tutorial', outcome='ok', chapter_id=chapter_id,
                              language=language, markdown=text[offset:end], total_chars=len(text),
                              offset=offset, next_offset=end if end < len(text) else None,
-                             path=path, sha256=self.manifest['files'][path]['sha256'])
+                             path=path, sha256=self.identity['files'][path]['sha256'])
 
     def browse_tutorials(self, offset=0, limit=5):
         index = json.loads(self.read('catalog/tutorial-index.json'))
@@ -158,47 +161,33 @@ class Consumer:
 
 
 def main(argv=None):
+    # The dispatcher imports Consumer from this module; importing it here keeps
+    # the shared core independent of the CLI parser and optional MCP SDK.
+    from consumer_tools import TOOL_PREFIX, call_tool, is_error_result, tools
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
     sub = parser.add_subparsers(dest='command', required=True)
-    for name in ('describe', 'verify'):
-        sub.add_parser(name)
-    for name in ('browse', 'search'):
-        p = sub.add_parser(name)
-        if name == 'search':
-            p.add_argument('--q', default='')
-        for field in FILTER_ORDER:
-            if field != 'q':
-                p.add_argument('--' + field.replace('_', '-'), default='')
-        p.add_argument('--offset', type=int, default=0)
-        p.add_argument('--limit', type=int, default=5)
-    p = sub.add_parser('get'); p.add_argument('asset_id')
-    p.add_argument('--language', choices=('en', 'zh'), default='en')
+    for tool in tools():
+        command = tool['name'].removeprefix(TOOL_PREFIX)
+        p = sub.add_parser(command, help=tool['description'])
+        schema = tool['inputSchema']
+        for field, definition in schema['properties'].items():
+            options = {'default': argparse.SUPPRESS}
+            if definition.get('type') == 'integer':
+                options['type'] = int
+            if 'enum' in definition:
+                options['choices'] = definition['enum']
+            if field in ('asset_id', 'chapter_id'):
+                p.add_argument(field, **options)
+            else:
+                p.add_argument('--' + field.replace('_', '-'), dest=field,
+                               required=field in schema.get('required', []), **options)
     args = vars(parser.parse_args(argv))
     root, command = args.pop('root'), args.pop('command')
-    try:
-        consumer = Consumer(root)
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        print(json.dumps({'schema': RESPONSE, 'command': command,
-                          'outcome': 'metadata_error', 'error': str(error)}))
-        return 2
-    try:
-        if command in ('search', 'browse'):
-            # Validate request separately so corrupt metadata is never called no_hit.
-            try:
-                result = consumer.query(command, **args)
-            except ValueError as error:
-                print(json.dumps(consumer.envelope(command, outcome='invalid_request', error=str(error))))
-                return 2
-        elif command == 'get':
-            result = consumer.get(args['asset_id'], args['language'])
-        else:
-            result = getattr(consumer, command)()
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        print(json.dumps(consumer.envelope(command, outcome='metadata_error', error=str(error))))
-        return 2
+    result = call_tool(root, TOOL_PREFIX + command, args)
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
-    return 0
+    return 2 if is_error_result(result) else 0
 
 
 if __name__ == '__main__':

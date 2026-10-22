@@ -22,71 +22,12 @@ from build_scirel_sphinx import guide_selection_complete  # noqa: E402
 import consumer_tools  # noqa: E402
 import exposure  # noqa: E402
 import validate_asset_documents  # noqa: E402
-from pure_query import Consumer, encode, sha  # noqa: E402
+from query import Consumer, encode, sha  # noqa: E402
 
 SOURCE = '0' * 40
-SNAPSHOT_ID = '1' * 64
 ASSET = 'scirel.synthetic.alpha'
 WHEEL_BYTES = b'Synthetic fixture only; this is not an installable wheel.\n'
 TUTORIAL = '# Synthetic tutorial\n\n合成示例，未作科学验证。\n\n```python\nprint(0)\n```\n\nOutput: 0\n'
-
-
-def _solving_source(root):
-    (root / 'references').mkdir(parents=True)
-    (root / 'scripts').mkdir()
-    (root / 'SKILL.md').write_text(
-        '# One method\n<!-- scirel-access:start -->\nsource-only access\n'
-        '<!-- scirel-access:end -->\n[detail](references/checks.md)\n')
-    (root / 'references/checks.md').write_text(
-        '# Checks\nKeep failures visible. [helper](../scripts/delivery.py)\n')
-    (root / 'scripts/delivery.py').write_text('print("synthetic helper")\n')
-    return root
-
-
-def test_flat_skill_is_one_deterministic_projection_with_all_actual_inputs(tmp_path):
-    root = _solving_source(tmp_path / 'method')
-    flat, inputs, helpers = delivery.compile_solving_skill(root)
-    assert (flat, inputs, helpers) == delivery.compile_solving_skill(root)
-    assert set(inputs) == {'SKILL.md', 'references/checks.md', 'scripts/delivery.py'}
-    assert helpers == {'tools/delivery.py': (root / 'scripts/delivery.py').read_bytes()}
-    assert b'source-only access' not in flat
-    assert b'Keep failures visible.' in flat
-    assert b'(references/' not in flat and b'(../scripts/' not in flat
-    assert b'(tools/delivery.py)' in flat
-    (root / 'references/checks.md').write_text('# Checks\nA changed scientific limit.\n')
-    changed, changed_inputs, changed_helpers = delivery.compile_solving_skill(root)
-    assert changed != flat and changed_inputs != inputs
-    assert changed_helpers == {}
-
-
-def test_flat_skill_follows_transitive_method_links_once_and_binds_helper_changes(tmp_path):
-    root = _solving_source(tmp_path / 'method')
-    checks = root / 'references/checks.md'
-    checks.write_text(checks.read_text() + '[next](more.md)\n')
-    (root / 'references/more.md').write_text('# More\n[back](checks.md)\n')
-    flat, inputs, _ = delivery.compile_solving_skill(root)
-    assert flat.count(b'<a id="method-checks">') == 1
-    assert set(inputs) == {'SKILL.md', 'references/checks.md', 'references/more.md', 'scripts/delivery.py'}
-    (root / 'scripts/delivery.py').write_text('print("changed helper")\n')
-    _, changed_inputs, helpers = delivery.compile_solving_skill(root)
-    assert changed_inputs != inputs
-    assert helpers['tools/delivery.py'] == b'print("changed helper")\n'
-
-
-@pytest.mark.parametrize('target', ['missing.md', '../../private.md', '../SKILL.md',
-                                   '../scripts/other.py'])
-def test_flat_skill_rejects_missing_or_unsupported_method_inputs(tmp_path, target):
-    root = _solving_source(tmp_path / 'method')
-    (root / 'references/checks.md').write_text('[bad](' + target + ')\n')
-    with pytest.raises(ValueError, match='reference'):
-        delivery.compile_solving_skill(root)
-
-
-def test_flat_skill_requires_an_explicit_single_access_boundary(tmp_path):
-    root = _solving_source(tmp_path / 'method')
-    (root / 'SKILL.md').write_text('# Missing the source access boundary\n')
-    with pytest.raises(ValueError, match='one public-access boundary'):
-        delivery.compile_solving_skill(root)
 
 
 def _write_snapshot(root: Path, *, count=2, summary_chars=0):
@@ -136,7 +77,7 @@ def _write_snapshot(root: Path, *, count=2, summary_chars=0):
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
     metadata = {
-        'schema': 'scirel.pure-consumption', 'snapshot_id': SNAPSHOT_ID,
+        'schema': 'scirel.consumer-runtime',
         'source_revision': SOURCE, 'asset_count': len(records),
         'runtime': {'wheel': 'synthetic.whl', 'wheel_sha256': sha(WHEEL_BYTES),
                     'requires_python': '>=3.14,<3.15',
@@ -146,7 +87,7 @@ def _write_snapshot(root: Path, *, count=2, summary_chars=0):
                       'scientific_applicability': 'not_assessed',
                       'incomplete_status': 'retrieval_incomplete'},
     }
-    manifest = delivery.seal(root, metadata)
+    manifest = delivery.seal_runtime(root, metadata)
     return root, manifest, documents
 
 
@@ -156,14 +97,14 @@ def snapshot(tmp_path):
 
 
 def _pins(manifest):
-    return {'expected_snapshot_sha256': manifest['manifest_sha256'],
+    return {'expected_snapshot_sha256': manifest['snapshot_sha256'],
             'expected_wheel_sha256': manifest['runtime']['wheel_sha256']}
 
 
 def _reseal(root):
-    manifest = json.loads((root / 'manifest.json').read_bytes())
-    return delivery.seal(root, {key: value for key, value in manifest.items()
-                                if key not in {'files', 'manifest_sha256'}})
+    manifest = json.loads((root / 'runtime.json').read_bytes())
+    return delivery.seal_runtime(root, {key: value for key, value in manifest.items()
+                                if key not in {'files', 'snapshot_sha256'}})
 
 
 def test_article_markdown_preserves_code_output_prose_and_product_links():
@@ -251,26 +192,26 @@ def test_failed_export_removes_stages_and_never_publishes_partial_packages(tmp_p
 def test_complete_export_publishes_both_roots_without_leftover_stages(tmp_path, monkeypatch):
     def export(wheel, en, zh, agent, human):
         agent.mkdir(); human.mkdir()
-        (agent / 'manifest.json').write_text('agent')
-        (human / 'manifest.json').write_text('human')
+        (agent / 'runtime.json').write_text('agent')
+        (human / 'index.html').write_text('human')
         return {'complete': True}
     monkeypatch.setattr(delivery, '_export', export)
     result = delivery.build(Path('wheel'), Path('en'), Path('zh'), tmp_path / 'agent', tmp_path / 'html')
     assert result == {'complete': True}
     assert sorted(path.name for path in tmp_path.iterdir()) == ['agent', 'html']
-    assert (tmp_path / 'agent/manifest.json').read_text() == 'agent'
-    assert (tmp_path / 'html/manifest.json').read_text() == 'human'
+    assert (tmp_path / 'agent/runtime.json').read_text() == 'agent'
+    assert (tmp_path / 'html/index.html').read_text() == 'human'
 
 
-def test_seal_binds_nested_manifests_as_product_members(tmp_path):
+def test_runtime_identity_binds_nested_product_members(tmp_path):
     root = tmp_path / 'sealed'
     (root / 'nested').mkdir(parents=True)
-    (root / 'nested/manifest.json').write_bytes(b'{"synthetic":true}\n')
-    manifest = delivery.seal(root, {'schema': 'synthetic.fixture'})
-    assert manifest['files']['nested/manifest.json'] == {
+    (root / 'nested/runtime.json').write_bytes(b'{"synthetic":true}\n')
+    manifest = delivery.seal_runtime(root, {'schema': 'synthetic.fixture'})
+    assert manifest['files']['nested/runtime.json'] == {
         'sha256': sha(b'{"synthetic":true}\n'), 'bytes': len(b'{"synthetic":true}\n')}
-    unsigned = {key: value for key, value in manifest.items() if key != 'manifest_sha256'}
-    assert manifest['manifest_sha256'] == sha(encode(unsigned))
+    unsigned = {key: value for key, value in manifest.items() if key != 'snapshot_sha256'}
+    assert manifest['snapshot_sha256'] == sha(encode(unsigned))
 
 
 def test_local_link_closure_reads_actual_targets_and_rejects_a_missing_member(tmp_path):
@@ -300,7 +241,7 @@ def test_export_archives_are_byte_stable_and_refuse_to_overwrite(snapshot, tmp_p
     with ZipFile(first['path']) as archive:
         assert set(archive.namelist()) == {
             path.relative_to(root).as_posix() for path in root.rglob('*') if path.is_file()}
-        assert archive.read('manifest.json') == (root / 'manifest.json').read_bytes()
+        assert archive.read('runtime.json') == (root / 'runtime.json').read_bytes()
     original = Path(first['path']).read_bytes()
     with pytest.raises(FileExistsError):
         delivery.archive(root, Path(first['path']))
@@ -426,7 +367,7 @@ def test_source_closure_rejects_drift_in_runtime_reader_or_snapshot_members(tmp_
     # still execute against their real implementations.
     source_inputs = [
         'scripts/' + name for name in (
-            'build_pure_delivery.py', 'capability_query.py', 'pure_query.py', 'consumer_tools.py',
+            'build_pure_delivery.py', 'solving_skill.py', 'capability_query.py', 'query.py', 'consumer_tools.py',
             'serve_consumer_mcp.py', 'scirel_docs.py', 'build_scirel_sphinx.py',
             'build_capability_matrix.py', 'validate_asset_documents.py', 'public_api_binding.py',
             'check_wheel_exposure.py', 'exposure.py')]
@@ -446,14 +387,14 @@ def test_source_closure_rejects_drift_in_runtime_reader_or_snapshot_members(tmp_
         helper = skill.parent / 'scripts/delivery.py'
         helper.parent.mkdir()
         helper.write_bytes(b'print("captured source")\n')
-        compile_skill = delivery.compile_solving_skill
+        load_skill = delivery.load_solving_skill
 
         def change_after_capture(root):
-            result = compile_skill(root)
+            result = load_skill(root)
             helper.write_bytes(b'print("unbound replacement")\n')
             return result
 
-        monkeypatch.setattr(delivery, 'compile_solving_skill', change_after_capture)
+        monkeypatch.setattr(delivery, 'load_solving_skill', change_after_capture)
     if failure == 'tutorial_import':
         tutorial = source_root / 'tools/docs/manual/synthetic.rst'
         tutorial.parent.mkdir(parents=True)
@@ -489,7 +430,7 @@ def test_source_closure_rejects_drift_in_runtime_reader_or_snapshot_members(tmp_
                                               read=members.__getitem__, capability_index=lambda value=index: value)
     if failure == 'skill_helper_drift':
         result = delivery.source_closure(snapshots, SOURCE)
-        captured = result['solving_projection']['helper_sha256']['tools/delivery.py']
+        captured = sha(b'print("captured source")\n')
         bound = result['generator_and_reading_inputs'][
             'skills/development/usage/scirel-solving/scripts/delivery.py']
         assert captured == bound == sha(b'print("captured source")\n')
@@ -535,7 +476,7 @@ def test_exact_snapshot_verifies_without_claiming_scientific_execution(snapshot)
     root, manifest, _ = snapshot
     result = Consumer(root).verify()
     assert result['outcome'] == 'ok'
-    assert result['snapshot_sha256'] == manifest['manifest_sha256']
+    assert result['snapshot_sha256'] == manifest['snapshot_sha256']
     assert result['wheel_sha256'] == sha(WHEEL_BYTES)
     assert result['scientific_runtime_revalidated'] is False
 
@@ -560,22 +501,22 @@ def test_verify_rejects_changed_or_unbound_product_members(snapshot, change, tmp
 
 
 @pytest.mark.parametrize('relative', ['../outside', '/outside', 'docs/../outside',
-                                     'docs\\outside', 'C:/outside', './manifest.json'])
+                                     'docs\\outside', 'C:/outside', './runtime.json'])
 def test_member_read_rejects_unsafe_paths(snapshot, relative):
     root, _, _ = snapshot
     with pytest.raises(ValueError):
         Consumer(root).read(relative)
 
 
-def test_manifest_tamper_and_symlink_cannot_establish_a_snapshot(snapshot, tmp_path):
+def test_runtime_identity_tamper_and_symlink_cannot_establish_a_snapshot(snapshot, tmp_path):
     root, _, _ = snapshot
-    path = root / 'manifest.json'
+    path = root / 'runtime.json'
     data = json.loads(path.read_bytes())
     data['asset_count'] += 1
     path.write_bytes(encode(data))
     with pytest.raises(ValueError):
         Consumer(root)
-    outside = tmp_path / 'manifest-copy.json'
+    outside = tmp_path / 'runtime-copy.json'
     outside.write_bytes(path.read_bytes())
     path.unlink()
     path.symlink_to(outside)
@@ -598,7 +539,7 @@ def test_describe_then_exact_get_bind_the_full_contract_and_language(snapshot):
     root, manifest, documents = snapshot
     describe = consumer_tools.call_tool(root, 'scirel_describe')
     assert describe['outcome'] == 'ok'
-    assert describe['snapshot_sha256'] == manifest['manifest_sha256']
+    assert describe['snapshot_sha256'] == manifest['snapshot_sha256']
     assert describe['wheel_sha256'] == sha(WHEEL_BYTES)
     args = {**_pins(manifest), 'asset_id': ASSET, 'language': 'zh'}
     original = dict(args)
@@ -761,16 +702,16 @@ def test_get_rejects_wrong_or_malformed_selected_contract_identity(snapshot, rep
 
 
 @pytest.mark.parametrize('malformation', ['runtime_missing', 'not_object'])
-def test_malformed_manifest_returns_metadata_error_without_uncaught_exceptions(snapshot, malformation):
+def test_malformed_runtime_identity_returns_metadata_error_without_uncaught_exceptions(snapshot, malformation):
     root, _, _ = snapshot
-    path = root / 'manifest.json'
+    path = root / 'runtime.json'
     if malformation == 'not_object':
         path.write_bytes(encode([]))
     else:
         manifest = json.loads(path.read_bytes())
         del manifest['runtime']
-        del manifest['manifest_sha256']
-        manifest['manifest_sha256'] = sha(encode(manifest))
+        del manifest['snapshot_sha256']
+        manifest['snapshot_sha256'] = sha(encode(manifest))
         path.write_bytes(encode(manifest))
     result = consumer_tools.call_tool(root, 'scirel_describe')
     assert result['outcome'] == 'metadata_error'

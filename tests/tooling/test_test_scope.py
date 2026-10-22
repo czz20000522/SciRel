@@ -10,7 +10,7 @@ import test_scope  # noqa: E402
 
 
 @pytest.mark.parametrize("script", [
-    "build_pure_delivery.py", "consumer_tools.py", "pure_query.py",
+    "build_pure_delivery.py", "consumer_tools.py", "query.py", "solving_skill.py",
     "serve_consumer_mcp.py", "check_wheel_exposure.py",
 ])
 def test_consumer_tools_select_the_delivery_tests(script):
@@ -73,8 +73,8 @@ def test_unknown_path_fails_closed_even_with_a_resolved_path(unknown, capsys):
 
 
 def test_combined_script_scope_is_deterministic_and_deduplicated(capsys):
-    assert test_scope.main(["--changed", "scripts/pure_query.py",
-                            "scripts/capability_query.py", "scripts/pure_query.py"]) == 0
+    assert test_scope.main(["--changed", "scripts/query.py",
+                            "scripts/capability_query.py", "scripts/query.py"]) == 0
     assert capsys.readouterr().out.splitlines()[-1] == (
         f"  {sys.executable} -m pytest -q tests/delivery tests/docs tests/tooling")
 

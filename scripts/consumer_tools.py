@@ -10,7 +10,7 @@ import json
 import re
 
 from capability_query import REQUEST_SCHEMA
-from pure_query import Consumer, encode, sha
+from query import Consumer, encode, sha
 
 TOOL_PREFIX = 'scirel_'
 
@@ -93,10 +93,10 @@ def call_tool(root, name, arguments=None):
     command = name.removeprefix(TOOL_PREFIX)
     expected_snapshot = args.pop('expected_snapshot_sha256', None)
     expected_wheel = args.pop('expected_wheel_sha256', None)
-    if (expected_snapshot is not None and expected_snapshot != consumer.manifest['manifest_sha256'] or
-            expected_wheel is not None and expected_wheel != consumer.manifest['runtime']['wheel_sha256']):
+    if (expected_snapshot is not None and expected_snapshot != consumer.identity['snapshot_sha256'] or
+            expected_wheel is not None and expected_wheel != consumer.identity['runtime']['wheel_sha256']):
         return consumer.envelope(command, outcome='identity_mismatch',
-                                 error='requested snapshot or installed wheel differs; rediscover and explicitly select a matching delivery')
+                                 error='requested snapshot or wheel differs; rediscover and explicitly select a matching runtime')
     try:
         if command == 'describe':
             return consumer.describe()
@@ -109,7 +109,7 @@ def call_tool(root, name, arguments=None):
             if cursor:
                 try:
                     decoded = json.loads(base64.urlsafe_b64decode(cursor.encode()))
-                    if (decoded['snapshot'] != consumer.manifest['manifest_sha256'] or
+                    if (decoded['snapshot'] != consumer.identity['snapshot_sha256'] or
                             decoded['query'] != query_digest or 'offset' in args or
                             type(decoded['offset']) is not int or decoded['offset'] < 0):
                         raise ValueError('cursor scope mismatch')
@@ -128,7 +128,7 @@ def call_tool(root, name, arguments=None):
                 offset = page['offset'] + len(page['items'])
                 page['next_offset'] = offset if offset < page['total'] else None
                 result['next_cursor'] = (base64.urlsafe_b64encode(encode({
-                    'snapshot': consumer.manifest['manifest_sha256'], 'query': query_digest,
+                    'snapshot': consumer.identity['snapshot_sha256'], 'query': query_digest,
                     'offset': offset})).decode() if page['next_offset'] is not None else None)
                 result['returned'] = len(page['items'])
                 result['truncated'] = len(page['items']) < original_count

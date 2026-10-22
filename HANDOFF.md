@@ -33,14 +33,18 @@ At an explicitly authorized integration checkpoint,
 HTML site from a clean source revision, exact wheel and fresh bilingual docs.
 It checks generation-time inputs, exact public IDs/API/contract/reader bindings,
 runtime signatures, source/wheel bytes, notices, tutorial imports/references,
-local links and flat-skill/registry names. It stages both outputs and cleans owned
+local links and internal skill reference reachability. It stages both outputs and cleans owned
 partial outputs on failure. Never overwrite an existing immutable bundle.
 
 The only outbound skill is the ignored local
 `skills/development/usage/scirel-solving/SKILL.md`. The internal entry reads its
-method notes as needed; the exporter deterministically expands that same source
-and adapts public access for the flat delivery. All used notes/helper bytes are
-bound separately because Git SHA alone does not cover ignored local skills.
+method notes as needed; the exporter copies the reachable internal references
+and helpers unchanged under `skills/scirel-solving/`. Cross-skill references are
+rejected. All used bytes are bound because Git SHA alone does not cover ignored
+local skills. The exported `tools/query.py` is the real standard-library CLI;
+MCP is optional and uses the same dispatch. `runtime.json` contains only generated
+runtime identity, pins and member integrity. Build checks remain internal; no
+delivery receipts or separate protocol/quickstart are required at runtime.
 Daily source discovery uses `scripts/scirel_docs.py query --source-root .`; it
 needs no wheel or pure build, shares the delivery query core and binds current
 public inputs rather than inventing an installed-wheel receipt.

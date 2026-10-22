@@ -1,6 +1,6 @@
-"""Official MCP Client transport checks, enabled with SCIREL_MCP_PYTHON.
+"""Standard-library CLI and official MCP Client transport checks.
 
-The optional interpreter must contain tools/docs/mcp-requirements.txt. SDK
+Set SCIREL_MCP_PYTHON to an interpreter with tools/docs/mcp-requirements.txt. SDK
 dependencies do not enter the scientific library or the project's test venv.
 The fixture is explicitly synthetic and tests transport/consumer behavior only.
 """
@@ -16,7 +16,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
-from consumer_tools import tools  # noqa: E402
+from consumer_tools import call_tool, tools  # noqa: E402
 
 # Executed by the isolated SDK interpreter. Both transports use the real
 # official Client in auto-negotiation mode, never a pinned/faked protocol.
@@ -186,14 +186,14 @@ def consumer_snapshot(tmp_path):
         files['catalog/contracts/' + asset + '.json'] = _encode({'asset_id': asset})
         for language in ('en', 'zh'):
             files['docs/' + language + '/api/' + asset + '.md'] = b'# Synthetic API\n'
-    manifest = {'schema': 'scirel.pure-consumption', 'source_revision': 'a' * 40,
-                'asset_count': len(records), 'snapshot_id': 'c' * 64,
+    identity = {'schema': 'scirel.consumer-runtime', 'source_revision': 'a' * 40,
+                'asset_count': len(records),
                 'retrieval': {'backend': 'lexical-and', 'completeness': 'unknown'},
                 'runtime': {'wheel_sha256': 'b' * 64},
                 'files': {path: {'sha256': _sha(data), 'bytes': len(data)}
                           for path, data in files.items()}}
-    manifest['manifest_sha256'] = _sha(_encode(manifest))
-    files['manifest.json'] = _encode(manifest)
+    identity['snapshot_sha256'] = _sha(_encode(identity))
+    files['runtime.json'] = _encode(identity)
     for relative, data in files.items():
         target = root / relative
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -206,7 +206,7 @@ def test_official_client_negotiates_and_calls_exact_registry(sdk_python, consume
                                                             tmp_path, transport):
     adapter = tmp_path / 'adapter'
     adapter.mkdir()
-    for filename in ('serve_consumer_mcp.py', 'consumer_tools.py', 'pure_query.py',
+    for filename in ('serve_consumer_mcp.py', 'consumer_tools.py', 'query.py',
                      'capability_query.py'):
         shutil.copyfile(ROOT / 'scripts' / filename, adapter / filename)
     config = {'scripts': str(adapter), 'root': str(consumer_snapshot),
@@ -222,3 +222,122 @@ def test_official_client_negotiates_and_calls_exact_registry(sdk_python, consume
     # Save actual negotiated evidence alongside this project test's fixture.
     (tmp_path / ('mcp-' + transport + '-evidence.json')).write_text(
         json.dumps(evidence, ensure_ascii=False, sort_keys=True, indent=2) + '\n')
+
+
+# -I -S gives this process only the standard library. The import guard also
+# fails immediately if a future CLI change attempts an optional SDK or science
+# import, even on hosts where those packages are otherwise installed.
+CLI_DRIVER = r'''
+import runpy
+import sys
+from pathlib import Path
+
+class NoOptionalDependencies:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname.split('.')[0] in {'mcp', 'mcp_types', 'numpy', 'scipy', 'scirel', 'sphinx'}:
+            raise AssertionError('CLI attempted optional import: ' + fullname)
+
+sys.meta_path.insert(0, NoOptionalDependencies())
+sys.dont_write_bytecode = True
+entry = Path(sys.argv.pop(1)).resolve()
+sys.path.insert(0, str(entry.parent))
+sys.argv[0] = str(entry)
+runpy.run_path(str(entry), run_name='__main__')
+'''
+
+
+def _cli(root, *arguments, entry=None, explicit_root=True):
+    args = [sys.executable, '-I', '-S', '-c', CLI_DRIVER,
+            str(entry or ROOT / 'scripts/query.py')]
+    if explicit_root:
+        args += ['--root', str(root)]
+    return subprocess.run([*args, *arguments], text=True, capture_output=True,
+                          timeout=15, cwd=root)
+
+
+def _cli_pins(root):
+    description = call_tool(root, 'scirel_describe')
+    pins = {key: description[value] for key, value in (
+        ('expected_snapshot_sha256', 'snapshot_sha256'),
+        ('expected_wheel_sha256', 'wheel_sha256'))}
+    flags = [part for key, value in pins.items()
+             for part in ('--' + key.replace('_', '-'), value)]
+    return pins, flags
+
+
+@pytest.mark.parametrize('command,arguments,flags', [
+    ('describe', {}, []),
+    ('browse', {'limit': 1}, ['--limit', '1']),
+    ('browse', {'collection': 'tutorials', 'limit': 1},
+     ['--collection', 'tutorials', '--limit', '1']),
+    ('search', {'q': 'periodic flux', 'limit': 1},
+     ['--q', 'periodic flux', '--limit', '1']),
+    ('get', {'asset_id': 'test.alpha', 'language': 'zh'}, ['test.alpha', '--language', 'zh']),
+    ('get_tutorial', {'chapter_id': 'sample', 'limit_chars': 7},
+     ['sample', '--limit-chars', '7']),
+])
+def test_cli_without_sdk_uses_the_same_dispatch(consumer_snapshot, command, arguments, flags):
+    pins, pin_flags = _cli_pins(consumer_snapshot) if command != 'describe' else ({}, [])
+    completed = _cli(consumer_snapshot, command, *flags, *pin_flags)
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == call_tool(
+        consumer_snapshot, 'scirel_' + command, {**pins, **arguments})
+
+
+def test_cli_without_sdk_can_continue_a_cursor_and_tutorial(consumer_snapshot):
+    _, flags = _cli_pins(consumer_snapshot)
+    first = _cli(consumer_snapshot, 'browse', *flags, '--limit', '1')
+    assert first.returncode == 0, first.stderr
+    page = json.loads(first.stdout)
+    second = _cli(consumer_snapshot, 'browse', *flags, '--limit', '1',
+                  '--cursor', page['next_cursor'])
+    assert second.returncode == 0, second.stderr
+    assert json.loads(second.stdout)['result']['items'][0]['asset_id'] == 'test.beta'
+    tutorial = _cli(consumer_snapshot, 'get_tutorial', 'sample', *flags,
+                    '--offset', '7', '--limit-chars', '7')
+    assert tutorial.returncode == 0, tutorial.stderr
+    assert json.loads(tutorial.stdout)['markdown'] == 'ic tuto'
+
+
+@pytest.mark.parametrize('command,arguments,outcome', [
+    ('search', ['--limit', '0'], 'invalid_request'),
+    ('search', ['--expected-snapshot-sha256', '0' * 64], 'identity_mismatch'),
+    ('search', ['--expected-wheel-sha256', '0' * 64], 'identity_mismatch'),
+    ('browse', ['--cursor', 'invalid cursor'], 'invalid_request'),
+    ('get', ['test.absent'], 'unknown_asset'),
+    ('get_tutorial', ['absent'], 'unknown_tutorial'),
+])
+def test_cli_without_sdk_returns_failure_exit_for_error_envelopes(
+        consumer_snapshot, command, arguments, outcome):
+    _, flags = _cli_pins(consumer_snapshot)
+    completed = _cli(consumer_snapshot, command, *flags, *arguments)
+    assert completed.returncode == 2, completed.stderr
+    assert json.loads(completed.stdout)['outcome'] == outcome
+
+
+def test_cli_requires_explicit_pins_after_discovery(consumer_snapshot):
+    completed = _cli(consumer_snapshot, 'search', '--q', 'periodic')
+    assert completed.returncode == 2
+    assert '--expected-snapshot-sha256' in completed.stderr
+    assert '--expected-wheel-sha256' in completed.stderr
+
+
+@pytest.mark.parametrize('member', ['runtime.json', 'catalog/capability-index.json',
+                                    'catalog/contracts/test.alpha.json'])
+def test_cli_without_sdk_fails_closed_on_corrupt_runtime(consumer_snapshot, member):
+    _, flags = _cli_pins(consumer_snapshot)
+    (consumer_snapshot / member).write_bytes(b'{}')
+    completed = _cli(consumer_snapshot, 'get', 'test.alpha', *flags)
+    assert completed.returncode == 2, completed.stderr
+    assert json.loads(completed.stdout)['outcome'] == 'metadata_error'
+
+
+def test_exported_cli_resolves_its_runtime_root_without_sdk(consumer_snapshot):
+    adapter = consumer_snapshot / 'tools'
+    adapter.mkdir()
+    for filename in ('query.py', 'consumer_tools.py', 'capability_query.py'):
+        shutil.copyfile(ROOT / 'scripts' / filename, adapter / filename)
+    completed = _cli(consumer_snapshot, 'describe', entry=adapter / 'query.py', explicit_root=False)
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == call_tool(consumer_snapshot, 'scirel_describe')
+    assert not list(adapter.rglob('__pycache__'))

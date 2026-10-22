@@ -1,17 +1,13 @@
-# Portable private consumption
+# Portable scientific consumption
 
-SciRel's consumer protocol is independent of the number of assets and the search
-backend. A delivery is a read-only snapshot of public contracts, their generated
-reading layers, one flat `scirel-solving` skill and one exact Python wheel. The
-contracts are the only scientific truth. Discovery is generated from their
-reviewed `discovery`, identity, aliases and port fields; consumers never maintain
-a parallel classification. Missing metadata stays unknown. There is no graph or
-Operator/TaskGraph classification inferred from the current contracts.
+SciRel's consumer runtime supplies public contracts, generated bilingual API and
+tutorial reading, the self-contained `scirel-solving` skill, query tools and an
+exact Python wheel. Contracts remain the scientific truth. Discovery is derived
+from their reviewed metadata rather than a second classification table.
 
-## Working-tree queries during development
+## Source queries during development
 
-Daily source queries use the same contract projection and query core without
-building a wheel, documentation snapshot or pure delivery:
+Daily queries read the current public source layer without a wheel or export:
 
 ```bash
 .venv/bin/python scripts/scirel_docs.py query --source-root . --describe
@@ -19,229 +15,143 @@ building a wheel, documentation snapshot or pure delivery:
 .venv/bin/python scripts/scirel_docs.py query --source-root . --asset scirel.physics.coulomb-ee
 ```
 
-`--source-root` and `--snapshot` are mutually exclusive. Source queries read only
-public contracts and their bound Chinese readers; HOLD is used only to exclude
-withheld assets. `--reader ASSET_ID` also returns the exact Chinese reader.
-The response binds HEAD, dirty state and contract/HOLD/reader input digests;
-reuse `source_identity_sha256` as `--expected-digest` to reject drift between
-operations. `wheel_binding: not_bound` explicitly excludes installed-wheel or
-scientific-execution evidence. Malformed or missing inputs return
-`metadata_error`, never a scientific absence claim. Relevant authored tutorials
-remain in `tools/docs/manual/` and `tools/docs/manual/en/`.
+`--source-root` and `--snapshot` are mutually exclusive. Source queries read
+public contracts and bound Chinese readers, using HOLD only to exclude withheld
+assets. `--reader ASSET_ID` returns the Chinese reader. Responses bind HEAD,
+dirty state and public-input digests; reuse `source_identity_sha256` through
+`--expected-digest` to reject drift. `wheel_binding: not_bound` excludes an
+installed-wheel or scientific-execution claim. Malformed inputs produce
+`metadata_error`. Relevant authored tutorials live in `tools/docs/manual/` and
+`tools/docs/manual/en/`.
 
-## Stable MCP protocol
+## CLI and optional MCP
 
-For an exported delivery, MCP is the formal Agent entry. The official Python SDK adapts one transport-neutral
-registry/dispatch to a client-launched stdio process or local loopback Streamable
-HTTP. Both run in the user's local environment or platform sandbox and use the
-same five directory tools and public snapshot. They
-never register every scientific function as a tool or execute arbitrary user
-code. Computation uses the installed scientific wheel in the user's Python
-program. SDK dependencies are pinned separately. Famou native client/transport
-support remains `NOT_RUN`.
+The exported `tools/query.py` is the real standard-library CLI. It requires
+neither an MCP connection nor its SDK. Source `scripts/query.py` is copied to
+that path unchanged. The CLI derives its commands and arguments from the same
+registry and calls the same dispatcher as MCP:
 
-JSON envelopes use `schema: scirel.consumer-response`, command, source revision,
-snapshot ID, exact manifest digest and wheel digest. There are no version suffixes
-or compatibility aliases. Precision reading remains tools-accessible even if a
-future host additionally exposes MCP resources.
-
-| Command | Input | Result |
-| --- | --- | --- |
-| `scirel_describe` | optional expected_wheel_sha256 | Identity, filters, schemas, backend limits, public count and runtime declarations |
-| `scirel_browse` | identity pins, filters, offset/limit/cursor/max_bytes | Stable ID ordered cards and continuation |
-| `scirel_search` | identity pins, q, filters, offset/limit/cursor/max_bytes | Ranked cards, hit reasons, conflicts and continuation |
-| `scirel_get` | identity pins, asset_id, language en/zh | Exact contract plus generated API Markdown and digests |
-| `scirel_get_tutorial` | identity pins, chapter_id, language, offset/limit_chars | Bounded tutorial text and continuation |
-
-The developer-only `python tools/query.py verify` checks every member, the manifest's own
-digest, path containment, missing/extra files and selected index identity. It is
-not scientific qualification. Limits are 1..100, default 5. Structured filters
-are capability, operation, model, geometry, boundary, device_scope, taxonomy and alias.
-Taxonomy matches exact contract labels. Missing fields remain unknown; a module
-name does not become another manually maintained scientific domain list.
-The authoritative query schemas are exported from the same portable core, not
-retyped in another implementation. Assets have stable `asset_id` identities;
-snapshot/source/digest identify which content that ID meant in a delivery.
-
-Discovery responses carry `retrieval.completeness: unknown` and
-`scientific_applicability: not_assessed`. `match` means every supplied lexical or
-structured filter matched indexed metadata. `near_miss` lists matched and missed
-constraints and is not a permissible substitute. MCP `outcome: no_candidates`
-means no candidate satisfied the query; its retrieval scope remains incomplete
-(`retrieval_incomplete`), so it does not establish scientific absence.
-`metadata_error` denotes malformed or corrupt data; it must never be presented
-as an absent scientific capability. Caller mistakes use `invalid_request`.
-
-Subsequent tools require `expected_snapshot_sha256` (the exact manifest digest
-returned by describe) and `expected_wheel_sha256`. Mismatch yields
-`identity_mismatch`; the server never assumes its latest docs match an installed
-wheel. Cursors bind the manifest and query, preventing pages from different
-snapshots being joined. The source/contracts/wheel content ID is distinct from
-the manifest digest, which also binds tools, skill and reading layers.
-
-Candidate count and core-envelope UTF-8 JSON bytes are bounded (`max_bytes`, default 32768,
-range 4096..65536). Whole cards are deferred with an explicit reason and
-continuation; scientific boundary text is never shortened to fit. One card over
-budget returns `response_too_large`. Tutorials report slices and next offsets;
-read the complete selected passage before executing a code example. `get`
-retrieves one complete selected contract and API layer, preserving its boundary.
-The official SDK also emits a text representation beside structured content;
-the full MCP wire response has duplication and framing overhead beyond this
-envelope budget. Hosts should set their wire budgets accordingly.
-
-The initial backend is deterministic lexical AND with weighted lexical ranking,
-case-insensitive phrase filters and exact device-scope enums. Reasons and score
-are evidence about indexed text, not probabilities or physical suitability.
-Ranking method is an implementation declaration, not a permanent protocol enum.
-Later lexical, vector or service implementations must preserve these envelope,
-identity, filtering, bounds, conflict and failure semantics. A backend change
-requires a newly identified snapshot and a measured retrieval baseline; callers
-must not infer correctness from a backend name. No additional service or vector
-database is required by this local delivery.
-
-## Scientific use
-
-Decompose a request into relationships, required inputs/outputs, units, shapes,
-model, geometry, boundary conditions and device scope. Search each relationship,
-read only selected contracts/Markdown, reject near misses, and verify connections
-(units, normalization, shape, sign/index conventions, models and applicability).
-Unknown ports or relations remain unknown until established. Do not enumerate
-all possible compositions or load the entire catalog into the prompt. Candidate
-recall and composition correctness are separate acceptance questions. Any glue
-science must be explicit, tested and disclosed. The designated scientific owner
-accepts the result's applicability.
-
-## Deployment choices
-
-Local/platform sandbox: install the separate SDK lock and start
-`python tools/server.py --root PATH --transport stdio`; the host owns lifecycle.
-Local/platform sandbox HTTP: the same entry accepts `--transport
-streamable-http --host 127.0.0.1 --port 8765`. Its actual endpoint is
-`http://127.0.0.1:8765/mcp`. The client and server run in the same local/sandbox
-environment. Famou native client integration remains `NOT_RUN`.
-
-The bundle contains `mcp-connections.json`, directly usable as official-SDK
-configuration fragments. Run from the extracted Agent root with its pinned SDK
-environment active (so `python` resolves to that environment):
-
-```json
-{
-  "stdio": {
-    "command": "python",
-    "args": ["tools/server.py", "--root", ".", "--transport", "stdio"]
-  },
-  "streamable_http": {"url": "http://127.0.0.1:8765/mcp"}
-}
+```sh
+python <package>/tools/query.py --root <package> describe
+python <package>/tools/query.py --root <package> search --q coulomb --limit 3 --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
+python <package>/tools/query.py --root <package> get <asset-id> --language en --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
+python <package>/tools/query.py --root <package> get_tutorial <chapter-id> --language zh --limit-chars 2000 --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
 ```
 
-For stdio use `Client(StdioServerParameters(**config["stdio"]))`; for HTTP use
-`Client(config["streamable_http"]["url"])`. Both are from `mcp`; call them inside
-an async context. Start the HTTP server separately with `--transport
-streamable-http --host 127.0.0.1 --port 8765`. These are
-official-SDK fragments; translating them to Famou's native host configuration
-still requires its actual supported schema and remains `NOT_RUN`.
+`--root` precedes the command. Take both pins from `describe`, then preserve them
+through selection and reading. CLI errors are JSON envelopes with a nonzero exit
+status; parser errors also return nonzero. Query operations do not run science.
+Use the installed wheel's ordinary public Python functions in the task program.
+The package README contains installation and optional transport setup.
 
-The SDK negotiates revisions it supports. Record actual SDK/protocol versions
-from the real client; do not label an old handshake as a new revision. Official
-references: [transports](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports),
-[tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools),
-[Python SDK](https://github.com/modelcontextprotocol/python-sdk).
+| CLI command | MCP tool | result |
+| --- | --- | --- |
+| `describe` | `scirel_describe` | identity, limits, schemas and runtime declarations |
+| `browse` | `scirel_browse` | bounded capability or tutorial cards |
+| `search` | `scirel_search` | ranked candidates with match/conflict reasons |
+| `get` | `scirel_get` | one complete contract and selected-language API Markdown |
+| `get_tutorial` | `scirel_get_tutorial` | a bounded tutorial passage and next offset |
 
-## Build and acceptance
+MCP adds the official pinned SDK as a transport adapter. For stdio the client
+launches `python tools/server.py --root <package> --transport stdio` and owns its
+lifecycle. For loopback Streamable HTTP, start the same server with
+`--transport streamable-http --host 127.0.0.1 --port 8765`; its endpoint is
+`http://127.0.0.1:8765/mcp`. Keep the server and client in the selected execution
+environment. Record actual negotiated SDK/protocol versions when checking a
+host; a local smoke test does not establish another platform's acceptance.
 
-At an explicitly authorized integration checkpoint, build the exact wheel and
-fresh bilingual documentation snapshots from one clean source revision, then:
+## Runtime identity and bounded retrieval
+
+`runtime.json` uses `schema: scirel.consumer-runtime`. It is generated from the
+selected public source and actual output bytes: source revision, asset count,
+wheel metadata/hash, retrieval declarations and the member integrity map.
+`snapshot_sha256` hashes its canonical JSON with that field omitted. This small
+runtime identity supports selection, continuation and byte integrity. Consumer
+execution does not require delivery manifests, build receipts or development
+evidence. An input hash establishes consistency, not scientific qualification.
+
+Responses use `schema: scirel.consumer-response`, command, source revision,
+`snapshot_sha256` and `wheel_sha256`. `describe` optionally checks a supplied
+wheel pin. All other commands require `expected_snapshot_sha256` and
+`expected_wheel_sha256`; a mismatch returns `identity_mismatch`. The server
+checks its selected runtime bytes, not the client's installed Python environment.
+Record the actual installed wheel separately when making execution claims.
+
+Capability cards are bounded by count and core JSON bytes: default limit 5,
+range 1..100; `max_bytes` defaults to 32768, range 4096..65536. Whole cards are
+deferred with explicit continuation rather than shortening scientific limits.
+A single over-budget card returns `response_too_large`. Follow a returned cursor
+with the same pins/query; omit an explicit offset when following the cursor.
+Tutorials use `next_offset`; read the relevant complete passage before executing
+its example. MCP framing/text duplication exceeds the core-envelope byte budget.
+
+Filters cover capability, operation, model, geometry, boundary, device scope,
+taxonomy and aliases. Discovery keeps `retrieval.completeness: unknown` and
+`scientific_applicability: not_assessed`. `match` describes indexed metadata;
+`near_miss` is not an applicable substitute. `no_candidates` is a bounded
+retrieval result, not proof of scientific absence. Corrupt or malformed metadata
+returns `metadata_error`, while caller mistakes return `invalid_request`.
+Missing metadata stays unknown. `get` preserves the selected complete contract,
+API reading and their byte digests.
+
+The initial backend uses deterministic lexical AND and weighted ranking. A
+score measures indexed-text relevance, not physical suitability or probability.
+A later backend must preserve filtering, identity, bounded continuation and
+failure semantics and establish its own measured retrieval baseline.
+
+## Skill and scientific use
+
+The sole method source is `skills/development/usage/scirel-solving/`. Its concise
+`SKILL.md` links to scientific guidance and the optional CSV delivery helper.
+Export copies the reachable files unchanged under `skills/scirel-solving/`,
+retaining `references/` and `scripts/`. Local links must resolve inside that
+single skill; cross-skill references, missing helpers and symlink inputs fail
+export. Unlinked source-local files are not runtime inputs. Captured bytes are
+rechecked before return and again during export, and those same bytes are used
+for hashing and output. Editing an exported package is never a source update.
+
+Start from the requested scientific relations, then select a few candidates and
+read their complete contracts and relevant tutorials. Check model, geometry,
+boundary, units, normalization, signs and shapes before composing calls. Make
+supplementary science explicit, executable, checked and disclosed. Distinguish
+candidate recall, connection correctness, numerical checks and the designated
+scientific owner's final applicability decision.
+
+## Export and maintenance
+
+Development normally changes source and runs affected tests. At an explicitly
+authorized delivery checkpoint, supply one exact wheel and fresh bilingual docs:
 
 ```bash
 .venv/bin/python scripts/build_pure_delivery.py \
-  --wheel dist/wheels/scirel-0.1.0.dev11-py3-none-any.whl \
-  --docs-en dist/docs-en-NEW --docs-zh dist/docs-zh-NEW \
-  --output dist/PRIVATE/agent --html-output dist/PRIVATE/html
+  --wheel <exact-wheel.whl> --docs-en <fresh-en-docs> --docs-zh <fresh-zh-docs> \
+  --output <new-agent-root> --html-output <new-html-root>
 ```
 
-The builder refuses overwrites and mismatched dirty/source/catalog identities.
-It derives the runtime lock from the actual wheel metadata. The repository's
-development `uv.lock` is not a consumer runtime lock. Dependencies are downloaded
-by the platform; pure Python does not mean dependency-free. Python is currently
-`>=3.14,<3.15` and NumPy, SciPy and mpmath remain mandatory.
+The builder refuses overwrites and mismatched source/catalog identities. It
+checks exact public asset coverage, language/input bindings, source signatures,
+local reading links, wheel RECORD/content/notices and source-byte closure.
+Runtime requirements come from that wheel's metadata; MCP requirements remain
+separate. Python and scientific dependencies are installed in the selected host
+environment. Pure Python does not mean dependency-free.
 
-Agent API/tutorial Markdown is projected from the same rendered, contract-bound
-HTML content, retaining code/output and linking selected exact contracts. HTML
-is exported separately for human browsing and can be statically hosted without
-being an Agent prerequisite. Both manifests bind the same source and contract
-content digest. Generated output does not prove individual page review or
-scientific runtime validation. Rights/notice statements are preserved; this
-checkpoint does not authorize public publication.
+Agent API/tutorial Markdown is projected from contract-bound HTML while
+preserving equations, code, output and links. The human HTML site is a separate
+output with necessary notices. Build/drift checks and scientific review evidence
+remain with their existing development/task authorities; they are not shipped
+as consumer prerequisites or redundant protocol/quickstart files. The generated
+README is the runtime installation and command guide.
 
-Record actual wheel SHA/RECORD/public and withheld exposure, installed import
-paths, dependencies, retrieval/get/call/result/failure checks, and environment.
-Real cross-domain, Chinese/English, alias, wrong-boundary and missing-capability
-probes form a bounded retrieval baseline, not a complete recall benchmark.
-Synthetic thousands-card timing/pagination/size checks are resource tests only.
-macOS results must never be labelled Linux/Famou acceptance. Platform installation,
-native tool adaptation, hosted HTML, composition quality and human acceptance
-remain `NOT_RUN` until executed there.
+Change canonical contracts and implementation together with bound Chinese
+readers and affected authored tutorials. Keep stable scientific asset identities
+when moving Python symbols; do not add aliases to hide an incomplete migration.
+Unknown or unavailable tutorial dependencies fail closed or become explicit
+subset placeholders, never runnable examples that silently require hidden code.
+Generated hashes do not prove semantic page review or scientific validation.
 
-## Maintenance and drift gates
-
-Keep `asset_id` stable when a function is renamed or moved between modules;
-scientific identity and taxonomy/handbook placement are maintenance decisions,
-not automatic consequences of the Python path. Change the canonical contract
-and implementation together, then update its bound Chinese reader, direct tests
-and affected authored tutorials. Never add aliases to hide a missed migration.
-
-The unified export starts with the exact current public contract set. Fresh
-bilingual docs capture generation-time input hashes (contracts, readers,
-handbooks, Sphinx configuration/templates/static assets and generator code),
-and reject input changes during generation. Export rejects missing/extra IDs,
-stale contracts/API mappings, mixed languages/input hashes, stale sidecars,
-unknown tutorial references/imports and local broken links. It reuses precise
-runtime signature/input checks and the existing catalog/source/wheel closure,
-then compares every installed package source/data member to the selected source
-bytes. An old wheel retaining the same version and symbol names is insufficient.
-The exact wheel's RECORD, metadata, notice bytes and exposure are also checked.
-
-Both output manifests bind source SHA, contract content, exact wheel, generation
-inputs and a common batch identity. The ignored canonical solving entry, its
-transitively linked method notes and used helper are separately hashed source
-inputs; clean Git SHA alone does not reproduce them. Export deterministically
-expands those notes into the one flat skill and adapts only the public-access
-section for the consumer layout/MCP protocol. The helper is exported as
-`tools/delivery.py`; the source closure also binds generated skill/helper hashes.
-Internal methods do not depend on an exported package, and editing a delivery is
-never an input to this process.
-The skill's tool names must exactly match the registry. New non-overlapping output
-directories and exact member inventories prevent old cards/pages from surviving
-a rename. The outer batch receipt binds both immutable manifests and ZIP hashes;
-acceptance records are sidecars and never silently change already selected pins.
-
-Authored tutorial dependencies are derived from doc references and Python import
-blocks. Unknown/renamed public APIs fail closed. A chapter referencing an
-unavailable capability is replaced by an explicit subset placeholder in each
-language, without publishing unavailable code or an unavailable API page. The
-current diagnostics/inference chapter is such a placeholder; it must not count
-as a completed runnable tutorial. Standalone magnetostatics and kinetic tutorials
-retain existing execution/content bindings, including explicit English
-placeholders where English text is unauthored. Other authored RST chapters get
-current reference/import/contract hashes with scientific `review_status: NOT_RUN`.
-Those hashes are traceability, not automatic natural-language semantic review.
-
-Maintenance sequence: modify canonical truth → check affected readers/tutorials
-and imports → build fresh bilingual snapshots and exact wheel from one clean
-candidate → unified export/closure check → installed-wheel checks and real stdio
-and HTTP smoke → issue a new immutable bundle. Select tests by changed paths;
-small changes do not require a scientific full-suite run. Validation success
-does not prove every natural-language page scientifically correct.
-
-Repository record locations and lifetime are governed by `catalog/RECORDS.md`;
-this protocol does not create a second cleanup policy. The delivery maintainer
-owns this task's build stages, smoke environments and
-receipts. Export uses isolated stages and removes them on any failure; incomplete
-Agent/HTML directories are never left as deliverables. After a candidate is
-replaced and its inputs are no longer used, retain only its minimal failure cause
-and regression result, then remove the abandoned wheel/docs/partial package.
-After successful handoff remove this task's duplicate environments, test scratch,
-build/egg-info and source bytecode caches. Keep the final immutable bundles and
-small receipts until explicitly superseded. Read and resolved issue/handoff items
-are closed or removed from the current entry; history belongs to Git and the task
-record. Do not keep stale open checklists or extra handoff copies.
+Select tests by changed paths. When a delivery is authorized, validate its actual
+installed wheel and real CLI/MCP operations, preserving failures and platform
+limits. Retrieval probes and synthetic scale tests have their stated scope;
+they do not prove complete recall or scientific correctness. Publication,
+rights decisions and host-specific acceptance require their own evidence.
+Repository record retention and cleanup follow `catalog/RECORDS.md`.
