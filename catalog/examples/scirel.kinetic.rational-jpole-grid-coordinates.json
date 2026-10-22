@@ -21,24 +21,24 @@
   ],
   "operation": [
    "build the complex dispersion diagnostic grid",
-   "no inputs -> declared 101x101 complex diagnostic grid and receipt"
+   "no caller inputs -> fixed 101x101 dimensionless complex diagnostic grid and execution receipt"
   ],
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "model": "Deterministic NumPy coordinate construction; no dispersion function or rational approximation is evaluated.",
+  "geometry": "Two-dimensional Cartesian ndgrid in the dimensionless complex plane: first index varies real x, second index varies imaginary y; this is not a physical spatial mesh.",
+  "boundary": "Inclusive fixed endpoints: x in [-5,5] with 101 samples, y in [-3,5] with 101 samples. The rectangle is not an approximation-validity domain.",
   "device_scope": "generic"
  },
  "identity": {
   "relation": "Complex dispersion diagnostic grid",
-  "direction": "Declared inputs to named scientific outputs.",
-  "definition": "Historical x,y ndgrid and z=x+i*y; full two-dimensional orientation preserved for diagnostic plots.",
-  "model": "Nonrelativistic Gaussian species; explicit finite-harmonic/rational approximation when applicable.",
-  "geometry": "Homogeneous plasma with background field along z; k=(kx,0,kz) where applicable.",
-  "coordinates": "Explicit ES dimensionless normalization or EM SI; complex frequency follows exp(-i omega t).",
-  "boundary": "Periodic/infinite homogeneous plane-wave response; finite numerical harmonic/pole representation explicitly declared.",
+  "direction": "No caller inputs to fixed x,y,z coordinate arrays and an execution receipt.",
+  "definition": "Construct x,y ndgrid and z=x+i*y; preserve the complete two-dimensional orientation for diagnostic plots.",
+  "model": "Deterministic NumPy coordinate construction; no dispersion function or rational approximation is evaluated.",
+  "geometry": "Two-dimensional Cartesian ndgrid in the dimensionless complex plane: first index varies real x, second index varies imaginary y; this is not a physical spatial mesh.",
+  "coordinates": "Dimensionless x=-5:0.1:5 and y=-3:0.08:5, both inclusive; z=x+i*y. No frequency normalization, wavevector or time convention is assigned.",
+  "boundary": "Inclusive fixed endpoints: x in [-5,5] with 101 samples, y in [-3,5] with 101 samples. The rectangle is not an approximation-validity domain.",
   "assumptions": [
-   "Model-specific deck conventions are explicit.",
-   "A numerical spectrum is not automatically a physically certified mode."
+   "The zero-argument helper fixes both axis ranges and the 101 samples on each axis.",
+   "Coordinates are diagnostic evaluation locations only; they establish no dispersion relation, mode classification or approximation accuracy."
   ]
  },
  "inputs": [],
@@ -64,18 +64,18 @@
  ],
  "applicability": {
   "preconditions": [
-   "Constituent inputs finite and representable in declared numeric ports."
+   "No caller inputs; axis ranges, sample counts and dimensionless coordinates are fixed."
   ],
   "supported": [
-   "Source diagnostic grid coordinates."
+   "Fixed complex diagnostic grid coordinates with complete ndgrid orientation."
   ],
   "excluded": [
    "The grid is not an independent accuracy certificate."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "No scientific caller inputs; finite grid construction errors remain observable.",
-  "runtime_failure": "Python numerical errors propagate with operation context; no source-runtime, checkout or network fallback.",
+  "invalid_input": "Supplying any arguments raises TypeError; no caller-supplied scientific inputs are accepted.",
+  "runtime_failure": "NumPy grid-construction errors propagate; no alternate coordinate source is selected.",
   "nonconvergence": "No convergence iteration or approximation-validity assertion.",
   "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
  },
@@ -97,20 +97,20 @@
  },
  "verification": {
   "scope": [
-   "Source-absent installed own scientific package; exact package/resource closure.",
-   "All12 APIs, independent canonical and separate held-out response, axis and signed-wavevector gates.",
-   "Full perpendicular ES3D N10/J8 original50-point default with independent weak-coefficient and Decimal offset checks."
+   "Direct gate: test_jpole_grid_coordinates_preserves_fixed_dimensionless_axes checks all coordinates, inclusive endpoints, shapes, dtypes and ndgrid orientation.",
+   "Repeated zero-argument calls return independent coordinate arrays with equal values.",
+   "The contract example constructs the grid and checks its declared shape; no dispersion function, harmonic expansion, pole evaluation or eigensolve is performed."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_rational.py"
   ],
-  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python implementation is validated on this macOS checkout.",
+  "evidence_ceiling": "Bounded to fixed 101x101 coordinate construction, dimensionless axis ranges, array orientation and execution-receipt identity. No approximation accuracy, physical mode, experimental calibration or release approval is established.",
   "known_limitations": [
    "Redistribution authority for the reference material remains unresolved; the pure-Python implementation does not execute the source runtime.",
-   "Finite-J/finite-N physics must be qualified for a new requested regime.",
-   "Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.",
+   "The helper computes coordinates only; finite-J/finite-N physics must be qualified separately for a requested regime.",
+   "Grid construction does not establish exact-axis response, approach-to-axis behavior or dispersion-solver correctness.",
    "Human scientific and plot approval pending.",
-   "The pure-Python example and bounded qualification run on this macOS host; arbitrary parameter regimes remain outside the evidence."
+   "The fixed diagnostic rectangle is not an approximation-validity domain."
   ]
  },
  "references": [

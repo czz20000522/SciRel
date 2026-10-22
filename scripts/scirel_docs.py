@@ -6,6 +6,8 @@ an executable catalog release or a scientific wheel qualification.
 from __future__ import annotations
 
 import argparse
+import ast
+import textwrap
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
@@ -23,8 +25,10 @@ from validate_asset_documents import load_document_set, validate_document
 from exposure import held_asset_ids
 from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
                                 english_guide_status, english_translation_gaps,
-                                load_english_handbook, load_translations,
+                                load_english_handbook,
                                 render_site)
+from capability_catalog import (PublicCatalog, build_capability_index, capability_record,
+                                capability_search_text, load_translations)
 from build_capability_matrix import build_matrix, render_markdown
 from capability_query import (CAPABILITY_INDEX_SCHEMA, CAPABILITY_QUERY_SCHEMA,
                               CAPABILITY_REQUEST_SCHEMA, DEVICE_SCOPES, FILTER_ORDER,
@@ -62,7 +66,7 @@ def sha(data):
 
 DOCUMENTATION_BUILD_SCRIPTS = (
     'scirel_docs.py', 'build_scirel_sphinx.py', 'build_capability_matrix.py',
-    'capability_query.py', 'validate_asset_documents.py', 'public_api_binding.py',
+    'capability_query.py', 'capability_catalog.py', 'validate_asset_documents.py', 'public_api_binding.py',
     'exposure.py',
 )
 
@@ -309,312 +313,8 @@ def chapter_files(asset_ids, *, expected_source_revision=None,
     return files
 
 
-def _discovery(document):
-    """Return the optional reviewed discovery block.
-
-    Unknown keys inside the block are ignored: they are not projected and they
-    never change the derived view.  A non-object block is a contract error.
-    """
-    discovery = document.get('discovery')
-    if discovery is None:
-        return {}
-    if not isinstance(discovery, dict):
-        raise ValueError('discovery must be an object: ' + document['asset_id'])
-    return discovery
-
-
-def _discovery_text(discovery, field):
-    """Return one reviewed nonempty discovery text list, or ``None``."""
-    values = discovery.get(field)
-    if values is None:
-        return None
-    if not isinstance(values, list) or not values or any(
-            not isinstance(value, str) or not value.strip() for value in values):
-        raise ValueError('invalid discovery.' + field + ' list')
-    return [value.strip() for value in values]
-
-
-def _discovery_value(discovery, field, fallback):
-    """Return one reviewed discovery string, or the contract-derived fallback."""
-    value = discovery.get(field)
-    if value is None:
-        return fallback.strip()
-    if not isinstance(value, str) or not value.strip():
-        raise ValueError('invalid discovery.' + field)
-    return value.strip()
-
-
-def _device_scope(document, discovery):
-    """Return ``(scope, source)``; absence always means ``unclassified``."""
-    if 'device_scope' not in discovery:
-        return 'unclassified', 'default-unclassified'
-    scope = discovery['device_scope']
-    if scope not in DEVICE_SCOPES:
-        raise ValueError('invalid discovery.device_scope: ' + document['asset_id'])
-    return scope, 'discovery'
-
-
-def _capability_port(port):
-    record = {
-        'name': port['name'],
-        'description': port['description'],
-        'units': port['units'],
-        'shape': port['shape'],
-        'dtype': port['dtype'],
-        'required': port.get('required', True),
-        'constraints': port['constraints'],
-    }
-    if 'default' in port:
-        record['default'] = port['default']
-    return record
-
-
-def capability_record(document):
-    """Project one contract into the read-only capability view.
-
-    Reviewed ``discovery`` text for capability/operation/model/geometry/
-    boundary/device_scope wins when present; otherwise the view derives from
-    ``title``/``identity``/``taxonomy``/ports/``verification``.  ``aliases``
-    always come from the top-level contract field (single recall truth), and
-    unknown discovery keys are ignored.  ``device_scope`` defaults to
-    ``unclassified`` and is never inferred from a name.
-    """
-    asset = document['asset_id']
-    identity = document['identity']
-    verification = document['verification']
-    tests = list(verification['tests'])
-    discovery = _discovery(document)
-    capability_terms = _discovery_text(discovery, 'capability')
-    operation_terms = _discovery_text(discovery, 'operation')
-    scope, scope_source = _device_scope(document, discovery)
-    return {
-        'asset_id': asset,
-        'symbol': document['public_api']['python']['symbol'],
-        'public_api': document['public_api'],
-        'capability': (capability_terms[0] if capability_terms
-                       else document['title']['en'].strip()),
-        'capability_summary': (' — '.join(capability_terms[1:])
-                               if capability_terms and len(capability_terms) > 1
-                               else document['summary']),
-        'summary': document['summary'],
-        'title_zh': document['title']['zh'],
-        'operation': (operation_terms[0] if operation_terms
-                      else identity['relation'].strip()),
-        'operation_direction': (' — '.join(operation_terms[1:])
-                                if operation_terms and len(operation_terms) > 1
-                                else identity['direction'].strip()),
-        'model': _discovery_value(discovery, 'model', identity['model']),
-        'geometry': _discovery_value(discovery, 'geometry', identity['geometry']),
-        'coordinates': identity['coordinates'].strip(),
-        'boundary': _discovery_value(discovery, 'boundary', identity['boundary']),
-        'device_scope': scope,
-        'device_scope_source': scope_source,
-        'aliases': list(document.get('aliases', [])),
-        'taxonomy': list(document.get('taxonomy', [])),
-        'ports': {
-            'inputs': [_capability_port(port) for port in document['inputs']],
-            'outputs': [_capability_port(port) for port in document['outputs']],
-        },
-        'contract_path': 'catalog/examples/' + asset + '.json',
-        'record_path': 'records/' + asset + '.json',
-        'docs_path': '/reference/generated/' + asset + '.html',
-        'evidence': {
-            'status': 'bounded' if tests else 'unvalidated',
-            'scope': list(verification['scope']),
-            'tests': tests,
-            'evidence_ceiling': verification['evidence_ceiling'],
-            'known_limitations': list(verification['known_limitations']),
-        },
-    }
-
-
-def capability_search_text(document, translation=None, *, language='zh'):
-    """Lexical recall text from the contract plus its bound reader layer.
-
-    The Chinese site also recalls the Chinese reader prose and the Chinese
-    title. The English site uses the English contract fields only (it has no
-    English reader layer), so Chinese queries do not match English pages.
-    The reviewed discovery fields are included except ``aliases``: the
-    top-level contract ``aliases`` list remains the only recall alias source,
-    so a stray ``discovery.aliases`` key cannot become a second truth.
-    """
-    if language not in LANGUAGES:
-        raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
-    if language == 'en' and translation is not None:
-        raise ValueError('English recall text does not consume a reader layer')
-    identity = document['identity']
-    discovery = document.get('discovery')
-    reviewed = {}
-    if isinstance(discovery, dict):
-        reviewed = {field: discovery[field] for field in
-                    ('capability', 'operation', 'model', 'geometry',
-                     'boundary', 'device_scope')
-                    if field in discovery}
-    payload = [
-        document['asset_id'],
-        document['title']['en'],
-        document['summary'],
-        identity['relation'],
-        identity['direction'],
-        identity['definition'],
-        identity['model'],
-        identity['geometry'],
-        identity['coordinates'],
-        identity['boundary'],
-        identity['assumptions'],
-        reviewed,
-        document.get('aliases', []),
-        document.get('taxonomy', []),
-        [port['name'] for port in document['inputs']],
-        [port['name'] for port in document['outputs']],
-        [port['units'] for port in document['inputs']],
-        [port['units'] for port in document['outputs']],
-        document['applicability'],
-        document['verification'],
-    ]
-    if language == 'zh':
-        payload.insert(2, document['title']['zh'])
-    if translation is not None:
-        payload.append([translation['summary'], translation['definition'],
-                        translation['model'], translation['boundary']])
-    return json.dumps(payload, ensure_ascii=False).lower()
-
-
-def build_capability_index(documents, *, source_revision, translations=None, language='zh'):
-    """Build the read-only capability index published inside a snapshot."""
-    if language not in LANGUAGES:
-        raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
-    records = sorted((capability_record(document) for document in documents),
-                     key=lambda item: item['asset_id'])
-    ids = [record['asset_id'] for record in records]
-    if len(ids) != len(set(ids)):
-        raise ValueError('duplicate capability index asset_id')
-    if translations is not None and set(translations) != set(ids):
-        raise ValueError('capability index translations differ from documents')
-    search_text = {}
-    for document in documents:
-        asset = document['asset_id']
-        search_text[asset] = capability_search_text(
-            document, None if translations is None else translations[asset],
-            language=language)
-    return {
-        'schema': CAPABILITY_INDEX_SCHEMA,
-        'source_revision': source_revision,
-        'asset_count': len(records),
-        'derivation': {
-            'capability': ('discovery.capability when present (first entry is the '
-                           'name, remaining text is the summary); otherwise '
-                           'title.en + summary'),
-            'operation': ('discovery.operation when present; otherwise '
-                          'identity.relation + identity.direction'),
-            'model': 'discovery.model; otherwise identity.model',
-            'geometry': ('discovery.geometry; otherwise identity.geometry; '
-                         'identity.coordinates is always included'),
-            'boundary': 'discovery.boundary; otherwise identity.boundary',
-            'device_scope': ('discovery.device_scope when present; otherwise '
-                             'unclassified, never inferred as generic'),
-            'aliases': ('contract top-level aliases only; a discovery.aliases key '
-                        'is ignored so aliases never become a second truth'),
-            'ports': 'inputs + outputs',
-            'evidence': ('verification.scope/tests/evidence_ceiling/'
-                         'known_limitations; status is bounded when '
-                         'verification.tests is non-empty, else unvalidated'),
-            'paths': ('contract_path is repository-relative; record_path is the '
-                      'served exact contract; docs_path is the snapshot web route'),
-        },
-        'assets': records,
-        'search_text': search_text,
-    }
-
-
-class SourceDocumentation:
-    """Read the public working tree without building or importing scientific code.
-
-    This identity binds current public inputs, not a wheel or a past acceptance
-    run. HOLD is read only to filter exposure; review evidence is never loaded.
-    """
-
-    def __init__(self, root, expected_digest=None):
-        self.root = Path(root).resolve()
-        self.input_digests = {}
-        self.input_bytes = {}
-        revision, dirty = self._git_identity()
-        hold = self.root / 'catalog/review/HOLD.json'
-        self._read('catalog/review/HOLD.json')
-        held = held_asset_ids(hold, read_bytes=self._captured)
-        self.documents = {}
-        for path in sorted((self.root / 'catalog/examples').glob('*.json')):
-            if path.stem in held:
-                continue
-            document = json.loads(self._read('catalog/examples/' + path.name))
-            validate_document(document, location=path.name)
-            if document['asset_id'] != path.stem:
-                raise ValueError('contract filename differs from asset identity')
-            self.documents[path.stem] = document
-        if not self.documents:
-            raise ValueError('source has no public asset documents')
-        for document in self.documents.values():
-            if any(item['asset_id'] not in self.documents
-                   for item in document['version']['dependencies']):
-                raise ValueError('public contract dependency is outside the public set')
-        reader_paths = sorted((self.root / 'tools/docs/zh').glob('*.json'))
-        for path in reader_paths:
-            self._read('tools/docs/zh/' + path.name)
-        documents = list(self.documents.values())
-        self.translations = load_translations(
-            self.root, self.root / 'catalog/examples', documents,
-            translation_paths=reader_paths, excluded_ids=held, read_bytes=self._captured)
-        self.index = build_capability_index(
-            documents, source_revision=revision, translations=self.translations)
-        # Snapshot web/record routes do not exist in a working-tree query.
-        for record in self.index['assets']:
-            record.pop('record_path')
-            record.pop('docs_path')
-        validate_capability_index(self.index, expected_ids=self.documents)
-        if ((revision, dirty) != self._git_identity() or
-                {path.stem for path in (self.root / 'catalog/examples').glob('*.json')
-                 if path.stem not in held} != set(self.documents) or
-                sorted((self.root / 'tools/docs/zh').glob('*.json')) != reader_paths or any(
-                sha(self._read(path)) != digest
-                for path, digest in tuple(self.input_digests.items()))):
-            raise ValueError('public source inputs changed during query')
-        self.identity = {
-            'source_revision': revision, 'source_dirty': dirty,
-            'source_inputs_sha256': sha(encode(self.input_digests)),
-        }
-        self.identity['source_identity_sha256'] = sha(encode(self.identity))
-        if expected_digest is not None and expected_digest != self.identity['source_identity_sha256']:
-            raise ValueError('source differs from expected digest')
-
-    def _git_identity(self):
-        try:
-            def git(*arguments):
-                return subprocess.check_output(
-                    ['git', *arguments], cwd=self.root, text=True,
-                    stderr=subprocess.PIPE, timeout=10).strip()
-            if Path(git('rev-parse', '--show-toplevel')).resolve() != self.root:
-                raise ValueError('source root must be the Git checkout root')
-            revision = git('rev-parse', 'HEAD')
-            if re.fullmatch(r'[0-9a-f]{40}', revision) is None:
-                raise ValueError('source HEAD must be a full Git commit id')
-            return revision, bool(git('status', '--porcelain'))
-        except (subprocess.SubprocessError, OSError) as error:
-            raise ValueError('cannot read source Git identity') from error
-
-    def _read(self, relative):
-        path = self.root / relative
-        if (not path.resolve().is_relative_to(self.root) or any(
-                parent.is_symlink() for parent in (path, *path.parents)
-                if parent != self.root.parent)):
-            raise ValueError('public source input escapes root or uses a symlink')
-        data = path.read_bytes()
-        self.input_digests[relative] = sha(data)
-        self.input_bytes[relative] = data
-        return data
-
-    def _captured(self, path):
-        """Only bytes already included in this query's input binding may be parsed."""
-        return self.input_bytes[Path(path).relative_to(self.root).as_posix()]
+class SourceDocumentation(PublicCatalog):
+    """Expose public source-query responses from captured catalog inputs."""
 
     def envelope(self, command, *, outcome='ok', **values):
         return dict(schema='scirel.source-query-response', command=command,
@@ -645,6 +345,119 @@ class SourceDocumentation:
         return result
 
 
+def tutorial_imports(text):
+    """Derive scientific imports from authored Python blocks, without execution."""
+    lines, imports = text.splitlines(), set()
+    position = 0
+    while position < len(lines):
+        if lines[position].strip() != '.. code-block:: python':
+            position += 1; continue
+        position += 1
+        while position < len(lines) and not lines[position].strip():
+            position += 1
+        block = []
+        while position < len(lines) and (not lines[position].strip() or lines[position].startswith('   ')):
+            block.append(lines[position]); position += 1
+        try:
+            tree = ast.parse(textwrap.dedent('\n'.join(block)))
+        except SyntaxError as error:
+            raise ValueError('authored Python tutorial block is not syntactically complete') from error
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith('scirel'):
+                imports.update((node.module, alias.name) for alias in node.names)
+            elif isinstance(node, ast.Import):
+                imports.update((alias.name, None) for alias in node.names if alias.name.startswith('scirel'))
+    return sorted(imports, key=str)
+
+
+def _public_exception_source(root, module, symbol):
+    """Read an explicitly exported exception declaration without importing it."""
+    from public_api_binding import implementation_module, source_module_path
+    import builtins
+    public = source_module_path(root, module)
+    trees = {}
+
+    def read(relative):
+        data = (root / relative).read_bytes()
+        trees[relative] = (data, ast.parse(data, filename=str(relative)))
+        return trees[relative][1]
+
+    tree = read(public)
+    exported = set()
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(
+                isinstance(target, ast.Name) and target.id == '__all__' for target in node.targets):
+            exported.update(ast.literal_eval(node.value))
+    if symbol not in exported:
+        return None
+    if public.name == '__init__.py':
+        relative = source_module_path(root, implementation_module(root, module, symbol))
+        tree = read(relative)
+    classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
+
+    def is_exception(name, seen):
+        value = getattr(builtins, name, None)
+        if isinstance(value, type) and issubclass(value, BaseException):
+            return True
+        if name not in classes or name in seen:
+            return False
+        return any(isinstance(base, ast.Name) and is_exception(base.id, seen | {name})
+                   for base in classes[name].bases)
+
+    if not is_exception(symbol, set()):
+        return None
+    return {relative.as_posix(): sha(data) for relative, (data, _) in trees.items()}
+
+
+def tutorial_source_bindings(root, documents, *, held_ids=()):
+    """Bind authored tutorial references/imports; this is not scientific review."""
+    ids = {doc['asset_id'] for doc in documents}
+    bindings = set()
+    for document in documents:
+        api = document['public_api']['python']
+        bindings.add((api['module'], api['symbol']))
+        if 'canonical_module' in api:
+            bindings.add((api['canonical_module'], api['canonical_symbol']))
+    result = []
+    held_ids = set(held_ids)
+    for language, relative_root in [('zh', root / 'tools/docs/manual'),
+                                     ('en', root / 'tools/docs/manual/en')]:
+        for path in sorted(relative_root.glob('*.rst')):
+            data = path.read_bytes()
+            text = data.decode()
+            references = set(re.findall(r':doc:`[^`]*?(scirel\.[a-zA-Z0-9_.-]+)[^`]*`', text))
+            unknown = references - ids
+            if unknown - held_ids:
+                raise ValueError('tutorial refers to unknown or renamed assets: ' + str(sorted(unknown)))
+            excluded = bool(unknown & held_ids)
+            imports = tutorial_imports(text)
+            support = {}
+            invalid = []
+            for module, symbol in imports:
+                if symbol is None or (module, symbol) in bindings or excluded:
+                    continue
+                try:
+                    proof = _public_exception_source(root, module, symbol)
+                except (OSError, ValueError, SyntaxError):
+                    proof = None
+                if proof is None:
+                    invalid.append((module, symbol))
+                else:
+                    support[module + '.' + symbol] = proof
+            if invalid:
+                raise ValueError('tutorial imports unavailable/renamed scientific API: ' + str(invalid))
+            result.append({'language': language, 'tutorial_id': path.stem,
+                'source_sha256': sha(data),
+                'public_contract_mapping_sha256': sha(encode({
+                    doc['asset_id']: doc['public_api']['python'] for doc in documents})),
+                'public_imports': [list(item) for item in imports if item in bindings],
+                'public_exception_imports': support,
+                'delivery_status': 'subset-placeholder' if excluded else 'authored',
+                'review_status': 'NOT_RUN',
+                'meaning': 'current byte/reference binding; never a scientific-review approval'})
+    return result
+
+
 def build(documents: Path, output: Path, outline: Path | None = None,
           translation_paths: list[Path] | None = None,
           *, source_revision: str | None = None,
@@ -660,6 +473,9 @@ def build(documents: Path, output: Path, outline: Path | None = None,
     docs = load_document_set(documents)
     held = held_asset_ids()
     docs = [document for document in docs if document['asset_id'] not in held]
+    public_documents = [document for document in load_document_set(ROOT / 'catalog/examples')
+                        if document['asset_id'] not in held]
+    tutorial_bindings = tutorial_source_bindings(ROOT, public_documents, held_ids=held)
     if not docs:
         raise ValueError('all documents are withheld by the exposure hold')
     if documentation_version is None:
@@ -769,6 +585,10 @@ def build(documents: Path, output: Path, outline: Path | None = None,
         raise ValueError('documentation source inputs changed during build') from error
     if final_inputs != source_inputs:
         raise ValueError('documentation source inputs changed during build')
+    final_public_documents = [document for document in load_document_set(ROOT / 'catalog/examples')
+                              if document['asset_id'] not in held]
+    if tutorial_source_bindings(ROOT, final_public_documents, held_ids=held) != tutorial_bindings:
+        raise ValueError('documentation tutorial inputs changed during build')
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
                 'source_dirty': dirty,
                 'source_inputs': source_inputs,
@@ -778,6 +598,7 @@ def build(documents: Path, output: Path, outline: Path | None = None,
                 'asset_count': len(docs),
                 'notice': NOTICE if language == 'zh' else NOTICE_EN,
                 'reader_language': LANGUAGE_TAGS[language],
+                'tutorial_bindings': tutorial_bindings,
                 'human_renderer': 'sphinx-pydata',
                 'validation': {'schema_and_dependency_closure': True,
                                'scientific_runtime_revalidated': False},

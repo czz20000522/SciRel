@@ -84,7 +84,8 @@ def test_input_mutation_during_render_aborts_before_output(source_tree, tmp_path
     document = {
         'asset_id': 'scirel.test.example', 'title': {'en': 'Example', 'zh': '示例'},
         'summary': 'Synthetic contract', 'taxonomy': [], 'aliases': [],
-        'version': '0.1.0', 'public_api': {},
+        'version': '0.1.0', 'public_api': {'python': {
+            'module': 'scirel.test', 'symbol': 'example'}},
         'verification': {'evidence_ceiling': 'synthetic fixture', 'known_limitations': []},
     }
     monkeypatch.setattr(docs, 'load_document_set', lambda path: [document])

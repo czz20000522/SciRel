@@ -26,6 +26,32 @@ def _response_error(actual,expected):
     return max(np.max(abs(actual-expected)/np.maximum(1,abs(expected))),np.linalg.norm(actual-expected)/max(1,np.linalg.norm(expected)))
 
 
+def test_jpole_grid_coordinates_preserves_fixed_dimensionless_axes():
+    result = rational.jpole_grid_coordinates()
+    state = result['state']
+    x, y, z = (state[name] for name in ('x', 'y', 'z'))
+    assert x.shape == y.shape == z.shape == (101, 101)
+    assert x.dtype == y.dtype == np.dtype('float64')
+    assert z.dtype == np.dtype('complex128')
+    # Independent rational-step axes bind every point and both index directions.
+    expected_x = -5 + np.arange(101) / 10
+    expected_y = -3 + 2 * np.arange(101) / 25
+    np.testing.assert_allclose(x, np.broadcast_to(expected_x[:, None], x.shape),
+                               rtol=0, atol=2e-15)
+    np.testing.assert_allclose(y, np.broadcast_to(expected_y[None, :], y.shape),
+                               rtol=0, atol=2e-15)
+    np.testing.assert_array_equal(x[[0, -1], 0], [-5, 5])
+    np.testing.assert_array_equal(y[0, [0, -1]], [-3, 5])
+    np.testing.assert_array_equal(z.real, x)
+    np.testing.assert_array_equal(z.imag, y)
+    second = rational.jpole_grid_coordinates()['state']
+    for name in ('x', 'y', 'z'):
+        np.testing.assert_array_equal(second[name], state[name])
+        assert not np.shares_memory(second[name], state[name])
+    assert result['receipt'].backend == 'Python/NumPy'
+    assert result['receipt'].operation == 'jpole_coordinates'
+
+
 @pytest.mark.parametrize('N',[0,1,12])
 @pytest.mark.parametrize('B0',[1e-7,-1e-7])
 def test_uniform_k0_is_cold_gyro_response_including_N0(N,B0):

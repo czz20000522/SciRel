@@ -44,7 +44,7 @@ async def exercise(target):
         advertised = await client.list_tools()
         exact = [tool.model_dump(by_alias=True, exclude_none=True) for tool in advertised.tools]
         assert exact == config['registry'], (exact, config['registry'])
-        assert len(exact) == 5
+        assert len(exact) == 4
         assert all(tool['annotations']['readOnlyHint'] is True for tool in exact)
         discovery = client.session.discover_result
         assert discovery is not None, 'auto mode must perform real discovery'
@@ -77,11 +77,12 @@ async def exercise(target):
         near = await call('near_miss', 'scirel_search', {**pins, 'model': 'slab', 'boundary': 'open'}, 'near_miss')
         assert all(item['missed_filters'] for item in near['result']['items'])
         document = await call('get', 'scirel_get', {**pins, 'asset_id': 'test.alpha'}, 'ok')
-        assert document['document']['asset_id'] == 'test.alpha'
-        assert 'Synthetic API' in document['markdown']
-        tutorial = await call('tutorial', 'scirel_get_tutorial',
-                              {**pins, 'chapter_id': 'sample', 'limit_chars': 7}, 'ok')
-        assert tutorial['markdown'] == 'Synthet' and tutorial['next_offset'] == 7
+        contract = root / 'catalog/contracts/test.alpha.json'
+        original_contract = contract.read_bytes()
+        assert len(original_contract) > 65536
+        assert document['document'] == json.loads(original_contract)
+        assert document['paths'] == {'contract': 'catalog/contracts/test.alpha.json'}
+        assert document['digests'] == {document['paths']['contract']: config['contract_sha256']}
         await call('invalid', 'scirel_search', {**pins, 'limit': 0}, 'invalid_request', True)
         await call('missing_pin', 'scirel_search', {}, 'invalid_request', True)
         await call('wrong_pin', 'scirel_search', {**pins, 'expected_snapshot_sha256': '0' * 64}, 'identity_mismatch', True)
@@ -175,17 +176,15 @@ def consumer_snapshot(tmp_path):
              'asset_count': len(records), 'assets': records,
              'search_text': {item['asset_id']: json.dumps(item, ensure_ascii=False).casefold()
                              for item in records}}
-    files = {'catalog/capability-index.json': _encode(index),
-             'catalog/tutorial-index.json': _encode({'chapters': [{
-                 'chapter_id': 'sample', 'paths': {'en': 'docs/en/tutorials/sample.md',
-                                                  'zh': 'docs/zh/tutorials/sample.md'}}]}),
-             'docs/en/tutorials/sample.md': b'Synthetic tutorial with a bounded continuation.\n',
-             'docs/zh/tutorials/sample.md': '合成教程，仅验证传输。\n'.encode()}
+    files = {'catalog/capability-index.json': _encode(index)}
     for record in records:
         asset = record['asset_id']
-        files['catalog/contracts/' + asset + '.json'] = _encode({'asset_id': asset})
-        for language in ('en', 'zh'):
-            files['docs/' + language + '/api/' + asset + '.md'] = b'# Synthetic API\n'
+        files['catalog/contracts/' + asset + '.json'] = _encode({
+            'asset_id': asset, 'notice': 'Synthetic fixture; no scientific validation.',
+            'parameters': {'units': '1', 'nested': [0, None, True]},
+            'original_text': '原始合同参数和适用范围' * 4000,
+            'evidence': {'final': 'end-of-contract'},
+        })
     identity = {'schema': 'scirel.consumer-runtime', 'source_revision': 'a' * 40,
                 'asset_count': len(records),
                 'retrieval': {'backend': 'lexical-and', 'completeness': 'unknown'},
@@ -210,14 +209,15 @@ def test_official_client_negotiates_and_calls_exact_registry(sdk_python, consume
                      'capability_query.py'):
         shutil.copyfile(ROOT / 'scripts' / filename, adapter / filename)
     config = {'scripts': str(adapter), 'root': str(consumer_snapshot),
-              'transport': transport, 'registry': tools()}
+              'transport': transport, 'registry': tools(),
+              'contract_sha256': _sha((consumer_snapshot / 'catalog/contracts/test.alpha.json').read_bytes())}
     completed = subprocess.run([sdk_python, '-c', CLIENT_PROBE], input=json.dumps(config),
                                text=True, capture_output=True, timeout=40, cwd=tmp_path)
     assert completed.returncode == 0, completed.stderr
     evidence = json.loads(completed.stdout)
     assert evidence['sdk_version'] == '2.3.0'
     assert evidence['protocol_version'] in evidence['supported_versions']
-    assert len(evidence['tools']) == 5
+    assert len(evidence['tools']) == 4
     assert not list(adapter.rglob('__pycache__'))
     # Save actual negotiated evidence alongside this project test's fixture.
     (tmp_path / ('mcp-' + transport + '-evidence.json')).write_text(
@@ -268,13 +268,9 @@ def _cli_pins(root):
 @pytest.mark.parametrize('command,arguments,flags', [
     ('describe', {}, []),
     ('browse', {'limit': 1}, ['--limit', '1']),
-    ('browse', {'collection': 'tutorials', 'limit': 1},
-     ['--collection', 'tutorials', '--limit', '1']),
     ('search', {'q': 'periodic flux', 'limit': 1},
      ['--q', 'periodic flux', '--limit', '1']),
-    ('get', {'asset_id': 'test.alpha', 'language': 'zh'}, ['test.alpha', '--language', 'zh']),
-    ('get_tutorial', {'chapter_id': 'sample', 'limit_chars': 7},
-     ['sample', '--limit-chars', '7']),
+    ('get', {'asset_id': 'test.alpha'}, ['test.alpha']),
 ])
 def test_cli_without_sdk_uses_the_same_dispatch(consumer_snapshot, command, arguments, flags):
     pins, pin_flags = _cli_pins(consumer_snapshot) if command != 'describe' else ({}, [])
@@ -284,7 +280,19 @@ def test_cli_without_sdk_uses_the_same_dispatch(consumer_snapshot, command, argu
         consumer_snapshot, 'scirel_' + command, {**pins, **arguments})
 
 
-def test_cli_without_sdk_can_continue_a_cursor_and_tutorial(consumer_snapshot):
+def test_cli_without_sdk_returns_the_complete_large_original_contract(consumer_snapshot):
+    _, flags = _cli_pins(consumer_snapshot)
+    original = (consumer_snapshot / 'catalog/contracts/test.alpha.json').read_bytes()
+    assert len(original) > 65536
+    completed = _cli(consumer_snapshot, 'get', 'test.alpha', *flags)
+    assert completed.returncode == 0, completed.stderr
+    response = json.loads(completed.stdout)
+    assert response['document'] == json.loads(original)
+    assert len(completed.stdout.encode()) > 65536
+    assert response['digests'] == {'catalog/contracts/test.alpha.json': _sha(original)}
+
+
+def test_cli_without_sdk_can_continue_a_cursor(consumer_snapshot):
     _, flags = _cli_pins(consumer_snapshot)
     first = _cli(consumer_snapshot, 'browse', *flags, '--limit', '1')
     assert first.returncode == 0, first.stderr
@@ -293,10 +301,6 @@ def test_cli_without_sdk_can_continue_a_cursor_and_tutorial(consumer_snapshot):
                   '--cursor', page['next_cursor'])
     assert second.returncode == 0, second.stderr
     assert json.loads(second.stdout)['result']['items'][0]['asset_id'] == 'test.beta'
-    tutorial = _cli(consumer_snapshot, 'get_tutorial', 'sample', *flags,
-                    '--offset', '7', '--limit-chars', '7')
-    assert tutorial.returncode == 0, tutorial.stderr
-    assert json.loads(tutorial.stdout)['markdown'] == 'ic tuto'
 
 
 @pytest.mark.parametrize('command,arguments,outcome', [
@@ -305,7 +309,6 @@ def test_cli_without_sdk_can_continue_a_cursor_and_tutorial(consumer_snapshot):
     ('search', ['--expected-wheel-sha256', '0' * 64], 'identity_mismatch'),
     ('browse', ['--cursor', 'invalid cursor'], 'invalid_request'),
     ('get', ['test.absent'], 'unknown_asset'),
-    ('get_tutorial', ['absent'], 'unknown_tutorial'),
 ])
 def test_cli_without_sdk_returns_failure_exit_for_error_envelopes(
         consumer_snapshot, command, arguments, outcome):

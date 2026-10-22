@@ -35,21 +35,12 @@ def tools():
          {**empty, 'properties': {'expected_wheel_sha256': pins['expected_wheel_sha256']}}),
         ('browse', 'Browse bounded public discovery cards in stable asset ID order; filters are metadata constraints.',
          {'type': 'object', 'additionalProperties': False, 'required': list(pins),
-          'properties': {**{key: value for key, value in query.items() if key != 'q'},
-                         'collection': {'enum': ['capabilities', 'tutorials'], 'default': 'capabilities'}}}),
+          'properties': {key: value for key, value in query.items() if key != 'q'}}),
         ('search', 'Recall bounded lexical candidates, with hit reasons and conflicts. Recall is not scientific applicability.',
          {'type': 'object', 'additionalProperties': False, 'required': list(pins), 'properties': query}),
-        ('get', 'Read one exact public contract and its generated API Markdown. Check units, model, boundary and evidence before use.',
+        ('get', 'Read one complete original public contract with its bound path and hash. Check units, model, boundary and evidence before use.',
          {'type': 'object', 'additionalProperties': False, 'required': ['asset_id', *pins],
-          'properties': {**pins, 'asset_id': {'type': 'string', 'minLength': 1},
-                         'language': {'enum': ['en', 'zh'], 'default': 'en'}}}),
-        ('get_tutorial', 'Read a bounded slice of a hand-authored tutorial. Follow next_offset to complete the selected text.',
-         {'type': 'object', 'additionalProperties': False, 'required': ['chapter_id', *pins],
-          'properties': {**pins, 'chapter_id': {'type': 'string', 'minLength': 1},
-                         'language': {'enum': ['en', 'zh'], 'default': 'en'},
-                         'offset': {'type': 'integer', 'minimum': 0, 'default': 0},
-                         'limit_chars': {'type': 'integer', 'minimum': 1,
-                                         'maximum': 20000, 'default': 12000}}}),
+          'properties': {**pins, 'asset_id': {'type': 'string', 'minLength': 1}}}),
     ]
     return [dict(name=TOOL_PREFIX + name, description=description, inputSchema=schema,
                  annotations={'readOnlyHint': True, 'destructiveHint': False,
@@ -102,9 +93,8 @@ def call_tool(root, name, arguments=None):
             return consumer.describe()
         if command in ('browse', 'search'):
             cursor, max_bytes = args.pop('cursor', ''), args.pop('max_bytes', 32768)
-            collection = args.pop('collection', 'capabilities')
             args.setdefault('limit', 5)
-            query_digest = sha(encode({'command': command, 'collection': collection,
+            query_digest = sha(encode({'command': command,
                                       **{k: v for k, v in args.items() if k != 'offset'}}))
             if cursor:
                 try:
@@ -116,12 +106,7 @@ def call_tool(root, name, arguments=None):
                     args['offset'] = decoded['offset']
                 except (ValueError, KeyError, TypeError) as error:
                     return consumer.envelope(command, outcome='invalid_request', error='invalid cursor: ' + str(error))
-            if collection == 'tutorials':
-                if set(args) - {'offset', 'limit'}:
-                    return consumer.envelope(command, outcome='invalid_request', error='tutorial browse accepts only pagination and identity')
-                result = consumer.browse_tutorials(**args)
-            else:
-                result = consumer.query(command, **args)
+            result = consumer.query(command, **args)
             page = result['result']
             original_count = len(page['items'])
             def continuation():
@@ -146,7 +131,6 @@ def call_tool(root, name, arguments=None):
                 return consumer.envelope(command, outcome='response_too_large', error='response envelope exceeds byte budget')
             return result
         if command == 'get':
-            return consumer.get(args['asset_id'], args.get('language', 'en'))
-        return consumer.tutorial(**args)
+            return consumer.get(args['asset_id'])
     except (OSError, ValueError, KeyError, TypeError) as error:
         return consumer.envelope(command, outcome='metadata_error', error=str(error))

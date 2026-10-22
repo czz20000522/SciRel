@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from capability_query import query_capabilities  # noqa: E402
 import scirel_docs  # noqa: E402
+import capability_catalog  # noqa: E402
 from scirel_docs import SourceDocumentation, encode, sha  # noqa: E402
 
 ASSET = 'scirel.physics.coulomb-ee'
@@ -209,7 +210,7 @@ def test_hold_aba_cannot_expose_a_held_contract_under_bound_hold_bytes(source, m
     reader_path.write_bytes(encode(bundle))
     commit(source)
     baseline = SourceDocumentation(source)
-    original = scirel_docs.held_asset_ids
+    original = capability_catalog.held_asset_ids
 
     def swap_during_hold_parse(path, **kwargs):
         before = path.read_bytes()
@@ -221,7 +222,7 @@ def test_hold_aba_cannot_expose_a_held_contract_under_bound_hold_bytes(source, m
         finally:
             path.write_bytes(before)
 
-    monkeypatch.setattr(scirel_docs, 'held_asset_ids', swap_during_hold_parse)
+    monkeypatch.setattr(capability_catalog, 'held_asset_ids', swap_during_hold_parse)
     queried = SourceDocumentation(source)
     assert queried.describe() == baseline.describe()
     assert queried.asset(HELD)['outcome'] == 'unknown_asset'
@@ -230,7 +231,7 @@ def test_hold_aba_cannot_expose_a_held_contract_under_bound_hold_bytes(source, m
 def test_reader_aba_cannot_return_unbound_text_under_the_same_source_identity(source, monkeypatch):
     baseline = SourceDocumentation(source)
     reader_path = source / 'tools/docs/zh/reader.json'
-    original = scirel_docs.load_translations
+    original = capability_catalog.load_translations
 
     def swap_during_reader_parse(*args, **kwargs):
         before = reader_path.read_bytes()
@@ -242,7 +243,7 @@ def test_reader_aba_cannot_return_unbound_text_under_the_same_source_identity(so
         finally:
             reader_path.write_bytes(before)
 
-    monkeypatch.setattr(scirel_docs, 'load_translations', swap_during_reader_parse)
+    monkeypatch.setattr(capability_catalog, 'load_translations', swap_during_reader_parse)
     queried = SourceDocumentation(source)
     assert queried.describe() == baseline.describe()
     assert queried.asset(ASSET, reader=True) == baseline.asset(ASSET, reader=True)
@@ -257,7 +258,7 @@ def test_reader_binding_checks_captured_contract_bytes_during_contract_aba(sourc
     bundle = json.loads(reader_path.read_bytes())
     bundle['records'][0]['source_sha256'] = sha(temporary_bytes)
     reader_path.write_bytes(encode(bundle))
-    original = scirel_docs.load_translations
+    original = capability_catalog.load_translations
 
     def swap_during_binding(*args, **kwargs):
         before = contract_path.read_bytes()
@@ -267,6 +268,6 @@ def test_reader_binding_checks_captured_contract_bytes_during_contract_aba(sourc
         finally:
             contract_path.write_bytes(before)
 
-    monkeypatch.setattr(scirel_docs, 'load_translations', swap_during_binding)
+    monkeypatch.setattr(capability_catalog, 'load_translations', swap_during_binding)
     with pytest.raises(ValueError, match='stale Chinese reader'):
         SourceDocumentation(source)

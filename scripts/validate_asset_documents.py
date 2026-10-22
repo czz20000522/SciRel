@@ -799,6 +799,16 @@ def _validate_runtime_inputs(
         parameter.kind is inspect.Parameter.VAR_KEYWORD
         for parameter in signature.parameters.values()
     )
+    documented_names = {port["name"] for port in document["inputs"]}
+    undocumented = sorted(
+        name for name, parameter in signature.parameters.items()
+        if parameter.kind not in (
+            inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD
+        ) and name not in documented_names
+    )
+    if undocumented:
+        _fail(document["asset_id"],
+              f"explicit callable inputs are undocumented: {undocumented}")
     for port in document["inputs"]:
         name = port["name"]
         parameter = signature.parameters.get(name)

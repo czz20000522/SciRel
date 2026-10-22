@@ -44,6 +44,7 @@ SCRIPT_LAYERS = {
     "build_catalog.py": ("tooling", "architecture"),
     "build_pure_delivery.py": ("delivery",),
     "build_scirel_sphinx.py": ("docs", "delivery"),
+    "capability_catalog.py": ("docs", "delivery"),
     "capability_query.py": ("tooling", "docs", "delivery"),
     "check_wheel_exposure.py": ("delivery",),
     "consumer_tools.py": ("delivery",),

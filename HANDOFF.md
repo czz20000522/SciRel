@@ -23,18 +23,21 @@ current identity. Historical checkpoints and resolved work remain in Git.
 
 The formal consumer protocol and maintenance sequence are
 `tools/docs/PURE_CONSUMPTION.md`. One standard-library query/Consumer core serves
-five read-only directory tools through the official MCP SDK over stdio and
+four read-only tools (`describe`, `browse`, `search`, `get`) through the official MCP SDK over stdio and
 Streamable HTTP. Computation stays in user Python with the installed wheel.
 SDK dependencies are separately locked; scientific dependencies remain NumPy,
 SciPy and mpmath on Python `>=3.14,<3.15`.
 
 At an explicitly authorized integration checkpoint,
-`scripts/build_pure_delivery.py` exports one Agent bundle and separate human
-HTML site from a clean source revision, exact wheel and fresh bilingual docs.
-It checks generation-time inputs, exact public IDs/API/contract/reader bindings,
-runtime signatures, source/wheel bytes, notices, tutorial imports/references,
-local links and internal skill reference reachability. It stages both outputs and cleans owned
-partial outputs on failure. Never overwrite an existing immutable bundle.
+`scripts/build_pure_delivery.py --wheel PATH --output NEW_ROOT` exports one Agent
+runtime from a clean source revision and exact wheel. It derives the lightweight
+index directly from public contracts and bound Chinese sidecars, checks the
+public set and source/wheel bytes, and binds the actual runtime inputs and
+internal skill reference closure. It does not need a documentation snapshot,
+Sphinx or HTML generation. Human API/tutorial/site generation remains the
+independent `scripts/scirel_docs.py build` pipeline, with its documentation
+bindings, examples, links and resources. Never overwrite an existing immutable
+bundle.
 
 The only outbound skill is the ignored local
 `skills/development/usage/scirel-solving/SKILL.md`. The internal entry reads its
@@ -43,13 +46,20 @@ and helpers unchanged under `skills/scirel-solving/`. Cross-skill references are
 rejected. All used bytes are bound because Git SHA alone does not cover ignored
 local skills. The exported `tools/query.py` is the real standard-library CLI;
 MCP is optional and uses the same dispatch. `runtime.json` contains only generated
-runtime identity, pins and member integrity. Build checks remain internal; no
+runtime identity, pins and member integrity. `get` returns one complete original
+JSON contract with its byte digest and path; it has no language selector or
+embedded Markdown, and the browse/search card budget does not truncate it.
+The runtime contains no API/tutorial Markdown, tutorial index or human site
+assets. Human reading is optional and uses only separately supplied actual
+site/version/path bindings; no URL or “latest” wheel match is inferred.
+Build checks remain internal; no
 delivery receipts or separate protocol/quickstart are required at runtime.
 Daily source discovery uses `scripts/scirel_docs.py query --source-root .`; it
 needs no wheel or pure build, shares the delivery query core and binds current
 public inputs rather than inventing an installed-wheel receipt.
-The task record holds the current final paths, hashes, acceptance and cleanup:
-https://app.notion.com/p/4011c0206a87812a8b81f0bb3be414bc
+The current structured-runtime batch record holds scope, candidate, verification
+and cleanup:
+https://app.notion.com/p/4011c0206a8781aeb2ccf15955414772
 
 MCP retrieval does not establish physical applicability or composition. Keep
 snapshot/wheel pins and continuation identity. Unknown ports/units/relations

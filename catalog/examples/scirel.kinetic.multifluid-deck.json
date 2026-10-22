@@ -28,15 +28,15 @@
  },
  "identity": {
   "relation": "Packaged fluid input data to an SI fluid deck",
-  "direction": "data read",
+  "direction": "No caller inputs to an independent copy of the fixed packaged SI table.",
   "definition": "Read the literal two-species ten-column fluid table without changing its physical numbers.",
   "model": "Fixed electron/proton fluid input data.",
   "geometry": "Uniform background, zero drift and zero density gradient.",
   "coordinates": "Columns q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,epsnx,epsny.",
   "boundary": "Declared local equilibrium input; no solution is inferred.",
   "assumptions": [
-   "The table contains isotropic sound speeds per species.",
-   "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; packaged defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
+   "The zero-argument loader accepts no species, density, velocity, sound-speed or file-path parameters.",
+   "The fixed electron/proton table uses q=+/-1.602e-19 C, me=9.109e-31 kg, mp=1.673e-27 kg and density 8.7e6 m^-3 per species. Drift and density-gradient columns are zero; parallel and perpendicular sound speeds are equal within each species: 2.893e4 m/s for electrons and 6.757e2 m/s for protons. No temperature conversion or equilibrium solve is performed."
   ]
  },
  "inputs": [],
@@ -53,7 +53,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "Finite inputs satisfying the declared units and shapes."
+   "No caller inputs; the packaged fluid_SI.in resource must be available and readable."
   ],
   "supported": [
    "Package-local input data; no checkout or network."
@@ -61,8 +61,8 @@
   "excluded": []
  },
  "failure_semantics": {
-  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
-  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+  "invalid_input": "Supplying any arguments raises TypeError; the loader accepts no caller-supplied scientific inputs or file path.",
+  "runtime_failure": "File access and NumPy text-parsing errors propagate; no alternate data source is selected.",
   "nonconvergence": "No iterative solve is performed.",
   "partial_results": "No partial result is returned on failure."
  },
@@ -79,12 +79,12 @@
  },
  "example": {
   "description": "Load independent packaged data.",
-  "code": "from scirel.kinetic.dispersion.multifluid import fluid_deck\na, b = fluid_deck(), fluid_deck()\nassert a.shape == (2, 10)\nassert a is not b",
+  "code": "from scirel.kinetic.dispersion.multifluid import fluid_deck\na, b = fluid_deck(), fluid_deck()\nassert a.shape == (2, 10)\nassert a is not b\nassert a.dtype.name == \"float64\"\nassert (a == b).all()",
   "expected": "The packaged helper returned an independent float64 deck of shape (2,10); two calls returned distinct arrays with equal values."
  },
  "verification": {
   "scope": [
-   "Direct gate: test_packaged_fluid_deck_is_loaded_directly binds fluid_deck() shape, finite SI fields and the fixed electron/proton rows.",
+   "Direct gate: test_packaged_fluid_deck_is_loaded_directly binds fluid_deck() shape, finite SI fields, the fixed electron/proton rows and independent arrays with equal values.",
    "The contract example and direct test both load the packaged table; no external calibration is claimed."
   ],
   "tests": [

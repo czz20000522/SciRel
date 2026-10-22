@@ -20,6 +20,7 @@ def test_consumer_tools_select_the_delivery_tests(script):
 
 @pytest.mark.parametrize(("script", "owners"), [
     ("capability_query.py", {"docs", "tooling", "delivery"}),
+    ("capability_catalog.py", {"docs", "delivery"}),
     ("scirel_docs.py", {"docs", "delivery"}),
     ("build_scirel_sphinx.py", {"docs", "delivery"}),
     ("build_capability_matrix.py", {"tooling", "docs", "delivery"}),

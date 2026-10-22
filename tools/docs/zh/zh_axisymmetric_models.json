@@ -89,13 +89,13 @@
   },
   {
    "asset_id": "scirel.electromagnetism.brb",
-   "source_sha256": "6dfdb60e4c4a3793e6f0eae396d9d23c30d3ce6ea3f919def4f3e1367298ac6c",
+   "source_sha256": "0ff478e584ad8c887022960f49e121d3cdd434e1ab5201fa995ff5da66cd09b2",
    "summary": "构造固定的 BRB 源组合：两组 88 点 TREX 线圈、两组 130 点矩形线圈，以及 36 个带符号的 16 点磁环。",
    "definition": "BRB 按属性顺序注册两组 TREXCoil、两组 RectangularCoil 和 36 个 MagnetRing 子对象。",
    "model": "采用声明常数的轴对称理想圆电流丝几何。",
    "boundary": "该对象只是几何组合，不标定实验装置或材料响应。",
    "assumptions": [
-    "这些常数只描述几何。",
+    "无参数构造器固定 BRB 几何和磁环电流默认值；不接收几何、电流或网格参数。",
     "子源采用理想圆电流丝响应。",
     "计算场仍需有限且不奇异的目标网格。"
    ],
@@ -110,7 +110,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "这些常数只描述几何。",
+     "无参数构造器固定 BRB 几何和磁环电流默认值；不接收几何、电流或网格参数。",
      "子源采用理想圆电流丝响应。"
     ],
     "supported": [
@@ -121,7 +121,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "BRB 构造或子源场计算沿用子源的 ValueError/FloatingPointError 语义；排除的扩展抛出 NotImplementedError。",
+    "invalid_input": "传入构造参数会抛出 TypeError。BRB 构造或后续子源场计算沿用子源的 ValueError/FloatingPointError 语义；排除的扩展抛出 NotImplementedError。",
     "runtime_failure": "子源的 Green 核数值失败向上传播。",
     "nonconvergence": "不适用；配置是直接的有序组合。",
     "partial_results": "构造失败不返回可用配置；子源由构造器注册。"
@@ -526,13 +526,13 @@
   },
   {
    "asset_id": "scirel.electromagnetism.wham",
-   "source_sha256": "ef6f94b987437b23e30b8a55ac70cf67a2c7a00615eb54025c7bcf5cd0b2b035",
+   "source_sha256": "56832f8ba1b5b3f821be1a7ac346c9436cd151275c4e8e3e50eeebc201d83765",
    "summary": "构造有序 WHAM 装置：四个矩形线圈依次含 32、32、10、10 条电流丝。",
    "definition": "WHAM 按 hts1、hts2、cc1、cc2 顺序注册四个矩形线圈子源。",
    "model": "轴对称理想圆电流丝几何。",
    "boundary": "该对象表示固定几何，不标定实验装置。",
    "assumptions": [
-    "构造器使用实现中的固定常数。",
+    "无参数构造器固定 WHAM 几何；不接收几何、电流或网格参数。",
     "计算场需要目标网格且目标点不能奇异。",
     "Device 保持子源顺序。"
    ],
@@ -547,7 +547,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "构造器使用实现中的固定常数。",
+     "无参数构造器固定 WHAM 几何；不接收几何、电流或网格参数。",
      "计算场需要目标网格且目标点不能奇异。"
     ],
     "supported": [
@@ -558,7 +558,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "构造或场计算中的子源 ValueError 以及活动电流丝的奇异性失败会向上传播。",
+    "invalid_input": "传入构造参数会抛出 TypeError。构造或后续场计算中的子源 ValueError 以及活动电流丝奇异性失败会向上传播。",
     "runtime_failure": "子源的 Green 核 FloatingPointError 向上传播。",
     "nonconvergence": "不适用；配置是直接的有序组合。",
     "partial_results": "构造失败时不返回可用的装置对象。"

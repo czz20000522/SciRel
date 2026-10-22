@@ -4,14 +4,14 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.multifluid-deck",
-   "source_sha256": "a557d1feb5c2be3ff8d9167ae734a0d7e3b94ba9b958977e1e881433cf4dd076",
+   "source_sha256": "9277373af5f7aeee294c41c56cbbc45c7c93719a1d383fc995c3055fd07d01b0",
    "summary": "返回随包多流体十列、双物种物理输入表的独立副本。",
    "definition": "读取双物种十列多流体 SI 字面数据表，不改变其中的物理数值。",
    "model": "固定的电子／质子流体输入数据。",
    "boundary": "已存储的局部平衡输入；不由此推断任何解。",
    "assumptions": [
-    "表中各物种的声速是各向同性的。",
-    "流体常数配置为 c2=(2.9979e8 m/s)^2，epsilon0=8.854e-12 F/m，mu0=1/(c2*epsilon0)，gamma 默认 5/3。电荷与质量是物种表中的显式 SI 输入；随包默认值为 q=+/-1.602e-19 C、me=9.109e-31 kg、mp=1.673e-27 kg。声速直接输入，不使用 kB，也不进行温度到速度的换算。这与当前动理学初始化使用的 epsilon0=8.8542e-12 F/m 不同。"
+    "无参数加载器不接收物种、密度、速度、声速或文件路径参数。",
+    "固定电子／质子表使用 q=+/-1.602e-19 C、me=9.109e-31 kg、mp=1.673e-27 kg，各物种密度均为 8.7e6 m^-3。漂移和密度梯度各列均为零；各物种的平行与垂直声速相等：电子为 2.893e4 m/s，质子为 6.757e2 m/s。不进行温度换算或平衡态求解。"
    ],
    "inputs": [],
    "outputs": [
@@ -24,7 +24,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入须有限，且满足所声明的单位和形状。"
+     "没有调用者输入；随包 fluid_SI.in 资源必须存在且可读。"
     ],
     "supported": [
      "包内局部输入数据；无需源码检出或网络。"
@@ -32,14 +32,14 @@
     "excluded": []
    },
    "failure_semantics": {
-    "invalid_input": "ValueError 或必需映射键缺失会拒绝非法输入。",
-    "runtime_failure": "依赖、数值库或原生运行时错误向上传播；不会静默改用其他提供方。",
+    "invalid_input": "传入任何参数会抛出 TypeError；加载器不接收调用者科学输入或文件路径。",
+    "runtime_failure": "文件访问与 NumPy 文本解析错误向上传播；不选择其他数据源。",
     "nonconvergence": "不执行迭代求解。",
     "partial_results": "失败时不返回部分结果。"
    },
    "verification": {
     "scope": [
-     "直接 gate：test_packaged_fluid_deck_is_loaded_directly 绑定 fluid_deck() 的形状、有限 SI 字段和固定电子/质子行。",
+     "直接 gate：test_packaged_fluid_deck_is_loaded_directly 绑定 fluid_deck() 的形状、有限 SI 字段、固定电子／质子行，以及数值相等的独立数组。",
      "合同示例和直接测试都加载打包表；不声称外部标定。"
     ],
     "known_limitations": [
@@ -1213,14 +1213,14 @@
   },
   {
    "asset_id": "scirel.kinetic.rational-jpole-grid-coordinates",
-   "source_sha256": "5b7d8c1a819be4498a09e5435606fa336f359ff12731e8faf2a60aa6f79a8b75",
+   "source_sha256": "796bc09bbf9052c8438b20bbe628231766e6ed0e3b3732f3b06ee3bdaf27756d",
    "summary": "返回声明的 101×101 复诊断 ndgrid，不暗示近似在该网格上处处有效。",
-   "definition": "历史 x,y ndgrid 与 z=x+i*y；为诊断绘图保留完整二维方向。",
-   "model": "非相对论高斯物种；适用时显式声明有限谐波／有理近似。",
-   "boundary": "周期或无限均匀介质中的平面波响应；显式声明有限数值谐波／极点表示。",
+   "definition": "构造 x,y ndgrid 与 z=x+i*y；为诊断绘图保留完整二维方向。",
+   "model": "使用 NumPy 确定性构造坐标；不计算色散函数或有理近似。",
+   "boundary": "固定且含端点：x 在 [-5,5] 内有 101 个采样，y 在 [-3,5] 内有 101 个采样。此矩形不是近似有效域。",
    "assumptions": [
-    "各模型的物种表约定均显式说明。",
-    "数值频谱不会自动成为物理上已认证的模态。"
+    "无参数辅助函数固定两轴范围以及各轴的 101 个采样点。",
+    "坐标只作为诊断求值位置；不建立色散关系、模态分类或近似精度。"
    ],
    "inputs": [],
    "outputs": [
@@ -1239,35 +1239,35 @@
    ],
    "applicability": {
     "preconditions": [
-     "组成输入须有限且能由已声明的数值端口表示。"
+     "没有调用者输入；轴范围、采样数和无量纲坐标均固定。"
     ],
     "supported": [
-     "诊断网格坐标。"
+     "固定复诊断网格坐标，保留完整 ndgrid 方向。"
     ],
     "excluded": [
      "网格本身不是独立精度证明。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "没有调用者科学输入；随包网格构造错误仍可观察。",
-    "runtime_failure": "Python 数值错误直接带上下文传播；不回退到来源运行时、本地源码目录或网络。",
+    "invalid_input": "传入任何参数会抛出 TypeError；不接收调用者科学输入。",
+    "runtime_failure": "NumPy 网格构造错误向上传播；不选择其他坐标源。",
     "nonconvergence": "不执行收敛迭代，也不声称近似有效。",
     "partial_results": "此操作抛出异常时不返回成功结果；不承诺部分科学结果。"
    },
    "verification": {
     "scope": [
-     "在没有源码检出的环境中安装本包；包与资源闭包精确一致。",
-     "全部 12 个 API，以及独立标准样例和另行留出的响应、坐标轴与有符号波矢门禁。",
-     "完整的垂直 ES3D N10/J8 原始 50 点默认用例，含独立弱系数与 Decimal 偏移检查。"
+     "直接 gate：test_jpole_grid_coordinates_preserves_fixed_dimensionless_axes 检查全部坐标、含端点的范围、形状、数据类型及 ndgrid 方向。",
+     "重复无参数调用返回数值相等且相互独立的坐标数组。",
+     "合同示例构造网格并检查声明形状；不执行色散函数、谐波展开、极点求值或本征求解。"
     ],
     "known_limitations": [
      "参考材料的再分发授权仍未解决；纯 Python 实现不执行来源运行时。",
-     "有限 J／有限 N 物理近似用于新的目标参数区间前，必须取得相应资格。",
-     "早期固定距离趋轴辅助断言仍作为失败记录保留；精确轴与直接响应门禁另行验证。",
+     "此辅助函数只计算坐标；用于目标参数区间的有限 J／有限 N 物理需另行取得资格。",
+     "网格构造不能证明精确轴响应、趋轴行为或色散求解器正确性。",
      "人工科学认可与绘图验收仍待完成。",
-     "纯 Python 示例与有界资格验证在本次 macOS 主机上运行；任意参数区间仍不在证据范围内。"
+     "固定诊断矩形不是近似有效域。"
     ],
-    "evidence_ceiling": "直接合同测试与所声明的有限用例只在各自数值门禁适用的范围内约束该关系；纯 Python 实现在本次 macOS 检出中已验证。"
+    "evidence_ceiling": "仅限固定 101×101 坐标构造、无量纲轴范围、数组方向和执行回执标识；不建立近似精度、物理模态、实验标定或发行批准。"
    },
    "example": {
     "description": "使用 NumPy 构造声明的 101x101 诊断网格。",

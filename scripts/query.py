@@ -90,14 +90,13 @@ class Consumer:
                     source_revision=self.identity['source_revision'], **values)
 
     def describe(self):
-        tutorials = json.loads(self.read('catalog/tutorial-index.json'))
         return self.envelope('describe', outcome='ok', asset_count=len(self.assets),
-                             commands=['describe', 'browse', 'search', 'get', 'get_tutorial'],
+                             commands=['describe', 'browse', 'search', 'get'],
                              filters=list(FILTER_ORDER), default_limit=5, maximum_limit=100,
                              retrieval=self.identity['retrieval'],
                              runtime=self.identity['runtime'],
-                             collections=['capabilities', 'tutorials'],
-                             tutorial_count=len(tutorials['chapters']),
+                             human_documentation={'status': 'unconfigured',
+                                                  'locator': 'asset_id'},
                              schemas={'request': REQUEST_SCHEMA, 'response': RESPONSE_SCHEMA})
 
     def query(self, command, **filters):
@@ -107,19 +106,16 @@ class Consumer:
         return self.envelope(command, outcome=outcome, result=result,
                              retrieval=self.identity['retrieval'])
 
-    def get(self, asset, language='en'):
+    def get(self, asset):
         if asset not in self.assets:
             return self.envelope('get', outcome='unknown_asset', asset_id=asset)
         contract = 'catalog/contracts/' + asset + '.json'
-        markdown = 'docs/' + language + '/api/' + asset + '.md'
         document = json.loads(self.read(contract))
         if not isinstance(document, dict) or document.get('asset_id') != asset:
             raise ValueError('contract asset identity differs')
         return self.envelope('get', outcome='ok', asset_id=asset,
-                             document=document, markdown=self.read(markdown).decode(),
-                             paths={'contract': contract, 'markdown': markdown},
-                             digests={p: self.identity['files'][p]['sha256']
-                                      for p in [contract, markdown]})
+                             document=document, paths={'contract': contract},
+                             digests={contract: self.identity['files'][contract]['sha256']})
 
     def verify(self):
         for relative in self.identity['files']:
@@ -132,32 +128,6 @@ class Consumer:
             raise ValueError('runtime has missing or extra members')
         return self.envelope('verify', outcome='ok', files_verified=len(actual),
                              scientific_runtime_revalidated=False)
-
-    def tutorial(self, chapter_id, language='en', offset=0, limit_chars=12000):
-        if (type(offset) is not int or offset < 0 or type(limit_chars) is not int or
-                not 1 <= limit_chars <= 20000):
-            raise ValueError('offset >= 0 and limit_chars 1..20000 required')
-        tutorials = json.loads(self.read('catalog/tutorial-index.json'))
-        found = next((item for item in tutorials['chapters']
-                      if item['chapter_id'] == chapter_id), None)
-        if found is None:
-            return self.envelope('get_tutorial', outcome='unknown_tutorial', chapter_id=chapter_id,
-                                 available=[x['chapter_id'] for x in tutorials['chapters']])
-        path = found['paths'][language]
-        text = self.read(path).decode()
-        end = min(len(text), offset + limit_chars)
-        return self.envelope('get_tutorial', outcome='ok', chapter_id=chapter_id,
-                             language=language, markdown=text[offset:end], total_chars=len(text),
-                             offset=offset, next_offset=end if end < len(text) else None,
-                             path=path, sha256=self.identity['files'][path]['sha256'])
-
-    def browse_tutorials(self, offset=0, limit=5):
-        index = json.loads(self.read('catalog/tutorial-index.json'))
-        cards = sorted(index['chapters'], key=lambda item: item['chapter_id'])
-        selected = cards[offset:offset + limit]
-        return self.envelope('browse', outcome='match', collection='tutorials', result={
-            'schema': 'scirel.tutorial-browse-response', 'items': selected, 'total': len(cards),
-            'offset': offset, 'next_offset': offset + limit if offset + limit < len(cards) else None})
 
 
 def main(argv=None):
@@ -178,7 +148,7 @@ def main(argv=None):
                 options['type'] = int
             if 'enum' in definition:
                 options['choices'] = definition['enum']
-            if field in ('asset_id', 'chapter_id'):
+            if field == 'asset_id':
                 p.add_argument(field, **options)
             else:
                 p.add_argument('--' + field.replace('_', '-'), dest=field,

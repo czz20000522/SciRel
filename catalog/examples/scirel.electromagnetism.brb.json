@@ -57,7 +57,7 @@
   ],
   "operation": [
    "Construct the fixed BRB source composition",
-   "configuration constructor -> ordered child sources"
+   "no caller inputs -> fixed ordered BRB child sources"
   ],
   "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
   "geometry": "Ordered child source geometries in cylindrical R,Z coordinates; R,Z in metres, currents in amperes, ring weights dimensionless and angles in degrees.",
@@ -66,14 +66,14 @@
  },
  "identity": {
   "relation": "Fixed BRB source composition",
-  "direction": "configuration constructor to ordered child sources",
+  "direction": "No caller inputs to fixed ordered BRB child sources.",
   "definition": "BRB registers two TREXCoil, two RectangularCoil, and thirty-six MagnetRing children in attribute order.",
   "model": "Axisymmetric ideal circular-filament geometry with declared constants.",
   "geometry": "Ordered child source geometries in cylindrical R,Z coordinates.",
   "coordinates": "R,Z in metres; currents in amperes; ring weights dimensionless; angles in degrees.",
   "boundary": "The object is a geometry composition and does not calibrate an experimental device or material response.",
   "assumptions": [
-   "The constants describe geometry only.",
+   "The zero-argument constructor fixes the BRB geometry and ring-current defaults; it accepts no geometry, current or mesh parameters.",
    "Child sources use the ideal circular-filament response.",
    "Field evaluation still requires a finite nonsingular target mesh."
   ]
@@ -92,7 +92,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "The constants describe geometry only.",
+   "The zero-argument constructor fixes the BRB geometry and ring-current defaults; it accepts no geometry, current or mesh parameters.",
    "Child sources use the ideal circular-filament response."
   ],
   "supported": [
@@ -103,7 +103,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "BRB construction or child field evaluation propagates the child source ValueError/FloatingPointError semantics; excluded additions raise NotImplementedError.",
+  "invalid_input": "Supplying constructor arguments raises TypeError. BRB construction or later child field evaluation propagates the child source ValueError/FloatingPointError semantics; excluded additions raise NotImplementedError.",
   "runtime_failure": "Green-kernel numerical failures propagate from a child source.",
   "nonconvergence": "Not applicable; the configuration is a direct ordered composition.",
   "partial_results": "Construction failure does not return a usable configuration; child registration is performed by the constructor."

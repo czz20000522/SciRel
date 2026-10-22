@@ -24,6 +24,8 @@ import tempfile
 import tomllib
 import xml.etree.ElementTree as ET
 
+from capability_catalog import load_translations
+
 LANGUAGE_TAGS = {'zh': 'zh-CN', 'en': 'en-US'}
 ENGLISH_GUIDE_PLACEHOLDER = (
     'English user-guide text for this chapter is not authored yet. Use the API '
@@ -282,92 +284,6 @@ def english_translation_gaps(docs):
         if paths:
             gaps[document['asset_id']] = sorted(set(paths))
     return gaps
-
-
-def load_translations(root, documents, docs, translation_paths=None, excluded_ids=(), *, read_bytes=None):
-    """Load one exact reader set; an explicit selection keeps all binding gates.
-
-    The default repository handbook still consumes all repository reader bundles.
-    A selected scientific distribution can supply its own complete reader set
-    without inheriting unrelated documents from another development selection.
-    A supplied reader consumes the caller's captured bytes for both bundles and
-    contract bindings, so validation cannot mix them with later filesystem bytes.
-    """
-    records = {}
-    paths = (sorted((root / 'tools/docs/zh').glob('*.json'))
-             if translation_paths is None else translation_paths)
-    for path in paths:
-        bundle = json.loads(path.read_bytes() if read_bytes is None else read_bytes(path))
-        if (not isinstance(bundle, dict) or bundle.get('schema') != 'scirel.reader-translation'
-                or bundle.get('language') != 'zh-CN' or not isinstance(bundle.get('records'), list)):
-            raise ValueError('invalid reader translation: ' + str(path))
-        for item in bundle['records']:
-            if (not isinstance(item, dict) or not isinstance(item.get('asset_id'), str)
-                    or not item['asset_id'].strip()):
-                raise ValueError('invalid reader record: ' + str(path))
-            if item['asset_id'] in records:
-                raise ValueError('duplicate reader translation: ' + item['asset_id'])
-            records[item['asset_id']] = item
-    excluded_ids = set(excluded_ids)
-    ids = {doc['asset_id'] for doc in docs}
-    active_records = {asset: record for asset, record in records.items()
-                      if asset not in excluded_ids}
-    if set(active_records) != ids:
-        raise ValueError('Chinese reader coverage differs from exact document set')
-    records = active_records
-    for doc in docs:
-        asset = doc['asset_id']; item = records[asset]
-        contract_path = documents / (asset + '.json')
-        contract_bytes = contract_path.read_bytes() if read_bytes is None else read_bytes(contract_path)
-        digest = hashlib.sha256(contract_bytes).hexdigest()
-        if item.get('source_sha256') != digest:
-            raise ValueError('stale Chinese reader translation: ' + asset)
-        for side in ('inputs', 'outputs'):
-            ports = item.get(side)
-            if not isinstance(ports, list) or any(not isinstance(port, dict) for port in ports):
-                raise ValueError('invalid translated ports: ' + asset + ':' + side)
-            if [x.get('name') for x in ports] != [x['name'] for x in doc[side]]:
-                raise ValueError('translated port names/order differ: ' + asset)
-            for port in ports:
-                for key in ('description', 'constraints', 'dtype'):
-                    if not isinstance(port.get(key), str) or not port[key].strip():
-                        raise ValueError('empty translated port field: ' + asset)
-        for key in ('summary', 'definition', 'model', 'boundary'):
-            if not isinstance(item.get(key), str) or not item[key].strip():
-                raise ValueError('empty translated description: ' + asset)
-        for side, fields in [('applicability', ('preconditions', 'supported', 'excluded')),
-                             ('verification', ('scope', 'known_limitations'))]:
-            if not isinstance(item.get(side), dict):
-                raise ValueError('invalid translated section: ' + asset + ':' + side)
-            for key in fields:
-                clauses = item[side].get(key)
-                if not isinstance(clauses, list) or len(clauses) != len(doc[side][key]):
-                    raise ValueError('translation dropped a contract clause: ' + asset + ':' + key)
-                if any(not isinstance(x, str) or not x.strip() for x in item[side][key]):
-                    raise ValueError('empty translated contract clause: ' + asset + ':' + key)
-        if (not isinstance(item.get('assumptions'), list)
-                or len(item['assumptions']) != len(doc['identity']['assumptions'])):
-            raise ValueError('translation dropped a model assumption: ' + asset)
-        if any(not isinstance(x, str) or not x.strip() for x in item['assumptions']):
-            raise ValueError('empty translated assumption: ' + asset)
-        failures = item.get('failure_semantics')
-        if not isinstance(failures, dict):
-            raise ValueError('invalid translated failure semantics: ' + asset)
-        for key in ('invalid_input', 'runtime_failure', 'nonconvergence', 'partial_results'):
-            if not isinstance(failures.get(key), str) or not failures[key].strip():
-                raise ValueError('missing failure semantics: ' + asset)
-        if (not isinstance(item['verification'].get('evidence_ceiling'), str)
-                or not item['verification']['evidence_ceiling'].strip()):
-            raise ValueError('missing translated evidence ceiling: ' + asset)
-        if not isinstance(item.get('example'), dict):
-            raise ValueError('invalid translated example: ' + asset)
-        for key in ('description', 'expected'):
-            if not isinstance(item['example'].get(key), str) or not item['example'][key].strip():
-                raise ValueError('missing translated example: ' + asset)
-        conflicts = item.get('source_conflicts', [])
-        if not isinstance(conflicts, list) or any(not isinstance(x, str) or not x.strip() for x in conflicts):
-            raise ValueError('invalid source conflict annotation: ' + asset)
-    return records
 
 
 def plain(text):

@@ -116,6 +116,7 @@ def test_explicit_fixed_axis_zero_field_preserves_anisotropic_capability():
 def test_packaged_fluid_deck_is_loaded_directly():
     deck = fluid_deck()
     assert deck.shape == (2, 10)
+    assert deck.dtype == np.dtype('float64')
     assert np.isfinite(deck).all()
     np.testing.assert_array_equal(deck[:, :3], [
         [-1.602e-19, 9.109e-31, 8.7e6],
@@ -124,6 +125,11 @@ def test_packaged_fluid_deck_is_loaded_directly():
     state = c.fluid_equilibrium_si(deck, B0=1e-3)
     assert state['q'].shape == (2,)
     assert np.isfinite(state['M']).all() if 'M' in state else True
+    second = fluid_deck()
+    np.testing.assert_array_equal(second, deck)
+    assert not np.shares_memory(deck, second)
+    deck[0, 0] = 0
+    assert second[0, 0] == -1.602e-19
 
 
 def test_relative_rate_wrapper_binds_roles_and_collision_state():
