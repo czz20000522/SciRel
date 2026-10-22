@@ -15,7 +15,7 @@ SciRel 是一个自包含的科学计算库。贡献的核心单位是一个**�
 
 ```bash
 python3.14 -m venv .venv
-.venv/bin/python -m pip install -e ".[test]"
+.venv/bin/python -m pip install -e . --group test
 # 或
 uv sync --locked --group test
 ```
@@ -39,15 +39,21 @@ uv sync --locked --group test
 
 ```bash
 # 受影响的功能测试（推荐先跑最贴近的测试文件）
-.venv/bin/python -m pytest tests/operator_contracts/test_<asset>.py -q
+.venv/bin/python -B -m pytest tests/<domain>/test_<asset>.py -q
 
-# 完整功能测试（提交前）
-.venv/bin/python -m pytest -q
+# 根据实际改动选择受影响域和通用层，再执行输出的命令
+.venv/bin/python -B scripts/test_scope.py --changed src/scirel/<domain>/<module>.py
+
+# 全量仅用于合并、发布和周期检查
+# .venv/bin/python -B -m pytest -q
 
 # 合同与文档
 .venv/bin/python scripts/validate_asset_documents.py catalog/examples
-.venv/bin/python scripts/scirel_docs.py build --output .runtime/docs-snapshot
+.venv/bin/python scripts/scirel_docs.py build --output dist/docs-check
 ```
+
+文档检查使用本次任务独占且不存在的输出目录；核对页面与实际输出后按
+[`catalog/RECORDS.md`](catalog/RECORDS.md) 清理。不能覆盖仍在使用的快照。
 
 发布轮子/安装包目前不在日常流程内；首次公开发布基线确定后统一冻结并补充对应发布检查。
 

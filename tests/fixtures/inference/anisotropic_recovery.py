@@ -8,7 +8,7 @@ import json
 import numpy as np
 from scirel.equilibrium import solve_axisymmetric_anisotropic_picard
 from scirel.diagnostics import synthesize_equilibrium_diagnostics
-from scirel.inference import solve_direct_anisotropic_inversion
+from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion
 
 
 def case(n=7, true_gradient=1.7, true_ratio=1.6, with_failed_trials=True):

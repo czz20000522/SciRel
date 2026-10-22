@@ -35,16 +35,34 @@ LAYERS = {"architecture", "docs", "delivery", "tooling"}
 INTEGRATION = "cross_domain"
 FULL_SUITE_EXIT = 2
 
-# Scripts whose behavior is covered by the delivery layer rather than tooling.
-DELIVERY_SCRIPTS = {
-    "validate_installed_wheel.py",
-    "validate_admission.py",
-    "validate_overlap_record.py",
-    "package_catalog_snapshot.py",
-}
-DOCS_SCRIPTS = {
-    "scirel_docs.py",
-    "build_scirel_sphinx.py",
+# Explicit owners include direct tests and layers that exercise a tool through
+# another script. New tools must declare their consumers instead of silently
+# inheriting tooling/architecture, which misses delivery and docs regressions.
+SCRIPT_LAYERS = {
+    "audit_public_export_documents.py": ("architecture",),
+    "build_capability_matrix.py": ("tooling", "docs", "delivery"),
+    "build_catalog.py": ("tooling", "architecture"),
+    "build_pure_delivery.py": ("delivery",),
+    "build_scirel_sphinx.py": ("docs", "delivery"),
+    "capability_query.py": ("tooling", "docs", "delivery"),
+    "check_wheel_exposure.py": ("delivery",),
+    "consumer_tools.py": ("delivery",),
+    "exposure.py": ("tooling", "architecture", "docs", "delivery"),
+    "mapping_interface_bindings.json": ("tooling", "architecture", "docs", "delivery"),
+    "measure_capability_runtime.py": ("architecture",),
+    "package_catalog_snapshot.py": ("tooling",),
+    "public_api_binding.py": ("tooling", "architecture", "docs", "delivery"),
+    "pure_query.py": ("delivery",),
+    "review_gate.py": ("tooling",),
+    "scirel_docs.py": ("docs", "delivery"),
+    "serve_consumer_mcp.py": ("delivery",),
+    "test_scope.py": ("tooling",),
+    "validate_admission.py": ("delivery",),
+    "validate_asset_documents.py": ("tooling", "architecture", "docs", "delivery"),
+    "validate_capability_runtime_closure.py": ("architecture",),
+    "validate_installed_wheel.py": ("delivery",),
+    "validate_overlap_record.py": ("delivery",),
+    "validate_runtime_imports.py": ("architecture",),
 }
 PACKAGING_FILES = {"pyproject.toml", "setup.py", "setup.cfg", "MANIFEST.in"}
 GLOBAL_PATHS = {"tests/conftest.py"}
@@ -144,6 +162,14 @@ def _classify_catalog(path: Path) -> tuple[list[str], list[str]]:
 
 def _classify_tests(relative: Path) -> tuple[list[str], list[str]]:
     parts = relative.parts
+    if parts and parts[0] == "fixtures":
+        owners = [
+            owner for owner in _test_dependents(relative.name)
+            if owner != "fixtures" and (TESTS / owner).is_dir()
+        ]
+        if owners:
+            return [f"tests/{owner}" for owner in owners], ["shared fixture: referencing test owners"]
+        raise UnresolvedPath(f"shared fixture has no referencing tests: {relative}")
     if len(parts) < 2:
         owners = [
             owner
@@ -164,11 +190,14 @@ def _classify_tests(relative: Path) -> tuple[list[str], list[str]]:
 def _classify_script(name: str) -> tuple[list[str], list[str]]:
     if name == "review_harness.py":
         return _review_scope(), ["held contract tests and review harness boundaries"]
-    if name in DELIVERY_SCRIPTS:
-        return [_layer_target("delivery")], []
-    if name in DOCS_SCRIPTS:
-        return [_layer_target("docs")], []
-    return [_layer_target("tooling"), _layer_target("architecture")], []
+    if name == "build_pleiades_truth.py":
+        return ["tests/cross_domain/multi_coil_vacuum_field"], [
+            "downstream truth consumers only: pytest does not execute the external source generator; "
+            "regeneration requires the explicitly supplied external source"
+        ]
+    if name not in SCRIPT_LAYERS:
+        raise UnresolvedPath(f"script has no declared test consumers: scripts/{name}")
+    return [_layer_target(layer) for layer in SCRIPT_LAYERS[name]], []
 
 
 def _review_scope(module: str | None = None, asset_id: str | None = None) -> list[str]:
@@ -235,7 +264,9 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
         ], ["asset schema change: affected domains are not derivable, run the full suite before merge"]
 
     if parts[0] == "scripts":
-        return _classify_script(parts[-1])
+        if len(parts) != 2:
+            raise UnresolvedPath(f"script path has no declared test consumers: {relative}")
+        return _classify_script(parts[1])
 
     if parts[0] == "licenses":
         return [_layer_target("delivery")], ["license files are part of the wheel contract"]
@@ -317,7 +348,7 @@ def _git_changed_paths() -> list[str]:
 
 def _render(targets: list[str], notes: list[str]) -> str:
     lines = [f"  {note}" for note in notes]
-    if targets == ["<full-suite>"]:
+    if "<full-suite>" in targets:
         command = f"{sys.executable} -m pytest -q"
     else:
         command = f"{sys.executable} -m pytest -q " + " ".join(targets)

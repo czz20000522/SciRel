@@ -10,7 +10,7 @@ from scipy.optimize import root
 from scirel.field import dense_axisymmetric_green_response
 from scirel.equilibrium import solve_axisymmetric_anisotropic_picard
 from scirel.diagnostics import synthesize_equilibrium_diagnostics
-from scirel.inference import solve_direct_anisotropic_inversion
+from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion
 
 
 def independent_case(n=5):

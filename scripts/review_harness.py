@@ -80,19 +80,20 @@ def check_contracts() -> None:
         if str(candidate_parent) not in parent.__path__:
             parent.__path__.append(str(candidate_parent))
 
-        # A held canonical symbol must stay out of the public package __all__.
-        # Validate the unchanged implementation contract in a review-only copy,
-        # then check the canonical getter's identity separately. Neither the
-        # stored contract nor public exports are changed by this projection.
-        implementation_document = deepcopy(document)
-        implementation_api = implementation_document['public_api']['python']
-        implementation_api.pop('canonical_module', None)
-        implementation_api.pop('canonical_symbol', None)
-        validate_runtime(implementation_document, source_root=ROOT)
+        # Validate the review module binding directly. If a contract explicitly
+        # declares a canonical identity, check it separately without treating
+        # that metadata as permission to expose a held symbol publicly.
+        runtime_document = document
+        if 'canonical_module' in python_api:
+            runtime_document = deepcopy(document)
+            runtime_api = runtime_document['public_api']['python']
+            runtime_api.pop('canonical_module')
+            runtime_api.pop('canonical_symbol')
+        validate_runtime(runtime_document, source_root=ROOT)
         if 'canonical_module' in python_api:
             canonical = importlib.import_module(python_api['canonical_module'])
             implementation = importlib.import_module(python_api['module'])
-            if getattr(canonical, python_api['canonical_symbol']) is not getattr(implementation, python_api['symbol']):
+            if getattr(canonical, python_api['canonical_symbol'], None) is not getattr(implementation, python_api['symbol']):
                 raise ValueError(f"{document['asset_id']}: canonical review binding differs")
         exec(
             compile(document['example']['code'], f"{document['asset_id']} example", 'exec'),

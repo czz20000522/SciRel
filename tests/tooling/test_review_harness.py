@@ -162,11 +162,16 @@ def test_review_contract_executes_example_without_changing_public_exports(monkey
     assert json.dumps(document, sort_keys=True) == original
     assert inference.__all__ == exports
     assert "solve_direct_anisotropic_inversion" not in inference.__all__
+    assert not hasattr(inference, "solve_direct_anisotropic_inversion")
 
 
 def test_review_contract_rejects_a_different_canonical_callable(monkeypatch):
     import scirel.inference as inference
 
-    monkeypatch.setattr(inference, "solve_direct_anisotropic_inversion", lambda: None)
+    document = json.loads((ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text())
+    document["public_api"]["python"].update(
+        canonical_module="scirel.inference", canonical_symbol="solve_direct_anisotropic_inversion")
+    monkeypatch.setattr(review_harness, "load_review_documents", lambda root: [document])
+    monkeypatch.setattr(inference, "solve_direct_anisotropic_inversion", lambda: None, raising=False)
     with pytest.raises(ValueError, match="canonical review binding differs"):
         review_harness.check_contracts()

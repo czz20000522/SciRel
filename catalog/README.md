@@ -78,8 +78,9 @@ A contract must let a consumer **find and select** a capability, not only call i
 The discovery view uses nine fields. `ports` and `evidence` are deterministic
 projections of `inputs`/`outputs` and `verification` and are deliberately **not**
 stored in the contract; six reviewed fields are carried by the optional top-level
-`discovery` block, and `aliases` stays the existing top-level list. Contracts are not
-backfilled yet, so most current assets still carry only the derived source fields.
+`discovery` block, and `aliases` stays the existing top-level list. All 247 public
+contracts and the one held contract currently carry this block. Its presence is
+not a scientific approval or a generic-device claim.
 The `asset_id` stays the only stable key, and `taxonomy` stays browsing
 classification: this section defines how to read the contract, it does not create a
 second one.
@@ -137,16 +138,17 @@ and must not boost or outweigh a ports/model match. `device_scope` records only 
 binding level; the named device and its binding evidence stay in the contract text
 and tests.
 
-The schema now carries `discovery.device_scope` directly, so device scope no longer
-needs an external table. No contract is backfilled yet: absent
-`discovery.device_scope` means `unclassified`, and consumers must not present it as
-`generic`. Intake still has to record the confirmed bindings in the contracts
-themselves; until then the known `device-bound` assets are
+The schema carries `discovery.device_scope` directly; no external table is needed.
+An absent `discovery.device_scope` still means `unclassified`, never `generic`.
+The current public contracts classify 198 assets as `generic`, 43 as
+`device-parameterized`, three as `device-bound` and three as `unclassified`.
+The held contract is classified as `generic`, which does not change its hold.
+The current `device-bound` assets are
 `scirel.electromagnetism.brb` (fixed BRB composition),
 `scirel.electromagnetism.wham` (fixed WHAM composition) and
-`scirel.electromagnetism.trex-coil` (fixed TREX coil geometry). All other current
-assets are `unclassified` pending review, including the ordered composition
-`scirel.electromagnetism.device`.
+`scirel.electromagnetism.trex-coil` (fixed TREX coil geometry). Read each contract
+for its current classification, including the ordered composition
+`scirel.electromagnetism.device`; these counts are a summary, not a second registry.
 
 ### Ownership and information boundary
 
