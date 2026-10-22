@@ -94,11 +94,36 @@ accepts the result's applicability.
 Local/platform sandbox: install the separate SDK lock and start
 `python tools/server.py --root PATH --transport stdio`; the host owns lifecycle.
 Hosted remote: the same entry accepts `--transport streamable-http`; default
-binding is loopback. Before exposure, the operator must explicitly choose the
+binding is loopback. For the documented port 8765 the actual endpoint is
+`http://127.0.0.1:8765/mcp`. A hosted client uses `https://YOUR_HOST/mcp`; a reverse
+proxy may expose another base path only if the operator configures that route
+and gives the matching full URL to clients. Before exposure, the operator must explicitly choose the
 deployment location, TLS termination, authentication/authorization, allowed
 origins/hosts, networking, monitoring and immutable snapshot rollout. These are
 not inferred from a passing loopback test. Remote status is `NOT_DEPLOYED`;
 Famou client integration is `NOT_RUN`.
+
+The bundle contains `mcp-connections.json`, directly usable as official-SDK
+configuration fragments. Run from the extracted Agent root with its pinned SDK
+environment active (so `python` resolves to that environment):
+
+```json
+{
+  "stdio": {
+    "command": "python",
+    "args": ["tools/server.py", "--root", ".", "--transport", "stdio"]
+  },
+  "streamable_http": {"url": "http://127.0.0.1:8765/mcp"}
+}
+```
+
+For stdio use `Client(StdioServerParameters(**config["stdio"]))`; for HTTP use
+`Client(config["streamable_http"]["url"])`. Both are from `mcp`; call them inside
+an async context. Start the HTTP server separately with `--transport
+streamable-http --host 127.0.0.1 --port 8765`. A hosted connection changes the
+full URL, while the tools, data and identity checks remain identical. These are
+official-SDK fragments; translating them to Famou's native host configuration
+still requires its actual supported schema and remains `NOT_RUN`.
 
 The SDK negotiates revisions it supports. Record actual SDK/protocol versions
 from the real client; do not label an old handshake as a new revision. Official
