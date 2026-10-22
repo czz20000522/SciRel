@@ -61,7 +61,5 @@ Authored tutorial dependency hashes are traceability; natural-language science
 review is not inferred from generation. Existing execution-bound standalone
 chapters and other hand-authored RST have distinct evidence scopes.
 
-After successful handoff, remove this task's abandoned candidates, test scratch,
-duplicate environments, build/egg-info and bytecode caches. Keep only final
-immutable products and small receipts. Close resolved task/handoff entries;
-do not retain old open checklists, handoff copies or whole failed packages.
+Record locations, retirement and actual task cleanup follow the single policy
+`catalog/RECORDS.md`. Keep this entry current; history remains in Git and Notion.

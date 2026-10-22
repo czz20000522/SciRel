@@ -186,7 +186,9 @@ and HTTP smoke → issue a new immutable bundle. Select tests by changed paths;
 small changes do not require a scientific full-suite run. Validation success
 does not prove every natural-language page scientifically correct.
 
-The delivery maintainer owns this task's build stages, smoke environments and
+Repository record locations and lifetime are governed by `catalog/RECORDS.md`;
+this protocol does not create a second cleanup policy. The delivery maintainer
+owns this task's build stages, smoke environments and
 receipts. Export uses isolated stages and removes them on any failure; incomplete
 Agent/HTML directories are never left as deliverables. After a candidate is
 replaced and its inputs are no longer used, retain only its minimal failure cause
