@@ -48,14 +48,16 @@ Each audited asset records:
 5. Record the numerical floor (roundoff/conditioning), not only residual norms.
 6. Update the contract if its evidence claim is broader than what was tested.
 
-## Known P0 finding
+## Closed P0 finding
 
-`scirel.kinetic.multifluid-frequency-solve` / `fluid_solve_state` fails at valid
-two-species parameters (`B0≈2.4e-3 T`, `k=0.05–0.15 m^-1`): two k-points raise
-`ArithmeticError`/`ZeroDivisionError`, two return duplicated/missing eigenpairs.
-The current solver is a SciRel QZ/refinement rewrite, not a verbatim source copy;
-the existing tests cover an invalid tolerance and a very small-k example only.
-This is treated as a SciRel capability defect, not a worker glue task.
+The historical `scirel.kinetic.multifluid-frequency-solve` / `fluid_solve_state`
+failure at valid two-species parameters (`B0≈2.4e-3 T`, `k=0.05–0.15 m^-1`) was
+fixed by the identity-inertia standard-eigenproblem correction. It is closed by
+the independent external PDRF oracle regression
+`tests/kinetic/test_dispersion_multifluid_oracle.py` (14 real frequencies at four
+k points, rtol 2e-9, backward error <=1e-10) plus the named historical reproducer
+in the same file. The external oracle, not SciRel self-consistency, is the closure
+evidence. No open P0 finding remains.
 
 ## Gate
 

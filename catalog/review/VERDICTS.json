@@ -1950,6 +1950,11 @@
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Residual qualification is backward accuracy, not forward conditioning of a near-multiple root.; No sparse selected-spectrum or branch-continuation semantics.; Example output is a bounded runtime observation, not a universal scientific claim."
+    },
+    {
+     "report": "tests/kinetic/test_dispersion_multifluid_oracle.py",
+     "verdict": "external PDRF oracle closure",
+     "oracle": "independent PDRF real frequencies at four k points; no open P0"
     }
    ]
   },

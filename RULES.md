@@ -104,6 +104,17 @@ the reason:
 - Capability discovery metadata lives in the contract `discovery` block and is maintained by the SciRel intake owner. No schema version labels; iterate directly.
 - Gaps are ordinary glue: explicit, testable, disclosed; final scientific acceptance belongs to the requester or a designated expert, not to the worker.
 
+## 9b. Source provenance
+
+- Public contract bodies describe the scientific relation and its validation, not
+  the source project, checkout path or commit hash.
+- Source identity is retained in `catalog/review/SOURCE_PROVENANCE.md` and
+  `catalog/review/evidence/` so a future owner can compare a capability with its
+  exact source if a problem appears.
+- Source identity is evidence, not a public capability name; do not use it as a
+  discovery label or a public API promise.
+- A source-parity record is not a physical-correctness claim.
+
 ## 10. Storage and publication
 
 - Mac checkout is the only source of truth. External project sources, runtime
