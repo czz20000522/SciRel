@@ -405,6 +405,18 @@ def test_catalog_can_bind_a_git_revision_and_source_version(tmp_path, release_ex
         f"[project]\nversion = \"{CATALOG_TEST_VERSION}\"\n",
         encoding="utf-8",
     )
+    # The fixture can live under SciRel's ignored run root. Give it its own Git
+    # identity rather than accidentally discovering the checkout's parent HEAD.
+    subprocess.run(["git", "init", "-q"], cwd=source_root, check=True)
+    subprocess.run(["git", "add", "pyproject.toml"], cwd=source_root, check=True)
+    subprocess.run(
+        ["git", "-c", "user.name=SciRel test", "-c",
+         "user.email=scirel-test@example.invalid", "commit", "-qm", "initial source"],
+        cwd=source_root, check=True,
+    )
+    source_revision = subprocess.check_output(
+        ["git", "rev-parse", "HEAD"], cwd=source_root, text=True,
+    ).strip()
     output = tmp_path / "catalog"
     result = build_catalog(
         release_examples,
@@ -414,10 +426,10 @@ def test_catalog_can_bind_a_git_revision_and_source_version(tmp_path, release_ex
         coverage_status="partial",
         declared_total=EXAMPLE_CLOSURE_COUNT + 1,
         source_root=source_root,
-        source_revision="a" * 40,
+        source_revision=source_revision,
     )
     release = json.loads((output / "release.json").read_text(encoding="utf-8"))
-    assert release["source_revision"] == "a" * 40
+    assert release["source_revision"] == source_revision
     assert result["root_digest"] == release["root_digest"]
 
 

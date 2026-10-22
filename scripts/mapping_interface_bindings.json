@@ -921,7 +921,7 @@
     "scirel.diagnostics.observation_residuals": "281ac7b6df4d2f305951ab35c1aa06018264ab0cd7ad9e0593ebc724a0238d82",
     "scirel.inference.anisotropic_parameter_optimization": "0b5c3d0157f880e4052a5f8ffabdb25e1afadcb0a1071e0477b160eed7c8a588",
     "scirel.inference.anisotropic_trial_evaluation": "e0c2b21263974a4ad2502eabcb9f81d657145ca9117c291af34fd0179ce6c3f8",
-    "scirel.inference.direct_anisotropic_inversion": "bef7ca846e2201066e5be3c7590642ca980637c5544ef4f3d73dfa4ea1ab74f4",
+    "scirel.inference.direct_anisotropic_inversion": "c7777c930a22886cda24d8be04fc943a358c416a10214a186571f6998c23102b",
     "scirel.inference.latin_hypercube_sampling": "ce887075bf13a80e868ac27870e14d3ed814b6176e7449e1ef6bb098412f9569"
    },
    "review_basis": "Port identity only; root scientific acceptance is separate. Fixed standard observation layout supplies N to trial and optimizer; finite failure penalty and actual scientific call budget are explicit. Numerical failed trials are excluded from best, terminal parameters are freshly evaluated, optimizer/forward/identifiability states remain distinct."

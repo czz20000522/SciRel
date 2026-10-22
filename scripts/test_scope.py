@@ -162,11 +162,32 @@ def _classify_tests(relative: Path) -> tuple[list[str], list[str]]:
 
 
 def _classify_script(name: str) -> tuple[list[str], list[str]]:
+    if name == "review_harness.py":
+        return _review_scope(), ["held contract tests and review harness boundaries"]
     if name in DELIVERY_SCRIPTS:
         return [_layer_target("delivery")], []
     if name in DOCS_SCRIPTS:
         return [_layer_target("docs")], []
     return [_layer_target("tooling"), _layer_target("architecture")], []
+
+
+def _review_scope(module: str | None = None, asset_id: str | None = None) -> list[str]:
+    from review_harness import load_review_documents, review_test_references
+
+    try:
+        documents = load_review_documents(ROOT)
+        if module is not None:
+            documents = [document for document in documents
+                         if document["public_api"]["python"]["module"] == module
+                         or document["public_api"]["python"]["module"].startswith(module + ".")]
+        if asset_id is not None:
+            documents = [document for document in documents if document["asset_id"] == asset_id]
+        if (module is not None or asset_id is not None) and not documents:
+            raise ValueError("review candidate has no held contract binding")
+        tests = review_test_references(documents, ROOT)
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise UnresolvedPath(str(error)) from error
+    return [*tests, _layer_target("tooling"), _layer_target("architecture")]
 
 
 def classify(relative: Path) -> tuple[list[str], list[str]]:
@@ -184,6 +205,13 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
         return _classify_tests(Path(*parts[1:]))
 
     if parts[0] == "catalog":
+        if parts[1:5] == ("review", "candidates", "src", "scirel") and relative.suffix == ".py":
+            module_parts = list(parts[4:-1])
+            if relative.stem != "__init__":
+                module_parts.append(relative.stem)
+            return _review_scope(module=".".join(module_parts)), ["held implementation: tests bound by its review contract"]
+        if len(parts) == 4 and parts[1:3] == ("review", "examples") and relative.suffix == ".json":
+            return _review_scope(asset_id=relative.stem), ["held contract: direct tests and review boundaries"]
         if len(parts) >= 3 and parts[1] == "examples":
             targets, notes = _classify_catalog(ROOT / relative)
             notes.append(f"validate the asset: python scripts/validate_asset_documents.py {relative}")

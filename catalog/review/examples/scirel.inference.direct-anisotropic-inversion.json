@@ -360,6 +360,7 @@
    "Selected installed-package user calls without a source checkout or development checkout, offline, in a plain virtual environment."
   ],
   "tests": [
+   "tests/cross_domain/direct_anisotropic_inversion/test_composition_direct_anisotropic_inversion.py",
    "tests/cross_domain/test_inference_physical_closure.py",
    "tests/cross_domain/test_anisotropic_inference_independent.py"
   ],

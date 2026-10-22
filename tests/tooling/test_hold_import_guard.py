@@ -16,8 +16,16 @@ def _run(code: str) -> subprocess.CompletedProcess:
 
 def test_held_symbol_is_not_importable_by_default():
     completed = _run(
+        "import scirel.inference as inference;"
+        "assert 'solve_direct_anisotropic_inversion' not in inference.__all__;"
         "from scirel.inference import solve_direct_anisotropic_inversion;"
         "solve_direct_anisotropic_inversion")
+    assert completed.returncode != 0
+    assert "human review" in completed.stderr or "No module named" in completed.stderr
+
+
+def test_held_implementation_module_is_not_importable_by_default():
+    completed = _run("import scirel.inference.direct_anisotropic_inversion")
     assert completed.returncode != 0
     assert "human review" in completed.stderr or "No module named" in completed.stderr
 

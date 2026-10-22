@@ -18,6 +18,25 @@ REVIEW_CATALOG = ROOT / 'catalog' / 'review' / 'examples'
 ALLOWED = {'pass', 'pass-with-limits', 'human-review', 'blocked'}
 
 
+def _evidence_errors(asset: str, record: dict) -> list[str]:
+    errors = []
+    evidence = record.get('evidence')
+    if not isinstance(evidence, list) or not evidence:
+        return [f'{asset}: evidence must be a nonempty array']
+    for entry in evidence:
+        report = entry.get('report') if isinstance(entry, dict) else None
+        if not isinstance(report, str) or not report.strip():
+            errors.append(f'{asset}: evidence report must be a nonempty path')
+            continue
+        path = Path(report)
+        resolved = (ROOT / path).resolve()
+        if path.is_absolute() or '..' in path.parts or not resolved.is_relative_to(ROOT.resolve()):
+            errors.append(f'{asset}: evidence report must stay inside the repository: {report}')
+        elif not resolved.is_file():
+            errors.append(f'{asset}: evidence report is missing: {report}')
+    return errors
+
+
 def check() -> list[str]:
     errors: list[str] = []
     hold = json.loads(HOLD.read_text(encoding='utf-8'))
@@ -33,6 +52,7 @@ def check() -> list[str]:
     if set(entries) != catalog:
         errors.append(f'verdict coverage mismatch: missing={sorted(catalog-set(entries))[:5]} extra={sorted(set(entries)-catalog)[:5]}')
     for asset, record in entries.items():
+        errors.extend(_evidence_errors(asset, record))
         status = record.get('status')
         if status not in ALLOWED:
             errors.append(f'{asset}: invalid status {status!r}')
