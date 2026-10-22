@@ -35,6 +35,8 @@ Read it after `AGENTS.md`/`RULES.md`, not instead of them.
    decisions, outbound policy.
 5. `catalog/review/MERGE_CHAIN.md` — candidate quarantine and dependency-closure
    merge rules.
+5b. `catalog/review/SOURCE_PROVENANCE.md` — review-side asset→source mapping;
+   public contracts stay free of source project names/hashes.
 6. `catalog/RECORDS.md` — record locations, lifetime, cleanup.
 7. `catalog/review/HOLD.json` / `VERDICTS.json` / `HUMAN_REVIEW_TODO.md` —
    current exposure state and pending decision.
@@ -90,7 +92,9 @@ Read it after `AGENTS.md`/`RULES.md`, not instead of them.
 ```
 
 At the last handoff: full `3209 passed / 3 skipped / 1 xfailed`; validator 247
-PASS; review gate PASS; wheel proof PASS; git clean.
+PASS; review gate PASS; wheel proof PASS; review harness 42 passed; git clean.
+The historical P0 is closed by the independent PDRF oracle regression, not by a
+self-consistency claim.
 
 ## Do not repeat these mistakes
 
