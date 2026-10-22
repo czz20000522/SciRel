@@ -268,6 +268,11 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
             raise UnresolvedPath(f"script path has no declared test consumers: {relative}")
         return _classify_script(parts[1])
 
+    if parts[:4] == ("skills", "development", "usage", "scirel-solving"):
+        return [_layer_target("delivery")], [
+            "solving source projection and helper closure; scientific task acceptance is separate"
+        ]
+
     if parts[0] == "licenses":
         return [_layer_target("delivery")], ["license files are part of the wheel contract"]
 

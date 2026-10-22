@@ -31,6 +31,64 @@ WHEEL_BYTES = b'Synthetic fixture only; this is not an installable wheel.\n'
 TUTORIAL = '# Synthetic tutorial\n\n合成示例，未作科学验证。\n\n```python\nprint(0)\n```\n\nOutput: 0\n'
 
 
+def _solving_source(root):
+    (root / 'references').mkdir(parents=True)
+    (root / 'scripts').mkdir()
+    (root / 'SKILL.md').write_text(
+        '# One method\n<!-- scirel-access:start -->\nsource-only access\n'
+        '<!-- scirel-access:end -->\n[detail](references/checks.md)\n')
+    (root / 'references/checks.md').write_text(
+        '# Checks\nKeep failures visible. [helper](../scripts/delivery.py)\n')
+    (root / 'scripts/delivery.py').write_text('print("synthetic helper")\n')
+    return root
+
+
+def test_flat_skill_is_one_deterministic_projection_with_all_actual_inputs(tmp_path):
+    root = _solving_source(tmp_path / 'method')
+    flat, inputs, helpers = delivery.compile_solving_skill(root)
+    assert (flat, inputs, helpers) == delivery.compile_solving_skill(root)
+    assert set(inputs) == {'SKILL.md', 'references/checks.md', 'scripts/delivery.py'}
+    assert helpers == {'tools/delivery.py': (root / 'scripts/delivery.py').read_bytes()}
+    assert b'source-only access' not in flat
+    assert b'Keep failures visible.' in flat
+    assert b'(references/' not in flat and b'(../scripts/' not in flat
+    assert b'(tools/delivery.py)' in flat
+    (root / 'references/checks.md').write_text('# Checks\nA changed scientific limit.\n')
+    changed, changed_inputs, changed_helpers = delivery.compile_solving_skill(root)
+    assert changed != flat and changed_inputs != inputs
+    assert changed_helpers == {}
+
+
+def test_flat_skill_follows_transitive_method_links_once_and_binds_helper_changes(tmp_path):
+    root = _solving_source(tmp_path / 'method')
+    checks = root / 'references/checks.md'
+    checks.write_text(checks.read_text() + '[next](more.md)\n')
+    (root / 'references/more.md').write_text('# More\n[back](checks.md)\n')
+    flat, inputs, _ = delivery.compile_solving_skill(root)
+    assert flat.count(b'<a id="method-checks">') == 1
+    assert set(inputs) == {'SKILL.md', 'references/checks.md', 'references/more.md', 'scripts/delivery.py'}
+    (root / 'scripts/delivery.py').write_text('print("changed helper")\n')
+    _, changed_inputs, helpers = delivery.compile_solving_skill(root)
+    assert changed_inputs != inputs
+    assert helpers['tools/delivery.py'] == b'print("changed helper")\n'
+
+
+@pytest.mark.parametrize('target', ['missing.md', '../../private.md', '../SKILL.md',
+                                   '../scripts/other.py'])
+def test_flat_skill_rejects_missing_or_unsupported_method_inputs(tmp_path, target):
+    root = _solving_source(tmp_path / 'method')
+    (root / 'references/checks.md').write_text('[bad](' + target + ')\n')
+    with pytest.raises(ValueError, match='reference'):
+        delivery.compile_solving_skill(root)
+
+
+def test_flat_skill_requires_an_explicit_single_access_boundary(tmp_path):
+    root = _solving_source(tmp_path / 'method')
+    (root / 'SKILL.md').write_text('# Missing the source access boundary\n')
+    with pytest.raises(ValueError, match='one public-access boundary'):
+        delivery.compile_solving_skill(root)
+
+
 def _write_snapshot(root: Path, *, count=2, summary_chars=0):
     root.mkdir()
     names = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'eta', 'theta', 'zeta'][:count]
@@ -310,7 +368,7 @@ def test_builder_requires_one_clean_bilingual_candidate_before_creating_outputs(
 
 
 @pytest.mark.parametrize('failure', [None, 'signature', 'sidecar', 'extra_api_page',
-                                     'contract_bytes', 'source_inputs', 'tutorial_import'])
+                                     'contract_bytes', 'source_inputs', 'tutorial_import', 'skill_helper_drift'])
 def test_source_closure_rejects_drift_in_runtime_reader_or_snapshot_members(tmp_path, monkeypatch, failure):
     source_root = tmp_path / 'source'
     catalog = source_root / 'catalog/examples'
@@ -379,6 +437,23 @@ def test_source_closure_rejects_drift_in_runtime_reader_or_snapshot_members(tmp_
         path = source_root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b'Synthetic source binding input; not executable product code.\n')
+    (source_root / 'skills/development/usage/scirel-solving/SKILL.md').write_text(
+        '# Synthetic method\n<!-- scirel-access:start -->\n'
+        'Synthetic source access only.\n<!-- scirel-access:end -->\n')
+    if failure == 'skill_helper_drift':
+        skill = source_root / 'skills/development/usage/scirel-solving/SKILL.md'
+        skill.write_text(skill.read_text() + '[helper](scripts/delivery.py)\n')
+        helper = skill.parent / 'scripts/delivery.py'
+        helper.parent.mkdir()
+        helper.write_bytes(b'print("captured source")\n')
+        compile_skill = delivery.compile_solving_skill
+
+        def change_after_capture(root):
+            result = compile_skill(root)
+            helper.write_bytes(b'print("unbound replacement")\n')
+            return result
+
+        monkeypatch.setattr(delivery, 'compile_solving_skill', change_after_capture)
     if failure == 'tutorial_import':
         tutorial = source_root / 'tools/docs/manual/synthetic.rst'
         tutorial.parent.mkdir(parents=True)
@@ -412,7 +487,14 @@ def test_source_closure_rejects_drift_in_runtime_reader_or_snapshot_members(tmp_
                     'source_inputs_sha256': sha(encode(bound_inputs))}
         snapshots[language] = SimpleNamespace(ids={ASSET}, manifest=manifest,
                                               read=members.__getitem__, capability_index=lambda value=index: value)
-    if failure is None:
+    if failure == 'skill_helper_drift':
+        result = delivery.source_closure(snapshots, SOURCE)
+        captured = result['solving_projection']['helper_sha256']['tools/delivery.py']
+        bound = result['generator_and_reading_inputs'][
+            'skills/development/usage/scirel-solving/scripts/delivery.py']
+        assert captured == bound == sha(b'print("captured source")\n')
+        assert captured != sha(helper.read_bytes())
+    elif failure is None:
         result = delivery.source_closure(snapshots, SOURCE)
         assert result['asset_count'] == 1
         assert result['source_signature_check'] == 'PASS'

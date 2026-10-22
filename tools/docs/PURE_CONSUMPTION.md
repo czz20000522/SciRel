@@ -8,9 +8,30 @@ reviewed `discovery`, identity, aliases and port fields; consumers never maintai
 a parallel classification. Missing metadata stays unknown. There is no graph or
 Operator/TaskGraph classification inferred from the current contracts.
 
+## Working-tree queries during development
+
+Daily source queries use the same contract projection and query core without
+building a wheel, documentation snapshot or pure delivery:
+
+```bash
+.venv/bin/python scripts/scirel_docs.py query --source-root . --describe
+.venv/bin/python scripts/scirel_docs.py query --source-root . --q coulomb --limit 3
+.venv/bin/python scripts/scirel_docs.py query --source-root . --asset scirel.physics.coulomb-ee
+```
+
+`--source-root` and `--snapshot` are mutually exclusive. Source queries read only
+public contracts and their bound Chinese readers; HOLD is used only to exclude
+withheld assets. `--reader ASSET_ID` also returns the exact Chinese reader.
+The response binds HEAD, dirty state and contract/HOLD/reader input digests;
+reuse `source_identity_sha256` as `--expected-digest` to reject drift between
+operations. `wheel_binding: not_bound` explicitly excludes installed-wheel or
+scientific-execution evidence. Malformed or missing inputs return
+`metadata_error`, never a scientific absence claim. Relevant authored tutorials
+remain in `tools/docs/manual/` and `tools/docs/manual/en/`.
+
 ## Stable MCP protocol
 
-MCP is the formal Agent entry. The official Python SDK adapts one transport-neutral
+For an exported delivery, MCP is the formal Agent entry. The official Python SDK adapts one transport-neutral
 registry/dispatch to a client-launched stdio process or local loopback Streamable
 HTTP. Both run in the user's local environment or platform sandbox and use the
 same five directory tools and public snapshot. They
@@ -181,8 +202,14 @@ bytes. An old wheel retaining the same version and symbol names is insufficient.
 The exact wheel's RECORD, metadata, notice bytes and exposure are also checked.
 
 Both output manifests bind source SHA, contract content, exact wheel, generation
-inputs and a common batch identity. The ignored canonical flat skill is a
-separate hashed source input; clean Git SHA alone does not reproduce that file.
+inputs and a common batch identity. The ignored canonical solving entry, its
+transitively linked method notes and used helper are separately hashed source
+inputs; clean Git SHA alone does not reproduce them. Export deterministically
+expands those notes into the one flat skill and adapts only the public-access
+section for the consumer layout/MCP protocol. The helper is exported as
+`tools/delivery.py`; the source closure also binds generated skill/helper hashes.
+Internal methods do not depend on an exported package, and editing a delivery is
+never an input to this process.
 The skill's tool names must exactly match the registry. New non-overlapping output
 directories and exact member inventories prevent old cards/pages from surviving
 a rename. The outer batch receipt binds both immutable manifests and ZIP hashes;

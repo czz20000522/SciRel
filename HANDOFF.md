@@ -37,8 +37,13 @@ local links and flat-skill/registry names. It stages both outputs and cleans own
 partial outputs on failure. Never overwrite an existing immutable bundle.
 
 The only outbound skill is the ignored local
-`skills/development/usage/scirel-solving/SKILL.md`. It is flat and self-contained;
-its source bytes are bound separately because Git SHA alone does not cover it.
+`skills/development/usage/scirel-solving/SKILL.md`. The internal entry reads its
+method notes as needed; the exporter deterministically expands that same source
+and adapts public access for the flat delivery. All used notes/helper bytes are
+bound separately because Git SHA alone does not cover ignored local skills.
+Daily source discovery uses `scripts/scirel_docs.py query --source-root .`; it
+needs no wheel or pure build, shares the delivery query core and binds current
+public inputs rather than inventing an installed-wheel receipt.
 The task record holds the current final paths, hashes, acceptance and cleanup:
 https://app.notion.com/p/4011c0206a87812a8b81f0bb3be414bc
 

@@ -1,6 +1,88 @@
 {
  "schema": "scirel.audit-verdicts",
- "policy": "Every catalog asset has exactly one verdict; exposed assets must be pass or pass-with-limits, held assets human-review, and blocked/not-audited assets cannot be exposed.",
+ "policy": "Every catalog asset has exactly one verdict; exposed assets must be pass or pass-with-limits, held assets human-review, and blocked/not-audited assets cannot be exposed. Historical report claims and candidate identities are separate from current maintenance overlays. Current material and retained-report digests identify bytes only; historical candidate identity and Markdown claim binding remain UNKNOWN. Locatable fixes/tests do not establish execution.",
+ "historical_candidate_identity": "UNKNOWN",
+ "current_candidate": {
+  "base_revision": "6cc923011100d4f7d3596f188300a3fd3b82c453",
+  "identity_scope": "current-materials-only",
+  "material_sha256": "dc00c898b0a1649584e21de7aab9ce76ad0a7889cf52bd2fe477dd9b8f6bfb45"
+ },
+ "report_bindings": {
+  "catalog/review/evidence/audit-d1.csv": {
+   "retained_sha256": "9f73be4285dea28d7d642f2d6cd0c3ef6140fbfb0edfad6dd5f4893b43e8eeb1",
+   "format": "csv",
+   "claim_fields": {
+    "verdict": "verdict",
+    "oracle": "oracle",
+    "residual_risk": "residual_risk"
+   }
+  },
+  "catalog/review/evidence/audit-d2.csv": {
+   "retained_sha256": "84ba3c0f808eef9a51db1404c51104ef572c975453494b147d9ab1bc7f1f4390",
+   "format": "csv",
+   "claim_fields": {
+    "verdict": "verdict",
+    "oracle": "oracle_a0",
+    "residual_risk": "residual_risks"
+   }
+  },
+  "catalog/review/evidence/audit-d3.csv": {
+   "retained_sha256": "cc19ee6511f51c401796186da2d330441a637b40b46948e0468970e2c464853f",
+   "format": "csv",
+   "claim_fields": {
+    "verdict": "verdict",
+    "oracle": "oracle",
+    "residual_risk": "finding_or_gap"
+   }
+  },
+  "catalog/review/evidence/audit-d4.csv": {
+   "retained_sha256": "69faab4e92667abc27e620b315addf24483ee7ca90fbf437394e73f0f2d861d3",
+   "format": "csv",
+   "claim_fields": {
+    "verdict": "verdict",
+    "oracle": "oracle",
+    "residual_risk": "residual_risks"
+   }
+  },
+  "catalog/review/evidence/audit-d5.csv": {
+   "retained_sha256": "df4769ff6908bb2a204ce114805e638c3e24f05c4f1d9a7114aa3accb940ae4d",
+   "format": "csv",
+   "claim_fields": {
+    "verdict": "verdict",
+    "oracle": "oracle",
+    "residual_risk": "notes"
+   }
+  },
+  "catalog/review/evidence/audit-d6.csv": {
+   "retained_sha256": "915c2971e6a501cbbc0079f760ebe9610ae718ea109074ff313bcd3e9506d0a4",
+   "format": "csv",
+   "claim_fields": {
+    "verdict": "verdict",
+    "oracle": "oracle_a0",
+    "residual_risk": "residual_risks"
+   }
+  },
+  "catalog/review/evidence/source-audit-collisions.md": {
+   "retained_sha256": "b3d7500fcff4d88f35c39665be2f81d89328a7d17db3573a08f76c456abc9101",
+   "format": "markdown",
+   "claim_binding": "UNKNOWN"
+  },
+  "catalog/review/evidence/source-audit-equilibrium.md": {
+   "retained_sha256": "b493d214211ec16a14c679ae2b073676ca0adb471a2347b5a6540ae64703db9e",
+   "format": "markdown",
+   "claim_binding": "UNKNOWN"
+  },
+  "catalog/review/evidence/source-audit-kinetic.md": {
+   "retained_sha256": "5cc10642b8144d76ff940b590b10b78e26bf5699b53cd960e84d4748209da93a",
+   "format": "markdown",
+   "claim_binding": "UNKNOWN"
+  },
+  "tests/kinetic/test_dispersion_multifluid_oracle.py": {
+   "retained_sha256": "0e966676f81db2133392fb8e152b3f02cd971a1c731e8bd8da4c90e247a8b040",
+   "format": "test-source",
+   "claim_binding": "UNKNOWN"
+  }
+ },
  "assets": {
   "scirel.basis.basis-matrix": {
    "status": "pass",
@@ -31,7 +113,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy CubicSpline reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Invalid yp length raises TypeError (len(float)) rather than the documented AssertionError; valid endpoint derivative yp is exact."
     }
    ]
   },
@@ -42,7 +124,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic boundary residual identities",
-     "residual_risk": ""
+     "residual_risk": "Precondition x_data[-1] > 0 is not validated: x_data[-1]==0 gives NaN at every query (divide-by-zero warnings) instead of the documented invalid-parameter failure."
     }
    ]
   },
@@ -64,7 +146,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic boundary residual identities",
-     "residual_risk": ""
+     "residual_risk": "Declared x_data[0]==0, y_data[0]==0 precondition is unchecked: nonzero-origin data is accepted and evaluated with an origin/robin row that the contract documents as unqualified."
     }
    ]
   },
@@ -143,7 +225,23 @@
      "oracle": "independent-analytic",
      "residual_risk": "D4-F3 live: plasma_mask int/float silently cast to bool; free-boundary rejects non-bool. Contract dtype says boolean array-like. Flags: template-copied-contract-text"
     }
-   ]
+   ],
+   "current_review": {
+    "claim": "The historical D4-F3 mask coercion was corrected: current code rejects integer and float plasma masks. The named regression is locatable; execution is not established by this registry. No external physical closure truth.",
+    "supersedes": [
+     {
+      "report": "catalog/review/evidence/audit-d4.csv",
+      "field": "residual_risk",
+      "value": "D4-F3 live: plasma_mask int/float silently cast to bool; free-boundary rejects non-bool. Contract dtype says boolean array-like. Flags: template-copied-contract-text"
+     }
+    ],
+    "fix_revision": "b2c96468e3484249a034aa4efd63144d09bdac65",
+    "tests": [
+     "tests/closures/test_reduced_hall_drift.py::test_reduced_hall_drift_rejects_nonboolean_plasma_mask"
+    ],
+    "verification_status": "NOT_RUN",
+    "released_dependencies": []
+   }
   },
   "scirel.closures.tabulated-pressure": {
    "status": "pass-with-limits",
@@ -265,7 +363,23 @@
      "oracle": "no external physical oracle; endpoint clipping, positivity, sign-change scan and direct formula replay",
      "residual_risk": "contract claims a non-existent optional external-root cross-implementation test; behavior probes pass"
     }
-   ]
+   ],
+   "current_review": {
+    "claim": "The contract no longer claims a nonexistent optional external-root comparison. The maintained contract guard locates the evidence boundary; no external physical comparison or current test execution is inferred.",
+    "supersedes": [
+     {
+      "report": "catalog/review/evidence/audit-d5.csv",
+      "field": "verdict",
+      "value": "fail"
+     }
+    ],
+    "fix_revision": "b2c96468e3484249a034aa4efd63144d09bdac65",
+    "tests": [
+     "tests/collisions/test_contract_evidence_claims.py::test_collision_contracts_do_not_claim_a_missing_external_test"
+    ],
+    "verification_status": "NOT_RUN",
+    "released_dependencies": []
+   }
   },
   "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section": {
    "status": "pass-with-limits",
@@ -734,7 +848,23 @@
      "oracle": "independent-analytic",
      "residual_risk": "Inherits D4-F3 mask coercion; terminal closure ordering now fixed (F2 regression). Flags: template-copied-contract-text"
     }
-   ]
+   ],
+   "current_review": {
+    "claim": "The historical inherited D4-F3 mask coercion was corrected: current code rejects nonboolean fixed and callable masks. F2 terminal-order regression remains. The named regression is locatable; execution is not established by this registry. No external equilibrium truth.",
+    "supersedes": [
+     {
+      "report": "catalog/review/evidence/audit-d4.csv",
+      "field": "residual_risk",
+      "value": "Inherits D4-F3 mask coercion; terminal closure ordering now fixed (F2 regression). Flags: template-copied-contract-text"
+     }
+    ],
+    "fix_revision": "b2c96468e3484249a034aa4efd63144d09bdac65",
+    "tests": [
+     "tests/cross_domain/reduced_hall_anisotropic_picard/test_composition_reduced_hall_anisotropic_picard.py::test_reduced_hall_rejects_nonboolean_fixed_and_callable_masks"
+    ],
+    "verification_status": "NOT_RUN",
+    "released_dependencies": []
+   }
   },
   "scirel.field.circular-filament-green": {
    "status": "pass",
@@ -908,7 +1038,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named-fixture/self-consistency (weak attribution)",
-     "residual_risk": ""
+     "residual_risk": "Two-point vertices fail inside splprep with TypeError 'm > k must hold' (precondition says enough distinct points; propagation is contract-allowed)."
     }
    ]
   },
@@ -930,7 +1060,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "is_closed uses exact endpoint equality, so a 401-point circle whose sin(2*pi) differs by 1 ULP is fitted as non-periodic (length 2.51326998 vs circumference 2.51327412, 1.7e-6 relative); intersection/root completeness limits are documented."
     }
    ]
   },
@@ -1029,7 +1159,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "radially_clamped_point_count counts only radius > r_max; inner-radius clamps are reported by covered_mask but counted by neither counter (documented limitation; probe: 2 covered-false, 0 radial count)."
     }
    ]
   },
@@ -1051,7 +1181,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic linear/geometry identity",
-     "residual_risk": ""
+     "residual_risk": "Negative radial grid coordinates are accepted (contract does not require R>=0); empty (0,2) query returns empty samples; linear-field nonuniform sampling exact."
     }
    ]
   },
@@ -1062,7 +1192,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "valid tolerance is 32 eps * max(1, axis span), so for axes offset to 1e6 m a point one ULP above the upper face (nextafter) is reported invalid/nan even though it is representable; documented formula but a practical large-coordinate trap."
     }
    ]
   },
@@ -1084,7 +1214,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic/manufactured field",
-     "residual_risk": ""
+     "residual_risk": "Negative radius grids are accepted (documented as physical caller precondition, not checked); cubic spline positivity can fail despite positive nodes (declared limitation)."
     }
    ]
   },
@@ -1095,7 +1225,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named-fixture/self-consistency (weak attribution)",
-     "residual_risk": ""
+     "residual_risk": "Duplicate flux coordinates keep the first occurrence after sorting (probe values 1.0 and 4.0); tie order is documented as not guaranteed."
     }
    ]
   },
@@ -1106,7 +1236,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named-fixture/self-consistency (weak attribution)",
-     "residual_risk": ""
+     "residual_risk": "pml_cells float 1.0 is coerced (int(value)==value); the innermost-radius proxy is not the magnetic axis when the grid excludes R=0 (documented); zero/oversized PML rejected."
     }
    ]
   },
@@ -1128,7 +1258,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Mesh.from_array([[0,1],[2,3]]) is interpreted as two 2-point coordinates, not a structured 2x2 grid; ambiguity is not documented."
     }
    ]
   },
@@ -1150,7 +1280,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
-     "residual_risk": ""
+     "residual_risk": "nr=nz=1 is accepted (contract only says positive integer counts); negative bounds rejected."
     }
    ]
   },
@@ -1222,8 +1352,8 @@
   },
   "scirel.inference.direct-anisotropic-inversion": {
    "status": "human-review",
-   "reason": "Composition source artifact is incomplete in the Pleiades FINAL payload and the intended forward port is the held axisymmetric capability.",
-   "required_decision": "Release axisymmetric with its mask policy and restore/bind the exact admitted direct-inversion graph; then re-audit and release without formula change, or replace the equilibrium_solver port.",
+   "reason": "The exact admitted direct-inversion graph artifact is missing. The axisymmetric dependency is already public; its release is no longer an open prerequisite.",
+   "required_decision": "Restore/bind the exact admitted direct-inversion graph and rerun direct composition/physical closure before reconsidering the hold. Do not substitute a later snapshot for the missing bytes.",
    "evidence": [
     {
      "report": "catalog/review/evidence/source-audit-equilibrium.md",
@@ -1231,7 +1361,23 @@
      "oracle": "exact admitted graph artifact unavailable; only admitted hashes and a later snapshot exist",
      "residual_risk": "do not claim byte/source parity until the exact graph and dependency condition are bound"
     }
-   ]
+   ],
+   "current_review": {
+    "claim": "The axisymmetric dependency is currently public. The exact admitted direct graph artifact remains missing; restore/bind it and rerun direct composition/physical closure before reconsidering this hold. Neither byte/source parity nor numerical acceptance is inferred.",
+    "supersedes": [
+     {
+      "report": "catalog/review/evidence/source-audit-equilibrium.md",
+      "field": "residual_risk",
+      "value": "do not claim byte/source parity until the exact graph and dependency condition are bound"
+     }
+    ],
+    "fix_revision": "58bcf0171aeda7b554336ac874931ccfde0e871e",
+    "tests": [],
+    "verification_status": "NOT_RUN",
+    "released_dependencies": [
+     "scirel.equilibrium.axisymmetric-anisotropic-picard"
+    ]
+   }
   },
   "scirel.inference.latin-hypercube-sampling": {
    "status": "pass-with-limits",
@@ -1301,7 +1447,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -1312,7 +1458,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1323,7 +1469,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1334,7 +1480,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text"
     }
    ]
@@ -1351,7 +1497,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
     }
    ]
@@ -1362,7 +1508,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text"
     }
    ]
@@ -1373,7 +1519,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -1384,7 +1530,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1406,7 +1552,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -1417,7 +1563,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1428,7 +1574,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1439,7 +1585,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1450,7 +1596,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text"
     }
    ]
@@ -1461,7 +1607,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1571,7 +1717,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1582,7 +1728,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1593,7 +1739,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities; thin direct-test count"
     }
    ]
@@ -1604,7 +1750,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -1615,7 +1761,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1632,7 +1778,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1643,7 +1789,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "selector 5 is mass-incomplete and selector 6 uses a finite-cutoff normalization; piecewise lower-plane values are a real-contour transform, not an inferred analytic continuation; the Gaussian high-phase branch is independently checked, other custom densities are only covered by the restricted parser/quadrature envelope."
     }
    ]
@@ -1654,7 +1800,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "the parser does not prove integrability, positivity, normalization or analytic continuation; arithmetic exceptions/nonfinite evaluations are not symbolic diagnoses."
     }
    ]
@@ -1665,7 +1811,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "the real-axis removable-point derivative uses a symmetric second-derivative estimate with no global error certificate; restricted parser; lower continuation only adds the declared residue term."
     }
    ]
@@ -1676,7 +1822,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "IAW/beam use the ordinary Faddeeva response and freeze the ion/beam parameters; extreme phase/temperature inputs can be unrepresentable; generalized-kind custom density quadrature is not interval-certified."
     }
    ]
@@ -1687,7 +1833,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "generic non-Maxwellian quadrature roots are not interval-certified and no quadrature error enters the acceptance gate; the default beam seed follows a damped branch and its preserved short-grid failure is a documented limitation, not a universal solver."
     }
    ]
@@ -1698,7 +1844,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "the closed form is asymptotic: large-k finite outputs do not imply asymptotic validity; damping below float64 underflows to zero; exact k=0 is rejected."
     }
    ]
@@ -1709,7 +1855,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1720,7 +1866,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1731,7 +1877,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text"
     }
    ]
@@ -1742,7 +1888,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text"
     }
    ]
@@ -1753,7 +1899,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "none-recorded",
      "residual_risk": "A0 records no oracle; contract carries family boilerplate evidence text"
     }
    ]
@@ -1764,7 +1910,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1847,7 +1993,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1858,7 +2004,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "epsilon_error is an estimate rather than a rigorous enclosure; finite inputs can have an unrepresentable complex response and no root is inferred from one evaluation."
     }
    ]
@@ -1869,7 +2015,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "the estimated error is not a rigorous enclosure; no uniqueness, least-damped-branch or global root-selection claim; supplied seeds select branches."
     }
    ]
@@ -1880,7 +2026,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
     }
    ]
@@ -1891,7 +2037,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
     }
    ]
@@ -1902,7 +2048,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
     }
    ]
@@ -1913,7 +2059,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1924,7 +2070,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1941,7 +2087,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -1958,7 +2104,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2002,7 +2148,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2024,7 +2170,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2035,7 +2181,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2046,7 +2192,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2057,7 +2203,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2068,7 +2214,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2079,7 +2225,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2090,7 +2236,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2129,7 +2275,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "self-consistency-only",
      "residual_risk": "A0 contract oracle is self-consistency only"
     }
    ]
@@ -2146,7 +2292,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "all bound tests are shared with other assets"
     }
    ]
@@ -2278,7 +2424,7 @@
     {
      "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "this is the pre-compensation seed, not the final compensated distribution; constants are fixed historical values; the -80 exponent floor is numerical (floored values carry no exponential resolution and must not be read as a physical Maxwellian); licensing pending."
     }
    ]
@@ -2289,7 +2435,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2300,7 +2446,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2317,7 +2463,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2372,7 +2518,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "contract carries family boilerplate evidence text"
     }
    ]
@@ -2383,7 +2529,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2394,7 +2540,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2405,7 +2551,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2416,7 +2562,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2427,7 +2573,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2438,7 +2584,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
     }
    ]
@@ -2449,7 +2595,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2460,7 +2606,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2471,7 +2617,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2482,7 +2628,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2493,7 +2639,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2504,7 +2650,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2515,7 +2661,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2526,7 +2672,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2537,7 +2683,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "independent-analytic",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
     }
    ]
@@ -2554,7 +2700,7 @@
     {
      "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
-     "oracle": "",
+     "oracle": "source-parity",
      "residual_risk": "all bound tests are shared with other assets"
     }
    ]
@@ -2610,9 +2756,25 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "fail",
      "oracle": "NumPy pinv identity (tests), zero-matrix case absent",
-     "residual_risk": ""
+     "residual_risk": "FAIL: all-zero matrix returns all-NaN (1/0 on zero singular values; RuntimeWarnings) instead of the zero pseudo-inverse returned by numpy.linalg.pinv; truncation keep-mask uses >= when singular.max()==0."
     }
-   ]
+   ],
+   "current_review": {
+    "claim": "The historical zero-matrix NaN finding has a maintained zero pseudo-inverse correction and a named NumPy/zero-matrix regression. The fix and test are locatable; this registry does not establish their execution on the current candidate.",
+    "supersedes": [
+     {
+      "report": "catalog/review/evidence/audit-d3.csv",
+      "field": "verdict",
+      "value": "fail"
+     }
+    ],
+    "fix_revision": "8e83eaaf90514a513d2d6838ce8540ed35ceb10c",
+    "tests": [
+     "tests/geometry/test_truncated_svd_inverse.py::test_zero_matrix_returns_zero_pseudo_inverse"
+    ],
+    "verification_status": "NOT_RUN",
+    "released_dependencies": []
+   }
   },
   "scirel.physics.coulomb-ee": {
    "status": "pass",
@@ -2723,7 +2885,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Empty input raises IndexError; the callable docstring explicitly allows NumPy IndexError."
     }
    ]
   },
@@ -2756,7 +2918,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "NaN design matrix raises LinAlgError 'SVD did not converge' (underlying exception propagation is contract-allowed)."
     }
    ]
   },
@@ -2767,7 +2929,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Outside-support query returns the nearest edge sample (no synthesis); outside-support is unqualified by contract."
     }
    ]
   },
@@ -2778,7 +2940,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Out-of-grid queries are silently extrapolated by RectBivariateSpline (probe: 1.0 at (1.2,0.5) for a unit field); out-of-grid is excluded/unqualified by contract but not rejected or masked."
     }
    ]
   },
@@ -2789,7 +2951,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Outside-hull values are nan (fill_value default); nonfinite/mismatched inputs propagate SciPy/Delaunay exceptions."
     }
    ]
   },
@@ -2800,7 +2962,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Field-shape validation uses assert and the first-radial-column-zero precondition is unchecked; nonzero first column yields [-0.8,-0.4,0.2,0.4,0.8] (drops -0.2, duplicates 0.2) silently."
     }
    ]
   },
@@ -2811,7 +2973,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Outside-hull query returns nan (SciPy griddata default); outside-support is excluded/unqualified."
     }
    ]
   },
@@ -2822,7 +2984,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Level membership is enforced with assert (AssertionError probe) instead of ValueError; empty level segments raise max() ValueError."
     }
    ]
   },
@@ -2833,7 +2995,7 @@
      "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
-     "residual_risk": ""
+     "residual_risk": "Precondition B>0 is not validated: zero field returns inf silently (divide-by-zero warning); the stronger geometry.flux-surface-inverse-field-average asset rejects nonpositive B."
     }
    ]
   },

@@ -45,6 +45,13 @@ def test_external_truth_generator_selects_its_consumers_with_an_evidence_limit()
     assert any("does not execute the external source generator" in note for note in notes)
 
 
+@pytest.mark.parametrize("relative", ["SKILL.md", "references/result-checks.md", "scripts/delivery.py"])
+def test_solving_source_changes_select_the_projection_consumer(relative):
+    targets, notes = test_scope.classify(Path("skills/development/usage/scirel-solving") / relative)
+    assert targets == ["tests/delivery"]
+    assert any("scientific task acceptance is separate" in note for note in notes)
+
+
 def test_current_script_inventory_has_an_explicit_bounded_scope():
     for script in sorted((ROOT / "scripts").glob("*.py")):
         targets, _ = test_scope.classify(script.relative_to(ROOT))

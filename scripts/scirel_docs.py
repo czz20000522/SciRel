@@ -19,7 +19,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from packaging.version import InvalidVersion, Version
 
-from validate_asset_documents import load_document_set
+from validate_asset_documents import load_document_set, validate_document
 from exposure import held_asset_ids
 from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
                                 english_guide_status, english_translation_gaps,
@@ -28,6 +28,7 @@ from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
 from build_capability_matrix import build_matrix, render_markdown
 from capability_query import (CAPABILITY_INDEX_SCHEMA, CAPABILITY_QUERY_SCHEMA,
                               CAPABILITY_REQUEST_SCHEMA, DEVICE_SCOPES, FILTER_ORDER,
+                              REQUEST_SCHEMA, RESPONSE_SCHEMA,
                               query_capabilities, validate_capability_index)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -526,6 +527,124 @@ def build_capability_index(documents, *, source_revision, translations=None, lan
     }
 
 
+class SourceDocumentation:
+    """Read the public working tree without building or importing scientific code.
+
+    This identity binds current public inputs, not a wheel or a past acceptance
+    run. HOLD is read only to filter exposure; review evidence is never loaded.
+    """
+
+    def __init__(self, root, expected_digest=None):
+        self.root = Path(root).resolve()
+        self.input_digests = {}
+        self.input_bytes = {}
+        revision, dirty = self._git_identity()
+        hold = self.root / 'catalog/review/HOLD.json'
+        self._read('catalog/review/HOLD.json')
+        held = held_asset_ids(hold, read_bytes=self._captured)
+        self.documents = {}
+        for path in sorted((self.root / 'catalog/examples').glob('*.json')):
+            if path.stem in held:
+                continue
+            document = json.loads(self._read('catalog/examples/' + path.name))
+            validate_document(document, location=path.name)
+            if document['asset_id'] != path.stem:
+                raise ValueError('contract filename differs from asset identity')
+            self.documents[path.stem] = document
+        if not self.documents:
+            raise ValueError('source has no public asset documents')
+        for document in self.documents.values():
+            if any(item['asset_id'] not in self.documents
+                   for item in document['version']['dependencies']):
+                raise ValueError('public contract dependency is outside the public set')
+        reader_paths = sorted((self.root / 'tools/docs/zh').glob('*.json'))
+        for path in reader_paths:
+            self._read('tools/docs/zh/' + path.name)
+        documents = list(self.documents.values())
+        self.translations = load_translations(
+            self.root, self.root / 'catalog/examples', documents,
+            translation_paths=reader_paths, excluded_ids=held, read_bytes=self._captured)
+        self.index = build_capability_index(
+            documents, source_revision=revision, translations=self.translations)
+        # Snapshot web/record routes do not exist in a working-tree query.
+        for record in self.index['assets']:
+            record.pop('record_path')
+            record.pop('docs_path')
+        validate_capability_index(self.index, expected_ids=self.documents)
+        if ((revision, dirty) != self._git_identity() or
+                {path.stem for path in (self.root / 'catalog/examples').glob('*.json')
+                 if path.stem not in held} != set(self.documents) or
+                sorted((self.root / 'tools/docs/zh').glob('*.json')) != reader_paths or any(
+                sha(self._read(path)) != digest
+                for path, digest in tuple(self.input_digests.items()))):
+            raise ValueError('public source inputs changed during query')
+        self.identity = {
+            'source_revision': revision, 'source_dirty': dirty,
+            'source_inputs_sha256': sha(encode(self.input_digests)),
+        }
+        self.identity['source_identity_sha256'] = sha(encode(self.identity))
+        if expected_digest is not None and expected_digest != self.identity['source_identity_sha256']:
+            raise ValueError('source differs from expected digest')
+
+    def _git_identity(self):
+        try:
+            def git(*arguments):
+                return subprocess.check_output(
+                    ['git', *arguments], cwd=self.root, text=True,
+                    stderr=subprocess.PIPE, timeout=10).strip()
+            if Path(git('rev-parse', '--show-toplevel')).resolve() != self.root:
+                raise ValueError('source root must be the Git checkout root')
+            revision = git('rev-parse', 'HEAD')
+            if re.fullmatch(r'[0-9a-f]{40}', revision) is None:
+                raise ValueError('source HEAD must be a full Git commit id')
+            return revision, bool(git('status', '--porcelain'))
+        except (subprocess.SubprocessError, OSError) as error:
+            raise ValueError('cannot read source Git identity') from error
+
+    def _read(self, relative):
+        path = self.root / relative
+        if (not path.resolve().is_relative_to(self.root) or any(
+                parent.is_symlink() for parent in (path, *path.parents)
+                if parent != self.root.parent)):
+            raise ValueError('public source input escapes root or uses a symlink')
+        data = path.read_bytes()
+        self.input_digests[relative] = sha(data)
+        self.input_bytes[relative] = data
+        return data
+
+    def _captured(self, path):
+        """Only bytes already included in this query's input binding may be parsed."""
+        return self.input_bytes[Path(path).relative_to(self.root).as_posix()]
+
+    def envelope(self, command, *, outcome='ok', **values):
+        return dict(schema='scirel.source-query-response', command=command,
+                    outcome=outcome, source_kind='working-tree', **self.identity,
+                    wheel_binding='not_bound', scientific_runtime_revalidated=False,
+                    **values)
+
+    def describe(self):
+        return self.envelope(
+            'describe', asset_count=len(self.documents), commands=['describe', 'search', 'get'],
+            filters=list(FILTER_ORDER), schemas={'request': REQUEST_SCHEMA, 'response': RESPONSE_SCHEMA},
+            manual_paths={'zh': 'tools/docs/manual', 'en': 'tools/docs/manual/en'},
+            notice='Public source inputs only; no installed wheel or scientific execution is bound.')
+
+    def capabilities(self, **filters):
+        result = query_capabilities(self.index, {'schema': CAPABILITY_REQUEST_SCHEMA, **filters})
+        return self.envelope('search', outcome='no_candidates' if result['status'] == 'gap'
+                             else result['status'], result=result)
+
+    def asset(self, asset_id, *, reader=False):
+        if asset_id not in self.documents:
+            return self.envelope('get', outcome='unknown_asset', asset_id=asset_id)
+        path = 'catalog/examples/' + asset_id + '.json'
+        result = self.envelope('get', asset_id=asset_id, document=self.documents[asset_id],
+                               path=path, sha256=self.input_digests[path])
+        if reader:
+            result['translation'] = self.translations[asset_id]
+        return result
+
+
 def build(documents: Path, output: Path, outline: Path | None = None,
           translation_paths: list[Path] | None = None,
           *, source_revision: str | None = None,
@@ -905,8 +1024,13 @@ def main():
     subs = parser.add_subparsers(dest='command', required=True)
     b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--language', choices=LANGUAGES, default='zh', help='site language: zh projects the Chinese reader layer; en projects the English contract fields with a skeleton guide'); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable'); b.add_argument('--source-revision', help='explicit full Git commit id for an archived source tree'); b.add_argument('--source-dirty', action='store_true', help='mark an explicitly bound source tree as dirty'); b.add_argument('--documentation-version', help='documentation editorial version on the compatible wheel release line')
     for name in ('query', 'serve'):
-        sub = subs.add_parser(name); sub.add_argument('--snapshot', type=Path, required=True); sub.add_argument('--expected-digest')
+        sub = subs.add_parser(name)
+        location = sub.add_mutually_exclusive_group(required=True)
+        location.add_argument('--snapshot', type=Path)
+        sub.add_argument('--expected-digest', help='selected snapshot digest or source_identity_sha256')
         if name == 'query':
+            location.add_argument('--source-root', type=Path, help='read the public working tree without building a snapshot or wheel')
+            sub.add_argument('--describe', action='store_true', help='describe the public source query and its current identity')
             sub.add_argument('--q', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--reader'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
             sub.add_argument('--capabilities', action='store_true', help='query the generated capability index instead of document search')
             sub.add_argument('--capability', default=''); sub.add_argument('--operation', default=''); sub.add_argument('--model', default=''); sub.add_argument('--geometry', default=''); sub.add_argument('--boundary', default=''); sub.add_argument('--taxonomy', default=''); sub.add_argument('--device-scope', '--device_scope', dest='device_scope', default=''); sub.add_argument('--alias', default='')
@@ -921,6 +1045,33 @@ def main():
                        documentation_version=a.documentation_version,
                        language=a.language)
         print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
+    if a.command == 'query' and a.source_root is not None:
+        if a.domain or a.chapter or a.handbook or a.topic:
+            parser.error('source queries accept capability filters, --asset, --reader or --describe')
+        if sum(bool(value) for value in (a.asset, a.reader, a.describe)) > 1:
+            parser.error('select one of --asset, --reader or --describe')
+        command = 'describe' if a.describe else 'get' if a.asset or a.reader else 'search'
+        try:
+            docs = SourceDocumentation(a.source_root, a.expected_digest)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            print(encode(dict(schema='scirel.source-query-response', command=command,
+                              outcome='metadata_error', error=str(error))).decode())
+            return 2
+        try:
+            if a.describe:
+                result = docs.describe()
+            elif a.asset or a.reader:
+                result = docs.asset(a.asset or a.reader, reader=bool(a.reader))
+            else:
+                result = docs.capabilities(**{field: getattr(a, field) for field in FILTER_ORDER},
+                                           offset=a.offset, limit=a.limit)
+        except ValueError as error:
+            print(encode(docs.envelope(command, outcome='invalid_request', error=str(error))).decode())
+            return 2
+        print(encode(result).decode())
+        return 0
+    if a.command == 'query' and a.describe:
+        parser.error('--describe requires --source-root')
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':
         capability_query = any((a.capabilities, a.capability, a.operation, a.model,
@@ -950,4 +1101,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

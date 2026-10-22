@@ -13,13 +13,13 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_HOLD = ROOT / 'catalog' / 'review' / 'HOLD.json'
 
 
-def held_asset_ids(path: Path | None = None) -> frozenset[str]:
-    """Return asset ids withheld from public exposure."""
+def held_asset_ids(path: Path | None = None, *, read_bytes=None) -> frozenset[str]:
+    """Return withheld ids, optionally parsing an already captured byte set."""
     path = DEFAULT_HOLD if path is None else Path(path)
-    if not path.exists():
+    if read_bytes is None and not path.exists():
         return frozenset()
-    payload = json.loads(path.read_text(encoding='utf-8'))
-    if payload.get('schema') != 'scirel.exposure-hold':
+    payload = json.loads(path.read_bytes() if read_bytes is None else read_bytes(path))
+    if not isinstance(payload, dict) or payload.get('schema') != 'scirel.exposure-hold':
         raise ValueError(f'invalid exposure hold schema: {path}')
     assets = payload.get('assets')
     if not isinstance(assets, dict):

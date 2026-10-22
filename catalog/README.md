@@ -10,6 +10,18 @@ capability matrix are projections of the same truth.
 
 Any agent changing a capability must read this file first.
 
+## Admission evidence checks
+
+`scripts/review_gate.py --check` checks retained report bytes, same-asset CSV
+claims, explicit historical successors and one aggregate for current public and
+review implementations/contracts plus their directly bound test files. This
+limited material identity does not bind every fixture, environment or execution.
+Historical candidate identities and unbound Markdown/test-source claims remain
+`UNKNOWN`; current hashes never turn them into historical proof. Fix revisions
+and test nodes are mechanically locatable only. The gate prints actual HEAD and
+working-tree state, does not execute those tests and never refreshes a binding.
+Actual regression commands and results belong to the current task record.
+
 ## One truth, no silent divergence
 
 When contract and implementation disagree, choose one truth explicitly and

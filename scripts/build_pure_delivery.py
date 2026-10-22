@@ -26,6 +26,106 @@ from scirel_docs import Documentation, build_capability_index, documentation_inp
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def compile_solving_skill(skill_root: Path):
+    """Flatten the one internal method; adapt only its public-access boundary.
+
+    Explicit Markdown links form the input closure. Method notes become local
+    sections and the one executable helper remains a product tool. This never
+    reads an old delivery as source or follows paths outside the supplied skill.
+    """
+    import re
+    skill_root = skill_root.resolve()
+    sources, helpers, sections = {}, {}, []
+    seen = set()
+    link = re.compile(r'\[([^\]]*)\]\(([^)]+)\)')
+
+    def read(path):
+        if not path.is_relative_to(skill_root) or not path.is_file():
+            raise ValueError('invalid solving source reference: ' + str(path))
+        relative = path.relative_to(skill_root).as_posix()
+        data = path.read_bytes()
+        sources[relative] = data
+        return data.decode('utf-8')
+
+    def anchor(path):
+        return 'method-' + path.stem
+
+    def expand(text, parent):
+        def replace(match):
+            label, target = match.groups()
+            parsed = urlsplit(target)
+            if parsed.scheme or parsed.netloc or target.startswith('#'):
+                return match.group()
+            path = (parent / unquote(parsed.path)).resolve()
+            if not path.is_relative_to(skill_root):
+                raise ValueError('solving reference leaves its source: ' + target)
+            relative = path.relative_to(skill_root).as_posix()
+            if path.suffix == '.md' and path.parent == skill_root / 'references':
+                if path not in seen:
+                    seen.add(path)
+                    # Reserve order before traversing transitive links.
+                    position = len(sections); sections.append(None)
+                    body = expand(read(path), path.parent)
+                    sections[position] = '<a id="' + anchor(path) + '"></a>\n\n' + body
+                return '[' + label + '](#' + anchor(path) + ')'
+            if relative == 'scripts/delivery.py' and not parsed.fragment:
+                read(path)
+                helpers['tools/delivery.py'] = sources[relative]
+                return '[' + label + '](tools/delivery.py)'
+            raise ValueError('unsupported solving reference: ' + target)
+        return link.sub(replace, text)
+
+    text = read(skill_root / 'SKILL.md')
+    start, end = '<!-- scirel-access:start -->', '<!-- scirel-access:end -->'
+    if text.count(start) != 1 or text.count(end) != 1 or text.index(end) < text.index(start):
+        raise ValueError('solving source must declare one public-access boundary')
+    access = '''## Consumer package and runtime
+
+Resolve paths from this package root. Public discovery is
+`catalog/capability-index.json`; complete contracts are
+`catalog/contracts/<asset-id>.json`; API reading is
+`docs/en/api/<asset-id>.md` or `docs/zh/api/<asset-id>.md`; tutorials are
+`docs/<language>/tutorials/<chapter>.md`. The method notes below are expanded
+from the internal solving source. No repository or other skill is required.
+
+Use the supplied wheel in the selected Python runtime. The package declares
+Python and scientific dependency requirements in its installation instructions
+and wheel metadata; pure does not mean dependency-free. HTML is a separate
+human site. Query tools do not run scientific computation.
+
+Discover the host's read-only MCP tools, then call `scirel_describe` for protocol,
+limits and identity. Select `snapshot_sha256` and the exact installed wheel's
+`wheel_sha256`. Send them as `expected_snapshot_sha256` and
+`expected_wheel_sha256` on every subsequent request:
+
+| operation | purpose |
+| --- | --- |
+| `scirel_browse` | bounded capability/tutorial pages |
+| `scirel_search` | lexical-ranked candidates with supplied constraints |
+| `scirel_get` | one complete public contract and selected-language API text |
+| `scirel_get_tutorial` | one relevant tutorial passage; follow `next_offset` |
+
+Preserve JSON errors and continuation tokens; do not mix identities. The server
+verifies delivery bytes, not the client's installed Python environment. An
+import does not prove the wheel hash. On `identity_mismatch`, explicitly select
+a matching delivery before continuing. Discovery cards obey `max_bytes`; refine
+or increase the budget for `response_too_large`, never truncate a contract.
+
+Use the supplied `mcp-connections.json`, `PROTOCOL.md` and `QUICKSTART.md` for
+SDK, stdio or loopback HTTP setup in the selected host environment. A missing
+connection is an integration limit; preserve bounded work possible from the
+public files. `python tools/query.py verify` is an optional developer integrity
+check. Integrity failure stops reliance on affected inputs. Provider/Famou and
+unrun platform validation remain `NOT_RUN` until actually exercised.
+'''
+    text = text[:text.index(start)] + access + text[text.index(end) + len(end):]
+    text = expand(text, skill_root)
+    # References may use a task-neutral placeholder in command examples.
+    text += '\n\n' + '\n\n'.join(sections)
+    text = text.replace('<skill>/scripts/delivery.py', 'tools/delivery.py')
+    return text.encode('utf-8'), sources, helpers
+
+
 class Node:
     def __init__(self, tag='', attrs=()):
         self.tag, self.attrs, self.children = tag, dict(attrs), []
@@ -350,12 +450,20 @@ def source_closure(snapshots, source):
         'PURE_CONSUMPTION.md', 'mcp-requirements.txt', 'handbook.json', 'handbook.en.json')]
     inputs += sorted((ROOT / 'tools/docs/zh').glob('*.json'))
     inputs += sorted((ROOT / 'tools/docs/manual').rglob('*.rst'))
-    inputs += [ROOT / 'skills/development/usage/scirel-solving/SKILL.md']
+    flat_skill, skill_inputs, skill_helpers = compile_solving_skill(ROOT / 'skills/development/usage/scirel-solving')
+    inputs += [ROOT / 'skills/development/usage/scirel-solving' / name for name in skill_inputs]
     return {'schema': 'scirel.consumer-source-closure', 'source_revision': source,
             'asset_count': len(ids), 'public_api_mapping_sha256': sha(encode(signatures)),
             'source_signature_check': 'PASS',
-            'generator_and_reading_inputs': {path.relative_to(ROOT).as_posix(): sha(path.read_bytes())
-                                              for path in inputs},
+            'generator_and_reading_inputs': {
+                **{path.relative_to(ROOT).as_posix(): sha(path.read_bytes()) for path in inputs
+                   if not path.is_relative_to(ROOT / 'skills/development/usage/scirel-solving')},
+                **{'skills/development/usage/scirel-solving/' + name: sha(data)
+                   for name, data in skill_inputs.items()}},
+            'solving_projection': {
+                'flat_sha256': sha(flat_skill),
+                'helper_sha256': {name: sha(data) for name, data in skill_helpers.items()},
+                'meaning': 'deterministic access adaptation and method expansion; not scientific review'},
             'tutorial_bindings': tutorial_bindings,
             'natural_language_scientific_review': 'NOT_RUN'}
 
@@ -409,7 +517,10 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
         path = output / relative; path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data if isinstance(data, bytes) else data.encode())
     put('wheel/' + wheel.name, wheel_bytes)
-    put('SKILL.md', (ROOT / 'skills/development/usage/scirel-solving/SKILL.md').read_bytes())
+    skill, _, skill_helpers = compile_solving_skill(ROOT / 'skills/development/usage/scirel-solving')
+    put('SKILL.md', skill)
+    for relative, data in skill_helpers.items():
+        put(relative, data)
     for source_name, name in [('capability_query.py', 'capability_query.py'),
                               ('pure_query.py', 'pure_query.py'),
                               ('consumer_tools.py', 'consumer_tools.py'),
@@ -551,8 +662,16 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
     for relative, digest in closure['generator_and_reading_inputs'].items():
         if sha((ROOT / relative).read_bytes()) != digest:
             raise ValueError('generator/reading/skill source input changed during export: ' + relative)
-    if sha((output / 'SKILL.md').read_bytes()) != closure['generator_and_reading_inputs']['skills/development/usage/scirel-solving/SKILL.md']:
-        raise ValueError('exported skill differs from separately bound ignored source input')
+    compiled, _, helpers = compile_solving_skill(ROOT / 'skills/development/usage/scirel-solving')
+    if (output / 'SKILL.md').read_bytes() != compiled:
+        raise ValueError('exported skill differs from its bound source projection')
+    if sha(compiled) != closure['solving_projection']['flat_sha256']:
+        raise ValueError('solving projection changed during export')
+    if {name: sha(data) for name, data in helpers.items()} != closure['solving_projection']['helper_sha256']:
+        raise ValueError('solving helper projection changed during export')
+    for relative, data in helpers.items():
+        if (output / relative).read_bytes() != data:
+            raise ValueError('exported solving helper differs from its bound source')
     manifest = seal(output, {'schema': 'scirel.pure-consumption', 'snapshot_id': snapshot_id,
         'peer': {'kind': 'static-documentation', 'snapshot_id': snapshot_id},
         **common, 'retrieval': {'backend': 'lexical-and', 'ranking_method': 'weighted-lexical',
