@@ -27,6 +27,9 @@ import validate_installed_wheel  # noqa: E402
 SOURCE = '0' * 40
 ASSET = 'scirel.synthetic.alpha'
 NOTICE = b'Synthetic fixture notice; no scientific validation.\n'
+NESTED_IMAGES = ('referenced.svg', 'collapsed.svg', 'shortcut.svg', 'angle image.svg',
+                 'raw.svg', 'small.svg', 'large.svg', 'direct.svg',
+                 'multi.svg', 'multi-small.svg', 'multi-large.svg', 'container.svg')
 
 
 def _write(root, relative, data):
@@ -50,16 +53,60 @@ class _Documentation:
                 '<p>Fixture only. <a href="/api/asset?id=' + ASSET + '">Contract</a> '
                 '<a href="../../user-guide/synthetic.html#limits">Tutorial</a></p>'
                 '<pre>print(0)\n</pre><p class="rubric">Actual output</p><pre>0\n</pre>'
-                '<img src="../../_images/diagram.svg" alt="Synthetic diagram"></article>').encode(),
+                '<img src="../../_images/diagram.svg" alt="Synthetic diagram">'
+                '<img src="../../_static/examples/used.svg" alt="Used example"></article>').encode(),
             'web/user-guide/synthetic.html': (
                 '<article class="bd-article"><h1>Synthetic tutorial ' + language + '</h1>'
                 '<p>Scope: synthetic scalar fixture. 合成示例。</p><pre>print(0)\n</pre>'
                 '<p><a href="../reference/generated/' + ASSET + '.html">API</a></p>'
-                '<p><a href="../tutorials/supplement.html">Further reading</a></p></article>').encode(),
+                '<p><a href="../tutorials/supplement.html">Further reading</a></p>'
+                '<p><a href="/chapters/synthetic/example.py">Complete example</a> '
+                '<a href="/chapters/synthetic/download.html">Download details</a></p>'
+                '<pre># [literal data](../assets/absent.svg)\n</pre></article>').encode(),
             'web/tutorials/supplement.html': (
                 '<article class="bd-article"><h1>Supplement ' + language + '</h1>'
                 '<p>Keep every unvalidated assumption visible.</p></article>').encode(),
             'web/_images/diagram.svg': b'<svg xmlns="http://www.w3.org/2000/svg"/>\n',
+            'web/_images/unused.svg': b'<svg><title>Unreferenced image fixture</title></svg>\n',
+            'web/_static/examples/used.svg': b'<svg><title>Referenced example fixture</title></svg>\n',
+            'web/_static/examples/unused.svg': b'<svg><title>Unreferenced example fixture</title></svg>\n',
+            'chapters/synthetic/example.py': b'print("synthetic download")\n',
+            'chapters/synthetic/download.html': (
+                '<!doctype html><link href="bundle/theme.css" rel="stylesheet">'
+                '<img src="bundle/picture.svg" alt="Nested fixture">'
+                '<a href="results.json">Results</a><a href="notes.md">Notes</a>').encode(),
+            'chapters/synthetic/results.json': encode({'notice': 'Synthetic result fixture'}),
+            'chapters/synthetic/notes.md': (
+                '# Download notes\n\n![reference][figure]\n\n[figure]: referenced.svg\n\n'
+                '![collapsed][]\n\n[collapsed]: collapsed.svg\n\n'
+                '![shortcut]\n\n[shortcut]: shortcut.svg\n\n'
+                '![angle](<angle image.svg>)\n\n'
+                '<img src="raw.svg" srcset="small.svg 1x, large.svg 2x">\n\n'
+                '<img\n    src="multi.svg"\n'
+                '    srcset="multi-small.svg 1x, multi-large.svg 2x"\n>\n\n'
+                '<div>\n    <img src="container.svg">\n</div>\n\n'
+                '[direct](direct.svg)\n\n'
+                '`[inline example](absent-inline.svg)`\n\n'
+                '`<div>`\n\n    [quoted HTML example](absent-quoted-html.svg)\n\n'
+                '    <div>\n    [indented HTML example](absent-indented-html.svg)\n    </div>\n\n'
+                '<img src="raw.svg">\n\n    [after void tag](absent-after-void.svg)\n\n'
+                '<div/>\n\n    [after self-closing tag](absent-after-self-closing.svg)\n\n'
+                '~~~md\n[fenced example](absent-fenced.svg)\n~~~\n\n'
+                '    [indented example](absent-indented.svg)\n\n'
+                '<!-- [commented example](absent-comment.svg) -->\n\n'
+                '[unused]: absent-unused-definition.svg\n\n'
+                '- Outer\n    - [download](nested-results.json)\n\n'
+                '          [nested code example](absent-nested-code.svg)\n\n'
+                '    ~~~md\n    [nested fenced example](absent-nested-fenced.svg)\n    ~~~\n').encode(),
+            'chapters/synthetic/nested-results.json': encode({'notice': 'Nested-list download fixture'}),
+            'chapters/synthetic/bundle/theme.css': (
+                b'/* url(absent-comment.svg) */\nbody {background: url("picture.svg")}\n'),
+            'chapters/synthetic/bundle/picture.svg': (
+                '<svg xmlns="http://www.w3.org/2000/svg">'
+                '<image href="pixel.png"/></svg>\n').encode(),
+            'chapters/synthetic/bundle/pixel.png': b'Synthetic opaque image fixture\n',
+            'chapters/synthetic/unused.json': encode({'notice': 'Unreferenced download fixture'}),
+            **{'chapters/synthetic/' + name: b'<svg/>\n' for name in NESTED_IMAGES},
         }
         self.manifest = {
             'source_revision': SOURCE, 'source_dirty': False,
@@ -134,7 +181,8 @@ def export_case(tmp_path, monkeypatch):
                         lambda *args, **kwargs: ({'status': 'PASS'}, []))
     monkeypatch.setattr(exposure, 'held_asset_ids', lambda: set())
     return SimpleNamespace(source=source, skill=skill, wheel=wheel, contract=contract,
-                           agent=tmp_path / 'agent', html=tmp_path / 'html', closure=closure)
+                           agent=tmp_path / 'agent', html=tmp_path / 'html', closure=closure,
+                           snapshots=snapshots)
 
 
 def _export(case):
@@ -171,7 +219,14 @@ def test_export_supplies_a_closed_skill_tree_and_standalone_runtime(export_case)
         'catalog/contracts/' + ASSET + '.json',
         *{f'docs/{language}/{relative}' for language in ('en', 'zh') for relative in (
             'api/' + ASSET + '.md', 'tutorials/synthetic.md',
-            'tutorials/supplement.md', 'assets/diagram.svg')},
+            'tutorials/supplement.md', 'assets/diagram.svg', 'assets/examples/used.svg',
+            'assets/chapters/synthetic/example.py', 'assets/chapters/synthetic/download.html',
+            'assets/chapters/synthetic/results.json', 'assets/chapters/synthetic/notes.md',
+            'assets/chapters/synthetic/nested-results.json',
+            'assets/chapters/synthetic/bundle/theme.css',
+            'assets/chapters/synthetic/bundle/picture.svg',
+            'assets/chapters/synthetic/bundle/pixel.png',
+            *('assets/chapters/synthetic/' + name for name in NESTED_IMAGES))},
     }
     actual = {path.relative_to(case.agent).as_posix()
               for path in case.agent.rglob('*') if path.is_file()}
@@ -181,7 +236,15 @@ def test_export_supplies_a_closed_skill_tree_and_standalone_runtime(export_case)
             'records/' + ASSET + '.json', 'readers/' + ASSET + '.json',
             'web/index.html', 'web/reference/generated/' + ASSET + '.html',
             'web/user-guide/synthetic.html', 'web/tutorials/supplement.html',
-            'web/_images/diagram.svg')}
+            'web/_images/diagram.svg', 'web/_images/unused.svg',
+            'web/_static/examples/used.svg', 'web/_static/examples/unused.svg',
+            'chapters/synthetic/example.py', 'chapters/synthetic/download.html',
+            'chapters/synthetic/results.json', 'chapters/synthetic/notes.md',
+            'chapters/synthetic/nested-results.json',
+            'chapters/synthetic/bundle/theme.css',
+            'chapters/synthetic/bundle/picture.svg', 'chapters/synthetic/bundle/pixel.png',
+            'chapters/synthetic/unused.json',
+            *('chapters/synthetic/' + name for name in NESTED_IMAGES))}
     assert {path.relative_to(case.html).as_posix()
             for path in case.html.rglob('*') if path.is_file()} == expected_html
     identity = json.loads((case.agent / 'runtime.json').read_bytes())
@@ -199,6 +262,13 @@ def test_export_supplies_a_closed_skill_tree_and_standalone_runtime(export_case)
     for relative in ('SKILL.md', 'references/checks.md', 'scripts/delivery.py'):
         assert (case.agent / 'skills/scirel-solving' / relative).read_bytes() == (
             case.skill / relative).read_bytes()
+    for language, snapshot in case.snapshots.items():
+        for source, target in (
+                ('web/_images/diagram.svg', 'diagram.svg'),
+                ('web/_static/examples/used.svg', 'examples/used.svg'),
+                *[(relative, relative) for relative in snapshot.files
+                  if relative.startswith('chapters/') and not relative.endswith('unused.json')]):
+            assert (case.agent / 'docs' / language / 'assets' / target).read_bytes() == snapshot.read(source)
     assert (case.agent / 'tools/query.py').read_bytes() == (case.source / 'scripts/query.py').read_bytes()
     assert (case.agent / 'catalog/contracts' / (ASSET + '.json')).read_bytes() == case.contract
     assert (case.agent / 'runtime-requirements.txt').read_text().splitlines()[-1] == 'numpy==2.5.4'
@@ -249,3 +319,46 @@ def test_export_rejects_a_skill_helper_changed_after_capture(export_case, monkey
     assert changed
     assert not case.agent.exists() and not case.html.exists()
     assert not list(case.agent.parent.glob('.scirel-delivery-stage-*'))
+
+
+@pytest.mark.parametrize('missing', [
+    'web/_images/diagram.svg', 'chapters/synthetic/bundle/pixel.png'])
+def test_export_rejects_a_missing_direct_or_nested_resource(export_case, missing):
+    case = export_case
+    snapshot = case.snapshots['en']
+    del snapshot.files[missing]
+    del snapshot.manifest['files'][missing]
+    with pytest.raises(ValueError, match='referenced resource is missing'):
+        _export(case)
+    assert not case.agent.exists() and not case.html.exists()
+
+
+def test_export_rejects_a_nested_resource_link_outside_its_root(export_case):
+    case = export_case
+    case.snapshots['en'].files['chapters/synthetic/bundle/picture.svg'] = (
+        b'<svg><image href="../../../../../../../../outside.png"/></svg>\n')
+    with pytest.raises(ValueError, match='resource link escapes export'):
+        _export(case)
+    assert not case.agent.exists() and not case.html.exists()
+
+
+@pytest.mark.parametrize('resource', ['referenced.svg', 'small.svg', 'angle image.svg',
+                                     'multi-small.svg', 'nested-results.json'])
+def test_export_rejects_missing_markdown_and_srcset_candidates(export_case, resource):
+    case = export_case
+    snapshot = case.snapshots['en']
+    relative = 'chapters/synthetic/' + resource
+    del snapshot.files[relative]
+    del snapshot.manifest['files'][relative]
+    with pytest.raises(ValueError, match='referenced resource is missing'):
+        _export(case)
+    assert not case.agent.exists() and not case.html.exists()
+
+
+def test_export_rejects_ambiguous_static_srcset(export_case):
+    case = export_case
+    case.snapshots['en'].files['chapters/synthetic/notes.md'] = (
+        b'<img src="raw.svg" srcset="small.svg 1x 2x">\n')
+    with pytest.raises(ValueError, match='invalid static resource srcset'):
+        _export(case)
+    assert not case.agent.exists() and not case.html.exists()

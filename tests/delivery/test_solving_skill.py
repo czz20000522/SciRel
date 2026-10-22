@@ -47,6 +47,44 @@ def test_inline_examples_do_not_create_dependencies_but_html_and_images_do(tmp_p
     assert 'image.bin' in solving_skill.load_solving_skill(root)
 
 
+def test_used_reference_forms_and_html_srcset_declare_the_actual_skill_closure(tmp_path):
+    root = _skill(tmp_path / 'skill')
+    images = {'full.svg', 'collapsed.svg', 'shortcut.svg', 'angle image.svg',
+              'raw.svg', 'small.svg', 'large.svg', 'multi.svg', 'multi-small.svg',
+              'multi-large.svg', 'nested.svg', 'container.svg'}
+    for name in images:
+        (root / name).write_bytes(b'<svg/>\n')
+    (root / 'SKILL.md').write_text(
+        '# Method\n\n![full][figure]\n\n[figure]: full.svg\n\n'
+        '![collapsed][]\n\n[collapsed]: collapsed.svg\n\n'
+        '![shortcut]\n\n[shortcut]: shortcut.svg\n\n'
+        '![angle](<angle image.svg>)\n\n'
+        '<img src="raw.svg" srcset="small.svg 1x, large.svg 2x">\n\n'
+        '<img\n    src="multi.svg"\n'
+        '    srcset="multi-small.svg 1x, multi-large.svg 2x"\n>\n\n'
+        '<div>\n    <img src="container.svg">\n</div>\n\n'
+        '`<div>`\n\n    [quoted HTML](absent-quoted-html.svg)\n\n'
+        '    <div>\n    [indented HTML](absent-indented-html.svg)\n    </div>\n\n'
+        '<img src="raw.svg">\n\n    [after void](absent-after-void.svg)\n\n'
+        '<div/>\n\n    [after self-closing](absent-after-self-closing.svg)\n\n'
+        '[unused]: absent-definition.svg\n\n'
+        '`[inline](absent-inline.svg)`\n\n'
+        '~~~md\n[fenced](absent-fenced.svg)\n~~~\n\n'
+        '    [indented](absent-indented.svg)\n\n'
+        '- Outer\n    - [download](nested.svg)\n\n'
+        '          [nested code](absent-nested-code.svg)\n\n'
+        '    ~~~md\n    [nested fenced](absent-nested-fenced.svg)\n    ~~~\n')
+    assert set(solving_skill.load_solving_skill(root)) == {'SKILL.md', *images}
+
+
+@pytest.mark.parametrize('srcset', ['small.svg 1x 2x', 'small.svg nonsense'])
+def test_ambiguous_html_image_candidates_fail_closed(tmp_path, srcset):
+    root = _skill(tmp_path / 'skill')
+    (root / 'SKILL.md').write_text('<img srcset="' + srcset + '">\n')
+    with pytest.raises(ValueError, match='invalid static resource srcset'):
+        solving_skill.load_solving_skill(root)
+
+
 @pytest.mark.parametrize('target', [
     'missing.md', '../../other-skill/SKILL.md', '%2e%2e/%2e%2e/private.md',
     '/private.md', 'file:///private.md', 'skill://other/SKILL.md',

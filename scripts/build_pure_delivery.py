@@ -20,7 +20,7 @@ import zipfile
 
 from check_wheel_exposure import inspect_wheel
 from query import encode, sha
-from solving_skill import load_solving_skill
+from solving_skill import html_links, load_solving_skill, markdown_links
 from scirel_docs import Documentation, build_capability_index, documentation_input_digests
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -185,30 +185,86 @@ def seal_runtime(directory, metadata):
     return identity
 
 
+def document_links(relative, data):
+    """Read explicit resource links without interpreting examples or downloads."""
+    import re
+    suffix = Path(relative).suffix.lower()
+    if suffix not in {'.html', '.md', '.svg', '.css'}:
+        return []
+    text = data.decode('utf-8')
+    if suffix == '.md':
+        return markdown_links(text)[0]
+
+    def css_links(css):
+        # Preserve quoted URL bytes while excluding actual CSS comments.
+        css = re.sub(r'''"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|/\*[\s\S]*?\*/''',
+                     lambda match: '' if match[0].startswith('/*') else match[0], css)
+        urls = re.findall(r'''url\(\s*(?:"([^"]*)"|'([^']*)'|([^\s)]*))\s*\)''', css,
+                          flags=re.IGNORECASE)
+        return [next((value for value in group if value), '') for group in urls] + [
+            match[1] for match in re.findall(r'''@import\s+(["'])(.*?)\1''', css,
+                                            flags=re.IGNORECASE)]
+
+    if suffix == '.css':
+        return css_links(text)
+    parser = ArticleParser(); parser.feed(text)
+    links = html_links(text)[0]
+
+    def walk(node):
+        if not isinstance(node, Node):
+            return
+        if node.attrs.get('style'):
+            links.extend(css_links(node.attrs['style']))
+        if node.tag == 'style':
+            links.extend(css_links(node.text()))
+        for child in node.children:
+            walk(child)
+
+    walk(parser.root)
+    return links
+
+
+def copy_referenced_assets(directory, candidates, readings):
+    """Copy only resources reached from projected API/tutorial reading paths.
+
+    Relative resource paths retain their captured bytes. Markdown/HTML/SVG/CSS
+    resources can declare further local dependencies; other downloads are
+    opaque and never executed. Missing or escaping links fail the export.
+    """
+    directory = directory.resolve()
+    pending = [(relative, (directory / relative).read_bytes()) for relative in readings]
+    visited = set()
+    while pending:
+        relative, data = pending.pop()
+        if relative in visited:
+            continue
+        visited.add(relative)
+        for href in document_links(relative, data):
+            parsed = urlsplit(href)
+            if parsed.scheme or parsed.netloc or not parsed.path:
+                continue
+            target = ((directory / unquote(parsed.path).lstrip('/')) if parsed.path.startswith('/')
+                      else directory / posixpath.dirname(relative) / unquote(parsed.path)).resolve()
+            if not target.is_relative_to(directory):
+                raise ValueError('resource link escapes export: ' + relative + ' -> ' + href)
+            destination = target.relative_to(directory).as_posix()
+            if destination in candidates:
+                captured = candidates[destination]
+                if destination not in visited:
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes(captured)
+                    pending.append((destination, captured))
+            elif not target.is_file():
+                raise ValueError('referenced resource is missing: ' + relative + ' -> ' + href)
+
+
 def local_link_closure(directory):
     """Check local document/image targets; no network or scientific execution."""
-    import re
     checked, errors = 0, []
     for path in directory.rglob('*'):
         if not path.is_file() or path.suffix not in {'.html', '.md'}:
             continue
-        text = path.read_text()
-        if path.suffix == '.html':
-            parser = ArticleParser(); parser.feed(text)
-            links = []
-            def walk(node):
-                if isinstance(node, Node):
-                    for attribute in ('href', 'src'):
-                        if attribute in node.attrs:
-                            links.append(node.attrs[attribute])
-                    for child in node.children:
-                        walk(child)
-            walk(parser.root)
-        else:
-            # Literal code and math may include Markdown-shaped data.
-            scrubbed = re.sub(r'(?ms)^(`{3,})[^\n]*\n.*?^\1[ \t]*$', '', text)
-            links = re.findall(r'!?\[[^\]]*\]\(([^)\s]+)\)', scrubbed)
-        for href in links:
+        for href in document_links(path.name, path.read_bytes()):
             parsed = urlsplit(href)
             if parsed.scheme or parsed.netloc or not parsed.path:
                 continue
@@ -452,6 +508,16 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
         put('catalog/contracts/' + asset + '.json', data)
     put('catalog/capability-index.json', encode(consumer_index(snapshots['zh'].capability_index())))
     chapters = []
+    asset_candidates, reading_paths = {}, []
+
+    def candidate(relative, data):
+        if (relative.startswith('/') or posixpath.normpath(relative) != relative or
+                not (output / relative).resolve().is_relative_to(output.resolve())):
+            raise ValueError('invalid projected resource path: ' + relative)
+        if relative in asset_candidates and asset_candidates[relative] != data:
+            raise ValueError('projected resource path has conflicting source bytes: ' + relative)
+        asset_candidates[relative] = data
+
     for language, snapshot in snapshots.items():
         html_root = html_output / language; html_root.mkdir()
         for relative in snapshot.manifest['files']:
@@ -461,6 +527,7 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
             data = snapshot.read(relative)
             if relative.startswith('web/') or relative.startswith(('records/', 'readers/', 'chapters/')) or relative in ('CAPABILITY_MATRIX.md', 'capability-matrix.json'):
                 target = html_root / relative; target.parent.mkdir(parents=True, exist_ok=True)
+                html_data = data
                 if relative.endswith('.html'):
                     text = data.decode()
                     import re
@@ -478,19 +545,20 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
                                         posixpath.relpath('CAPABILITY_MATRIX.md', posixpath.dirname(relative)) + '"')
                     text = text.replace('href="/capability-matrix.json"', 'href="' +
                                         posixpath.relpath('capability-matrix.json', posixpath.dirname(relative)) + '"')
-                    data = text.encode()
-                target.write_bytes(data)
+                    html_data = text.encode()
+                target.write_bytes(html_data)
             if relative.startswith('web/_images/'):
-                put('docs/' + language + '/assets/' + relative.removeprefix('web/_images/'), data)
+                candidate('docs/' + language + '/assets/' + relative.removeprefix('web/_images/'), data)
             if relative.startswith('web/_static/examples/'):
-                put('docs/' + language + '/assets/examples/' + relative.removeprefix('web/_static/examples/'), data)
+                candidate('docs/' + language + '/assets/examples/' + relative.removeprefix('web/_static/examples/'), data)
             if relative.startswith('chapters/'):
-                put('docs/' + language + '/assets/' + relative, data)
+                candidate('docs/' + language + '/assets/' + relative, data)
         for asset in sorted(snapshot.ids):
             relative = 'web/reference/generated/' + asset + '.html'
             destination = 'docs/' + language + '/api/' + asset + '.md'
             put(destination, markdown(snapshot.read(relative).decode(), source_path=relative,
                                       target_path=destination, language=language))
+            reading_paths.append(destination)
         book = json.loads(snapshot.read('handbook.json'))
         for chapter in book['chapters']:
             chapter_id = chapter['id']
@@ -498,6 +566,7 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
             destination = 'docs/' + language + '/tutorials/' + chapter_id + '.md'
             put(destination, markdown(snapshot.read(relative).decode(), source_path=relative,
                                       target_path=destination, language=language))
+            reading_paths.append(destination)
             if language == 'en':
                 chapters.append({'chapter_id': chapter_id, 'paths': {
                     lang: 'docs/' + lang + '/tutorials/' + chapter_id + '.md' for lang in ('en', 'zh')}})
@@ -507,11 +576,13 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
                 destination = 'docs/' + language + '/tutorials/' + tutorial_id + '.md'
                 put(destination, markdown(snapshot.read(relative).decode(), source_path=relative,
                                           target_path=destination, language=language))
+                reading_paths.append(destination)
                 if language == 'en':
                     if any(item['chapter_id'] == tutorial_id for item in chapters):
                         raise ValueError('tutorial ID collides with chapter ID: ' + tutorial_id)
                     chapters.append({'chapter_id': tutorial_id, 'paths': {
                         lang: 'docs/' + lang + '/tutorials/' + tutorial_id + '.md' for lang in ('en', 'zh')}})
+    copy_referenced_assets(output, asset_candidates, reading_paths)
     put('catalog/tutorial-index.json', encode({'schema': 'scirel.tutorial-index', 'chapters': chapters}))
     # The Agent wheel already carries the checked notice bytes. The human site
     # is separate and therefore needs its own notices.
