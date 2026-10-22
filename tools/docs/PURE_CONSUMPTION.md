@@ -185,3 +185,14 @@ candidate → unified export/closure check → installed-wheel checks and real s
 and HTTP smoke → issue a new immutable bundle. Select tests by changed paths;
 small changes do not require a scientific full-suite run. Validation success
 does not prove every natural-language page scientifically correct.
+
+The delivery maintainer owns this task's build stages, smoke environments and
+receipts. Export uses isolated stages and removes them on any failure; incomplete
+Agent/HTML directories are never left as deliverables. After a candidate is
+replaced and its inputs are no longer used, retain only its minimal failure cause
+and regression result, then remove the abandoned wheel/docs/partial package.
+After successful handoff remove this task's duplicate environments, test scratch,
+build/egg-info and source bytecode caches. Keep the final immutable bundles and
+small receipts until explicitly superseded. Read and resolved issue/handoff items
+are closed or removed from the current entry; history belongs to Git and the task
+record. Do not keep stale open checklists or extra handoff copies.

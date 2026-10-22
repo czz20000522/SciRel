@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import textwrap
+import tempfile
 from urllib.parse import parse_qs, urlsplit
 from urllib.parse import unquote
 import zipfile
@@ -359,7 +360,7 @@ def source_closure(snapshots, source):
             'natural_language_scientific_review': 'NOT_RUN'}
 
 
-def build(wheel, docs_en, docs_zh, output, html_output):
+def _export(wheel, docs_en, docs_zh, output, html_output):
     if (output.resolve().is_relative_to(html_output.resolve()) or
             html_output.resolve().is_relative_to(output.resolve())):
         raise ValueError('agent and HTML outputs must be distinct non-overlapping directories')
@@ -556,6 +557,32 @@ def build(wheel, docs_en, docs_zh, output, html_output):
         'agent_manifest_sha256': manifest['manifest_sha256'],
         'documentation_snapshots': {lang: docs.manifest['snapshot_sha256'] for lang, docs in snapshots.items()}})
     return {'agent': manifest, 'html': html_manifest}
+
+
+def build(wheel, docs_en, docs_zh, output, html_output):
+    """Publish both complete projections, cleaning all owned stages on failure."""
+    output, html_output = Path(output), Path(html_output)
+    if (output.resolve().is_relative_to(html_output.resolve()) or
+            html_output.resolve().is_relative_to(output.resolve())):
+        raise ValueError('agent and HTML outputs must be distinct non-overlapping directories')
+    for target in (output, html_output):
+        if target.exists():
+            raise FileExistsError('refusing overwrite: ' + str(target))
+    output.parent.mkdir(parents=True, exist_ok=True)
+    html_output.parent.mkdir(parents=True, exist_ok=True)
+    published = []
+    try:
+        with tempfile.TemporaryDirectory(prefix='.scirel-delivery-stage-', dir=output.parent) as temp:
+            stage = Path(temp)
+            result = _export(wheel, docs_en, docs_zh, stage / 'agent', stage / 'html')
+            (stage / 'agent').rename(output); published.append(output)
+            (stage / 'html').rename(html_output); published.append(html_output)
+        return result
+    except BaseException:
+        # Only these newly created task-owned paths can be rolled back.
+        for target in published:
+            shutil.rmtree(target)
+        raise
 
 
 def main():

@@ -179,6 +179,31 @@ def test_authored_mathml_without_latex_preserves_the_operator_tree():
     assert result.strip() != 'ab'
 
 
+def test_failed_export_removes_stages_and_never_publishes_partial_packages(tmp_path, monkeypatch):
+    def fail(wheel, en, zh, agent, human):
+        agent.mkdir(); human.mkdir()
+        (agent / 'partial.json').write_text('incomplete')
+        raise ValueError('synthetic failure after writing')
+    monkeypatch.setattr(delivery, '_export', fail)
+    with pytest.raises(ValueError, match='synthetic failure'):
+        delivery.build(Path('wheel'), Path('en'), Path('zh'), tmp_path / 'agent', tmp_path / 'html')
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_complete_export_publishes_both_roots_without_leftover_stages(tmp_path, monkeypatch):
+    def export(wheel, en, zh, agent, human):
+        agent.mkdir(); human.mkdir()
+        (agent / 'manifest.json').write_text('agent')
+        (human / 'manifest.json').write_text('human')
+        return {'complete': True}
+    monkeypatch.setattr(delivery, '_export', export)
+    result = delivery.build(Path('wheel'), Path('en'), Path('zh'), tmp_path / 'agent', tmp_path / 'html')
+    assert result == {'complete': True}
+    assert sorted(path.name for path in tmp_path.iterdir()) == ['agent', 'html']
+    assert (tmp_path / 'agent/manifest.json').read_text() == 'agent'
+    assert (tmp_path / 'html/manifest.json').read_text() == 'human'
+
+
 def test_seal_binds_nested_manifests_as_product_members(tmp_path):
     root = tmp_path / 'sealed'
     (root / 'nested').mkdir(parents=True)
