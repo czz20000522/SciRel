@@ -11,12 +11,13 @@ Operator/TaskGraph classification inferred from the current contracts.
 ## Stable MCP protocol
 
 MCP is the formal Agent entry. The official Python SDK adapts one transport-neutral
-registry/dispatch to a client-launched stdio process or Streamable HTTP. Local and
-remotely hosted modes use the same five directory tools and public snapshot. They
+registry/dispatch to a client-launched stdio process or local loopback Streamable
+HTTP. Both run in the user's local environment or platform sandbox and use the
+same five directory tools and public snapshot. They
 never register every scientific function as a tool or execute arbitrary user
 code. Computation uses the installed scientific wheel in the user's Python
-program. SDK dependencies are pinned separately. No public service is deployed
-by this build; Famou protocol/transport/authentication support remains `NOT_RUN`.
+program. SDK dependencies are pinned separately. Famou native client/transport
+support remains `NOT_RUN`.
 
 JSON envelopes use `schema: scirel.consumer-response`, command, source revision,
 snapshot ID, exact manifest digest and wheel digest. There are no version suffixes
@@ -74,8 +75,8 @@ Ranking method is an implementation declaration, not a permanent protocol enum.
 Later lexical, vector or service implementations must preserve these envelope,
 identity, filtering, bounds, conflict and failure semantics. A backend change
 requires a newly identified snapshot and a measured retrieval baseline; callers
-must not infer correctness from a backend name. No remote server or vector
-database is required by this delivery.
+must not infer correctness from a backend name. No additional service or vector
+database is required by this local delivery.
 
 ## Scientific use
 
@@ -93,15 +94,10 @@ accepts the result's applicability.
 
 Local/platform sandbox: install the separate SDK lock and start
 `python tools/server.py --root PATH --transport stdio`; the host owns lifecycle.
-Hosted remote: the same entry accepts `--transport streamable-http`; default
-binding is loopback. For the documented port 8765 the actual endpoint is
-`http://127.0.0.1:8765/mcp`. A hosted client uses `https://YOUR_HOST/mcp`; a reverse
-proxy may expose another base path only if the operator configures that route
-and gives the matching full URL to clients. Before exposure, the operator must explicitly choose the
-deployment location, TLS termination, authentication/authorization, allowed
-origins/hosts, networking, monitoring and immutable snapshot rollout. These are
-not inferred from a passing loopback test. Remote status is `NOT_DEPLOYED`;
-Famou client integration is `NOT_RUN`.
+Local/platform sandbox HTTP: the same entry accepts `--transport
+streamable-http --host 127.0.0.1 --port 8765`. Its actual endpoint is
+`http://127.0.0.1:8765/mcp`. The client and server run in the same local/sandbox
+environment. Famou native client integration remains `NOT_RUN`.
 
 The bundle contains `mcp-connections.json`, directly usable as official-SDK
 configuration fragments. Run from the extracted Agent root with its pinned SDK
@@ -120,8 +116,7 @@ environment active (so `python` resolves to that environment):
 For stdio use `Client(StdioServerParameters(**config["stdio"]))`; for HTTP use
 `Client(config["streamable_http"]["url"])`. Both are from `mcp`; call them inside
 an async context. Start the HTTP server separately with `--transport
-streamable-http --host 127.0.0.1 --port 8765`. A hosted connection changes the
-full URL, while the tools, data and identity checks remain identical. These are
+streamable-http --host 127.0.0.1 --port 8765`. These are
 official-SDK fragments; translating them to Famou's native host configuration
 still requires its actual supported schema and remains `NOT_RUN`.
 
