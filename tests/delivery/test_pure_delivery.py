@@ -170,12 +170,13 @@ def test_mathml_preserves_bound_roots_fractions_subscripts_and_powers(display):
     assert 'Before' in result and 'After' in result
 
 
-def test_mathml_without_exact_formula_fails_instead_of_flattening_science():
+def test_authored_mathml_without_latex_preserves_the_operator_tree():
     article = ('<article class="bd-article"><math><mfrac><mi>a</mi><mi>b</mi>'
                '</mfrac></math></article>')
-    with pytest.raises(ValueError):
-        delivery.markdown(article, source_path='web/user-guide/synthetic.html',
-                          target_path='docs/en/tutorials/synthetic.md', language='en')
+    result = delivery.markdown(article, source_path='web/user-guide/synthetic.html',
+                               target_path='docs/en/tutorials/synthetic.md', language='en')
+    assert '<math><mfrac><mi>a</mi><mi>b</mi></mfrac></math>' in result
+    assert result.strip() != 'ab'
 
 
 def test_seal_binds_nested_manifests_as_product_members(tmp_path):

@@ -5,6 +5,7 @@ import argparse
 import ast
 import importlib
 from html.parser import HTMLParser
+from html import escape
 import json
 import posixpath
 from pathlib import Path
@@ -80,6 +81,8 @@ def markdown(html, *, source_path, target_path, language):
             asset = parse_qs(parsed.query).get('id', [''])[0]
             destination = ('catalog/contracts/' + asset + '.json' if parsed.path == '/api/asset'
                            else 'catalog/readers/' + asset + '.json')
+        elif parsed.path.startswith('/chapters/'):
+            destination = 'docs/' + language + '/assets/' + parsed.path.lstrip('/')
         else:
             absolute = posixpath.normpath(posixpath.join(posixpath.dirname(source_path), parsed.path))
             if '/reference/generated/' in absolute:
@@ -108,7 +111,16 @@ def markdown(html, *, source_path, target_path, language):
         if tag == 'math':
             formula = attrs.get('aria-label')
             if not formula:
-                raise ValueError('MathML needs an exact bound LaTeX aria-label')
+                # Authored MathML need not have LaTeX source. Preserve its full
+                # operator tree; never flatten roots/fractions/powers to text.
+                def mathml(value):
+                    if isinstance(value, str):
+                        return escape(value)
+                    attributes = ''.join(' ' + key + '="' + escape(val or '', quote=True) + '"'
+                                         for key, val in value.attrs.items())
+                    return '<' + value.tag + attributes + '>' + ''.join(
+                        mathml(child) for child in value.children) + '</' + value.tag + '>'
+                return '\n\n' + mathml(node) + '\n\n'
             return ('\n\n$$\n' + formula + '\n$$\n\n' if attrs.get('display') == 'block'
                     else '$' + formula + '$')
         if tag == 'pre':
@@ -433,7 +445,7 @@ def build(wheel, docs_en, docs_zh, output, html_output):
         html_root = html_output / language; html_root.mkdir()
         for relative in snapshot.manifest['files']:
             data = snapshot.read(relative)
-            if relative.startswith('web/') or relative.startswith(('records/', 'readers/')) or relative in ('CAPABILITY_MATRIX.md', 'capability-matrix.json'):
+            if relative.startswith('web/') or relative.startswith(('records/', 'readers/', 'chapters/')) or relative in ('CAPABILITY_MATRIX.md', 'capability-matrix.json'):
                 target = html_root / relative; target.parent.mkdir(parents=True, exist_ok=True)
                 if relative.endswith('.html'):
                     text = data.decode()
@@ -442,6 +454,12 @@ def build(wheel, docs_en, docs_zh, output, html_output):
                         text = re.sub(r'/api/' + endpoint + r'\?id=([a-zA-Z0-9_.-]+)',
                             lambda match: posixpath.relpath(folder + '/' + match[1] + '.json',
                                 posixpath.dirname(relative)), text)
+                    text = re.sub(r'/api/chapter\?id=([a-zA-Z0-9_.-]+)',
+                        lambda match: posixpath.relpath('chapters/' + match[1] + '/chapter.json',
+                            posixpath.dirname(relative)), text)
+                    text = re.sub(r'(?<=href=")/chapters/([^"?]+)',
+                        lambda match: posixpath.relpath('chapters/' + match[1],
+                            posixpath.dirname(relative)), text)
                     text = text.replace('href="/CAPABILITY_MATRIX.md"', 'href="' +
                                         posixpath.relpath('CAPABILITY_MATRIX.md', posixpath.dirname(relative)) + '"')
                     text = text.replace('href="/capability-matrix.json"', 'href="' +
@@ -452,6 +470,8 @@ def build(wheel, docs_en, docs_zh, output, html_output):
                 put('docs/' + language + '/assets/' + relative.removeprefix('web/_images/'), data)
             if relative.startswith('web/_static/examples/'):
                 put('docs/' + language + '/assets/examples/' + relative.removeprefix('web/_static/examples/'), data)
+            if relative.startswith('chapters/'):
+                put('docs/' + language + '/assets/' + relative, data)
         for asset in sorted(snapshot.ids):
             relative = 'web/reference/generated/' + asset + '.html'
             destination = 'docs/' + language + '/api/' + asset + '.md'
