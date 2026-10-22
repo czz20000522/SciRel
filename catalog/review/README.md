@@ -1,9 +1,9 @@
 # Human-review exposure hold
 
 `HOLD.json` is the reversible exposure gate between candidate capability and
-public capability list. Held assets remain validated contracts in
-`catalog/examples` only when they are kept for review; code and direct tests are
-not deleted. They are excluded from:
+public capability list. Held contracts remain in `catalog/review/examples/` and
+their candidate code in `catalog/review/candidates/`; their review evidence and
+direct tests are retained. They are excluded from:
 
 - generated documentation and readers,
 - the capability index / query service,
