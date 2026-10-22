@@ -17,7 +17,13 @@ Read it after `AGENTS.md`/`RULES.md`, not instead of them.
     composition + physical-closure, then rebind.
 - `dist/` contains the last zh/en docs snapshots and `dist/acceptance/` including
   the outbound S1-S6 report and wheel-exposure proof. These are generated
-  artifacts, not source truth.
+  artifacts, not source truth; rebuild into a new output directory (the build
+  refuses to overwrite an existing snapshot).
+- retained verdict evidence: `catalog/review/evidence/` (audit CSVs and source
+  audit reports; no `/tmp` references remain in `VERDICTS.json`).
+- review harness: `python scripts/review_harness.py --check` (sets
+  `SCIREL_REVIEW_HOLD=1`, mounts the candidate tree and runs the held contract's
+  direct tests).
 
 ## Required entry points
 
