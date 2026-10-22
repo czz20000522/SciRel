@@ -208,3 +208,27 @@ until the workflow and its acceptance evidence exist.
 
 The exposed outbound chain is usable; held capabilities remain in-flow gaps to fill
 or bound, not user handoffs. The capability count is not the acceptance metric.
+
+## Source-based decisions
+
+Use the source tree as an oracle for **source fidelity**, not for choosing
+between two physically defensible models:
+
+- **source parity**: implementation, defaults, branches and failure semantics
+  match a pinned canonical source commit; release with bounded evidence, not a
+  claim of physical calibration.
+- **source conflict**: two source versions/paths disagree. Choose the canonical
+  archive/commit, repair the implementation and add a regression; do not let both
+  versions remain unlabelled.
+- **source defect**: the source itself has a silent floor, warning-only guard,
+  lost branch or similar defect. A repair is allowed only when it is explicit,
+  tested and labelled `source-defect repair`, never `source parity`.
+- **no source / missing artifact**: keep the asset held. Do not substitute a
+  plausible formula or a missing graph artifact.
+- **API policy**: mask strictness, terminal ordering, fail-closed continuation or
+  similar receiver policy is not source behaviour. Record it as SciRel policy,
+  not as parity.
+
+Source identity and commit hashes belong in the review verdict/evidence record,
+not in the public contract body. A source-parity result never replaces an
+external physical oracle or user acceptance.
