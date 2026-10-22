@@ -59,7 +59,7 @@ async def serve_stdio(server):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root', type=Path, required=True,
-                        help='Root of one manifest-bound consumer snapshot')
+                        help='Root of one identity-bound consumer runtime')
     parser.add_argument('--transport', choices=('stdio', 'streamable-http'), default='stdio')
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8000)

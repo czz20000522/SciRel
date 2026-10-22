@@ -162,7 +162,7 @@ def test_export_supplies_a_closed_skill_tree_and_standalone_runtime(export_case)
     case = export_case
     result = _export(case)
     expected = {
-        'README.md', 'runtime.json', 'runtime-requirements.txt', 'mcp-requirements.txt',
+        'runtime.json', 'runtime-requirements.txt', 'mcp-requirements.txt', 'mcp-connections.json',
         'wheel/' + case.wheel.name,
         'tools/query.py', 'tools/capability_query.py', 'tools/consumer_tools.py', 'tools/server.py',
         'skills/scirel-solving/SKILL.md', 'skills/scirel-solving/references/checks.md',

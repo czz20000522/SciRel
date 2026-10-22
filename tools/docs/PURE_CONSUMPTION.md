@@ -42,7 +42,7 @@ python <package>/tools/query.py --root <package> get_tutorial <chapter-id> --lan
 through selection and reading. CLI errors are JSON envelopes with a nonzero exit
 status; parser errors also return nonzero. Query operations do not run science.
 Use the installed wheel's ordinary public Python functions in the task program.
-The package README contains installation and optional transport setup.
+Install the wheel named by `describe.runtime.wheel` with `python -m pip install <package>/wheel/<wheel>` in the declared Python runtime. Scientific requirements are also in `runtime-requirements.txt`; optional MCP uses `mcp-requirements.txt`.
 
 | CLI command | MCP tool | result |
 | --- | --- | --- |
@@ -139,8 +139,8 @@ Agent API/tutorial Markdown is projected from contract-bound HTML while
 preserving equations, code, output and links. The human HTML site is a separate
 output with necessary notices. Build/drift checks and scientific review evidence
 remain with their existing development/task authorities; they are not shipped
-as consumer prerequisites or redundant protocol/quickstart files. The generated
-README is the runtime installation and command guide.
+as consumer prerequisites or redundant protocol/quickstart files. The skill states the minimal installation command using the actual wheel and
+requirement files; CLI help supplies the command syntax.
 
 Change canonical contracts and implementation together with bound Chinese
 readers and affected authored tutorials. Keep stable scientific asset identities

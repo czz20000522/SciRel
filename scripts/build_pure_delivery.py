@@ -365,27 +365,16 @@ def source_closure(snapshots, source):
             'natural_language_scientific_review': 'NOT_RUN'}
 
 
-def consumer_readme(runtime):
-    return ('# SciRel consumer\n\n'
-        'Python ' + runtime['requires_python'] + '. Run these commands from this directory.\n'
-        'The CLI reads public metadata using only the Python standard library.\n\n'
-        '```bash\npython tools/query.py --root . describe\n```\n\n'
-        'Use describe/help to select the snapshot_sha256 and wheel_sha256, then pass\n'
-        '--expected-snapshot-sha256 and --expected-wheel-sha256 to browse, search, get\n'
-        'or get_tutorial. Read the selected contract before scientific use.\n'
-        'The solving method starts at [scirel-solving](skills/scirel-solving/SKILL.md).\n\n'
-        'Install scientific computation in your own Python environment:\n\n'
-        '```bash\npython3.14 -m venv ../scirel-consumer-venv\n'
-        '../scirel-consumer-venv/bin/python -m pip install wheel/' + runtime['wheel'] + '\n```\n\n'
-        'runtime-requirements.txt is derived from that wheel. Its license/notice files\n'
-        'are included in wheel metadata. Query identity verifies exported bytes; it\n'
-        'does not establish the client environment or scientific applicability.\n\n'
-        'Optional MCP uses the same query core with the official SDK in an environment\n'
-        'containing the pinned mcp-requirements.txt dependencies:\n\n'
-        '```bash\npython -m pip install -r mcp-requirements.txt\n'
-        'python tools/server.py --root . --transport stdio\n```\n\n'
-        'For loopback HTTP use --transport streamable-http --host 127.0.0.1 --port 8765;\n'
-        'the endpoint is http://127.0.0.1:8765/mcp. Stop your own server after use.\n')
+def consumer_index(full_index):
+    """Project source discovery into the metadata used by both runtime callers."""
+    fields = ('asset_id', 'symbol', 'capability', 'capability_summary', 'operation',
+              'operation_direction', 'model', 'geometry', 'coordinates', 'boundary',
+              'device_scope', 'device_scope_source', 'aliases', 'taxonomy', 'title_zh')
+    index = {key: full_index[key] for key in ('schema', 'source_revision', 'asset_count')}
+    index['assets'] = [{key: record[key] for key in fields} for record in full_index['assets']]
+    index['search_text'] = full_index['search_text']
+    index['derivation'] = 'Read-only projection of exact public contracts and bound Chinese reader; selected ports/evidence are in get.'
+    return index
 
 
 def _export(wheel, docs_en, docs_zh, output, html_output):
@@ -449,6 +438,9 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
             raise ValueError('runtime tool differs from its bound source: ' + source_name)
         put('tools/' + name, data)
     put('mcp-requirements.txt', (ROOT / 'tools/docs/mcp-requirements.txt').read_bytes())
+    put('mcp-connections.json', encode({
+        'stdio': {'command': 'python', 'args': ['tools/server.py', '--root', '.', '--transport', 'stdio']},
+        'streamable_http': {'url': 'http://127.0.0.1:8765/mcp'}}))
     contracts = {}
     for asset in sorted(snapshots['en'].ids):
         data = snapshots['en'].read('records/' + asset + '.json')
@@ -458,16 +450,7 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
             raise ValueError('snapshot contract differs from source: ' + asset)
         contracts[asset] = sha(data)
         put('catalog/contracts/' + asset + '.json', data)
-    full_index = snapshots['zh'].capability_index()
-    # Keep query metadata; ports/evidence remain in the selected exact contract.
-    fields = ('asset_id', 'symbol', 'capability', 'capability_summary', 'operation',
-              'operation_direction', 'model', 'geometry', 'coordinates', 'boundary',
-              'device_scope', 'device_scope_source', 'aliases', 'taxonomy', 'title_zh')
-    index = {key: full_index[key] for key in ('schema', 'source_revision', 'asset_count')}
-    index['assets'] = [{key: record[key] for key in fields} for record in full_index['assets']]
-    index['search_text'] = full_index['search_text']
-    index['derivation'] = 'Read-only projection of exact public contracts and bound Chinese reader; selected ports/evidence are in get.'
-    put('catalog/capability-index.json', encode(index))
+    put('catalog/capability-index.json', encode(consumer_index(snapshots['zh'].capability_index())))
     chapters = []
     for language, snapshot in snapshots.items():
         html_root = html_output / language; html_root.mkdir()
@@ -542,7 +525,6 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
     runtime = {'package_version': metadata['Version'], 'requires_python': metadata['Requires-Python'],
                'requires_dist': requirements, 'wheel': wheel.name, 'wheel_sha256': sha(wheel_bytes),
                'dependencies_bundled': False}
-    put('README.md', consumer_readme(runtime))
     for item in chapters:
         if any(not (output / relative).is_file() for relative in item['paths'].values()):
             raise ValueError('tutorial index has an old or missing reading path')
