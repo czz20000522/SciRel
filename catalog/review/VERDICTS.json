@@ -6,7 +6,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -17,7 +17,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -28,7 +28,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy CubicSpline reference comparison",
      "residual_risk": ""
@@ -39,7 +39,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic boundary residual identities",
      "residual_risk": ""
@@ -50,7 +50,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "SciPy CubicSpline reference comparison",
      "residual_risk": ""
@@ -61,7 +61,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic boundary residual identities",
      "residual_risk": ""
@@ -72,7 +72,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "Exactly absent species have a finite signed diagnostic proxy, not the mathematically infinite logarithm; its magnitude is not a physical logarithmic ratio. | Binary64 underflow can round densities or pressures to zero; positive-population log diagnostics still use analytic log density."
@@ -83,7 +83,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "The pressure law, electrostatic potential and profile alignment are caller supplied; successful broadcasting cannot establish one physical coordinate frame. | Independent fitted total and ion pressures remain a supported phenomenological contract; residual stress is not evidence for a new physical species. species_sum imposes numerical composition only."
@@ -94,7 +94,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Root uniqueness/refill phenomenology not established; limited oracle."
@@ -105,7 +105,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "Wb vs Wb/rad label not converted; one ion species/Boltzmann electron."
@@ -116,7 +116,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "The solver cannot detect a numerically valid callback whose residual represents the wrong physics. | Eight expansion rounds and max_iterations do not guarantee a bracket or convergence."
@@ -127,7 +127,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "A positive nonintegral charge-state multiplier is accepted; physical charge-state meaning is caller-owned. | Broadcasting proves shape compatibility, not coordinate alignment."
@@ -138,7 +138,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "D4-F3 live: plasma_mask int/float silently cast to bool; free-boundary rejects non-bool. Contract dtype says boolean array-like. Flags: template-copied-contract-text"
@@ -149,7 +149,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "No positive-B or coordinate-alignment check is performed, and the historical psi unit label must not be used to infer a Wb-to-Wb/rad conversion. | Finite nonnegative tabulated values do not ensure nonnegative extrapolation; failing extrapolations raise instead of returning a physical pressure. Flags: template-copied-contract-text"
@@ -161,7 +161,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -171,7 +171,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -181,7 +181,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -191,7 +191,7 @@
    "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
     }
    ]
@@ -201,7 +201,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -211,7 +211,7 @@
    "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
     }
    ]
@@ -221,7 +221,7 @@
    "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
     }
    ]
@@ -231,7 +231,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -240,7 +240,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "fail",
      "oracle": "no external physical oracle; endpoint clipping, positivity, sign-change scan and direct formula replay",
      "residual_risk": "contract claims a non-existent optional external-root cross-implementation test; behavior probes pass"
@@ -252,7 +252,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -262,7 +262,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -272,7 +272,7 @@
    "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
     }
    ]
@@ -282,7 +282,7 @@
    "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
     }
    ]
@@ -292,7 +292,7 @@
    "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
     }
    ]
@@ -301,7 +301,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass-with-limits",
      "oracle": "closed form + 100/200-digit Decimal independent extreme evaluation",
      "residual_risk": "no external physical oracle; license pending; prior external comparison explicitly out of scope"
@@ -313,7 +313,7 @@
    "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
     }
    ]
@@ -323,7 +323,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -332,7 +332,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "SciPy special.kve external implementation",
      "residual_risk": "no unresolved defect in probes"
@@ -343,7 +343,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass-with-limits",
      "oracle": "closed form + 100/200-digit Decimal independent extreme evaluation",
      "residual_risk": "no external physical oracle; license pending"
@@ -354,7 +354,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Bilinear interpolation has discrete interpolation error; values at node locations can be verified analytically. | Unit labels cannot prove that the caller's actual data are correctly scaled. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -365,7 +365,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract. | Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability. Flags: all-tests-in-shared-files"
@@ -376,7 +376,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "unit is a declared match only; units are not converted automatically and instrument calibration is not verified. | chi2 is only the algebraic squared sum under the stated diagonal weights; it cannot be interpreted alone as statistical significance. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -387,7 +387,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract. | Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability. Flags: all-tests-in-shared-files"
@@ -398,7 +398,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "self-consistency-only",
      "residual_risk": "The denominator floor changes the relative ratio when the previous-state norm is below 1e-30 Wb. | At the smallest subnormal magnitudes, 1e-30/scale may overflow during scaling, so the returned zero need not equal the mathematical ratio. Flags: no-limit/singular/extreme-test-signal"
@@ -409,7 +409,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "The returned value is an arithmetic observation; no positivity label, criterion statement or stability meaning is provided by this asset. | The relation is the local fluid-ordering firehose discriminant; gradient-driven, kinetic and finite-Larmor corrections are not represented. Flags: template-copied-contract-text"
@@ -420,7 +420,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "The species count is fixed at four; no general-length ledger is supported. | The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented. Flags: template-copied-contract-text, generic-boilerplate-limitation"
@@ -431,7 +431,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent Stix closed form (this audit), Hermiticity and exact-resonance tests",
      "residual_risk": "unguarded paths remain outside the evidence ceiling; underflowed denominator is classified as resonance"
@@ -442,7 +442,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed. | Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -453,13 +453,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed. | Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract. Flags: template-copied-contract-text, all-tests-in-shared-files"
     },
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass-with-limits",
      "oracle": "fixed geometry/child counts from the declared constants; qualification/lifecycle tests; no external device truth",
      "residual_risk": "fixed geometry only; no independent device-field truth"
@@ -470,7 +470,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "An exact active self-point of an ideal filament diverges and is rejected; other matrix entries declare their own discrete zero-self convention. | Interior self-fields of finite conductors, material permeability and error bounds on the full continuous domain are not established."
@@ -481,7 +481,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed. | Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -492,7 +492,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "Dense O(Ntarget*Nsource) work and storage. | The discrete zero-self entry does not describe a conductor self-field. Flags: HIGH-RISK-LOW-TEST, no-limit/singular/extreme-test-signal"
@@ -503,7 +503,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "Dense quadratic work/storage | Zero-self is a limited discrete model Flags: no-limit/singular/extreme-test-signal"
@@ -514,7 +514,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed. | Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -525,7 +525,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed. | Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -536,13 +536,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed. | Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract. Flags: template-copied-contract-text, all-tests-in-shared-files"
     },
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass-with-limits",
      "oracle": "fixed geometry/child counts from the declared constants; qualification/lifecycle tests; no external device truth",
      "residual_risk": "fixed geometry only; no independent device-field truth"
@@ -553,13 +553,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed. | Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract. Flags: template-copied-contract-text, all-tests-in-shared-files"
     },
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass-with-limits",
      "oracle": "fixed geometry/child counts from the declared constants; qualification/lifecycle tests; no external device truth",
      "residual_risk": "fixed geometry only; no independent device-field truth"
@@ -570,7 +570,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization. | Floating-point rounding envelopes do not bound discretization error or experimental uncertainty. Flags: template-copied-contract-text"
@@ -581,7 +581,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization. | Floating-point rounding envelopes do not bound discretization error or experimental uncertainty. Flags: template-copied-contract-text"
@@ -592,7 +592,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization. | Floating-point rounding envelopes do not bound discretization error or experimental uncertainty. Flags: template-copied-contract-text"
@@ -603,13 +603,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/source-audit-equilibrium.md",
+     "report": "catalog/review/evidence/source-audit-equilibrium.md",
      "verdict": "pass-with-limits",
      "oracle": "manufactured/analytic discrete checks; Pleiades task-graph assembly parity only",
      "residual_risk": "no upstream anisotropic formula; mask/terminal order are SciRel API policy"
     },
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization. | Floating-point rounding envelopes do not bound discretization error or experimental uncertainty. Flags: template-copied-contract-text"
@@ -620,7 +620,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization. | Floating-point rounding envelopes do not bound discretization error or experimental uncertainty. Flags: template-copied-contract-text"
@@ -631,7 +631,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Legacy uniform-grid contract; excludes force balance/nonuniform/plotit; no external equilibrium truth."
@@ -642,7 +642,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Strict bool mask; no external equilibrium truth; rank-deficient wall residual retained. Flags: template-copied-contract-text"
@@ -653,7 +653,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "The caller supplies pressure_derivative, g_psi, vacuum flux and the Picard iteration policy. | A finite flux-update norm alone does not establish pressure-current closure; the full solver checks a second residual. Flags: template-copied-contract-text"
@@ -664,7 +664,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Uses a dense square Green matrix and a pressure spline defined by an exact midplane and exact zero-pressure sample. | No adaptive damping or physical-model selection is performed. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -675,7 +675,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "Source-parity composition only; unknown outer keys passthrough; no external end-to-end truth. Flags: no-limit/singular/extreme-test-signal"
@@ -686,7 +686,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Strict exact-zero tests for both midplane and pressure boundary do not tolerate near-zero samples. | The prefix and spline are identical representations of the chosen interpolant; this does not prove the prescribed pressure law or extrapolation physically suitable. Flags: template-copied-contract-text"
@@ -697,7 +697,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Inherits D4-F3 mask coercion; terminal closure ordering now fixed (F2 regression). Flags: template-copied-contract-text"
@@ -708,7 +708,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "Targets exactly on a filament are not a resolved self-field model. | Public distribution licensing remains pending a human decision. Flags: template-copied-contract-text, generic-boilerplate-limitation"
@@ -719,7 +719,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour. | Declared input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the axis offset. Flags: template-copied-contract-text, all-tests-in-shared-files, generic-boilerplate-limitation"
@@ -730,7 +730,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour. | The approximation is less accurate than library special functions (~1e-8 relative sampled); consumers needing higher accuracy should use the baseline scipy-elliptic filament relation instead. Flags: template-copied-contract-text, all-tests-in-shared-files, generic-boilerplate-limitation"
@@ -741,7 +741,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "self-consistency-only",
      "residual_risk": "Overflow fail-open fixed and regression-tested; shape/broadcast contract remains caller-bounded. Flags: no-limit/singular/extreme-test-signal, no-dtype/nan/inf-test-signal, template-copied-contract-text"
@@ -752,7 +752,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "The result preserves separate source columns and does not sum them. | Public distribution licensing remains pending a human decision. Flags: template-copied-contract-text, generic-boilerplate-limitation"
@@ -763,7 +763,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour. | This asset is a declared relation variant of scirel.field.circular-filament-green, not a new Green capability; the variant boundary (caller-supplied elliptic values, scalar target, source regularization, fail-closed singulars) must not be collapsed by silent unification. Flags: template-copied-contract-text, all-tests-in-shared-files, generic-boilerplate-limitation"
@@ -774,7 +774,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Uniform radial quadrature; first-node psi reference; no continuum error bound. Flags: template-copied-contract-text, generic-boilerplate-limitation"
@@ -785,7 +785,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "Rank truncation may retain nonzero residual; no physical wall or conductor validation. Flags: thin-test-count, no-dtype/nan/inf-test-signal"
@@ -796,7 +796,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Requires uniform axis-reflection-symmetric Z; nonuniform R accepted."
@@ -807,7 +807,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "Pleiades full-array test skips when gitignored truth absent; fixed spot anchors still run. No material coils/3D. Flags: no-limit/singular/extreme-test-signal, template-copied-contract-text, test-file-has-skips/xfails"
@@ -818,7 +818,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "Exactly sixteen filament points and fixed relative weights are returned. | The result does not encode absolute current or magnetization strength. Flags: template-copied-contract-text"
@@ -829,7 +829,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization. | Floating-point rounding envelopes do not bound discretization error or experimental uncertainty. Flags: template-copied-contract-text"
@@ -840,7 +840,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "The returned median is a default numerical reference, not an independently determined physical scale. | The fixed floor replaces exact zero in B."
@@ -851,7 +851,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "Only uniform center spacing is supported. | Rotation is confined to the R-Z cross-section. Flags: thin-test-count, no-limit/singular/extreme-test-signal, no-dtype/nan/inf-test-signal"
@@ -862,7 +862,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -873,7 +873,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named-fixture/self-consistency (weak attribution)",
      "residual_risk": ""
@@ -884,7 +884,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -895,7 +895,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -906,7 +906,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -917,7 +917,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -928,7 +928,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -939,7 +939,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent two-body kinematics re-derived from the published constants; stationary 2.45 MeV anchor",
      "residual_risk": "no unresolved defect in probes"
@@ -950,7 +950,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "Unbatched point values only, N>=2. No alternate-coordinate chain-rule x port, mesh adaptation, area/volume inference or JAX transformations. | Quadratic internal-face exactness does not establish global second order with arbitrary boundary data or arbitrary distorted grids. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -961,7 +961,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "The absolute D floor is a declared convention in supplied units, not a unit-invariant physical regularization. | Conservation is relative to selected numerical boundary flux; ghost/semi-implicit face value may differ from the prescribed Dirichlet value. No unrestricted-grid accuracy or positivity claim. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -972,7 +972,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "Uniform sine manufactured stationary solution exhibits second-order point error under grid refinement; arbitrary nonuniform convergence is not established. | No physical face areas or cell volumes inferred; all metric transformations and compatible coordinate units belong to caller. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -983,7 +983,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "Single-channel unit transient coefficient only; coupled source matrices, transient-in/out factors, nonlinear coefficients, internal boundary row replacement and nonlinear solvers are excluded. | Explicit and Crank-Nicolson modes have caller-dependent stability/oscillation constraints; no adaptive timestep or positivity guarantee. The implicit branch uses a banded linear solve; no global stability bound is claimed. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -994,7 +994,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -1005,7 +1005,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named-fixture/self-consistency (weak attribution)",
      "residual_risk": ""
@@ -1016,7 +1016,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic linear/geometry identity",
      "residual_risk": ""
@@ -1027,7 +1027,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -1038,7 +1038,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "analytic midpoint identity",
      "residual_risk": ""
@@ -1049,7 +1049,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "analytic/manufactured field",
      "residual_risk": ""
@@ -1060,7 +1060,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named-fixture/self-consistency (weak attribution)",
      "residual_risk": ""
@@ -1071,7 +1071,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named-fixture/self-consistency (weak attribution)",
      "residual_risk": ""
@@ -1082,7 +1082,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "analytic linear/geometry identity",
      "residual_risk": ""
@@ -1093,7 +1093,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
      "residual_risk": ""
@@ -1104,7 +1104,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
      "residual_risk": ""
@@ -1115,7 +1115,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
      "residual_risk": ""
@@ -1126,7 +1126,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "named reference comparison",
      "residual_risk": ""
@@ -1137,7 +1137,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
      "residual_risk": ""
@@ -1148,7 +1148,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
      "residual_risk": ""
@@ -1159,7 +1159,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "named reference comparison",
      "residual_risk": ""
@@ -1170,7 +1170,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "May stall near a constant penalty; finite LHS and local optimization do not guarantee finding a feasible point. | No automatic covariance, Fisher-rank or confidence-interval report is provided; additional scientific design is required. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -1181,7 +1181,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "The scientific meaning of RuntimeError belongs to the caller's port; the failure record does not replace investigation of the original exception. | A single trial does not judge parameter identifiability or optimality. Flags: template-copied-contract-text, all-tests-in-shared-files"
@@ -1194,7 +1194,7 @@
    "required_decision": "Release axisymmetric with its mask policy and restore/bind the exact admitted direct-inversion graph; then re-audit and release without formula change, or replace the equilibrium_solver port.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-equilibrium.md",
+     "report": "catalog/review/evidence/source-audit-equilibrium.md",
      "verdict": "human-review",
      "oracle": "exact admitted graph artifact unavailable; only admitted hashes and a later snapshot exist",
      "residual_risk": "do not claim byte/source parity until the exact graph and dependency condition are bound"
@@ -1205,7 +1205,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "Bool n_samples gives TypeError rather than ValueError; n_samples int-like numpy ints rejected. Flags: HIGH-RISK-LOW-TEST, no-limit/singular/extreme-test-signal"
@@ -1216,13 +1216,13 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "structural round-trip only (no physical/unit oracle)",
      "residual_risk": ""
     },
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent fixed-width fixture roundtrip, strict/trailing and injection tests",
      "residual_risk": "no unresolved defect in probes"
@@ -1233,13 +1233,13 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "structural round-trip only (no physical/unit oracle)",
      "residual_risk": ""
     },
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent fixed-width fixture roundtrip, strict/trailing and injection tests",
      "residual_risk": "no unresolved defect in probes"
@@ -1250,13 +1250,13 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "structural round-trip only (no physical/unit oracle)",
      "residual_risk": ""
     },
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent fixed-width fixture roundtrip, strict/trailing and injection tests",
      "residual_risk": "no unresolved defect in probes"
@@ -1267,7 +1267,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -1278,7 +1278,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1289,7 +1289,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1300,7 +1300,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text"
@@ -1311,13 +1311,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.; The source implementation accepted some noninteger orders implicitly; SciRel intentionally restricts n to exactly representable integers.; Public distribution license and expert scientific recognition remain open.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
@@ -1328,7 +1328,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text"
@@ -1339,7 +1339,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -1350,7 +1350,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1361,7 +1361,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; default lmx=15; unlike the conventional sum, no near-zero kz clamp is applied; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
@@ -1372,7 +1372,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -1383,7 +1383,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1394,7 +1394,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1405,7 +1405,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1416,7 +1416,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text"
@@ -1427,7 +1427,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1438,7 +1438,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Source permissions remain NOT_ESTABLISHED; no public release.; No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.; J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.; Scientific validity is bounded by the tested numerical domain and applicability conditions.; Pure-Python execution is tested on this host; native parity is not claimed."
@@ -1449,7 +1449,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Source permissions remain NOT_ESTABLISHED; no public release.; No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.; J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.; Scientific validity is bounded by the tested numerical domain and applicability conditions.; Pure-Python execution is tested on this host; native parity is not claimed."
@@ -1460,7 +1460,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes; source resonance denominators must not vanish and M must remain finite; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
@@ -1471,7 +1471,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Source permissions remain NOT_ESTABLISHED; no public release.; No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.; J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.; Scientific validity is bounded by the tested numerical domain and applicability conditions.; Pure-Python execution is tested on this host; native parity is not claimed."
@@ -1482,7 +1482,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Source permissions remain NOT_ESTABLISHED; no public release.; No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.; J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.; Scientific validity is bounded by the tested numerical domain and applicability conditions.; Pure-Python execution is tested on this host; native parity is not claimed."
@@ -1493,7 +1493,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Source permissions remain NOT_ESTABLISHED; no public release.; No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.; J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.; Scientific validity is bounded by the tested numerical domain and applicability conditions.; Pure-Python execution is tested on this host; native parity is not claimed."
@@ -1504,7 +1504,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; Source permissions remain NOT_ESTABLISHED; no public release.; No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.; J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.; Scientific validity is bounded by the tested numerical domain and applicability conditions.; Pure-Python execution is tested on this host; native parity is not claimed."
@@ -1515,7 +1515,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; selection rejects nonpropagating modes and returns at most keep branches; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
@@ -1526,7 +1526,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; J is 8 or 12 and L-pole tables exist only through harmonic 7; every frequency must be nonzero; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
@@ -1537,7 +1537,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1548,7 +1548,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1559,7 +1559,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities; thin direct-test count"
@@ -1570,7 +1570,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -1581,7 +1581,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1592,13 +1592,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; frozen tables cover |n|=0..7; requests beyond them fail; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1609,7 +1609,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "selector 5 is mass-incomplete and selector 6 uses a finite-cutoff normalization; piecewise lower-plane values are a real-contour transform, not an inferred analytic continuation; the Gaussian high-phase branch is independently checked, other custom densities are only covered by the restricted parser/quadrature envelope."
@@ -1620,7 +1620,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "the parser does not prove integrability, positivity, normalization or analytic continuation; arithmetic exceptions/nonfinite evaluations are not symbolic diagnoses."
@@ -1631,7 +1631,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "the real-axis removable-point derivative uses a symmetric second-derivative estimate with no global error certificate; restricted parser; lower continuation only adds the declared residue term."
@@ -1642,7 +1642,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "IAW/beam use the ordinary Faddeeva response and freeze the ion/beam parameters; extreme phase/temperature inputs can be unrepresentable; generalized-kind custom density quadrature is not interval-certified."
@@ -1653,7 +1653,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "generic non-Maxwellian quadrature roots are not interval-certified and no quadrature error enters the acceptance gate; the default beam seed follows a damped branch and its preserved short-grid failure is a documented limitation, not a universal solver."
@@ -1664,7 +1664,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "the closed form is asymptotic: large-k finite outputs do not imply asymptotic validity; damping below float64 underflows to zero; exact k=0 is rejected."
@@ -1675,7 +1675,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1686,7 +1686,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1697,7 +1697,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text"
@@ -1708,7 +1708,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text"
@@ -1719,7 +1719,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 records no oracle; contract carries family boilerplate evidence text"
@@ -1730,7 +1730,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1741,7 +1741,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; the conventional sum clamps |kz|<1e-10 to +1e-10; Ronnmark keeps zero kz; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
@@ -1752,7 +1752,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; zero kz is allowed without the conventional sum's positive clamp; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
@@ -1763,7 +1763,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.; No near-zero kz clamping is inherited from the source path.; The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.; This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.; Distribution license and expert recognition remain open.; local execution covers this a"
@@ -1774,7 +1774,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; abs(kz)<1e-10 is replaced by +1e-10 before all resonant divisions; Public distribution license and expert review remain pending.; Scientific validity is bounded by the tested numerical domain and applicability conditions."
@@ -1785,7 +1785,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; multiple signed roots may exist; exit flags and residuals expose nonconvergence without mirroring roots; Public distribution license and expert review remain pending.; local execution covers this asset."
@@ -1796,7 +1796,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; zero kz is allowed; roots retain sign and nonpositive exit flags remain observable; Public distribution license and expert review remain pending.; Fluid native/local execution covers this asset."
@@ -1807,13 +1807,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Numerical residual checks are finite precision; the endpoint xi_tp=1 is excluded by the singular differential operator.; The legacy backend names no longer request a truncated approximation.; Example output is a bounded runtime observation, not a universal scientific claim."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1824,7 +1824,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "epsilon_error is an estimate rather than a rigorous enclosure; finite inputs can have an unrepresentable complex response and no root is inferred from one evaluation."
@@ -1835,7 +1835,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "the estimated error is not a rigorous enclosure; no uniqueness, least-damped-branch or global root-selection claim; supplied seeds select branches."
@@ -1846,7 +1846,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
@@ -1857,7 +1857,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
@@ -1868,7 +1868,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text"
@@ -1879,7 +1879,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1890,7 +1890,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1901,13 +1901,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=finite; oracle=self-consistency-only; This is one attributed equilibrium fixture, not a plasma-parameter catalog.; Example output is a bounded runtime observation, not a universal scientific claim."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1918,13 +1918,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Fixed-axis and field-following pressure are distinct physical models.; No global equilibrium force-balance proof is supplied.; Example output is a bounded runtime observation, not a universal scientific claim."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1935,7 +1935,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Gyrotropic pressure closure is a declared local fluid model.; Assembly does not select a physical branch or remove constraint modes.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -1946,7 +1946,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Residual qualification is backward accuracy, not forward conditioning of a near-multiple root.; No sparse selected-spectrum or branch-continuation semantics.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -1957,13 +1957,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Relative-pair and bath rates have different conservation properties.; Rates form a declared scientific variant; positive-rate growth is not reproduced.; Example output is a bounded runtime observation, not a universal scientific claim."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1974,7 +1974,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Descending frequency sorts are per point and do not identify a continuous physical branch.; Default method 4 is finite but substantially larger than bounded qualification grids.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -1985,7 +1985,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -1996,7 +1996,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2007,7 +2007,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2018,7 +2018,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2029,7 +2029,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2040,7 +2040,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2051,7 +2051,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only; contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2062,7 +2062,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-kinetic.md",
      "verdict": "pass-with-limits",
      "oracle": "PDRK pinned 21c08f2 grid/seed/formula + analytic vacuum branch",
      "residual_risk": "default seed may fail closed; non-vacuum source trajectory not replayed"
@@ -2073,7 +2073,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Near-cancellation scale is a residual normalization, not a root-condition estimate.; Lower-half-plane unrepresentable special-function values are rejected.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -2084,13 +2084,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Caller-specific thermal-speed and drift definitions are not inferred or converted.; Source truncation order and diagnostic flags are not part of this standardized output.; Finite z may yield unrepresentable lower-half-plane values; SciRel rejects them.; An earlier prose statement of this step was incorrect; SciRel documents the analytic identity instead."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "A0 contract oracle is self-consistency only"
@@ -2101,13 +2101,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; finite representable arguments outside numerical poles of the rational approximation; Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "all bound tests are shared with other assets"
@@ -2118,7 +2118,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Original license unverified; MATLAB execution NOT_RUN.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -2129,7 +2129,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Original license unverified; MATLAB execution NOT_RUN.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -2140,7 +2140,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Original license unverified; MATLAB execution NOT_RUN.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; Source-runtime execution is outside this pure-Python implementation."
@@ -2151,7 +2151,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Redistribution permission for the reference material is unverified; MATLAB execution NOT_RUN.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -2162,7 +2162,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; Redistribution authority for the source material remains unresolved; native MATLAB/the reference runtime execution is NOT_RUN.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; The native example and full native-path qualification require the declared local Python runtime on Linux amd64"
@@ -2173,7 +2173,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent-analytic",
      "residual_risk": "probe=finite; oracle=independent-analytic; Redistribution authority for the reference material remains unresolved; the pure-Python implementation does not execute the source runtime.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; The pure-Python example and bounded qualification run on this macOS host; arbitrary parameter reg"
@@ -2184,7 +2184,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; Redistribution permission for the reference material remains unresolved; this implementation does not execute the source runtime.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; The pure-Python example and bounded verification run on this macOS host; arbitrary parameter regimes remain"
@@ -2195,7 +2195,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; Redistribution authority for the reference material remains unresolved; the pure-Python implementation does not execute the source runtime.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; The pure-Python example and bounded qualification run on this macOS host; arbitrary parameter reg"
@@ -2206,7 +2206,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; Redistribution authority for the reference material remains unresolved; the pure-Python implementation does not execute the source runtime.; Finite-J/finite-N physics must be qualified for a new requested regime.; Earlier fixed-distance approach-to-axis ancillary assertions remain failed records; exact-axis/direct-response gates are separately qualified.; Human scientific and plot approval pending.; The pure-Python example and bounded qualification run on this macOS host; arbitrary parameter reg"
@@ -2217,7 +2217,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; Local technical development; human scientific endorsement and publication clearance remain pending.; Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.; Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.; Lower-half-plane poles define a rational approximation; its global strong-damping accuracy is not established by bounded up"
@@ -2228,7 +2228,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=nonfinite-allowed; oracle=source-parity; branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only; Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
@@ -2239,7 +2239,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d6.csv",
+     "report": "catalog/review/evidence/audit-d6.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "this is the pre-compensation seed, not the final compensated distribution; constants are fixed historical values; the -80 exponent floor is numerical (floored values carry no exponential resolution and must not be read as a physical Maxwellian); licensing pending."
@@ -2250,7 +2250,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2261,7 +2261,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2272,13 +2272,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
      "residual_risk": "probe=exception; oracle=independent-analytic; The constants and eV-to-K factor intentionally use the declared numeric convention.; No thermal distribution, wave dispersion or root result is returned.; Public distribution license and expert scientific recognition remain open."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "bound tests do not visibly probe limits/singularities"
@@ -2289,7 +2289,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.; Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.; The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy cl"
@@ -2300,7 +2300,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.; Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.; The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy cl"
@@ -2311,7 +2311,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.; Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.; The magnetic longitudinal pressure-divergence factor two is a phenomenological mirror correction; no universal kinetic mirror threshold or experimental accuracy cl"
@@ -2322,7 +2322,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "self-consistency-only",
      "residual_risk": "probe=exception; oracle=self-consistency-only; Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.; No branch tracking or unique phase/degenerate basis.; No source/physical species model is inferred from arbitrary matrix inputs.; Local evaluation under the declared authorization only; redistribution of the source material or the paper is NOT_ESTABLISHED.; Example output is a bounded runtime observation, not a universal scientific claim."
@@ -2333,7 +2333,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text"
@@ -2344,7 +2344,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -2355,7 +2355,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -2366,7 +2366,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -2377,7 +2377,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "D2 probe is finite/structure/composition only; bound tests carry any deeper numerical evidence; contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -2388,7 +2388,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; bound tests do not visibly probe limits/singularities"
@@ -2399,7 +2399,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets"
@@ -2410,7 +2410,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2421,7 +2421,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2432,7 +2432,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2443,7 +2443,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2454,7 +2454,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2465,7 +2465,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2476,7 +2476,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2487,7 +2487,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2498,7 +2498,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "contract carries family boilerplate evidence text; all bound tests are shared with other assets; bound tests do not visibly probe limits/singularities"
@@ -2509,13 +2509,13 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d1.csv",
+     "report": "catalog/review/evidence/audit-d1.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "probe=exception; oracle=source-parity; only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation; Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
     },
     {
-     "report": "/tmp/audit-d2.csv",
+     "report": "catalog/review/evidence/audit-d2.csv",
      "verdict": "pass-with-limits",
      "oracle": "",
      "residual_risk": "all bound tests are shared with other assets"
@@ -2526,7 +2526,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "Empirical fit, no independent published oracle; signed inputs are algebra-only. Flags: no-dtype/nan/inf-test-signal, all-tests-in-shared-files"
@@ -2537,7 +2537,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification. | Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision. Flags: no-dtype/nan/inf-test-signal, all-tests-in-shared-files"
@@ -2548,7 +2548,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d4.csv",
+     "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass-with-limits",
      "oracle": "source-parity",
      "residual_risk": "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification. | Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision. Flags: no-dtype/nan/inf-test-signal, all-tests-in-shared-files"
@@ -2559,7 +2559,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2570,7 +2570,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "fail",
      "oracle": "NumPy pinv identity (tests), zero-matrix case absent",
      "residual_risk": ""
@@ -2581,7 +2581,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent Decimal/longdouble formula evaluation",
      "residual_risk": "no unresolved defect in probes"
@@ -2592,7 +2592,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent Decimal/longdouble formula evaluation",
      "residual_risk": "no unresolved defect in probes"
@@ -2604,7 +2604,7 @@
    "reason": "Source-parity audit against the pinned upstream source; external physical calibration is still not claimed.",
    "evidence": [
     {
-     "report": "/tmp/source-audit-collisions.md / /tmp/source-audit-kinetic.md",
+     "report": "catalog/review/evidence/source-audit-collisions.md + source-audit-kinetic.md",
      "verdict": "source-parity"
     }
    ]
@@ -2613,7 +2613,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent Decimal/longdouble formula evaluation",
      "residual_risk": "no unresolved defect in probes"
@@ -2624,7 +2624,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "independent Decimal/longdouble formula evaluation",
      "residual_risk": "no unresolved defect in probes"
@@ -2635,7 +2635,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass-with-limits",
      "oracle": "independent scipy.integrate.quad of the defined integral and analytic zero-energy limit",
      "residual_risk": "accepts boolean/numeric-string inputs silently; contract dtype is real"
@@ -2646,7 +2646,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "named-fixture/self-consistency (weak attribution)",
      "residual_risk": ""
@@ -2657,7 +2657,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "named-fixture/self-consistency (weak attribution)",
      "residual_risk": ""
@@ -2668,7 +2668,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2679,7 +2679,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2690,7 +2690,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2701,7 +2701,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2712,7 +2712,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2723,7 +2723,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2734,7 +2734,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2745,7 +2745,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2756,7 +2756,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2767,7 +2767,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2778,7 +2778,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2789,7 +2789,7 @@
    "status": "pass-with-limits",
    "evidence": [
     {
-     "report": "/tmp/audit-d3.csv",
+     "report": "catalog/review/evidence/audit-d3.csv",
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
@@ -2800,7 +2800,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "exact discrete-integral identity and analytic profile samples",
      "residual_risk": "no unresolved defect in probes"
@@ -2811,7 +2811,7 @@
    "status": "pass",
    "evidence": [
     {
-     "report": "/tmp/audit-d5.csv",
+     "report": "catalog/review/evidence/audit-d5.csv",
      "verdict": "pass",
      "oracle": "exact discrete-integral identity and analytic profile samples",
      "residual_risk": "no unresolved defect in probes"

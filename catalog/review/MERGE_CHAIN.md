@@ -1,8 +1,9 @@
 # Merge chain protocol
 
-Status: policy now; the code quarantine is the next refactor. The current
-`SCIREL_REVIEW_HOLD` import guard is transitional and must not be treated as the
-final containment boundary.
+Status: the quarantine refactor is complete (commit 76d67b74); held code and
+contracts live in the review tree and are absent from the installed package.
+Only one artifact-blocked composition remains held. `SCIREL_REVIEW_HOLD` is now
+only the review-harness switch, not a containment boundary.
 
 ## Candidate layout
 

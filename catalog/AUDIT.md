@@ -1,6 +1,6 @@
 # Capability audit and adversarial testing
 
-This is the project-wide audit protocol for the 248 catalog assets. It is not a
+This is the project-wide audit protocol for the catalog assets. Current exposure is 247 admitted + 1 human-review hold; the verdict registry covers all 248. It is not a
 replacement for direct tests; it defines how a capability moves from "tests pass"
 to "audited for its declared domain".
 
@@ -197,7 +197,7 @@ candidates, integration tests, external truth), not a single capability audit.
 It is recorded as a direction, not a release gate; no coverage claim is made
 until the workflow and its acceptance evidence exist.
 
-## Outbound acceptance S1-S6 (exposed 229)
+## Outbound acceptance S1-S6 (exposed 247)
 
 - S1 fillable gap: PASS; |B| ratio via glue matched Pleiades truth exactly.
 - S2 unfillable gap: PASS; parametric/bounded CX rate, no user handoff.
