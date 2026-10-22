@@ -25,9 +25,18 @@ scientific truth.
 | `/tmp/outbound-*`, worker outputs | smoke/acceptance runs, candidate analysis | task lifetime | keep the acceptance result and failing evidence in `OUTBOUND.md`/Notion; delete the scratch tree when the task closes |
 | `build/`, `*.egg-info/`, `__pycache__/` | build/cache | one command | delete after build/test; never commit |
 
-Raw failure evidence is not deleted before the finding is recorded. If it may be
-needed for human review, move the minimal evidence into `catalog/review/` or the
-review archive first.
+Before retiring a failed attempt, record its minimal candidate identity, failure
+cause and regression result in the existing task/evidence record. A rejected
+package with no continuing use is then removed immediately; retaining a whole
+wheel/docs/partial tree is not failure evidence. Builders stage outputs and roll
+back owned partial outputs on failure without touching pre-existing targets.
+Keep only genuinely needed human-review evidence in the existing review record.
+
+Task handoffs end when the recipient has taken over; problem notes end when the
+problem is resolved. Transfer necessary conclusions into the existing canonical
+truth/task record, then remove the obsolete note from the active tree. Keep one
+current handoff entry; use Git for history rather than parallel handoff copies.
+After a successful task, remove its scratch, duplicate environments and caches.
 
 ## Generated product artifacts
 
@@ -43,8 +52,9 @@ generation path and a skip/fixture rule.
 
 ## Notion and local skills
 
-- Notion holds decisions, handoffs and review conclusions. It is durable until
-  superseded; obsolete pages are archived rather than silently rewritten.
+- Notion holds decisions and review conclusions; resolved task states are closed
+  so they do not remain current work. Archiving/deleting pages follows the user's
+  authorization and is never inferred from filesystem cleanup permission.
 - `skills/` is local and excluded from Git. Changes to a skill must be backed up
   with the local skill source; do not put run outputs or truth artifacts inside a
   skill directory.
@@ -61,8 +71,10 @@ only after the merged closure is green; the verdict record remains.
 
 1. `git status --porcelain` is clean.
 2. No tracked file cites `/tmp`, a private path or a hidden oracle.
-3. The latest docs snapshot is built from the current commit; old snapshots are
-   either removed or clearly marked superseded.
+3. The final deliverable is bound to its clean source and exact content. Remove
+   superseded snapshots and rejected packages with no continuing reference/use;
+   a superseded label alone is not retirement. Keep genuinely referenced final
+   deliveries and valid HOLD scientific/verdict evidence for their actual scope.
 4. Every truth artifact has provenance and a reproducible generator.
 5. Every held/candidate record has a verdict and, if unresolved, a named owner
    decision in `catalog/review/HUMAN_REVIEW_TODO.md`.
