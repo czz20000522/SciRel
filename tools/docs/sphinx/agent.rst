@@ -1,10 +1,25 @@
 Agent 查询
 =============
 
-页面与只读 HTTP / CLI 接口消费同一个摘要绑定快照。Agent 可以先定位主题，再读取少量函数的完整合同，不必导入科学库或一次加载全部文档。
+正式 Agent 消费入口是只读 MCP。公开快照可由本地或平台沙盒的 stdio 进程，以及托管的 Streamable HTTP 服务读取。两种方式共用能力索引、完整合同与按需 Markdown；公网 HTML 供人浏览，不是查询前置。科学计算仍由用户的 Python 程序调用已安装的 wheel，MCP 不执行任意代码。
 
-发现与搜索
---------------
+正式 MCP 工具
+----------------
+
+* ``scirel_describe``：快照、wheel 摘要、依赖和查询限制。
+* ``scirel_browse``：分页浏览能力或教程目录。
+* ``scirel_search``：少量候选、命中原因及约束冲突。
+* ``scirel_get``：一个完整公共合同及对应语言的 API Markdown。
+* ``scirel_get_tutorial``：按需读取手写教程与显式续读片段。
+
+先发现，再把 ``expected_snapshot_sha256`` 与 ``expected_wheel_sha256`` 传给后续工具。游标绑定数据集与查询，不能跨批续读。数量和 JSON envelope 字节都有预算；只延期完整候选卡，不删减科学边界。当前排序是可替换的词法实现；显式筛选不静默放宽。缺失元数据保持 unknown，零命中不证明科学能力缺失，召回不证明物理适用或可组合。
+
+私有消费包安装独立 adapter 依赖后，用 ``python tools/server.py --root /实际消费包路径 --transport stdio`` 启动本地进程；loopback HTTP 使用 ``--transport streamable-http --host 127.0.0.1 --port 8765``，客户端连接 ``http://127.0.0.1:8765/mcp``。托管上线前另行明确 TLS、认证和运维；Famou/Linux 兼容性需分别实测。pure 仍依赖 Python、NumPy、SciPy 和 mpmath。
+
+以下 HTTP/CLI 属于开发文档维护验证入口；正式消费使用上述 MCP 工具。
+
+开发快照发现与搜索
+----------------------
 
 .. code-block:: bash
 
@@ -43,4 +58,4 @@ Agent 查询
    python scripts/scirel_docs.py query --snapshot /实际快照路径 --q 磁场 --limit 5
    python scripts/scirel_docs.py query --snapshot /实际快照路径 --reader scirel.field.circular-filament-green
 
-查询不执行科学函数，也不修改科学资产。需要计算时，应在符合相应科学合同的安装环境中调用公开 Python 入口。当前提供 HTTP 与 CLI；尚未提供 MCP transport。
+查询不执行科学函数，也不修改科学资产。需要计算时，在符合相应科学合同的安装环境中调用公开 Python 入口。维护快照验证不代表 Famou 接入、公开部署或科学人工验收完成。

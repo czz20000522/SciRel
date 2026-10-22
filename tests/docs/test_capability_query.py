@@ -218,11 +218,12 @@ def test_structured_queries_filter_on_contract_fields(snapshot):
     assert base['snapshot_sha256'] == docs.manifest['snapshot_sha256']
     assert base['notice'] and '开发文档' in base['notice']
     assert base['query'] == {'capability': '', 'operation': '', 'model': '',
-                             'geometry': '', 'device_scope': '', 'alias': '',
+                             'geometry': '', 'boundary': '', 'taxonomy': '',
+                             'device_scope': '', 'alias': '',
                              'q': '', 'offset': 0, 'limit': 2}
     assert not any('search_text' in item for item in base['items'])
 
-    for field in ('capability', 'operation', 'model', 'geometry'):
+    for field in ('capability', 'operation', 'model', 'geometry', 'boundary'):
         result = docs.capabilities(**{field: record[field]}, limit=100)
         ids = {item['asset_id'] for item in result['items']}
         assert record['asset_id'] in ids, field
@@ -401,6 +402,10 @@ def test_capability_http_cli_and_missing_index(snapshot):
                                    '--limit', '2'])
     assert json.loads(cli) == docs.capabilities(
         device_scope=record['device_scope'], limit=2)
+    cli = subprocess.check_output([sys.executable, str(ROOT / 'scripts/scirel_docs.py'),
+                                   'query', '--snapshot', str(snapshot),
+                                   '--boundary', record['boundary'], '--limit', '2'])
+    assert json.loads(cli) == docs.capabilities(boundary=record['boundary'], limit=2)
 
     http = server(docs, 0)
     thread = threading.Thread(target=http.serve_forever, daemon=True)

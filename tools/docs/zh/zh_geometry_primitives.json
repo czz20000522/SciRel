@@ -8,7 +8,7 @@
    "summary": "将选定基函数求值为设计矩阵的列；矩阵行对应样本，列对应基函数。",
    "definition": "将选定基函数求值为设计矩阵的列。",
    "model": "构造委托给显式的基函数工厂。",
-   "boundary": "沿用底层样条的端点规则与外推约定。",
+   "boundary": "样条求值在有限节点区间外为零；不进行外推。",
    "assumptions": [
     "用于构造的样本有限，并满足各边界条件的特定假设。",
     "多项式基的列按升幂排列；poly_deg 默认 3 表示三个基函数。",
@@ -45,7 +45,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "对不支持的基函数选择器、非有限或不匹配的样本、未排序节点或无效边界参数抛出 ValueError 或 AssertionError；线性系统求解失败会向上传播。",
+    "invalid_input": "对未注册的选择器抛出 KeyError，对保留但不支持的选择器抛出 NotImplementedError，对未知关键字抛出 TypeError，对无效样条样本、节点或边界参数抛出 ValueError；线性系统求解失败会向上传播。",
     "runtime_failure": "数值线性代数或可选 SciPy 特殊函数异常会在求值时向上传播。",
     "nonconvergence": "不适用；基函数构造和求值是直接计算，不声明迭代收敛。",
     "partial_results": "构造失败时不返回求值器；样条在节点区间外查询遵循实现的置零行为。"

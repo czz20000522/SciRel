@@ -51,8 +51,9 @@ Read it after `AGENTS.md`/`RULES.md`, not instead of them.
 - Held code/contracts live in the tracked review tree:
   `catalog/review/candidates/src/...` and `catalog/review/examples/`.
   They are not installed and are not in the public catalog.
-- `scripts/check_wheel_exposure.py` proves held modules/symbols and candidate
-  paths are absent from the built wheel.
+- `scripts/check_wheel_exposure.py --wheel PATH` inspects exact distribution
+  bytes (SHA/RECORD/metadata/static public API and held/candidate exclusion).
+  It does not build a replacement wheel or prove installed runtime behavior.
 - A composition with a held member is itself held; do not expose a partially
   wired chain.
 
@@ -86,7 +87,7 @@ Read it after `AGENTS.md`/`RULES.md`, not instead of them.
 .venv/bin/python -m pytest -q
 .venv/bin/python scripts/validate_asset_documents.py catalog/examples --check-runtime --execute-examples
 .venv/bin/python scripts/review_gate.py --check
-.venv/bin/python scripts/check_wheel_exposure.py --output dist/acceptance/wheel-exposure.json
+.venv/bin/python scripts/check_wheel_exposure.py --wheel dist/EXACT-DISTRIBUTION.whl --output dist/acceptance/wheel-exposure.json
 .venv/bin/python scripts/scirel_docs.py build --output dist/docs-20261021
 .venv/bin/python scripts/scirel_docs.py build --language en --output dist/docs-en-20261021
 ```
@@ -114,3 +115,23 @@ self-consistency claim.
 - optional evidence hygiene outside the exposed set (P0/hold records).
 - optional complex-case replication track; recorded in `catalog/AUDIT.md`, not a
   release gate.
+
+## Private consumption integration tools
+
+`tools/docs/PURE_CONSUMPTION.md` defines the MCP-first consumer protocol and its
+two deployment modes. `scripts/capability_query.py` is the single standard-library
+retrieval core shared by development docs and the consumer; discovery metadata
+remains a projection of public contracts. `scripts/consumer_tools.py` exposes
+five read-only directory tools, and the official-SDK adapter
+`scripts/serve_consumer_mcp.py` supports stdio and Streamable HTTP. Scientific
+computation stays in user Python with the installed wheel. SDK requirements are
+separate from the scientific package dependencies.
+
+At an explicitly authorized integration checkpoint,
+`scripts/build_pure_delivery.py` exports a private consumer directory and separate
+HTML site from one clean source revision, exact wheel and bilingual snapshots.
+Generated artifacts stay under `dist/`. A generated site or static wheel proof
+is not Linux/Famou acceptance, scientific page review, public deployment or
+public-distribution authorization. Preserve the emitted `NOT_RUN` boundaries.
+The local ignored canonical `scirel-solving/SKILL.md` is a flat product input;
+its exported bytes are separately bound by the delivery manifest.

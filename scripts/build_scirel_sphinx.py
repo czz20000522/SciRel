@@ -231,6 +231,13 @@ def _english_guide_content(root, chapter_id, available):
     text = english_manual_chapter(root, chapter_id)
     if text is None:
         return None, 'placeholder'
+    if not guide_selection_complete(text, chapter_id, available):
+        return None, 'subset-placeholder'
+    return text, 'authored'
+
+
+def guide_selection_complete(text, chapter_id, available):
+    """Apply the same selected-document reference closure in both languages."""
     for target in _english_doc_refs(text):
         if target.startswith('/'):
             doc = target[1:]
@@ -238,8 +245,8 @@ def _english_guide_content(root, chapter_id, available):
             base = posixpath.dirname('user-guide/' + chapter_id)
             doc = posixpath.normpath(posixpath.join(base, target))
         if doc not in available:
-            return None, 'subset-placeholder'
-    return text, 'authored'
+            return False
+    return True
 
 
 def english_guide_status(root, chapters, available):
@@ -821,12 +828,8 @@ def render_site(root, docs, book, translations, chapter, *, figure_files=None, m
         shutil.copytree(root/'tools/docs/sphinx', source, ignore=shutil.ignore_patterns('requirements.txt'))
         def write(path, text):
             p = source/(path + '.rst'); p.parent.mkdir(parents=True, exist_ok=True); p.write_text(text)
-        # Held capabilities may still be linked from authored guides. Resolve
-        # those links to a review-state placeholder, without publishing the
-        # API, contract or scientific details.
-        for asset in withheld_ids:
-            write('reference/generated/' + asset,
-                  ':orphan:\n\n' + title('人工审核中') + '\n\n该能力暂不对外暴露，正在等待人工审核。\n')
+        # A guide referencing unavailable assets gets a chapter placeholder;
+        # no withheld identifier or runnable unavailable API is published.
         home = title('SciRel 中文文档')
         home += 'SciRel 是面向科学计算的 Python 关系库。按要解决的物理问题，选择单个科学函数，或使用组合多个关系的复合求解入口。\n\n'
         home += '.. grid:: 1 2 2 2\n   :gutter: 3\n\n'
@@ -860,10 +863,16 @@ def render_site(root, docs, book, translations, chapter, *, figure_files=None, m
             write('user-guide/capability-matrix', render_matrix_page(matrix))
         write('reference/index', title('API 参考') + '按科学领域查阅功能函数。选择左侧领域，在正文中按问题浏览函数及用途，点击函数名查看参数、返回值、适用范围与示例。\n\n' + toctree([c['id'] for c in book['chapters']], maxdepth=1))
         manual_root = root / 'tools/docs/manual'
+        available_guides = english_available_docs(root, book, set(by_id), matrix=matrix)
         for c in book['chapters']:
             authored = manual_root / (c['id'] + '.rst')
             if authored.is_file():
-                write('user-guide/'+c['id'], authored.read_text())
+                authored_text = authored.read_text()
+                if guide_selection_complete(authored_text, c['id'], available_guides):
+                    write('user-guide/'+c['id'], authored_text)
+                else:
+                    write('user-guide/'+c['id'], title(c['title']) +
+                          '本章手写教程引用当前公开集合之外的能力，因此不在本快照提供。请查阅已公开的 API 参考。\n\n')
             else:
                 # Never project contract prose into the user guide. Untranslated
                 # chapters stay blank until an authored tutorial exists.

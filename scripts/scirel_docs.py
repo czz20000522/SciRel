@@ -26,14 +26,12 @@ from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
                                 load_english_handbook, load_translations,
                                 render_site)
 from build_capability_matrix import build_matrix, render_markdown
+from capability_query import (CAPABILITY_INDEX_SCHEMA, CAPABILITY_QUERY_SCHEMA,
+                              CAPABILITY_REQUEST_SCHEMA, DEVICE_SCOPES, FILTER_ORDER,
+                              query_capabilities, validate_capability_index)
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = 'scirel.documentation-snapshot'
-CAPABILITY_INDEX_SCHEMA = 'scirel.capability-index'
-CAPABILITY_QUERY_SCHEMA = 'scirel.capability-query-response'
-DEVICE_SCOPES = ('generic', 'device-parameterized', 'device-bound', 'unclassified')
-CAPABILITY_FILTER_ORDER = ('capability', 'operation', 'model', 'geometry',
-                           'device_scope', 'alias', 'q')
 NOTICE = ('开发文档 · 按每条资产的版本与证据范围使用。文档收录不代表人工批准、'
           '全项目通过或公开发行；此快照不是单一 wheel 的安装清单。')
 NOTICE_EN = ('Development documentation · Use each asset according to its version and '
@@ -59,6 +57,58 @@ def encode(value):
 
 def sha(data):
     return hashlib.sha256(data).hexdigest()
+
+
+DOCUMENTATION_BUILD_SCRIPTS = (
+    'scirel_docs.py', 'build_scirel_sphinx.py', 'build_capability_matrix.py',
+    'capability_query.py', 'validate_asset_documents.py', 'public_api_binding.py',
+    'exposure.py',
+)
+
+
+def documentation_input_digests(documents=None, *, outline=None, translation_paths=None):
+    """Hash exact source inputs, independent of a selected contract directory.
+
+    Contract keys always use catalog/examples/<filename>; relocated/subset
+    inputs therefore retain stable public identities. Only public docs sources
+    and build code are included, never private review material. Explicit reader
+    or outline overrides have stable keys without exposing their local paths.
+    """
+    documents = ROOT / 'catalog/examples' if documents is None else Path(documents)
+    docs_root = ROOT / 'tools/docs'
+    if not docs_root.is_dir() or not documents.is_dir():
+        raise ValueError('documentation source directories are missing')
+    digests = {}
+
+    def include(key, path):
+        if path.is_symlink():
+            raise ValueError('documentation source input may not be a symlink: ' + key)
+        digests[key] = sha(path.read_bytes())
+
+    caches = {'__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache', '.cache', '_build'}
+    for path in sorted(docs_root.rglob('*')):
+        relative = path.relative_to(ROOT)
+        if (set(relative.parts) & caches or path.suffix in {'.pyc', '.pyo'}
+                or path.name == '.DS_Store'):
+            continue
+        if path.is_symlink():
+            raise ValueError('documentation source input may not be a symlink: ' + relative.as_posix())
+        if path.is_file():
+            include(relative.as_posix(), path)
+    for name in DOCUMENTATION_BUILD_SCRIPTS:
+        include('scripts/' + name, ROOT / 'scripts' / name)
+    include('pyproject.toml', ROOT / 'pyproject.toml')
+    contracts = sorted(documents.glob('*.json'))
+    if not contracts:
+        raise ValueError('no documentation contract inputs')
+    for path in contracts:
+        include('catalog/examples/' + path.name, path)
+    if outline is not None:
+        include('build-inputs/outline.json', Path(outline))
+    if translation_paths is not None:
+        for number, path in enumerate(translation_paths):
+            include('build-inputs/translations/' + str(number).zfill(4) + '.json', Path(path))
+    return dict(sorted(digests.items()))
 
 
 def project_version(root=ROOT):
@@ -484,6 +534,10 @@ def build(documents: Path, output: Path, outline: Path | None = None,
           language: str = 'zh'):
     if language not in LANGUAGES:
         raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
+    if language == 'en' and translation_paths is not None:
+        raise ValueError('English build does not consume Chinese reader bundles')
+    source_inputs = documentation_input_digests(
+        documents, outline=outline, translation_paths=translation_paths)
     docs = load_document_set(documents)
     held = held_asset_ids()
     docs = [document for document in docs if document['asset_id'] not in held]
@@ -589,8 +643,17 @@ def build(documents: Path, output: Path, outline: Path | None = None,
             ):
                 copy_text = copy_text.replace(source_text, english_text)
             files[copy_path] = copy_text.encode('utf-8')
+    try:
+        final_inputs = documentation_input_digests(
+            documents, outline=outline, translation_paths=translation_paths)
+    except (OSError, ValueError) as error:
+        raise ValueError('documentation source inputs changed during build') from error
+    if final_inputs != source_inputs:
+        raise ValueError('documentation source inputs changed during build')
     manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
                 'source_dirty': dirty,
+                'source_inputs': source_inputs,
+                'source_inputs_sha256': sha(encode(source_inputs)),
                 'project_version': project_version(),
                 'documentation_version': documentation_version,
                 'asset_count': len(docs),
@@ -681,122 +744,29 @@ class Documentation:
         if 'capabilities.json' not in self.manifest['files']:
             raise KeyError('snapshot has no capability index; rebuild the snapshot')
         index = json.loads(self.read('capabilities.json'))
-        if index.get('schema') != CAPABILITY_INDEX_SCHEMA:
-            raise ValueError('invalid capability index schema')
-        if index.get('source_revision') != self.manifest.get(
-                'source_revision', self.manifest['source_commit']):
-            raise ValueError('capability index source revision differs from snapshot')
-        assets = index.get('assets')
-        if not isinstance(assets, list) or index.get('asset_count') != len(assets):
-            raise ValueError('invalid capability index count')
-        ids = [asset.get('asset_id') if isinstance(asset, dict) else None for asset in assets]
-        if len(set(ids)) != len(ids) or set(ids) != self.ids:
-            raise ValueError('capability index differs from the document set')
-        search_text = index.get('search_text')
-        if not isinstance(search_text, dict) or set(search_text) != set(ids):
-            raise ValueError('capability index recall text differs from its assets')
-        return index
+        return validate_capability_index(
+            index,
+            expected_source_revision=self.manifest.get(
+                'source_revision', self.manifest['source_commit']),
+            expected_ids=self.ids,
+        )
 
     def capabilities(self, capability='', operation='', model='', geometry='',
-                     device_scope='', alias='', q='', offset=0, limit=20):
-        """Structured, read-only capability recall over the generated index.
+                     device_scope='', alias='', q='', offset=0, limit=20, boundary='',
+                     taxonomy=''):
+        """Bounded, lexically ranked retrieval using the portable query core.
 
-        Strict matches satisfy every supplied filter (AND).  Only when nothing
-        satisfies the whole query are partial matches returned as ``near_miss``
-        rows; an empty result is an explicit ``gap`` with a recall caveat.
-        ``device_scope`` filters the reviewed scope and defaults to
-        ``unclassified`` for contracts without a ``discovery`` block.
+        All supplied filters and q terms remain AND conditions; partial structured
+        matches are explicitly near_miss. Ranking never proves applicability.
         """
-        if not isinstance(q, str) or len(q) > 512 or offset < 0 or not 1 <= limit <= 100:
-            raise ValueError('q <= 512 characters, offset >= 0, limit 1..100 required')
-        filters = {'capability': capability, 'operation': operation, 'model': model,
-                   'geometry': geometry, 'device_scope': device_scope, 'alias': alias}
-        for name, value in filters.items():
-            if not isinstance(value, str):
-                raise ValueError(name + ' must be a string')
-            filters[name] = value.strip()
-            if len(filters[name]) > 1024:
-                raise ValueError(name + ' <= 1024 characters required')
-        if filters['device_scope'] and filters['device_scope'] not in DEVICE_SCOPES:
-            raise ValueError('device_scope must be one of: ' + ', '.join(DEVICE_SCOPES))
-        index = self.capability_index()
-        records = index['assets']
-        recall = index['search_text']
-        terms = q.casefold().split()
-        supplied = {name: value.casefold() for name, value in filters.items() if value}
-        order = {name: position for position, name in enumerate(CAPABILITY_FILTER_ORDER)}
-
-        def classify(record):
-            matched, missed = [], []
-            text = {
-                'capability': (record['capability'] + '\n' + record['capability_summary']).casefold(),
-                'operation': (record['operation'] + '\n' + record['operation_direction']).casefold(),
-                'model': record['model'].casefold(),
-                'geometry': (record['geometry'] + '\n' + record['coordinates']).casefold(),
-                'alias': '\n'.join(record['aliases']).casefold(),
-            }
-            for name in ('capability', 'operation', 'model', 'geometry', 'alias'):
-                if name in supplied:
-                    (matched if supplied[name] in text[name] else missed).append(name)
-            if 'device_scope' in supplied:
-                if supplied['device_scope'] == record['device_scope']:
-                    matched.append('device_scope')
-                else:
-                    missed.append('device_scope')
-            if terms:
-                haystack = recall[record['asset_id']]
-                if all(term in haystack for term in terms):
-                    matched.append('q')
-                else:
-                    missed.append('q')
-            matched.sort(key=order.get)
-            missed.sort(key=order.get)
-            return matched, missed
-
-        strict, partial = [], []
-        for record in records:
-            matched, missed = classify(record)
-            if not missed:
-                strict.append((record, matched, missed))
-            elif matched and any(name != 'q' for name in matched):
-                partial.append((record, matched, missed))
-        if strict:
-            status, candidates = 'match', strict
-        elif partial:
-            status = 'near_miss'
-            candidates = sorted(partial, key=lambda item: (-len(item[1]), item[0]['asset_id']))
-        else:
-            status, candidates = 'gap', []
-        total = len(candidates)
-        page = candidates[offset:offset+limit]
-        items = []
-        for record, matched, missed in page:
-            item = dict(record)
-            item['status'] = status
-            item['matched_filters'] = matched
-            item['missed_filters'] = missed
-            items.append(item)
-        result = self.envelope(
-            schema=CAPABILITY_QUERY_SCHEMA,
-            query={**filters, 'q': q, 'offset': offset, 'limit': limit},
-            status=status,
-            match_total=len(strict),
-            near_miss_total=len(partial) if status == 'near_miss' else 0,
-            total=total,
-            offset=offset,
-            next_offset=offset+limit if offset+limit < total else None,
-            items=items,
-        )
-        if status == 'gap':
-            result['gap'] = {
-                'reason': 'no asset matched every supplied filter',
-                'filters': {name: value for name, value in filters.items() if value},
-                'q': q,
-                'caveat': ('A zero lexical hit does not establish a scientific capability '
-                           'gap; applicability is decided by ports, units, model, '
-                           'geometry and evidence.'),
-            }
-        return result
+        response = query_capabilities(self.capability_index(), {
+            'schema': CAPABILITY_REQUEST_SCHEMA,
+            'capability': capability, 'operation': operation, 'model': model,
+            'geometry': geometry, 'boundary': boundary, 'taxonomy': taxonomy,
+            'device_scope': device_scope,
+            'alias': alias, 'q': q, 'offset': offset, 'limit': limit,
+        })
+        return self.envelope(**response)
 
     def asset(self, asset_id):
         if asset_id not in self.ids:
@@ -842,7 +812,7 @@ class Documentation:
                     p[key] = int(p[key])
             return self.search(**p)
         if parsed.path == '/api/capabilities':
-            if set(p) - (set(CAPABILITY_FILTER_ORDER) | {'offset', 'limit'}):
+            if set(p) - (set(FILTER_ORDER) | {'offset', 'limit'}):
                 raise ValueError('unknown capability query parameter')
             for key in ('offset', 'limit'):
                 if key in p:
@@ -874,7 +844,7 @@ class Documentation:
             # advertise an endpoint they cannot serve.
             if 'capabilities.json' in self.manifest['files']:
                 endpoints['capabilities'] = ('/api/capabilities?capability=…&operation=…&'
-                                             'model=…&geometry=…&device_scope=…&'
+                                             'model=…&geometry=…&boundary=…&taxonomy=…&device_scope=…&'
                                              'alias=…&q=…&offset=0&limit=20')
             return self.envelope(endpoints=endpoints,
                                  handbook='/api/handbook', topic='/api/topic?id=…',
@@ -939,7 +909,7 @@ def main():
         if name == 'query':
             sub.add_argument('--q', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--reader'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
             sub.add_argument('--capabilities', action='store_true', help='query the generated capability index instead of document search')
-            sub.add_argument('--capability', default=''); sub.add_argument('--operation', default=''); sub.add_argument('--model', default=''); sub.add_argument('--geometry', default=''); sub.add_argument('--device-scope', '--device_scope', dest='device_scope', default=''); sub.add_argument('--alias', default='')
+            sub.add_argument('--capability', default=''); sub.add_argument('--operation', default=''); sub.add_argument('--model', default=''); sub.add_argument('--geometry', default=''); sub.add_argument('--boundary', default=''); sub.add_argument('--taxonomy', default=''); sub.add_argument('--device-scope', '--device_scope', dest='device_scope', default=''); sub.add_argument('--alias', default='')
         else:
             sub.add_argument('--port', type=int, default=8765)
     a = parser.parse_args()
@@ -954,7 +924,7 @@ def main():
     docs = Documentation(a.snapshot, a.expected_digest)
     if a.command == 'query':
         capability_query = any((a.capabilities, a.capability, a.operation, a.model,
-                                a.geometry, a.device_scope, a.alias))
+                                a.geometry, a.boundary, a.taxonomy, a.device_scope, a.alias))
         if a.reader:
             result = docs.reader(a.reader)
         elif a.handbook:
@@ -965,7 +935,7 @@ def main():
             result = docs.asset(a.asset)
         elif capability_query:
             result = docs.capabilities(a.capability, a.operation, a.model, a.geometry,
-                                       a.device_scope, a.alias, a.q, a.offset, a.limit)
+                                       a.device_scope, a.alias, a.q, a.offset, a.limit, a.boundary, a.taxonomy)
         else:
             result = docs.search(a.q, a.domain, a.offset, a.limit, a.topic)
         print(encode(result).decode()); return
