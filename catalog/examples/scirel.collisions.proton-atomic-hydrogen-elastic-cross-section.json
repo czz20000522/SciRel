@@ -5,7 +5,7 @@
   "en": "H+-on-H elastic momentum-transfer cross section",
   "zh": "原子氢质子弹性动量转移截面"
  },
- "summary": "Compute the elastic momentum-transfer cross section of a proton on a stationary atomic-hydrogen target using the canonical KN1DPy piecewise branches: E < 10 eV uses the low-energy polynomial and E >= 10 eV uses the high-energy polynomial, with the input shape preserved.",
+ "summary": "Compute the elastic momentum-transfer cross section of a proton on a stationary atomic-hydrogen target using the declared piecewise fit: E < 10 eV uses the low-energy polynomial and E >= 10 eV uses the high-energy polynomial, with the input shape preserved.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -27,25 +27,25 @@
   ],
   "operation": [
    "Evaluate the H+-on-H elastic momentum-transfer cross section",
-   "collision energies -> cross section per energy with one extra leading singleton output axis"
+   "collision energies -> cross section per energy with the input shape preserved"
   ],
-  "model": "Empirical H+-on-H momentum-transfer fit with a low-energy polynomial below and at 10 eV; energy is the projectile energy in the stationary-target frame.",
+  "model": "Empirical H+-on-H momentum-transfer fit with a low-energy polynomial below 10 eV and a high-energy polynomial at or above 10 eV; energy is the projectile energy in the stationary-target frame.",
   "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
-  "boundary": "Input must be finite and nonnegative; values outside the energy domain take the endpoint value, and exactly 10 eV uses the low-energy branch with no zero gap at the breakpoint.",
+  "boundary": "Input must be finite and nonnegative; values outside the energy domain take the endpoint value, exactly 10 eV uses the high-energy branch, and the output shape equals the input shape.",
   "device_scope": "generic"
  },
  "identity": {
   "relation": "the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint",
-  "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
+  "direction": "collision energies -> cross section per energy, with the input shape preserved",
   "definition": "The laboratory proton energy E is clipped to [0.001, 1.01e5] eV. E < 10 uses a seven-coefficient low-energy log polynomial and E >= 10 uses a two-coefficient high-energy polynomial; the cross section is exp(poly(log E))*1e-4 m^2. The two empirical fits are not forced to be continuous; the result has the input shape.",
   "model": "empirical H+-on-H momentum-transfer fit; the energy is the projectile energy in the stationary-target frame",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
-  "boundary": "input must be a finite nonnegative real; values outside the energy domain take the endpoint value, and exactly 10 eV uses the low-energy branch",
+  "boundary": "input must be a finite nonnegative real; values outside the energy domain take the endpoint value, and exactly 10 eV uses the high-energy branch",
   "assumptions": [
-   "the low- and high-energy fit coefficients retain their declared frozen values; the breakpoint uses E <= 10 eV for the low-energy branch, so exactly 10 eV is not left in a zero-valued gap.",
+   "the low- and high-energy fit coefficients retain their declared frozen values; E < 10 eV uses the low-energy branch and E >= 10 eV uses the high-energy branch, including exactly 10 eV.",
    "endpoint clipping does not imply experimental accuracy outside the domain; the low and high segments may have a finite jump, and no unsupported smoothing is applied.",
-   "the output retains one leading singleton axis; negative energies, booleans, complex numbers and strings are rejected."
+   "the output preserves the input shape without adding a leading singleton axis; negative energies, booleans, complex numbers and strings are rejected."
   ]
  },
  "inputs": [
@@ -67,7 +67,7 @@
    "shape": "input shape",
    "dtype": "float64 array",
    "required": true,
-   "constraints": "finite and positive; the shape has one more leading singleton axis than the input"
+   "constraints": "finite and positive; the output shape equals the input shape"
   }
  ],
  "applicability": {
@@ -107,7 +107,7 @@
  },
  "verification": {
   "scope": [
-   "the canonical 10 eV breakpoint is probed directly: E<10 uses the low branch and E>=10 uses the high branch, including exactly 10 eV; immediate below/above values are covered",
+   "the declared 10 eV breakpoint is probed directly: E<10 uses the low branch and E>=10 uses the high branch, including exactly 10 eV; immediate below/above values are covered",
    "input-shape output, input rejection and endpoint-clipping assertions are retained",
    "downstream atomic collision-matrix assembly and independent angular integration use the corrected piecewise definition"
   ],

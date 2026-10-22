@@ -26,24 +26,24 @@
   ],
   "operation": [
    "Evaluate the H-on-H2 elastic momentum-transfer cross section",
-   "collision energies -> cross section per energy with one extra leading singleton output axis"
+   "collision energies -> cross section per energy with the input shape preserved"
   ],
   "model": "Single declared five-coefficient logarithmic-polynomial fit; no external-data interpolation and no rate integration.",
   "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
-  "boundary": "Energies must be finite and nonnegative; values outside the [0.03, 1.01e4] eV fit range clip to the endpoints; the output rank is one higher than the input rank.",
+  "boundary": "Energies must be finite and nonnegative; values outside the [0.03, 1.01e4] eV fit range clip to the endpoints; the output shape equals the input shape.",
   "device_scope": "generic"
  },
  "identity": {
   "relation": "the H-on-H2 elastic momentum-transfer cross section as a function of collision energy",
-  "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
-  "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the five coefficients. The result has the same shape as the input, matching the canonical KN1DPy source.",
+  "direction": "collision energies -> cross section per energy, with the input shape preserved",
+  "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the five coefficients. The result has the same shape as the input.",
   "model": "a single declared cross-section fit; no interpolation of external data and no rate integration",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
-  "boundary": "energies must be finite and nonnegative; in-domain values outside the fit range clip to the range endpoints; the output rank is one higher than the input rank",
+  "boundary": "energies must be finite and nonnegative; values outside the fit range clip to the range endpoints; the output shape equals the input shape",
   "assumptions": [
-   "The coefficients and the output wrapper are the declared conventions, kept bit for bit.",
-   "The output is not shaped like the broadcast input: it carries one extra leading singleton axis. This asset declares that wrapper explicitly and leaves the discrepancy with the broadcast-shape description open.",
+   "The five coefficients and endpoint clipping are the declared fit conventions.",
+   "The fit is evaluated elementwise and preserves the input shape, including zero-dimensional inputs; no leading singleton axis is added.",
    "No external physical cross-section reference is bound; this residual stays open."
   ]
  },
@@ -71,11 +71,11 @@
  ],
  "applicability": {
   "preconditions": [
-   "The caller accepts the clipping convention and the leading-singleton output-axis wrapper, or removes the extra axis itself."
+   "The caller accepts the clipping convention and uses a result with the same shape as the input energies."
   ],
   "supported": [
    "H-on-H2 elastic momentum-transfer cross sections on the fit within (or clamped to) its declared energy range.",
-   "Scalar and array evaluation of any rank, always with the extra leading axis.",
+   "Scalar and array evaluation of any rank, preserving the input shape.",
    "Rejecting negative energies."
   ],
   "excluded": [
@@ -105,7 +105,7 @@
   "dependencies": []
  },
  "example": {
-  "description": "Evaluate the fit, confirm the leading axis and endpoint clipping, and confirm the negative-energy rejection.",
+  "description": "Evaluate the fit, confirm the input-shape output and endpoint clipping, and confirm the negative-energy rejection.",
   "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_h2_elastic_cross_section\n\nenergy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])\nresult = evaluate_hydrogen_h2_elastic_cross_section(energy)\nassert result.shape == energy.shape\nassert np.all(np.isfinite(result)) and np.all(result > 0.0)\nclipped = evaluate_hydrogen_h2_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\ntry:\n    evaluate_hydrogen_h2_elastic_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')",
   "expected": "Cross sections in m^2 with the input shape; endpoint repetition outside the clipped range; ValueError naming nonnegativity for a negative energy."
  },
@@ -124,8 +124,7 @@
   "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
   "known_limitations": [
    "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
-   "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
-   "The output carries one extra leading singleton axis (the np.array([E]) wrapper). A broadcast-input-shape description would say otherwise; the wrapper is kept and the discrepancy is left open.",
+   "This fit is not validated against an external atomic-physics reference; no external validation gap is closed here.",
    "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",

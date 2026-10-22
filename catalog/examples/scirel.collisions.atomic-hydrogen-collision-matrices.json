@@ -42,7 +42,7 @@
    "Constants H_MASS = 1.6726231e-27 kg and Q = 1.602177e-19 C; Vth = sqrt(2*Q*Tnorm/(mu*H_MASS)), and every node uses v/Vth.",
    "The fit argument is the laboratory energy of the relevant projectile in the stationary-target frame, not always a center-of-mass energy. Momentum transfer maps E_D to E_D/2 for the hydrogen fits and viscosity maps E_D to E_D; H (mu=1) and D (mu=2) are verified, and other positive mu values are only an algebraic extension without new physical qualification.",
    "The molecular CX projectile mass is 2*H_MASS; the mixed H-H2/P-H2 fits always use the H projectile mass, and exchanging the test particle and the background does not change the relative-speed cross section.",
-   "The H+-H fit assigns exactly 10 eV to the low-energy polynomial; the zero gap at that breakpoint is closed, and the segments are not forced into a smooth splice.",
+   "The H+-H fit uses the low-energy polynomial for E < 10 eV and the high-energy polynomial for E >= 10 eV, including exactly 10 eV; the segments are not forced into a smooth splice.",
    "The default five-angle rule is a numerical approximation; the caller must independently check angular and velocity-grid convergence."
   ]
  },
