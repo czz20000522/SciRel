@@ -445,6 +445,9 @@ def _export(wheel, docs_en, docs_zh, output, html_output):
     for language, snapshot in snapshots.items():
         html_root = html_output / language; html_root.mkdir()
         for relative in snapshot.manifest['files']:
+            if relative == 'web/_static/webpack-macros.html':
+                # Theme build template, not a rendered page/runtime resource.
+                continue
             data = snapshot.read(relative)
             if relative.startswith('web/') or relative.startswith(('records/', 'readers/', 'chapters/')) or relative in ('CAPABILITY_MATRIX.md', 'capability-matrix.json'):
                 target = html_root / relative; target.parent.mkdir(parents=True, exist_ok=True)
