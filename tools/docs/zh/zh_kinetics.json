@@ -755,7 +755,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-   "source_sha256": "e4aa951c09ebb2019c4833833e8297523419e5b69ab47c0498ef9f54f3109c21",
+   "source_sha256": "6e2db46196904e090aef4898a7ea9955cb58f85bbc1d43f53e75138b3221bbfc",
    "summary": "在每个空间单元独立归约原子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -1052,7 +1052,8 @@
     "known_limitations": [
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
-     "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。"
+     "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。",
+     "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。"
     ]
    }
   },
@@ -1646,9 +1647,9 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "c28d13f077f42145852a9561b5df537a2e9a7727475c7ec898325451d24957db",
-   "summary": "以碰撞能量（eV）为自变量，给出 H–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式，并按 np.array([E]) 约定多带一个前导单例轴。负能量被拒绝。",
-   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。结果比输入多一个前导单例轴，即 np.array([E]) 包装约定。",
+   "source_sha256": "5866ce38bd511b44c48a934178e1f0e89f3ef058cb7d62c4299a3bc9f996ab95",
+   "summary": "以碰撞能量（eV）为自变量，给出 H–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式，返回与输入相同的形状。负能量被拒绝。",
+   "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。结果形状与输入相同，遵循 canonical KN1DPy 源实现。",
    "model": "单一所声明的截面拟合；不插值外部数据，也不对速率做积分。",
    "assumptions": [
     "系数和输出包装是所声明的约定，逐位保留。",
@@ -1667,8 +1668,8 @@
    "outputs": [
     {
      "name": "cross_section_m2",
-     "description": "每个能量的弹性动量转移截面，额外带前导长度 1 轴。",
-     "constraints": "有限且严格为正。",
+     "description": "每个能量的弹性动量转移截面，形状与输入相同。",
+     "constraints": "有限且严格为正；无额外前导单例轴。",
      "dtype": "float64 数组"
     }
    ],
@@ -1695,13 +1696,13 @@
     "partial_results": "不返回部分结果。"
    },
    "example": {
-    "description": "检查拟合、输出前导轴、端点重复及负能量拒绝。",
-    "expected": "输出单位 m²，额外带长度 1 轴；越界重复端点；负能量引发 ValueError。"
+    "description": "检查拟合、输出形状、端点重复及负能量拒绝。",
+    "expected": "输出单位 m²，形状与输入相同；越界重复端点；负能量引发 ValueError。"
    },
    "verification": {
     "scope": [
      "拟合在截断域上与系数集的独立求值一致，相对容差 1e-15。",
-     "每种输入维数均多一个前导单例轴，包装不改变数值。",
+     "输出形状与输入相同，不再附加前导单例轴。",
      "拟合上下界外结果精确重复对应端点值。",
      "输入合同：非有限和负能量被拒绝，错误信息指明对应量；负能量抛出异常，而不是被静默截断。",
      "本仓库不维护也不重放任何外部实现对照；维护测试只用仓内独立表述核验所声明关系，且仅在受测网格上覆盖所述拒绝与裁剪行为。"
@@ -3369,7 +3370,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
-   "source_sha256": "dbe871838e68fe633218c595e6344dae15565e174a04db006160c76884f9e7ce",
+   "source_sha256": "1e0ea8220254bf6346c8430fd03faf37e10dc4909a33f10f6f7ac86f420a40da",
    "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -3666,7 +3667,8 @@
     "known_limitations": [
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
-     "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。"
+     "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。",
+     "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。canonical 的零累积 sentinel 分支选择由显式 moment_state/target_distribution 取代，目标分支不再依赖全局累积目标的符号。"
     ]
    }
   },
@@ -3926,9 +3928,9 @@
   },
   {
    "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
-   "source_sha256": "ec12d2079f5cdec0276c653a5b3f249baf2e2a48264346dcba6618d03f2aeaa0",
-   "summary": "计算静止原子氢靶上的质子弹性动量传递截面；10 eV 使用低能多项式，修复 Python 翻译中的零洞。保留能域端点裁剪和领先单例输出轴。",
-   "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E≤10 时使用七系数低能 log 多项式，E>10 时使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；输出增加一个领先单例轴。",
+   "source_sha256": "297fc3bd505e28ac0aea6b38570be5701ebcc76d90c8a5ca153d358a6679f556",
+   "summary": "计算静止原子氢靶上的质子弹性动量传递截面；按 canonical KN1DPy 分段：E<10 eV 使用低能多项式，E≥10 eV 使用高能多项式，因此恰好 10 eV 属于高能分支；输出形状与输入相同。",
+   "definition": "将实验室质子能量 E 裁到 [0.001,1.01e5] eV。E<10 使用七系数低能 log 多项式，E≥10 使用二系数高能多项式；截面为 exp(poly(log E))*1e-4 m²。两段经验拟合不强制连续；结果形状与输入相同。",
    "model": "原始 IDL sigma_el_p_h 的 H+-on-H 动量传递经验拟合；能量为静止靶参考系的弹丸能量。",
    "assumptions": [
     "低/高能拟合系数沿用所声明的数值；只修复低能端把 IDL 的 le 10 误译为 <10 造成的断点空洞。",
@@ -3948,7 +3950,7 @@
     {
      "name": "cross_section_m2",
      "description": "H+-H 弹性动量传递截面。",
-     "constraints": "有限且正；形状比输入多一个领先单例轴。",
+     "constraints": "有限且正；形状与输入相同，无额外前导单例轴。",
      "dtype": "float64 数组"
     }
    ],
@@ -3970,13 +3972,13 @@
     "partial_results": "不返回部分结果。"
    },
    "example": {
-    "description": "检查 10 eV 断点与两侧的有限正截面。",
-    "expected": "三个截面均有限正数；断点属于低能段，右侧可保留经验拟合的有限跳变。"
+    "description": "检查 canonical 10 eV 断点与两侧的有限正截面。",
+    "expected": "三个截面均有限正数且形状与输入相同；10 eV 属于高能分支，右侧可保留经验拟合的有限跳变。"
    },
    "verification": {
     "scope": [
-     "先复现 10 eV 返回零的反例，再据此修复低能分支的断点。",
-     "保留非断点拟合、输出轴、输入拒绝和端点裁剪的已有数值断言与容差。",
+     "直接探测 canonical 10 eV 断点：E<10 使用低能分支，E≥10（含 10 eV）使用高能分支；覆盖紧邻断点两侧的值。",
+     "直接探测 canonical 10 eV 断点：E<10 使用低能分支，E≥10（含 10 eV）使用高能分支；覆盖紧邻断点两侧的值。",
      "后续原子碰撞矩阵与独立角积分使用修正后的分段定义。"
     ],
     "evidence_ceiling": "证明所声明的分段拟合与原始断点定义一致，未建立新的实验截面普适精度；根级接收、人工科学认可及许可另行记录。",
@@ -4842,7 +4844,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-elastic-cross-section",
-   "source_sha256": "2ef5bda567f2c60530f41b51a03907ac058fe74af1436ddb0f051f3802f948d1",
+   "source_sha256": "3111b445dcb21e071b5f6c35a6401fccafee0886715b3ca3e637b53257fa12c1",
    "summary": "以碰撞能量（eV）为自变量，给出 H₂–H₂ 弹性动量转移截面（m²）：在 [0.03, 1.01e4] eV 上截断的单一五系数对数多项式。选择器校验保留：viscosity=True 选择所声明的同一拟合回退，选择器必须是标量布尔或整数。负能量被拒绝。",
    "definition": "将能量截断至 [0.03, 1.01e4] eV，再以五系数计算 exp(polyval(log(E_clipped), a))×1e-4 m²。viscosity=True 选择所声明的回退，仍求同一动量转移拟合。截断范围之外返回端点值。",
    "model": "单一所声明的截面拟合，附一个所声明的无操作回退选择器；不插值外部数据，也不对速率做积分。",
@@ -4915,7 +4917,8 @@
      "拟合范围外的能量静默返回端点值；这是所声明的截断约定，不是错误。",
      "负能量拒绝是本合同的显式前提：负能量抛出 ValueError，而不是返回截断端点。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
-     "公开分发许可仍待人工决定。"
+     "公开分发许可仍待人工决定。",
+     "该实现在两个输入/selector 行为上刻意不追求 source parity：canonical 实现会把负能量静默裁剪到 0.03 eV 端点，并在 viscosity=True 时打印警告；本资产用 ValueError 拒绝负能量，要求标量布尔/整数 selector，且不输出警告。非负能量上的拟合算术、端点裁剪与标量 selector 校验仍按声明合同保留。"
     ]
    }
   },

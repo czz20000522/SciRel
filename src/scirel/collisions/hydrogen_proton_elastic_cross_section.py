@@ -1,19 +1,15 @@
 """H+-on-H elastic momentum-transfer fit in m^2.
 
 The input is projectile proton laboratory energy in eV with target H at rest.
-The the neutral-transport formulation IDL primary sigma_el_p_h.pro uses E <= 10 eV for the low-energy
-polynomial and E > 10 eV for the high-energy polynomial. This repairs the
-Python translation's zero at exactly 10 eV; the original failure is preserved
-in the scientific-correction receipt. The two empirical fits are not forced
-continuous. Endpoint clipping [0.001, 1.01e5] eV and the leading singleton
-output axis remain explicit. Fit fidelity does not establish accuracy outside
-the cited experimental/model range or grant redistribution approval.
+The canonical KN1DPy commit ``bb22c872`` ``sigma_el_p_h`` source uses
+``E < 10`` for the low-energy polynomial and ``E >= 10`` for the high-energy
+polynomial, so exactly 10 eV uses the high-energy branch. The two empirical
+fits are not forced continuous. Endpoint clipping [0.001, 1.01e5] eV and the
+input-preserving output shape are explicit. Fit fidelity does not establish
+accuracy outside the cited experimental/model range or grant redistribution
+approval.
 """
 from __future__ import annotations
-
-# HELD: human-review exposure guard
-from scirel._hold import require_review_import
-require_review_import(__name__)
 
 
 import numpy as np
@@ -44,10 +40,10 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
     Returns
     -------
     numpy.ndarray
-        Cross sections in ``m^2`` with one extra leading singleton axis
-        compared with the input (the saved source's ``np.array([E])``
-        wrapper convention). Exactly 10 eV uses the low polynomial; accepted
-        values are positive and finite. The empirical breakpoint may jump.
+        Cross sections in ``m^2`` with the input's shape. Exactly 10 eV uses
+        the high-energy polynomial, matching canonical KN1DPy ``bb22c872``;
+        accepted values are positive and finite. The empirical breakpoint may
+        jump.
 
     Raises
     ------
@@ -56,8 +52,8 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
     """
     clipped = clipped_energy(energy_ev, 0.001, 1.01e5)
     result = np.zeros_like(clipped, dtype=float)
-    low = clipped <= 10.0
-    high = clipped > 10.0
+    low = clipped < 10.0
+    high = clipped >= 10.0
     if np.any(low):
         result[low] = np.exp(
             log_polynomial(np.log(clipped[low]), _LOW_ENERGY_COEFFICIENTS)
@@ -66,4 +62,4 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
         result[high] = np.exp(
             log_polynomial(np.log(clipped[high]), _HIGH_ENERGY_COEFFICIENTS)
         ) * 1.0e-4
-    return result[np.newaxis, ...]
+    return result

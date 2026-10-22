@@ -5,7 +5,7 @@
   "en": "H-on-H2 elastic momentum-transfer cross section",
   "zh": "原子氢分子氢弹性动量转移截面"
  },
- "summary": "H-on-H2 elastic momentum-transfer cross section in m^2 as a function of collision energy in eV: a single five-coefficient logarithmic polynomial on the clipped [0.03, 1.01e4] eV domain, preserving the np.array([E]) output wrapper as one extra leading singleton axis. Negative energies are rejected.",
+ "summary": "H-on-H2 elastic momentum-transfer cross section in m^2 as a function of collision energy in eV: a single five-coefficient logarithmic polynomial on the clipped [0.03, 1.01e4] eV domain, returning the input shape. Negative energies are rejected.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -36,7 +36,7 @@
  "identity": {
   "relation": "the H-on-H2 elastic momentum-transfer cross section as a function of collision energy",
   "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
-  "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the five coefficients. The result carries one extra leading singleton axis compared with the input, the np.array([E]) wrapper convention.",
+  "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the five coefficients. The result has the same shape as the input, matching the canonical KN1DPy source.",
   "model": "a single declared cross-section fit; no interpolation of external data and no rate integration",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
@@ -61,9 +61,9 @@
  "outputs": [
   {
    "name": "cross_section_m2",
-   "description": "Elastic momentum-transfer cross section, one value per energy, with one extra leading singleton axis.",
+   "description": "Elastic momentum-transfer cross section, one value per energy, with the input shape.",
    "units": "m^2",
-   "shape": "input shape with one extra leading axis of size 1",
+   "shape": "input shape",
    "dtype": "float64 array",
    "required": true,
    "constraints": "Finite and strictly positive for every accepted input."
@@ -106,13 +106,13 @@
  },
  "example": {
   "description": "Evaluate the fit, confirm the leading axis and endpoint clipping, and confirm the negative-energy rejection.",
-  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_h2_elastic_cross_section\n\nenergy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])\nresult = evaluate_hydrogen_h2_elastic_cross_section(energy)\nassert result.shape == (1, energy.size)\nassert np.all(np.isfinite(result)) and np.all(result > 0.0)\nclipped = evaluate_hydrogen_h2_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))\nassert clipped[0][0] == clipped[0][1] and clipped[0][-1] == clipped[0][-2]\ntry:\n    evaluate_hydrogen_h2_elastic_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')",
-  "expected": "Cross sections in m^2 with a leading singleton axis; endpoint repetition outside the clipped range; ValueError naming nonnegativity for a negative energy."
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_h2_elastic_cross_section\n\nenergy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])\nresult = evaluate_hydrogen_h2_elastic_cross_section(energy)\nassert result.shape == energy.shape\nassert np.all(np.isfinite(result)) and np.all(result > 0.0)\nclipped = evaluate_hydrogen_h2_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\ntry:\n    evaluate_hydrogen_h2_elastic_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')",
+  "expected": "Cross sections in m^2 with the input shape; endpoint repetition outside the clipped range; ValueError naming nonnegativity for a negative energy."
  },
  "verification": {
   "scope": [
    "That the fit equals an independent evaluation of the coefficient set on the clipped domain to a relative tolerance of 1e-15.",
-   "The declared output shape: the result carries one extra leading singleton axis for every input rank, with values unchanged under the wrapper.",
+   "The declared output shape equals the input shape; there is no extra leading singleton axis.",
    "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
    "The input contract: non-finite and negative energies are rejected with messages naming the quantity; a negative energy raises rather than being silently clipped.",
    "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."

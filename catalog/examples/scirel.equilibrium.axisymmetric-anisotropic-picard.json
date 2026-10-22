@@ -128,7 +128,7 @@
    "dtype": "boolean array-like, callable or None",
    "required": false,
    "default": null,
-   "constraints": "When omitted, all cells are active; False cells have J_phi set to zero before Green feedback."
+   "constraints": "When omitted, all cells are active. A fixed mask must be a boolean array and a callable must return a boolean array of the same shape; integer, float and 0/1 coercions are rejected. False cells have J_phi set to zero before Green feedback."
   },
   {
    "name": "minimum_field",
@@ -375,11 +375,12 @@
   "excluded": [
    "A built-in pressure closure or automatic choice of anisotropic model.",
    "Free-boundary conductor response, kinetic end-loss closure or non-axisymmetric equilibrium.",
-   "A guarantee of convergence, physical stability or compatibility for arbitrary caller closures."
+   "A guarantee of convergence, physical stability or compatibility for arbitrary caller closures.",
+   "Integer/float/0-1 plasma_mask coercion and implicit dtype conversion."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError/TypeError for missing or invalid grid, Green matrix, controls, pressure_closure or mask; invalid closure mapping/pressure values, wrong mask shape and dependency input failures propagate.",
+  "invalid_input": "Raises ValueError/TypeError for missing or invalid grid, Green matrix, controls, pressure_closure or mask; invalid closure mapping/pressure values, wrong mask shape and dependency input failures propagate. A non-boolean fixed mask or non-boolean callable mask (including integer/float/0-1 values) is rejected with ValueError; mask shape mismatch fails closed.",
   "runtime_failure": "Raises FloatingPointError before the terminal pressure_closure, mask or force evaluation when the terminal field is below minimum_field; iteration fields are checked before each closure call.",
   "nonconvergence": "After maxiter steps, returns the last state with converged=false and the iteration history; there is no automatic retry or failure_reason field.",
   "partial_results": "No mapping is returned after an exception. Bounded nonconvergence is a complete last-state result, not an exception."
@@ -418,17 +419,19 @@
    "Dynamic inactive mask is applied before Green feedback and scalar pressures broadcast unchanged.",
    "Wrong pressure shape, missing closure and invalid controls fail closed.",
    "Manufactured isotropic linear pressure produces analytic J_phi and terminal cell currents.",
-   "Terminal firehose, compatibility and minimum-field checks."
+   "Terminal firehose, compatibility and minimum-field checks.",
+   "Strict boolean mask rejection and the terminal gate ordering are pinned by direct regressions; the assembly is the source-level artifact, not a claim of upstream anisotropic-formula parity."
   ],
   "tests": [
    "tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests. Mask policy and terminal gate order are API decisions, not independent physics evidence; no upstream anisotropic-pressure oracle is claimed.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "No expert scientific endorsement or public release follows from this numerical successor."
+   "No expert scientific endorsement or public release follows from this numerical successor.",
+   "Mask semantics are a caller/API policy (strict boolean only); they are not a physical formula claim. Terminal gate order is a SciRel API decision."
   ]
  },
  "composition": {

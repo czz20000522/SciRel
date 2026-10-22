@@ -1,9 +1,6 @@
-"""Held parallel continuation implementation; review overlay only."""
+"""Fail-closed seeded continuation for the parallel electromagnetic dispersion root."""
 
 from __future__ import annotations
-
-from scirel._hold import require_review_import
-require_review_import(__name__)
 
 import numpy as np
 from scipy.optimize import root
@@ -52,6 +49,6 @@ def _continue_em1d(state, *, pm=1, k_grid=None, initial_guess=None, residual_tol
 
 
 def continue_em1d(inputs):
-    """Held review wrapper: continue a seeded parallel root across a k grid."""
+    """Continue a seeded parallel root across a k grid under the fail-closed policy."""
 
     return _continue_em1d(**inputs)

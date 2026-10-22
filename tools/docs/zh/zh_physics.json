@@ -8675,7 +8675,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.axisymmetric-anisotropic-picard",
-   "source_sha256": "1e27cc1576c2815e57d0c79a8c61d4bce8fa1d08e14b97a82718852e8dae80f3",
+   "source_sha256": "82f3dec4da2b61589a99371bba7a02b737829ef4da7a1d4ef06fe00ca14db0af",
    "summary": "将外供各向异性压力闭合与当前极向场、柱坐标压力力和稠密格林磁通更新迭代耦合，最后重新求值并检查返回的末状态。",
    "definition": "从 psi_vac 副本重构场并执行迭代场门禁，调用 pressure_closure(B,psi)，广播或验证压力，求 div(P)、掩蔽非激活 J_phi，再做磁通松弛 Green 更新。以未松弛 step.fixed_point_residual<=tol 或次数上限判停，相对松弛磁通步幅仅作诊断；末 psi 上重算场、闭合、力及电流，按所声明顺序检查最小场、firehose 裕度和严格平行力相容性。",
    "model": "有界轴对称旋磁压力 Picard 组合，压力闭合由调用者提供。",
@@ -8738,7 +8738,7 @@
     {
      "name": "plasma_mask",
      "description": "固定激活布尔数组，或每个 B、psi 状态上求值的动态函数。",
-     "constraints": "省略时全激活；False 处 J_phi 在反馈前置零。",
+     "constraints": "省略时全部单元激活。固定掩码必须是布尔数组，可调用对象必须返回同形状布尔数组；拒绝整数、浮点和 0/1 强制转换。False 单元在反馈前将 J_phi 置零。",
      "dtype": "布尔数组、可调用对象或 None"
     },
     {
@@ -8906,11 +8906,12 @@
     "excluded": [
      "内置压力闭合或自动选择各向异性模型。",
      "自由边界导体响应、动力学端损闭合、非轴对称平衡。",
-     "对任意外供闭合的收敛、稳定或兼容性保证。"
+     "对任意外供闭合的收敛、稳定或兼容性保证。",
+     "整数/浮点/0-1 的 plasma_mask 强制转换以及隐式 dtype 转换。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺失或非法网格、格林、控制、闭合、掩码抛 ValueError/TypeError；闭合映射、压力、掩码形状及依赖错误继续抛出。",
+    "invalid_input": "缺失或非法网格、格林、控制、闭合、掩码抛 ValueError/TypeError；闭合映射、压力、掩码形状及依赖错误继续抛出。 非布尔固定掩码或非布尔可调用掩码（包括整数/浮点/0-1 值）以 ValueError 拒绝；掩码形状不匹配 fail closed。",
     "runtime_failure": "当终态场低于 minimum_field 时，在 terminal pressure_closure、mask 或 force 求值之前抛出 FloatingPointError；迭代场在每次 closure 调用之前检查。",
     "nonconvergence": "到 maxiter 返回 converged=false 和记录；无自动重试或 failure_reason 字段。",
     "partial_results": "异常不返回映射；有界不收敛是完整末态结果，不是异常。"
@@ -8925,13 +8926,15 @@
      "动态掩码在反馈前生效，标量压力广播不变。",
      "错压力形状、缺闭合及非法控制拒绝。",
      "制造线性各向同性压力给解析电流和末单元电流。",
-     "末态 firehose、兼容性和最小场检查。"
+     "末态 firehose、兼容性和最小场检查。",
+     "严格布尔掩码拒绝与 terminal gate 顺序由直接回归固定；该组装是源级产物，不声称上游各向异性公式一致性。"
     ],
-    "evidence_ceiling": "制造和解析离散检查仅支持所述极向模型及声明积分几何，不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。",
+    "evidence_ceiling": "制造和解析离散检查仅支持所述极向模型及声明积分几何，不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。 掩码策略与 terminal gate 顺序是 API 决策，不是独立物理证据；不声称上游各向异性压力 oracle。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不约束离散误差或实验不确定度。",
-     "此数值后继不自动获得专家认可或公开发行资格。"
+     "此数值后继不自动获得专家认可或公开发行资格。",
+     "掩码语义是调用方/API 策略（仅严格布尔），不是物理公式声明。Terminal gate 顺序是 SciRel API 决策。"
     ],
     "tests": [
      "tests/cross_domain/axisymmetric_anisotropic_picard/test_composition_axisymmetric_anisotropic_picard.py",

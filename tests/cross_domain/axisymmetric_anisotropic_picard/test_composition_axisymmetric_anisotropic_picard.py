@@ -176,3 +176,37 @@ def test_review_gate_rejects_nonfinite_and_coerced_control_values():
         _run(_inputs(maxiter=1.2))
     with pytest.raises(ValueError, match="strict_compatibility must be a boolean"):
         _run(_inputs(strict_compatibility=0))
+
+
+@pytest.mark.parametrize("mask", [
+    np.ones((5, 5), dtype=int),
+    np.ones((5, 5), dtype=float),
+    [[1, 0], [0, 1]],
+])
+def test_plasma_mask_rejects_integer_and_float_coercion(mask):
+    with pytest.raises(ValueError, match="boolean"):
+        _run(_inputs(plasma_mask=mask, maxiter=1))
+
+
+@pytest.mark.parametrize("mask", [
+    lambda _b, psi: np.zeros_like(psi, dtype=int),
+    lambda _b, psi: np.zeros_like(psi, dtype=float),
+])
+def test_plasma_mask_callable_return_must_be_boolean(mask):
+    with pytest.raises(ValueError, match="boolean"):
+        _run(_inputs(plasma_mask=mask, maxiter=1))
+
+
+def test_plasma_mask_accepts_fixed_boolean_array():
+    values = _inputs(maxiter=1)
+    mask = np.zeros_like(values["psi_vac"], dtype=bool)
+    mask[:, :2] = True
+    result = _run({**values, "plasma_mask": mask})
+    assert np.all(result["J_phi"][~mask] == 0.0)
+
+
+def test_mask_shape_mismatch_fails_closed():
+    values = _inputs(maxiter=1)
+    wrong = np.ones((2, 2), dtype=bool)
+    with pytest.raises(ValueError, match="plasma_mask"):
+        _run({**values, "plasma_mask": wrong})

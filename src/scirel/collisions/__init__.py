@@ -20,6 +20,13 @@ __all__ = [
     "evaluate_atomic_hydrogen_charge_exchange_cross_section",
     "evaluate_hydrogen2_proton_elastic_cross_section",
     "evaluate_atomic_hydrogen_elastic_cross_section",
+    "evaluate_hydrogen_h2_elastic_cross_section",
+    "evaluate_hydrogen_proton_elastic_cross_section",
+    "assemble_atomic_hydrogen_omega_frequencies",
+    "evaluate_hydrogen2_hydrogen2_elastic_cross_section",
+    "assemble_molecular_hydrogen_omega_frequencies",
+    "assemble_atomic_hydrogen_collision_matrices",
+    "assemble_molecular_hydrogen_collision_matrices",
 ]
 
 

@@ -540,7 +540,7 @@
   },
   {
    "asset_id": "scirel.kinetic.parallel-em-continuation",
-   "source_sha256": "745401562d4e116e1e3d5e5d645af3bf271440018b24340bf346a86a8c805581",
+   "source_sha256": "c6848124c15b554ddd87722a821fc13e7a82fab299459ccab3e1218920dfa910",
    "summary": "通过显式网格延续一个满足因果性的动理学根；接受的根会作为下一点的种子，并记录诊断失败。失败或虚假成功的根不会传递到后续点。",
    "definition": "在每个 k 处，用 scipy.optimize.root(method=hybr) 求解 f/scale 的两个实分量。只有 solver.success、输出有限且满足声明的残差界时才接受。只有被接受的根才会成为下一点的初始猜测。",
    "model": "任意物种数的漂移各向同性 Maxwellian 分布平行电磁响应。",
@@ -567,13 +567,13 @@
      "name": "k_grid",
      "description": "按给定次序排列的有符号实波矢网格。",
      "dtype": "float64 数组或 None",
-     "constraints": "各点有限且非零；显式数组会展平。None 使用 0.01*arange(1,51)/state[cwp]。"
+     "constraints": "各点有限且非零；显式数组会展平。None 使用 0.01*arange(1,51)/state[cwp]。 默认源网格是尽力而为；显式数组会展平，并支持两个符号。"
     },
     {
      "name": "initial_guess",
      "description": "首个复时间频率种子。",
      "dtype": "complex128 或 None",
-     "constraints": "数值有限；None 使用 (0.05+0.04j)*state[wcs1]。"
+     "constraints": "数值有限；None 使用源式最佳努力种子 (0.05+0.04j)*state[wcs1]。声称覆盖分支的调用方应提供显式种子。"
     },
     {
      "name": "residual_tolerance",
@@ -598,31 +598,35 @@
    ],
    "applicability": {
     "preconditions": [
-     "输入须有限，且满足所声明的单位和形状。"
+     "输入须有限，且满足所声明的单位和形状。",
+     "若声称覆盖一个 k 网格上的分支延续，调用方须提供分支种子（initial_guess），或明确接受 fail-closed 终止；源形状的默认种子/网格只是便利，不是完备性声明。"
     ],
     "supported": [
      "有限、有序的正或负网格，任一固定 pm，以及任意被允许的物种数量。",
      "真实漂移束流以及独立的三物种负波矢延续。"
     ],
     "excluded": [
-     "不自动发现多分支，也不处理分支交叉。"
+     "不自动发现多分支，也不处理分支交叉。",
+     "源式地把失败 fsolve 返回值带入下一个种子；自动多分支发现或交叉处理。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "ValueError 或必需映射键缺失会拒绝非法输入。",
-    "runtime_failure": "依赖、数值库或原生运行时错误向上传播；不会静默改用其他提供方。",
+    "invalid_input": "ValueError 或必需映射键缺失会拒绝非法输入。 未被接受的延续会抛出 ContinuationFailure，携带尝试的 k、种子、求解器成功/状态、scaled residual 及已接受前缀；不返回部分结果。",
+    "runtime_failure": "依赖、数值库或原生运行时错误向上传播；不会静默改用其他提供方。 声明的 ContinuationFailure（缺少可接受根）是科学失败，不是依赖错误。",
     "nonconvergence": "ContinuationFailure 携带 k、种子、可取得的尝试根／状态／残差以及已接受的前缀。",
     "partial_results": "失败时为诊断提供 accepted_prefix；它不代表成功完成整个延续。"
    },
    "verification": {
     "scope": [
      "test_vacuum_continuation_matches_analytic_branch_and_zero_residual 检查真空解析分支（两点网格上 omega=0.2,0.21，零 scaled residual）；test_parallel_rejects_complex_and_unrepresentable_wavevectors 覆盖非法 k 网格；残差本身在同一文件中有直接 Hermite 积分 gate。",
-     "有界示例覆盖一次代表延续；不扩展适用范围。"
+     "有界示例覆盖一次代表延续；不扩展适用范围。",
+     "回归固定默认种子的 fail-closed 记录、显式种子的已接受延续以及非法网格拒绝；不声称非真空源轨迹一致性。"
     ],
     "known_limitations": [
      "解析延续检查仅为真空两点评例；不声明非真空精度。",
      "延续根依赖种子；不作唯一性或最大增长率声明。",
-     "默认 50 点网格保留来源归一化，但需要调用方提供 cwp 与 wcs1。"
+     "默认 50 点网格保留来源归一化，但需要调用方提供 cwp 与 wcs1。",
+     "默认 50 点网格/种子可能在可接受 k 点抛出 ContinuationFailure；fail-closed 停止而不是携带失败根，因此分支声明需要显式调用方种子（或接受失败）。"
     ],
     "evidence_ceiling": "限定于所声明的延续，仅覆盖受测真空两点分支与失败契约。真空解析分支以零 scaled residual 复现；非法 k 网格被拒绝；底层残差有直接 Hermite 积分 gate。不证明非真空延续精度、与种子无关的分支选择、唯一性或最大增长行为。"
    },

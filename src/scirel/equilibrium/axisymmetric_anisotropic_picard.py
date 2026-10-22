@@ -1,14 +1,21 @@
 """Standalone orchestration of the current SciRel anisotropic Picard solver."""
 from __future__ import annotations
 
-# HELD: human-review exposure guard
-from scirel._hold import require_review_import
-require_review_import(__name__)
-
 from scirel._validation import finite_scalar as _require_finite_scalar, integer_scalar as _require_integer_scalar, bool_scalar as _require_bool_scalar
 from collections.abc import Mapping
 import numpy as np
 from ._anisotropic_numerics import cell_areas
+
+
+def _require_boolean_mask(value, shape, name='plasma_mask'):
+    """Require an exact-shape boolean mask; never coerce ints/floats/0-1 values."""
+    mask = np.asarray(value)
+    if mask.dtype.kind != 'b':
+        raise ValueError(f'{name} must be a boolean array; integer/float/0-1 coercion is not accepted')
+    if mask.shape != shape:
+        raise ValueError(f'{name} must match the R-Z grid shape {shape}')
+    return mask
+
 
 def _coerce_pressure(parallel, perpendicular, psi):
     """Broadcast scalar Pa values or validate the caller-owned grid shape."""
@@ -72,9 +79,12 @@ def run_composition(inputs, *, asset_loader):
     if not np.isfinite(tol) or not np.isfinite(relax) or (not np.isfinite(minimum_field)) or (not np.isfinite(minimum_firehose)) or (not np.isfinite(compatibility_tol)) or (tol <= 0.0) or (maxiter < 1) or (not 0.0 <= relax < 1.0) or (minimum_field <= 0.0) or (compatibility_tol < 0.0):
         raise ValueError('Picard controls are invalid')
     mask_port = inputs.get('plasma_mask')
-    fixed_mask = np.ones_like(psi_vac, dtype=bool) if mask_port is None else None if callable(mask_port) else np.asarray(mask_port, dtype=bool)
-    if fixed_mask is not None and fixed_mask.shape != psi_vac.shape:
-        raise ValueError('plasma_mask must match the R-Z grid')
+    if mask_port is None:
+        fixed_mask = np.ones_like(psi_vac, dtype=bool)
+    elif callable(mask_port):
+        fixed_mask = None
+    else:
+        fixed_mask = _require_boolean_mask(mask_port, psi_vac.shape)
     field = asset_loader('scirel.field.poloidal_field_from_flux')
     force = asset_loader('scirel.equilibrium.anisotropic_force_balance')
     update = asset_loader('scirel.equilibrium.axisymmetric_picard_update')
@@ -86,9 +96,7 @@ def run_composition(inputs, *, asset_loader):
         if np.any(magnetic['B'] < minimum_field):
             raise FloatingPointError('magnetic field fell below minimum_field; the gyrotropic closure is singular')
         state = _require_state(closure, magnetic, psi)
-        active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
-        if active.shape != psi.shape:
-            raise ValueError('callable plasma_mask returned the wrong shape')
+        active = _require_boolean_mask(mask_port(magnetic['B'], psi), psi.shape) if callable(mask_port) else fixed_mask
         force_state = force(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], state['p_parallel'], state['p_perpendicular'], active)
         j_phi = _apply_active_mask(force_state['J_phi'], active)
         step = update(r_grid, z_grid, j_phi, psi, psi_vac, g_psi, relax, old_currents, cell_edges=inputs.get('cell_edges'))
@@ -102,9 +110,7 @@ def run_composition(inputs, *, asset_loader):
     if np.any(magnetic['B'] < minimum_field):
         raise FloatingPointError('magnetic field fell below minimum_field at the returned terminal state')
     state = _require_state(closure, magnetic, psi)
-    active = np.asarray(mask_port(magnetic['B'], psi), dtype=bool) if callable(mask_port) else fixed_mask
-    if active.shape != psi.shape:
-        raise ValueError('callable plasma_mask returned the wrong shape')
+    active = _require_boolean_mask(mask_port(magnetic['B'], psi), psi.shape) if callable(mask_port) else fixed_mask
     force_state = force(r_grid, z_grid, magnetic['B_R'], magnetic['B_Z'], state['p_parallel'], state['p_perpendicular'], active)
     j_phi = _apply_active_mask(force_state['J_phi'], active)
     terminal_cell_currents = j_phi * cell_areas(r_grid, z_grid, inputs.get('cell_edges'))

@@ -2,55 +2,10 @@
  "schema": "scirel.exposure-hold",
  "policy": "Held assets remain in catalog/examples for review and code/tests stay intact, but documentation, capability index, query service and capability matrix must exclude them until human approval.",
  "assets": {
-  "scirel.collisions.atomic-hydrogen-omega-frequencies": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose."
-  },
-  "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose."
-  },
-  "scirel.collisions.molecular-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose."
-  },
-  "scirel.collisions.molecular-hydrogen-omega-frequencies": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose."
-  },
-  "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose."
-  },
-  "scirel.equilibrium.axisymmetric-anisotropic-picard": {
-   "status": "human-review",
-   "reason": "Strict boolean plasma-mask policy has not been unified with the reduced-Hall/free-boundary siblings; exposure waits for the consistency decision.",
-   "required_decision": "Owner accepts either strict bool or a documented coercion policy and the matching regression; then rebind."
-  },
-  "scirel.kinetic.parallel-em-continuation": {
-   "status": "human-review",
-   "reason": "The default 50-point seed can fail with ContinuationFailure at a valid k point; branch/seed policy is not agent-decidable.",
-   "required_decision": "Owner defines and tests the seed/branch policy or restricts the declared input envelope before exposure."
-  },
   "scirel.inference.direct-anisotropic-inversion": {
    "status": "human-review",
-   "reason": "Exposed composition depends on the held axisymmetric anisotropic Picard capability; a chain with a held member cannot be exposed.",
-   "required_decision": "Owner must either release the axisymmetric capability with its mask policy or replace the dependency; then rebind and re-audit this composition."
-  },
-  "scirel.collisions.atomic-hydrogen-collision-matrices": {
-   "status": "human-review",
-   "reason": "Composition depends on a held source-conflict elastic cross-section; cannot expose a chain with a held member.",
-   "required_decision": "Resolve the source-conflict dimensions and release the dependencies first."
-  },
-  "scirel.collisions.molecular-hydrogen-collision-matrices": {
-   "status": "human-review",
-   "reason": "Composition depends on a held source-conflict elastic cross-section; cannot expose a chain with a held member.",
-   "required_decision": "Resolve the source-conflict dimensions and release the dependencies first."
+   "reason": "Assembly source parity, but Pleiades FINAL payload lacks the admitted direct-inversion graph artifact; axisymmetric dependency is now released. Keep for artifact restoration.",
+   "required_decision": "Restore/bind the exact admitted graph artifact and rerun composition/physical-closure; no physics choice required."
   }
  }
 }

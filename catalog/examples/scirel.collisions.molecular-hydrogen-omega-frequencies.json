@@ -484,7 +484,8 @@
   "known_limitations": [
    "the moment ratio may be ill-conditioned near a zero denominator; there is no arbitrary floor, and a unique equilibrium linearization rate is not invented from single-point data",
    "a finite angular or velocity grid may produce a Maxwell stress residual; convergence must be checked for the application",
-   "the limitations of the cross-section fits, H/D scaling and the molecular-viscosity approximation are inherited; licensing remains to be determined"
+   "the limitations of the cross-section fits, H/D scaling and the molecular-viscosity approximation are inherited; licensing remains to be determined",
+   "This is deliberately not source parity for zero/negative denominators: the canonical implementation floors the mixed drift and self-stress denominators and clips every Omega to nonnegative; this asset instead returns NaN with defined=False at a zero denominator and a negative_no_bgk_closure status for a negative ratio. The canonical zero-accumulator sentinel branch selection is replaced by explicit moment_state/target_distribution, so the target branch no longer depends on the sign of a global accumulated target."
   ]
  }
 }

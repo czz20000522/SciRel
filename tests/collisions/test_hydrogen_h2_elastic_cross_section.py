@@ -1,12 +1,11 @@
 """Direct contract tests for ``scirel.collisions.hydrogen_h2_elastic_cross_section``.
 
-The saved the neutral-transport formulation leaf fits the H-on-H2 elastic
+The canonical KN1DPy commit ``bb22c872`` leaf fits the H-on-H2 elastic
 momentum-transfer cross section with a single logarithmic polynomial clipped
-to ``[0.03, 1.01e4] eV``, preserving the source ``np.array([E])`` wrapper as
-one extra leading singleton output axis.  One documented repair relative to
-the saved implementation is exercised: negative energies are rejected (the
-saved document declares nonnegative energies but its implementation silently
-clipped them to the lower endpoint).
+to ``[0.03, 1.01e4] eV`` and returns the input shape.  One documented repair
+relative to the saved implementation is exercised: negative energies are
+rejected (the saved document declares nonnegative energies but its
+implementation silently clipped them to the lower endpoint).
 """
 from __future__ import annotations
 
@@ -29,23 +28,24 @@ def independent_fit(energy):
 def test_fit_matches_independent_evaluation():
     energy = np.array([0.03, 0.5, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])
     actual = evaluate_hydrogen_h2_elastic_cross_section(energy)
-    np.testing.assert_allclose(actual[0], independent_fit(energy), rtol=1e-15, atol=0.0)
-    assert actual.shape == (1, energy.size)
+    np.testing.assert_allclose(actual, independent_fit(energy), rtol=1e-15, atol=0.0)
+    assert actual.shape == energy.shape
     assert np.all(np.isfinite(actual)) and np.all(actual > 0.0)
 
 
-def test_leading_singleton_axis_is_preserved():
-    """Declared source convention: the result carries one extra leading axis."""
+def test_output_shape_preserves_input_shape():
+    """Canonical source convention: no extra leading singleton axis."""
     two_d = evaluate_hydrogen_h2_elastic_cross_section(np.array([[1.0, 100.0, 1.0e3]]))
-    assert two_d.shape == (1, 1, 3)
+    assert two_d.shape == (1, 3)
     one_d = evaluate_hydrogen_h2_elastic_cross_section(np.array([1.0, 100.0, 1.0e3]))
+    assert one_d.shape == (3,)
     np.testing.assert_array_equal(two_d[0], one_d)
 
 
 def test_endpoint_clipping_is_preserved():
     result = evaluate_hydrogen_h2_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))
-    assert result[0][0] == result[0][1]
-    assert result[0][-1] == result[0][-2]
+    assert result[0] == result[1]
+    assert result[-1] == result[-2]
 
 
 def test_negative_energy_is_rejected():

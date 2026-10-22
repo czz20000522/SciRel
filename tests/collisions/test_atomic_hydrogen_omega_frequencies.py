@@ -189,3 +189,25 @@ def test_inputs_unchanged_and_channels_distinct(op,names,flow,stress):
     r=op(*a)
     for x,y in zip(a,snapshot):np.testing.assert_array_equal(x,y)
     assert not np.allclose(r['Omega_'+names[0]],r['Omega_'+names[1]],rtol=1e-9,atol=1e-12)
+
+
+@pytest.mark.parametrize('op,names,flow,stress',OPS)
+def test_weak_nonzero_drift_is_not_floored(op,names,flow,stress):
+    """Non-source-parity repair: remove the canonical denominator floor.
+
+    The canonical implementation floors the mixed denominator and the self
+    stress before division. This asset keeps the exact ratio, so a weak but
+    nonzero drift must appear in the returned rate rather than being clamped.
+    """
+    f = np.array([[[1.0], [3.0]]])
+    zero = np.zeros_like(f)
+    alpha = np.full_like(f, 2.0e-8)
+    result = op(
+        f, np.array([4.0]), alpha, zero, np.zeros((2, 2)), np.ones(1),
+        np.ones(2), np.array([1.0]), np.array([-1.0, 1.0]), 1.0,
+        np.array([0.5 - 1.0e-8]), np.zeros(1),
+    )
+    np.testing.assert_allclose(
+        result['Omega_' + names[0]], 2.0e-8 / (0.5 - (0.5 - 1.0e-8)),
+        rtol=1e-14, atol=0.0,
+    )

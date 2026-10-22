@@ -138,7 +138,8 @@
    "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
    "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
-   "Public distribution licensing remains pending a human decision."
+   "Public distribution licensing remains pending a human decision.",
+   "This is deliberately not source parity for two input/selector behaviors: the canonical implementation silently clipped negative energies to the 0.03 eV endpoint and printed a warning when viscosity=True; this asset rejects negative energies with ValueError, requires a scalar boolean/integer selector, and emits no warning. The fit arithmetic, endpoint clipping on nonnegative energies, and scalar selector validation remain the declared contract."
   ]
  }
 }

@@ -5,7 +5,7 @@
   "en": "H+-on-H elastic momentum-transfer cross section",
   "zh": "原子氢质子弹性动量转移截面"
  },
- "summary": "Compute the elastic momentum-transfer cross section of a proton on a stationary atomic-hydrogen target; exactly 10 eV uses the low-energy polynomial, with no zero gap at the breakpoint. Endpoint clipping over the energy domain and the leading singleton output axis are preserved.",
+ "summary": "Compute the elastic momentum-transfer cross section of a proton on a stationary atomic-hydrogen target using the canonical KN1DPy piecewise branches: E < 10 eV uses the low-energy polynomial and E >= 10 eV uses the high-energy polynomial, with the input shape preserved.",
  "taxonomy": [
   "collisions",
   "cross-section",
@@ -37,7 +37,7 @@
  "identity": {
   "relation": "the H+-on-H elastic momentum-transfer cross section as a piecewise function of collision energy with a 10 eV breakpoint",
   "direction": "collision energies -> cross section per energy, with one extra leading singleton output axis",
-  "definition": "The laboratory proton energy E is clipped to [0.001, 1.01e5] eV. E <= 10 uses a seven-coefficient low-energy log polynomial and E > 10 uses a two-coefficient high-energy polynomial; the cross section is exp(poly(log E))*1e-4 m^2. The two empirical fits are not forced to be continuous; the output gains one leading singleton axis.",
+  "definition": "The laboratory proton energy E is clipped to [0.001, 1.01e5] eV. E < 10 uses a seven-coefficient low-energy log polynomial and E >= 10 uses a two-coefficient high-energy polynomial; the cross section is exp(poly(log E))*1e-4 m^2. The two empirical fits are not forced to be continuous; the result has the input shape.",
   "model": "empirical H+-on-H momentum-transfer fit; the energy is the projectile energy in the stationary-target frame",
   "geometry": "none; a scalar material function of collision energy",
   "coordinates": "collision energy in eV; output cross section in m^2",
@@ -62,9 +62,9 @@
  "outputs": [
   {
    "name": "cross_section_m2",
-   "description": "H+-H elastic momentum-transfer cross section",
+   "description": "H+-H elastic momentum-transfer cross section with the input shape.",
    "units": "m^2",
-   "shape": "input shape with one extra leading axis of size 1",
+   "shape": "input shape",
    "dtype": "float64 array",
    "required": true,
    "constraints": "finite and positive; the shape has one more leading singleton axis than the input"
@@ -102,13 +102,13 @@
  },
  "example": {
   "description": "check the 10 eV breakpoint and the finite positive cross sections on both sides",
-  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))\nassert y.shape == (1, 3)\nassert np.isfinite(y).all() and (y > 0).all()\nnp.testing.assert_allclose(y[0, 0], y[0, 1], rtol=1e-14)\n",
-  "expected": "all three cross sections are finite and positive; the breakpoint belongs to the low-energy segment, and the right side may retain a finite jump of the empirical fit"
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section\ny = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))\nassert y.shape == (3,)\nassert np.isfinite(y).all() and (y > 0).all()\nhigh = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4\nnp.testing.assert_allclose(y[1], high, rtol=1e-15)",
+  "expected": "Three finite positive cross sections with input shape; exactly 10 eV belongs to the high-energy branch, and the empirical fit may jump across the breakpoint."
  },
  "verification": {
   "scope": [
-   "the 10 eV breakpoint is probed directly; the zero-valued breakpoint failure is covered by a regression that exercises exactly 10 eV together with values immediately below and above it",
-   "existing numeric assertions and tolerances for non-breakpoint fits, the output axis, input rejection and endpoint clipping are retained",
+   "the canonical 10 eV breakpoint is probed directly: E<10 uses the low branch and E>=10 uses the high branch, including exactly 10 eV; immediate below/above values are covered",
+   "input-shape output, input rejection and endpoint-clipping assertions are retained",
    "downstream atomic collision-matrix assembly and independent angular integration use the corrected piecewise definition"
   ],
   "tests": [

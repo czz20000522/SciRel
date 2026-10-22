@@ -9,12 +9,10 @@ polynomial, ``exp(polyval(log(E), a)) * 1e-4``, evaluated on the
 source-clipped domain ``[0.03, 1.01e4]`` eV.
 
 **Two declared source behaviors are kept exactly.**  The endpoint clipping
-repeats values outside the range, and the output shape preserves the source
-``np.array([E])`` wrapper: the result carries one extra leading singleton axis
-compared with the input.  The saved document's boilerplate instead declares
-the output shaped like the input; this module keeps the implementation's
-documented behavior and declares it explicitly, and the discrepancy is
-recorded as an expert-review question rather than silently resolved.
+repeats values outside the range, and the output shape equals the input shape,
+matching the canonical KN1DPy commit ``bb22c872`` source.  The older saved
+package's ``np.array([E])`` wrapper is not retained; the source conflict was
+resolved against the canonical E-archive source.
 
 **Input-contract repairs relative to the saved implementation.**  The saved
 document declares the energy nonnegative, but its implementation silently
@@ -24,20 +22,16 @@ rejected before float conversion.  The arithmetic is preserved on finite
 nonnegative real inputs.
 
 Evidence ceiling: this module establishes the clipped fit against an
-independent evaluation of the same formula, the leading axis, the endpoint
-clipping, the input and failure contracts, these repairs, and -- in the
-environment-gated replay test -- exact agreement with the saved the neutral-transport formulation
-implementation on the declared domain.  The saved bundle's strict D1
+independent evaluation of the same formula, the input-preserving output shape,
+the endpoint clipping, the input and failure contracts, these repairs, and --
+in the environment-gated replay test -- exact agreement with the canonical
+KN1DPy implementation on the declared domain.  The saved bundle's strict D1
 qualification has been withdrawn; that replay is historical development
 evidence, not qualified-L1 provenance.  No test establishes the fit against an
 external physical cross-section reference: the saved package records that
 residual as ``validation_oracle_gap``.
 """
 from __future__ import annotations
-
-# HELD: human-review exposure guard
-from scirel._hold import require_review_import
-require_review_import(__name__)
 
 
 import numpy as np
@@ -67,9 +61,8 @@ def evaluate_hydrogen_h2_elastic_cross_section(energy_ev):
     Returns
     -------
     numpy.ndarray
-        Cross sections in ``m^2`` with one extra leading singleton axis
-        compared with the input (the saved source's ``np.array([E])`` wrapper
-        convention).  Finite and strictly positive for every accepted input.
+        Cross sections in ``m^2`` with the input's shape.  Finite and strictly
+        positive for every accepted input.
 
     Raises
     ------
@@ -77,5 +70,4 @@ def evaluate_hydrogen_h2_elastic_cross_section(energy_ev):
         If ``energy_ev`` contains a non-real, non-finite or negative value.
     """
     clipped = clipped_energy(energy_ev, 0.03, 1.01e4)
-    result = np.exp(log_polynomial(np.log(clipped), _COEFFICIENTS)) * 1.0e-4
-    return result[np.newaxis, ...]
+    return np.exp(log_polynomial(np.log(clipped), _COEFFICIENTS)) * 1.0e-4

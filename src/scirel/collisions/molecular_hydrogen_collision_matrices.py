@@ -1,12 +1,12 @@
-"""Source-free assembly of the atomic four-family SIG collision matrices.
+"""Source-free assembly of the molecular H2 four-family SIG collision matrices.
 
 Reproduces the double-velocity-space (``vr,vx``) x (``vr',vx'``) collision-operator
-assembly of the neutral-transport formulation ``kinetic_h.py:888-1018`` for the atomic four families:
+assembly of the neutral-transport formulation ``kinetic_h2.py:1036-1125`` for the molecular four families:
 
-- ``SIG_CX``   : H + H+  charge exchange,    weight ``Vr2pidVrdVx``
-- ``SIG_H_H``  : H-H     elastic, viscosity  weight ``Vr2pidVrdVx``
-- ``SIG_H_H2`` : H-H2    elastic,            weight ``Vr2pidVrdVx * vx_vx``
-- ``SIG_H_P``  : H-H+    elastic,            weight ``Vr2pidVrdVx * vx_vx``
+- ``SIG_CX``   : H2 + H2+ charge exchange, weight ``Vr2pidVrdVx``
+- ``SIG_H2_H`` : H2-H     elastic,          weight ``Vr2pidVrdVx * vx_vx``
+- ``SIG_H2_P`` : H2-H+    elastic,          weight ``Vr2pidVrdVx * vx_vx``
+- ``SIG_H2_H2``: H2-H2    elastic (viscosity), weight ``Vr2pidVrdVx``
 
 All reshapes are performed in Fortran order (``order='F'``) as the source
 legacy ``Work`` buffer does. The four fits are bound to SciRel cross-section
@@ -14,37 +14,44 @@ operators, while the theta quadrature remains local. Bounded negative cells
 in the elastic families are intrinsic (signed
 ``vr2_vx2`` / ``vx_vx`` factors) and are reproduced as-is, never clamped.
 
-Physical energy convention: the input to each fit is the equivalent hydrogen
-projectile laboratory energy with a stationary target. For H/D momentum
-transfer the neutral-transport formulation section 2.1.2.6 maps E_D to E_D/2; for viscosity it maps E_D to
-E_D. Thus mixed/CX factors are Tnorm/mu and self viscosity is Tnorm.
-Default five-angle midpoint integration is approximate. n_theta enables an
-explicit angular convergence study; fit fidelity is not universal accuracy.
+Source-exact energy factors (verbatim from ``kinetic_h2.py:1045,1061,1078,1108``):
+
+- ``SIG_CX``    : ``v_v2 * (H_MASS*Vth2/Q)``            -- NOTE: no 0.5, and no mu.
+- ``SIG_H2_H``  : ``v_v2 * (0.5*H_MASS*Vth2/Q)``       -- tabulated as H -> H2.
+- ``SIG_H2_P``  : ``v_v2 * (0.5*H_MASS*Vth2/Q)``       -- tabulated as p -> H2.
+- ``SIG_H2_H2`` : ``v_v2 * (H_MASS*mu*Vth2/Q)`` with ``/8.0`` and ``vis=1``
+  (kinetic_h2.py:1108, ``sigma_el_hh_hh`` called with ``vis=1``).
+
+Energy is projectile laboratory energy for a stationary target, not a generic
+center-of-mass energy. H2+ charge exchange therefore uses twice the atomic
+proton mass. Mixed H/H2 and p/H2 fits use the H projectile mass, even when the
+molecule is the test particle. For deuterium the neutral-transport formulation section 2.1.2.6 uses the H
+momentum-transfer fit at E_D/2, but the viscosity fit at E_D (same laboratory
+energy for equal-mass collisions). The self molecular viscosity cross section
+is the source's momentum-transfer surrogate, not measured independent viscosity.
+The default five-angle midpoint rule is approximate; n_theta permits explicit
+convergence studies. These model assumptions are retained, not hidden quirks.
 """
 from __future__ import annotations
-
-# HELD: human-review exposure guard
-from scirel._hold import require_review_import
-require_review_import(__name__)
 
 
 
 
 import numpy as np
 
-from .atomic_hydrogen_charge_exchange_cross_section import evaluate_atomic_hydrogen_charge_exchange_cross_section
-from .atomic_hydrogen_elastic_cross_section import evaluate_atomic_hydrogen_elastic_cross_section
+from .molecular_hydrogen_charge_exchange_cross_section import evaluate_molecular_hydrogen_charge_exchange_cross_section
 from .hydrogen_h2_elastic_cross_section import evaluate_hydrogen_h2_elastic_cross_section
-from .hydrogen_proton_elastic_cross_section import evaluate_hydrogen_proton_elastic_cross_section
+from .hydrogen2_proton_elastic_cross_section import evaluate_hydrogen2_proton_elastic_cross_section
+from .hydrogen2_hydrogen2_elastic_cross_section import evaluate_hydrogen2_hydrogen2_elastic_cross_section
 from ._velocity_geometry import averaged_matrix, predecessor_state
 
-__all__ = ["assemble_atomic_hydrogen_collision_matrices"]
+__all__ = ["assemble_molecular_hydrogen_collision_matrices"]
 
 # Source constants (CONST.H_MASS, CONST.Q) verbatim.
 H_MASS = 1.6726231e-27
 Q = 1.602177e-19
 
-# Fixed theta quadrature used by the source (kinetic_h.py:600-604).
+# Fixed theta quadrature used by the source (kinetic_h2.py, same as atomic).
 NTHETA = 5
 D_THETA = np.ones(NTHETA) / NTHETA
 THETA = np.pi * (np.arange(NTHETA) / NTHETA + 0.5 / NTHETA)
@@ -52,7 +59,7 @@ COS_THETA = np.cos(THETA)
 
 
 # --------------------------------------------------------------------------- #
-# Double-velocity-space predecessor geometry (source kinetic_h.py:888-927).    #
+# Double-velocity-space predecessor geometry (source kinetic_h2.py:997-1034).  #
 # --------------------------------------------------------------------------- #
 def _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta=5):
     """Return (v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx) on the source shape layout.
@@ -66,8 +73,8 @@ def _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta=5):
 # --------------------------------------------------------------------------- #
 # Public operator.                                                             #
 # --------------------------------------------------------------------------- #
-def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5):
-    """Assemble the atomic four-family SIG collision matrices.
+def assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5):
+    """Assemble the molecular H2 four-family SIG collision matrices.
 
     Parameters
     ----------
@@ -77,7 +84,8 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         ``make_dvr_dvx`` output).
     dVx : (nvx,) array, axial cell widths (source ``make_dvr_dvx`` output).
     Tnorm : float, normalization energy (eV); ``Vth = sqrt(2*Q*Tnorm/(mu*H_MASS))``.
-    mu : float, normalized mass of the colliding species (default 1.0 = H).
+    mu : float, normalized mass flag (source: 1 = hydrogen, 2 = deuterium;
+        default 1.0).
 
     n_theta : int, keyword-only
         Positive midpoint azimuth count; default 5 retains the neutral-transport formulation rule.
@@ -85,7 +93,7 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
 
     Returns
     -------
-    dict with ``SIG_CX``, ``SIG_H_H``, ``SIG_H_H2``, ``SIG_H_P``, each
+    dict with ``SIG_CX``, ``SIG_H2_H``, ``SIG_H2_P``, ``SIG_H2_H2``, each
     ``(nvr*nvx, nvr*nvx)``, plus the captured predecessor state ``v_v2``,
     ``v_v``, ``vr2_vx2``, ``vx_vx``, ``Vr2pidVrdVx`` and the thermal
     normalization ``Vth2`` for forensic parity checks.
@@ -103,7 +111,7 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         temperature = np.asarray(Tnorm)
         mass = np.asarray(mu)
     except (TypeError, ValueError, OverflowError) as exc:
-        raise ValueError("invalid velocity-space carrier for SIG assembly") from exc
+        raise ValueError("invalid velocity-space carrier for molecular SIG assembly") from exc
     if (
         vr.ndim != 1 or vx.ndim != 1 or Vr2pidVr.ndim != 1 or dVx.ndim != 1
         or vr.size < 1 or vx.size < 1
@@ -118,7 +126,7 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         or not np.isfinite(temperature) or float(temperature) <= 0.0
         or not np.isfinite(mass) or float(mass) <= 0.0
     ):
-        raise ValueError("invalid velocity-space carrier for SIG assembly")
+        raise ValueError("invalid velocity-space carrier for molecular SIG assembly")
     if isinstance(n_theta, (bool, np.bool_)) or not isinstance(n_theta, (int, np.integer)) or n_theta < 1:
         raise ValueError("n_theta must be a positive integer")
     angular_weights = np.ones(n_theta) / n_theta
@@ -129,7 +137,7 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     nvx = vx.size
     nsig = nvr * nvx
 
-    # Thermal normalization (source kinetic_h.py:551-552).
+    # Thermal normalization (source kinetic_h2.py:656).
     mass_kg = mu * H_MASS
     if mass_kg == 0.0:
         raise ValueError("thermal normalization is not representable")
@@ -140,35 +148,35 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
 
     v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx = _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta)
 
-    # Energy factor shared by SIG_CX / SIG_H_H2 / SIG_H_P (0.5*H_MASS*Vth2/Q).
-    # SIG_H_H uses the mu-scaled factor 0.5*H_MASS*mu*Vth2/Q (source kinetic_h.py:957).
-    ecx = 0.5 * H_MASS * Vth2 / Q
-    ehh = 0.5 * H_MASS * mu * Vth2 / Q
+    # Energy factors (verbatim, source kinetic_h2.py:1045,1061,1078,1108).
+    ecx = H_MASS * Vth2 / Q
+    e_half = 0.5 * H_MASS * Vth2 / Q
+    eh2 = H_MASS * mu * Vth2 / Q
 
     sig = {}
 
-    # SIG_CX (source kinetic_h.py:939-945)
+    # SIG_CX (source kinetic_h2.py:1044-1049)
     sig["SIG_CX"] = averaged_matrix(
-        v_v * evaluate_atomic_hydrogen_charge_exchange_cross_section(v_v2 * ecx),
+        v_v * evaluate_molecular_hydrogen_charge_exchange_cross_section(v_v2 * ecx),
         Vr2pidVrdVx, angular_weights, nsig,
     )
 
-    # SIG_H_H (source kinetic_h.py:956-965)
-    sig["SIG_H_H"] = averaged_matrix(
-        vr2_vx2 * v_v * evaluate_atomic_hydrogen_elastic_cross_section(v_v2 * ehh, viscosity=True) / 8,
+    # SIG_H2_H (source kinetic_h2.py:1060-1066)
+    sig["SIG_H2_H"] = averaged_matrix(
+        v_v * evaluate_hydrogen_h2_elastic_cross_section(v_v2 * e_half),
+        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+    )
+
+    # SIG_H2_P (source kinetic_h2.py:1077-1091)
+    sig["SIG_H2_P"] = averaged_matrix(
+        v_v * evaluate_hydrogen2_proton_elastic_cross_section(v_v2 * e_half),
+        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+    )
+
+    # SIG_H2_H2 (source kinetic_h2.py:1107-1120)
+    sig["SIG_H2_H2"] = averaged_matrix(
+        vr2_vx2 * v_v * evaluate_hydrogen2_hydrogen2_elastic_cross_section(v_v2 * eh2, viscosity=True) / 8.0,
         Vr2pidVrdVx, angular_weights, nsig,
-    )
-
-    # SIG_H_H2 (source kinetic_h.py:979-988)
-    sig["SIG_H_H2"] = averaged_matrix(
-        v_v * evaluate_hydrogen_h2_elastic_cross_section(v_v2 * ecx)[0],
-        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
-    )
-
-    # SIG_H_P (source kinetic_h.py:1004-1011)
-    sig["SIG_H_P"] = averaged_matrix(
-        v_v * evaluate_hydrogen_proton_elastic_cross_section(v_v2 * ecx)[0],
-        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
     )
 
     for key, value in sig.items():

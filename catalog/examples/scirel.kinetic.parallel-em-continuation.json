@@ -67,7 +67,7 @@
    "shape": "(K,) or null",
    "dtype": "float64 array or None",
    "required": false,
-   "constraints": "Finite nonzero points; explicit arrays are flattened. None uses 0.01*arange(1,51)/state[cwp].",
+   "constraints": "Finite nonzero points; explicit arrays are flattened. None uses 0.01*arange(1,51)/state[cwp]. The default source grid is best-effort; explicit arrays are flattened and both signs are supported.",
    "default": null
   },
   {
@@ -77,7 +77,7 @@
    "shape": "scalar or null",
    "dtype": "complex128 or None",
    "required": false,
-   "constraints": "Finite; None uses (0.05+0.04j)*state[wcs1].",
+   "constraints": "Finite; None uses the source best-effort seed (0.05+0.04j)*state[wcs1]. Callers claiming a branch should supply an explicit seed.",
    "default": null
   },
   {
@@ -114,19 +114,21 @@
  ],
  "applicability": {
   "preconditions": [
-   "Finite inputs satisfying the declared units and shapes."
+   "Finite inputs satisfying the declared units and shapes.",
+   "For a claimed continuation across a k grid, the caller supplies the branch seed (initial_guess) or explicitly accepts fail-closed termination; the source-shaped default seed/grid is convenience, not a completeness claim."
   ],
   "supported": [
    "Finite ordered positive or negative grids, either fixed pm, and arbitrary admitted species count.",
    "Genuine drifting-beam and independent three-species negative continuation."
   ],
   "excluded": [
-   "Automatic multi-branch discovery or crossing resolution."
+   "Automatic multi-branch discovery or crossing resolution.",
+   "Source-style carryover of a failed fsolve return into the next seed; automatic multi-branch discovery or crossing resolution."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
-  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs. A non-accepted continuation raises ContinuationFailure carrying attempted k, seed, solver success/status, scaled residual and the accepted prefix; no partial result is returned.",
+  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider. A declared ContinuationFailure (missing accepted root) is a scientific failure, not a dependency error.",
   "nonconvergence": "ContinuationFailure carries k, seed, attempted root/status/residual when available, and the accepted prefix.",
   "partial_results": "Failure exposes accepted_prefix diagnostically; it is not a successful complete continuation."
  },
@@ -153,7 +155,8 @@
  "verification": {
   "scope": [
    "test_vacuum_continuation_matches_analytic_branch_and_zero_residual checks the vacuum analytic branch (omega=0.2,0.21 on the two-point grid with zero scaled residual); test_parallel_rejects_complex_and_unrepresentable_wavevectors covers malformed k grids; the residual itself has the direct Hermite-quadrature gate in the same file.",
-   "The bounded example covers one representative continuation; it does not extend applicability beyond the declared preconditions."
+   "The bounded example covers one representative continuation; it does not extend applicability beyond the declared preconditions.",
+   "Regression pins the default-seed fail-closed record, an explicit-seed accepted continuation, and malformed-grid rejection; no non-vacuum source-trajectory parity is claimed."
   ],
   "tests": [
    "tests/kinetic/test_dispersion_parallel.py"
@@ -162,7 +165,8 @@
   "known_limitations": [
    "The analytic continuation check is a vacuum two-point case only; no non-vacuum accuracy claim is made.",
    "A continued root is seed-dependent; no uniqueness or largest-growth claim.",
-   "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1."
+   "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1.",
+   "The default 50-point grid/seed can raise ContinuationFailure at an admissible k point; fail-closed stops instead of carrying a failed root, so a branch claim requires an explicit caller seed (or an accepted failure)."
   ]
  },
  "references": [

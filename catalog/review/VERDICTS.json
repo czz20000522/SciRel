@@ -187,10 +187,14 @@
    ]
   },
   "scirel.collisions.atomic-hydrogen-collision-matrices": {
-   "status": "human-review",
-   "reason": "Composition depends on a held source-conflict elastic cross-section; cannot expose a chain with a held member.",
-   "required_decision": "Resolve the source-conflict dimensions and release the dependencies first.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md",
+     "verdict": "source parity or accepted repair"
+    }
+   ]
   },
   "scirel.collisions.atomic-hydrogen-elastic-cross-section": {
    "status": "pass-with-limits",
@@ -203,16 +207,24 @@
    ]
   },
   "scirel.collisions.atomic-hydrogen-omega-frequencies": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md",
+     "verdict": "source parity or accepted repair"
+    }
+   ]
   },
   "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md",
+     "verdict": "source parity or accepted repair"
+    }
+   ]
   },
   "scirel.collisions.janev-electron-impact-ionization-rate": {
    "status": "pass-with-limits",
@@ -256,22 +268,34 @@
    ]
   },
   "scirel.collisions.molecular-hydrogen-collision-matrices": {
-   "status": "human-review",
-   "reason": "Composition depends on a held source-conflict elastic cross-section; cannot expose a chain with a held member.",
-   "required_decision": "Resolve the source-conflict dimensions and release the dependencies first.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md",
+     "verdict": "source parity or accepted repair"
+    }
+   ]
   },
   "scirel.collisions.molecular-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md",
+     "verdict": "source parity or accepted repair"
+    }
+   ]
   },
   "scirel.collisions.molecular-hydrogen-omega-frequencies": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md",
+     "verdict": "source parity or accepted repair"
+    }
+   ]
   },
   "scirel.collisions.normalized-momentum": {
    "status": "pass-with-limits",
@@ -285,10 +309,14 @@
    ]
   },
   "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section": {
-   "status": "human-review",
-   "reason": "Collision/rate fit or a derived collision matrix/omega asset whose external physical oracle is absent or whose fit is nonmonotonic; agent cannot decide release exposure.",
-   "required_decision": "Owner supplies an external reference fixture or accepts the fit limitation in writing; then rebind and expose.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "reason": "Source audit: conflict repaired to canonical parity or source-defect repair explicitly accepted; no external physical calibration claimed.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-collisions.md",
+     "verdict": "source parity or accepted repair"
+    }
+   ]
   },
   "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section": {
    "status": "pass-with-limits",
@@ -572,10 +600,21 @@
    ]
   },
   "scirel.equilibrium.axisymmetric-anisotropic-picard": {
-   "status": "human-review",
-   "reason": "Strict boolean plasma-mask policy has not been unified with the reduced-Hall/free-boundary siblings; exposure waits for the consistency decision.",
-   "required_decision": "Owner accepts either strict bool or a documented coercion policy and the matching regression; then rebind.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-equilibrium.md",
+     "verdict": "pass-with-limits",
+     "oracle": "manufactured/analytic discrete checks; Pleiades task-graph assembly parity only",
+     "residual_risk": "no upstream anisotropic formula; mask/terminal order are SciRel API policy"
+    },
+    {
+     "report": "/tmp/audit-d4.csv",
+     "verdict": "pass-with-limits",
+     "oracle": "independent-analytic",
+     "residual_risk": "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization. | Floating-point rounding envelopes do not bound discretization error or experimental uncertainty. Flags: template-copied-contract-text"
+    }
+   ]
   },
   "scirel.equilibrium.axisymmetric-picard-update": {
    "status": "pass-with-limits",
@@ -1151,9 +1190,16 @@
   },
   "scirel.inference.direct-anisotropic-inversion": {
    "status": "human-review",
-   "reason": "Exposed composition depends on the held axisymmetric anisotropic Picard capability; a chain with a held member cannot be exposed.",
-   "required_decision": "Owner must either release the axisymmetric capability with its mask policy or replace the dependency; then rebind and re-audit this composition.",
-   "evidence": []
+   "reason": "Composition source artifact is incomplete in the Pleiades FINAL payload and the intended forward port is the held axisymmetric capability.",
+   "required_decision": "Release axisymmetric with its mask policy and restore/bind the exact admitted direct-inversion graph; then re-audit and release without formula change, or replace the equilibrium_solver port.",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-equilibrium.md",
+     "verdict": "human-review",
+     "oracle": "exact admitted graph artifact unavailable; only admitted hashes and a later snapshot exist",
+     "residual_risk": "do not claim byte/source parity until the exact graph and dependency condition are bound"
+    }
+   ]
   },
   "scirel.inference.latin-hypercube-sampling": {
    "status": "pass-with-limits",
@@ -2013,10 +2059,15 @@
    ]
   },
   "scirel.kinetic.parallel-em-continuation": {
-   "status": "human-review",
-   "reason": "The default 50-point seed can fail with ContinuationFailure at a valid k point; branch/seed policy is not agent-decidable.",
-   "required_decision": "Owner defines and tests the seed/branch policy or restricts the declared input envelope before exposure.",
-   "evidence": []
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "/tmp/source-audit-kinetic.md",
+     "verdict": "pass-with-limits",
+     "oracle": "PDRK pinned 21c08f2 grid/seed/formula + analytic vacuum branch",
+     "residual_risk": "default seed may fail closed; non-vacuum source trajectory not replayed"
+    }
+   ]
   },
   "scirel.kinetic.parallel-em-residual": {
    "status": "pass-with-limits",

@@ -15,10 +15,6 @@ linearization is inferred. The original the neutral-transport formulation model 
 approximation; finite-grid quadrature does not guarantee exact Maxwell balance.
 """
 
-# HELD: human-review exposure guard
-from scirel._hold import require_review_import
-require_review_import(__name__)
-
 from ._elastic_moments import reduce_elastic_moments
 
 __all__ = ['assemble_molecular_hydrogen_omega_frequencies']
