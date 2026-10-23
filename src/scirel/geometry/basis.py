@@ -231,7 +231,7 @@ class ClampedCubicSpline(CubicSpline):
         If ``yp`` does not contain exactly two endpoint slopes.
     ValueError
         If the knot or ordinate arrays are nonfinite, unsorted, mismatched or
-        shorter than the supported minimum.
+        shorter than the supported minimum, or an endpoint slope is nonfinite.
     numpy.linalg.LinAlgError
         If the clamped boundary slope system cannot be solved.
 
@@ -244,6 +244,8 @@ class ClampedCubicSpline(CubicSpline):
     def __init__(self, x_data, y_data, yp=[0, 0]):
         CubicSpline.__init__(self, x_data, y_data)
         assert len(yp) == 2, "yp must be a vector of length 2"
+        if not np.all(np.isfinite(yp)):
+            raise ValueError("yp must contain finite endpoint slopes")
         interior, rhs = _interior_system(self.d_x, self.d_y)
         rhs = rhs.copy()
         rhs[0] -= yp[0] / self.d_x[0]
@@ -346,7 +348,7 @@ class SecondClampedCubicSpline(CubicSpline):
     ------
     ValueError
         If the knots or ordinates violate the finite, increasing, matched
-        input contract.
+        input contract, or ``m`` is nonfinite.
     numpy.linalg.LinAlgError
         If the origin/Robin slope system cannot be solved.
 
@@ -360,6 +362,8 @@ class SecondClampedCubicSpline(CubicSpline):
 
     def __init__(self, x_data, y_data, m=1):
         CubicSpline.__init__(self, x_data, y_data)
+        if not np.isfinite(m):
+            raise ValueError("m must be finite")
         h = self.d_x
         delta = self.d_y
         x_last = self.x_data[-1]

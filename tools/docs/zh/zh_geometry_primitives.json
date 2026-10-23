@@ -69,10 +69,10 @@
   },
   {
    "asset_id": "scirel.basis.build-basis",
-   "source_sha256": "751d51a49a8905ef7956212f1ee15b96a0a83993a4a0ba261cda7cfc2f14583a",
+   "source_sha256": "8982c0e8ed2bd0fd17b64221fd4468d90beb49dc1bcbbca131d305557c6db28b",
    "summary": "构造可调用的升幂多项式或三次样条基函数。",
    "definition": "构造升幂多项式或三次样条求值器列表。",
-   "model": "按映射选择基函数；多项式默认 poly_deg=3，样条默认 n_knots=5。",
+   "model": "按映射选择升幂多项式或 C2 三次样条基函数；多项式默认有三个基函数（0、1、2 次幂），样条默认有五个节点、四个区间。",
    "boundary": "各样条选择器继承其精确端点规则。",
    "assumptions": [
     "用于构造的样本有限，并满足各边界条件的特定假设。",

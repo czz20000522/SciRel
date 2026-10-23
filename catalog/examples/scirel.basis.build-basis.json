@@ -22,7 +22,7 @@
    "basis selection to independent evaluators",
    "basis selector and constructor options -> list of callable basis functions"
   ],
-  "model": "Caller-selected ascending-power polynomial or C2 cubic-spline basis; defaults are polynomial degree 3 and five knot intervals.",
+  "model": "Caller-selected ascending-power polynomial or C2 cubic-spline basis; the polynomial default has three basis functions (powers 0, 1 and 2), while the spline default has five knots and four intervals.",
   "geometry": "One-dimensional scalar abscissa and ordinate samples; the returned evaluators are agnostic to the caller's coherent coordinate and ordinate units.",
   "boundary": "Spline evaluation is zero outside the finite knot interval with no extrapolation; unsupported factory selections are rejected rather than approximated.",
   "device_scope": "generic"

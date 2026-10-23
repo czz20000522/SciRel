@@ -121,3 +121,20 @@ def test_parse_segment_public_docstring_declares_contract():
     assert "Returns" in doc
     assert "Raises" in doc
     assert "terminal vertex" in doc
+
+
+@pytest.mark.parametrize("endpoint", [0, 1])
+@pytest.mark.parametrize("invalid_slope", [np.nan, np.inf, -np.inf])
+def test_clamped_spline_rejects_nonfinite_endpoint_slopes(endpoint, invalid_slope):
+    slopes = [0.0, 0.0]
+    slopes[endpoint] = invalid_slope
+    with pytest.raises(ValueError, match="yp.*finite"):
+        basis.ClampedCubicSpline([0.0, 0.3, 1.0], [0.0, 0.2, 1.0], yp=slopes)
+
+
+@pytest.mark.parametrize("invalid_coefficient", [np.nan, np.inf, -np.inf])
+def test_second_clamped_spline_rejects_nonfinite_robin_coefficient(invalid_coefficient):
+    with pytest.raises(ValueError, match="m.*finite"):
+        basis.SecondClampedCubicSpline(
+            [0.0, 0.3, 1.0], [0.0, 0.2, 1.0], m=invalid_coefficient
+        )
