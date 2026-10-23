@@ -54,6 +54,27 @@ def test_rejects_missing_current_contract():
         run_composition(values, asset_loader=_assets)
 
 
+@pytest.mark.parametrize("shape", [(0, 2), (2, 0), (0, 0)])
+def test_rejects_empty_target_grids_before_indexing(shape):
+    values = _inputs()
+    values["r_grid"] = np.empty(shape)
+    values["z_grid"] = np.empty(shape)
+    with pytest.raises(ValueError, match="nonempty"):
+        solve_multi_coil_vacuum_field(values)
+
+
+@pytest.mark.parametrize("shape", [(1, 1), (1, 3), (3, 1)])
+def test_singleton_target_axes_remain_supported(shape):
+    values = _inputs()
+    values["r_grid"], values["z_grid"] = np.meshgrid(
+        np.linspace(0.0, 0.3, shape[1]), np.linspace(-0.2, 0.2, shape[0])
+    )
+    result = solve_multi_coil_vacuum_field(values)
+    for name in ("psi_vac", "b_r_vac", "b_z_vac"):
+        assert result[name].shape == shape
+        assert np.isfinite(result[name]).all()
+
+
 def test_unrepresentable_vacuum_field_fails_closed():
     r_grid = np.array([[0.0, 0.47 + 1e-16], [0.0, 0.47 + 1e-16]])
     z_grid = np.array([[0.0, 0.0], [0.025, 0.025]])

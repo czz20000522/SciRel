@@ -24,20 +24,20 @@
    "rectangular-coil records and target grid -> vacuum fields and filament table"
   ],
   "model": "Ordered acyclic composition of rectangular geometry, circular Green response and current contraction.",
-  "geometry": "Matching rectilinear target grid and nonempty ordered coil list.",
+  "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns.",
   "boundary": "Input validation or any dependency failure aborts the call without a fallback or partial field.",
   "device_scope": "device-parameterized"
  },
  "identity": {
   "relation": "Ordered multi-coil vacuum-field composition",
   "direction": "rectangular-coil records and target grid to vacuum fields and filament table",
-  "definition": "For each caller coil, discretize centers, attach weights, evaluate Green responses, contract one drive current, and reshape to the input grid.",
+  "definition": "Discretize each caller coil, attach filament weights, and evaluate its target-ordered Green response. Stack the responses as [N_target,N_coil] matrices with one coil per column, contract the [N_coil] drive-current vector along axis 1, and reshape to the input grid.",
   "model": "Ordered acyclic composition of rectangular geometry, circular Green response, and current contraction.",
-  "geometry": "Matching rectilinear target grid and nonempty ordered coil list.",
+  "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns.",
   "coordinates": "Grid and coil geometry in metres; currents in amperes; output psi Wb/rad and fields tesla.",
   "boundary": "Input validation or any dependency failure aborts the call without a fallback or partial field.",
   "assumptions": [
-   "Target grids are finite, matching, and strictly increasing in R and Z.",
+   "Target grids are finite, matching and nonempty, and their R and Z axes are strictly increasing; singleton axes are permitted.",
    "Each coil mapping has the required finite fields and optional weights/angle.",
    "Returned filament rows preserve coil and within-coil order."
   ]
@@ -50,7 +50,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite rectilinear 2-D grid; radial axis is strictly increasing and nonnegative."
+   "constraints": "Finite nonempty rectilinear 2-D grid; radial axis is strictly increasing and nonnegative. N_R and N_Z are each at least one."
   },
   {
    "name": "z_grid",
@@ -59,7 +59,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite, same shape as r_grid, and axial axis strictly increasing."
+   "constraints": "Finite, nonempty, same shape as r_grid, and axial axis strictly increasing; singleton axes are permitted."
   },
   {
    "name": "rectangular_coils",
@@ -111,7 +111,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "Target grids are finite, matching, and strictly increasing in R and Z.",
+   "Target grids are finite, matching and nonempty, and their R and Z axes are strictly increasing; singleton axes are permitted.",
    "Each coil mapping has the required finite fields and optional weights/angle."
   ],
   "supported": [
@@ -122,7 +122,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for missing or malformed grids, empty/nonmapping coils, invalid geometry, weights, or currents.",
+  "invalid_input": "ValueError is raised for missing, empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, or currents.",
   "runtime_failure": "Dependency ValueError/FloatingPointError propagates before any field is returned, including a nonrepresentable current-weighted Green contraction; no fallback or retry is performed.",
   "nonconvergence": "Not applicable; the graph has no feedback loop.",
   "partial_results": "No field or filament output is returned after a failed graph stage."
@@ -158,9 +158,9 @@
  "verification": {
   "scope": [
    "Linear scaling with coil drive current.",
-   "Independent response rows for multiple coils.",
+   "Independent response columns for multiple coils, aligned with the drive-current vector along axis 1.",
    "Current-versus-filament-weight semantics.",
-   "Missing current and invalid grid failures.",
+   "Missing-current and empty-grid failures, with nonempty singleton-axis grids retained.",
    "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields.",
    "Fixed Pleiades two-coil reference values and, when the external truth artifact is present, the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py.",
    "scripts/build_pleiades_truth.py regenerates the same external Pleiades truth from a caller-supplied source checkout; the fixed reference constants remain resident and the full-array comparison skips when the generated artifact is absent."
@@ -169,7 +169,7 @@
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
    "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
   ],
-  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response rows with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` contains 6 test functions, 1 of which references `solve_multi_coil_vacuum_field`, and is bound only by this asset; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: fixed Pleiades external reference constants; the full-array comparison is skipped when the gitignored `dist/reference-truth/simple-two-coil` artifact is absent. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists.",
+  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: fixed Pleiades external reference constants; the full-array comparison is skipped when the gitignored `dist/reference-truth/simple-two-coil` artifact is absent. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists.",
   "known_limitations": [
    "No field cache or device object is kept between calls.",
    "No feedback, optimization, or conductor-material model is included.",
@@ -245,7 +245,7 @@
     "id": "green_response",
     "kind": "function",
     "asset_id": "scirel.field.circular-filament-green",
-    "description": "Evaluate one Green response row for the current coil block.",
+    "description": "Evaluate one target-ordered Green response vector for the current coil block.",
     "inputs": [
      "rzw",
      "rz_pts"
@@ -259,7 +259,7 @@
    {
     "id": "stack_responses",
     "kind": "controlled_glue",
-    "description": "Stack one completed response row and drive current per coil without multiplication.",
+    "description": "Stack one completed target-ordered response vector per coil as a column of each [N_target,N_coil] matrix, preserving the aligned [N_coil] drive-current vector without multiplication.",
     "inputs": [
      "gpsi",
      "gBR",
@@ -277,7 +277,7 @@
     "id": "superposition",
     "kind": "function",
     "asset_id": "scirel.field.current-green-superposition",
-    "description": "Contract coil currents with the stacked response rows.",
+    "description": "Contract the drive-current vector with the coil columns of each [N_target,N_coil] response matrix along axis 1.",
     "inputs": [
      "currents",
      "gpsi",
@@ -462,7 +462,7 @@
      "node": "attach_weights",
      "port": "current_a"
     },
-    "description": "One drive current per coil response row.",
+    "description": "One drive current per coil response column.",
     "condition": "For each declared coil.",
     "transform": "Finite scalar conversion only.",
     "kind": "data",
@@ -537,9 +537,9 @@
      "node": "stack_responses",
      "port": "gpsi"
     },
-    "description": "One completed Green response mapping.",
+    "description": "One target-ordered flux response vector.",
     "condition": "After each coil response completes.",
-    "transform": "Stack one row per coil; gBR/gBZ follow the same edge contract.",
+    "transform": "Column-stack one vector per coil into a [N_target,N_coil] matrix; gpsi/gBR/gBZ use the same axis convention.",
     "kind": "data",
     "required": true
    },
@@ -552,9 +552,9 @@
      "node": "stack_responses",
      "port": "gBR"
     },
-    "description": "One radial-field response row.",
+    "description": "One target-ordered radial-field response vector.",
     "condition": "After each coil response completes.",
-    "transform": "Stack one row per coil.",
+    "transform": "Column-stack one vector per coil into a [N_target,N_coil] matrix; gpsi/gBR/gBZ use the same axis convention.",
     "kind": "data",
     "required": true
    },
@@ -567,9 +567,9 @@
      "node": "stack_responses",
      "port": "gBZ"
     },
-    "description": "One axial-field response row.",
+    "description": "One target-ordered axial-field response vector.",
     "condition": "After each coil response completes.",
-    "transform": "Stack one row per coil.",
+    "transform": "Column-stack one vector per coil into a [N_target,N_coil] matrix; gpsi/gBR/gBZ use the same axis convention.",
     "kind": "data",
     "required": true
    },
@@ -582,7 +582,7 @@
      "node": "stack_responses",
      "port": "drive_current"
     },
-    "description": "One current value per response row.",
+    "description": "One current value per coil response column.",
     "condition": "After each coil is expanded.",
     "transform": "Preserve caller coil order.",
     "kind": "data",
@@ -597,7 +597,7 @@
      "node": "superposition",
      "port": "currents"
     },
-    "description": "Current vector aligned with response axis 0.",
+    "description": "Current vector [N_coil] aligned with response axis 1 (coil columns).",
     "condition": "After all coil responses complete.",
     "transform": "Identity.",
     "kind": "data",
@@ -612,9 +612,9 @@
      "node": "superposition",
      "port": "gpsi"
     },
-    "description": "Stacked response tensors.",
+    "description": "Flux response matrix with target rows and coil columns.",
     "condition": "After all coil responses complete.",
-    "transform": "gBR/gBZ follow the same shape-preserving binding.",
+    "transform": "Identity; preserve [N_target,N_coil] shape and caller coil order.",
     "kind": "data",
     "required": true
    },
@@ -627,9 +627,9 @@
      "node": "superposition",
      "port": "gBR"
     },
-    "description": "Stacked radial-field response tensor.",
+    "description": "Radial-field response matrix with target rows and coil columns.",
     "condition": "After all coil responses complete.",
-    "transform": "Identity.",
+    "transform": "Identity; preserve [N_target,N_coil] shape and caller coil order.",
     "kind": "data",
     "required": true
    },
@@ -642,9 +642,9 @@
      "node": "superposition",
      "port": "gBZ"
     },
-    "description": "Stacked axial-field response tensor.",
+    "description": "Axial-field response matrix with target rows and coil columns.",
     "condition": "After all coil responses complete.",
-    "transform": "Identity.",
+    "transform": "Identity; preserve [N_target,N_coil] shape and caller coil order.",
     "kind": "data",
     "required": true
    },
@@ -726,7 +726,7 @@
   ],
   "execution": {
    "mode": "ordered_dag_composition",
-   "ordering": "Validate inputs, iterate coils in caller order, discretize and evaluate each response independently, stack completed rows, superpose once, and reshape outputs.",
+   "ordering": "Validate the nonempty grids and coil records, discretize all coils in caller order, evaluate each target-ordered Green response independently, column-stack the responses as [N_target,N_coil], contract currents along axis 1 once, and reshape outputs.",
    "branches": [],
    "state_ownership": "Caller owns grid and coil declarations; the graph owns only local ordered lists for the current call and retains no mutable state.",
    "failure_propagation": "Validation or dependency failure aborts the call immediately; no fallback, retry, or partial field result is produced.",

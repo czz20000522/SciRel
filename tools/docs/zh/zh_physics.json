@@ -9583,12 +9583,12 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "01c0db8e51a18471dec834815a01e59b6835c44e6d4eca96f5659546abb114a7",
+   "source_sha256": "a1badd60ea4e00776f6d48e1f14593a33434916e7ab01fbbd1311ea597bc4de6",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
-   "definition": "对每个调用者线圈离散中心、附加权重、计算 Green 响应、收缩一个驱动电流，并重塑回输入网格。",
+   "definition": "逐个离散调用者线圈、附加电流丝权重并计算按目标点排序的 Green 响应。每个线圈占一列，组成 [N_target,N_coil] 矩阵，沿轴 1 与 [N_coil] 驱动电流向量收缩，再重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
    "assumptions": [
-    "目标网格有限、形状匹配，且 R、Z 严格递增。",
+    "目标网格有限、形状匹配且非空，R、Z 轴严格递增；允许单点轴。",
     "每个线圈映射含必要有限字段及可选权重/角度。",
     "返回的电流丝行保持线圈顺序和线圈内顺序。"
    ],
@@ -9597,13 +9597,13 @@
     {
      "name": "r_grid",
      "description": "目标柱坐标半径网格。",
-     "constraints": "有限二维直角网格；径向轴严格递增且非负。",
+     "constraints": "有限非空二维直角网格；径向轴严格递增且非负，N_R、N_Z 均至少为 1。",
      "dtype": "实数数组或可转换为数组的输入"
     },
     {
      "name": "z_grid",
      "description": "目标轴向坐标网格。",
-     "constraints": "有限，与 r_grid 同形，轴向坐标严格递增。",
+     "constraints": "有限、非空、与 r_grid 同形，轴向坐标严格递增；允许单点轴。",
      "dtype": "实数数组或可转换为数组的输入"
     },
     {
@@ -9641,7 +9641,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "目标网格有限、形状匹配，且 R、Z 严格递增。",
+     "目标网格有限、形状匹配且非空，R、Z 轴严格递增；允许单点轴。",
      "每个线圈映射含必要有限字段及可选权重/角度。"
     ],
     "supported": [
@@ -9652,7 +9652,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺失或格式错误的网格、空/非映射线圈、非法几何、权重或电流时抛出 ValueError。",
+    "invalid_input": "缺失、空或格式错误的网格、空/非映射线圈、非法几何、权重或电流时抛出 ValueError。",
     "runtime_failure": "依赖产生的 ValueError/FloatingPointError 会在返回任何场之前传播，包括不可表示的电流加权 Green 收缩；不执行回退或重试。",
     "nonconvergence": "不适用；图没有反馈环。",
     "partial_results": "任一步骤失败后不返回场或电流丝输出。"
@@ -9664,14 +9664,14 @@
    "verification": {
     "scope": [
      "驱动电流的线性缩放。",
-     "多个线圈的独立响应行。",
+     "多个线圈具有独立响应列，与驱动电流向量沿轴 1 对齐。",
      "电流与电流丝权重的区分。",
-     "缺失电流和非法网格的失败行为。",
+     "缺失电流和空网格的失败行为，并保留非空单点轴网格。",
      "不可表示的近导线或大电流响应以失败闭合，而不是返回非有限场。",
      "固定 Pleiades 双线圈参考值以及存在外部 truth artifact 时的完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 覆盖。",
      "scripts/build_pleiades_truth.py 用调用者提供的外部 Pleiades source checkout 重新生成同一 truth；固定参考常量仍常驻，artifact 缺失时完整数组测试跳过。"
     ],
-    "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应行。证据：`test_composition_multi_coil_vacuum_field.py` 含 6 个测试函数，其中 1 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定; `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：固定 Pleiades 外部参考常数；当被 gitignore 的 `dist/reference-truth/simple-two-coil` 工件缺失时跳过全数组比较。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。",
+    "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应列。证据：`test_composition_multi_coil_vacuum_field.py` 检验独立线圈响应列、电流缩放、空网格拒绝与单点轴接受； `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：固定 Pleiades 外部参考常数；当被 gitignore 的 `dist/reference-truth/simple-two-coil` 工件缺失时跳过全数组比较。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。",
     "known_limitations": [
      "调用之间不保留场缓存或设备对象。",
      "不含反馈、优化或导体材料模型。",

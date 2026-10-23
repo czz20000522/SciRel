@@ -110,6 +110,8 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
     magnetic[..., 2] = bz
     if not np.isfinite(magnetic).all():
         raise ValueError("mapped equilibrium produced non-finite static B0")
+    if not np.isfinite(psi).all():
+        raise ValueError("mapped equilibrium produced non-finite poloidal flux")
     return {
         "magnetic_flux_density_t": magnetic,
         "poloidal_flux_wb_per_rad": psi,

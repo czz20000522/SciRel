@@ -35,6 +35,8 @@ def run_composition(inputs, *, asset_loader):
     r_grid, z_grid = np.asarray(inputs["r_grid"], dtype=float), np.asarray(inputs["z_grid"], dtype=float)
     if r_grid.ndim != 2 or z_grid.shape != r_grid.shape or not np.all(np.isfinite(r_grid)) or not np.all(np.isfinite(z_grid)):
         raise ValueError("r_grid and z_grid must be equal-shape finite 2-D arrays")
+    if not r_grid.size:
+        raise ValueError("r_grid and z_grid must be nonempty 2-D arrays")
     r_axis, z_axis = r_grid[0], z_grid[:, 0]
     if (np.any(r_axis < 0.0) or np.any(np.diff(r_axis) <= 0.0) or np.any(np.diff(z_axis) <= 0.0)
             or not np.allclose(r_grid, r_axis[None, :]) or not np.allclose(z_grid, z_axis[:, None])):

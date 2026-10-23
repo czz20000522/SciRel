@@ -41,8 +41,8 @@
   "assumptions": [
    "The equilibrium map is axisymmetric, so the map depends on radius and axial coordinate only and carries no toroidal mode structure.",
    "The map axes are strictly increasing, so the enclosing interpolation cell of every clamped query coordinate is well defined.",
-   "The map arrays are finite, so the interpolation cannot be poisoned by a non-finite sample.",
-   "The radial field component is the poloidal field magnitude in the R-Z plane, so its Cartesian transverse split is br * (x, y) / r and is undefined on the axis.",
+   "The map arrays are finite; interpolation and Cartesian assembly must also remain finite at every returned grid point.",
+   "br_t and bz_t are signed cylindrical radial and axial components, respectively; the poloidal field magnitude is hypot(br_t, bz_t). The Cartesian transverse split is br * (x, y) / r and is undefined on the axis.",
    "The caller owns the equilibrium mapping and the grid; this relation retains no state and reads no file."
   ]
  },
@@ -153,7 +153,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError when equilibrium is not a mapping, when a required map entry is missing, when a map axis is not a finite strictly increasing 1D array of at least five points, when a map array does not have the [N_r, N_z] map shape or is not finite, or when a solver grid axis is not a finite strictly increasing 1D array of at least two points.",
-  "runtime_failure": "Raises ValueError if the assembled static field is not finite anywhere, which can only arise from an input the validation did not cover. There is no fallback interpolation method.",
+  "runtime_failure": "Raises ValueError if floating-point interpolation or Cartesian assembly produces a non-finite poloidal flux or static field, including arithmetic overflow from finite source samples. There is no fallback interpolation method.",
   "nonconvergence": "Not applicable; this relation is a single closed-form evaluation with no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no mapping."
  },
@@ -181,8 +181,8 @@
    "A measurement that the two-stage interpolation ordering is not discriminating on a rectilinear grid.",
    "The coverage mask marking exactly the closed map box, including the inner-radius exclusion.",
    "Both clamp counters, on a grid that extends beyond the map box on every face.",
-   "The Cartesian transverse split, including the exactly zero on-axis convention.",
-   "Fail-closed validation of the map axes, the map arrays, and the solver grid axes.",
+   "The signed cylindrical radial and axial components, their Cartesian transverse split, and the exactly zero on-axis convention.",
+   "Fail-closed validation of the map axes, the map arrays, and the solver grid axes, including nonrepresentable interpolated flux from finite source samples.",
    "The absence of the classification parameters from this relation, by call and by import inspection.",
    "Exact agreement with an independent reconstruction of the field, the flux, the coverage mask, and both counters."
   ],
@@ -190,7 +190,7 @@
    "tests/geometry/test_axisymmetric_grid_mapping.py",
    "tests/cross_domain/axisymmetric_equilibrium_grid_support/test_composition_axisymmetric_equilibrium_grid_support.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Builds the radius and the axial coordinate of every Cartesian grid point, clamps each query coordinate onto the closed map box, evaluates the tensor-product linear interpolant of each map array at the clamped coordinates, splits the interpolated radial field…. Evidence: test_axisymmetric_grid_mapping.py, test_composition_axisymmetric_equilibrium_grid_support.py (18 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Non-axisymmetric or three-dimensional equilibria; Extrapolation beyond the map box; the relation clamps instead.",
+  "evidence_ceiling": "Bounded to the declared tensor-product interpolation, signed cylindrical-to-Cartesian field split, coverage and clamp counters. The bound test files exercise independent bilinear reconstruction, signed-component preservation and rejection of nonrepresentable interpolated flux; the contract example is a separate bounded call. Excluded scope: non-axisymmetric or three-dimensional equilibria, and extrapolation beyond the map box; the relation clamps instead.",
   "known_limitations": [
    "The interpolation is linear; a coarse map produces a piecewise-bilinear field with discontinuous derivatives across map cells.",
    "Query points outside the map box silently receive the box-face value. The coverage mask and the clamp counters report this, but a caller that ignores them will not notice.",

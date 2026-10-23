@@ -1,12 +1,12 @@
 {
  "schema": "scirel.chapter-execution",
- "source_commit": "c2da73947e7c573c16ad3f07f0c28ad184381488",
- "source_identity_note": "Chapter implementation, example and results were replayed from the SciRel working tree based on commit c2da73947e7c573c16ad3f07f0c28ad184381488 (including the task-30 fail-closed current-weighted contraction change); this development replay is source-bound and does not establish a release wheel receipt.",
+ "source_commit": "e6e6c8a132bb0c1f2cdfba7ad86327ff4ddbc957",
+ "source_identity_note": "Current development chapter example replayed from the SciRel source tree based on e6e6c8a132bb0c1f2cdfba7ad86327ff4ddbc957 with the nonempty-target-grid guard and target-row/coil-column contract correction. All current chapter checks passed; results.json bytes and existing figure bindings are unchanged. This is source-bound technical evidence, not a release wheel or historical source-parity receipt.",
  "files": {
   "src/scirel/field/circular_filament_green.py": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
   "src/scirel/field/current_green_superposition.py": "7505b1dc85ec968bbe6e3b1531d603d3289bd2de4fe1912de0cc3afa0980ca5c",
   "src/scirel/field/rectangular_coil_filaments.py": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d",
-  "src/scirel/field/multi_coil_vacuum_field.py": "7233291b594729b323140f7d7974e2f94467cad59ecb568ac723a263d5b599a3",
+  "src/scirel/field/multi_coil_vacuum_field.py": "b82dde02975437ad1f2986e1c5c142013203bae21719daa6a692f10c63a3d454",
   "src/scirel/_composition.py": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
   "src/scirel/electromagnetism/greens.py": "4ddc23c98d384c23043bc721f39ad1a7f44b5e54cdf216809fe939cd0453e03c"
  },
@@ -25,14 +25,14 @@
   "pair.svg": "fd0f4133af90931a49245d07dad5008cea0b9fafa71db3df528a6863c00a9f02",
   "rectangle.svg": "650ff248aa14f304e0278c609748a61ee195ab59a3726a90c4d80b1212985175"
  },
- "plot_runtime": "Existing figures remain bound to the checked chapter results; this development replay did not rebuild a release wheel.",
+ "plot_runtime": "NOT_RUN in this replay: existing figure bytes remain bound to the byte-identical checked chapter results; no plot or release wheel was rebuilt.",
  "document_files": {
   "catalog/examples/scirel.field.circular-filament-green.json": "66daec3e64835415e74bc38e9047f3ede6eab884aed351028e604fceea4d6fc3",
   "catalog/examples/scirel.field.current-green-superposition.json": "cd5b76fbfba705f956d92f4d01f123bc9d7bbf3332f02dadfb78e0632c4720e3",
   "catalog/examples/scirel.field.rectangular-coil-filaments.json": "b8ab77d237143e406f62e362f085601267dc8e14c991215479be9f4f3a9464f3",
-  "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "01c0db8e51a18471dec834815a01e59b6835c44e6d4eca96f5659546abb114a7",
+  "catalog/examples/scirel.field.multi-coil-vacuum-field.json": "a1badd60ea4e00776f6d48e1f14593a33434916e7ab01fbbd1311ea597bc4de6",
   "catalog/examples/scirel.electromagnetism.circular-filament-green.json": "25746cc7c070faf881543269379b5544fbe7fe468973b83afc1bd26c4134de60"
  },
- "previous_execution_sha256": "c0512a66b78b7c1ac4e5e7a7ff904bbf47e05282a3baf66a8bc57b5f17031145",
- "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; example and plot rerun from source"
+ "previous_execution_sha256": "6f90c30a23dee116f7c90cbadb7238caddb5213ef7403e2c5396fa3e8e503efe",
+ "execution_environment": "macOS arm64 current .venv; chapter example replayed from source; existing checked figures retained without rerender."
 }

@@ -209,6 +209,39 @@ def test_u1_a_t05_cartesian_assembly_preserves_the_cylindrical_split(
     assert int((~off_axis).sum()) > 0
 
 
+def test_cartesian_assembly_preserves_signed_radial_and_axial_components(
+    candidate, equilibrium
+):
+    eq = equilibrium()
+    eq["br_t"] = np.full_like(eq["br_t"], -3.0)
+    eq["bz_t"] = np.full_like(eq["bz_t"], 4.0)
+    x_axis, y_axis, z_axis = [-0.2, 0.2], [-0.3, 0.3], [-0.1, 0.1]
+    result = candidate["mapping"](eq, x_axis, y_axis, z_axis)
+    xx, yy, _ = np.meshgrid(x_axis, y_axis, z_axis, indexing="ij")
+    radius = np.hypot(xx, yy)
+    magnetic = result["magnetic_flux_density_t"]
+
+    np.testing.assert_allclose(magnetic[..., 0], -3.0 * xx / radius, rtol=1e-14, atol=1e-14)
+    np.testing.assert_allclose(magnetic[..., 1], -3.0 * yy / radius, rtol=1e-14, atol=1e-14)
+    np.testing.assert_array_equal(magnetic[..., 2], np.full(radius.shape, 4.0))
+    np.testing.assert_allclose(np.linalg.norm(magnetic, axis=-1), 5.0, rtol=1e-14, atol=1e-14)
+
+
+@pytest.mark.parametrize("sign", [-1.0, 1.0])
+def test_nonrepresentable_interpolated_flux_fails_closed(candidate, equilibrium, sign):
+    eq = equilibrium(r_size=5, z_size=5)
+    eq["br_t"] = np.zeros_like(eq["br_t"])
+    eq["bz_t"] = np.zeros_like(eq["bz_t"])
+    eq["psi_wb_per_rad"] = np.broadcast_to(
+        sign * np.array([1e308, -1e308, 1e308, -1e308, 1e308])[:, None],
+        eq["psi_wb_per_rad"].shape,
+    ).copy()
+
+    with np.errstate(over="ignore", invalid="ignore"):
+        with pytest.raises(ValueError, match="non-finite poloidal flux"):
+            candidate["mapping"](eq, [0.3, 0.4], [0.0, 0.1], [-0.1, 0.1])
+
+
 # --- Test U1-A-T06: validation is fail-closed. ------------------------------
 @pytest.mark.parametrize(
     "mutation, message",
