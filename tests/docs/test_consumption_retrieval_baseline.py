@@ -56,8 +56,8 @@ GROUPS = [
      'domains': ['collisions', 'kinetic'],
      'composition_requirements': [
          'The rate fit takes paired temperature and impact-energy samples in eV and returns m^3/s.',
-         'An explicitly justified target number density and n*rate conversion are needed to obtain s^-1; no such glue is executed here.',
-         'Align the frequency to (nvr,nvx,nx), supply the remaining loss terms and declare the charge-exchange enable flag.',
+         'An explicitly justified target number density gives nu=n*rate in s^-1; divide by the same Vth used for u=v/Vth to obtain alpha=nu/Vth in m^-1. No such glue is executed here.',
+         'Align alpha to (nvr,nvx,nx), supply the remaining inverse-length losses and normalized velocity nodes, and declare the charge-exchange enable flag.',
          'The logarithmic Maxwellian rate fit is not asserted equivalent to a velocity-mesh cross-section integral.'],
      'numerical_composition': 'NOT_RUN'},
 ]
@@ -126,7 +126,7 @@ def _public_probes(index, contracts):
     assert units(FIELD, 'outputs', 'B_R') == units(CURRENT, 'inputs', 'br') == 'T'
     assert units(FIELD, 'outputs', 'B_Z') == units(CURRENT, 'inputs', 'bz') == 'T'
     assert units(CX_RATE, 'outputs', 'rate_m3_s') == 'm^3/s'
-    assert units(LOSS, 'inputs', 'charge_exchange_frequency_s_inv') == 's^-1'
+    assert units(LOSS, 'inputs', 'charge_exchange_frequency_m_inv') == 'm^-1'
     return results
 
 

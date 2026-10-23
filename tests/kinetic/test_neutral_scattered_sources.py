@@ -115,7 +115,7 @@ def test_regeneration_rejects_keys_meshes_and_nonfinite_output():
 
 @pytest.mark.parametrize("bad", [[True], ["1"], [1.0 + 0j]])
 def test_regeneration_rejects_implicit_real_conversion(bad):
-    with pytest.raises(ValueError, match="frequencies_s_inv"):
+    with pytest.raises(ValueError, match="frequencies_m_inv"):
         aggregate_elastic_regeneration_source({"a": bad}, {"a": np.ones((1, 1, 1))})
 
 

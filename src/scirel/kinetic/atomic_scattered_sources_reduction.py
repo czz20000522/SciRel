@@ -31,7 +31,12 @@ def _sum_source_channels(charge_exchange, elastic):
 def reduce_atomic_scattered_sources(
     charge_exchange_source_distribution, elastic_source_distribution
 ):
-    """Return source-order ``Beta_CX + OmegaM`` with signed cells retained."""
+    """Return normalized spatial ``Beta_CX + OmegaM`` in F/m.
+
+    Both inputs use one common dimensionless u=v/Vth velocity grid and are
+    physical distribution-rate sources divided by that Vth. Signed cells
+    and the declared addition order are retained.
+    """
     charge_exchange = _real_array(
         charge_exchange_source_distribution, "charge_exchange_source_distribution"
     )

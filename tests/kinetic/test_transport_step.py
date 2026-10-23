@@ -222,7 +222,7 @@ def test_transport_inputs_reject_real_value_coercion():
     for invalid in ([True, False], ["-1", "1"], [-1j, 1j]):
         with pytest.raises(ValueError, match="vx"):
             assemble_neutral_upwind_transport_coefficients(x, invalid, field, field)
-    with pytest.raises(ValueError, match="collision_frequency_s_inv"):
+    with pytest.raises(ValueError, match="collision_frequency_m_inv"):
         assemble_neutral_upwind_transport_coefficients(x, vx, field.astype(complex), field)
     with pytest.raises(ValueError, match="Ak"):
         propagate_neutral_generation(

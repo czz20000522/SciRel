@@ -5,7 +5,7 @@
   "en": "Neutral Boltzmann RHS assembly",
   "zh": "中性BoltzmannRHS组装"
  },
- "summary": "Assemble the explicit neutral Boltzmann RHS: Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall) from the source terms, collision frequency, and total distribution.",
+ "summary": "Convert the normalized spatial source balance S+Beta_CX-alpha*F+OmegaM+Swall from F/m to the physical Boltzmann distribution-rate RHS in F/s by one explicit Vth multiplication.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,14 +18,14 @@
  "discovery": {
   "capability": [
    "Neutral Boltzmann RHS assembly",
-   "Assemble the explicit neutral Boltzmann RHS: Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall) from the source terms, collision frequency, and total distribution."
+   "Convert the normalized spatial source balance S+Beta_CX-alpha*F+OmegaM+Swall from F/m to the physical Boltzmann distribution-rate RHS in F/s by one explicit Vth multiplication."
   ],
   "operation": [
    "assemble the neutral Boltzmann right-hand side",
    "thermal speed plus six aligned 3-D fields -> Boltzmann RHS"
   ],
-  "model": "the explicit Boltzmann RHS assembly",
-  "geometry": "two velocity dimensions over one spatial axis",
+  "model": "the explicit Boltzmann RHS assembly; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "two velocity dimensions over one spatial axis; velocity axes are dimensionless u=v/Vth on one common caller normalization",
   "boundary": "thermal speed finite and positive; all six fields finite 3-D arrays with one common shape",
   "device_scope": "generic"
  },
@@ -35,12 +35,13 @@
   "definition": "The signed sum: rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum).",
   "model": "the explicit Boltzmann RHS assembly",
   "geometry": "two velocity dimensions over one spatial axis",
-  "coordinates": "thermal speed m/s; all fields in the source's discrete units",
+  "coordinates": "thermal speed is m/s; total_distribution F is m^-3; alpha=nu/Vth is m^-1; each source field is Q/Vth in F/m; rhs is F/s.",
   "boundary": "thermal speed finite and positive; all six fields finite 3-D arrays with one common shape",
   "assumptions": [
    "The signed sum defines the relation; the sign convention (alpha_c*f subtracted) is preserved.",
    "The caller owns the individual source/frequency fields; this asset only assembles.",
-   "SciRel rejects boolean, string and complex coercions and any non-finite RHS produced from finite inputs."
+   "SciRel rejects boolean, string and complex coercions and any non-finite RHS produced from finite inputs.",
+   "Use one caller-selected Vth: velocity coordinates are u=v/Vth, F integrates over normalized velocity volume to number density in m^-3, alpha=nu/Vth is m^-1, and every source input is Q/Vth in F/m. This callable multiplies the complete balance by thermal_speed_m_s exactly once to return F/s; it does not normalize physical frequency or source inputs for the caller."
   ]
  },
  "inputs": [
@@ -55,8 +56,8 @@
   },
   {
    "name": "coefficient_source_distribution",
-   "description": "The coefficient source term.",
-   "units": "source-discrete",
+   "description": "The coefficient source term. Supply the normalized spatial source Q/Vth, not a physical F/s source.",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -64,17 +65,17 @@
   },
   {
    "name": "charge_exchange_source_sum",
-   "description": "The CX source sum.",
-   "units": "source-discrete",
+   "description": "The CX source sum. Supply the normalized spatial source Q/Vth, not a physical F/s source.",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
    "constraints": "Finite 3-D."
   },
   {
-   "name": "collision_frequency_s_inv",
-   "description": "The collision frequency field.",
-   "units": "s^-1",
+   "name": "collision_frequency_m_inv",
+   "description": "Inverse-length collision coefficient alpha=nu/Vth; the explicit final thermal-speed multiplication restores the physical loss nu*F.",
+   "units": "m^-1",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -83,7 +84,7 @@
   {
    "name": "total_distribution",
    "description": "The total distribution.",
-   "units": "source-discrete",
+   "units": "m^-3",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -91,8 +92,8 @@
   },
   {
    "name": "elastic_source_sum",
-   "description": "The elastic source sum.",
-   "units": "source-discrete",
+   "description": "The elastic source sum. Supply the normalized spatial source Q/Vth, not a physical F/s source.",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -100,8 +101,8 @@
   },
   {
    "name": "wall_source_sum",
-   "description": "The wall source sum.",
-   "units": "source-discrete",
+   "description": "The wall source sum. Supply the normalized spatial source Q/Vth, not a physical F/s source.",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -111,8 +112,8 @@
  "outputs": [
   {
    "name": "rhs",
-   "description": "The Boltzmann RHS.",
-   "units": "source-discrete m/s",
+   "description": "Physical distribution-rate RHS; one Vth multiplication converts every normalized spatial balance term from F/m to F/s.",
+   "units": "m^-3 s^-1 (F/s)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
@@ -121,7 +122,8 @@
  ],
  "applicability": {
   "preconditions": [
-   "Thermal speed finite positive; all six fields finite aligned 3-D."
+   "Thermal speed finite positive; all six fields finite aligned 3-D.",
+   "All input fields must use one common Vth normalization; the explicit thermal_speed_m_s multiplication converts the completed spatial balance to a physical distribution-rate RHS."
   ],
   "supported": [
    "Boltzmann RHS assembly for H and H2 neutral transport diagnostics."
@@ -140,7 +142,7 @@
   "python": {
    "module": "scirel.kinetic.neutral_boltzmann_rhs",
    "symbol": "assemble_neutral_boltzmann_rhs",
-   "signature": "assemble_neutral_boltzmann_rhs(thermal_speed_m_s, coefficient_source_distribution, charge_exchange_source_sum, collision_frequency_s_inv, total_distribution, elastic_source_sum, wall_source_sum)",
+   "signature": "assemble_neutral_boltzmann_rhs(thermal_speed_m_s, coefficient_source_distribution, charge_exchange_source_sum, collision_frequency_m_inv, total_distribution, elastic_source_sum, wall_source_sum)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "assemble_neutral_boltzmann_rhs"
   }
@@ -156,17 +158,18 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Direct tests bind the signed sum and one final Vth multiplication, shape/finiteness validation, implicit-real rejection and overflowing-output rejection.",
+   "The cross-domain tests compare the assembled RHS with independently formed physical wall loss, stationary source balance and CX/elastic number balance at two Vth values.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
   ],
   "tests": [
-   "tests/kinetic/test_transport_step.py"
+   "tests/kinetic/test_transport_step.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: The signed sum: rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum). Evidence: test_transport_step.py (18 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Implicit or nonlinear Boltzmann solvers; external collision models; external physical validation.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind the signed sum and one final Vth multiplication, shape/finiteness validation, implicit-real rejection and overflowing-output rejection. The cross-domain tests compare the assembled RHS with independently formed physical wall loss, stationary source balance and CX/elastic number balance at two Vth values. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
   "known_limitations": [
-   "Only shared-file coverage is bound (test_transport_step.py); no asset-specific failure/limit probe is recorded.",
-   "No independent or external oracle is recorded; the evidence is self-consistency/regression only.",
-   "The contract does not establish: Implicit or nonlinear Boltzmann solvers; external collision models.."
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
   ]
  }
 }

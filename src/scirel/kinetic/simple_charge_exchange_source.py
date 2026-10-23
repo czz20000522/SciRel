@@ -1,4 +1,4 @@
-"""Cell-local charge-exchange source from an explicit previous generation."""
+"""Normalized charge-exchange source h*integral(alpha_CX*F_previous*d^3u)."""
 
 from __future__ import annotations
 
@@ -25,14 +25,23 @@ def _real_array(value, name):
 
 def assemble_simple_charge_exchange_source(
     target_distribution,
-    charge_exchange_frequency_s_inv,
+    charge_exchange_frequency_m_inv,
     previous_generation_distribution,
     cylindrical_weight,
     dvx,
 ):
-    """Scale target by each cell's quadrature-contracted CX rate."""
+    """Return a spatial source in F/m on dimensionless velocity nodes.
+
+    ``target_distribution`` is a caller-provided dimensionless shape h,
+    ``previous_generation_distribution`` is a distribution density F, and
+    ``charge_exchange_frequency_m_inv`` is alpha_CX=nu_CX/Vth. Quadrature
+    weights integrate over normalized velocity volume. The caller owns h's
+    normalization: only a unit weighted integral makes the source number
+    integral equal the CX loss integral. No normalization or density division
+    is performed here; signed finite h is used as given.
+    """
     target = _real_array(target_distribution, "target_distribution")
-    alpha = _real_array(charge_exchange_frequency_s_inv, "charge_exchange_frequency_s_inv")
+    alpha = _real_array(charge_exchange_frequency_m_inv, "charge_exchange_frequency_m_inv")
     previous = _real_array(
         previous_generation_distribution, "previous_generation_distribution"
     )

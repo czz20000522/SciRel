@@ -34,7 +34,7 @@ Velocity-mesh nodes are expressed in normalized velocity, in units of the therma
 
    Vth = sqrt(2*e*Tnorm / (m_amu*m_H))
 
-where ``Tnorm`` is the mesh normalization temperature in eV. The spatial transport coefficients, however, require ``vx`` to share units with ``x`` and ``alpha``, so ``Vth`` must be multiplied back before entering spatial transport. The seed entry point does the opposite: it accepts a shift in m/s and divides by ``Vth`` internally.
+where ``Tnorm`` is the mesh normalization temperature in eV. This chapter consistently uses dimensionless velocity ``u=v/Vth``: spatial transport receives the original ``vr`` and ``vx`` nodes and inverse-length collision coefficients ``alpha=nu/Vth`` in m^-1. Divide every physical frequency ``nu`` in s^-1 by that same ``Vth``. Source fields likewise use ``Q/Vth`` in F/m, where F integrates over normalized velocity volume to number density. The explicit physical RHS or moment diagnostics multiply by ``Vth`` at their stated boundary. The Maxwellian seed accepts a shift in m/s and divides by ``Vth`` internally.
 
 Velocity mesh: nodes, measure and volume
 ----------------------------------------
@@ -90,7 +90,7 @@ What this section does not establish
 
 - A matching volume sum only says the cell partition closes; it does not prove that a 17×34 mesh is fine enough for a given distribution. Cold beams, high-energy tails or strongly anisotropic distributions may need more nodes.
 - The outermost ghost face uses the convention "mirror the last node, then take a half cell". A different cell-face convention cannot reuse ``radial_measure``, ``dvx`` or ``volume`` here.
-- Mesh nodes are normalized velocities, not m/s. Treating ``vr`` or ``vx`` directly as physical velocities when multiplying by a collision frequency produces spatial attenuation that is wrong by orders of magnitude.
+- Mesh nodes are dimensionless velocities; transport consumes ``nu/Vth`` in m^-1, rather than a physical frequency in s^-1.
 - A requested energy changes ``Tnorm`` and may switch the uniform branch to the stretched branch. Do not assume that "adding one energy node" adds only one node without changing the other mesh positions.
 
 Maxwellian seed: normalization and moments
@@ -197,18 +197,18 @@ What this section does not establish
 - Temperature is a centred second moment; it is not the ``temperature_ev`` parameter of the seed entry point unless mass, molecule count and normalization temperature all follow the same convention. Mixing factors systematically changes ``u`` and ``T``.
 - ``stress_zz = stress_yy`` is a declaration of the relation, not a physical conclusion independently verified by one moment calculation.
 
-Loss frequency and upwind coefficients
---------------------------------------
+Normalized loss and upwind coefficients
+---------------------------------------
 
-Neutral particles are lost in space through charge exchange, elastic collisions and finite duct walls. The total loss frequency is assembled as
+Neutral particles are lost in space through charge exchange, elastic collisions and finite duct walls. Spatial transport consumes the physical loss frequency divided by the thermal speed, ``alpha=nu/Vth`` in m^-1:
 
 .. code-block:: text
 
    alpha(vr,vx,x) = [Alpha_CX] + base_loss + Omega_EL + 2*vr/D
 
-where the wall term applies only to a positive duct diameter ``D``; ``D = 0`` means wall loss is disabled, not that "the wall is at infinity". ``Alpha_CX`` is an optional channel and must be supplied explicitly as a nonnegative field of the same shape when enabled.
+Here ``vr`` is dimensionless radial velocity: the wall coefficient ``2*vr/D`` in m^-1 corresponds to physical escape frequency ``2*vr*Vth/D`` in s^-1. The wall term applies only to a positive duct diameter; ``D = 0`` disables it. When enabled, the optional ``Alpha_CX`` must be supplied explicitly as an aligned nonnegative inverse-length field. The code divides the chosen physical base, elastic and CX frequencies of 1500, 500 and 2000 s^-1 by the same ``Vth`` used by the seed.
 
-The upwind coefficients assemble ``alpha``, the spatial nodes ``x``, the axial velocity ``vx`` and the source distribution into six fields. For the positive-velocity branch, the forward recursion uses ``Ak`` and the diagonal source term ``Fk``; for the negative-velocity branch, the backward recursion uses ``Ck`` and ``Gk``. ``Bk`` and ``Dk`` are source coefficients used by the other "scattered generation" path. This section follows only the first-flight path, with the source set to zero, so the recursion actually uses ``Ak``, ``Ck`` and zero source terms.
+The upwind coefficients combine ``alpha``, metre coordinates ``x``, dimensionless axial nodes ``vx`` and normalized source ``Q/Vth`` into six fields. The positive branch recurses forward using dimensionless ``Ak`` and distribution-valued ``Fk``; the negative branch recurses backward using dimensionless ``Ck`` and distribution-valued ``Gk``. The scattered-path coefficients ``Bk`` and ``Dk`` are in metres, so multiplying a source in F/m gives F. This section follows first flight with zero source.
 
 .. code-block:: python
 
@@ -217,52 +217,54 @@ The upwind coefficients assemble ``alpha``, the spatial nodes ``x``, the axial v
        assemble_neutral_upwind_transport_coefficients,
    )
 
-   x = np.linspace(0.0, 2.0, 21)
+   x = np.linspace(0.0, 2.0, 201)  # dx = 0.01 m
    nx = x.size
    shape = (vr.size, vx.size, nx)
 
-   base = np.full(nx, 1500.0)
-   elastic = np.full(nx, 500.0)
+   vth = seed["thermal_speed_m_s"]
+   base = np.full(nx, 1500.0 / vth)
+   elastic = np.full(nx, 500.0 / vth)
    diameter = np.full(nx, 0.2)
-   cx = np.full(shape, 2000.0)
+   cx = np.full(shape, 2000.0 / vth)
    alpha = assemble_neutral_total_collision_frequency(
        vr, vx, base, elastic, diameter, cx
    )
 
-   vx_phys = vx * seed["thermal_speed_m_s"]
    coef = assemble_neutral_upwind_transport_coefficients(
-       x, vx_phys, alpha, np.zeros(shape)
+       x, vx, alpha, np.zeros(shape)
    )
 
    print(f"alpha shape = {alpha.shape}")
-   print(f"alpha(vr={vr[0]:.3f}, vx=+3.5) = {alpha[0, -1, 0]:.1f} s^-1")
-   print(f"alpha(vr={vr[-1]:.3f}, vx=+3.5) = {alpha[-1, -1, 0]:.1f} s^-1")
+   print(f"alpha(vr={vr[0]:.3f}, vx=+3.5) = {alpha[0, -1, 0]:.6f} m^-1")
+   print(f"alpha(vr={vr[-1]:.3f}, vx=+3.5) = {alpha[-1, -1, 0]:.6f} m^-1")
    print(f"Ak(vr={vr[0]:.3f}, vx=+3.5) = {coef['Ak'][0, -1, 0]:.9f}")
    print(f"Ak(vr={vr[-1]:.3f}, vx=+3.5) = {coef['Ak'][-1, -1, 0]:.9f}")
    print(f"Ck(vr={vr[0]:.3f}, vx=-3.5) = {coef['Ck'][0, 0, 1]:.9f}")
    print(f"Fk all zero = {np.all(coef['Fk'] == 0.0)}")
+   print(f"min active Ak = {coef['Ak'][:, vx > 0.0, :-1].min():.6f}")
 
 Actual output:
 
 .. code-block:: text
 
-   alpha shape = (17, 34, 21)
-   alpha(vr=0.219, vx=+3.5) = 4002.2 s^-1
-   alpha(vr=3.500, vx=+3.5) = 4035.0 s^-1
-   Ak(vr=0.219, vx=+3.5) = 0.988662699
-   Ak(vr=3.500, vx=+3.5) = 0.988570280
-   Ck(vr=0.219, vx=-3.5) = 0.988662699
+   alpha shape = (17, 34, 201)
+   alpha(vr=0.219, vx=+3.5) = 2.586350 m^-1
+   alpha(vr=3.500, vx=+3.5) = 35.398850 m^-1
+   Ak(vr=0.219, vx=+3.5) = 0.992637632
+   Ak(vr=3.500, vx=+3.5) = 0.903728842
+   Ck(vr=0.219, vx=-3.5) = 0.992637632
    Fk all zero = True
+   min active Ak = 0.105512
 
-At the lowest radial velocity ``alpha = 4002.2 s^-1``; at the highest it is ``4035.0 s^-1``. The difference of 32.8 s^-1 comes from the wall term: as ``vr`` goes from 0.21875 to 3.5, ``2*vr/D`` goes from 2.1875 to 35.0; charge exchange 2000, base loss 1500 and elastic 500 sum to 4000. Axial velocity does not affect ``alpha``, so the positive and negative branches have the same coefficient at the same ``vr``, and ``Ck`` equals ``Ak`` on mirrored nodes.
+At the lowest radial velocity ``alpha = 2.586350 m^-1``; at the highest it is ``35.398850 m^-1``. The volume-collision channels sum to ``4000/Vth = 0.398850 m^-1``. As ``vr`` increases from 0.21875 to 3.5, the wall coefficient ``2*vr/D`` increases from 2.1875 to 35.0 m^-1. Axial velocity does not affect this example's ``alpha``, so ``Ck`` and ``Ak`` agree at mirrored velocity nodes.
 
-``Ak = 0.98866`` is the surviving fraction per 0.1 m cell. With ``dx = 0.1``, ``v = 35100.95 m/s`` and ``alpha = 4002.2``, the estimate is ``dx*alpha/(2v) = 0.00570``, so ``Ak`` is close to ``1 - 0.01134``, consistent with the output. ``Fk`` is all zero because this section sets the source distribution to zero; that does not mean the first-flight path never has source terms, only that this numerical experiment observes only attenuation after boundary injection.
+At the fastest positive node, ``dx*alpha/(2*u_x) = 0.003695``, giving ``Ak = 0.992637632`` per 0.01 m cell. This recurrence is a trapezoidal discretization along each velocity characteristic. To interpret a zero-source recurrence with nonnegative boundary data as a nonnegative distribution, its active coefficients must also be nonnegative: the positive branch requires ``dx*alpha_k <= 2*u_x``, with an analogous condition on the negative branch. A 0.1 m step gives negative coefficients in slow bins after correcting the normalization. Here 0.01 m gives a minimum active ``Ak = 0.105512``, and the next block checks that the generated distribution is nonnegative. This establishes discrete admissibility for this case, not mesh convergence. Zero ``Fk`` only records the absence of a volume source in this experiment.
 
 What this section does not establish
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- ``alpha`` is an externally supplied loss frequency, not a self-consistent result computed from cross sections, density and temperature. Changing ``base``, ``elastic``, ``cx`` or the duct diameter changes the result; the 4002.2 here is not a "standard value" for any gas.
-- ``Ak < 1`` only says that this combination of ``dx``, ``vx`` and ``alpha`` attenuates at each step; it does not prove that the scheme is stable for arbitrary step sizes or frequencies. The upwind scheme also has numerical diffusion, which a coarse mesh can mix into the physical attenuation.
+- ``alpha`` is an externally specified inverse-length coefficient. The collision frequencies and duct diameter are demonstration parameters, not a self-consistent calculation from cross sections, density and temperature.
+- Nonnegative active coefficients admit a nonnegative attenuation interpretation for this case. They do not prove positivity, accuracy or stability for arbitrary spatial steps.
 - ``D = 0`` disables the wall term; it does not mean there is no wall. The shape of ``alpha`` is ``(nvr, nvx, nx)``, but ``base``, ``elastic`` and ``diameter`` in this section vary only with ``x``, and ``cx`` is a constant field. Velocity- or space-dependent fields require rechecking every cell.
 - Coefficient assembly does not check physical resolution conditions such as "is the collision frequency smaller than ``v/dx``"; it checks only the input domain and finiteness.
 
@@ -290,47 +292,48 @@ To make the picture "incident from ``x=0``" self-consistent, we zero the negativ
    boundary = f.copy()
    boundary[:, vx < 0.0] = 0.0
    gen = propagate_neutral_generation(
-       vx_phys, coef["Ak"], coef["Bk"], coef["Fk"],
+       vx, coef["Ak"], coef["Bk"], coef["Fk"],
        coef["Ck"], coef["Dk"], coef["Gk"],
        generation_kind="first_flight", incoming_boundary=boundary,
    )
 
+   assert np.all(gen >= 0.0)
    print(f"shape = {gen.shape}, finite = {np.all(np.isfinite(gen))}")
    print(f"negative-vx max = {np.abs(gen[:, vx < 0.0, :]).max():.1e}")
-   for k in (0, 10, 20):
+   for k in (0, 100, 200):
        print(f"n(x={x[k]:.1f}) = {np.sum(quad['volume'] * gen[:, :, k]):.6f} m^-3")
 
    j = np.argmax(vx)
    ratio = gen[0, j, :] / boundary[0, j]
-   exact = np.exp(-alpha[0, j, 0] * x / vx_phys[j])
+   exact = np.exp(-alpha[0, j, 0] * x / vx[j])
    print(f"fastest bin ratio(2 m) = {ratio[-1]:.9f}")
-   print(f"exp(-alpha*L/v) = {exact[-1]:.9f}")
+   print(f"exp(-alpha*L/u_x) = {exact[-1]:.9f}")
    print(f"max relative difference = {np.max(np.abs(ratio / exact - 1.0)):.2e}")
 
 Actual output:
 
 .. code-block:: text
 
-   shape = (17, 34, 21), finite = True
+   shape = (17, 34, 201), finite = True
    negative-vx max = 0.0e+00
    n(x=0.0) = 0.622978 m^-3
-   n(x=1.0) = 0.333689 m^-3
-   n(x=2.0) = 0.212893 m^-3
-   fastest bin ratio(2 m) = 0.796091494
-   exp(-alpha*L/v) = 0.796093461
-   max relative difference = 2.47e-06
+   n(x=1.0) = 0.004721 m^-3
+   n(x=2.0) = 0.000697 m^-3
+   fastest bin ratio(2 m) = 0.228111491
+   exp(-alpha*L/u_x) = 0.228113026
+   max relative difference = 6.73e-06
 
-For the fastest velocity cell (smallest ``vr``, ``vx = +3.5 Vth``), the maximum relative difference between the recursion and the continuous exponential attenuation ``exp(-alpha*x/v)`` is ``2.47e-6``. This confirms that, with no source term and an ``alpha`` constant along ``x``, the first-flight recursion really implements the first-order discretization of "exponential attenuation along a characteristic" cell by cell. This check covers only one velocity cell and cannot replace a check of the whole distribution.
+For the fastest velocity cell (smallest ``vr``, ``vx = +3.5``, corresponding to physical speed ``3.5*Vth``), the maximum relative difference from ``exp(-alpha*x/u_x)=exp(-nu*x/v_x)`` is ``6.73e-6``. This checks the trapezoidal recurrence on one characteristic with zero source and a spatially constant coefficient; it does not replace a whole-distribution or mesh-convergence check.
 
-The integrated density drops from ``0.622978`` to ``0.212893``, a ratio of ``0.342``; it is clearly smaller than the fastest cell's ``0.796`` because slow particles attenuate much faster. After 2 m the surviving distribution has been velocity-filtered and is no longer the original Maxwellian. Treating ``0.342`` as "an exponential attenuation rate" is misleading: it is neither ``exp(-alpha L/v)`` for a single velocity nor enough to infer a unique ``alpha``.
+The integrated density drops from ``0.622978`` to ``0.000697``, a ratio of about ``0.00112``. It is smaller than the fastest cell's ``0.228`` because particles with lower axial speed or stronger radial wall loss are removed preferentially. After 2 m the distribution is no longer the original Maxwellian. Its integrated density ratio does not determine a unique ``alpha``.
 
 What this section does not establish
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - This is not a self-consistent neutral-transport solution. There is no volume source, no recombination, no wall reflection, no second boundary, and no coupling to a plasma background; ``alpha`` is still externally supplied.
 - A zero negative-velocity branch is a direct consequence of the first-flight boundary-injection scheme, not evidence that "there are no backward neutral particles physically". Filling the negative branch requires a volume source or boundary treatment at the other end.
-- Agreement of a single cell with ``exp(-alpha*x/v)`` validates only the discretization along that one characteristic; it does not validate the integrated density, other velocity cells or a spatially varying ``alpha``.
-- The first-order upwind scheme has numerical diffusion, and at ``dx = 0.1 m`` this diffusion may mix with the true gradient; no mesh-convergence study is performed here.
+- Agreement of a single cell with ``exp(-alpha*x/u_x)`` validates only the discretization along that one characteristic; it does not validate the integrated density, other velocity cells or a spatially varying ``alpha``.
+- The 0.01 m step passes this case's nonnegativity check; no spatial or velocity mesh-convergence study of the full distribution is performed here.
 - The output is a distribution value, not a density or flux. ``gen`` must be used with the same ``volume``; a different measure cannot be compared directly.
 
 Terminal diagnostics: flux and heat flux
@@ -353,7 +356,7 @@ All three entry points allow zero-width cells as long as each spatial slice has 
 
 Positive ``radial_measure`` and ``dvx`` are used here, so these functions should agree term by term with the moment reduction on the overlapping fields.
 
-The preceding ``gen`` is a normalized distribution with density about 1 m^-3. To obtain readable physical magnitudes, we multiply by a number density ``n0 = 1e20 m^-3``. Because ``alpha`` is externally supplied and does not depend on density, this scaling changes only the absolute diagnostic values, not the propagation result.
+The preceding ``gen`` comes from a unit-integral seed, with density decreasing from 0.622978 m^-3 at the boundary to 0.000697 m^-3 at the endpoint. To obtain readable physical magnitudes, define ``n0 = 1e20`` as the dimensionless ratio of a target reference density of 1e20 m^-3 to 1 m^-3. Thus ``f_phys = n0 * gen`` retains units m^-3. Because ``alpha`` is externally supplied and does not depend on density, this scaling changes only the absolute diagnostic values, not the propagation result.
 
 .. code-block:: python
 
@@ -383,7 +386,7 @@ The preceding ``gen`` is a normalized distribution with density about 1 m^-3. To
        quad["radial_measure"], quad["dvx"],
    )
 
-   for k in (0, 20):
+   for k in (0, 200):
        print(f"x={x[k]:.1f} m:")
        print(f"  n = {mom_phys['density_m3'][k]:.6e} m^-3")
        print(f"  flux = {flux['flux_profile_m2_s'][k]:.6e} m^-2 s^-1")
@@ -420,36 +423,36 @@ Actual output:
      q_rand = 2.409290e+04 W m^-2
      q_total = 3.945699e+05 W m^-2
    x=2.0 m:
-     n = 2.128927e+19 m^-3
-     flux = 2.781894e+23 m^-2 s^-1
-     u = 1.306712e+04 m/s
-     p = 3.357300e+19 eV m^-3
-     T = 1.576992 eV
-     q_rand = 5.230610e+03 W m^-2
-     q_total = 2.244745e+05 W m^-2
-   relative mismatch: flux 1.68e-15, p 9.17e-16, q_rand 4.22e-14
+     n = 6.974323e+16 m^-3
+     flux = 1.424204e+21 m^-2 s^-1
+     u = 2.042068e+04 m/s
+     p = 2.080844e+16 eV m^-3
+     T = 0.298358 eV
+     q_rand = 8.061539e+00 W m^-2
+     q_total = 1.266536e+03 W m^-2
+   relative mismatch: flux 1.94e-15, p 2.11e-15, q_rand 8.54e-14
 
-The density drops to ``0.342`` of its original value, while the flux drops to ``0.490``: they differ because the mean velocity rises from 9.10 km/s to 13.07 km/s. Slow particles are lost preferentially, and the surviving distribution carries a higher flux per particle. Flux is not "density times a constant velocity"; it is the profile of ``n*u`` and must be read together with density and velocity.
+Density drops to about ``0.00112`` of its initial value, while flux drops to about ``0.00251``. Mean velocity rises from 9.10 km/s to 20.42 km/s as slower particles are lost preferentially. Flux is the ``n*u`` profile and must be read with both density and velocity.
 
-Pressure drops to ``0.338``, while temperature changes only from ``1.5947`` to ``1.5770`` eV (about ``0.989``). Temperature is a centred second moment, so density and pressure can fall substantially while temperature stays nearly unchanged; here "nearly" is not conservation. Note that the boundary temperature is no longer the seed parameter 2 eV: we kept only the positive-velocity half, and the centred second moment of a half-Maxwellian differs from that of a full Maxwellian. The 1.59 eV is a property of the filtered boundary distribution.
+Pressure drops to about ``0.000209``, while temperature falls from ``1.5947`` to ``0.2984`` eV, about ``0.187`` of its boundary value. The wall-loss term also selects radial velocity, so filtering changes the centred second moment. The boundary temperature already differs from the seed parameter 2 eV because retaining only the positive half changes that centred moment.
 
-The random heat flux falls from ``2.41e4`` to ``5.23e3`` W/m², and the total heat flux from ``3.95e5`` to ``2.24e5`` W/m². At ``x=0`` the total heat flux is about 16.4 times the random heat flux because it also contains the bulk kinetic-energy flux and the enthalpy flux; the random heat flux describes only fluctuations relative to the mean flow. They answer different questions and are not interchangeable.
+Random heat flux falls from ``2.41e4`` to ``8.06`` W/m², and total heat flux from ``3.95e5`` to ``1.27e3`` W/m². At ``x=0`` total heat flux is about 16.4 times random heat flux because it also contains bulk kinetic-energy and enthalpy fluxes. Random heat flux describes fluctuations relative to the mean flow; the two quantities answer different questions.
 
-The last line's relative differences ``1.68e-15``, ``9.17e-16`` and ``4.22e-14`` show that the terminal reduction and the moment reduction really consume the same discrete distribution on the same positive weights. They are algebraic consistency checks, not independent physical validation, and not error bounds.
+The last line's relative differences ``1.94e-15``, ``2.11e-15`` and ``8.54e-14`` show that the terminal and moment reductions consume the same discrete distribution on the same positive weights. They are algebraic consistency checks, not independent physical validation or error bounds.
 
 What this section does not establish
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - These profiles correspond to only one boundary distribution, one ``alpha`` model and one mesh. They are not a conservation proof, and they do not cover wall reflection, volume sources, recombination or feedback with a plasma.
 - ``n0 = 1e20`` is a demonstration scaling. Heat flux, flux and pressure all scale linearly with ``n0``; if ``alpha`` actually depended on density, this scaling would no longer be consistent with the propagation.
-- A nearly unchanged temperature does not mean thermal equilibrium or energy conservation. The total-heat-flux expression contains several terms; changing the definition or the reference frame changes the reading.
+- Changes in temperature and heat flux describe moments of this lossy distribution; they do not by themselves establish energy conservation. Changing the definition or reference frame also changes the heat-flux reading.
 - The terminal entry points allow zero-weight cells; this example does not trigger that branch. The behavior of zero-weight cells cannot be extrapolated from these positive-weight results.
 - Agreement at the ``1e-15`` level does not mean physical accuracy; it only says the two post-processing paths perform the same discrete sum. The real error sources are the mesh, ``alpha``, the boundary distribution and velocity truncation.
 
 Common pitfalls
 ---------------
 
-**Normalized vs physical velocity.** The mesh ``vx`` is dimensionless, ``alpha`` is in s^-1, and ``x`` is in m. ``Vth`` must be multiplied in before entering the upwind coefficients; otherwise ``dx*alpha/vx`` is not dimensionless and the attenuation is wrong by orders of magnitude. The seed entry point instead accepts a shift in m/s and divides by ``Vth`` internally. The two entry points use opposite conventions, so do not guess units from parameter names.
+**Normalized vs physical velocity.** Transport uses dimensionless ``vx=u_x``, ``alpha=nu/Vth`` in m^-1 and ``x`` in metres, making ``dx*alpha/u_x`` dimensionless. Divide physical frequencies by the same ``Vth``; combining physical velocity with inverse-length coefficients mixes conventions. Sources are ``Q/Vth`` in F/m. The explicit Boltzmann RHS multiplies the complete spatial balance by ``Vth`` exactly once to recover F/s.
 
 **Use the mass factors as a set.** The H2 bookkeeping in this chapter is ``mass_amu=2``, ``isotope_mass_amu=2``, ``molecularity=1`` and terminal ``mass_ratio=1``. If the same distribution is kept but the moment reduction is changed to ``isotope_mass_amu=1`` and ``molecularity=2``, the thermal speed and molecule mass change their factors together, and the same distribution gives a flow velocity of about ``4453.6 m/s`` and a temperature of ``4.0385 eV`` instead of the 3009.1 m/s and 1.9888 eV above. That is inconsistent bookkeeping, not a physical change.
 
@@ -457,7 +460,7 @@ Common pitfalls
 
 **First-flight boundary fills only the positive-velocity branch.** The ``incoming_boundary`` of ``first_flight`` writes only positive ``vx`` at ``x=0``; the negative branch recurses backward from a zero right-boundary value, with no boundary injection. For two-sided incidence, one first-flight call cannot be treated as a two-boundary problem.
 
-**Density attenuation is not a single exponential.** The fastest cell follows ``exp(-alpha*x/v)``, but the integrated density ratio 0.342 is the result of velocity filtering. Do not fit an "effective attenuation rate" to the integrated density and use it to infer ``alpha``; different velocities attenuate at different rates.
+**Density attenuation is not a single exponential.** The fastest cell follows ``exp(-alpha*x/u_x)``, but the integrated density ratio of about 0.00112 comes from velocity filtering. Different velocities attenuate differently, so fitting one rate to integrated density cannot recover a unique ``alpha``.
 
 **Random heat flux is not total heat flux.** The former is the heat flow carried by centred fluctuations; the latter also includes the transport of bulk kinetic energy and enthalpy. In this chapter the two differ by about a factor of 16 at ``x=0``. When quoting a "heat flux", always say which one.
 
@@ -470,7 +473,7 @@ When to use which function
 - To construct an integration measure from existing ``vr`` and ``vx``: use :doc:`../reference/generated/scirel.kinetic.cylindrical-velocity-quadrature`. It does not generate a mesh and does not convert units.
 - To build a shifted Maxwellian seed: use :doc:`../reference/generated/scirel.kinetic.shifted-maxwellian-seed`. It performs no moment compensation, and its normalization depends on the ``cylindrical_volume`` you supply.
 - To obtain density, flow velocity, temperature, stress and random heat flux from a distribution: use :doc:`../reference/generated/scirel.kinetic.axisymmetric-neutral-moments`. Note the empty-slice policy and the ``stress_zz`` alias convention.
-- To assemble the total loss frequency: use :doc:`../reference/generated/scirel.kinetic.neutral-total-collision-frequency`. When charge exchange is enabled, the frequency field must be supplied explicitly; ``D = 0`` disables the wall term.
+- To assemble the normalized total-loss coefficient ``nu/Vth``: use :doc:`../reference/generated/scirel.kinetic.neutral-total-collision-frequency`. When charge exchange is enabled, the inverse-length field must be supplied explicitly; ``D = 0`` disables the wall term.
 - To assemble one-dimensional upwind coefficients: use :doc:`../reference/generated/scirel.kinetic.neutral-upwind-transport-coefficients`. The first-flight and scattered paths consume different coefficients, so choose ``generation_kind`` first.
 - To propagate one neutral generation: use :doc:`../reference/generated/scirel.kinetic.neutral-generation-propagation`. First flight uses only the positive-velocity boundary; the scattered path requires ``scattered_source_distribution``.
 - To read flux and flow velocity from a terminal distribution: use :doc:`../reference/generated/scirel.kinetic.terminal-flux-velocity-reduction`; for pressure and temperature use :doc:`../reference/generated/scirel.kinetic.terminal-pressure-temperature-reduction`; for random and total heat flux use :doc:`../reference/generated/scirel.kinetic.terminal-heat-flux-reduction`.

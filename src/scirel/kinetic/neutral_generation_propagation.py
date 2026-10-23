@@ -40,7 +40,12 @@ def _propagate_branch(generation, coefficient, source_term, indices, forward):
 
 
 def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, incoming_boundary=None, scattered_source_distribution=None):
-    """Return one source-style neutral generation for `first_flight` or `scattered`."""
+    """Return one normalized neutral distribution generation F.
+
+    ``vx`` is dimensionless u_x=v_x/Vth. Ak/Ck are dimensionless, Bk/Dk
+    are metres, Fk/Gk and ``incoming_boundary`` are F, and the scattered
+    spatial source is F/m. Coefficients and sources share one caller Vth.
+    """
     axial = _finite_real_array(vx, "vx")
     coefficients = [
         _finite_real_array(value, name)

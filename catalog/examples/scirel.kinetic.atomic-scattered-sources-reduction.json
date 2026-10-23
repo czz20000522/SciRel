@@ -5,7 +5,7 @@
   "en": "Atomic scattered-source two-channel reduction",
   "zh": "原子双通道散射源归约"
  },
- "summary": "The pointwise sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
+ "summary": "The pointwise sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation normalized spatial source distributions (Q/Vth, in F/m) on one velocity-space mesh, preserving signed values.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,14 +18,14 @@
  "discovery": {
   "capability": [
    "Atomic scattered-source two-channel reduction",
-   "The pointwise sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values."
+   "The pointwise sum Beta_CX + OmegaM of the atomic charge-exchange and elastic scattered-generation normalized spatial source distributions (Q/Vth, in F/m) on one velocity-space mesh, preserving signed values."
   ],
   "operation": [
    "sum the atomic scattered-generation source channels",
    "two aligned source fields -> their pointwise sum"
   ],
-  "model": "Pointwise aggregation of the two scattered-generation source channels",
-  "geometry": "two velocity dimensions over one spatial axis",
+  "model": "Pointwise aggregation of the two scattered-generation source channels; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "two velocity dimensions over one spatial axis; velocity axes are dimensionless u=v/Vth on one common caller normalization",
   "boundary": "two finite aligned three-dimensional fields; signed values preserved",
   "device_scope": "generic"
  },
@@ -35,19 +35,20 @@
   "definition": "Plain pointwise addition; no clamping of signed values",
   "model": "Pointwise aggregation of the two scattered-generation source channels",
   "geometry": "two velocity dimensions over one spatial axis",
-  "coordinates": "all fields in the source's discrete source-distribution units",
+  "coordinates": "All input and output source fields are Q/Vth in F/m (m^-4 when F is m^-3), on one common dimensionless u=v/Vth velocity grid.",
   "boundary": "two finite aligned three-dimensional fields; signed values preserved",
   "assumptions": [
    "The caller owns the construction of each channel's source; this asset only aggregates.",
    "Signed entries are meaningful (the channel normalizations may subtract); the sum does not clamp.",
-   "Declared finiteness tightening: the output is gated for finiteness, so extreme-but-valid inputs that would overflow fail closed rather than returning non-finite results, per the finite-output contract. The divergence is pinned by a bounded regression test."
+   "Declared finiteness tightening: the output is gated for finiteness, so extreme-but-valid inputs that would overflow fail closed rather than returning non-finite results, per the finite-output contract. The divergence is pinned by a bounded regression test.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
   ]
  },
  "inputs": [
   {
    "name": "charge_exchange_source_distribution",
    "description": "The CX scattered source.",
-   "units": "source-discrete",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -56,7 +57,7 @@
   {
    "name": "elastic_source_distribution",
    "description": "The elastic scattered source.",
-   "units": "source-discrete",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -67,7 +68,7 @@
   {
    "name": "total_source",
    "description": "The aggregated scattered source.",
-   "units": "source-discrete",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
@@ -76,7 +77,8 @@
  ],
  "applicability": {
   "preconditions": [
-   "Two finite aligned scattered-source fields."
+   "Two finite aligned scattered-source fields.",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
   ],
   "supported": [
    "Atomic generation-source aggregation on a shared mesh."
@@ -111,15 +113,18 @@
  },
  "verification": {
   "scope": [
-   "That the sum equals an independent pointwise addition and preserves signed values.",
-   "The alignment and finiteness failure contracts."
+   "Direct tests bind signed pointwise sums, cancellation, shape validation, implicit-real rejection and overflowing-total rejection.",
+   "The cross-domain tests consume real CX and elastic source producers and compare their aggregated physical RHS and velocity-integrated number balance.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
   ],
   "tests": [
-   "tests/kinetic/test_neutral_scattered_sources.py"
+   "tests/kinetic/test_neutral_scattered_sources.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
   ],
-  "evidence_ceiling": "Bounded to the pointwise atomic charge-exchange plus elastic scattered-generation source sum. Evidence: `test_neutral_scattered_sources.py` contains 11 test functions, 4 of which reference `reduce_atomic_scattered_sources`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic pointwise-add comparison in the bound file. It does not establish misaligned meshes or non-finite source fields.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind signed pointwise sums, cancellation, shape validation, implicit-real rejection and overflowing-total rejection. The cross-domain tests consume real CX and elastic source producers and compare their aggregated physical RHS and velocity-integrated number balance. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
   "known_limitations": [
-   "Three direct functions in the four-asset-shared scattered-source file cover frozen samples, signed atomic sums and implicit-real rejection; no test binds a nonfinite aggregate beyond the shape/overflow checks."
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
   ]
  }
 }

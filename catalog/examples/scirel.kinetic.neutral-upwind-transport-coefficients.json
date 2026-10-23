@@ -5,7 +5,7 @@
   "en": "Neutral upwind spatial transport coefficients",
   "zh": "中性上风空间推进系数"
  },
- "summary": "Assemble the source forward/backward trapezoidal transport coefficients Ak/Bk/Fk/Ck/Dk/Gk from spatial nodes, velocity axis, collision frequency and source distribution.",
+ "summary": "Assemble forward/backward trapezoidal spatial coefficients Ak/Bk/Fk/Ck/Dk/Gk from metre coordinates, dimensionless u_x, alpha=nu/Vth in m^-1 and normalized source Q/Vth in F/m.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,14 +18,14 @@
  "discovery": {
   "capability": [
    "Neutral upwind spatial transport coefficients",
-   "Assemble the source forward/backward trapezoidal transport coefficients Ak/Bk/Fk/Ck/Dk/Gk from spatial nodes, velocity axis, collision frequency and source distribution."
+   "Assemble forward/backward trapezoidal spatial coefficients Ak/Bk/Fk/Ck/Dk/Gk from metre coordinates, dimensionless u_x, alpha=nu/Vth in m^-1 and normalized source Q/Vth in F/m."
   ],
   "operation": [
    "assemble the neutral upwind transport coefficients",
    "spatial nodes, velocity axis, collision frequency, source -> Ak/Bk/Fk/Ck/Dk/Gk + branch indices"
   ],
-  "model": "First-order upwind trapezoidal discretization of the forward and backward transport coefficients",
-  "geometry": "one spatial dimension with two velocity branches (positive/negative vx)",
+  "model": "Bidirectional trapezoidal discretization along each velocity characteristic; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "one spatial dimension with two velocity branches (positive/negative vx); velocity axes are dimensionless u=v/Vth on one common caller normalization",
   "boundary": "x strictly increasing with >= 2 nodes and finite positive spatial steps, vx one-dimensional with no zero node, alpha/source finite 3-D aligned shapes, alpha nonnegative, vx must contain both positive and negative branches",
   "device_scope": "generic"
  },
@@ -33,14 +33,15 @@
   "relation": "source forward/backward trapezoidal transport coefficients for bidirectional neutral propagation",
   "direction": "spatial nodes, velocity axis, collision frequency, source -> Ak/Bk/Fk/Ck/Dk/Gk + branch indices",
   "definition": "Forward branch (positive vx): Ak = (2*vx - dx*alpha_k)/(2*vx + dx*alpha_{k+1}), Bk = dx/(2*vx + dx*alpha_{k+1}), Fk = dx*(source_{k+1}+source_k)/(2*vx + dx*alpha_{k+1}). Backward branch (negative vx): Ck/Dk/Gk analogous.",
-  "model": "First-order upwind trapezoidal discretization of the forward and backward transport coefficients",
+  "model": "Bidirectional trapezoidal discretization along each velocity characteristic",
   "geometry": "one spatial dimension with two velocity branches (positive/negative vx)",
-  "coordinates": "x in m; vx and collision frequency in the source's own discrete units; the dimensional convention is source-defined and not independently calibrated",
+  "coordinates": "x in m; vx is dimensionless u_x=v_x/Vth; alpha=nu/Vth is m^-1 and source_distribution is Q/Vth in F/m. Ak/Ck are dimensionless, Bk/Dk are m and Fk/Gk have distribution units F.",
   "boundary": "x strictly increasing with >= 2 nodes and finite positive spatial steps, vx one-dimensional with no zero node, alpha/source finite 3-D aligned shapes, alpha nonnegative, vx must contain both positive and negative branches",
   "assumptions": [
-   "The first-order upwind scheme is the declared discretization; no higher-order or conservative correction is applied.",
+   "The declared recurrence applies the trapezoidal rule along each velocity characteristic; no additional flux correction is applied. Smooth constant-coefficient attenuation has second-order spatial error, but positivity is not guaranteed for arbitrary steps.",
    "SciRel rejects boolean, string and complex coercions and any non-finite coefficient produced from finite inputs.",
-   "The vx axis must contain both positive and negative branches; a zero node is rejected."
+   "The vx axis must contain both positive and negative branches; a zero node is rejected.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
   ]
  },
  "inputs": [
@@ -55,17 +56,17 @@
   },
   {
    "name": "vx",
-   "description": "Velocity axis.",
-   "units": "source-defined discrete",
+   "description": "Dimensionless axial velocity u_x=v_x/Vth; use the same Vth as every inverse-length collision/source coefficient.",
+   "units": "dimensionless (u=v/Vth)",
    "shape": "[nvx]",
    "dtype": "real array-like",
    "required": true,
    "constraints": "Finite one-dimensional; no zero nodes; must contain both positive and negative branches."
   },
   {
-   "name": "collision_frequency_s_inv",
-   "description": "Collision frequency field.",
-   "units": "s^-1",
+   "name": "collision_frequency_m_inv",
+   "description": "Inverse-length total-loss coefficient alpha=nu/Vth.",
+   "units": "m^-1",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -73,12 +74,12 @@
   },
   {
    "name": "source_distribution",
-   "description": "Source distribution field.",
-   "units": "source-discrete",
+   "description": "Normalized spatial distribution source Q/Vth; divide a physical F/s source by the same Vth before calling.",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "Finite, same shape as collision_frequency_s_inv."
+   "constraints": "Finite, same shape as collision_frequency_m_inv."
   }
  ],
  "outputs": [
@@ -89,18 +90,19 @@
    "shape": "mapping",
    "dtype": "mapping of [nvr,nvx,nx] float64 arrays and two index arrays",
    "required": true,
-   "constraints": "Exactly Ak, Bk, Fk, Ck, Dk, Gk (each [nvr,nvx,nx]), positive_vx_indices, negative_vx_indices."
+   "constraints": "Exactly Ak, Bk, Fk, Ck, Dk, Gk (each [nvr,nvx,nx]), positive_vx_indices and negative_vx_indices. Ak/Ck are dimensionless, Bk/Dk are metres and Fk/Gk are in m^-3 (F)."
   }
  ],
  "applicability": {
   "preconditions": [
-   "x strictly increasing >= 2 nodes; vx no zero, both branches present; alpha/source finite aligned 3-D."
+   "x strictly increasing >= 2 nodes; vx no zero, both branches present; alpha/source finite aligned 3-D.",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
   ],
   "supported": [
    "Forward/backward trapezoidal transport coefficients for H and H2 neutral generation propagation."
   ],
   "excluded": [
-   "Higher-order schemes; nonuniform velocity-axis weighting; conservative flux correction."
+   "Alternative spatial stencils; nonuniform velocity-axis weighting; conservative flux correction."
   ]
  },
  "failure_semantics": {
@@ -113,7 +115,7 @@
   "python": {
    "module": "scirel.kinetic.upwind_transport_coefficients",
    "symbol": "assemble_neutral_upwind_transport_coefficients",
-   "signature": "assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_s_inv, source_distribution)",
+   "signature": "assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_m_inv, source_distribution)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "assemble_neutral_upwind_transport_coefficients"
   }
@@ -129,17 +131,18 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Direct tests bind branch separation, the forward trapezoidal coefficient relation, real-value/finiteness validation and unrepresentable-step/output rejection.",
+   "The cross-domain tests feed these coefficients into actual propagation, compare fixed physical attenuation with an analytic characteristic, measure second-order error in one constant-coefficient case and preserve a prescribed source/loss equilibrium.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
   ],
   "tests": [
-   "tests/kinetic/test_transport_step.py"
+   "tests/kinetic/test_transport_step.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Forward branch (positive vx): Ak = (2*vx - dx*alpha_k)/(2*vx + dx*alpha_{k+1}), Bk = dx/(2*vx + dx*alpha_{k+1}), Fk = dx*(source_{k+1}+source_k)/(2*vx + dx*alpha_{k+1}). Backward branch (negative vx): Ck/Dk/Gk analogous. Evidence: test_transport_step.py (18 recorded test functions; shared-file coverage only; bounded source-method parity); the contract example ran. Excluded scope: Higher-order schemes; nonuniform velocity-axis weighting; conservative flux correction; external physical validation.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind branch separation, the forward trapezoidal coefficient relation, real-value/finiteness validation and unrepresentable-step/output rejection. The cross-domain tests feed these coefficients into actual propagation, compare fixed physical attenuation with an analytic characteristic, measure second-order error in one constant-coefficient case and preserve a prescribed source/loss equilibrium. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
   "known_limitations": [
-   "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
-   "Only shared-file coverage is bound (test_transport_step.py); no asset-specific failure/limit probe is recorded.",
-   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
   ]
  }
 }

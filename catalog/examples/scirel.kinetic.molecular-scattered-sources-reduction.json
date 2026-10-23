@@ -5,7 +5,7 @@
   "en": "Molecular scattered-source three-channel reduction",
   "zh": "分子三通道散射源归约"
  },
- "summary": "The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values.",
+ "summary": "The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation normalized spatial source distributions (Q/Vth, in F/m) on one velocity-space mesh, preserving signed values.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,14 +18,14 @@
  "discovery": {
   "capability": [
    "Molecular scattered-source three-channel reduction",
-   "The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation source distributions on one velocity-space mesh, preserving signed values."
+   "The source-order sum Swall + Beta_CX + OmegaM of the molecular wall, charge-exchange and elastic scattered-generation normalized spatial source distributions (Q/Vth, in F/m) on one velocity-space mesh, preserving signed values."
   ],
   "operation": [
    "sum the molecular scattered-generation source channels",
    "three aligned source fields -> their pointwise sum in the declared order"
   ],
-  "model": "the scattered-source aggregation",
-  "geometry": "two velocity dimensions over one spatial axis",
+  "model": "the scattered-source aggregation; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "two velocity dimensions over one spatial axis; velocity axes are dimensionless u=v/Vth on one common caller normalization",
   "boundary": "three finite aligned three-dimensional fields; signed values preserved",
   "device_scope": "generic"
  },
@@ -35,19 +35,20 @@
   "definition": "Plain pointwise addition in the order wall, CX, elastic; no clamping of signed values",
   "model": "the scattered-source aggregation",
   "geometry": "two velocity dimensions over one spatial axis",
-  "coordinates": "all fields in the source's discrete source-distribution units",
+  "coordinates": "All input and output source fields are Q/Vth in F/m (m^-4 when F is m^-3), on one common dimensionless u=v/Vth velocity grid.",
   "boundary": "three finite aligned three-dimensional fields; signed values preserved",
   "assumptions": [
    "The wall-source channel exists only on the molecular side; this is why the molecular reduction is a separate asset from its atomic sibling.",
    "The caller owns the per-channel source construction; this asset only aggregates.",
-   "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour."
+   "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
   ]
  },
  "inputs": [
   {
    "name": "wall_source_distribution",
    "description": "The wall scattered source.",
-   "units": "source-discrete",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -56,7 +57,7 @@
   {
    "name": "charge_exchange_source_distribution",
    "description": "The CX scattered source.",
-   "units": "source-discrete",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -65,7 +66,7 @@
   {
    "name": "elastic_source_distribution",
    "description": "The elastic scattered source.",
-   "units": "source-discrete",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -76,7 +77,7 @@
   {
    "name": "total_source",
    "description": "The aggregated scattered source.",
-   "units": "source-discrete",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
@@ -85,7 +86,8 @@
  ],
  "applicability": {
   "preconditions": [
-   "Three finite aligned scattered-source fields."
+   "Three finite aligned scattered-source fields.",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
   ],
   "supported": [
    "Molecular generation-source aggregation on a shared mesh."
@@ -120,17 +122,18 @@
  },
  "verification": {
   "scope": [
-   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
-   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+   "Direct tests bind wall/CX/elastic addition order, signed values, shape validation and overflowing-total rejection.",
+   "The cross-domain tests consume real CX and elastic source producers with a zero wall channel, then compare the physical RHS and velocity-integrated number balance.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
   ],
   "tests": [
-   "tests/kinetic/test_neutral_scattered_sources.py"
+   "tests/kinetic/test_neutral_scattered_sources.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
   ],
-  "evidence_ceiling": "Bounded to the source-order sum of molecular wall, charge-exchange and elastic scattered-generation sources. Evidence: `test_neutral_scattered_sources.py` contains 11 test functions, 3 of which reference `reduce_molecular_scattered_sources`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against a channel-weighted sum in the bound file. It does not establish misaligned meshes or non-finite source fields.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind wall/CX/elastic addition order, signed values, shape validation and overflowing-total rejection. The cross-domain tests consume real CX and elastic source producers with a zero wall channel, then compare the physical RHS and velocity-integrated number balance. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
   "known_limitations": [
-   "The bound file is shared by four assets and has three direct functions covering frozen finite samples, source-order signed cells and shape/derived-overflow rejection.",
-   "The three inputs must be aligned 3-D arrays; a nonfinite aggregate after signed addition raises ValueError rather than clipping or dropping a channel.",
-   "No test binds a mismatched channel-key or nonfinite input field beyond the retained finite samples; the example is the only documented runtime output."
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
   ]
  }
 }

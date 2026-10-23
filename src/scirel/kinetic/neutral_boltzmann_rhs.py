@@ -28,7 +28,7 @@ def _assemble_collision_balance(arrays):
     return (
         arrays["coefficient_source_distribution"]
         + arrays["charge_exchange_source_sum"]
-        - arrays["collision_frequency_s_inv"] * arrays["total_distribution"]
+        - arrays["collision_frequency_m_inv"] * arrays["total_distribution"]
         + arrays["elastic_source_sum"]
         + arrays["wall_source_sum"]
     )
@@ -38,12 +38,18 @@ def assemble_neutral_boltzmann_rhs(
     thermal_speed_m_s,
     coefficient_source_distribution,
     charge_exchange_source_sum,
-    collision_frequency_s_inv,
+    collision_frequency_m_inv,
     total_distribution,
     elastic_source_sum,
     wall_source_sum,
 ):
-    """Return ``Vth*(S + Beta_CX - alpha_c*f + OmegaM + Swall)``."""
+    """Return the physical RHS ``Vth*(S + Beta_CX - alpha_c*F + OmegaM + Swall)``.
+
+    alpha_c=nu/Vth is in m^-1; every supplied source is Q/Vth in F/m.
+    This explicit boundary multiplies the whole normalized spatial balance
+    by the common thermal speed once, returning F/s. Supplying physical
+    collision frequencies or F/s sources here would apply Vth twice.
+    """
     try:
         raw_speed = np.asarray(thermal_speed_m_s)
         if raw_speed.ndim != 0 or raw_speed.dtype.kind not in "iuf":
@@ -56,7 +62,7 @@ def assemble_neutral_boltzmann_rhs(
     fields = {
         "coefficient_source_distribution": coefficient_source_distribution,
         "charge_exchange_source_sum": charge_exchange_source_sum,
-        "collision_frequency_s_inv": collision_frequency_s_inv,
+        "collision_frequency_m_inv": collision_frequency_m_inv,
         "total_distribution": total_distribution,
         "elastic_source_sum": elastic_source_sum,
         "wall_source_sum": wall_source_sum,

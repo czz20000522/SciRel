@@ -26,7 +26,12 @@ def _real_array(value, name):
 def reduce_molecular_scattered_sources(
     wall_source_distribution, charge_exchange_source_distribution, elastic_source_distribution
 ):
-    """Return source-order ``Swall + Beta_CX + OmegaM`` with signed cells."""
+    """Return normalized spatial ``Swall + Beta_CX + OmegaM`` in F/m.
+
+    All inputs use one common dimensionless u=v/Vth velocity grid and are
+    physical distribution-rate sources divided by that Vth. Signed cells
+    and the declared addition order are retained.
+    """
     fields = (
         ("wall_source_distribution", wall_source_distribution),
         ("charge_exchange_source_distribution", charge_exchange_source_distribution),

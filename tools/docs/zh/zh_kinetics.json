@@ -591,14 +591,15 @@
   },
   {
    "asset_id": "scirel.kinetic.neutral-boltzmann-rhs",
-   "source_sha256": "c2c57fdbc97ec7b857667b8e168005b905e8f41d122ff12432bc2f9156aaf741",
-   "summary": "由各源项、碰撞频率和总分布组装显式中性粒子 Boltzmann 方程右端。",
+   "source_sha256": "c9270397c93c4ce2c4dfa09e78c1ff8a5a90ca2f84044bf2d592b24d1686a74d",
+   "summary": "将 S+Beta_CX-alpha*F+OmegaM+Swall 的归一化空间平衡 F/m 显式乘一次 Vth，返回物理 Boltzmann 右端 F/s。",
    "definition": "带符号求和：rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum)。",
-   "model": "显式 Boltzmann 右端项装配。",
+   "model": "显式 Boltzmann 右端项装配与空间到时间单位换算。",
    "assumptions": [
     "带符号求和定义该关系；alpha_c*f 作为减项的符号约定保持不变。",
     "调用者负责各源及频率，此算子只负责组装。",
-    "拒绝布尔、字符串、复数和有限输入产生的非有限结果。"
+    "拒绝布尔、字符串、复数和有限输入产生的非有限结果。",
+    "共用调用者选定的 Vth：u=v/Vth 无量纲，F 的积分给出 m^-3 数密度，alpha=nu/Vth 为 m^-1，每项输入源为 Q/Vth（F/m）。本入口将完整平衡显式乘一次 thermal_speed_m_s，返回 F/s；不会替调用者把物理频率或物理源先归一化。"
    ],
    "boundary": "热速度有限正；六个场是同一形状的有限三维数组。",
    "inputs": [
@@ -610,37 +611,37 @@
     },
     {
      "name": "coefficient_source_distribution",
-     "description": "系数源项。",
+     "description": "系数源项。 输入归一化空间源 Q/Vth（F/m），不要直接输入物理源 F/s。",
      "constraints": "有限三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "charge_exchange_source_sum",
-     "description": "电荷交换源之和。",
+     "description": "电荷交换源之和。 输入归一化空间源 Q/Vth（F/m），不要直接输入物理源 F/s。",
      "constraints": "有限三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
-     "name": "collision_frequency_s_inv",
-     "description": "碰撞频率场。",
+     "name": "collision_frequency_m_inv",
+     "description": "逆长度碰撞系数 alpha=nu/Vth，末尾一次热速度乘法恢复物理损失 nu*F。",
      "constraints": "有限三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "total_distribution",
-     "description": "总分布。",
+     "description": "归一化速度体积上的总分布密度 F，单位 m^-3。",
      "constraints": "有限三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "elastic_source_sum",
-     "description": "弹性源之和。",
+     "description": "弹性源之和。 输入归一化空间源 Q/Vth（F/m），不要直接输入物理源 F/s。",
      "constraints": "有限三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "wall_source_sum",
-     "description": "壁面源之和。",
+     "description": "壁面源之和。 输入归一化空间源 Q/Vth（F/m），不要直接输入物理源 F/s。",
      "constraints": "有限三维场。",
      "dtype": "转为 float64 的实数类数组"
     }
@@ -648,14 +649,15 @@
    "outputs": [
     {
      "name": "rhs",
-     "description": "Boltzmann 方程右端。",
+     "description": "物理分布时间变化率 RHS；一次 Vth 乘法将 F/m 换成 F/s。",
      "constraints": "有限。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "热速度有限正，六场有限且同形。"
+     "热速度有限正，六场有限且同形。",
+     "所有输入场须共用一个 Vth 归一化；显式乘 thermal_speed_m_s 把完成的空间平衡换成物理分布时间变化率。"
     ],
     "supported": [
      "原子和分子中性输运诊断的右端装配。"
@@ -676,39 +678,40 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "直接测试绑定带符号求和和末尾一次 Vth 乘法、形状/有限性校验、隐式实数及输出溢出拒绝。",
+     "跨域测试在两个 Vth 下，将组装 RHS 与独立构造的物理壁面损失、定常源平衡和 CX/弹性粒子数平衡比较。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于所声明关系：带符号求和：rhs = Vth * (coeff_source + charge_exchange_source_sum - collision_frequency * total_distribution + elastic_source_sum + wall_source_sum)。证据：test_transport_step.py（记录 18 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不提供隐式/非线性 Boltzmann 求解器或外部碰撞模型；外部物理验证。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定带符号求和和末尾一次 Vth 乘法、形状/有限性校验、隐式实数及输出溢出拒绝。跨域测试在两个 Vth 下，将组装 RHS 与独立构造的物理壁面损失、定常源平衡和 CX/弹性粒子数平衡比较。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "仅绑定共享文件覆盖（test_transport_step.py）；未记录资产专属失败/边界探针。",
-     "未记录独立或外部 oracle；证据仅为自洽/回归。",
-     "合同不建立：不提供隐式/非线性 Boltzmann 求解器或外部碰撞模型。。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
   {
    "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
-   "source_sha256": "856fbbc333faa54786e184d99537663b5e35b08c76d789ef5bfddadd6385c0a7",
-   "summary": "按通道名聚合弹性再生源 Σ_q Ω_q[x]M_q(vr,vx,x)。",
+   "source_sha256": "472c0a9e46a1d4568ed143114817087e52158418a2e47e9dd9a811cbc2d5762b",
+   "summary": "聚合归一化弹性再生源 Σ_q Omega_q[x]*M_q(u_r,u_x,x)，其中 Omega_q=nu_q/Vth 为 m^-1，分布 M_q 为 m^-3。",
    "definition": "频率与分布的键集合必须完全一致；每一项把 (nx,) 剖面乘入最后一轴；字典迭代顺序决定浮点求和顺序。",
-   "model": "通道聚合关系。",
+   "model": "逆长度弹性系数与分布密度的通道加权汇合。",
    "assumptions": [
     "通道键是调用者声明的标识符（例如物种对名称），资产本身不解释它们。所有通道必须使用同一速度网格；会被广播的单例速度维度一律拒绝。",
     "物理上分布和频率应非负，这一预期会被强制执行。",
-    "失败关闭的有限性：极端但合法的输入可能溢出，因此本资产按所声明的有限输出合同拒绝非有限结果，而不是返回它；一个有界回归测试固定了该行为。"
+    "失败关闭的有限性：极端但合法的输入可能溢出，因此本资产按所声明的有限输出合同拒绝非有限结果，而不是返回它；一个有界回归测试固定了该行为。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "非空匹配键，有限非负nx频率，有限非负同形(nvr,nvx,nx)分布。",
    "inputs": [
     {
-     "name": "frequencies_s_inv",
-     "description": "各通道弹性频率剖面。",
+     "name": "frequencies_m_inv",
+     "description": "各通道逆长度弹性系数 Omega_q=nu_q/Vth，单位 m^-1。",
      "constraints": "有限非负，键与分布映射完全相同。",
      "dtype": "实数类数组映射"
     },
     {
      "name": "regenerated_distributions",
-     "description": "各通道再生分布。",
+     "description": "共同无量纲速度网格上的再生分布密度，单位 m^-3。",
      "constraints": "有限非负，所有三维形状相同，空间轴匹配频率。",
      "dtype": "实数类数组映射"
     }
@@ -716,14 +719,15 @@
    "outputs": [
     {
      "name": "regeneration_source",
-     "description": "聚合再生源。",
+     "description": "聚合空间再生源，单位 F/m。",
      "constraints": "有限且非负，按字典迭代顺序对通道求和。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "非空同键映射、共同速度/空间网格、有限非负场。"
+     "非空同键映射、共同速度/空间网格、有限非负场。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "调用者定义的物种对弹性再生汇合。"
@@ -744,12 +748,14 @@
    },
    "verification": {
     "scope": [
-     "聚合结果等于按字典迭代顺序独立计算的通道加权和。",
-     "核验键集合、实数值、共同网格、对齐、非负及有限输出的失败合同。"
+     "直接测试绑定通道加权值和映射求和顺序、非空同键集合、共同网格、隐式实数及有限输出拒绝。",
+     "跨域测试消费逆长度弹性通道和，乘以分布密度，再将结果乘 Vth 与指定物理弹性源比较。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于所声明关系：频率与分布的键集合必须完全一致；每一项把 (nx,) 剖面乘入最后一轴；字典迭代顺序决定浮点求和顺序。证据：test_neutral_scattered_sources.py（记录 11 个测试函数；仅共享文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：排除空/异键、负/非有限、空间不匹配及仅可广播但不相等的速度网格；外部物理验证。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定通道加权值和映射求和顺序、非空同键集合、共同网格、隐式实数及有限输出拒绝。跨域测试消费逆长度弹性通道和，乘以分布密度，再将结果乘 Vth 与指定物理弹性源比较。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "仅绑定共享文件覆盖（test_neutral_scattered_sources.py）；未记录资产专属失败/边界探针。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
@@ -2446,32 +2452,33 @@
   },
   {
    "asset_id": "scirel.kinetic.molecular-scattered-sources-reduction",
-   "source_sha256": "10ef48af0d0aacc725cfa120b375578b6b182d5681e5de735d0a7cc7711697ae",
-   "summary": "按壁面源、电荷交换源、弹性源的顺序汇合分子散射源。",
+   "source_sha256": "621a1231ca83993f26276a3ac29753733624e9745c9aa5553fa143651ddae72e",
+   "summary": "按壁面、CX、弹性顺序汇合分子归一化空间源 Swall+Beta_CX+OmegaM（Q/Vth，F/m），保留带符号值。",
    "definition": "按壁面、CX、弹性顺序做普通逐点相加；不对带符号值做钳制。",
-   "model": "散射源聚合。",
+   "model": "归一化散射源的顺序聚合。",
    "assumptions": [
     "壁面源通道只存在于分子一侧，这正是分子归约与原子同类资产分开的原因。",
     "调用者负责各源构造。",
-    "失败关闭的有限性：极端但合法的输入可能溢出，因此本资产按所声明的有限输出合同拒绝非有限结果，而不是返回它；一个有界回归测试固定了该行为。"
+    "失败关闭的有限性：极端但合法的输入可能溢出，因此本资产按所声明的有限输出合同拒绝非有限结果，而不是返回它；一个有界回归测试固定了该行为。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "三个源共享同一速度与空间网格。",
    "inputs": [
     {
      "name": "wall_source_distribution",
-     "description": "壁面散射源。",
+     "description": "壁面散射源。 归一化空间源单位为 F/m。",
      "constraints": "有限三维数组，允许有符号值。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "charge_exchange_source_distribution",
-     "description": "电荷交换散射源。",
+     "description": "电荷交换散射源。 归一化空间源单位为 F/m。",
      "constraints": "有限三维数组，与壁面源同形。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "elastic_source_distribution",
-     "description": "弹性散射源。",
+     "description": "弹性散射源。 归一化空间源单位为 F/m。",
      "constraints": "有限三维数组，与壁面源同形。",
      "dtype": "转为 float64 的实数类数组"
     }
@@ -2479,14 +2486,15 @@
    "outputs": [
     {
      "name": "total_source",
-     "description": "汇合后的分子源。",
+     "description": "汇合后的分子源。 归一化空间源单位为 F/m。",
      "constraints": "按所声明顺序逐点求和；有限；保留符号值。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "三个源有限且完全对齐。"
+     "三个源有限且完全对齐。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "分子逐代散射源汇合。"
@@ -2507,14 +2515,14 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "直接测试绑定壁面/CX/弹性相加顺序、带符号值、形状校验及溢出总量拒绝。",
+     "跨域测试消费真实 CX 和弹性源生产者，壁面通道设为零，再对照物理 RHS 和速度积分粒子数平衡。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于分子壁、电荷交换与弹性散射产生源按源顺序求和。证据：`test_neutral_scattered_sources.py` 含 11 个测试函数，其中 3 个引用 `reduce_molecular_scattered_sources`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中针对通道加权和的自洽/回归。不建立：未对齐网格或非有限源场。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定壁面/CX/弹性相加顺序、带符号值、形状校验及溢出总量拒绝。跨域测试消费真实 CX 和弹性源生产者，壁面通道设为零，再对照物理 RHS 和速度积分粒子数平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "绑定文件由四个资产共享，含三个直接函数，覆盖冻结有限样本、源顺序带符号单元与形状/派生溢出拒绝。",
-     "三个输入必须是同形三维数组；带符号相加后非有限总量会抛出 ValueError，而不是裁剪或丢弃通道。",
-     "除保留的有限样本外，没有测试绑定通道键不匹配或非有限输入场；示例是唯一记录的运行输出。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
@@ -2622,25 +2630,26 @@
   },
   {
    "asset_id": "scirel.kinetic.neutral-generation-propagation",
-   "source_sha256": "2a7e56480e201b32b732c2aa5a3212c3decdfff84f404b5bee523f5d7d22296c",
-   "summary": "使用一阶迎风输运系数，沿空间网格双向推进一代中性粒子（首次飞行或散射代）。",
+   "source_sha256": "cf24a973bf87b04b11d35fc9be6823d0916bdb225da77317a5fc1c153af89257",
+   "summary": "用无量纲轴向节点和归一化输运/源系数，在空间中推进一代中性分布。",
    "definition": "首次飞行使用正向边界、Fk 和反向 Gk；散射代使用正向 Bk 和反向 Dk 的源递推。负速度支右端起值为零。",
-   "model": "双向一阶迎风传播。",
+   "model": "使用调用者输运系数的双向递推。",
    "assumptions": [
-    "传播采用一阶迎风格式。",
+    "所给 Ak/Bk/Fk/Ck/Dk/Gk 定义递推；本函数不选择空间离散格式，也不强制分布非负。",
     "两种代类型互斥：first_flight使用incoming_boundary，scattered使用scattered_source_distribution。",
     "incoming_boundary 只作用于正 vx 分支（前向传播入口）；负 vx 分支从右边界零值开始（generation[:, negative, x.size-1] 保持为零）。",
-    "vx 轴单位是一种离散约定，未独立标定；vx、碰撞频率与空间步长之间的量纲关系由迎风格式本身定义。",
+    "无量纲 vx 轴和六个输运系数必须共用一个 Vth；传播过程不把速度或源乘以 Vth。",
     "vx 轴必须有限（拒绝 NaN/inf）；否则为 NaN 的 vx 节点会被静默留为零。",
     "SciRel拒绝布尔、字符串、复数转换及有限输入产生的非有限代分布。",
     "first_flight以前向源项Fk传播；scattered采用正分支Bk和负分支Dk作源系数。两类通过进入递推的系数区分，并有回归测试确认。",
-    "当 nx=0 时，generation[:, positive, 0] 对空轴索引会抛出原始 IndexError；本资产改为以要求 nx >= 1 的具名 ValueError 失败关闭。"
+    "当 nx=0 时，generation[:, positive, 0] 对空轴索引会抛出原始 IndexError；本资产改为以要求 nx >= 1 的具名 ValueError 失败关闭。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "vx 为一维且同时含正、负分支；六个系数场是有限且同形的三维数组；generation_kind 为 {first_flight, scattered}；first_flight 需要 incoming_boundary，scattered 需要 scattered_source_distribution；nx 至少为 1（零节点空间轴会以具名 ValueError 失败关闭，而不是抛出原始 IndexError）。",
    "inputs": [
     {
      "name": "vx",
-     "description": "轴向速度。",
+     "description": "无量纲轴向速度 u_x=v_x/Vth。",
      "constraints": "有限一维，含正负支。",
      "dtype": "转为 float64 的实数类数组"
     },
@@ -2652,13 +2661,13 @@
     },
     {
      "name": "Bk",
-     "description": "散射代正向源系数。",
+     "description": "散射代正向源系数。 单位 m。",
      "constraints": "有限对齐三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "Fk",
-     "description": "首次飞行正向源项。",
+     "description": "首次飞行正向源项。 分布单位 F（m^-3）。",
      "constraints": "有限对齐三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
@@ -2670,13 +2679,13 @@
     },
     {
      "name": "Dk",
-     "description": "散射代反向源系数。",
+     "description": "散射代反向源系数。 单位 m。",
      "constraints": "有限对齐三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "Gk",
-     "description": "首次飞行反向源项。",
+     "description": "首次飞行反向源项。 分布单位 F（m^-3）。",
      "constraints": "有限对齐三维场。",
      "dtype": "转为 float64 的实数类数组"
     },
@@ -2688,13 +2697,13 @@
     },
     {
      "name": "incoming_boundary",
-     "description": "入射边界。",
+     "description": "入射边界。 分布单位 F（m^-3）。",
      "constraints": "first_flight 时必需且有限对齐；scattered 时必须为 None。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "scattered_source_distribution",
-     "description": "散射源分布。",
+     "description": "散射空间源 Q/Vth，单位 F/m。",
      "constraints": "scattered 时必需且有限对齐；first_flight 时必须为 None。",
      "dtype": "转为 float64 的实数类数组"
     }
@@ -2702,20 +2711,21 @@
    "outputs": [
     {
      "name": "generation",
-     "description": "本代粒子分布。",
+     "description": "本代分布密度 F，单位 m^-3。",
      "constraints": "有限且形状与系数一致。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "六系数对齐、速度含双支，源参数满足互斥和类型要求。"
+     "六系数对齐、速度含双支，源参数满足互斥和类型要求。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "原子/分子的首次飞行与散射代推进。"
     ],
     "excluded": [
-     "不提供高阶输运或多物种耦合。"
+     "不提供其他递推格式或多物种耦合。"
     ]
    },
    "failure_semantics": {
@@ -2730,14 +2740,14 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "直接测试绑定两种代类型、Fk/Gk 与 Bk/Dk 的源用法、仅正支入射边界、有符号边界、零节点拒绝及有限输出失败语义。",
+     "跨域测试将传播的物理衰减与解析特征线比较，并在共同 Vth 归一化下保持指定源/损失平衡。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于所声明关系：首次飞行使用正向边界、Fk 和反向 Gk；散射代使用正向 Bk 和反向 Dk 的源递推。负速度支右端起值为零。证据：test_transport_step.py（记录 18 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：不提供高阶输运或多物种耦合；外部物理验证。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定两种代类型、Fk/Gk 与 Bk/Dk 的源用法、仅正支入射边界、有符号边界、零节点拒绝及有限输出失败语义。跨域测试将传播的物理衰减与解析特征线比较，并在共同 Vth 归一化下保持指定源/损失平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "仅绑定共享文件覆盖（test_transport_step.py）；未记录资产专属失败/边界探针。",
-     "未记录独立或外部 oracle；证据仅为自洽/回归。",
-     "合同不建立：不提供高阶输运或多物种耦合。。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
@@ -2862,35 +2872,37 @@
   },
   {
    "asset_id": "scirel.kinetic.elastic-frequency-channels",
-   "source_sha256": "57f3a95e847e99b38f189802bc87d3d4d9a8606b2948afd4b5af2c18e6183e5a",
-   "summary": "按调用者顺序逐点相加恰好三个已归一化弹性频率通道。",
+   "source_sha256": "835e4bfb1a53fc5c3b07013bb1031d3d308bac6214cf462b91ccc68e4074c7f0",
+   "summary": "按调用者顺序逐点相加恰好三个已归一化的逆长度弹性碰撞系数 Omega=nu/Vth。",
    "definition": "三个通道按调用者顺序从左到右相加（保持浮点求和顺序）；只接受恰好三个通道。",
-   "model": "通道汇合关系。",
+   "model": "逆长度弹性通道汇合关系。",
    "assumptions": [
     "三通道计数定义一个物种家族的弹性配对；其他数量被拒绝。",
     "物理上期望通道非负，但运行时只强制有限性。",
-    "三个 1e308 通道会溢出为 inf；本资产按所声明的有限输出合同对非有限总和失败关闭。回归测试固定了该行为。"
+    "三个 1e308 通道会溢出为 inf；本资产按所声明的有限输出合同对非有限总和失败关闭。回归测试固定了该行为。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "恰好三个非空、有限、同形状剖面。",
    "inputs": [
     {
-     "name": "frequency_profiles",
-     "description": "三个弹性频率通道，单位 s⁻¹。",
+     "name": "frequency_profiles_m_inv",
+     "description": "三个弹性逆长度系数 Omega_q=nu_q/Vth，使用共同 Vth，单位 m^-1。",
      "constraints": "恰好三个非空有限同形状数组，保持调用者顺序。",
      "dtype": "实数类数组序列"
     }
    ],
    "outputs": [
     {
-     "name": "elastic_frequency_s_inv",
-     "description": "输运总弹性频率，单位 s⁻¹。",
+     "name": "elastic_frequency_m_inv",
+     "description": "空间输运所用的逆长度弹性系数和，单位 m^-1。",
      "constraints": "有限；等于按所声明顺序的逐点求和。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "调用者提供三个已归一化、有限同形状通道。"
+     "调用者提供三个已归一化、有限同形状通道。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "共享网格上的物种对弹性 Omega 汇合。"
@@ -2911,13 +2923,14 @@
    },
    "verification": {
     "scope": [
-     "求和等于按所声明顺序独立计算的逐点相加。",
-     "通道数、形状与有限性失败合同。",
-     "溢出的通道求和会失败关闭（否则三个 1e308 通道会得到 inf）。"
+     "直接测试绑定调用者加法顺序、零通道、通道数/形状校验、隐式实数及溢出总量拒绝。",
+     "跨域测试将三项指定物理弹性频率除以共同 Vth，汇合再生源并在 RHS 中恢复物理源。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于三个已归一化弹性碰撞频率通道的逐点求和。证据：`test_neutral_frequency_assembly.py` 含 7 个测试函数，其中 3 个引用 `sum_elastic_frequency_channels`，由 2 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立逐点加法对照。不建立：通道数不是三、形状不匹配或非有限值。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定调用者加法顺序、零通道、通道数/形状校验、隐式实数及溢出总量拒绝。跨域测试将三项指定物理弹性频率除以共同 Vth，汇合再生源并在 RHS 中恢复物理源。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "两资产共享 frequency-array 文件中的三个直接函数覆盖通道顺序/零通道、数量/形状/非有限总量拒绝与隐式实数拒绝。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
@@ -3271,38 +3284,39 @@
   },
   {
    "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
-   "source_sha256": "708cccd074baedee95927f6d7c0010d3b6b3a79f0bb985ac13ad60623ab8a412",
-   "summary": "组装空间推进所消费的中性总损失频率 alpha_c = 可选 Alpha_CX + 基础损失 + Omega_EL + 壁面损失（2 vr / D 在网格上广播）。",
+   "source_sha256": "eb8332988549debf2ba01bdfcaa605a5d0b78855a7e123fdbde0e1273c55fc8a",
+   "summary": "把可选 CX、基础及弹性损失和壁面项 2*u_r/D 组装为逆长度总损失系数 alpha=nu/Vth。",
    "definition": "按基础 + 弹性 + 壁面，再在启用时加 CX 的顺序装配；零管径在这些单元给出零壁面损失（这是所声明的语义，不是无限长管极限）；启用电荷交换却缺少对应场时失败关闭。",
-   "model": "总损失频率装配。",
+   "model": "总损失系数装配。",
    "assumptions": [
-    "壁面损失 2 vr / D 是自由飞行管模型；它是几何逃逸频率，不是表面相互作用模型。",
+    "归一化壁面系数 2*u_r/D 是物理自由飞行逃逸频率 2*v_r/D 除以 Vth；不模拟表面相互作用。",
     "零管径在所声明的算术下意味着没有壁面损失；公开合同是否应改为拒绝零直径，仍是一个待专家判断的问题。",
-    "失败关闭的有限性：极端但合法的输入可能溢出，因此本资产按所声明的有限输出合同拒绝非有限结果，而不是返回它；一个有界回归测试固定了该行为。"
+    "失败关闭的有限性：极端但合法的输入可能溢出，因此本资产按所声明的有限输出合同拒绝非有限结果，而不是返回它；一个有界回归测试固定了该行为。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "轴和剖面有限，vr>0；各损失项与直径非负；启用 CX 时必须给出对齐的非负三维频率。",
    "inputs": [
     {
      "name": "vr",
-     "description": "径向速度轴。",
+     "description": "无量纲径向速度 u_r=v_r/Vth。",
      "constraints": "有限且严格为正。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "vx",
-     "description": "轴向速度轴。",
+     "description": "无量纲轴向速度 u_x=v_x/Vth。",
      "constraints": "有限一维数组。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
-     "name": "base_loss_frequency_s_inv",
-     "description": "电离或解离等基本损失频率。",
+     "name": "base_loss_frequency_m_inv",
+     "description": "电离或解离等基本损失频率。 该系数是物理频率除以共同 Vth，单位 m^-1。",
      "constraints": "有限非负空间剖面。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
-     "name": "elastic_frequency_s_inv",
-     "description": "弹性碰撞频率。",
+     "name": "elastic_frequency_m_inv",
+     "description": "弹性碰撞频率。 该系数是物理频率除以共同 Vth，单位 m^-1。",
      "constraints": "有限非负，与基本损失剖面对齐。",
      "dtype": "转为 float64 的实数类数组"
     },
@@ -3313,8 +3327,8 @@
      "dtype": "转为 float64 的实数类数组"
     },
     {
-     "name": "charge_exchange_frequency_s_inv",
-     "description": "可选电荷交换频率。",
+     "name": "charge_exchange_frequency_m_inv",
+     "description": "可选电荷交换频率。 该系数是物理频率除以共同 Vth，单位 m^-1。",
      "constraints": "启用时必须提供有限非负且对齐的三维场；停用时忽略已给值。",
      "dtype": "转为 float64 的实数类数组"
     },
@@ -3327,15 +3341,16 @@
    ],
    "outputs": [
     {
-     "name": "total_frequency_s_inv",
-     "description": "总碰撞/损失频率。",
+     "name": "total_frequency_m_inv",
+     "description": "逆长度总损失系数 alpha=nu/Vth；仅在需要物理频率时另乘共同 Vth。",
      "constraints": "有限且非负。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "有限对齐剖面和速度轴，vr>0。"
+     "有限对齐剖面和速度轴，vr>0。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "原子/分子空间输运中的管壁及电荷交换损失装配。"
@@ -3356,14 +3371,14 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "直接测试绑定壁面/CX 分支、零管径停用、启用 CX 必须给场、实数与开关校验及有限输出拒绝。",
+     "跨域测试把 D=2 m、u_r=1 的壁面系数接到真实输运步和 5000/s 物理损失，并在两个 Vth 下对照指定物理衰减与定常源平衡。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于所声明关系：按基础 + 弹性 + 壁面，再在启用时加 CX 的顺序装配；零管径在这些单元给出零壁面损失（这是所声明的语义，不是无限长管极限）；启用电荷交换却缺少对应场时失败关闭。证据：test_neutral_frequency_assembly.py（记录 7 个测试函数；仅共享文件覆盖；仅自洽/回归）；合同 example 已运行。不建立的范围：排除负损失、负直径，以及启用却缺失的 CX 场；外部物理验证。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定壁面/CX 分支、零管径停用、启用 CX 必须给场、实数与开关校验及有限输出拒绝。跨域测试把 D=2 m、u_r=1 的壁面系数接到真实输运步和 5000/s 物理损失，并在两个 Vth 下对照指定物理衰减与定常源平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "仅绑定共享文件覆盖（test_neutral_frequency_assembly.py）；未记录资产专属失败/边界探针。",
-     "未记录独立或外部 oracle；证据仅为自洽/回归。",
-     "未绑定奇异或极端极限探针；主张限于所列有限/普通输入。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
@@ -6332,26 +6347,27 @@
   },
   {
    "asset_id": "scirel.kinetic.atomic-scattered-sources-reduction",
-   "source_sha256": "923afbce126bc40c454b36fe276d19fe01e153608d7e7ff73cc5f4be1435e6ec",
-   "summary": "在同一速度空间网格上，把原子电荷交换和弹性散射代源分布逐点相加为 Beta_CX + OmegaM，保留带符号值。",
+   "source_sha256": "1c2a9d078f7877eb1e846853ffd9b40d04f5a3274e0352fd9c2d4b03c9c18393",
+   "summary": "在共同速度网格上逐点相加原子 CX 与弹性归一化空间源 Beta_CX+OmegaM（Q/Vth，F/m），保留带符号值。",
    "definition": "普通逐点相加；不对带符号值做钳制。",
-   "model": "两个散射代源通道的逐点聚合。",
+   "model": "两个归一化散射源通道的逐点聚合。",
    "assumptions": [
     "每个通道的源构造由调用者负责；本资产只做聚合。",
     "带符号项是有意义的（各通道归一化可能做减法）；求和不做钳制。",
-    "所声明的有限性收紧：输出受有限性门禁保护，极端但合法的输入若会溢出，将按有限输出合同失败关闭，而不是返回非有限结果。该分歧由一个有界回归测试固定。"
+    "所声明的有限性收紧：输出受有限性门禁保护，极端但合法的输入若会溢出，将按有限输出合同失败关闭，而不是返回非有限结果。该分歧由一个有界回归测试固定。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "两个源必须共享同一速度与空间网格。",
    "inputs": [
     {
      "name": "charge_exchange_source_distribution",
-     "description": "电荷交换散射源。",
+     "description": "电荷交换散射源。 归一化空间源单位为 F/m。",
      "constraints": "有限三维数组，允许有符号值。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "elastic_source_distribution",
-     "description": "弹性散射源。",
+     "description": "弹性散射源。 归一化空间源单位为 F/m。",
      "constraints": "有限三维数组，与电荷交换源完全同形。",
      "dtype": "转为 float64 的实数类数组"
     }
@@ -6359,14 +6375,15 @@
    "outputs": [
     {
      "name": "total_source",
-     "description": "汇合后的源项。",
+     "description": "汇合后的源项。 归一化空间源单位为 F/m。",
      "constraints": "有限，保留带符号的逐点和。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "两个源有限且完全对齐。"
+     "两个源有限且完全对齐。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "同一网格上的原子逐代散射源汇合。"
@@ -6387,12 +6404,14 @@
    },
    "verification": {
     "scope": [
-     "归约和等于独立逐点相加，并保留正负符号。",
-     "核验对齐与有限值要求的失败合同。"
+     "直接测试绑定带符号逐点和、相消、形状校验、隐式实数及溢出总量拒绝。",
+     "跨域测试消费真实 CX 与弹性源生产者，对照汇合后的物理 RHS 和速度积分粒子数平衡。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于原子电荷交换加弹性散射产生源的逐点求和。证据：`test_neutral_scattered_sources.py` 含 11 个测试函数，其中 4 个引用 `reduce_atomic_scattered_sources`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立解析逐点加法对照。不建立：未对齐网格或非有限源场。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定带符号逐点和、相消、形状校验、隐式实数及溢出总量拒绝。跨域测试消费真实 CX 与弹性源生产者，对照汇合后的物理 RHS 和速度积分粒子数平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "四资产共享 scattered-source 文件中的三个直接函数覆盖冻结样本、带符号原子求和与隐式实数拒绝；没有测试在形状/溢出检查之外绑定非有限总量。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
@@ -6945,14 +6964,15 @@
   },
   {
    "asset_id": "scirel.kinetic.neutral-upwind-transport-coefficients",
-   "source_sha256": "e829fc16a9a979612b0dc23659e4ee78a41af68687cd5a7f1377cd469d755732",
-   "summary": "为中性粒子的双向迎风输运生成 Ak、Bk、Fk、Ck、Dk、Gk。",
+   "source_sha256": "5fa5620e79e18ff09bab10619f55aad2feac5f08f2df55312b994e5179cfcd51",
+   "summary": "由米制坐标、无量纲 u_x、逆长度 alpha=nu/Vth 和空间源 Q/Vth（F/m）组装双向梯形输运系数。",
    "definition": "正 vx 支：Ak=(2vx−dx α_k)/(2vx+dx α_{k+1})，Bk=dx/(2vx+dx α_{k+1})，Fk=dx(source_{k+1}+source_k)/(2vx+dx α_{k+1})；负 vx 支按对应的反向关系生成 Ck、Dk、Gk。",
-   "model": "前向和后向输运系数的一阶迎风梯形离散。",
+   "model": "沿各速度特征线的双向梯形离散。",
    "assumptions": [
-    "一阶迎风格式是所声明的离散；不施加更高阶或守恒修正。",
+    "递推沿每条速度特征线使用梯形规则，不另加通量修正；光滑常系数衰减有二阶空间误差，但任意步长不保证非负。",
     "SciRel 拒绝布尔、字符串和复数强制转换，也拒绝有限输入产生的任何非有限系数。",
-    "vx轴必须同时含正、负分支，拒绝零节点。"
+    "vx轴必须同时含正、负分支，拒绝零节点。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "x 至少两点、严格递增且步长有限正；α 和源为有限同形三维场，α 非负。",
    "inputs": [
@@ -6964,19 +6984,19 @@
     },
     {
      "name": "vx",
-     "description": "轴向速度轴。",
+     "description": "无量纲轴向速度 u_x=v_x/Vth，与所有逆长度碰撞/源系数共用 Vth。",
      "constraints": "有限一维，含正负速度且不含零。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
-     "name": "collision_frequency_s_inv",
-     "description": "碰撞频率场。",
+     "name": "collision_frequency_m_inv",
+     "description": "逆长度总损失系数 alpha=nu/Vth，单位 m^-1。",
      "constraints": "有限非负，形状为 (nvr,nvx,nx)。",
      "dtype": "转为 float64 的实数类数组"
     },
     {
      "name": "source_distribution",
-     "description": "源分布。",
+     "description": "归一化空间源 Q/Vth，单位 F/m；物理 F/s 源需先除以同一个 Vth。",
      "constraints": "有限，与碰撞频率场同形。",
      "dtype": "转为 float64 的实数类数组"
     }
@@ -6985,19 +7005,20 @@
     {
      "name": "coefficients",
      "description": "六个输运系数及正负速度索引。",
-     "constraints": "包含六个有限三维场和 positive_vx_indices、negative_vx_indices。",
+     "constraints": "恰含 Ak/Bk/Fk/Ck/Dk/Gk 六个有限三维场及正负速度索引；Ak/Ck 无量纲，Bk/Dk 为 m，Fk/Gk 为 F（m^-3）。",
      "dtype": "映射"
     }
    ],
    "applicability": {
     "preconditions": [
-     "空间步长和速度支符合合同，输入场完全对齐。"
+     "空间步长和速度支符合合同，输入场完全对齐。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "原子和分子的逐代输运系数生成。"
     ],
     "excluded": [
-     "不提供高阶离散、非均匀速度权重修正或保守通量修正。"
+     "不提供其他空间模板、非均匀速度轴权重或保守通量修正。"
     ]
    },
    "failure_semantics": {
@@ -7012,14 +7033,14 @@
    },
    "verification": {
     "scope": [
-     "当前 SciRel 实现及本合同列出的仓库测试覆盖所声明的公共端口与数值关系。",
-     "示例只演练一个有界的代表性算例，不把适用范围扩展到声明前提之外。"
+     "直接测试绑定速度分支分离、正向梯形系数关系、实数/有限性校验及不可表示步长/输出拒绝。",
+     "跨域测试将系数接到真实传播，与解析特征线对照指定物理衰减，在一个常系数算例中测得二阶误差，并保持指定源/损失平衡。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于所声明关系：正 vx 支：Ak=(2vx−dx α_k)/(2vx+dx α_{k+1})，Bk=dx/(2vx+dx α_{k+1})，Fk=dx(source_{k+1}+source_k)/(2vx+dx α_{k+1})；负 vx 支按对应的反向关系生成 Ck、Dk、Gk。证据：test_transport_step.py（记录 18 个测试函数；仅共享文件覆盖；有界 source-method 对照）；合同 example 已运行。不建立的范围：不提供高阶离散、非均匀速度权重修正或保守通量修正；外部物理验证。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定速度分支分离、正向梯形系数关系、实数/有限性校验及不可表示步长/输出拒绝。跨域测试将系数接到真实传播，与解析特征线对照指定物理衰减，在一个常系数算例中测得二阶误差，并保持指定源/损失平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "本合同不携带任何经独立评审的、与外部实现一致性的资格；未经新的独立评审不能主张此类资格。",
-     "仅绑定共享文件覆盖（test_transport_step.py）；未记录资产专属失败/边界探针。",
-     "未记录独立或外部 oracle；证据仅为自洽/回归。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },
@@ -7755,44 +7776,45 @@
   },
   {
    "asset_id": "scirel.kinetic.simple-charge-exchange-source",
-   "source_sha256": "3c14b4cabb9b4ac68732a581732cc63533959591d0ac9e20481e4d910d99f403",
-   "summary": "逐空间单元把上一散射代与 CX 频率求积，再用该速率缩放目标分布，形成局部电荷交换散射源。",
+   "source_sha256": "0afe993a2392cc30523cc4b74a866d7600c101238df49aed5504f297d0f6ffc7",
+   "summary": "将调用者提供的无量纲目标形状 h，乘以 alpha_CX 与上一代分布的速度积分，得到单元局部 CX 空间源 Q_CX/Vth。",
    "definition": "单元局部的构造：速率收缩把上一代分布与 CX 场归约，目标形状按单元缩放；不发生跨单元输运。",
-   "model": "Simple_CX 的逐代单元局部散射步骤。",
+   "model": "归一化速度上的 Simple_CX 逐代单元局部散射。",
    "assumptions": [
     "单元局部性是所声明的逐代散射近似；单元之间的输运是更大计算中的另一个步骤。",
-    "求积归一及CX场由调用者负责。",
-    "所声明的有限性收紧：输出受有限性门禁保护，极端但合法的输入若会溢出，将按有限输出合同失败关闭，而不是返回非有限结果。该分歧由一个有界回归测试固定。"
+    "目标形状 h、归一化速度求积和 alpha_CX 由调用者提供。仅当 integral(h*d^3u)=1 时，输出速度积分等于上一代 CX 损失积分。任意有限 h 原样使用，不自动归一化，也不隐式除以密度。",
+    "所声明的有限性收紧：输出受有限性门禁保护，极端但合法的输入若会溢出，将按有限输出合同失败关闭，而不是返回非有限结果。该分歧由一个有界回归测试固定。",
+    "公开输运约定使用调用者选定的同一个 Vth：速度 u=v/Vth 无量纲，碰撞系数 alpha=nu/Vth 为 m^-1；分布 F 对归一化速度体积积分后给出 m^-3 数密度，空间源 Q/Vth 为 F/m。物理频率 s^-1 必须先除以同一个 Vth；纯空间算子不自动换算。"
    ],
    "boundary": "有限对齐三维场，有限非负二维权重和一维dvx；CX频率非负。",
    "inputs": [
     {
      "name": "target_distribution",
-     "description": "待缩放的目标分布。",
-     "constraints": "有限三维。",
+     "description": "调用者提供的无量纲目标形状 h；函数不自动归一化，也不除以密度。",
+     "constraints": "有限、对齐的三维形状，可含带符号值；加权积分为 1 是粒子数守恒再生的调用者条件，不是运行门禁。",
      "dtype": "实数类数组"
     },
     {
-     "name": "charge_exchange_frequency_s_inv",
-     "description": "CX碰撞频率。",
+     "name": "charge_exchange_frequency_m_inv",
+     "description": "逆长度电荷交换系数 alpha_CX=nu_CX/Vth，与归一化求积共用 Vth，单位 m^-1。",
      "constraints": "有限非负，与目标对齐。",
      "dtype": "实数类数组"
     },
     {
      "name": "previous_generation_distribution",
-     "description": "上一代分布。",
+     "description": "上一代分布密度 F，单位 m^-3。",
      "constraints": "有限三维，与目标对齐。",
      "dtype": "实数类数组"
     },
     {
      "name": "cylindrical_weight",
-     "description": "圆柱求积权重。",
+     "description": "无量纲归一化速度空间上的圆柱求积权重。",
      "constraints": "有限非负，与前两轴对齐。",
      "dtype": "实数类数组"
     },
     {
      "name": "dvx",
-     "description": "轴向单元宽度。",
+     "description": "无量纲轴向速度单元宽度。",
      "constraints": "有限非负，与轴向轴对齐。",
      "dtype": "实数类数组"
     }
@@ -7800,14 +7822,15 @@
    "outputs": [
     {
      "name": "scattered_source",
-     "description": "逐单元散射源。",
+     "description": "空间源 h*integral(alpha_CX*F_previous*d^3u)，单位 F/m；物理源为该结果乘 Vth。",
      "constraints": "有限，为目标乘单元速率。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "有限对齐场，频率/权重/宽度非负。"
+     "有限对齐场，频率/权重/宽度非负。",
+     "无量纲速度节点、逆长度碰撞系数和空间源必须共用一个 Vth；纯空间算子不隐式换算单位。"
     ],
     "supported": [
      "原子和分子共享求积上的逐代CX散射。"
@@ -7828,14 +7851,14 @@
    },
    "verification": {
     "scope": [
-     "源项等于按所声明运算顺序独立计算的单元局部速率收缩。",
-     "核验对齐与非负要求的失败合同。",
-     "对固定校验和锚定的参考值做只读的合法输入比较；仅为有界证据。"
+     "直接测试绑定带符号因子的单元局部求积收缩、对齐/非负校验、隐式实数及有限输出拒绝。",
+     "跨域测试消费实际 Alpha_CX 生产者，将源乘 Vth 与物理速率收缩比较，核验调用者目标形状的线性缩放；仅在目标形状加权积分为 1 时检查粒子数平衡。",
+     "合同示例只覆盖一个有界代表性调用；数值检查不建立外部物理验证或全参数域适用性。"
     ],
-    "evidence_ceiling": "限于所声明关系：单元局部的构造：速率收缩把上一代分布与 CX 场归约，目标形状按单元缩放；不发生跨单元输运。证据：test_neutral_scattered_sources.py（记录 11 个测试函数；仅共享文件覆盖；有界 source-method 对照）；合同 example 已运行。不建立的范围：不接受网格失配、负频率/求积量或非有限场；外部物理验证。",
+    "evidence_ceiling": "限于所声明的归一化输运关系。直接测试绑定带符号因子的单元局部求积收缩、对齐/非负校验、隐式实数及有限输出拒绝。跨域测试消费实际 Alpha_CX 生产者，将源乘 Vth 与物理速率收缩比较，核验调用者目标形状的线性缩放；仅在目标形状加权积分为 1 时检查粒子数平衡。列出的直接及跨域测试是当前可复现证据，示例演练一个有界调用。独立解析和 SI 单位对照仅限这些夹具；未绑定的历史来源/一致性回执仍为 UNKNOWN，本次不重新建立其资格。",
     "known_limitations": [
-     "本合同不携带任何经独立评审的、与外部实现一致性的资格；未经新的独立评审不能主张此类资格。",
-     "仅绑定共享文件覆盖（test_neutral_scattered_sources.py）；未记录资产专属失败/边界探针。"
+     "这些测试不建立外部碰撞数据标定、来源项目一致性资格或装置特定物理验证。",
+     "归一化测试采用有界对齐网格和指定速率，不认证完整分布的网格收敛、任意步长非负性或完整非线性输运模型。"
     ]
    }
   },

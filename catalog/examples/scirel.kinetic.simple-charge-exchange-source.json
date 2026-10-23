@@ -5,7 +5,7 @@
   "en": "Simple charge-exchange scattered-generation source",
   "zh": "简化电荷交换散射源"
  },
- "summary": "The cell-local charge-exchange scattered-generation source: the target distribution scaled per spatial cell by the quadrature contraction of the CX frequency field with the previous generation's distribution.",
+ "summary": "Build the normalized cell-local charge-exchange source Q_CX/Vth by multiplying a caller-supplied dimensionless target shape by the velocity integral of alpha_CX times the previous generation distribution.",
  "taxonomy": [
   "kinetic",
   "neutral-transport",
@@ -18,14 +18,14 @@
  "discovery": {
   "capability": [
    "Simple charge-exchange scattered-generation source",
-   "The cell-local charge-exchange scattered-generation source: the target distribution scaled per spatial cell by the quadrature contraction of the CX frequency field with the previous generation's distribution."
+   "Build the normalized cell-local charge-exchange source Q_CX/Vth by multiplying a caller-supplied dimensionless target shape by the velocity integral of alpha_CX times the previous generation distribution."
   ],
   "operation": [
    "evaluate the cell-local charge-exchange source",
    "target, CX frequency, previous generation and quadrature -> the scattered source"
   ],
-  "model": "Simple_CX per-generation cell-local scattering step",
-  "geometry": "two velocity dimensions over one spatial axis; cell-local in space",
+  "model": "Simple_CX per-generation cell-local scattering step; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "two velocity dimensions over one spatial axis; cell-local in space; velocity axes are dimensionless u=v/Vth on one common caller normalization",
   "boundary": "finite aligned three-dimensional target/frequency/previous fields; finite nonnegative (nvr,nvx) weight and (nvx) dvx; nonnegative frequency, weight, and dvx",
   "device_scope": "generic"
  },
@@ -35,28 +35,29 @@
   "definition": "The cell-local construction: the rate contraction reduces the previous generation against the CX field, and the target shape is scaled per cell; no cross-cell transport enters",
   "model": "Simple_CX per-generation cell-local scattering step",
   "geometry": "two velocity dimensions over one spatial axis; cell-local in space",
-  "coordinates": "all fields in the source's discrete units; frequency in s^-1",
+  "coordinates": "Velocity quadrature is over dimensionless u=v/Vth; previous F has units m^-3, alpha_CX=nu_CX/Vth is m^-1, target h is dimensionless, and the returned spatial source is F/m.",
   "boundary": "finite aligned three-dimensional target/frequency/previous fields; finite nonnegative (nvr,nvx) weight and (nvx) dvx; nonnegative frequency, weight, and dvx",
   "assumptions": [
    "Cell-locality is the declared per-generation scattering approximation; transport between cells is a separate step of the larger calculation.",
-   "The caller owns the quadrature normalization and the CX frequency field.",
-   "Declared finiteness tightening: the output is gated for finiteness, so extreme-but-valid inputs that would overflow fail closed rather than returning non-finite results, per the finite-output contract. The divergence is pinned by a bounded regression test."
+   "The caller supplies the target shape h, the normalized quadrature and alpha_CX. If integral(h*d^3u)=1, the output velocity integral equals the previous-generation CX loss integral. Arbitrary finite h is used as given; no automatic normalization or hidden density factor is applied.",
+   "Declared finiteness tightening: the output is gated for finiteness, so extreme-but-valid inputs that would overflow fail closed rather than returning non-finite results, per the finite-output contract. The divergence is pinned by a bounded regression test.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
   ]
  },
  "inputs": [
   {
    "name": "target_distribution",
-   "description": "The target distribution to scale.",
-   "units": "source-discrete",
+   "description": "Caller-provided dimensionless target shape h on the normalized velocity grid; this function neither normalizes h nor divides it by a density.",
+   "units": "dimensionless",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
-   "constraints": "A finite three-dimensional field."
+   "constraints": "Finite aligned three-dimensional shape; signed cells are accepted. Unit weighted integral is a separate caller condition for number-conserving CX regeneration, not a runtime gate."
   },
   {
-   "name": "charge_exchange_frequency_s_inv",
-   "description": "The CX frequency field.",
-   "units": "s^-1",
+   "name": "charge_exchange_frequency_m_inv",
+   "description": "Inverse-length charge-exchange coefficient alpha_CX=nu_CX/Vth, using the same Vth as the normalized quadrature.",
+   "units": "m^-1",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -65,7 +66,7 @@
   {
    "name": "previous_generation_distribution",
    "description": "The previous generation's distribution.",
-   "units": "source-discrete",
+   "units": "m^-3",
    "shape": "[nvr,nvx,nx]",
    "dtype": "real array-like",
    "required": true,
@@ -74,7 +75,7 @@
   {
    "name": "cylindrical_weight",
    "description": "The cylindrical quadrature weight.",
-   "units": "source-discrete measure",
+   "units": "dimensionless normalized velocity-space measure",
    "shape": "[nvr,nvx]",
    "dtype": "real array-like",
    "required": true,
@@ -83,7 +84,7 @@
   {
    "name": "dvx",
    "description": "The axial cell sizes.",
-   "units": "source-discrete measure",
+   "units": "dimensionless normalized velocity-space measure",
    "shape": "[nvx]",
    "dtype": "real array-like",
    "required": true,
@@ -93,8 +94,8 @@
  "outputs": [
   {
    "name": "scattered_source",
-   "description": "The cell-local scattered source.",
-   "units": "source-discrete s^-1",
+   "description": "Normalized spatial source h*integral(alpha_CX*F_previous*d^3u); the physical distribution-rate source is Vth times this field.",
+   "units": "m^-4 (F/m)",
    "shape": "[nvr,nvx,nx]",
    "dtype": "float64 array",
    "required": true,
@@ -103,7 +104,8 @@
  ],
  "applicability": {
   "preconditions": [
-   "Finite aligned fields with nonnegative frequency, weight, and cell sizes."
+   "Finite aligned fields with nonnegative frequency, weight, and cell sizes.",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
   ],
   "supported": [
    "Per-generation CX scattering on a shared quadrature for atomic and molecular fields."
@@ -122,7 +124,7 @@
   "python": {
    "module": "scirel.kinetic.simple_charge_exchange_source",
    "symbol": "assemble_simple_charge_exchange_source",
-   "signature": "assemble_simple_charge_exchange_source(target_distribution, charge_exchange_frequency_s_inv, previous_generation_distribution, cylindrical_weight, dvx)",
+   "signature": "assemble_simple_charge_exchange_source(target_distribution, charge_exchange_frequency_m_inv, previous_generation_distribution, cylindrical_weight, dvx)",
    "canonical_module": "scirel.kinetic",
    "canonical_symbol": "assemble_simple_charge_exchange_source"
   }
@@ -138,17 +140,18 @@
  },
  "verification": {
   "scope": [
-   "That the source equals an independent cell-local rate contraction in the declared operation order.",
-   "The alignment and nonnegativity failure contracts.",
-   "A read-only valid-input comparison against digest-pinned reference values; bounded evidence only."
+   "Direct tests bind the cell-local quadrature contraction with signed factors, alignment/nonnegativity validation, implicit-real rejection and finite-output rejection.",
+   "The cross-domain tests consume the actual Alpha_CX producer, compare Vth times the source with a physical-rate contraction, verify linear scaling of the supplied target shape, and check number balance only when that shape has unit weighted integral.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
   ],
   "tests": [
-   "tests/kinetic/test_neutral_scattered_sources.py"
+   "tests/kinetic/test_neutral_scattered_sources.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: The cell-local construction: the rate contraction reduces the previous generation against the CX field, and the target shape is scaled per cell; no cross-cell transport enters. Evidence: test_neutral_scattered_sources.py (11 recorded test functions; shared-file coverage only; bounded source-method parity); the contract example ran. Excluded scope: Misaligned meshes; negative frequency, weight, or cell sizes; non-finite fields; external physical validation.",
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind the cell-local quadrature contraction with signed factors, alignment/nonnegativity validation, implicit-real rejection and finite-output rejection. The cross-domain tests consume the actual Alpha_CX producer, compare Vth times the source with a physical-rate contraction, verify linear scaling of the supplied target shape, and check number balance only when that shape has unit weighted integral. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
   "known_limitations": [
-   "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
-   "Only shared-file coverage is bound (test_neutral_scattered_sources.py); no asset-specific failure/limit probe is recorded."
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
   ]
  }
 }
