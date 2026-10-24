@@ -3,9 +3,9 @@
  "policy": "Every catalog asset has exactly one verdict; exposed assets must be pass or pass-with-limits, held assets human-review, and blocked/not-audited assets cannot be exposed. Historical report claims and candidate identities are separate from current maintenance overlays. Current material and retained-report digests identify bytes only; historical candidate identity and Markdown claim binding remain UNKNOWN. Locatable fixes/tests do not establish execution.",
  "historical_candidate_identity": "UNKNOWN",
  "current_candidate": {
-  "base_revision": "5ef42de8287e645fafe0a99fa2996dd1e514c224",
+  "base_revision": "fe4019343808a1b256cd553979e486daff5dc733",
   "identity_scope": "current-materials-only",
-  "material_sha256": "7f411b8b019af20b9a7c7160569aa45b4882888d0736661dfbbcbebd1e285d20"
+  "material_sha256": "111afb98f4e839652e3d1cf48d830e40ffa40c04e7b7675cc6ebcf355a3fd36a"
  },
  "report_bindings": {
   "catalog/review/evidence/audit-d1.csv": {
