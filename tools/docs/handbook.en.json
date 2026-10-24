@@ -810,9 +810,11 @@
     },
     {
      "id": "dense-linear-algebra",
-     "title": "Thresholded pseudoinverse of dense real matrices",
-     "introduction": "Perform a truncated singular-value decomposition of a finite real matrix and return the Moore–Penrose pseudoinverse; the truncation threshold is an explicit input, not a statistical noise model, and matrix conditioning and applicability remain the caller's judgment.",
+     "title": "Orthonormal modal bases and dense linear algebra",
+     "introduction": "The orthonormal Legendre modal basis on a reference hypercube provides member evaluation, reference-coordinate derivatives, reflection and projection on its own Gauss rule; truncated singular-value decomposition separately returns a Moore–Penrose pseudoinverse for finite real matrices. Physical meshes, Jacobians, limiters and statistical noise models are not supplied implicitly by these numerical entry points.",
      "assets": [
+      "scirel.numerics.orthonormal-modal-basis",
+      "scirel.numerics.modal-projection",
       "scirel.numerics.truncated-svd-inverse"
      ]
     }

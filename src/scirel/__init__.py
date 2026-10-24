@@ -48,6 +48,7 @@ __all__ = [
     "io",
     "kinetic",
     "neoclassical",
+    "numerics",
     "physics",
     "plasma",
     "source",

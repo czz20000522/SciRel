@@ -5,7 +5,7 @@
  "current_candidate": {
   "base_revision": "b02dbdad82dfa6485a6d587aa0f5dd7852971c7c",
   "identity_scope": "current-materials-only",
-  "material_sha256": "cdd9b68fe101bef3bd44a54fd14191f7bb1c309d32b09983572b0d773084948c"
+  "material_sha256": "7edcf8252094a0ff64356d95011073ffbc3b441e2c020f0b8b5cd0f780eb484d"
  },
  "report_bindings": {
   "catalog/review/evidence/audit-d1.csv": {
@@ -79,6 +79,11 @@
   },
   "tests/kinetic/test_dispersion_multifluid_oracle.py": {
    "retained_sha256": "0e966676f81db2133392fb8e152b3f02cd971a1c731e8bd8da4c90e247a8b040",
+   "format": "test-source",
+   "claim_binding": "UNKNOWN"
+  },
+  "tests/numerics/test_modal_basis.py": {
+   "retained_sha256": "ce91b26189b818266f6c7f7c5bb3cf1c38ddcb00277fa4f6f8843b4a2016dd9d",
    "format": "test-source",
    "claim_binding": "UNKNOWN"
   }
@@ -2746,6 +2751,28 @@
      "verdict": "pass-with-limits",
      "oracle": "SciPy/analytic reference comparison",
      "residual_risk": ""
+    }
+   ]
+  },
+  "scirel.numerics.modal-projection": {
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "tests/numerics/test_modal_basis.py",
+     "verdict": "pass-with-limits",
+     "oracle": "independent NumPy and analytic reference fixtures",
+     "residual_risk": "Evidence is bounded to the basis's own Gauss nodes, dimensions one through three and orders zero through three; physical-cell projection and broader arbitrary-input claims remain unqualified."
+    }
+   ]
+  },
+  "scirel.numerics.orthonormal-modal-basis": {
+   "status": "pass-with-limits",
+   "evidence": [
+    {
+     "report": "tests/numerics/test_modal_basis.py",
+     "verdict": "pass-with-limits",
+     "oracle": "independent NumPy and analytic reference fixtures",
+     "residual_risk": "Evidence is bounded to the tested family, dimensions and orders; physical-mesh convergence, arbitrary-order semantics and equivalence to another discretization implementation remain unqualified."
     }
    ]
   },

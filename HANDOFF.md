@@ -1,5 +1,19 @@
 # SciRel current handoff
 
+## 2026-10-25 modal numerics integration batch
+
+Integrated the admitted reference-cell orthonormal modal basis and modal
+projection capabilities under `scirel.numerics`. The public catalog is now 249
+assets (the existing human-review hold remains separate); contracts, direct
+tests, bilingual API reader records, handbook navigation, package exports,
+license notice and mechanical verdict bindings are synchronized. The bounded
+checks passed: 122 direct numerical tests, 210 architecture tests, 33 core docs
+tests, 13 English-site tests and 168 delivery tests (2 skipped); the standalone
+documentation snapshot build and asset validation also passed. No wheel,
+`dist/`, frozen case or deployment artifact was changed. The tooling suite has
+one pre-existing unrelated failure in the multi-coil-vacuum-field complex
+mapping binding check; it is retained as `NOT_RUN` for this batch's scope.
+
 Read `AGENTS.md`, `RULES.md`, `catalog/README.md`, and
 `tools/docs/manual/README.md` before changing this checkout. The unique checkout
 is `/Users/tomczz/Projects/SciReL`; use `git rev-parse HEAD` and `git status` for

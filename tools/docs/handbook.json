@@ -817,9 +817,11 @@
     },
     {
      "id": "dense-linear-algebra",
-     "title": "稠密实矩阵的阈值伪逆",
-     "introduction": "对有限实矩阵做截断奇异值分解并返回 Moore–Penrose 伪逆；截断阈值是显式输入而不是统计噪声模型，矩阵病态性和适用性仍需调用者判断。",
+     "title": "正交模态基与稠密线性代数",
+     "introduction": "参考超立方体上的正交归一 Legendre 模态基提供成员求值、参考坐标导数、反射和自身高斯规则投影；有限实矩阵的截断奇异值分解另返回 Moore–Penrose 伪逆。物理网格、Jacobian、限制器和统计噪声模型均不由这些数值入口隐式补充。",
      "assets": [
+      "scirel.numerics.orthonormal-modal-basis",
+      "scirel.numerics.modal-projection",
       "scirel.numerics.truncated-svd-inverse"
      ]
     }

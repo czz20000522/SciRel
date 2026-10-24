@@ -1,0 +1,253 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.numerics.modal-projection",
+ "title": {
+  "en": "Modal projection of values sampled on a Gauss rule",
+  "zh": "高斯规则采样值上的模态投影"
+ },
+ "summary": "Build an orthonormal modal basis, sample the values that drive it, and return the modal coefficients of their L2 projection.",
+ "taxonomy": [
+  "numerical-methods",
+  "modal-discretization",
+  "projection"
+ ],
+ "aliases": [
+  "modal projection",
+  "DG projection",
+  "Gauss to modal"
+ ],
+ "identity": {
+  "relation": "c_i = sum_q w_q b_i(z_q) f_q",
+  "direction": "Sampled values on a declared Gauss rule to modal coefficients",
+  "definition": "The projection is the weighted inner product of the samples with each orthonormal member, using the tensor Gauss-Legendre rule that the basis itself declares. Because the members are orthonormal under the reference-cell inner product and the rule integrates every member product exactly, the returned coefficients reproduce the sampled member combination exactly when the samples come from that basis, and give the L2 projection otherwise.",
+  "model": "Modal L2 projection on a single reference hypercube",
+  "geometry": "Reference cell [-1,1]^ndim; passthrough of the basis geometry",
+  "coordinates": "Logical coordinates of the basis's own quadrature nodes",
+  "boundary": "No boundary condition is applied; the reference cell has no physical boundary",
+  "assumptions": [
+   "Samples arrive in the member order and node order of the constructed basis",
+   "Finite float64 conversion of every sample and coefficient"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "kind",
+   "description": "Basis family selector",
+   "units": "1",
+   "shape": "string",
+   "dtype": "str",
+   "required": true,
+   "constraints": "tensor or serendipity"
+  },
+  {
+   "name": "ndim",
+   "description": "Reference-cell dimension",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Integer 1 through 6"
+  },
+  {
+   "name": "order",
+   "description": "Polynomial order per axis",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Non-negative integer"
+  },
+  {
+   "name": "values",
+   "description": "Samples at the nodes of the constructed basis's own quadrature rule",
+   "units": "field",
+   "shape": "(order+1)**ndim",
+   "dtype": "finite real array-like converted to float64",
+   "required": true,
+   "constraints": "Shape must equal the basis quadrature weight shape; no broadcasting"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "coefficients",
+   "description": "Modal coefficients of the L2 projection, in the basis member order",
+   "units": "field",
+   "shape": "num_basis",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite; exact recovery when the samples come from the same basis"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Sample count equals (order+1)**ndim and sample order matches the basis quadrature node order"
+  ],
+  "supported": [
+   "Exact coefficient recovery for any member combination the basis represents",
+   "The tested family, dimensions one through three and orders zero through three"
+  ],
+  "excluded": [
+   "Samples on an arbitrary scattered node set are not supported; only the basis's own tensor Gauss nodes are accepted.",
+   "No physical mesh, Jacobian or cell measure is applied, so physical-cell projection is the caller's responsibility.",
+   "No filtering, limiting or positivity correction is applied to the result."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when the basis arguments are outside their domain or the sample array has the wrong shape or contains a non-finite value.",
+  "runtime_failure": "Raises ValueError if the underlying Gauss-Legendre root iteration does not converge.",
+  "nonconvergence": "No approximate nodes are substituted; the underlying rule reports failure.",
+  "partial_results": "Returns the full coefficient array or raises; no partial or zero-filled coefficient array is returned."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.numerics.modal_basis",
+   "symbol": "modal_projection",
+   "signature": "modal_projection(inputs)",
+   "canonical_module": "scirel.numerics",
+   "canonical_symbol": "modal_projection"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.numerics.orthonormal-modal-basis"
+   }
+  ]
+ },
+ "example": {
+  "description": "Project a known member combination sampled on the basis's own Gauss rule and confirm the coefficients come back unchanged.",
+  "code": "import numpy as np\nfrom scirel.numerics.modal_basis import modal_basis, modal_projection\n\nbasis = modal_basis(\"tensor\", 2, 2)\nnodes, weights = basis.quadrature()\nexpected = np.linspace(-1.0, 1.0, basis.num_basis)\nvalues = basis.expand(nodes, expected)\ncoefficients = modal_projection(\n    {\"kind\": \"tensor\", \"ndim\": 2, \"order\": 2, \"values\": values}\n)\nprint(\"coefficients recovered within 1e-12:\", bool(np.abs(coefficients - expected).max() < 1e-12))\n",
+  "expected": "coefficients recovered within 1e-12: True"
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented rejection behavior",
+   "Exact coefficient recovery for tensor and serendipity samples",
+   "Forwarding of the documented input mapping to the scientific delegate",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/numerics/test_modal_basis.py"
+  ],
+  "evidence_ceiling": "Exact recovery establishes the documented relation for samples produced by the same basis; it does not establish L2 optimality on arbitrary sampled data, physical-cell accuracy, or agreement with any specific discretization package. Higher dimensions and orders outside the tested bounded set are unqualified.",
+  "known_limitations": [
+   "Only the basis's own quadrature nodes are accepted, so off-node sampled data is unqualified.",
+   "Orders above three and dimensions above three are exercised only for member counts, not for projection accuracy."
+  ]
+ },
+ "composition": {
+  "nodes": [
+   {
+    "id": "basis",
+    "kind": "function",
+    "asset_id": "scirel.numerics.orthonormal-modal-basis",
+    "description": "Construct the orthonormal modal basis and its tensor Gauss rule for the declared family, dimension and order.",
+    "inputs": [
+     "kind",
+     "ndim",
+     "order"
+    ],
+    "outputs": [
+     "basis"
+    ]
+   },
+   {
+    "id": "project",
+    "kind": "controlled_glue",
+    "description": "Apply the basis's own weighted inner product to the samples, which is the L2 projection because the members are orthonormal.",
+    "inputs": [
+     "values"
+    ],
+    "outputs": [
+     "coefficients"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "kind"
+    },
+    "to": {
+     "node": "basis",
+     "port": "kind"
+    },
+    "description": "Basis family selector",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ndim"
+    },
+    "to": {
+     "node": "basis",
+     "port": "ndim"
+    },
+    "description": "Reference-cell dimension",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "order"
+    },
+    "to": {
+     "node": "basis",
+     "port": "order"
+    },
+    "description": "Polynomial order per axis",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "values"
+    },
+    "to": {
+     "node": "project",
+     "port": "values"
+    },
+    "description": "Samples on the constructed basis quadrature nodes",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "project",
+     "port": "coefficients"
+    },
+    "to": {
+     "node": "$output",
+     "port": "coefficients"
+    },
+    "description": "Modal coefficients of the L2 projection",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "single pass",
+   "ordering": "Construct the basis from the declared family, dimension and order, then apply its weighted inner product to the supplied samples",
+   "branches": [],
+   "state_ownership": "The caller owns the basis arguments and the sample array; the composition allocates only the coefficient array.",
+   "failure_propagation": "A rejected basis argument raises from the basis step; a rejected sample shape or non-finite sample raises from the glue step.",
+   "feedback": []
+  }
+ }
+}

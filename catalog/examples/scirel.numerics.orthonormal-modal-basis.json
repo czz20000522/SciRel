@@ -1,0 +1,135 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.numerics.orthonormal-modal-basis",
+ "title": {
+  "en": "Orthonormal modal polynomial basis on the reference hypercube",
+  "zh": "参考超立方体上的正交归一模态多项式基"
+ },
+ "summary": "Build a tensor or serendipity modal basis whose members are orthonormal under the unweighted inner product on [-1,1]^ndim, and evaluate, differentiate, reflect and project onto it.",
+ "taxonomy": [
+  "numerical-methods",
+  "modal-discretization",
+  "orthogonal-polynomials"
+ ],
+ "aliases": [
+  "modal basis",
+  "DG basis",
+  "orthonormal Legendre basis",
+  "serendipity basis"
+ ],
+ "identity": {
+  "relation": "integral over [-1,1]^ndim of b_i(z) b_j(z) dz = delta_ij",
+  "direction": "Declared basis family, dimension and polynomial order to a callable orthonormal member set",
+  "definition": "Members are products of one-dimensional orthonormal Legendre polynomials, one factor per reference axis, indexed by exponent tuples. The tensor family keeps every tuple in [0,order]^ndim; the serendipity family keeps only tuples where at most one axis has exponent two or greater, which removes the cost of a full tensor slot for cross terms that add no per-axis resolution. Members are ordered by total degree, then by descending exponent on the first axis, then the second, and so on. Quadrature is the tensor Gauss-Legendre rule of order+1 points per axis, which integrates every product of two members exactly.",
+  "model": "Modal polynomial discretization on a single reference hypercube",
+  "geometry": "Reference cell [-1,1]^ndim; no physical mesh or metric is implied",
+  "coordinates": "Logical coordinates z in [-1,1]^ndim, ascending along each axis",
+  "boundary": "No boundary condition is applied; the reference cell has no physical boundary",
+  "assumptions": [
+   "Logical coordinates are converted to float64 and must be finite",
+   "A coefficient vector is only meaningful together with the family, dimension, order and member order that produced it"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "kind",
+   "description": "Basis family selector",
+   "units": "1",
+   "shape": "string",
+   "dtype": "str",
+   "required": false,
+   "constraints": "tensor or serendipity",
+   "default": "tensor"
+  },
+  {
+   "name": "ndim",
+   "description": "Reference-cell dimension",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Integer 1 through 6; booleans are rejected",
+   "default": 1
+  },
+  {
+   "name": "order",
+   "description": "Polynomial order per axis",
+   "units": "1",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Non-negative integer; orders zero through three are qualified, higher orders are unqualified",
+   "default": 1
+  }
+ ],
+ "outputs": [
+  {
+   "name": "basis",
+   "description": "Basis handle exposing kind, ndim, order, num_basis, exponents(), evaluate, expand, gradient, flip_sign, quadrature and project",
+   "units": "1",
+   "shape": "ModalBasis",
+   "dtype": "ModalBasis",
+   "required": true,
+   "constraints": "Members are orthonormal under the unweighted inner product on the reference cell"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Logical coordinates are finite and lie inside [-1,1]^ndim; the cell is the caller's reference cell, not a physical element"
+  ],
+  "supported": [
+   "Evaluating all members, an expansion, and one reference-coordinate derivative of an expansion",
+   "Reflecting an expansion across a reference axis by sign-flipping its odd powers",
+   "Projecting values sampled on the basis's own tensor Gauss rule back onto the members",
+   "The tested family, dimensions one through three and orders zero through three"
+  ],
+  "excluded": [
+   "No physical mesh, Jacobian, metric or cell measure is applied; mapping to a physical element is the caller's responsibility.",
+   "No boundary condition, upwinding, limiting or positivity handling is provided.",
+   "Serendipity members do not span the same polynomial space as the tensor family at the same order; the two are not interchangeable.",
+   "The projection is exact only for values sampled on this basis's own quadrature nodes."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when kind is not tensor or serendipity, ndim is outside 1..6, order is negative or non-integral, a boolean is passed where an integer is required, coordinates are non-finite or outside the reference cell, a coordinate array has the wrong trailing axis, a coefficient or sample array has the wrong shape or contains a non-finite value, or a direction is outside range(ndim).",
+  "runtime_failure": "Raises ValueError if the Gauss-Legendre root iteration does not converge; no approximate ordinates are substituted.",
+  "nonconvergence": "The Gauss-Legendre Newton iteration is bounded at 200 sweeps per root and reports failure instead of returning an unconverged node.",
+  "partial_results": "Construction is atomic: a rejected basis exposes no members. Evaluation returns a complete array or raises; no partial member set is returned."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.numerics.modal_basis",
+   "symbol": "modal_basis",
+   "signature": "modal_basis(kind='tensor', ndim=1, order=1)",
+   "canonical_module": "scirel.numerics",
+   "canonical_symbol": "modal_basis"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Build the two-dimensional second-order serendipity basis, confirm its eight members are orthonormal under its own Gauss rule, and check that projecting an expansion's own samples returns its coefficients.",
+  "code": "import numpy as np\nfrom scirel.numerics.modal_basis import modal_basis\n\nbasis = modal_basis(\"serendipity\", 2, 2)\nassert basis.num_basis == 8\n\nnodes, weights = basis.quadrature()\nmembers = basis.evaluate(nodes)\ngram = np.einsum(\"q,qi,qj->ij\", weights, members, members)\ncoefficients = np.arange(8, dtype=float) - 3.5\nrecovered = basis.project(basis.expand(nodes, coefficients))\nprint(\"orthonormal within 1e-12:\", bool(np.abs(gram - np.eye(8)).max() < 1e-12))\nprint(\"coefficients recovered within 1e-12:\", bool(np.abs(recovered - coefficients).max() < 1e-12))\n",
+  "expected": "orthonormal within 1e-12: True\ncoefficients recovered within 1e-12: True"
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented rejection behavior",
+   "Member counts and one-dimensional member literals against the reference kernel",
+   "Orthonormality, quadrature exactness and projection recovery on named fixtures",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/numerics/test_modal_basis.py"
+  ],
+  "evidence_ceiling": "Member-count agreement, orthonormality and projection recovery establish the documented relation on the tested family, dimension and order combinations; they do not establish convergence-order claims on a physical mesh, arbitrary-order tie-breaking, or agreement with any specific discretization package. Higher dimensions and orders outside the tested bounded set are unqualified.",
+  "known_limitations": [
+   "Only dimensions one through six and orders zero through three are covered by the regression fixtures.",
+   "Serendipity member selection is exercised for orders zero through three only; higher orders are unqualified.",
+   "The projection is only exercised on the basis's own quadrature nodes, not on arbitrary sample locations.",
+   "The serendipity exponent rule is qualified only for orders zero through three; higher-order semantics are unqualified."
+  ]
+ }
+}
