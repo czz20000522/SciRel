@@ -22,100 +22,66 @@ The neutron branch of the DD reaction is
 
    D + D -> n + 3He + 3.27 MeV
 
-Here ``Q = 3.27 MeV`` is the total energy released by the reaction. The relative motion of the two deuterons supplies additional kinetic energy, which is shared by the neutron and 3He according to their masses after the reaction. The non-relativistic two-body kinematics are
+Here ``Q = 3.27 MeV`` is the total energy released by the reaction. The relative motion of the deuterons supplies additional kinetic energy, which is shared by the neutron and 3He by mass. The implementation first computes the centre velocity and the squared CM neutron speed:
 
 .. code-block:: text
 
-   v_cm    = (v1 + v2) / 2
+   V       = (v1 + v2) / 2
    v_rel   = v1 - v2
    E_avail = Q + (1/2) * (m_D/2) * |v_rel|^2
    E_cm    = m_He3 / (m_n + m_He3) * E_avail
-   E_boost = (1/2) * m_n * |v_cm|^2
-   E_lab   = E_cm + E_boost + 2 * sqrt(E_cm * E_boost) * cos(theta)
+   u^2     = E_cm / k_n
 
-The formulas omit unit conversions; internally the implementation converts velocities from cm/s to m/s, masses from amu to kg, and finally MeV to keV. Here ``theta`` is the angle between the centre-of-mass velocity direction and the detector line of sight. ``m_He3/(m_n+m_He3)`` is approximately 0.749, so the neutron energy for stationary reactants is about ``0.749 * 3.27 MeV = 2.45 MeV``. The last term is a kinematic interference term: it is not an isotropic angular distribution, only the energy of the same reaction along different lines of sight.
+The detector vector ``d`` is a **laboratory-frame** line of sight from the reaction point to the detector. After the unit-norm gate, let ``n = d / |d|`` and write the laboratory neutron velocity along that ray as ``s*n``. It must satisfy
 
-Units need special care: both velocities are in **cm/s**, the detector direction is a dimensionless unit vector, and the returned energy is in **keV**. Velocities and the detector vector must be in the same Cartesian system; the function performs no coordinate transformation. The detector vector must be a unit vector with tolerance ``1e-12``; a non-unit vector is rejected rather than normalized automatically.
+.. code-block:: text
 
-The implementation writes ``E_lab`` as the sum of two nonnegative terms, avoiding a rounded negative value in backward detection where the two terms nearly cancel. This does not impose a lower bound on the result and does not replace zero with another number.
+   |s*n - V|^2 = u^2
+   a = V . n
+   b^2 = |V - a*n|^2
+   s = a ± sqrt(u^2 - b^2)
+   E_lab = 1000 * k_n * s^2   (keV)
 
-Stationary vs moving deuterons: one energy, two directions
+The function returns an energy only when this laboratory ray has one distinct strictly positive root. A positive tangent is accepted; zero speed cannot reach the detector; an unreachable ray or two distinct positive roots raises ``ValueError`` because the single-value interface has no branch selector. The roots are intersections of a velocity sphere with a laboratory ray. The detector direction must not be substituted for a CM emission angle, and the result must not be written as a ``cos(theta)`` CM-angle formula.
+
+Units need special care: both velocities are in **cm/s**, the detector direction is dimensionless, and the returned energy is in **keV**. Velocities and the detector vector must be in the same Cartesian system; the function performs no coordinate transformation. Complex or non-finite components, wrong shapes and detector norms outside ``1e-12`` are rejected.
+
+Stationary reactants and laboratory rays
 ----------------------------------------------------------
 
-Start with two cases: completely stationary reactants, and a pair of co-moving deuterons with the detector pointing forward and backward.
+With stationary reactants ``V=0``, every unit ray has one positive root and returns the mass-partition anchor:
 
 .. code-block:: python
 
-   from scirel.fusion import calculate_dd_neutron_lab_energy_kev
-
-   E = calculate_dd_neutron_lab_energy_kev
-   still = E(
-       reactant1_velocity_cm_s=(0.0, 0.0, 0.0),
-       reactant2_velocity_cm_s=(0.0, 0.0, 0.0),
-       detector_unit_vector=(1.0, 0.0, 0.0),
-   )
+   from scirel.fusion import calculate_dd_neutron_lab_energy_kev as E
+   still = E(reactant1_velocity_cm_s=(0.0, 0.0, 0.0),
+             reactant2_velocity_cm_s=(0.0, 0.0, 0.0),
+             detector_unit_vector=(1.0, 0.0, 0.0))
    v1, v2 = (1.0e8, 0.0, 0.0), (5.0e7, 0.0, 0.0)
    forward = E(reactant1_velocity_cm_s=v1, reactant2_velocity_cm_s=v2,
                detector_unit_vector=(1.0, 0.0, 0.0))
    backward = E(reactant1_velocity_cm_s=v1, reactant2_velocity_cm_s=v2,
                 detector_unit_vector=(-1.0, 0.0, 0.0))
-   print(f"stationary : {still:.9f} keV")
-   print(f"forward    : {forward:.9f} keV")
-   print(f"backward   : {backward:.9f} keV")
+   print(still, forward, backward)
 
-Actual output:
-
-.. code-block:: text
-
-   stationary : 2450.475899416 keV
-   forward    : 2624.190695809 keV
-   backward   : 2284.596359041 keV
-
-For stationary reactants ``E_boost = 0`` and the interference term is also zero, leaving the mass-partition energy ``2450.475899416 keV``. This is the familiar 2.45 MeV anchor for DD neutrons; it is slightly below ``0.75 * 3.27 MeV`` because the mass ratio is ``3.01603/(1.008665+3.01603)``, not exactly 3/4.
-
-With ``v1 = 1e8 cm/s`` and ``v2 = 5e7 cm/s``, the centre-of-mass velocity is ``7.5e7 cm/s`` and the relative velocity is ``5e7 cm/s``. Forward detection gives ``2624.19 keV`` and backward detection gives ``2284.60 keV``, a difference of about ``339.6 keV``. This difference comes from centre-of-mass motion and the interference term, not from a changed Q value: it is the same reaction with only the detector direction changed.
-
-The average of the two directions is about ``2454.4 keV``, roughly ``3.9 keV`` above the stationary value. This comes from the relative motion raising ``E_avail`` and from the centre-of-mass boost; it is not a new Q value or an "average reaction energy".
-
-What this section does not establish: each call gives one neutron energy for one pair of velocities and one direction. It does not compute reaction rates, yields, angular-distribution weights or subsequent neutron transport. It is also a non-relativistic relation; pushing the velocities into the relativistic regime gives results with no physical meaning.
+The outputs are ``2450.475899416``, ``2624.190695809`` and ``2284.596359041 keV``. Both forward and backward rays are reachable with one positive root. If the boost places a ray through the interior of the velocity sphere, two distinct positive roots exist; the single-value entry rejects that ambiguity instead of selecting a branch silently.
 
 Scanning the detector direction: energy is not isotropic
---------------------------------------------------------
+----------------------------------------------------------
 
-Fix a beam of ``1.3e8 cm/s`` deuterons hitting a stationary deuterium target, and rotate the detector direction in the ``x-y`` plane from 0 to 180 degrees:
-
-.. code-block:: python
-
-   import numpy as np
-   from scirel.fusion import calculate_dd_neutron_lab_energy_kev
-
-   for deg in (0, 30, 60, 90, 120, 150, 180):
-       theta = np.deg2rad(deg)
-       detector = (np.cos(theta), np.sin(theta), 0.0)
-       energy = calculate_dd_neutron_lab_energy_kev(
-           reactant1_velocity_cm_s=(1.3e8, 0.0, 0.0),
-           reactant2_velocity_cm_s=(0.0, 0.0, 0.0),
-           detector_unit_vector=detector,
-       )
-       print(f"{deg:3d} deg  {energy:9.3f} keV")
-
-Actual output:
+For ``v1=(1.3e8,0,0)`` and ``v2=0``, scan laboratory rays in the ``x-y`` plane:
 
 .. code-block:: text
 
      0 deg   2606.618 keV
-    30 deg   2586.880 keV
-    60 deg   2532.955 keV
-    90 deg   2459.292 keV
-   120 deg   2385.628 keV
-   150 deg   2331.703 keV
+    30 deg   2585.762 keV
+    60 deg   2529.617 keV
+    90 deg   2454.875 keV
+   120 deg   2382.341 keV
+   150 deg   2330.613 keV
    180 deg   2311.965 keV
 
-The energy decreases monotonically with angle, and the forward-to-backward difference is about ``295 keV``, roughly 12% of the 90-degree value. The 90-degree value ``2459.292 keV`` is exactly the average of 0 and 180 degrees: ``(2606.618 + 2311.965)/2 = 2459.2915``. This is not a coincidence: it follows from the ``cos(theta)`` term vanishing at 90 degrees and being ±1 at 0/180 degrees.
-
-This curve is the **line-of-sight energy for a fixed velocity pair and reaction channel**, not a measured angular distribution. A forward detector seeing a higher neutron energy does not mean there are more neutrons in that direction; a yield requires a reaction rate and an angular distribution, and neither is part of this call.
-
-What this section does not establish: this curve is not a DD neutron spectrum, and it cannot be used to infer detector counts. To obtain a spectrum, many velocity pairs (a distribution function) and an angular-distribution weight are needed; none of the three functions in this chapter provides them.
+Energy changes with the line of sight, but the 90-degree value is not the average of the forward and backward values; non-collinear values come from the quadratic intersection of the velocity sphere with the laboratory ray. This is a line-of-sight energy curve for a fixed velocity pair, not a measured angular distribution or a DD spectrum; the function computes no reaction rate, yield, angular weight or subsequent transport.
 
 From reaction energy to heating: fast-ion partition
 ---------------------------------------------------
