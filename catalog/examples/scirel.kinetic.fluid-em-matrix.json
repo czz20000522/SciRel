@@ -5,7 +5,7 @@
  "discovery": {
   "capability": [
    "Corrected finite rational EM matrix",
-   "Assemble the complete finite L/J matrix with restored conductivity polynomials and constrained source-table moments."
+   "Assemble the complete finite L/J matrix with restored conductivity polynomials and measured source-table diagnostics."
   ],
   "operation": [
    "assemble the finite rational EM matrix",
@@ -49,7 +49,7 @@
   ],
   "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
   "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
-  "definition": "M acts on [Jx_snl,Jy_snl,Jz_snl,Ey,Ez,By,Bz]; polynomial conductivity restores four matrix entries; n>=1 inverse moments projected to zero with stable Gamma representation.",
+  "definition": "M acts on [Jx_snl,Jy_snl,Jz_snl,Ey,Ez,By,Bz]; polynomial conductivity restores four matrix entries; n>=1 inverse moments are reported from the sole stable-Gamma coefficient table; model targets are descriptive and no projection is applied.",
   "direction": "forward",
   "geometry": "uniform background B along z; wavevector (kx,0,kz)",
   "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
@@ -98,7 +98,7 @@
  "outputs": [
   {
    "constraints": "State and terminal diagnostics retain scientific meaning; no caller state mutation.",
-   "description": "M entries carry mixed-state SI dimensions for kx X=M X; corrected poles and exact cn_raw source tables, normalization ledger, state, omega and N.",
+   "description": "M entries carry mixed-state SI dimensions for kx X=M X; corrected poles, measured inverse_moment_diagnostics, state, omega and N.",
    "dtype": "mapping",
    "name": "result",
    "required": true,
@@ -116,7 +116,7 @@
   }
  },
  "schema": "scirel.asset-document",
- "summary": "Assemble the complete finite L/J matrix with restored conductivity polynomials and constrained source-table moments.",
+ "summary": "Assemble the complete finite L/J matrix with restored conductivity polynomials and measured source-table diagnostics.",
  "taxonomy": [
   "kinetic",
   "plasma-waves",
@@ -140,7 +140,8 @@
    "Coherent SI state; signed/zero kz away from true rational resonance denominators."
   ],
   "tests": [
-   "tests/kinetic/test_fluid_spectrum_full.py"
+   "tests/kinetic/test_fluid_spectrum_full.py",
+   "tests/kinetic/test_fluid_em_diagnostics.py"
   ]
  },
  "version": {

@@ -6,6 +6,7 @@ execute locally and do not require Linux, the reference solver, or an external c
 from __future__ import annotations
 
 import copy
+import math
 import operator
 from pathlib import Path
 
@@ -323,47 +324,51 @@ def _poles(j_order, N):
     l = get_gamma_lpole_coefficients(max_harmonic=7)
     # The native pole producer always returned all eight source tables.  N is
     # a matrix control, not a pole-table truncation control.
-    cn = np.empty((1, 8), object); raw = np.empty_like(cn)
+    cn = np.empty((1, 8), object)
     for i in range(8):
         cn[0, i] = {"rl": l["residues"][i + 1].copy(), "pl": l["poles"][i + 1].copy()}
-        raw[0, i] = copy.deepcopy(cn[0, i])
     return {"J": np.asarray(j_order),
             "L": np.asarray([l["order_lengths"][i + 1] for i in range(8)]),
-            "cn": cn, "cn_raw": raw, "moment_normalization": {},
+            "cn": cn, "inverse_moment_diagnostics": _inverse_moment_diagnostics(cn),
             "bzj": z["bzj"], "czj": z["czj"], "n": np.asarray(j_order)}
 
 
-def _legacy_moment_normalization():
-    """Shape the native eight-cell normalization diagnostic."""
-    result = np.empty((1, 8), object)
-    result[0, 0] = np.empty((0, 0), float)
-    for i in range(1, 8):
-        result[0, i] = {
-            "harmonic": _mat_scalar(i),
-            "residue_change_max": _mat_scalar(0.0),
-            "inverse_moments_before": np.zeros((1, 2)),
-            "inverse_moments_after": np.zeros((1, 2)),
-            "large_z_moment_changes": np.zeros((1, 2)),
-        }
-    return result
+def _complex_fsum(values):
+    values = [complex(value) for value in values]
+    return complex(math.fsum(value.real for value in values),
+                   math.fsum(value.imag for value in values))
+
+
+def _inverse_moment_diagnostics(cn):
+    """Measure inverse pole moments of the sole finite coefficient table."""
+    first = np.empty(7, dtype=complex); second = np.empty(7, dtype=complex)
+    for n in range(1, 8):
+        table = cn[0, n - 1]
+        first[n - 1] = _complex_fsum(table["rl"] / table["pl"])
+        second[n - 1] = _complex_fsum(table["rl"] / table["pl"] ** 2)
+    return {"harmonics": np.arange(1, 8, dtype=int).reshape(1, -1),
+            "sum_residue_over_pole": first.reshape(1, -1),
+            "sum_residue_over_pole_squared": second.reshape(1, -1),
+            "model_target": np.zeros((1, 1), dtype=complex)}
 
 
 def _legacy_poles(poles):
     """Project pole tables to the old native workspace representation."""
-    cn = np.empty((1, 8), object); raw = np.empty((1, 8), object)
+    cn = np.empty((1, 8), object)
     for i in range(8):
         cn[0, i] = {"rl": _mat_row(poles["cn"][0, i]["rl"], dtype=complex),
                     "pl": _mat_row(poles["cn"][0, i]["pl"], dtype=complex)}
-        raw[0, i] = {"rl": _mat_row(poles["cn_raw"][0, i]["rl"], dtype=complex),
-                     "pl": _mat_row(poles["cn_raw"][0, i]["pl"], dtype=complex)}
+    diagnostics = poles["inverse_moment_diagnostics"]
     return {
         "J": _mat_scalar(poles["J"].item()),
         "L": np.asarray(poles["L"], dtype=float).reshape(-1, 1),
         "bzj": _mat_row(poles["bzj"], dtype=complex),
         "cn": cn,
-        "cn_raw": raw,
+        "inverse_moment_diagnostics": {"harmonics": np.asarray(diagnostics["harmonics"], dtype=int),
+                                       "sum_residue_over_pole": _mat_row(diagnostics["sum_residue_over_pole"].ravel(), dtype=complex),
+                                       "sum_residue_over_pole_squared": _mat_row(diagnostics["sum_residue_over_pole_squared"].ravel(), dtype=complex),
+                                       "model_target": np.asarray(diagnostics["model_target"], dtype=complex)},
         "czj": _mat_row(poles["czj"], dtype=complex),
-        "moment_normalization": _legacy_moment_normalization(),
         "n": _mat_scalar(poles["n"].item()),
     }
 
@@ -501,7 +506,7 @@ def solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None):
         out = assemble_fluid_em(state, omega, j_order, N); last = out; d = _source_runtime_eigvals(out["M"]); selected = d[np.real(d) > 1e-5 * float(np.asarray(state["kn"]).item())]
         selected = selected[np.argsort(np.abs(np.imag(selected)), kind="stable")]
         if selected.size < 5: raise ValueError("fewer than five positive-real candidate eigenvalues")
-        kxx[i] = selected[:5]; selected_cells[0, i] = selected.copy(); spectra[0, i] = d.reshape(-1, 1); diagnostics[0, i] = {"eigenvector_values": d, "componentwise_backward_error": np.zeros(d.size), "physical_state_scaled_backward_error": np.zeros(d.size), "physical_gate_tolerance": np.asarray(2e-12), "finite_matrix_mode_count": np.asarray(d.size), "complete_finite_matrix_spectrum": np.asarray(d.size == out["M"].shape[0]), "complete_physical_modes": np.asarray(False), "selection_is_heuristic": np.asarray(True)}
+        kxx[i] = selected[:5]; selected_cells[0, i] = selected.copy(); spectra[0, i] = d.reshape(-1, 1); diagnostics[0, i] = {"eigenvalues": d, "eigenpair_residuals_computed": np.asarray(False, dtype=np.uint8), "finite_matrix_mode_count": np.asarray(d.size), "complete_finite_matrix_spectrum": np.asarray(d.size == out["M"].shape[0]), "complete_physical_modes": np.asarray(False), "selection_is_heuristic": np.asarray(True)}
     return _legacy_em_result(state, last, xx, kxx, spectra, selected_cells,
                              diagnostics)
 
@@ -509,10 +514,8 @@ def solve_fluid_em(jcase=2, j_order=8, max_harmonic=6, omegas=None):
 def _legacy_diagnostic(value):
     """Convert one eigen diagnostic record to native MAT shapes and dtypes."""
     return {
-        "eigenvector_values": np.asarray(value["eigenvector_values"], complex).reshape(-1, 1),
-        "componentwise_backward_error": np.asarray(value["componentwise_backward_error"], float).reshape(-1, 1),
-        "physical_state_scaled_backward_error": np.asarray(value["physical_state_scaled_backward_error"], float).reshape(-1, 1),
-        "physical_gate_tolerance": _mat_scalar(value["physical_gate_tolerance"].item()),
+        "eigenvalues": np.asarray(value["eigenvalues"], complex).reshape(-1, 1),
+        "eigenpair_residuals_computed": _mat_scalar(bool(value["eigenpair_residuals_computed"].item()), dtype=np.uint8),
         "finite_matrix_mode_count": _mat_scalar(value["finite_matrix_mode_count"].item()),
         "complete_finite_matrix_spectrum": _mat_scalar(bool(value["complete_finite_matrix_spectrum"].item()), dtype=np.uint8),
         "complete_physical_modes": _mat_scalar(bool(value["complete_physical_modes"].item()), dtype=np.uint8),
@@ -560,8 +563,7 @@ def _legacy_em_result(state, last, xx, kxx, spectra, selected_cells, diagnostics
         "w": last["omega"],
         "J": poles["J"],
         "cn": poles["cn"],
-        "cn_raw": poles["cn_raw"],
-        "moment_normalization": poles["moment_normalization"],
+        "inverse_moment_diagnostics": poles["inverse_moment_diagnostics"],
         "bzj": poles["bzj"],
         "czj": poles["czj"],
         "xx": frequencies.reshape(1, -1),

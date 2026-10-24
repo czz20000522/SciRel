@@ -275,7 +275,7 @@
    "outputs": [
     {
      "name": "result",
-     "description": "具有混合状态 SI 量纲的 M；修正极点与精确的 cn_raw 表、归一化账目、状态、omega 和 N。",
+     "description": "具有混合状态 SI 量纲的 M；修正极点、源系数表的实测逆矩诊断、状态、omega 和 N。",
      "constraints": "状态与末端诊断保持科学含义，不修改调用者的状态。",
      "dtype": "映射"
     }
@@ -285,7 +285,7 @@
     "expected": "返回 M 为 40×40、N=0 的映射，并含 poles、state 与 omega。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "b2fecfe48f2f9217b82b3fdb18731d15186f1fcd85afb58e3bacd02bdb5ad852",
+   "source_sha256": "178caebfd29b9cb42e26735a88841eac1344b78323c3b06a5b2f81429ab154f3",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -299,7 +299,7 @@
      "合同声明使用 SciRel 的 Python 3.14、NumPy 2.5.4 与 SciPy 1.18.1 环境；Linux amd64 本地运行时仍是声明要求。"
     ],
     "supported": [
-     "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及原始数据表。",
+     "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及源系数表。",
      "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
     ],
     "excluded": [
@@ -314,7 +314,7 @@
    },
    "verification": {
     "scope": [
-     "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及原始数据表。",
+     "J8/J12 与全部 N=0..7 控制，包含完整矩阵状态及源系数表。",
      "一致的 SI 状态，允许有符号或为零的 kz，但须避开真正的有理共振分母。"
     ],
     "known_limitations": [
@@ -407,7 +407,7 @@
   },
   {
    "summary": "组合 EM 算例、修正后的有限矩阵与按原始次序排列的谱，并附带有限的数值证据。",
-   "definition": "返回全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，物理状态相似缩放后的后向误差容差常量为 2e-12。",
+   "definition": "返回全部有限矩阵本征值；按正实部及较小虚部绝对值启发式选取五个候选，返回 `eigenvalues`、有限谱计数和启发式候选；`eigenpair_residuals_computed=false`，不计算物理资格门。",
    "inputs": [
     {
      "name": "jcase",
@@ -447,7 +447,7 @@
     "expected": "返回 kxx 形状为 (1,5) 的谱映射，并含 roots、matM、spectra 与 eigen_diagnostics。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "77cd8d74f28a7cba592c2f3aaecbdcd041beb8ed20a4892d00e999700f17250d",
+   "source_sha256": "b9bebcd3ab5b2564de18e7e2c266494011c9f4838fda7f58e873888dcc59b4e6",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -472,7 +472,7 @@
     "invalid_input": "未知控制、非有限/不自洽 SI 状态、真实非零留数极点或不可表示谱/矩阵抛出 ValueError。",
     "runtime_failure": "NumPy/SciPy 数值错误带操作上下文传播；不选择原生运行时、源检出或网络回退。",
     "nonconvergence": "EM 求解不进行非线性搜索；求解失败是显式 ValueError，而不是收敛标志。",
-    "partial_results": "异常后不返回结果映射；返回的 EM 谱仅含 `status` 与有限数组。"
+    "partial_results": "异常后不返回结果映射；返回的 EM 谱含有限数组和完备性/启发式选择诊断，不承诺 `status` 字段。"
    },
    "verification": {
     "scope": [
@@ -480,7 +480,7 @@
      "全部有限谱、按原始次序排列的值、候选及末端矩阵。"
     ],
     "known_limitations": [
-     "直接绑定的函数是六资产共享文件 `test_fluid_spectrum_full.py` 中的 `test_status_and_complete_finite_spectrum_are_explicit` 与 `test_multifrequency_em_preserves_each_nested_diagnostic_array`；不存在单独的 EM 测试文件。",
+     "直接绑定的函数是六资产共享文件 `test_fluid_spectrum_full.py` 中的 `test_status_and_complete_finite_spectrum_are_explicit` 与 `test_multifrequency_em_preserves_each_nested_diagnostic_array`；另有专门的 `test_fluid_em_diagnostics.py` 检查实测逆矩、退役字段和公开嵌套结构。",
      "不保证跨线程/平台不变性、任意精度、所有物理模态完备性或非线性求解无条件收敛。",
      "J/L 极点和有限谐波近似的误差，与关系一致性和数值残差分开判断。",
      "EM 分支使用固定历史常数 `c2=2.99792458e8**2`、`epsilon0=8.854187817e-12` 与 `kB=1.38064852e-23`；不做单位换算或现代 CODATA 替换。",
@@ -490,7 +490,7 @@
    },
    "source_conflicts": [
     "applicability.preconditions 同时要求 Linux amd64 上的本地运行时 7.3.0 和 SciRel 的 Python 3.14/NumPy 2.5.4/SciPy 1.18.1 环境，并重复声明需要 Linux amd64；本实现为纯 Python/NumPy/SciPy，示例已在本机 macOS 直接运行。该前置条件与实现不一致，待合同修订。",
-    "definition 原称物理状态相似缩放后的后向误差门槛不超过 2e-12；当前实现的 eigen_diagnostics 将该误差硬编码为零，只保留 2e-12 阈值常量，并未实际计算该后向误差。合同与实现待核对。"
+    "definition 原称物理状态相似缩放后的后向误差门槛不超过 2e-12；旧的后向误差字段和 2e-12 物理门槛未计算，已退役；当前返回 `eigenpair_residuals_computed=false`，保留真实本征值、有限谱计数与启发式选择。"
    ]
   }
  ]
