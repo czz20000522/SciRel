@@ -413,6 +413,22 @@ Add the Maxwell curl terms:
    D_xz = D_zx = K_xz + n_x n_z
    det(D) = 0 gives the eigenmodes
 
+Signed ``kz`` interpretation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For a static, drift-free, isotropic Maxwellian, ``kz`` is a signed parallel wavenumber. The causal response obeys ``K(kx,-kz)=P K(kx,kz) P`` with ``P=diag(1,1,-1)``; ``D`` has the same reflection and the determinant is invariant. Internally the resonance denominators use ``|kz|`` and the four mixed components recover their signs; ``n_z`` still uses the caller's signed ``kz``. The conventional finite-harmonic path keeps its existing ``|kz|<1e-10`` clamp to ``+1e-10``, so zero and near-zero cases remain that path's numerical convention.
+
+.. code-block:: python
+
+   plus = evaluate_kinetic_dispersion_relation(..., kz=159.0, kx_frac=0.5)
+   minus = evaluate_kinetic_dispersion_relation(..., kz=-159.0, kx_frac=0.5)
+   P = np.diag([1.0, 1.0, -1.0])
+   assert np.allclose(minus["K_sum_n"], P @ plus["K_sum_n"] @ P)
+   assert np.allclose(minus["D_ronnmark"], P @ plus["D_ronnmark"] @ P)
+   assert minus["determinant_sum_n"] == pytest.approx(plus["determinant_sum_n"])
+
+This reflection is a coordinate symmetry. It does not write ``abs(kz)`` back to the returned ports and does not change charges, gyro signs, harmonic indices or ``kx``. It covers only the declared static Maxwellian condition; complex frequency, drift, anisotropy and other near-zero branches require separate validation.
+
 ``evaluate_kinetic_dispersion_relation`` computes both paths on the same equilibrium snapshot: the finite-harmonic sum (``lmx = 5``) and the Ronnmark fixed-pole approximation with ``J = 8``. It accepts SI species parameters, ``T00`` in eV, the dimensionless frequency ratio ``omega_frac``, the dimensionless perpendicular wavenumber ratio ``kx_frac``, and the **absolute** parallel wavenumber ``kz``. ``omega`` and ``kx`` are derived internally from ``wn`` and ``kn``; the caller must not pass absolute values and ratios at the same time.
 
 Take ``omega_frac = 1000``, ``kx_frac = 0.5`` and ``kz = 159 1/m``:

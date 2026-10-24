@@ -105,6 +105,7 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
     if omega is None:
         f = float(f)
     kz = float(kz)
+    response_kz = kz if kz >= 0.0 else -kz
     kx = complex(kx)
     if not np.isfinite(B0) or not np.isfinite(kz) or not np.isfinite(kx):
         raise ValueError("B0, kz and kx must be finite")
@@ -161,7 +162,7 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
         b = bs[s]
         a = as_[s]
         for j in range(j_order):
-            xsj = _cdiv(complex(omega, 0.0) - _cmul(complex(kz * vts[s], 0.0), czj[j]), complex(wcs[s], 0.0))
+            xsj = _cdiv(complex(omega, 0.0) - _cmul(complex(response_kz * vts[s], 0.0), czj[j]), complex(wcs[s], 0.0))
             rc = ronnmark(xsj, b)
             rsj = rc["R"]
             drsj = rc["dR_dlambda"]
@@ -186,6 +187,12 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
             k_tensor[2, 0] = k_tensor[2, 0] + _cmul(term, x_xz)
             k_tensor[2, 1] = k_tensor[2, 1] + _cmul(term, complex(-x_yz.real, -x_yz.imag))
             k_tensor[2, 2] = k_tensor[2, 2] + _cmul(term, x_zz)
+
+    if kz < 0.0:
+        k_tensor[0, 2] = _rmul(-1.0, k_tensor[0, 2])
+        k_tensor[1, 2] = _rmul(-1.0, k_tensor[1, 2])
+        k_tensor[2, 0] = _rmul(-1.0, k_tensor[2, 0])
+        k_tensor[2, 1] = _rmul(-1.0, k_tensor[2, 1])
 
     nz2 = _cmul(nz, nz); nx2 = _cmul(nx, nx); nxnz = _cmul(nx, nz)
     d_tensor = k_tensor.copy()

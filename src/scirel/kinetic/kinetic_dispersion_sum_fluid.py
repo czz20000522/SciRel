@@ -69,6 +69,8 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
         # conventional sum_n operator and must not be shared with the Ronnmark operator.
         kz = 1e-10
 
+    response_kz = kz if kz > 0.0 else -kz
+
     omega = 2.0 * np.pi * f
     n_species = qs.size
     vts = np.sqrt(2.0 * _KB * Ts0 / ms)
@@ -81,11 +83,11 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
 
     k_tensor = np.eye(3, dtype=complex)
     for s in range(n_species):
-        z0 = omega / (kz * vts[s])
+        z0 = omega / (response_kz * vts[s])
         b = bs[s]
         a = a_s[s]
         for l in range(-lmx, lmx + 1):
-            zn = (omega - l * wcs[s]) / (kz * vts[s])
+            zn = (omega - l * wcs[s]) / (response_kz * vts[s])
             gam, gamp = _gamma_and_prime(l, b)
             x_xx = l**2 * gam / b
             x_xy = 1j * l * gamp
@@ -104,6 +106,12 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
             k_tensor[2, 1] += term * (-x_yz)
             k_tensor[2, 2] += term * x_zz
         k_tensor[2, 2] += wps2[s] / omega**2 * 2.0 * z0**2
+
+    if kz < 0.0:
+        k_tensor[0, 2] = -k_tensor[0, 2]
+        k_tensor[1, 2] = -k_tensor[1, 2]
+        k_tensor[2, 0] = -k_tensor[2, 0]
+        k_tensor[2, 1] = -k_tensor[2, 1]
 
     d_tensor = k_tensor.copy()
     d_tensor[0, 0] = k_tensor[0, 0] - nz**2

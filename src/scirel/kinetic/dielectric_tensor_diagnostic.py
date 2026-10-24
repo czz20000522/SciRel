@@ -165,6 +165,7 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
     b0 = _real_scalar(B0, "B0")
     freq = _real_scalar(f, "f")
     kz_c = _real_scalar(kz, "kz")
+    response_kz = kz_c if kz_c > 0.0 else -kz_c
     kx_c = _complex_scalar(kx, "kx")
 
     if b0 == 0:
@@ -210,12 +211,12 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
 
         # bonk/fDtensor.m:48-78
         for j in range(species_count):
-            z0 = w / (kz_c * vts[j])
-            z0s[j] = z0
+            z0 = w / (response_kz * vts[j])
+            z0s[j] = w / (kz_c * vts[j])
             b = bs[j]
             a = as_[j]
             for l in range(-lmx, lmx + 1):
-                zn = (w - l * wcs[j]) / (kz_c * vts[j])
+                zn = (w - l * wcs[j]) / (response_kz * vts[j])
 
                 xsn_xx = l**2 * _gamman(l, b) / b
                 xsn_xy = 1j * l * _gammapn(l, b)
@@ -242,6 +243,12 @@ def evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=_LMX
 
             # bonk/fDtensor.m:77：fDR.m 中被注释掉、此处 load-bearing 的收尾项
             K[2, 2] = K[2, 2] + wps2[j] / w**2 * 2.0 * z0**2
+
+        if kz_c < 0.0:
+            K[0, 2] = -K[0, 2]
+            K[1, 2] = -K[1, 2]
+            K[2, 0] = -K[2, 0]
+            K[2, 1] = -K[2, 1]
 
         # bonk/fDtensor.m:80-83：Maxwell 旋度项（21-11-12 19:37 的符号修正版）
         D = _np.zeros((3, 3), dtype=_np.complex128)

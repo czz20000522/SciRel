@@ -289,6 +289,7 @@
    "Python preflight ran, but local execution covers this asset."
   ],
   "tests": [
+   "tests/kinetic/test_kinetic_signed_kz.py",
    "tests/kinetic/test_kinetic_dispersion_sum_n.py"
   ],
   "evidence_ceiling": "Bounded to one or more homogeneous magnetized Maxwellian species with finite harmonic sums and analytic Z values. Evidence: `test_kinetic_dispersion_sum_n.py` contains 4 test functions, 4 of which reference `evaluate_kinetic_dispersion_sum`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: independent analytic/high-precision Z-function references plus frozen fluid-BW values. It does not establish kx=0/kz=0 limits, complex roots, drift/loss-cone distributions, or automatic harmonic convergence.",

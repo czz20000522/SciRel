@@ -52,6 +52,7 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     B0 = _finite_scalar("B0", B0, nonzero=True)
     f = _finite_scalar("f", f, nonzero=True)
     kz = _finite_scalar("kz", kz, nonzero=True)
+    response_kz = kz if kz > 0.0 else -kz
     kx = _finite_scalar("kx", kx, nonzero=True)
     if isinstance(lmx, (bool, np.bool_)) or not isinstance(lmx, (int, np.integer)) or lmx < 0:
         raise ValueError("lmx must be a non-negative integer")
@@ -83,9 +84,9 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
 
     k_tensor = np.eye(3, dtype=complex)
     for s in range(qs.size):
-        z0 = omega / (kz * vts[s])
+        z0 = omega / (response_kz * vts[s])
         for n in range(-lmx, lmx + 1):
-            zn = (omega - n * wcs[s]) / (kz * vts[s])
+            zn = (omega - n * wcs[s]) / (response_kz * vts[s])
             gamma = evaluate_bessel_gamma(n, b[s])
             g = complex(gamma["Gamma_n"])
             gp = complex(gamma["Gamma_prime_n"])
@@ -103,6 +104,12 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
                 [xz, -yz, zz],
             ])
         k_tensor[2, 2] += wps2[s] / omega**2 * 2.0 * z0**2
+
+    if kz < 0.0:
+        k_tensor[0, 2] = -k_tensor[0, 2]
+        k_tensor[1, 2] = -k_tensor[1, 2]
+        k_tensor[2, 0] = -k_tensor[2, 0]
+        k_tensor[2, 1] = -k_tensor[2, 1]
 
     d_tensor = k_tensor.copy()
     d_tensor[0, 0] -= nz**2

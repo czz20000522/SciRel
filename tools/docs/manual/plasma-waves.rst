@@ -413,6 +413,22 @@
    D_xz = D_zx = K_xz + n_x n_z
    det(D) = 0 给出本征模
 
+有符号 ``kz`` 的解释
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+对静态、无漂移、各向同性 Maxwellian，``kz`` 是有符号的平行波数。因果响应满足 ``K(kx,-kz)=P K(kx,kz) P``，其中 ``P=diag(1,1,-1)``；``D`` 也满足同样反射，行列式保持不变。实现内部以 ``|kz|`` 评估共振分母，再恢复四个混合分量的符号；``n_z`` 仍使用调用者传入的有符号 ``kz``。常规有限谐波路径的 ``|kz|<1e-10`` 仍钳位到 ``+1e-10``，所以零和近零边界属于该路径的既有数值约定。
+
+.. code-block:: python
+
+   plus = evaluate_kinetic_dispersion_relation(..., kz=159.0, kx_frac=0.5)
+   minus = evaluate_kinetic_dispersion_relation(..., kz=-159.0, kx_frac=0.5)
+   P = np.diag([1.0, 1.0, -1.0])
+   assert np.allclose(minus["K_sum_n"], P @ plus["K_sum_n"] @ P)
+   assert np.allclose(minus["D_ronnmark"], P @ plus["D_ronnmark"] @ P)
+   assert minus["determinant_sum_n"] == pytest.approx(plus["determinant_sum_n"])
+
+该反射是坐标对称性，不是把 ``kz`` 绝对值写回返回端口，也不改变电荷、回旋符号、谐波索引或 ``kx``。它只覆盖声明的静态 Maxwellian 条件；复杂频率、漂移、各向异性和其他近零分支仍需各自验证。
+
 ``evaluate_kinetic_dispersion_relation`` 在同一个平衡快照上同时计算两条路径：有限谐波求和（``lmx = 5``）和 Ronnmark 固定 ``J = 8`` 极点。它接受 SI 物种参数、以 eV 为单位的 ``T00``、无量纲频率比 ``omega_frac``、无量纲垂直波数比 ``kx_frac``，以及**绝对**平行波数 ``kz``。``omega`` 和 ``kx`` 由入口自己用 ``wn``、``kn`` 导出，调用者不要同时传绝对值和比例。
 
 取 ``omega_frac = 1000``、``kx_frac = 0.5``、``kz = 159 1/m``：
