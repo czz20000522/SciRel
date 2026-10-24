@@ -18,10 +18,12 @@ The first candidate workflow for the next authorized user task is **axisymmetric
 vacuum coil-field evaluation**: discover public field/geometry contracts, select
 the complete contract, state any grid aggregation as explicit glue, execute in a
 task-owned environment, read back field/profile artifacts, then independently
-check symmetry/limit/shape constraints. Its status is `NOT_STARTED` here; a
-real request, neutral inputs, acceptance thresholds, and owner must be fixed
-before execution. Scientific correctness, rights, and human acceptance remain
-separate from structural admission.
+check symmetry/limit/shape constraints. Its status is `source-backed development
+execution COMPLETE` here; `wheel-Famou acceptance NOT_RUN`. The completed task
+used 84 already-expanded circular-filament inputs; the rectangular
+`coils-to-filament` requirement is `NOT_READY` for this input. Scientific
+correctness, rights, and human acceptance remain separate from structural
+admission.
 
 ## Current public boundary
 
