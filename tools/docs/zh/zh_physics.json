@@ -732,7 +732,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
-   "source_sha256": "d157fb5020ed2df62fd9af48492dbe5c9573dbd8880c992a8efd8a6565c80cf4",
+   "source_sha256": "2cbff5691356bbb779a73e329681bf802881a433b9843e60c63f3e9b1573d648",
    "summary": "使用有限回旋谐波求和，为磁化 Maxwellian 多组分等离子体组装 x-z 平面的动力学介电张量、Maxwell 色散张量及其行列式。",
    "definition": "omega=2*pi*f；vts=sqrt(2*kB*T_s/m_s)；wcs=q_s*B0/m_s；wps2=n_s*q_s^2/(m_s*epsilon0)；a_s=kx*sqrt(kB*T_s/m_s)/wcs；b_s=a_s^2；z_n=(omega-n*wcs)/(kz*vts)。使用 Gamma_n(b)、Gamma_prime_n(b) 和解析 Z(z_n)，在 n=-lmx..lmx 范围求和，各组分项的权重为 (wps2/omega^2)*z_0*Z(z_n)。按既有磁化率分量约定组装 K，再减去 Maxwell 旋度项得到 D 及其行列式。符号约定为 K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)。",
    "model": "均匀磁化 Maxwellian 多组分等离子体的截断常规回旋谐波求和；使用 SciRel 解析 Faddeeva Z，而非有限阶 Weideman 实现。",
@@ -3241,7 +3241,7 @@
   },
   {
    "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
-   "source_sha256": "b4771629cf7d711aea4f977f68f1650a733a2309a9d9307f86cff4f702ce5b92",
+   "source_sha256": "31f4fb5b32e4db10bfaae950e11c6e2df6bfe052ffd2b5b2abf9d231e8943e38",
    "summary": "按默认 lmx=15 的谐波截断计算介电张量和色散张量的全部九个分量。",
    "definition": "对 l=-lmx..lmx 的 Maxwellian 谐波贡献求和，通过 Maxwell 旋度项由 K 形成 D，并用显式六项展开式计算其行列式。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -5381,7 +5381,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-sum-fluid",
-   "source_sha256": "e7f6d78e2efaef42b1a40515c34b7ea168703954d012eea4761ba3978aaed0c2",
+   "source_sha256": "1cc0c64b772798baaf5f00f7d7361479049f69ae53677f79fdc92c10f447191b",
    "summary": "使用有限回旋谐波求和组装 Maxwellian 等离子体的 3×3 动力学张量，并对近零 kz 施加正向钳位。",
    "definition": "使用缩放 Bessel Gamma 项和 N=64 Weideman Z，对 -lmx 至 lmx 的谐波求和；在 K 中加入 Maxwell 旋度项得到 D，再计算 determinant=det(D)。",
    "model": "均匀磁化 Maxwellian 等离子体",
@@ -7370,7 +7370,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-ronnmark",
-   "source_sha256": "35a99d99065cdd390c2bd8daee05c45510c97a8e02120c3b6a501120fadf5f35",
+   "source_sha256": "19c04f399408d6a91326ab13941687fcc7cade8bfa27ce9820513a7076d714d2",
    "summary": "计算 J=8 有理极点形式的 3×3 动力学张量和色散行列式，允许复数 kx 与零 kz。",
    "definition": "用 J=8 共振极点和 Ronnmark R 函数替代 Z 与谐波响应，加入 Maxwell 旋度项后计算 det(D)。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
@@ -8944,7 +8944,7 @@
   },
   {
    "asset_id": "scirel.kinetic.kinetic-dispersion-relation",
-   "source_sha256": "c41ca08db00509810aacbe0b3ebc9f563d99371ec22d90823fb33a466870cce7",
+   "source_sha256": "cbef34e7409c3eb08a09e8228e1aa67bd87e42e82373f5c3b682881551ef884c",
    "summary": "在同一个由平衡状态导出的波点，分别计算常规有限谐波求和与 Ronnmark 色散行列式。",
    "definition": "任务图导出 omega=omega_frac*wn、kx=kx_frac*kn 和 f=omega/(2*pi)，随后用同一 SI 组分状态计算 Weideman 求和路径与 Ronnmark 路径。",
    "model": "均匀磁化多组分 Maxwellian 等离子体",
