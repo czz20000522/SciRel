@@ -7,8 +7,8 @@ current identity. Historical checkpoints and resolved work remain in Git.
 
 ## Current baseline and next outbound entry
 
-The current development baseline is clean `HEAD=d9ca1001` (verify live before
-acting). The bounded maintenance gate is canonical in
+This batch started from a clean `d9ca1001`; read the current identity live with
+`git rev-parse HEAD` and `git status` before acting. The bounded maintenance gate is canonical in
 [`RULES.md` section 12](RULES.md#12-baseline-and-outbound-batch-gate), and the
 outbound worker entry is `skills/development/usage/scirel-solving/SKILL.md`.
 This batch records the gate only; it does not rebuild a wheel, alter a frozen
