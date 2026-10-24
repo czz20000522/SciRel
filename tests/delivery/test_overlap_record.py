@@ -1,6 +1,7 @@
 """Reception overlap records state overlap only; they carry no merge decision."""
 
 import importlib.util
+import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -30,6 +31,17 @@ def _record():
 def test_valid_overlap_record_passes():
     result = overlap.validate_record(_record())
     assert result["status"] == "PASS", result["errors"]
+
+
+def test_schema_and_validator_share_unversioned_contract():
+    schema = json.loads((ROOT / "contracts" / "reception" / "overlap-record.schema.json").read_text())
+    assert schema["required"] == ["schema", "records"]
+    assert "schema_version" not in schema["properties"]
+    versioned = _record()
+    versioned["schema_version"] = "1.0"
+    result = overlap.validate_record(versioned)
+    assert result["status"] == "FAIL"
+    assert any("allowed properties" in error for error in result["errors"])
 
 
 def test_none_requires_no_matches():

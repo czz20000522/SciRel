@@ -7,16 +7,11 @@
  "additionalProperties": false,
  "required": [
   "schema",
-  "schema_version",
   "records"
  ],
  "properties": {
   "schema": {
    "const": "scirel.overlap-record"
-  },
-  "schema_version": {
-   "type": "string",
-   "pattern": "^\\d+\\.\\d+(\\.\\d+)?$"
   },
   "records": {
    "type": "array",
