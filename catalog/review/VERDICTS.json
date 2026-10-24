@@ -3,9 +3,9 @@
  "policy": "Every catalog asset has exactly one verdict; exposed assets must be pass or pass-with-limits, held assets human-review, and blocked/not-audited assets cannot be exposed. Historical report claims and candidate identities are separate from current maintenance overlays. Current material and retained-report digests identify bytes only; historical candidate identity and Markdown claim binding remain UNKNOWN. Locatable fixes/tests do not establish execution.",
  "historical_candidate_identity": "UNKNOWN",
  "current_candidate": {
-  "base_revision": "df68a29098c7d740247214667ea90900ba17dc60",
+  "base_revision": "b02dbdad82dfa6485a6d587aa0f5dd7852971c7c",
   "identity_scope": "current-materials-only",
-  "material_sha256": "67d73713f0c8467fff95606bd16bfd8708c9b281c34d30b30cba9f00215f34b9"
+  "material_sha256": "cdd9b68fe101bef3bd44a54fd14191f7bb1c309d32b09983572b0d773084948c"
  },
  "report_bindings": {
   "catalog/review/evidence/audit-d1.csv": {
@@ -36,7 +36,7 @@
    }
   },
   "catalog/review/evidence/audit-d4.csv": {
-   "retained_sha256": "69faab4e92667abc27e620b315addf24483ee7ca90fbf437394e73f0f2d861d3",
+   "retained_sha256": "8ee9ff3b814cc781fda9bce084dd3d21a8cf9d09c21468e854d74618e6e52a43",
    "format": "csv",
    "claim_fields": {
     "verdict": "verdict",
@@ -972,7 +972,7 @@
      "report": "catalog/review/evidence/audit-d4.csv",
      "verdict": "pass",
      "oracle": "independent-analytic",
-     "residual_risk": "Pleiades full-array test skips when gitignored truth absent; fixed spot anchors still run. No material coils/3D. Flags: no-limit/singular/extreme-test-signal, template-copied-contract-text, test-file-has-skips/xfails"
+     "residual_risk": "Tracked Pleiades fixture full-array comparison runs; fixed spot anchors also run. No material coils/3D. Flags: no-limit/singular/extreme-test-signal, template-copied-contract-text, test-file-has-skips/xfails"
     }
    ]
   },

@@ -162,18 +162,18 @@
    "Current-versus-filament-weight semantics.",
    "Missing-current and empty-grid failures, with nonempty singleton-axis grids retained.",
    "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields.",
-   "Fixed Pleiades two-coil reference values and, when the external truth artifact is present, the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py.",
-   "scripts/build_pleiades_truth.py regenerates the same external Pleiades truth from a caller-supplied source checkout; the fixed reference constants remain resident and the full-array comparison skips when the generated artifact is absent."
+   "Fixed Pleiades two-coil reference values and the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py using the tracked domain fixture.",
+   "scripts/build_pleiades_truth.py writes only an explicitly named candidate from a caller-supplied source checkout; it never overwrites the tracked fixture or vendors source."
   ],
   "tests": [
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
    "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
   ],
-  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: fixed Pleiades external reference constants; the full-array comparison is skipped when the gitignored `dist/reference-truth/simple-two-coil` artifact is absent. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists.",
+  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: the tracked Pleiades simple-two-coil fixture (`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`) and its provenance; the full 9x9 arrays are compared on every run. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists.",
   "known_limitations": [
    "No field cache or device object is kept between calls.",
    "No feedback, optimization, or conductor-material model is included.",
-   "The fixed Pleiades spot references always run; the full-array comparison is skipped when the gitignored `dist/reference-truth/simple-two-coil` artifact is absent, and malformed/empty coil lists remain excluded."
+   "The fixed Pleiades spot references and full-array comparison run on every test invocation; malformed/empty coil lists remain excluded."
   ]
  },
  "composition": {

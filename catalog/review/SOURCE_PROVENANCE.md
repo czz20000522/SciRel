@@ -56,6 +56,9 @@ evidence gap, distinct from mathematical parity.
 ## Pleiades equilibrium / inversion
 
 - upstream Pleiades commit: `0161abb3e9a1d85143c650f068ec524d672fc9ab`
+- simple-two-coil external truth fixture: `tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil/`
+- simple-two-coil source archive SHA-256: `f86cfec618690e41a669d692ff195a775f756d2a654fc3e41d8175bf328381b3`
+- simple-two-coil fixture SHA-256: `TRUTH.json` `87bbcb11ba31b185fd66a4d7c5c23aa54a5e79a4586ee81fee3116e8769ee208`; `truth.npz` `5eb45d93dedbab05a8cfbeb372b9a29fe7c2850fc8540abd3ffdb15d7028d996`; `SCIREL_COMPARISON.json` `64d2bc685b57fd40017847682da85ee7f1e0cb9333656f6b0cf4aed7ee66ee29`
 - Pleiades delivery source commit: `e4ec86fa72d7cdbf74c4799f16127c8b099e7c00`
 - axisymmetric admitted graph: `task_graphs/新版轴对称各向异性Picard平衡/graph.py` sha256 `3de0fc07...`, `task_graph.yaml` sha256 `3410647a...`, `vcommit_9ed34...`
 - direct inversion admitted graph: `task_graphs/直接各向异性参数反演/graph.py` sha256 `6d1c3b52...`, `task_graph.yaml` sha256 `997b3335...`, `vcommit_d196...`

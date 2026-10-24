@@ -9583,7 +9583,7 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "a1badd60ea4e00776f6d48e1f14593a33434916e7ab01fbbd1311ea597bc4de6",
+   "source_sha256": "5e69e32c8ba023f38bc206280b36aa50b2246e52839fc0fc308de6a09a15d486",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
    "definition": "逐个离散调用者线圈、附加电流丝权重并计算按目标点排序的 Green 响应。每个线圈占一列，组成 [N_target,N_coil] 矩阵，沿轴 1 与 [N_coil] 驱动电流向量收缩，再重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
@@ -9668,14 +9668,14 @@
      "电流与电流丝权重的区分。",
      "缺失电流和空网格的失败行为，并保留非空单点轴网格。",
      "不可表示的近导线或大电流响应以失败闭合，而不是返回非有限场。",
-     "固定 Pleiades 双线圈参考值以及存在外部 truth artifact 时的完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 覆盖。",
-     "scripts/build_pleiades_truth.py 用调用者提供的外部 Pleiades source checkout 重新生成同一 truth；固定参考常量仍常驻，artifact 缺失时完整数组测试跳过。"
+     "固定 Pleiades 双线圈参考值以及完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 使用领域内受跟踪 fixture 覆盖。",
+     "scripts/build_pleiades_truth.py 只用调用者提供的外部 Pleiades source checkout 写入显式指定的候选输出；不会覆盖受跟踪 fixture，也不会携带 source。"
     ],
-    "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应列。证据：`test_composition_multi_coil_vacuum_field.py` 检验独立线圈响应列、电流缩放、空网格拒绝与单点轴接受； `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：固定 Pleiades 外部参考常数；当被 gitignore 的 `dist/reference-truth/simple-two-coil` 工件缺失时跳过全数组比较。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。",
+    "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应列。证据：`test_composition_multi_coil_vacuum_field.py` 检验独立线圈响应列、电流缩放、空网格拒绝与单点轴接受； `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：受跟踪的 Pleiades simple-two-coil fixture（`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`）及其 provenance；每次都比较完整 9×9 数组。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。",
     "known_limitations": [
      "调用之间不保留场缓存或设备对象。",
      "不含反馈、优化或导体材料模型。",
-     "固定 Pleiades 点值参照始终运行；当被 gitignore 的 `dist/reference-truth/simple-two-coil` 工件缺失时跳过全数组比较，畸形/空线圈列表仍被排除。"
+     "固定 Pleiades 点值参照和完整数组比较每次都运行，畸形/空线圈列表仍被排除。"
     ],
     "tests": [
      "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",

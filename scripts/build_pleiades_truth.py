@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Regenerate the external Pleiades simple-two-coil reference truth.
 
-The generator imports a caller-supplied Pleiades checkout and writes the source
-truth consumed by ``tests/cross_domain/multi_coil_vacuum_field``.  It never
-vendors or copies Pleiades source; ``--source-root`` is a runtime input only.
-The committed test keeps fixed reference constants, and the full-array test is
-skipped when the generated artifact is absent.
+The generator imports a caller-supplied Pleiades checkout and writes a
+candidate source truth.  It never vendors or copies Pleiades source;
+``--source-root`` is a runtime input only.  ``--output`` is required so a
+caller chooses an explicit candidate directory; the tracked domain fixture is
+never a default or an implicit overwrite target.
 
 Example::
 
@@ -13,8 +13,8 @@ Example::
         --source-root /path/to/pleiades \
         --source-archive /path/to/pleiades-0161abb3.zip
 
-The fixed source revision is the independent oracle recorded by
-``dist/reference-truth/simple-two-coil/TRUTH.json``.
+The fixed source revision is the independent oracle recorded by the tracked
+domain fixture under ``tests/fixtures/multi_coil_vacuum_field``.
 """
 from __future__ import annotations
 
@@ -44,7 +44,10 @@ COILS = (
     {"r0": 0.45, "z0": 0.15, "nr": 2, "nz": 2, "dr": 0.04, "dz": 0.05, "current": -800.0},
 )
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT = ROOT / "dist" / "reference-truth" / "simple-two-coil"
+FORMAL_FIXTURE = (
+    ROOT / "tests" / "fixtures" / "multi_coil_vacuum_field"
+    / "pleiades_simple_two_coil"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -161,8 +164,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="explicit archive SHA-256 when the archive is unavailable")
     parser.add_argument("--source-commit", default=None,
                         help="explicit source commit when the source tree has no .git metadata")
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT,
-                        help=f"output directory (default: {DEFAULT_OUTPUT.relative_to(ROOT)})")
+    parser.add_argument("--output", required=True, type=Path,
+                        help="explicit candidate output directory (never the formal fixture)")
     parser.add_argument("--allow-other-commit", action="store_true",
                         help="allow a source revision other than the recorded oracle revision")
     parser.add_argument("--allow-other-archive", action="store_true",
@@ -200,6 +203,10 @@ def main(argv: list[str] | None = None) -> int:
 
     fields = build_arrays(source_root)
     output = args.output.resolve()
+    if output == FORMAL_FIXTURE.resolve() and not args.check:
+        raise SystemExit(
+            "refusing to write the formal tracked fixture; choose an explicit candidate directory"
+        )
     if args.check:
         check_existing(output, fields)
         print(f"Pleiades truth matches existing artifact: {output}")

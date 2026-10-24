@@ -1,0 +1,41 @@
+{
+  "source": "Pleiades",
+  "source_commit": "0161abb3e9a1d85143c650f068ec524d672fc9ab",
+  "source_archive_sha256": "f86cfec618690e41a669d692ff195a775f756d2a654fc3e41d8175bf328381b3",
+  "compatibility_patch": "pleiades/fields.py and current_sets.py: collections.Iterable -> collections.abc.Iterable (Python 3.14 import only)",
+  "grid": {
+    "rmin": 0.0,
+    "rmax": 0.8,
+    "zmin": -0.4,
+    "zmax": 0.4,
+    "nr": 9,
+    "nz": 9
+  },
+  "coils": [
+    {
+      "r0": 0.45,
+      "z0": -0.15,
+      "nr": 2,
+      "nz": 2,
+      "dr": 0.04,
+      "dz": 0.05,
+      "current": 1000.0
+    },
+    {
+      "r0": 0.45,
+      "z0": 0.15,
+      "nr": 2,
+      "nz": 2,
+      "dr": 0.04,
+      "dz": 0.05,
+      "current": -800.0
+    }
+  ],
+  "arrays": {
+    "psi_vac": "Wb/rad",
+    "b_r_vac": "T",
+    "b_z_vac": "T",
+    "order": "[N_Z,N_R]"
+  },
+  "note": "Independent Pleiades source truth; SciRel is not used to generate this file."
+}

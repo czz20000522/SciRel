@@ -68,11 +68,13 @@ After a successful task, remove its scratch, duplicate environments and caches.
 | --- | --- | --- | --- |
 | `dist/docs-*`, `dist/scirel-docs-*.tar.gz`, consumer bundles / transport archives | rendered documentation and immutable delivery snapshots | while actively used or required for verification | rebuild to a new target at a named commit; retire old outputs only after verifying replacement and ending their continuing use |
 | `dist/reference-truth/` | external oracle artifacts used by tests/reports | while referenced by a test, acceptance record or decision | keep the `TRUTH.json` provenance and generator script; delete only after the reference is retired and the test is updated |
+| `tests/fixtures/<domain>/` | reviewed, tracked domain fixtures used directly by tests | while the supported test and its evidence remain active | preserve byte identity and provenance; retire only with the consumer, contract evidence and generator/decision update |
 | `dist/acceptance/` | acceptance verdicts | project lifetime or release cycle | archive with the release; never silently replace |
 
 Generated artifacts are gitignored. They are reproducible products, not source
-truth; a test must not depend on a hidden artifact without a documented
-generation path and a skip/fixture rule.
+truth; a test may use a reviewed tracked fixture when its provenance and
+candidate-generation path are documented. Candidate outputs must remain
+separate from the formal fixture and must not overwrite it by default.
 
 ## Notion and local skills
 

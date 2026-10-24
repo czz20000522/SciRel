@@ -1,18 +1,14 @@
 """Repeatable Pleiades external-truth probe for the multi-coil field/green path.
 
-The generated ``dist/reference-truth/simple-two-coil`` artifact is not tracked
-in Git.  It can be regenerated explicitly with
-``scripts/build_pleiades_truth.py --source-root <external Pleiades checkout>``;
-the script never vendors Pleiades source.  The fixed reference constants below
-are copied from that independent truth (``TRUTH.json`` grid/coils and
-``truth.npz`` spot values) so the field and Green paths always have an external
-numeric anchor; when the artifact is present, the full arrays are compared as
-well, and that full-array test skips when it is absent.
+The reviewed Pleiades truth is a tracked domain fixture.  The generator in
+``scripts/build_pleiades_truth.py`` writes only an explicitly named candidate
+output and never vendors Pleiades source or overwrites this fixture.  The fixed
+reference constants below are copied from that independent truth so the field
+and Green paths retain an external numeric anchor.
 """
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from scirel.field.circular_filament_green import circular_filament_green_response
 from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
@@ -21,8 +17,7 @@ from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
 
 
 ROOT = Path(__file__).resolve().parents[3]
-TRUTH_DIR = ROOT / "dist" / "reference-truth" / "simple-two-coil"
-HAS_TRUTH_ARTIFACT = (TRUTH_DIR / "truth.npz").is_file()
+TRUTH_DIR = ROOT / "tests" / "fixtures" / "multi_coil_vacuum_field" / "pleiades_simple_two_coil"
 
 # Independent Pleiades source truth: TRUTH.json grid and rectangular-coil records.
 PLEIADES_SOURCE_COMMIT = "0161abb3e9a1d85143c650f068ec524d672fc9ab"
@@ -138,10 +133,6 @@ def test_fixed_reference_values_match_dense_green_matrices():
         _assert_reference(fields[field].reshape(r_grid.shape), field)
 
 
-@pytest.mark.skipif(
-    not HAS_TRUTH_ARTIFACT,
-    reason="Pleiades truth artifact is absent (dist/reference-truth is gitignored)",
-)
 def test_multi_coil_matches_full_pleiades_truth_arrays():
     import json
 
