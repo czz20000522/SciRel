@@ -5,6 +5,24 @@ Read `AGENTS.md`, `RULES.md`, `catalog/README.md`, and
 is `/Users/tomczz/Projects/SciReL`; use `git rev-parse HEAD` and `git status` for
 current identity. Historical checkpoints and resolved work remain in Git.
 
+## Current baseline and next outbound entry
+
+The current development baseline is clean `HEAD=344e97ab` (verify live before
+acting). The bounded maintenance gate is canonical in
+[`RULES.md` section 12](RULES.md#12-baseline-and-outbound-batch-gate), and the
+outbound worker entry is `skills/development/usage/scirel-solving/SKILL.md`.
+This batch records the gate only; it does not rebuild a wheel, alter a frozen
+case/package, or start a new scientific run.
+
+The first candidate workflow for the next authorized user task is **axisymmetric
+vacuum coil-field evaluation**: discover public field/geometry contracts, select
+the complete contract, state any grid aggregation as explicit glue, execute in a
+task-owned environment, read back field/profile artifacts, then independently
+check symmetry/limit/shape constraints. Its status is `NOT_STARTED` here; a
+real request, neutral inputs, acceptance thresholds, and owner must be fixed
+before execution. Scientific correctness, rights, and human acceptance remain
+separate from structural admission.
+
 ## Current public boundary
 
 - Public capabilities: **247**; current contracts are `catalog/examples/`.

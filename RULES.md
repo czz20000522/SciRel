@@ -137,3 +137,38 @@ When a new durable preference appears:
 
 This file is itself the meta-rule: **if it is valuable, it is written down where
 the next owner will find it.**
+
+## 12. Baseline and outbound batch gate
+
+Use this short gate for each bounded maintenance or outbound batch. `RULES.md`
+is the canonical checklist; `HANDOFF.md` records the current revision and
+Notion records the decision/history.
+
+1. **Preflight:** record owner, scope, non-goals, current `HEAD`, clean/dirty
+   state, input/runtime identity, and lifecycle/cleanup condition. Keep
+   `PASS`, `NOT_RUN`, `HOLD`, `BLOCKED`, and `UNKNOWN` distinct.
+2. **Red → green:** reproduce the requested failure or missing evidence with
+   the smallest affected check, then make the minimal change. Do not refresh a
+   historical result or use file existence as run evidence. Select checks with
+   `scripts/test_scope.py --changed` and expand local → affected domain/cross
+   domain → docs/tooling/delivery as the change requires.
+3. **Independent review:** reread the diff and evidence from a separate review
+   pass. Confirm contract → implementation → direct test → example → bilingual
+   projection bindings; generated output is not approval. Scientific correctness,
+   rights, and human acceptance remain separate decisions.
+4. **Current binding:** bind only current source/material digests and actual
+   commands. Preserve old failures and `UNKNOWN`/`NOT_RUN`; do not rewrite
+   history or release a new wheel/package unless explicitly authorized.
+5. **Commit and clean:** commit the bounded tracked change, then remove expired
+   staging, caches, temporary packages, branches/worktrees/sessions and
+   environments whose owner and exit condition are satisfied. Read back the
+   cleanup; retain only final artifacts and minimum evidence.
+6. **Record:** update `HANDOFF.md` and the existing Notion record with scope,
+   evidence, unresolved status, next authorized action, and the exact first
+   candidate workflow when outbound work is next. Never treat chat as the sole
+   handoff.
+
+For outbound work the worker receives only the user request and public
+contracts/docs. The executable path is **discover → select contract → explicit
+glue → execute → readback → independent acceptance**. Source identity, hidden
+oracle, receiver roadmap, and private acceptance material stay with the owner.
