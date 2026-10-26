@@ -24,9 +24,13 @@ immutable integration delivery), and `contract-semantic-audit-20261023/`
 (open remediation evidence). These retained roots are historical or frozen,
 not the current source baseline.
 
+The affected architecture/docs/tooling run recreated 21 source-package cache
+directories; a second exact safe-delete pass removed 136 files and 1,180,676
+logical bytes. The final readback has no project `__pycache__` directories.
+
 The current source identity is always the live output of `git rev-parse HEAD`
 and `git status --porcelain`; the preceding closeout commit was
-`878b9891d9e9a2449981545428bca8c3ee149d3e`, and this handoff refresh
+`d370651bc087862a5aba19db8bf5b0d1940ab896`, and this handoff refresh
 supersedes it as the clean baseline.
 The public catalog is 249 assets, with one human-review hold
 `scirel.inference.direct-anisotropic-inversion`. Docs tests and asset schema
