@@ -1,5 +1,37 @@
 # SciRel current handoff
 
+## 2026-10-26 skill lifecycle and residue cleanup
+
+The development package now has one executable artifact closeout reference at
+`skills/development/references/artifact-lifecycle-closeout.md`. The cleanup
+route uses it together with `catalog/RECORDS.md`, separates process records,
+current results, temporary runtime products and frozen deliveries, and
+requires exact disposition plus filesystem/Git/consumer readback. Stale skill
+links were rebound to the current contracts and record policy; SciRel's
+development route no longer asks for AOCI maintenance. The tracked policy
+change is `fe87dddf` (`DOC: close artifact lifecycle and cleanup loop`).
+
+The cleanup pass retired 42 exact targets: the stale 247-asset `.runtime`
+documentation snapshot, superseded 2026-10-22 documentation/review snapshots,
+synthetic query-maintenance output, package metadata scratch, an empty
+maintenance directory, repository `.DS_Store` files and project
+`__pycache__` directories. The safe-delete plan covered 4,788 files and
+143,241,495 logical bytes; its apply receipt is outside the repository. The
+canonical development `.venv` was retained. The remaining `dist` roots are
+intentional: `acceptance/` (project acceptance), `reference-truth/` (external
+oracle used by acceptance evidence), `famou-pure-20261022-20afa0cc/` (private
+immutable integration delivery), and `contract-semantic-audit-20261023/`
+(open remediation evidence). These retained roots are historical or frozen,
+not the current source baseline.
+
+The current source identity is always the live output of `git rev-parse HEAD`
+and `git status --porcelain`; this handoff commit is the new clean baseline.
+The public catalog is 249 assets, with one human-review hold
+`scirel.inference.direct-anisotropic-inversion`. Docs tests and asset schema
+validation are the current scoped checks; full suite, wheel, platform,
+release, rights and human-scientific acceptance remain `NOT_RUN` unless a
+future task explicitly opens those gates.
+
 ## 2026-10-25 modal numerics integration batch
 
 Integrated the admitted reference-cell orthonormal modal basis and modal
