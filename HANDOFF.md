@@ -21,8 +21,10 @@ current identity. Historical checkpoints and resolved work remain in Git.
 
 ## Current baseline and next outbound entry
 
-This batch started from a clean `d9ca1001`; read the current identity live with
-`git rev-parse HEAD` and `git status` before acting. The bounded maintenance gate is canonical in
+This batch started from a clean `d9ca1001`; the 2026-10-26 baseline recheck was
+`b49ab1ac3bfb4710349f490af1009485543a17cc` with a clean worktree. Read the
+current identity live with `git rev-parse HEAD` and `git status` before acting.
+The bounded maintenance gate is canonical in
 [`RULES.md` section 12](RULES.md#12-baseline-and-outbound-batch-gate), and the
 outbound worker entry is `skills/development/usage/scirel-solving/SKILL.md`.
 This batch records the gate only; it does not rebuild a wheel, alter a frozen
@@ -41,7 +43,7 @@ admission.
 
 ## Current public boundary
 
-- Public capabilities: **247**; current contracts are `catalog/examples/`.
+- Public capabilities: **249**; current contracts are `catalog/examples/`.
 - Human-review hold: **1**, `scirel.inference.direct-anisotropic-inversion`.
   Its implementation and contract remain in the review tree and are excluded
   from the installed package, discovery index, API pages and runnable tutorials.

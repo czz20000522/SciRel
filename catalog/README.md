@@ -90,7 +90,7 @@ A contract must let a consumer **find and select** a capability, not only call i
 The discovery view uses nine fields. `ports` and `evidence` are deterministic
 projections of `inputs`/`outputs` and `verification` and are deliberately **not**
 stored in the contract; six reviewed fields are carried by the optional top-level
-`discovery` block, and `aliases` stays the existing top-level list. All 247 public
+`discovery` block, and `aliases` stays the existing top-level list. All 249 public
 contracts and the one held contract currently carry this block. Its presence is
 not a scientific approval or a generic-device claim.
 The `asset_id` stays the only stable key, and `taxonomy` stays browsing
@@ -153,7 +153,7 @@ and tests.
 The schema carries `discovery.device_scope` directly; no external table is needed.
 An absent `discovery.device_scope` still means `unclassified`, never `generic`.
 The current public contracts classify 198 assets as `generic`, 43 as
-`device-parameterized`, three as `device-bound` and three as `unclassified`.
+`device-parameterized`, three as `device-bound` and five as `unclassified`.
 The held contract is classified as `generic`, which does not change its hold.
 The current `device-bound` assets are
 `scirel.electromagnetism.brb` (fixed BRB composition),
