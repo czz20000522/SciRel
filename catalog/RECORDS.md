@@ -41,6 +41,23 @@ outcome in the existing task; a policy edit alone is not completed cleanup.
 These are process truth, not scientific truth; the contract remains the single
 scientific truth.
 
+## Separate process records from results
+
+Process records describe a reusable method or obligation and stay in their
+canonical tracked location. Results describe one exact source/runtime/command
+observation and must carry its scope, status, and claim ceiling. Temporary
+runtime products are disposable after their useful finding is condensed into
+the existing task, handoff, review, or Notion record. Frozen deliveries and
+truth fixtures remain byte-exact while a named consumer, test, acceptance, or
+decision still uses them. A historical result may be retained as evidence but
+must never be presented as the current baseline.
+
+Every named checkpoint that creates generated output closes with an exact
+disposition receipt: path, owner, consumer, `RETAIN`/`RETIRE`/`HOLD`, reason,
+end condition, and readback. Do not create a second artifact registry; use the
+existing task and handoff records. If ownership or continuing use is unclear,
+keep the path and record `UNKNOWN` or `HOLD` rather than deleting it.
+
 ## Transient work products
 
 | location | contents | lifetime | cleanup |

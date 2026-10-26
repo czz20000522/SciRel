@@ -162,7 +162,10 @@ Notion records the decision/history.
 5. **Commit and clean:** commit the bounded tracked change, then remove expired
    staging, caches, temporary packages, branches/worktrees/sessions and
    environments whose owner and exit condition are satisfied. Read back the
-   cleanup; retain only final artifacts and minimum evidence.
+   cleanup; retain only final artifacts and minimum evidence. For every named
+   generated artifact, record its process/result/temporary/frozen class and an
+   exact `RETAIN`/`RETIRE`/`HOLD` disposition before mutation; no age, name, or
+   broad glob is a deletion rule.
 6. **Record:** update `HANDOFF.md` and the existing Notion record with scope,
    evidence, unresolved status, next authorized action, and the exact first
    candidate workflow when outbound work is next. Never treat chat as the sole
