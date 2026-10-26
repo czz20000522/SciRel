@@ -25,12 +25,16 @@ immutable integration delivery), and `contract-semantic-audit-20261023/`
 not the current source baseline.
 
 The current source identity is always the live output of `git rev-parse HEAD`
-and `git status --porcelain`; this handoff commit is the new clean baseline.
+and `git status --porcelain`; the preceding closeout commit was
+`878b9891d9e9a2449981545428bca8c3ee149d3e`, and this handoff refresh
+supersedes it as the clean baseline.
 The public catalog is 249 assets, with one human-review hold
 `scirel.inference.direct-anisotropic-inversion`. Docs tests and asset schema
-validation are the current scoped checks; full suite, wheel, platform,
-release, rights and human-scientific acceptance remain `NOT_RUN` unless a
-future task explicitly opens those gates.
+validation passed; the affected architecture/docs/tooling scope was 361
+passed with one pre-existing failure in the multi-coil-vacuum-field complex
+mapping binding check. Full suite, wheel, platform, release, rights and
+human-scientific acceptance remain `NOT_RUN` unless a future task explicitly
+opens those gates.
 
 ## 2026-10-25 modal numerics integration batch
 
