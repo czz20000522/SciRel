@@ -12,6 +12,7 @@ __all__ = [
     "normalized_momentum",
     "thermal_electron_momentum",
     "average_cross_section_over_maxwellian",
+    "evaluate_fast_ion_stopping_increment",
     "evaluate_janev_electron_impact_ionization_rate",
     "evaluate_atomic_hydrogen_charge_exchange_rate",
     "evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
@@ -31,6 +32,9 @@ __all__ = [
 
 
 _LAZY_EXPORTS = {
+    "evaluate_fast_ion_stopping_increment": (
+        "fast_ion_stopping_increment", "evaluate_fast_ion_stopping_increment"
+    ),
     "BesselBackendEvaluationError": ("relativistic_maxwellian_bessel", "BesselBackendEvaluationError"),
     "InvalidBesselArgumentError": ("relativistic_maxwellian_bessel", "InvalidBesselArgumentError"),
     "relativistic_maxwellian_bessel": ("relativistic_maxwellian_bessel", "relativistic_maxwellian_bessel"),

@@ -372,6 +372,55 @@ The last call deliberately sets the background flow velocity equal to the actual
 
 What this section does not establish: this is a local moment-matching reduction, not a complete Boltzmann collision operator; a finite velocity/angle mesh does not guarantee an exact Maxwellian equilibrium; a negative ratio is retained but does not constitute an acceptable nonnegative BGK relaxation; and single-cell results do not replace spatial coupling, time advance or convergence studies.
 
+Another local question: how much stopping cross section do fast ions add?
+-------------------------------------------------------------------------
+
+Given a local neutral-beam deposition power density, an electron slowing time and the beam-particle birth direction, one can evaluate a separate fast-ion stopping increment. The chosen pitch is the cosine of that birth direction relative to the magnetic axis. It is not an angle, and no equivalence to a toroidal or full-local-field direction is inferred.
+
+The empirical model fixes pitch diffusion at ``y=0.6``. Let ``T=te/10000`` and ``r=((E/A)/1e6)/T``. With the specified energy polynomial ``F(r)`` and pitch polynomial ``G(min(1,abs(cosine)))``, it evaluates
+
+.. code-block:: text
+
+   S = power_density / (E * 1.602176462e-19)
+   delta_sigma = (S * slowing_time / ne) * T^(-0.9027) * F(r) * G(p) * 1e-19 m^2
+
+Power density is in W/m^3, so ``S`` is in m^-3 s^-1 and ``S*slowing_time/ne`` is dimensionless. The call infers no volume from total power, estimates no slowing time and reconstructs no beam path or magnetic field.
+
+.. code-block:: python
+
+   import numpy as np
+   from scirel.collisions import evaluate_fast_ion_stopping_increment
+
+   increment = evaluate_fast_ion_stopping_increment(
+       beam_mass_number=1.0,
+       beam_energy_ev=100000.0,
+       birth_pitch_cosine=0.5,
+       electron_density_m3=1e18,
+       electron_temperature_ev=10000.0,
+       power_density_w_m3=1e6,
+       electron_slowing_time_s=1.0,
+   )
+   np.testing.assert_allclose(
+       increment, [[1.9645775636530587e-18]], rtol=5e-12, atol=1e-300,
+   )
+   print(increment.shape)
+   print(increment.dtype)
+   print(f"{increment[0, 0]:.17g} m^2")
+
+Actual output:
+
+.. code-block:: text
+
+   (1, 1)
+   float64
+   1.9645775636530587e-18 m^2
+
+This is an additional area, about ``1.96e-18`` m^2 for the seven supplied inputs; it does not supply the total cross section needed for attenuation. All-scalar calls still return a two-dimensional ``(1,1)`` array. One-dimensional inputs become rows; N-dimensional inputs align leading axes and append singleton axes on the right of lower-rank arrays.
+
+The finite positive example is not a guarantee over the full input domain. Only the energy polynomial is overwritten with zero for ``r>pi``; equality is not cut off, and infinities or undefined values in other factors can still make the final result nonfinite. NaN pitch maps to one under the absolute-pitch cap, negative temperature can produce complex values, and zero power does not bypass division by energy. These arithmetic outcomes do not qualify physical plasma states.
+
+The qualitative low-density/high-energy setting supplies no calibration interval, species coverage or error bound. Numerical verification of the fixed expression does not replace human scientific acceptance, which remains pending. Full coefficients, strict boundaries and evidence limits are in :doc:`../reference/generated/scirel.collisions.fast-ion-stopping-increment`.
+
 Choosing entry points, common pitfalls, and what this chapter does not cover
 ----------------------------------------------------------------------------
 

@@ -732,7 +732,7 @@ def _render_english_site(root, docs, book, *, matrix=None):
             capture_output=True, text=True)
         if result.returncode:
             raise RuntimeError('Sphinx English build failed:\n' + result.stdout + result.stderr)
-        files = {'web/' + str(p.relative_to(output)): p.read_bytes()
+        files = {'web/' + p.relative_to(output).as_posix(): p.read_bytes()
                  for p in output.rglob('*')
                  if p.is_file() and '.doctrees' not in p.parts and p.name != '.buildinfo'}
         renderer = {
@@ -852,7 +852,7 @@ def render_site(root, docs, book, translations, chapter, *, figure_files=None, m
         result = subprocess.run([sys.executable, '-m', 'sphinx', '-b', 'html', '-W', '--keep-going', '-q', str(source), str(output)], capture_output=True, text=True)
         if result.returncode:
             raise RuntimeError('Sphinx build failed:\n' + result.stdout + result.stderr)
-        files = {'web/'+str(p.relative_to(output)): p.read_bytes() for p in output.rglob('*') if p.is_file() and '.doctrees' not in p.parts and p.name != '.buildinfo'}
+        files = {'web/'+p.relative_to(output).as_posix(): p.read_bytes() for p in output.rglob('*') if p.is_file() and '.doctrees' not in p.parts and p.name != '.buildinfo'}
         renderer = {'sphinx': version('Sphinx'), 'pydata_sphinx_theme': version('pydata-sphinx-theme'),
                     'sphinx_copybutton': version('sphinx-copybutton'), 'sphinx_design': version('sphinx-design'),
                     'pygments': version('Pygments'), 'jieba': jieba_version,

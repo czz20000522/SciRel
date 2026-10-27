@@ -1,5 +1,51 @@
 # SciRel current handoff
 
+## 2026-10-27 bounded empirical stopping increment
+
+Added one independent leaf in the existing collisions domain:
+`scirel.collisions.fast-ion-stopping-increment`, exported as
+`evaluate_fast_ion_stopping_increment`. The public catalog now has 250 assets;
+the existing single human-review hold remains separate and unchanged.
+
+This is evaluation of a specified empirical expression with fixed y=0.6, not
+total stopping, attenuation, deposition, geometry or time evolution. The power
+port is explicitly local volumetric deposition density in W/m^3: a supplied
+total-W metadata label was corrected without changing formula, constants or
+fixture numbers. The caller supplies magnetic-axis birth-pitch cosine and
+slowing time. Toroidal/full-local-field pitch equivalence, calibration range,
+fit error, arbitrary species validity and application effects are unestablished.
+Human scientific acceptance remains pending; development expression admission
+does not close those limits.
+
+Windows Python 3.14.7 / NumPy 2.5.4 is now available in the canonical local
+`.venv`. The original neutral packet's seven tests passed; its complete frozen
+56-case/37-row source-behavior comparison passed, retaining the original
+5e-12/1e-300 criteria and all exceptional cases. The normalized library has 70
+passing direct tests, including those 56 fixtures, the original seven behavioral
+assertions and independent high-precision expression/scaling checks. The
+affected collisions plus known neutral-transport cross-domain scope was 507
+passed and one xfailed. All 250 contracts and mechanical review bindings passed.
+Those scopes bind different packet/product identities and must not be merged
+into a physical-qualification count.
+
+Both reader languages, handbook topics and authored tutorial sections are
+synchronized. The actual scalar example is (1,1), float64,
+1.9645775636530587e-18 m^2. Two Windows renderer keys now use POSIX paths in
+both language pipelines, fixing generated HTML routes. Documentation tests are
+92 passed and one setup failure: Windows WinError 1314 prevents creation of the
+symlink needed by that remaining boundary test. Its failure was preserved.
+The initial broader generic run also retains failures in unchanged pure-consumer
+and skill-export tooling, plus the previously recorded multi-coil complex-mapping
+binding check. No unrelated export, source evidence or tolerance was repaired.
+
+The main coordinator owns concurrent admission validator/producer/exporter,
+contract and related test changes; this batch does not stage them. Source
+identity and global dirty state must be read live. Public source query, runtime
+signature and the new example were executed successfully. No scientific
+approval, source-application parity, wheel, publication or release was performed.
+The next owner is the main coordinator for independent review of this source
+batch before a separate outbound session uses public capabilities only.
+
 ## 2026-10-26 skill lifecycle and residue cleanup
 
 The development package now has one executable artifact closeout reference at

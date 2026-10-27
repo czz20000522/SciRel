@@ -3,11 +3,16 @@
  "policy": "Every catalog asset has exactly one verdict; exposed assets must be pass or pass-with-limits, held assets human-review, and blocked/not-audited assets cannot be exposed. Historical report claims and candidate identities are separate from current maintenance overlays. Current material and retained-report digests identify bytes only; historical candidate identity and Markdown claim binding remain UNKNOWN. Locatable fixes/tests do not establish execution.",
  "historical_candidate_identity": "UNKNOWN",
  "current_candidate": {
-  "base_revision": "b02dbdad82dfa6485a6d587aa0f5dd7852971c7c",
+  "base_revision": "1f3c15d445b24e44ee40a9aca51edbdeeb21ac36",
   "identity_scope": "current-materials-only",
-  "material_sha256": "7edcf8252094a0ff64356d95011073ffbc3b441e2c020f0b8b5cd0f780eb484d"
+  "material_sha256": "0f4ab3191d739c68bc200fe6b3ea44e58e0f36091731691b56550fc707251db1"
  },
  "report_bindings": {
+  "tests/collisions/test_fast_ion_stopping_increment.py": {
+   "retained_sha256": "4f34a642025669071114e4a5849b81023fe7bb4b8870bab66cd09a3c5a1446fe",
+   "format": "test-source",
+   "claim_binding": "UNKNOWN"
+  },
   "catalog/review/evidence/audit-d1.csv": {
    "retained_sha256": "9f73be4285dea28d7d642f2d6cd0c3ef6140fbfb0edfad6dd5f4893b43e8eeb1",
    "format": "csv",
@@ -342,6 +347,18 @@
     {
      "report": "catalog/review/evidence/source-audit-collisions.md",
      "verdict": "source parity or accepted repair"
+    }
+   ]
+  },
+  "scirel.collisions.fast-ion-stopping-increment": {
+   "status": "pass-with-limits",
+   "reason": "Development admission of the specified empirical expression only. Local power-density units are W/m^3; no formula or saved input numbers changed. Human scientific acceptance remains pending.",
+   "evidence": [
+    {
+     "report": "tests/collisions/test_fast_ion_stopping_increment.py",
+     "verdict": "pass-with-limits",
+     "oracle": "Frozen independent-engine real/imaginary component fixtures and independent high-precision expression/scaling checks",
+     "residual_risk": "No quantitative calibration domain, fit-error bound, pitch-geometry equivalence, general species validity or application-level enhancement is established. Arithmetic probes are not physical plasma support; warnings are diagnostic rather than text/count equivalence."
     }
    ]
   },

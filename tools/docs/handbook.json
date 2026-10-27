@@ -484,6 +484,14 @@
      ]
     },
     {
+     "id": "fast-ion-stopping-increment",
+     "title": "求值快离子对阻止截面的经验增量",
+     "introduction": "由局部中性束功率密度、外给电子减速时间及相对磁轴的出生方向余弦，求值固定 y=0.6 的经验面积增量。它不计算总阻止、衰减、沉积或演化；定性的低密度高能背景没有给出已标定区间或误差界。",
+     "assets": [
+      "scirel.collisions.fast-ion-stopping-increment"
+     ]
+    },
+    {
      "id": "velocity-averaged-rates",
      "title": "在 Maxwellian 速度网格上平均截面",
      "introduction": "给定截面函数、圆柱速度网格及体积权重，计算定向单能粒子与离散 Maxwellian 靶群体的速率平均。碰撞能量采用文档规定的粒子质量约定，网格尾部是否充分解析需要另外检查。",

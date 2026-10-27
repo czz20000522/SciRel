@@ -372,6 +372,55 @@ H 与 H⁺ 的电荷交换截面有两条独立拟合。默认分支是九系数
 
 这一节不能推出：这是矩匹配的局部归约，不是完整 Boltzmann 碰撞算子；有限速度/角网格不保证精确 Maxwell 平衡；负比值虽然被保留，但不构成可接受的非负 BGK 松弛；单单元结果不能替代空间耦合、时间推进或收敛研究。
 
+另一个局部问题：快离子增加多少阻止截面？
+----------------------------------------
+
+若已知局部中性束沉积功率密度、电子减速时间和束粒子的出生方向，可以单独求值一个快离子阻止截面增量。这里选择出生方向相对磁轴的余弦；它不是角度，也没有与环向或完整局部磁场方向自动等同。
+
+该经验模型固定俯仰扩散参数 ``y=0.6``。令 ``T=te/10000``、``r=((E/A)/1e6)/T``，用给定能量多项式 ``F(r)`` 和俯仰多项式 ``G(min(1,abs(cosine)))`` 计算
+
+.. code-block:: text
+
+   S = power_density / (E * 1.602176462e-19)
+   delta_sigma = (S * slowing_time / ne) * T^(-0.9027) * F(r) * G(p) * 1e-19 m^2
+
+功率密度以 W/m³ 给出，因此 ``S`` 为 m^-3 s^-1，``S*slowing_time/ne`` 无量纲。该调用不从总功率推算体积，不估算减速时间，也不重建束路或磁场。
+
+.. code-block:: python
+
+   import numpy as np
+   from scirel.collisions import evaluate_fast_ion_stopping_increment
+
+   increment = evaluate_fast_ion_stopping_increment(
+       beam_mass_number=1.0,
+       beam_energy_ev=100000.0,
+       birth_pitch_cosine=0.5,
+       electron_density_m3=1e18,
+       electron_temperature_ev=10000.0,
+       power_density_w_m3=1e6,
+       electron_slowing_time_s=1.0,
+   )
+   np.testing.assert_allclose(
+       increment, [[1.9645775636530587e-18]], rtol=5e-12, atol=1e-300,
+   )
+   print(increment.shape)
+   print(increment.dtype)
+   print(f"{increment[0, 0]:.17g} m^2")
+
+实际输出：
+
+.. code-block:: text
+
+   (1, 1)
+   float64
+   1.9645775636530587e-18 m^2
+
+这是给定七个输入下的附加面积，约 ``1.96e-18`` m²；它没有给出可用于衰减的总截面。全标量调用仍返回二维 ``(1,1)`` 数组；一维输入变成行，N 维输入按前导轴对齐，并在较低维数组的右侧补单例轴。
+
+不要把上面的有限正数推广为整个输入域的保证。只有能量多项式在 ``r>pi`` 时被置零，等号不截断；其余因子的无穷或未定义值仍可能使最终结果非有限。NaN 俯仰按绝对值上限规则映射为 1，负温度可产生复数；零功率也不绕过能量除法。不能将这些算术结果当作物理上可接受的等离子体状态。
+
+定性的低密度高能背景不提供标定区间、物种覆盖或误差界；固定表达式的数值验证也不替代仍待完成的人工科学接受。完整系数、严格边界和验证上限见 :doc:`../reference/generated/scirel.collisions.fast-ion-stopping-increment`。
+
 选择入口、易错点与本章没有覆盖的部分
 ------------------------------------
 

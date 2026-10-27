@@ -477,6 +477,14 @@
      ]
     },
     {
+     "id": "fast-ion-stopping-increment",
+     "title": "Evaluating an empirical fast-ion stopping increment",
+     "introduction": "Evaluate a fixed y=0.6 empirical area increment using local neutral-beam power density, a supplied electron slowing time and a birth-direction cosine relative to the magnetic axis. This does not calculate total stopping, attenuation, deposition or evolution; the qualitative low-density/high-energy setting supplies no calibrated interval or error bound.",
+     "assets": [
+      "scirel.collisions.fast-ion-stopping-increment"
+     ]
+    },
+    {
      "id": "velocity-averaged-rates",
      "title": "Averaging cross sections on a Maxwellian velocity grid",
      "introduction": "Given a cross-section function, a cylindrical velocity grid and volume weights, compute the rate average of a directed monoenergetic particle against a discrete Maxwellian target population. Collision energy uses the documented particle-mass convention; whether the grid tail is sufficiently resolved requires a separate check.",
