@@ -1,5 +1,34 @@
 # SciRel current handoff
 
+## 2026-10-27 Windows tooling failure closure
+
+Implementation commit `0bee05b3` closes all 46 previously recorded
+delivery/tooling failures. The affected architecture/docs/delivery/tooling run
+was **721 passed, two unchanged optional MCP SDK transport checks not run**.
+After fast-forwarding the reviewed bytes into the canonical Windows checkout,
+43 focused checks passed there, including current contract examples and the
+CLI/MCP path boundary. These scopes overlap and are not additive.
+
+Skill capture now uses anchored native Windows handles and rejects reparse
+points before reading; the POSIX descriptor path remains intact. Five bounded
+POSIX loader probes passed. Consumer CLI output is explicitly UTF-8, preserving
+its byte budget, and CLI/MCP retain lexical roots for the common validator.
+Archive checks inspect original ZIP names before normalization. Windows tests
+use actual file reparse points and directory junctions without changing host
+privileges; POSIX retains real symlinks. No old failure became a skip.
+
+Two current mapping-interface source digests were stale after the existing
+`576ee4c9` validation guards. Their registry entries now match the unchanged
+implementation; all 14 records and 70 module bindings were checked. This batch
+changes no scientific implementation, public scientific port, numerical
+assertion/tolerance or frozen evidence, and adds no dependency. Scientific,
+rights, publication and release acceptance remain separate.
+
+The older docs setup and generic tooling failures recorded below describe the
+receiver's earlier revision and are superseded by this engineering repair;
+their historical receipts remain unchanged. The independent outbound attempt
+retains its own earlier source identity rather than claiming this revision ran.
+
 ## 2026-10-27 bounded empirical stopping increment
 
 Added one independent leaf in the existing collisions domain:
