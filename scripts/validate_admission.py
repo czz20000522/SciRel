@@ -1,37 +1,34 @@
-"""Validate one FINAL submission against SciRel's admission standard.
+"""Validate the public admission format; PASS never means scientific acceptance.
 
-The admission standard is the only external interaction surface: a submission
-is a decomposition/FINAL directory whose control files bind each other and
-whose payload bytes match the manifest. This validator does not judge science,
-does not read D0-D3 packages and does not record overlap or merge decisions.
+The schema reader implements only the explicitly supported keywords used by the
+live admission schemas. Unknown keywords fail closed; this is not a general
+JSON Schema engine. Validation never imports or executes payload code.
 """
-
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
-import sys
+import stat
 
 ROOT = Path(__file__).resolve().parents[1]
-FINAL_SCHEMA = ROOT / "contracts" / "admission" / "project-final.schema.json"
-FILES_SCHEMA = ROOT / "contracts" / "admission" / "files.schema.json"
+FINAL_SCHEMA = ROOT / "contracts/admission/project-final.schema.json"
+FILES_SCHEMA = ROOT / "contracts/admission/files.schema.json"
+PATH_MAP_SCHEMA = ROOT / "contracts/admission/path-map.schema.json"
 BOUND = ("FINAL.json", "FILES.json", "PATH_MAP.json")
 ROOT_BINDING = "ROOT.sha256"
-FINAL_KEYS = {
-    "schema", "project_id", "decomposition_scope", "limitations",
-    "claim_ceiling", "files", "path_map", "root_binding", "payload_files",
-    "payload_bytes", "evidence_policy", "custody_note", "license",
-    "identity", "stage_evidence", "capabilities", "functions", "compositions",
-    "platform_boundaries",
-}
-_REQUIRED = (
-    "schema", "project_id", "decomposition_scope", "limitations",
-    "claim_ceiling", "files", "path_map", "root_binding", "payload_files",
-    "payload_bytes", "evidence_policy", "custody_note", "license",
-)
+CONTROLS = frozenset((*BOUND, ROOT_BINDING))
+DERIVED_KEYS = frozenset(("schema", "files", "path_map", "root_binding", "payload_files", "payload_bytes"))
+_KEYWORDS = frozenset(("$schema", "$id", "title", "description", "type", "const",
+                       "required", "properties", "additionalProperties", "propertyNames",
+                       "items", "minItems", "minLength", "minimum", "pattern"))
+_TYPES = {"object": lambda v: isinstance(v, dict), "array": lambda v: isinstance(v, list),
+          "string": lambda v: isinstance(v, str),
+          "integer": lambda v: (isinstance(v, int) and not isinstance(v, bool))
+          or (isinstance(v, float) and v.is_integer())}
 
 
 def _sha(path: Path) -> str:
@@ -42,236 +39,326 @@ def _sha(path: Path) -> str:
     return digest.hexdigest()
 
 
+def json_bytes(value) -> bytes:
+    return (json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode("utf-8")
+
+
+def _object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate JSON key: {key!r}")
+        result[key] = value
+    return result
+
+
+def _invalid_constant(value):
+    raise ValueError(f"non-JSON numeric constant: {value}")
+
+
+def read_json(path: Path):
+    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_object,
+                      parse_constant=_invalid_constant)
+
+
 def _safe_relative(path: str, errors: list[str], where: str) -> bool:
     if not isinstance(path, str) or not path:
         errors.append(f"{where}: path must be a non-empty string")
         return False
-    if "\\" in path or path.startswith("/") or path.startswith("./"):
-        errors.append(f"{where}: path must be a relative POSIX path: {path!r}")
-        return False
     parts = path.split("/")
-    if any(part in {"", ".", ".."} for part in parts):
-        errors.append(f"{where}: path contains an empty/dot/.. segment: {path!r}")
+    invalid = ("\\" in path or any(c in '<>:"|?*' for c in path) or path.startswith("/")
+               or any(ord(c) < 32 or 127 <= ord(c) <= 159 or 0xD800 <= ord(c) <= 0xDFFF for c in path)
+               or any(p in {"", ".", ".."} or p.endswith((".", " ")) for p in parts)
+               or any(re.fullmatch(r"(?i:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])", p.split(".")[0]) for p in parts))
+    if invalid:
+        errors.append(f"{where}: unsafe relative POSIX path: {path!r}")
         return False
     return True
 
 
-def _check_final(final: dict, errors: list[str]) -> None:
-    if not isinstance(final, dict):
-        errors.append("FINAL.json: expected an object")
+def check_ancestors(path: Path, errors: list[str]) -> None:
+    # Inspect lexical ancestors before resolve(), so a junction cannot disappear
+    # from the checks by resolving its destination first.
+    absolute = path.absolute()
+    for current in reversed((absolute, *absolute.parents)):
+        try:
+            info = current.lstat()
+        except FileNotFoundError:
+            continue
+        if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & 0x400:
+            errors.append(f"links/reparse points are forbidden: {current}")
+            return
+
+
+def inspect_tree(directory: Path, errors: list[str]) -> tuple[dict[str, Path], set[str]]:
+    check_ancestors(directory, errors)
+    if errors:
+        return {}, set()
+    if not directory.is_dir():
+        errors.append(f"not a directory: {directory}")
+        return {}, set()
+    files = {}
+    stored = set()
+    folded = set()
+    for parent, dirs, names in os.walk(directory, followlinks=False, onerror=lambda e: errors.append(str(e))):
+        for name in sorted(dirs + names):
+            target = Path(parent) / name
+            relative = target.relative_to(directory).as_posix()
+            info = target.lstat()
+            if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & 0x400:
+                errors.append(f"links/reparse points are forbidden: {relative}")
+                if name in dirs:
+                    dirs.remove(name)
+                continue
+            if not _safe_relative(relative, errors, "stored member"):
+                continue
+            if relative.casefold() in folded:
+                errors.append(f"portable path collision: {relative}")
+            folded.add(relative.casefold())
+            stored.add(relative)
+            if stat.S_ISREG(info.st_mode):
+                if info.st_nlink > 1:
+                    errors.append(f"hardlinked member is forbidden: {relative}")
+                files[relative] = target
+            elif not stat.S_ISDIR(info.st_mode):
+                errors.append(f"non-regular member: {relative}")
+    return files, stored
+
+
+def _schema_definition(schema, where: str) -> None:
+    if isinstance(schema, bool):
         return
-    unknown = sorted(set(final) - FINAL_KEYS)
+    if not isinstance(schema, dict):
+        raise ValueError(f"{where}: schema must be an object or boolean")
+    unknown = set(schema) - _KEYWORDS
     if unknown:
-        errors.append(f"FINAL.json: unknown properties {unknown}")
-    if "schema_version" in final:
-        errors.append("FINAL.json: schema_version is not allowed; the contract has no version suffix")
-    for key in _REQUIRED:
-        if key not in final:
-            errors.append(f"FINAL.json: missing {key}")
-    if final.get("schema") != "scirel.project-final":
-        errors.append("FINAL.json: schema must be scirel.project-final")
-    if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", str(final.get("project_id", ""))):
-        errors.append("FINAL.json: project_id must be lowercase kebab-case")
-    for key in ("decomposition_scope", "claim_ceiling", "evidence_policy", "custody_note"):
-        if not isinstance(final.get(key), str) or not final.get(key):
-            errors.append(f"FINAL.json: {key} must be a non-empty string")
-    limitations = final.get("limitations")
-    if not isinstance(limitations, list) or not limitations or not all(
-            isinstance(item, str) and item for item in limitations):
-        errors.append("FINAL.json: limitations must be a non-empty list of strings")
-    if final.get("files") != "FILES.json":
-        errors.append("FINAL.json: files must be FILES.json")
-    if final.get("path_map") != "PATH_MAP.json":
-        errors.append("FINAL.json: path_map must be PATH_MAP.json")
-    if final.get("root_binding") != ROOT_BINDING:
-        errors.append(f"FINAL.json: root_binding must be {ROOT_BINDING}")
-    for key in ("payload_files", "payload_bytes"):
-        value = final.get(key)
-        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
-            errors.append(f"FINAL.json: {key} must be a positive integer")
-    license_ = final.get("license")
-    if not isinstance(license_, dict):
-        errors.append("FINAL.json: license must be an object")
-    else:
-        if set(license_) != {"spdx", "references"}:
-            errors.append("FINAL.json: license must contain exactly spdx and references")
-        if not isinstance(license_.get("spdx"), str) or not license_.get("spdx"):
-            errors.append("FINAL.json: license.spdx must be a non-empty string")
-        refs = license_.get("references")
-        if not isinstance(refs, list) or not refs or not all(
-                isinstance(item, str) and item for item in refs):
-            errors.append("FINAL.json: license.references must be a non-empty string list")
-    for key in ("identity", "stage_evidence"):
-        if key in final and not isinstance(final[key], dict):
-            errors.append(f"FINAL.json: {key} must be an object of strings")
-    for key in ("capabilities", "functions", "platform_boundaries"):
-        if key in final and (not isinstance(final[key], list)
-                             or not all(isinstance(item, str) and item for item in final[key])):
-            errors.append(f"FINAL.json: {key} must be a list of strings")
-    compositions = final.get("compositions")
-    if compositions is not None:
-        if not isinstance(compositions, list):
-            errors.append("FINAL.json: compositions must be a list")
-        else:
-            for item in compositions:
-                if not isinstance(item, dict) or set(item) != {"directory", "name"}:
-                    errors.append("FINAL.json: compositions entries need exactly directory and name")
-                elif not all(isinstance(item[key], str) and item[key] for key in item):
-                    errors.append("FINAL.json: compositions entries need non-empty strings")
+        raise ValueError(f"{where}: unsupported schema keywords: {sorted(unknown)}")
+    if "type" in schema and schema["type"] not in _TYPES:
+        raise ValueError(f"{where}: unsupported schema type")
+    if "pattern" in schema:
+        re.compile(schema["pattern"])
+    for key, child in schema.get("properties", {}).items():
+        _schema_definition(child, f"{where}.{key}")
+    for key in ("additionalProperties", "propertyNames", "items"):
+        if key in schema:
+            _schema_definition(schema[key], f"{where}.{key}")
 
 
-def _check_files(manifest: dict, final_dir: Path, errors: list[str]) -> list[dict]:
-    if not isinstance(manifest, dict):
-        errors.append("FILES.json: expected an object")
-        return []
-    if manifest.get("schema") != "scirel.final-files":
-        errors.append("FILES.json: schema must be scirel.final-files")
-    entries = manifest.get("files")
-    if not isinstance(entries, list) or not entries:
-        errors.append("FILES.json: files must be a non-empty array")
-        return []
-    seen: set[str] = set()
-    ordered: list[str] = []
-    for index, entry in enumerate(entries):
-        if not isinstance(entry, dict):
-            errors.append(f"FILES.json: files[{index}] must be an object")
-            continue
-        if set(entry) != {"path", "bytes", "sha256"}:
-            errors.append(f"FILES.json: files[{index}] must contain exactly path/bytes/sha256")
-            continue
-        path = entry["path"]
-        if not _safe_relative(path, errors, f"FILES.json: files[{index}]"):
-            continue
-        if path in seen:
-            errors.append(f"FILES.json: duplicate path {path}")
-        seen.add(path)
-        ordered.append(path)
-        size = entry["bytes"]
-        digest = entry["sha256"]
-        if not isinstance(size, int) or isinstance(size, bool) or size < 0:
-            errors.append(f"FILES.json: {path}: bytes must be a non-negative integer")
-        if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
-            errors.append(f"FILES.json: {path}: sha256 must be 64 lowercase hex characters")
-    if ordered != sorted(ordered):
-        errors.append("FILES.json: members must be sorted by case-sensitive POSIX path")
-    if "FINAL.json" not in seen:
-        errors.append("FILES.json: FINAL.json must be a member")
-    if "PATH_MAP.json" not in seen:
-        errors.append("FILES.json: PATH_MAP.json must be a member")
-    for forbidden in ("FILES.json", ROOT_BINDING):
-        if forbidden in seen:
-            errors.append(f"FILES.json: {forbidden} is bound by ROOT.sha256, not a member")
-    return entries
-
-
-def _check_payload(entries: list[dict], final_dir: Path, errors: list[str]) -> int:
-    total = 0
-    for entry in entries:
-        path = entry.get("path")
-        if not isinstance(path, str) or not path:
-            continue
-        target = final_dir / path
-        if not target.is_file():
-            errors.append(f"payload missing: {path}")
-            continue
-        actual_bytes = target.stat().st_size
-        if actual_bytes != entry.get("bytes"):
-            errors.append(f"payload size mismatch: {path}: {actual_bytes} != {entry.get('bytes')}")
-        actual_sha = _sha(target)
-        if actual_sha != entry.get("sha256"):
-            errors.append(f"payload digest mismatch: {path}")
-        total += actual_bytes
-    return total
-
-
-def _check_root(final_dir: Path, errors: list[str]) -> None:
-    root = final_dir / ROOT_BINDING
-    if not root.is_file():
-        errors.append("ROOT.sha256: missing")
+def _schema_value(value, schema, errors: list[str], where: str) -> None:
+    if schema is True:
         return
-    lines = root.read_text(encoding="utf-8").splitlines()
-    if not lines:
-        errors.append("ROOT.sha256: empty")
+    if schema is False:
+        errors.append(f"{where}: not permitted by schema")
         return
-    expected = [f"{_sha(final_dir / name)}  {name}" for name in BOUND]
-    if lines[0] != f"{hashlib.sha256((''.join(line + '\n' for line in expected)).encode()).hexdigest()}  {ROOT_BINDING}":
-        errors.append("ROOT.sha256: root digest does not match the bound files")
-    if lines[1:] != expected:
-        errors.append("ROOT.sha256: bound lines do not match the three control files")
-    if not root.read_text(encoding="utf-8").endswith("\n"):
-        errors.append("ROOT.sha256: must end with a newline")
+    if "type" in schema and not _TYPES[schema["type"]](value):
+        errors.append(f"{where}: expected {schema['type']}")
+        return
+    if "const" in schema and (type(value) is not type(schema["const"]) or value != schema["const"]):
+        errors.append(f"{where}: must equal {schema['const']!r}")
+    if isinstance(value, dict):
+        for key in schema.get("required", []):
+            if key not in value:
+                errors.append(f"{where}: missing {key}")
+        properties = schema.get("properties", {})
+        for key, item in value.items():
+            if "propertyNames" in schema:
+                _schema_value(key, schema["propertyNames"], errors, f"{where} key {key!r}")
+            if key in properties:
+                _schema_value(item, properties[key], errors, f"{where}.{key}")
+            elif schema.get("additionalProperties") is False:
+                errors.append(f"{where}: unknown property {key!r}")
+            elif isinstance(schema.get("additionalProperties"), dict):
+                _schema_value(item, schema["additionalProperties"], errors, f"{where}.{key}")
+    elif isinstance(value, list):
+        if len(value) < schema.get("minItems", 0):
+            errors.append(f"{where}: requires at least {schema['minItems']} item(s)")
+        if "items" in schema:
+            for index, item in enumerate(value):
+                _schema_value(item, schema["items"], errors, f"{where}[{index}]")
+    elif isinstance(value, str):
+        if len(value) < schema.get("minLength", 0):
+            errors.append(f"{where}: string is too short")
+        if "pattern" in schema and re.search(schema["pattern"], value) is None:
+            errors.append(f"{where}: string does not match schema pattern")
+    elif isinstance(value, (int, float)) and not isinstance(value, bool) and "minimum" in schema:
+        if value < schema["minimum"]:
+            errors.append(f"{where}: below minimum {schema['minimum']}")
+
+
+def check_schema(value, schema_path: Path, errors: list[str], where: str) -> None:
+    schema = read_json(schema_path)
+    _schema_definition(schema, str(schema_path))
+    _schema_value(value, schema, errors, where)
+
+
+def _check_final(final, errors: list[str]) -> None:
+    check_schema(final, FINAL_SCHEMA, errors, "FINAL.json")
+
+
+def check_references(final: dict, members: set[str], errors: list[str]) -> None:
+    for reference in final["license"]["references"]:
+        if _safe_relative(reference, errors, "license reference") and reference not in members:
+            errors.append(f"FINAL.json: license reference is not a FILES member: {reference}")
+    for key, value in final.get("stage_evidence", {}).items():
+        if _safe_relative(value, errors, f"stage_evidence.{key}") and value not in members:
+            errors.append(f"FINAL.json: stage_evidence.{key} is not a FILES member: {value}")
+    for item in final.get("compositions", []):
+        _safe_relative(item["directory"], errors, "composition directory")
+
+
+def check_path_map(mapping, members: set[str], stored: set[str], errors: list[str]) -> None:
+    check_schema(mapping, PATH_MAP_SCHEMA, errors, "PATH_MAP.json")
+    if not isinstance(mapping, dict):
+        return
+    aliases = set(mapping)
+    occupied = {p.casefold() for p in stored | set(CONTROLS)}
+    file_paths = {p.casefold() for p in members | set(CONTROLS)}
+    alias_paths = {p.casefold() for p in aliases}
+    folded = set()
+    for alias, target in mapping.items():
+        if not _safe_relative(alias, errors, "PATH_MAP alias"):
+            continue
+        if not _safe_relative(target, errors, f"PATH_MAP target for {alias}"):
+            continue
+        if alias.casefold() in occupied or alias.casefold() in folded:
+            errors.append(f"PATH_MAP.json: alias collides with a stored member/alias: {alias}")
+        folded.add(alias.casefold())
+        if any(alias.casefold().startswith(p + "/") for p in file_paths):
+            errors.append(f"PATH_MAP.json: alias is nested under a stored file: {alias}")
+        if any(alias.casefold().startswith(p + "/") for p in alias_paths):
+            errors.append(f"PATH_MAP.json: alias is nested under another file alias: {alias}")
+        if alias == target or target in aliases:
+            errors.append(f"PATH_MAP.json: identity mapping/alias chain is forbidden: {alias}")
+        if target in CONTROLS or target not in members:
+            errors.append(f"PATH_MAP.json: target must be a directly stored non-control FILES member: {target}")
+
+
+def root_bytes(final_dir: Path) -> bytes:
+    lines = b"".join(f"{_sha(final_dir / name)}  {name}\n".encode("utf-8") for name in BOUND)
+    return f"{hashlib.sha256(lines).hexdigest()}  {ROOT_BINDING}\n".encode("ascii") + lines
 
 
 def _emit_root(final_dir: Path) -> None:
-    lines = [f"{_sha(final_dir / name)}  {name}" for name in BOUND]
-    digest = hashlib.sha256(("".join(line + "\n" for line in lines)).encode()).hexdigest()
-    (final_dir / ROOT_BINDING).write_text(
-        f"{digest}  {ROOT_BINDING}\n" + "".join(line + "\n" for line in lines),
-        encoding="utf-8")
+    errors = []
+    files, _ = inspect_tree(final_dir, errors)
+    if not all(name in files for name in BOUND):
+        errors.append("required controls missing before ROOT emission")
+    if errors:
+        raise ValueError("; ".join(errors))
+    (final_dir / ROOT_BINDING).write_bytes(root_bytes(final_dir))
 
 
 def validate(final_dir: Path, *, emit_root: bool = False) -> dict:
-    report = {"directory": str(final_dir), "status": "PASS", "errors": [], "warnings": [],
-              "checks": {}}
-    if not final_dir.is_dir():
-        report["status"] = "NOT_RUN"
-        report["errors"].append("FINAL directory does not exist")
-        return report
-    if emit_root:
-        _emit_root(final_dir)
-        report["checks"]["emit_root"] = "WROTE"
-    missing = [name for name in ("FINAL.json", "FILES.json", "PATH_MAP.json") if not (final_dir / name).is_file()]
-    if missing:
-        report["status"] = "NOT_RUN"
-        report["errors"].append(f"required control file(s) missing: {missing}")
-        return report
+    final_dir = Path(final_dir)
+    report = {"directory": str(final_dir), "status": "FAIL", "errors": [], "warnings": [], "checks": {}}
+    errors = report["errors"]
     try:
-        final = json.loads((final_dir / "FINAL.json").read_text(encoding="utf-8"))
-        manifest = json.loads((final_dir / "FILES.json").read_text(encoding="utf-8"))
-        path_map = json.loads((final_dir / "PATH_MAP.json").read_text(encoding="utf-8"))
-    except (OSError, ValueError) as exc:
-        report["status"] = "FAIL"
-        report["errors"].append(f"cannot parse control files: {exc}")
-        return report
-    errors: list[str] = []
-    _check_final(final, errors)
-    entries = _check_files(manifest, final_dir, errors)
-    paths = {entry.get("path") for entry in entries if isinstance(entry, dict)}
-    if isinstance(final, dict):
-        if final.get("payload_files") != len(entries):
-            errors.append(f"FINAL.json: payload_files={final.get('payload_files')} but FILES.json has {len(entries)}")
-        total = _check_payload(entries, final_dir, errors)
-        if final.get("payload_bytes") != total:
-            errors.append(f"FINAL.json: payload_bytes={final.get('payload_bytes')} but payload sums to {total}")
-        license_ = final.get("license")
-        if isinstance(license_, dict):
-            for reference in license_.get("references", []):
-                if reference not in paths:
-                    errors.append(f"FINAL.json: license reference is not a FILES member: {reference}")
-        for key, value in (final.get("stage_evidence") or {}).items():
-            if value not in paths:
-                errors.append(f"FINAL.json: stage_evidence.{key} is not a FILES member: {value}")
-    if not isinstance(path_map, dict):
-        errors.append("PATH_MAP.json: expected an object")
-    _check_root(final_dir, errors)
-    report["errors"].extend(errors)
-    report["checks"]["payload_files"] = len(entries)
-    report["status"] = "PASS" if not errors else "FAIL"
+        check_ancestors(final_dir, errors)
+        if errors:
+            return report
+        if not final_dir.is_dir():
+            report["status"] = "NOT_RUN"
+            errors.append("FINAL directory does not exist or is not a directory")
+            return report
+        files, stored = inspect_tree(final_dir, errors)
+        if errors:
+            return report
+        missing = [name for name in BOUND if name not in files]
+        if missing:
+            report["status"] = "NOT_RUN"
+            errors.append(f"required control file(s) missing: {missing}")
+            return report
+        final, manifest, mapping = [read_json(final_dir / name) for name in BOUND]
+        if mapping == {} and (final_dir / "PATH_MAP.json").read_bytes() != b"{}\n":
+            errors.append("PATH_MAP.json: empty object must be exactly b'{}\\n'")
+        _check_final(final, errors)
+        check_schema(manifest, FILES_SCHEMA, errors, "FILES.json")
+        if errors:
+            return report
+        entries = manifest["files"]
+        paths = []
+        for entry in entries:
+            if _safe_relative(entry["path"], errors, "FILES member"):
+                paths.append(entry["path"])
+        if errors:
+            return report  # Never open a manifest path until every path is safe.
+        members = set(paths)
+        if paths != sorted(paths):
+            errors.append("FILES.json: members must be sorted by case-sensitive POSIX path")
+        if len(members) != len(paths):
+            errors.append("FILES.json: duplicate path")
+        if not {"FINAL.json", "PATH_MAP.json"} <= members:
+            errors.append("FILES.json: FINAL.json and PATH_MAP.json must be members")
+        if members & {"FILES.json", ROOT_BINDING}:
+            errors.append("FILES.json: FILES.json/ROOT.sha256 are outer-bound controls, not members")
+        actual_members = set(files) - {"FILES.json", ROOT_BINDING}
+        if members != actual_members:
+            errors.append(f"FILES.json: missing/unlisted members: missing={sorted(members - actual_members)}, unlisted={sorted(actual_members - members)}")
+        total = 0
+        for entry in entries:
+            target = files.get(entry["path"])
+            if target is None:
+                continue
+            size = target.stat().st_size
+            total += size
+            if size != entry["bytes"]:
+                errors.append(f"payload size mismatch: {entry['path']}")
+            if _sha(target) != entry["sha256"]:
+                errors.append(f"payload digest mismatch: {entry['path']}")
+        if final["payload_files"] != len(entries):
+            errors.append("FINAL.json: payload_files does not match FILES member count")
+        if final["payload_bytes"] != total:
+            errors.append("FINAL.json: payload_bytes does not match FILES byte sum")
+        check_references(final, members, errors)
+        check_path_map(mapping, members, stored, errors)
+        if emit_root and not errors:
+            _emit_root(final_dir)
+            report["checks"]["emit_root"] = "WROTE"
+        if ROOT_BINDING not in files and not (emit_root and not errors):
+            errors.append("ROOT.sha256: missing")
+        elif (final_dir / ROOT_BINDING).read_bytes() != root_bytes(final_dir):
+            errors.append("ROOT.sha256: bytes do not match fixed FINAL/FILES/PATH_MAP LF binding")
+        report["checks"].update(payload_files=len(entries), payload_bytes=total)
+        report["status"] = "FAIL" if errors else "PASS"
+    except (OSError, ValueError, TypeError, KeyError, RecursionError, re.error) as exc:
+        errors.append(f"cannot validate admission: {type(exc).__name__}: {exc}")
     return report
+
+
+def exit_code(report: dict) -> int:
+    return {"PASS": 0, "FAIL": 1, "NOT_RUN": 2}[report["status"]]
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("final", type=Path)
-    parser.add_argument("--emit-root", action="store_true",
-                        help="write ROOT.sha256 from the current control files, then validate")
-    parser.add_argument("--output", type=Path)
+    parser.add_argument("--emit-root", action="store_true", help="explicitly produce ROOT after checking safe controls and all members")
+    parser.add_argument("--output", type=Path, help="machine report outside the package")
     args = parser.parse_args(argv)
-    report = validate(args.final, emit_root=args.emit_root)
+    output_errors = []
     if args.output:
-        args.output.write_text(json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    print(json.dumps(report, ensure_ascii=False, indent=1))
-    return 0 if report["status"] == "PASS" else (2 if report["status"] == "NOT_RUN" else 1)
+        try:
+            check_ancestors(args.output, output_errors)
+            if args.output.resolve().is_relative_to(args.final.resolve()):
+                output_errors.append("report output must be outside the package")
+            if args.output.exists():
+                info = args.output.lstat()
+                if not stat.S_ISREG(info.st_mode) or info.st_nlink > 1:
+                    output_errors.append("report output must be an ordinary unshared file")
+        except (OSError, ValueError) as exc:
+            output_errors.append(str(exc))
+    if output_errors:
+        report = {"directory": str(args.final), "status": "FAIL", "errors": output_errors}
+    else:
+        report = validate(args.final, emit_root=args.emit_root)
+        if args.output:
+            try:
+                args.output.write_bytes(json_bytes(report))
+            except (OSError, ValueError) as exc:
+                report["status"] = "FAIL"
+                report["errors"].append(f"cannot write report: {exc}")
+    print(json.dumps(report, ensure_ascii=True, indent=2))
+    return exit_code(report)
 
 
 if __name__ == "__main__":

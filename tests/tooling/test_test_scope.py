@@ -12,6 +12,7 @@ import test_scope  # noqa: E402
 @pytest.mark.parametrize("script", [
     "build_pure_delivery.py", "consumer_tools.py", "query.py", "solving_skill.py",
     "serve_consumer_mcp.py", "check_wheel_exposure.py",
+    "prepare_admission.py", "export_admission_tools.py", "validate_admission.py",
 ])
 def test_consumer_tools_select_the_delivery_tests(script):
     targets, _ = test_scope.classify(Path("scripts") / script)
