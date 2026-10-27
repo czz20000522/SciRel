@@ -9,32 +9,179 @@ import stat
 from urllib.parse import unquote, urlsplit
 
 
+if os.name == 'nt':
+    import ctypes
+    from ctypes import wintypes
+    import msvcrt
+
+    class _UnicodeString(ctypes.Structure):
+        _fields_ = [('Length', wintypes.USHORT), ('MaximumLength', wintypes.USHORT),
+                    ('Buffer', wintypes.LPWSTR)]
+
+    class _ObjectAttributes(ctypes.Structure):
+        _fields_ = [('Length', wintypes.ULONG), ('RootDirectory', wintypes.HANDLE),
+                    ('ObjectName', ctypes.POINTER(_UnicodeString)),
+                    ('Attributes', wintypes.ULONG), ('SecurityDescriptor', ctypes.c_void_p),
+                    ('SecurityQualityOfService', ctypes.c_void_p)]
+
+    class _IOStatus(ctypes.Structure):
+        _fields_ = [('Status', ctypes.c_void_p), ('Information', ctypes.c_size_t)]
+
+    class _AttributeTag(ctypes.Structure):
+        _fields_ = [('FileAttributes', wintypes.DWORD), ('ReparseTag', wintypes.DWORD)]
+
+    _ntdll = ctypes.WinDLL('ntdll', use_last_error=True)
+    _kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+    _ntdll.NtCreateFile.argtypes = [
+        ctypes.POINTER(wintypes.HANDLE), wintypes.ULONG,
+        ctypes.POINTER(_ObjectAttributes), ctypes.POINTER(_IOStatus), ctypes.c_void_p,
+        wintypes.ULONG, wintypes.ULONG, wintypes.ULONG, wintypes.ULONG,
+        ctypes.c_void_p, wintypes.ULONG]
+    _ntdll.NtCreateFile.restype = wintypes.LONG
+    _ntdll.RtlNtStatusToDosError.argtypes = [wintypes.LONG]
+    _ntdll.RtlNtStatusToDosError.restype = wintypes.ULONG
+    _kernel32.GetFileInformationByHandleEx.argtypes = [
+        wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD]
+    _kernel32.GetFileInformationByHandleEx.restype = wintypes.BOOL
+    _kernel32.CreateFileW.argtypes = [
+        wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD, ctypes.c_void_p,
+        wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    _kernel32.CreateFileW.restype = wintypes.HANDLE
+    _kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    _kernel32.CloseHandle.restype = wintypes.BOOL
+
+
+def _windows_open(name: str, *, root: int | None = None, directory: bool = False) -> int:
+    """Open one component without following it, relative to a held directory.
+
+    Only drive/share anchors use CreateFileW. Every subsequent open names a
+    single child of a native RootDirectory; FILE_OPEN_REPARSE_POINT and the
+    handle attribute check reject junctions, symlinks and other reparse tags.
+    """
+    if root is not None:
+        if (name in {'', '.', '..'} or name.endswith(('.', ' '))
+                or any(char in name for char in ':/\\\x00')):
+            raise OSError('invalid native solving reference')
+        encoded_length = len(name.encode('utf-16-le'))
+        if encoded_length > 65532:
+            raise OSError('invalid native solving path')
+        buffer = ctypes.create_unicode_buffer(name)
+        string = _UnicodeString(encoded_length, encoded_length + 2,
+                                ctypes.cast(buffer, wintypes.LPWSTR))
+        attributes = _ObjectAttributes(ctypes.sizeof(_ObjectAttributes), root,
+                                       ctypes.pointer(string), 0x40, None, None)
+        native_handle, status_block = wintypes.HANDLE(), _IOStatus()
+        # SYNCHRONIZE | FILE_READ_ATTRIBUTES, with FILE_TRAVERSE for
+        # directories or FILE_READ_DATA for files. Directory handles deny
+        # write/delete sharing; files permit edits for drift checks.
+        status = _ntdll.NtCreateFile(
+            ctypes.byref(native_handle), 0x100000 | 0x80 | (0x20 if directory else 0x1),
+            ctypes.byref(attributes),
+            ctypes.byref(status_block), None, 0, 0x1 if directory else 0x1 | 0x2,
+            1, 0x20 | 0x200000 | (0x1 if directory else 0x40), None, 0)
+        if status < 0:
+            raise ctypes.WinError(_ntdll.RtlNtStatusToDosError(status))
+        handle = native_handle.value
+    else:
+        # OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | OPEN_REPARSE_POINT.
+        handle = _kernel32.CreateFileW(name, 0x20 | 0x80, 0x1, None, 3,
+                                       0x2000000 | 0x200000, None)
+        if handle == wintypes.HANDLE(-1).value:
+            raise ctypes.WinError(ctypes.get_last_error())
+    try:
+        info = _AttributeTag()
+        if not _kernel32.GetFileInformationByHandleEx(
+                handle, 9, ctypes.byref(info), ctypes.sizeof(info)):
+            raise ctypes.WinError(ctypes.get_last_error())
+        if info.FileAttributes & 0x400:
+            raise OSError('solving reference is a reparse point')
+        if bool(info.FileAttributes & 0x10) != directory:
+            raise OSError('incorrect solving reference type')
+        return handle
+    except BaseException:
+        _kernel32.CloseHandle(handle)
+        raise
+
+
+def _open_root(skill_root: Path) -> int:
+    if os.name != 'nt':
+        return os.open(skill_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    absolute = os.path.abspath(skill_root)
+    if absolute.startswith('\\\\?\\'):
+        absolute = absolute[4:]
+        if absolute.startswith('UNC\\'):
+            absolute = '\\\\' + absolute[4:]
+    if absolute.startswith('\\\\.\\'):
+        raise OSError('device paths cannot supply a solving skill')
+    path = Path(absolute)
+    if not path.anchor or not (re.match(r'^[A-Za-z]:\\$', path.anchor)
+                               or path.anchor.startswith('\\\\')):
+        raise OSError('invalid solving skill root')
+    anchor = ('\\\\?\\UNC\\' + path.anchor[2:] if path.anchor.startswith('\\\\')
+              else '\\\\?\\' + path.anchor)
+    handle = _windows_open(anchor, directory=True)
+    try:
+        for part in path.parts[1:]:
+            child = _windows_open(part, root=handle, directory=True)
+            _kernel32.CloseHandle(handle)
+            handle = child
+        return handle
+    except BaseException:
+        _kernel32.CloseHandle(handle)
+        raise
+
+
+def _close_root(root_fd: int) -> None:
+    if os.name == 'nt':
+        _kernel32.CloseHandle(root_fd)
+    else:
+        os.close(root_fd)
+
+
+def _source_identity(value: os.stat_result) -> tuple[int, ...]:
+    return (value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+
+
 def _read_source(root_fd: int, relative: str) -> tuple[bytes, tuple[int, ...]]:
-    """Read through directory descriptors so symlink swaps cannot escape root."""
-    directory = os.dup(root_fd)
+    """Read through an anchored, no-reparse platform file handle."""
+    directory = None
+    native_handle = None
     try:
         parts = PurePosixPath(relative).parts
-        for part in parts[:-1]:
-            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
-                            dir_fd=directory)
-            os.close(directory)
-            directory = child
-        descriptor = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory)
+        if os.name == 'nt':
+            parent = root_fd
+            for part in parts[:-1]:
+                child = _windows_open(part, root=parent, directory=True)
+                if directory is not None:
+                    _close_root(directory)
+                directory = parent = child
+            native_handle = _windows_open(parts[-1], root=parent)
+            descriptor = msvcrt.open_osfhandle(native_handle, os.O_RDONLY | os.O_BINARY)
+            native_handle = None  # The CRT descriptor now owns the handle.
+        else:
+            directory = os.dup(root_fd)
+            for part in parts[:-1]:
+                child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                                dir_fd=directory)
+                os.close(directory)
+                directory = child
+            descriptor = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW, dir_fd=directory)
         with os.fdopen(descriptor, 'rb') as stream:
             before = os.fstat(stream.fileno())
             if not stat.S_ISREG(before.st_mode):
                 raise ValueError('solving reference is not a regular file: ' + relative)
             data = stream.read()
             after = os.fstat(stream.fileno())
-        identity = lambda value: (value.st_dev, value.st_ino, value.st_size,
-                                  value.st_mtime_ns, value.st_ctime_ns)
-        if identity(before) != identity(after):
+        if _source_identity(before) != _source_identity(after):
             raise ValueError('solving source changed while loading: ' + relative)
-        return data, identity(after)
+        return data, _source_identity(after)
     except OSError as exc:
         raise ValueError('invalid or unsafe solving reference: ' + relative) from exc
     finally:
-        os.close(directory)
+        if directory is not None:
+            _close_root(directory)
+        if native_handle is not None:
+            _kernel32.CloseHandle(native_handle)
 
 
 def _prose(text: str) -> str:
@@ -248,7 +395,7 @@ def _local_reference(parent: str, target: str) -> tuple[str, str] | None:
     if parsed.query or re.search(r'%(?![0-9a-fA-F]{2})', parsed.path + parsed.fragment):
         raise ValueError('invalid solving reference: ' + target)
     path = unquote(parsed.path, errors='strict')
-    if path.startswith('/') or '\\' in path or '\x00' in path:
+    if path.startswith('/') or '\\' in path or ':' in path or '\x00' in path:
         raise ValueError('solving reference leaves its skill: ' + target)
     parts = list(PurePosixPath(parent).parent.parts)
     if path:
@@ -278,7 +425,7 @@ def load_solving_skill(skill_root: Path) -> dict[str, bytes]:
     from a previous export, and unlinked source-local files are not exported.
     """
     try:
-        root_fd = os.open(skill_root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+        root_fd = _open_root(skill_root)
     except OSError as exc:
         raise ValueError('invalid or unsafe solving skill root: ' + str(skill_root)) from exc
     sources, identities, anchors, fragments = {}, {}, {}, []
@@ -311,4 +458,4 @@ def load_solving_skill(skill_root: Path) -> dict[str, bytes]:
                 raise ValueError('solving source changed while loading: ' + relative)
         return dict(sorted(sources.items()))
     finally:
-        os.close(root_fd)
+        _close_root(root_fd)

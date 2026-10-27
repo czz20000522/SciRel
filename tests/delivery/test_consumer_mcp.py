@@ -4,6 +4,7 @@ Set SCIREL_MCP_PYTHON to an interpreter with tools/docs/mcp-requirements.txt. SD
 dependencies do not enter the scientific library or the project's test venv.
 The fixture is explicitly synthetic and tests transport/consumer behavior only.
 """
+import asyncio
 import hashlib
 import json
 import os
@@ -11,12 +12,16 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+from types import ModuleType, SimpleNamespace
 
 import pytest
+from fs_links import directory_link, file_link_or_reparse
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from consumer_tools import call_tool, tools  # noqa: E402
+from query import Consumer  # noqa: E402
+import serve_consumer_mcp as mcp_adapter  # noqa: E402
 
 # Executed by the isolated SDK interpreter. Both transports use the real
 # official Client in auto-negotiation mode, never a pinned/faked protocol.
@@ -200,6 +205,63 @@ def consumer_snapshot(tmp_path):
     return root
 
 
+@pytest.fixture
+def registered_mcp_adapter(monkeypatch):
+    """Exercise callback registration without claiming an official SDK run."""
+    class Model(SimpleNamespace):
+        @classmethod
+        def model_validate(cls, value):
+            return cls(**value)
+
+    class Server:
+        def __init__(self, name, *, instructions, on_list_tools, on_call_tool):
+            self.name = name
+            self.instructions = instructions
+            self.on_list_tools = on_list_tools
+            self.on_call_tool = on_call_tool
+
+    async def run_sync(function, *args):
+        return function(*args)
+
+    anyio = ModuleType('anyio')
+    anyio.to_thread = SimpleNamespace(run_sync=run_sync)
+    mcp = ModuleType('mcp')
+    server_module = ModuleType('mcp.server')
+    server_module.Server = Server
+    types_module = ModuleType('mcp.types')
+    for name in ('CallToolResult', 'ListToolsResult', 'TextContent', 'Tool'):
+        setattr(types_module, name, Model)
+    for name, module in (('anyio', anyio), ('mcp', mcp),
+                         ('mcp.server', server_module), ('mcp.types', types_module)):
+        monkeypatch.setitem(sys.modules, name, module)
+    return mcp_adapter
+
+
+@pytest.mark.parametrize('linked_component', ['none', 'root', 'parent'])
+def test_mcp_registered_callback_preserves_runtime_path_validation(
+        registered_mcp_adapter, consumer_snapshot, tmp_path, linked_component):
+    root = consumer_snapshot
+    if linked_component != 'none':
+        target = consumer_snapshot if linked_component == 'root' else consumer_snapshot.parent
+        link = directory_link(tmp_path / 'linked-runtime', target)
+        root = link if linked_component == 'root' else link / consumer_snapshot.name
+
+    server = registered_mcp_adapter.create_server(root)
+    advertised = asyncio.run(server.on_list_tools(None, None))
+    assert [vars(tool) for tool in advertised.tools] == tools()
+    response = asyncio.run(server.on_call_tool(
+        None, SimpleNamespace(name='scirel_describe', arguments={})))
+
+    assert response.structured_content == call_tool(root, 'scirel_describe')
+    assert json.loads(response.content[0].text) == response.structured_content
+    assert response.is_error is (linked_component != 'none')
+    assert response.structured_content['outcome'] == (
+        'ok' if linked_component == 'none' else 'metadata_error')
+    if linked_component != 'none':
+        assert ('link' in response.structured_content['error'] or
+                'reparse' in response.structured_content['error'])
+
+
 @pytest.mark.parametrize('transport', ['stdio', 'streamable-http'])
 def test_official_client_negotiates_and_calls_exact_registry(sdk_python, consumer_snapshot,
                                                             tmp_path, transport):
@@ -239,7 +301,9 @@ class NoOptionalDependencies:
 
 sys.meta_path.insert(0, NoOptionalDependencies())
 sys.dont_write_bytecode = True
-entry = Path(sys.argv.pop(1)).resolve()
+# Simulate a non-UTF-8 Windows pipe on every host. The CLI owns its wire encoding.
+sys.stdout.reconfigure(encoding='cp1252')
+entry = Path(sys.argv.pop(1)).absolute()
 sys.path.insert(0, str(entry.parent))
 sys.argv[0] = str(entry)
 runpy.run_path(str(entry), run_name='__main__')
@@ -251,8 +315,13 @@ def _cli(root, *arguments, entry=None, explicit_root=True):
             str(entry or ROOT / 'scripts/query.py')]
     if explicit_root:
         args += ['--root', str(root)]
-    return subprocess.run([*args, *arguments], text=True, capture_output=True,
-                          timeout=15, cwd=root)
+    completed = subprocess.run([*args, *arguments], capture_output=True,
+                               timeout=15, cwd=root)
+    # Read actual wire bytes and decode the JSON protocol independently of
+    # both the parent process locale and the child's initial stdout encoding.
+    return subprocess.CompletedProcess(completed.args, completed.returncode,
+                                       completed.stdout.decode('utf-8'),
+                                       completed.stderr.decode('utf-8'))
 
 
 def _cli_pins(root):
@@ -303,6 +372,16 @@ def test_cli_without_sdk_can_continue_a_cursor(consumer_snapshot):
     assert json.loads(second.stdout)['result']['items'][0]['asset_id'] == 'test.beta'
 
 
+def test_cli_utf8_wire_preserves_the_dispatcher_byte_budget(consumer_snapshot):
+    pins, flags = _cli_pins(consumer_snapshot)
+    completed = _cli(consumer_snapshot, 'browse', *flags, '--max-bytes', '4096')
+    assert completed.returncode == 0, completed.stderr
+    response = json.loads(completed.stdout)
+    assert response == call_tool(consumer_snapshot, 'scirel_browse', {**pins, 'max_bytes': 4096})
+    assert '周期通量' in completed.stdout
+    assert len(completed.stdout.encode('utf-8')) <= 4096
+
+
 @pytest.mark.parametrize('command,arguments,outcome', [
     ('search', ['--limit', '0'], 'invalid_request'),
     ('search', ['--expected-snapshot-sha256', '0' * 64], 'identity_mismatch'),
@@ -344,3 +423,62 @@ def test_exported_cli_resolves_its_runtime_root_without_sdk(consumer_snapshot):
     assert completed.returncode == 0, completed.stderr
     assert json.loads(completed.stdout) == call_tool(consumer_snapshot, 'scirel_describe')
     assert not list(adapter.rglob('__pycache__'))
+
+
+def test_exported_cli_rejects_a_linked_default_runtime_root(consumer_snapshot, tmp_path):
+    adapter = consumer_snapshot / 'tools'
+    adapter.mkdir()
+    for filename in ('query.py', 'consumer_tools.py', 'capability_query.py'):
+        shutil.copyfile(ROOT / 'scripts' / filename, adapter / filename)
+    linked_root = directory_link(tmp_path / 'linked-runtime', consumer_snapshot)
+
+    completed = _cli(consumer_snapshot, 'describe', entry=linked_root / 'tools' / 'query.py',
+                     explicit_root=False)
+
+    assert completed.returncode == 2, completed.stderr
+    response = json.loads(completed.stdout)
+    assert response['outcome'] == 'metadata_error'
+    assert 'link' in response['error'] or 'reparse' in response['error']
+
+
+@pytest.mark.parametrize('linked_component', ['root', 'parent'])
+def test_consumer_rejects_linked_runtime_roots_before_resolution(
+        consumer_snapshot, tmp_path, linked_component):
+    link = tmp_path / 'linked-runtime'
+    if linked_component == 'root':
+        directory_link(link, consumer_snapshot)
+        root = link
+    else:
+        directory_link(link, consumer_snapshot.parent)
+        root = link / consumer_snapshot.name
+    with pytest.raises(ValueError, match='link|reparse'):
+        Consumer(root)
+
+
+def test_consumer_rejects_a_linked_catalog_directory(consumer_snapshot, tmp_path):
+    catalog = consumer_snapshot / 'catalog'
+    outside = tmp_path / 'catalog-data'
+    catalog.rename(outside)
+    directory_link(catalog, outside)
+    with pytest.raises(ValueError, match='link|reparse'):
+        Consumer(consumer_snapshot)
+
+
+@pytest.mark.parametrize('relative', ['runtime.json', 'catalog/contracts/test.alpha.json'])
+def test_consumer_rejects_file_links_or_reparse_points_before_reading(
+        consumer_snapshot, tmp_path, relative):
+    member = consumer_snapshot / relative
+    outside = tmp_path / 'original-member.json'
+    member.rename(outside)
+    file_link_or_reparse(member, outside)
+    with pytest.raises(ValueError, match='link|reparse'):
+        consumer = Consumer(consumer_snapshot)
+        consumer.get('test.alpha')
+
+
+def test_consumer_verify_rejects_an_unbound_empty_directory_link(consumer_snapshot, tmp_path):
+    outside = tmp_path / 'empty-directory'
+    outside.mkdir()
+    directory_link(consumer_snapshot / 'extra', outside)
+    with pytest.raises(ValueError, match='link|reparse'):
+        Consumer(consumer_snapshot).verify()

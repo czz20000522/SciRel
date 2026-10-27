@@ -23,7 +23,7 @@ def create_server(root):
     from mcp.server import Server
     from mcp.types import CallToolResult, ListToolsResult, TextContent, Tool
 
-    root = Path(root).resolve()
+    root = Path(root).absolute()
 
     async def list_tools(context, params):
         return ListToolsResult(tools=[Tool.model_validate(item)

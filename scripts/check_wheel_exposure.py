@@ -28,8 +28,8 @@ SCHEMA = "scirel.wheel-exposure-proof"
 
 
 def _safe_member(name: str) -> bool:
-    parts = name.rstrip("/").split("/")
-    return bool(name) and not name.startswith("/") and "\\" not in name and all(
+    parts = name.removesuffix("/").split("/")
+    return bool(name) and not name.startswith("/") and "\\" not in name and "\x00" not in name and all(
         part not in {"", ".", ".."} and ":" not in part for part in parts
     )
 
@@ -373,17 +373,20 @@ def inspect_wheel(
     try:
         with zipfile.ZipFile(io.BytesIO(data)) as archive:
             infos = archive.infolist()
-            names = [info.filename for info in infos]
+            # ZipInfo.filename sanitizes separators on Windows and truncates
+            # NULs. Audit the original archive names before that information
+            # is lost, retaining those same names for RECORD comparisons.
+            names = [info.orig_filename for info in infos]
             duplicates = sorted(name for name, count in Counter(names).items() if count > 1)
             unsafe = sorted(name for name in names if not _safe_member(name))
-            symlinks = sorted(info.filename for info in infos if stat.S_ISLNK(info.external_attr >> 16))
+            symlinks = sorted(info.orig_filename for info in infos if stat.S_ISLNK(info.external_attr >> 16))
             report["archive"] = {"files": sum(not info.is_dir() for info in infos),
                                  "duplicate_members": duplicates, "unsafe_members": unsafe,
                                  "symlink_members": symlinks}
             for label, findings in (("duplicate members", duplicates), ("unsafe members", unsafe), ("symlink members", symlinks)):
                 if findings:
                     errors.append(f"archive {label}: {findings}")
-            members = {info.filename: archive.read(info) for info in infos if not info.is_dir()}
+            members = {info.orig_filename: archive.read(info) for info in infos if not info.is_dir()}
     except (zipfile.BadZipFile, OSError, RuntimeError, NotImplementedError) as exc:
         errors.append(f"cannot read wheel archive: {exc}")
         return report

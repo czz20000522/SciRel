@@ -88,7 +88,11 @@ def intake(tmp_path: Path):
         wheel = tmp_path / f"scirel-0.0.1-{suffix}-py3-none-any.whl"
         with ZipFile(wheel, "w") as archive:
             for name, data in members.items():
-                archive.writestr(name, data)
+                info = ZipInfo(name)
+                # Keep deliberately unsafe archive names intact on Windows,
+                # where ZipInfo normally replaces backslashes before writing.
+                info.filename = name
+                archive.writestr(info, data)
         return wheel
 
     def inspect(wheel, **kwargs):
@@ -244,7 +248,10 @@ def test_rejects_duplicate_archive_and_record_members(intake) -> None:
     assert any("duplicate RECORD paths" in error for error in report["record"]["errors"])
 
 
-@pytest.mark.parametrize("unsafe", ["../outside", "/outside", "C:/outside", "scirel\\outside", "scirel/./outside"])
+@pytest.mark.parametrize("unsafe", [
+    "../outside", "/outside", "C:/outside", "C:outside", "scirel\\outside",
+    "scirel/./outside", "scirel//outside", "scirel/outside\x00hidden", "scirel//",
+])
 def test_rejects_archive_path_escapes(intake, unsafe) -> None:
     files, write, inspect = intake
     report = inspect(write({**files, unsafe: b"unsafe"}))

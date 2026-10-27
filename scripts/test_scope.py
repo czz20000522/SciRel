@@ -70,7 +70,10 @@ SCRIPT_LAYERS = {
 }
 PACKAGING_FILES = {"pyproject.toml", "setup.py", "setup.cfg", "MANIFEST.in"}
 GLOBAL_PATHS = {"tests/conftest.py"}
-TEST_HARNESS_TARGETS = {"tests/_review_bindings.py": "tests/cross_domain"}
+TEST_HARNESS_TARGETS = {
+    "tests/_review_bindings.py": ("tests/cross_domain",),
+    "tests/fs_links.py": ("tests/delivery", "tests/docs"),
+}
 
 
 class UnresolvedPath(ValueError):
@@ -232,7 +235,7 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
     if relative.as_posix() in GLOBAL_PATHS:
         return ["<full-suite>"], ["global test configuration affects every scope"]
     if relative.as_posix() in TEST_HARNESS_TARGETS:
-        return [TEST_HARNESS_TARGETS[relative.as_posix()]], ["shared test harness"]
+        return list(TEST_HARNESS_TARGETS[relative.as_posix()]), ["shared test harness"]
 
     if parts[0] == "tests":
         return _classify_tests(Path(*parts[1:]))

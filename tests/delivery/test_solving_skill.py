@@ -1,8 +1,10 @@
 """A hierarchical skill export is an unchanged, closed snapshot of its inputs."""
 from pathlib import Path
+import os
 import sys
 
 import pytest
+from fs_links import directory_link, file_link_or_reparse
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
@@ -17,7 +19,7 @@ def _skill(root):
         '# Limits\n\n[helper](../scripts/delivery.py)\n[more][detail]\n\n'
         '[detail]: more.md "Further checks"\n')
     (root / 'references/more.md').write_text('# More\n\n[back](checks.md)\n')
-    (root / 'scripts/delivery.py').write_text('print("synthetic helper")\n')
+    (root / 'scripts/delivery.py').write_bytes(b'print("synthetic helper")\n')
     return root
 
 
@@ -98,19 +100,95 @@ def test_missing_or_cross_skill_references_fail_closed(tmp_path, target):
 
 
 @pytest.mark.parametrize('directory', [False, True])
-def test_symlinks_cannot_supply_an_input_even_after_a_path_is_selected(tmp_path, directory):
+def test_links_and_file_reparse_points_cannot_supply_selected_inputs(tmp_path, directory):
     root = _skill(tmp_path / 'skill')
     external = tmp_path / 'external'
     external.mkdir()
     (external / 'helper.py').write_text('secret = 1\n')
     if directory:
-        (root / 'foreign').symlink_to(external, target_is_directory=True)
+        directory_link(root / 'foreign', external)
         target = 'foreign/helper.py'
     else:
-        (root / 'helper.py').symlink_to(external / 'helper.py')
+        file_link_or_reparse(root / 'helper.py', external / 'helper.py')
         target = 'helper.py'
     (root / 'SKILL.md').write_text('[helper](' + target + ')\n')
+    with pytest.raises(ValueError, match='unsafe solving reference') as error:
+        solving_skill.load_solving_skill(root)
+    if os.name == 'nt' and not directory:
+        assert 'reparse point' in str(error.value.__cause__)
+
+
+def test_a_redirected_skill_root_cannot_supply_any_input(tmp_path):
+    external = _skill(tmp_path / 'external')
+    linked = directory_link(tmp_path / 'linked', external)
+    with pytest.raises(ValueError, match='unsafe solving skill root'):
+        solving_skill.load_solving_skill(linked)
+
+
+@pytest.mark.skipif(os.name != 'nt', reason='Windows root component traversal')
+def test_windows_skill_root_cannot_have_a_redirected_ancestor(tmp_path):
+    external = tmp_path / 'external'
+    _skill(external / 'skill')
+    linked = directory_link(tmp_path / 'linked', external)
+    with pytest.raises(ValueError, match='unsafe solving skill root'):
+        solving_skill.load_solving_skill(linked / 'skill')
+
+
+def test_a_directory_cannot_supply_regular_file_bytes(tmp_path):
+    root = _skill(tmp_path / 'skill')
+    (root / 'SKILL.md').write_text('[directory](references)\n')
+    with pytest.raises(ValueError, match='reference'):
+        solving_skill.load_solving_skill(root)
+
+
+@pytest.mark.parametrize('target', ['helper.py:private', 'helper.py%3Aprivate'])
+def test_stream_syntax_cannot_supply_an_undeclared_file_input(tmp_path, target):
+    root = _skill(tmp_path / 'skill')
+    (root / 'helper.py').write_bytes(b'public helper\n')
+    # This is a real alternate stream on Windows, and a distinct file on POSIX.
+    (root / 'helper.py:private').write_bytes(b'private stream\n')
+    (root / 'SKILL.md').write_text('[helper](' + target + ')\n')
+    with pytest.raises(ValueError, match='reference'):
+        solving_skill.load_solving_skill(root)
+
+
+def test_a_directory_redirected_during_capture_is_never_followed(tmp_path, monkeypatch):
+    root = _skill(tmp_path / 'skill')
+    external = _skill(tmp_path / 'external')
+    (root / 'SKILL.md').write_text('[checks](foreign/checks.md#limits)\n')
+    read = solving_skill._read_source
+    changed = False
+
+    def redirect_after_selection(root_fd, relative):
+        nonlocal changed
+        result = read(root_fd, relative)
+        if relative == 'SKILL.md' and not changed:
+            changed = True
+            directory_link(root / 'foreign', external / 'references')
+        return result
+
+    monkeypatch.setattr(solving_skill, '_read_source', redirect_after_selection)
     with pytest.raises(ValueError, match='unsafe solving reference'):
+        solving_skill.load_solving_skill(root)
+
+
+def test_replacing_a_source_with_identical_bytes_during_capture_is_rejected(tmp_path, monkeypatch):
+    root = _skill(tmp_path / 'skill')
+    read = solving_skill._read_source
+    changed = False
+
+    def replace_after_read(root_fd, relative):
+        nonlocal changed
+        result = read(root_fd, relative)
+        if relative == 'scripts/delivery.py' and not changed:
+            changed = True
+            replacement = root / 'replacement.py'
+            replacement.write_bytes(result[0])
+            replacement.replace(root / relative)
+        return result
+
+    monkeypatch.setattr(solving_skill, '_read_source', replace_after_read)
+    with pytest.raises(ValueError, match='changed while loading'):
         solving_skill.load_solving_skill(root)
 
 

@@ -458,7 +458,7 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
     try:
         with ZipFile(path) as archive:
             infos = archive.infolist()
-            names = [info.filename for info in infos]
+            names = [info.orig_filename for info in infos]
             details["file_count"] = len(names)
             details["uncompressed_bytes"] = sum(info.file_size for info in infos)
             duplicate_names = sorted({name for name in names if names.count(name) > 1})
@@ -470,17 +470,20 @@ def _wheel_payload(path: Path) -> tuple[dict[str, Any], list[str]]:
             metadata_name: str | None = None
             metadata_version: str | None = None
             for info in infos:
-                name = info.filename
+                # Validate raw archive names before ZipInfo's host-specific
+                # separator replacement or NUL truncation can hide a violation.
+                name = info.orig_filename
                 if not name or name.endswith("/"):
                     errors.append(f"wheel contains an empty or directory archive member: {name!r}")
                     continue
                 if "\\" in name:
                     errors.append(f"wheel member uses a backslash path: {name!r}")
                     continue
-                relative = PurePosixPath(name)
-                if relative.is_absolute() or ".." in relative.parts:
+                if (name.startswith("/") or ":" in name or "\x00" in name or
+                        any(part in {"", ".", ".."} for part in name.split("/"))):
                     errors.append(f"wheel member escapes its archive root: {name!r}")
                     continue
+                relative = PurePosixPath(name)
                 top = relative.parts[0]
                 top_levels.add(top)
                 if top == "scirel":

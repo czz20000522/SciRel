@@ -8,6 +8,8 @@ import sys
 
 import pytest
 
+from fs_links import directory_link, file_link_or_reparse
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from capability_query import query_capabilities  # noqa: E402
@@ -164,7 +166,8 @@ print(json.dumps(SourceDocumentation(sys.argv[2]).describe()))
 
 
 @pytest.mark.parametrize('fault', ['contract', 'reader', 'reader_list', 'reader_null_failure',
-                                  'reader_null_section', 'hold', 'hold_list', 'missing_hold', 'symlink'])
+                                  'reader_null_section', 'hold', 'hold_list', 'missing_hold',
+                                  'file_link_or_reparse'])
 def test_corrupt_source_metadata_fails_instead_of_claiming_no_hit(source, fault, tmp_path):
     contract_path = source / 'catalog/examples' / (ASSET + '.json')
     if fault == 'contract':
@@ -189,7 +192,37 @@ def test_corrupt_source_metadata_fails_instead_of_claiming_no_hit(source, fault,
         external = tmp_path / 'external.json'
         external.write_bytes(contract_path.read_bytes())
         contract_path.unlink()
-        contract_path.symlink_to(external)
+        file_link_or_reparse(contract_path, external)
+    result = cli(source, '--q', 'nonexistent-science-term')
+    assert result.returncode == 2
+    response = json.loads(result.stdout)
+    assert response['outcome'] == 'metadata_error'
+    assert 'result' not in response
+
+
+def test_public_source_rejects_file_link_or_reparse_before_reading_it(source, tmp_path, monkeypatch):
+    contract_path = source / 'catalog/examples' / (ASSET + '.json')
+    external = tmp_path / 'external.json'
+    external.write_bytes(contract_path.read_bytes())
+    contract_path.unlink()
+    file_link_or_reparse(contract_path, external)
+    read_bytes = Path.read_bytes
+
+    def refuse_link_read(path):
+        if path == contract_path:
+            raise AssertionError('public source opened a file link/reparse point')
+        return read_bytes(path)
+
+    monkeypatch.setattr(Path, 'read_bytes', refuse_link_read)
+    with pytest.raises(ValueError, match='link|reparse'):
+        SourceDocumentation(source)
+
+
+def test_public_source_rejects_contracts_redirected_by_a_directory_link(source, tmp_path):
+    contracts = source / 'catalog/examples'
+    external = tmp_path / 'external-contracts'
+    contracts.rename(external)
+    directory_link(contracts, external)
     result = cli(source, '--q', 'nonexistent-science-term')
     assert result.returncode == 2
     response = json.loads(result.stdout)

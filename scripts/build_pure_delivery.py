@@ -5,7 +5,9 @@ import argparse
 import email
 import io
 import json
+import os
 from pathlib import Path
+import stat
 import tempfile
 import zipfile
 
@@ -29,12 +31,35 @@ BUILD_INPUTS = (
 )
 
 
+def _delivery_files(directory):
+    """Reject lexical links/reparse points before descending or reading bytes."""
+    directory = Path(directory)
+
+    def inspect(path):
+        info = path.lstat()
+        if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & 0x400:
+            raise ValueError('delivery contains link/reparse point: ' + str(path))
+        return info
+
+    for path in (directory, *directory.parents):
+        inspect(path)
+
+    def walk_error(error):
+        raise error
+
+    files = []
+    for parent, dirs, names in os.walk(directory, followlinks=False, onerror=walk_error):
+        for name in sorted(dirs + names):
+            path = Path(parent) / name
+            if stat.S_ISREG(inspect(path).st_mode):
+                files.append(path)
+    return sorted(files)
+
+
 def seal_runtime(directory, metadata):
     files = {}
-    for path in sorted(directory.rglob('*')):
-        if path.is_symlink():
-            raise ValueError('delivery contains symlink: ' + str(path))
-        if path.is_file() and path != directory / 'runtime.json':
+    for path in _delivery_files(directory):
+        if path != directory / 'runtime.json':
             data = path.read_bytes()
             files[path.relative_to(directory).as_posix()] = {'sha256': sha(data), 'bytes': len(data)}
     identity = {**metadata, 'files': files}
@@ -47,13 +72,13 @@ def seal_runtime(directory, metadata):
 def archive(directory, target):
     if target.exists():
         raise FileExistsError(target)
+    members = _delivery_files(directory)
     with zipfile.ZipFile(target, 'x', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as output:
-        for path in sorted(directory.rglob('*')):
-            if path.is_file():
-                info = zipfile.ZipInfo(path.relative_to(directory).as_posix(), (1980, 1, 1, 0, 0, 0))
-                info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o100644 << 16
-                output.writestr(info, path.read_bytes())
+        for path in members:
+            info = zipfile.ZipInfo(path.relative_to(directory).as_posix(), (1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o100644 << 16
+            output.writestr(info, path.read_bytes())
     return {'path': str(target), 'sha256': sha(target.read_bytes()), 'bytes': target.stat().st_size}
 
 

@@ -101,3 +101,12 @@ def test_shared_fixture_without_a_test_consumer_fails_closed(tmp_path, monkeypat
     monkeypatch.setattr(test_scope, "TESTS", tmp_path)
     with pytest.raises(test_scope.UnresolvedPath, match="shared fixture has no referencing tests"):
         test_scope.classify(Path("tests/fixtures/unused.dat"))
+
+
+@pytest.mark.parametrize(("path", "expected"), [
+    ("tests/_review_bindings.py", ["tests/cross_domain"]),
+    ("tests/fs_links.py", ["tests/delivery", "tests/docs"]),
+])
+def test_shared_harness_selects_all_declared_consumers(path, expected):
+    targets, _ = test_scope.classify(Path(path))
+    assert targets == expected

@@ -2,6 +2,7 @@
 
 Run ``describe`` first, then pass the returned snapshot and wheel hashes to
 subsequent commands. CLI and MCP calls use the same read-only dispatcher.
+CLI JSON is encoded as UTF-8 on stdout.
 """
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import sys
 
 sys.dont_write_bytecode = True
@@ -29,12 +31,24 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def _is_link_or_reparse(path):
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        return False
+    return (stat.S_ISLNK(metadata.st_mode) or
+            bool(getattr(metadata, 'st_file_attributes', 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT))
+
+
 class Consumer:
     def __init__(self, root):
-        self.root = Path(root).resolve()
+        root = Path(root).absolute()
+        if any(_is_link_or_reparse(path) for path in [root, *root.parents]):
+            raise ValueError('runtime root may not use a link or reparse point')
+        self.root = root.resolve()
         path = self.root / 'runtime.json'
-        if path.is_symlink():
-            raise ValueError('runtime identity may not be a symlink')
+        if _is_link_or_reparse(path):
+            raise ValueError('runtime identity may not use a link or reparse point')
         self.identity = json.loads(path.read_bytes())
         if not isinstance(self.identity, dict):
             raise ValueError('runtime identity must be an object')
@@ -72,9 +86,9 @@ class Consumer:
                 any(p in {'.', '..'} for p in relative.split('/'))):
             raise ValueError('invalid member path')
         path = self.root / relative
-        if (not path.resolve().is_relative_to(self.root) or
-                any(p.is_symlink() for p in [path, *path.parents] if p != self.root.parent)):
-            raise ValueError('member path escapes root or uses a symlink')
+        if (any(_is_link_or_reparse(p) for p in [path, *path.parents]) or
+                not path.resolve().is_relative_to(self.root)):
+            raise ValueError('member path escapes root or uses a link or reparse point')
         expected = self.identity['files'].get(relative)
         if not expected:
             raise ValueError('member is not runtime-bound: ' + relative)
@@ -122,8 +136,8 @@ class Consumer:
             self.read(relative)
         actual = {p.relative_to(self.root).as_posix() for p in self.root.rglob('*')
                   if p.is_file()}
-        if any(p.is_symlink() for p in self.root.rglob('*')):
-            raise ValueError('runtime contains symlinks')
+        if any(_is_link_or_reparse(p) for p in self.root.rglob('*')):
+            raise ValueError('runtime contains a link or reparse point')
         if actual != set(self.identity['files']) | {'runtime.json'}:
             raise ValueError('runtime has missing or extra members')
         return self.envelope('verify', outcome='ok', files_verified=len(actual),
@@ -136,7 +150,7 @@ def main(argv=None):
     from consumer_tools import TOOL_PREFIX, call_tool, is_error_result, tools
 
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--root', type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument('--root', type=Path, default=Path(__file__).absolute().parents[1])
     sub = parser.add_subparsers(dest='command', required=True)
     for tool in tools():
         command = tool['name'].removeprefix(TOOL_PREFIX)
@@ -156,6 +170,10 @@ def main(argv=None):
     args = vars(parser.parse_args(argv))
     root, command = args.pop('root'), args.pop('command')
     result = call_tool(root, TOOL_PREFIX + command, args)
+    # Pipe encoding is part of the JSON protocol, independent of the host
+    # locale. In-memory text capture streams already accept Unicode strings.
+    if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
     print(json.dumps(result, ensure_ascii=False, sort_keys=True))
     return 2 if is_error_result(result) else 0
 

@@ -6,7 +6,7 @@ from types import ModuleType
 from types import SimpleNamespace
 import sys
 from pathlib import Path
-from zipfile import ZipFile
+from zipfile import ZipFile, ZipInfo
 
 import pytest
 
@@ -59,23 +59,25 @@ def test_runtime_identity_rejects_a_non_virtual_environment(
 
 
 def test_runtime_identity_rejects_external_site_packages(
-    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(validator.sys, "prefix", "/tmp/scirel-venv")
-    monkeypatch.setattr(validator.sys, "base_prefix", "/tmp/scirel-python")
+    prefix = tmp_path / "venv"
+    external_site = tmp_path / "system" / "site-packages"
+    monkeypatch.setattr(validator.sys, "prefix", str(prefix))
+    monkeypatch.setattr(validator.sys, "base_prefix", str(tmp_path / "python"))
     monkeypatch.setattr(
         validator.sys,
         "path",
         [
-            "/tmp/scirel-venv/lib/python3.14/site-packages",
-            "/usr/lib/python3.14/site-packages",
+            str(prefix / "lib" / "python3.14" / "site-packages"),
+            str(external_site),
         ],
     )
     expected_python = f"{sys.version_info.major}.{sys.version_info.minor}"
 
     actual, errors = validator._runtime_identity(None, expected_python)
 
-    assert actual["external_site_paths"] == ["/usr/lib/python3.14/site-packages"]
+    assert actual["external_site_paths"] == [str(external_site.resolve())]
     assert any("outside the virtual environment" in error for error in errors)
 
 
@@ -351,22 +353,41 @@ def test_wheel_payload_audit_rejects_development_files_and_path_traversal(tmp_pa
     assert any("escapes its archive root" in error for error in errors)
 
 
+@pytest.mark.parametrize("name", [
+    "scirel\\outside.py", "scirel/outside\x00hidden.py", "C:/outside.py",
+    "scirel/C:outside.py", "scirel/../outside.py", "scirel/./outside.py",
+    "scirel//outside.py",
+])
+def test_wheel_payload_rejects_noncanonical_archive_names(tmp_path: Path, name: str) -> None:
+    wheel = tmp_path / "unsafe.whl"
+    info = ZipInfo(name)
+    info.filename = name  # Preserve raw malicious bytes on Windows too.
+    with ZipFile(wheel, "w") as archive:
+        archive.writestr(info, b"unsafe")
+        archive.writestr("scirel-0.0.1.dist-info/METADATA", "Name: scirel\nVersion: 0.0.1\n")
+
+    details, errors = validator._wheel_payload(wheel)
+
+    assert details["status"] == "FAIL"
+    assert any(repr(name) in error and ("backslash" in error or "escapes its archive root" in error)
+               for error in errors)
+
+
 def test_catalog_wheel_closure_checks_dynamic_document_count(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     root = tmp_path / "project"
     (root / "catalog/examples").mkdir(parents=True)
     (root / "src/scirel/field").mkdir(parents=True)
-    (root / "src/scirel/field/poloidal.py").write_text(
-        "def value(): return 1\n", encoding="utf-8"
-    )
+    source = b"def value(): return 1\n"
+    (root / "src/scirel/field/poloidal.py").write_bytes(source)
     (root / "catalog/examples/example.json").write_text(
         '{"public_api":{"python":{"module":"scirel.field.poloidal","symbol":"value"}}}',
         encoding="utf-8",
     )
     wheel = tmp_path / "scirel.whl"
     with ZipFile(wheel, "w") as archive:
-        archive.writestr("scirel/field/poloidal.py", "def value(): return 1\n")
+        archive.writestr("scirel/field/poloidal.py", source)
 
     monkeypatch.setattr(
         validator.subprocess,
@@ -392,12 +413,15 @@ def test_catalog_wheel_closure_checks_dynamic_document_count(
     }
 
 
-def test_catalog_wheel_closure_rejects_same_module_with_different_source_bytes(tmp_path: Path) -> None:
+@pytest.mark.parametrize("source_bytes", [b"def value(): return 2\n", b"def value(): return 1\r\n"])
+def test_catalog_wheel_closure_rejects_same_module_with_different_source_bytes(
+    tmp_path: Path, source_bytes: bytes,
+) -> None:
     root = tmp_path / "project"
     (root / "catalog/examples").mkdir(parents=True)
     (root / "src/scirel/field").mkdir(parents=True)
     source = root / "src/scirel/field/poloidal.py"
-    source.write_text("def value(): return 2\n", encoding="utf-8")
+    source.write_bytes(source_bytes)
     (root / "catalog/examples/example.json").write_text(
         '{"public_api":{"python":{"module":"scirel.field.poloidal","symbol":"value"}}}',
         encoding="utf-8",
@@ -418,7 +442,7 @@ def test_catalog_wheel_closure_rejects_missing_bound_symbol(tmp_path: Path) -> N
     (root / "catalog/examples").mkdir(parents=True)
     (root / "src/scirel/field").mkdir(parents=True)
     source = "def other(): return 1\n"
-    (root / "src/scirel/field/poloidal.py").write_text(source, encoding="utf-8")
+    (root / "src/scirel/field/poloidal.py").write_bytes(source.encode("utf-8"))
     (root / "catalog/examples/example.json").write_text(
         '{"public_api":{"python":{"module":"scirel.field.poloidal","symbol":"missing"}}}',
         encoding="utf-8",

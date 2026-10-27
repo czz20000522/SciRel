@@ -10,6 +10,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import stat
 import subprocess
 
 from capability_query import CAPABILITY_INDEX_SCHEMA, DEVICE_SCOPES, validate_capability_index
@@ -405,10 +406,14 @@ class PublicCatalog:
 
     def _read(self, relative):
         path = self.root / relative
-        if (not path.resolve().is_relative_to(self.root) or any(
-                parent.is_symlink() for parent in (path, *path.parents)
-                if parent != self.root.parent)):
-            raise ValueError('public source input escapes root or uses a symlink')
+        for parent in (path, *path.parents):
+            if parent == self.root.parent:
+                break
+            info = parent.lstat()
+            if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & 0x400:
+                raise ValueError('public source input uses a link/reparse point')
+        if not path.resolve().is_relative_to(self.root):
+            raise ValueError('public source input escapes root')
         data = path.read_bytes()
         self.input_digests[relative] = sha(data)
         self.input_bytes[relative] = data

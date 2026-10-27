@@ -71,7 +71,7 @@
    ],
    "modules": {
     "scirel.geometry.axisymmetric_equilibrium_grid_support": "1d08e8d99211b176df2537d6fbb7c81376abbb740839b224337db905d462517d",
-    "scirel.geometry.axisymmetric_grid_mapping": "4a1e7d3cdc68184c8006394bda041b54762d38f33c0270d5e74fb4487e970915",
+    "scirel.geometry.axisymmetric_grid_mapping": "4d3964fdb80bfec50a85a351627a9601a12069b0b0a64aba86cbe366ed75685a",
     "scirel.geometry.material_support": "79f3f119e49b7515edbb330df9ce0285a2aa0f2e0b07acfb4f555d7552d54f7a"
    },
    "review_basis": "Wrapper removes only the two injectable implementation callables then passes inputs to run_composition. run_composition requires exactly the seven documented scientific inputs via _REQUIRED_INPUTS, maps the caller equilibrium and solver axes, derives cylindrical geometry with read-only broadcast views, and applies caller separatrix/PML/PEC metadata. It does not solve equilibrium or reconstruct material physics. Runtime missing ports are rejected; extra scientific input mapping entries are ignored as documented by the unchanged implementation."
@@ -660,7 +660,7 @@
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
     "scirel.field.circular_filament_green": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
     "scirel.field.current_green_superposition": "7505b1dc85ec968bbe6e3b1531d603d3289bd2de4fe1912de0cc3afa0980ca5c",
-    "scirel.field.multi_coil_vacuum_field": "7233291b594729b323140f7d7974e2f94467cad59ecb568ac723a263d5b599a3",
+    "scirel.field.multi_coil_vacuum_field": "b82dde02975437ad1f2986e1c5c142013203bae21719daa6a692f10c63a3d454",
     "scirel.field.rectangular_coil_filaments": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d"
    },
    "review_basis": "run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."

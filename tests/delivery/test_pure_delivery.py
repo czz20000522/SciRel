@@ -13,6 +13,8 @@ from zipfile import ZipFile
 
 import pytest
 
+from fs_links import directory_link, file_link_or_reparse
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 import build_pure_delivery as delivery  # noqa: E402
@@ -126,7 +128,7 @@ def test_exact_snapshot_verifies_without_claiming_scientific_execution(snapshot)
     assert result['scientific_runtime_revalidated'] is False
 
 
-@pytest.mark.parametrize('change', ['extra', 'missing', 'tamper', 'symlink'])
+@pytest.mark.parametrize('change', ['extra', 'missing', 'tamper', 'file_link_or_reparse'])
 def test_verify_rejects_changed_or_unbound_product_members(snapshot, change, tmp_path):
     root, _, _ = snapshot
     member = root / f'catalog/contracts/{ASSET}.json'
@@ -140,9 +142,12 @@ def test_verify_rejects_changed_or_unbound_product_members(snapshot, change, tmp
         outside = tmp_path / 'outside.json'
         outside.write_bytes(member.read_bytes())
         member.unlink()
-        member.symlink_to(outside)
-    with pytest.raises((OSError, ValueError)):
+        file_link_or_reparse(member, outside)
+    with pytest.raises((OSError, ValueError)) as rejected:
         Consumer(root).verify()
+    if change == 'file_link_or_reparse':
+        assert isinstance(rejected.value, ValueError)
+        assert 'link' in str(rejected.value) or 'reparse' in str(rejected.value)
 
 
 @pytest.mark.parametrize('relative', ['../outside', '/outside', 'docs/../outside',
@@ -153,20 +158,90 @@ def test_member_read_rejects_unsafe_paths(snapshot, relative):
         Consumer(root).read(relative)
 
 
-def test_runtime_identity_tamper_and_symlink_cannot_establish_a_snapshot(snapshot, tmp_path):
+def test_runtime_identity_tamper_and_file_link_or_reparse_cannot_establish_a_snapshot(snapshot, tmp_path):
     root, _, _ = snapshot
     path = root / 'runtime.json'
-    data = json.loads(path.read_bytes())
+    original = path.read_bytes()
+    data = json.loads(original)
     data['asset_count'] += 1
     path.write_bytes(encode(data))
     with pytest.raises(ValueError):
         Consumer(root)
     outside = tmp_path / 'runtime-copy.json'
-    outside.write_bytes(path.read_bytes())
+    outside.write_bytes(original)
     path.unlink()
-    path.symlink_to(outside)
-    with pytest.raises(ValueError):
+    file_link_or_reparse(path, outside)
+    with pytest.raises(ValueError, match='link|reparse'):
         Consumer(root)
+
+
+def test_verify_rejects_contracts_redirected_by_a_directory_link(snapshot, tmp_path):
+    root, _, _ = snapshot
+    contracts = root / 'catalog/contracts'
+    outside = tmp_path / 'outside-contracts'
+    contracts.rename(outside)
+    directory_link(contracts, outside)
+    with pytest.raises(ValueError, match='link|reparse|escapes'):
+        Consumer(root).verify()
+
+
+@pytest.mark.parametrize('operation', ['seal', 'archive'])
+@pytest.mark.parametrize('location', ['root', 'ancestor', 'internal_member', 'external_member'])
+def test_export_rejects_directory_links_before_reading_payload(tmp_path, monkeypatch, operation, location):
+    root = tmp_path / 'real' / 'runtime'
+    root.mkdir(parents=True)
+    payload = root / 'payload.txt'
+    payload.write_bytes(b'Bound fixture bytes')
+    identity = delivery.seal_runtime(root, {'schema': 'synthetic.fixture'})
+    before = (root / 'runtime.json').read_bytes()
+    if location == 'root':
+        observed = directory_link(tmp_path / 'linked-runtime', root)
+    elif location == 'ancestor':
+        observed = directory_link(tmp_path / 'linked-parent', root.parent) / root.name
+    else:
+        target = root / 'internal' if location == 'internal_member' else tmp_path / 'external'
+        target.mkdir()
+        (target / 'foreign.txt').write_bytes(b'Foreign fixture bytes')
+        directory_link(root / 'linked-member', target)
+        observed = root
+    read_bytes = Path.read_bytes
+
+    def refuse_payload_read(path):
+        raise AssertionError('export read payload before rejecting a directory link: ' + str(path))
+
+    target = tmp_path / 'rejected.zip'
+    with monkeypatch.context() as guarded:
+        guarded.setattr(Path, 'read_bytes', refuse_payload_read)
+        with pytest.raises(ValueError, match='link|reparse'):
+            if operation == 'seal':
+                delivery.seal_runtime(observed, identity)
+            else:
+                delivery.archive(observed, target)
+    assert read_bytes(root / 'runtime.json') == before
+    assert not target.exists()
+
+
+@pytest.mark.parametrize('operation', ['seal', 'archive'])
+def test_export_rejects_file_link_or_reparse_before_reading_payload(tmp_path, monkeypatch, operation):
+    root = tmp_path / 'runtime'
+    root.mkdir()
+    outside = tmp_path / 'external.txt'
+    outside.write_bytes(b'External fixture bytes')
+    file_link_or_reparse(root / 'member.txt', outside)
+
+    def refuse_payload_read(path):
+        raise AssertionError('export opened a file link/reparse point: ' + str(path))
+
+    target = tmp_path / 'rejected.zip'
+    with monkeypatch.context() as guarded:
+        guarded.setattr(Path, 'read_bytes', refuse_payload_read)
+        with pytest.raises(ValueError, match='link|reparse'):
+            if operation == 'seal':
+                delivery.seal_runtime(root, {'schema': 'synthetic.fixture'})
+            else:
+                delivery.archive(root, target)
+    assert not (root / 'runtime.json').exists()
+    assert not target.exists()
 
 
 def test_mcp_registry_contains_only_read_only_product_tools():
