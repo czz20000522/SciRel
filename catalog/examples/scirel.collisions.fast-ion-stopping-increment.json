@@ -51,7 +51,7 @@
    "name": "beam_mass_number",
    "description": "Beam isotope mass number A used in the E/A energy normalization.",
    "units": "dimensionless",
-   "shape": "scalar or array; scalar -> (1,1), vector -> row; leading axes expand with singleton padding on the right",
+   "shape": "() | (N,) | (d0,d1,...)",
    "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
    "required": true,
    "constraints": "No positivity or finiteness check; the caller owns physical interpretation and compatibility with the other input axes."
@@ -60,7 +60,7 @@
    "name": "beam_energy_ev",
    "description": "Beam-particle injection energy E, before the E/A and MeV normalizations.",
    "units": "eV",
-   "shape": "scalar or array; scalar -> (1,1), vector -> row; leading axes expand with singleton padding on the right",
+   "shape": "() | (N,) | (d0,d1,...)",
    "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
    "required": true,
    "constraints": "No positivity or finiteness check; E enters the particle-rate division even when power density is zero."
@@ -69,7 +69,7 @@
    "name": "birth_pitch_cosine",
    "description": "Cosine of the neutral-particle birth direction relative to the magnetic axis.",
    "units": "dimensionless",
-   "shape": "scalar or array; scalar -> (1,1), vector -> row; leading axes expand with singleton padding on the right",
+   "shape": "() | (N,) | (d0,d1,...)",
    "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
    "required": true,
    "constraints": "A cosine parameter, not degrees or radians. Arithmetic uses fmin(1,abs(value)); magnitudes above one and infinities cap at one, and NaN maps to one."
@@ -78,7 +78,7 @@
    "name": "electron_density_m3",
    "description": "Local electron number density n in the normalization S*tau/n.",
    "units": "m^-3",
-   "shape": "scalar or array; scalar -> (1,1), vector -> row; leading axes expand with singleton padding on the right",
+   "shape": "() | (N,) | (d0,d1,...)",
    "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
    "required": true,
    "constraints": "No positivity, finiteness or density-threshold check; division by zero and nonfinite arithmetic are retained."
@@ -87,7 +87,7 @@
    "name": "electron_temperature_ev",
    "description": "Electron temperature te, normalized as T=(te/1e3)/10.",
    "units": "eV",
-   "shape": "scalar or array; scalar -> (1,1), vector -> row; leading axes expand with singleton padding on the right",
+   "shape": "() | (N,) | (d0,d1,...)",
    "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
    "required": true,
    "constraints": "No positivity or finiteness check. A negative scaled temperature uses the complex fractional-power branch; zero and extreme values can give warnings and nonfinite results."
@@ -96,7 +96,7 @@
    "name": "power_density_w_m3",
    "description": "Supplied local volumetric neutral-beam deposition power density P.",
    "units": "W/m^3",
-   "shape": "scalar or array; scalar -> (1,1), vector -> row; leading axes expand with singleton padding on the right",
+   "shape": "() | (N,) | (d0,d1,...)",
    "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
    "required": true,
    "constraints": "Total injected power in W is not interchangeable with this port. No volume conversion, positivity check or zero-power shortcut is applied."
@@ -105,7 +105,7 @@
    "name": "electron_slowing_time_s",
    "description": "Caller-supplied electron slowing time tau multiplying the local particle-rate density.",
    "units": "s",
-   "shape": "scalar or array; scalar -> (1,1), vector -> row; leading axes expand with singleton padding on the right",
+   "shape": "() | (N,) | (d0,d1,...)",
    "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
    "required": true,
    "constraints": "No slowing-time estimate, clipping, positivity check or finiteness check is performed."
@@ -116,7 +116,7 @@
    "name": "stopping_increment_m2",
    "description": "Only the empirical additive fast-ion contribution to the stopping cross section.",
    "units": "m^2",
-   "shape": "ndarray with at least two axes, from the declared leading-axis expansion; all-scalar inputs -> (1,1)",
+   "shape": "(...), ndim >= 2",
    "dtype": "float64 or complex128 ndarray",
    "required": true,
    "constraints": "May contain signed, NaN, infinite or complex values. Neither a finite nonnegative value nor a zero result for zero power is guaranteed."

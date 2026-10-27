@@ -7921,7 +7921,7 @@
   },
   {
    "asset_id": "scirel.collisions.fast-ion-stopping-increment",
-   "source_sha256": "e1567f56edc718957e123f08637ad23aa35472d8d75f71d355978638ac9227b3",
+   "source_sha256": "47ae2399b3ea53d7c3385c5f1cbed1400a86047d2d828cad0b7c474448816e73",
    "summary": "由局部功率密度、外给电子减速时间及相对磁轴的出生方向余弦，求值固定经验快离子对中性束阻止截面的附加贡献；只返回单位 m² 的增量。",
    "definition": "记 A=beam_mass_number、E=beam_energy_ev、c=birth_pitch_cosine、n=electron_density_m3、te=electron_temperature_ev、P=power_density_w_m3、tau=electron_slowing_time_s。取 e=1.602176462e-19 J/eV，S=P/(E*e)、T=(te/1e3)/10、Ehat=(E/A)/1e6、r=Ehat/T。按升幂顺序累计 F(r)=0.57658+1.6432*r-4.8886*r²+5.3932*r³-2.9226*r⁴+0.77156*r⁵-0.079095*r⁶，再只在 r>pi 处将 F 置零，等号不截断。令 p=fmin(1,abs(c))，因此 c 为 NaN 时 p=1；按升幂顺序累计 G(p)=0.30812*p+11.992*p²-68.971*p³+165.94*p⁴-177.33*p⁵+69.833*p⁶。俯仰扩散参数固定 y=0.6，先算 R=(((T^(-0.9027)*F(r))*G(p))*1e-19 m²，再返回 ((S*tau)/n)*R，保留此乘除顺序及负 T 的复数分数幂分支。S 的单位为 m^-3 s^-1，S*tau/n 无量纲，1e-19 m² 提供面积尺度。",
    "model": "固定经验多项式与温度分数幂，俯仰扩散参数固定 y=0.6；没有已量化物理域上的标定预测保证。",
