@@ -258,3 +258,37 @@ Capability discovery for all ten neutral cases, including candidate-003 masked t
 
 The current sealed request and manifest are `sealed-request.json` (SHA-256 `72252768ae37f80841762e966d99cb34f15b06ac4c1d9360a01ee5a4a361c439`) and `current-manifest.json` (SHA-256 `6bfc5cd6905e5b251c4c80469a3522df4955a199fb50e3b843a53adaf456abd9`). The fresh census is `fresh-census-20261029.json`; its decision is `BLOCKED_NO_EXECUTION`: the SciRel-only WSL runtime root and required containerd/BuildKit sockets were not observable, Docker daemon/buildx were unavailable, and immutable image, exact wheel, and one-use grant were unbound. No case started, no public API was called, and no scientific result or acceptance claim was made. The next action is an independent current image digest, exact wheel hash, fresh <=300 s census, then a new exact single-use grant before reviewing `benchmark-magnetic-001` for execution.
 
+
+## 2026-10-29 SciRel endpoint repair diagnostic
+
+A bounded host/provider read-only diagnostic was completed for the SciRel runtime boundary. The Windows Docker Desktop `desktop-linux` context was unreachable; `docker version` could not connect and `docker buildx ls` reported both builders as error. WSL remained running.
+
+The allowed `/srv/scirel/.runtime` root existed, but the expected containerd and BuildKit sockets were absent. Five containerd processes shared the same SciRel root/state; two duplicate owners exposed `/tmp/scirel-p0.sock`, and the current SciRel log reported waiting for BoltDB open. The only alternate containerd/BuildKit listeners were under `/tmp/scirel-p0-runtime`, outside the allowed root, and were explicitly classified as non-reusable. No CodeFusion runtime was read.
+
+Static repair only: added `D:/software/JetBrains/python_workspace/SciRel-runtime/endpoint-guard-v004.sh` and wired `start-new-boundary.sh` through pre-start/post-start fail-closed checks. Bash syntax checks passed; current pre-start correctly fails with `containerd_duplicate_processes`. No process was killed, no WSL restart occurred, and no daemon/container/scientific task was started.
+
+Fresh diagnostic evidence is `E:/SciRel-lab/_shared/operations/demo-targeted-extraction/coordinator/p0-demo-20261028/outbound-sealed-20261029/fresh-census-20261029-endpoint-repair-r3.json` (SHA-256 `e4965547c0833a8600e8bcd2ae790e17b97ae8c77c82282b21174ce91fb940a8`), with summary `endpoint-repair-20261029-r3.json` (SHA-256 `d84ae34360d9534b59657845ba2dff040dd56108c8be33ec93aac6f2c6672a73`). Decision remains `BLOCKED_NO_EXECUTION`; immutable image, exact wheel, fresh grant and exact request are unbound/not generated. The next owner must perform an explicitly authorized SciRel-only runtime reset, restore the expected sockets, then capture a new <=300-second census before issuing a single-use grant.
+
+## 2026-10-29 Docker provider boundary rebind
+
+Docker Desktop context `desktop-linux` is now available as a Linux/amd64 Engine; Docker Buildx node `desktop-linux` is running with BuildKit v0.34.0. The physical BuildKit namespace is Docker-owned `moby`; the logical SciRel boundary remains labels `scirel` and `scirel-buildkit`. The provider adapter no longer requires the missing legacy `/srv/scirel` sockets.
+
+A non-scientific bounded preflight used local image digest `sha256:82c07562f5217250593cea9c86938cc741dfa89b61dca98753cc7ef056c62e19` with `--pull=never`. It created one labeled CID, mounted only the preflight script read-only and one owned results directory, used network none, 2 CPUs, 4 GiB memory, 4 GiB memory-swap, pids 128 and read-only rootfs, then exited 0. In-container readback passed `cpu.max=200000 100000`, `memory.max=4294967296`, `memory.swap.max=0`, `pids.max=128`, interfaces `lo`; exact CID removal and absence readback passed. No scientific API or case ran, and no existing running service was interrupted.
+
+Evidence:
+
+- `E:/SciRel-lab/_shared/operations/demo-targeted-extraction/coordinator/p0-demo-20261028/outbound-sealed-20261029/provider-fresh-census-20261029-r2.json` SHA-256 `48d08b79d4d920dd1325d4fbeac79eee68dd86aeefc51455e4c0e83ce2db8695`
+- `provider-boundary-20261029-r2.json` SHA-256 `13095f24f7e63201b27f192bea83918eadeee5e2d79aca90d81958c1eefd7ada`
+- `provider-readiness-20261029-r2.json` SHA-256 `040bbee1d2f0d22b16462caba652d6d2806996dd645f30c466bb7d0c9ae37efc`
+- `provider-exact-request-preparation-20261029-r2.json` SHA-256 `62a409811c19388c48230329d385973bd8b4ab823b50a13f5e3fce9f99d96e59`
+- `docker-provider-adapter-contract-20261029.md` SHA-256 `e39088e886e9bcc05dcdbf47de1de7ecac628ffc429b9a6f0793c6b45e3e69ae`
+
+Provider readiness is `PASS_FOR_BOUNDED_PREFLIGHT`; outbound exact request remains `BLOCKED_NOT_GENERATED` until a current outbound image digest, exact wheel hash and fresh single-use grant are bound. The minimum outbound entry is `provider-exact-request-preparation-20261029-r2.json`. CodeFusion paths/namespaces remain forbidden; no old grant was reused.
+
+## 2026-10-29 Unified ten-case demo smoke
+
+The Docker provider was available for the P0 demo closure. A single common image `scirel/p0-demo-unified:20261029` (`sha256:e2fd749b01d6b0ec8123e5db863467828f0f5c49ce257a5189d6c9e890fa5466`) ran the external q01-q10 glue serially with 2 CPUs, 4 GiB memory, pids 128, network none and `--rm` cleanup.
+
+Nine cases produced parseable outputs and q10 produced a parseable bounded nonconvergence (`converged=false`, `maxiter_reached`); there were no timeouts, nonzero exits or hard blocks. Results are indexed at `E:/SciRel-lab/_shared/outbound/portfolio-20261027/results/p0-demo-runtime-20261029/demo-results-index.json`, with the complete run summary in `unified-smoke-summary.json` and per-case artifacts under `unified-smoke/q01` through `unified-smoke/q10`.
+
+q07 remains an observed `SOURCE_DIFF` in the volume reference and is an AI-retryable focused follow-up. q10's nonconvergence is retained as an observable failure path. Scientific acceptance remains a separate expert decision; neither case blocks the runtime/demo closure. Demo-specific glue remains outside SciRel core.
