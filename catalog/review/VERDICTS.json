@@ -3054,6 +3054,26 @@
      "residual_risk": "No mesh convergence, boundary reconstruction, equilibrium solve, physical volume calibration or arbitrary-mask applicability claim."
     }
    ]
+  },  "scirel.kinetic.relativistic-codrift-generalized-spectrum": {
+   "status": "pass-with-limits",
+   "reason": "D1 source-fidelity partial for the declared normalized relativistic co-drift spectrum path; SciRel isolated execution and physical/scientific acceptance remain pending.",
+   "evidence": [
+    {
+     "report": "tests/kinetic/test_relativistic_codrift.py",
+     "verdict": "pass-with-limits",
+     "oracle": "retained host source probes and typed source-output fixture",
+     "residual_risk": "Only c=epsilon0=mu0=B0=1, ky=0 and zero collisions are exercised; no physical mode, stability, general-domain, SciRel-boundary or release claim."
+    }
+   ]
+  },  "scirel.kinetic.velocity-slice-moment-compensation": {
+   "status": "pass-with-limits",
+   "reason": "Bounded A05 source-fidelity partial integrated as a new kinetic moment-correction leaf; one NaN/type limitation and all broader science claims remain open.",
+   "evidence": [{"report":"tests/kinetic/test_moment_compensation.py","verdict":"pass-with-limits","oracle":"retained typed source/replay observations","residual_risk":"No full transport, independent scientific oracle, physical stability, or complete source-fidelity closure."}]
+  },
+  "scirel.kinetic.compensated-shifted-maxwellian": {
+   "status": "pass-with-limits",
+   "reason": "Bounded A06 extension of the existing pre-compensation shifted Maxwellian leaf; candidate limitations and scientific acceptance remain open.",
+   "evidence": [{"report":"tests/kinetic/test_moment_compensation.py","verdict":"pass-with-limits","oracle":"retained typed source/replay observations","residual_risk":"One NaN/type limitation, no ADAS/JH validation, no full solver parity or independent physical correctness."}]
   },  "scirel.source.exponential": {
    "status": "pass",
    "evidence": [
@@ -3078,4 +3098,6 @@
   }
  }
 }
+
+
 

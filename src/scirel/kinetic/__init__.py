@@ -94,6 +94,9 @@ __all__ = ['assemble_frank_egedal_pressure',
  'solve_fluid_bonk',
  'assemble_fluid_em',
  'solve_fluid_em',
+ 'solve_relativistic_codrift_spectrum',
+ 'compensate_velocity_slice',
+ 'build_compensated_shifted_maxwellian',
 ]
 
 _LAZY_EXPORTS = {'assemble_frank_egedal_pressure': ('frank_egedal_pressure_state', 'assemble_frank_egedal_pressure'),
@@ -196,6 +199,9 @@ _LAZY_EXPORTS = {'assemble_frank_egedal_pressure': ('frank_egedal_pressure_state
  'solve_fluid_bonk': ('fluid_spectrum', 'solve_fluid_bonk'),
  'assemble_fluid_em': ('fluid_spectrum', 'assemble_fluid_em'),
  'solve_fluid_em': ('fluid_spectrum', 'solve_fluid_em'),
+ 'solve_relativistic_codrift_spectrum': ('relativistic_codrift', 'solve_relativistic_codrift_spectrum'),
+ 'compensate_velocity_slice': ('moment_compensation', 'compensate_velocity_slice'),
+ 'build_compensated_shifted_maxwellian': ('moment_compensation', 'build_compensated_shifted_maxwellian'),
  'evaluate_gpdf_small_k': ('generalized_dispersion', 'evaluate_gpdf_small_k')}
 
 # Keep the child-module facade discoverable without importing every scientific

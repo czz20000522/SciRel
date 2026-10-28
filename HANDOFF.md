@@ -238,3 +238,14 @@ chapters and other hand-authored RST have distinct evidence scopes.
 
 Record locations, retirement and actual task cleanup follow the single policy
 `catalog/RECORDS.md`. Keep this entry current; history remains in Git and Notion.
+
+## 2026-10-28 SciRel public runner / settlement continuation
+
+接替旧 runtime-engineering 会话后，当前 SciRel-only outbound runtime 交接已收口到以下事实：
+
+- 独立边界仍为 `D:/software/JetBrains/python_workspace/SciRel-runtime`、WSL `/srv/scirel/.runtime`、containerd namespace `scirel`、BuildKit builder `scirel-buildkit`。CodeFusion runtime、locks、cache、output 与 `codefusion*` namespace 禁止读取、挂载、检查、清理或复用。
+- 外部准备包 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/results/unified-sciRel-runtime-p0-20261028/` 新增 `scirel_runtime_runner.py`、`22_SCIREL_PUBLIC_RUNNER_CONTRACT.md`、`23_SCIREL_PUBLIC_RUNNER_CHECK.json`、`24_SCIREL_PUBLIC_RUNNER_CLOSURE.json`。runner 是标准库实现：在 CID 创建前校验 SciRel roots、manifest/资源限制、request/manifest hash、fresh census <=300 s、immutable image digest、exact wheel hash 和一次性授权；运行只接受单请求/单结果；settlement 先写 pre-cleanup receipt，再只处理精确 CID 并读回 CID 缺失。
+- 既有 `16_SCIREL_RUNTIME_PREPARATION_CLOSURE.json` 的 stale manifest bytes/hash 已修复；`16`、`17-21_TEN_TASK_RUNTIME.sha256`、`21_TEN_TASK_RUNTIME_CLOSURE.json` 与 `24` 已逐成员读回一致。
+- 当前证据：runner/manifest/settlement static design `PASS`；immutable image `UNBOUND`、exact wheel `UNBOUND`、fresh census `NOT_RUN`、Linux cgroup/network/CID execution `NOT_RUN`、cleanup settlement `DESIGNED_NOT_RUN`、scientific acceptance `NOT_ASSESSED`。
+
+下一步：由独立 Linux/amd64 owner 提供本地 immutable image digest、exact wheel binding 和 fresh census，生成一次性 exact authorization；完成 bounded preflight/cgroup/network/CID readback 后，才可启动单个真实任务。未满足前置条件时保持 BLOCKED/NOT_RUN，不运行科学，不改写历史 receipt。

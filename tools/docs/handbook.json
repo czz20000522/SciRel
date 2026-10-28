@@ -284,6 +284,14 @@
      ]
     },
     {
+      "id": "relativistic-codrift-spectrum",
+      "title": "求解归一化相对论协动广义谱",
+      "introduction": "对声明的归一化常数、带漂移的物种状态和 ky=0 波矢组装 4S+6 广义本征问题。相对论切向惯性、零碰撞、超光速拒绝和两种独立排序都属于此专用分支；完整谱不等于物理模态识别或稳定性结论。",
+      "assets": [
+        "scirel.kinetic.relativistic-codrift-generalized-spectrum"
+      ]
+    },
+    {
      "id": "fluid-wavevector-branches",
      "title": "求解流体垂直波数分支",
      "introduction": "先组装 L/J 极点矩阵，再求复本征值并按给定规则选择分支；扫描入口把平衡尺度、频率序列和分支选择连接起来。极点表有有限阶数范围，选择规则不能替代物理模式识别。",
@@ -553,6 +561,15 @@
       "scirel.kinetic.axisymmetric-neutral-moments",
       "scirel.collisions.relativistic-maxwellian-bessel-closure"
      ]
+    },
+    {
+      "id": "moment-compensated-maxwellian",
+      "title": "对速度切片做漂移与能量矩补偿",
+      "introduction": "先用同一圆柱速度求积构造平移 Maxwell 分布，再对单个切片或每个平移应用有界的离散漂移/能量修正。该修正保留源的有限体积差分与符号分支，不是完整输运求解或物理稳定性证明。",
+      "assets": [
+        "scirel.kinetic.velocity-slice-moment-compensation",
+        "scirel.kinetic.compensated-shifted-maxwellian"
+      ]
     },
     {
      "id": "mirror-distributions-and-loss-cones",

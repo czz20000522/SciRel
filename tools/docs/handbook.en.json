@@ -279,6 +279,14 @@
      ]
     },
     {
+      "id": "relativistic-codrift-spectrum",
+      "title": "Solving a normalized relativistic co-drift spectrum",
+      "introduction": "Assemble the 4S+6 generalized eigenproblem for declared normalized constants, drifting species and ky=0 wavevectors. Relativistic tangent inertia, zero collisions, superluminal rejection and two independent orderings belong to this specialized branch; a complete spectrum is not a mode-identification or stability result.",
+      "assets": [
+        "scirel.kinetic.relativistic-codrift-generalized-spectrum"
+      ]
+    },
+    {
      "id": "fluid-wavevector-branches",
      "title": "Solving fluid perpendicular-wavenumber branches",
      "introduction": "First assemble the L/J pole matrix, then solve for complex eigenvalues and select branches by the given rule; the scan entry point connects equilibrium scales, frequency sequences and branch selection. Pole tables have a limited order range, and selection rules cannot replace physical mode identification.",
@@ -546,6 +554,15 @@
       "scirel.kinetic.axisymmetric-neutral-moments",
       "scirel.collisions.relativistic-maxwellian-bessel-closure"
      ]
+    },
+    {
+      "id": "moment-compensated-maxwellian",
+      "title": "Compensating drift and energy moments on velocity slices",
+      "introduction": "Build shifted Maxwellian slices on one cylindrical quadrature, then apply the bounded discrete drift and energy correction to a slice or every shift. The correction retains source finite-volume and sign branches; it is not a complete transport solve or stability proof.",
+      "assets": [
+        "scirel.kinetic.velocity-slice-moment-compensation",
+        "scirel.kinetic.compensated-shifted-maxwellian"
+      ]
     },
     {
      "id": "mirror-distributions-and-loss-cones",
