@@ -249,3 +249,12 @@ Record locations, retirement and actual task cleanup follow the single policy
 - 当前证据：runner/manifest/settlement static design `PASS`；immutable image `UNBOUND`、exact wheel `UNBOUND`、fresh census `NOT_RUN`、Linux cgroup/network/CID execution `NOT_RUN`、cleanup settlement `DESIGNED_NOT_RUN`、scientific acceptance `NOT_ASSESSED`。
 
 下一步：由独立 Linux/amd64 owner 提供本地 immutable image digest、exact wheel binding 和 fresh census，生成一次性 exact authorization；完成 bounded preflight/cgroup/network/CID readback 后，才可启动单个真实任务。未满足前置条件时保持 BLOCKED/NOT_RUN，不运行科学，不改写历史 receipt。
+
+## 2026-10-29 P0 outbound successor sealed preparation
+
+The current outbound successor re-read the public SciReL surface and sealed a new ten-case request from the neutral scaffold. The final source binding, public input digest and contract count are retained in the sealed evidence below; the old 250-asset scaffold identity is stale and was not reused.
+
+Capability discovery for all ten neutral cases, including candidate-003 masked toroidal volume, candidate-005 relativistic co-drift spectrum, candidate-006 A03/A05/A06, and the now-public candidate-004 discrete feedback primitive, is retained at `E:/SciRel-lab/_shared/operations/demo-targeted-extraction/coordinator/p0-demo-20261028/outbound-sealed-20261029/capability-discovery-20261029.json`. Each case records reusable public assets, explicit glue, and uncovered relations; glue is not counted as SciReL capability and science acceptance remains pending human review.
+
+The current sealed request and manifest are `sealed-request.json` (SHA-256 `72252768ae37f80841762e966d99cb34f15b06ac4c1d9360a01ee5a4a361c439`) and `current-manifest.json` (SHA-256 `6bfc5cd6905e5b251c4c80469a3522df4955a199fb50e3b843a53adaf456abd9`). The fresh census is `fresh-census-20261029.json`; its decision is `BLOCKED_NO_EXECUTION`: the SciRel-only WSL runtime root and required containerd/BuildKit sockets were not observable, Docker daemon/buildx were unavailable, and immutable image, exact wheel, and one-use grant were unbound. No case started, no public API was called, and no scientific result or acceptance claim was made. The next action is an independent current image digest, exact wheel hash, fresh <=300 s census, then a new exact single-use grant before reviewing `benchmark-magnetic-001` for execution.
+
