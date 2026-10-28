@@ -173,6 +173,14 @@
      ]
     },
     {
+      "id": "sampled-vector-feedback",
+      "title": "Running a discrete vector error feedback primitive",
+      "introduction": "Compute P/I/filtered-D state, an eleven-output current map and sample-and-hold branches on an explicit ten-channel reference/measurement sequence. This is a device-neutral discrete state primitive; it does not solve a device, actuator or plasma equilibrium and does not establish closed-loop stability.",
+      "assets": [
+        "scirel.closures.discrete-vector-error-feedback"
+      ]
+    },
+    {
      "id": "local-pressure-compatibility",
      "title": "Checking parallel-pressure compatibility and local stability indicators",
      "introduction": "Pointwise firehose margins, fixed-flux pressure-derivative diagnostics and parallel-pressure residuals answer different questions. Entry points requiring derivatives must state the fixed-flux condition; these local indicators do not provide a verdict on global stability, growth rates or general Hall-flow stability.",

@@ -1,0 +1,124 @@
+{
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.closures.discrete-vector-error-feedback",
+  "title": {
+    "en": "Discrete vector error filtering and current feedback",
+    "zh": "离散矢量误差滤波与电流反馈"
+  },
+  "summary": "Evaluate a device-neutral sampled ten-channel error filter with proportional, integral and filtered-derivative state, an 11x10 current map, feed-forward addition and enable hold/reset branches.",
+  "taxonomy": ["closures", "control", "sampled-feedback"],
+  "aliases": ["vector feedback", "sample-and-hold current feedback"],
+  "discovery": {
+    "capability": [
+      "Discrete vector error filtering and current feedback",
+      "Simulate the declared sampled ten-channel feedback state and mapped current output."
+    ],
+    "operation": [
+      "sampled PID/filter state feedback",
+      "reference, measurement, feed-forward current and controller -> current outputs and state trace"
+    ],
+    "model": "Ten-channel proportional/integral/filtered-derivative state with forward-Euler integration and an 11x10 linear feedback map.",
+    "geometry": "Device-neutral vectors: ten measured/reference channels and eleven current outputs; no spatial or magnetic geometry is reconstructed.",
+    "boundary": "Disabled samples output feed-forward current and hold PID/feedback state; a disabled-to-enabled transition resets integrator/filter state before evaluation.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "sampled reference/measurement vectors and controller state to mapped current feedback and trace",
+    "direction": "inputs, controller -> total_current_A, feedback_current_A, pid_components, error_T and state_trace",
+    "definition": "Compute error=reference-measurement; evaluate P/I/filtered-D terms when enabled; apply the effective 11x10 map; add feed-forward current; and update or hold state according to the enable branch.",
+    "model": "Discrete sampled PID/filter feedback primitive with forward-Euler integrator and first-order derivative filter.",
+    "geometry": "Device-neutral vector relation with ten error channels, thirty ordered PID components and eleven current outputs; no spatial geometry.",
+    "coordinates": "Reference and measured channels use tesla, feed-forward/feedback/total currents use amperes, and sample times use seconds.",
+    "boundary": "The public relation covers the declared typed sampled path with interpolation disabled and exact observation times; nonzero internal reset is outside the declared branch.",
+    "assumptions": [
+      "The controller parameters and signal arrays share one ten-channel/eleven-output layout.",
+      "The coefficient matrix is applied after multiplication by coefficient_scale.",
+      "The relation is a numerical sampled-state primitive; it does not establish a stable closed loop or a physical device controller."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "inputs",
+      "description": "Sampled input mapping carrying input_time_s, observation_time_s and reference, measurement, feed-forward and enable signals.",
+      "units": "mixed T, A and s",
+      "shape": "mapping with n samples",
+      "dtype": "Python mapping",
+      "required": true,
+      "constraints": "reference_T and measured_T are [n,10], feedforward_current_A is [n,11], enable is binary [n], and observation_time_s equals input_time_s for interpolation-off mode."
+    },
+    {
+      "name": "controller",
+      "description": "Sampled P/I/D/filter gains, map, sample period and initial state mapping.",
+      "units": "mixed controller units",
+      "shape": "mapping",
+      "dtype": "Python mapping",
+      "required": true,
+      "constraints": "P, I, D and N_per_s have ten entries; coefficient_matrix_unscaled is [11,10]; initial integrator/filter states have ten entries; internal controls follow the declared binary/reset path."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Mapping containing schema, time_s, values and state_trace.",
+      "units": "mixed T, A, s and controller state units",
+      "shape": "mapping",
+      "dtype": "JSON-ready Python mapping",
+      "required": true,
+      "constraints": "values contains total_current_A [n,11], feedback_current_A [n,11], pid_components [n,30] in P1,I1,D1 order and error_T [n,10]; state_trace records reset and pre/post integrator/filter states."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies aligned finite sampled arrays and a finite controller mapping.",
+      "The caller accepts interpolation-off exact-time semantics and the declared ten-channel/eleven-output layout."
+    ],
+    "supported": [
+      "Finite sampled enable/hold/reset sequences on the declared parameter path.",
+      "Independent source-free evaluation of the discrete state and current map."
+    ],
+    "excluded": [
+      "Native MATLAB/Simulink execution or model parity beyond the retained source/replay evidence.",
+      "Closed-loop stability, convergence, actuator limits, plant dynamics, calibration or device-specific geometry.",
+      "Parameter-resolution and malformed-input coverage beyond the direct checks."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises TypeError or ValueError for non-mapping inputs, missing signals, wrong shapes, nonfinite values, nonbinary enable/internal controls, invalid sample timing, negative filter rates or nonzero internal_reset.",
+    "runtime_failure": "NumPy conversion and arithmetic errors propagate; no fallback controller or interpolation path is selected.",
+    "nonconvergence": "Not applicable; this is a finite sampled pass with no iterative solve. Closed-loop convergence is outside the relation.",
+    "partial_results": "No result mapping is returned after validation or sampled-state failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.closures.discrete_vector_feedback",
+      "symbol": "simulate_feedback",
+      "signature": "simulate_feedback(inputs, controller) -> dict[str, Any]",
+      "canonical_module": "scirel.closures",
+      "canonical_symbol": "simulate_discrete_vector_feedback"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev11",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Run the supplied 121-sample device-neutral fixture through the sampled feedback state.",
+    "code": "from pathlib import Path\nimport json\nfrom scirel.closures import simulate_discrete_vector_feedback\nroot = Path('tests/fixtures/closures/discrete_vector_feedback/evidence')\nresult = simulate_discrete_vector_feedback(json.loads((root/'fixtures/feedback-input.json').read_text()), json.loads((root/'source-defaults.json').read_text()))\nassert result['values']['total_current_A'][40] == result['values']['total_current_A'][40]\nassert len(result['time_s']) == 121",
+    "expected": "The bounded fixture returns 121 samples with eleven total-current outputs per sample; disabled samples retain feed-forward output and state."
+  },
+  "verification": {
+    "scope": [
+      "Four direct tests cover fixture shapes, source/replay equality, independent reimplementation against the saved trace, disabled hold/rising reset and nonbinary enable rejection.",
+      "The incoming supplement binds 12,463 source/replay numeric scalars, equal result/state files and complete member/license hashes.",
+      "The public test fixture preserves the source result and state trace bytes used by the direct comparison."
+    ],
+    "tests": ["tests/closures/test_discrete_vector_feedback.py"],
+    "evidence_ceiling": "Bounded source-fidelity partial for the declared sampled adapter path. Native Simulink, parameter-resolution discrimination, broader malformed inputs, physical calibration, closed-loop convergence/stability, human scientific acceptance, rights acceptance and release remain unestablished.",
+    "known_limitations": [
+      "The implementation reproduces the declared typed fixture path and does not model a plant, actuator saturation or magnetic geometry.",
+      "Disabled and rising-enable behavior is explicit state semantics, not evidence of a stable controller.",
+      "The source/replay evidence is an adapter transcription comparison; native Simulink execution remains NOT_RUN.",
+      "License texts are retained under licenses/discrete-vector-feedback; rights acceptance remains a separate decision."
+    ]
+  }
+}

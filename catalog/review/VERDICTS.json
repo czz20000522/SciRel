@@ -3074,6 +3074,10 @@
    "status": "pass-with-limits",
    "reason": "Bounded A06 extension of the existing pre-compensation shifted Maxwellian leaf; candidate limitations and scientific acceptance remain open.",
    "evidence": [{"report":"tests/kinetic/test_moment_compensation.py","verdict":"pass-with-limits","oracle":"retained typed source/replay observations","residual_risk":"One NaN/type limitation, no ADAS/JH validation, no full solver parity or independent physical correctness."}]
+  },  "scirel.closures.discrete-vector-error-feedback": {
+   "status": "pass-with-limits",
+   "reason": "Receiver integration of candidate-004 source-free supplement for the declared sampled vector feedback path; source/replay and direct tests are bounded to the typed fixture and native/physical acceptance remain pending.",
+   "evidence": [{"report":"tests/closures/test_discrete_vector_feedback.py","verdict":"pass-with-limits","oracle":"bound source/replay result and state traces plus independent source-free reimplementation","residual_risk":"No native Simulink parity, parameter-resolution coverage, closed-loop stability/convergence, physical calibration or human scientific acceptance."}]
   },  "scirel.source.exponential": {
    "status": "pass",
    "evidence": [
@@ -3098,6 +3102,7 @@
   }
  }
 }
+
 
 
 

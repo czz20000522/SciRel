@@ -12,6 +12,7 @@ __all__ = [
     "close_reduced_hall_drift",
     "solve_mirror_ambipolar_potential",
     "solve_mirror_quasineutral_closure",
+    "simulate_discrete_vector_feedback",
 ]
 
 
@@ -47,6 +48,10 @@ _LAZY_EXPORTS = {
     "solve_mirror_quasineutral_closure": (
         "mirror_quasineutral_closure",
         "solve_mirror_quasineutral_closure",
+    ),
+    "simulate_discrete_vector_feedback": (
+        "discrete_vector_feedback",
+        "simulate_feedback",
     ),
 }
 

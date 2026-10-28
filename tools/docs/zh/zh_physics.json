@@ -9682,6 +9682,80 @@
      "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
     ]
    }
+  },
+  {
+   "asset_id": "scirel.closures.discrete-vector-error-feedback",
+   "source_sha256": "a6b57cd20cb3294f02330561254b686f9ec64ce3ee30c85ea67e0fbd72f458c7",
+   "summary": "在设备中立的十通道采样序列上计算离散 P/I/滤波 D 状态、十一路电流映射以及使能保持/复位分支。",
+   "definition": "计算 error=reference-measurement；使能时求 P/I/滤波 D，应用 11×10 矩阵并叠加前馈；禁用时保持 PID/反馈状态并返回前馈电流；禁用到使能上升沿先复位积分器和滤波器。",
+   "model": "带前向 Euler 积分和一阶滤波导数的离散采样 PID/反馈原语。",
+   "boundary": "公共关系限于声明的类型化采样路径、关闭插值和精确观测时间；非零 internal_reset 不属于声明分支。",
+   "assumptions": [
+    "控制器与信号共享十通道/十一路布局。",
+    "反馈矩阵先乘 coefficient_scale。",
+    "这是数值采样状态原语，不证明闭环稳定或装置控制有效。"
+   ],
+   "inputs": [
+    {
+     "name": "inputs",
+     "description": "含时间和参考、测量、前馈、使能信号的采样映射。",
+     "constraints": "reference_T、measured_T 为 [n,10]，feedforward_current_A 为 [n,11]，enable 为二值 [n]。",
+     "dtype": "Python 映射"
+    },
+    {
+     "name": "controller",
+     "description": "P/I/D/滤波增益、矩阵、采样周期和初始状态映射。",
+     "constraints": "十元素增益/状态，矩阵形状 [11,10]，二值内部控制。",
+     "dtype": "Python 映射"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "result",
+     "description": "含时间、总电流、反馈电流、PID 分量、误差和状态轨迹的映射。",
+     "constraints": "PID 分量按 P1,I1,D1,…,P10,I10,D10 排列；状态记录复位和前后状态。",
+     "dtype": "JSON 可序列化 Python 映射"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "采样数组对齐且有限。",
+     "调用者接受关闭插值的精确时间语义和十通道/十一路布局。"
+    ],
+    "supported": [
+     "声明采样路径上的使能、保持和上升沿复位序列。",
+     "独立求值离散状态和电流映射。"
+    ],
+    "excluded": [
+     "不执行原生 MATLAB/Simulink、装置几何、执行器限制或物理标定。",
+     "不提供闭环稳定性、收敛性或超出直接检查的畸形输入覆盖。",
+     "不把采样反馈状态解释为已验证的装置控制器。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "非映射、缺失信号、错误形状、非有限值、非二值控制、无效采样时间、负滤波率或非零 internal_reset 引发 TypeError/ValueError。",
+    "runtime_failure": "NumPy 转换和算术异常向上传播；不选择备用控制器或插值路径。",
+    "nonconvergence": "不适用；这是有限采样过程，不含迭代求解。",
+    "partial_results": "校验或状态失败后不返回结果映射。"
+   },
+   "verification": {
+    "scope": [
+     "四个直接测试覆盖形状、源/重放一致性、独立重实现、禁用保持、上升复位和非二值使能拒绝。",
+     "入站补充绑定 12,463 个源/重放数值标量、相同结果/状态文件及完整成员/许可证哈希。",
+     "公共夹具保留直接比较使用的源结果和状态轨迹。"
+    ],
+    "known_limitations": [
+     "不建模装置、执行器饱和或磁场几何。",
+     "保持与上升沿复位是状态语义，不是稳定控制证据。",
+     "源/重放比较是适配器转录证据；原生 Simulink 仍未运行。",
+     "许可证文本保留于离散反馈目录，权利接受仍待决定。"
+    ],
+    "evidence_ceiling": "限于声明采样适配器路径的源保真部分证据；原生 Simulink、参数解析、更广畸形输入、物理标定、闭环稳定/收敛、人工科学接受、权利接受和发布均未建立。"
+   },
+   "example": {
+    "description": "在 121 点类型化夹具上运行设备中立采样反馈状态。",
+    "expected": "返回 121 个样本及每个样本的十一路总电流；禁用样本返回前馈并保持状态。"
+   }
   }
  ]
 }

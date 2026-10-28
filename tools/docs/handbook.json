@@ -174,6 +174,14 @@
      ]
     },
     {
+      "id": "sampled-vector-feedback",
+      "title": "运行离散矢量误差反馈原语",
+      "introduction": "在明确的十通道参考/测量序列上计算 P/I/滤波 D 状态、十一路电流映射和采样保持分支。它是设备中立的离散状态原语，不求解装置、执行器或等离子体平衡，也不提供闭环稳定性结论。",
+      "assets": [
+        "scirel.closures.discrete-vector-error-feedback"
+      ]
+    },
+    {
      "id": "local-pressure-compatibility",
      "title": "检查平行压强相容性与局域稳定性指标",
      "introduction": "逐点火蛇裕度、固定磁通压强导数诊断与平行压强残差回答不同问题。需要导数的入口必须明确固定磁通条件；这些局域指标不提供全局稳定性、增长率或一般 Hall 流动稳定性的判决。",
