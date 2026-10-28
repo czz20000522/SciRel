@@ -8025,6 +8025,290 @@
      "通用装置分类仅表示未内置具名装置常数，不认证物理适用性。"
     ]
    }
+  },
+{
+ "asset_id": "scirel.kinetic.relativistic-codrift-generalized-spectrum",
+ "source_sha256": "ef4def17c7f815c1d4f50ff9c0a3a2515cfb563b02334dc45e8765cd38d177f3",
+ "summary": "对声明归一化常数、带漂移物种和 ky=0 波矢求解相对论协动广义谱。",
+ "definition": "逐个波矢组装 4*S+6 阶 M 与 A，求解 M X=lambda A X，映射 omega=i lambda，并分别按实部和虚部降序排列完整谱。",
+ "model": "归一化线性相对论协动广义本征问题；只支持 c=epsilon0=mu0=B0=1 和零碰撞。",
+ "boundary": "必须满足归一化常数、零碰撞与 ky=0；超光速相对论速度和维度错误在返回前失败。",
+ "assumptions": [
+  "压强指数 gamma_pressure=1。",
+  "质量和密度为正，每个物种有三个速度分量和两个密度梯度分量。",
+  "完整有限谱按每个波矢返回；不推断物理模态或稳定性。"
+ ],
+ "inputs": [
+  {
+   "name": "case",
+   "description": "归一化常数、物种记录、相对论开关、碰撞选择器和波矢的类型化映射。",
+   "constraints": "常数均为 1，collision_matrix 为 zero，k 为 [N,3] 且每个 ky=0；物种维度及正性满足合同。",
+   "dtype": "Python 映射"
   }
+ ],
+ "outputs": [
+  {
+   "name": "spectra",
+   "description": "每个波矢一个记录，含 real_order 与 imag_order 的实部/虚部对。",
+   "constraints": "每个排序包含完整 4*S+6 个有限模式；两种排序彼此独立。",
+   "dtype": "嵌套 Python 列表"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "调用者接受归一化常数和坐标约定。",
+   "物种质量/密度为正、gamma_pressure=1 且维度正确。",
+   "相对论速度严格小于 c。"
+  ],
+  "supported": [
+   "声明的相对论和非相对论零碰撞分支。"
+  ],
+  "excluded": [
+   "SI 换算、非零 ky、非零碰撞、任意归一化常数及一般温热流体/协变模型。",
+   "模态跟踪、稳定性认证和声明源保真夹具以外的物理正确性。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "不支持常数、非零碰撞、ky 非零、物种维度错误、gamma_pressure 非 1、非正质量/密度或相对论速度 >= c 时抛出 ValueError。",
+  "runtime_failure": "SciPy 广义特征求解或有限谱检查的数值异常向上传播，不返回备用谱。",
+  "nonconvergence": "不适用；特征求解失败直接传播。",
+  "partial_results": "校验、求解或有限性失败后不返回部分谱。"
+ },
+ "verification": {
+  "scope": [
+   "候选包的相对论/非相对论主机探针及超光速、ky 非零和碰撞非零失败。",
+   "三个直接测试保留 14 模式形状、有限输出、首行源比较和超光速拒绝。"
+  ],
+  "known_limitations": [
+   "仅支持归一化常数、ky=0 和零碰撞。",
+   "候选夹具只有两个物种和四个波矢；更广输入域未验证。",
+   "完整数值谱不是物理模态分类或稳定性结果。",
+   "SciRel 隔离执行仍未运行。",
+   "GPL-3.0-or-later 权利接受仍待处理。"
+  ],
+  "evidence_ceiling": "D1 源保真部分证据只支持声明归一化路径和失败边界；不建立物理正确性、协变温热流体有效性、稳定性、人工科学接受、权利接受或发布。"
+ },
+ "example": {
+  "description": "空归一化波矢列表。",
+  "expected": "校验常数与零碰撞后返回空 spectra 列表。"
+ }
+},
+{
+ "asset_id": "scirel.kinetic.velocity-slice-moment-compensation",
+ "source_sha256": "6dcb7780a9e421baac5973deaf173b82fcc7c4a5fe7aa929c0de7d60a3f288e1",
+ "summary": "对一个圆柱速度分布切片施加有界离散修正，使轴向漂移和能量矩接近目标。",
+ "definition": "按源顺序计算矩、有限体积差分和四种符号组合，必要时施加带符号缩放，返回修正切片及缩放因子。",
+ "model": "离散有限体积双分量矩补偿；没有非线性收敛循环。",
+ "boundary": "调用者提供求积和目标矩；奇异修正系数保留零修正，不选择备用求解器。",
+ "assumptions": [
+  "切片、速度轴和求积对齐。",
+  "vth、目标漂移和能量使用一致单位。",
+  "这是离散源原语，不证明物理闭合或稳定性。"
+ ],
+ "inputs": [
+  {
+   "name": "f_slice",
+   "description": "一个分布切片。",
+   "constraints": "形状匹配求积和速度轴。",
+   "dtype": "实数数组"
+  },
+  {
+   "name": "quadrature",
+   "description": "同一网格的圆柱速度求积映射。",
+   "constraints": "含径向测度、dvx、面、速度平方和符号索引。",
+   "dtype": "映射"
+  },
+  {
+   "name": "vr",
+   "description": "归一化径向速度轴。",
+   "constraints": "与求积行匹配。",
+   "dtype": "实数数组"
+  },
+  {
+   "name": "vx",
+   "description": "归一化轴向速度轴。",
+   "constraints": "与求积列匹配并含正负值。",
+   "dtype": "实数数组"
+  },
+  {
+   "name": "vth",
+   "description": "热速度尺度。",
+   "constraints": "参与目标矩计算。",
+   "dtype": "实数标量"
+  },
+  {
+   "name": "target_vx",
+   "description": "目标轴向漂移。",
+   "constraints": "使用 m/s。",
+   "dtype": "实数标量"
+  },
+  {
+   "name": "target_energy",
+   "description": "目标二阶能量矩。",
+   "constraints": "使用 m²/s²。",
+   "dtype": "实数标量"
+  },
+  {
+   "name": "nb",
+   "description": "归一化乘数。",
+   "constraints": "用于源矩和输出缩放。",
+   "dtype": "实数标量"
+  },
+  {
+   "name": "assume_pos",
+   "description": "是否假设切片为正。",
+   "constraints": "控制有符号截断和缩放。",
+   "dtype": "布尔值"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "adjusted_slice",
+   "description": "修正后的速度切片。",
+   "constraints": "与输入同形，原始算术/非有限行为按 NumPy 保留。",
+   "dtype": "float64 数组"
+  },
+  {
+   "name": "scale",
+   "description": "有符号修正缩放。",
+   "constraints": "启用限制时通常不超过 1。",
+   "dtype": "Python 浮点数"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "切片、速度轴和求积对齐。",
+   "调用者接受源有限体积和单位约定。"
+  ],
+  "supported": [
+   "对原子或分子单切片做声明的双矩补偿。"
+  ],
+  "excluded": [
+   "完整输运求解、迭代收敛保证和物理稳定性证明。",
+   "自动网格、目标选择或耦合通道解析。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "NumPy 形状、索引、转换和算术异常向上传播；不新增输入修复。",
+  "runtime_failure": "奇异或非有限算术遵循源形状计算，不选择备用修正。",
+  "nonconvergence": "不适用；无迭代。",
+  "partial_results": "异常后不返回部分映射。"
+ },
+ "verification": {
+  "scope": [
+   "维护的六点网格上检查形状、有限算术和有符号模式。",
+   "候选证据保留正值、有符号、零切片、目标和形状错误行。"
+  ],
+  "known_limitations": [
+   "不建立物理矩闭合或收敛。",
+   "奇异和格式错误分支继承原始算术/索引行为。",
+   "候选证据不覆盖完整求解器或分子耦合输运。"
+  ],
+  "evidence_ceiling": "限于声明离散修正的源保真部分证据；NaN payload/警告差异及整数/浮点类型差异仍开放，独立科学正确性、完整输运和人工接受未建立。"
+ },
+ "example": {
+  "description": "在六点轴向网格上修正一个有限切片。",
+  "expected": "输出保持 (3,6) 形状并返回标量缩放。"
+ }
+},
+{
+ "asset_id": "scirel.kinetic.compensated-shifted-maxwellian",
+ "source_sha256": "97c2599192a43bbf071758d0d1cbbb266949f7d323c71a9780b63d9394ea6c06",
+ "summary": "构造裁剪并按圆柱求积归一化的平移 Maxwell 分布切片，再应用有界离散漂移/能量补偿阶段。",
+ "definition": "计算热速度和裁剪指数，按求积归一化每个切片，施加 compensate_velocity_slice 后再次归一化。",
+ "model": "固定氢质量/电荷常数的离散平移 Maxwell 分布与源形状矩补偿。",
+ "boundary": "温度不正时返回零切片；指数仅在严格 (-80,0) 内保留，其余替换为 -80。",
+ "assumptions": [
+  "速度网格可由圆柱求积接受。",
+  "mu 和 molecularity 遵循源质量及分子数约定。",
+  "最终分布是离散源对象，不是完整输运解。"
+ ],
+ "inputs": [
+  {
+   "name": "vr",
+   "description": "归一化径向速度轴。",
+   "constraints": "传给圆柱求积。",
+   "dtype": "实数数组"
+  },
+  {
+   "name": "vx",
+   "description": "归一化轴向速度轴。",
+   "constraints": "传给圆柱求积。",
+   "dtype": "实数数组"
+  },
+  {
+   "name": "temperatures_eV",
+   "description": "每个平移的温度。",
+   "constraints": "不正项返回零切片。",
+   "dtype": "实数数组"
+  },
+  {
+   "name": "shifts_ms",
+   "description": "物理轴向平移。",
+   "constraints": "与温度同形。",
+   "dtype": "实数数组"
+  },
+  {
+   "name": "mu",
+   "description": "物种质量乘数。",
+   "constraints": "参与热速度和目标能量。",
+   "dtype": "实数标量"
+  },
+  {
+   "name": "molecularity",
+   "description": "分子数指数乘数。",
+   "constraints": "参与指数和目标能量。",
+   "dtype": "实数标量"
+  },
+  {
+   "name": "tnorm_eV",
+   "description": "归一化温度。",
+   "constraints": "参与热速度。",
+   "dtype": "实数标量"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "distribution",
+   "description": "矩补偿后的平移 Maxwell 切片。",
+   "constraints": "每个正温切片在生成求积上重新归一化；不正温分支为零。",
+   "dtype": "float64 数组"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "轴和物种参数遵循归一化源约定。",
+   "调用者接受固定氢常数和裁剪指数算术。"
+  ],
+  "supported": [
+   "声明原子/分子源形状分支的有限平移 Maxwell 切片。"
+  ],
+  "excluded": [
+   "ADAS/JH、分子耦合输运、完整求解器演化、外部标定及更广物理正确性。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "求积、形状或索引异常向上传播；不选择备用网格/求解器。",
+  "runtime_failure": "溢出、NaN 和警告遵循 NumPy 算术及源形状修正。",
+  "nonconvergence": "不适用；无迭代。",
+  "partial_results": "异常后不返回部分分布。"
+ },
+ "verification": {
+  "scope": [
+   "直接检查形状、不正温分支和正温有限切片。",
+   "候选证据保留温度分支、裁剪、非均匀氘以及 NaN/负/零边界行。"
+  ],
+  "known_limitations": [
+   "扩展现有预补偿 shifted Maxwellian 叶，不替换它。",
+   "固定常数和裁剪算术是模型约定，不是标定证据。",
+   "候选证据不覆盖分子耦合通道或完整输运求解器。"
+  ],
+  "evidence_ceiling": "限于 A06 源保真部分；NaN payload/警告差异及整数/浮点类型差异仍开放，独立科学正确性、ADAS/JH、完整求解器和人工接受未建立。"
+ },
+ "example": {
+  "description": "构造含零温分支的三个平移。",
+  "expected": "分布形状为 (3,6,3)，零和负温切片恰为零。"
+ }
+}
  ]
 }
