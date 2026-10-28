@@ -8,6 +8,12 @@ axes, state/order, failure semantics, applicability and examples. The
 implementation must satisfy it; tests, API pages, user-guide chapters and the
 capability matrix are projections of the same truth.
 
+The project-level boundary between source behavior graphs, public composition
+graphs and user-owned outbound task graphs is defined in
+[`../ARCHITECTURE.md`](../ARCHITECTURE.md). The `composition` field below is a
+public SciReL composition contract; it is not an automatic copy of a source
+project's task graph and it does not describe a user's private program.
+
 Any agent changing a capability must read this file first.
 
 ## Admission evidence checks

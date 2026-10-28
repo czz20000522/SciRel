@@ -7,6 +7,11 @@ Discovery is derived from their reviewed metadata rather than a second
 classification table. Human API pages, tutorials and the bilingual site have a
 separate documentation pipeline.
 
+The consumer is a static asset for general agents. The outbound agent owns the
+program and task graph it creates for a user request; the consumer runtime does
+not collect, execute or report that private graph to SciReL. See the project
+boundary and graph-role rules in [`../../ARCHITECTURE.md`](../../ARCHITECTURE.md).
+
 ## Source queries during development
 
 Daily queries read the current public source layer without a wheel or export:

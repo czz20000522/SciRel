@@ -1,5 +1,10 @@
 # SciRel current handoff
 
+The durable architecture boundary for source behavior graphs, public
+compositions, user-owned task graphs and scale-aware static retrieval is
+[`ARCHITECTURE.md`](ARCHITECTURE.md). Read it with `RULES.md` before changing
+the contract, consumer query surface or decomposition handoff.
+
 ## 2026-10-27 Windows tooling failure closure
 
 Implementation commit `0bee05b3` closes all 46 previously recorded

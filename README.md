@@ -43,7 +43,8 @@ licenses/              # 许可与来源署名
 
 ## 项目规则
 
-项目的元规则、合同真值、文档审查、双语和交接约定见 [`RULES.md`](RULES.md)。后续接手者应先读它和 `AGENTS.md`。
+项目的三条线边界、任务图角色和大规模静态检索策略见 [`ARCHITECTURE.md`](ARCHITECTURE.md)。
+元规则、合同真值、文档审查、双语和交接约定见 [`RULES.md`](RULES.md)。后续接手者应先读它们和 `AGENTS.md`。
 
 ## 开发
 

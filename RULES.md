@@ -91,10 +91,20 @@ the reason:
   delivery format; not the receiver catalog/roadmap/acceptance decisions.
 - Receiver workers know the self-contained package, contracts/tests/evidence and
   local acceptance rules; not source identity or decomposition history.
-- Humans own the full chain. An optional global coordinator may assist the human
-  but must not leak receiver context to workers or source identity to the receiver.
+- The source, maintenance and outbound lines are independent. A general outbound
+  agent consumes the static package without sending its private program, task
+  graph or gap list back to the maintainer. An optional coordinator may track
+  public handoff state, but must not leak receiver context to source workers or
+  source identity to the outbound consumer.
 - Deliveries are self-contained; source checkout, private paths or receiver
   expectations must not become runtime dependencies.
+
+The canonical distinction between a source behavior task graph, an extraction
+procedure graph, a public SciRel composition graph and a user task graph is in
+[`ARCHITECTURE.md`](ARCHITECTURE.md). A source behavior graph is part of the
+source evidence when ordering, state, branch, feedback or failure semantics
+affect the observable result; it is not the procedure used to extract the
+candidate.
 
 ## 9. Outbound delivery
 
