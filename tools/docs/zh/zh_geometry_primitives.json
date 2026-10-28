@@ -2212,8 +2212,45 @@
    },
    "example": {
     "description": "对一个秩亏 2×2 矩阵和矩形矩阵求截断伪逆。",
-    "expected": "秩亏用例与 numpy.linalg.pinv 一致，矩形用例返回 (n,m) 形状。"
+   "expected": "秩亏用例与 numpy.linalg.pinv 一致，矩形用例返回 (n,m) 形状。"
    }
+  },
+  {
+   "asset_id": "scirel.geometry.masked-toroidal-volume",
+   "source_sha256": "8b6e24f2abc54dfe03e0737124488513fb37795e602a07b45d5d7ee67a1d5e38",
+   "summary": "根据显式有限 R/Z 网格和调用者提供的核心掩码，计算环向旋转后的体积。",
+   "definition": "逐元素计算 2*pi*R*dR*dZ，按 NumPy 广播乘以 core_mask 后求和，并投影为 Python 浮点数。",
+   "model": "离散有限网格环向体积归约。",
+   "boundary": "掩码定义纳入区域；不隐式构造边界、不外推，也不推断拓扑。",
+   "assumptions": [
+    "R、dR 和 dZ 使用一致的长度单位，通常为米。",
+    "dR 和 dZ 是标量均匀单元宽度。",
+    "core_mask 为布尔或数值数组，并可与 R 广播。",
+    "调用者已经确定掩码所代表的平衡或边界状态。",
+    "有限网格求和是给定网格的测度，不构成网格收敛或物理形状保证。"
+   ],
+   "inputs": [
+    {"name": "R", "description": "有限 R/Z 网格的主半径坐标数组。", "constraints": "按 NumPy 算术使用；不排序、不单独检查有限性或推断网格。", "dtype": "实数数组"},
+    {"name": "dR", "description": "均匀径向单元宽度。", "constraints": "按输入使用；零、负值和非有限值不单独拒绝。", "dtype": "实数标量"},
+    {"name": "dZ", "description": "均匀竖直单元宽度。", "constraints": "按输入使用；零、负值和非有限值不单独拒绝。", "dtype": "实数标量"},
+    {"name": "core_mask", "description": "调用者提供的核心或限制器掩码，可带数值单元权重。", "constraints": "遵循 NumPy 广播；不隐式构造掩码，也不裁剪到 [0,1]。", "dtype": "布尔或数值数组"}
+   ],
+   "outputs": [
+    {"name": "volume", "description": "有限网格环向旋转后的求和体积。", "constraints": "有限性、NaN 或无穷由输入算术决定；不应用物理有效性过滤。", "dtype": "Python 浮点数"}
+   ],
+   "applicability": {
+    "preconditions": ["调用者提供有限网格测度以及代表纳入区域的掩码。", "R、dR、dZ 使用一致长度单位，并接受离散单元求和近似。"],
+    "supported": ["布尔掩码选择网格位置。", "数值掩码提供显式单元权重。", "可与 R 广播的 NumPy 掩码形状及声明的有限/非有限算术分支。"],
+    "excluded": ["平衡求解、限制器或分离面构造以及拓扑推断。", "非均匀单元求积、网格收敛估计和几何边界修正。", "将任意调用者掩码的结果声称为物理验证的等离子体体积。"]
+   },
+   "failure_semantics": {"invalid_input": "不支持的操作数或不兼容形状会传播 Python/NumPy 算术或广播异常；函数不做额外域校验。", "runtime_failure": "意外的 NumPy 算术异常向上传播，不选择备用掩码或网格。", "nonconvergence": "不适用；这是没有迭代的直接归约。", "partial_results": "算术或广播失败后不返回部分体积。"},
+   "verification": {
+    "scope": ["布尔和数值掩码下声明有限网格关系的精确算术。", "NumPy 广播失败、零间距、非有限算术和 float32 坐标行。", "输入不变性和 Python 浮点标量投影。", "候选包的完整十二行源行为分母保留在入站证据中；缺失状态行不属于显式公共端口。"],
+    "known_limitations": ["单元和继承调用者网格与掩码，不构造或验证平衡边界。", "零、负、NaN 和无穷输入遵循 NumPy 算术，可能产生非有限结果。", "数值掩码是有意的权重，不解释为布尔核心分类。", "候选包的状态到端口适配器及缺失状态警告不属于公共调用签名。", "权利、人工科学接受和发布仍是独立决定。"],
+    "evidence_ceiling": "候选包的精确比较仅证明其十二行分母上的源行为一致；直接回归证明此显式 R/dR/dZ/core_mask 关系。两者都不建立独立物理正确性、网格收敛、边界重建或人工科学接受。"
+   },
+   "example": {"description": "在 2x2 R/Z 网格上用均匀宽度选择两个单元求和。", "expected": "返回标量 2*pi*(1+2)*0.5*0.25 立方米。"}
   }
  ]
 }
+

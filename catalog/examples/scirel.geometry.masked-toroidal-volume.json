@@ -1,0 +1,144 @@
+{
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.geometry.masked-toroidal-volume",
+  "title": {
+    "en": "Masked finite-grid toroidal volume",
+    "zh": "掩码有限网格环向体积"
+  },
+  "summary": "Compute the toroidally revolved volume represented by an explicit finite R/Z grid and a caller-supplied core mask.",
+  "taxonomy": ["geometry", "volume", "axisymmetric", "grid-reduction"],
+  "aliases": ["masked plasma volume", "finite R-Z toroidal volume"],
+  "discovery": {
+    "capability": [
+      "Masked finite-grid toroidal volume",
+      "Reduce an explicit masked R/Z mesh to its toroidally revolved volume."
+    ],
+    "operation": [
+      "finite-grid toroidal volume reduction with an explicit mask",
+      "R coordinates, cell widths and core mask -> scalar volume"
+    ],
+    "model": "Discrete cell sum of 2*pi*R*dR*dZ*core_mask; no equilibrium solve or boundary reconstruction.",
+    "geometry": "Axisymmetric R/Z mesh with axis 0 radial and axis 1 vertical; the mask and coordinates are supplied explicitly.",
+    "boundary": "The mask values select or weight included grid locations; no implicit boundary, extrapolation or topology inference is performed.",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "finite R/Z coordinates and an explicit core mask to the toroidally revolved grid volume",
+    "direction": "R, dR, dZ, core_mask -> volume",
+    "definition": "Form 2*pi*R*dR*dZ elementwise, multiply by core_mask using NumPy broadcasting, sum all elements and project the scalar to a Python float.",
+    "model": "Discrete finite-grid toroidal volume reduction.",
+    "geometry": "Axisymmetric R/Z mesh; axis 0 is radial and axis 1 is vertical; R and spacings use metres and the output uses cubic metres.",
+    "coordinates": "R contains major-radius coordinates at the supplied grid locations; no coordinate transformation or mesh reconstruction is performed.",
+    "boundary": "The caller-supplied mask defines the included region. Numeric mask values are weights, and values outside a Boolean interpretation are not clipped.",
+    "assumptions": [
+      "R is a real array whose entries and dR/dZ use one consistent length unit, normally metres.",
+      "dR and dZ are uniform cell widths represented by scalar values.",
+      "core_mask is Boolean or numeric and is broadcast-compatible with R.",
+      "The caller has already solved or selected any equilibrium and boundary state represented by core_mask.",
+      "The finite cell sum is a measure for the supplied mesh; it is not a convergence or physical-shape guarantee."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "R",
+      "description": "Major-radius coordinate array for the finite R/Z grid.",
+      "units": "m",
+      "shape": "array-like, conventionally [N_R,N_Z]",
+      "dtype": "real array",
+      "required": true,
+      "constraints": "Used as supplied by NumPy arithmetic; the implementation does not sort, validate finiteness or infer a mesh."
+    },
+    {
+      "name": "dR",
+      "description": "Uniform radial cell width.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Used as supplied; zero, negative and non-finite values are not separately rejected."
+    },
+    {
+      "name": "dZ",
+      "description": "Uniform vertical cell width.",
+      "units": "m",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Used as supplied; zero, negative and non-finite values are not separately rejected."
+    },
+    {
+      "name": "core_mask",
+      "description": "Caller-supplied core or limiter mask, optionally carrying numeric cell weights.",
+      "units": "dimensionless",
+      "shape": "broadcast-compatible with R",
+      "dtype": "Boolean or numeric array",
+      "required": true,
+      "constraints": "Broadcasting follows NumPy. No implicit mask is constructed and values are not clipped to [0,1]."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "volume",
+      "description": "Summed toroidally revolved finite-grid volume.",
+      "units": "m^3",
+      "shape": "scalar",
+      "dtype": "Python float",
+      "required": true,
+      "constraints": "Finite, NaN or infinite according to the supplied arithmetic; no physical validity filter is applied."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies a finite-grid R/Z measure and a mask representing the region to include.",
+      "R, dR and dZ use one consistent length unit, and the caller accepts the discrete cell-sum approximation."
+    ],
+    "supported": [
+      "Boolean masks selecting grid locations.",
+      "Numeric masks providing explicit per-cell weights.",
+      "NumPy-broadcastable mask shapes and the declared finite/non-finite arithmetic branches."
+    ],
+    "excluded": [
+      "Equilibrium solving, limiter or separatrix construction, and topology inference.",
+      "Nonuniform-cell quadrature, mesh convergence estimation and geometric boundary correction.",
+      "A claim that the returned sum is a physically validated plasma volume for an arbitrary caller mask."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Python and NumPy arithmetic or broadcasting exceptions propagate for unsupported operands or incompatible shapes; the callable performs no separate domain validation.",
+    "runtime_failure": "Unexpected NumPy arithmetic errors propagate and no fallback mask or mesh is selected.",
+    "nonconvergence": "Not applicable; this is one direct reduction with no iteration.",
+    "partial_results": "No partial volume is returned after an arithmetic or broadcasting failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.masked_toroidal_volume",
+      "symbol": "plasma_volume",
+      "signature": "plasma_volume(R, dR, dZ, core_mask) -> float",
+      "canonical_module": "scirel.geometry",
+      "canonical_symbol": "plasma_volume"
+    }
+  },
+  "version": {"implementation_version": "0.1.0.dev11", "dependencies": []},
+  "example": {
+    "description": "Sum two selected cells on a 2x2 R/Z grid with uniform widths.",
+    "code": "import numpy as np\nfrom scirel.geometry import plasma_volume\nR = np.array([[1.0, 1.0], [2.0, 2.0]])\nmask = np.array([[True, False], [True, False]])\nvolume = plasma_volume(R, dR=0.5, dZ=0.25, core_mask=mask)\nnp.testing.assert_allclose(volume, 2.0 * np.pi * (1.0 + 2.0) * 0.5 * 0.25)",
+    "expected": "The selected cells produce the scalar volume 2*pi*(1+2)*0.5*0.25 cubic metres."
+  },
+  "verification": {
+    "scope": [
+      "Exact arithmetic for Boolean and numeric masks on the declared finite-grid relation.",
+      "NumPy broadcasting failure, zero spacing, non-finite arithmetic and float32 coordinate rows.",
+      "Input immutability and Python-float scalar projection.",
+      "The complete twelve-row candidate source-fidelity denominator is retained in the incoming packet; state-only missing-profile rows are outside this explicit public port contract."
+    ],
+    "tests": ["tests/geometry/test_masked_toroidal_volume.py"],
+    "evidence_ceiling": "The incoming candidate's exact comparison establishes source behavior parity for its twelve declared rows, while the maintained direct tests establish this explicit source-free R/dR/dZ/core_mask relation. Neither establishes independent physical correctness, mesh convergence, boundary reconstruction or human scientific acceptance.",
+    "known_limitations": [
+      "The cell sum inherits the caller's grid and mask; it does not construct or validate an equilibrium boundary.",
+      "Zero, negative, NaN and infinite inputs follow NumPy arithmetic and may produce non-finite output.",
+      "Numeric mask weights are intentional and are not interpreted as a Boolean core classification.",
+      "The source packet's state-to-port adapter and missing-state warnings are not part of the public callable signature.",
+      "Rights, human scientific acceptance and release remain separate decisions."
+    ]
+  }
+}

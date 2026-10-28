@@ -3043,7 +3043,18 @@
     }
    ]
   },
-  "scirel.source.exponential": {
+  "scirel.geometry.masked-toroidal-volume": {
+   "status": "pass-with-limits",
+   "reason": "Development admission of the explicit masked finite-grid toroidal volume reduction only; source parity, independent physical correctness and human scientific acceptance remain bounded separately.",
+   "evidence": [
+    {
+     "report": "tests/geometry/test_masked_toroidal_volume.py",
+     "verdict": "pass-with-limits",
+     "oracle": "exact discrete arithmetic and retained twelve-row source comparison",
+     "residual_risk": "No mesh convergence, boundary reconstruction, equilibrium solve, physical volume calibration or arbitrary-mask applicability claim."
+    }
+   ]
+  },  "scirel.source.exponential": {
    "status": "pass",
    "evidence": [
     {
@@ -3067,3 +3078,4 @@
   }
  }
 }
+

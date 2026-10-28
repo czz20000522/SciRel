@@ -725,6 +725,14 @@
      ]
     },
     {
+      "id": "volume-and-grid-measures",
+      "title": "由显式网格掩码计算环向体积",
+      "introduction": "对调用者提供的 R/Z 网格和核心掩码做离散环向体积归约。掩码可以是布尔选择或数值权重；该入口不求解平衡、不构造边界，也不把离散和解释为网格收敛或物理体积验证。",
+      "assets": [
+        "scirel.geometry.masked-toroidal-volume"
+      ]
+    },
+    {
      "id": "point-and-grid-constructors",
      "title": "构造目标点集和矩形网格",
      "introduction": "PointsMesh 保留成对坐标，RectMesh 由独立边界和节点数生成规则网格；参数设值须保留有效状态。构造坐标不意味着已经计算物理磁场。",

@@ -718,6 +718,14 @@
      ]
     },
     {
+      "id": "volume-and-grid-measures",
+      "title": "Computing toroidal volume from an explicit masked grid",
+      "introduction": "Reduce caller-supplied R/Z coordinates and a core mask to a discrete toroidal volume. The mask may select cells or provide numeric weights; this entry point does not solve equilibrium, construct a boundary, or establish mesh convergence or physical volume validation.",
+      "assets": [
+        "scirel.geometry.masked-toroidal-volume"
+      ]
+    },
+    {
      "id": "point-and-grid-constructors",
      "title": "Constructing target point sets and rectangular grids",
      "introduction": "PointsMesh retains paired coordinates, while RectMesh generates a regular grid from independent boundaries and node counts; setting parameters must preserve a valid state. Constructing coordinates does not mean the physical magnetic field has been computed.",
