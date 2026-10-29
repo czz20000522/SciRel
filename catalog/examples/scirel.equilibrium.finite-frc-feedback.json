@@ -1,0 +1,114 @@
+{
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.equilibrium.finite-frc-feedback",
+  "title": {
+    "en": "Finite-grid FRC feedback composition",
+    "zh": "有限网格 FRC 反馈组合"
+  },
+  "summary": "Run fixed finite-grid FRC Green boundary, inner pressure/current and coil feedback with explicit convergence state.",
+  "taxonomy": [
+    "equilibrium",
+    "free-boundary",
+    "frc",
+    "feedback"
+  ],
+  "aliases": [
+    "finite FRC feedback"
+  ],
+  "discovery": {
+    "capability": [
+      "Finite-grid FRC feedback composition",
+      "Run fixed finite-grid FRC Green boundary, inner pressure/current and coil feedback with explicit convergence state."
+    ],
+    "operation": [
+      "finite FRC inputs -> psi, pressure, current, boundary and three-layer diagnostics"
+    ],
+    "model": "Finite FRC feedback composition.",
+    "geometry": "Finite typed scientific input mapping",
+    "boundary": "Declared finite input and typed failure contract",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "finite FRC inputs -> psi, pressure, current, boundary and three-layer diagnostics",
+    "direction": "typed inputs -> typed scientific result",
+    "definition": "Finite FRC feedback composition.",
+    "model": "Finite FRC feedback composition.",
+    "geometry": "Finite typed scientific input mapping",
+    "coordinates": "Caller-declared units and axes",
+    "boundary": "No hidden defaults or source checkout dependencies",
+    "assumptions": [
+      "Caller supplies complete finite typed inputs",
+      "Declared failure states are preserved"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "inputs",
+      "description": "Complete typed scientific input mapping.",
+      "units": "caller-declared",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Finite fields and declared model controls."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Complete scientific result mapping.",
+      "units": "caller-declared",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Finite fields and declared diagnostics."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy the declared finite model contract"
+    ],
+    "supported": [
+      "Run fixed finite-grid FRC Green boundary, inner pressure/current and coil feedback with explicit convergence state."
+    ],
+    "excluded": [
+      "Unspecified source models and hidden runtime state"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for malformed or nonfinite inputs.",
+    "runtime_failure": "Propagates numerical failures without fabricated output.",
+    "nonconvergence": "Returns declared bounded nonconvergence state when applicable.",
+    "partial_results": "No partial result on validation failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.equilibrium.free_boundary_frc",
+      "symbol": "solve_finite_frc_feedback",
+      "signature": "solve_finite_frc_feedback(inputs: dict) -> dict",
+      "canonical_module": "scirel.equilibrium",
+      "canonical_symbol": "solve_finite_frc_feedback"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev12",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded representative call.",
+    "code": "from scirel.equilibrium import solve_finite_frc_feedback\nresult=solve_finite_frc_feedback(inputs)\nassert \"converged\" in result",
+    "expected": "Finite typed result mapping."
+  },
+  "verification": {
+    "scope": [
+      "normal, lower-bound and upper-bound inputs",
+      "applicable failure and composition paths"
+    ],
+    "tests": [
+      "tests/equilibrium/test_finite_frc_feedback.py"
+    ],
+    "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate.",
+    "known_limitations": [
+      "No external physical validation or release approval is implied."
+    ]
+  }
+}

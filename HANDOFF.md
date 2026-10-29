@@ -5,6 +5,44 @@ compositions, user-owned task graphs and scale-aware static retrieval is
 [`ARCHITECTURE.md`](ARCHITECTURE.md). Read it with `RULES.md` before changing
 the contract, consumer query surface or decomposition handoff.
 
+## 2026-10-29 ten-case demonstration capability closure
+
+The ten demonstration problem contracts were clarified before the final clean
+run. q02 now states the signed-frequency convention, q04 treats the supplied
+response tables as complete inputs, q05 states its finite topology scope, q06
+states the fixed atomic-only slab configuration, q07 states that its outputs
+are determined by the finite geometry/mask, q10 states the fixed finite-grid
+and bounded-nonconvergence protocol; q03 no longer carries an unrelated
+polarization requirement, and q09 has the standard problem/output/acceptance
+projection files.
+
+Three reusable public compositions were merged for the formerly mismatched
+cases:
+
+- `scirel.kinetic.simulate_sat123` for the ten SAT1/SAT2/SAT3 scenarios,
+  shear shift, geometry projection, signed spectra and interval integration;
+- `scirel.kinetic.solve_atomic_slab_transport` for the fixed finite velocity
+  mesh, boundary normalization, ionization/CX/recombination rates, repeated
+  generation propagation and moment reduction;
+- `scirel.equilibrium.solve_finite_frc_feedback` for the fixed finite-grid FRC
+  Green/coil composition and explicit bounded feedback diagnostics.
+
+The clean outbound run `clean-agent-run-20261029-v2` used only the revised
+cases and a current public-package snapshot. It did not read reference
+answers, hidden oracle, historical glue, receiver roadmap or source archives.
+All ten cases completed with observable per-case traces; q04, q06 and q10 now
+resolve through the public APIs. q06 retains `max_generations` when the fixed
+input does not satisfy the truncation threshold, and q10 retains
+`converged=false/maxiter_reached`; neither state is rewritten as scientific
+acceptance. The v2 audit and intake are in the external challenge artifact
+directory. Current domain tests passed after the additions (1360 passed, 3
+skipped, 2 warnings); the four direct new/changed tests also pass.
+
+This closes the engineering/outbound capability gap for the ten contracts. It
+does not approve scientific validity, physical applicability, source rights or
+release. The remaining user-owned presentation code is glue and stays outside
+SciReL core.
+
 ## 2026-10-27 Windows tooling failure closure
 
 Implementation commit `0bee05b3` closes all 46 previously recorded

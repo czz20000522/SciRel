@@ -159,5 +159,69 @@
     ]
    }
   }
- ]
+ ,
+{
+ "asset_id": "scirel.equilibrium.finite-frc-feedback",
+ "source_sha256": "216fd50df84ecab9a4aabdf164e86042f8264644fa6076c5a061813829a5e66f",
+ "summary": "按公开输入执行有限网格 FRC 反馈组合，并保留声明的停止状态。",
+ "definition": "Finite FRC feedback composition.",
+ "model": "Finite FRC feedback composition.",
+ "boundary": "No hidden defaults or source checkout dependencies",
+ "assumptions": [
+  "调用者提供完整、有限且类型正确的输入。",
+  "调用者提供完整、有限且类型正确的输入。"
+ ],
+ "inputs": [
+  {
+   "name": "inputs",
+   "description": "合同定义的输入。",
+   "constraints": "遵守合同声明的形状、类型和有限性约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "调用者声明"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "合同定义的输出结果。",
+   "constraints": "遵守合同声明的结果约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "调用者声明"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "输入满足合同声明的有限模型和类型约束。"
+  ],
+  "supported": [
+   "支持合同声明的有限网格 FRC 反馈组合。"
+  ],
+  "excluded": [
+   "不扩展到合同未声明的模型、设备或隐藏状态。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "输入形状、类型或有限性不满足合同时抛出 ValueError。",
+  "runtime_failure": "数值计算失败或结果不可表示时传播实际运行错误。",
+  "nonconvergence": "保留合同声明的有界非收敛状态，不伪造成功。",
+  "partial_results": "验证失败时不返回伪造的部分结果。"
+ },
+ "example": {
+  "description": "使用有限网格输入执行公开组合。",
+  "expected": "返回有限结果和明确收敛状态。"
+ },
+ "verification": {
+  "scope": [
+   "覆盖正常、下界、上界及适用的失败/组合路径。",
+   "覆盖正常、下界、上界及适用的失败/组合路径。"
+  ],
+  "known_limitations": [
+   "科学适用性、物理正确性和发布批准仍需独立审查。"
+  ],
+  "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate."
+ }
+}
+]
 }

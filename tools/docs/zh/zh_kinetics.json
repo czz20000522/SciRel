@@ -8309,6 +8309,132 @@
   "description": "构造含零温分支的三个平移。",
   "expected": "分布形状为 (3,6,3)，零和负温切片恰为零。"
  }
+},
+{
+ "asset_id": "scirel.kinetic.multiscale-sat123",
+ "source_sha256": "c488a099b64038ec026d4818bb8221abe5b7ddf8b60aa826dea6c57f0f5e0607",
+ "summary": "按公开输入执行可复用的科学组合，并保留声明的输出和失败状态。",
+ "definition": "Finite supplied-response saturation and transport composition.",
+ "model": "Finite supplied-response saturation and transport composition.",
+ "boundary": "No hidden defaults or source checkout dependencies",
+ "assumptions": [
+  "调用者提供完整、有限且类型正确的输入。",
+  "调用者提供完整、有限且类型正确的输入。"
+ ],
+ "inputs": [
+  {
+   "name": "inputs",
+   "description": "合同定义的输入。",
+   "constraints": "遵守合同声明的形状、类型和有限性约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "caller-declared"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "合同定义的输出结果。",
+   "constraints": "遵守合同声明的结果约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "caller-declared"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "输入满足合同声明的有限模型和类型约束。"
+  ],
+  "supported": [
+   "支持合同声明的有限科学组合。"
+  ],
+  "excluded": [
+   "不扩展到合同未声明的模型、设备或隐藏状态。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "输入形状、类型或有限性不满足合同时抛出 ValueError。",
+  "runtime_failure": "数值计算失败或结果不可表示时传播实际运行错误。",
+  "nonconvergence": "保留合同声明的有界非收敛状态，不伪造成功。",
+  "partial_results": "验证失败时不返回伪造的部分结果。"
+ },
+ "example": {
+  "description": "使用一组有限合同输入执行公开组合。",
+  "expected": "返回声明形状的有限结果或明确失败状态。"
+ },
+ "verification": {
+  "scope": [
+   "覆盖正常、下界、上界及适用的失败/组合路径。",
+   "覆盖正常、下界、上界及适用的失败/组合路径。"
+  ],
+  "known_limitations": [
+   "科学适用性、物理正确性和发布批准仍需独立审查。"
+  ],
+  "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate."
+ }
+},
+{
+ "asset_id": "scirel.kinetic.atomic-slab-transport",
+ "source_sha256": "5f329a7c536a9964637eb59459a71108345acd0a3a5832069691daca565e9a30",
+ "summary": "按公开输入执行可复用的科学组合，并保留声明的输出和失败状态。",
+ "definition": "Finite atomic slab transport composition.",
+ "model": "Finite atomic slab transport composition.",
+ "boundary": "No hidden defaults or source checkout dependencies",
+ "assumptions": [
+  "调用者提供完整、有限且类型正确的输入。",
+  "调用者提供完整、有限且类型正确的输入。"
+ ],
+ "inputs": [
+  {
+   "name": "inputs",
+   "description": "合同定义的输入。",
+   "constraints": "遵守合同声明的形状、类型和有限性约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "caller-declared"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "合同定义的输出结果。",
+   "constraints": "遵守合同声明的结果约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "caller-declared"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "输入满足合同声明的有限模型和类型约束。"
+  ],
+  "supported": [
+   "支持合同声明的有限科学组合。"
+  ],
+  "excluded": [
+   "不扩展到合同未声明的模型、设备或隐藏状态。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "输入形状、类型或有限性不满足合同时抛出 ValueError。",
+  "runtime_failure": "数值计算失败或结果不可表示时传播实际运行错误。",
+  "nonconvergence": "保留合同声明的有界非收敛状态，不伪造成功。",
+  "partial_results": "验证失败时不返回伪造的部分结果。"
+ },
+ "example": {
+  "description": "使用一组有限合同输入执行公开组合。",
+  "expected": "返回声明形状的有限结果或明确失败状态。"
+ },
+ "verification": {
+  "scope": [
+   "覆盖正常、下界、上界及适用的失败/组合路径。",
+   "覆盖正常、下界、上界及适用的失败/组合路径。"
+  ],
+  "known_limitations": [
+   "科学适用性、物理正确性和发布批准仍需独立审查。"
+  ],
+  "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate."
+ }
 }
  ]
 }

@@ -26,6 +26,7 @@ __all__ = [
     "solve_axisymmetric_anisotropic_picard",
     "solve_isotropic_pressure_flux",
     "solve_reduced_hall_anisotropic_picard",
+    "solve_finite_frc_feedback",
     "solve_kinetic_mirror_hall_equilibrium",
     "EquilibriumResult",
     "compute_equilibrium",
@@ -73,6 +74,7 @@ _LAZY_EXPORTS = {
         "reduced_hall_anisotropic_picard",
         "solve_reduced_hall_anisotropic_picard",
     ),
+    "solve_finite_frc_feedback": ("free_boundary_frc", "solve_finite_frc_feedback"),
     "solve_kinetic_mirror_hall_equilibrium": (
         "kinetic_mirror_hall_equilibrium",
         "solve_kinetic_mirror_hall_equilibrium",

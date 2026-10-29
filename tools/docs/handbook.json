@@ -127,7 +127,8 @@
       "scirel.diagnostics.picard-flux-residual",
       "scirel.equilibrium.axisymmetric-anisotropic-picard",
       "scirel.equilibrium.free-boundary-anisotropic-picard",
-      "scirel.equilibrium.compute-equilibrium"
+      "scirel.equilibrium.compute-equilibrium",
+      "scirel.equilibrium.finite-frc-feedback"
      ]
     },
     {
@@ -288,7 +289,8 @@
       "scirel.kinetic.kinetic-dispersion-sum-fluid",
       "scirel.kinetic.kinetic-dispersion-ronnmark",
       "scirel.kinetic.dielectric-tensor-diagnostic",
-      "scirel.kinetic.kinetic-dispersion-relation"
+      "scirel.kinetic.kinetic-dispersion-relation",
+      "scirel.kinetic.multiscale-sat123"
      ]
     },
     {
@@ -612,7 +614,8 @@
       "scirel.kinetic.neutral-total-collision-frequency",
       "scirel.kinetic.neutral-upwind-transport-coefficients",
       "scirel.kinetic.neutral-generation-propagation",
-      "scirel.kinetic.neutral-boltzmann-rhs"
+      "scirel.kinetic.neutral-boltzmann-rhs",
+      "scirel.kinetic.atomic-slab-transport"
      ]
     },
     {

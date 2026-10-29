@@ -136,7 +136,7 @@ def test_english_handbook_file_matches_canonical_structure():
     assert len(english['chapters']) == 9
     assert sum(len(chapter['topics']) for chapter in english['chapters']) == 74
     assert len({asset for chapter in english['chapters']
-                for topic in chapter['topics'] for asset in topic['assets']}) == 256
+                for topic in chapter['topics'] for asset in topic['assets']}) == 259
     assert not CJK.search(json.dumps(english, ensure_ascii=False))
 
 

@@ -1,0 +1,113 @@
+{
+  "schema": "scirel.asset-document",
+  "asset_id": "scirel.kinetic.multiscale-sat123",
+  "title": {
+    "en": "Multiscale SAT123 saturation and transport composition",
+    "zh": "多尺度 SAT123 饱和与输运组合"
+  },
+  "summary": "Compute SAT1/SAT2/SAT3 saturation, geometry, shifted response and signed transport projections from supplied response tables.",
+  "taxonomy": [
+    "kinetic",
+    "saturation",
+    "transport"
+  ],
+  "aliases": [
+    "SAT123 saturation composition"
+  ],
+  "discovery": {
+    "capability": [
+      "Multiscale SAT123 saturation and transport composition",
+      "Compute SAT1/SAT2/SAT3 saturation, geometry, shifted response and signed transport projections from supplied response tables."
+    ],
+    "operation": [
+      "supplied response tables -> finite SAT scenarios and signed transport spectra"
+    ],
+    "model": "Finite supplied-response saturation and transport composition.",
+    "geometry": "Finite typed scientific input mapping",
+    "boundary": "Declared finite input and typed failure contract",
+    "device_scope": "generic"
+  },
+  "identity": {
+    "relation": "supplied response tables -> finite SAT scenarios and signed transport spectra",
+    "direction": "typed inputs -> typed scientific result",
+    "definition": "Finite supplied-response saturation and transport composition.",
+    "model": "Finite supplied-response saturation and transport composition.",
+    "geometry": "Finite typed scientific input mapping",
+    "coordinates": "Caller-declared units and axes",
+    "boundary": "No hidden defaults or source checkout dependencies",
+    "assumptions": [
+      "Caller supplies complete finite typed inputs",
+      "Declared failure states are preserved"
+    ]
+  },
+  "inputs": [
+    {
+      "name": "inputs",
+      "description": "Complete typed scientific input mapping.",
+      "units": "caller-declared",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Finite fields and declared model controls."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "result",
+      "description": "Complete scientific result mapping.",
+      "units": "caller-declared",
+      "shape": "mapping",
+      "dtype": "mapping",
+      "required": true,
+      "constraints": "Finite fields and declared diagnostics."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Inputs satisfy the declared finite model contract"
+    ],
+    "supported": [
+      "Compute SAT1/SAT2/SAT3 saturation, geometry, shifted response and signed transport projections from supplied response tables."
+    ],
+    "excluded": [
+      "Unspecified source models and hidden runtime state"
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for malformed or nonfinite inputs.",
+    "runtime_failure": "Propagates numerical failures without fabricated output.",
+    "nonconvergence": "Returns declared bounded nonconvergence state when applicable.",
+    "partial_results": "No partial result on validation failure."
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.multiscale_saturation",
+      "symbol": "simulate_sat123",
+      "signature": "simulate_sat123(inputs: dict) -> dict",
+      "canonical_module": "scirel.kinetic",
+      "canonical_symbol": "simulate_sat123"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev12",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Bounded representative call.",
+    "code": "from scirel.kinetic import simulate_sat123\nresult=simulate_sat123(inputs)\nassert len(result[\"scenarios\"]) == 10",
+    "expected": "Finite typed result mapping."
+  },
+  "verification": {
+    "scope": [
+      "normal, lower-bound and upper-bound inputs",
+      "applicable failure and composition paths"
+    ],
+    "tests": [
+      "tests/kinetic/test_multiscale_saturation.py"
+    ],
+    "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate.",
+    "known_limitations": [
+      "No external physical validation or release approval is implied."
+    ]
+  }
+}

@@ -361,6 +361,7 @@ expected = {
     "solve_axisymmetric_anisotropic_picard",
     "solve_isotropic_pressure_flux",
     "solve_reduced_hall_anisotropic_picard",
+        "solve_finite_frc_feedback",
     "solve_kinetic_mirror_hall_equilibrium",
     "EquilibriumResult",
     "compute_equilibrium",
