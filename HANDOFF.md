@@ -327,7 +327,7 @@ SciRel 现有拆解、D2 合并、出库和验证 skill 已增加 priority execu
 
 初始评测摘要把 q02-q07/q10 标成 `HOLD_UNSUPPORTED_PUBLIC_API`，但回读 runner 后确认它实际只执行了 q01、q08、q09；其余七题没有真实答题或 API 搜索。因此原摘要保留为历史回执，不能作为公开能力缺失证据。纠正记录见 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/evaluation-correction-20261029.md`。
 
-合并线当前应使用同目录的 `capability-gap-intake-20261029-corrected.md/json`。真实 discovery 已补齐 q02、q03、q05、q06、q07、q10：q02 是现有多流体 API 与题面 signed-nu 合同不匹配；q03 的公开相对论谱 API 已通过 4 个波矢和边界/失败测试；q05 用显式有限拓扑 glue 完成；q06 复用了中性输运叶子；q07 复用了 `plasma_volume`；q10 复用了自由边界 Picard 组合但与固定 FRC/coil 协议不同。q04 已确认题面表格和闭合规则完整，暂保为 task glue 发现。只有真实发现和运行后仍缺少的可复用关系，才可进入 merge/intake；协议适配和题目编排保持 outbound-owned，不升级成公共 API。
+合并线当前应使用同目录的 `capability-gap-intake-20261029-corrected.md/json`。真实 discovery 已补齐 q02、q03、q05、q06、q07、q10：q02 的公开 normalized spectral primitives 已实际返回完整 18 模态并满足增长率迹恒等式，`nu` 转置/对角映射和 ky 校验保留为题目 glue；q03 的公开相对论谱 API 已通过 4 个波矢和边界/失败测试；q05 用显式有限拓扑 glue 完成；q06 复用了中性输运叶子；q07 复用了 `plasma_volume`；q10 复用了自由边界 Picard 组合但与固定 FRC/coil 协议不同。q04 已确认题面表格和闭合规则完整，暂保为 task glue 发现。只有真实发现和运行后仍缺少的可复用关系，才可进入 merge/intake；协议适配和题目编排保持 outbound-owned，不升级成公共 API。
 
 十题合同审查已补齐 q09 的标准 `problem.md`、`output-spec.json`、`acceptance.md` 投影，并删除 q03 验收文件中与频谱输出无关的极化条款；q02、q04-q07、q10 的归一化合同、经验输入、有限拓扑范围、公开叶子边界和有界非收敛语义也已在题面前置说明。完整审计见 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/ten-case-capability-closure-audit-20261029.md`。
 
