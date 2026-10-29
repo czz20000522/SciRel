@@ -185,3 +185,15 @@ For outbound work the worker receives only the user request and public
 contracts/docs. The executable path is **discover → select contract → explicit
 glue → execute → readback → independent acceptance**. Source identity, hidden
 oracle, receiver roadmap, and private acceptance material stay with the owner.
+
+## 13. 编程题式能力测试与对抗性覆盖
+
+SciRel 的能力建设采用编程题式合同。题面必须定义完整的问题、类型化输入、单位、边界、输出、失败语义和参考观察；SciRel 提供可复用的科学核心能力，agent 通过公开语言和依赖编写 glue、控制流程与任务组合。
+
+单个正常样例通过不构成功能正确性或通用性证据。每个能力和题目至少建立三类测试：正常范围、下界、上界；适用时还要加入空值、退化、奇异、分支切换、失败和组合输入。测试应攻击输入形状、单位、边界、状态变化、异常类型、输出结构和数值不变量，逼出只针对示例的实现。
+
+合并者不需要一次性猜出全部通用设计。测试先暴露缺口，再把重复出现且具有独立科学语义的关系提升为 SciRel 公共能力；题目专属编排、格式转换和流程控制保留为显式可测试 glue。通用性由跨边界测试矩阵和多个独立题目共同证明，不由单个演示结果或代码规模证明。
+
+外部 agent 评测必须使用不含参考答案、隐藏 oracle、既有 glue 和历史运行结果的干净题包。评测 agent 只得到题面、公开输入输出合同和当前 SciRel 公共包；参考答案只由主控在事后用于比较。评测记录实际 API 调用、生成的 glue、测试覆盖、结果、失败路径和未覆盖关系，防止答案泄漏或把样例转写冒充能力提取。
+
+用户可见的完成标准是：题面完整、三类边界测试通过、失败语义可观测、独立 agent 能从公开包生成解答、重复组合仍可运行。科学正确性由参考 oracle 和人工审查单独判断；它不能替代通用性测试，通用性测试也不能替代科学接受。

@@ -292,3 +292,11 @@ The Docker provider was available for the P0 demo closure. A single common image
 Nine cases produced parseable outputs and q10 produced a parseable bounded nonconvergence (`converged=false`, `maxiter_reached`); there were no timeouts, nonzero exits or hard blocks. Results are indexed at `E:/SciRel-lab/_shared/outbound/portfolio-20261027/results/p0-demo-runtime-20261029/demo-results-index.json`, with the complete run summary in `unified-smoke-summary.json` and per-case artifacts under `unified-smoke/q01` through `unified-smoke/q10`.
 
 q07 remains an observed `SOURCE_DIFF` in the volume reference and is an AI-retryable focused follow-up. q10's nonconvergence is retained as an observable failure path. Scientific acceptance remains a separate expert decision; neither case blocks the runtime/demo closure. Demo-specific glue remains outside SciRel core.
+
+## 2026-10-29 编程题式通用性测试原则
+
+SciRel 后续能力提取、合并和出库统一采用编程题式测试。每个题面定义完整问题合同；SciRel 提供可复用核心能力；agent 负责用公开语言和依赖编写 glue、控制流程和组合。单一正常样例通过只证明该样例可运行。
+
+每个能力至少覆盖正常范围、下界、上界，并在适用时覆盖退化、奇异、分支、失败和组合输入。测试攻击输入类型、形状、单位、边界、状态变化、异常、输出结构和数值不变量，先用测试暴露缺口，再决定哪些重复科学关系应提升为公共能力。题目专属流程保留为显式、可测试 glue。
+
+外部 agent 评测使用干净题包：只提供题面、公开输入输出合同和当前 SciRel 公共包，不提供参考答案、隐藏 oracle、既有题目 glue、历史结果或合并路线。主控在事后以参考答案比较，并记录实际 API、glue、边界覆盖、失败路径和未覆盖关系。十题演示将按此原则从运行 smoke 升级为通用性测试矩阵。
