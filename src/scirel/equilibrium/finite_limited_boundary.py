@@ -71,14 +71,16 @@ def find_critical_points(R, Z, psi, limiter=None):
     dr, dz = r[1] - r[0], z[1] - z[0]
     gr = (f[2:, 1:-1] - f[:-2, 1:-1]) / (2 * dr)
     gz = (f[1:-1, 2:] - f[1:-1, :-2]) / (2 * dz)
-    c = gr * gr + gz * gz
+    # Boundary proxy is exactly zero; retaining the full node shape makes the
+    # strict 8-neighbour test fail closed for candidates adjacent to an edge.
+    c = np.zeros_like(f)
+    c[1:-1, 1:-1] = gr * gr + gz * gz
     candidates = []
     for i in range(1, r.size - 1):
         for j in range(1, z.size - 1):
-            ci = c[i - 1, j - 1]
-            neighbors = [c[ii, jj] for ii in range(max(0, i - 2), min(c.shape[0], i + 1))
-                         for jj in range(max(0, j - 2), min(c.shape[1], j + 1))
-                         if (ii, jj) != (i - 1, j - 1)]
+            ci = c[i, j]
+            neighbors = [c[i + di, j + dj] for di in (-1, 0, 1)
+                         for dj in (-1, 0, 1) if (di, dj) != (0, 0)]
             if not np.all(ci < np.asarray(neighbors)):
                 continue
             gR, gZ = gr[i - 1, j - 1], gz[i - 1, j - 1]
