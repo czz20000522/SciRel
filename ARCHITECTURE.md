@@ -47,6 +47,20 @@ its own inputs, results and diagnostics. Those artifacts remain user-owned.
 SciRel's query tools help the agent find contracts; they do not plan or execute
 the user's scientific work.
 
+The outbound line has two operating modes under the same skill:
+
+| Mode | Owner and purpose | Public capability gap | Completion path |
+| --- | --- | --- | --- |
+| Internal SciRel run | SciRel owner tests the current package or prepares a capability addition | Stop the affected task at the missing public relation, record the gap, and route it to the maintenance/intake line | Capability decision, boundary tests, integration and rerun |
+| External user run | A distributed package is used to solve a user's requirement | Treat SciRel as optional; implement the missing step with ordinary programming or numerical dependencies when permitted, and disclose it as task glue | User solution tests, diagnostics and deliverable result |
+
+The same discovery and testing method serves both modes. The difference is
+ownership and routing. A missing public capability is an internal intake signal;
+it is a task-level implementation choice for an external user. An external
+solution never becomes evidence that SciRel already owns the missing scientific
+relation; an internal gap report never blocks an external user from completing
+a solvable programming task.
+
 ## Capability boundary and ownership
 
 The package is intentionally split into a reusable scientific core and a

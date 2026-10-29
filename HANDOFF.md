@@ -316,3 +316,9 @@ SciRel 不需要独自解决每道完整题目；它必须提供稳定、可组�
 SciRel 现有拆解、D2 合并、出库和验证 skill 已增加 priority execution card；这些文件位于本地 ignored skill bundle，持久决策同步在 `RULES.md`、`ARCHITECTURE.md`、`HANDOFF.md` 和 Notion。卡片要求触发条件、事实来源、state/evidence card、边界矩阵、失败恢复、停止/重开条件和复现交付。
 
 独立外部 agent 评测结果保存在 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/evaluation-summary-20261029.md`：只读干净题包和公开 SciRel 包，q01/q08/q09 完成，q02-q07/q10 明确报告 `HOLD_UNSUPPORTED_PUBLIC_API`，agent 测试 6 passed。该结果是能力入口缺口证据，不是题目无解或科学接受结论；下一步由合并线按重复科学关系和边界测试决定公共能力提取。
+
+## 2026-10-29 内部与外部出库模式
+
+`scirel-solving` 统一承载两种出库模式。内部模式由 SciRel owner 用于测试当前包或准备能力补充；发现公开能力缺口时停在能力边界，记录合同搜索、近似匹配失败、是否可提取为公共能力，并路由到合并/接收线。外部模式面向分发后的普通用户；SciRel 是可选增强，agent 可以用普通编程和公开数值依赖自行补全，并把补全作为可测试、可披露的任务 glue，继续交付用户结果。
+
+两种模式共享需求卡、API 追踪、正常/下界/上界测试、失败与诊断记录。区别是缺口的所有权：内部缺口是 SciRel intake 信号，外部缺口是用户任务实现选择。外部任务不因 SciRel 缺口而阻塞，外部 glue 运行成功也不反向声称 SciRel 已拥有该公共能力。
