@@ -4,6 +4,8 @@ from importlib import import_module as _import_module
 from types import ModuleType as _ModuleType
 import sys as _sys
 
+from .modal_basis import ModalBasis, modal_basis, modal_projection
+
 __all__ = [
     "ModalBasis",
     "modal_basis",
