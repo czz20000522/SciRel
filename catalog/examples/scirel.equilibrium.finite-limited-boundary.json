@@ -27,7 +27,9 @@
     {"name": "R", "description": "Strictly increasing radial grid axis.", "units": "caller-declared length", "shape": "(n_R,)", "dtype": "finite real array", "required": true, "constraints": "At least three nodes."},
     {"name": "Z", "description": "Strictly increasing vertical grid axis.", "units": "caller-declared length", "shape": "(n_Z,)", "dtype": "finite real array", "required": true, "constraints": "At least three nodes."},
     {"name": "psi", "description": "Node flux field in R/Z order.", "units": "caller-declared flux", "shape": "(n_R,n_Z)", "dtype": "finite real array", "required": true, "constraints": "Shape must match axes."},
-    {"name": "limiter", "description": "Closed polygon vertices in R/Z order.", "units": "caller-declared length", "shape": "(n,2)", "dtype": "finite real array", "required": true, "constraints": "At least four vertices; first and last are closed or the first is appended; nonzero area and strictly interior to the grid."}
+    {"name": "limiter", "description": "Closed polygon vertices in R/Z order.", "units": "caller-declared length", "shape": "(n,2)", "dtype": "finite real array", "required": true, "constraints": "At least four vertices; first and last are closed or the first is appended; nonzero area and strictly interior to the grid."},
+    {"name": "angle_count", "description": "Number of equally spaced boundary rays.", "units": "count", "shape": "scalar", "dtype": "integer", "required": false, "default": 80, "constraints": "Positive integer."},
+    {"name": "ray_samples", "description": "Samples used along each boundary ray.", "units": "count", "shape": "scalar", "dtype": "integer", "required": false, "default": 1000, "constraints": "Positive integer."}
   ],
   "outputs": [
     {"name": "opoints_RZpsi", "description": "O-point candidates sorted by distance to grid center.", "units": "R/Z and flux caller units", "shape": "(n_O,3)", "dtype": "finite real array", "required": true, "constraints": "At least one row; primary O is row zero."},
