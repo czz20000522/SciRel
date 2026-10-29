@@ -112,7 +112,7 @@ def export_case(tmp_path, monkeypatch):
     with ZipFile(case.wheel, 'w') as wheel:
         wheel.writestr('synthetic-0.dist-info/METADATA',
                        'Metadata-Version: 2.4\nName: synthetic\nVersion: 0\n'
-                       'Requires-Python: >=3.14,<3.15\nRequires-Dist: numpy==2.5.4\n\n')
+                       'Requires-Python: >=3.11\nRequires-Dist: numpy==2.5.4\n\n')
         wheel.writestr('synthetic-0.dist-info/licenses/licenses/NOTICE.txt', NOTICE)
         for path in sorted((source / 'src/scirel').rglob('*.py')):
             wheel.writestr(path.relative_to(source / 'src').as_posix(), path.read_bytes())

@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.compute-equilibrium",
-   "source_sha256": "e445998cf28a2d0cdd289976f5555d8b639aee7374609b43fc884f926b778be1",
+   "source_sha256": "2d7ac8fdcbd8cf62055dae0ed6d6b88484d0c7a2ac530a7b305de0744c9e5ae0",
    "summary": "在给定真空磁通与 Green 矩阵下执行有界轴对称压力—电流反馈，并返回显式终态。",
    "definition": "压力闭合为 j_phi=R dP/dpsi，其中 psi=R A_phi。更新残差为 ||psi_new-psi_old||_2/abs(edge_new)。闭合残差为 ||I_new-I_target(psi_new,新拟合)||_2/||I_target||_2：目标为零且误差为零时取零；目标为零但电流非零时残差为无穷，并给出非有限终态。只有两个残差同时不超过 tol 才算收敛。状态只在本次调用内有效；依次计算拟合导数、应用掩膜、更新松弛电流、做 Green 收缩、更新磁通与边界/拟合，并求两个残差，在收敛、状态无效或达到 maxiter 时停止。",
    "model": "基于压力—半径反馈，使用 InterpolatedUnivariateSpline 和调用者提供的 Green 矩阵。",
@@ -162,7 +162,7 @@
  ,
 {
  "asset_id": "scirel.equilibrium.finite-frc-feedback",
- "source_sha256": "7d27d4c77c7ed1dc069634f2b8720abade21a496a59b6c83bba47d12df8bad7a",
+ "source_sha256": "044c6b9702ade439c6254389727ada2bda296145a0cca79607bbd35b0f8095e7",
  "summary": "按公开输入执行有限网格 FRC 反馈组合，并保留声明的停止状态。",
  "definition": "Finite FRC feedback composition.",
  "model": "Finite FRC feedback composition.",
@@ -225,7 +225,7 @@
 },
 {
  "asset_id": "scirel.equilibrium.finite-limited-boundary",
- "source_sha256": "985eeecf91bed1ed59ec512570cf12ba45b0d84da9c77bb7ae5db990426389eb",
+ "source_sha256": "e827b47f7ee29c93ae20036db54bdc7deabe4ca7ebcff3fcd45b5ef90ab237a7",
  "summary": "从有序 R/Z 网格和闭合 limiter 提取有限磁轴候选、边界磁通与闭合磁通轮廓。",
  "definition": "有限差分临界点、limiter 细化、双线性接触和三次插值射线组合。",
  "model": "有限差分临界点估计、双线性插值和张量三次插值。",

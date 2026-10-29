@@ -176,7 +176,7 @@ def test_distribution_metadata_must_resolve_inside_environment_prefix(
     distribution = SimpleNamespace(
         _path=metadata_root,
         version="0.1.0.dev9",
-        metadata={"Requires-Python": ">=3.14,<3.15"},
+        metadata={"Requires-Python": ">=3.11"},
     )
     monkeypatch.setattr(validator.metadata, "distribution", lambda _: distribution)
     installed_module = Path(sys.prefix) / "lib" / "python3.14" / "site-packages" / "scirel" / "__init__.py"

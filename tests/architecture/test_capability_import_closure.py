@@ -27,7 +27,7 @@ def test_documented_field_capability_reports_import_closure() -> None:
     assert result["source"]["revision"]
     assert len(result["source"]["content_sha256"]) == 64
     assert result["source_after"] == result["source"]
-    assert result["source"]["package_version"] == "0.1.0.dev11"
+    assert result["source"]["package_version"] == "0.0.0"
     assert result["child"]["isolated"] is True
     validate_receipt(result)
     assert result["target"]["module"] == "scirel.field"

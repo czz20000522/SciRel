@@ -1,6 +1,6 @@
 version = 1
 revision = 3
-requires-python = "==3.14.*"
+requires-python = ">=3.11"
 resolution-markers = [
     "platform_machine == 'ARM64' and sys_platform == 'win32'",
     "platform_machine != 'ARM64' or sys_platform != 'win32'",
@@ -383,7 +383,7 @@ wheels = [
 
 [[package]]
 name = "scirel"
-version = "0.1.0.dev11"
+version = "0.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "mpmath" },

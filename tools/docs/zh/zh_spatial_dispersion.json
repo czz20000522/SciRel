@@ -32,7 +32,7 @@
     "expected": "返回包含 B0=6 T、S=3、jcase=3 以及 ms、ns0、qs 等 (1,3) 数组的状态映射。"
    },
    "asset_id": "scirel.kinetic.fluid-case-state",
-   "source_sha256": "f0b0a09dcd53334de4c02c87f16169704fffb4f59112dafaaeeb8b53d86c3c1e",
+   "source_sha256": "c863fadc27f81aa01fdc02c8b3819007283283827a7e963df17a9a4abf2529f1",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -112,7 +112,7 @@
     "expected": "返回 2×2 complex128 矩阵，元素约为 [[0.6667, 0.6667], [-1.1111, -1.1111]]。"
    },
    "asset_id": "scirel.kinetic.fluid-special-functions",
-   "source_sha256": "3ebfc6946929a8a0b710fb8a0191db8cbbd8f9f0d8222da1fde9609787cc5e53",
+   "source_sha256": "e4364c42d08eb383fdd75e7066bf79485b85c26c2713ef5cf5eaac2e41b13900",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -198,7 +198,7 @@
     "expected": "返回包含 determinant≈2086.26、3×3 K 与 D，以及未修改 state_after 的映射。"
    },
    "asset_id": "scirel.kinetic.fluid-dispersion-response",
-   "source_sha256": "7c1c8e2808ac2ba7d9d787065681dd732eb221b9bf82807feb0a0531a3fb2840",
+   "source_sha256": "c94559ab05b8357ce2862427500b2351c752ceaa62a0e30ffcb0836c4bbae45c",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -285,7 +285,7 @@
     "expected": "返回 M 为 40×40、N=0 的映射，并含 poles、state 与 omega。"
    },
    "asset_id": "scirel.kinetic.fluid-em-matrix",
-   "source_sha256": "178caebfd29b9cb42e26735a88841eac1344b78323c3b06a5b2f81429ab154f3",
+   "source_sha256": "282ba42741718a42d44f6b27a1170c42c2d70966b8f5ea5b0d4aed35091f37f4",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -360,7 +360,7 @@
     "expected": "返回完整诊断映射；root_valid 为 [[True]]，nf≈-7.67e-12+1304.24j m^-1，xx≈1.108e11 rad/s。"
    },
    "asset_id": "scirel.kinetic.fluid-bonk-search",
-   "source_sha256": "afcd54fff8dd359966f08c01f4438584cf5fb5bb698aeb96e402ac9fdbfd40e4",
+   "source_sha256": "8738eb05a092c2c2d11cc846f38f1d230b2063f78b28a40427f0e36df9b8c542",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [
@@ -447,7 +447,7 @@
     "expected": "返回 kxx 形状为 (1,5) 的谱映射，并含 roots、matM、spectra 与 eigen_diagnostics。"
    },
    "asset_id": "scirel.kinetic.fluid-em-spectrum",
-   "source_sha256": "b9bebcd3ab5b2564de18e7e2c266494011c9f4838fda7f58e873888dcc59b4e6",
+   "source_sha256": "ff718e0422d2a436d16eb2217456ec11f90fdc83a00ab92db22350eface621e0",
    "model": "均匀磁场沿 z 轴，波矢为 (kx,0,kz)；静止、各向同性 Maxwell 分布等离子体及明确声明的数值近似。",
    "boundary": "均匀线性响应，采用 SI 制及 exp(i k·x−i omega t)，回旋频率和半径带符号；真正共振与可去奇点的解析极限分别处理。",
    "assumptions": [

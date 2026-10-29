@@ -63,7 +63,7 @@ def _write_snapshot(root: Path, *, count=2, summary_chars=0):
         'schema': 'scirel.consumer-runtime',
         'source_revision': SOURCE, 'asset_count': len(records),
         'runtime': {'wheel': 'synthetic.whl', 'wheel_sha256': sha(WHEEL_BYTES),
-                    'requires_python': '>=3.14,<3.15',
+                    'requires_python': '>=3.11',
                     'requires_dist': ['numpy', 'scipy', 'mpmath'],
                     'dependencies_bundled': False},
         'retrieval': {'backend': 'lexical-and', 'completeness': 'unknown',

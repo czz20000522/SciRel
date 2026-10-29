@@ -69,7 +69,7 @@ def _write_minimal_snapshot(root, documents, source='0' * 40):
     manifest = {
         'schema': 'scirel.documentation-snapshot',
         'source_commit': source, 'source_revision': source, 'source_dirty': False,
-        'project_version': '0.1.0.dev11', 'documentation_version': '0.1.0.dev11',
+        'project_version': '0.0.0', 'documentation_version': '0.0.0',
         'asset_count': len(documents), 'notice': 'synthetic capability test snapshot',
         'reader_language': 'zh-CN', 'human_renderer': 'sphinx-pydata',
         'validation': {'schema_and_dependency_closure': True,

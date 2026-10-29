@@ -48,7 +48,7 @@ def intake(tmp_path: Path):
     }), encoding="utf-8")
     project = tmp_path / "pyproject.toml"
     project.write_text('[project]\nname="scirel"\nversion="0.0.1"\n'
-                       'requires-python=">=3.14,<3.15"\ndependencies=["numpy==2.5.4"]\n',
+                       'requires-python=">=3.11"\ndependencies=["numpy==2.5.4"]\n',
                        encoding="utf-8")
     files = {
         "scirel/__init__.py": b'raise RuntimeError("the inspector must not import the wheel")\n',
@@ -69,7 +69,7 @@ def intake(tmp_path: Path):
         "scirel/domain/facade.py": b'from .core import evaluate as reexported\n',
         DIST_INFO + "/METADATA": (
             b'Metadata-Version: 2.4\nName: scirel\nVersion: 0.0.1\n'
-            b'Requires-Python: <3.15,>=3.14\nRequires-Dist: numpy==2.5.4\n\n'
+            b'Requires-Python: >=3.11\nRequires-Dist: numpy==2.5.4\n\n'
         ),
         DIST_INFO + "/WHEEL": b'Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n',
         DIST_INFO + "/licenses/licenses/NOTICE": b'Attribution bytes\n',

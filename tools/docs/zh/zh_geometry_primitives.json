@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.basis.basis-matrix",
-   "source_sha256": "d8373203bf70bacf99f1122cd691d1188ff7ed3d4a94868f23c97516aa1318d4",
+   "source_sha256": "a7809207b5d70340204e7c1f341a85039f351713903443738827b6e691eb0cdd",
    "summary": "将选定基函数求值为设计矩阵的列；矩阵行对应样本，列对应基函数。",
    "definition": "将选定基函数求值为设计矩阵的列。",
    "model": "构造委托给显式的基函数工厂。",
@@ -69,7 +69,7 @@
   },
   {
    "asset_id": "scirel.basis.build-basis",
-   "source_sha256": "8982c0e8ed2bd0fd17b64221fd4468d90beb49dc1bcbbca131d305557c6db28b",
+   "source_sha256": "139d4c50690bf3af58f03ef59908bcf65296fd738c86effc72804a78d6ec3277",
    "summary": "构造可调用的升幂多项式或三次样条基函数。",
    "definition": "构造升幂多项式或三次样条求值器列表。",
    "model": "按映射选择升幂多项式或 C2 三次样条基函数；多项式默认有三个基函数（0、1、2 次幂），样条默认有五个节点、四个区间。",
@@ -134,7 +134,7 @@
   },
   {
    "asset_id": "scirel.basis.clamped-cubic-spline",
-   "source_sha256": "e723eabfd1d1c5d3a9c2e7293f2fbc20b22763a5ddeeec8a486132c84416c582",
+   "source_sha256": "56760203fc3262c90dff09d499a795a1bb4cb27c491b0dc6dee8eeef3096b881",
    "summary": "使用两端指定一阶导数的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -209,7 +209,7 @@
   },
   {
    "asset_id": "scirel.basis.first-clamped-cubic-spline",
-   "source_sha256": "700f6a85b9abd5c137476206b2ac37d3187fe96d6d3cb8610b63dfa38125488a",
+   "source_sha256": "24033dac9ab8d97983fc9f1106123ad47652f3187e5b4d93fe54023a9fcec61e",
    "summary": "使用左端指定一阶导数和柱坐标右端方程的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -295,7 +295,7 @@
   },
   {
    "asset_id": "scirel.basis.natural-cubic-spline",
-   "source_sha256": "667668c099788d9420bb7b86b5a7ea4c5dad9b7c4da3ace3f58216206e06d9cd",
+   "source_sha256": "c7ff04ce760de3b9adddeef91718df3835e00e081d1b60736651822444aa3994",
    "summary": "使用两端二阶导数为零的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -364,7 +364,7 @@
   },
   {
    "asset_id": "scirel.basis.second-clamped-cubic-spline",
-   "source_sha256": "ff0e2b42aed717525cab01178da3be541fd97fb56eb57965599d7af0587345ac",
+   "source_sha256": "7ad29d05464e851c79705ad69ca864c6de231d37b1d0ac2a25a2f53304bd9789",
    "summary": "使用指定原点行和柱坐标右端方程的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -445,7 +445,7 @@
   },
   {
    "asset_id": "scirel.fieldline.arclength-derivative",
-   "source_sha256": "d2c4afacfdb38c03fb555e9b4a6f079f2dbad393e1826eacd181879e0e601084",
+   "source_sha256": "e391dea6970b0179823353d565108fa7740d9bb5c0a2bd7d100b15ead817bc22",
    "summary": "以相邻顶点累计距离为自变量，对采样值求导。",
    "definition": "内部点使用三点非等距差分模板，两个端点使用单边二次差分模板。",
    "model": "基于相邻顶点累计距离的直接有限差分导数。",
@@ -512,7 +512,7 @@
   },
   {
    "asset_id": "scirel.fieldline.boundary",
-   "source_sha256": "008c850a892027d6900f4bb191094882504aa1cfa0eca71ee8446614a0412be1",
+   "source_sha256": "94ea9c1fa812110f5f7e208cfb270c0d243334cc42889e30acf71994c6cd5c64",
    "summary": "对有序平面边界顶点拟合非周期参数样条。",
    "definition": "使用 s=0 拟合 SciPy 参数样条，并在 200 个参数值上采样。",
    "model": "默认使用非周期二次 splprep 拟合。",
@@ -572,7 +572,7 @@
   },
   {
    "asset_id": "scirel.fieldline.contour-points",
-   "source_sha256": "d8ea769bcb4c3f2c0690ab406af7a1457171a132897e9332cf07fd6042a687ca",
+   "source_sha256": "e5414acdece7fb434dcddbb60941187be76dfb2d2ee3baaaa45dbe4b3e214cb7",
    "summary": "将每个等值级别映射为拟合后的 FieldLine 对象列表。",
    "definition": "对每个等值级别，在对应的 allsegs 条目中为每条线段构造一个 FieldLine。",
    "model": "直接构造集合，不重建场。",
@@ -634,7 +634,7 @@
   },
   {
    "asset_id": "scirel.fieldline.fieldline",
-   "source_sha256": "cfbd12418bf6eab85490c6ae9a9dadb5a3ecae4921f5b06771495bf42bad5ae5",
+   "source_sha256": "dd64288cd5a91c93063a5faf1b680ab03a835e4a1648fd68074493d789989ba3",
    "summary": "拟合轮廓路径，并提供弧长、场插值、梯度、曲率和有界交点诊断。",
    "definition": "拟合有序参数线；场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "默认二次样条、可选网格插值、局部多项式曲率导数，以及独立的均匀网格磁通梯度曲率路径。",
@@ -707,7 +707,7 @@
   },
   {
    "asset_id": "scirel.fieldline.fieldline-set",
-   "source_sha256": "226812180cb53727fc4b4e89a57ff8e437ed81056f644cc53bbdeb36a9ae66a6",
+   "source_sha256": "1b0d0f0a2dc6f4c265cf88d61e676a8c091762d3bff443d3540332fd8ef12eba",
    "summary": "构造按等值级别存储拟合后 FieldLine 列表的 FieldLineSet。",
    "definition": "为每条线段构造 FieldLine 实例，并存入 flset 映射。",
    "model": "直接构造集合，并转发 FieldLine 关键字参数。",
@@ -769,7 +769,7 @@
   },
   {
    "asset_id": "scirel.fieldline.helper-contour-points",
-   "source_sha256": "5b3017b8a764d4dfceca4e60040b018d23e260ee484fcac7d34819d97c389b8e",
+   "source_sha256": "9c7c0ffc500eff6bec2ba777978e234a5286b8de91120454b181d148f85a617b",
    "summary": "将每个等值级别映射为拟合后的 HelperFieldLine 对象列表。",
    "definition": "对每个等值级别，在 allsegs 中为每条线段构造一个 HelperFieldLine。",
    "model": "直接构造集合，不重建场。",
@@ -831,7 +831,7 @@
   },
   {
    "asset_id": "scirel.fieldline.helper-fieldline",
-   "source_sha256": "5722249847561d4ca0552365b25e96336ffb9dd7e38e91ce01f3845ebf18177d",
+   "source_sha256": "775168919a8546fa73bb525ab1d60f948f54807c2cda5788405f5e626450df87",
    "summary": "拟合轮廓路径，并提供辅助插值、弧长、梯度、场曲率和有界交点诊断。",
    "definition": "拟合有序参数线；辅助插值保留查询值为非有限时的原有行为，同时场曲率沿拟合几何对归一化插值 BR、BZ 求导。",
    "model": "固定为 1000 点的二次默认样条，支持选择 linear、nearest 或 cubic 插值及局部多项式曲率导数。",
@@ -904,7 +904,7 @@
   },
   {
    "asset_id": "scirel.geometry.rotate",
-   "source_sha256": "5443f17960ea9cbbf4ec57b8caf49bcb327e9fe54740c60e94492f72c19d856e",
+   "source_sha256": "92b2d2178c8319439603899ddc002b777fa3760f4fcd7e9c70955c470fa0d466",
    "summary": "在柱坐标 R、Z 平面旋转行向量。",
    "definition": "采用顺时针为正的行向量旋转，角度单位为度。",
    "model": "二维 R、Z 平面。",
@@ -975,7 +975,7 @@
   },
   {
    "asset_id": "scirel.numerics.nonuniform-derivatives",
-   "source_sha256": "09cfcc255a8247b2de79c435a4b68acabaffd2ebbe0635b486aeb446811c2d31",
+   "source_sha256": "b3dc26ab1bf269b605def6debb86854d5e9917ae1f2758bea5660585b4e86e9b",
    "summary": "在每个内部横坐标处对局部二次多项式求导。",
    "definition": "在每个内部横坐标处对局部二次多项式求导。",
    "model": "三点不等间距多项式算子。采用 x 坐标单位及 y 值单位。",
@@ -1048,7 +1048,7 @@
   },
   {
    "asset_id": "scirel.sampling.meridional-polar-forward",
-   "source_sha256": "bdc2277225686b8be074d0f4dbfaafc54e16880c1bbbfbb17b9ea74da473f757",
+   "source_sha256": "284d3595b3662bbc90c74d1b67f84b4b7891e4e11eebdf78944bc8ccc9e89ba5",
    "summary": "将柱坐标子午面位置及矢量分量映射为 r、theta 及其正交单位基分量。",
    "definition": "正变换使用显式公式计算 r、theta、u_r、u_theta；theta 从 +Z 朝 +rho 方向以弧度计。修正后的角度和正交基保留位置、范数及逆映射。",
    "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度与矢量单位，theta 以弧度计。",
@@ -1128,7 +1128,7 @@
   },
   {
    "asset_id": "scirel.sampling.meridional-polar-inverse",
-   "source_sha256": "ebc1202f45f6f59a8cbe26b71c1b17bc193866a05adf5433188ed82d53f22585",
+   "source_sha256": "3d1687c75314032b83eba05f1838420f19f5374d85bd1b89933b3d563873708e",
    "summary": "将正 r、theta 及极坐标矢量分量映射到子午面 rho、Z 分量。",
    "definition": "逆变换使用显式公式计算 rho、z、u_rho、u_z；theta 从 +Z 朝 +rho 方向以弧度计。它确定正向约定并保留矢量范数。",
    "model": "欧几里得子午面坐标变换，无磁场模型。几何为距原点正距离的平面有符号 rho、Z 坐标；调用者提供一致的长度与矢量单位，theta 以弧度计。",
@@ -1208,7 +1208,7 @@
   },
   {
    "asset_id": "scirel.sampling.nonuniform-first-derivative",
-   "source_sha256": "5ee8f27f04dc8a10e6c01cb9b0f266b2032ce78249863da1c955acedfe4a4333",
+   "source_sha256": "327fe01cb5da88a0adaf122618fe821ad1623a4ea9a22f47f4f823bdb3bae7a0",
    "summary": "用共享的非均匀二次多项式算子返回内点一阶导数。",
    "definition": "用共享的非均匀二次多项式算子返回内点一阶导数。",
    "model": "内置的有限差分实现。采用通用且一致的坐标/值单位。",
@@ -1275,7 +1275,7 @@
   },
   {
    "asset_id": "scirel.sampling.parse-segment",
-   "source_sha256": "1cc3cd9ec45d729ffc375cb7a5ac541f210ee373caadbe5a73294853ac616628",
+   "source_sha256": "3d4e07577b5e7bf1229af2b99218a38955f6c72d9170b3c9395a8a92d549111d",
    "summary": "循环移位至最近起点，按有符号多边形检验定向，并保留所选终止顶点。",
    "definition": "循环移位至最近起点，按有符号多边形检验定向，并保留所选终止顶点。",
    "model": "沿用原实现的轮廓解析，并修正端点的包含规则。平面坐标采用长度单位。",
@@ -1352,7 +1352,7 @@
   },
   {
    "asset_id": "scirel.sampling.path-distance",
-   "source_sha256": "e1424cb2280dafb83b884ddf633f8e4d45ef094a14782625fe28aa45ff2c6985",
+   "source_sha256": "1c951b50a294407878c5fd18d9428a43fff61d46d2d8aa2288e7c1d20c279e9b",
    "summary": "从零开始累积相邻顶点间的欧几里得距离。",
    "definition": "从零开始累积相邻顶点间的欧几里得距离。",
    "model": "精确的多边形弦长。平面坐标对采用一致的长度单位。",
@@ -1411,7 +1411,7 @@
   },
   {
    "asset_id": "scirel.sampling.point-nearest",
-   "source_sha256": "a8ca694d3eaa03b4c1863041b87b80c4cc779f0e8b5ed4d31c1161418156d79d",
+   "source_sha256": "aa0b71bd48b2cbdc0e8e55ac31d97f60190f3bb4baa213a0692354540549006f",
    "summary": "选择展平后坐标距离平方最小的点。",
    "definition": "选择展平后坐标距离平方最小的点。",
    "model": "在任意匹配的平面数组上选取几何最近样本。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
@@ -1492,7 +1492,7 @@
   },
   {
    "asset_id": "scirel.sampling.polynomial-fit",
-   "source_sha256": "b442d4fa11038d85bbf4f35f352745d18db8b517472d319574c6f0453d192896",
+   "source_sha256": "f8c2f02d158e03103c192da57c417110988eabd74fed5ed828ee183736513a3f",
    "summary": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
    "definition": "采用绝对奇异值截断 1e-10，计算升幂排列的最小范数系数。",
    "model": "显式 SVD 伪逆。x、y 为通用样本单位，系数单位为 y 除以 x 的幂。",
@@ -1573,7 +1573,7 @@
   },
   {
    "asset_id": "scirel.sampling.rectangular-nearest",
-   "source_sha256": "2744ae3f266755db25e6bb4ab68cf6ec508971d6523d8244edc13756ff565742",
+   "source_sha256": "3c5809c0788e776169e2b7cb4638ef3983eec8336844f3a15f9d175039326c5f",
    "summary": "分别选择距每个查询最近的 x 列及 y 行。",
    "definition": "分别选择距每个查询最近的 x 列及 y 行。",
    "model": "可分离 xy 网格按轴最近邻采样。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
@@ -1654,7 +1654,7 @@
   },
   {
    "asset_id": "scirel.sampling.rectangular-spline",
-   "source_sha256": "a8177cf3c7c33fd7afdda51734835f55babc4786ef1ad46c5cb295a677bcb412",
+   "source_sha256": "3e0ba2783ebb8cdeafa3382e242f560f1074219b229e3f82b361317ffa176e88",
    "summary": "在有序路径顶点处求双三次矩形场插值。",
    "definition": "在有序路径顶点处求双三次矩形场插值。",
    "model": "采用原实现默认次数和平滑度的矩形双三次样条；使用行列网格及平面路径。",
@@ -1734,7 +1734,7 @@
   },
   {
    "asset_id": "scirel.sampling.regular-grid",
-   "source_sha256": "6a2bd37e69f91493c090f6831f16afb616161bcfc405732ac7887bc5138708e5",
+   "source_sha256": "c296f0a485c179c1f541656604ef6503cd88f566164f38b5dc930efa4b697f2b",
    "summary": "将标量场插值到提供的网格或生成的 ij 索引网格。",
    "definition": "将标量场插值到提供的网格或生成的 ij 索引网格。",
    "model": "使用 SciPy 的线性插值，默认生成 200×200 网格；输出轴按 ij 次序生成。",
@@ -1807,7 +1807,7 @@
   },
   {
    "asset_id": "scirel.sampling.scalar-reflection",
-   "source_sha256": "404537ac64b8c485d1689d1edc5e020ae3f52ac82a36ca04bb4fe0649d44381f",
+   "source_sha256": "7374e82008a3611d07a2276028275f7a67f1cf935c2d76fa40aaa22cfbf68f90",
    "summary": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
    "definition": "将 R 关于 R=0 镜像，并复制 Z 与偶对称标量场，且不重复零列。",
    "model": "沿用原实现的 hstack 约定，并提供具名 quantities 替代方式。Rho、Z 为按径向列排列的平面网格。",
@@ -1881,7 +1881,7 @@
   },
   {
    "asset_id": "scirel.sampling.scattered-linear",
-   "source_sha256": "fd68d19335f110172da408d6592c56cacffd31342f4cefb70d02d36364aa0b3b",
+   "source_sha256": "d2a4c787ec8661811545caf8d7911b6c86ac8fa6e793c93d2fd4ff046b46277f",
    "summary": "在给定坐标对处插值求场值。",
    "definition": "在给定坐标对处插值求场值。",
    "model": "SciPy griddata，默认使用 linear 方法。X 为列坐标、Y 为行坐标，或二者为匹配的散点数组。",
@@ -1962,7 +1962,7 @@
   },
   {
    "asset_id": "scirel.sampling.select-fieldline",
-   "source_sha256": "28055f36e9f5056a87aff695b01e500b6996cd5e143b9fa6291a60b7eb3cfa19",
+   "source_sha256": "d2be2319a0bebfb6cb2f19143f272cd3a1e9cb31d5a5d787b899dcc04e836c4b",
    "summary": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
    "definition": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
    "model": "沿用原实现的轮廓线段选择；idx_check 是为兼容而保留、会被忽略的参数。采用平面线段顶点及精确等值标签。",
@@ -2054,7 +2054,7 @@
   },
   {
    "asset_id": "scirel.sampling.weighted-line-integral",
-   "source_sha256": "adc97008768669854e6bbc4e9bc0f4d208419f5bba124c896e204e733537b390",
+   "source_sha256": "7958d74fe99bdbc16833c915fe58d4074891af3b288f723a8ca71e3a66bb22d2",
    "summary": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "definition": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "model": "沿用原实现的矩形样条采样和折线梯形求积。采用 xy 矩形网格及具有显式弦长的平面路径。",
@@ -2144,7 +2144,7 @@
   },
   {
    "asset_id": "scirel.numerics.truncated-svd-inverse",
-   "source_sha256": "6e18f3a8678f31c5fb7a87ee904b6006c93dfd96ec2acf746bd878ba160b77a9",
+   "source_sha256": "d91b4c227b6f6a6dd684c2d43b1472a28c04ed934bd204fe5e3a31e28b61a987",
    "summary": "计算有限实矩阵的 Moore–Penrose 伪逆，并按相对阈值截断奇异值。",
    "definition": "对 M = U diag(s) V^T，返回 V diag(s ≥ rcond 时取 1/s，否则取 0) U^T。",
    "model": "稠密实矩阵的截断奇异值分解。",
@@ -2217,7 +2217,7 @@
   },
   {
    "asset_id": "scirel.geometry.masked-toroidal-volume",
-   "source_sha256": "19ac2a127e306d9fab872260cee509229334c05cade08026c5faa4fe3004dbad",
+   "source_sha256": "5922695666700a395d1a4a0c382707976c12e84bab95f37e9a4815f19f58388b",
    "summary": "根据显式有限 R/Z 网格和调用者提供的核心掩码，计算环向旋转后的体积。",
    "definition": "逐元素计算 2*pi*R*dR*dZ，按 NumPy 广播乘以 core_mask 后求和，并投影为 Python 浮点数。",
    "model": "离散有限网格环向体积归约。",

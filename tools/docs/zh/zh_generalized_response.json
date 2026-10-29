@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-dr",
-   "source_sha256": "31569cfbe332f237374e344d7d675a1c13f4a3fd865ea3feb8bfd52dad8baa26",
+   "source_sha256": "4c5d9600487b7f66562d0193435236197836ac93637ac38c2acb3b4a1d414752",
    "summary": "按默认阶数求值 16 阶 Faddeeva 变体，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -86,7 +86,7 @@
   },
   {
    "asset_id": "scirel.kinetic.evaluate-faddeeva-gpdf",
-   "source_sha256": "a48eef06933056441718089ce536157dd08a9f6b7ccaa2f7de19f6e91768eefe",
+   "source_sha256": "86650d598048c2d1e483b42e6de52977884243f8d470b7d47a31996f0c71ad41",
    "summary": "按默认阶数求值 32 阶 Faddeeva 变体，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -168,7 +168,7 @@
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-fft",
-   "source_sha256": "782b30d9f93431df0e1e3397a1ce821945bd569f973ca281f8efb8ef40d914b1",
+   "source_sha256": "2002950a30818ad85ad6001dfe575bfa1c3e4a2e5903f1989b28a44b7f242fce",
    "summary": "按默认阶数求值 FFT Maxwellian 色散近似，并遵循所声明的失败语义。",
    "definition": "采用 Weideman 有理 FFT 展开，在虚轴使用 erfcx 求值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -251,7 +251,7 @@
   },
   {
    "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
-   "source_sha256": "272c110b2e153c2a5d8addcaba744761952e9560c60cd4fc78021e96da8d5829",
+   "source_sha256": "ac85f6f79f372d7bec24f7608c99eacac52104ae022fca0302e85fdb6175594f",
    "summary": "按默认阶数求值固定极点 Maxwellian 色散近似，并遵循所声明的失败语义。",
    "definition": "采用固定数表的部分分式近似；先在上半平面求值，再用 Gaussian 反射关系取得下半平面值。",
    "model": "一维 Maxwellian 等离子体响应。",
@@ -333,7 +333,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-dispersion",
-   "source_sha256": "c246a9fa23f7a507ff512f445f30caaa1da46d2699a9c535cba26fe5a45be619",
+   "source_sha256": "96cda5c6de342dfbca825eecefeb717a53bf5738f0bacb5d816e76648d478f39",
    "summary": "求值七类原始广义分布选择器中的任意一类。",
    "definition": "选择器对应的密度为：delta(v)；在 [-0.5,0.5] 上恒为 1 的顶帽；max(0,1-|v|)；sqrt(2)/pi/(1+v²/2)²；H(v-0.1)exp(-v²)/sqrt(pi)；以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位于 a 的跳跃 J 对 Zp 贡献 J/(a-z)。已修正不一致的顶帽密度符号及不完整 Maxwellian 的截断跳跃。大相位处的 Gaussian 导数采用避免相消的原始极化率或矩展开，不减去已舍入的单位项。远场顶帽值使用收敛的逆幂级数；导数先分别计算分母的实部与虚部，再取倒数，以保留可表示的微小轮廓分量。中心附近的实响应使用实数 log1p，边缘附近使用 log-hypot 之差，轮廓相位使用单个 atan2；不使用复数 log1p。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -440,7 +440,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-expression-differentiation",
-   "source_sha256": "ed0aa5bdce7a996fb4e05f0e05986c2b08fdc1b7b5298394159e9bdb15f7c2b6",
+   "source_sha256": "c411582878cc248769cb9e67371a28822c0ca9d872c46d40affaa2f1ad1fdba2",
    "summary": "把受限密度表达式编译为可分别求值和求解析一阶导数的可调用对象。",
    "definition": "解析有限实常量、pi、v、算术和已声明初等函数，并按精确解析链式法则传播（函数值，导数）对；解析前先规范化 MATLAB 逐元素运算符。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -509,7 +509,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-hilbert",
-   "source_sha256": "f368562d7bcd1fcf48f976167d55fbce1503e02dfe704cea6c92ae2a4b490f2a",
+   "source_sha256": "1d7b2c4b9f1a2e07b98fefc811406327da6d7cb519337d7ea1bcec4743bcbce9",
    "summary": "计算受限解析表达式及其导数变换。",
    "definition": "DensityExpression 解释受限 AST，按链式法则传播解析一阶导数，不使用 eval 或 SymPy。实轴被积函数先减去 f(x)·exp(-(v-x)²)；该项与 1/(v-x) 相乘后为奇函数，其全实轴主值为零。边界值加上 i·pi·f(x)，可选下半平面延拓再加上 2·pi·i·f(z)。|z|≥12 时，利用端点值消失所给出的恒等式 Zp=Cauchy[v·fprime]/z，避免总质量为零的密度导数发生相消；绝对求积容差与相位模成反比。密度导数及其解析延拓不由已舍入的 Z 或 epsilon 重建。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -614,7 +614,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-residual",
-   "source_sha256": "35735775a65fac6d61768231a5ffd651c62438ecf5971cba6b93d79d91c0e15b",
+   "source_sha256": "2a5ff8c17b2806b5294f4f8a6a9d27414938c81365c96a1cbaacb5f5205b1c28",
    "summary": "计算 Langmuir、离子声波、束流和广义分布残差。",
    "definition": "离子声波采用 D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti，其中 q=x/sqrt(Ti/mi)。束流采用 D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)]，其中 q=x/sqrt(Tb)-vd。广义分布采用 D=k²-Zp/2。真空项与极化率归一化沿用既定约定。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -762,7 +762,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-root-scans",
-   "source_sha256": "41ae37748071a45aba8cb2304b8ecc8cc2acdb37d1032f32969a1daa7477e45c",
+   "source_sha256": "53ec5904bac98a1ca8603c8cbc64211cc49a165924b278525063f60180dd4cde",
    "summary": "运行全部四类带初始种子的静电根扫描。",
    "definition": "各类网格为：Langmuir .1:.1:1 后接 2:1:10，固定相位种子 1-.1i；离子声波 1.1:-.05:.05，相位种子 .04-.02i；束流 .4:-.005:.05，相位种子 (1-.01i)*sqrt(2)*.4；广义分布 .1:.1:1 后接 1.5:.5:5，频率种子 1.5-.001i。离子声波和束流分支接续上一个相位，广义分布分支接续上一个频率。k 通过闭包绑定，避免作为无效的 fsolve 第四参数传入。求解使用 D/k² 或直接使用经过验证的 Maxwellian epsilon，并同时检查求解器成功、残差容差及函数求值预算。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -952,7 +952,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-small-k",
-   "source_sha256": "801798bd14cbda8318d97031b492fc39e4934490411e36d661ed320b9003b2bf",
+   "source_sha256": "9de806d7c0f7c4cd2cd97d07f8743f15fa64b6877ca18ca0efd8fab400ad6c95",
    "summary": "计算 Langmuir 频率与阻尼的小 k 渐近式。",
    "definition": "在对数域计算阻尼幅值，避免 k³ 下溢时直接表达式出现 0/0；精确 k=0 被拒绝。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -1025,7 +1025,7 @@
   },
   {
    "asset_id": "scirel.kinetic.gpdf-cauchy-transform",
-   "source_sha256": "a40c4b0c5d48ac47b4814f91c41101b04685159a4a855d094d55b116d233b694",
+   "source_sha256": "8c90bbcfc1fec5615876c283079f326a06d723d2299e16f373b741972b455c80",
    "summary": "对调用者给定的密度特征求 Cauchy 变换，并针对近实轴核峰使用专门求积。",
    "definition": "G(z)=∫ density(v)/(v-z) dv。对 z=x+i·y，邻近投影的有限面板采用 v=x+abs(y)·sinh(t)，使被积核为 density(v)·(tanh(t)+i·sign(y)·sech(t))。变换后的有界面板可分辨已知核峰与长尾；平滑远面板和无穷尾部使用实坐标求积。仅按声明的支撑约定增加显式解析延拓。",
    "model": "一维广义等离子体响应。",
@@ -1141,7 +1141,7 @@
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
-   "source_sha256": "7430497b8104947eca6a513fbaa14330a758180c62dbbe4baa3e300c4ed9848b",
+   "source_sha256": "3a3cf8a775a93ec4de9a6705f73077919a29dcc391c1e59457884d6d437f40f8",
    "summary": "计算归一化 Maxwellian 介电响应，并避免大相速处的相消。",
    "definition": "epsilon=1+chi，chi=(1+z*Z(z))/k²。大 |z| 使用等价 Gaussian 矩展开避免相消，D=k²*epsilon 仅作为诊断量。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1226,7 +1226,7 @@
   },
   {
    "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
-   "source_sha256": "25c89cb4e4aaec5c56da69d462d79446dd12480fa0b7c68627da1fa76a030248",
+   "source_sha256": "e42b0ab47dbdd2da984e739746399f5b4e455b731f8f5c762ad2cb779622f3ac",
    "summary": "从显式复种子求一个 Maxwellian 模态，并检查残差与误差。",
    "definition": "用两个实分量求解 epsilon(omega,k)=0，再进行不依赖 k² 缩放的归一化残差与估计误差门禁。",
    "model": "一维均匀 Maxwellian 等离子体，等离子体频率归一化为一。",
@@ -1341,7 +1341,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-diagnostic",
-   "source_sha256": "cf2e638523e9bb0bbc7d985b8146614c816b1411961b89e8a3bb8a45083f4145",
+   "source_sha256": "b88eae54a2946655b0278b1229bca6402c84ebd64dd8b08b60966ccc6d77cbd0",
    "summary": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
    "definition": "omega=pi/mean(diff(peak_times))；gamma 为峰值幅度对数随时间的最小二乘斜率。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1431,7 +1431,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-distribution",
-   "source_sha256": "bae943814dc6cd6abf5f41c063373440c6c35adfc33ef49fb0a01ad7b826157a",
+   "source_sha256": "c243a265a8a345575724b13607006449352e169e656d5bb9c2c2c4f3d582fa9e",
    "summary": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "definition": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1530,7 +1530,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-envelope",
-   "source_sha256": "2f8d2656612befba3bec23bcd13ab4a6f9c583ae38459a48812431f76deac006",
+   "source_sha256": "cf37c75d13b8c6c3b8888ad4c702cb7bd9d6967c93d4ed01e8c6615c07e62380",
    "summary": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
    "definition": "lndE=log(abs(E))；可选理论包络 lndEe=log(abs(E[0]))+wi*(t-t0)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1620,7 +1620,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-evolve",
-   "source_sha256": "52f00c0848ee901e6ac96a38dfe7fb0556e5de2bf8b046bf5ad1ff1fdeab7cc4",
+   "source_sha256": "772367245c495c73571e6a127280d45a454249df909923814aa8585c725177c2",
    "summary": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "definition": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1686,7 +1686,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-field",
-   "source_sha256": "7280b298673005a9382a51e979aa1892ccd8d2218b1f1dd6143c9a11e70f22dc",
+   "source_sha256": "085a0de3aa6d6aa37645ead147767de71982a1878c46b3b50f51d3411bbcdbec",
    "summary": "Poisson 闭合关系为 E=i dv sum(df)/k。",
    "definition": "Poisson 闭合关系为 E=i dv sum(df)/k。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1769,7 +1769,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-init",
-   "source_sha256": "97db359ce91a2365e6c0417aad7c28a620b0fe8665c62c833b04bed70be3b6eb",
+   "source_sha256": "a0e445fbba167c3253d8dc1b4e9435c47ea9efd22f178347c7bd1a0942ee40fa",
    "summary": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
    "definition": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1883,7 +1883,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-landau",
-   "source_sha256": "bdbb6704130a356adab931d4f55453bebf6e42e43d6e94b9f4f9309445529e44",
+   "source_sha256": "529c982bc61e091fe8b3fe7b81cad237fdd54b20c0f221d45fceab9140ed51d3",
    "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1997,7 +1997,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-rhs",
-   "source_sha256": "c3f26418f8ee47d620b5b6ae885ece862b1be36c994ac4b4cea38cce03a1a4b7",
+   "source_sha256": "782fdbd860cf23b12a3d39d6e77b228d3a719176d86135d619b35827d00c8b8d",
    "summary": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
    "definition": "df_dt=-ikv*df+dE*df0dv；所有速度节点共享同一个标量 dE。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -2096,7 +2096,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-rk4-step",
-   "source_sha256": "1a5ac14887ceecb388c7bf0e545e70005a6271a3b942615312af574067b24d03",
+   "source_sha256": "e2b9e068b370dcbc6bb0b0128a63bfbd174ca0c453df7fff2b947772309c729b",
    "summary": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；各级均满足闭合。",
    "definition": "f_new=P4(dt*A)f，其中 A=-ik diag(v)+(i dv/k)g 1^T；各级均满足闭合。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",

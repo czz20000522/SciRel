@@ -118,7 +118,7 @@
       "canonical_symbol": "plasma_volume"
     }
   },
-  "version": {"implementation_version": "0.1.0.dev11", "dependencies": []},
+  "version": {"implementation_version": "0.0.0", "dependencies": []},
   "example": {
     "description": "Sum two selected cells on a 2x2 R/Z grid with uniform widths.",
     "code": "import numpy as np\nfrom scirel.geometry import plasma_volume\nR = np.array([[1.0, 1.0], [2.0, 2.0]])\nmask = np.array([[True, False], [True, False]])\nvolume = plasma_volume(R, dR=0.5, dZ=0.25, core_mask=mask)\nnp.testing.assert_allclose(volume, 2.0 * np.pi * (1.0 + 2.0) * 0.5 * 0.25)",

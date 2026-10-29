@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.numerics.modal-projection",
-   "source_sha256": "85f547094d267536aaede3601040a19181c895361c0441e7d73ce30623042f9d",
+   "source_sha256": "f0fa2417000dff70c03baa80fadda20cf30bb0737ced5edf179095141f2ff1f5",
    "summary": "构造正交归一模态基，并将高斯规则节点上的采样值投影为模态系数。",
    "definition": "使用基自身声明的张量 Gauss-Legendre 规则，对每个正交归一成员计算加权内积。",
    "model": "单个参考超立方体上的模态 L2 投影。",
@@ -42,7 +42,7 @@
   },
   {
    "asset_id": "scirel.numerics.orthonormal-modal-basis",
-   "source_sha256": "fa9814fabfa2ef579dc86081e910d1e2985de3e94cbd53635b0b2fff05e9d63d",
+   "source_sha256": "6396176557c1760285b8cbe16fbe991d8fe1076e80676086f94458f7bc833e54",
    "summary": "在参考超立方体上构造 tensor 或 serendipity 正交归一模态多项式基，并支持求值、求导、反射和投影。",
    "definition": "成员是各参考坐标轴上一维正交归一 Legendre 多项式的乘积，并按声明的指数顺序排列。",
    "model": "单个参考超立方体上的模态多项式离散化。",
