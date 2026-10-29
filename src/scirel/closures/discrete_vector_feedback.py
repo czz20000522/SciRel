@@ -17,6 +17,8 @@ _SCHEMA = "magnetic-error-current-feedback-discrete"
 _CHANNELS = 10
 _OUTPUTS = 11
 
+__all__ = ["simulate_feedback"]
+
 
 def _array(value: Any, *, name: str, shape: tuple[int, ...] | None = None) -> np.ndarray:
     arr = np.asarray(value, dtype=float)
