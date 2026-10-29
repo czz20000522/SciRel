@@ -30,6 +30,12 @@ __all__ = [
     "solve_kinetic_mirror_hall_equilibrium",
     "EquilibriumResult",
     "compute_equilibrium",
+    "find_critical_points",
+    "refine_limiter_polygon",
+    "bilinear_interpolate",
+    "trace_flux_boundary",
+    "solve_limited_boundary",
+    "solve_finite_limited_boundary",
 ]
 
 
@@ -81,6 +87,12 @@ _LAZY_EXPORTS = {
     ),
     "EquilibriumResult": ("equilibrium_state", "EquilibriumResult"),
     "compute_equilibrium": ("equilibrium_state", "compute_equilibrium"),
+    "find_critical_points": ("finite_limited_boundary", "find_critical_points"),
+    "refine_limiter_polygon": ("finite_limited_boundary", "refine_limiter_polygon"),
+    "bilinear_interpolate": ("finite_limited_boundary", "bilinear_interpolate"),
+    "trace_flux_boundary": ("finite_limited_boundary", "trace_flux_boundary"),
+    "solve_limited_boundary": ("finite_limited_boundary", "solve_limited_boundary"),
+    "solve_finite_limited_boundary": ("finite_limited_boundary", "solve_finite_limited_boundary"),
 }
 
 

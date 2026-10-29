@@ -127,7 +127,8 @@
       "scirel.equilibrium.axisymmetric-anisotropic-picard",
       "scirel.equilibrium.free-boundary-anisotropic-picard",
       "scirel.equilibrium.compute-equilibrium",
-      "scirel.equilibrium.finite-frc-feedback"
+      "scirel.equilibrium.finite-frc-feedback",
+      "scirel.equilibrium.finite-limited-boundary"
      ]
     },
     {
@@ -174,12 +175,12 @@
      ]
     },
     {
-      "id": "sampled-vector-feedback",
-      "title": "Running a discrete vector error feedback primitive",
-      "introduction": "Compute P/I/filtered-D state, an eleven-output current map and sample-and-hold branches on an explicit ten-channel reference/measurement sequence. This is a device-neutral discrete state primitive; it does not solve a device, actuator or plasma equilibrium and does not establish closed-loop stability.",
-      "assets": [
-        "scirel.closures.discrete-vector-error-feedback"
-      ]
+     "id": "sampled-vector-feedback",
+     "title": "Running a discrete vector error feedback primitive",
+     "introduction": "Compute P/I/filtered-D state, an eleven-output current map and sample-and-hold branches on an explicit ten-channel reference/measurement sequence. This is a device-neutral discrete state primitive; it does not solve a device, actuator or plasma equilibrium and does not establish closed-loop stability.",
+     "assets": [
+      "scirel.closures.discrete-vector-error-feedback"
+     ]
     },
     {
      "id": "local-pressure-compatibility",
@@ -289,12 +290,12 @@
      ]
     },
     {
-      "id": "relativistic-codrift-spectrum",
-      "title": "Solving a normalized relativistic co-drift spectrum",
-      "introduction": "Assemble the 4S+6 generalized eigenproblem for declared normalized constants, drifting species and ky=0 wavevectors. Relativistic tangent inertia, zero collisions, superluminal rejection and two independent orderings belong to this specialized branch; a complete spectrum is not a mode-identification or stability result.",
-      "assets": [
-        "scirel.kinetic.relativistic-codrift-generalized-spectrum"
-      ]
+     "id": "relativistic-codrift-spectrum",
+     "title": "Solving a normalized relativistic co-drift spectrum",
+     "introduction": "Assemble the 4S+6 generalized eigenproblem for declared normalized constants, drifting species and ky=0 wavevectors. Relativistic tangent inertia, zero collisions, superluminal rejection and two independent orderings belong to this specialized branch; a complete spectrum is not a mode-identification or stability result.",
+     "assets": [
+      "scirel.kinetic.relativistic-codrift-generalized-spectrum"
+     ]
     },
     {
      "id": "fluid-wavevector-branches",
@@ -566,13 +567,13 @@
      ]
     },
     {
-      "id": "moment-compensated-maxwellian",
-      "title": "Compensating drift and energy moments on velocity slices",
-      "introduction": "Build shifted Maxwellian slices on one cylindrical quadrature, then apply the bounded discrete drift and energy correction to a slice or every shift. The correction retains source finite-volume and sign branches; it is not a complete transport solve or stability proof.",
-      "assets": [
-        "scirel.kinetic.velocity-slice-moment-compensation",
-        "scirel.kinetic.compensated-shifted-maxwellian"
-      ]
+     "id": "moment-compensated-maxwellian",
+     "title": "Compensating drift and energy moments on velocity slices",
+     "introduction": "Build shifted Maxwellian slices on one cylindrical quadrature, then apply the bounded discrete drift and energy correction to a slice or every shift. The correction retains source finite-volume and sign branches; it is not a complete transport solve or stability proof.",
+     "assets": [
+      "scirel.kinetic.velocity-slice-moment-compensation",
+      "scirel.kinetic.compensated-shifted-maxwellian"
+     ]
     },
     {
      "id": "mirror-distributions-and-loss-cones",
@@ -746,12 +747,12 @@
      ]
     },
     {
-      "id": "volume-and-grid-measures",
-      "title": "Computing toroidal volume from an explicit masked grid",
-      "introduction": "Reduce caller-supplied R/Z coordinates and a core mask to a discrete toroidal volume. The mask may select cells or provide numeric weights; this entry point does not solve equilibrium, construct a boundary, or establish mesh convergence or physical volume validation.",
-      "assets": [
-        "scirel.geometry.masked-toroidal-volume"
-      ]
+     "id": "volume-and-grid-measures",
+     "title": "Computing toroidal volume from an explicit masked grid",
+     "introduction": "Reduce caller-supplied R/Z coordinates and a core mask to a discrete toroidal volume. The mask may select cells or provide numeric weights; this entry point does not solve equilibrium, construct a boundary, or establish mesh convergence or physical volume validation.",
+     "assets": [
+      "scirel.geometry.masked-toroidal-volume"
+     ]
     },
     {
      "id": "point-and-grid-constructors",
