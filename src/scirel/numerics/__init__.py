@@ -10,7 +10,11 @@ __all__ = [
     "modal_projection",
 ]
 
-_LAZY_EXPORTS = {name: ("modal_basis", name) for name in __all__}
+_LAZY_EXPORTS = {
+    "ModalBasis": ("modal_basis", "ModalBasis"),
+    "modal_basis": ("modal_basis", "modal_basis"),
+    "modal_projection": ("modal_basis", "modal_projection"),
+}
 
 
 def __getattr__(name):
