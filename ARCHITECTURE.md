@@ -29,6 +29,13 @@ inputs, outputs, state transitions, failure paths and correctness evidence. It
 does not choose SciRel asset IDs, public taxonomy, final aliases or receiver
 roadmap decisions.
 
+The source line may be invoked without any user question or benchmark problem.
+In that case it builds a source inventory and provisional scientific boundaries
+from the source itself. It records what is observed, what is an independently
+meaningful relation, and which projection decisions remain unresolved. A source
+specific orchestration is not automatically “glue”: glue is a consumer-context
+classification made when a user task or public contract is available.
+
 ### Maintenance line
 
 The maintenance line admits self-contained candidate packets and maintains the
@@ -74,7 +81,7 @@ format conversion and presentation as explicit glue.
 | --- | --- | --- | --- |
 | User requirement / benchmark problem contract | User / problem author / coordinator | Complete statement, typed inputs, units, boundaries, outputs, failure paths and test families when the problem is benchmarked | Requirement review and boundary test matrix |
 | Public capability | Maintenance line | Reusable scientific relation or composition with public contract | Implementation, direct tests, contract and projections |
-| User glue | Outbound agent / user | Task-specific orchestration and ordinary programming around public capabilities | Reproducible source, API trace, agent tests, outputs and disclosed gaps |
+| User glue | Outbound agent / user | Task-specific orchestration and ordinary programming around public capabilities; only classifiable when a consumer requirement exists | Reproducible source, API trace, agent tests, outputs and disclosed gaps |
 | Benchmark reference oracle | Coordinator / designated reviewer | Optional internal expected observations and comparison rules for benchmark regression | Separate oracle custody and post-run comparison; never a user runtime dependency |
 | Scientific acceptance | Human owner / designated expert | Physical interpretation, applicability, rights and release decision | Explicit acceptance record |
 
@@ -112,6 +119,16 @@ The source behavior graph is part of the source behavior whenever the source
 order is non-commutative or controls state, branches, feedback or failure. A
 leaf-only submission is incomplete when omitting that graph would change the
 observable result. It is not an extraction procedure graph.
+
+For extraction, an **operator** is a complete directed scientific mapping with
+explicit assumptions, units, axes, numerical conventions and a meaningful
+validation boundary. A **scientific task graph** is a composition of such
+contracts whose ordering, state handoff, branch, feedback, join or failure gate
+changes the scientific result. **Source behavior** is what the frozen source
+actually does, including source-specific coordination and defects. **Glue** is
+consumer-context code for data preparation, ordinary control flow, format
+conversion or presentation; without a consumer requirement it remains an
+unresolved projection, not a fact the source worker must invent.
 
 The public `composition` field is not an automatic copy of a source graph. It
 is created only when the maintenance line can give the composition a stable
