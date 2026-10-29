@@ -266,6 +266,22 @@
    "dtype": "有限实数",
    "shape": "(n,2)",
    "units": "调用者声明"
+  },
+  {
+   "name": "angle_count",
+   "description": "等间隔边界射线数量。",
+   "constraints": "正整数。",
+   "dtype": "整数",
+   "shape": "标量",
+   "units": "计数"
+  },
+  {
+   "name": "ray_samples",
+   "description": "每条边界射线上的采样数量。",
+   "constraints": "正整数。",
+   "dtype": "整数",
+   "shape": "标量",
+   "units": "计数"
   }
  ],
  "outputs": [
