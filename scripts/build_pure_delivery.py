@@ -199,13 +199,6 @@ def _export(wheel, output):
             'stdio': {'command': 'python', 'args': [
                 'skills/scirel-capability-discovery/scripts/server.py', '--root', '.', '--transport', 'stdio']},
             'streamable_http': {'url': 'http://127.0.0.1:8765/mcp'}}))
-        put('.mcp.json', encode({'mcpServers': {'scirel': {
-            'type': 'stdio', 'command': 'python', 'args': [
-                'skills/scirel-capability-discovery/scripts/server.py', '--root', '.', '--transport', 'stdio']}}}))
-        put('.codex-plugin/plugin.json', encode({
-            'name': 'scirel-external-agent-runtime', 'version': metadata['Version'],
-            'description': 'SciRel public discovery, solving and result-validation skills.',
-            'skills': './skills/', 'mcp': './.mcp.json'}))
     else:
         put('mcp-connections.json', encode({
             'stdio': {'command': 'python', 'args': ['tools/server.py', '--root', '.', '--transport', 'stdio']},
