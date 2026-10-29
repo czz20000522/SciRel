@@ -9685,7 +9685,7 @@
   },
 {
  "asset_id": "scirel.closures.discrete-vector-error-feedback",
- "source_sha256": "a6b57cd20cb3294f02330561254b686f9ec64ce3ee30c85ea67e0fbd72f458c7",
+ "source_sha256": "0cd8fa1185c662ff35a77e58bb0dfaa9e667d9db2203a80e568ffdb09d2586ce",
  "summary": "在设备中立的十通道采样序列上计算离散 P/I/滤波 D 状态、十一路电流映射以及使能保持/复位分支。",
  "definition": "计算 error=reference-measurement；使能时求 P/I/滤波 D，应用 11×10 矩阵并叠加前馈；禁用时保持 PID/反馈状态并返回前馈电流；禁用到使能上升沿先复位积分器和滤波器。",
  "model": "带前向 Euler 积分和一阶滤波导数的离散采样 PID/反馈原语。",

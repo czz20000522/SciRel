@@ -92,7 +92,7 @@
     "python": {
       "module": "scirel.closures.discrete_vector_feedback",
       "symbol": "simulate_feedback",
-      "signature": "simulate_feedback(inputs, controller) -> dict[str, Any]",
+      "signature": "simulate_feedback(inputs: 'Mapping[str, Any]', controller: 'Mapping[str, Any]') -> 'dict[str, Any]'",
       "canonical_module": "scirel.closures",
       "canonical_symbol": "simulate_discrete_vector_feedback"
     }
