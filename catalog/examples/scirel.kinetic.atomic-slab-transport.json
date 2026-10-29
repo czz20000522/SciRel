@@ -83,7 +83,7 @@
     "python": {
       "module": "scirel.kinetic.atomic_slab_transport",
       "symbol": "solve_atomic_slab_transport",
-      "signature": "solve_atomic_slab_transport(inputs: dict) -> dict",
+      "signature": "solve_atomic_slab_transport(inputs: 'dict') -> 'dict'",
       "canonical_module": "scirel.kinetic",
       "canonical_symbol": "solve_atomic_slab_transport"
     }

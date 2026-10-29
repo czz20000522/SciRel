@@ -84,7 +84,7 @@
     "python": {
       "module": "scirel.equilibrium.free_boundary_frc",
       "symbol": "solve_finite_frc_feedback",
-      "signature": "solve_finite_frc_feedback(inputs: dict) -> dict",
+      "signature": "solve_finite_frc_feedback(inputs: 'dict') -> 'dict'",
       "canonical_module": "scirel.equilibrium",
       "canonical_symbol": "solve_finite_frc_feedback"
     }

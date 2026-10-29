@@ -113,7 +113,7 @@
     "python": {
       "module": "scirel.geometry.masked_toroidal_volume",
       "symbol": "plasma_volume",
-      "signature": "plasma_volume(R, dR, dZ, core_mask) -> float",
+      "signature": "plasma_volume(R: 'np.ndarray', dR: 'float', dZ: 'float', core_mask: 'np.ndarray') -> 'float'",
       "canonical_module": "scirel.geometry",
       "canonical_symbol": "plasma_volume"
     }
