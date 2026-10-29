@@ -329,4 +329,6 @@ SciRel 现有拆解、D2 合并、出库和验证 skill 已增加 priority execu
 
 合并线当前应使用同目录的 `capability-gap-intake-20261029-corrected.md/json`。真实 discovery 已补齐 q02、q03、q05、q06、q07、q10：q02 是现有多流体 API 与题面 signed-nu 合同不匹配；q03 的公开相对论谱 API 已通过 4 个波矢和边界/失败测试；q05 用显式有限拓扑 glue 完成；q06 复用了中性输运叶子；q07 复用了 `plasma_volume`；q10 复用了自由边界 Picard 组合但与固定 FRC/coil 协议不同。q04 已确认题面表格和闭合规则完整，暂保为 task glue 发现。只有真实发现和运行后仍缺少的可复用关系，才可进入 merge/intake；协议适配和题目编排保持 outbound-owned，不升级成公共 API。
 
+十题合同审查已补齐 q09 的标准 `problem.md`、`output-spec.json`、`acceptance.md` 投影，并删除 q03 验收文件中与频谱输出无关的极化条款；q02、q04-q07、q10 的归一化合同、经验输入、有限拓扑范围、公开叶子边界和有界非收敛语义也已在题面前置说明。完整审计见 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/ten-case-capability-closure-audit-20261029.md`。
+
 出库 skill 的 gap card 仍要求先披露公开能力边界，再按内部/外部分流。每个真实候选仍需 normal/lower/upper 及适用的退化、分支、失败、组合测试；外部出库可以用可见、可测试的普通 glue，内部出库才把重复公共关系路由到合并线。
