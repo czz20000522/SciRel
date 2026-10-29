@@ -325,7 +325,8 @@ SciRel 现有拆解、D2 合并、出库和验证 skill 已增加 priority execu
 
 ## 2026-10-29 公开能力缺口 intake
 
-独立 agent 评测的七个 `HOLD_UNSUPPORTED_PUBLIC_API` 已整理为可直接交给串行合并线的 intake 包：
-`E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/capability-gap-intake-20261029.md` 与同名 JSON。q02/q03 进入多流体谱公共能力族，q05 进入磁拓扑/边界追踪公共能力族，q06 进入有限速度原子输运，q07 进入通用轮廓几何与环向体积，q10 作为自由边界反馈公共组合候选；q04 先保留为给定响应的显式 task glue，等待独立重复关系再提升。
+初始评测摘要把 q02-q07/q10 标成 `HOLD_UNSUPPORTED_PUBLIC_API`，但回读 runner 后确认它实际只执行了 q01、q08、q09；其余七题没有真实答题或 API 搜索。因此原摘要保留为历史回执，不能作为公开能力缺失证据。纠正记录见 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/evaluation-correction-20261029.md`。
 
-这份 intake 只记录合并候选与测试门，不伪造答案或科学接受。每个候选仍需 normal/lower/upper 及适用的退化、分支、失败、组合测试。内部出库按卡片自动路由到 merge/intake；外部出库先向用户披露缺口，只有选择会改变交付范围或科学含义时才停下来询问，否则继续用可见、可测试的普通 glue。
+合并线当前应使用同目录的 `capability-gap-intake-20261029-corrected.md/json`。真实 discovery 已补齐 q02、q03、q05、q06、q07、q10：q02 是现有多流体 API 与题面 signed-nu 合同不匹配；q03 的公开相对论谱 API 已通过 4 个波矢和边界/失败测试；q05 用显式有限拓扑 glue 完成；q06 复用了中性输运叶子；q07 复用了 `plasma_volume`；q10 复用了自由边界 Picard 组合但与固定 FRC/coil 协议不同。q04 已确认题面表格和闭合规则完整，暂保为 task glue 发现。只有真实发现和运行后仍缺少的可复用关系，才可进入 merge/intake；协议适配和题目编排保持 outbound-owned，不升级成公共 API。
+
+出库 skill 的 gap card 仍要求先披露公开能力边界，再按内部/外部分流。每个真实候选仍需 normal/lower/upper 及适用的退化、分支、失败、组合测试；外部出库可以用可见、可测试的普通 glue，内部出库才把重复公共关系路由到合并线。
