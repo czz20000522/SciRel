@@ -12,7 +12,7 @@ SciReL work is divided into three independent responsibilities:
 ```text
 source line      source behavior -> neutral candidate packet
 maintenance line candidate packet -> static SciReL asset
-outbound line    user request + static SciReL -> user-owned program and result
+outbound line    user requirement + static SciReL -> user-owned program and result
 ```
 
 The lines may exchange only the artifacts defined by their public boundary.
@@ -40,11 +40,12 @@ the package usable.
 
 ### Outbound line
 
-The outbound line receives a user request and a public SciReL package. A general
-agent searches the published contracts, writes its own program, creates or
-updates its own task graph, runs it, and retains its own inputs, results and
-diagnostics. Those artifacts remain user-owned. SciReL's query tools help the
-agent find contracts; they do not plan or execute the user's scientific work.
+The outbound line receives a user requirement and a public SciRel package. A
+general agent searches the published contracts, writes its own program, creates
+or updates its own task graph, writes task-specific tests, runs it, and retains
+its own inputs, results and diagnostics. Those artifacts remain user-owned.
+SciRel's query tools help the agent find contracts; they do not plan or execute
+the user's scientific work.
 
 ## Capability boundary and ownership
 
@@ -57,10 +58,10 @@ format conversion and presentation as explicit glue.
 
 | Artifact | Owner | Responsibility | Acceptance evidence |
 | --- | --- | --- | --- |
-| Problem contract | Problem author / coordinator | Complete statement, typed inputs, units, boundaries, outputs, failure paths and test families | Contract review and boundary test matrix |
+| User requirement / benchmark problem contract | User / problem author / coordinator | Complete statement, typed inputs, units, boundaries, outputs, failure paths and test families when the problem is benchmarked | Requirement review and boundary test matrix |
 | Public capability | Maintenance line | Reusable scientific relation or composition with public contract | Implementation, direct tests, contract and projections |
-| User glue | Outbound agent / user | Task-specific orchestration and ordinary programming around public capabilities | Reproducible source, API trace, tests, outputs and disclosed gaps |
-| Test oracle | Coordinator / designated reviewer | Independent expected observations and comparison rules | Separate oracle custody and post-run comparison |
+| User glue | Outbound agent / user | Task-specific orchestration and ordinary programming around public capabilities | Reproducible source, API trace, agent tests, outputs and disclosed gaps |
+| Benchmark reference oracle | Coordinator / designated reviewer | Optional internal expected observations and comparison rules for benchmark regression | Separate oracle custody and post-run comparison; never a user runtime dependency |
 | Scientific acceptance | Human owner / designated expert | Physical interpretation, applicability, rights and release decision | Explicit acceptance record |
 
 The boundary is tested in both directions. A capability must survive normal,
@@ -70,12 +71,16 @@ ordinary glue to solve the complete problem contract. Passing one fixed example
 does not promote task-specific glue into a public capability; repeated
 scientific relations across independent problems are the evidence for promotion.
 
-An external-agent evaluation therefore receives only the problem contract and
-the public SciRel package. It does not receive reference answers, hidden oracle
-data, existing glue or historical result files. The coordinator compares the
-result after the evaluation. This keeps capability discovery, solution
-generation and scientific acceptance as separate claims while testing whether
-the public boundary is actually usable.
+An external-agent benchmark evaluation receives only the benchmark problem
+contract and the public SciRel package. It does not receive reference answers,
+hidden oracle data, existing glue or historical result files. The coordinator
+may compare the result with a separately held benchmark oracle after the
+evaluation. In a real user task there is no assumed reference oracle: the agent
+must solve the requirement using the public package, ordinary programming,
+task-specific tests, constraints and observable diagnostics. This keeps
+capability discovery, solution generation, benchmark regression and scientific
+acceptance as separate claims while testing whether the public boundary is
+actually usable.
 
 ## Four graph roles
 
