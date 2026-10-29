@@ -331,4 +331,6 @@ SciRel 现有拆解、D2 合并、出库和验证 skill 已增加 priority execu
 
 十题合同审查已补齐 q09 的标准 `problem.md`、`output-spec.json`、`acceptance.md` 投影，并删除 q03 验收文件中与频谱输出无关的极化条款；q02、q04-q07、q10 的归一化合同、经验输入、有限拓扑范围、公开叶子边界和有界非收敛语义也已在题面前置说明。完整审计见 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/ten-case-capability-closure-audit-20261029.md`。
 
+新的 clean external-agent challenge 已实际覆盖 q01–q10，未读参考答案、隐藏 oracle 或历史 glue。结果为 7/10 完成，q04、q06、q10 在真实非 glue 能力边界处报告 `CONTRACT_MISMATCH`：分别缺少 SAT1/2/3 多尺度饱和与原生剪切输运、有限速度原子 slab solver/orchestrator、固定 FRC Green/boundary 三层反馈协议。详细回执见 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/challenge-agent-20261029/clean-agent-run-20261029/summary.json` 与 `report.md`；最终 intake 见同目录 `capability-gap-intake-20261029-final.md/json`。因此当前不能验收“十题全部闭环”，但已经证明 q01、q02、q03、q05、q07、q08、q09 可由公开能力和显式 glue 完成。
+
 出库 skill 的 gap card 仍要求先披露公开能力边界，再按内部/外部分流。每个真实候选仍需 normal/lower/upper 及适用的退化、分支、失败、组合测试；外部出库可以用可见、可测试的普通 glue，内部出库才把重复公共关系路由到合并线。
