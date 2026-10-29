@@ -128,8 +128,7 @@
       "scirel.equilibrium.axisymmetric-anisotropic-picard",
       "scirel.equilibrium.free-boundary-anisotropic-picard",
       "scirel.equilibrium.compute-equilibrium",
-      "scirel.equilibrium.finite-frc-feedback",
-      "scirel.equilibrium.finite-limited-boundary"
+      "scirel.equilibrium.finite-frc-feedback"
      ]
     },
     {
@@ -176,12 +175,12 @@
      ]
     },
     {
-     "id": "sampled-vector-feedback",
-     "title": "运行离散矢量误差反馈原语",
-     "introduction": "在明确的十通道参考/测量序列上计算 P/I/滤波 D 状态、十一路电流映射和采样保持分支。它是设备中立的离散状态原语，不求解装置、执行器或等离子体平衡，也不提供闭环稳定性结论。",
-     "assets": [
-      "scirel.closures.discrete-vector-error-feedback"
-     ]
+      "id": "sampled-vector-feedback",
+      "title": "运行离散矢量误差反馈原语",
+      "introduction": "在明确的十通道参考/测量序列上计算 P/I/滤波 D 状态、十一路电流映射和采样保持分支。它是设备中立的离散状态原语，不求解装置、执行器或等离子体平衡，也不提供闭环稳定性结论。",
+      "assets": [
+        "scirel.closures.discrete-vector-error-feedback"
+      ]
     },
     {
      "id": "local-pressure-compatibility",
@@ -295,12 +294,12 @@
      ]
     },
     {
-     "id": "relativistic-codrift-spectrum",
-     "title": "求解归一化相对论协动广义谱",
-     "introduction": "对声明的归一化常数、带漂移的物种状态和 ky=0 波矢组装 4S+6 广义本征问题。相对论切向惯性、零碰撞、超光速拒绝和两种独立排序都属于此专用分支；完整谱不等于物理模态识别或稳定性结论。",
-     "assets": [
-      "scirel.kinetic.relativistic-codrift-generalized-spectrum"
-     ]
+      "id": "relativistic-codrift-spectrum",
+      "title": "求解归一化相对论协动广义谱",
+      "introduction": "对声明的归一化常数、带漂移的物种状态和 ky=0 波矢组装 4S+6 广义本征问题。相对论切向惯性、零碰撞、超光速拒绝和两种独立排序都属于此专用分支；完整谱不等于物理模态识别或稳定性结论。",
+      "assets": [
+        "scirel.kinetic.relativistic-codrift-generalized-spectrum"
+      ]
     },
     {
      "id": "fluid-wavevector-branches",
@@ -574,13 +573,13 @@
      ]
     },
     {
-     "id": "moment-compensated-maxwellian",
-     "title": "对速度切片做漂移与能量矩补偿",
-     "introduction": "先用同一圆柱速度求积构造平移 Maxwell 分布，再对单个切片或每个平移应用有界的离散漂移/能量修正。该修正保留源的有限体积差分与符号分支，不是完整输运求解或物理稳定性证明。",
-     "assets": [
-      "scirel.kinetic.velocity-slice-moment-compensation",
-      "scirel.kinetic.compensated-shifted-maxwellian"
-     ]
+      "id": "moment-compensated-maxwellian",
+      "title": "对速度切片做漂移与能量矩补偿",
+      "introduction": "先用同一圆柱速度求积构造平移 Maxwell 分布，再对单个切片或每个平移应用有界的离散漂移/能量修正。该修正保留源的有限体积差分与符号分支，不是完整输运求解或物理稳定性证明。",
+      "assets": [
+        "scirel.kinetic.velocity-slice-moment-compensation",
+        "scirel.kinetic.compensated-shifted-maxwellian"
+      ]
     },
     {
      "id": "mirror-distributions-and-loss-cones",
@@ -754,12 +753,12 @@
      ]
     },
     {
-     "id": "volume-and-grid-measures",
-     "title": "由显式网格掩码计算环向体积",
-     "introduction": "对调用者提供的 R/Z 网格和核心掩码做离散环向体积归约。掩码可以是布尔选择或数值权重；该入口不求解平衡、不构造边界，也不把离散和解释为网格收敛或物理体积验证。",
-     "assets": [
-      "scirel.geometry.masked-toroidal-volume"
-     ]
+      "id": "volume-and-grid-measures",
+      "title": "由显式网格掩码计算环向体积",
+      "introduction": "对调用者提供的 R/Z 网格和核心掩码做离散环向体积归约。掩码可以是布尔选择或数值权重；该入口不求解平衡、不构造边界，也不把离散和解释为网格收敛或物理体积验证。",
+      "assets": [
+        "scirel.geometry.masked-toroidal-volume"
+      ]
     },
     {
      "id": "point-and-grid-constructors",

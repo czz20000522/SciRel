@@ -158,187 +158,70 @@
      "不提供独立的连续体力平衡残差；离散模型由调用者提供的 G 决定。"
     ]
    }
-  },
-  {
-   "asset_id": "scirel.equilibrium.finite-frc-feedback",
-   "source_sha256": "216fd50df84ecab9a4aabdf164e86042f8264644fa6076c5a061813829a5e66f",
-   "summary": "按公开输入执行有限网格 FRC 反馈组合，并保留声明的停止状态。",
-   "definition": "Finite FRC feedback composition.",
-   "model": "Finite FRC feedback composition.",
-   "boundary": "No hidden defaults or source checkout dependencies",
-   "assumptions": [
-    "调用者提供完整、有限且类型正确的输入。",
-    "调用者提供完整、有限且类型正确的输入。"
-   ],
-   "inputs": [
-    {
-     "name": "inputs",
-     "description": "合同定义的输入。",
-     "constraints": "遵守合同声明的形状、类型和有限性约束。",
-     "dtype": "映射",
-     "shape": "mapping",
-     "units": "调用者声明"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "result",
-     "description": "合同定义的输出结果。",
-     "constraints": "遵守合同声明的结果约束。",
-     "dtype": "映射",
-     "shape": "mapping",
-     "units": "调用者声明"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "输入满足合同声明的有限模型和类型约束。"
-    ],
-    "supported": [
-     "支持合同声明的有限网格 FRC 反馈组合。"
-    ],
-    "excluded": [
-     "不扩展到合同未声明的模型、设备或隐藏状态。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "输入形状、类型或有限性不满足合同时抛出 ValueError。",
-    "runtime_failure": "数值计算失败或结果不可表示时传播实际运行错误。",
-    "nonconvergence": "保留合同声明的有界非收敛状态，不伪造成功。",
-    "partial_results": "验证失败时不返回伪造的部分结果。"
-   },
-   "example": {
-    "description": "使用有限网格输入执行公开组合。",
-    "expected": "返回有限结果和明确收敛状态。"
-   },
-   "verification": {
-    "scope": [
-     "覆盖正常、下界、上界及适用的失败/组合路径。",
-     "覆盖正常、下界、上界及适用的失败/组合路径。"
-    ],
-    "known_limitations": [
-     "科学适用性、物理正确性和发布批准仍需独立审查。"
-    ],
-    "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate."
-   }
-  },
-  {
-   "asset_id": "scirel.equilibrium.finite-limited-boundary",
-   "source_sha256": "0b6251ae7d9f03db6e2b428e552552fd5c8e039d7feaac62d814d8f9115412c8",
-   "summary": "从有限 R/Z 磁通网格提取磁轴候选、受限器接触磁通和闭合归一化边界。",
-   "definition": "严格八邻域有限差分候选筛选、受限器网格交点细化、双线性接触值与多射线样条首个严格越界的组合。",
-   "model": "中心有限差分梯度平方代理与 Hessian 修正；受限器值采用双线性插值；射线采用张量积三次插值。",
-   "boundary": "R/Z 轴必须严格递增，受限器严格位于矩形域内；每条射线都必须存在首个 q>1 交点。",
-   "assumptions": [
-    "psi 为形状 (len(R),len(Z)) 的有限实数组。",
-    "正常有限工况存在非退化 O 点和有限接触磁通。"
-   ],
-   "inputs": [
-    {
-     "name": "R",
-     "description": "递增径向节点轴。",
-     "constraints": "至少三个有限节点。",
-     "dtype": "有限实数数组",
-     "shape": "(n_R,)",
-     "units": "调用者声明"
-    },
-    {
-     "name": "Z",
-     "description": "递增纵向节点轴。",
-     "constraints": "至少三个有限节点。",
-     "dtype": "有限实数数组",
-     "shape": "(n_Z,)",
-     "units": "调用者声明"
-    },
-    {
-     "name": "psi",
-     "description": "R/Z 顺序的节点磁通。",
-     "constraints": "形状必须为 (n_R,n_Z)。",
-     "dtype": "有限实数数组",
-     "shape": "(n_R,n_Z)",
-     "units": "调用者声明"
-    },
-    {
-     "name": "limiter",
-     "description": "闭合受限器 R/Z 顶点。",
-     "constraints": "非退化且严格位于网格域内。",
-     "dtype": "有限实数数组",
-     "shape": "(n,2)",
-     "units": "调用者声明"
-    }
-   ],
-   "outputs": [
-    {
-     "name": "opoints_RZpsi",
-     "description": "按距域中心排序的 O 候选。",
-     "constraints": "至少包含主 O。",
-     "dtype": "有限实数数组",
-     "shape": "(n_O,3)",
-     "units": "R/Z 与磁通调用者单位"
-    },
-    {
-     "name": "xpoints_RZpsi",
-     "description": "符号磁通筛选后的 X 候选。",
-     "constraints": "可为空。",
-     "dtype": "有限实数数组",
-     "shape": "(n_X,3)",
-     "units": "R/Z 与磁通调用者单位"
-    },
-    {
-     "name": "boundary_psi",
-     "description": "细化受限器点的最大双线性磁通。",
-     "constraints": "有限标量。",
-     "dtype": "Python float",
-     "shape": "scalar",
-     "units": "调用者声明磁通"
-    },
-    {
-     "name": "closed_boundary_RZ",
-     "description": "按角度排序并闭合的射线交点。",
-     "constraints": "最后一行精确复制第一行。",
-     "dtype": "有限实数数组",
-     "shape": "(angle_count+1,2)",
-     "units": "调用者声明长度"
-    }
-   ],
-   "applicability": {
-    "preconditions": [
-     "输入有限且形状一致。",
-     "存在非退化 O 点、受限器接触和各射线交点。"
-    ],
-    "supported": [
-     "有限规则矩形网格和闭合受限器。"
-    ],
-    "excluded": [
-     "退化 Hessian、拓扑 tie、外推、SOL/strike 重建和设备常数。"
-    ]
-   },
-   "failure_semantics": {
-    "invalid_input": "形状、非有限、未排序、退化或越界输入抛 ValueError。",
-    "runtime_failure": "无有效 O、接触磁通或任一射线交点时抛 ValueError。",
-    "nonconvergence": "不适用。",
-    "partial_results": "失败不返回部分结果。"
-   },
-   "verification": {
-    "scope": [
-     "二次磁通正常实例。",
-     "下界/上界节点、细化和双线性测试。",
-     "畸形、退化和无交点失败。"
-    ],
-    "tests": [
-     "tests/equilibrium/test_finite_limited_boundary.py"
-    ],
-    "evidence_ceiling": "仅证明有限 typed-array 合同和二次场回归，不证明物理正确性或更宽拓扑。",
-    "known_limitations": [
-     "精确排序 tie 和退化 Hessian 被拒绝。",
-     "每条射线都必须有有效首个严格越界交点。",
-     "不代表物理正确性、网格收敛或更宽拓扑的科学接受。"
-    ]
-   },
-   "example": {
-    "description": "有限网格受限边界提取。",
-    "expected": "返回 O/X 候选、接触磁通和闭合轮廓。"
-   }
   }
- ]
+ ,
+{
+ "asset_id": "scirel.equilibrium.finite-frc-feedback",
+ "source_sha256": "216fd50df84ecab9a4aabdf164e86042f8264644fa6076c5a061813829a5e66f",
+ "summary": "按公开输入执行有限网格 FRC 反馈组合，并保留声明的停止状态。",
+ "definition": "Finite FRC feedback composition.",
+ "model": "Finite FRC feedback composition.",
+ "boundary": "No hidden defaults or source checkout dependencies",
+ "assumptions": [
+  "调用者提供完整、有限且类型正确的输入。",
+  "调用者提供完整、有限且类型正确的输入。"
+ ],
+ "inputs": [
+  {
+   "name": "inputs",
+   "description": "合同定义的输入。",
+   "constraints": "遵守合同声明的形状、类型和有限性约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "调用者声明"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "合同定义的输出结果。",
+   "constraints": "遵守合同声明的结果约束。",
+   "dtype": "映射",
+   "shape": "mapping",
+   "units": "调用者声明"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "输入满足合同声明的有限模型和类型约束。"
+  ],
+  "supported": [
+   "支持合同声明的有限网格 FRC 反馈组合。"
+  ],
+  "excluded": [
+   "不扩展到合同未声明的模型、设备或隐藏状态。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "输入形状、类型或有限性不满足合同时抛出 ValueError。",
+  "runtime_failure": "数值计算失败或结果不可表示时传播实际运行错误。",
+  "nonconvergence": "保留合同声明的有界非收敛状态，不伪造成功。",
+  "partial_results": "验证失败时不返回伪造的部分结果。"
+ },
+ "example": {
+  "description": "使用有限网格输入执行公开组合。",
+  "expected": "返回有限结果和明确收敛状态。"
+ },
+ "verification": {
+  "scope": [
+   "覆盖正常、下界、上界及适用的失败/组合路径。",
+   "覆盖正常、下界、上界及适用的失败/组合路径。"
+  ],
+  "known_limitations": [
+   "科学适用性、物理正确性和发布批准仍需独立审查。"
+  ],
+  "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate."
+ }
+}
+]
 }
