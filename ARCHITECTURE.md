@@ -46,6 +46,37 @@ updates its own task graph, runs it, and retains its own inputs, results and
 diagnostics. Those artifacts remain user-owned. SciReL's query tools help the
 agent find contracts; they do not plan or execute the user's scientific work.
 
+## Capability boundary and ownership
+
+The package is intentionally split into a reusable scientific core and a
+user-owned solution program. The core does not need to solve every complete
+question by itself; it must expose stable, composable scientific relations with
+typed ports, units, shapes, applicability and failure semantics. The outbound
+agent supplies the missing orchestration, data preparation, control flow,
+format conversion and presentation as explicit glue.
+
+| Artifact | Owner | Responsibility | Acceptance evidence |
+| --- | --- | --- | --- |
+| Problem contract | Problem author / coordinator | Complete statement, typed inputs, units, boundaries, outputs, failure paths and test families | Contract review and boundary test matrix |
+| Public capability | Maintenance line | Reusable scientific relation or composition with public contract | Implementation, direct tests, contract and projections |
+| User glue | Outbound agent / user | Task-specific orchestration and ordinary programming around public capabilities | Reproducible source, API trace, tests, outputs and disclosed gaps |
+| Test oracle | Coordinator / designated reviewer | Independent expected observations and comparison rules | Separate oracle custody and post-run comparison |
+| Scientific acceptance | Human owner / designated expert | Physical interpretation, applicability, rights and release decision | Explicit acceptance record |
+
+The boundary is tested in both directions. A capability must survive normal,
+lower-bound and upper-bound inputs, plus applicable degenerate, branch, failure
+and composition cases. A user solution must be able to use the public core and
+ordinary glue to solve the complete problem contract. Passing one fixed example
+does not promote task-specific glue into a public capability; repeated
+scientific relations across independent problems are the evidence for promotion.
+
+An external-agent evaluation therefore receives only the problem contract and
+the public SciRel package. It does not receive reference answers, hidden oracle
+data, existing glue or historical result files. The coordinator compares the
+result after the evaluation. This keeps capability discovery, solution
+generation and scientific acceptance as separate claims while testing whether
+the public boundary is actually usable.
+
 ## Four graph roles
 
 The word “task graph” is reserved for an operator graph whose ordering or
