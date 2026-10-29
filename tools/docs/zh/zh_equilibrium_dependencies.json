@@ -222,6 +222,121 @@
   ],
   "evidence_ceiling": "Bounded public composition evidence; scientific acceptance remains separate."
  }
+},
+{
+ "asset_id": "scirel.equilibrium.finite-limited-boundary",
+ "source_sha256": "0b6251ae7d9f03db6e2b428e552552fd5c8e039d7feaac62d814d8f9115412c8",
+ "summary": "从有序 R/Z 网格和闭合 limiter 提取有限磁轴候选、边界磁通与闭合磁通轮廓。",
+ "definition": "有限差分临界点、limiter 细化、双线性接触和三次插值射线组合。",
+ "model": "有限差分临界点估计、双线性插值和张量三次插值。",
+ "boundary": "轴严格递增，limiter 严格位于网格域内；不外推、不伪造候选或丢弃失败射线。",
+ "assumptions": [
+  "psi 按 [R,Z] 轴序提供且为有限实数。",
+  "支持非退化有限 limited 情景。"
+ ],
+ "inputs": [
+  {
+   "name": "R",
+   "description": "径向网格轴。",
+   "constraints": "有限、严格递增、一维且至少三个节点。",
+   "dtype": "有限实数",
+   "shape": "(n_R,)",
+   "units": "调用者声明"
+  },
+  {
+   "name": "Z",
+   "description": "纵向网格轴。",
+   "constraints": "有限、严格递增、一维且至少三个节点。",
+   "dtype": "有限实数",
+   "shape": "(n_Z,)",
+   "units": "调用者声明"
+  },
+  {
+   "name": "psi",
+   "description": "按 [R,Z] 排列的节点磁通。",
+   "constraints": "形状与轴一致且全部有限。",
+   "dtype": "有限实数",
+   "shape": "(n_R,n_Z)",
+   "units": "调用者声明"
+  },
+  {
+   "name": "limiter",
+   "description": "R/Z 闭合多边形。",
+   "constraints": "至少四个顶点、非退化且严格位于网格域内。",
+   "dtype": "有限实数",
+   "shape": "(n,2)",
+   "units": "调用者声明"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "opoints_RZpsi",
+   "description": "按域中心距离排序的 O 候选。",
+   "constraints": "至少一行，首行是主 O。",
+   "dtype": "有限实数数组",
+   "shape": "(n_O,3)",
+   "units": "调用者声明"
+  },
+  {
+   "name": "xpoints_RZpsi",
+   "description": "有限筛选后的 X 候选，可为空。",
+   "constraints": "空数组表示该有限情景没有保留 X。",
+   "dtype": "有限实数数组",
+   "shape": "(n_X,3)",
+   "units": "调用者声明"
+  },
+  {
+   "name": "boundary_psi",
+   "description": "细化 limiter 点上的最大双线性磁通。",
+   "constraints": "有限标量。",
+   "dtype": "浮点数",
+   "shape": "scalar",
+   "units": "调用者声明"
+  },
+  {
+   "name": "closed_boundary_RZ",
+   "description": "按射线顺序排列并复制首点闭合的轮廓。",
+   "constraints": "每条射线必须有首个严格越界交点。",
+   "dtype": "有限实数数组",
+   "shape": "(angle_count+1,2)",
+   "units": "调用者声明"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "轴、磁通和 limiter 有限且形状一致。",
+   "存在非退化主 O 和有限 limiter 接触。"
+  ],
+  "supported": [
+   "有限规则 R/Z 网格上的 limited 边界提取。"
+  ],
+  "excluded": [
+   "退化 Hessian、拓扑或接触 tie、外推以及 diverted/SOL/multi-null 重建。"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "形状、非有限、非递增、退化或越域输入抛出 ValueError。",
+  "runtime_failure": "无有效 O、有限接触或任一射线交点时抛出 ValueError。",
+  "nonconvergence": "不迭代；不适用。",
+  "partial_results": "失败时不返回伪造的部分结果。"
+ },
+ "example": {
+  "description": "对有限 R/Z 磁通网格提取受限闭边界。",
+  "expected": "返回 O/X 候选、有限 boundary_psi 和闭合 R/Z 轮廓。"
+ },
+ "verification": {
+  "scope": [
+   "有限二次磁通正常实例。",
+   "节点下界/上界、limiter 细化和双线性边界。",
+   "非有限、退化、无交点和无候选失败。"
+  ],
+  "known_limitations": [
+    "不代表更宽拓扑或物理正确性已被接受。",
+    "不建立网格收敛、源行为一致性或设备绑定证明。",
+    "不覆盖退化 Hessian、拓扑 tie 或 diverted/SOL/multi-null。"
+   ],
+  "evidence_ceiling": "有限 typed-array 工程证据；科学接受仍需独立审查。"
+ }
 }
 ]
 }
