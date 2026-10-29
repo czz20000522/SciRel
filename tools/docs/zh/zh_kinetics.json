@@ -8028,7 +8028,7 @@
   },
 {
  "asset_id": "scirel.kinetic.relativistic-codrift-generalized-spectrum",
- "source_sha256": "ef4def17c7f815c1d4f50ff9c0a3a2515cfb563b02334dc45e8765cd38d177f3",
+ "source_sha256": "472163b84413978155a1ceafab0ebbbfec3aaef75c3270a0a02594a5e3edd981",
  "summary": "对声明归一化常数、带漂移物种和 ky=0 波矢求解相对论协动广义谱。",
  "definition": "逐个波矢组装 4*S+6 阶 M 与 A，求解 M X=lambda A X，映射 omega=i lambda，并分别按实部和虚部降序排列完整谱。",
  "model": "归一化线性相对论协动广义本征问题；只支持 c=epsilon0=mu0=B0=1 和零碰撞。",
@@ -8375,7 +8375,7 @@
 },
 {
  "asset_id": "scirel.kinetic.atomic-slab-transport",
- "source_sha256": "5f329a7c536a9964637eb59459a71108345acd0a3a5832069691daca565e9a30",
+ "source_sha256": "4fc7d3eb2090a0ba4012933690a48a78a33ad4437663c58c42bf5edd3378fcca",
  "summary": "按公开输入执行可复用的科学组合，并保留声明的输出和失败状态。",
  "definition": "Finite atomic slab transport composition.",
  "model": "Finite atomic slab transport composition.",

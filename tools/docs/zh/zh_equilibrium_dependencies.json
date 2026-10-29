@@ -162,7 +162,7 @@
  ,
 {
  "asset_id": "scirel.equilibrium.finite-frc-feedback",
- "source_sha256": "216fd50df84ecab9a4aabdf164e86042f8264644fa6076c5a061813829a5e66f",
+ "source_sha256": "2ebaeb1d95edec1cc7fc31ba36465553cfd9c0559170686b2b63310802677079",
  "summary": "按公开输入执行有限网格 FRC 反馈组合，并保留声明的停止状态。",
  "definition": "Finite FRC feedback composition.",
  "model": "Finite FRC feedback composition.",
@@ -225,7 +225,7 @@
 },
 {
  "asset_id": "scirel.equilibrium.finite-limited-boundary",
- "source_sha256": "0b6251ae7d9f03db6e2b428e552552fd5c8e039d7feaac62d814d8f9115412c8",
+ "source_sha256": "fa72882056ef7d47f5a4aac98c4840c9b9bf8f4c4e5325258ee2b0cfc67a267c",
  "summary": "从有序 R/Z 网格和闭合 limiter 提取有限磁轴候选、边界磁通与闭合磁通轮廓。",
  "definition": "有限差分临界点、limiter 细化、双线性接触和三次插值射线组合。",
  "model": "有限差分临界点估计、双线性插值和张量三次插值。",
