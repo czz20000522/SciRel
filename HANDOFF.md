@@ -281,7 +281,7 @@ Record locations, retirement and actual task cleanup follow the single policy
 
 接替旧 runtime-engineering 会话后，当前 SciRel-only outbound runtime 交接已收口到以下事实：
 
-- 独立边界仍为 `D:/software/JetBrains/python_workspace/SciRel-runtime`、WSL `/srv/scirel/.runtime`、containerd namespace `scirel`、BuildKit builder `scirel-buildkit`。CodeFusion runtime、locks、cache、output 与 `codefusion*` namespace 禁止读取、挂载、检查、清理或复用。
+- 独立边界为 `D:/software/JetBrains/python_workspace/SciRel-runtime`、WSL distro `Ubuntu-SciRel`、guest runtime `/srv/scirel/runtime`、Docker data root `/srv/scirel/runtime/docker`，并使用 SciRel 自有 project/run 挂载和标签。`Ubuntu-CodeFusion` 及其 `/srv/codefusion` runtime、locks、cache、output 与 `codefusion*` namespace 属于 CodeFusion，SciRel 禁止读取、挂载、检查、清理或复用。
 - 外部准备包 `E:/SciRel-lab/_shared/outbound/portfolio-20261027/results/unified-sciRel-runtime-p0-20261028/` 新增 `scirel_runtime_runner.py`、`22_SCIREL_PUBLIC_RUNNER_CONTRACT.md`、`23_SCIREL_PUBLIC_RUNNER_CHECK.json`、`24_SCIREL_PUBLIC_RUNNER_CLOSURE.json`。runner 是标准库实现：在 CID 创建前校验 SciRel roots、manifest/资源限制、request/manifest hash、fresh census <=300 s、immutable image digest、exact wheel hash 和一次性授权；运行只接受单请求/单结果；settlement 先写 pre-cleanup receipt，再只处理精确 CID 并读回 CID 缺失。
 - 既有 `16_SCIREL_RUNTIME_PREPARATION_CLOSURE.json` 的 stale manifest bytes/hash 已修复；`16`、`17-21_TEN_TASK_RUNTIME.sha256`、`21_TEN_TASK_RUNTIME_CLOSURE.json` 与 `24` 已逐成员读回一致。
 - 当前证据：runner/manifest/settlement static design `PASS`；immutable image `UNBOUND`、exact wheel `UNBOUND`、fresh census `NOT_RUN`、Linux cgroup/network/CID execution `NOT_RUN`、cleanup settlement `DESIGNED_NOT_RUN`、scientific acceptance `NOT_ASSESSED`。
@@ -297,11 +297,11 @@ Capability discovery for all ten neutral cases, including candidate-003 masked t
 The current sealed request and manifest are `sealed-request.json` (SHA-256 `72252768ae37f80841762e966d99cb34f15b06ac4c1d9360a01ee5a4a361c439`) and `current-manifest.json` (SHA-256 `6bfc5cd6905e5b251c4c80469a3522df4955a199fb50e3b843a53adaf456abd9`). The fresh census is `fresh-census-20261029.json`; its decision is `BLOCKED_NO_EXECUTION`: the SciRel-only WSL runtime root and required containerd/BuildKit sockets were not observable, Docker daemon/buildx were unavailable, and immutable image, exact wheel, and one-use grant were unbound. No case started, no public API was called, and no scientific result or acceptance claim was made. The next action is an independent current image digest, exact wheel hash, fresh <=300 s census, then a new exact single-use grant before reviewing `benchmark-magnetic-001` for execution.
 
 
-## 2026-10-29 SciRel endpoint repair diagnostic
+## 2026-10-29 SciRel endpoint repair diagnostic（历史快照，已被 2026-10-30 Ubuntu-SciRel profile 替代）
 
 A bounded host/provider read-only diagnostic was completed for the SciRel runtime boundary. The Windows Docker Desktop `desktop-linux` context was unreachable; `docker version` could not connect and `docker buildx ls` reported both builders as error. WSL remained running.
 
-The allowed `/srv/scirel/.runtime` root existed, but the expected containerd and BuildKit sockets were absent. Five containerd processes shared the same SciRel root/state; two duplicate owners exposed `/tmp/scirel-p0.sock`, and the current SciRel log reported waiting for BoltDB open. The only alternate containerd/BuildKit listeners were under `/tmp/scirel-p0-runtime`, outside the allowed root, and were explicitly classified as non-reusable. No CodeFusion runtime was read.
+At that time the allowed `/srv/scirel/.runtime` root existed, but the expected containerd and BuildKit sockets were absent. Five containerd processes shared the same SciRel root/state; two duplicate owners exposed `/tmp/scirel-p0.sock`, and the current SciRel log reported waiting for BoltDB open. The only alternate containerd/BuildKit listeners were under `/tmp/scirel-p0-runtime`, outside the allowed root, and were explicitly classified as non-reusable. No CodeFusion runtime was read. This old root is historical and is not the current SciRel runtime; current work uses the independent `Ubuntu-SciRel` profile at `/srv/scirel/runtime`.
 
 Static repair only: added `D:/software/JetBrains/python_workspace/SciRel-runtime/endpoint-guard-v004.sh` and wired `start-new-boundary.sh` through pre-start/post-start fail-closed checks. Bash syntax checks passed; current pre-start correctly fails with `containerd_duplicate_processes`. No process was killed, no WSL restart occurred, and no daemon/container/scientific task was started.
 
