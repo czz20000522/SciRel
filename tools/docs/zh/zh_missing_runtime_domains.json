@@ -960,13 +960,14 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "a81d1590f06278ad5bc50de0ea5b235baad168028309fc4c66c398e2983a9410",
+   "source_sha256": "329416725a33447ab9d53e392caa910cc9007b8a930d068cefef5ec22870582b",
    "summary": "电子-电子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
-     "仅覆盖 Wesson 代数和声明的数值边界。"
+     "仅覆盖 Wesson 代数和声明的数值边界。",
+     "命名说明：'ee' 是 Wesson 的电子-电子形式，常数为 31.0。Sauter 等（1999）碰撞率中的电子库仑对数 lnΛ_e = 31.3 − ln(√n_e / T_e[eV]) 对应 'ei' 形式（scirel.physics.coulomb-ei，常数 31.3），不是本函数。"
     ],
     "scope": [
      "以独立 60 位 Decimal 对数覆盖温度、密度的最小次正规数至最大 float64，并检查尺度变换恒等式。",
@@ -1037,13 +1038,14 @@
      "units": "无量纲"
     }
    ],
-   "source_sha256": "10c739ce1c0222654d2045b01a6531d9e73e8251c9571d51647b516bcce21bc8",
+   "source_sha256": "b7071dccf6dd823563eb55fd0ab1fd457a68a39ea5212af5fc47bd0af0d80a5e",
    "summary": "电子-离子库仑对数估计。",
    "verification": {
     "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
     "known_limitations": [
      "不声称外部标定或完整碰撞频率组合。",
-     "仅覆盖 Wesson 代数和声明的数值边界。"
+     "仅覆盖 Wesson 代数和声明的数值边界。",
+     "Sauter 等（1999）在电子碰撞率 ν*_e 中用的 lnΛ_e 就是这个形式（31.3 − ln(√n_e/T_e[eV])，此处 T 以 keV 输入）；'ee' 函数（常数 31.0）是另一种估计。"
     ],
     "scope": [
      "以独立 60 位 Decimal 对数覆盖温度、密度的最小次正规数至最大 float64，并检查尺度变换恒等式。",

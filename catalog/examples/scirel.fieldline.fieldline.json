@@ -131,7 +131,8 @@
    "get_kappa_n_2 requires uniform xy grid and nonzero flux gradient",
    "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified.",
    "Refining path samples on a fixed interpolated field need not monotonically improve physical curvature error; four fixed-interpolant refinement cases remain recorded as failures and are distinct from the spatial-grid refinement gate.",
-   "Local quartic field-curvature derivatives assume a sufficiently smooth genuine field line. Public d_ds retains its polygonal three-point contract; neither implies a universal curvature-error bound."
+   "Local quartic field-curvature derivatives assume a sufficiently smooth genuine field line. Public d_ds retains its polygonal three-point contract; neither implies a universal curvature-error bound.",
+   "Choosing a field-line route: in an axisymmetric field the field line through a point lies on the contour psi = R*A_phi = const through it. This class fits a smooth path to contour vertices you supply; it does not integrate the field-line equation. If you only need the points of a line, the contour of psi is enough; use this fit when you need arclength, fields interpolated along the line, curvature or intersections. FieldLine and HelperFieldLine fit the same path and differ only in how helper interpolation treats nonfinite queries. An independent check of either is to integrate dR/ds = B_R/|B_p|, dZ/ds = B_Z/|B_p| from one vertex and confirm psi stays constant."
   ]
  }
 }

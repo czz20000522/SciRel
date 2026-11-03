@@ -114,7 +114,8 @@
   "known_limitations": [
    "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
    "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
-   "HelperFieldLine has no flux-gradient curvature entry; this collection inherits only its field-based curvature method"
+   "HelperFieldLine has no flux-gradient curvature entry; this collection inherits only its field-based curvature method",
+   "Choosing a field-line route: in an axisymmetric field the field line through a point lies on the contour psi = R*A_phi = const through it. This class fits a smooth path to contour vertices you supply; it does not integrate the field-line equation. If you only need the points of a line, the contour of psi is enough; use this fit when you need arclength, fields interpolated along the line, curvature or intersections. FieldLine and HelperFieldLine fit the same path and differ only in how helper interpolation treats nonfinite queries. An independent check of either is to integrate dR/ds = B_R/|B_p|, dZ/ds = B_Z/|B_p| from one vertex and confirm psi stays constant."
   ]
  }
 }

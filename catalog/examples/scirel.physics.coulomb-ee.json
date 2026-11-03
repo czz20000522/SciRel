@@ -120,7 +120,8 @@
   "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
   "known_limitations": [
    "No external calibration or collision-frequency composition is claimed.",
-   "Only the Wesson algebra and declared numerical boundaries are covered."
+   "Only the Wesson algebra and declared numerical boundaries are covered.",
+   "Naming: 'ee' is Wesson's electron-electron form with constant 31.0. The electron Coulomb logarithm in Sauter et al. (1999) collisionality, lnLambda_e = 31.3 - ln(sqrt(n_e)/T_e[eV]), is the 'ei' form (scirel.physics.coulomb-ei, constant 31.3), not this one."
   ]
  }
 }
