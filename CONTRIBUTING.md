@@ -45,7 +45,7 @@ uv sync --locked --group test
 .venv/bin/python -B scripts/test_scope.py --changed src/scirel/<domain>/<module>.py
 
 # 合并前的完整验收：全量测试、门禁、合同示例、文档构建、样例报告
-.venv/bin/python -B scripts/check_all.py
+.venv/bin/python -B skills/development/scirel-acceptance/scripts/check_all.py
 
 # 合同与文档
 .venv/bin/python scripts/validate_asset_documents.py catalog/examples

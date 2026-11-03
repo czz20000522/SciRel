@@ -1,0 +1,5 @@
+#!/bin/sh
+# See skills/development/scirel-acceptance/SKILL.md
+python="$(git rev-parse --show-toplevel)/.venv/bin/python"
+[ -x "$python" ] || python=python3
+exec "$python" -B "$(git rev-parse --show-toplevel)/skills/development/scirel-acceptance/scripts/precommit_check.py"

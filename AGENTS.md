@@ -2,6 +2,10 @@
 
 写给接手这个仓库的任何人或 agent。先读完这一页，这里不依赖聊天记录、私人笔记或某台机器的路径。
 
+## 三层角色
+
+SciRel 分三层，每层有自己的入口 skill 和验收标准，见 [skills/README.md](skills/README.md)：供给者提取候选，合并者把候选并入库，消费者用分发包解决问题。
+
 ## 这是什么
 
 SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开函数都有一份正式合同，写明模型、单位、输入输出、适用范围和失败行为。
@@ -19,6 +23,7 @@ SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开�
 | 项目规则 | [RULES.md](RULES.md) |
 | 改代码或加功能 | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | 改合同 | [catalog/README.md](catalog/README.md)、[catalog/AUDIT.md](catalog/AUDIT.md) |
+| 代码风格和公开 API | [`scirel-code-style` skill](skills/development/scirel-code-style/SKILL.md) |
 | 回答用户的物理问题 | [求解 skill](skills/development/usage/scirel-solving/SKILL.md)、[流程框架](skills/development/usage/scirel-solving/references/workflow.md) |
 | 看完整求解样例 | [examples/coil-offset/REPORT.md](examples/coil-offset/REPORT.md) |
 
@@ -30,7 +35,7 @@ tests/             功能测试和架构、文档、交付、工具测试
 catalog/examples/  已公开功能的合同（科学真值）
 catalog/review/    审查状态、被 hold 的合同和代码（不进入安装包）
 contracts/         合同 schema 和准入规则
-scripts/           校验和构建工具，统一入口 scripts/check_all.py
+scripts/           校验和构建工具
 skills/            求解、开发和提取方法
 tools/docs/        手册内容和构建器
 examples/          求解样例和待整理案例
@@ -41,11 +46,9 @@ licenses/          许可和署名
 
 ```sh
 uv sync --locked --group test      # 需要 Python 3.14，见 .python-version
-.venv/bin/python -B scripts/check_all.py
 ```
 
-`check_all.py` 全部通过才算全绿。改动较小时可以先跑 `scripts/test_scope.py --changed <路径>` 给出的范围，合并前跑全量。
-
+检查的入口是 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
 ## 必须遵守
 
 这些规则多数由 `tests/architecture/test_repository_skeleton.py` 和 `scripts/review_gate.py` 检查。
@@ -68,4 +71,5 @@ uv sync --locked --group test      # 需要 Python 3.14，见 .python-version
 
 - `skills/` 下的测试不在默认测试范围内，也没有整理到能全部通过。
 - `scripts/review_harness.py --check` 会因被 hold 的合同示例而失败，这是预期行为。
-- 公开 API 和 `kinetic` 领域的结构还需要重构，见 [CONTRIBUTING.md](CONTRIBUTING.md) 关于发布前重构的说明。
+- 公开 API 的迁移进度见 [API 规范](skills/development/scirel-code-style/references/api-spec.md)。
+- 科学审查结论见 [catalog/review/SCIENCE_AUDIT.md](catalog/review/SCIENCE_AUDIT.md)。

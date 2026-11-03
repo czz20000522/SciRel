@@ -47,6 +47,7 @@ test = [
     { include-group = "report" },
     "packaging",
     "pytest==9.1.1",
+    "ruff==0.17.3",
 ]
 
 # Keep wheel intake fail-closed: only the explicit package-data declarations
@@ -81,3 +82,24 @@ markers = [
     "tooling: build, catalog and validation tool checks",
 ]
 
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+# Skills other than the delivered and acceptance ones keep their own formatting
+# until each is revised; vendored and fixture material is not ours to format.
+include = [
+    "src/**/*.py",
+    "tests/**/*.py",
+    "scripts/**/*.py",
+    "examples/**/*.py",
+    "skills/development/usage/**/*.py",
+    "skills/development/scirel-acceptance/**/*.py",
+]
+
+[tool.ruff.lint]
+select = ["E9", "F", "B006", "B904"]
+
+[tool.ruff.lint.per-file-ignores]
+# Lazy facades declare names for static tools and rely on __getattr__.
+"src/scirel/**/__init__.py" = ["F401", "F403", "F822"]

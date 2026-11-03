@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tempfile
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[4]
 VALIDATE_REPORT = 'skills/development/usage/scirel-solving/scripts/validate_report.py'
 WHEEL = 'scirel-0.0.0-py3-none-any.whl'
 

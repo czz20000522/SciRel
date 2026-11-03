@@ -15,6 +15,7 @@ PRIVATE_PATH = re.compile(r"/Users/[a-z]|/home/[a-z]+/|[A-Z]:[/\\]software|/srv/
 PRIVATE_DEPENDENCY = re.compile(r"\bNotion\b|Mac checkout|\bE drive\b")
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s#]+)(?:#[^)]*)?\)")
 THIS_FILE = "tests/architecture/test_repository_skeleton.py"
+PATTERN_FILES = {THIS_FILE, "skills/development/scirel-acceptance/scripts/precommit_check.py", "tests/tooling/test_precommit_check.py"}
 
 
 def tracked() -> list[Path]:
@@ -24,7 +25,7 @@ def tracked() -> list[Path]:
 
 def texts():
     for path in tracked():
-        if path.suffix in TEXT_SUFFIXES and path.relative_to(ROOT).as_posix() != THIS_FILE:
+        if path.suffix in TEXT_SUFFIXES and path.relative_to(ROOT).as_posix() not in PATTERN_FILES:
             yield path, path.read_text(encoding="utf-8", errors="replace")
 
 
@@ -89,3 +90,21 @@ def test_held_code_is_outside_the_installed_package():
         document = json.loads((ROOT / "catalog/review/examples" / f"{asset}.json").read_text(encoding="utf-8"))
         module = document["public_api"]["python"]["module"].split(".")
         assert not (ROOT / "src").joinpath(*module).with_suffix(".py").exists(), asset
+
+
+def test_usage_directory_holds_exactly_the_delivered_skills():
+    import sys
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    source = (ROOT / "scripts/build_pure_delivery.py").read_text(encoding="utf-8")
+    delivered = set(re.search(r"SKILL_NAMES = \((.*?)\)", source).group(1).replace("'", "").replace(" ", "").split(","))
+    present = {p.name for p in (ROOT / "skills/development/usage").iterdir() if p.is_dir()}
+    assert present == delivered - {""}
+
+
+def test_each_role_names_an_entry_skill_that_exists():
+    text = (ROOT / "skills/README.md").read_text(encoding="utf-8")
+    for role in ("Supplier", "Merger", "Consumer"):
+        assert f"**{role}**" in text
+    for target in re.findall(r"\]\(([^)]*SKILL\.md)\)", text):
+        assert (ROOT / "skills" / target).is_file(), target

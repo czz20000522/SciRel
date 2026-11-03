@@ -12,4 +12,4 @@ Pending assets are not exposed. Resolved decisions show up in `VERDICTS.json` an
 
 `scripts/review_harness.py --check` fails until these examples are repaired; the failure is expected while they are held.
 
-To release an asset: record the decision in `VERDICTS.json` and `HOLD.json`, move its contract to `catalog/examples/` and its code to `src/scirel/`, restore the domain exports and the canonical binding, repair the example, restore its reader and handbook entries, then run `scripts/check_all.py`.
+To release an asset: record the decision in `VERDICTS.json` and `HOLD.json`, move its contract to `catalog/examples/` and its code to `src/scirel/`, restore the domain exports and the canonical binding, repair the example, restore its reader and handbook entries, then run the checks in the `scirel-acceptance` skill.

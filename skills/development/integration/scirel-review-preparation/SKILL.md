@@ -15,7 +15,7 @@ publication; this skill prepares a truthful review surface and cannot approve, g
 
 - Missing exact documents: [relation page contract](../scientific-asset-normalization/references/relation-page-contract.md).
 - Scientific finding or correction: [asset correctness](../scientific-asset-correctness/SKILL.md); source-only gap goes to D1.
-- Application interpretation/repeatability: [project implementation](../../usage/scientific-project-implementation/SKILL.md).
+- Application interpretation/repeatability: `scirel-solving`.
 - Upload/decision mechanics: [human review handoff](../scientific-asset-normalization/references/human-review-handoff.md).
 
 1. Bind the stable candidate, dependency/runtime identities, retained denominator, D2 checks and relevant D3
