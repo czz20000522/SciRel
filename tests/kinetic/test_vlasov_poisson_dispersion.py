@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_allclose
 from scipy.linalg import expm
+from scirel.kinetic import vlasov_poisson
 from scirel.kinetic.vlasov_poisson import (
     vp_init,
     vp_distribution,
@@ -182,3 +183,58 @@ def test_slowing_down_smooth_cutoff_has_exact_zero_far_tail():
     with np.errstate(over="raise", invalid="raise"):
         g, _, _ = vp_distribution(np.array([-1e308, 0.0, 1e308]), 4, cutoff_mode="smooth")
     assert_allclose(g, np.zeros(3), atol=0, rtol=0)
+
+
+def test_builtin_kappa_family_is_unit_density_with_variance_two_kappa_over_two_kappa_minus_three():
+    from math import gamma, pi, sqrt
+
+    v = np.linspace(-400.0, 400.0, 800001)
+    dv = v[1] - v[0]
+    for kappa in (3.0, 6.0):
+        f = (
+            gamma(kappa)
+            / (gamma(kappa - 0.5) * sqrt(2 * pi * kappa))
+            * (1 + v * v / (2 * kappa)) ** (-kappa)
+        )
+        g, _, _ = vlasov_poisson.vp_distribution(v, 2, kappa=kappa)
+        np.testing.assert_allclose(g[1:-1], (f[2:] - f[:-2]) / (2 * dv), rtol=1e-4, atol=1e-12)
+        assert np.sum(f) * dv == pytest.approx(1.0, rel=1e-8)
+        assert np.sum(v * v * f) * dv == pytest.approx(2 * kappa / (2 * kappa - 3), rel=1e-5)
+
+
+def test_custom_equilibrium_and_initial_perturbation_reproduce_the_builtin_maxwellian():
+    builtin = vlasov_poisson.vp_init(1, nv=256, dt=0.05, nt=40, k=0.4, vmax=8.0)
+    v = builtin["vv"]
+    custom = vlasov_poisson.vp_init(
+        None,
+        nv=256,
+        dt=0.05,
+        nt=40,
+        k=0.4,
+        vmax=8.0,
+        df0dv=-v * np.exp(-v * v / 2) / np.sqrt(2 * np.pi),
+        df_initial=0.1 * np.exp(-v * v),
+    )
+    np.testing.assert_allclose(
+        vlasov_poisson.vp_evolve(custom)["dEt"],
+        vlasov_poisson.vp_evolve(builtin)["dEt"],
+        rtol=1e-13,
+        atol=1e-16,
+    )
+    shaped = vlasov_poisson.vp_init(1, nv=256, k=0.4, vmax=8.0, df_initial=np.exp(-v * v / 2))
+    assert shaped["dE"] == pytest.approx(1j * shaped["dv"] * np.sum(np.exp(-v * v / 2)) / 0.4)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"Fn": None},
+        {"Fn": 1, "df0dv": np.zeros(257)},
+        {"Fn": None, "df0dv": np.zeros(10)},
+        {"Fn": 1, "df_initial": np.zeros(10)},
+        {"Fn": 1, "df_initial": np.full(257, np.nan)},
+    ],
+)
+def test_custom_vp_arrays_are_explicit_and_on_the_grid(kwargs):
+    with pytest.raises(ValueError):
+        vlasov_poisson.vp_init(nv=256, vmax=8.0, **kwargs)

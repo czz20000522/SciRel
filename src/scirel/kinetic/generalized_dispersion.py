@@ -375,7 +375,16 @@ def _top_hat_transform(points):
 def evaluate_generalized_dispersion(
     z, selector=0, *, expression="exp(-v.^2)/sqrt(pi)", integration_mesh=None
 ):
-    """Evaluate the normalized transform for selectors 0 through 6."""
+    """Return ``Z(z) = integral f(v)/(v - z) dv`` and ``Zp = dZ/dz`` for a selected density.
+
+    ``z`` is in the velocity variable of the density. Selector 0 uses
+    ``expression`` (default ``exp(-v**2)/sqrt(pi)``, the Maxwellian with ``v``
+    in units of ``sqrt(2) v_t``, so ``z = omega/(sqrt(2) k v_t)``). Selectors:
+    1 ``delta(v)``; 2 top-hat on ``[-0.5, 0.5]``; 3 triangle ``max(0, 1-|v|)``;
+    4 ``sqrt(2)/pi/(1+v**2/2)**2``; 5 ``H(v-0.1) exp(-v**2)/sqrt(pi)``
+    (mass-incomplete); 6 ``3 sqrt(3)/(4 pi)/(1+|v|**3)`` truncated at ``|v| <= 4``.
+    Expressions accept ``**`` or ``^`` for powers and MATLAB ``.^ .* ./``.
+    """
     points = _points(z)
     if (
         isinstance(selector, (bool, np.bool_))

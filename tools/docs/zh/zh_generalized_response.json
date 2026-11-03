@@ -333,7 +333,7 @@
   },
   {
    "asset_id": "scirel.kinetic.generalized-dispersion",
-   "source_sha256": "96cda5c6de342dfbca825eecefeb717a53bf5738f0bacb5d816e76648d478f39",
+   "source_sha256": "5e909ae1d72b9ee5f61bc6811109bdc1989e22d7bfa5d371904a332389988afe",
    "summary": "求值七类原始广义分布选择器中的任意一类。",
    "definition": "选择器对应的密度为：delta(v)；在 [-0.5,0.5] 上恒为 1 的顶帽；max(0,1-|v|)；sqrt(2)/pi/(1+v²/2)²；H(v-0.1)exp(-v²)/sqrt(pi)；以及在 |v|≤4 上的 3sqrt(3)/(4pi)/(1+|v|³)。位于 a 的跳跃 J 对 Zp 贡献 J/(a-z)。已修正不一致的顶帽密度符号及不完整 Maxwellian 的截断跳跃。大相位处的 Gaussian 导数采用避免相消的原始极化率或矩展开，不减去已舍入的单位项。远场顶帽值使用收敛的逆幂级数；导数先分别计算分母的实部与虚部，再取倒数，以保留可表示的微小轮廓分量。中心附近的实响应使用实数 log1p，边缘附近使用 log-hypot 之差，轮廓相位使用单个 atan2；不使用复数 log1p。",
    "model": "一维、无磁场、无碰撞的静电等离子体。",
@@ -346,7 +346,7 @@
    "inputs": [
     {
      "name": "z",
-     "description": "Maxwellian 归一化下的复相位点 z=omega/(sqrt(2)*k)。",
+     "description": "复相点 z，与所选密度使用同一速度变量 v：Z(z)=∫ f(v)/(v−z) dv。默认 Maxwell 分布 exp(−v²)/√π 的 v 以 √2 v_t 为单位，所以 z=ω/(√2 k v_t)；自定义 expression 时，z 是以该表达式中 v 的单位表示的 ω/k。",
      "constraints": "必须有限且可表示。",
      "dtype": "实数或复数数值",
      "shape": "标量或非空数组",
@@ -354,7 +354,7 @@
     },
     {
      "name": "selector",
-     "description": "0 为解析表达式或 Maxwellian；1 为原点 delta；2 为 [-0.5,0.5] 上高度为 1 的正顶帽（top-hat）；3 为 [-1,1] 上的三角分布；4 为 n=2、vt=1 的归一化 gamma 分布；5 为 H(v-0.1)exp(-v²)/sqrt(pi)；6 为 |v|≤4 的截断减速（slowing-down）分布。",
+     "description": "密度族，以速度变量 v 表示，除选项 5（质量不完整）和 6（截断）外积分均为 1：0 用 expression 参数（默认 exp(−v²)/√π，即 v 以 √2 v_t 为单位的 Maxwell 分布）；1 δ(v)；2 [−0.5,0.5] 上取 1 的方顶；3 三角形 max(0,1−|v|)；4 幂律 √2/π/(1+v²/2)²（κ=2 型洛伦兹密度，不是 gamma 分布）；5 不完整 Maxwell H(v−0.1) exp(−v²)/√π，质量不完整；6 |v|≤4 上截断的慢化分布 3√3/(4π)/(1+|v|³)。",
      "constraints": "必须是 0 至 6 的整数；拒绝布尔值。",
      "dtype": "整数",
      "shape": "标量",
@@ -362,7 +362,7 @@
     },
     {
      "name": "expression",
-     "description": "以 v 表达的解析密度；可使用有限实常量、pi、算术运算和 exp/log/sqrt/sin/cos/sinh/cosh/tanh，并接受 MATLAB 点运算符。",
+     "description": "以 v 表示的解析密度，可用有限实常数、pi、加减乘除与乘方，以及 exp/log/sqrt/sin/cos/sinh/cosh/tanh。乘方写作 ** 或 ^ 均可，也接受 MATLAB 逐元素运算符 .^ .* ./，含义相同。",
      "constraints": "密度必须为实值、可积，且导数衰减；禁止任意代码、比较、属性访问和下标索引。",
      "dtype": "字符串",
      "shape": "标量",
@@ -1431,7 +1431,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-distribution",
-   "source_sha256": "c243a265a8a345575724b13607006449352e169e656d5bb9c2c2c4f3d582fa9e",
+   "source_sha256": "16f9d1babde29ec8e7045b484b35760471936097c39c8038c9d19599a05c6bc8",
    "summary": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "definition": "g=f0_prime；Fn=4 时包含 A/(|v|³+vt³) 在截断处的跳跃质量。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1451,7 +1451,7 @@
     },
     {
      "name": "Fn",
-     "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
+     "description": "内置平衡分布，均为单位密度：1 Maxwell exp(−v²/2)/√(2π)（方差为 1）；2 κ 分布 Γ(κ)/(Γ(κ−½)√(2πκ)) (1+v²/(2κ))^−κ，即 θ²=2，方差为 2κ/(2κ−3)，**不是**单位温度；3 三角形 max(0,1−|v|)；4 截断慢化分布。",
      "constraints": "取值为 1、2、3 或 4。",
      "dtype": "整数",
      "shape": "标量",
@@ -1467,7 +1467,7 @@
     },
     {
      "name": "kappa",
-     "description": "kappa 形状参数，仅在 Fn=2 时使用。",
+     "description": "Fn=2 分布的 κ 指数。该分布不会被缩放到单位方差；要用指定温度的 κ 分布，请把它的导数作为 df0dv 传给 vp_init。",
      "constraints": "Fn=2 时必须有限且大于 1/2。",
      "dtype": "实数标量",
      "shape": "标量",
@@ -1620,7 +1620,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-evolve",
-   "source_sha256": "772367245c495c73571e6a127280d45a454249df909923814aa8585c725177c2",
+   "source_sha256": "63b5700aad81cf9335ad730c6e3db77203046334a4e1aa734acf8a5735625ad0",
    "summary": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "definition": "按 RK4 各级顺序施加电场反馈，精确执行 nt 步；内存复杂度 O(nv+nt)。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1632,7 +1632,7 @@
    "inputs": [
     {
      "name": "state",
-     "description": "由 vp_init 生成的状态映射，含 df、dE、vv、df0dv、k、dv、dt、nt 及控制参数。",
+     "description": "由 vp_init 生成的状态映射。要换初始扰动或平衡分布，请给 vp_init 传 df_initial 或 df0dv；若自行修改 df，须同时令 dE = vp_field(df,k,dv)，否则报错。",
      "constraints": "必须为完整 VP 状态；数组有限且对齐；初始场满足 Poisson 闭合；nt 为非负整数。",
      "dtype": "字典",
      "shape": "映射",
@@ -1769,9 +1769,9 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-init",
-   "source_sha256": "a0e445fbba167c3253d8dc1b4e9435c47ea9efd22f178347c7bd1a0942ee40fa",
+   "source_sha256": "0d9ccdfb84e533cb4e683077572201b89d29aa5a9f744a061d0ac568f0bcc9b7",
    "summary": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
-   "definition": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
+   "definition": "v=linspace(-vmax,vmax,nv+1)；f0' 取内置分布 Fn，或调用者给的 df0dv（Fn=None）；df=df_initial，默认 .1 exp(-v^2)；E=i dv sum(df)/k。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
    "boundary": "有限均匀速度窗口与离散 Poisson 闭合；固定离子背景；仅构造初始状态。",
    "assumptions": [
@@ -1781,15 +1781,15 @@
    "inputs": [
     {
      "name": "Fn",
-     "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
-     "constraints": "取值为 1、2、3 或 4。",
+     "description": "内置平衡分布，均为单位密度：1 Maxwell exp(−v²/2)/√(2π)（方差为 1）；2 κ 分布 Γ(κ)/(Γ(κ−½)√(2πκ)) (1+v²/(2κ))^−κ，即 θ²=2，方差为 2κ/(2κ−3)，**不是**单位温度；3 三角形 max(0,1−|v|)；4 截断慢化分布。",
+     "constraints": "取 1、2、3、4 之一，或与 df0dv 一起取 None。",
      "dtype": "整数",
      "shape": "标量",
      "units": "无量纲"
     },
     {
      "name": "kappa",
-     "description": "kappa 形状参数，仅在 Fn=2 时使用。",
+     "description": "Fn=2 分布的 κ 指数。该分布不会被缩放到单位方差；要用指定温度的 κ 分布，请把它的导数作为 df0dv 传给 vp_init。",
      "constraints": "Fn=2 时必须有限且大于 1/2。",
      "dtype": "实数标量",
      "shape": "标量",
@@ -1834,6 +1834,22 @@
      "dtype": "实数标量",
      "shape": "标量",
      "units": "无量纲"
+    },
+    {
+     "name": "df_initial",
+     "description": "vv=linspace(−vmax,vmax,nv+1) 上的初始扰动 df(v,0)。默认 0.1·exp(−v²)，是网格速度单位下的固定高斯，不与 f0 成正比。",
+     "constraints": "有限，每个速度节点一个值；None 表示用默认值。",
+     "dtype": "实数或复数数组",
+     "shape": "[nv+1]",
+     "units": "无量纲"
+    },
+    {
+     "name": "df0dv",
+     "description": "vv 上自定义的平衡分布导数 f0'(v)，代替内置分布；须同时给 Fn=None。",
+     "constraints": "有限实数，每个速度节点一个值；当且仅当 Fn 为 None 时给出。",
+     "dtype": "实数数组",
+     "shape": "[nv+1]",
+     "units": "无量纲"
     }
    ],
    "outputs": [
@@ -1871,7 +1887,8 @@
     "scope": [
      "验证离散 Poisson 约束和含非对角项的秩一反馈。",
      "用稠密矩阵指数验证 RK4 阶数，并以解析自由输运及阻尼余弦检验诊断。",
-     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。"
+     "验证 slowing-down 弱导数的分部积分关系，并执行默认 2049 节点、2000 步计算。",
+     "与内置 Maxwell 分布和默认扰动相同的自定义 df0dv/df_initial 复现其电场历史；数组不在网格上、给 df0dv 时同时给 Fn、或 Fn=None 却不给 df0dv 时抛出 ValueError。"
     ],
     "known_limitations": [
      "采用有限窗矩形求积，存在采样复现时间 TR=2pi/(k*dv)。",
@@ -1883,7 +1900,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-landau",
-   "source_sha256": "529c982bc61e091fe8b3fe7b81cad237fdd54b20c0f221d45fceab9140ed51d3",
+   "source_sha256": "01a09c422abd668f6d30f18de85f5f22b60393edb1c9874ab5623cae34a0dbed",
    "summary": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "definition": "初始化满足 Poisson 闭合的 df、E，顺序执行 nt 个 RK4 步，再计算完整电场幅度包络及峰值诊断。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1895,7 +1912,7 @@
    "inputs": [
     {
      "name": "Fn",
-     "description": "分布族：1 为 Maxwellian，2 为 kappa，3 为三角分布，4 为截断 slowing-down。",
+     "description": "内置平衡分布，均为单位密度：1 Maxwell exp(−v²/2)/√(2π)（方差为 1）；2 κ 分布 Γ(κ)/(Γ(κ−½)√(2πκ)) (1+v²/(2κ))^−κ，即 θ²=2，方差为 2κ/(2κ−3)，**不是**单位温度；3 三角形 max(0,1−|v|)；4 截断慢化分布。",
      "constraints": "取值为 1、2、3 或 4。",
      "dtype": "整数",
      "shape": "标量",
@@ -1903,7 +1920,7 @@
     },
     {
      "name": "kappa",
-     "description": "kappa 形状参数，仅在 Fn=2 时使用。",
+     "description": "Fn=2 分布的 κ 指数。该分布不会被缩放到单位方差；要用指定温度的 κ 分布，请把它的导数作为 df0dv 传给 vp_init。",
      "constraints": "Fn=2 时必须有限且大于 1/2。",
      "dtype": "实数标量",
      "shape": "标量",

@@ -44,7 +44,7 @@
  "inputs": [
   {
    "name": "Fn",
-   "description": "Distribution family: 1 Maxwellian, 2 kappa, 3 triangular, 4 cutoff slowing-down.",
+   "description": "Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi) (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance 2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4 cutoff slowing-down.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "integer",
@@ -54,7 +54,7 @@
   },
   {
    "name": "kappa",
-   "description": "Kappa shape, used only by Fn=2.",
+   "description": "Kappa index of the Fn=2 family. The family is not rescaled to unit variance; for a kappa distribution at a prescribed temperature pass its derivative as df0dv to vp_init.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "real scalar",

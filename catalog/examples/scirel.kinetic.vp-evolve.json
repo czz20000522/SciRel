@@ -44,7 +44,7 @@
  "inputs": [
   {
    "name": "state",
-   "description": "State mapping produced by vp_init, with df,dE,vv,df0dv,k,dv,dt,nt and source controls.",
+   "description": "State mapping produced by vp_init. To start from another perturbation or equilibrium pass df_initial or df0dv to vp_init; an edited df needs dE = vp_field(df,k,dv) or the call raises.",
    "units": "dimensionless",
    "shape": "mapping",
    "dtype": "dict",
