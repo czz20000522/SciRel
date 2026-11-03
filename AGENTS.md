@@ -72,4 +72,3 @@ uv sync --locked --group test      # 需要 Python 3.14，见 .python-version
 - `skills/` 下的测试不在默认测试范围内，也没有整理到能全部通过。
 - `scripts/review_harness.py --check` 会因被 hold 的合同示例而失败，这是预期行为。
 - 公开 API 的迁移进度见 [API 规范](skills/development/scirel-code-style/references/api-spec.md)。
-- 科学审查结论见 [catalog/review/SCIENCE_AUDIT.md](catalog/review/SCIENCE_AUDIT.md)。
