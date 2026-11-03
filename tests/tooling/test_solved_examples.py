@@ -1,4 +1,5 @@
 """Solved examples stay reproducible, and the report validator rejects weak reports."""
+
 import importlib.util
 import json
 from pathlib import Path
@@ -27,7 +28,9 @@ def solve():
     return _load(CASE / "solve.py", "coil_offset_solve")
 
 
-@pytest.mark.parametrize("report", sorted(ROOT.glob("examples/*/REPORT.md")), ids=lambda p: p.parent.name)
+@pytest.mark.parametrize(
+    "report", sorted(ROOT.glob("examples/*/REPORT.md")), ids=lambda p: p.parent.name
+)
 def test_example_reports_pass_the_validator(report):
     assert validate_report.validate(report) == []
 
@@ -56,8 +59,12 @@ def test_coil_all_saved_checks_pass_and_are_recomputed(solve):
 def test_coil_centre_is_the_helmholtz_value_and_doubling_current_doubles_the_field(solve):
     rings = solve.STATES["nominal"]
     single = solve.field(rings, [[0.0, 0.0]])["Bz"][0]
-    assert single == pytest.approx((4 / 5) ** 1.5 * solve.MU0 * solve.CURRENT / solve.RADIUS, rel=1e-12)
-    assert solve.field(rings, [[0.0, 0.0]], current=2 * solve.CURRENT)["Bz"][0] == pytest.approx(2 * single)
+    assert single == pytest.approx(
+        (4 / 5) ** 1.5 * solve.MU0 * solve.CURRENT / solve.RADIUS, rel=1e-12
+    )
+    assert solve.field(rings, [[0.0, 0.0]], current=2 * solve.CURRENT)["Bz"][0] == pytest.approx(
+        2 * single
+    )
 
 
 def test_coil_reversing_the_current_reverses_the_field_and_keeps_the_tilt(solve):
@@ -128,17 +135,20 @@ def test_validator_accepts_a_minimal_report(tmp_path):
     assert _report(tmp_path, GOOD) == []
 
 
-@pytest.mark.parametrize("change, message", [
-    (("## 答案\n影响约 3%。\n\n", ""), "missing section"),
-    (("## 讨论", "## 结论2\n\n## 讨论"), None),
-    (("影响约 3%", "影响约 1.2345678%"), "significant digits"),
-    (("用 $B=\\mu_0 I$。", "先做转置。"), "implementation detail"),
-    (("用 $B=\\mu_0 I$。", "只有文字。"), "no formula"),
-    (("![图](f.png)\n\n*图 1　说明。*", "无图"), "no figure"),
-    (("*图 1　说明。*", "说明"), "no caption"),
-    (("f.png", "missing.png"), "missing figure"),
-    (("用 $B=\\mu_0 I$。", "用 $B$。\n\n```\ncode\n```"), "code blocks"),
-])
+@pytest.mark.parametrize(
+    "change, message",
+    [
+        (("## 答案\n影响约 3%。\n\n", ""), "missing section"),
+        (("## 讨论", "## 结论2\n\n## 讨论"), None),
+        (("影响约 3%", "影响约 1.2345678%"), "significant digits"),
+        (("用 $B=\\mu_0 I$。", "先做转置。"), "implementation detail"),
+        (("用 $B=\\mu_0 I$。", "只有文字。"), "no formula"),
+        (("![图](f.png)\n\n*图 1　说明。*", "无图"), "no figure"),
+        (("*图 1　说明。*", "说明"), "no caption"),
+        (("f.png", "missing.png"), "missing figure"),
+        (("用 $B=\\mu_0 I$。", "用 $B$。\n\n```\ncode\n```"), "code blocks"),
+    ],
+)
 def test_validator_rejects_weak_reports(tmp_path, change, message):
     errors = _report(tmp_path, GOOD.replace(*change))
     if message is None:
@@ -155,7 +165,9 @@ def test_validator_accepts_declared_absence_with_a_reason_only(tmp_path):
 
 def test_validator_requires_failed_checks_to_be_reported(tmp_path):
     (tmp_path / "data").mkdir()
-    (tmp_path / "data/checks.json").write_text(json.dumps([{"name": "symmetry_check", "status": "FAIL"}]))
+    (tmp_path / "data/checks.json").write_text(
+        json.dumps([{"name": "symmetry_check", "status": "FAIL"}])
+    )
     assert any("symmetry_check" in error for error in _report(tmp_path, GOOD))
     assert _report(tmp_path, GOOD + "symmetry_check 未通过。\n") == []
 
@@ -171,8 +183,13 @@ def test_framework_ships_with_the_solving_skill_and_needs_nothing_from_the_repos
 
     skill = ROOT / "skills/development/usage/scirel-solving"
     closure = solving_skill.load_solving_skill(skill)
-    for name in ("references/workflow.md", "references/method-design.md", "references/report-format.md",
-                 "references/example-report.md", "scripts/validate_report.py"):
+    for name in (
+        "references/workflow.md",
+        "references/method-design.md",
+        "references/report-format.md",
+        "references/example-report.md",
+        "scripts/validate_report.py",
+    ):
         assert name in closure, name
     for name, data in closure.items():
         if name.endswith(".md"):
@@ -185,10 +202,14 @@ def test_gap_response_offers_the_closest_terms_and_a_way_forward():
     from capability_query import query_capabilities
     from scirel_docs import build_capability_index
 
-    documents = [json.loads(path.read_text(encoding="utf-8"))
-                 for path in sorted((ROOT / "catalog/examples").glob("*.json"))]
-    result = query_capabilities(build_capability_index(documents, source_revision="0" * 40),
-                                {"schema": "scirel.capability-query", "q": "circular coil nonexistentword"})
+    documents = [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((ROOT / "catalog/examples").glob("*.json"))
+    ]
+    result = query_capabilities(
+        build_capability_index(documents, source_revision="0" * 40),
+        {"schema": "scirel.capability-query", "q": "circular coil nonexistentword"},
+    )
     assert result["status"] == "gap"
     assert result["gap"]["retry_hint"]
     assert result["gap"]["closest_terms"]
@@ -198,9 +219,18 @@ def test_gap_response_offers_the_closest_terms_and_a_way_forward():
 def test_delivered_skills_do_not_contain_answers_from_the_reference_demo():
     summary = json.loads((CASE / "data/summary.json").read_text(encoding="utf-8"))
     nominal, offset = summary["states"]["nominal"], summary["states"]["offset"]
-    values = [100 * nominal["U"], 100 * offset["U"], 1e3 * nominal["bref_T"], 1e3 * offset["bref_T"],
-              1e3 * nominal["tilt_max_rad"], 1e3 * offset["tilt_max_rad"]]
-    needles = {f"{value:.2f}" for value in values} | {f"{nominal['bref_T']:.8f}", f"{offset['bref_T']:.8f}"}
+    values = [
+        100 * nominal["U"],
+        100 * offset["U"],
+        1e3 * nominal["bref_T"],
+        1e3 * offset["bref_T"],
+        1e3 * nominal["tilt_max_rad"],
+        1e3 * offset["tilt_max_rad"],
+    ]
+    needles = {f"{value:.2f}" for value in values} | {
+        f"{nominal['bref_T']:.8f}",
+        f"{offset['bref_T']:.8f}",
+    }
     hits = []
     for path in (ROOT / "skills/development/usage").rglob("*.md"):
         text = path.read_text(encoding="utf-8")
@@ -210,15 +240,24 @@ def test_delivered_skills_do_not_contain_answers_from_the_reference_demo():
 
 def test_delivered_skills_speak_to_any_user_and_stay_free_of_internal_content():
     # Words that belong to maintainers and evaluation, not to a user's agent.
-    internal = re.compile(r"RULES\.md|AGENTS\.md|ARCHITECTURE\.md|benchmark|hidden oracle|gap card|缺口卡|intake|ATTEMPTED"
-                          r"|RUNTIME_GAP|internal run|external run|batch entry", re.I)
+    internal = re.compile(
+        r"RULES\.md|AGENTS\.md|ARCHITECTURE\.md|benchmark|hidden oracle|gap card|缺口卡|intake|ATTEMPTED"
+        r"|RUNTIME_GAP|internal run|external run|batch entry",
+        re.I,
+    )
     # A hand-written catalog size would go stale as the catalog grows.
-    catalog_size = re.compile(r"\b\d{2,4} (public |admitted )?(contracts|assets|capabilities)\b|\d{2,4} ?(份|个)合同")
+    catalog_size = re.compile(
+        r"\b\d{2,4} (public |admitted )?(contracts|assets|capabilities)\b|\d{2,4} ?(份|个)合同"
+    )
     hits = []
     for name in ("scirel-solving", "scirel-capability-discovery", "scirel-result-validation"):
         for path in (ROOT / "skills/development/usage" / name).rglob("*.md"):
             text = path.read_text(encoding="utf-8")
-            hits += [f"{path.name}: {m.group(0)}" for pattern in (internal, catalog_size) for m in pattern.finditer(text)]
+            hits += [
+                f"{path.name}: {m.group(0)}"
+                for pattern in (internal, catalog_size)
+                for m in pattern.finditer(text)
+            ]
     assert hits == []
 
 
