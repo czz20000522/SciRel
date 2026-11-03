@@ -19,12 +19,14 @@ SciRel is pre-release, so public names can still change without compatibility al
 
 ## Public API
 
-Follow [the API rules](references/api-spec.md). In short:
+The method for reviewing an API is in the `api-design-method` skill. SciPy's standard practice is SciRel's standard. Follow [the API rules](references/api-spec.md). In short:
 
 - Public callables live in `scirel.<domain>` and are listed in that domain's `__all__`. Implementation modules are private details.
 - Names say what the function does, using the shared verb list. Classes use `CapWords`.
 - Parameters are explicit. No `inputs` mapping, and no `**kwargs`.
-- Docstrings follow numpydoc, with units in the parameter descriptions.
+- Docstrings use the full numpydoc layout: Parameters, Returns, Raises, See Also, Notes, References and Examples. Units are written as `[unit]` in each entry, and Examples run as doctests.
+- Each fact has one owner. The signature and docstring own names, defaults, units, returned items, exceptions and the example. The contract's overlapping fields derive from them, and `check_contract_sync.py` enforces this. The contract alone owns what SciPy has no place for: physical model, applicability, failure semantics, evidence and limitations.
+- Functions returning several quantities return `scirel._result.Result`.
 - Every public callable has a contract in `catalog/examples/`.
 
 ## When you change a public name or signature

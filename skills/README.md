@@ -31,6 +31,7 @@ SciRel has three roles. Each has one entry skill and its own acceptance standard
 | `development/integration/scientific-asset-normalization`, `scientific-asset-correctness`, `scirel-review-preparation` | Steps it routes to |
 | `development/scirel-acceptance` | Local checks for every change |
 | `development/scirel-code-style` | Code style and public API rules |
+| `development/api-design-method` | The general method for reviewing and improving an API |
 | `development/scientific-computation-validation`, `development/scientific-runtime-dataset-construction` | Validation and dataset routes |
 | `development/scirel-outbound-evaluation` | Test the delivered package with clean agents |
 | `development/post-acceptance-runtime-cleanup` | Clean up after a run |

@@ -17,7 +17,7 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 
 `check_all.py` prints `ALL GREEN` when everything passes. Any other ending means the tree is not green.
 
-It runs lint and format, the full test suite, the review registry gate, contract signatures and examples, the contract sync check, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
+It runs the full test suite, the review registry gate, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 
 ## Docstring and contract: one source of truth
 
@@ -33,6 +33,13 @@ git config core.hooksPath .githooks
 ```
 
 The hooks then run the pre-commit check on `git commit` and the full check on `git push`. They are a safety net, not a replacement for running the checks yourself. Do not bypass them with `--no-verify`. If a hook is wrong, fix the hook.
+
+## Ratchets
+
+Two lists only tighten.
+
+- `scripts/contract_sync_scope.json` lists the assets whose docstring and contract are checked for agreement. Add to it; do not remove from it.
+- `hazard_baseline.json` lists accepted hits of the hazard scan. A new hit fails the check. Read it with the `api-design-method` skill's checklist. Fix it, or if it is intended, regenerate the baseline with `scan_hazards.py src/scirel --write-baseline <file>` and say why in the commit message.
 
 ## When a check fails
 

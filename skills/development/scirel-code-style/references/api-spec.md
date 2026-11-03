@@ -55,22 +55,46 @@ These rules follow SciPy where they fit: a small root namespace, domain subpacka
 
 ## Returns and errors
 
-- A function returning several quantities returns a `dict` with documented keys, as the catalog does today. Do not mix tuples and dicts within one function.
-- Invalid input raises `ValueError`, or `TypeError` for a wrong kind. An unrepresentable result raises `FloatingPointError`.
+- A function returning several quantities returns `scirel._result.Result`, a `dict` subclass with attribute access on the pattern of `scipy.optimize.OptimizeResult`. Existing mapping use keeps working. Plain `dict` returns migrate as they are touched.
+- One function returns one shape on every branch. Do not mix tuples and mappings.
+- Invalid input raises `ValueError`, or `TypeError` for a wrong kind, and the message names the parameter. An unrepresentable result raises `FloatingPointError`.
+- If a value can be supplied two ways, require exactly one.
 - A solver reports non-convergence as declared in its contract, and never returns it looking converged.
+- A status field must not hide a programming error: catch the numerical exceptions you expect, not `Exception`.
 
 ## Docstrings
 
-Use numpydoc sections: `Parameters`, `Returns`, `Raises`, `Notes` for formulas and sources, and `Examples` where short. State units in the parameter description.
+Use the full numpydoc layout:
+
+| Section | Requirement |
+| --- | --- |
+| Parameters | Every parameter, with `[unit]` for a dimensional value, and shape, meaning and default behaviour |
+| Returns | Every returned item with the same detail |
+| Raises | Each exception and what triggers it |
+| See Also | Related functions |
+| Notes | Formula, conventions and limits |
+| References | Sources for formulas |
+| Examples | Runs as a doctest, and is the same code as the contract example |
+
+Bring existing functions up to this as they are touched. New functions meet it from the start.
+
+## One truth
+
+| Fact | Owner | Derived copy |
+| --- | --- | --- |
+| Names, order, defaults | Signature | Contract `public_api`, `inputs` |
+| Units, shapes, meaning, returned items | Docstring | Contract `inputs`, `outputs` |
+| Exceptions | Docstring `Raises` | Contract `failure_semantics` |
+| Example | Docstring `Examples` | Contract `example` |
+| Public names | `__all__` | Contract `public_api`, documentation |
+| Model, applicability, evidence, limitations | Contract | None |
+
+`check_contract_sync.py` enforces the derived columns for the assets in its scope list.
+
+## Deprecation
+
+Before the first public release, rename directly and update every caller, with no alias. After it, keep an old name for at least two minor releases, emit `DeprecationWarning` naming the replacement, and record it in the release notes. Do not change the meaning of an existing name or parameter in place.
 
 ## Migration status
 
-Each batch keeps `scirel-acceptance` green.
-
-| Batch | Change | Status |
-| --- | --- | --- |
-| 1 | ruff configuration and formatting | see Git history |
-| 2 | Private composition helpers, removing duplicate `run_composition` | see Git history |
-| 3 | Explicit parameters for compositions | see Git history |
-| 4 | Split `kinetic` into `kinetic`, `neutrals`, `mirror` | see Git history |
-| 5 | Unified names | see Git history |
+Open work is tracked in GitHub issues with the `agent-task` label. Each change keeps `scirel-acceptance` green.

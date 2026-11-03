@@ -1,6 +1,6 @@
 {
  "schema": "scirel.contract-sync-scope",
- "note": "Assets whose code docstring and JSON contract are checked for agreement by check_contract_sync.py. Start with the operators the showcase cases use; extend this list until it covers the catalog.",
+ "note": "Assets whose code docstring and JSON contract are checked for agreement by check_contract_sync.py. Assets are added and not removed, until the list covers the catalog.",
  "assets": [
   {
    "asset_id": "scirel.io.read-geqdsk"

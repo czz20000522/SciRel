@@ -21,6 +21,8 @@ def steps(output: Path) -> list[tuple[str, list[str]]]:
         ('contracts and examples', [*python, 'scripts/validate_asset_documents.py', 'catalog/examples',
                                     '--check-runtime', '--execute-examples']),
         ('contract sync', [*python, 'skills/development/scirel-acceptance/scripts/check_contract_sync.py']),
+        ('new hazard patterns', [*python, 'skills/development/api-design-method/scripts/scan_hazards.py', 'src/scirel',
+                                 '--baseline', 'skills/development/scirel-acceptance/hazard_baseline.json']),
         ('documentation build', [*python, 'scripts/scirel_docs.py', 'build', '--output', str(output / 'docs')]),
     ]
     for report in sorted(ROOT.glob('examples/*/REPORT.md')):

@@ -23,7 +23,7 @@ SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开�
 | 项目规则 | [RULES.md](RULES.md) |
 | 改代码或加功能 | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | 改合同 | [catalog/README.md](catalog/README.md)、[catalog/AUDIT.md](catalog/AUDIT.md) |
-| 代码风格和公开 API | [`scirel-code-style` skill](skills/development/scirel-code-style/SKILL.md) |
+| 代码风格和公开 API | [`scirel-code-style` skill](skills/development/scirel-code-style/SKILL.md)（标准）、[`api-design-method` skill](skills/development/api-design-method/SKILL.md)（通用方法） |
 | 回答用户的物理问题 | [求解 skill](skills/development/usage/scirel-solving/SKILL.md)、[流程框架](skills/development/usage/scirel-solving/references/workflow.md) |
 
 ## 目录
