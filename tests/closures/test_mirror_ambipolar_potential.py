@@ -280,3 +280,39 @@ def test_review_gate_rejects_nonfinite_and_noninteger_solver_controls():
         scientific_function(**{**base, "ion_charge_c": np.nan})
     with pytest.raises(ValueError, match="max_iterations"):
         scientific_function(**{**base, "max_iterations": 2.0})
+
+
+def test_fluxes_follow_the_closed_form_barrier_integral_with_an_offset_reference():
+    import math
+
+    from scirel.closures import solve_mirror_ambipolar_potential
+
+    charge, mass = 1.602176634e-19, 3.3435837768e-27
+
+    def barrier(s, a):
+        if a >= 0.0:
+            return math.exp(-a) / (1.0 + s)
+        return 1.0 - s / (1.0 + s) * math.exp(a / s) if s > 0.0 else 1.0
+
+    for plug in (-500.0, 100.0, 300.0):
+        out = solve_mirror_ambipolar_potential(
+            1.0,
+            10.0,
+            0.0,
+            mass,
+            charge,
+            1e19,
+            1000 * charge,
+            3000 * charge,
+            300 * charge,
+            phi_reference_v=100.0,
+            mode="evaluate",
+            phi_plug_v=plug,
+        )
+        expected = (
+            1e19
+            * math.sqrt(1000 * charge / (2 * math.pi * mass))
+            * barrier(27.0, (plug - 100.0) / 1000.0)
+        )
+        assert out["ion_particle_flux_m2_s"] == pytest.approx(expected, rel=1e-12)
+        assert out["potential_v"] == pytest.approx(plug)

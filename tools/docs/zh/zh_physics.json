@@ -7967,9 +7967,9 @@
   },
   {
    "asset_id": "scirel.closures.mirror-ambipolar-potential",
-   "source_sha256": "da2158c05d7bd16168b0acf3222724234b65946f035e6490f0594cc5522fe74d",
+   "source_sha256": "89505bf54f1618d5495980a5bfbf49e2d9f6cc5605050cea01b2d8ca37fd56ce",
    "summary": "在指定端塞电势计算单向离子/电子端损通量，或逐磁面通过有界括区与二分求电荷加权通量平衡。",
-   "definition": "每物种通量为 n sqrt(T_parallel/(2πm)) I(s,a) refill，s=(T_perpendicular/T_parallel)(B_plug/B_reference−1)，a=q(phi_plug−phi_reference)/T_parallel。电子使用固定质量、−e 电荷和两方向相同热能。evaluate 只求给定电势通量；solve 对电荷加权离子/电子通量对数比求根，热电压初始括区最多扩展八轮再共享二分。双真空保留参考势；有界指数差商与对数归一化保留正物种下溢后的对数通量。测试电势与返回电势相同；使用缩放相对势差和安全中点，回调严格零才收缩括区，否则半宽与残差原门槛同时满足才算收敛。",
+   "definition": "每物种通量为 n sqrt(T_parallel/(2πm)) I(s,a) refill，s=(T_perpendicular/T_parallel)(B_plug/B_reference−1)，a=q(phi_plug−phi_reference)/T_parallel。I(s,a)=∫₀^∞ exp(−y−max(s y+a,0)) dy；s≥0 时，a≥0 为 exp(−a)/(1+s)，a<0 且 s>0 为 1−(s/(1+s)) exp(a/s)，a<0 且 s=0 为 1。电势降 Δφ = potential_v − phi_reference_v，两者使用调用者的同一电压零点。电子使用固定质量、−e 电荷和两方向相同热能。evaluate 只求给定电势通量；solve 对电荷加权离子/电子通量对数比求根，热电压初始括区最多扩展八轮再共享二分。双真空保留参考势；有界指数差商与对数归一化保留正物种下溢后的对数通量。测试电势与返回电势相同；使用缩放相对势差和安全中点，回调严格零才收缩括区，否则半宽与残差原门槛同时满足才算收敛。",
    "model": "单正离子与电子的半空间磁镜/静电端损模型，参考粒子群和补充比例外供；不是完整碰撞输运或自洽平衡。",
    "assumptions": [
     "两 B 为正 T 幅值，热能 J、电荷 C 对应同一单离子/电子系统。",
@@ -8096,7 +8096,7 @@
    "outputs": [
     {
      "name": "potential_v",
-     "description": "求解或指定的端塞势，solve 双真空保持参考势。",
+     "description": "端塞电势 phi_plug（调用者的电压零点下的绝对值，不是电势降）；电势降为 potential_v − phi_reference_v。求解或指定，solve 双真空保持参考势。",
      "constraints": "evaluate 返回给定值；solve 全激活面通过停止条件才返回。",
      "dtype": "NumPy float64 数组"
     },
@@ -8179,7 +8179,8 @@
      "双真空单步、单边真空拒绝、非法控制、括区失败和上限不收敛。",
      "evaluate 不平衡但 converged=True，solve 忽略指定势。",
      "a=−100、b=1000 下坡势垒仍有限；100 位独立检查覆盖 −1 附近、零及两种符号斜率。",
-     "等质量等温、共同 ±1e20/±1e308 势下平衡根不因中点溢出丢失零电流态，端点指定求值与求平衡保持区别。"
+     "等质量等温、共同 ±1e20/±1e308 势下平衡根不因中点溢出丢失零电流态，端点指定求值与求平衡保持区别。",
+     "在势垒正负两侧、且 phi_reference_v 非零时，返回通量等于 n sqrt(T_parallel/(2πm)) I(s,a)，I 取闭式。"
     ],
     "evidence_ceiling": "直接测试支持所选半空间极限、双真空参考势、一个收敛例、函数密度等价及失败路径；不证明真实端损模型、所有积分分支、任意参数、根唯一、所有极端末残差界或专家认可。",
     "known_limitations": [
@@ -9583,9 +9584,9 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "70f5e19cf387037996a8d791cd38bee6359c355e8c52877a1b002f00fec78b8f",
+   "source_sha256": "d8e5f7563a75d16ad24bbba260eec96b666dc3bcb140bff748962e293c181cfa",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。",
-   "definition": "逐个离散调用者线圈、附加电流丝权重并计算按目标点排序的 Green 响应。每个线圈占一列，组成 [N_target,N_coil] 矩阵，沿轴 1 与 [N_coil] 驱动电流向量收缩，再重塑回输入网格。",
+   "definition": "逐个离散调用者线圈、附加电流丝权重并计算按目标点排序的 Green 响应。每个线圈的驱动量是每根电流丝的电流（current_a，或 ampere_turns_a 除以该线圈权重之和）。每个线圈占一列，组成 [N_target,N_coil] 矩阵，沿轴 1 与 [N_coil] 驱动电流向量收缩，再重塑回输入网格。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
    "assumptions": [
     "目标网格有限、形状匹配且非空，R、Z 轴严格递增；允许单点轴。",
@@ -9608,8 +9609,8 @@
     },
     {
      "name": "rectangular_coils",
-     "description": "线圈映射序列，包含 r0_m、z0_m、nr、nz、dr_m、dz_m、current_a 及可选 angle_deg、weights。",
-     "constraints": "非空；每个线圈一个有限驱动电流；若有权重，每根生成电流丝对应一个有限权重。",
+     "description": "线圈映射序列，包含 r0_m、z0_m、nr、nz、dr_m、dz_m，current_a 与 ampere_turns_a 二选一，以及可选 angle_deg、weights。current_a 是**每根**电流丝的电流（第 j 根为 current_a*weights[j]，权重默认 1，所以线圈总安匝是 nr*nz*current_a）；ampere_turns_a 是整个线圈块的总电流，按权重比例分给各电流丝。把总安匝当作 current_a 传入，场会大 nr*nz 倍。",
+     "constraints": "非空；每个线圈给出且只给出一个有限的 current_a 或 ampere_turns_a（两者都给或都不给时抛出 ValueError），可为每根生成的电流丝给一个有限权重；使用 ampere_turns_a 时权重之和不能为零。",
      "dtype": "由映射组成的 Python 序列"
     }
    ],
@@ -9669,7 +9670,8 @@
      "缺失电流和空网格的失败行为，并保留非空单点轴网格。",
      "不可表示的近导线或大电流响应以失败闭合，而不是返回非有限场。",
      "固定 Pleiades 双线圈参考值以及完整 9x9 数组，由 tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py 使用领域内受跟踪 fixture 覆盖。",
-     "scripts/build_pleiades_truth.py 只用调用者提供的外部 Pleiades source checkout 写入显式指定的候选输出；不会覆盖受跟踪 fixture，也不会携带 source。"
+     "scripts/build_pleiades_truth.py 只用调用者提供的外部 Pleiades source checkout 写入显式指定的候选输出；不会覆盖受跟踪 fixture，也不会携带 source。",
+     "每根电流丝的 current_a 与线圈总安匝 ampere_turns_a：两种写法给出相同的场，单根电流丝与轴上圆环解析式一致，两者都给或都不给时抛出 ValueError。"
     ],
     "evidence_ceiling": "限于具有独立线圈电流的线性多线圈真空场与 Green 响应列。证据：`test_composition_multi_coil_vacuum_field.py` 检验独立线圈响应列、电流缩放、空网格拒绝与单点轴接受； `test_pleiades_two_coil_truth.py` 含 4 个测试函数，其中 2 个引用 `solve_multi_coil_vacuum_field`，仅由本资产绑定；本审计已执行有界示例。真值来源：受跟踪的 Pleiades simple-two-coil fixture（`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`）及其 provenance；每次都比较完整 9×9 数组。不建立：迭代线圈求解、非线性材料、有限线效应，或畸形/空线圈列表。",
     "known_limitations": [

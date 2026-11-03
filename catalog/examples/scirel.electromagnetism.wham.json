@@ -23,6 +23,7 @@
   ],
   "evidence_ceiling": "Named geometry, lifecycle and configuration cases only; no arbitrary-input scientific correctness or release claim.",
   "known_limitations": [
+   "Set a child's current as coil.current (amperes in EACH filament) or coil.total_current (ampere-turns of the whole block, divided by the weight sum); for hts1 total_current = 32 * current. When a task specifies its own coil geometry or currents, build the coils from the task (for example with scirel.field.solve_multi_coil_vacuum_field) and use this preset only after checking that its geometry matches.",
    "No experimental validation of source device constants, conductor area proxy or material magnetization is claimed.",
    "Direct geometry/weight arrays can be mutated; cache content changes are detected, but mutation that desynchronizes parameterized geometry from its parameters is outside the supported contract.",
    "Unknown **kwargs are permissive where inherited; no arbitrary keyword semantic claim.",
@@ -61,10 +62,10 @@
  "identity": {
   "relation": "Fixed WHAM source composition",
   "direction": "No caller inputs to fixed ordered WHAM child sources.",
-  "definition": "WHAM registers hts1, hts2, cc1, and cc2 rectangular coil children in that order.",
+  "definition": "WHAM registers hts1, hts2, cc1, and cc2 rectangular coil children in that order. Fixed geometry (R0, Z0 of the block centre in m; nr x nz filaments; centre spacings dR, dZ in m): hts1 (0.25, +0.942; 8x4; 0.0475, 0.0275), hts2 (0.25, -0.942; 8x4; 0.0475, 0.0275), cc1 (1.005, +0.205; 2x5; 0.025, 0.024), cc2 (1.005, -0.205; 2x5; 0.025, 0.024). No operating currents are included: every child starts at current = 1 A per filament (unit weights), so fields are per-ampere responses until the caller sets currents.",
   "model": "Axisymmetric ideal circular-filament geometry.",
   "geometry": "Four rectangular source lattices in cylindrical R,Z coordinates.",
-  "coordinates": "R,Z in metres; currents in amperes; weights dimensionless.",
+  "coordinates": "R,Z in metres; current is amperes per filament and total_current is amperes per coil block; weights dimensionless.",
   "boundary": "The object represents fixed geometry and does not calibrate the experimental device.",
   "assumptions": [
    "The zero-argument constructor fixes the WHAM geometry; it accepts no geometry, current or mesh parameters.",
@@ -76,7 +77,7 @@
  "outputs": [
   {
    "name": "source",
-   "description": "Constructed WHAM object with source geometry, common currents, weights and optional target mesh. Fields are evaluated by its methods.",
+   "description": "Constructed WHAM object with the fixed source geometry, unit per-filament currents, weights and optional target mesh. Fields are evaluated by its methods after the caller sets currents.",
    "units": "geometry m; current A; weights dimensionless",
    "shape": "one object",
    "dtype": "WHAM",

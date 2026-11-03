@@ -526,9 +526,9 @@
   },
   {
    "asset_id": "scirel.electromagnetism.wham",
-   "source_sha256": "2ad1bac0dd8eadd22e44fafdb31ce109b6a675c2cf9a15d37028814d342c31bf",
+   "source_sha256": "d3abc396c181f26d75611b1ab0ede8f449bed4bf9727c8bd63b5cec3de5fb175",
    "summary": "构造有序 WHAM 装置：四个矩形线圈依次含 32、32、10、10 条电流丝。",
-   "definition": "WHAM 按 hts1、hts2、cc1、cc2 顺序注册四个矩形线圈子源。",
+   "definition": "WHAM 按 hts1、hts2、cc1、cc2 顺序登记四个矩形线圈子源。固定几何（线圈块中心 R0、Z0，单位 m；nr×nz 根电流丝；中心间距 dR、dZ，单位 m）：hts1 (0.25, +0.942; 8×4; 0.0475, 0.0275)，hts2 (0.25, −0.942; 8×4; 0.0475, 0.0275)，cc1 (1.005, +0.205; 2×5; 0.025, 0.024)，cc2 (1.005, −0.205; 2×5; 0.025, 0.024)。不含运行电流：每个子线圈初始 current = 每根电流丝 1 A（权重为 1），调用者设定电流前得到的是每安培的响应。",
    "model": "轴对称理想圆电流丝几何。",
    "boundary": "该对象表示固定几何，不标定实验装置。",
    "assumptions": [
@@ -540,7 +540,7 @@
    "outputs": [
     {
      "name": "source",
-     "description": "WHAM 对象，具有源几何、共同电流、权重和可选网格，通过方法计算场。",
+     "description": "WHAM 对象，具有固定源几何、每根电流丝 1 A 的初始电流、权重和可选网格；调用者设定电流后通过方法计算场。",
      "constraints": "场方法要求已配置或显式提供目标网格；几何与生命周期属性由所构造的对象决定。",
      "dtype": "WHAM"
     }
@@ -570,6 +570,7 @@
      "在有限目标点上组合完整的 BRB／WHAM 配置。"
     ],
     "known_limitations": [
+     "子线圈电流用 coil.current（**每根**电流丝的安培数）或 coil.total_current（整个线圈块的安匝，除以权重之和）设定；对 hts1，total_current = 32 × current。题目自己给出线圈几何或电流时，应按题目建线圈（例如用 scirel.field.solve_multi_coil_vacuum_field），只有核对几何一致后才使用本预设。",
      "不声称对装置常数、导体面积代理或材料磁化做过实验验证。",
      "几何与权重数组可以直接修改，缓存会检测内容变化；但使参数化几何与其参数不一致的修改不在支持约定内。",
      "继承接口对未知 **kwargs 可能较为宽松，但不保证任意关键字的语义。",

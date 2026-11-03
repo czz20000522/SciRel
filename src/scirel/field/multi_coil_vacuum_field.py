@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+CURRENT_KEYS = ("current_a", "ampere_turns_a")
+
 
 def _attach_coil_current(points, current, weights):
     """Attach dimensionless filament weights while keeping drive current scalar."""
@@ -63,7 +65,7 @@ def run_composition(inputs, *, asset_loader):
 
     geometry = asset_loader("scirel.field.rectangular_coil_filaments")
     source_blocks, currents = [], []
-    required_coil = {"r0_m", "z0_m", "nr", "nz", "dr_m", "dz_m", "current_a"}
+    required_coil = {"r0_m", "z0_m", "nr", "nz", "dr_m", "dz_m"}
     for index, coil in enumerate(coils):
         missing = (
             sorted(required_coil.difference(coil))
@@ -72,6 +74,12 @@ def run_composition(inputs, *, asset_loader):
         )
         if not isinstance(coil, dict) or missing:
             raise ValueError(f"rectangular_coils[{index}] misses {', '.join(missing)}")
+        given = [key for key in CURRENT_KEYS if key in coil]
+        if len(given) != 1:
+            raise ValueError(
+                f"rectangular_coils[{index}] needs exactly one of current_a (current in each filament) "
+                f"or ampere_turns_a (total current of the coil, split over its filaments); got {given or 'neither'}"
+            )
         points = geometry(
             coil["r0_m"],
             coil["z0_m"],
@@ -81,14 +89,23 @@ def run_composition(inputs, *, asset_loader):
             coil["dz_m"],
             coil.get("angle_deg", 0.0),
         )
-        current = float(coil["current_a"])
-        if not np.isfinite(current):
-            raise ValueError(f"rectangular_coils[{index}].current_a must be finite")
+        value = float(coil[given[0]])
+        if not np.isfinite(value):
+            raise ValueError(f"rectangular_coils[{index}].{given[0]} must be finite")
         weights = np.asarray(coil.get("weights", np.ones(len(points))), dtype=float)
         if weights.shape != (len(points),) or not np.all(np.isfinite(weights)):
             raise ValueError(
                 f"rectangular_coils[{index}].weights must be finite with one value per filament"
             )
+        if given[0] == "current_a":
+            current = value
+        else:
+            total_weight = float(np.sum(weights))
+            if total_weight == 0.0 or not np.isfinite(total_weight):
+                raise ValueError(
+                    f"rectangular_coils[{index}].ampere_turns_a needs filament weights with a nonzero finite sum"
+                )
+            current = value / total_weight
         block, drive = _attach_coil_current(points, current, weights)
         source_blocks.append(block)
         currents.append(drive)
@@ -110,8 +127,23 @@ def run_composition(inputs, *, asset_loader):
 def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     """Compute vacuum fields from ``rectangular_coils`` records.
 
-    The returned ``psi_vac`` is Wb/rad and ``b_r_vac``/``b_z_vac`` are tesla;
-    all arrays have the shape of the supplied ``r_grid`` and ``z_grid``.
+    Each coil mapping gives ``r0_m, z0_m, nr, nz, dr_m, dz_m`` (an ``nr`` x ``nz``
+    array of thin circular filaments centred on ``(r0_m, z0_m)`` with centre
+    spacings ``dr_m, dz_m``), optional ``angle_deg`` and ``weights`` (one per
+    filament, default 1), and exactly one current:
+
+    * ``current_a``: the current in each filament, in amperes. Filament ``j``
+      carries ``current_a * weights[j]``, so the coil's total ampere-turns are
+      ``current_a * sum(weights)`` (``nr * nz * current_a`` for unit weights).
+    * ``ampere_turns_a``: the total current of the whole coil block, in
+      amperes. It is split over the filaments in proportion to ``weights``
+      (equally for unit weights).
+
+    Giving both, or neither, raises ``ValueError``; passing a coil's total
+    ampere-turns as ``current_a`` would multiply its field by ``nr * nz``.
+
+    The returned ``psi_vac`` is Wb/rad (``R * A_phi``) and ``b_r_vac``/``b_z_vac``
+    are tesla; all arrays have the shape of the supplied ``r_grid`` and ``z_grid``.
     Raises ``ValueError`` for missing or malformed grid and coil records.
     """
     from scirel._composition import compose

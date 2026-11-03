@@ -24,7 +24,7 @@ inputs:
   shape: list[mapping]
   units: mixed SI
   required: true
-  constraints: each mapping declares r0_m,z0_m,nr,nz,dr_m,dz_m,current_a; current_a is the source set-drive current, optional weights are per-filament multipliers, angle_deg optional
+  constraints: each mapping declares r0_m,z0_m,nr,nz,dr_m,dz_m and exactly one of current_a (current in each filament) or ampere_turns_a (total coil current split over filaments by weight); optional weights are per-filament multipliers, angle_deg optional
 outputs:
 - name: psi_vac
   meaning: 线圈真空磁通
