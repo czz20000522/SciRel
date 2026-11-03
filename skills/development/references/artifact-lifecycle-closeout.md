@@ -31,10 +31,11 @@ proves scientific correctness or human acceptance.
    scope, status, and failure or claim ceiling. Use only
    `PASS`, `FAIL`, `NOT_RUN`, `BLOCKED`, `HOLD`, and `UNKNOWN` as applicable;
    never upgrade a missing receipt from file existence.
-2. **Condense.** Move the minimum conclusion, failure identity, provenance,
-   reopen condition, and next owner into the existing `HANDOFF.md`, task,
-   review record, or Notion record. Do not create a second registry and do not
-   copy a full output tree into a skill or tracked source directory.
+2. **Condense.** Move the minimum conclusion, failure identity, reopen
+   condition, and next owner into the task, review record, or Notion record.
+   Do not add a handoff log to the published repository, do not create a second
+   registry, and do not copy a full output tree into a skill or tracked source
+   directory.
 3. **Plan exact dispositions.** For every owned path choose `RETAIN`,
    `RETIRE`, or `HOLD`, with the consumer, reason, and end condition. A
    superseded name, age, size, or glob is not a deletion reason. Missing

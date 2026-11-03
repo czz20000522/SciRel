@@ -114,16 +114,14 @@ candidate.
 - Capability discovery metadata lives in the contract `discovery` block and is maintained by the SciRel intake owner. No schema version labels; iterate directly.
 - Gaps are ordinary glue: explicit, testable, disclosed; final scientific acceptance belongs to the requester or a designated expert, not to the worker.
 
-## 9b. Source provenance
+## 9b. Source identity
 
 - Public contract bodies describe the scientific relation and its validation, not
   the source project, checkout path or commit hash.
-- Source identity is retained in `catalog/review/SOURCE_PROVENANCE.md` and
-  `catalog/review/evidence/` so a future owner can compare a capability with its
-  exact source if a problem appears.
-- Source identity is evidence, not a public capability name; do not use it as a
-  discovery label or a public API promise.
-- A source-parity record is not a physical-correctness claim.
+- Source identity is not part of the published repository. Do not add a provenance
+  ledger, source audit, or checkout path to the public tree.
+- Source identity is not a discovery label or a public API promise.
+- A source-parity note is not a physical-correctness claim.
 
 ## 10. Storage and publication
 
@@ -151,8 +149,8 @@ the next owner will find it.**
 ## 12. Baseline and outbound batch gate
 
 Use this short gate for each bounded maintenance or outbound batch. `RULES.md`
-is the canonical checklist; `HANDOFF.md` records the current revision and
-Notion records the decision/history.
+is the canonical checklist. The current revision is the Git commit. Decision
+history belongs in Notion, not in a published handoff log.
 
 1. **Preflight:** record owner, scope, non-goals, current `HEAD`, clean/dirty
    state, input/runtime identity, and lifecycle/cleanup condition. Keep
@@ -176,10 +174,9 @@ Notion records the decision/history.
    generated artifact, record its process/result/temporary/frozen class and an
    exact `RETAIN`/`RETIRE`/`HOLD` disposition before mutation; no age, name, or
    broad glob is a deletion rule.
-6. **Record:** update `HANDOFF.md` and the existing Notion record with scope,
-   evidence, unresolved status, next authorized action, and the exact first
-   candidate workflow when outbound work is next. Never treat chat as the sole
-   handoff.
+6. **Record:** update the existing Notion record with scope, evidence,
+   unresolved status, and the next authorized action. Do not add a handoff log
+   to the published repository, and never treat chat as the sole handoff.
 
 For outbound work the worker receives only the user request and public
 contracts/docs. The executable path is **discover → select contract → explicit
