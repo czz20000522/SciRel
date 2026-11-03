@@ -1,31 +1,15 @@
-"""Solved examples stay reproducible, and the report validator rejects weak reports."""
+"""Solved example reports pass the validator, and the validator rejects weak reports."""
 
-import importlib.util
 import json
 from pathlib import Path
 import re
 import sys
 
-import numpy as np
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-CASE = ROOT / "examples" / "coil-offset"
 sys.path.insert(0, str(ROOT / "skills/development/usage/scirel-solving/scripts"))
 import validate_report  # noqa: E402
-
-
-def _load(path: Path, name: str):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-@pytest.fixture(scope="module")
-def solve():
-    return _load(CASE / "solve.py", "coil_offset_solve")
 
 
 @pytest.mark.parametrize(
@@ -33,68 +17,6 @@ def solve():
 )
 def test_example_reports_pass_the_validator(report):
     assert validate_report.validate(report) == []
-
-
-def test_coil_report_is_regenerated_exactly_from_saved_results():
-    make_report = _load(CASE / "make_report.py", "coil_offset_report")
-    assert make_report.render() == (CASE / "REPORT.md").read_text(encoding="utf-8")
-
-
-def test_coil_saved_summary_matches_a_fresh_calculation(solve):
-    saved = json.loads((CASE / "data/summary.json").read_text(encoding="utf-8"))["states"]
-    for name, rings in solve.STATES.items():
-        fresh = solve.metrics(rings)
-        assert fresh["U"] == pytest.approx(saved[name]["U"], rel=1e-12)
-        assert fresh["bref_T"] == pytest.approx(saved[name]["bref_T"], rel=1e-12)
-
-
-def test_coil_all_saved_checks_pass_and_are_recomputed(solve):
-    states = {name: solve.metrics(rings) for name, rings in solve.STATES.items()}
-    fresh = solve.run_checks(states)
-    assert [c["name"] for c in fresh if c["status"] != "PASS"] == []
-    saved = json.loads((CASE / "data/checks.json").read_text(encoding="utf-8"))
-    assert {c["name"]: c["status"] for c in saved} == {c["name"]: c["status"] for c in fresh}
-
-
-def test_coil_centre_is_the_helmholtz_value_and_doubling_current_doubles_the_field(solve):
-    rings = solve.STATES["nominal"]
-    single = solve.field(rings, [[0.0, 0.0]])["Bz"][0]
-    assert single == pytest.approx(
-        (4 / 5) ** 1.5 * solve.MU0 * solve.CURRENT / solve.RADIUS, rel=1e-12
-    )
-    assert solve.field(rings, [[0.0, 0.0]], current=2 * solve.CURRENT)["Bz"][0] == pytest.approx(
-        2 * single
-    )
-
-
-def test_coil_reversing_the_current_reverses_the_field_and_keeps_the_tilt(solve):
-    points = solve.grid_points()
-    forward = solve.field(solve.STATES["offset"], points)
-    backward = solve.field(solve.STATES["offset"], points, current=-solve.CURRENT)
-    np.testing.assert_allclose(backward["Bz"], -forward["Bz"])
-    np.testing.assert_allclose(
-        np.abs(np.arctan2(backward["Br"], backward["Bz"]) % np.pi - np.pi / 2),
-        np.abs(np.arctan2(forward["Br"], forward["Bz"]) % np.pi - np.pi / 2),
-    )
-
-
-def test_coil_independent_reference_detects_a_wrong_factor_or_sign(solve):
-    points = solve.grid_points()
-    reference = solve.biot_savart(solve.STATES["nominal"], points, nodes=256)
-    kernel = solve.field(solve.STATES["nominal"], points)
-    tolerance = 1e-11 * solve.MU0 * solve.CURRENT / (2 * solve.RADIUS)
-    assert np.max(np.abs(kernel["Bz"] - reference["Bz"])) <= tolerance
-    assert np.max(np.abs(2 * kernel["Bz"] - reference["Bz"])) > tolerance
-    assert np.max(np.abs(-kernel["Br"] - reference["Br"])) > tolerance
-
-
-def test_coil_uniformity_uses_only_the_nine_central_points(solve):
-    points = solve.grid_points()
-    assert sum(solve.is_center(point) for point in points) == 9
-    state = solve.metrics(solve.STATES["nominal"])
-    assert state["center_points"] == 9
-    for r, z in state["U_at"]:
-        assert r <= 0.10 and abs(z) <= 0.10
 
 
 GOOD = """# t
@@ -193,7 +115,7 @@ def test_framework_ships_with_the_solving_skill_and_needs_nothing_from_the_repos
         assert name in closure, name
     for name, data in closure.items():
         if name.endswith(".md"):
-            assert b"examples/coil-offset" not in data, name
+            assert not re.search(rb"(?<!catalog/)examples/", data), name
             assert b"skills/development/usage" not in data, name
 
 
@@ -214,28 +136,6 @@ def test_gap_response_offers_the_closest_terms_and_a_way_forward():
     assert result["gap"]["retry_hint"]
     assert result["gap"]["closest_terms"]
     assert all(item["matched_terms"] for item in result["gap"]["closest_terms"])
-
-
-def test_delivered_skills_do_not_contain_answers_from_the_reference_demo():
-    summary = json.loads((CASE / "data/summary.json").read_text(encoding="utf-8"))
-    nominal, offset = summary["states"]["nominal"], summary["states"]["offset"]
-    values = [
-        100 * nominal["U"],
-        100 * offset["U"],
-        1e3 * nominal["bref_T"],
-        1e3 * offset["bref_T"],
-        1e3 * nominal["tilt_max_rad"],
-        1e3 * offset["tilt_max_rad"],
-    ]
-    needles = {f"{value:.2f}" for value in values} | {
-        f"{nominal['bref_T']:.8f}",
-        f"{offset['bref_T']:.8f}",
-    }
-    hits = []
-    for path in (ROOT / "skills/development/usage").rglob("*.md"):
-        text = path.read_text(encoding="utf-8")
-        hits += [f"{path.name}: {needle}" for needle in needles if needle in text]
-    assert hits == []
 
 
 def test_delivered_skills_speak_to_any_user_and_stay_free_of_internal_content():
@@ -263,4 +163,4 @@ def test_delivered_skills_speak_to_any_user_and_stay_free_of_internal_content():
 
 def test_wheel_metadata_readme_does_not_link_to_solved_examples():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    assert "examples/coil-offset" not in readme and "REPORT.md" not in readme
+    assert not re.search(r"(?<!catalog/)examples/", readme) and "REPORT.md" not in readme

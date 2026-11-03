@@ -25,7 +25,6 @@ SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开�
 | 改合同 | [catalog/README.md](catalog/README.md)、[catalog/AUDIT.md](catalog/AUDIT.md) |
 | 代码风格和公开 API | [`scirel-code-style` skill](skills/development/scirel-code-style/SKILL.md) |
 | 回答用户的物理问题 | [求解 skill](skills/development/usage/scirel-solving/SKILL.md)、[流程框架](skills/development/usage/scirel-solving/references/workflow.md) |
-| 看完整求解样例 | [examples/coil-offset/REPORT.md](examples/coil-offset/REPORT.md) |
 
 ## 目录
 
