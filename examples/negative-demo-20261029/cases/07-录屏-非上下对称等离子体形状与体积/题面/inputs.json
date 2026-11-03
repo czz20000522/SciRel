@@ -1,0 +1,85 @@
+{
+  "executable": true,
+  "input_complete": true,
+  "input_status": "FINITE_INPUT_AUTHORED_STATIC_ONLY_NOT_EVALUATED",
+  "fixed_inputs": {
+    "outline_model": {
+      "R_m": "R0+a*cos(theta+delta*sin(theta))",
+      "Z_m": "Z0+b*sin(theta)*(1+eta*sin(theta))",
+      "R0": 1.6,
+      "Z0": 0.1,
+      "a": 0.5,
+      "b": 0.8,
+      "delta": 0.3,
+      "eta": 0.1
+    },
+    "theta_range_rad": [
+      0,
+      6.283185307179586
+    ]
+  },
+  "selected_finite_input": {
+    "authored_now": true,
+    "boundary_sampling": {
+      "segments": 256,
+      "theta_recipe": "theta_k=theta_min+(theta_max-theta_min)*k/256, k=0..255; use the unchanged fixed_inputs.theta_range_rad endpoints",
+      "outline_recipe": "Evaluate the original fixed R(theta),Z(theta) formula at each theta_k; append an exact copy of vertex0 as vertex256.",
+      "shape": [
+        257,
+        2
+      ],
+      "columns": [
+        "R_m",
+        "Z_m"
+      ],
+      "closure": "exact first-vertex copy; endpoint theta_max is represented by this closing copy, not a separately evaluated trigonometric point",
+      "resampling": "none; no interpolation, filtering, sorting or smoothing"
+    },
+    "volume_grid": {
+      "R_min_m": 0.8,
+      "R_max_m": 2.4,
+      "R_count": 65,
+      "Z_min_m": -1.1,
+      "Z_max_m": 1.3,
+      "Z_count": 129,
+      "R_node_recipe": "R_i=RN64(R_min+(R_max-R_min)*i/64), i=0..64; inner expression uses exact real values of the binary64 constants",
+      "Z_node_recipe": "Z_j=RN64(Z_min+(Z_max-Z_min)*j/128), j=0..128",
+      "R_array_recipe": "R_grid[i,j]=R_i",
+      "Z_array_recipe": "Z_grid[i,j]=Z_j",
+      "array_shape": [
+        65,
+        129
+      ],
+      "axis_order": [
+        "R",
+        "Z"
+      ],
+      "dR_recipe": "RN64(R_1-R_0) from the materialized first two R nodes",
+      "dZ_recipe": "RN64(Z_1-Z_0) from the materialized first two Z nodes",
+      "node_weight": "each node has the full dR*dZ; no half weights at any edge"
+    },
+    "limiter_core_mask": {
+      "shape": [
+        65,
+        129
+      ],
+      "values": "integer0or1",
+      "boundary_membership": "boundary included as1",
+      "construction": "model.md section2 gives exact point-on-segment and half-open horizontal-ray parity against the same stored257vertex boundary; no physical solve or private profile required"
+    },
+    "numeric_convention": {
+      "literal_parameters": "Original and selected decimal scalar inputs are rounded once to nearest binary64, ties to even, and then treated as exact real constants for input construction.",
+      "theta_and_vertices": "theta expressions and original trig formulas are mathematical real expressions with those constants; each stored vertex coordinate is rounded once to binary64, ties to even. Closure is a raw first-vertex copy.",
+      "pi_for_volume": "binary64 value0x1.921fb54442d18p+1; equals the stated theta_max/2 at this input precision",
+      "mask_predicates": "Exact real tests on the materialized binary64 vertex/grid coordinates. No epsilon or hidden geometry library.",
+      "output_contract": "The formulas define finite mathematical observables; no bitwise cross-library solver-answer requirement or new tolerance."
+    }
+  },
+  "unresolved_items": [],
+  "outside_this_card_residuals": [
+    "Squareness is outside the original nine desired outputs and is not supplied by this card.",
+    "Current-centre geometry requires a toroidal current distribution; it is outside the original nine outputs and is not an input gap for them.",
+    "This finite geometric question does not claim full FGN-GEOM family coverage or Grad-Shafranov convergence."
+  ],
+  "engineering_and_scientific_status": "Reference/source/build/capture/replay/compare and actual input construction are NOT_RUN; science and numeric acceptance remain pending."
+}

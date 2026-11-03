@@ -1,0 +1,53 @@
+{
+  "case_id": "coil-installation-001",
+  "input_id": "coil-installation-pilot",
+  "说明": "两个同向细圆环的名义配置与上环轴向偏移；SI单位。",
+  "model": {
+    "coordinate_system": "right-handed cylindrical (R, phi, Z)",
+    "mu0_H_per_m": 1.2566370614359173e-06,
+    "coil_radius_m": 0.5,
+    "current_per_coil_A": 1000.0,
+    "configurations": {
+      "nominal": {
+        "coil_z_m": [
+          -0.25,
+          0.25
+        ]
+      },
+      "displaced": {
+        "coil_z_m": [
+          -0.25,
+          0.27
+        ]
+      }
+    }
+  },
+  "observation": {
+    "R_m": [
+      0.02,
+      0.05,
+      0.1,
+      0.15,
+      0.2
+    ],
+    "Z_m": [
+      -0.2,
+      -0.1,
+      0.0,
+      0.1,
+      0.2
+    ]
+  },
+  "diagnostics": {
+    "reference_point_m": [
+      0.02,
+      0.0
+    ],
+    "flux_point_m": [
+      0.1,
+      0.0
+    ],
+    "core_R_max_m": 0.1,
+    "core_abs_Z_max_m": 0.1
+  }
+}

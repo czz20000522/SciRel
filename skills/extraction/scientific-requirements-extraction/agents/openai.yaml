@@ -1,0 +1,6 @@
+interface:
+  display_name: "科学需求提取"
+  short_description: "从科学源码生成可判定需求题，盘点物理能力覆盖并估算工作量"
+  default_prompt: "使用 $scientific-requirements-extraction 盘点指定来源项目的物理能力，估算需求题库工作量，并先提取少量可复现样例。"
+policy:
+  allow_implicit_invocation: true

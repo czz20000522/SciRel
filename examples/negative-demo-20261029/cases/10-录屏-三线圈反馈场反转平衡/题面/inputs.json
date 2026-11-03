@@ -1,0 +1,61 @@
+{
+  "parameters": {
+    "Be": 1,
+    "Rs": 0.075,
+    "alpha": 31.53506688503839,
+    "betas": 0.6,
+    "n": 2,
+    "sigma": 8.312551897545152,
+    "Izeta0": -451325.70543429017
+  },
+  "grid": {
+    "radial_nodes": 17,
+    "vertical_nodes": 33,
+    "R_min_m": 0,
+    "R_max_m": 0.14,
+    "Z_min_m": -0.75,
+    "Z_max_m": 0.75
+  },
+  "coils": {
+    "radius_m": [
+      0.15,
+      0.15,
+      0.15
+    ],
+    "radial_width_m": [
+      0.006,
+      0.006,
+      0.006
+    ],
+    "Z_center_m": [
+      -0.7,
+      0,
+      0.7
+    ],
+    "vertical_width_m": [
+      0.1,
+      1.2,
+      0.1
+    ],
+    "current_A": [
+      1000000.0,
+      1000000.0,
+      1000000.0
+    ],
+    "radial_samples": 10,
+    "vertical_samples": 100
+  },
+  "iteration": {
+    "maximum_inner_steps": 20000,
+    "maximum_boundary_steps": 30,
+    "inner_step_change_tolerance_Wb": 1e-09,
+    "boundary_step_change_tolerance_Wb": 2e-09,
+    "field_relative_tolerance": 0.0005,
+    "coil_counter_exclusive_max": 200,
+    "old_flux_fraction": 0.99,
+    "old_coil_fraction": 0.95,
+    "initial_pressure_multiplier": 1,
+    "initial_coil_multiplier": 1,
+    "initial_field_ratio": 1.1
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "free-boundary-frc-finite-grid",
+  "required": [
+    "psi_Wb",
+    "pressure_last_Pa",
+    "current_last_A_m2",
+    "pressure_multiplier",
+    "coil_multiplier",
+    "equivalent_field_T",
+    "weighted_midplane_current_last_A",
+    "section_current_last_A",
+    "inner_change_Wb",
+    "boundary_change_Wb",
+    "inner_counter",
+    "boundary_counter",
+    "coil_counter",
+    "boundary_flux_Wb",
+    "coil_boundary_flux_Wb",
+    "inner_converged",
+    "boundary_converged",
+    "field_converged",
+    "converged",
+    "status",
+    "failure_reason",
+    "termination_reason"
+  ],
+  "matrices": {
+    "names": [
+      "psi_Wb",
+      "pressure_last_Pa",
+      "current_last_A_m2"
+    ],
+    "shape": [
+      17,
+      33
+    ],
+    "axis_order": [
+      "R",
+      "Z"
+    ]
+  },
+  "boundary_arrays": {
+    "names": [
+      "boundary_flux_Wb",
+      "coil_boundary_flux_Wb"
+    ],
+    "length": 63,
+    "order": "model.md boundary enumeration"
+  },
+  "numeric_values": "finite real; explicit booleans; counters retained protocol state, not total-step claims",
+  "stopping": "all three finite-protocol criteria",
+  "status": {
+    "type": "string enum",
+    "values": [
+      "RESULT_AVAILABLE_FINITE_PROTOCOL",
+      "HOLD_NONCONVERGED_FINITE_STATE",
+      "HOLD_NONFINITE_OR_UNDEFINED",
+      "HOLD_PUBLIC_RUNTIME_MISSING",
+      "HOLD_INVALID_INPUT"
+    ],
+    "meaning": "RESULT_AVAILABLE_FINITE_PROTOCOL requires all finite-protocol criteria and converged=true; HOLD_NONCONVERGED_FINITE_STATE is a finite last state with maxiter_reached; the remaining HOLD states are runtime, input, or numeric failures and are not finite protocol results."
+  },
+  "termination_reason": {
+    "type": "string",
+    "values": [
+      "finite_protocol_converged",
+      "maxiter_reached",
+      "public_runtime_missing",
+      "invalid_input",
+      "nonfinite_or_undefined"
+    ],
+    "meaning": "Machine-readable reason for status; preserve the underlying API failure_reason separately when supplied."
+  },
+  "failure": {
+    "typed": true,
+    "status_field": "status",
+    "termination_reason_field": "termination_reason",
+    "finite_nonconvergence": "Return all finite last-state arrays and counters with status=HOLD_NONCONVERGED_FINITE_STATE, termination_reason=maxiter_reached, converged=false, and preserve failure_reason=maxiter_reached.",
+    "numeric_failure": "Use HOLD_NONFINITE_OR_UNDEFINED and termination_reason=nonfinite_or_undefined; do not fabricate arrays or zero-fill missing outputs.",
+    "missing_runtime": "Use HOLD_PUBLIC_RUNTIME_MISSING and termination_reason=public_runtime_missing.",
+    "invalid_input": "Use HOLD_INVALID_INPUT and termination_reason=invalid_input."
+  },
+  "failure_reason": {
+    "type": [
+      "string",
+      "null"
+    ],
+    "meaning": "Underlying public API failure reason when supplied; null on finite protocol convergence and may be maxiter_reached for bounded nonconvergence."
+  }
+}

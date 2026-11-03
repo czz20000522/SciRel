@@ -1,0 +1,159 @@
+{
+  "kind": "finite-atomic-slab-result",
+  "coordinates": {
+    "x_m": {
+      "shape": [
+        "Nx"
+      ],
+      "meaning": "derived strictly increasing atomic mesh"
+    },
+    "radial_velocity_normalized": {
+      "shape": [
+        "Nr"
+      ],
+      "meaning": "positive radial nodes"
+    },
+    "axial_velocity_normalized": {
+      "shape": [
+        "Nu"
+      ],
+      "meaning": "ordered symmetric nonzero signed axial nodes"
+    },
+    "Tnorm_eV": {
+      "shape": []
+    },
+    "thermal_scale_ms": {
+      "shape": []
+    }
+  },
+  "arrays": {
+    "distribution": {
+      "shape": [
+        "Nr",
+        "Nu",
+        "Nx"
+      ],
+      "units": "m^-3 per dimensionless velocity volume"
+    },
+    "boundary_distribution": {
+      "shape": [
+        "Nr",
+        "Nu"
+      ],
+      "units": "m^-3 per dimensionless velocity volume",
+      "meaning": "Applied left positive-vx boundary after bottom flux normalization;not the upstream pre-rescale boundary shape."
+    },
+    "density": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "m^-3"
+    },
+    "particle_flux": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "m^-2 s^-1"
+    },
+    "flow_velocity": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "m/s"
+    },
+    "pressure": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "eV m^-3"
+    },
+    "temperature": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "eV"
+    },
+    "random_heat_flux": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "W/m^2"
+    },
+    "total_heat_flux": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "W/m^2"
+    },
+    "ionization_source": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "m^-3 s^-1"
+    },
+    "net_particle_source": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "m^-3 s^-1"
+    },
+    "thermal_energy_transfer": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "W/m^3"
+    },
+    "momentum_transfer": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "N/m^3"
+    },
+    "total_energy_transfer": {
+      "shape": [
+        "Nx"
+      ],
+      "units": "W/m^3"
+    }
+  },
+  "scalars": {
+    "specified_incident_flux": {
+      "units": "m^-2 s^-1"
+    },
+    "left_albedo": {
+      "units": "1"
+    }
+  },
+  "optional_diagnostics": {
+    "zeroth_generation_density": "Nx;last outer iteration only",
+    "generation_densities": "Nx by(g_last+1);not padded unused columns",
+    "last_generation": "integer;cutoff applied after adding current generation"
+  },
+  "decisions": [
+    "RESULT_AVAILABLE_ON_DECLARED_DOMAIN",
+    "HOLD_INPUT_OR_SOURCE_DOMAIN",
+    "HOLD_SPATIAL_STEP",
+    "HOLD_GENERATIONS",
+    "HOLD_NONFINITE_OR_UNDEFINED_KERNEL",
+    "HOLD_SCIENTIFIC_ACCEPTANCE"
+  ],
+  "numerical_and_physical_budget": {
+    "status": "pending-independent-review",
+    "rtol": null,
+    "atol": null
+  },
+  "failure_policy": "Report stage and precise failure without source or model repair;do not replace an undefined/nonfinite output with0.",
+  "status_field": {
+    "name": "status",
+    "values": [
+      "RESULT_AVAILABLE_ON_DECLARED_DOMAIN",
+      "HOLD_GENERATIONS",
+      "HOLD_PUBLIC_RUNTIME_MISSING",
+      "HOLD_INPUT_OR_SOURCE_DOMAIN",
+      "HOLD_SPATIAL_STEP",
+      "HOLD_NONFINITE_OR_UNDEFINED_KERNEL",
+      "HOLD_SCIENTIFIC_ACCEPTANCE"
+    ]
+  },
+  "missing_outputs_policy": "Every unavailable public field is listed in missing_outputs with a typed reason; no zero or shape placeholder is allowed."
+}

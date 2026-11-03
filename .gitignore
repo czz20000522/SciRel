@@ -20,8 +20,9 @@ dist/
 *.DS_Store
 AGENTS.md.backup.*
 
-# Local project assets: method skills and agent instructions stay outside Git
-/skills/
+# Method skills are part of the published tree. The running extraction
+# progress ledger stays local.
+/skills/extraction/scientific-computation-asset-extraction/references/scientific_capability_closure_and_progress.md
 /AGENTS.md
 
 # Local generated publish artifacts (HTML site, docs bundle)

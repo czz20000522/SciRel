@@ -1,0 +1,93 @@
+{
+  "format": "directory with fields.npz, profiles.npz, summary.json, run_receipt.json",
+  "field_arrays": {
+    "shape": [
+      201,
+      76
+    ],
+    "names": [
+      "R_m",
+      "Z_m",
+      "BR_T",
+      "BZ_T",
+      "psi_Wb_per_rad",
+      "Bmag_T"
+    ]
+  },
+  "profile_arrays": {
+    "axis_shape": [
+      201
+    ],
+    "midplane_shape": [
+      76
+    ],
+    "names": [
+      "axis_Z_m",
+      "axis_BR_T",
+      "axis_BZ_T",
+      "axis_psi_Wb_per_rad",
+      "axis_Bmag_T",
+      "midplane_R_m",
+      "midplane_BR_T",
+      "midplane_BZ_T",
+      "midplane_psi_Wb_per_rad",
+      "midplane_Bmag_T"
+    ]
+  },
+  "summary": {
+    "required_fields": [
+      "status",
+      "axis_max_Bmag_T",
+      "axis_center_Bmag_T",
+      "axis_mirror_ratio",
+      "mirror_ratio_denominator_error_budget_T"
+    ],
+    "status_field": "status",
+    "status_values": [
+      "COMPLETED_BOUNDED_PARTIAL",
+      "MIRROR_RATIO_UNDEFINED_LOW_DENOMINATOR",
+      "HOLD_INVALID_INPUT",
+      "HOLD_NONFINITE_FIELD"
+    ],
+    "axis_mirror_ratio": {
+      "type": "number|null",
+      "value": "max(axis_Bmag_T)/axis_center_Bmag_T over all 201 axis points",
+      "null_rule": "Set null, never divide, and use MIRROR_RATIO_UNDEFINED_LOW_DENOMINATOR when axis_center_Bmag_T <= mirror_ratio_denominator_error_budget_T."
+    },
+    "mirror_ratio_denominator_error_budget_T": {
+      "formula": "1e-10 + 1e-7*abs(axis_center_Bmag_T)",
+      "units": "T"
+    }
+  },
+  "failure": {
+    "typed": true,
+    "status_field": "status",
+    "invalid_inputs": "HOLD_INVALID_INPUT",
+    "nonfinite_fields": "HOLD_NONFINITE_FIELD",
+    "low_denominator": "MIRROR_RATIO_UNDEFINED_LOW_DENOMINATOR",
+    "retained_outputs": "fields.npz, profiles.npz and run_receipt.json remain valid outputs when the field itself is finite; summary.axis_mirror_ratio is null in the low-denominator case."
+  },
+  "public_call": "at least one actual call to scirel.field.circular_filament_green_response",
+  "units": {
+    "R_m": "m",
+    "Z_m": "m",
+    "BR_T": "T",
+    "BZ_T": "T",
+    "psi_Wb_per_rad": "Wb/rad",
+    "Bmag_T": "T"
+  },
+  "axis_order": "[Z,R]",
+  "mirror_ratio": "max(axis_Bmag_T)/axis_center_Bmag_T over all 201 axis points",
+  "numeric_budget": {
+    "rtol": 1e-07,
+    "field_atol": 1e-10,
+    "psi_atol": 1e-11,
+    "coordinate_atol": 1e-14
+  },
+  "role": "vacuum_field_seed_for_equilibrium_iteration",
+  "not_claimed": [
+    "complete_equilibrium",
+    "self_consistent_plasma_balance",
+    "stability_or_convergence_acceptance"
+  ]
+}

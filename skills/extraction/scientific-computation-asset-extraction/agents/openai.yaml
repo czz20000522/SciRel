@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Asset Extraction"
+  short_description: "Prepare D0 sources and extract faithful D1 bundles"
+  default_prompt: "Use $scientific-computation-asset-extraction for the requested stage: prepare and freeze D0 with its upstream differences, or extract the supplied D0 in D1 source_fidelity mode."
+policy:
+  allow_implicit_invocation: true

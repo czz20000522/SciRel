@@ -1,0 +1,65 @@
+{
+  "state": "COMPLETE_LIMITED_NO_X_FINITE_REQUEST_WITH_ORIGINAL_RESIDUALS",
+  "format": "JSON object",
+  "desired_quantities": [
+    "opoints_RZpsi",
+    "xpoints_RZpsi",
+    "boundary_psi",
+    "closed_boundary_RZ"
+  ],
+  "shape_and_operator_status": "Actual65x85 input, closed limiter, finite critical and limited-boundary operators and new explicit80-ray composition fully defined; original4requested outputs retained, no null replacement.",
+  "nonfinite_policy": "Explicit failure if any required finite candidate/boundary/trace cannot be evaluated. No JSON NaN/Infinity, fake X, dropped ray, zero fill or successful all-null result; legal emptyX alone is allowed.",
+  "scientific_acceptance": "pending",
+  "fields": {
+    "opoints_RZpsi": {
+      "shape": [
+        "n_o",
+        3
+      ],
+      "columns": [
+        "R_m",
+        "Z_m",
+        "finite_psi_estimate_Wb_per_rad"
+      ],
+      "order": "After limiter filtering, increasing squared distance to original domain center; main O first. n_o>=1 on success. No new exact-distance tie rule."
+    },
+    "xpoints_RZpsi": {
+      "shape": [
+        "n_x",
+        3
+      ],
+      "columns": [
+        "R_m",
+        "Z_m",
+        "finite_psi_estimate_Wb_per_rad"
+      ],
+      "order": "Existing finite flux-difference/sign/primary LOS selection in model.md; n_x=0 is valid and serialized as[].",
+      "empty_policy": "Empty array is legal for this supported limited/no-X task, not failure and not null.",
+      "cardinality": "n_x is the number of candidates remaining after finite flux-difference/sign filtering and deletion of failed primary candidates; n_x=0 is legal. The first retained candidate is the only candidate required to pass the primary LOS check; remaining retained candidates are reported but are not claimed to have passed that check."
+    },
+    "boundary_psi": {
+      "shape": [],
+      "unit": "Wb/rad",
+      "definition": "Actual maximum signed bilinear node flux over the fully specified refined closedlimiter points; no analytic answer prefilled."
+    },
+    "closed_boundary_RZ": {
+      "shape": [
+        81,
+        2
+      ],
+      "columns": [
+        "R_m",
+        "Z_m"
+      ],
+      "order": "80finite rays from+Z toward+R in increasingk, followed by exactcopy ofpoint0. No X columns.",
+      "definition": "Actual normalized-spline/clip/firststrictcross/adjacentlinear interpolation composition in model.md; not HOLD/null."
+    }
+  },
+  "numeric_budget": "pending; no new tolerance or comparator",
+  "reference_execution": "NOT_RUN; separate from mathematical/public input completeness",
+  "audit_regressions": {
+    "crossing_weight": "For f=(q_next-1)/(q_next-q_prev), crossing=(1-f)*P_next+f*P_prev; if q_prev==1 then crossing=P_prev.",
+    "x_selection": "Sort by squared flux difference, apply sign gate, then delete failed first candidates until the first candidate satisfies both finite checks.",
+    "scope": "These regressions protect the finite limited/no-X contract; they do not claim diverted or multi-null coverage."
+  }
+}

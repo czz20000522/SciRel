@@ -1,0 +1,6 @@
+interface:
+  display_name: "Post-Acceptance Runtime Cleanup"
+  short_description: "Route acceptance-owned runtime asset cleanup"
+  default_prompt: "Use $post-acceptance-runtime-cleanup to route post-acceptance runtime asset cleanup through the SciRel lifecycle policy."
+policy:
+  allow_implicit_invocation: false

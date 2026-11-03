@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Request Solving"
+  short_description: "Clarify a fuzzy request and deliver checked scientific results"
+  default_prompt: "Use $scirel-solving to restate and clarify this fuzzy scientific request, size the job, keep the user-facing plan separate from internal execution, find and call SciRel capabilities, record every gap as explicit glue, check the result and deliver result-first. The host owns authorization, observability and recovery."
+policy:
+  allow_implicit_invocation: true

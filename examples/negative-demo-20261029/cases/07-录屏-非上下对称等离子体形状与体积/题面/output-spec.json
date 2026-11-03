@@ -1,0 +1,66 @@
+{
+  "state": "FINITE_INPUT_DEFINED_NOT_EVALUATED",
+  "format": "Future JSON object with exactly the nine declared quantities, each a finite scalar",
+  "desired_quantities": [
+    "area_m2",
+    "volume_m3",
+    "perimeter_m",
+    "Rgeo_m",
+    "Zgeo_m",
+    "minor_radius_m",
+    "elongation",
+    "triangularity_upper",
+    "triangularity_lower"
+  ],
+  "shape_and_operator_status": "Complete outline sampling, closure/no-resampling, full R/Z/dR/dZ/limiter_core_mask construction and all nine finite operators are in inputs.json and model.md.",
+  "nonfinite_policy": "Every requested scalar must be finite. Missing state, shape/axis/closure error, zero denominator or unexpected nonfinite result is explicit failure; no zero fill or hidden reference repair.",
+  "scientific_acceptance": "pending",
+  "fields": {
+    "area_m2": {
+      "shape": [],
+      "unit": "m^2",
+      "definition": "Unsigned area of the supplied closed chord polygon."
+    },
+    "volume_m3": {
+      "shape": [],
+      "unit": "m^3",
+      "definition": "2*pi*sum(R_grid*dR*dZ*limiter_core_mask) over all65x129nodes; no polygon-moment replacement."
+    },
+    "perimeter_m": {
+      "shape": [],
+      "unit": "m",
+      "definition": "Consecutive Euclidean length of the same closed polygon."
+    },
+    "Rgeo_m": {
+      "shape": [],
+      "unit": "m",
+      "definition": "(vertex_Rmax+vertex_Rmin)/2"
+    },
+    "Zgeo_m": {
+      "shape": [],
+      "unit": "m",
+      "definition": "(vertex_Zmax+vertex_Zmin)/2"
+    },
+    "minor_radius_m": {
+      "shape": [],
+      "unit": "m",
+      "definition": "(vertex_Rmax-vertex_Rmin)/2"
+    },
+    "elongation": {
+      "shape": [],
+      "unit": "dimensionless",
+      "definition": "(vertex_Zmax-vertex_Zmin)/(vertex_Rmax-vertex_Rmin)"
+    },
+    "triangularity_upper": {
+      "shape": [],
+      "unit": "dimensionless",
+      "definition": "(Rgeo-R_at_first_vertex_Zmax)/minor_radius"
+    },
+    "triangularity_lower": {
+      "shape": [],
+      "unit": "dimensionless",
+      "definition": "(Rgeo-R_at_first_vertex_Zmin)/minor_radius"
+    }
+  },
+  "numeric_budget": "pending; no new tolerance or comparator is declared"
+}
