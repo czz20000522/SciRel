@@ -1,0 +1,145 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.polynomial-fit",
+ "title": {
+  "en": "Ascending-power SVD polynomial fit",
+  "zh": "升幂SVD多项式拟合"
+ },
+ "summary": "Compute minimum-norm ascending-power coefficients with absolute singular cutoff1e-10",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "poly_fit"
+ ],
+ "discovery": {
+  "capability": [
+   "Ascending-power SVD polynomial fit",
+   "Compute minimum-norm ascending-power coefficients with an absolute singular-value cutoff of 1e-10."
+  ],
+  "operation": [
+   "ascending-power polynomial fit with SVD truncation",
+   "matched one-dimensional samples and polynomial order -> basis evaluators and coefficients"
+  ],
+  "model": "Explicit SVD pseudo-inverse fit to ascending-power polynomial columns with an absolute singular cutoff of 1e-10.",
+  "geometry": "One-dimensional sample coordinates and ordinates in generic units; coefficients scale as y/x**power.",
+  "boundary": "No boundary model; over- and underdetermined systems use the same cutoff, and the cutoff is not a scale-invariant statistical rank policy.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Ascending-power SVD polynomial fit",
+  "direction": "Declared inputs to Ascending power evaluators",
+  "definition": "Compute minimum-norm ascending-power coefficients with absolute singular cutoff1e-10",
+  "model": "Explicit source SVD pseudoinverse",
+  "geometry": "one-dimensional sample coordinates and ordinates",
+  "coordinates": "Generic x,y sample units; coefficients y/x**power",
+  "boundary": "No boundary model; over/underdetermined systems use same cutoff",
+  "assumptions": [
+   "Finite one-dimensional matched x,y",
+   "Integer order>=0 for supported fit"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x",
+   "description": "Sample coordinates",
+   "units": "coordinate units",
+   "shape": "(M,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite matched"
+  },
+  {
+   "name": "y",
+   "description": "Sample values",
+   "units": "value units",
+   "shape": "(M,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite matched"
+  },
+  {
+   "name": "order",
+   "description": "Highest polynomial power",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Nonnegative integer",
+   "default": 3
+  }
+ ],
+ "outputs": [
+  {
+   "name": "basis_fns",
+   "description": "Ascending power evaluators",
+   "units": "coordinate**power",
+   "shape": "list(order+1)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Functions retain exponent"
+  },
+  {
+   "name": "coefficients",
+   "description": "Minimum-norm coefficients",
+   "units": "value/coordinate**power",
+   "shape": "(order+1,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Singular values below1e-10 discarded"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite one-dimensional matched x,y",
+   "Integer order>=0 for supported fit"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "Absolute source cutoff is not a scale-invariant statistical rank policy",
+   "No uncertainty/confidence or ill-conditioning guarantee"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "poly_fit",
+   "signature": "poly_fit(x, y, order=3)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "poly_fit"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Fit a first-order ascending-power polynomial to three samples.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import poly_fit\n\n_, coefficients = poly_fit(np.array([-1.0, 0.0, 1.0]), np.array([2.0, 1.0, 0.0]), order=1)\nnp.testing.assert_allclose(coefficients, [1.0, -1.0])",
+  "expected": "The fitted ascending-power coefficients are [1.0, -1.0]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Absolute source cutoff is not a scale-invariant statistical rank policy",
+   "No uncertainty/confidence or ill-conditioning guarantee"
+  ]
+ }
+}

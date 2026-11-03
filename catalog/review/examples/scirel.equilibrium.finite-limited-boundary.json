@@ -1,0 +1,192 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.finite-limited-boundary",
+ "title": {
+  "en": "Finite-grid limited magnetic boundary",
+  "zh": "有限网格受限磁边界"
+ },
+ "summary": "Find finite-difference magnetic-axis candidates, evaluate a refined limiter contact and trace a closed normalized flux boundary from typed R/Z arrays.",
+ "taxonomy": [
+  "equilibrium",
+  "topology",
+  "geometry",
+  "finite-grid"
+ ],
+ "aliases": [
+  "finite magnetic axis",
+  "limited flux boundary"
+ ],
+ "discovery": {
+  "capability": [
+   "Finite-grid limited magnetic boundary",
+   "Combine critical-point screening, limiter contact and ray contour tracing."
+  ],
+  "operation": [
+   "finite-grid topology and boundary extraction",
+   "R/Z axes, node flux and limiter polygon -> O/X candidates, contact flux and closed contour"
+  ],
+  "model": "Central finite-difference eight-neighbor candidate screening, bilinear limiter contact and tensor-product cubic interpolating spline rays.",
+  "geometry": "Strictly increasing R and Z axes with psi[R,Z] node order; limiter vertices are R/Z pairs; no axisymmetric reconstruction is performed.",
+  "boundary": "Limiter vertices must lie strictly inside the rectangular grid. Boundary contact uses refined grid-line intersections and the signed maximum bilinear value; each ray requires a first strict normalized-flux crossing.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "finite R/Z flux grid and closed limiter to limited magnetic topology and boundary",
+  "direction": "R, Z, psi, limiter -> O/X candidates, limiter flux and closed R/Z contour",
+  "definition": "Screen strict eight-neighbor minima of a central-difference gradient-square proxy, classify Hessian corrections, refine limiter segments against grid lines, then trace ordered rays from the primary O point.",
+  "model": "Finite-difference critical-point estimate, bilinear interpolation and RectBivariateSpline cubic interpolation with first strict q>1 crossing.",
+  "geometry": "R and Z are one-dimensional increasing axes; psi has shape (len(R),len(Z)); outputs use R/Z ordering and no hidden device constants.",
+  "coordinates": "Caller-declared length and flux units are preserved; the implementation does not rescale units.",
+  "boundary": "No extrapolation, fabricated O/X point, dropped ray or default contour is produced on failure.",
+  "assumptions": [
+   "The supplied grid is rectilinear and finite.",
+   "The supported case has a nondegenerate O point inside a nondegenerate limiter."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "R",
+   "description": "Strictly increasing radial grid axis.",
+   "units": "caller-declared length",
+   "shape": "(n_R,)",
+   "dtype": "finite real array",
+   "required": true,
+   "constraints": "At least three nodes."
+  },
+  {
+   "name": "Z",
+   "description": "Strictly increasing vertical grid axis.",
+   "units": "caller-declared length",
+   "shape": "(n_Z,)",
+   "dtype": "finite real array",
+   "required": true,
+   "constraints": "At least three nodes."
+  },
+  {
+   "name": "psi",
+   "description": "Node flux field in R/Z order.",
+   "units": "caller-declared flux",
+   "shape": "(n_R,n_Z)",
+   "dtype": "finite real array",
+   "required": true,
+   "constraints": "Shape must match axes."
+  },
+  {
+   "name": "limiter",
+   "description": "Closed polygon vertices in R/Z order.",
+   "units": "caller-declared length",
+   "shape": "(n,2)",
+   "dtype": "finite real array",
+   "required": true,
+   "constraints": "At least four vertices; first and last are closed or the first is appended; nonzero area and strictly interior to the grid."
+  },
+  {
+   "name": "angle_count",
+   "description": "Number of equally spaced boundary rays.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "default": 80,
+   "constraints": "Positive integer."
+  },
+  {
+   "name": "ray_samples",
+   "description": "Samples used along each boundary ray.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "default": 1000,
+   "constraints": "Positive integer."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "opoints_RZpsi",
+   "description": "O-point candidates sorted by distance to grid center.",
+   "units": "R/Z and flux caller units",
+   "shape": "(n_O,3)",
+   "dtype": "finite real array",
+   "required": true,
+   "constraints": "At least one row; primary O is row zero."
+  },
+  {
+   "name": "xpoints_RZpsi",
+   "description": "Finite X-point candidates after signed flux filtering.",
+   "units": "R/Z and flux caller units",
+   "shape": "(n_X,3)",
+   "dtype": "finite real array",
+   "required": true,
+   "constraints": "May be empty."
+  },
+  {
+   "name": "boundary_psi",
+   "description": "Maximum bilinear flux over refined limiter points.",
+   "units": "caller-declared flux",
+   "shape": "scalar",
+   "dtype": "Python float",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "closed_boundary_RZ",
+   "description": "Ordered ray crossings with an exact closing copy of row zero.",
+   "units": "caller-declared length",
+   "shape": "(angle_count+1,2)",
+   "dtype": "finite real array",
+   "required": true,
+   "constraints": "Every ray must have a first strict q>1 crossing."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Axes, node flux and polygon are finite and shape-consistent.",
+   "A nondegenerate O point and finite limiter contact exist."
+  ],
+  "supported": [
+   "Finite rectilinear grids, empty or nonempty X-point arrays, arbitrary closed polygons strictly inside the domain."
+  ],
+  "excluded": [
+   "Degenerate Hessians, topology ties, extrapolation, diverted/SOL/strike-point reconstruction and device-specific constants."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for malformed, nonfinite, unsorted, degenerate or out-of-domain inputs.",
+  "runtime_failure": "Raises ValueError when no valid O point, finite contact or ray crossing exists; numerical interpolation errors propagate.",
+  "nonconvergence": "Not applicable; the operation is finite and noniterative.",
+  "partial_results": "No partial result mapping is returned after validation or ray-trace failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium.finite_limited_boundary",
+   "symbol": "solve_limited_boundary",
+   "signature": "solve_limited_boundary(R, Z, psi, limiter, *, angle_count=80, ray_samples=1000)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Extract a finite limited boundary from typed arrays.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import solve_limited_boundary\nr=np.linspace(0.0,2.0,9); z=np.linspace(-1.0,1.0,9)\nR,Z=np.meshgrid(r,z,indexing='ij'); psi=1.0-((R-1.0)**2+Z**2)\nlimiter=np.array([[.4,-.6],[1.6,-.6],[1.6,.6],[.4,.6],[.4,-.6]])\nresult=solve_limited_boundary(r,z,psi,limiter,angle_count=8,ray_samples=100)\nassert result['closed_boundary_RZ'].shape == (9,2)",
+  "expected": "A finite mapping with O/X candidates, boundary_psi and an ordered closed contour."
+ },
+ "verification": {
+  "scope": [
+   "Normal finite limited case against an analytic quadratic field.",
+   "Lower/upper node and sample boundaries, polygon refinement and bilinear values.",
+   "Malformed, nonfinite, degenerate, out-of-domain and no-crossing failures."
+  ],
+  "tests": [
+   "tests/equilibrium/test_finite_limited_boundary.py"
+  ],
+  "evidence_ceiling": "Direct tests establish the finite typed-array contract and the analytic quadratic regression; they do not establish physical validity, mesh convergence or broader null topology acceptance.",
+  "known_limitations": [
+   "Exact sorting ties and degenerate Hessians remain rejected.",
+   "The spline trace requires a valid first strict crossing on every requested ray.",
+   "Scientific review, rights and release remain separate decisions."
+  ]
+ }
+}

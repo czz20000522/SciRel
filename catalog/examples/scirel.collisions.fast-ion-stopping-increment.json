@@ -1,0 +1,186 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.fast-ion-stopping-increment",
+ "title": {
+  "en": "Empirical fast-ion stopping cross-section increment",
+  "zh": "经验快离子阻止截面增量"
+ },
+ "summary": "Evaluate one fixed empirical additive fast-ion contribution to the neutral-beam stopping cross section from local power density, supplied electron slowing time and a magnetic-axis birth-pitch cosine; return only the increment in m^2.",
+ "taxonomy": [
+  "collisions",
+  "cross-section",
+  "fast-ion",
+  "neutral-beam",
+  "empirical-increment"
+ ],
+ "aliases": [
+  "fast-ion beam-stopping increment",
+  "additive stopping cross section"
+ ],
+ "discovery": {
+  "capability": [
+   "Empirical fast-ion stopping cross-section increment",
+   "A local additive area contribution evaluated with supplied power density and electron slowing time."
+  ],
+  "operation": [
+   "Evaluate a fixed empirical additive stopping contribution",
+   "beam mass and energy, birth-pitch cosine, electron density and temperature, local power density and slowing time -> stopping increment in m^2"
+  ],
+  "model": "Fixed empirical energy and pitch polynomials, fractional temperature power and pitch-diffusion parameter y=0.6; this is expression evaluation with no established quantitative calibration interval or fit-error bound.",
+  "geometry": "Caller-supplied cosine of the neutral-particle birth direction relative to the magnetic axis; scalar inputs become (1,1), vectors become rows and lower-rank arrays gain singleton axes on the right. No beam path, magnetic field or spatial geometry is reconstructed.",
+  "boundary": "The expression uses fmin(1,abs(birth_pitch_cosine)), including NaN pitch mapping to one, and overwrites only the energy polynomial for energy_ratio>pi. Other zero, negative, nonfinite and extreme real inputs retain arithmetic warnings and NaN/Inf/complex outcomes; complex inputs and incompatible axes fail.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "a fixed empirical additive fast-ion contribution to the neutral-beam stopping cross section",
+  "direction": "seven local beam/plasma inputs -> stopping_increment_m2 array",
+  "definition": "Let A=beam_mass_number, E=beam_energy_ev, c=birth_pitch_cosine, n=electron_density_m3, te=electron_temperature_ev, P=power_density_w_m3 and tau=electron_slowing_time_s. Use e=1.602176462e-19 J/eV, S=P/(E*e), T=(te/1e3)/10, Ehat=(E/A)/1e6 and r=Ehat/T. Accumulate F(r)=0.57658+1.6432*r-4.8886*r^2+5.3932*r^3-2.9226*r^4+0.77156*r^5-0.079095*r^6 in ascending power order, then overwrite F with zero where r>pi, leaving equality unchanged. Set p=fmin(1,abs(c)); NaN c therefore gives p=1. Accumulate G(p)=0.30812*p+11.992*p^2-68.971*p^3+165.94*p^4-177.33*p^5+69.833*p^6 in ascending power order. With fixed pitch-diffusion parameter y=0.6, form R=(((T^(-0.9027)*F(r))*G(p))*1e-19 m^2, then return ((S*tau)/n)*R, retaining this multiplication/division order and the complex fractional-power branch for negative T. S has units m^-3 s^-1, S*tau/n is dimensionless and 1e-19 m^2 supplies the area scale.",
+  "model": "fixed empirical polynomials and temperature power with pitch diffusion fixed at y=0.6; no calibrated prediction over a quantified physical domain",
+  "geometry": "local supplied quantities and a magnetic-axis birth-pitch cosine; no spatial or magnetic geometry solver",
+  "coordinates": "E and te in eV, n in m^-3, P in W/m^3 and tau in s; A and the birth-pitch cosine are dimensionless. Scalar inputs become (1,1), one-dimensional inputs become (1,N), and implicit expansion aligns leading axes by appending singleton axes on the right.",
+  "boundary": "only the absolute pitch cap and strict r>pi energy-polynomial overwrite are applied; there is no density gate, finite-result guarantee or zero-power short circuit",
+  "assumptions": [
+   "The coefficient tables, ascending-power accumulation, e=1.602176462e-19 J/eV and fixed y=0.6 define this expression and are not replaced by refitted coefficients or a newer conversion constant.",
+   "The power port is a local volumetric neutral-beam deposition power density in W/m^3. The caller supplies the slowing time in seconds; neither a volume nor a slowing-time model is inferred.",
+   "The birth-pitch input is a cosine relative to the magnetic axis, not an angle. Its equivalence to a toroidal-direction or full-local-magnetic-field pitch is not established.",
+   "Inputs are converted to real binary64 arrays without physical-domain rejection of zero, negative or nonfinite values. Such arithmetic probes do not represent qualified physical plasma states."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "beam_mass_number",
+   "description": "Beam isotope mass number A used in the E/A energy normalization.",
+   "units": "dimensionless",
+   "shape": "() | (N,) | (d0,d1,...)",
+   "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
+   "required": true,
+   "constraints": "No positivity or finiteness check; the caller owns physical interpretation and compatibility with the other input axes."
+  },
+  {
+   "name": "beam_energy_ev",
+   "description": "Beam-particle injection energy E, before the E/A and MeV normalizations.",
+   "units": "eV",
+   "shape": "() | (N,) | (d0,d1,...)",
+   "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
+   "required": true,
+   "constraints": "No positivity or finiteness check; E enters the particle-rate division even when power density is zero."
+  },
+  {
+   "name": "birth_pitch_cosine",
+   "description": "Cosine of the neutral-particle birth direction relative to the magnetic axis.",
+   "units": "dimensionless",
+   "shape": "() | (N,) | (d0,d1,...)",
+   "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
+   "required": true,
+   "constraints": "A cosine parameter, not degrees or radians. Arithmetic uses fmin(1,abs(value)); magnitudes above one and infinities cap at one, and NaN maps to one."
+  },
+  {
+   "name": "electron_density_m3",
+   "description": "Local electron number density n in the normalization S*tau/n.",
+   "units": "m^-3",
+   "shape": "() | (N,) | (d0,d1,...)",
+   "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
+   "required": true,
+   "constraints": "No positivity, finiteness or density-threshold check; division by zero and nonfinite arithmetic are retained."
+  },
+  {
+   "name": "electron_temperature_ev",
+   "description": "Electron temperature te, normalized as T=(te/1e3)/10.",
+   "units": "eV",
+   "shape": "() | (N,) | (d0,d1,...)",
+   "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
+   "required": true,
+   "constraints": "No positivity or finiteness check. A negative scaled temperature uses the complex fractional-power branch; zero and extreme values can give warnings and nonfinite results."
+  },
+  {
+   "name": "power_density_w_m3",
+   "description": "Supplied local volumetric neutral-beam deposition power density P.",
+   "units": "W/m^3",
+   "shape": "() | (N,) | (d0,d1,...)",
+   "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
+   "required": true,
+   "constraints": "Total injected power in W is not interchangeable with this port. No volume conversion, positivity check or zero-power shortcut is applied."
+  },
+  {
+   "name": "electron_slowing_time_s",
+   "description": "Caller-supplied electron slowing time tau multiplying the local particle-rate density.",
+   "units": "s",
+   "shape": "() | (N,) | (d0,d1,...)",
+   "dtype": "real scalar or array-like converted to float64; complex-valued inputs rejected",
+   "required": true,
+   "constraints": "No slowing-time estimate, clipping, positivity check or finiteness check is performed."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "stopping_increment_m2",
+   "description": "Only the empirical additive fast-ion contribution to the stopping cross section.",
+   "units": "m^2",
+   "shape": "(...), ndim >= 2",
+   "dtype": "float64 or complex128 ndarray",
+   "required": true,
+   "constraints": "May contain signed, NaN, infinite or complex values. Neither a finite nonnegative value nor a zero result for zero power is guaranteed."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Supply the declared local units, the magnetic-axis birth-pitch cosine and an independently chosen electron slowing time.",
+   "Accept the fixed y=0.6 expression, real binary64 input conversion and the stated leading-axis expansion convention."
+  ],
+  "supported": [
+   "Stateless evaluation of the specified empirical additive expression, with no input mutation.",
+   "Scalar, row, column, matrix and N-dimensional evaluations, including the declared arithmetic and incompatible-axis behavior."
+  ],
+  "excluded": [
+   "Total stopping cross section, attenuation, energy deposition, time evolution, a slowing-time estimate or a complete application model.",
+   "Beam geometry or magnetic-field reconstruction, or equivalence of magnetic-axis, toroidal-direction and full-local-field pitch.",
+   "A quantified calibrated energy/density/pitch interval, a fit-error bound, arbitrary species coverage or independent physical validation. The qualitative low-density/high-energy context is not a calibration domain.",
+   "Parity for redundant trailing singleton axes, particular MATLAB releases or non-binary64 input-storage behavior."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises TypeError for complex-valued inputs. Values that cannot be converted to float64 propagate their conversion error; incompatible expanded axes raise ValueError.",
+  "runtime_failure": "Numerical arithmetic may emit RuntimeWarning and return NaN, signed infinity or complex values. Zero, negative, nonfinite and extreme real values are not replaced with a fallback or rejected as unphysical; caller warning filters can turn warnings into exceptions.",
+  "nonconvergence": "Not applicable; this is a direct stateless expression with no iteration.",
+  "partial_results": "No partial array is returned after an exception. NaN/Inf/complex entries in a returned array are retained arithmetic outcomes, not a convergence or scientific-validity status."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.fast_ion_stopping_increment",
+   "symbol": "evaluate_fast_ion_stopping_increment",
+   "signature": "evaluate_fast_ion_stopping_increment(beam_mass_number, beam_energy_ev, birth_pitch_cosine, electron_density_m3, electron_temperature_ev, power_density_w_m3, electron_slowing_time_s)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "evaluate_fast_ion_stopping_increment"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate one all-scalar case with a supplied magnetic-axis birth-pitch cosine, local power density and slowing time.",
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_fast_ion_stopping_increment\nincrement = evaluate_fast_ion_stopping_increment(1.0, 100000.0, 0.5, 1e18, 10000.0, 1e6, 1.0)\nassert increment.shape == (1, 1)\nnp.testing.assert_allclose(increment, [[1.9645775636530587e-18]], rtol=5e-12, atol=1e-300)\nprint(increment.shape)\nprint(increment.dtype)\nprint(f'{increment[0, 0]:.17g} m^2')",
+  "expected": "(1, 1)\nfloat64\n1.9645775636530587e-18 m^2"
+ },
+ "verification": {
+  "scope": [
+   "Fixed numerical baselines cover the seven ports, strict energy-ratio cutoff, absolute pitch cap, negative/zero/nonfinite arithmetic and complex-temperature results; finite real and imaginary components use rtol=5e-12 and atol=1e-300. Warnings are retained as diagnostics; equality of warning text or counts is not required.",
+   "Direct tests check scalar/row/column/matrix/N-dimensional axes, expansion, empty input and incompatible-axis failure, plus unchanged inputs.",
+   "An independent high-precision expression checks numerical evaluation, with linear scaling in power density and supplied slowing time and inverse scaling in electron density; the example checks one finite scalar case. Dimensional closure rests on the declared definitions and cited area unit, not numerical tests of physical validity."
+  ],
+  "tests": [
+   "tests/collisions/test_fast_ion_stopping_increment.py"
+  ],
+  "evidence_ceiling": "Numerical baselines and independent expression/scaling checks support evaluation of this specified empirical relation and its declared arithmetic/axis behavior. They do not establish a calibrated physical domain, quantified fit error, general species validity or complete application behavior. The cited area scale, normalization and birth-pitch definitions do not close those gaps. Human scientific acceptance remains pending.",
+  "known_limitations": [
+   "The qualitative low-density/high-energy setting supplies no quantitative density gate or calibrated energy/pitch interval; fixed y=0.6 is a model assumption.",
+   "No independent physical calibration, fit-error bound or general species coverage is established; the simplified treatment may overestimate enhancement.",
+   "The caller supplies local power density, electron slowing time and the appropriate magnetic-axis birth-pitch cosine; no conversion from total power or alternative pitch geometry is inferred.",
+   "Warnings, signed results, NaN/Inf and complex values can occur, including from finite or zero-power inputs. Redundant trailing-singleton, MATLAB-release and non-binary64-storage parity are not promised.",
+   "The generic discovery classification means no named-device constants are built in; it does not certify physical applicability."
+  ]
+ },
+ "references": [
+  "K. Okano et al. (2001), ECA 25A, P2.088, pp. 809-812; birth-pitch definition on p. 810 and area scale/normalization in Eq. (6), p. 811. https://info.fusion.ciemat.es/OCS/EPS2001/pdfs/P2.088.pdf"
+ ]
+}

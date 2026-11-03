@@ -1,0 +1,229 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.geometry.material-support-classification",
+ "title": {
+  "en": "Closed-flux and magnetic-axis material support classification",
+  "zh": "闭合磁通面与磁轴材料支撑分类"
+ },
+ "summary": "Classify which points of a solver grid carry cold-plasma material support from the poloidal flux already sampled on that grid, the cylindrical coordinates of the grid, the separatrix flux and the selected flux-surface side, the PML frame thickness, and the caller-owned PEC mask.",
+ "taxonomy": [
+  "geometry",
+  "material-support",
+  "flux-surface",
+  "pml"
+ ],
+ "aliases": [
+  "material support mask",
+  "cold plasma support classification"
+ ],
+ "discovery": {
+  "capability": [
+   "Closed-flux and magnetic-axis material support classification",
+   "Classify solver-grid points carrying cold-plasma material support from sampled poloidal flux and separatrix data."
+  ],
+  "operation": [
+   "geometric support classification on sampled flux values and solver-box coordinates",
+   "poloidal flux, grid coordinates, separatrix flux, PML thickness and PEC mask -> support, closed-flux and axis-segment masks"
+  ],
+  "model": "Geometric material-support classification; no plasma model, field solve or flux-surface reconstruction.",
+  "geometry": "Sampled poloidal flux on a solver grid with cylindrical radii, axial coordinates and discrete solver-box indices.",
+  "boundary": "The PML frame is the set of points within pml_cells of a solver-box face; a zero thickness is rejected rather than treated as an empty frame.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "a sampled poloidal flux, the cylindrical coordinates of the sampling grid, a separatrix flux with a selected side, a PML frame thickness, and a PEC mask to the set of grid points with cold-plasma material support",
+  "direction": "poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask -> material_support_mask, closed_flux_mask, axis_segment_mask",
+  "definition": "Forms the closed-flux mask as the covered points on the selected side of the separatrix flux, forms the innermost-radius segment as the covered points at the grid's minimum radius within the poloidal half length, excludes the PML frame on all six faces of the solver box, excludes the caller's PEC mask, and requires the result to be non-empty.",
+  "model": "geometric material-support classification on a sampled flux surface; no plasma model, no field solve, and no flux-surface reconstruction is performed",
+  "geometry": "the flux surface is supplied as a sampled scalar field, so the classification is purely geometric in the sampled flux value and in the grid coordinates",
+  "coordinates": "cylindrical radius and axial coordinate of the sampling grid, together with the discrete index position of each point in the solver box",
+  "boundary": "the PML frame is the set of points within pml_cells of any of the six faces of the solver box; the frame thickness must be a positive integer, so a zero thickness is rejected rather than interpreted as an empty frame",
+  "assumptions": [
+   "The poloidal flux was already sampled on the same grid, so no interpolation is performed here.",
+   "The coverage mask marks the points for which that sampling is defined; the classification never extends support beyond it.",
+   "The flux-surface side is a caller decision, so the relation never infers which side of the separatrix is confined.",
+   "The innermost radius present on the grid is the axis location; this coincides with the magnetic axis only when the grid actually contains r = 0.",
+   "The PEC mask is a caller-owned geometric declaration, not a derived quantity."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "poloidal_flux_wb_per_rad",
+   "description": "Poloidal flux per radian sampled on the solver grid.",
+   "units": "Wb/rad",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and three-dimensional. Non-finite flux is rejected, because a non-finite sample cannot be compared against the separatrix flux."
+  },
+  {
+   "name": "covered_mask",
+   "description": "Points for which the flux sampling is defined.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool array-like",
+   "required": true,
+   "constraints": "Must match the flux shape. Support is never granted outside this mask."
+  },
+  {
+   "name": "radii_m",
+   "description": "Cylindrical radius of every grid point.",
+   "units": "m",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, non-negative, and matching the flux shape. The grid's minimum value locates the innermost radius."
+  },
+  {
+   "name": "axial_coordinate_m",
+   "description": "Axial coordinate of every grid point.",
+   "units": "m",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and matching the flux shape. Its absolute value is compared against the poloidal half length."
+  },
+  {
+   "name": "separatrix_flux_wb_per_rad",
+   "description": "Poloidal flux per radian of the separatrix.",
+   "units": "Wb/rad",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite. Not required to lie inside the sampled flux range; a separatrix outside the range simply makes the selected side empty, which then fails the non-empty support requirement."
+  },
+  {
+   "name": "closed_flux_side",
+   "description": "Which side of the separatrix flux is confined.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "Exactly 'less_than' or 'greater_than'. Any other value is rejected rather than defaulted."
+  },
+  {
+   "name": "xpoint_half_length_m",
+   "description": "Poloidal half length around the midplane within which the innermost-radius segment counts as support.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "pml_cells",
+   "description": "Thickness of the perfectly matched layer frame, in grid cells, excluded on all six faces of the solver box.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "A positive integer. A zero thickness is rejected: the exclusion is expressed as slice assignments, and a zero thickness would make every slice cover the whole box."
+  },
+  {
+   "name": "pec_mask",
+   "description": "Caller-owned perfect-electric-conductor mask.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool array-like",
+   "required": true,
+   "constraints": "Must match the flux shape. PEC points are removed from the support after the flux-surface classification."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "material_support_mask",
+   "description": "Grid points carrying cold-plasma material support.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Guaranteed non-empty: an empty mask raises instead of being returned, because a solve with no cold-plasma material is not a result of this relation."
+  },
+  {
+   "name": "closed_flux_mask",
+   "description": "Covered grid points on the selected side of the separatrix flux, before the PML frame and the PEC mask are applied.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "A subset of covered_mask. Returned so that a caller can attribute an empty or surprising support mask to the flux-surface choice rather than to the frame or the conductor mask."
+  },
+  {
+   "name": "axis_segment_mask",
+   "description": "Covered grid points at the grid's innermost radius within the poloidal half length, before the PML frame and the PEC mask are applied.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "A subset of covered_mask. Because this term is intersected with the coverage mask, it is empty whenever the sampled equilibrium's radial axis begins above the grid's minimum radius."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The poloidal flux has already been sampled on the solver grid, and the coverage mask states where that sampling is defined.",
+   "The caller has decided which side of the separatrix flux is confined and the poloidal half length of interest.",
+   "The solver box has a genuine PML frame of at least one cell."
+  ],
+  "supported": [
+   "Either separatrix side.",
+   "Any PML frame thickness that leaves a non-empty interior.",
+   "The innermost-radius segment may add covered, non-PEC, non-PML points whether the minimum grid radius is zero or positive; for positive minimum radius it is a geometric proxy, not the magnetic axis.",
+   "PEC masks of any shape-compatible pattern.",
+   "Any three-dimensional solver grid shape."
+  ],
+  "excluded": [
+   "Interpolation or reconstruction of the flux field; the flux must already be sampled.",
+   "Inferring which side of the separatrix is confined.",
+   "Identifying the magnetic axis from the flux field; the innermost-radius segment is a geometric proxy only.",
+   "Any plasma, collisionality, or wave model.",
+   "Solver grids with no PML frame, which are rejected rather than treated as having an empty frame."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when the flux is not a finite 3D array, when covered_mask, radii_m, axial_coordinate_m, or pec_mask does not match the flux shape, when radii_m is negative or non-finite, when the coordinate arrays are non-finite, when the separatrix flux is non-finite, when closed_flux_side is not one of the two allowed values, when the poloidal half length is non-finite or not strictly positive, or when pml_cells is not a positive integer.",
+  "runtime_failure": "Raises ValueError when the classified support mask is empty. The message names the closed-flux side, the innermost-radius segment, the PML frame, and the PEC mask as the contributing causes, rather than attributing the outcome to the equilibrium.",
+  "nonconvergence": "Not applicable; this relation is a fixed sequence of mask operations with no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no mapping."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.material_support",
+   "symbol": "classify_material_support",
+   "signature": "classify_material_support(poloidal_flux_wb_per_rad, covered_mask, radii_m, axial_coordinate_m, *, separatrix_flux_wb_per_rad, closed_flux_side, xpoint_half_length_m, pml_cells, pec_mask)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "classify_material_support"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Classify material support on a 9x9x7 grid while applying the PML frame and one PEC exclusion.",
+  "code": "import numpy as np\nfrom scirel.geometry import classify_material_support\nx_m = np.linspace(-0.5, 0.5, 9)\ny_m = np.linspace(-0.5, 0.5, 9)\nz_m = np.linspace(-0.4, 0.4, 7)\nxx, yy, zz = np.meshgrid(x_m, y_m, z_m, indexing='ij')\nradii = np.hypot(xx, yy)\nflux = 0.9 * radii + 0.1 * np.sin(2.0 * np.pi * zz)\ncovered = (radii >= 0.05) & (radii <= 1.0) & (zz >= -0.5) & (zz <= 0.5)\npec = np.zeros((9, 9, 7), dtype=bool)\npec[5, 5, 3] = True\nresult = classify_material_support(\n    flux,\n    covered,\n    radii,\n    zz,\n    separatrix_flux_wb_per_rad=0.4,\n    closed_flux_side='less_than',\n    xpoint_half_length_m=0.2,\n    pml_cells=1,\n    pec_mask=pec,\n)\nsupport = result['material_support_mask']\nassert support.dtype == bool and support.shape == (9, 9, 7)\nassert support.sum() > 0\nassert not support[0, :, :].any() and not support[-1, :, :].any()\nassert not support[:, 0, :].any() and not support[:, -1, :].any()\nassert not support[:, :, 0].any() and not support[:, :, -1].any()\nassert not support[5, 5, 3]\nassert not result['axis_segment_mask'].any()\nassert result['closed_flux_mask'].sum() >= support.sum()",
+  "expected": "Support is nonempty, absent on all six box faces, excludes the PEC point, and has an empty axis-segment mask."
+ },
+ "verification": {
+  "scope": [
+   "Both separatrix sides, their disjointness, and the monotonicity of the less_than side in the separatrix flux.",
+   "Exclusion of the PML frame on all six faces for two different frame thicknesses.",
+   "Removal of PEC points after the flux-surface classification.",
+   "The zero-thickness rejection: pml_cells must be a positive integer, and the error names pml_cells together with the exclusion that a zero thickness would cause.",
+   "The innermost-radius segment as a live branch, adding exactly the axis points on a side that excludes the axis, and as an inert branch when the coverage mask intersects it away.",
+   "The empty-support error naming the actual contributing causes.",
+   "Fail-closed validation of every parameter.",
+   "Exact agreement with the independently computed support mask for the same sampled flux and coordinates."
+  ],
+  "tests": [
+   "tests/geometry/test_material_support.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Forms the closed-flux mask as the covered points on the selected side of the separatrix flux, forms the innermost-radius segment as the covered points at the grid's minimum radius within the poloidal half length, excludes the PML frame on all six faces of the…. Evidence: test_material_support.py (8 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Interpolation or reconstruction of the flux field; the flux must already be sampled; Inferring which side of the separatrix is confined.",
+  "known_limitations": [
+   "The magnetic axis is identified with the grid's innermost radius, which is the grid's r = 0 only when the grid contains the origin. On a grid that does not, the axis term marks a thin column at the smallest sampled radius instead of the axis.",
+   "The innermost-radius segment is intersected with the coverage mask, so it cannot add points when the equilibrium map's radial axis begins above the grid's minimum radius. This is part of the declared relation, not a defect repair.",
+   "A solver grid with no PML frame is rejected rather than supported. A no-frame run is a different relation and would need its own asset.",
+   "The relation is purely geometric in the sampled flux; it does not verify that the sampled flux is a physical equilibrium.",
+   "The independent analytic comparison does not replace an external experimental reference."
+  ]
+ }
+}

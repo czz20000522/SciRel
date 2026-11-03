@@ -1,0 +1,302 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.dielectric-tensor-diagnostic",
+ "title": {
+  "en": "Full kinetic dielectric tensor diagnostic",
+  "zh": "完整动理学介电张量诊断"
+ },
+ "summary": "Evaluate all nine dielectric and dispersion tensor components using the source's default 15 harmonics.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Full kinetic dielectric tensor diagnostic",
+   "Evaluate all nine dielectric and dispersion tensor components using the source's default 15 harmonics."
+  ],
+  "operation": [
+   "evaluate the full kinetic dielectric tensor",
+   "SI species and wavepoint to full K, D and six-term determinant"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "boundary": "default lmx=15; unlike the conventional sum, no near-zero kz clamp is applied",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "SI species and wavepoint to full K, D and six-term determinant",
+  "direction": "SI species and wavepoint to full K, D and six-term determinant",
+  "definition": "Sum l=-lmx..lmx Maxwellian harmonic contributions, form D from K with Maxwell curl terms, and evaluate its explicit six-term determinant.",
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous plasma",
+  "coordinates": "wavevector x-z plane; complex kx permitted, z parallel to B0",
+  "boundary": "default lmx=15; unlike the conventional sum, no near-zero kz clamp is applied",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "B0",
+   "description": "Background magnetic-field strength; scalar; unit T (tesla); must be a finite nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly).",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Must be a finite nonzero real number (`B0=0` degenerates `wcs` and `rhocs` and raises directly)."
+  },
+  {
+   "name": "qs",
+   "description": "Charge of each species; scalar or one-dimensional array of length `S`; unit C (coulomb); must be finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction.",
+   "units": "C",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero (zero charge gives `wps2=0` and `wcs=0`); the sign sets the gyration direction."
+  },
+  {
+   "name": "ms",
+   "description": "Mass of each species; scalar or one-dimensional array of length `S`; unit kg; must be strictly positive and finite.",
+   "units": "kg",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Strictly positive and finite."
+  },
+  {
+   "name": "ns0",
+   "description": "Number density of each species; scalar or one-dimensional array of length `S`; unit m^-3; must be strictly positive and finite.",
+   "units": "m^-3",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Strictly positive and finite."
+  },
+  {
+   "name": "Ts0",
+   "description": "Temperature of each species; scalar or one-dimensional array of length `S`; unit K (kelvin, **not** eV); must be strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen source comment states this convention).",
+   "units": "K",
+   "shape": "scalar or (S,) species array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Strictly positive and finite; the caller converts eV by multiplying by `1.6022e-19/kB` (the frozen source comment states this convention)."
+  },
+  {
+   "name": "f",
+   "description": "Electromagnetic wave frequency; scalar; unit Hz; must be a finite nonzero real number (`w=2*pi*f=0` divides by zero); internally uses `w=2*pi*f` (frozen source).",
+   "units": "Hz",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite nonzero real number (`w=2*pi*f=0` divides by zero); internally uses `w=2*pi*f` (frozen source)."
+  },
+  {
+   "name": "kz",
+   "description": "Parallel wavenumber; scalar; unit rad/m; must be a finite nonzero real number (`z0` and `zn` are both divided by `kz`, frozen source).",
+   "units": "rad/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite nonzero real number (`z0` and `zn` are both divided by `kz`, frozen source)."
+  },
+  {
+   "name": "kx",
+   "description": "Perpendicular wavenumber; scalar; unit rad/m; must be finite and may be real or complex (the source `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and `Xsn_xz/Xsn_zz` become `NaN` (the source implementation behaves the same way; this operator does not mask it).",
+   "units": "rad/m",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite and may be real or complex (the source `fsolve` scan uses complex `kx`); at `kx=0`, `as=0` and `Xsn_xz/Xsn_zz` become `NaN` (the source implementation behaves the same way; this operator does not mask it)."
+  },
+  {
+   "name": "lmx",
+   "description": "Bessel harmonic-sum truncation limit; integer scalar; dimensionless; must be a nonnegative integer, default `15` (frozen source); increase it to check convergence.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "Nonnegative integer, default `15` (frozen source); increase it to check convergence.",
+   "default": 15
+  }
+ ],
+ "outputs": [
+  {
+   "name": "K",
+   "description": "Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is column j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some components may be `NaN`/`inf`, matching the source implementation without replacement.",
+   "units": "dimensionless",
+   "shape": "(3,3)",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "Kinetic dielectric tensor `K_ij`; `(3,3)` complex `numpy.ndarray` (axis 0 is row i, axis 1 is column j); dimensionless; initialized to `diag(1,1,1)`; when `kx=0` or `kz` is near zero some components may be `NaN`/`inf`, matching the source implementation without replacement."
+  },
+  {
+   "name": "D",
+   "description": "Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`.",
+   "units": "dimensionless",
+   "shape": "(3,3)",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "Dispersion tensor `D_ij`; `(3,3)` complex `numpy.ndarray`; dimensionless; obtained from `K` by adding `nx^2`, `nz^2` and `nx*nz`; when `K` is `NaN` the corresponding components are also `NaN`."
+  },
+  {
+   "name": "det_D",
+   "description": "Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of about 1e-9 is allowed when the real and imaginary magnitudes differ greatly).",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Dispersion determinant `det(D)`; complex scalar; dimensionless; evaluated from the six-term expansion and agrees with `numpy.linalg.det(D)` within floating-point error (a relative deviation of about 1e-9 is allowed when the real and imaginary magnitudes differ greatly)."
+  },
+  {
+   "name": "w",
+   "description": "Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined only when `f` is nonzero.",
+   "units": "rad/s",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Angular frequency; real scalar; unit rad/s; equal to `2*pi*f` and defined only when `f` is nonzero."
+  },
+  {
+   "name": "vts",
+   "description": "Thermal speed `sqrt(2*kB*Ts0/ms)` of each species; real array of shape `(S,)`; unit m/s; must be strictly positive.",
+   "units": "m/s",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Strictly positive."
+  },
+  {
+   "name": "wcs",
+   "description": "Cyclotron frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the charge sign and is nonzero when `B0` is nonzero.",
+   "units": "rad/s",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Cyclotron frequency `qs*B0/ms` of each species; real array of shape `(S,)`; unit rad/s; carries the charge sign and is nonzero when `B0` is nonzero."
+  },
+  {
+   "name": "wps2",
+   "description": "Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit s^-2; nonnegative.",
+   "units": "s^-2",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Plasma-frequency squared `ns0*qs^2/ms/epsilon0` of each species; real array of shape `(S,)`; unit s^-2; nonnegative."
+  },
+  {
+   "name": "rhocs",
+   "description": "Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero.",
+   "units": "m",
+   "shape": "(S,) species array",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Gyroradius `sqrt(kB*Ts0/ms)/wcs` of each species; real array of shape `(S,)`; unit m; signed and defined when `wcs` is nonzero."
+  },
+  {
+   "name": "nx",
+   "description": "Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and complex whenever `kx` is complex.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Perpendicular refractive index `sqrt(c2)*kx/w`; complex scalar; dimensionless; defined when `w` is nonzero and complex whenever `kx` is complex."
+  },
+  {
+   "name": "nz",
+   "description": "Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is nonzero.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Parallel refractive index `sqrt(c2)*kz/w`; complex scalar; dimensionless; a real scalar when `w` is nonzero."
+  },
+  {
+   "name": "as",
+   "description": "`kx*rhocs` of each species; complex array of shape `(S,)`; dimensionless; reduces to real when `kx` is real.",
+   "units": "dimensionless",
+   "shape": "(S,) species array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "`kx*rhocs` of each species; complex array of shape `(S,)`; dimensionless; reduces to real when `kx` is real."
+  },
+  {
+   "name": "bs",
+   "description": "`as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0` (that is, `kx=0`) `Gamman(l,b)/b` becomes `NaN`, matching the source implementation.",
+   "units": "dimensionless",
+   "shape": "(S,) species array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "`as.^2` of each species; complex array of shape `(S,)`; dimensionless; at `bs=0` (that is, `kx=0`) `Gamman(l,b)/b` becomes `NaN`, matching the source implementation."
+  },
+  {
+   "name": "z0s",
+   "description": "`z0=w/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated downstream.",
+   "units": "dimensionless",
+   "shape": "(S,) species array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "`z0=w/(kz*vts)` of each species; complex array of shape `(S,)`; dimensionless; diagnostic only and not accumulated downstream."
+  },
+  {
+   "name": "lmx",
+   "description": "Harmonic truncation limit actually used; integer scalar; dimensionless; equals the supplied `lmx` so the summation range can be reproduced.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Harmonic truncation limit actually used; integer scalar; dimensionless; equals the supplied `lmx` so the summation range can be reproduced."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "default lmx=15; unlike the conventional sum, no near-zero kz clamp is applied"
+  ],
+  "supported": [
+   "Evaluate all nine dielectric and dispersion tensor components using the source's default 15 harmonics."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Source-compatible arithmetic may return nonfinite values at a singular wavepoint.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dielectric_tensor_diagnostic",
+   "symbol": "evaluate_kinetic_dielectric_tensor",
+   "signature": "evaluate_kinetic_dielectric_tensor(B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=15)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_kinetic_dielectric_tensor"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate a bounded one-species dielectric-tensor case and check the tensor shape.",
+  "code": "from scirel.kinetic import evaluate_kinetic_dielectric_tensor\nr=evaluate_kinetic_dielectric_tensor(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[11604941.036704937],f=1e10,kz=1,kx=1e4); assert r['K'].shape==(3,3)\n",
+  "expected": "Observed PASS: the bounded one-species case returns finite 3x3 K and D tensors, a finite determinant, and the declared intermediate scales with lmx=15."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/kinetic/test_kinetic_signed_kz.py",
+   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+  ],
+  "evidence_ceiling": "Bounded to the nine dielectric/dispersion tensor components with the source-default 15 harmonics. Evidence: `test_fluid_spectrum_r43_kinetic.py` contains 12 test functions, 5 of which reference `evaluate_kinetic_dielectric_tensor`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity. It does not establish mode identity, arbitrary-parameter accuracy, or an independent full kinetic tensor.",
+  "known_limitations": [
+   "default lmx=15; unlike the conventional sum, no near-zero kz clamp is applied",
+   "Five direct functions in the four-asset-shared kinetic file cover the 15-harmonic/six-term determinant, invalid species controls, star-import surface and lazy SciPy loading; no independent Bessel-sum tensor oracle is bound.",
+   "Lazy SciPy loading is tested separately from tensor accuracy; a successful import-boundary test is not a tensor oracle."
+  ]
+ }
+}

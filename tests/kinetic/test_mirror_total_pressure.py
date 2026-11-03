@@ -1,0 +1,107 @@
+import numpy as np
+import pytest
+
+from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure, assemble_mirror_total_pressure as scientific_function
+
+
+def test_total_pressure_and_terminal_fields_are_assembled():
+    ion = {"p_parallel_pa": [2.0, 3.0], "p_perpendicular_pa": [4.0, 5.0], "density_m3": [1.0, 2.0], "marker": "ion"}
+    electron = {"electron_density_m3": [6.0, 7.0], "electron_pressure_pa": 1.5, "relative_charge_residual": [0.1, 0.2]}
+    result = scientific_function(ion, electron)
+    np.testing.assert_allclose(result["p_parallel"], [3.5, 4.5])
+    np.testing.assert_allclose(result["p_perpendicular"], [5.5, 6.5])
+    assert result["kinetic_moments"] is ion
+    assert result["marker"] == "ion"
+
+
+def test_missing_state_field_fails_closed():
+    with pytest.raises(ValueError, match="missing required"):
+        scientific_function({"p_parallel_pa": 1.0}, {"electron_pressure_pa": 1.0})
+
+
+def test_density_and_residual_are_unvalidated_pass_through_fields():
+    ion_density = np.array([-1.0, np.nan])
+    electron_density = np.array([np.nan, -2.0])
+    residual = np.array([np.inf, -np.inf])
+    ion = {"p_parallel_pa": [2.0, 3.0], "p_perpendicular_pa": [4.0, 5.0], "density_m3": ion_density}
+    electron = {"electron_density_m3": electron_density, "electron_pressure_pa": 1.5, "relative_charge_residual": residual}
+
+    # Historical node ID: invalid physical species fields must fail closed.
+    with pytest.raises(ValueError, match="ion density.*finite and nonnegative"):
+        scientific_function(ion, electron)
+    ion["density_m3"] = np.array([1.0, 2.0])
+    with pytest.raises(ValueError, match="electron density.*finite and nonnegative"):
+        scientific_function(ion, electron)
+    electron["electron_density_m3"] = np.array([6.0, 7.0])
+    with pytest.raises(ValueError, match="relative charge residual must be finite"):
+        scientific_function(ion, electron)
+    # Finite nonzero residuals are observational fields, not neutrality proof.
+    residual = np.array([.1, -.2])
+    electron["relative_charge_residual"] = residual
+    result = scientific_function(ion, electron)
+    assert result["relative_charge_residual"] is residual
+    np.testing.assert_allclose(result["p_parallel"], [3.5, 4.5])
+    np.testing.assert_allclose(result["p_perpendicular"], [5.5, 6.5])
+
+
+def test_reviewed_relation_example():
+    import numpy as np
+    from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure
+
+    ion = {
+        "p_parallel_pa": [2.0, 3.0],
+        "p_perpendicular_pa": [4.0, 5.0],
+        "density_m3": [1.0, 2.0],
+        "marker": "ion",
+    }
+    electron = {
+        "electron_density_m3": [6.0, 7.0],
+        "electron_pressure_pa": 1.5,
+        "relative_charge_residual": [0.1, 0.2],
+    }
+    result = assemble_mirror_total_pressure(ion, electron)
+    assert np.allclose(result["p_parallel"], [3.5, 4.5])
+    assert np.allclose(result["p_perpendicular"], [5.5, 6.5])
+    assert np.allclose(
+        result["p_perpendicular"] - result["p_parallel"],
+        np.asarray(ion["p_perpendicular_pa"]) - np.asarray(ion["p_parallel_pa"]),
+    )
+    assert result["kinetic_moments"] is ion
+    assert result["marker"] == "ion"
+    assert result["electrostatic_potential"] is None
+
+
+def test_electrostatic_potential_is_preserved_when_provided():
+    ion = {
+        "p_parallel_pa": [2.0],
+        "p_perpendicular_pa": [3.0],
+        "density_m3": [1.0],
+    }
+    potential = np.array([0.2, -0.1])
+    electron = {
+        "electron_density_m3": [1.0],
+        "electron_pressure_pa": [1.0],
+        "relative_charge_residual": [0.0],
+        "electrostatic_potential": potential,
+    }
+
+    result = assemble_mirror_total_pressure(ion, electron)
+
+    assert result["electrostatic_potential"] is potential
+
+
+def test_electrostatic_potential_defaults_to_none_when_absent():
+    ion = {
+        "p_parallel_pa": [2.0],
+        "p_perpendicular_pa": [3.0],
+        "density_m3": [1.0],
+    }
+    electron = {
+        "electron_density_m3": [1.0],
+        "electron_pressure_pa": [1.0],
+        "relative_charge_residual": [0.0],
+    }
+
+    result = assemble_mirror_total_pressure(ion, electron)
+
+    assert result["electrostatic_potential"] is None

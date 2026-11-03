@@ -1,0 +1,163 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.generalized-hilbert",
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Analytic expression Hilbert transforms",
+   "Evaluate a safe analytic expression and its derivative transforms."
+  ],
+  "operation": [
+   "evaluate analytic expression Hilbert transforms",
+   "analytic expression, density and integration mesh, z -> Z(z) and Z'(z)"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "device_scope": "generic"
+ },
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "generalized-dispersion"
+ ],
+ "title": {
+  "zh": "解析分布的 Hilbert 与 Cauchy 变换",
+  "en": "Evaluate a safe analytic expression and its derivative transforms."
+ },
+ "summary": "Evaluate a safe analytic expression and its derivative transforms.",
+ "identity": {
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "relation": "Z=integral f/(v-z)dv; Zp=integral f′/(v-z)dv",
+  "definition": "DensityExpression interprets the restricted AST and propagates analytic first derivatives by chain rules without eval or SymPy. Real-axis integrands subtract f(x)*exp(-(v-x)²), whose whole-line odd PV vanishes. Boundary values add i*pi*f(x); optional lower continuation adds 2*pi*i*f(z). For |z|>=12 the vanishing-endpoint identity Zp=Cauchy[v*fprime]/z avoids cancellation of the zero-mass derivative; the absolute quadrature tolerance scales inversely with phase magnitude. The density derivative and its analytic continuation are not reconstructed from rounded Z or epsilon.",
+  "direction": "Declared inputs to declared scientific outputs",
+  "geometry": "One-dimensional velocity space",
+  "coordinates": "Dimensionless real velocity and complex phase or frequency",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "assumptions": [
+   "Density is real and integrable on the real contour.",
+   "No collective-mode uniqueness or certified global quadrature bound is asserted.",
+   "Expression has a valid analytic extension where continuation is requested.",
+   "Explicit increasing mesh resolves all density features and tails."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "z",
+   "description": "Complex phase point z=omega/(sqrt(2)*k) for the Maxwellian normalization.",
+   "dtype": "real or complex numeric",
+   "shape": "scalar or nonempty array",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "expression",
+   "description": "Analytic density in v using finite real constants, pi, arithmetic and exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted.",
+   "dtype": "str",
+   "shape": "scalar",
+   "required": true,
+   "constraints": "Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or indexing.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "integration_mesh",
+   "description": "Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.",
+   "dtype": "real vector",
+   "shape": "one-dimensional at least two points",
+   "required": true,
+   "constraints": "All material features resolved; no unresolved tail features.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "continuation",
+   "description": "Add 2*pi*i*f(z) and derivative in the lower plane when true.",
+   "dtype": "bool",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless",
+   "default": true
+  }
+ ],
+ "outputs": [
+  {
+   "name": "Z",
+   "description": "Integral f(v)/(v-z) dv with the declared continuation.",
+   "dtype": "complex array",
+   "shape": "same as z",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "Zp",
+   "description": "Derivative dZ/dz including distributional jumps.",
+   "dtype": "complex array",
+   "shape": "same as z",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.generalized_dispersion",
+   "symbol": "evaluate_generalized_hilbert",
+   "signature": "evaluate_generalized_hilbert(z, expression, *, integration_mesh, continuation=True)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_generalized_hilbert"
+  }
+ },
+ "applicability": {
+  "supported": [
+   "Safe AST algebra and analytic chain-rule derivative through DensityExpression.",
+   "Off-axis qualified Cauchy quadrature and real-axis subtracted principal value."
+  ],
+  "excluded": [
+   "Piecewise or nonanalytic expression syntax; use distribution selectors.",
+   "Automatic discovery of unresolved callback features."
+  ],
+  "preconditions": [
+   "Density is real and integrable on the real contour.",
+   "No collective-mode uniqueness or certified global quadrature bound is asserted.",
+   "Expression has a valid analytic extension where continuation is requested.",
+   "Explicit increasing mesh resolves all density features and tails."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for an unsupported expression, non-finite phase/mesh, or malformed integration_mesh/continuation.",
+  "runtime_failure": "FloatingPointError for a non-finite continued transform and RuntimeError when quadrature fails; no fallback path is selected.",
+  "nonconvergence": "RuntimeError when real-axis/exterior quadrature fails or the declared removable-point estimate is not representable.",
+  "partial_results": "No partial Z/Zp pair is returned after a failed transform."
+ },
+ "verification": {
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_models.py",
+   "tests/kinetic/test_generalized_dispersion_independent_corrections.py"
+  ],
+  "scope": [
+   "Safe AST algebra and analytic chain-rule derivative through DensityExpression.",
+   "Off-axis qualified Cauchy quadrature and real-axis subtracted principal value.",
+   "Centered and shifted Gaussian explicit-Hilbert derivatives at large phase, both half-planes and the real boundary; independent high-precision equations with componentwise zero absolute tolerance."
+  ],
+  "known_limitations": [
+   "Real-axis local removable-point evaluation of the derivative integrand uses a symmetric second-derivative estimate; no global error certificate is returned.",
+   "Restricted parser supports finite real constants, pi, v, arithmetic, exp/log/sqrt/sin/cos/sinh/cosh/tanh.",
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: DensityExpression interprets the restricted AST and propagates analytic first derivatives by chain rules without eval or SymPy. Real-axis integrands subtract f(x)*exp(-(v-x)²), whose whole-line odd PV vanishes…. Evidence: test_generalized_dispersion_models.py, test_generalized_dispersion_independent_corrections.py (25 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Piecewise or nonanalytic expression syntax; use distribution selectors; Automatic discovery of unresolved callback features."
+ },
+ "example": {
+  "description": "Evaluate the analytic Lorentzian Hilbert/Cauchy transform on an explicit feature mesh.",
+  "code": "from scirel.kinetic.generalized_dispersion import evaluate_generalized_hilbert\nz=.4-.7j\nr=evaluate_generalized_hilbert(z,'1/(1+v**2)/pi',integration_mesh=[-20,-2,-1,0,1,2,20])\nassert abs(r['Z']+1/(z+1j))<2e-9\n",
+  "expected": "Observed PASS: the explicit integration mesh returns a finite transform matching -1/(z+i) within 2e-9."
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+ ]
+}

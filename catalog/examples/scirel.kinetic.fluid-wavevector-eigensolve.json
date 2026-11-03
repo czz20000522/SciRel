@@ -1,0 +1,203 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",
+ "title": {
+  "en": "Fluid perpendicular-wavenumber eigenbranches",
+  "zh": "流体垂直波数本征分支"
+ },
+ "summary": "Solve a general complex fluid eigenmatrix and select positive-real least-damped kx branches.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Fluid perpendicular-wavenumber eigenbranches",
+   "Solve a general complex fluid eigenmatrix and select positive-real least-damped kx branches."
+  ],
+  "operation": [
+   "solve the fluid eigenmatrix for leading kx branches",
+   "complex square matrix and kn to full spectrum and filtered leading branches"
+  ],
+  "model": "linearized fluid pole dispersion eigenproblem",
+  "geometry": "no physical spatial grid",
+  "boundary": "selection rejects nonpropagating modes and returns at most keep branches",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "complex square matrix and kn to full spectrum and filtered leading branches",
+  "direction": "complex square matrix and kn to full spectrum and filtered leading branches",
+  "definition": "Solve kx X=M X with general complex LAPACK zgeev; keep Re(kx)>real_floor_scale*kn and stable-sort by |Im(kx)|.",
+  "model": "linearized fluid pole dispersion eigenproblem",
+  "geometry": "no physical spatial grid",
+  "coordinates": "complex perpendicular wavenumber plane",
+  "boundary": "selection rejects nonpropagating modes and returns at most keep branches",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "matrix",
+   "description": "Complex square matrix whose eigenproblem is solved, usually the fluid dispersion matrix",
+   "units": "Consistent with the matrix-assembly convention",
+   "shape": "`(NN, NN)` complex square matrix",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Nonempty square matrix with finite entries."
+  },
+  {
+   "name": "kn",
+   "description": "Wavenumber normalization scale used to turn the real-part threshold into an absolute threshold",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "real_floor_scale",
+   "description": "Relative real-part threshold for non-propagating eigenvalues",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "Finite and nonnegative, default `1e-5`.",
+   "default": 1e-05
+  },
+  {
+   "name": "keep",
+   "description": "Number of leading eigenvalues to return",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "At least 1, default 5.",
+   "default": 5
+  }
+ ],
+ "outputs": [
+  {
+   "name": "eigenvalues",
+   "description": "All eigenvalues, that is, the complete $k_\\perp$ spectrum",
+   "units": "1/m",
+   "shape": "Complex array of length `NN`",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite complex numbers."
+  },
+  {
+   "name": "selected",
+   "description": "Eigenvalues whose real part exceeds the threshold, sorted in ascending $|\\operatorname{Im}|$ order",
+   "units": "1/m",
+   "shape": "Complex array of length `selected_count`",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "A subset of `eigenvalues`."
+  },
+  {
+   "name": "head",
+   "description": "First `keep` sorted physical eigenvalues",
+   "units": "1/m",
+   "shape": "Complex array of length at most `keep`",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "When fewer than `keep` eigenvalues survive, returns every surviving value."
+  },
+  {
+   "name": "eigenvalue_count",
+   "description": "Total number of eigenvalues, equal to the matrix order",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Equal to the number of rows of `matrix`."
+  },
+  {
+   "name": "selected_count",
+   "description": "Number of eigenvalues passing the real-part threshold",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "At most `eigenvalue_count`."
+  },
+  {
+   "name": "returned_count",
+   "description": "Length of `head`",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Equal to `min(keep, selected_count)`."
+  },
+  {
+   "name": "real_floor",
+   "description": "Absolute real-part threshold actually used",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Equal to `real_floor_scale*kn`."
+  },
+  {
+   "name": "sort_key",
+   "description": "Sort-key label",
+   "units": "not applicable",
+   "shape": "string",
+   "dtype": "string",
+   "required": true,
+   "constraints": "Fixed to `ascending_abs_imag`."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "selection rejects nonpropagating modes and returns at most keep branches"
+  ],
+  "supported": [
+   "Solve a general complex fluid eigenmatrix and select positive-real least-damped kx branches."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "The general complex LAPACK solver raises LinAlgError on nonconvergence.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_wavevector_eigensolve",
+   "symbol": "solve_fluid_wavevector_eigenproblem",
+   "signature": "solve_fluid_wavevector_eigenproblem(*, matrix, kn, real_floor_scale=1e-05, keep=5)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_fluid_wavevector_eigenproblem"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Solve a diagonal complex eigenproblem and retain only the positive-real branch.",
+  "code": "from scirel.kinetic import solve_fluid_wavevector_eigenproblem\nr=solve_fluid_wavevector_eigenproblem(matrix=__import__('numpy').diag([1+1j,-1+0j]),kn=1); assert len(r['selected'])==1\n",
+  "expected": "Observed PASS: the diagonal witness exposes both eigenvalues and selects exactly the one branch with positive real part."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
+  ],
+  "evidence_ceiling": "Bounded to a general complex fluid eigenmatrix and positive-real least-damped kx branch selection. Evidence: `test_fluid_spectrum_r43_fluid.py` contains 9 test functions, 3 of which reference `solve_fluid_wavevector_eigenproblem`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity. It does not establish mode identity or arbitrary-parameter accuracy.",
+  "known_limitations": [
+   "selection rejects nonpropagating modes and returns at most keep branches",
+   "The three direct functions cover eigen selection, the nonpropagating-mode floor and integer branch-count rejection; `test_domain_import_boundaries.py` only checks lazy LAPACK loading.",
+   "The eigensolve returns at most `keep` least-damped positive-real branches; it does not certify mode identity or arbitrary-parameter accuracy."
+  ]
+ }
+}

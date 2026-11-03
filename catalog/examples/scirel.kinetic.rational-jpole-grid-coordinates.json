@@ -1,0 +1,119 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.rational-jpole-grid-coordinates",
+ "title": {
+  "en": "Complex dispersion diagnostic grid",
+  "zh": "复色散诊断网格"
+ },
+ "summary": "Return the declared 101x101 complex diagnostic ndgrid, without implying approximation validity over the grid.",
+ "taxonomy": [
+  "kinetic",
+  "plasma",
+  "plasma-dispersion-function"
+ ],
+ "aliases": [
+  "legacy.jpole_grid_coordinates"
+ ],
+ "discovery": {
+  "capability": [
+   "Complex dispersion diagnostic grid",
+   "Return the declared 101x101 complex diagnostic ndgrid, without implying approximation validity over the grid."
+  ],
+  "operation": [
+   "build the complex dispersion diagnostic grid",
+   "no caller inputs -> fixed 101x101 dimensionless complex diagnostic grid and execution receipt"
+  ],
+  "model": "Deterministic NumPy coordinate construction; no dispersion function or rational approximation is evaluated.",
+  "geometry": "Two-dimensional Cartesian ndgrid in the dimensionless complex plane: first index varies real x, second index varies imaginary y; this is not a physical spatial mesh.",
+  "boundary": "Inclusive fixed endpoints: x in [-5,5] with 101 samples, y in [-3,5] with 101 samples. The rectangle is not an approximation-validity domain.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Complex dispersion diagnostic grid",
+  "direction": "No caller inputs to fixed x,y,z coordinate arrays and an execution receipt.",
+  "definition": "Construct x,y ndgrid and z=x+i*y; preserve the complete two-dimensional orientation for diagnostic plots.",
+  "model": "Deterministic NumPy coordinate construction; no dispersion function or rational approximation is evaluated.",
+  "geometry": "Two-dimensional Cartesian ndgrid in the dimensionless complex plane: first index varies real x, second index varies imaginary y; this is not a physical spatial mesh.",
+  "coordinates": "Dimensionless x=-5:0.1:5 and y=-3:0.08:5, both inclusive; z=x+i*y. No frequency normalization, wavevector or time convention is assigned.",
+  "boundary": "Inclusive fixed endpoints: x in [-5,5] with 101 samples, y in [-3,5] with 101 samples. The rectangle is not an approximation-validity domain.",
+  "assumptions": [
+   "The zero-argument helper fixes both axis ranges and the 101 samples on each axis.",
+   "Coordinates are diagnostic evaluation locations only; they establish no dispersion relation, mode classification or approximation accuracy."
+  ]
+ },
+ "inputs": [],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "Dimensionless x,y,z arrays, each (101,101): ndgrid of x=-5:0.1:5 and y=-3:0.08:5, z=x+1i*y. The first index varies real x; the second varies imaginary y.",
+   "units": "dimensionless",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Preserve complete NumPy ndgrid orientation. This historical diagnostic grid is not a declared approximation-validity domain."
+  },
+  {
+   "name": "receipt",
+   "description": "Frozen Python execution receipt for an executed pure-Python operator; execution provenance is separate from scientific validity.",
+   "units": "not applicable",
+   "shape": "Python execution receipt object",
+   "dtype": "Python execution receipt",
+   "required": true,
+   "constraints": "Execution provenance does not certify scientific validity by itself."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "No caller inputs; axis ranges, sample counts and dimensionless coordinates are fixed."
+  ],
+  "supported": [
+   "Fixed complex diagnostic grid coordinates with complete ndgrid orientation."
+  ],
+  "excluded": [
+   "The grid is not an independent accuracy certificate."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Supplying any arguments raises TypeError; no caller-supplied scientific inputs are accepted.",
+  "runtime_failure": "NumPy grid-construction errors propagate; no alternate coordinate source is selected.",
+  "nonconvergence": "No convergence iteration or approximation-validity assertion.",
+  "partial_results": "No successful result is returned if this operation raises; no partial scientific return is promised."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.rational",
+   "symbol": "jpole_grid_coordinates",
+   "signature": "jpole_grid_coordinates()"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Construct the declared 101x101 diagnostic grid with NumPy.",
+  "code": "from scirel.kinetic.dispersion.rational import jpole_grid_coordinates\nr = jpole_grid_coordinates()\nassert r['state']['z'].shape == (101, 101)",
+  "expected": "PASS: .venv/bin/python constructs the grid directly on macOS."
+ },
+ "verification": {
+  "scope": [
+   "Direct gate: test_jpole_grid_coordinates_preserves_fixed_dimensionless_axes checks all coordinates, inclusive endpoints, shapes, dtypes and ndgrid orientation.",
+   "Repeated zero-argument calls return independent coordinate arrays with equal values.",
+   "The contract example constructs the grid and checks its declared shape; no dispersion function, harmonic expansion, pole evaluation or eigensolve is performed."
+  ],
+  "tests": [
+   "tests/kinetic/test_dispersion_rational.py"
+  ],
+  "evidence_ceiling": "Bounded to fixed 101x101 coordinate construction, dimensionless axis ranges, array orientation and execution-receipt identity. No approximation accuracy, physical mode, experimental calibration or release approval is established.",
+  "known_limitations": [
+   "Redistribution authority for the reference material remains unresolved; the pure-Python implementation does not execute the source runtime.",
+   "The helper computes coordinates only; finite-J/finite-N physics must be qualified separately for a requested regime.",
+   "Grid construction does not establish exact-axis response, approach-to-axis behavior or dispersion-solver correctness.",
+   "Human scientific and plot approval pending.",
+   "The fixed diagnostic rectangle is not an approximation-validity domain."
+  ]
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
+}

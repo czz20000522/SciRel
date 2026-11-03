@@ -1,0 +1,168 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.coil-green-geometry",
+ "title": {
+  "en": "Axisymmetric coil Green geometry and elliptic modulus",
+  "zh": "轴对称线圈几何模数"
+ },
+ "summary": "Compute the source-offset radius, elliptic modulus squared, and distance used by the filament-coil Green expression.",
+ "taxonomy": [
+  "field",
+  "axisymmetric",
+  "green-response",
+  "geometry"
+ ],
+ "aliases": [
+  "compute_axisymmetric_coil_modulus"
+ ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric coil Green geometry and elliptic modulus",
+   "Compute the source-offset radius, elliptic modulus squared and distance used by the filament-coil Green expression."
+  ],
+  "operation": [
+   "scalar axisymmetric coil observation geometry",
+   "observation point and coil centres -> regularized radius, modulus squared and distance"
+  ],
+  "model": "Scalar observation geometry for aligned circular coils.",
+  "geometry": "One observation point paired with one-dimensional coil-centre arrays.",
+  "boundary": "Raw observation radius must be nonnegative; underflow, overflow and nonfinite geometry raise ValueError.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Axisymmetric coil observation geometry",
+  "direction": "observation point and coil centers to regularized Green geometry",
+  "definition": "Apply the fixed 1e-8 m observation-radius offset and compute m and the distance denominator elementwise.",
+  "model": "Scalar observation geometry for aligned circular coils.",
+  "geometry": "One observation point paired with one-dimensional coil-center arrays.",
+  "coordinates": "R,Z in metres; modulus squared dimensionless.",
+  "boundary": "Raw observation radius must be nonnegative; underflow, overflow, and nonfinite geometry raise ValueError.",
+  "assumptions": [
+   "Coil radii are strictly positive.",
+   "All coil vectors have one-dimensional matching shapes.",
+   "The offset is applied exactly once before the response operator."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "observation_radius_m",
+   "description": "Raw cylindrical radius of the observation point.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite; must be nonnegative (a raw radius in (-1e-8, 0) is rejected: the axis offset would silently regularize it to a positive one -- declared hardening); the regularized radius must be finite and positive."
+  },
+  {
+   "name": "observation_z_m",
+   "description": "Axial coordinate of the observation point.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "coil_radius_m",
+   "description": "Ring-coil centre radii.",
+   "units": "m",
+   "shape": "[ncoil]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 1-D with strictly positive entries, same shape as coil_z_m."
+  },
+  {
+   "name": "coil_z_m",
+   "description": "Ring-coil centre axial coordinates.",
+   "units": "m",
+   "shape": "[ncoil]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 1-D, same shape as coil_radius_m."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "regularized_radius_m",
+   "description": "Observation radius after the axis offset, the value the filament-coil Green operators must receive.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite and positive; paired once with the response operator (which does not offset again)."
+  },
+  {
+   "name": "modulus_squared",
+   "description": "Per-coil squared elliptic modulus m = k^2.",
+   "units": "dimensionless",
+   "shape": "[ncoil]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite values in (0, 1] on accepted non-singular geometry; overflow from finite but extreme inputs raises ValueError (declared hardening)."
+  },
+  {
+   "name": "distance_m",
+   "description": "Per-coil Green geometric distance denominator sqrt((r0+rl)^2+(z0-zl)^2).",
+   "units": "m",
+   "shape": "[ncoil]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Coil radii are strictly positive.",
+   "All coil vectors have one-dimensional matching shapes."
+  ],
+  "supported": [
+   "Finite paired coil arrays, the axis offset, endpoint modulus values, and declared overflow/underflow failures."
+  ],
+  "excluded": [
+   "Coil-field evaluation, singular response handling, and arbitrary overflow behavior beyond the validated float64 domain."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for nonfinite, negative, mismatched, nonpositive-radius, underflowed, or overflowed geometry.",
+  "runtime_failure": "No iterative runtime failure is defined; NumPy floating-point failures are converted to ValueError by validation.",
+  "nonconvergence": "Not applicable; this is direct geometry arithmetic.",
+  "partial_results": "No geometry tuple is returned after validation failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.coil_green_geometry",
+   "symbol": "compute_axisymmetric_coil_modulus",
+   "signature": "compute_axisymmetric_coil_modulus(observation_radius_m, observation_z_m, coil_radius_m, coil_z_m)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "compute_axisymmetric_coil_modulus"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Compute regularized geometry for one observation point and two coils.",
+  "code": "import numpy as np\nfrom scirel.field import compute_axisymmetric_coil_modulus\nradius, modulus, distance = compute_axisymmetric_coil_modulus(\n    0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1]))\nassert radius == 0.3 + 1e-8\nassert np.all((modulus > 0.0) & (modulus <= 1.0))\nassert np.all(distance > 0.0)",
+  "expected": "The returned radius is 0.30000001 m; both modulus-squared values are in (0,1] and distances are positive."
+ },
+ "verification": {
+  "scope": [
+   "Source-regularized geometry quantities against an independent recomputation.",
+   "Input and failure contracts.",
+   "A finite extreme geometry with an underflowed modulus is rejected before the Green response."
+  ],
+  "tests": [
+   "tests/field/test_filament_coil_green.py"
+  ],
+  "evidence_ceiling": "Bounded to source-regularized axisymmetric coil modulus and distance geometry. Evidence: `test_filament_coil_green.py` contains 13 test functions, 6 of which reference `compute_axisymmetric_coil_modulus`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent analytic recomputation of the regularized geometry. It does not establish coil-field evaluation, singular response handling, or overflow behavior outside validated float64.",
+  "known_limitations": [
+   "No external cross-implementation comparison is bound to this contract; only the tests in this repository establish its behaviour.",
+   "Declared input hardening: raw observation radii in (-1e-8, 0) are rejected rather than silently regularized to positive values by the axis offset.",
+   "Declared output hardening: finite but extreme input magnitudes (e.g. r0 = rl = 1e308) that overflow the squared geometry sums are rejected with ValueError instead of handing a non-finite modulus or distance to the response operator.",
+   "A modulus of exactly 1 (observation point on a filament ring) is an admissible output; consumers must reject it (the response operator does).",
+   "The independent oracle recomputes the regularized geometry but does not bind an external code comparison.",
+   "A zero modulus caused by floating-point underflow is rejected here, an explicit boundary of this contract."
+  ]
+ }
+}

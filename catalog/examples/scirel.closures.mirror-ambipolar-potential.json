@@ -1,0 +1,373 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.closures.mirror-ambipolar-potential",
+ "title": {
+  "en": "Mirror ambipolar end-loss potential",
+  "zh": "镜端双极损失电势闭合"
+ },
+ "summary": "Evaluate source-equivalent one-way ion/electron end-loss fluxes at a prescribed plug potential, or solve their charge-weighted flux balance independently on each flux surface with bounded bracket expansion and bisection.",
+ "taxonomy": [
+  "closures",
+  "mirror",
+  "ambipolarity",
+  "end-loss"
+ ],
+ "aliases": [
+  "mirror end-loss current balance",
+  "ambipolar plug potential"
+ ],
+ "discovery": {
+  "capability": [
+   "Mirror ambipolar end-loss potential",
+   "Evaluate source-equivalent one-way end-loss fluxes at a prescribed plug potential, or solve their charge-weighted balance on each flux surface."
+  ],
+  "operation": [
+   "bounded bracket expansion and bisection of the charge-weighted ion/electron end-loss flux balance",
+   "reference and plug fields, flux labels, ion properties, reference populations and solver controls -> plug potential, one-way fluxes and current-balance diagnostics"
+  ],
+  "model": "One magnetized positive-ion species and an electron half-space mirror/electrostatic end-loss model with caller-supplied reference populations and phenomenological loss-refill fractions; not a full collisional transport or self-consistent equilibrium model.",
+  "geometry": "Independent caller-defined flux surfaces with reference and plug magnetic magnitudes; scalar or array values share one NumPy broadcast shape.",
+  "boundary": "Reference potential fixes the voltage origin; in solve mode reference densities must be simultaneously positive or zero per surface and a joint vacuum keeps the reference potential, while evaluate mode requires a prescribed plug potential and imposes no current balance.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "Single-ion mirror end-loss fluxes and ambipolar plug potential relative to a reference surface",
+  "direction": "(reference/plug fields, psi, ion mass/charge, reference densities, ion/electron thermal energies, potentials, refill and solver controls) -> plug potential, one-way particle fluxes and current-balance diagnostics",
+  "definition": "For each species form a one-way half-space flux n*sqrt(T_parallel/(2*pi*m))*I(s,a)*refill, where s=(T_perpendicular/T_parallel)*(B_plug/B_reference-1) and a=q*(phi_plug-phi_reference)/T_parallel; I is the implemented piecewise mirror/electrostatic barrier pitch integral. Electrons use a fixed electron mass, charge -e and equal parallel/perpendicular thermal energies; ion charge state is q_i/e. In evaluate mode calculate fluxes at phi_plug_v without solving. In solve mode seek charge_state*ion_flux=electron_flux using a log-current ratio, an initial phi_reference +/- initial_bracket_thermal*(T_i_parallel/q_i+T_e/e) bracket, at most eight expansion rounds, then shared vectorized bisection up to max_iterations. Joint zero-density surfaces keep phi_reference_v. The barrier integral is evaluated through bounded exponential divided differences and log normalization; positive-population log fluxes survive flux underflow. The tested and returned bisection potential are identical. Electrostatic barriers use scaled relative potential differences. Bisection computes a finite midpoint without first adding two large same-sign potentials. A strictly zero evaluated log-current residual contracts that surface bracket to the evaluated point; otherwise the original half-width and residual tolerances both remain required. Adjacent-float stalling without a qualifying residual is not convergence.",
+  "model": "One magnetized positive ion species and an electron half-space mirror/electrostatic end-loss model, with caller-supplied reference populations and phenomenological loss-refill fractions; not a full collisional transport or self-consistent equilibrium model.",
+  "geometry": "Independent caller-defined flux surfaces with reference and plug magnetic magnitudes; scalar or array values share one NumPy broadcast shape.",
+  "coordinates": "psi identifies the caller's surfaces and is passed to optional density/temperature/potential profile callables. No psi monotonicity, spatial coordinate alignment or field-line geometry is checked.",
+  "boundary": "The reference potential phi_reference_v fixes the voltage origin; the unknown plug potential is solved relative to it. In solve mode both reference densities must be positive together or zero together per surface; joint vacuum retains phi_reference_v. In evaluate mode a prescribed phi_plug_v is required and current balance is not imposed.",
+  "assumptions": [
+   "B_reference and B_plug are positive magnitudes in tesla; thermal-energy inputs in joules and charge in coulombs describe the same single-ion/electron system.",
+   "The reference profiles and mirror ratio represent compatible surfaces, and each species' one-way flux is adequately described by the implemented half-space barrier integral and chosen refill fraction.",
+   "The electron reference density defaults to (ion_charge_c/e)*ion_density_ref_m3 but may be supplied independently; evaluate mode accepts nonneutral and one-sided-vacuum states for diagnosis."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "b_reference_t",
+   "description": "Reference magnetic-field magnitude.",
+   "units": "T",
+   "shape": "scalar or array; jointly broadcast with b_plug_t, psi and phi_reference_v",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Finite and strictly positive at every surface."
+  },
+  {
+   "name": "b_plug_t",
+   "description": "Plug magnetic-field magnitude.",
+   "units": "T",
+   "shape": "scalar or array; common broadcast shape",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Finite and strictly positive at every surface; the implementation does not require b_plug_t >= b_reference_t."
+  },
+  {
+   "name": "psi",
+   "description": "Caller-defined flux-surface coordinate for profiles.",
+   "units": "caller-defined flux coordinate",
+   "shape": "scalar or array; common broadcast shape",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Finite; no monotonicity or normalization requirement is enforced."
+  },
+  {
+   "name": "ion_mass_kg",
+   "description": "Mass of the positive ion species.",
+   "units": "kg",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "Strictly positive."
+  },
+  {
+   "name": "ion_charge_c",
+   "description": "Positive ion charge; divided by elementary charge to form the charge-state multiplier.",
+   "units": "C",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": true,
+   "constraints": "Strictly positive; integer charge state is not enforced."
+  },
+  {
+   "name": "ion_density_ref_m3",
+   "description": "Ion reference number density, optionally a callable of psi.",
+   "units": "m^-3",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative. In solve mode it must be positive exactly where electron reference density is positive."
+  },
+  {
+   "name": "ion_temperature_parallel_j",
+   "description": "Ion parallel thermal-energy scale, optionally a callable of psi.",
+   "units": "J",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "ion_temperature_perpendicular_j",
+   "description": "Ion perpendicular thermal-energy scale, optionally a callable of psi.",
+   "units": "J",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "electron_temperature_j",
+   "description": "Electron thermal-energy scale used in both pitch directions, optionally a callable of psi.",
+   "units": "J",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "phi_reference_v",
+   "description": "Reference potential and returned potential on joint-vacuum surfaces in solve mode.",
+   "units": "V",
+   "shape": "scalar or array; common broadcast shape",
+   "dtype": "real array-like converted to float64",
+   "required": false,
+   "default": 0.0,
+   "constraints": "Finite; the solve bracket is centered on this field."
+  },
+  {
+   "name": "electron_density_ref_m3",
+   "description": "Optional electron reference density, or callable of psi.",
+   "units": "m^-3",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": false,
+   "default": null,
+   "constraints": "If absent, charge_state times ion_density_ref_m3 is used; if supplied, finite and nonnegative. Solve mode requires paired positive or paired zero density on each surface."
+  },
+  {
+   "name": "ion_loss_refill",
+   "description": "Multiplier of the modeled one-way ion loss flux.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1.0,
+   "constraints": "In [0,1]; solve mode requires strictly positive value, while evaluate mode permits zero."
+  },
+  {
+   "name": "electron_loss_refill",
+   "description": "Multiplier of the modeled one-way electron loss flux.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1.0,
+   "constraints": "In (0,1]."
+  },
+  {
+   "name": "potential_tolerance_v",
+   "description": "Maximum half-width of the active returned-potential bracket.",
+   "units": "V",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-06,
+   "constraints": "Strictly positive; used together with current_tolerance."
+  },
+  {
+   "name": "current_tolerance",
+   "description": "Maximum absolute log-current ratio at the tested midpoint.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 1e-10,
+   "constraints": "Strictly positive; a separate relative_current_residual is returned for diagnosis."
+  },
+  {
+   "name": "max_iterations",
+   "description": "Maximum number of shared vectorized bisection updates.",
+   "units": "iterations",
+   "shape": "scalar",
+   "dtype": "Python or NumPy integer scalar, excluding bool",
+   "required": false,
+   "default": 100,
+   "constraints": "Integer >= 1; float values are not truncated."
+  },
+  {
+   "name": "initial_bracket_thermal",
+   "description": "Initial bracket half-width in combined ion/electron thermal voltages.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "finite real scalar",
+   "required": false,
+   "default": 8.0,
+   "constraints": "Strictly positive; expansion is additionally bounded to eight rounds."
+  },
+  {
+   "name": "mode",
+   "description": "Choose plug-potential solve or prescribed-potential flux evaluation.",
+   "units": "enum",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": false,
+   "default": "solve",
+   "constraints": "Exactly 'solve' or 'evaluate'; evaluate requires phi_plug_v."
+  },
+  {
+   "name": "phi_plug_v",
+   "description": "Prescribed plug potential for evaluate mode, optionally a callable of psi.",
+   "units": "V",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": false,
+   "default": null,
+   "constraints": "Required and finite in evaluate mode. Ignored in solve mode."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "potential_v",
+   "description": "Solved or prescribed plug potential; joint-vacuum surfaces retain phi_reference_v in solve mode.",
+   "units": "V",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Evaluate mode returns supplied phi_plug_v; solve mode returns only after all active surfaces meet the implemented stopping test."
+  },
+  {
+   "name": "ion_particle_flux_m2_s",
+   "description": "Modeled one-way ion end-loss particle flux after ion_loss_refill.",
+   "units": "m^-2 s^-1",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite nonnegative; zero for absent ions or zero refill; underflow may round to zero."
+  },
+  {
+   "name": "electron_particle_flux_m2_s",
+   "description": "Modeled one-way electron end-loss particle flux after electron_loss_refill.",
+   "units": "m^-2 s^-1",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite nonnegative; zero for absent electrons; underflow may round to zero."
+  },
+  {
+   "name": "log_current_ratio",
+   "description": "Analytic log charge-weighted ion flux minus log electron flux for positive populations; inactive evaluation uses finite tiny-floor diagnostics.",
+   "units": "dimensionless",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite. Active positive populations retain analytic logs when a reported flux underflows."
+  },
+  {
+   "name": "relative_current_residual",
+   "description": "tanh(log_current_ratio/2), avoiding flux-sum overflow.",
+   "units": "dimensionless",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Evaluate mode can be unbalanced. Solve mode checks log_current_ratio at the very returned potential."
+  },
+  {
+   "name": "iterations",
+   "description": "Shared bisection update count, or zero in evaluate mode.",
+   "units": "iterations",
+   "shape": "scalar",
+   "dtype": "Python int",
+   "required": true,
+   "constraints": "Evaluate returns 0; solve mode returns at least one update even if all surfaces are joint vacuum."
+  },
+  {
+   "name": "converged",
+   "description": "Whether the solve stopping test passed, or whether evaluate mode completed without solving.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "Python bool",
+   "required": true,
+   "constraints": "Always True in a returned mapping. In evaluate mode this does not assert ambipolar balance; solve failures raise."
+  },
+  {
+   "name": "evaluation_complete",
+   "description": "The requested numerical evaluation completed.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "Python bool",
+   "required": true,
+   "constraints": "True on successful return."
+  },
+  {
+   "name": "current_balance_solved",
+   "description": "Whether a bounded current-balance solve was performed.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "Python bool",
+   "required": true,
+   "constraints": "True in solve mode, False in prescribed evaluate mode; not a model validity certificate."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Positive magnetic magnitudes, mass, charge and thermal energies, finite compatible reference profiles and their declared SI units.",
+   "For solve mode, both reference densities are positive together or zero together at each surface, and the modeled flux ratio has a bracketable root within the bounded expansion."
+  ],
+  "supported": [
+   "Independent scalar or vectorized flux-surface evaluation with prescribed potential and caller-defined density/temperature profiles.",
+   "Bounded solve of single-ion/electron charge-weighted end-loss balance, including mixed active and joint-vacuum surfaces."
+  ],
+  "excluded": [
+   "A multispecies charge sum, collisional end-loss transport, self-consistent reference profiles or equilibrium reconstruction.",
+   "Interpreting evaluate-mode converged as a current-balance result, or claiming that a numerical root certifies the source model's physical validity."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for unsupported mode, nonfinite/nonpositive required scalar controls, refill values outside their mode-specific bounds, nonfinite or nonpositive fields/temperatures, negative densities, absent evaluate-mode phi_plug_v, or one-sided-vacuum solve surfaces. Noninteger max_iterations raises ValueError; incompatible broadcasts, numeric conversion and caller profile failures may raise ValueError or TypeError.",
+  "runtime_failure": "Raises RuntimeError if an active surface cannot be bracketed after eight expansion rounds. Nonfinite dimensionless barriers, fluxes or residuals raise FloatingPointError or ValueError; no NaN success is returned.",
+  "nonconvergence": "Raises RuntimeError unless all active surfaces meet half-bracket-width and absolute log-current-ratio tests at the same returned potential within max_iterations. A mathematically desired root that cannot be represented at the requested width and residual resolution still fails; no ULP-sized tolerance floor is silently introduced.",
+  "partial_results": "No result mapping is returned after any validation, callback, bracketing or solve failure. Evaluate mode returns a complete diagnostic mapping even when the prescribed potential leaves a large current residual."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.closures.mirror_ambipolar_potential",
+   "symbol": "solve_mirror_ambipolar_potential",
+   "signature": "solve_mirror_ambipolar_potential(b_reference_t, b_plug_t, psi, ion_mass_kg, ion_charge_c, ion_density_ref_m3, ion_temperature_parallel_j, ion_temperature_perpendicular_j, electron_temperature_j, phi_reference_v=0.0, electron_density_ref_m3=None, ion_loss_refill=1.0, electron_loss_refill=1.0, potential_tolerance_v=1e-06, current_tolerance=1e-10, max_iterations=100, initial_bracket_thermal=8.0, mode='solve', phi_plug_v=None)",
+   "canonical_module": "scirel.closures",
+   "canonical_symbol": "solve_mirror_ambipolar_potential"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Check the zero-slope half-space barrier integral at a prescribed plug potential.",
+  "code": "import numpy as np\nfrom scirel.closures import solve_mirror_ambipolar_potential\ne = 1.602176634e-19\nm_i = 1.67262192595e-27\nm_e = 9.1093837139e-31\nr = solve_mirror_ambipolar_potential(1.0, 1.0, 0.0, m_i, e, 2.0e18, 2.0*e, 3.0*e, e, electron_density_ref_m3=3.0e18, ion_loss_refill=0.25, electron_loss_refill=0.5, mode='evaluate', phi_plug_v=1.0)\nnp.testing.assert_allclose(r['ion_particle_flux_m2_s'], 2.0e18*np.sqrt(2.0*e/(2.0*np.pi*m_i))*np.exp(-0.5)*0.25)\nnp.testing.assert_allclose(r['electron_particle_flux_m2_s'], 3.0e18*np.sqrt(e/(2.0*np.pi*m_e))*0.5)\nassert r['iterations'] == 0 and r['converged']\nassert r['evaluation_complete'] and not r['current_balance_solved']",
+  "expected": "The zero-mirror-slope ion barrier gives an exp(-1/2) factor, while the electron one-way flux has no barrier at +1 V; evaluate mode reports zero iterations without asserting current balance."
+ },
+ "verification": {
+  "scope": [
+   "An analytic zero-mirror-slope flux limit and selected vectorized, profile-callable and current-balance cases.",
+   "Joint-vacuum single-update behavior, one-sided-vacuum rejection, invalid controls, bracket failure and iteration-budget nonconvergence.",
+   "Evaluate-mode unbalanced current with converged=True, and solve-mode disregard of phi_plug_v.",
+   "Analytic extreme downhill barrier a=-100,b=1000 yields finite flux; 100-digit independent barrier checks cover slopes around -1, zero and both signs.",
+   "Equal-mass, equal-temperature balanced roots at positive/negative common potentials 1e20 and 1e308 retain the actual zero-current state without midpoint overflow; prescribed endpoint evaluation remains distinct from solving current balance."
+  ],
+  "tests": [
+   "tests/closures/test_mirror_ambipolar_potential.py",
+   "tests/kinetic/test_reviewed_failure_semantics.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Direct SciRel tests establish selected flux values from an independent half-space limit, reference-potential retention on joint vacuum, a convergent current-balance example, callable density profile equivalence, and selected failure paths. They do not prove the physical end-loss model, all pitch-integral branches, arbitrary parameter regimes, uniqueness of roots, final residual bounds at every extreme or current expert recognition.",
+  "known_limitations": [
+   "Refill fractions and the prescribed reference profiles are external model inputs, not derived transport physics.",
+   "Evaluate-mode converged retains the historical evaluation-success meaning; current_balance_solved explicitly distinguishes it from a solved endpoint.",
+   "Finite model inputs can require an unrepresentable flux or bracket; these fail explicitly. Refill and reference populations remain prescribed phenomenology.",
+   "Public distribution licensing and expert recognition remain pending."
+  ]
+ }
+}

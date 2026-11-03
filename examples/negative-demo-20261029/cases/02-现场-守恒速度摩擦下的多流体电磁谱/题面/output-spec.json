@@ -1,0 +1,15 @@
+{
+  "complex_encoding": "复数编码为 [real, imag]",
+  "units": "所有频率、nu 和增长率诊断使用同一无量纲逆时间归一化",
+  "required": {
+    "collision_states": "必须为每个输入碰撞工况提供且仅提供一个对象，并按唯一 id 匹配"
+  },
+  "state_object": {
+    "id": "输入工况的公开 id",
+    "spectra": "数组包含 len(k) 行；每行是一个无序复数频率多重集合，必须恰好包含 4*S+6 个根，并保留重复根",
+    "maximum_growth_rate": "长度为 len(k) 的有限带符号实数；每个值是对应完整谱的 max Im(omega)",
+    "summed_growth_rate": "长度为 len(k) 的有限带符号实数；每个值是对应完整谱的 sum Im(omega)",
+    "k": "可选的完整且唯一的 k 标签；省略时，行顺序必须与输入 k 的顺序一致"
+  },
+  "failure": "输入无效或求解器出错时必须明确失败；不得静默修复 nu、截断本征根或切换源代码分支"
+}

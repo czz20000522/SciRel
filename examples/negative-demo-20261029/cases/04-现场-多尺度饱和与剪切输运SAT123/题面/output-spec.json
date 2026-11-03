@@ -1,0 +1,136 @@
+{
+  "format": "UTF-8 JSON；数值叶节点必须有限，不能包含布尔值、null 或非有限数",
+  "normalisation": "使用 a、cs、Bunit、ne、Te、mD 的归一化",
+  "scenario_order": [
+    "sat1-negative-shear",
+    "sat1-zero-shear",
+    "sat1-positive-shear",
+    "sat2-negative-shear",
+    "sat2-zero-shear",
+    "sat2-positive-shear",
+    "sat3-negative-shear",
+    "sat3-zero-shear",
+    "sat3-positive-shear",
+    "sat3-transition-zero-shear"
+  ],
+  "species_order": [
+    "electron",
+    "deuterium"
+  ],
+  "field_order": [
+    "electrostatic",
+    "parallel-vector-potential",
+    "parallel-magnetic-compression"
+  ],
+  "quantity_order": [
+    "particle",
+    "energy",
+    "toroidal-momentum",
+    "parallel-momentum",
+    "energy-exchange"
+  ],
+  "geometry_scalar_order": [
+    "ft",
+    "ft_electron",
+    "ft_deuterium",
+    "B2_average",
+    "R2_average",
+    "RBt_average",
+    "B_average",
+    "Bt_average",
+    "grad_r_average",
+    "Bp0",
+    "Bt0",
+    "Bgeo0",
+    "SAT_geo0",
+    "SAT_geo1",
+    "SAT_geo2",
+    "grad_r0",
+    "kx_geo0"
+  ],
+  "geometry_xgrid_order": [
+    "Bx",
+    "kxx",
+    "wdx",
+    "b0x",
+    "b2x",
+    "cx_tor_par",
+    "cx_tor_per",
+    "cx_par_par"
+  ],
+  "peak_fields": [
+    "vzf_measure",
+    "kymax",
+    "jmax_1based"
+  ],
+  "geometry_shapes": {
+    "native_shift_kx_over_ky": [
+      12
+    ],
+    "geometry_shift_signBt": [
+      12
+    ],
+    "x_grid": [
+      31
+    ],
+    "geometry_scalars": [
+      12,
+      17
+    ],
+    "geometry_xgrid": [
+      12,
+      31,
+      8
+    ]
+  },
+  "spectral_shapes": {
+    "field_spectrum": [
+      12,
+      2,
+      4
+    ],
+    "moment_intensity": [
+      12,
+      2,
+      2,
+      4
+    ],
+    "flux_spectrum_GB": [
+      12,
+      2,
+      2,
+      3,
+      5
+    ],
+    "flux_interval_contributions_GB": [
+      12,
+      2,
+      3,
+      5
+    ],
+    "total_flux_GB": [
+      2,
+      3,
+      5
+    ]
+  },
+  "field_components": [
+    "native_vbar_equals_P",
+    "phi_P",
+    "QL_Apar_squared_times_P",
+    "QL_Bpar_squared_times_P"
+  ],
+  "moment_components": [
+    "N",
+    "T",
+    "U",
+    "Q"
+  ],
+  "comparison": {
+    "rtol": 1e-10,
+    "atol": 1e-12,
+    "exact_reference_zero": true,
+    "scope": "仅比较同一组给定响应、有限网格和原生闭合模型"
+  },
+  "model_scope": "仅覆盖给定响应下的饱和、几何和谱位移；不生成物理矩、本征谱，也不代表科学验收通过"
+}

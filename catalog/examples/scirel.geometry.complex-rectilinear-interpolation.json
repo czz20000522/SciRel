@@ -1,0 +1,157 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.geometry.complex-rectilinear-interpolation",
+ "title": {
+  "en": "Complex rectilinear field interpolation",
+  "zh": "复值直角网格场插值"
+ },
+ "summary": "Trilinearly interpolate a complex-valued field sampled on three strictly increasing rectilinear axes at caller-owned target points, returning a per-point geometric validity mask and nan+nanj for points outside the tolerance-expanded source box.",
+ "taxonomy": [
+  "geometry",
+  "interpolation",
+  "rectilinear-grid",
+  "complex-field"
+ ],
+ "aliases": [
+  "complex trilinear sampling",
+  "RF solver-grid field resampling"
+ ],
+ "discovery": {
+  "capability": [
+   "Complex rectilinear field interpolation",
+   "Trilinearly interpolate a complex field sampled on three increasing rectilinear axes, with a per-point validity mask."
+  ],
+  "operation": [
+   "piecewise-trilinear reconstruction of a band-limited complex field",
+   "source axes, complex values and target points -> interpolated values and validity mask"
+  ],
+  "model": "Piecewise-trilinear interpolation on a tensor-product rectilinear grid with no uniform-spacing assumption.",
+  "geometry": "Rectilinear tensor-product grid with caller-declared Cartesian axes in metres, indexed [x, y, z].",
+  "boundary": "Closed source box expanded by tol = 32 * eps * max(1, max axis span); outside the expansion no extrapolation is performed.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "complex field samples on three rectilinear axes to interpolated values at arbitrary target points",
+  "direction": "source axes plus complex values plus target points -> interpolated_values, valid_mask",
+  "definition": "Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box return nan+nanj with valid_mask false.",
+  "model": "piecewise-trilinear reconstruction of a band-limited complex field",
+  "geometry": "tensor-product rectilinear grid; no assumption of uniform spacing on any axis",
+  "coordinates": "caller-declared Cartesian axes in metres, indexed [x, y, z]",
+  "boundary": "closed-box domain expanded by tol = 32 * eps * max(1, max axis span); outside the expansion no extrapolation is performed",
+  "assumptions": [
+   "Each of the three source axes is strictly increasing and contains at least two finite points.",
+   "The first three axes of source_values correspond exactly to x_m, y_m, and z_m in that order.",
+   "valid_mask is a geometric predicate only; it does not assert that the source or the returned value is finite."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "source_axes_m",
+   "description": "Mapping with keys x_m, y_m, and z_m holding the three strictly increasing source axes.",
+   "units": "m",
+   "shape": "mapping of three [N_axis] arrays",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Each axis is one-dimensional, finite, has at least two points, and is strictly increasing."
+  },
+  {
+   "name": "source_values",
+   "description": "Complex field samples on the tensor-product source grid, indexed [x, y, z]; trailing axes are preserved.",
+   "units": "caller-declared field units",
+   "shape": "[N_x,N_y,N_z] plus optional trailing axes",
+   "dtype": "complex array-like",
+   "required": true,
+   "constraints": "Leading shape must equal (N_x, N_y, N_z); values are not required to be finite, and non-finite entries propagate into every target point whose stencil touches them."
+  },
+  {
+   "name": "target_points_m",
+   "description": "Target Cartesian points to sample, one point per row.",
+   "units": "m",
+   "shape": "[N_point,3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Two-dimensional, exactly three columns, and finite; non-finite target points are rejected rather than masked."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "interpolated_values",
+   "description": "Interpolated complex field value per target point, with the source trailing axes preserved.",
+   "units": "caller-declared field units",
+   "shape": "[N_point] plus optional trailing axes",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "nan+nanj wherever valid_mask is false; finite at every valid_mask point only when the touched source values are finite."
+  },
+  {
+   "name": "valid_mask",
+   "description": "Geometric containment predicate: true exactly when the target point lies inside the closed source box expanded by tol.",
+   "units": "dimensionless",
+   "shape": "[N_point]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Independent of source and result finiteness; a true entry does not guarantee a finite interpolated value."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The complex field is sampled on a tensor-product rectilinear grid that is dense enough for trilinear reconstruction to be meaningful over the region of interest."
+  ],
+  "supported": [
+   "Point-wise sampling of a complex field on an arbitrary (non-uniform) rectilinear grid.",
+   "Batch querying of a full Cartesian solver grid where only part of the grid covers the source domain.",
+   "Complex fields with trailing component axes, such as a three-component vector field."
+  ],
+  "excluded": [
+   "Extrapolation beyond the tolerance-expanded source box.",
+   "Curvilinear, cylindrical, or unstructured source grids.",
+   "Masking or repairing non-finite source data; that decision belongs to the caller."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for a missing or non-mapping source_axes_m, an axis that is not one-dimensional, has fewer than two points, is non-finite, or is not strictly increasing, for a source_values leading shape that does not match the axes, and for target points that are not a finite (N,3) array.",
+  "runtime_failure": "No exception is raised for out-of-domain points; they are reported through valid_mask with nan+nanj values. NumPy or SciPy errors for otherwise valid inputs propagate unchanged.",
+  "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no output mapping."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.complex_rectilinear_interpolation",
+   "symbol": "interpolate_complex_rectilinear_field",
+   "signature": "interpolate_complex_rectilinear_field(source_axes_m, source_values, target_points_m)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "interpolate_complex_rectilinear_field"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Interpolate a complex field at two geometrically valid points and one point outside the tolerance-expanded box.",
+  "code": "import numpy as np\nfrom scirel.geometry import interpolate_complex_rectilinear_field\naxes = {'x_m': np.array([0.0, 1.0, 2.0]), 'y_m': np.array([0.0, 1.0, 2.0]), 'z_m': np.array([0.0, 1.0, 2.0])}\nvalues = np.zeros((3, 3, 3), dtype=complex)\nvalues[1, 1, 1] = 4.0 + 2.0j\npoints = np.array([[1.0, 1.0, 1.0], [1.0 + 1.0e-15, 1.0, 1.0], [1.0, 1.0, 3.0]])\nresult = interpolate_complex_rectilinear_field(axes, values, points)\nassert result['valid_mask'].tolist() == [True, True, False]\nassert np.isfinite(result['interpolated_values'][:2]).all()\nassert np.isnan(result['interpolated_values'][2].real) and np.isnan(result['interpolated_values'][2].imag)",
+  "expected": "The complex value array has length three; the first two entries are finite and valid_mask is [True, True, False], with nan+nanj for the invalid point."
+ },
+ "verification": {
+  "scope": [
+   "Agreement with an independent explicit eight-corner trilinear reference at interior points.",
+   "Axis-order and leading-shape conformance, including rejection of a permuted axis mapping.",
+   "valid_mask equals tolerance-expanded geometric containment, including the exactly-at-tol boundary.",
+   "Clamping of tolerance-shell points onto the closed box, proven by equality with the corresponding face point.",
+   "nan+nanj and a false mask for points outside the expanded box, including points that would clamp to a finite face value.",
+   "Propagation of non-finite source values through the stencil while valid_mask stays true.",
+   "Fail-closed validation of source axes, source shape, and target points.",
+   "Empty target sets and preservation of trailing source axes."
+  ],
+  "tests": [
+   "tests/geometry/test_complex_rectilinear_interpolation.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Separable trilinear interpolation in [x, y, z] axis order with the source values indexed [N_x, N_y, N_z]; target points inside the closed source box expanded by tol are clamped onto the closed box and interpolated, and target points outside that expanded box…. Evidence: test_complex_rectilinear_interpolation.py (12 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Extrapolation beyond the tolerance-expanded source box; Curvilinear, cylindrical, or unstructured source grids.",
+  "known_limitations": [
+   "Only trilinear (first-order) reconstruction is offered; no higher-order or conservative scheme is included.",
+   "valid_mask reports geometry only and must not be used as a finiteness test on the returned values.",
+   "No extrapolation is performed outside the tolerance-expanded box, so callers with points beyond the shell receive nan rather than a clamped edge value.",
+   "The independent analytic comparison does not replace an external experimental reference."
+  ]
+ }
+}

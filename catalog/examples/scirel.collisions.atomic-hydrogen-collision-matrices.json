@@ -1,0 +1,275 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
+ "title": {
+  "en": "Atomic hydrogen four-family collision matrices",
+  "zh": "原子氢四族碰撞矩阵组装"
+ },
+ "summary": "Assemble the charge-exchange, two momentum-transfer and self-collision stress matrices on a cylindrical normalized velocity grid. The H/D laboratory-energy scaling is explicit; elastic matrices retain their sign, and the angular node count can be increased for an explicit convergence check.",
+ "taxonomy": [
+  "collisions",
+  "collision-matrix",
+  "atomic-hydrogen",
+  "velocity-space"
+ ],
+ "aliases": [
+  "atomic SIG assembly",
+  "assemble_atomic_hydrogen_collision_matrices"
+ ],
+ "discovery": {
+  "capability": [
+   "Atomic hydrogen four-family collision matrices",
+   "Assemble charge-exchange, two momentum-transfer and self-collision stress matrices on a cylindrical normalized velocity grid."
+  ],
+  "operation": [
+   "Assemble the four-family atomic-hydrogen collision matrices",
+   "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and accompanying geometry"
+  ],
+  "model": "Axisymmetric velocity-space integration kernels; momentum-transfer and viscosity cross sections use different isotope scalings.",
+  "geometry": "Cylindrical velocity space with a uniform midpoint azimuthal average (five points by default, n_theta explicitly increaseable); vr and vx are dimensionless v/Vth and source/target pairs flatten in Fortran order.",
+  "boundary": "vr positive and strictly increasing, vx strictly increasing, radial weights nonnegative, axial weights positive, Tnorm and mu positive and finite; vx need not cross zero; n_theta must be a positive integer; elastic matrices retain their sign.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "atomic H four-family normalized collision-kernel matrix assembly",
+  "direction": "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and the accompanying geometry",
+  "definition": "Let g^2 = vr_i^2 + vr_k^2 - 2*vr_i*vr_k*cos(theta) + (vx_j - vx_l)^2 and theta_m = pi*(m + 1/2)/n_theta. Matrix column weights are Vr2pidVr_k*dVx_l, with Fortran ordering row = i + nvr*j and col = k + nvr*l. The CX kernel is <g*sigma_CX>, the mixed momentum kernel is (vx_j - vx_l)*<g*sigma_mt>, and the self-collision stress kernel is <(g_perp^2 - 2*g_x^2)*g*sigma_vis>/8. Vth^2 = 2*Q*Tnorm/(mu*H_MASS). Atomic CX and mixed-momentum fit energies are g^2*Tnorm/mu, and the self viscosity energy is g^2*Tnorm.",
+  "model": "axisymmetric velocity-space integration kernels; momentum-transfer and viscosity cross sections use different isotope scalings",
+  "geometry": "cylindrical velocity space with a uniform midpoint azimuthal average, five points by default; n_theta can be increased explicitly",
+  "coordinates": "vr and vx are dimensionless v/Vth; source and target velocity pairs flatten in Fortran order",
+  "boundary": "positive and strictly increasing vr, strictly increasing vx, nonnegative radial weights, positive axial weights, and positive finite Tnorm and mu; vx is not required to cross zero. n_theta must be a positive integer; the outputs retain negative values of the elastic kernels",
+  "assumptions": [
+   "Constants H_MASS = 1.6726231e-27 kg and Q = 1.602177e-19 C; Vth = sqrt(2*Q*Tnorm/(mu*H_MASS)), and every node uses v/Vth.",
+   "The fit argument is the laboratory energy of the relevant projectile in the stationary-target frame, not always a center-of-mass energy. Momentum transfer maps E_D to E_D/2 for the hydrogen fits and viscosity maps E_D to E_D; H (mu=1) and D (mu=2) are verified, and other positive mu values are only an algebraic extension without new physical qualification.",
+   "The molecular CX projectile mass is 2*H_MASS; the mixed H-H2/P-H2 fits always use the H projectile mass, and exchanging the test particle and the background does not change the relative-speed cross section.",
+   "The H+-H fit uses the low-energy polynomial for E < 10 eV and the high-energy polynomial for E >= 10 eV, including exactly 10 eV; the segments are not forced into a smooth splice.",
+   "The default five-angle rule is a numerical approximation; the caller must independently check angular and velocity-grid convergence."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "vr",
+   "description": "radial normalized velocity nodes",
+   "units": "v/Vth",
+   "shape": "[nvr]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "nonempty, finite, positive and strictly increasing"
+  },
+  {
+   "name": "vx",
+   "description": "axial normalized velocity nodes",
+   "units": "v/Vth",
+   "shape": "[nvx]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "nonempty, finite and strictly increasing; may be shifted as a whole and is not required to cross zero"
+  },
+  {
+   "name": "Vr2pidVr",
+   "description": "cylindrical radial velocity integration weights",
+   "units": "dimensionless normalized radial-area measure",
+   "shape": "[nvr]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "finite and nonnegative, aligned with vr"
+  },
+  {
+   "name": "dVx",
+   "description": "axial velocity integration weights",
+   "units": "dimensionless normalized axial-speed increment",
+   "shape": "[nvx]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "finite and positive, aligned with vx"
+  },
+  {
+   "name": "Tnorm",
+   "description": "normalization energy that defines the thermal speed",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "finite positive real scalar; arrays, booleans and strings are rejected"
+  },
+  {
+   "name": "mu",
+   "description": "isotope mass ratio: 1 for hydrogen and 2 for deuterium",
+   "units": "multiples of 1.6726231e-27 kg",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": false,
+   "default": 1.0,
+   "constraints": "finite positive real scalar; physical checks are limited to H=1 and D=2"
+  },
+  {
+   "name": "n_theta",
+   "description": "number of azimuthal midpoint nodes; used for an explicit convergence check",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "positive integer; booleans are rejected. Default 5",
+   "default": 5
+  }
+ ],
+ "outputs": [
+  {
+   "name": "SIG_CX",
+   "description": "nonnegative charge-exchange kernel",
+   "units": "m^2 in normalized kernel convention",
+   "shape": "[nvr*nvx,nvr*nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and nonnegative"
+  },
+  {
+   "name": "SIG_H_H",
+   "description": "signed self-collision stress kernel, including the viscosity cross section and the 1/8 factor",
+   "units": "m^2 in normalized kernel convention",
+   "shape": "[nvr*nvx,nvr*nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; positive, negative and zero values are retained"
+  },
+  {
+   "name": "SIG_H_H2",
+   "description": "signed mixed-species momentum-transfer kernel",
+   "units": "m^2 in normalized kernel convention",
+   "shape": "[nvr*nvx,nvr*nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; positive, negative and zero values are retained"
+  },
+  {
+   "name": "SIG_H_P",
+   "description": "signed mixed-species momentum-transfer kernel",
+   "units": "m^2 in normalized kernel convention",
+   "shape": "[nvr*nvx,nvr*nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; positive, negative and zero values are retained"
+  },
+  {
+   "name": "v_v2",
+   "description": "normalized squared relative speed at each angular node",
+   "units": "(v/Vth)^2",
+   "shape": "[nvr,nvx,nvr,nvx,n_theta]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and nonnegative"
+  },
+  {
+   "name": "v_v",
+   "description": "normalized relative speed",
+   "units": "v/Vth",
+   "shape": "[nvr,nvx,nvr,nvx,n_theta]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and nonnegative"
+  },
+  {
+   "name": "vr2_vx2",
+   "description": "relative radial squared term minus twice the axial squared term",
+   "units": "(v/Vth)^2",
+   "shape": "[nvr,nvx,nvr,nvx,n_theta]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; positive, negative and zero values are retained"
+  },
+  {
+   "name": "vx_vx",
+   "description": "signed axial velocity difference",
+   "units": "v/Vth",
+   "shape": "[nvr,nvx,nvr,nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; positive, negative and zero values are retained"
+  },
+  {
+   "name": "Vr2pidVrdVx",
+   "description": "broadcast target-column velocity integration weights",
+   "units": "dimensionless normalized volume measure",
+   "shape": "[nvr,nvx,nvr,nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and nonnegative"
+  },
+  {
+   "name": "Vth2",
+   "description": "square of the thermal speed scale",
+   "units": "m^2/s^2",
+   "shape": "[1]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and positive"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "each channel uses the declared laboratory energy, isotope scaling, cross-section fit and endpoint clipping",
+   "the caller checks finite angular and velocity integration accuracy for the intended use; arrays are flattened in Fortran order"
+  ],
+  "supported": [
+   "H/D four-channel matrix assembly, a common axial velocity shift, and weighted exchange symmetry or antisymmetry"
+  ],
+  "excluded": [
+   "full transport-equation solution, cross-call cache lifetime, other species, and unverified isotope extrapolation",
+   "inferring accuracy for arbitrary distributions or new experimental cross-section qualification from a finite node count"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "raises ValueError for non-real or non-finite values, mismatched shapes, non-increasing axes, invalid weights or normalization, or an invalid n_theta",
+  "runtime_failure": "raises ValueError when the thermal speed, a cross section or a matrix is not representable as a finite value; an out-of-memory failure also returns no partial matrix",
+  "nonconvergence": "a finite midpoint quadrature with no adaptive iteration; convergence is the caller's check",
+  "partial_results": "never returns partial results"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.atomic_hydrogen_collision_matrices",
+   "symbol": "assemble_atomic_hydrogen_collision_matrices",
+   "signature": "assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "assemble_atomic_hydrogen_collision_matrices"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section"
+   },
+   {
+    "asset_id": "scirel.collisions.atomic-hydrogen-elastic-cross-section"
+   },
+   {
+    "asset_id": "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section"
+   },
+   {
+    "asset_id": "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section"
+   }
+  ]
+ },
+ "example": {
+  "description": "build a two-by-two velocity grid and check the signed matrices and the default five-angle geometry",
+  "code": "import numpy as np\nfrom scirel.collisions import assemble_atomic_hydrogen_collision_matrices\nr = assemble_atomic_hydrogen_collision_matrices(\n    vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),\n    Vr2pidVr=np.array([1.0, 2.0]), dVx=np.array([2.0, 2.0]), Tnorm=1.0,\n)\nassert r['SIG_CX'].shape == (4, 4)\nassert r['v_v2'].shape == (2, 2, 2, 2, 5)\nassert np.isfinite(r['SIG_H_H']).all()\nassert (r['SIG_H_H'] < 0).any()\nassert r['Vth2'].shape == (1,)",
+  "expected": "four finite 4x4 matrices; CX is nonnegative and the elastic moments retain negative values; the five-angle geometry and the thermal-speed square are returned"
+ },
+ "verification": {
+  "scope": [
+   "independent geometry and fit comparisons retain the existing numerical tolerances",
+   "H/D four-channel 4096-angle midpoint results are compared with independent SciPy adaptive integration; weighted exchange relations and a common boost are checked",
+   "moments and Alpha from real normalized distributions verify H<->H2 momentum exchange, Maxwell equilibrium momentum and weak drift"
+  ],
+  "tests": [
+   "tests/collisions/test_atomic_hydrogen_collision_matrices.py",
+   "tests/collisions/test_collision_physical_closure.py"
+  ],
+  "evidence_ceiling": "supports consistency of the declared velocity integration kernels with the tested discrete inputs; it is not experimental cross-section validation over all energy ranges and does not constitute full physical qualification",
+  "known_limitations": [
+   "fit endpoint clipping and the molecular viscosity surrogate are model approximations",
+   "the default five-angle rule has no universal accuracy guarantee; higher-order checks do not replace the caller's grid convergence",
+   "human scientific acceptance and redistribution licensing are decided separately; the verification gap is not closed by this file"
+  ]
+ }
+}

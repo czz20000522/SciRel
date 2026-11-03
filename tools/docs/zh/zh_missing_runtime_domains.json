@@ -1,0 +1,1560 @@
+{
+ "language": "zh-CN",
+ "records": [
+  {
+   "applicability": {
+    "excluded": [
+     "仅处理未批处理的点值，至少两个单元；不提供其他坐标的链式导数端口、网格自适应、面积/体积推断或 JAX 变换。",
+     "内部面的二次多项式精确性不等于任意边界数据和任意畸变网格的全局二阶精度。"
+    ],
+    "preconditions": [
+     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+    ],
+    "supported": [
+     "由显式面网格、单元点值和边界数据构造不可变变量。"
+    ]
+   },
+   "asset_id": "scirel.fvm.cell-variable",
+   "assumptions": [
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+   ],
+   "boundary": "两端各给一个标量 Dirichlet 值或沿坐标正向的 Neumann 导数；未提供度量时采用单位横截面。",
+   "definition": "单元中心取相邻面坐标的算术中点。face_value 在内部面上做线性插值，端点用给定边界值或半单元梯度外推。face_grad 在内部面拟合三个相邻点值；到最后一个内部面时，改用两个相邻单元的值，并配合真实的右端 Dirichlet 值或沿坐标正向的 Neumann 导数。对 Neumann 情形，记 s=(u1-u0)/(x1-x0) 为割线斜率、b 为边界坐标、f 为内部面坐标，则 q_prime(f)=s+(g-s)*(2*f-x0-x1)/(2*b-x0-x1)，其中 x0、x1 为相邻单元中心，g 为给定的 Neumann 梯度。N+1 个布尔值组成的 two_point_mask 可用相邻割线覆盖内部梯度。端点处 Dirichlet 的梯度仍取半单元割线，Neumann 的梯度直接采用给定值。grad 等于 face_value 之差除以单元宽度。",
+   "example": {
+    "description": "构造一个双单元变量，给定单位 Neumann 梯度，并核对面值重构。",
+    "expected": "面值为 [0, 1, 2]，重构出的面梯度处处为 1。"
+   },
+   "failure_semantics": {
+    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；有限体积入口的非数值输入抛出 TypeError。",
+    "nonconvergence": "没有迭代；该构造不适用收敛判据，不伪造收敛标记。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "计算结果非有限时抛出 FloatingPointError。"
+   },
+   "inputs": [
+    {
+     "name": "value",
+     "description": "算术中心点值，不是单元体积平均",
+     "constraints": "有限一维实数组，长度至少二。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N",
+     "units": "调用者量 Q"
+    },
+    {
+     "name": "face_centers",
+     "description": "单调递增单元边界坐标",
+     "constraints": "有限严格递增，宽度为正有限值且中点间距非零。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "坐标 X"
+    },
+    {
+     "name": "left_face_constraint",
+     "description": "左端边界值",
+     "constraints": "每端的值或梯度必须恰有一个非 None；设置时为有限标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量或 None",
+     "units": "Q"
+    },
+    {
+     "name": "right_face_constraint",
+     "description": "右端边界值",
+     "constraints": "每端的值或梯度必须恰有一个非 None；设置时为有限标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量或 None",
+     "units": "Q"
+    },
+    {
+     "name": "left_face_grad_constraint",
+     "description": "左端沿坐标正向的导数",
+     "constraints": "每端的值或梯度必须恰有一个非 None；设置时为有限标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量或 None",
+     "units": "Q/X"
+    },
+    {
+     "name": "right_face_grad_constraint",
+     "description": "右端沿坐标正向的导数",
+     "constraints": "每端的值或梯度必须恰有一个非 None；设置时为有限标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量或 None",
+     "units": "Q/X"
+    }
+   ],
+   "model": "一维守恒有限体积离散。",
+   "outputs": [
+    {
+     "name": "variable",
+     "description": "不可变的 float64 CellVariable 副本，提供 face_value()、face_grad() 和 grad() 方法",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "CellVariable",
+     "shape": "CellVariable 对象",
+     "units": "Q；导数 Q/X"
+    }
+   ],
+   "source_sha256": "a8d18a68f816fde7ba07925890676bc6b9fe63683aff77e52f1502137ed9cb67",
+   "summary": "由显式面网格、单元点值和边界数据构造不可变变量。",
+   "verification": {
+    "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
+    "known_limitations": [
+     "仅处理未批处理的点值，至少两个单元；不提供其他坐标的链式导数端口、网格自适应、面积/体积推断或 JAX 变换。",
+     "内部面的二次多项式精确性不等于任意边界数据和任意畸变网格的全局二阶精度。"
+    ],
+    "scope": [
+     "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。",
+     "在不等的末端宽度和双单元网格上检查匹配 Neumann 数据的二次、一次与常数导数；由导数约束的重构取代了不准确的线性外推边界值。显式两点掩码、Dirichlet 端点半单元割线和线性面值均维持原有定义。"
+    ],
+    "tests": [
+     "tests/fvm/test_fvm.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "D 的绝对下限是输入单位下的声明约定，不是单位不变的物理正则化。",
+     "守恒相对于所选数值边界通量；ghost 或 semi-implicit 面值可能不同于给定 Dirichlet 值。不保证任意网格精度或正性。"
+    ],
+    "preconditions": [
+     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+    ],
+    "supported": [
+     "使用幂律面权重组装对流与指定边界通量。"
+    ]
+   },
+   "asset_id": "scirel.fvm.convection",
+   "assumptions": [
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+   ],
+   "boundary": "两端各给一个标量 Dirichlet 值或沿坐标正向的 Neumann 导数；未提供度量时采用单位横截面。",
+   "definition": "面 Peclet 数定义为 p=distance*v/D，其中 distance 是面间距，边界处取半单元宽，D 的绝对值下限为 1e-20。权重 alpha 按 p 分段取值：|p|<=.001 时取 .5；.001<p<=10 时取 [(p-1)+(1-p/10)^5]/p；-10<=p<-.001 时取 [(1+p/10)^5-1]/p；p>10 时取 1-1/p；p<-10 时取 -1/p。内部面两侧使用互补的 alpha 权重；相邻单元共用同一个面通量。ghost 模式由面数据重建虚单元，direct 模式直接使用给定面值，semi-implicit 模式在当前单元值与面数据之间加权。两端的 Neumann 导数均沿坐标正向。",
+   "example": {
+    "description": "组装常数面速度下的对流项，并核对给定的常数状态具有零残差。",
+    "expected": "三对角算子与边界强迫在常数状态下相互抵消，得到零残差向量。"
+   },
+   "failure_semantics": {
+    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；有限体积入口的非数值输入抛出 TypeError。",
+    "nonconvergence": "没有迭代；该组装不适用收敛判据，不伪造收敛标记。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "计算结果非有限时抛出 FloatingPointError。"
+   },
+   "inputs": [
+    {
+     "name": "v_face",
+     "description": "沿坐标增加方向为正的面对流系数",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "X/time"
+    },
+    {
+     "name": "d_face",
+     "description": "仅用于幂律权重的有符号扩散尺度",
+     "constraints": "匹配有限面数组；按输入单位设幅值下限 1e-20，零取正号。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "X^2/time"
+    },
+    {
+     "name": "var",
+     "description": "网格与标量边界约束",
+     "constraints": "已验证的 CellVariable，至少两个单元。",
+     "dtype": "CellVariable",
+     "shape": "CellVariable",
+     "units": "Q"
+    },
+    {
+     "name": "dirichlet_mode",
+     "description": "Dirichlet 边界面重构策略",
+     "constraints": "ghost、direct 或 semi-implicit。",
+     "dtype": "str",
+     "shape": "字符串",
+     "units": "无量纲"
+    },
+    {
+     "name": "neumann_mode",
+     "description": "给定导数的边界面重构策略",
+     "constraints": "ghost 或 semi-implicit。",
+     "dtype": "str",
+     "shape": "字符串",
+     "units": "无量纲"
+    }
+   ],
+   "model": "一维守恒有限体积离散。",
+   "outputs": [
+    {
+     "name": "matrix",
+     "description": "具有 diagonal、above、below 属性的三对角矩阵，支持 to_dense() 和 matvec()",
+     "constraints": "有限三对角算子。",
+     "dtype": "TriDiagonal",
+     "shape": "N×N 算子",
+     "units": "1/time"
+    },
+    {
+     "name": "forcing",
+     "description": "与单元值无关的边界贡献",
+     "constraints": "有限实单元数组。",
+     "dtype": "float64 数组",
+     "shape": "N",
+     "units": "Q/time"
+    }
+   ],
+   "source_sha256": "e8f3ed43442526da924d7c92b73106cdd983ac1cae842ada4ab8cfb752589946",
+   "summary": "使用幂律面权重组装守恒对流算子及指定边界通量。",
+   "verification": {
+    "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
+    "known_limitations": [
+     "D 的绝对下限是输入单位下的声明约定，不是单位不变的物理正则化。",
+     "守恒相对于所选数值边界通量；ghost 或 semi-implicit 面值可能不同于给定 Dirichlet 值。不保证任意网格精度或正性。"
+    ],
+    "scope": [
+     "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。"
+    ],
+    "tests": [
+     "tests/fvm/test_fvm.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "均匀正弦制造稳态解在加密下表现为二阶点误差；未建立任意非均匀网格收敛性。",
+     "不推断物理面面积和单元体积；所有度量变换与坐标单位由调用者负责。"
+    ],
+    "preconditions": [
+     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+    ],
+    "supported": [
+     "将扩散通量散度组装为三对角算子与边界强迫。"
+    ]
+   },
+   "asset_id": "scirel.fvm.diffusion",
+   "assumptions": [
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+   ],
+   "boundary": "两端各给一个标量 Dirichlet 值或沿坐标正向的 Neumann 导数；未提供度量时采用单位横截面。",
+   "definition": "内部面通量为 D_face*(u_right-u_left)/相邻单元中心距。Dirichlet 边界用半单元割线，Neumann 用正向梯度。单元残差为左右通量差除以宽度，因此宽度加权残差和等于净边界通量。有符号 D 仍按代数处理，物理扩散要求 D>=0。",
+   "example": {
+    "description": "组装单位扩散系数下的扩散项，并核对线性剖面满足离散平衡。",
+    "expected": "三对角算子与边界强迫在单位梯度剖面下相互抵消，得到零残差向量。"
+   },
+   "failure_semantics": {
+    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；有限体积入口的非数值输入抛出 TypeError。",
+    "nonconvergence": "没有迭代；该组装不适用收敛判据，不伪造收敛标记。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "计算结果非有限时抛出 FloatingPointError。"
+   },
+   "inputs": [
+    {
+     "name": "d_face",
+     "description": "包含调用者度量因子的面扩散系数",
+     "constraints": "有限 N+1 实数组；物理扩散要求非负。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "X^2/time"
+    },
+    {
+     "name": "var",
+     "description": "网格与标量边界约束",
+     "constraints": "已验证的 CellVariable，至少两个单元。",
+     "dtype": "CellVariable",
+     "shape": "CellVariable",
+     "units": "Q"
+    }
+   ],
+   "model": "一维守恒有限体积离散。",
+   "outputs": [
+    {
+     "name": "matrix",
+     "description": "具有 diagonal、above、below 属性的三对角矩阵，支持 to_dense() 和 matvec()",
+     "constraints": "有限；与网格匹配的声明算子/向量形状；不广播。",
+     "dtype": "TriDiagonal",
+     "shape": "N×N 算子",
+     "units": "1/time"
+    },
+    {
+     "name": "forcing",
+     "description": "与单元值无关的边界贡献",
+     "constraints": "有限；长度与算子行数匹配；不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N",
+     "units": "Q/time"
+    }
+   ],
+   "source_sha256": "9e6fe04e9461103e1938dc63393e14ac62e3692f7f3df42a3b73baf126dcd402",
+   "summary": "将扩散通量散度组装为三对角算子与边界强迫。",
+   "verification": {
+    "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
+    "known_limitations": [
+     "均匀正弦制造稳态解在加密下表现为二阶点误差；未建立任意非均匀网格收敛性。",
+     "不推断物理面面积和单元体积；所有度量变换与坐标单位由调用者负责。"
+    ],
+    "scope": [
+     "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。"
+    ],
+    "tests": [
+     "tests/fvm/test_fvm.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "仅支持单通道、单位瞬态系数；不含耦合源矩阵、瞬态输入/输出因子、非线性系数、内部边界行替换或非线性求解器。",
+     "显式和 Crank–Nicolson 格式的稳定性与振荡约束由调用者判断；不提供自适应步长或正性保证。隐式分支用带状线性求解器求解三对角系统；不声称全局稳定性界。"
+    ],
+    "preconditions": [
+     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+    ],
+    "supported": [
+     "分别提供旧、新线性算子，推进单个通道一步。"
+    ]
+   },
+   "asset_id": "scirel.fvm.theta-step",
+   "assumptions": [
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+   ],
+   "boundary": "两端各给一个标量 Dirichlet 值或沿坐标正向的 Neumann 导数；未提供度量时采用单位横截面。",
+   "definition": "求解线性系统 (I-dt*theta*C_new)u_new=(I+dt*(1-theta)*C_old)u_old+dt*((1-theta)*c_old+theta*c_new)。左端是作用在待求新状态上的隐式算子，右端只使用旧状态、旧算子以及两层的边界强迫。C 为扩散与对流算子之和，c 包含边界强迫和显式源。输出携带新的边界条件；不进行隐藏迭代，也没有停止条件。",
+   "example": {
+    "description": "用隐式权重为一半的 theta 步，把零状态在单位常数源作用下推进一步。",
+    "expected": "两个单元值都推进到 [0.2, 0.2]。"
+   },
+   "failure_semantics": {
+    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；有限体积入口的非数值输入抛出 TypeError。",
+    "nonconvergence": "没有迭代；theta 步仅解一次线性系统，不伪造收敛标记。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "若计算结果不是有限值，则抛出 FloatingPointError；若 theta 步中的带状线性系统奇异，则抛出 numpy.linalg.LinAlgError。出现这两类情况时不做截断、回退或迭代重试，异常直接向上层调用者传播，不返回任何替代结果。"
+   },
+   "inputs": [
+    {
+     "name": "var_old",
+     "description": "旧单元值与旧边界",
+     "constraints": "已验证 CellVariable。",
+     "dtype": "CellVariable",
+     "shape": "CellVariable",
+     "units": "Q"
+    },
+    {
+     "name": "var_new",
+     "description": "新边界与输出网格；传入的变量值不是非线性迭代初值",
+     "constraints": "网格和形状与 var_old 完全相同。",
+     "dtype": "CellVariable",
+     "shape": "CellVariable",
+     "units": "Q"
+    },
+    {
+     "name": "dt",
+     "description": "时间增量",
+     "constraints": "有限正实标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "时间"
+    },
+    {
+     "name": "d_old",
+     "description": "旧扩散系数；None 表示该项不存在",
+     "constraints": "提供时须为有限显式实数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "X^2/time"
+    },
+    {
+     "name": "d_new",
+     "description": "新扩散系数；None 表示该项不存在",
+     "constraints": "提供时须为有限显式实数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "X^2/time"
+    },
+    {
+     "name": "v_old",
+     "description": "旧对流系数；None 表示该项不存在",
+     "constraints": "提供时须为有限显式实数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "X/time"
+    },
+    {
+     "name": "v_new",
+     "description": "新对流系数；None 表示该项不存在",
+     "constraints": "提供时须为有限显式实数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "X/time"
+    },
+    {
+     "name": "source_old",
+     "description": "旧显式源；None 表示该项不存在",
+     "constraints": "提供时须为有限显式实数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N",
+     "units": "Q/time"
+    },
+    {
+     "name": "source_new",
+     "description": "新显式源；None 表示该项不存在",
+     "constraints": "提供时须为有限显式实数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N",
+     "units": "Q/time"
+    },
+    {
+     "name": "theta",
+     "description": "新时间层的隐式权重",
+     "constraints": "0<=theta<=1；0 为显式 Euler，0.5 为 Crank–Nicolson，1 为后向 Euler。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "dirichlet_mode",
+     "description": "Dirichlet 边界面重构策略",
+     "constraints": "ghost、direct 或 semi-implicit。",
+     "dtype": "str",
+     "shape": "字符串",
+     "units": "无量纲"
+    },
+    {
+     "name": "neumann_mode",
+     "description": "Neumann 边界面重构策略",
+     "constraints": "ghost 或 semi-implicit。",
+     "dtype": "str",
+     "shape": "字符串",
+     "units": "无量纲"
+    }
+   ],
+   "model": "一维守恒有限体积离散。",
+   "outputs": [
+    {
+     "name": "variable",
+     "description": "新 float64 单元值与新边界",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "CellVariable",
+     "shape": "CellVariable",
+     "units": "Q"
+    }
+   ],
+   "source_sha256": "01a7522c28c3dd8c1881aa7f1c70dd59e70219091286ff7b2bd6f9f7617a5eac",
+   "summary": "用分别给出的旧、新线性算子推进单个通道一步。",
+   "verification": {
+    "evidence_ceiling": "仅支持所列离散不变量与均匀网格制造解收敛；不声称任意网格稳定性、精度或完整输运模拟。",
+    "known_limitations": [
+     "仅支持单通道、单位瞬态系数；不含耦合源矩阵、瞬态输入/输出因子、非线性系数、内部边界行替换或非线性求解器。",
+     "显式和 Crank–Nicolson 格式的稳定性与振荡约束由调用者判断；不提供自适应步长或正性保证。隐式分支用带状线性求解器求解三对角系统；不声称全局稳定性界。"
+    ],
+    "scope": [
+     "独立检查通量守恒、线性/常数精确态、均匀网格制造扩散解收敛和 theta 时间因果性。"
+    ],
+    "tests": [
+     "tests/fvm/test_fvm.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "完整输运演化、实验标定或隐式坐标重建。"
+    ],
+    "preconditions": [
+     "至少两个有限实面值。"
+    ],
+    "supported": [
+     "一维相邻面值的中点插值，不广播。"
+    ]
+   },
+   "asset_id": "scirel.geometry.face-to-cell",
+   "assumptions": [
+    "不推断外推或广播轴。",
+    "仅传递数值；几何坐标由调用者提供。"
+   ],
+   "boundary": "至少两个有限实面值；不推断广播轴。",
+   "definition": "计算相邻两面值的算术平均，输出长度少一；先求和可表示时直接求和，否则先各除以二，避免溢出。不补造几何或坐标。",
+   "example": {
+    "description": "把四个面坐标转换为相邻的三个单元中心坐标。",
+    "expected": "返回的 float64 单元中心为 [1.0, 5.0, 9.0]。"
+   },
+   "failure_semantics": {
+    "invalid_input": "对布尔/字符串/复数/掩码或空输入、非有限值、畸形或不兼容形状抛出 ValueError；不接受虚构的奇异域。",
+    "nonconvergence": "不适用；直接代数计算。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "合法中点意外非有限时抛出 FloatingPointError；有限 float64 端点的中点可表示。"
+   },
+   "inputs": [
+    {
+     "name": "face",
+     "description": "面上的值",
+     "constraints": "非空一维有限实数组，长度至少二；拒绝布尔、字符串、复数和掩码。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "[n]",
+     "units": "与输出相同"
+    }
+   ],
+   "model": "中点平均关系，并带有显式的数值边界检查。",
+   "outputs": [
+    {
+     "name": "cell",
+     "description": "单元中点值",
+     "constraints": "有限，长度比输入少一。",
+     "dtype": "float64 数组",
+     "shape": "[n-1]",
+     "units": "与输入相同"
+    }
+   ],
+   "source_sha256": "44e8b9f2e1332111c9f3f7f01edccc0bb986b5dc252388d07cd643e1aef4a74f",
+   "summary": "将一维网格上相邻的面值转换为单元中点值。",
+   "verification": {
+    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
+    "known_limitations": [
+     "不提供非均匀坐标上的插值。",
+     "一致性仅限中点关系；SciRel 另加显式输入检查。"
+    ],
+    "scope": [
+     "构造中点、次正规数舍入、有限端点防溢出以及形状和类型边界。",
+     "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
+     "与本关系在 SciRel 中的规范调用者和依赖一致。"
+    ],
+    "tests": [
+     "tests/cross_domain/test_algebra_grid.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
+     "物理解释要求轴对称托卡马克、非负标量热压强、取对数前密度和温度为正，以及一致的总磁通和磁场符号。有符号输入仅有代数意义。"
+    ],
+    "preconditions": [
+     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+    ],
+    "supported": [
+     "由显式压强、对数梯度及拟合系数计算平行电流密度。"
+    ]
+   },
+   "asset_id": "scirel.neoclassical.bootstrap-current",
+   "assumptions": [
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+   ],
+   "boundary": "电流的第一个磁轴面严格为零，其他位置梯度显式提供。",
+   "definition": "平行电流密度逐面计算：四项分别是密度梯度项 L31*pe*dlnne、离子密度梯度项 L31*pi*dlnni、电子温度梯度项 (L31+L32)*pe*dlnTe 和离子温度梯度项 (L31+alpha*L34)*pi*dlnTi；四项相加后乘以系数 -F*2*pi*multiplier/(B0*dpsi_drho)。磁轴处的第一个面严格为零。单元电流取相邻面的算术平均，并采用可防溢出的有限中点实现。",
+   "example": {
+    "description": "检查磁轴零值与 2*pi 归一化。",
+    "expected": "面电流为 [0,-pi,-pi]。"
+   },
+   "failure_semantics": {
+    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
+    "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "系数或电流算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
+   },
+   "inputs": [
+    {
+     "name": "bootstrap_multiplier",
+     "description": "无量纲乘数，有符号代数照常参与运算",
+     "constraints": "有限实标量；物理配置使用非负乘数。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "F_face",
+     "description": "面上的环向磁通函数 R*B_toroidal",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "T·m"
+    },
+    {
+     "name": "B0",
+     "description": "采用有符号约定的参考环向磁场",
+     "constraints": "有限非零标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "T"
+    },
+    {
+     "name": "dpsi_drho_face",
+     "description": "总极向磁通对归一化半径的导数，不是每弧度磁通",
+     "constraints": "有限匹配面数组；磁轴以外非零。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "Wb"
+    },
+    {
+     "name": "p_e_face",
+     "description": "电子标量热压强",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "Pa"
+    },
+    {
+     "name": "p_i_face",
+     "description": "离子标量热压强",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "Pa"
+    },
+    {
+     "name": "dlnne_drho_face",
+     "description": "电子密度对数梯度",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "dlnni_drho_face",
+     "description": "主离子密度对数梯度",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "dlnte_drho_face",
+     "description": "电子温度对数梯度",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "dlnti_drho_face",
+     "description": "离子温度对数梯度",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "L31",
+     "description": "密度梯度拟合系数 L31",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "L32",
+     "description": "电子温度系数修正 L32",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "L34",
+     "description": "离子温度系数 L34；Redl 拟合中 L34=L31",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "alpha",
+     "description": "离子温度梯度拟合乘数 alpha",
+     "constraints": "有限且面形状匹配。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    }
+   ],
+   "model": "有明确适用边界的轴对称托卡马克经验拟合。",
+   "outputs": [
+    {
+     "name": "j_parallel_bootstrap_face",
+     "description": "面平行电流密度，磁轴首项为零",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "A/m^2"
+    },
+    {
+     "name": "j_parallel_bootstrap",
+     "description": "相邻面平均的单元电流密度",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N",
+     "units": "A/m^2"
+    }
+   ],
+   "source_sha256": "863ea3d1582237b9c1fdb6ffd36e0b2604ce4db14c822a6acb6eade7b6fcdf77",
+   "summary": "由压强、对数梯度及拟合系数组装平行自举电流。",
+   "verification": {
+    "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
+    "known_limitations": [
+     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。",
+     "物理解释要求轴对称托卡马克、非负标量热压强、取对数前密度和温度为正，以及一致的总磁通和磁场符号。有符号输入仅有代数意义。"
+    ],
+    "scope": [
+     "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。"
+    ],
+    "tests": [
+     "tests/tooling/test_bootstrap.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+    ],
+    "preconditions": [
+     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+    ],
+    "supported": [
+     "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。"
+    ]
+   },
+   "asset_id": "scirel.neoclassical.redl-bootstrap-coefficients",
+   "assumptions": [
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+   ],
+   "boundary": "无额外边界条件：系数只由各面的 f_trap、nu_e_star、Z_eff 和 nu_i_star 决定；本入口不组装电流，也没有磁轴面置零步骤。",
+   "definition": "作为对照，Sauter 的 L31/L34 使用各自有效俘获份额和四次多项式，L32 由电子-电子与电子-离子有理多项式相加；本函数返回 Redl 的修订拟合，其中 L34=L31。alpha=(B+a*y)/(1+c*y)，y=nu_i_star^2*f_trap^6；Sauter 的 (a,c)=(.315,.15)，Redl 为 (-.002,.004)，B 随模型变化。二进制指数缩放选择 y 或 1/y，避免平方溢出和对数相消。",
+   "example": {
+    "description": "检查零俘获份额的解析极限。",
+    "expected": "L31、L32、L34 均为零。"
+   },
+   "failure_semantics": {
+    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
+    "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "系数算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
+   },
+   "inputs": [
+    {
+     "name": "f_trap",
+     "description": "调用者给定俘获粒子份额，不是逆长宽比",
+     "constraints": "有限面数组，0<=f_trap<=1。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "nu_e_star",
+     "description": "模型约定下电子碰撞频率与弹跳频率之比",
+     "constraints": "非负有限面数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "Z_eff",
+     "description": "拟合使用的有效离子电荷",
+     "constraints": "Sauter 要求正值，Redl 要求至少 1；物理准中性全电离等离子体的 Z_eff>=1。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "nu_i_star",
+     "description": "模型约定下离子碰撞频率与弹跳频率之比",
+     "constraints": "非负有限面数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    }
+   ],
+   "model": "有明确适用边界的轴对称托卡马克经验拟合。",
+   "outputs": [
+    {
+     "name": "coefficients",
+     "description": "按 (L31,L32,L34,alpha) 排列的四个无量纲面数组",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "长度为 N+1 的四个数组",
+     "units": "无量纲"
+    }
+   ],
+   "source_sha256": "d1a1bd8b13f9dad3e3861a5384407924cdb3e162075fa7c3b75c413e514b7971",
+   "summary": "由显式面碰撞度计算 Redl 无量纲自举电流拟合系数。",
+   "verification": {
+    "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
+    "known_limitations": [
+     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+    ],
+    "scope": [
+     "独立 Decimal 拟合检查、系数与调用方结果对照以及有限算术回归。"
+    ],
+    "tests": [
+     "tests/tooling/test_bootstrap.py"
+    ]
+   },
+   "source_conflicts": [
+    "identity.boundary 原称“First current face at magnetic axis exactly zero”，但本入口只计算无量纲拟合系数，不组装电流，也没有磁轴面置零步骤。本页边界说明已按实现改写，合同待修订。"
+   ]
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+    ],
+    "preconditions": [
+     "使用声明的形状、定义域和一致科学约定，不隐含广播。"
+    ],
+    "supported": [
+     "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。"
+    ]
+   },
+   "asset_id": "scirel.neoclassical.sauter-bootstrap-coefficients",
+   "assumptions": [
+    "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
+   ],
+   "boundary": "无额外边界条件：系数只由各面的 f_trap、nu_e_star、Z_eff 和 nu_i_star 决定；本入口不组装电流，也没有磁轴面置零步骤。",
+   "definition": "Sauter 的 L31/L34 使用各自有效俘获份额和四次多项式，L32 由电子-电子与电子-离子有理多项式相加；作为对照，Redl 使用其修订拟合且 L34=L31。alpha=(B+a*y)/(1+c*y)，y=nu_i_star^2*f_trap^6；Sauter 的 (a,c)=(.315,.15)，Redl 为 (-.002,.004)，B 随模型变化。二进制指数缩放选择 y 或 1/y，避免平方溢出和对数相消。",
+   "example": {
+    "description": "检查零俘获份额的解析极限。",
+    "expected": "L31、L32、L34 均为零。"
+   },
+   "failure_semantics": {
+    "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
+    "nonconvergence": "不适用；这是直接解析拟合和算术映射。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "系数算术产生非有限结果时抛出 FloatingPointError；不返回回退值。"
+   },
+   "inputs": [
+    {
+     "name": "f_trap",
+     "description": "调用者给定俘获粒子份额，不是逆长宽比",
+     "constraints": "有限面数组，0<=f_trap<=1。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "nu_e_star",
+     "description": "模型约定下电子碰撞频率与弹跳频率之比",
+     "constraints": "非负有限面数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "Z_eff",
+     "description": "拟合使用的有效离子电荷",
+     "constraints": "Sauter 要求正值，Redl 要求至少 1；物理准中性全电离等离子体的 Z_eff>=1。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    },
+    {
+     "name": "nu_i_star",
+     "description": "模型约定下离子碰撞频率与弹跳频率之比",
+     "constraints": "非负有限面数组。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "无量纲"
+    }
+   ],
+   "model": "有明确适用边界的轴对称托卡马克经验拟合。",
+   "outputs": [
+    {
+     "name": "coefficients",
+     "description": "按 (L31,L32,L34,alpha) 排列的四个无量纲面数组",
+     "constraints": "有限、显式、一维，面形状须匹配，不广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "长度为 N+1 的四个数组",
+     "units": "无量纲"
+    }
+   ],
+   "source_sha256": "ee69492a93fbe030cdc9eab12ea1541a19802b673560c4587fb404af617c2bdc",
+   "summary": "由显式面碰撞度计算 Sauter 无量纲自举电流拟合系数。",
+   "verification": {
+    "evidence_ceiling": "仅证明拟合代数与有限算术，不构成经验模型的全面物理资格。",
+    "known_limitations": [
+     "这里不作经验系数的实验标定。调用者提供符合模型的碰撞度与俘获份额；不重建几何、边缘台基或完整输运物理。",
+     "电荷/碰撞度组合即使数值有限，只要量级很大，中间量或最终结果仍可能无法表示，此时会明确失败；float64 转换也无法恢复此前丢失的精度。"
+    ],
+    "scope": [
+     "独立 Decimal 拟合检查、系数与调用方结果对照以及有限算术回归。"
+    ],
+    "tests": [
+     "tests/tooling/test_bootstrap.py"
+    ]
+   },
+   "source_conflicts": [
+    "identity.boundary 原称“First current face at magnetic axis exactly zero”，但本入口只计算无量纲拟合系数，不组装电流，也没有磁轴面置零步骤。本页边界说明已按实现改写，合同待修订。"
+   ]
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "本页只覆盖声明的库仑对数代数，不提供碰撞频率组合。",
+     "零或负对数不能解释为有效弱耦合碰撞物理；不提供实验标定或分区切换模型。"
+    ],
+    "preconditions": [
+     "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。"
+    ],
+    "supported": [
+     "指定关系及广播形状上的有限 NumPy 计算。"
+    ]
+   },
+   "asset_id": "scirel.physics.coulomb-ee",
+   "assumptions": [
+    "这是弱耦合条件下的数学估计。",
+    "调用者判断库仑对数的符号和大小是否适合所用物理模型。"
+   ],
+   "boundary": "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。",
+   "definition": "31.0-0.5*ln(n_e)+ln(1000*T_e)。用 ln(1000)+ln(T) 计算温度项，避免中间乘法上溢或下溢。",
+   "example": {
+    "description": "计算有限温度和密度下的库仑对数。",
+    "expected": "得到有限无量纲对数。"
+   },
+   "failure_semantics": {
+    "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值、形状不合或非正输入抛出 ValueError。",
+    "nonconvergence": "不适用；直接代数计算。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。"
+   },
+   "inputs": [
+    {
+     "name": "T_e",
+     "description": "电子温度",
+     "constraints": "非空、有限且严格为正；拒绝布尔、字符串、复数和掩码；形状须可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "广播形状",
+     "units": "keV"
+    },
+    {
+     "name": "n_e",
+     "description": "电子密度",
+     "constraints": "非空、有限且严格为正；拒绝布尔、字符串、复数和掩码；形状须可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "广播形状",
+     "units": "m^-3"
+    }
+   ],
+   "model": "Wesson 库仑对数关系，并带有显式的数值边界检查。",
+   "outputs": [
+    {
+     "name": "result",
+     "description": "库仑对数",
+     "constraints": "有限有符号数学值；碰撞物理的适用性由调用者判断。",
+     "dtype": "float64 标量或数组",
+     "shape": "广播形状",
+     "units": "无量纲"
+    }
+   ],
+   "source_sha256": "a81d1590f06278ad5bc50de0ea5b235baad168028309fc4c66c398e2983a9410",
+   "summary": "电子-电子库仑对数估计。",
+   "verification": {
+    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
+    "known_limitations": [
+     "不声称外部标定或完整碰撞频率组合。",
+     "仅覆盖 Wesson 代数和声明的数值边界。"
+    ],
+    "scope": [
+     "以独立 60 位 Decimal 对数覆盖温度、密度的最小次正规数至最大 float64，并检查尺度变换恒等式。",
+     "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
+     "与本关系的规范 SciRel 调用者及依赖一致。"
+    ],
+    "tests": [
+     "tests/cross_domain/test_algebra_grid.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "本页只覆盖声明的库仑对数代数，不提供碰撞频率组合。",
+     "零或负对数不能解释为有效弱耦合碰撞物理；不提供实验标定或分区切换模型。"
+    ],
+    "preconditions": [
+     "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。"
+    ],
+    "supported": [
+     "指定关系及广播形状上的有限 NumPy 计算。"
+    ]
+   },
+   "asset_id": "scirel.physics.coulomb-ei",
+   "assumptions": [
+    "这是弱耦合条件下的数学估计。",
+    "调用者判断库仑对数的符号和大小是否适合所用物理模型。"
+   ],
+   "boundary": "T_e、n_e 均为正有限值，温度以 keV、密度以 m^-3 输入。",
+   "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e)。用 ln(1000)+ln(T) 计算温度项，避免中间乘法上溢或下溢。",
+   "example": {
+    "description": "计算有限温度和密度下的库仑对数。",
+    "expected": "得到有限无量纲对数。"
+   },
+   "failure_semantics": {
+    "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值、形状不合或非正输入抛出 ValueError。",
+    "nonconvergence": "不适用；直接代数计算。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。"
+   },
+   "inputs": [
+    {
+     "name": "T_e",
+     "description": "电子温度",
+     "constraints": "非空、有限且严格为正；拒绝布尔、字符串、复数和掩码；形状须可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "广播形状",
+     "units": "keV"
+    },
+    {
+     "name": "n_e",
+     "description": "电子密度",
+     "constraints": "非空、有限且严格为正；拒绝布尔、字符串、复数和掩码；形状须可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "广播形状",
+     "units": "m^-3"
+    }
+   ],
+   "model": "Wesson 库仑对数关系，并带有显式的数值边界检查。",
+   "outputs": [
+    {
+     "name": "result",
+     "description": "库仑对数",
+     "constraints": "有限有符号数学值；碰撞物理的适用性由调用者判断。",
+     "dtype": "float64 标量或数组",
+     "shape": "广播形状",
+     "units": "无量纲"
+    }
+   ],
+   "source_sha256": "10c739ce1c0222654d2045b01a6531d9e73e8251c9571d51647b516bcce21bc8",
+   "summary": "电子-离子库仑对数估计。",
+   "verification": {
+    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
+    "known_limitations": [
+     "不声称外部标定或完整碰撞频率组合。",
+     "仅覆盖 Wesson 代数和声明的数值边界。"
+    ],
+    "scope": [
+     "以独立 60 位 Decimal 对数覆盖温度、密度的最小次正规数至最大 float64，并检查尺度变换恒等式。",
+     "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
+     "与本关系的规范 SciRel 调用者及依赖一致。"
+    ],
+    "tests": [
+     "tests/cross_domain/test_algebra_grid.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "本页只覆盖声明的库仑对数代数，不提供碰撞频率组合。",
+     "零或负对数不能解释为有效弱耦合碰撞物理；不提供实验标定或分区切换模型。"
+    ],
+    "preconditions": [
+     "T_i、n_i、Z_i 均为正有限值，温度以 keV、密度以 m^-3 输入。"
+    ],
+    "supported": [
+     "指定关系及广播形状上的有限 NumPy 计算。"
+    ]
+   },
+   "asset_id": "scirel.physics.coulomb-ii",
+   "assumptions": [
+    "调用者判断弱耦合估计是否适用。",
+    "电荷为正标量或可广播场，不代表多物种混合。"
+   ],
+   "boundary": "T_i、n_i、Z_i 均为正有限值，温度以 keV、密度以 m^-3 输入。",
+   "definition": "Sauter 1999 离子-离子弱耦合拟合 30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i)，不是 NRL 2013 Eq. c；用 ln(1000)+ln(T) 避免中间溢出/下溢。",
+   "example": {
+    "description": "计算有限温度和密度下的库仑对数。",
+    "expected": "得到有限无量纲对数。"
+   },
+   "failure_semantics": {
+    "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值、形状不合或非正输入抛出 ValueError。",
+    "nonconvergence": "不适用；直接代数计算。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。"
+   },
+   "inputs": [
+    {
+     "name": "T_i",
+     "description": "离子温度",
+     "constraints": "非空、有限且严格为正；拒绝布尔、字符串、复数和掩码；形状须可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "广播形状",
+     "units": "keV"
+    },
+    {
+     "name": "n_i",
+     "description": "离子密度",
+     "constraints": "非空、有限且严格为正；拒绝布尔、字符串、复数和掩码；形状须可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "广播形状",
+     "units": "m^-3"
+    },
+    {
+     "name": "Z_i",
+     "description": "离子电荷数",
+     "constraints": "非空、有限且严格为正；拒绝布尔、字符串、复数和掩码；形状须可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "广播形状",
+     "units": "无量纲"
+    }
+   ],
+   "model": "带 SciRel 数值边界检查的 Sauter 离子-离子库仑对数关系",
+   "outputs": [
+    {
+     "name": "result",
+     "description": "库仑对数",
+     "constraints": "有限有符号数学值；碰撞物理的适用性由调用者判断。",
+     "dtype": "float64 标量或数组",
+     "shape": "广播形状",
+     "units": "无量纲"
+    }
+   ],
+   "source_sha256": "91972e6c4c23fbfe1e5fcb286d007774bc9d95bacf0520879e2c37d7c479f4af",
+   "summary": "Sauter 离子-离子库仑对数估计。",
+   "verification": {
+    "evidence_ceiling": "维护测试只建立声明的 Sauter 1999 离子-离子拟合、形状和数值边界；不建立全局物理标定或 NRL 2013 Eq. c，独立 NRL 转写相差 +0.4388 ln Lambda。",
+    "known_limitations": [
+     "不声称外部标定或完整碰撞频率组合。",
+     "只覆盖声明的 Sauter 1999 离子-离子拟合代数和数值边界；不是通用库仑对数模型。",
+     "本关系不是 NRL 2013 Eq. c。独立转写 NRL 2013 Eq. c 在探针上相差 ln Lambda 常数 +0.4388；保留 Sauter 公式，不得引用为 NRL 2013 Eq. c。"
+    ],
+    "scope": [
+     "使用独立 60 位 Decimal 对数在温度/密度/电荷尺度（含最小次正规数和最大 float64）上核验声明的 Sauter 拟合；覆盖变换/缩放恒等式。",
+     "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
+     "与本关系的规范 SciRel 调用者及依赖一致。"
+    ],
+    "tests": [
+     "tests/cross_domain/test_algebra_grid.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "不提供多离子混合、碰撞输运或实验标定。"
+    ],
+    "preconditions": [
+     "主离子和杂质电荷均为正有限值且互不相同，有效电荷处于两者之间。"
+    ],
+    "supported": [
+     "指定关系及广播形状上的有限 NumPy 计算。"
+    ]
+   },
+   "asset_id": "scirel.physics.dilution",
+   "assumptions": [
+    "有效电荷的两个端点对应纯物种极限。",
+    "不据此推断任意多离子组分。"
+   ],
+   "boundary": "主离子和杂质电荷均为正有限值且互不相同，有效电荷处于两者之间。",
+   "definition": "在一个主离子电荷态与一个杂质电荷态下，主离子密度比由准中性代数关系 d=(Z_impurity-Z_eff)/(Z_i*(Z_impurity-Z_i)) 给出；分母分两步计算，避免可避免的中间溢出。",
+   "example": {
+    "description": "用主电荷 1、杂质电荷 6、有效电荷 2.5 求密度比。",
+    "expected": "结果为 0.7。"
+   },
+   "failure_semantics": {
+    "invalid_input": "布尔、字符串、复数、掩码、空数组、非有限值、形状不合、非正输入或杂质电荷等于主离子电荷时抛出 ValueError。",
+    "nonconvergence": "不适用；直接代数计算。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "有限输入计算出不可表示结果时抛出 FloatingPointError，不返回替代值。"
+   },
+   "inputs": [
+    {
+     "name": "Z_i",
+     "description": "主离子电荷态",
+     "constraints": "有限且严格为正；拒绝布尔、字符串、复数和掩码。",
+     "dtype": "实数标量或零维数组",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "Z_impurity",
+     "description": "杂质电荷态",
+     "constraints": "有限且严格为正，与有效电荷形状可广播。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "可与 Z_eff 广播",
+     "units": "无量纲"
+    },
+    {
+     "name": "Z_eff",
+     "description": "有效电荷",
+     "constraints": "有限且位于主离子与杂质电荷之间；拒绝布尔、字符串、复数和掩码。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "可与 Z_impurity 广播",
+     "units": "无量纲"
+    }
+   ],
+   "model": "主离子稀释关系，并带有明确的 SciRel 数值边界检查。",
+   "outputs": [
+    {
+     "name": "result",
+     "description": "主离子密度比 n_i/n_e",
+     "constraints": "有限并处于代数物理范围。",
+     "dtype": "float64 标量或数组",
+     "shape": "广播形状",
+     "units": "无量纲"
+    }
+   ],
+   "source_sha256": "2e227b788062b0ebc42bed31b3f363d1de7a842d297c024057e7b4dd1532a4e8",
+   "summary": "由单一主离子与单一杂质电荷计算主离子稀释份额。",
+   "verification": {
+    "evidence_ceiling": "维护测试仅支持所列关系、形状和指定边界行为，不构成普遍物理标定。",
+    "known_limitations": [
+     "单杂质模型不是一般多离子混合求解器。",
+     "声明的排序以外，电荷态的物理解释由调用者负责。"
+    ],
+    "scope": [
+     "独立构造物种电荷平衡、端点、奇异边界和大电荷可表示性。",
+     "覆盖空、布尔、字符串、复数、掩码、非有限和不匹配输入的失败行为。",
+     "与本关系的规范 SciRel 调用者及依赖一致。"
+    ],
+    "tests": [
+     "tests/cross_domain/test_algebra_grid.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "不由温度或密度作状态方程转换。",
+     "不声称物理闭合或等离子体标定。"
+    ],
+    "preconditions": [
+     "压强和网格向量为有限、非空、一维且等长。",
+     "物理储存热能要求非负标量热压强；有限有符号数组仅作代数兼容。总压强单独输入，不强制等于电子与离子之和。",
+     "单元体积权重为 vpr*drho_norm。"
+    ],
+    "supported": [
+     "声明标量/数组形状下的有限实压强与网格输入、正权重，以及分量能量和总能量。",
+     "对畸形、非有限、不匹配或非正权重输入以 ValueError 拒绝。"
+    ]
+   },
+   "asset_id": "scirel.physics.thermal-energy",
+   "assumptions": [
+    "压强和网格向量为有限、非空、一维且等长。",
+    "物理储存热能要求非负标量热压强；有限有符号数组仅作代数兼容。总压强单独输入，不强制等于电子与离子之和。",
+    "单元体积权重为 vpr*drho_norm。"
+   ],
+   "boundary": "离散单元体积求和；不外推或隐式重建端点。",
+   "definition": "分别计算 1.5*sum(p*vpr*drho_norm)。先将输入转为 binary64，再精确计算有理数乘积与累加，保持有符号相消，只在最终结果舍入为 float64。",
+   "example": {
+    "description": "分别计算三个压强通道的热能。",
+    "expected": "返回 (7.8, 11.7, 19.5)，允许浮点舍入误差。"
+   },
+   "failure_semantics": {
+    "invalid_input": "压强或网格输入不合、非有限、不匹配或权重非正时抛出 ValueError。",
+    "nonconvergence": "不适用；直接有限计算。",
+    "partial_results": "失败时不返回部分元组。",
+    "runtime_failure": "最终 float64 结果不可表示时抛出 FloatingPointError。"
+   },
+   "inputs": [
+    {
+     "name": "p_el",
+     "description": "电子压强剖面",
+     "constraints": "有限有符号实值，与 vpr、drho_norm 同形。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "Pa"
+    },
+    {
+     "name": "p_ion",
+     "description": "离子压强剖面",
+     "constraints": "有限有符号实值，与 vpr、drho_norm 同形。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "Pa"
+    },
+    {
+     "name": "p_tot",
+     "description": "总压强剖面",
+     "constraints": "有限有符号实值，与 vpr、drho_norm 同形。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "Pa"
+    },
+    {
+     "name": "vpr",
+     "description": "体积度量",
+     "constraints": "有限且严格为正。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "m^3"
+    },
+    {
+     "name": "drho_norm",
+     "description": "单元求积宽度",
+     "constraints": "有限且严格为正。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "无量纲"
+    }
+   ],
+   "model": "非相对论各向同性气体内能密度 u=3p/2；有符号有限输入按代数兼容处理。",
+   "outputs": [
+    {
+     "name": "W_el",
+     "description": "电子热能",
+     "constraints": "成功时为有限有符号标量。",
+     "dtype": "float",
+     "shape": "标量",
+     "units": "J"
+    },
+    {
+     "name": "W_ion",
+     "description": "离子热能",
+     "constraints": "成功时为有限有符号标量。",
+     "dtype": "float",
+     "shape": "标量",
+     "units": "J"
+    },
+    {
+     "name": "W_tot",
+     "description": "总热能",
+     "constraints": "成功时为有限有符号标量。",
+     "dtype": "float",
+     "shape": "标量",
+     "units": "J"
+    }
+   ],
+   "source_sha256": "d2b4c8eb02f0153745650a58b4e28bcc6a49e1f53e478ad7a5bce9a4faf172b9",
+   "summary": "分别积分电子、离子及总标量压强，得到储存热能。",
+   "verification": {
+    "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
+    "known_limitations": [
+     "不由温度或密度作状态方程转换。",
+     "不声称物理闭合或等离子体标定。",
+     "有符号输入仅为代数扩展，不代表正的物理储存能量。",
+     "精确中间计算只保持转换后 binary64 输入的离散关系，不能恢复输入转换丢失精度或验证求积网格。"
+    ],
+    "scope": [
+     "以精确有理数中间量和独立数值探针检查守恒、溢出/下溢、分量独立性与错误输入。",
+     "检查不同排列中的有符号相消以及中间乘积上溢/下溢；使用精确 binary64 乘积且仅最终舍入。"
+    ],
+    "tests": [
+     "tests/kinetic/test_profile_energy.py",
+     "tests/kinetic/test_thermal_cancellation.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "按归一化关系，decay_start 不影响结果。",
+     "不声称超出所给单元权重的连续求积。"
+    ],
+    "preconditions": [
+     "各网格数组为等长、有限、一维。",
+     "单元体积权重为 vpr*drho_norm。",
+     "正宽度随 rho 增长，负宽度随 rho 衰减。"
+    ],
+    "supported": [
+     "在非均匀网格上生成离散体积归一化指数剖面；支持有符号、整数和极小宽度以及 decay_start 相消。"
+    ]
+   },
+   "asset_id": "scirel.source.exponential",
+   "assumptions": [
+    "各网格数组为等长、有限、一维。",
+    "单元体积权重为 vpr*drho_norm。",
+    "正宽度随 rho 增长，负宽度随 rho 衰减。"
+   ],
+   "boundary": "离散单元体积求和；不外推或隐式重建端点。",
+   "definition": "对有限的非零宽度，先取安全宽度 w_safe：把 width 的绝对值与 float64 tiny 比较，取较大者，再沿用 width 的符号。正宽度以最后一个 rho 为基准 ref，负宽度以第一个 rho 为基准。接着计算未归一化权重 S_i=exp((rho_i-ref)/w_safe)，用单元体积权重 vpr*drho_norm 对 S_i 求和来归一化，返回 total*S_i/Σ_j(S_j*vpr_j*drho_norm_j)，使离散积分等于给定的 total；该归一化只使用给定的单元权重点积。decay_start 在归一化中精确相消，因此不影响结果；宽度为零或非有限时按失败语义返回全为 NaN 的剖面。",
+   "example": {
+    "description": "计算离散体积归一化源剖面。",
+    "expected": "离散积分等于给定总量 4。"
+   },
+   "failure_semantics": {
+    "invalid_input": "类型、形状不合，网格、位置参数或总量非有限，或权重非正时抛出 ValueError。通过这些检查后，宽度为零、NaN 或无穷时返回全 NaN 剖面。",
+    "nonconvergence": "不适用；直接有限计算。",
+    "partial_results": "抛出异常后不返回部分剖面。",
+    "runtime_failure": "有限输出溢出，或 float64 舍入后离散积分相对偏差超过 64 倍机器精度（绝对容差为零）时抛出 FloatingPointError。可忽略的尾部允许下溢为零。"
+   },
+   "inputs": [
+    {
+     "name": "rho_norm",
+     "description": "单元中心归一化半径",
+     "constraints": "非空、有限、严格递增且在 [0,1]；拒绝布尔、复数、字符串和掩码。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "无量纲"
+    },
+    {
+     "name": "vpr",
+     "description": "单位归一化半径的体积度量",
+     "constraints": "有限且严格为正。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "m^3"
+    },
+    {
+     "name": "drho_norm",
+     "description": "单元求积宽度",
+     "constraints": "有限且严格为正，与半径数组同形。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "无量纲"
+    },
+    {
+     "name": "decay_start",
+     "description": "归一化中相消的参考衰减位置",
+     "constraints": "有限实标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "width",
+     "description": "指数宽度",
+     "constraints": "有限非零宽度才产生有限结果；零或非有限宽度返回 NaN。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "total",
+     "description": "目标离散体积积分",
+     "constraints": "有限有符号标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "剖面量×m^3"
+    }
+   ],
+   "model": "离散径向源形，float64 输出与扩展精度中间计算。",
+   "outputs": [
+    {
+     "name": "profile",
+     "description": "归一化源剖面",
+     "constraints": "有限非零宽度下成功返回有限结果；零或非有限宽度返回全 NaN。",
+     "dtype": "float64 数组",
+     "shape": "与 rho_norm 相同",
+     "units": "总量/m^3"
+    }
+   ],
+   "source_sha256": "d156d58efc5ac5acd2ac424a73c92cd83cf1b742703ee7304d619ca0fb7fd026",
+   "summary": "在非均匀归一化半径网格上生成体积归一化指数源剖面。",
+   "verification": {
+    "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
+    "known_limitations": [
+     "按归一化关系，decay_start 不影响结果。",
+     "不声称超出所给单元权重的连续求积。",
+     "扩展中间量的极端尺度检查在 Linux x86_64 上使用 NumPy longdouble 执行；对于 longdouble 不具备扩展指数范围的平台，尚无同等计算验证，因此这些平台上的极端尺度结果不能视为已获得同等计算资格。",
+     "不支持数组参数广播或批轴；网格为等长向量，源参数为标量。"
+    ],
+    "scope": [
+     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、起始位置相消及错误输入。"
+    ],
+    "tests": [
+     "tests/kinetic/test_profile_energy.py"
+    ]
+   }
+  },
+  {
+   "applicability": {
+    "excluded": [
+     "不声称超出所给单元权重的连续求积。",
+     "不提供声明的标量和网格合同以外的参数验证。"
+    ],
+    "preconditions": [
+     "各网格数组为等长、有限、一维。",
+     "单元体积权重为 vpr*drho_norm。",
+     "宽度为标量；高斯对宽度是偶函数，因此接受有限有符号宽度。"
+    ],
+    "supported": [
+     "在非均匀网格上生成离散体积归一化高斯剖面；支持有符号、整数和极小宽度以及远离网格的中心。"
+    ]
+   },
+   "asset_id": "scirel.source.gaussian",
+   "assumptions": [
+    "各网格数组为等长、有限、一维。",
+    "单元体积权重为 vpr*drho_norm。",
+    "宽度为标量；高斯对宽度是偶函数，因此接受有限有符号宽度。"
+   ],
+   "boundary": "离散单元体积求和；不外推或隐式重建端点。",
+   "definition": "取分母 D 为 2*width^2 与 float64 tiny 中的较大者。先减去所有单元中的最小平方距离，再用因式分解的平方差计算未归一化权重 S_i=exp(-((rho_i-center)^2-min_j((rho_j-center)^2))/D)，返回 total*S_i/Σ_j(S_j*vpr_j*drho_norm_j)。在次正规宽度下采用这一声明的分母下限，因此结果不等于未截断的连续高斯采样。",
+   "example": {
+    "description": "计算离散体积归一化源剖面。",
+    "expected": "离散积分等于给定总量 4。"
+   },
+   "failure_semantics": {
+    "invalid_input": "类型、形状不合，网格、位置参数或总量非有限，或权重非正时抛出 ValueError。通过这些检查后，宽度为零、NaN 或无穷时返回全 NaN 剖面。",
+    "nonconvergence": "不适用；直接有限计算。",
+    "partial_results": "失败后不返回部分结果。",
+    "runtime_failure": "有限输出溢出，或 float64 舍入后离散积分相对偏差超过 64 倍机器精度（绝对容差为零）时抛出 FloatingPointError。可忽略的尾部允许下溢为零。"
+   },
+   "inputs": [
+    {
+     "name": "rho_norm",
+     "description": "单元中心归一化半径",
+     "constraints": "非空、有限、严格递增且在 [0,1]；拒绝布尔、复数、字符串和掩码。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "无量纲"
+    },
+    {
+     "name": "vpr",
+     "description": "单位归一化半径的体积度量",
+     "constraints": "有限且严格为正。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "m^3"
+    },
+    {
+     "name": "drho_norm",
+     "description": "单元求积宽度",
+     "constraints": "有限且严格为正，与半径数组同形。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "非空一维向量",
+     "units": "无量纲"
+    },
+    {
+     "name": "center",
+     "description": "高斯中心",
+     "constraints": "有限实标量，可在 [0,1] 之外。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "width",
+     "description": "高斯宽度",
+     "constraints": "有限非零宽度才产生有限结果；零或非有限宽度返回 NaN。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "total",
+     "description": "目标离散体积积分",
+     "constraints": "有限有符号标量。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "标量",
+     "units": "剖面量×m^3"
+    }
+   ],
+   "model": "离散径向源形，float64 输出与扩展精度中间计算。",
+   "outputs": [
+    {
+     "name": "profile",
+     "description": "归一化源剖面",
+     "constraints": "有限非零宽度下成功返回有限结果；零或非有限宽度返回全 NaN。",
+     "dtype": "float64 数组",
+     "shape": "与 rho_norm 相同",
+     "units": "总量/m^3"
+    }
+   ],
+   "source_sha256": "b5e364677e6f3fe7c1fb9f64e3af8c1723f3961c1f1d7bceb87935c55847e70b",
+   "summary": "在非均匀归一化半径网格上生成体积归一化高斯源剖面。",
+   "verification": {
+    "evidence_ceiling": "独立数值探针支持所列数学关系、离散守恒、边界、形状和失败行为；不代表一般等离子体标定或完整边界模型有效性。",
+    "known_limitations": [
+     "不声称超出所给单元权重的连续求积。",
+     "不提供声明的标量和网格合同以外的参数验证。",
+     "扩展中间量的极端尺度检查在 Linux x86_64 上使用 NumPy longdouble 执行；对于 longdouble 不具备扩展指数范围的系统，尚无同等计算验证，因此这些平台上的极端尺度结果不能视为已获得同等计算资格。",
+     "不支持数组参数广播或批轴；网格为等长向量，源参数为标量。"
+    ],
+    "scope": [
+     "覆盖非均匀网格、守恒、有符号/整数/极小宽度、远离网格的中心及错误输入。"
+    ],
+    "tests": [
+     "tests/kinetic/test_profile_energy.py"
+    ]
+   }
+  }
+ ],
+ "schema": "scirel.reader-translation"
+}

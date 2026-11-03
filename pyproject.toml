@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "scirel"
+version = "0.0.0"
+description = "Scientific Relations Library"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["numpy==2.5.4", "scipy==1.18.1", "mpmath==1.4.1"]
+license-files = ["licenses/**/*"]
+keywords = ["scientific computing", "numerical methods", "plasma physics"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+[project.urls]
+Homepage = "https://github.com/czz20000522/SciRel"
+Repository = "https://github.com/czz20000522/SciRel"
+Issues = "https://github.com/czz20000522/SciRel/issues"
+
+
+[dependency-groups]
+build = ["setuptools==84.0.0", "wheel==0.48.0"]
+docs = [
+    "Sphinx==8.1.3",
+    "pydata-sphinx-theme==0.19.0",
+    "sphinx-copybutton==0.5.2",
+    "sphinx-design==0.6.1",
+    "jieba==0.42.1",
+    "latex2mathml==3.81.1",
+]
+# Plotting belongs to reports and examples, never to the scientific package.
+report = ["matplotlib==3.11.2"]
+test = [
+    { include-group = "build" },
+    { include-group = "docs" },
+    { include-group = "report" },
+    "packaging",
+    "pytest==9.1.1",
+]
+
+# Keep wheel intake fail-closed: only the explicit package-data declarations
+# below may add non-Python resources. VCS metadata, egg-info leftovers and
+# future unreviewed files must not enter the scientific distribution implicitly.
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.package-data]
+"scirel.kinetic.dispersion" = ["_data/*"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["scirel", "scirel.*"]
+exclude = [
+    "scirel._framework_compositions",
+    "scirel._framework_compositions.*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["build", "provenance", "skills"]
+addopts = "-p no:cacheprovider"
+pythonpath = ["src", "tests"]
+markers = [
+    "unit: fast isolated checks with no scientific or filesystem boundary",
+    "contract: scientific-domain contract tests under tests/<domain>",
+    "integration: cross-domain composition tests under tests/cross_domain",
+    "architecture: public surface, import boundary and package layout checks",
+    "docs: bilingual handbook and documentation pipeline checks",
+    "delivery: admission, reception and installed-wheel checks",
+    "tooling: build, catalog and validation tool checks",
+]
+

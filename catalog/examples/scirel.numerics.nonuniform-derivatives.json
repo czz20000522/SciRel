@@ -1,0 +1,133 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.numerics.nonuniform-derivatives",
+ "title": {
+  "en": "Nonuniform interior first and second derivatives",
+  "zh": "非均匀坐标内点一阶与二阶导数"
+ },
+ "summary": "Differentiate a local quadratic at each interior abscissa",
+ "taxonomy": [
+  "analysis",
+  "numerics"
+ ],
+ "aliases": [
+  "diff_12_central"
+ ],
+ "discovery": {
+  "capability": [
+   "Nonuniform interior first and second derivatives",
+   "Differentiate a local quadratic at each interior abscissa of a nonuniform one-dimensional grid."
+  ],
+  "operation": [
+   "three-point unequal-spacing derivative operator",
+   "strictly increasing abscissa and matched values -> interior first and second derivatives"
+  ],
+  "model": "Three-point unequal-spacing local quadratic finite-difference operator.",
+  "geometry": "One-dimensional nonuniform abscissa and ordinate samples; only interior points are returned and no endpoint values are fabricated.",
+  "boundary": "N>=3 and strictly increasing finite x are required; endpoints, periodic stencils and noisy-data inference are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Nonuniform interior first and second derivatives",
+  "direction": "Declared inputs to Interior first derivative",
+  "definition": "Differentiate a local quadratic at each interior abscissa",
+  "model": "Three-point unequal-spacing polynomial operator",
+  "geometry": "one-dimensional nonuniform abscissa and ordinate samples",
+  "coordinates": "x coordinate units and y value units",
+  "boundary": "No endpoint values are fabricated",
+  "assumptions": [
+   "Finite matched one-dimensional x,y with N>=3",
+   "x strictly increasing"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x",
+   "description": "Strictly increasing abscissae",
+   "units": "coordinate units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite N>=3"
+  },
+  {
+   "name": "y",
+   "description": "Sampled values",
+   "units": "value units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite same N"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "d_one",
+   "description": "Interior first derivative",
+   "units": "value per coordinate",
+   "shape": "(N-2,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Quadratic exactness"
+  },
+  {
+   "name": "d_two",
+   "description": "Interior second derivative",
+   "units": "value per coordinate squared",
+   "shape": "(N-2,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Quadratic exactness"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite matched one-dimensional x,y with N>=3",
+   "x strictly increasing"
+  ],
+  "supported": [
+   "Finite strictly increasing one-dimensional arrays with at least one interior point"
+  ],
+  "excluded": [
+   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.numerics",
+   "symbol": "diff_12_central",
+   "signature": "diff_12_central(x, y)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "diff_12_central"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Compute first and second derivatives of y=x² at the interior point of a nonuniform grid.",
+  "code": "import numpy as np\nfrom scirel.geometry.numerics import diff_12_central\n\nx = np.array([0.0, 0.3, 1.0])\nfirst, second = diff_12_central(x, x * x)\nnp.testing.assert_allclose(first, [0.6])\nnp.testing.assert_allclose(second, [2.0])",
+  "expected": "The interior estimates are first derivative [0.6] and second derivative [2.0]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+  ]
+ }
+}

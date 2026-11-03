@@ -1,0 +1,148 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.cross-mesh-scalar-interpolation",
+ "title": {
+  "en": "Cross-mesh scalar interpolation",
+  "zh": "跨网格标量插值"
+ },
+ "summary": "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings. The in-range mesh_b nodes must form one contiguous block; a non-contiguous selection fails closed with a named contract error.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "interpolation",
+  "mesh-handoff"
+ ],
+ "aliases": [
+  "interp_scalarx"
+ ],
+ "discovery": {
+  "capability": [
+   "Cross-mesh scalar interpolation",
+   "Interpolate a 1-D spatial scalar profile from one species' spatial mesh onto another's: in-range mesh_b nodes take linear interpolation of the profile, out-of-range nodes stay exactly zero (the source's phase-space contract), with the optional source boundary warnings. The in-range mesh_b nodes must form one contiguous block; a non-contiguous selection fails closed with a named contract error."
+  ],
+  "operation": [
+   "interpolate a scalar profile onto another spatial mesh",
+   "profile and mesh_a nodes plus mesh_b nodes -> interpolated profile on mesh_b"
+  ],
+  "model": "the N5 H<->H2 seam interpolation",
+  "geometry": "one-dimensional spatial meshes",
+  "boundary": "finite real one-dimensional arrays; xa has at least two strictly increasing nodes and is aligned to fa; at least one in-range xb node; finite output. The in-range mesh_b nodes must form one contiguous block.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "the interp_scalarx handoff: fb[k0:k1+1] = interp1d(xa, fa)(xb[okk]) with okk the mesh_b nodes inside the mesh_a range and zeros elsewhere",
+  "direction": "profile and mesh_a nodes plus mesh_b nodes -> interpolated profile on mesh_b",
+  "definition": "okk selects xb in [min(xa), max(xa)]; the in-range block receives the scipy linear interpolation; out-of-range nodes are exactly zero; do_warn reproduces the source's boundary warnings without changing the output",
+  "model": "the N5 H<->H2 seam interpolation",
+  "geometry": "one-dimensional spatial meshes",
+  "coordinates": "nodes in m; profile in the caller's units",
+  "boundary": "finite real one-dimensional arrays; xa has at least two strictly increasing nodes and is aligned to fa; at least one in-range xb node; finite output. The in-range mesh_b nodes must form one contiguous block.",
+  "assumptions": [
+   "The out-of-range zero fill is a deliberate physics contract (interpolations outside the phase space are set to zero), not a defect.",
+   "Linear interpolation only; higher-order or conservative remaps are excluded.",
+   "Interpolated values are assigned positionally into the fb[k0:k1+1] slice, so a non-contiguous in-range selection would raise a raw numpy broadcast error; this asset fails closed with a named ValueError instead. Contiguity refers to the selected index range, not sortedness of xb: an unsorted-but-contiguous xb maps correctly and stays legal.",
+   "SciRel rejects boolean, string and complex array coercions, a one-node input mesh, and a non-integer do_warn up front rather than failing later with a less specific error. Valid finite real arrays and integer warning thresholds use the stated interpolation and warning arithmetic."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "fa",
+   "description": "The scalar profile on mesh_a.",
+   "units": "caller units",
+   "shape": "[nxa]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite real nonempty one-dimensional array; boolean, string and complex coercions are rejected."
+  },
+  {
+   "name": "xa",
+   "description": "The mesh_a spatial nodes.",
+   "units": "m",
+   "shape": "[nxa]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real values, at least two strictly increasing nodes, aligned to fa."
+  },
+  {
+   "name": "xb",
+   "description": "The mesh_b spatial nodes.",
+   "units": "m",
+   "shape": "[nxb]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite real nonempty one-dimensional array; out-of-range nodes receive zero."
+  },
+  {
+   "name": "do_warn",
+   "description": "The source boundary-warning switch.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "constraints": "0 (default) skips warnings; other integer values apply the do_warn * max(abs(fb)) boundary threshold (output unchanged). Boolean, fractional and string switches are rejected.",
+   "default": 0
+  }
+ ],
+ "outputs": [
+  {
+   "name": "fb",
+   "description": "The interpolated profile on mesh_b.",
+   "units": "caller units",
+   "shape": "[nxb]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; in-range nodes interpolated, out-of-range nodes exactly zero."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "At least two strictly increasing mesh_a nodes aligned to the profile; at least one mesh_b node inside the mesh_a range."
+  ],
+  "supported": [
+   "H<->H2 species-handoff interpolation of 1-D scalars (densities, temperatures, wall sources) between two spatial meshes."
+  ],
+  "excluded": [
+   "Extrapolation outside the mesh_a range: out-of-range nodes are zero, never extrapolated.",
+   "Two-dimensional or vector profiles."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when an array is not finite, real, nonempty and one-dimensional; xa has fewer than two strictly increasing nodes; fa and xa lengths disagree; no xb node is in range; the in-range selection is non-contiguous; or do_warn is not an integer scalar.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result; on the declared domain the relation is finite by construction.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.cross_mesh_scalar_interpolation",
+   "symbol": "interpolate_scalar_across_mesh",
+   "signature": "interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "interpolate_scalar_across_mesh"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Interpolate a linear profile across meshes; confirm the zero fill and rejections.",
+  "code": "import numpy as np\nfrom scirel.kinetic import interpolate_scalar_across_mesh\nxa = np.array([0.0, 0.5, 1.0, 1.5, 2.0])\nfa = np.array([1.0, 2.0, 3.0, 4.0, 5.0])\nxb = np.array([0.0, 0.25, 0.8, 1.1, 1.6, 2.0])\nfb = interpolate_scalar_across_mesh(fa, xa, xb)\nnp.testing.assert_allclose(fb, 1.0 + 2.0 * xb, rtol=0.0, atol=4e-16)\nfb2 = interpolate_scalar_across_mesh(fa, xa, np.array([-1.0, 0.5, 5.0]))\nassert fb2[0] == 0.0 and fb2[2] == 0.0 and fb2[1] == 2.0\ntry:\n    interpolate_scalar_across_mesh(fa, xa, np.array([5.0, 6.0]))\nexcept ValueError as error:\n    assert 'within range' in str(error)\nelse:\n    raise AssertionError('a fully out-of-range mesh_b must be rejected')\n",
+  "expected": "Observed PASS: The closed-form linear profile on in-range nodes, exact zeros outside; a fully out-of-range mesh_b is rejected."
+ },
+ "verification": {
+  "scope": [
+   "That a linear profile is reproduced to closed-form precision at every in-range node.",
+   "That out-of-range mesh_b nodes are exactly zero and the interpolation is affine-invariant.",
+   "That the do_warn mode changes warnings only, never the output.",
+   "The input and failure contracts."
+  ],
+  "tests": [
+   "tests/kinetic/test_cross_mesh_scalar_interpolation.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: okk selects xb in [min(xa), max(xa)]; the in-range block receives the scipy linear interpolation; out-of-range nodes are exactly zero; do_warn reproduces the source's boundary warnings without changing the output. Evidence: test_cross_mesh_scalar_interpolation.py (7 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Extrapolation outside the mesh_a range: out-of-range nodes are zero, never extrapolated; Two-dimensional or vector profiles.",
+  "known_limitations": [
+   "The independent analytic comparison does not replace an external experimental reference."
+  ]
+ }
+}

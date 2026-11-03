@@ -1,0 +1,220 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.terminal-energy-transfer-reduction",
+ "title": {
+  "en": "Terminal molecular energy-transfer reduction",
+  "zh": "终态分子能量转移率归约"
+ },
+ "summary": "Reduce a caller-supplied terminal H2 distribution, signed collision RHS and external molecular source to loss, thermal, momentum and total transfer profiles.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "terminal-diagnostics",
+  "energy-transfer"
+ ],
+ "aliases": [
+  "reduce_terminal_molecular_energy_transfer"
+ ],
+ "discovery": {
+  "capability": [
+   "Terminal molecular energy-transfer reduction",
+   "Reduce a caller-supplied terminal H2 distribution, signed collision RHS and external molecular source to loss, thermal, momentum and total transfer profiles."
+  ],
+  "operation": [
+   "reduce terminal energy-transfer profiles",
+   "terminal (vr,vx,x) distribution, signed RHS and external source, normalized velocity nodes, mass, speed and quadrature -> four x profiles"
+  ],
+  "model": "Terminal H2 loss, momentum and energy-transfer diagnostic on an explicit collision RHS with an external molecular source",
+  "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
+  "boundary": "finite nonnegative nonempty three-dimensional terminal distribution; finite signed RHS of the same shape and signed external source [nx]; finite aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio, thermal speed and integrated density in every x cell",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "terminal H2 loss, momentum and energy-transfer reduction from an explicit RHS",
+  "direction": "terminal (vr,vx,x) distribution, signed RHS and external source, normalized velocity nodes, mass, speed and quadrature -> four x profiles",
+  "definition": "For each spatial cell k, density=sum_i weight[i]*sum_j f[i,j,k]*dvx[j] and particle_flux=Vth*sum_i weight[i]*sum_j vx[j]*f[i,j,k]*dvx[j], with the declared per-cell matrix-vector and radial order. Let u=particle_flux/density, c_x=vx-u/Vth, c_squared=vr^2+c_x^2 and m=2*mass_ratio*1.6726231e-27 kg. Loss is external_source minus the weighted RHS integral. Thermal transfer is 0.5*m*Vth^2 times the weighted integral of c_squared*RHS. Momentum transfer is m*Vth times the weighted integral of c_x*RHS. Total transfer is thermal_transfer+momentum_transfer*u-0.5*m*(loss-external_source)*u^2. In finite exact arithmetic, total transfer equals 0.5*m*Vth^2 times the weighted integral of (vr^2+vx^2)*RHS and is independent of the external-source input.",
+  "model": "Terminal H2 loss, momentum and energy-transfer diagnostic on an explicit collision RHS with an external molecular source",
+  "geometry": "one-dimensional x profile over cylindrical (vr,vx) velocity cells",
+  "coordinates": "radial and axial velocity nodes are dimensionless speeds normalized by the supplied thermal speed; radial nodes are nonnegative and axial nodes may be signed",
+  "boundary": "finite nonnegative nonempty three-dimensional terminal distribution; finite signed RHS of the same shape and signed external source [nx]; finite aligned velocity nodes and nonnegative quadrature weights; positive scalar mass ratio, thermal speed and integrated density in every x cell",
+  "assumptions": [
+   "The caller supplies the RHS and external source. This callable does not assemble the Boltzmann RHS, infer a terminal generation or bind a callable dependency to an RHS producer.",
+   "The mass ratio multiplies the declared hydrogen mass constant 1.6726231e-27 kg, not a standard atomic mass unit; the H2 mass uses twice that factor.",
+   "The source labels the momentum output N/m^2, while a volumetric interpretation of the RHS could imply a different dimension. Physical units and distribution normalization require expert review before use as an absolute transfer rate.",
+   "Boolean, complex and numeric-string coercions are excluded by the maintained real-numeric contract."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "radial_velocity_normalized",
+   "description": "Nonnegative normalized radial velocity nodes.",
+   "units": "v/Vth",
+   "shape": "[nvr]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative, nonempty and one-dimensional; zero nodes are allowed and no monotonicity gate is imposed."
+  },
+  {
+   "name": "axial_velocity_normalized",
+   "description": "Signed normalized axial velocity nodes.",
+   "units": "v/Vth",
+   "shape": "[nvx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, nonempty and one-dimensional; zero nodes are allowed and no monotonicity gate is imposed."
+  },
+  {
+   "name": "mass_ratio",
+   "description": "Positive factor of the declared hydrogen mass used for the H2 particle mass.",
+   "units": "factor of 1.6726231e-27 kg",
+   "shape": "scalar",
+   "dtype": "real numeric scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive; boolean and numeric-string coercions are rejected."
+  },
+  {
+   "name": "thermal_speed_m_s",
+   "description": "Caller-supplied H2 thermal speed.",
+   "units": "m/s",
+   "shape": "scalar",
+   "dtype": "real numeric scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive; no speed is derived from temperature in this callable."
+  },
+  {
+   "name": "terminal_distribution",
+   "description": "Terminal H2 velocity distribution by spatial cell, used to derive the mean flow.",
+   "units": "source-normalized distribution; no implicit conversion",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative and nonempty with exactly three axes."
+  },
+  {
+   "name": "collision_rhs",
+   "description": "Caller-supplied signed terminal Boltzmann RHS field.",
+   "units": "source-normalized distribution rate; physical normalization unverified",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and signed; exactly aligned to terminal_distribution."
+  },
+  {
+   "name": "cylindrical_weight",
+   "description": "Radial cylindrical integration measure.",
+   "units": "source-normalized radial-area measure",
+   "shape": "[nvr]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; zero cells are allowed if every integrated density remains positive."
+  },
+  {
+   "name": "dvx",
+   "description": "Normalized axial cell widths.",
+   "units": "normalized axial-speed increment",
+   "shape": "[nvx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; zero cells are allowed if every integrated density remains positive."
+  },
+  {
+   "name": "external_molecular_source_profile_m3_s",
+   "description": "Caller-supplied signed external H2 particle source profile.",
+   "units": "source-labeled m^-3 s^-1",
+   "shape": "[nx]",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and signed; exactly one value per spatial cell."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "loss_rate_profile_m3_s",
+   "description": "External molecular source minus the weighted signed RHS integral.",
+   "units": "source-labeled m^-3 s^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and signed."
+  },
+  {
+   "name": "thermal_energy_transfer_rate_profile_w_m3",
+   "description": "Centered second-energy moment of the signed RHS.",
+   "units": "source-labeled W/m^3",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and signed."
+  },
+  {
+   "name": "momentum_transfer_rate_profile_n_m2",
+   "description": "Centered axial momentum moment of the signed RHS.",
+   "units": "source-labeled N/m^2; dimensional interpretation unresolved",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and signed."
+  },
+  {
+   "name": "total_energy_transfer_rate_profile_w_m3",
+   "description": "Total axial energy-transfer rate reconstructed from thermal, momentum and loss moments.",
+   "units": "source-labeled W/m^3",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and signed; independent of external source in finite exact arithmetic."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller supplies a terminal H2 distribution, aligned signed collision RHS, quadrature and external molecular source.",
+   "Each spatial slice has strictly positive integrated distribution density."
+  ],
+  "supported": [
+   "Stateless reduction of terminal H2 loss and transfer profiles on finite cylindrical carriers, including signed RHS/source and some zero quadrature cells."
+  ],
+  "excluded": [
+   "Boltzmann RHS assembly, terminal generation-state selection, conservation-error evaluation, wall-source feedback and external physical validation."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real numeric or non-finite inputs, malformed or misaligned axes/fields, negative radial nodes/distribution/weights/widths, nonpositive mass ratio or thermal speed, or nonpositive integrated density. The RHS and external source may be signed.",
+  "runtime_failure": "Raises ValueError if a loss, thermal, momentum or total transfer output becomes non-finite; no partial mapping is returned.",
+  "nonconvergence": "Not applicable; no iteration.",
+  "partial_results": "Never returned."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.terminal_energy_transfer_reduction",
+   "symbol": "reduce_terminal_molecular_energy_transfer",
+   "signature": "reduce_terminal_molecular_energy_transfer(radial_velocity_normalized, axial_velocity_normalized, mass_ratio, thermal_speed_m_s, terminal_distribution, collision_rhs, cylindrical_weight, dvx, external_molecular_source_profile_m3_s)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "reduce_terminal_molecular_energy_transfer"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Reduce one terminal H2 spatial cell from an explicitly signed RHS and source.",
+  "code": "import numpy as np\nfrom scirel.kinetic import reduce_terminal_molecular_energy_transfer\nvr = np.array([0.5, 1.0])\nvx = np.array([-1.0, 1.0])\nf = np.ones((2, 2, 1))\nrhs = np.array([[[0.2], [-0.1]], [[0.1], [-0.2]]])\nr = reduce_terminal_molecular_energy_transfer(vr, vx, 1.0, 5000.0, f, rhs, np.array([1.0, 2.0]), np.array([0.5, 0.5]), np.array([0.1]))\nassert set(r) == {'loss_rate_profile_m3_s', 'thermal_energy_transfer_rate_profile_w_m3', 'momentum_transfer_rate_profile_n_m2', 'total_energy_transfer_rate_profile_w_m3'}\nassert all(value.shape == (1,) and np.isfinite(value).all() for value in r.values())",
+  "expected": "Four finite one-cell loss and transfer profiles on the explicitly supplied terminal carrier."
+ },
+ "verification": {
+  "scope": [
+   "Independent centered RHS moments and a raw uncentered energy-moment oracle check all four outputs on a signed nonuniform carrier.",
+   "External-source variation changes only loss; some zero quadrature cells are accepted with positive density.",
+   "Three digest-pinned reference cases cover exact finite replay and the declared boolean-coercion divergence."
+  ],
+  "tests": [
+   "tests/kinetic/test_terminal_molecular_energy_transfer.py"
+  ],
+  "evidence_ceiling": "Direct comparisons establish the finite discrete RHS reduction and boundary differences on tested carriers. They do not establish the incoming terminal distribution or RHS, absolute physical normalization, qualification of the whole closure or expert approval.",
+  "known_limitations": [
+   "No independently reviewed qualification of parity with an external implementation holds; parity evidence is bounded to the declared finite cases.",
+   "The source-labeled momentum unit and absolute distribution/RHS normalization require expert review.",
+   "Public distribution licensing remains pending."
+  ]
+ }
+}

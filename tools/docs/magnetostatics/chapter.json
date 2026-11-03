@@ -1,0 +1,92 @@
+{
+  "schema": "scirel.learning-chapter",
+  "id": "magnetostatics",
+  "title": "轴对称线圈磁场",
+  "discipline": [
+    "电磁学",
+    "磁静力学"
+  ],
+  "introduction": "给定线圈的几何形状与电流，计算指定位置的磁场。本章从单个圆电流环出发，逐步计算对称线圈对和具有矩形截面的线圈组，学习如何设置输入、解释结果，并用解析关系检查计算是否合理。",
+  "prerequisites": "需要了解电流产生磁场、圆柱坐标和线性叠加，能够使用 Python 与 NumPy 数组。以下小节按顺序运行，共用前面定义的变量；也可下载本章完整脚本一次运行。",
+  "conventions": [
+    "使用圆柱坐标 (R, Z)：R 为到对称轴的距离，Z 为轴向位置；所有圆环与 Z 轴同轴。",
+    "长度用 m，电流用 A，输出磁场用 T；图表显示 mT（1 mT = 10⁻³ T）。正电流按绕 +Z 轴的右手定则取向。",
+    "计算对象是真空中的静态、轴对称电流；不含磁性材料、等离子体响应或随时间变化的电磁感应。"
+  ],
+  "imports": "import numpy as np\nfrom scirel.field import (\n    circular_filament_green_response,\n    superpose_current_green_field,\n    solve_multi_coil_vacuum_field,\n)",
+  "sections": [
+    {
+      "id": "single",
+      "title": "1. 单个圆电流环：计算轴线上的磁场",
+      "problem": "一个半径 a = 0.35 m、位于 Z = 0 的单匝圆电流环通入 1000 A 电流。沿轴线从 −0.7 m 到 0.7 m，磁场怎样变化？",
+      "method": "先计算单位电流的响应，再乘以实际电流。源数组的每一行是 [R, Z, 权重]，这里权重为 1；观测点数组的每一行是 [R, Z]。由于观测点位于对称轴上，径向分量为零。",
+      "formula": "Bz(0, z) = μ₀ I a² / [2(a² + z²)³ᐟ²]，本实现采用 μ₀ = 4π × 10⁻⁷ H/m。",
+      "code_section": "single",
+      "figure": "single.svg",
+      "caption": "图 1　圆环的轴上磁场。实线为数值计算，圆点为独立轴上公式；二者在本图尺度下重合。",
+      "result_key": "single",
+      "interpretation": "中心处磁场最大，沿轴线向两侧对称衰减。轴上公式提供了不依赖椭圆积分实现的交叉检查；这个检查只覆盖本例的轴上点，不等于验证了所有几何与所有观测位置。",
+      "formula_mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mrow><msub><mi>B</mi><mi>z</mi></msub><mo>(</mo><mn>0</mn><mo>,</mo><mi>z</mi><mo>)</mo><mo>=</mo><mfrac><mrow><msub><mi>μ</mi><mn>0</mn></msub><mi>I</mi><msup><mi>a</mi><mn>2</mn></msup></mrow><mrow><mn>2</mn><msup><mrow><mo>(</mo><msup><mi>a</mi><mn>2</mn></msup><mo>+</mo><msup><mi>z</mi><mn>2</mn></msup><mo>)</mo></mrow><mfrac><mn>3</mn><mn>2</mn></mfrac></msup></mrow></mfrac></mrow></math>",
+      "formula_note": "a 为圆环半径，z 为相对圆环中心的轴向距离。本实现采用 μ₀ = 4π × 10⁻⁷ H/m。"
+    },
+    {
+      "id": "pair",
+      "title": "2. 对称线圈对：得到更平坦的中心磁场",
+      "problem": "如何让中心附近的磁场沿轴线变化得更慢？使用两个半径相同的圆环，各通入 1000 A 同向电流，放在 Z = ±0.175 m，环间距恰好等于半径。",
+      "method": "分别计算两个圆环的单位电流响应，再按目标行、源列堆叠（每列一个圆环的响应），用电流向量沿源列叠加。这是亥姆霍兹线圈的理想几何。在同一几何下，把第二个电流改为负值，还能比较反向通电的情况。",
+      "formula": "同向通电时，中心 Bz = (4/5)³ᐟ² μ₀ I / a。中心轴向二阶导数为零，使中心附近的轴向曲线更平坦。",
+      "code_section": "pair",
+      "figure": "pair.svg",
+      "caption": "图 2　左：各自按中心值归一化，比较单环与同向线圈对的轴向均匀程度。右：反向通电时中心磁场为零，轴线两侧符号相反。",
+      "result_key": "pair",
+      "interpretation": "同向线圈对在中心提供非零磁场，且中心附近的相对变化更小。反向电流使中心轴向磁场相消，但离开中心后一般不为零。不能把“中心为零”解释为整个空间没有磁场。",
+      "formula_mathml": "<math xmlns=\"http://www.w3.org/1998/Math/MathML\" display=\"block\"><mrow><msub><mi>B</mi><mi>z</mi></msub><mo>(</mo><mn>0</mn><mo>,</mo><mn>0</mn><mo>)</mo><mo>=</mo><msup><mrow><mo>(</mo><mfrac><mn>4</mn><mn>5</mn></mfrac><mo>)</mo></mrow><mfrac><mn>3</mn><mn>2</mn></mfrac></msup><mfrac><mrow><msub><mi>μ</mi><mn>0</mn></msub><mi>I</mi></mrow><mi>a</mi></mfrac></mrow></math>",
+      "formula_note": "两圆环半径和间距均为 a，每环同向通入电流 I。中心轴向二阶导数为零，使中心附近的轴向曲线更平坦。"
+    },
+    {
+      "id": "rectangle",
+      "title": "3. 矩形截面线圈组：计算一片区域内的磁场",
+      "problem": "真实线圈有截面宽度，如何近似它的磁场分布？取两组线圈，截面中心位于 (R, Z) = (0.45, ±0.12) m，径向宽 0.04 m、轴向高 0.05 m，每组总安匝数为 1000 A·turn。",
+      "method": "把每个截面上的电流分配到 8 × 8 个理想圆环，再求和。本例的等权节点包含截面边界；它是一种离散近似，并非导体内部的精确解。dr_m 与 dz_m 是相邻节点间距，因此用总宽度除以 n−1。每个节点权重为 1/n²，保持每组总安匝数不变。",
+      "code_section": "rectangle",
+      "figure": "rectangle.svg",
+      "caption": "图 3　线圈内部空腔的轴向磁场 Bz，等值线和灰度均以 mT 表示。观测区 R ≤ 0.30 m，与导线位置保持距离；图中没有把导线所在区域当作连续介质计算。",
+      "result_key": "rectangle",
+      "interpretation": "关于 Z = 0 的对称线圈产生上下对称的 Bz 分布，中平面上的 Br 相消。边缘区域的磁场变化说明：轴上或中心的检查不能替代整个目标区域的均匀性评估。"
+    },
+    {
+      "id": "checks",
+      "title": "4. 检查结果：离散加密是否改变结论",
+      "problem": "离散得更细，结果是否稳定？保持几何尺寸、总安匝数和观测点不变，只将每组线圈的节点数从 2 × 2 增加到 16 × 16。",
+      "method": "下面同时检查圆环的轴上公式、对称线圈的中平面径向场以及电流加倍时磁场加倍的线性关系。表格中的加密变化只针对中心一个观测点。",
+      "code_section": "checks",
+      "result_key": "checks",
+      "interpretation": "8 × 8 与 16 × 16 的中心结果相差约 0.0093%。这表明本例中心值随加密的变化很小，但不是对整个区域的误差上界，也不是所有网格上的收敛证明。实际使用时，应在你关心的观测区域重复检查。"
+    }
+  ],
+  "limitations": [
+    "理想细丝的导线位置是奇点。此逐源求和入口仅对精确自点保留显式离散零约定，其他算术非有限抛错；离散零不是物理自场。观测点必须避开导线，不用本方法计算导体内部或自感。",
+    "改变离散节点数时必须明确每个节点代表的电流。本例以归一化权重保持总安匝数固定；默认全 1 权重表示每根细丝均承受所给电流。",
+    "本章只解释 Br、Bz。接口还返回 psi，但本章没有验证磁通的归一化约定，也不将其用作磁通计算教程。",
+    "有限截面使用离散圆环近似；非轴对称绕组、铁芯材料响应、等离子体平衡及反馈迭代需要其他模型。"
+  ],
+  "assets": [
+    {
+      "id": "scirel.field.circular-filament-green",
+      "purpose": "给定圆电流环与观测点，计算单位电流磁场响应"
+    },
+    {
+      "id": "scirel.field.current-green-superposition",
+      "purpose": "按标量或向量电流叠加响应"
+    },
+    {
+      "id": "scirel.field.rectangular-coil-filaments",
+      "purpose": "将矩形截面离散为圆环位置"
+    },
+    {
+      "id": "scirel.field.multi-coil-vacuum-field",
+      "purpose": "组合离散、响应与叠加，计算线圈组磁场"
+    }
+  ],
+  "run": "在包含上述 API 的 SciRel 环境中运行：python example.py results.json。本后继使用隔离运行环境，无源码和网络；不是对任意已安装版本的保证。"
+}

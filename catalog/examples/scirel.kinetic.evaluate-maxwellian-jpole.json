@@ -1,0 +1,139 @@
+{
+ "schema": "scirel.asset-document",
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Fixed-pole Maxwellian dispersion approximation",
+   "Evaluate the fixed-pole Maxwellian dispersion approximation with its default order and declared failure contract."
+  ],
+  "operation": [
+   "evaluate the fixed-pole Maxwellian dispersion function",
+   "z,order -> Z,order"
+  ],
+  "model": "One-dimensional Maxwellian plasma response",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Real axis is accepted; exponential continuation overflow raises.",
+  "device_scope": "generic"
+ },
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "generalized-dispersion"
+ ],
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for non-finite/empty phase points or an order below the supported pole count.",
+  "runtime_failure": "FloatingPointError when the pole sum exceeds finite float64 range; no fallback to a lower-order sum is selected.",
+  "nonconvergence": "Fixed J-pole approximation has no iterative convergence claim; the omitted-tail bound is not a certified global error.",
+  "partial_results": "No partial value is returned after a failed call."
+ },
+ "verification": {
+  "scope": [
+   "Default and explicit order, scalar/matrix shapes, reflection, normalization, positive imaginary axis overflow regression.",
+   "80-digit mpmath equation grid and 70-digit independent Gaussian Cauchy integrals."
+  ],
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_faddeeva_variants.py",
+   "tests/kinetic/test_generalized_dispersion_faddeeva_independent.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Fixed tabulated partial-fraction approximation; upper-plane evaluation and Gaussian lower-plane reflection. Evidence: test_generalized_dispersion_faddeeva_variants.py, test_generalized_dispersion_faddeeva_independent.py (9 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: A guaranteed global error bound; An arbitrary distribution response.",
+  "known_limitations": [
+   "Lower-plane exponential may exceed float64.",
+   "Fixed truncation error depends on phase point and order.",
+   "Only shared-file coverage is bound (test_generalized_dispersion_faddeeva_variants.py); no asset-specific failure/limit probe is recorded."
+  ]
+ },
+ "asset_id": "scirel.kinetic.evaluate-maxwellian-jpole",
+ "title": {
+  "zh": "Maxwellian 固定极点色散近似",
+  "en": "evaluate maxwellian jpole"
+ },
+ "summary": "Evaluate the fixed-pole Maxwellian dispersion approximation with its default order and declared failure contract.",
+ "identity": {
+  "model": "One-dimensional Maxwellian plasma response",
+  "relation": "Z_J(z)=sum_j b_j/(z-c_j), with lower-plane reflection",
+  "definition": "Fixed tabulated partial-fraction approximation; upper-plane evaluation and Gaussian lower-plane reflection.",
+  "direction": "z,order -> Z,order",
+  "coordinates": "Complex normalized phase velocity",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Real axis is accepted; exponential continuation overflow raises.",
+  "assumptions": [
+   "Dimensionless normalized Maxwellian argument."
+  ]
+ },
+ "applicability": {
+  "supported": [
+   "Exactly 8,12,16,24 poles.",
+   "Finite nonempty scalar or array input; shape preserved."
+  ],
+  "preconditions": [
+   "All phase values and computed results fit complex128."
+  ],
+  "excluded": [
+   "A guaranteed global error bound.",
+   "An arbitrary distribution response."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "z",
+   "description": "Dimensionless complex phase points.",
+   "dtype": "complex numeric",
+   "shape": "scalar or nonempty array",
+   "units": "dimensionless",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "order",
+   "description": "Rational truncation or pole count. Explicit None is invalid.",
+   "dtype": "integer",
+   "shape": "scalar",
+   "units": "count",
+   "required": false,
+   "default": 8,
+   "constraints": "Exactly 8,12,16,24 poles. Boolean rejected."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "Z",
+   "description": "Complex response.",
+   "dtype": "complex array",
+   "shape": "same as z",
+   "units": "dimensionless",
+   "required": true,
+   "constraints": "Finite complex128."
+  },
+  {
+   "name": "order",
+   "description": "Effective truncation or pole count.",
+   "dtype": "integer",
+   "shape": "scalar",
+   "units": "count",
+   "required": true,
+   "constraints": "Exactly 8,12,16,24 poles."
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.faddeeva_variants",
+   "symbol": "evaluate_maxwellian_jpole",
+   "signature": "evaluate_maxwellian_jpole(z, *, order=8)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_maxwellian_jpole"
+  }
+ },
+ "example": {
+  "description": "Evaluate a finite upper-plane response.",
+  "code": "from scirel.kinetic import evaluate_maxwellian_jpole\nimport numpy as np\nr=evaluate_maxwellian_jpole(0.2+0.7j)\nassert np.isfinite(r[\"Z\"])\n",
+  "expected": "Observed PASS: Finite complex response at the effective order."
+ },
+ "references": [
+  "Weideman (1994), Computation of the Complex Error Function, doi:10.1137/0731077",
+  "Xie (2013), Generalized Plasma Dispersion Function, arXiv:1305.6476"
+ ]
+}

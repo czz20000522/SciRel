@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Asset Correctness"
+  short_description: "Establish and repair bounded scientific correctness"
+  default_prompt: "Use $scientific-asset-correctness to assess these exact frozen candidates, repair only demonstrated defects with an independent basis, and return claim-bounded evidence."
+policy:
+  allow_implicit_invocation: false

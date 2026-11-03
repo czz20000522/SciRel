@@ -1,0 +1,123 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.basis.basis-matrix",
+ "title": {
+  "en": "Basis design matrix",
+  "zh": "基函数设计矩阵"
+ },
+ "summary": "Evaluate the selected basis as columns of a sample-by-basis design matrix.",
+ "taxonomy": [
+  "analysis",
+  "basis"
+ ],
+ "aliases": [
+  "BasisMatrix"
+ ],
+ "discovery": {
+  "capability": [
+   "Basis design matrix",
+   "Evaluate the selected polynomial or cubic-spline basis as columns of a sample-by-basis design matrix."
+  ],
+  "operation": [
+   "basis selection to sampled design matrix",
+   "basis selector, sample abscissa and constructor options -> matrix of basis values"
+  ],
+  "model": "Caller-selected ascending-power polynomial or C2 cubic-spline basis; construction delegates to the explicit basis factory.",
+  "geometry": "One-dimensional scalar abscissa and ordinate samples; rows follow the input domain and columns follow the basis order. No multidimensional geometry is reconstructed.",
+  "boundary": "Spline basis evaluation is zero outside the finite knot interval with no extrapolation; unsupported quartic and special-function selections are rejected.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Basis design matrix",
+  "direction": "Declared inputs to Evaluator yielding matrix of basis values",
+  "definition": "Evaluate selected basis functions into columns of a design matrix",
+  "model": "Construction delegates to the explicit source basis factory",
+  "geometry": "one-dimensional scalar abscissa and ordinate samples",
+  "coordinates": "Rows follow input domain; columns follow basis order",
+  "boundary": "Spline evaluation is zero outside the finite knot interval; no extrapolation is performed.",
+  "assumptions": [
+   "Finite constructor samples and boundary-specific assumptions",
+   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "basis",
+   "description": "Basis selector",
+   "units": "dimensionless",
+   "shape": "string",
+   "dtype": "str",
+   "required": true,
+   "constraints": "As build_basis"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "matrix",
+   "description": "Evaluator yielding matrix of basis values",
+   "units": "basis-value units",
+   "shape": "(M,K)",
+   "dtype": "Python callable object",
+   "required": true,
+   "constraints": "Caller provides one-dimensional domain"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite constructor samples and boundary-specific assumptions",
+   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+  ],
+  "supported": [
+   "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
+  ],
+  "excluded": [
+   "Quartic and special-function factory selections are rejected; no invented implementations",
+   "Physical special-spline closures and unsupported knot domains remain unresolved"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate.",
+  "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
+  "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
+  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval return zero."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.basis",
+   "symbol": "BasisMatrix",
+   "signature": "BasisMatrix(basis, **kwargs)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "BasisMatrix"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.basis.build-basis"
+   }
+  ]
+ },
+ "example": {
+  "description": "Evaluate the default polynomial basis on two samples and inspect the row/column order.",
+  "code": "import numpy as np\nfrom scirel.geometry.basis import BasisMatrix\n\nsamples = np.array([0.0, 1.0])\nmatrix = BasisMatrix(\"poly\")(samples)\nnp.testing.assert_allclose(matrix, [[1.0, 0.0, 0.0], [1.0, 1.0, 1.0]])",
+  "expected": "The returned design matrix has shape (2, 3) and values [[1, 0, 0], [1, 1, 1]]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Quartic and special-function factory selections are rejected; no invented implementations",
+   "Physical special-spline closures and unsupported knot domains remain unresolved"
+  ]
+ }
+}

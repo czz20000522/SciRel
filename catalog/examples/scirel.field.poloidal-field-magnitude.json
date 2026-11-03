@@ -1,0 +1,137 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.poloidal-field-magnitude",
+ "title": {
+  "en": "Poloidal magnetic-field magnitude",
+  "zh": "极向磁场幅值"
+ },
+ "summary": "Compute a floored poloidal-field magnitude and its median reference value from BR and BZ arrays.",
+ "taxonomy": [
+  "field",
+  "axisymmetric",
+  "field-magnitude"
+ ],
+ "aliases": [
+  "poloidal B magnitude"
+ ],
+ "discovery": {
+  "capability": [
+   "Poloidal magnetic-field magnitude",
+   "Compute a floored poloidal-field magnitude and its median reference value from BR and BZ arrays."
+  ],
+  "operation": [
+   "pointwise Euclidean magnitude with a finite lower floor",
+   "radial and axial field arrays -> B and B0_default"
+  ],
+  "model": "Pointwise Euclidean magnitude with a finite lower floor.",
+  "geometry": "Matching nonempty two-dimensional caller arrays.",
+  "boundary": "Nonfinite inputs, shape mismatch, empty arrays and unrepresentable magnitudes are rejected.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Poloidal-field magnitude and reference",
+  "direction": "radial and axial field arrays to B and B0_default",
+  "definition": "Compute hypot(BR,BZ), floor each entry at 1e-30, and return the median using a difference-first midpoint.",
+  "model": "Pointwise Euclidean magnitude with a finite lower floor.",
+  "geometry": "Matching nonempty 2-D caller arrays.",
+  "coordinates": "BR,BZ,B and B0_default in tesla.",
+  "boundary": "Nonfinite inputs, shape mismatch, empty arrays, and unrepresentable magnitudes are rejected.",
+  "assumptions": [
+   "Inputs are finite real arrays with identical 2-D shape.",
+   "The reference is a descriptive median, not an automatically applied normalization.",
+   "The floor is part of the numerical contract."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "br",
+   "description": "Radial poloidal magnetic-field component.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array-like, converted to float64",
+   "required": true,
+   "constraints": "Finite, nonempty two-dimensional array; same shape as bz."
+  },
+  {
+   "name": "bz",
+   "description": "Axial poloidal magnetic-field component.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array-like, converted to float64",
+   "required": true,
+   "constraints": "Finite, nonempty two-dimensional array; same shape as br."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "B",
+   "description": "Pointwise floored poloidal-field magnitude.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and at least 1e-30 T for accepted inputs whose magnitude fits float64."
+  },
+  {
+   "name": "B0_default",
+   "description": "Median of the returned B values for use as a caller-selected reference field.",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite, at least 1e-30 T, and derived from all returned grid values."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs are finite real arrays with identical 2-D shape.",
+   "The reference is a descriptive median, not an automatically applied normalization."
+  ],
+  "supported": [
+   "Zero floor, large finite values, shape failures, and median reference behavior."
+  ],
+  "excluded": [
+   "Vector fields of other rank, automatic normalization, and physical field-quality assessment."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for nonfinite, empty, non-2-D, mismatched, or unrepresentable inputs.",
+  "runtime_failure": "No iterative runtime failure is defined; overflow is converted to ValueError.",
+  "nonconvergence": "Not applicable; magnitude and median are direct operations.",
+  "partial_results": "No mapping is returned after validation or overflow failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.poloidal_field_magnitude",
+   "symbol": "compute_poloidal_field_magnitude",
+   "signature": "compute_poloidal_field_magnitude(br, bz)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "compute_poloidal_field_magnitude"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Compute the magnitude for a 3-4-5 point and a zero pair.",
+  "code": "import numpy as np\nfrom scirel.field import compute_poloidal_field_magnitude\nresult = compute_poloidal_field_magnitude([[3.0, 0.0]], [[4.0, 0.0]])\nnp.testing.assert_allclose(result['B'], [[5.0, 1e-30]])\nassert result['B0_default'] == 2.5",
+  "expected": "B is [[5,1e-30]] T and B0_default is 2.5 T."
+ },
+ "verification": {
+  "scope": [
+   "3-4-5 magnitude, zero floor and median reference.",
+   "Shape mismatch, empty grid and unrepresentable magnitude rejection.",
+   "Large finite component and median arithmetic regressions."
+  ],
+  "tests": [
+   "tests/field/test_poloidal_field_magnitude.py"
+  ],
+  "evidence_ceiling": "Direct SciRel tests cover the arithmetic and selected floating-point boundaries of this maintained relation; they do not establish a model-specific physical interpretation of the reference median or expert recognition of the development record.",
+  "known_limitations": [
+   "The returned median is a default numerical reference, not an independently determined physical scale.",
+   "The fixed floor replaces exact zero in B.",
+   "Public distribution licensing and SciRel expert recognition remain pending."
+  ]
+ }
+}

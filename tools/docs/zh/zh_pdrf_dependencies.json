@@ -1,0 +1,1156 @@
+{
+ "schema": "scirel.reader-translation",
+ "language": "zh-CN",
+ "records": [
+  {
+   "asset_id": "scirel.kinetic.spectral-temporal-matrix",
+   "source_sha256": "9c9bddc600b95cc1e4c754a497cc34d72680b7de1981747dfd696926190f1e7e",
+   "summary": "组装独立修正后的局域流体/Maxwell 生成器与相对论惯性。",
+   "definition": "对 k=(kx,0,kz)、eps=(epsx,epsy,0)：dn_dot=-i(k·v0)dn-n0*(i*k+eps)·dv。动量方程 A_v*d(v)_dot=-i(k·v0)A_v*dv+(q/m)*(dv×B0+v0×dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision。当 B0!=0 时，令 D=(Psz-Psp)/B0/rho，并加入 [-i*kz*D*dBx, -i*kz*D*dBy, -2*D*((i*kx+epsx)*dBx+epsy*dBy)]。Maxwell 方程：dE_dot=i*c2*(k×dB)-sum(q*(n0*dv+v0*dn))/epsilon0；dB_dot=-i*(k×dE)。当 rel=1 时，A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2。额外的密度项和磁系数梯度项补上了此前遗漏的背景压强加速度导数。正的自身强迫项改由耗散摩擦表示。不声称对 Lorentz 覆盖作修正：原始 Lorentz 项与各向异性项使用不同的列。",
+   "model": "带经验纵向磁压因子 2 的代数各向异性多流体闭合。",
+   "boundary": "B0=0 时导向响应项归零，固定 z 向压强仍显式给出；rel=1 排除光速及超光速漂移。",
+   "assumptions": [
+    "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+    "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+    "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+    "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。"
+   ],
+   "inputs": [
+    {
+     "name": "state",
+     "description": "带有显式主数据与配置的新建等离子体状态。",
+     "constraints": "由 initialize_plasma_state 生成；主输入会重新验证，所有派生字段重新计算。",
+     "dtype": "字典（映射）",
+     "shape": "映射",
+     "units": "按状态声明的混合物理量单位"
+    },
+    {
+     "name": "kx",
+     "description": "x 方向波数。",
+     "constraints": "复数值描述局域空间解析符号。",
+     "dtype": "有限复标量",
+     "shape": "标量",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "kz",
+     "description": "z 方向波数。",
+     "constraints": "与 kx 采用相同约定。",
+     "dtype": "有限复标量",
+     "shape": "标量",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "rel",
+     "description": "相对论惯性选择器。",
+     "constraints": "取 0 或 1；rel=1 要求 |v0|<c。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "M",
+     "description": "时间生成器，按物种 [dn,dvx,dvy,dvz] 后接 [Ex,Ey,Ez,Bx,By,Bz] 排列。",
+     "constraints": "有限；满足 lambda*A*x=M*x 且 omega=i*lambda。",
+     "dtype": "complex128",
+     "shape": "[4s+6, 4s+6]",
+     "units": "行输出单位每秒除以列状态单位；归一化情形类似"
+    },
+    {
+     "name": "A",
+     "description": "惯性矩阵。",
+     "constraints": "除 rel=1 的速度块含 d(gamma*v)/dv 外，其余为单位阵。",
+     "dtype": "complex128",
+     "shape": "[4s+6, 4s+6]",
+     "units": "在等比例缩放的速度块内无量纲"
+    },
+    {
+     "name": "state",
+     "description": "矩阵使用的、经重新验证的新建状态。",
+     "constraints": "不含过时派生字段；保持显式碰撞分类。",
+     "dtype": "字典（映射）",
+     "shape": "映射",
+     "units": "按状态约定的各量单位"
+    },
+    {
+     "name": "scales",
+     "description": "用于相似变换的正物理状态列缩放。",
+     "constraints": "密度=n_j，速度=c，B=sqrt(sum(rho)/epsilon0)，E=c*B；行与列按同一规则变换。",
+     "dtype": "float64 数组",
+     "shape": "[4s+6]",
+     "units": "按分量分别为密度、速度、电场和磁场单位"
+    },
+    {
+     "name": "kx",
+     "description": "接受的 x 波数。",
+     "constraints": "与请求值相同。",
+     "dtype": "复数",
+     "shape": "标量",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "kz",
+     "description": "接受的 z 波数。",
+     "constraints": "与请求值相同。",
+     "dtype": "复数",
+     "shape": "标量",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "状态的主数据与配置满足新建状态合同；派生场会重新计算。",
+     "kx/kz 为有限复数；rel 取 0 或 1，rel=1 时漂移严格低于光速。单位必须与状态一致。"
+    ],
+    "supported": [
+     "修正后的局域流体/Maxwell 生成器、相对论切向惯性、代数各向异性压强响应和物理相似缩放。不计算本征谱、扫描或图形。"
+    ],
+    "excluded": [
+     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "状态、波数、rel 选择器无效，rel=1 漂移达到或超过光速，或矩阵/缩放不可表示时抛出 ValueError；状态验证失败会向上传播。",
+    "runtime_failure": "原生数值转换或组装失败会向上传播。",
+    "nonconvergence": "没有迭代，也不调用本征求解器。",
+    "partial_results": "失败后不返回映射，也不产生文件副作用。"
+   },
+   "example": {
+    "description": "默认矩阵形状。",
+    "expected": "默认归一化状态生成了形状为 (14,14) 的有限 M、A 矩阵。"
+   },
+   "verification": {
+    "scope": [
+     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
+     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
+    ],
+    "evidence_ceiling": "限于含相对论切向惯性与代数各向异性压力的局部流体/麦克斯韦生成元。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 6 个引用 `assemble_spectral_matrix`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或无协变修正的热力学。",
+    "known_limitations": [
+     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。",
+     "四资产共享文件 `test_spectral_evolution.py` 中的六个直接函数覆盖碰撞/耗散、梯度线性化、相对论边界拒绝、SI 参数个数与显式碰撞类别；此处不调用本征求解。",
+     "生成元拒绝达到光速的 `rel=1` 漂移并使用固定历史常数；不声称原生/参考运行时一致。"
+    ],
+    "tests": [
+     "tests/kinetic/test_spectral_evolution.py"
+    ]
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.spectral-dispersion-scan",
+   "source_sha256": "5e3308c2acec6169ce6dfe572fde9e028a1b9a6d89a738086c4d14077ff64d68",
+   "summary": "用修正后的算子运行完整扫描族，并显式给出状态与限制。",
+   "definition": "初始化一次；对每个按方法选定的 k 点组装修正矩阵并计算条件化本征谱；收集全部排序后的模式，并记录最后一点的 M、A、w1、w2、state。方法 2 在归一化/SI 单位下分别使用 101/196 个幅值点，方法 3 使用 51 个角度，方法 4 使用 50×75 笛卡尔网格并按先 kz 后 kx 的行主序扫描；method 为 0、1 或未知非负整数时走单点分支。随后为 2/3/4 返回双面板图形元数据；其他选择器保持零坐标轴。可选的 SI 位置返回前缀为 (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0)，各字段均有定义。",
+   "model": "由新建状态、修正后的局域多流体矩阵和条件化谱组合而成；扫描网格遵循声明的方法默认值。",
+   "boundary": "整个扫描受 max_points 限制；失败即中止，不产生部分科学结果；独立排序不是分支延续。",
+   "assumptions": [
+    "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+    "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+    "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+    "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。"
+   ],
+   "inputs": [
+    {
+     "name": "species",
+     "description": "各行为 q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,eps_x,eps_y；文本输入首行为表头。",
+     "constraints": "s>=1，m/n>0，cs>=0；None 使用文档示例行；各行是独立流体，可包含相同行。默认归一化行：[-1,1,4,0,0,0,0,0,0,0]，[1,4,4,0,0,0,0,0,0,0]。默认 SI 行：[-1.602e-19,9.109e-31,8.7e6,0,0,0,4.631e6,4.631e6,0,0]，[1.602e-19,1.673e-27,8.7e6,0,0,0,9.360e4,9.360e4,0,0]。",
+     "dtype": "实数数组或字符串",
+     "shape": "[s,10] 或文本",
+     "units": "按量分别为 SI 的 C、kg、m^-3、m/s、m^-1；归一化单位由显式给定的 c2、epsilon0 和 B0 固定"
+    },
+    {
+     "name": "unit",
+     "description": "单位约定与默认常数。",
+     "constraints": "normalized 或 si，不做输入转换。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "method",
+     "description": "扫描选择器。",
+     "constraints": "0/1 及未知非负整数为单点；2 为幅值，3 为角度，4 为笛卡尔网格。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "rel",
+     "description": "惯性选择器，原样传给矩阵组装。",
+     "constraints": "0 或 1；rel=1 时漂移严格低于光速。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "vectors",
+     "description": "是否公开对应的本征向量列。",
+     "constraints": "不改变本征值计算路径。",
+     "dtype": "布尔",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "oldmethod",
+     "description": "数值初解选择器。",
+     "constraints": "1 为广义 SciPy eig；2 为 solve(A,M) 的 eig；两者都使用平衡坐标和相同的精化检查。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "prior",
+     "description": "为调用兼容性接受的前一状态，从不作为主要科学输入。",
+     "constraints": "所有字段都会重新派生；prior 不会被修改。",
+     "dtype": "字典或 None",
+     "shape": "映射或 null",
+     "units": "状态约定"
+    },
+    {
+     "name": "cfg",
+     "description": "常数 B0、c2、epsilon0、gammaTs；碰撞控制与分类。",
+     "constraints": "仅接受文档字段；c2/epsilon0/gammaTs>0。显式速率的方向为接收者 i 指向 j，对角为零，非负且满足 rho 互易。drag_rates>=0。nue/nui 表示轻/重粒子浴，nuei 表示轻粒子接收者的跨类碰撞，同类 nuee/nuii 采用较低 rho 的接收者。默认质量分类为归一化 <=1 或 SI <=9.1093837139e-31 kg；collision_classes 显式给出 light/heavy（可写 electron/ion 别名）时覆盖默认分类。这些只是数值类别，不是推断出的物种身份。默认归一化：B0=1,c2=1,epsilon0=1,gammaTs=1；SI：B0=8e-9 T,c2=(2.9979e8)^2,epsilon0=8.854e-12,gammaTs=5/3。五个既有速率全为零；缺少显式配对/阻力速率时由这些零控制量导出。默认分类使用声明的质量阈值。",
+     "dtype": "字典或 None",
+     "shape": "映射或 null",
+     "units": "B0 为 T（SI）或归一化值；c2 为速度平方；epsilon0 为 SI 或归一化值；速率为 s^-1 或归一化频率"
+    },
+    {
+     "name": "k_grid",
+     "description": "幅值扫描覆盖。",
+     "constraints": "有限且非空；仅用于方法 2。默认归一化 101 点或 SI 196 点。",
+     "dtype": "实数数组或 None",
+     "shape": "[K] 或 null",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "theta_grid",
+     "description": "角度扫描覆盖。",
+     "constraints": "有限且非空；仅用于方法 3。默认 51 个 0..pi/2 采样。",
+     "dtype": "实数数组或 None",
+     "shape": "[T] 或 null",
+     "units": "rad"
+    },
+    {
+     "name": "kx_grid",
+     "description": "笛卡尔 x 扫描覆盖。",
+     "constraints": "有限且非空；仅用于方法 4。默认 75 个采样，形状顺序为 [Z,X,N]。",
+     "dtype": "实数数组或 None",
+     "shape": "[X] 或 null",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "kz_grid",
+     "description": "笛卡尔 z 扫描覆盖。",
+     "constraints": "有限且非空；仅用于方法 4。默认 50 个采样。",
+     "dtype": "实数数组或 None",
+     "shape": "[Z] 或 null",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "k",
+     "description": "单点波数。",
+     "constraints": "有限；仅用于单分支。角度扫描仍采用 k=2。",
+     "dtype": "复数",
+     "shape": "标量",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "theta",
+     "description": "相对 z 轴的单点传播角。",
+     "constraints": "有限；方法 2 在归一化单位下取声明的 pi/4 角，在 SI 单位下取 0。",
+     "dtype": "实数",
+     "shape": "标量",
+     "units": "rad"
+    },
+    {
+     "name": "max_points",
+     "description": "已求解扫描点的上限。",
+     "constraints": "正数；整个请求扫描必须能容纳。无反馈或迭代。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "plot_path",
+     "description": "可选的显式 PNG 导出路径。",
+     "constraints": "仅方法 2/3/4；Agg 在内存中生成 PNG，并在提供路径时写入。",
+     "dtype": "路径或 None",
+     "shape": "标量或 null",
+     "units": "文件系统路径"
+    },
+    {
+     "name": "output_count",
+     "description": "可选的按位置返回前缀长度。",
+     "constraints": "归一化 0..4，SI 0..17。所有分支都定义 kk、ww1、ww2；None 返回映射。",
+     "dtype": "整数或 None",
+     "shape": "标量或 null",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "M",
+     "description": "时间生成器，按物种 [dn,dvx,dvy,dvz] 后接 [Ex,Ey,Ez,Bx,By,Bz] 排列。",
+     "constraints": "有限；满足 lambda*A*x=M*x 且 omega=i*lambda。",
+     "dtype": "complex128",
+     "shape": "[4s+6, 4s+6]",
+     "units": "行输出单位每秒除以列状态单位；归一化情形类似"
+    },
+    {
+     "name": "A",
+     "description": "惯性矩阵。",
+     "constraints": "除 rel=1 的速度块含 d(gamma*v)/dv 外，其余为单位阵。",
+     "dtype": "complex128",
+     "shape": "[4s+6, 4s+6]",
+     "units": "在等比例缩放的速度块内无量纲"
+    },
+    {
+     "name": "state",
+     "description": "矩阵使用的、经重新验证的新建状态。",
+     "constraints": "不含过时派生字段；保持显式碰撞分类。",
+     "dtype": "字典（映射）",
+     "shape": "映射",
+     "units": "按状态约定的各量单位"
+    },
+    {
+     "name": "scales",
+     "description": "用于相似变换的正物理状态列缩放。",
+     "constraints": "密度=n_j，速度=c，B=sqrt(sum(rho)/epsilon0)，E=c*B；行与列按同一规则变换。",
+     "dtype": "float64 数组",
+     "shape": "[4s+6]",
+     "units": "按分量分别为密度、速度、电场和磁场单位"
+    },
+    {
+     "name": "kx",
+     "description": "接受的 x 波数。",
+     "constraints": "与请求值相同。",
+     "dtype": "复数",
+     "shape": "标量",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "kz",
+     "description": "接受的 z 波数。",
+     "constraints": "与请求值相同。",
+     "dtype": "复数",
+     "shape": "标量",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "w1",
+     "description": "按实部降序排列的频率。",
+     "constraints": "omega=i*lambda；并列时稳定排序；不是模式追踪。",
+     "dtype": "complex128",
+     "shape": "[N]",
+     "units": "SI 下为 s^-1，或归一化频率"
+    },
+    {
+     "name": "w2",
+     "description": "同样的模式，按虚部降序排列。",
+     "constraints": "独立排序。",
+     "dtype": "complex128",
+     "shape": "[N]",
+     "units": "SI 下为 s^-1，或归一化频率"
+    },
+    {
+     "name": "X1",
+     "description": "与 w1 对应的本征向量列。",
+     "constraints": "只有 vectors=True 的映射才公开对应的最后一点向量；公共位置前缀不含向量。相位任意，退化基不唯一。",
+     "dtype": "complex128",
+     "shape": "[N, N]",
+     "units": "混合状态单位，按最大绝对值归一化"
+    },
+    {
+     "name": "X2",
+     "description": "与 w2 对应的本征向量列。",
+     "constraints": "只有 vectors=True 的映射才公开对应的最后一点向量；公共位置前缀不含向量。相位任意，退化基不唯一。",
+     "dtype": "complex128",
+     "shape": "[N, N]",
+     "units": "混合状态单位，按最大绝对值归一化"
+    },
+    {
+     "name": "residual1",
+     "description": "w1 的缩放全局后向误差。",
+     "constraints": "有限且不超过 1e-10；不是前向精度证书。",
+     "dtype": "float64",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "residual2",
+     "description": "w2 的缩放全局后向误差。",
+     "constraints": "判据相同。",
+     "dtype": "float64",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "component_residual",
+     "description": "活动分量的最大后向误差。",
+     "constraints": "双精度超过 1e-12 时回退到 50 位十进制；最终超过 1e-10 则拒绝。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "precision",
+     "description": "实际算术路径。",
+     "constraints": "complex128，或 mpmath 50 位十进制转 complex128；原始输入系数仍为双精度。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "oldmethod",
+     "description": "所选的初解方法。",
+     "constraints": "1 或 2。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "method",
+     "description": "实际执行的选择器。",
+     "constraints": "与传入的 method 完全相同。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "unit",
+     "description": "单位约定。",
+     "constraints": "normalized 或 si。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "kk",
+     "description": "幅值数据。",
+     "constraints": "始终有定义；SI 非扫描元数不返回未定义字段。",
+     "dtype": "数值数组",
+     "shape": "[K]、[T]、[Z,X] 或 [1]",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "tt",
+     "description": "角度扫描横坐标。",
+     "constraints": "仅方法 3 填充。",
+     "dtype": "float64 数组",
+     "shape": "[T] 或空",
+     "units": "rad"
+    },
+    {
+     "name": "kkx",
+     "description": "笛卡尔网格的 x 分量。",
+     "constraints": "仅方法 4。",
+     "dtype": "float64 数组",
+     "shape": "[Z,X] 或空",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "kkz",
+     "description": "笛卡尔网格的 z 分量。",
+     "constraints": "仅方法 4。",
+     "dtype": "float64 数组",
+     "shape": "[Z,X] 或空",
+     "units": "SI 下为 m^-1，或归一化逆长度"
+    },
+    {
+     "name": "ww1",
+     "description": "每个点上按实部独立排序的频率。",
+     "constraints": "完整扫描数组；不是连续模式追踪。",
+     "dtype": "complex128",
+     "shape": "[K,N]、[T,N]、[Z,X,N] 或 [1,N]",
+     "units": "SI 下为 s^-1，或归一化频率"
+    },
+    {
+     "name": "ww2",
+     "description": "每个点上按虚部独立排序的频率。",
+     "constraints": "完整扫描数组。",
+     "dtype": "complex128",
+     "shape": "与 ww1 相同",
+     "units": "SI 下为 s^-1，或归一化频率"
+    },
+    {
+     "name": "points",
+     "description": "已求解点数。",
+     "constraints": "至多 max_points。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "execution_order",
+     "description": "显式执行顺序。",
+     "constraints": "初始化；行主序组装/求谱；绘图。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "max_points",
+     "description": "实际执行的限制。",
+     "constraints": "与传入值相同。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "graphics",
+     "description": "坐标轴数与模式计数的元数据。",
+     "constraints": "方法 2/3/4 为两个坐标轴，其他选择器为零个；不对单物种的质量标题索引或零颜色索引作额外处理。",
+     "dtype": "字典",
+     "shape": "映射",
+     "units": "无量纲"
+    },
+    {
+     "name": "plot_png",
+     "description": "PNG 字节；当前实现返回空字节，不包含图像数据。",
+     "constraints": "仅方法 2/3/4；请求的文件写入相同字节。",
+     "dtype": "字节",
+     "shape": "字节或缺失",
+     "units": "PNG 字节"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "有限十列物种数据，质量/密度为正、声速非负；所有配置常数与速率满足各自声明的定义域。",
+     "调用者选择一致的 SI 或归一化量；单位选择只标记数据并选取默认值，不会隐式转换数组。"
+    ],
+    "supported": [
+     "在显式声明的有效闭合下，完整的归一化/SI 局域多流体映射、声明的扫描选择器以及调用者拥有的状态。"
+    ],
+    "excluded": [
+     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "单位、形状、非有限数据、物理符号、速率、选择器无效，或状态在数值上不可表示时抛出 ValueError；矩阵在 rel=1 且漂移达到或超过 c 时拒绝。",
+    "runtime_failure": "原生 NumPy/SciPy/mpmath 或文件导出失败会向上传播；残差或本征向量不合格由 ArithmeticError 拒绝。",
+    "nonconvergence": "没有物理迭代。数值本征求解器失败会向上传播；失败时不声称得到结果。",
+    "partial_results": "失败后不返回结果字典；只有调用者明确请求 PNG 时才产生文件副作用。"
+   },
+   "example": {
+    "description": "完整的两点幅值扫描。",
+    "expected": "归一化两点扫描返回的 ww1 形状为 (2,14)，图形元数据中的 axes_count=2、mode_count=5，plot_png 为 0 字节（当前实现未生成 PNG 图像）。"
+   },
+   "verification": {
+    "scope": [
+     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
+     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
+    ],
+    "evidence_ceiling": "限于局部归一化/SI 多流体色散映射及其扫描选择器。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 3 个引用 `evaluate_spectral_dispersion`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
+    "known_limitations": [
+     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。",
+     "实现为其 SI 映射使用固定历史常数；不进行现代 CODATA 替换或单位换算层。",
+     "`rel=1` 达到或超过 `c` 时被拒绝，实现没有绘图或导出副作用；成功调用只返回数据。"
+    ],
+    "tests": [
+     "tests/kinetic/test_spectral_evolution.py"
+    ]
+   },
+   "source_conflicts": [
+    "outputs.plot_png 与示例预期原称方法 2/3/4 生成内存 PNG；当前实现 _plot 返回空字节 b\"\"，plot_path 也只写入空文件，示例实际得到 0 字节。本页已按实际运行改写示例预期，合同待修订。"
+   ]
+  },
+  {
+   "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
+   "source_sha256": "856ff5a9acfb05fc33c12c9cead7523d1359deab6c05541e8193f54f5ad0dbc5",
+   "summary": "求解时间模式并独立排序，保持成对的值与向量，并以实数精度做精化。",
+   "definition": "lambda*A*X=M*X；omega=i*lambda。对两个矩阵先施加正对角物理相似变换，再做二进制相似平衡。先做双精度 eig；当分量残差 >1e-12 时，在私有克隆上下文中用 50 位十进制 mpmath 做实际求逆和 eig。最终全局残差或活动分量残差 >1e-10 时拒绝。转换为 complex128，并在不使未缩放幅值溢出的前提下归一化向量。排序按实部/虚部频率独立且稳定。",
+   "model": "稠密线性广义本征问题，并以向后误差控制算术精化。",
+   "boundary": "矩阵或解非有限、惯性矩阵奇异或残差过大时失败；重根模式的基不唯一。",
+   "assumptions": [
+    "使用 SciPy 双精度算术，并以 mpmath 核心在需要时真正回退到高精度。",
+    "精度受条件数和已舍入输入系数限制；高精度不是普遍的前向误差证明。",
+    "四个/六个输出的 vpa 阶次拆分被有意不采用；eig 之后的符号转换没有带来额外精度。"
+   ],
+   "inputs": [
+    {
+     "name": "M",
+     "description": "时间生成器。",
+     "constraints": "非空有限方阵。",
+     "dtype": "复数数组",
+     "shape": "[N, N]",
+     "units": "行导数单位除以列状态单位"
+    },
+    {
+     "name": "A",
+     "description": "同尺寸的惯性矩阵。",
+     "constraints": "要得到有限模式，必须非奇异。",
+     "dtype": "复数数组",
+     "shape": "[N, N]",
+     "units": "与 M 配对的惯性约定单位"
+    },
+    {
+     "name": "vectors",
+     "description": "是否公开对应的本征向量列。",
+     "constraints": "不改变本征值计算路径。",
+     "dtype": "布尔",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "oldmethod",
+     "description": "数值初解选择器。",
+     "constraints": "1 为广义 SciPy eig；2 为 solve(A,M) 的 eig；两者都使用平衡坐标和相同的精化检查。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "scales",
+     "description": "可选的物理相似缩放。",
+     "constraints": "M 与 A 按同一规则变换；随后进行二进制平衡。None 只使用平衡。",
+     "dtype": "实数数组或 None",
+     "shape": "[N] 或 null",
+     "units": "按分量的状态单位"
+    },
+    {
+     "name": "output_count",
+     "description": "可选的按位置返回数量。",
+     "constraints": "0..6 返回 (M,A,w1,w2,X1,X2) 的前缀；取 5 时包含已定义的 X1。None 返回文档映射。",
+     "dtype": "整数或 None",
+     "shape": "标量或 null",
+     "units": "无量纲"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "w1",
+     "description": "按实部降序排列的频率。",
+     "constraints": "omega=i*lambda；并列时稳定排序；不是模式追踪。",
+     "dtype": "complex128",
+     "shape": "[N]",
+     "units": "SI 下为 s^-1，或归一化频率"
+    },
+    {
+     "name": "w2",
+     "description": "同样的模式，按虚部降序排列。",
+     "constraints": "独立排序。",
+     "dtype": "complex128",
+     "shape": "[N]",
+     "units": "SI 下为 s^-1，或归一化频率"
+    },
+    {
+     "name": "X1",
+     "description": "与 w1 对应的本征向量列。",
+     "constraints": "仅 vectors=True（或按位置返回）时提供；相位任意，退化基不唯一。",
+     "dtype": "complex128",
+     "shape": "[N, N]",
+     "units": "混合状态单位，按最大绝对值归一化"
+    },
+    {
+     "name": "X2",
+     "description": "与 w2 对应的本征向量列。",
+     "constraints": "仅 vectors=True（或按位置返回）时提供。",
+     "dtype": "complex128",
+     "shape": "[N, N]",
+     "units": "混合状态单位，按最大绝对值归一化"
+    },
+    {
+     "name": "residual1",
+     "description": "w1 的缩放全局后向误差。",
+     "constraints": "有限且不超过 1e-10；不是前向精度证书。",
+     "dtype": "float64",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "residual2",
+     "description": "w2 的缩放全局后向误差。",
+     "constraints": "判据相同。",
+     "dtype": "float64",
+     "shape": "[N]",
+     "units": "无量纲"
+    },
+    {
+     "name": "component_residual",
+     "description": "活动分量的最大后向误差。",
+     "constraints": "双精度超过 1e-12 时回退到 50 位十进制；最终超过 1e-10 则拒绝。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "precision",
+     "description": "实际算术路径。",
+     "constraints": "complex128，或 mpmath 50 位十进制转 complex128；原始输入系数仍为双精度。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "oldmethod",
+     "description": "所选的初解方法。",
+     "constraints": "1 或 2。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "有限、非空、同形的方阵 M 与 A；A 非奇异；可选的相似缩放为正有限值。",
+     "oldmethod 取 {1,2}；vectors 为布尔；output_count 为 None 或 0..6 的整数。矩阵单位与物理含义由调用者负责。"
+    ],
+    "supported": [
+     "稠密广义时间本征问题，给出配对的值/向量、稳定且独立的实部/虚部排序，以及受后向残差控制的算术。"
+    ],
+    "excluded": [
+     "不进行物种初始化、单位转换、物理符号/相对论校验、扫描调度、绘图或模式追踪。",
+     "不提供普遍的前向本征值精度、退化极化唯一性或对输入系数所丢精度的恢复。",
+     "仅在已声明的许可范围内本地评估；再分发权限仍为 NOT_ESTABLISHED。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "M/A 形状无效、矩阵/缩放非有限、选择器无效或检测到奇异惯性时抛出 ValueError。",
+    "runtime_failure": "NumPy/SciPy/mpmath 失败会向上传播；非有限模式、零向量或最终残差过大由 ArithmeticError 拒绝。",
+    "nonconvergence": "底层本征求解器失败会向上传播；没有物理迭代，也不伪造结果。",
+    "partial_results": "失败后不返回谱映射或按位置结果；不产生文件或绘图副作用。"
+   },
+   "example": {
+    "description": "解析对角本征谱。",
+    "expected": "对 M=diag(-i,2i) 和 A=I，两种返回顺序都是 [1+0j, -2+0j]，残差为零。"
+   },
+   "verification": {
+    "scope": [
+     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
+     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。",
+     "外部 PDRF 实频参考点由 tests/kinetic/test_dispersion_multifluid_oracle.py 覆盖。"
+    ],
+    "evidence_ceiling": "限于带实/虚部排序与后向残差的稠密广义时间本征问题。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 2 个引用 `solve_temporal_spectrum`，由 4 个资产共享; `test_dispersion_multifluid_oracle.py` 含 4 个测试函数，其中 1 个引用 `solve_temporal_spectrum`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：自洽/回归，外加一个固定外部 PDRF 真值情形。不建立：通用前向本征值精度、唯一简并极化或模追踪。",
+    "known_limitations": [
+     "后向残差界不能证明普遍的前向精度；已舍入的输入矩阵限制了可用信息。",
+     "不做分支追踪，也不给出唯一相位或退化基。",
+     "不从任意矩阵输入推断物理物种模型。",
+     "共享谱文件中的两个直接函数加一个固定外部 PDRF 真值测试覆盖该求解；真值文件由三个资产共享，只绑定一个参照情形。",
+     "除融合 PDRF 真值情形外未绑定外部矩阵级参照；数值底线是后向残差，而非前向本征值误差棒。"
+    ],
+    "tests": [
+     "tests/kinetic/test_spectral_evolution.py",
+     "tests/kinetic/test_dispersion_multifluid_oracle.py"
+    ]
+   }
+  },
+  {
+   "asset_id": "scirel.kinetic.spectral-plasma-state",
+   "source_sha256": "1ef70d99c0ef8e75538b0ca5e391e87e6d5ace39bd22c0f041052d77b35b5fea",
+   "summary": "从主数据派生新状态、诊断量及耗散互易碰撞矩阵。",
+   "definition": "rho=m*n；Q=sum(q*n)；J=sum(q*n*v)；平行/垂直压强=rho*cs^2/gamma；omega_c=q*B0/m；omega_p=sqrt(n*q^2/(epsilon0*m))。配对摩擦：acceleration_i=sum_j rate_ij*(dv_j-dv_i)-drag_i*dv_i，且 rho_i rate_ij=rho_j rate_ji。",
+   "model": "带外部支撑背景的局域多流体代数热状态有效模型。",
+   "boundary": "质量/密度为正；B0 可为零，此时 beta 为 null；状态独立于 prior 重新创建。",
+   "assumptions": [
+    "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+    "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+    "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+    "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。"
+   ],
+   "inputs": [
+    {
+     "name": "species",
+     "description": "各行为 q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,eps_x,eps_y；文本输入首行为表头。",
+     "constraints": "s>=1，m/n>0，cs>=0；None 使用文档示例行；各行是独立流体，可包含相同行。默认归一化行：[-1,1,4,0,0,0,0,0,0,0]，[1,4,4,0,0,0,0,0,0,0]。默认 SI 行：[-1.602e-19,9.109e-31,8.7e6,0,0,0,4.631e6,4.631e6,0,0]，[1.602e-19,1.673e-27,8.7e6,0,0,0,9.360e4,9.360e4,0,0]。",
+     "dtype": "实数数组或字符串",
+     "shape": "[s,10] 或文本",
+     "units": "按量分别为 SI 的 C、kg、m^-3、m/s、m^-1；归一化单位由显式给定的 c2、epsilon0 和 B0 固定"
+    },
+    {
+     "name": "unit",
+     "description": "单位约定与默认常数。",
+     "constraints": "normalized 或 si，不做输入转换。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "prior",
+     "description": "为调用兼容性接受的前一状态，从不作为主要科学输入。",
+     "constraints": "所有字段都会重新派生；prior 不会被修改。",
+     "dtype": "字典或 None",
+     "shape": "映射或 null",
+     "units": "状态约定"
+    },
+    {
+     "name": "cfg",
+     "description": "常数 B0、c2、epsilon0、gammaTs；碰撞控制与分类。",
+     "constraints": "仅接受文档字段；c2/epsilon0/gammaTs>0。显式速率的方向为接收者 i 指向 j，对角为零，非负且满足 rho 互易。drag_rates>=0。nue/nui 表示轻/重粒子浴，nuei 表示轻粒子接收者的跨类碰撞，同类 nuee/nuii 采用较低 rho 的接收者。默认质量分类为归一化 <=1 或 SI <=9.1093837139e-31 kg；collision_classes 显式给出 light/heavy（可写 electron/ion 别名）时覆盖默认分类。这些只是数值类别，不是推断出的物种身份。默认归一化：B0=1,c2=1,epsilon0=1,gammaTs=1；SI：B0=8e-9 T,c2=(2.9979e8)^2,epsilon0=8.854e-12,gammaTs=5/3。五个既有速率全为零；缺少显式配对/阻力速率时由这些零控制量导出。默认分类使用声明的质量阈值。",
+     "dtype": "字典或 None",
+     "shape": "映射或 null",
+     "units": "B0 为 T（SI）或归一化值；c2 为速度平方；epsilon0 为 SI 或归一化值；速率为 s^-1 或归一化频率"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "s",
+     "description": "流体行数。",
+     "constraints": "不去重，也不遗留陈旧尾部。",
+     "dtype": "整数",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "unit",
+     "description": "声明的单位约定。",
+     "constraints": "normalized 或 si。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "species",
+     "description": "全部主物种输入的副本，归调用者所有。",
+     "constraints": "保持输入顺序。",
+     "dtype": "float64",
+     "shape": "[s, 10]",
+     "units": "按量分别为 SI 的 C、kg、m^-3、m/s、m^-1；归一化单位由显式给定的 c2、epsilon0 和 B0 固定"
+    },
+    {
+     "name": "qs",
+     "description": "电荷。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "C 或归一化电荷"
+    },
+    {
+     "name": "ms",
+     "description": "质量。",
+     "constraints": "为正。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "kg 或归一化质量"
+    },
+    {
+     "name": "ns0",
+     "description": "数密度。",
+     "constraints": "为正。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m^-3 或归一化密度"
+    },
+    {
+     "name": "vs0x",
+     "description": "x 方向漂移速度。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m/s 或归一化速度"
+    },
+    {
+     "name": "vs0y",
+     "description": "y 方向漂移速度。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m/s 或归一化速度"
+    },
+    {
+     "name": "vs0z",
+     "description": "z 方向漂移速度。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m/s 或归一化速度"
+    },
+    {
+     "name": "csz2",
+     "description": "平行声速的平方。",
+     "constraints": "非负。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m^2/s^2 或归一化速度平方"
+    },
+    {
+     "name": "csp2",
+     "description": "垂直声速的平方。",
+     "constraints": "非负。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m^2/s^2 或归一化速度平方"
+    },
+    {
+     "name": "epsnx",
+     "description": "x 方向对数密度梯度。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m^-1 或归一化逆长度"
+    },
+    {
+     "name": "epsny",
+     "description": "y 方向对数密度梯度。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m^-1 或归一化逆长度"
+    },
+    {
+     "name": "rhos0",
+     "description": "质量密度 m*n。",
+     "constraints": "为正。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "kg/m^3 或归一化质量密度"
+    },
+    {
+     "name": "gammaTs",
+     "description": "代数压强系数。",
+     "constraints": "为正。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "无量纲"
+    },
+    {
+     "name": "Psz",
+     "description": "平行背景压强 rho*csz2/gamma。",
+     "constraints": "非负。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "Pa 或归一化压强"
+    },
+    {
+     "name": "Psp",
+     "description": "垂直背景压强 rho*csp2/gamma。",
+     "constraints": "非负。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "Pa 或归一化压强"
+    },
+    {
+     "name": "Deltas",
+     "description": "导向压强差系数 (Psz-Psp)/B0。",
+     "constraints": "B0=0 时严格为零，导向固定为 z 向。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "Pa/T 或归一化压强/磁场"
+    },
+    {
+     "name": "vA",
+     "description": "带符号 Alfvén 尺度 B0/sqrt(mu0*rho)。",
+     "constraints": "B0=0 时严格为零。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "m/s 或归一化速度"
+    },
+    {
+     "name": "wcs",
+     "description": "带符号回旋频率 q*B0/m。",
+     "constraints": "允许为零。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "s^-1 或归一化频率"
+    },
+    {
+     "name": "wps",
+     "description": "等离子体频率 sqrt(n*q^2/(epsilon0*m))。",
+     "constraints": "非负。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "s^-1 或归一化频率"
+    },
+    {
+     "name": "betasz",
+     "description": "平行 beta 2*mu0*Psz/B0^2。",
+     "constraints": "B0=0 时无定义并返回 None，而不是陈旧的或虚构的零。",
+     "dtype": "float64 数组或 None",
+     "shape": "[s] 或 null",
+     "units": "无量纲"
+    },
+    {
+     "name": "betasp",
+     "description": "垂直 beta 2*mu0*Psp/B0^2。",
+     "constraints": "B0=0 时无定义。",
+     "dtype": "float64 数组或 None",
+     "shape": "[s] 或 null",
+     "units": "无量纲"
+    },
+    {
+     "name": "Q0",
+     "description": "总电荷密度 sum(q*n)。",
+     "constraints": "在外部维持背景下可以非零。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "C/m^3 或归一化电荷密度"
+    },
+    {
+     "name": "J0x",
+     "description": "x 方向背景电流。",
+     "constraints": "有限；不声称无外力平衡。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "A/m^2 或归一化电流密度"
+    },
+    {
+     "name": "J0y",
+     "description": "y 方向背景电流。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "A/m^2 或归一化电流密度"
+    },
+    {
+     "name": "J0z",
+     "description": "z 方向背景电流。",
+     "constraints": "有限。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "A/m^2 或归一化电流密度"
+    },
+    {
+     "name": "B0",
+     "description": "z 向背景磁场。",
+     "constraints": "有限，允许为零。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "T 或归一化磁场"
+    },
+    {
+     "name": "c2",
+     "description": "光速平方。",
+     "constraints": "为正。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "m^2/s^2 或归一化速度平方"
+    },
+    {
+     "name": "epsilon0",
+     "description": "介电常数。",
+     "constraints": "为正。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "F/m 或归一化介电常数"
+    },
+    {
+     "name": "mu0",
+     "description": "磁导率 1/(c2*epsilon0)。",
+     "constraints": "正且有限。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "H/m 或归一化磁导率"
+    },
+    {
+     "name": "mirror_factor",
+     "description": "现象学纵向磁压因子。",
+     "constraints": "严格为 2。",
+     "dtype": "float64",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "nu",
+     "description": "速度空间碰撞生成器：正的配对耦合，对角为负的浴项与外流速率之和。",
+     "constraints": "行和=-drag_rates；按 rho 加权保持配对动量守恒。",
+     "dtype": "float64",
+     "shape": "[s, s]",
+     "units": "s^-1 或归一化频率"
+    },
+    {
+     "name": "collision_rates",
+     "description": "接收者速率矩阵。",
+     "constraints": "非负、对角为零，rho_i rate_ij=rho_j rate_ji；动量通量有限且不下溢。",
+     "dtype": "float64",
+     "shape": "[s, s]",
+     "units": "s^-1 或归一化频率"
+    },
+    {
+     "name": "drag_rates",
+     "description": "外部静止浴速率。",
+     "constraints": "非负。",
+     "dtype": "float64",
+     "shape": "[s]",
+     "units": "s^-1 或归一化频率"
+    },
+    {
+     "name": "collision_classes",
+     "description": "声明的数值碰撞类别。",
+     "constraints": "light/heavy，并在组装过程中保持。",
+     "dtype": "字符串数组",
+     "shape": "[s]",
+     "units": "无量纲"
+    },
+    {
+     "name": "background",
+     "description": "声明的背景支撑约定。",
+     "constraints": "外部维持、零扰动响应。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "pressure_closure",
+     "description": "热力学关系标签。",
+     "constraints": "代数固定温度系数。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "zero_field_director",
+     "description": "未磁化压强取向。",
+     "constraints": "固定 z 向。",
+     "dtype": "字符串",
+     "shape": "标量",
+     "units": "无量纲"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "有限十列物种数据，质量/密度为正、声速非负；所有配置常数与速率满足各自声明的定义域。",
+     "调用者选择一致的 SI 或归一化量；单位选择只标记数据并选取默认值，不会隐式转换数组。"
+    ],
+    "supported": [
+     "归一化/SI 主状态的新建派生、诊断量、显式与既有互易碰撞速率、重复调用以及零磁场。不计算本征谱或扫描。"
+    ],
+    "excluded": [
+     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "单位、表形状、非有限量、物理符号、配置、非互易速率无效，或派生态（含动量通量）在数值上不可表示时抛出 ValueError。",
+    "runtime_failure": "原生数组转换错误会向上传播。不访问文件，也不调用本征求解器。",
+    "nonconvergence": "没有迭代或收敛过程。",
+    "partial_results": "失败后不返回状态映射；不改动外部状态，也不产生文件副作用。"
+   },
+   "example": {
+    "description": "新建的归一化示例。",
+    "expected": "默认归一化状态包含 s=2 个独立流体，且 Q0=0.0。"
+   },
+   "verification": {
+    "scope": [
+     "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
+     "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
+    ],
+    "evidence_ceiling": "限于不计算本征谱的全新归一化/SI 等离子体态导出及诊断。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 10 个引用 `initialize_plasma_state`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
+    "known_limitations": [
+     "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
+     "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
+     "磁化纵向压强散度因子 2 是现象学镜面修正；不声称通用动理学镜面阈值或实验精度。",
+     "相对论惯性取 d(gamma*v)/dv，压强与摩擦为非协变形式；不声称完整协变热力学。",
+     "四资产共享文件 `test_spectral_evolution.py` 中的十个直接函数覆盖初始化、碰撞耗散/动量守恒、重新初始化、质量/密度拒绝与下溢；该文件也测试矩阵/谱姊妹资产。",
+     "初始化是局部代数的：不导出背景平衡、不强制全局麦克斯韦-高斯边界，也不进行完整熵/CGL/动理学演化。"
+    ],
+    "tests": [
+     "tests/kinetic/test_spectral_evolution.py"
+    ]
+   }
+  }
+ ]
+}

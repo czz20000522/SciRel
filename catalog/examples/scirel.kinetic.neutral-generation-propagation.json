@@ -1,0 +1,209 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.neutral-generation-propagation",
+ "title": {
+  "en": "Neutral generation propagation",
+  "zh": "中性代际空间传播"
+ },
+ "summary": "Propagate one neutral distribution generation in space with dimensionless axial nodes and normalized inverse-length transport/source coefficients.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "propagation",
+  "generation"
+ ],
+ "aliases": [
+  "propagate_neutral_generation"
+ ],
+ "discovery": {
+  "capability": [
+   "Neutral generation propagation",
+   "Propagate one neutral distribution generation in space with dimensionless axial nodes and normalized inverse-length transport/source coefficients."
+  ],
+  "operation": [
+   "propagate one neutral generation along both velocity branches",
+   "vx, Ak/Bk/Fk/Ck/Dk/Gk, generation_kind, incoming_boundary or scattered_source -> generation distribution"
+  ],
+  "model": "Bidirectional recurrence using caller-provided transport coefficients; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "one spatial dimension, two velocity branches; velocity axes are dimensionless u=v/Vth on one common caller normalization",
+  "boundary": "vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "bidirectional spatial propagation of one neutral generation using the supplied transport coefficients",
+  "direction": "vx, Ak/Bk/Fk/Ck/Dk/Gk, generation_kind, incoming_boundary or scattered_source -> generation distribution",
+  "definition": "first_flight: forward from boundary on positive vx using Fk as source term, backward on negative vx using Gk as source term; scattered: forward on positive vx using Bk as source coefficient, backward on negative vx using Dk as source coefficient.",
+  "model": "Bidirectional recurrence using caller-provided transport coefficients",
+  "geometry": "one spatial dimension, two velocity branches",
+  "coordinates": "vx is dimensionless u_x=v_x/Vth; generation and incoming boundary are distribution densities F in m^-3; Ak/Ck are dimensionless, Bk/Dk are m, Fk/Gk are F and scattered_source_distribution is F/m.",
+  "boundary": "vx one-dimensional with both positive and negative branches; six coefficient fields finite aligned 3-D; generation_kind in {first_flight, scattered}; first_flight requires incoming_boundary; scattered requires scattered_source_distribution; nx must be at least one (a zero-node spatial axis fails closed with a named ValueError rather than a raw IndexError)",
+  "assumptions": [
+   "The supplied Ak/Bk/Fk/Ck/Dk/Gk fields define the recurrence; this callable does not choose a spatial discretization or enforce positivity.",
+   "The two generation kinds are mutually exclusive: first_flight uses incoming_boundary, scattered uses scattered_source_distribution.",
+   "The incoming_boundary applies only to the positive-vx branch (the forward propagation entry point); the negative-vx branch starts from zero at the right boundary (generation[:, negative, x.size-1] remains zero).",
+   "The dimensionless vx axis and the six transport coefficients must use one common Vth normalization; this propagation does not multiply velocities or sources by Vth.",
+   "The vx axis must be finite (NaN/inf rejected); a NaN vx node would otherwise be silently left zero.",
+   "SciRel rejects boolean, string and complex coercions and any non-finite generation produced from finite inputs.",
+   "first_flight uses Fk as the forward source term; scattered uses Bk (positive) and Dk (negative) as source coefficients. The two kinds are distinguished by which coefficient enters the recurrence, confirmed by a regression test.",
+   "The generation[:, positive, 0] indexing would raise a raw IndexError for nx=0 with an empty axis; this asset fail-closes with a named ValueError requiring nx >= 1.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "vx",
+   "description": "Velocity axis.",
+   "units": "dimensionless (u=v/Vth)",
+   "shape": "[nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite one-dimensional with both positive and negative branches."
+  },
+  {
+   "name": "Ak",
+   "description": "Forward diagonal coefficient.",
+   "units": "dimensionless",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 3-D."
+  },
+  {
+   "name": "Bk",
+   "description": "Forward source coefficient (scattered branch).",
+   "units": "m",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 3-D."
+  },
+  {
+   "name": "Fk",
+   "description": "Forward source term (first-flight branch).",
+   "units": "m^-3",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 3-D."
+  },
+  {
+   "name": "Ck",
+   "description": "Backward diagonal coefficient.",
+   "units": "dimensionless",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 3-D."
+  },
+  {
+   "name": "Dk",
+   "description": "Backward source coefficient (scattered).",
+   "units": "m",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 3-D."
+  },
+  {
+   "name": "Gk",
+   "description": "Backward source term.",
+   "units": "m^-3",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite 3-D."
+  },
+  {
+   "name": "generation_kind",
+   "description": "The generation branch selector.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string scalar",
+   "required": true,
+   "constraints": "Exactly 'first_flight' or 'scattered'."
+  },
+  {
+   "name": "incoming_boundary",
+   "description": "The incoming boundary distribution (first_flight only).",
+   "units": "m^-3",
+   "shape": "[nvr,nvx]",
+   "dtype": "real array-like",
+   "required": false,
+   "constraints": "Required for first_flight; must be finite and aligned; must be None for scattered.",
+   "default": null
+  },
+  {
+   "name": "scattered_source_distribution",
+   "description": "The scattered source distribution (scattered only).",
+   "units": "m^-4 (F/m)",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": false,
+   "constraints": "Required for scattered; must be finite and aligned; must be None for first_flight.",
+   "default": null
+  }
+ ],
+ "outputs": [
+  {
+   "name": "generation",
+   "description": "The propagated generation distribution.",
+   "units": "m^-3",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Six finite aligned coefficient fields; vx with both branches; exactly one of incoming_boundary (first_flight) or scattered_source_distribution (scattered).",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
+  ],
+  "supported": [
+   "First-flight and scattered neutral generation propagation for H and H2 transport."
+  ],
+  "excluded": [
+   "Alternative recurrence schemes; multi-species coupling."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when vx lacks branches, coefficient fields are not finite aligned 3-D, generation_kind is invalid, or the wrong source/boundary is supplied.",
+  "runtime_failure": "Raises ValueError if finite inputs overflow to a non-finite generation.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.neutral_generation_propagation",
+   "symbol": "propagate_neutral_generation",
+   "signature": "propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, incoming_boundary=None, scattered_source_distribution=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "propagate_neutral_generation"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Propagate a first-flight generation from a uniform boundary.",
+  "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_upwind_transport_coefficients, propagate_neutral_generation\nx = np.linspace(0, 1, 3)\nvx = np.array([-1.0, 1.0])\nalpha = np.ones((2, 2, 3))\nsource = np.ones((2, 2, 3))\nr = assemble_neutral_upwind_transport_coefficients(x, vx, alpha, source)\nboundary = np.ones((2, 2))\ngen = propagate_neutral_generation(vx, r['Ak'], r['Bk'], r['Fk'], r['Ck'], r['Dk'], r['Gk'], generation_kind='first_flight', incoming_boundary=boundary)\nassert gen.shape == (2, 2, 3)\nassert np.all(np.isfinite(gen))",
+  "expected": "The first-flight example returned a finite generation array of shape (2, 2, 3); the positive and negative velocity branches were propagated separately."
+ },
+ "verification": {
+  "scope": [
+   "Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, zero-node rejection and finite-output failure semantics.",
+   "The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+  ],
+  "tests": [
+   "tests/kinetic/test_transport_step.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
+  ],
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind both generation kinds, Fk/Gk versus Bk/Dk source use, positive-only incoming boundary, signed boundary cells, zero-node rejection and finite-output failure semantics. The cross-domain tests compare propagated physical attenuation against an analytic characteristic and preserve a prescribed source/loss equilibrium using one common Vth normalization. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "known_limitations": [
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+  ]
+ }
+}

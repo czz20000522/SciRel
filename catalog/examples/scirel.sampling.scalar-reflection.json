@@ -1,0 +1,135 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.scalar-reflection",
+ "title": {
+  "en": "Scalar half-plane reflection",
+  "zh": "标量半平面反射"
+ },
+ "summary": "Reflect R across zero and duplicate Z and even scalar quantities without duplicate zero column",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "reflect_and_hstack"
+ ],
+ "discovery": {
+  "capability": [
+   "Scalar half-plane reflection",
+   "Reflect R across zero and duplicate Z and even scalar quantities without duplicating the zero column."
+  ],
+  "operation": [
+   "radial half-plane reflection of scalar grids",
+   "Rho, Z and optional matching scalar grids -> reflected Rho, Z and scalar grids with width 2*Nr-1"
+  ],
+  "model": "Explicit hstack convention for a scalar radial symmetry with a named-quantities alternative; no physical field model.",
+  "geometry": "Planar R-Z grids with radial column order; the first radial column must be zero and the remaining columns are reflected in reverse order.",
+  "boundary": "Supplied fields must be even under radial reflection; vector-component parity and signed-radius physical-field interpretations are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Scalar half-plane reflection",
+  "direction": "Declared inputs to Tuple reflected Rho,Z and scalar fields",
+  "definition": "Reflect R across zero and duplicate Z and even scalar quantities without duplicate zero column",
+  "model": "Source hstack convention with named quantities alternative",
+  "geometry": "planar R-Z grid with scalar radial symmetry",
+  "coordinates": "Rho,Z planar grids with radial column order",
+  "boundary": "First radial column zero; remaining columns reflected in reverse order",
+  "assumptions": [
+   "Matching finite Rho,Z and scalar field shapes",
+   "First radial column is zero; supplied fields are even under radial reflection"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "Rho",
+   "description": "Nonnegative radial grid",
+   "units": "length units",
+   "shape": "(Nz,Nr)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Radial first column zero; at least two radial columns"
+  },
+  {
+   "name": "Z",
+   "description": "Axial grid",
+   "units": "length units",
+   "shape": "same as Rho",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Matching finite two-dimensional shape"
+  },
+  {
+   "name": "quantities",
+   "description": "Named scalar/even fields; alternative to positional fields",
+   "units": "field units",
+   "shape": "list of grids or None",
+   "dtype": "list or None",
+   "required": false,
+   "constraints": "Finite and shape-matched when supplied; do not combine with positional fields",
+   "default": null
+  }
+ ],
+ "outputs": [
+  {
+   "name": "reflected",
+   "description": "Tuple reflected Rho,Z and scalar fields",
+   "units": "coordinate and field units",
+   "shape": "(Nz,2*Nr-1) each",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero column represented once"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Matching finite Rho,Z and scalar field shapes",
+   "First radial column is zero, at least two radial columns are present, and supplied fields are even under radial reflection"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "No vector-component parity or signed-radius physical field interpretation"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; a nonzero first radial column, fewer than two radial columns, mismatched shapes or nonfinite arrays are rejected with ValueError; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "reflect_and_hstack",
+   "signature": "reflect_and_hstack(Rho, Z, *args, quantities=None)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "reflect_and_hstack"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Reflect a scalar radial grid about R=0 without duplicating the zero column.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import reflect_and_hstack\n\nrho, z = np.meshgrid([0.0, 0.5, 1.0], [-0.2, 0.2])\nreflected = reflect_and_hstack(rho, z, quantities=[rho * rho])\nassert reflected[0].shape == (2, 5)\nassert reflected[1].shape == (2, 5)\nassert reflected[2].shape == (2, 5)",
+  "expected": "The reflected coordinate and scalar arrays each have shape (2, 5)."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract",
+   "ValueError rejection of nonzero first-column, nonfinite and shape-invalid inputs."
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "No vector-component parity or signed-radius physical field interpretation"
+  ]
+ }
+}

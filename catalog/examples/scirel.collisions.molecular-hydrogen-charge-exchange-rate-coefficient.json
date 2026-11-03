@@ -1,0 +1,136 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+ "title": {
+  "en": "Molecular-hydrogen charge-exchange Maxwellian rate coefficient",
+  "zh": "分子氢电荷交换Maxwellian速率系数"
+ },
+ "summary": "Evaluate the H2 + H2+ charge-exchange Maxwellian rate-coefficient fit from paired plasma temperature and impact energy samples in eV.",
+ "taxonomy": [
+  "collisions",
+  "rate-coefficient",
+  "charge-exchange",
+  "hydrogen",
+  "molecular",
+  "tabulated-fit"
+ ],
+ "aliases": [
+  "sigmav_cx_hh",
+  "molecular-H2 CX Maxwellian rate"
+ ],
+ "discovery": {
+  "capability": [
+   "Molecular-hydrogen charge-exchange Maxwellian rate coefficient",
+   "Maxwellian H2 + H2+ charge-exchange rate coefficient from paired temperature and impact-energy samples in eV."
+  ],
+  "operation": [
+   "Evaluate the molecular-H2 charge-exchange Maxwellian rate coefficient",
+   "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s"
+  ],
+  "model": "Molecular-H2 nine-by-nine bivariate logarithmic rate fit; not a velocity-mesh Maxwellian integral.",
+  "geometry": "None; paired scalar or array material samples with no spatial or velocity axis inferred (coordinates: temperature and impact energy in eV).",
+  "boundary": "Inputs must be finite and identically shaped with strictly positive temperature and nonnegative impact energy; both dimensions clip at the fit endpoints and the output must be finite and positive.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "molecular-H2 charge-exchange Maxwellian rate coefficient from a bivariate logarithmic fit",
+  "direction": "paired plasma temperature and impact energy in eV -> rate coefficient in m^3/s",
+  "definition": "Sequentially clip positive temperature and nonnegative impact energy to [0.1, 2.01e4] eV. With L_T=log(T), L_E=log(E), accumulate log_rate=sum_j=0..8 sum_i=0..8 a[i,j]*L_E^j*L_T^i using the energy-outer, temperature-inner addition order and the molecular 9x9 coefficient table. Return exp(log_rate)*1e-6 m^3/s. The output keeps the paired input shape.",
+  "model": "Molecular-H2 nine-by-nine bivariate logarithmic rate fit; not a velocity-mesh Maxwellian integral",
+  "geometry": "none; paired scalar or array material samples",
+  "coordinates": "temperature and impact energy in eV, with no spatial or velocity axis inferred",
+  "boundary": "finite real numeric inputs of identical shape; temperature strictly positive, impact energy nonnegative; endpoint clipping in both dimensions; finite positive represented output",
+  "assumptions": [
+   "The molecular coefficient table and summation order define the fit on finite real inputs.",
+   "The atomic-H charge-exchange rate is a distinct physical system with another coefficient table. The molecular fit also does not call the molecular cross-section fit or maxwellian-relative-speed-rate-average; their equivalence is not established.",
+   "The callable requires exact shape equality between temperature and energy; broadcast-compatible input shapes are not supported.",
+   "Nonpositive temperature, negative energy and boolean or numeric-string coercions are rejected."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "temperature_ev",
+   "description": "Plasma temperature for the molecular Maxwellian rate fit.",
+   "units": "eV",
+   "shape": "scalar or array; exactly the shape of energy_ev",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and strictly positive; values below 0.1 or above 2.01e4 eV are clipped to the respective endpoint."
+  },
+  {
+   "name": "energy_ev",
+   "description": "Impact energy paired with each temperature sample.",
+   "units": "eV",
+   "shape": "scalar or array; exactly the shape of temperature_ev",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; zero and positive values below 0.1 or above 2.01e4 eV are clipped to the respective endpoint."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "rate_m3_s",
+   "description": "H2 + H2+ charge-exchange Maxwellian rate coefficient evaluated by the molecular fit.",
+   "units": "m^3/s",
+   "shape": "same as both inputs",
+   "dtype": "float64 array or scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive on accepted inputs; no physical reference accuracy is asserted."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller accepts the endpoint-clipping convention and supplies physically paired temperatures and impact energies."
+  ],
+  "supported": [
+   "Scalar and equal-shape array evaluation of the molecular-H2 charge-exchange rate fit on or clipped to its declared domain."
+  ],
+  "excluded": [
+   "Atomic-H charge exchange, molecular elastic scattering, dissociation, CX collision-frequency assembly and explicit velocity-mesh averaging of a cross section.",
+   "External atomic-physics accuracy claims or physical correctness outside the fit's compared domain."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real numeric, non-finite or unequal-shape inputs, nonpositive temperature or negative energy. Boolean, complex and numeric-string coercions are rejected.",
+  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned.",
+  "nonconvergence": "Not applicable; no iteration.",
+  "partial_results": "Never returned."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.hydrogen2_charge_exchange_rate",
+   "symbol": "evaluate_hydrogen2_charge_exchange_rate",
+   "signature": "evaluate_hydrogen2_charge_exchange_rate(temperature_ev, energy_ev)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "evaluate_hydrogen2_charge_exchange_rate"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the molecular fit and compare it with the distinct atomic fit.",
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen2_charge_exchange_rate, evaluate_atomic_hydrogen_charge_exchange_rate\nt = np.array([0.1, 10.0, 20100.0])\ne = np.array([0.2, 10.0, 20100.0])\nr = evaluate_hydrogen2_charge_exchange_rate(t, e)\na = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nassert not np.allclose(r, a, rtol=1e-12, atol=0.0)",
+  "expected": "Three positive molecular rates, numerically distinct from the atomic-H fit on the same pairs."
+ },
+ "verification": {
+  "scope": [
+   "Fixed reference values and independent polyval2d reevaluation verify the molecular coefficient direction and fit on ordinary samples; the double-upper-endpoint corner is checked against the declared-order value.",
+   "Direct tests cover molecular-vs-atomic difference, clipping, scalar shape, invalid domain and non-real input rejection.",
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."
+  ],
+  "tests": [
+   "tests/collisions/test_hydrogen2_charge_exchange_rate.py"
+  ],
+  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with the in-file independent evaluation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
+  "known_limitations": [
+   "No external atomic-physics oracle is bound; the fit is not independently validated as a physical rate model.",
+   "Out-of-fit-range values silently repeat endpoint rates rather than extrapolating or failing.",
+   "The fitted rate is not derived at runtime from the separate molecular cross-section asset or the mesh rate-average asset.",
+   "Public distribution licensing remains pending.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
+   "The frozen bivariate fit is non-monotonic in impact energy: at 1000 eV, over 500 logarithmically spaced energies in [0.1, 2.01e4] eV, its log-derivative changes sign four times and its minimum/maximum ratio is about 0.28. This is a fit property, not a validated physical threshold; callers must not assume a monotone rate."
+  ]
+ }
+}

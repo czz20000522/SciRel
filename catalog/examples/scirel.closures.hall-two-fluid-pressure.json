@@ -1,0 +1,336 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.closures.hall-two-fluid-pressure",
+ "title": {
+  "en": "Hall two-fluid pressure state closure",
+  "zh": "Hall 双流体压强状态闭合"
+ },
+ "summary": "Assemble a caller-supplied total gyrotropic pressure law, quasineutral ion/electron densities, electron pressure components and electrostatic potential into a broadcast two-fluid state for a reduced Hall closure.",
+ "taxonomy": [
+  "closures",
+  "hall",
+  "two-fluid",
+  "pressure-state"
+ ],
+ "aliases": [
+  "Hall two-fluid pressure decomposition"
+ ],
+ "discovery": {
+  "capability": [
+   "Hall two-fluid pressure state closure",
+   "Assemble a caller-supplied total gyrotropic pressure law, quasineutral species densities, pressure components and potential into a broadcast two-fluid state."
+  ],
+  "operation": [
+   "explicit two-fluid pressure and density bookkeeping from caller-supplied profiles",
+   "magnetic field, flux, pressure law, ion density, electron pressure and potential -> total, ion and electron pressures and densities"
+  ],
+  "model": "Prescribed gyrotropic total stress and species bookkeeping with an optional independent fitted residual stress; not a self-consistent two-fluid equilibrium.",
+  "geometry": "Caller-supplied scalar or broadcast magnetic-field magnitude and flux coordinates; no R-Z mesh is constructed.",
+  "boundary": "No physical boundary condition is applied; the default species split fails on a negative ion component, and explicit ion pressures override it without an equality check.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Total gyrotropic pressure and prescribed species profiles to an explicit two-fluid pressure and density state",
+  "direction": "(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, optional species pressure components) -> total, ion and electron pressures, equal ion/electron number densities, and electrostatic potential",
+  "definition": "Broadcast B and psi to one shape, evaluate pressure_law(B, psi) for p_parallel and p_perpendicular, and broadcast all supplied profiles onto that shape. Set electron_density=ion_density. Absent electron parallel/perpendicular components each default to electron_pressure; absent ion components are the respective total pressure minus the electron component. Explicit ion components are accepted independently and are not checked to sum to total pressure. Reject negative ion density, electron scalar/component pressures and ion component pressures; no positivity check is applied to the total pressures themselves. In default independent_fit mode retain these independent prescribed total/species fields and expose residual_stress_parallel_pa=total_parallel-ion_parallel-electron_parallel and its perpendicular analogue. These are algebraic residual stresses, not validated additional particle species. In species_sum mode both residuals must vanish within 64*float64_epsilon times their local pressure scale or ValueError is raised. species_pressure_sum_consistent reports this same numerical check in either mode.",
+  "model": "Prescribed gyrotropic total stress and species bookkeeping, optionally with independent fitted residual stress; not a derived self-consistent two-fluid equilibrium. A downstream total-force law already includes the residual stress, whereas ion moments remain ion-only.",
+  "geometry": "Caller-supplied scalar or broadcast array of magnetic-field magnitude and flux coordinates; the implementation does not construct an R-Z mesh.",
+  "coordinates": "Profile callables receive jointly broadcast magnetic_field and psi arrays; their outputs and fixed profiles broadcast to that common shape without coordinate-axis validation.",
+  "boundary": "No physical boundary condition is applied. The default species split is algebraic and fails when it gives a negative ion component; explicit ion pressures can override that split without an equality check.",
+  "assumptions": [
+   "magnetic_field is a compatible field magnitude in tesla and psi denotes one common caller-defined flux coordinate; its normalization is not checked.",
+   "The pressure law returns total parallel and perpendicular pressure in Pa on the supplied state.",
+   "Equal returned ion and electron number densities express a singly charged quasineutral state; the function does not derive charge state or verify a physical neutrality model."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "magnetic_field",
+   "description": "Magnetic-field magnitude supplied to the pressure law and profile callables.",
+   "units": "T",
+   "shape": "scalar or array, jointly broadcast with psi",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Finite after joint broadcasting; no positive-field check."
+  },
+  {
+   "name": "psi",
+   "description": "Caller-defined flux coordinate supplied to the pressure law and profile callables.",
+   "units": "caller-defined flux coordinate",
+   "shape": "scalar or array, jointly broadcast with magnetic_field",
+   "dtype": "real array-like converted to float64",
+   "required": true,
+   "constraints": "Finite after joint broadcasting; coordinate normalization and monotonicity are not checked."
+  },
+  {
+   "name": "pressure_law",
+   "description": "Callable returning total gyrotropic p_parallel and p_perpendicular fields.",
+   "units": "inputs T and caller-defined flux coordinate; outputs Pa",
+   "shape": "callable of (broadcast magnetic_field, broadcast psi) returning a dictionary",
+   "dtype": "Python callable returning a dict with real array-like values",
+   "required": true,
+   "constraints": "Dictionary must contain p_parallel and p_perpendicular, each finite and broadcastable to the common shape. Total pressures are not checked for nonnegativity."
+  },
+  {
+   "name": "ion_density_m3",
+   "description": "Ion number density, or callable of magnetic_field and psi producing it.",
+   "units": "m^-3",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": true,
+   "constraints": "Every resulting value must be finite and nonnegative."
+  },
+  {
+   "name": "electron_pressure_pa",
+   "description": "Electron pressure baseline, or callable of magnetic_field and psi producing it.",
+   "units": "Pa",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": true,
+   "constraints": "Every resulting value must be finite and nonnegative."
+  },
+  {
+   "name": "electrostatic_potential_v",
+   "description": "Prescribed electrostatic potential, or callable of magnetic_field and psi producing it.",
+   "units": "V",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": true,
+   "constraints": "Every resulting value must be finite; no potential solve is performed."
+  },
+  {
+   "name": "ion_p_parallel_pa",
+   "description": "Optional explicit ion parallel pressure overriding total minus electron parallel pressure.",
+   "units": "Pa",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": false,
+   "default": null,
+   "constraints": "If supplied, finite and nonnegative; no check that it and electron_p_parallel sum to p_parallel."
+  },
+  {
+   "name": "ion_p_perpendicular_pa",
+   "description": "Optional explicit ion perpendicular pressure overriding total minus electron perpendicular pressure.",
+   "units": "Pa",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": false,
+   "default": null,
+   "constraints": "If supplied, finite and nonnegative; no check that it and electron_p_perpendicular sum to p_perpendicular."
+  },
+  {
+   "name": "electron_p_parallel_pa",
+   "description": "Optional electron parallel pressure; defaults to electron_pressure_pa.",
+   "units": "Pa",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": false,
+   "default": null,
+   "constraints": "If supplied, finite and nonnegative."
+  },
+  {
+   "name": "electron_p_perpendicular_pa",
+   "description": "Optional electron perpendicular pressure; defaults to electron_pressure_pa.",
+   "units": "Pa",
+   "shape": "scalar, array or callable output broadcastable to common shape",
+   "dtype": "real array-like or Python callable returning real array-like",
+   "required": false,
+   "default": null,
+   "constraints": "If supplied, finite and nonnegative."
+  },
+  {
+   "name": "pressure_composition_mode",
+   "description": "Choose independent fitted total/species moments or enforce their sum.",
+   "units": "enum",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": false,
+   "default": "independent_fit",
+   "constraints": "Exactly 'independent_fit' or 'species_sum'."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "p_parallel",
+   "description": "Total parallel pressure returned by pressure_law.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite; may be negative because no total-pressure sign check is applied."
+  },
+  {
+   "name": "p_perpendicular",
+   "description": "Total perpendicular pressure returned by pressure_law.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite; may be negative because no total-pressure sign check is applied."
+  },
+  {
+   "name": "ion_density",
+   "description": "Prescribed ion number density.",
+   "units": "m^-3",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative."
+  },
+  {
+   "name": "electron_density",
+   "description": "Copy of the ion number density under the implemented single-charge neutrality assumption.",
+   "units": "m^-3",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Exactly the same array value as ion_density."
+  },
+  {
+   "name": "electron_pressure",
+   "description": "Prescribed electron pressure baseline.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; can differ from explicitly supplied electron components."
+  },
+  {
+   "name": "electron_p_parallel",
+   "description": "Electron parallel pressure component.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; defaults to electron_pressure."
+  },
+  {
+   "name": "electron_p_perpendicular",
+   "description": "Electron perpendicular pressure component.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; defaults to electron_pressure."
+  },
+  {
+   "name": "electrostatic_potential",
+   "description": "Prescribed electrostatic potential.",
+   "units": "V",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite; no consistency with pressure gradients is checked."
+  },
+  {
+   "name": "ion_p_parallel",
+   "description": "Ion parallel pressure, explicit or total minus electron parallel component.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; explicit values need not sum with electron component to total pressure."
+  },
+  {
+   "name": "ion_p_perpendicular",
+   "description": "Ion perpendicular pressure, explicit or total minus electron perpendicular component.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; explicit values need not sum with electron component to total pressure."
+  },
+  {
+   "name": "pressure_composition_mode",
+   "description": "Selected composition contract.",
+   "units": "enum",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "'independent_fit' or 'species_sum'."
+  },
+  {
+   "name": "species_pressure_sum_consistent",
+   "description": "Both residual stresses vanish within roundoff-scaled comparison.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "Python bool",
+   "required": true,
+   "constraints": "True does not certify physical self-consistency."
+  },
+  {
+   "name": "residual_stress_parallel_pa",
+   "description": "Total parallel stress minus specified ion/electron pressure components.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 scalar or array",
+   "required": true,
+   "constraints": "Finite and signed; algebraic residual, not an additional validated particle species."
+  },
+  {
+   "name": "residual_stress_perpendicular_pa",
+   "description": "Total perpendicular stress minus specified ion/electron pressure components.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 scalar or array",
+   "required": true,
+   "constraints": "Finite and signed; already included in total stress."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The prescribed pressure law and profiles describe one compatible physical state and return Pa, m^-3 and V values in the declared roles.",
+   "All values are finite and broadcast onto the common magnetic_field/psi shape; default ion components remain nonnegative or explicit components are supplied."
+  ],
+  "supported": [
+   "Array or callable species profiles over the common field/flux shape.",
+   "Default total-to-species pressure split or independent explicit ion/electron parallel and perpendicular components."
+  ],
+  "excluded": [
+   "Computing an equilibrium, potential, pressure law or Hall current from first principles.",
+   "Enforcing total pressure equality when explicit ion components are provided, a multispecies charge sum or physical axis alignment beyond NumPy broadcasting."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite magnetic_field/psi, negative checked moments, or a profile that cannot broadcast; raises FloatingPointError for nonfinite pressure or profile values. A noncallable pressure_law or non-dictionary result raises TypeError; missing pressure keys raise KeyError. Numeric conversion and initial broadcasting can also raise TypeError or ValueError; profile callbacks propagate their exceptions. Unsupported composition mode or a nonzero component residual in species_sum mode raises ValueError.",
+  "runtime_failure": "Nonfinite species sums/residual stresses raise FloatingPointError. Independent-fit residual stresses are permitted explicitly; no physical closure is silently inferred from them.",
+  "nonconvergence": "Not applicable; no solver iteration is performed.",
+  "partial_results": "Validation or callback failure returns no mapping; successful return includes all original fields and the four explicit composition fields."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.closures.hall_two_fluid_pressure",
+   "symbol": "close_hall_two_fluid_pressure",
+   "signature": "close_hall_two_fluid_pressure(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, ion_p_parallel_pa=None, ion_p_perpendicular_pa=None, electron_p_parallel_pa=None, electron_p_perpendicular_pa=None, pressure_composition_mode='independent_fit')",
+   "canonical_module": "scirel.closures",
+   "canonical_symbol": "close_hall_two_fluid_pressure"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Assemble a broadcast Hall state with the default algebraic ion pressure split.",
+  "code": "import numpy as np\nfrom scirel.closures import close_hall_two_fluid_pressure\ndef law(b, psi):\n    return {'p_parallel': 5.0 + b + psi, 'p_perpendicular': 4.0 + b + 2.0*psi}\nr = close_hall_two_fluid_pressure([[1.0, 2.0]], [[0.2, 0.4]], law, 1.0e18, 1.0, 3.0)\nnp.testing.assert_allclose(r['p_parallel'], [[6.2, 7.4]])\nnp.testing.assert_allclose(r['ion_p_parallel'] + r['electron_p_parallel'], r['p_parallel'])\nnp.testing.assert_allclose(r['electron_density'], r['ion_density'])\nassert r['species_pressure_sum_consistent']\nnp.testing.assert_allclose(r['residual_stress_parallel_pa'], 0., atol=1e-14)",
+  "expected": "The total parallel pressure is [[6.2, 7.4]] Pa; default species components sum to it and the two number-density arrays agree."
+ },
+ "verification": {
+  "scope": [
+   "Broadcast law/profile evaluation, default electron and ion pressure decomposition and equal returned species densities.",
+   "Rejection of a negative derived ion pressure component.",
+   "Independent total=10, ion=3, electron=2 preserves residual stress=5; species_sum rejects it and accepts the default zero-residual algebraic split."
+  ],
+  "tests": [
+   "tests/closures/test_hall_two_fluid_pressure.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Direct SciRel regressions establish the selected two-cell values, callable profiles, default component split and one negative-moment rejection. They do not verify arbitrary user pressure laws, explicit component-total consistency, all broadcast shapes, a physical Hall force balance or current, or current expert recognition.",
+  "known_limitations": [
+   "The pressure law, electrostatic potential and profile alignment are caller supplied; successful broadcasting cannot establish one physical coordinate frame.",
+   "Independent fitted total and ion pressures remain a supported phenomenological contract; residual stress is not evidence for a new physical species. species_sum imposes numerical composition only.",
+   "No total-pressure sign or physical gyrotropy validity test is performed.",
+   "Public distribution licensing and expert recognition remain pending."
+  ]
+ }
+}

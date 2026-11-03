@@ -1,0 +1,163 @@
+kind: scientific_composition
+name: 各向同性压力通量Picard平衡
+entrypoint: composition_fixture.py::run_composition
+display_name:
+  zh: 各向同性压力--通量 Picard 平衡
+  en: Closure-aware Isotropic Pressure--Flux Picard Equilibrium
+framework_mapping:
+  primary_pfm_node: N2
+  coverage: full
+  related_pfm_nodes:
+  - N1
+inputs:
+- name: r_grid
+  meaning: 柱坐标 R 网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: 有限的规则直角张量网格；轴 1 是严格单调且等间距的 R 轴，至少两个节点；形状为 [N_Z,N_R]
+- name: z_grid
+  meaning: 柱坐标 Z 网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: 与 r_grid 同形的有限规则直角张量网格；轴 0 是严格单调且等间距的 Z 轴，至少两个节点，并包含一整行精确 Z=0 的中平面
+- name: pressure_of_radius
+  meaning: 中平面径向压强 callable
+  shape: callable(R_m)->pressure_Pa
+  units: Pa
+  required: true
+  constraints: 输入半径单位m；返回有限压力；中平面采样序列中必须有精确0.0定义压力边界；样条采样点须满足插值条件
+- name: psi_vac
+  meaning: 外加或真空磁通
+  shape: '[N_Z,N_R]'
+  units: Wb/rad
+  required: true
+  constraints: 与网格同形状且有限；按[Z,R]的C-order展平后对应Green矩阵的场点
+- name: g_psi
+  meaning: cell current 到 field flux dense Green 矩阵
+  shape: '[N_field,N_field]'
+  units: Wb/rad/A
+  required: true
+  constraints: N_field=N_Z*N_R；行对应目标场点、列对应源单元；行列均按[Z,R]的C-order排列；有限
+- name: tol
+  meaning: Picard 停止阈值
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 必须为有限且严格为正的标量
+- name: maxiter
+  meaning: 最大 Picard 次数
+  shape: scalar_integer
+  units: iteration
+  required: true
+  constraints: 必须为非负整数标量；不接受浮点数或布尔值；0 表示不执行 Picard 更新
+- name: relax
+  meaning: 新旧 cell current 混合权重
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 必须为有限标量，且满足 0 <= relax < 1
+- name: plasma_mask
+  meaning: 禁用压力电流的单元选择器（历史字段名保留为 plasma_mask）
+  shape: '[N_Z,N_R]'
+  units: boolean
+  required: false
+  constraints: True 单元在电流组装前将压力导数置零；False 单元保留压力电流；必须与 R-Z 网格同形
+outputs:
+- name: psi
+  meaning: 当前或最终磁通
+  shape: '[N_Z,N_R]'
+  units: Wb/rad
+  required: true
+  constraints: 与输入网格同形状；是真空磁通与最后一轮等离子体磁通之和
+- name: plasma_currents
+  meaning: 离散环向 cell current
+  shape: '[N_Z,N_R]'
+  units: A
+  required: true
+  constraints: 与输入网格同形状；每个元素对应一个环向网格单元
+- name: pressure_of_psi
+  meaning: 可重建 P(psi) spline 表示
+  shape: mapping
+  units: Pa and Wb/rad
+  required: true
+  constraints: 包含压力--磁通采样、样条节点、系数和阶数；采样区间外压力取零
+- name: iterations
+  meaning: 实际 Picard 次数
+  shape: scalar_integer
+  units: iteration
+  required: true
+  constraints: 0<=iterations<=maxiter
+- name: residual
+  meaning: 最终相对残差
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 磁通变化L2范数除以abs(psi_edge)；psi_edge非零时才有有效归一化；非有限值标记失败
+- name: residual_history
+  meaning: 每步相对残差
+  shape: '[iterations]'
+  units: dimensionless
+  required: true
+  constraints: 只含已完成的双残差评价；数值失败时可短于iterations
+- name: converged
+  meaning: Picard 收敛标志
+  shape: scalar
+  units: boolean
+  required: true
+  constraints: residual和closure_residual均有限且不大于tol；至少已执行一次更新
+- name: failure_reason
+  meaning: 显式失败状态
+  shape: string_or_null
+  units: dimensionless
+  required: true
+  constraints: 收敛时为空值；未收敛时返回声明的失败标记字符串
+- name: closure_residual
+  meaning: 末态压力电流方程相对残差
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: 与磁通残差共同判定收敛；无更新时为正无穷
+- name: closure_residual_history
+  meaning: 每次已完成评价的闭合残差
+  shape: sequence
+  units: dimensionless
+  required: true
+  constraints: 与residual_history一一对应
+- name: status
+  meaning: 数值终末状态
+  shape: string
+  units: dimensionless
+  required: true
+  constraints: converged、maxiter或nonfinite
+execution:
+  mode: sequential_state_feedback_picard
+  order_policy: 精确中平面取样与压力边界确定→P(psi)样条与导数→单元电流→电流松弛→Green磁通反馈→重建样条
+  state_policy: 图只拥有有序的psi、电流、残差反馈；算子拥有压力导数和单步数值关系；调用者拥有压力函数、真空磁通和Green矩阵
+  failure_policy: 缺少精确零压边界或样条采样无效时拒绝；任一残差超过阈值且达到上限时返回maxiter_reached；非有限数值显式失败；无更新不算收敛
+nodes:
+- id: closure_aware_equilibrium
+  name: 压力电流闭合与磁通双门禁求解
+  kind: scientific_function
+  callable: scirel.equilibrium.equilibrium_state::compute_equilibrium
+  asset_ref: scirel.equilibrium.compute-equilibrium
+  inputs: [r_grid, z_grid, pressure_of_radius, psi_vac, g_psi, tol, maxiter, relax, plasma_mask]
+  outputs: [psi, plasma_currents, iterations, residual, closure_residual, residual_history, closure_residual_history, status]
+- id: serialize_terminal_pressure
+  name: 精确末态样条表示
+  kind: scientific_function
+  callable: scirel.equilibrium.pressure_flux_state::build_pressure_flux_state
+  asset_ref: scirel.equilibrium.pressure_flux_state
+  inputs: [r_grid, z_grid, psi, pressure_of_radius, plasma_mask]
+  outputs: [pressure_of_psi]
+edges:
+- from: closure_aware_equilibrium
+  from_output: psi
+  to: serialize_terminal_pressure
+  to_input: psi
+  data: 唯一共享求解器的末态；不新增第二迭代环
+  condition: 样条末态有效
+  required: true
+  transform: identity
+  closure: asset

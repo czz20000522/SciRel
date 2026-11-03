@@ -1,0 +1,397 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+ "title": {
+  "en": "Equilibrium synthetic point diagnostics",
+  "zh": "平衡合成诊断"
+ },
+ "summary": "Sample flux and explicitly requested pressure, density or electron-temperature profiles on the same R-Z grid with explicit units; distinguish raw psi samples from single-turn linked flux.",
+ "taxonomy": [
+  "diagnostics",
+  "equilibrium",
+  "point-sampling"
+ ],
+ "aliases": [
+  "equilibrium flux-loop and Thomson-like sampling"
+ ],
+ "discovery": {
+  "capability": [
+   "Equilibrium synthetic point diagnostics",
+   "Sample flux and explicitly requested pressure, density or electron-temperature profiles on an R-Z grid with explicit units."
+  ],
+  "operation": [
+   "read-only point sampling of an equilibrium field at requested R-Z observations",
+   "equilibrium, R, Z and observations -> flux-loop and profile samples with units"
+  ],
+  "model": "Read-only point sampling of an equilibrium field; the legacy Thomson namespace is not a Thomson-scattering instrument model.",
+  "geometry": "Rectangular R-Z grid in cylindrical coordinates; fields indexed [Z,R] and observation points ordered [R,Z].",
+  "boundary": "Bilinear sampling inside the closed grid boundary with no extrapolation; empty or unknown requests, empty point sets, missing fields and unit conflicts are rejected.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "equilibrium field and explicit observation conventions to physical-quantity samples at requested points",
+  "direction": "equilibrium, R, Z, observations -> flux_loops / thomson and units",
+  "definition": "Use the existing bilinear sampler. For flux_loops.quantity=raw_psi, retain equilibrium.psi_unit; for quantity=magnetic_flux, output Wb and multiply by 2*pi only when psi is explicitly declared in Wb/rad; Wb inputs are unchanged. thomson samples only the actually requested profiles whose units are declared consistently, and does not infer missing channels. Every result carries units.",
+  "model": "read-only point sampling of an equilibrium field; thomson is a legacy namespace, not a Thomson-scattering instrument model",
+  "geometry": "rectangular R-Z grid in cylindrical coordinates",
+  "coordinates": "fields are indexed [Z,R], observation points are [R,Z] per row, and coordinate units are m",
+  "boundary": "bilinear sampling inside the closed grid boundary with no extrapolation. Empty or unknown requests, empty point sets, missing fields and unit conflicts are rejected; coil turns, reference-loop subtraction and instrument response are not implied.",
+  "assumptions": [
+   "Input fields come from the same physical state and the same grid.",
+   "The caller explicitly declares the psi unit and gauge; the validated convention is psi=R A_phi with unit Wb/rad.",
+   "Pressure is in Pa and density in m^-3; electron temperature explicitly uses K, eV or J and must match profile_units exactly; no conversion is performed here."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "equilibrium",
+   "description": "Equilibrium state to sample; flux uses psi and psi_unit, profiles use profiles and profile_units.",
+   "units": "physical units declared by the individual fields",
+   "shape": "mapping; fields [N_Z,N_R]",
+   "dtype": "mapping and real arrays",
+   "required": true,
+   "constraints": "Only requested fields are accessed; every field is finite and has the same grid shape."
+  },
+  {
+   "name": "R",
+   "description": "Radial coordinate grid.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Finite rectangular grid with strictly increasing radial coordinate and at least two columns."
+  },
+  {
+   "name": "Z",
+   "description": "Axial coordinate grid.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Finite, same shape as R, with strictly increasing axial coordinate and at least two rows."
+  },
+  {
+   "name": "observations",
+   "description": "A flux request contains points, quantity and unit; a profile request under thomson contains points and per-channel {unit}, and may also contain values/sigma used by inversion.",
+   "units": "points in m; each channel unit is explicitly declared",
+   "shape": "nonempty mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Only flux_loops and thomson are allowed; flux quantity must be raw_psi or magnetic_flux; profile keys are limited to density, electron_temperature, p_parallel and p_perp. Every request must actually have a value; unknown kind/channel/flux fields are not ignored."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "flux_loops",
+   "description": "Return raw psi samples or single-turn linked flux in point order.",
+   "units": "raw_psi: original unit; magnetic_flux: Wb",
+   "shape": "[N_flux]",
+   "dtype": "float64 array",
+   "required": false,
+   "constraints": "Present only when requested; raw_psi is not multiplied by 2*pi and a flux conversion must not produce a nonfinite value.",
+   "default": "absent"
+  },
+  {
+   "name": "thomson",
+   "description": "Return profile samples for explicitly requested channels; temperature or density is not inferred from pressure.",
+   "units": "pressure in Pa; density in m^-3; electron temperature as declared",
+   "shape": "mapping[channel → [N_point]]",
+   "dtype": "mapping and float64 arrays",
+   "required": false,
+   "constraints": "Only requested channels are returned; a missing requested field fails.",
+   "default": "absent"
+  },
+  {
+   "name": "units",
+   "description": "Unit metadata in one-to-one correspondence with the actual outputs.",
+   "units": "identifier",
+   "shape": "mapping",
+   "dtype": "string mapping",
+   "required": true,
+   "constraints": "The residual reducer uses this metadata to match explicit observation units."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Source fields, grid, observation points and units are explicit and mutually consistent."
+  ],
+  "supported": [
+   "Explicit distinction between raw psi samples and Wb single-turn linked flux.",
+   "Point sampling of supplied pressure, density and electron temperature."
+  ],
+  "excluded": [
+   "Thomson spectral response, calibration, spatial convolution, temperature inversion or an electron distribution that was not supplied.",
+   "Automatic inference of flux gauge, turns, reference-loop subtraction or 2*pi conversion of all raw psi."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for missing fields, empty/unknown requests, invalid point sets, unit mismatches or out-of-domain points.",
+  "runtime_failure": "Sampler exceptions propagate; a nonfinite flux conversion raises FloatingPointError.",
+  "nonconvergence": "This function does not solve an equilibrium; an inversion trial must verify forward convergence before entering it.",
+  "partial_results": "No partially successful result is returned on error; the caller's equilibrium is not modified."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.diagnostics.equilibrium_synthesis_diagnostics",
+   "symbol": "synthesize_equilibrium_diagnostics",
+   "signature": "synthesize_equilibrium_diagnostics(inputs=None, **kwargs)",
+   "canonical_module": "scirel.diagnostics",
+   "canonical_symbol": "synthesize_equilibrium_diagnostics"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.geometry.bilinear-grid-sampling"
+   }
+  ]
+ },
+ "example": {
+  "description": "A uniform axial field Bz=2 T has psi=R^2 Wb/rad; the single-turn flux at R=1 m should be 2*pi Wb.",
+  "code": "import numpy as np\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nR,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])\nr=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})\nnp.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)\nassert r['units']['flux_loops']=='Wb'",
+  "expected": "Returns [2*pi] Wb, consistent with the independent analytic circular-area times Bz; a raw_psi request returns [1] Wb/rad."
+ },
+ "verification": {
+  "scope": [
+   "Analytic psi-to-full-flux relation for a uniform Bz.",
+   "Interior/boundary sampling of a linear manufactured profile, units and non-modification.",
+   "Rejection of missing channels/unknown requests/unsupported turns and reference-loop fields; real Picard inversion consumer."
+  ],
+  "tests": [
+   "tests/cross_domain/test_inference_physical_closure.py",
+   "tests/cross_domain/test_anisotropic_inference_independent.py"
+  ],
+  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
+  "known_limitations": [
+   "Bilinear interpolation has discrete interpolation error; values at node locations can be verified analytically.",
+   "Unit labels cannot prove that the caller's actual data are correctly scaled.",
+   "Historical licensing status remains pending a final decision."
+  ]
+ },
+ "composition": {
+  "nodes": [
+   {
+    "id": "requests",
+    "kind": "controlled_glue",
+    "description": "Validate all observation kinds, units and source fields; form per-channel sampling requests and explicit conversion conventions.",
+    "inputs": [
+     "observations",
+     "equilibrium"
+    ],
+    "outputs": [
+     "quantities",
+     "points",
+     "conventions"
+    ]
+   },
+   {
+    "id": "sampling",
+    "kind": "function",
+    "asset_id": "scirel.geometry.bilinear-grid-sampling",
+    "description": "Call the same bilinear operator for each explicitly requested field; fail if a request is not satisfied.",
+    "inputs": [
+     "r_grid",
+     "z_grid",
+     "quantity",
+     "points"
+    ],
+    "outputs": [
+     "samples"
+    ]
+   },
+   {
+    "id": "pack",
+    "kind": "controlled_glue",
+    "description": "Apply the 2*pi conversion only to explicitly Wb/rad->Wb flux, and assemble samples and units from the original fields.",
+    "inputs": [
+     "samples",
+     "conventions"
+    ],
+    "outputs": [
+     "flux_loops",
+     "thomson",
+     "units"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "observations"
+    },
+    "to": {
+     "node": "requests",
+     "port": "observations"
+    },
+    "description": "Read all requests.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "requests",
+     "port": "equilibrium"
+    },
+    "description": "Read matching fields and units.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "requests",
+     "port": "quantities"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "quantity"
+    },
+    "description": "Obtain the field for each request.",
+    "condition": "Normal execution.",
+    "transform": "Project item by item; do not invent a missing profile.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "requests",
+     "port": "points"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "points"
+    },
+    "description": "Obtain the coordinates for each request.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "R"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "r_grid"
+    },
+    "description": "Share the radial grid.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "Z"
+    },
+    "to": {
+     "node": "sampling",
+     "port": "z_grid"
+    },
+    "description": "Share the axial grid.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "sampling",
+     "port": "samples"
+    },
+    "to": {
+     "node": "pack",
+     "port": "samples"
+    },
+    "description": "Collect the actual samples.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "requests",
+     "port": "conventions"
+    },
+    "to": {
+     "node": "pack",
+     "port": "conventions"
+    },
+    "description": "Provide explicit units and flux convention.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "pack",
+     "port": "flux_loops"
+    },
+    "to": {
+     "node": "$output",
+     "port": "flux_loops"
+    },
+    "description": "Flux or raw psi output.",
+    "condition": "When flux_loops is requested.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "pack",
+     "port": "thomson"
+    },
+    "to": {
+     "node": "$output",
+     "port": "thomson"
+    },
+    "description": "Profile output.",
+    "condition": "When thomson is requested.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "pack",
+     "port": "units"
+    },
+    "to": {
+     "node": "$output",
+     "port": "units"
+    },
+    "description": "Units matching the output.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "ordered_dag",
+   "ordering": "Validate requests and units first, then run bilinear sampling for flux_loops and each requested profile, and finally convert and assemble.",
+   "branches": [
+    "Execute only explicitly requested branches.",
+    "Multiply by 2*pi when quantity=magnetic_flux and psi_unit=Wb/rad; do not apply this conversion to raw_psi or a Wb source."
+   ],
+   "state_ownership": "Read the caller's fields without modifying arrays; output samples are owned by this call.",
+   "failure_propagation": "Any request error or conversion overflow terminates the whole call; no success with dropped channels is returned.",
+   "feedback": []
+  }
+ }
+}

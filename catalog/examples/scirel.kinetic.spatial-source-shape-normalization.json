@@ -1,0 +1,135 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.spatial-source-shape-normalization",
+ "title": {
+  "en": "Spatial source-shape normalization",
+  "zh": "空间源形状归一化"
+ },
+ "summary": "Normalize a nonnegative one-dimensional spatial source profile to unit integral under the trapezoidal measure, returning the unit-integral shape and the original integral.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "source-normalization"
+ ],
+ "aliases": [
+  "normalize_spatial_source_shape"
+ ],
+ "discovery": {
+  "capability": [
+   "Spatial source-shape normalization",
+   "Normalize a nonnegative one-dimensional spatial source profile to unit integral under the trapezoidal measure, returning the unit-integral shape and the original integral."
+  ],
+  "operation": [
+   "normalize a spatial source shape to unit integral",
+   "source profile plus coordinates -> unit-integral shape and original integral"
+  ],
+  "model": "Unit-integral normalization of a one-dimensional nonnegative spatial profile under the trapezoidal measure",
+  "geometry": "one-dimensional space",
+  "boundary": "aligned finite one-dimensional profile and strictly increasing coordinates with at least two nodes; nonnegative source; finite positive integral",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "shape = source / integral(source, x) with the trapezoidal measure; the normalized shape re-integrates to 1 within the declared tolerance",
+  "direction": "source profile plus coordinates -> unit-integral shape and original integral",
+  "definition": "The NumPy trapezoidal rule on the caller's coordinates; the unit-integral re-check uses rtol 1e-12, atol 1e-14; a zero profile is rejected, never silently replaced",
+  "model": "Unit-integral normalization of a one-dimensional nonnegative spatial profile under the trapezoidal measure",
+  "geometry": "one-dimensional space",
+  "coordinates": "coordinates in m; shape in m^-1; integral in the source's profile unit times m",
+  "boundary": "aligned finite one-dimensional profile and strictly increasing coordinates with at least two nodes; nonnegative source; finite positive integral",
+  "assumptions": [
+   "The trapezoidal measure is the declared spatial discretization; other quadratures are excluded.",
+   "The strict positivity precondition is what lets the shape rebuild a total source."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "source",
+   "description": "The source profile.",
+   "units": "source units",
+   "shape": "[n]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite nonnegative real numeric one-dimensional array; boolean, string and complex coercions are rejected."
+  },
+  {
+   "name": "x_m",
+   "description": "The spatial coordinates.",
+   "units": "m",
+   "shape": "[n]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real numeric values, strictly increasing, at least two nodes, aligned to the source; boolean, string and complex coercions are rejected."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "shape_m_inv",
+   "description": "The unit-integral source shape.",
+   "units": "m^-1",
+   "shape": "[n]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; trapezoidal integral exactly re-checked to 1."
+  },
+  {
+   "name": "integral_source",
+   "description": "The original spatial integral.",
+   "units": "source units times m",
+   "shape": "scalar",
+   "dtype": "float scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Aligned finite nonnegative profile on a strictly increasing coordinate mesh."
+  ],
+  "supported": [
+   "Wall-source and volumetric source shapes needing unit spatial integrals."
+  ],
+  "excluded": [
+   "Zero or negative profiles; non-monotonic coordinates; fewer than two nodes."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean, string or complex coercions, or when the alignment, finiteness, monotonicity or positivity contract is violated, or the normalized shape fails its unit-integral re-check.",
+  "runtime_failure": "Raises ValueError when the integral or normalized shape is non-finite or the integral is nonpositive; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.spatial_source_shape_normalization",
+   "symbol": "normalize_spatial_source_shape",
+   "signature": "normalize_spatial_source_shape(source, x_m)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "normalize_spatial_source_shape"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Normalize one profile and confirm the independent trapezoidal measure and fail-closed contracts.",
+  "code": "import numpy as np\nfrom scirel.kinetic import normalize_spatial_source_shape\nsource = np.array([1.0, 2.0, 1.0])\nx_m = np.array([0.0, 1.0, 2.0])\nresult = normalize_spatial_source_shape(source, x_m)\nassert result['integral_source'] == 3.0\nnp.testing.assert_array_equal(result['shape_m_inv'], source / 3.0)\nassert np.trapezoid(result['shape_m_inv'], x_m) == 1.0\ntry:\n    normalize_spatial_source_shape(np.array([0.0, 0.0]), np.array([0.0, 1.0]))\nexcept ValueError as error:\n    assert 'positive spatial integral' in str(error)\nelse:\n    raise AssertionError('a zero profile must be rejected')",
+  "expected": "The unit-integral shape and original integral; a zero profile is rejected, never silently replaced."
+ },
+ "verification": {
+  "scope": [
+   "That the shape equals the independent trapezoidal normalization and re-integrates to exactly 1.",
+   "The alignment, monotonicity, real-input and positivity failure contracts.",
+   "A read-only digest-pinned comparison on three finite valid profiles."
+  ],
+  "tests": [
+   "tests/kinetic/test_neutral_normalizations.py"
+  ],
+  "evidence_ceiling": "Bounded to unit-integral normalization of a nonnegative one-dimensional spatial source profile under the trapezoidal measure. Evidence: `test_neutral_normalizations.py` contains 11 test functions, 3 of which reference `normalize_spatial_source_shape`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity against the independent trapezoidal normalization in the bound file. It does not establish zero/negative profiles, non-monotonic coordinates, or fewer than two nodes.",
+  "known_limitations": [
+   "This contract carries no independently reviewed qualification of parity with any external implementation; no such qualification can be claimed without a fresh independent review.",
+   "The earlier behavior accepts boolean and numeric-string coercions, and complex input may raise TypeError; SciRel consistently rejects these as invalid real-array inputs.",
+   "The bound file is shared by two assets and three direct functions cover trapezoidal normalization, invalid profiles and non-real coercion; exact agreement at three finite profiles is a regression check, not global parity."
+  ]
+ }
+}

@@ -1,0 +1,141 @@
+{
+  "case_id": "coil-installation-001",
+  "文件": "result.json",
+  "格式": "JSON对象；禁止NaN、Infinity、缺字段与额外字段",
+  "数值预算状态": "FROZEN_FOR_EXECUTION",
+  "units": {
+    "coordinates": "m",
+    "BR": "T",
+    "BZ": "T",
+    "Bmag": "T",
+    "psi": "Wb",
+    "Phi": "Wb",
+    "Tmax": "rad",
+    "U": "1"
+  },
+  "顶层字段": {
+    "case_id": {
+      "type": "string",
+      "description": "必须为coil-installation-001"
+    },
+    "input_id": {
+      "type": "string",
+      "description": "与inputs.json一致"
+    },
+    "units": {
+      "type": "object",
+      "description": "必须与本规格units完全一致"
+    },
+    "coordinates": {
+      "type": "object",
+      "description": "R_m、Z_m与输入一致；shape=[5,5]；indexing=rows=Z,columns=R"
+    },
+    "configurations": {
+      "type": "object",
+      "description": "仅nominal与displaced两个配置；每个字段定义如下"
+    },
+    "differences": {
+      "type": "object",
+      "description": "仅BR、BZ、psi三个5×5矩阵，以及delta_U、delta_Tmax_rad两个标量；均为displaced−nominal"
+    }
+  },
+  "配置字段": {
+    "BR": {
+      "type": "number[5][5]",
+      "description": "径向场，T"
+    },
+    "BZ": {
+      "type": "number[5][5]",
+      "description": "轴向场，T"
+    },
+    "Bmag": {
+      "type": "number[5][5]",
+      "description": "sqrt(BR²+BZ²)，T"
+    },
+    "psi": {
+      "type": "number[5][5]",
+      "description": "RAφ约化极向磁通，轴线为零规范，Wb"
+    },
+    "summary": {
+      "type": "object",
+      "description": "以下汇总字段"
+    }
+  },
+  "汇总字段": {
+    "Bref_T": {
+      "type": "number",
+      "description": "该配置BZ(0.02,0)，T"
+    },
+    "Phi_Wb": {
+      "type": "number",
+      "description": "2πψ(0.10,0)，Wb"
+    },
+    "U": {
+      "type": "number",
+      "description": "中心9点max(abs(BZ/Bref−1))，无量纲"
+    },
+    "Tmax_rad": {
+      "type": "number",
+      "description": "中心9点max(abs(atan2(BR,BZ)))，rad"
+    },
+    "core_point_count": {
+      "type": "integer",
+      "description": "必须为9"
+    },
+    "reflection_residual": {
+      "type": "object",
+      "description": "BR_T=max(abs(BR(R,Z)+BR(R,−Z)))；BZ_T=max(abs(BZ(R,Z)−BZ(R,−Z)))；psi_Wb=max(abs(psi(R,Z)−psi(R,−Z)))；覆盖全部25点"
+    }
+  },
+  "坐标字段": {
+    "R_m": {
+      "type": "number[5]",
+      "description": "输入半径次序，m"
+    },
+    "Z_m": {
+      "type": "number[5]",
+      "description": "输入高度次序，m"
+    },
+    "shape": {
+      "type": "integer[2]",
+      "description": "[nZ,nR]"
+    },
+    "indexing": {
+      "type": "string",
+      "description": "固定rows=Z,columns=R"
+    }
+  },
+  "失败": "非有限数、单位/点序/字段错误或零替代结果不满足题意；输入/运行失败使用 HOLD_INVALID_INPUT 或 HOLD_NONFINITE_OUTPUT。",
+  "status": {
+    "type": "string",
+    "values": [
+      "COMPLETED_BOUNDED_PARTIAL",
+      "HOLD_INVALID_INPUT",
+      "HOLD_NONFINITE_OUTPUT"
+    ],
+    "description": "Machine-readable task status."
+  },
+  "numeric_budget": {
+    "comparison": "abs(actual-reference) <= atol + rtol*abs(reference)",
+    "rtol": 1e-07,
+    "atol": {
+      "BR_T": 1e-10,
+      "BZ_T": 1e-10,
+      "Bmag_T": 1e-10,
+      "psi_Wb": 1e-11,
+      "Phi_Wb": 1e-10,
+      "U": 1e-09,
+      "Tmax_rad": 1e-09,
+      "delta_U": 1e-09,
+      "delta_Tmax_rad": 1e-09,
+      "reflection_BR_T": 1e-10,
+      "reflection_BZ_T": 1e-10,
+      "reflection_psi_Wb": 1e-11
+    },
+    "installation_detection_floor": {
+      "delta_U": 1e-06,
+      "delta_Tmax_rad": 1e-06
+    },
+    "finite_and_shape": "Every declared scalar and matrix element must be finite and shape-correct; no zero substitution or dropped points."
+  }
+}

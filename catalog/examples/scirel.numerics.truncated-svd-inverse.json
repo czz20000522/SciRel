@@ -1,0 +1,129 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.numerics.truncated-svd-inverse",
+ "title": {
+  "en": "Truncated SVD pseudo-inverse",
+  "zh": "截断 SVD 伪逆"
+ },
+ "summary": "Compute the Moore-Penrose inverse of a finite real matrix, discarding singular values below a relative threshold.",
+ "taxonomy": [
+  "analysis",
+  "numerics"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Truncated SVD pseudo-inverse",
+   "Compute the Moore-Penrose pseudo-inverse of a finite real matrix, discarding singular values below a relative threshold."
+  ],
+  "operation": [
+   "thresholded Moore-Penrose inversion",
+   "dense real matrix and relative rcond -> pseudo-inverse with truncated singular values"
+  ],
+  "model": "Truncated singular-value decomposition of a dense real matrix: V diag(1/s for s>=rcond else 0) U^T.",
+  "geometry": "Dense real matrix with no spatial geometry; matrix entries are dimensionless and rcond is a relative scalar threshold.",
+  "boundary": "Singular values below rcond are discarded; non-2-D, nonfinite or non-positive-threshold inputs are rejected, and complex or sparse matrices and iterative or weighted least-squares semantics are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "thresholded Moore-Penrose pseudo-inverse",
+  "direction": "real matrix M -> pseudo-inverse M^+",
+  "definition": "For M = U diag(s) V^T, return V diag(1/s for s >= rcond else 0) U^T.",
+  "model": "truncated singular-value decomposition of a dense real matrix",
+  "geometry": "dense real matrix without spatial geometry",
+  "coordinates": "dimensionless matrix entries; rcond is a relative scalar threshold",
+  "boundary": "singular values below rcond are discarded; non-2-D, non-finite or non-positive-threshold inputs are rejected",
+  "assumptions": [
+   "The input is a finite real matrix.",
+   "rcond is a positive finite relative threshold.",
+   "NumPy singular-value ordering and sign conventions are used."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "mat",
+   "description": "finite real matrix whose pseudo-inverse is requested",
+   "units": "dimensionless",
+   "shape": "(m,n)",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite real 2-D array"
+  },
+  {
+   "name": "rcond",
+   "description": "relative singular-value threshold",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "finite positive scalar",
+   "default": 1e-10
+  }
+ ],
+ "outputs": [
+  {
+   "name": "inverse",
+   "description": "truncated pseudo-inverse with shape (n,m)",
+   "units": "dimensionless",
+   "shape": "(n,m)",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite for a finite input"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "finite real 2-D input",
+   "positive finite rcond"
+  ],
+  "supported": [
+   "square, tall and wide matrices",
+   "rank-deficient spectra with thresholded singular values"
+  ],
+  "excluded": [
+   "complex or sparse matrices",
+   "iterative or regularized least-squares semantics beyond truncation"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for non-2-D or non-finite matrices and for a non-positive or non-finite rcond.",
+  "runtime_failure": "No additional runtime failure is defined; NumPy floating-point behavior applies.",
+  "nonconvergence": "Not applicable; the computation is a direct decomposition.",
+  "partial_results": "No partial result is returned after invalid input."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.truncated_svd_inverse",
+   "symbol": "truncated_svd_inverse",
+   "signature": "truncated_svd_inverse(mat, rcond=1e-10)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "truncated_svd_inverse"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Invert a rank-deficient two-by-two matrix and a rectangular matrix.",
+  "code": "import numpy as np\nfrom scirel.geometry import truncated_svd_inverse\nm = np.array([[1., 2.], [2., 4.]])\nassert np.allclose(truncated_svd_inverse(m), np.linalg.pinv(m))\nr = truncated_svd_inverse(np.ones((5, 3)))\nassert r.shape == (3, 5)",
+  "expected": "The truncated inverse equals the NumPy pseudo-inverse on the rank-deficient case and preserves the (n,m) shape."
+ },
+ "verification": {
+  "scope": [
+   "Agreement with numpy.linalg.pinv on square, tall and wide full-rank matrices.",
+   "Rank-deficient thresholding and the M M^+ M = M projection identity.",
+   "Rejection of non-2-D and non-finite matrices and of non-positive or non-finite thresholds.",
+   "The zero matrix returns the zero pseudo-inverse, covered by tests/geometry/test_truncated_svd_inverse.py."
+  ],
+  "tests": [
+   "tests/geometry/test_truncated_svd_inverse.py"
+  ],
+  "evidence_ceiling": "Mathematical identity checks on bounded dense matrices; no application-level diagnostic-fitting or statistical-error claim.",
+  "known_limitations": [
+   "Complex and sparse matrices are not supported.",
+   "rcond follows NumPy singular-value conventions; it is not a statistical noise model.",
+   "No iterative, weighted or regularized least-squares semantics are provided."
+  ]
+ }
+}

@@ -1,0 +1,144 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.parse-segment",
+ "title": {
+  "en": "Contour segment orientation and endpoints",
+  "zh": "等值线段方向与端点"
+ },
+ "summary": "Roll to nearest start, orient by signed polygon test, and retain selected terminal vertex",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "parse_segment"
+ ],
+ "discovery": {
+  "capability": [
+   "Contour segment orientation and endpoints",
+   "Roll a contour segment to the nearest start, orient it by a signed polygon test, and retain the selected terminal vertex."
+  ],
+  "operation": [
+   "contour segment orientation and endpoint parsing",
+   "ordered planar vertices plus optional start/end and clockwise choice -> oriented selected vertices"
+  ],
+  "model": "Discrete contour parsing with a signed polygon orientation test and a corrected inclusive endpoint; no contour reconstruction.",
+  "geometry": "Planar contour vertices in caller length units; orientation is inferred from the polygon rather than from a field.",
+  "boundary": "Default retains all vertices and the explicit nearest end is inclusive; open-curve closure, repeated endpoints and general topology policies are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Contour segment orientation and endpoints",
+  "direction": "Declared inputs to Ordered selected vertices",
+  "definition": "Roll to nearest start, orient by signed polygon test, and retain selected terminal vertex",
+  "model": "Source contour parsing with corrected inclusive endpoint",
+  "geometry": "planar contour vertices",
+  "coordinates": "Planar coordinates in length units",
+  "boundary": "Default retains all vertices; explicit nearest end inclusive",
+  "assumptions": [
+   "Finite planar segment with meaningful polygon orientation"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "flpoints",
+   "description": "Ordered planar path vertices",
+   "units": "length units",
+   "shape": "(N,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite supplied ordering"
+  },
+  {
+   "name": "start_coord",
+   "description": "Nearest selected starting coordinate",
+   "units": "length units",
+   "shape": "(2,) or None",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Exact nearest-vertex selection",
+   "default": null
+  },
+  {
+   "name": "end_coord",
+   "description": "Nearest terminal coordinate included in output",
+   "units": "length units",
+   "shape": "(2,) or None",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Terminal vertex retained; no interpolated crossing",
+   "default": null
+  },
+  {
+   "name": "clockwise",
+   "description": "Desired signed polygon orientation",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "Signed shoelace-like source test",
+   "default": true
+  }
+ ],
+ "outputs": [
+  {
+   "name": "segment",
+   "description": "Ordered selected vertices",
+   "units": "length units",
+   "shape": "(M,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "No synthetic or omitted default endpoint"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite planar segment with meaningful polygon orientation"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "Open-curve closure, repeated endpoints and topology policies are not generalized"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "parse_segment",
+   "signature": "parse_segment(flpoints, start_coord=None, end_coord=None, clockwise=True)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "parse_segment"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Parse a four-vertex contour segment while retaining its clockwise vertex order.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import parse_segment\n\nsegment = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])\nnp.testing.assert_array_equal(parse_segment(segment), segment)",
+  "expected": "The four input vertices are returned in the same (4, 2) order."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/equilibrium/test_analysis_corrections.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Open-curve closure, repeated endpoints and topology policies are not generalized"
+  ]
+ }
+}

@@ -1,0 +1,491 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
+ "title": {
+  "en": "Molecular hydrogen elastic Omega aggregation",
+  "zh": "分子氢弹性碰撞矩与局部松弛系数"
+ },
+ "summary": "Reduce molecular-hydrogen elastic collision momentum and stress moments independently in each spatial cell, returning normalized coefficients Omega (m^-1), physical frequencies nu (s^-1) and their definedness. A zero denominator retains the collision moment and returns an explicitly undefined frequency; no artificial floor or positive clipping hides it.",
+ "taxonomy": [
+  "collisions",
+  "molecular-hydrogen",
+  "omega-frequency",
+  "velocity-space"
+ ],
+ "aliases": [
+  "assemble_molecular_hydrogen_omega_frequencies"
+ ],
+ "discovery": {
+  "capability": [
+   "Molecular hydrogen elastic Omega aggregation",
+   "Reduce molecular-hydrogen elastic momentum and stress moments per spatial cell into Omega coefficients, collision frequencies and definedness."
+  ],
+  "operation": [
+   "Aggregate molecular-hydrogen elastic Omega and collision frequencies",
+   "physical distribution, density, two signed Alpha channels, self-collision SIG, velocity weights and cell state -> collision moments, frequencies and status"
+  ],
+  "model": "Moment-matched BGK approximation for momentum and stress; not the full Boltzmann collision operator.",
+  "geometry": "Cylindrical (vr, vx) velocity carrier per spatial cell x with N = nvr*nvx Fortran-order matrix indexing; vr and vx normalized by Vth, with Vth, vxi and VxH in physical velocity units and no implicit conversion.",
+  "boundary": "Distributions finite and nonnegative, density and integration weights positive, axes strictly increasing, radii and Vth positive, and the density must equal the integral; a zero denominator in an enabled channel is reported through the returned status rather than silently replaced.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "molecular H2 elastic Omega_H2_P, Omega_H2_H and Omega_H2_H2 frequency aggregation",
+  "direction": "physical distribution, density, two signed Alpha channels, self-collision SIG, velocity integration weights and explicit cell state -> collision moments, frequencies and status",
+  "definition": "Let w_ij = Vr2pidVr_i*dVx_j, n = sum(w*f), u = sum(w*f*vx)/n, U = Vth*u, and K = vr^2 - 2*(vx - u)^2. The central state uses W = sum(w*f*K)/n; the target state uses W = sum(w*(f - M)*K)/n, where M must conserve the cell particle number, mean velocity and total kinetic energy. For the two mixed channels N = sum(w*f*Alpha)/n and d = (U - U_background)/Vth; for self-collision Alpha = SIG_self @ F(f), N = sum(w*f*Alpha)/n and d = W. Omega = N/d and nu = Vth*Omega, with no negative clipping and no floor. The mixed physical acceleration is moment_rate = -beta*Vth^2*N and the self-collision stress rate is -Vth^3*N; atomic beta = (1/2, 2/3) and molecular beta = (1/3, 1/3). When d = 0, Omega/nu = NaN and defined = False, while finite N and moment_rate are still returned. A disabled channel is exactly zero with status disabled. The total frequency is the sum of the three channels and propagates undefined values from enabled channels.",
+  "model": "a moment-matched BGK approximation for momentum and stress; it is not the full Boltzmann collision operator, and a single-point 0/0 does not determine a unique linearized rate",
+  "geometry": "cylindrical (vr,vx) velocity carrier per spatial cell x, with N=nvr*nvx Fortran-order matrix indexing",
+  "coordinates": "vr and vx are normalized by Vth; Vth, vxi and VxH share physical velocity units; no implicit conversion",
+  "boundary": "finite nonnegative distributions, positive density and integration weights, strictly increasing axes, positive radii and Vth; the density must equal the integral. The target state is verified for conservation in each cell. A zero denominator in an enabled channel is not an input error but an explicitly undefined frequency",
+  "assumptions": [
+   "All velocities use the same Vth; integrating f over the dimensionless velocity volume gives m^-3, SIG already includes the target integration weights, and both Alpha and Omega have units m^-1.",
+   "The two Alpha channels must be generated from real background distributions on the same grid and the corresponding SIG; the background flows must match those distributions. This function cannot recover the background distributions from Alpha alone.",
+   "The atom, molecule and ion belong to the same H or D isotope, and the mixed-channel mass fractions follow from this; H/D mixed-isotope collisions are not treated as a verified range.",
+   "moment_state is central or target and can be selected independently per cell; the target distribution is nonnegative and conserves density, flow velocity and kinetic energy to within 64 binary64 eps of integration roundoff. That tolerance applies only to the conservation check, not to the denominator.",
+   "Negative ratios are retained and marked negative_no_bgk_closure, meaning the moment cannot be represented by a nonnegative BGK relaxation rate; such a value is not a usable nonnegative collision frequency.",
+   "A Maxwell equilibrium on a finite velocity or angular grid may retain a stress residual; this function retains that residual and does not hide discretization error behind an undefined frequency."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "fH2",
+   "description": "molecular neutral distribution; its integral over dimensionless velocity volume is the density",
+   "units": "m^-3",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "nonempty, finite and nonnegative"
+  },
+  {
+   "name": "nH2",
+   "description": "particle number density in each spatial cell",
+   "units": "m^-3",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "positive and finite; consistent with sum(w*f) to within 64*eps relative integration roundoff"
+  },
+  {
+   "name": "Alpha_H2_P",
+   "description": "Alpha generated from the corresponding background distribution and signed momentum matrix",
+   "units": "m^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and aligned with the distribution; negative values are retained"
+  },
+  {
+   "name": "Alpha_H2_H",
+   "description": "Alpha generated from the corresponding background distribution and signed momentum matrix",
+   "units": "m^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and aligned with the distribution; negative values are retained"
+  },
+  {
+   "name": "SIG_H2_H2",
+   "description": "self-collision stress matrix including target-column integration weights; Fortran velocity ordering",
+   "units": "m^2",
+   "shape": "[N,N], N=nvr*nvx",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite square matrix; signed entries are retained"
+  },
+  {
+   "name": "Vr2pidVr",
+   "description": "cylindrical radial velocity integration weights",
+   "units": "dimensionless",
+   "shape": "[nvr]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and strictly positive"
+  },
+  {
+   "name": "dVx",
+   "description": "axial velocity integration weights",
+   "units": "dimensionless",
+   "shape": "[nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and strictly positive"
+  },
+  {
+   "name": "vr",
+   "description": "radial normalized velocity nodes",
+   "units": "v/Vth",
+   "shape": "[nvr]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite, positive and strictly increasing"
+  },
+  {
+   "name": "vx",
+   "description": "axial normalized velocity nodes",
+   "units": "v/Vth",
+   "shape": "[nvx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and strictly increasing; not required to cross zero"
+  },
+  {
+   "name": "Vth",
+   "description": "thermal speed scale shared by all distributions",
+   "units": "m/s",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "finite and positive"
+  },
+  {
+   "name": "vxi",
+   "description": "mean ion background velocity used to generate the first Alpha channel",
+   "units": "m/s",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and consistent with the integral mean of the background distribution"
+  },
+  {
+   "name": "VxH",
+   "description": "mean neutral background velocity used to generate the second Alpha channel",
+   "units": "m/s",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and consistent with the integral mean of the background distribution"
+  },
+  {
+   "name": "moment_state",
+   "description": "per cell, use the central stress or the stress difference against an explicit target distribution",
+   "units": "dimensionless",
+   "shape": "scalar or [nx]",
+   "dtype": "string or string array",
+   "required": false,
+   "constraints": "accepts only central/target",
+   "default": "central"
+  },
+  {
+   "name": "target_distribution",
+   "description": "self-collision target distribution; used only in cells explicitly marked target",
+   "units": "m^-3",
+   "shape": "[nvr,nvx,nx] or null",
+   "dtype": "real array or None",
+   "required": false,
+   "constraints": "required for target cells; finite and nonnegative, conserving particle number, mean velocity and total kinetic energy in each target cell; must be None when no target cell is present",
+   "default": null
+  },
+  {
+   "name": "H2_P_EL",
+   "description": "whether the corresponding elastic channel is enabled",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "boolean scalar",
+   "required": false,
+   "constraints": "accepts only bool; when disabled, the frequency and collision moment are exactly zero and the status is disabled",
+   "default": true
+  },
+  {
+   "name": "H2_H_EL",
+   "description": "whether the corresponding elastic channel is enabled",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "boolean scalar",
+   "required": false,
+   "constraints": "accepts only bool; when disabled, the frequency and collision moment are exactly zero and the status is disabled",
+   "default": true
+  },
+  {
+   "name": "H2_H2_EL",
+   "description": "whether the corresponding elastic channel is enabled",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "boolean scalar",
+   "required": false,
+   "constraints": "accepts only bool; when disabled, the frequency and collision moment are exactly zero and the status is disabled",
+   "default": true
+  }
+ ],
+ "outputs": [
+  {
+   "name": "VxH2",
+   "description": "mean axial velocity of molecular hydrogen",
+   "units": "m/s",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite, including when all channels are disabled"
+  },
+  {
+   "name": "Wperp_paraH2",
+   "description": "selected central stress or the stress difference against the target distribution",
+   "units": "(v/Vth)^2",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; may be negative or zero, with no floor"
+  },
+  {
+   "name": "central_stress",
+   "description": "central radial-minus-twice-axial second moment of the original distribution",
+   "units": "(v/Vth)^2",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and independent of the selected target"
+  },
+  {
+   "name": "Omega_H2_P",
+   "description": "normalized moment-matched coefficient for this channel",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
+  },
+  {
+   "name": "nu_H2_P",
+   "description": "physical moment-matched frequency, Omega multiplied by Vth",
+   "units": "s^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
+  },
+  {
+   "name": "moment_H2_P",
+   "description": "per-particle signed collision-moment numerator N; velocity powers remain normalized",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; retained even where the frequency is undefined; exactly zero when disabled"
+  },
+  {
+   "name": "moment_rate_H2_P",
+   "description": "physical acceleration recovered from the mass fraction and Vth",
+   "units": "m/s^2",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and signed; exactly zero when disabled"
+  },
+  {
+   "name": "defined_H2_P",
+   "description": "whether this frequency is defined",
+   "units": "dimensionless",
+   "shape": "[nx]",
+   "dtype": "bool array",
+   "required": true,
+   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
+  },
+  {
+   "name": "status_H2_P",
+   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
+   "units": "dimensionless",
+   "shape": "[nx]",
+   "dtype": "string array",
+   "required": true,
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
+  },
+  {
+   "name": "Omega_H2_H",
+   "description": "normalized moment-matched coefficient for this channel",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
+  },
+  {
+   "name": "nu_H2_H",
+   "description": "physical moment-matched frequency, Omega multiplied by Vth",
+   "units": "s^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
+  },
+  {
+   "name": "moment_H2_H",
+   "description": "per-particle signed collision-moment numerator N; velocity powers remain normalized",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; retained even where the frequency is undefined; exactly zero when disabled"
+  },
+  {
+   "name": "moment_rate_H2_H",
+   "description": "physical acceleration recovered from the mass fraction and Vth",
+   "units": "m/s^2",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and signed; exactly zero when disabled"
+  },
+  {
+   "name": "defined_H2_H",
+   "description": "whether this frequency is defined",
+   "units": "dimensionless",
+   "shape": "[nx]",
+   "dtype": "bool array",
+   "required": true,
+   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
+  },
+  {
+   "name": "status_H2_H",
+   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
+   "units": "dimensionless",
+   "shape": "[nx]",
+   "dtype": "string array",
+   "required": true,
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
+  },
+  {
+   "name": "Omega_H2_H2",
+   "description": "normalized moment-matched coefficient for this channel",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and signed where defined; NaN when enabled with a zero denominator; exactly zero when disabled"
+  },
+  {
+   "name": "nu_H2_H2",
+   "description": "physical moment-matched frequency, Omega multiplied by Vth",
+   "units": "s^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "shares Omega's definedness; a negative value is not an acceptable nonnegative BGK relaxation"
+  },
+  {
+   "name": "moment_H2_H2",
+   "description": "per-particle signed collision-moment numerator N; velocity powers remain normalized",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite; retained even where the frequency is undefined; exactly zero when disabled"
+  },
+  {
+   "name": "moment_rate_H2_H2",
+   "description": "physical rate of change of the central stress recovered from Vth",
+   "units": "m^2/s^3",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "finite and signed; exactly zero when disabled"
+  },
+  {
+   "name": "defined_H2_H2",
+   "description": "whether this frequency is defined",
+   "units": "dimensionless",
+   "shape": "[nx]",
+   "dtype": "bool array",
+   "required": true,
+   "constraints": "True for a disabled channel; true for an enabled channel only where the denominator is nonzero"
+  },
+  {
+   "name": "status_H2_H2",
+   "description": "explicitly distinguishes disabled, finite nonnegative, negative ratio and zero denominator",
+   "units": "dimensionless",
+   "shape": "[nx]",
+   "dtype": "string array",
+   "required": true,
+   "constraints": "disabled / finite_nonnegative / negative_no_bgk_closure / undefined_zero_denominator"
+  },
+  {
+   "name": "Omega_EL",
+   "description": "sum of the three normalized channel coefficients",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "NaNs from enabled channels propagate explicitly; undefined terms are not ignored"
+  },
+  {
+   "name": "nu_EL",
+   "description": "sum of the three physical channel frequencies",
+   "units": "s^-1",
+   "shape": "[nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Omega_EL*Vth; undefined status propagates explicitly"
+  },
+  {
+   "name": "defined_EL",
+   "description": "conjunction of the defined masks of all three channels",
+   "units": "dimensionless",
+   "shape": "[nx]",
+   "dtype": "bool array",
+   "required": true,
+   "constraints": "False when any enabled channel is undefined"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "the distribution, background Alpha, background mean velocities and SIG use the same isotope, grid, normalization and weights",
+   "the caller must inspect defined/status and must not treat a negative coefficient or NaN as a nonnegative BGK frequency"
+  ],
+  "supported": [
+   "per-cell physical collision moments, central or conserved-target stress differences, and explicitly undefined frequencies",
+   "actual discrete Maxwell distributions, weak drift and signed stress; a common velocity shift and spatial partitioning do not change the physical moments"
+  ],
+  "excluded": [
+   "the full Boltzmann scattering distribution, automatic inversion of background distributions, arbitrary isotope mixing, and a unique equilibrium linearization frequency without a specified perturbation family",
+   "experimental universality beyond the cross-section fits and automatic space or angular grid convergence guarantees"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "raises ValueError when shapes, real finiteness, distribution nonnegativity, density or weight positivity, axis ordering, boolean flags or target conservation are not satisfied",
+  "runtime_failure": "raises ValueError when a collision moment or a frequency that should be defined is not representable as a finite float64",
+  "nonconvergence": "this function has no iteration; velocity and angular grid convergence are the caller's responsibility",
+  "partial_results": "a complete state mapping is returned; NaN in an enabled zero-denominator channel is an explicit undefined result while the other finite moments are retained, and this is not a partial successful execution"
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.molecular_hydrogen_omega_frequencies",
+   "symbol": "assemble_molecular_hydrogen_omega_frequencies",
+   "signature": "assemble_molecular_hydrogen_omega_frequencies(fH2, nH2, Alpha_H2_P, Alpha_H2_H, SIG_H2_H2, Vr2pidVr, dVx, vr, vx, Vth, vxi, VxH, *, moment_state='central', target_distribution=None, H2_P_EL=True, H2_H_EL=True, H2_H2_EL=True)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "assemble_molecular_hydrogen_omega_frequencies"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.molecular-alpha-contraction"
+   },
+   {
+    "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices"
+   }
+  ]
+ },
+ "example": {
+  "description": "generate Alpha from the actual four-channel matrices and a nonnegative physical distribution, then inspect the local moments and the unit conversion",
+  "code": "import numpy as np\nfrom scirel.collisions import assemble_molecular_hydrogen_collision_matrices, assemble_molecular_hydrogen_omega_frequencies\nvr = np.array([0.5, 1.0]); vx = np.array([-1.0, 0.0, 1.0])\nwr = np.array([1.0, 2.0]); dx = np.ones(3); w = wr[:, None] * dx\nf = np.exp(-vr[:, None]**2 - (vx[None, :] - 0.2)**2)\nf *= 2e17 / np.sum(w * f)\nbg = np.exp(-vr[:, None]**2 - vx[None, :]**2)\nbg *= 3e17 / np.sum(w * bg)\ns = assemble_molecular_hydrogen_collision_matrices(vr, vx, wr, dx, 1.0, mu=2.0, n_theta=32)\nvth = float(np.sqrt(s['Vth2'][0])); ub = np.array([vth * np.sum(w * bg * vx) / np.sum(w * bg)])\nalphas = [(s[k] @ bg.ravel(order='F')).reshape(f.shape, order='F')[:, :, None] for k in ['SIG_H2_P', 'SIG_H2_H']]\nr = assemble_molecular_hydrogen_omega_frequencies(f[:, :, None], np.array([2e17]), *alphas, s['SIG_H2_H2'], wr, dx, vr, vx, vth, ub, ub)\nassert np.isfinite(r['moment_H2_P']).all()\nassert r['defined_H2_P'].all()\nnp.testing.assert_allclose(r['nu_H2_P'], vth * r['Omega_H2_P'], rtol=1e-14)\n",
+  "expected": "the mixed collision moments generated from the actual SIG are finite; channels with nonzero drift are defined and nu equals Vth*Omega"
+ },
+ "verification": {
+  "scope": [
+   "the earlier failures around a global state sentinel, molecular central moments with a common velocity shift, and a zero denominator dropping finite moments were reproduced; each is now covered by an item-by-item regression",
+   "independent scalar double summation, conservation targets, spatial partitioning, a common velocity shift, negative-ratio status and undefined propagation",
+   "Alpha generated from actual fit matrices and normalized Maxwell distributions; H/D adaptive angular integration, weighted exchange relations, equilibrium momentum and two-sided weak drift"
+  ],
+  "tests": [
+   "tests/collisions/test_molecular_hydrogen_omega_frequencies.py",
+   "tests/collisions/test_atomic_hydrogen_omega_frequencies.py",
+   "tests/collisions/test_collision_physical_closure.py"
+  ],
+  "evidence_ceiling": "supports physical consistency of the given moment model with the tested discrete inputs; it does not represent full project-level application acceptance, nonnegative BGK closure for arbitrary distributions or external experimental accuracy. The candidate asset still requires independent intake acceptance; human scientific approval and public release are decided separately",
+  "known_limitations": [
+   "the moment ratio may be ill-conditioned near a zero denominator; there is no arbitrary floor, and a unique equilibrium linearization rate is not invented from single-point data",
+   "a finite angular or velocity grid may produce a Maxwell stress residual; convergence must be checked for the application",
+   "the limitations of the cross-section fits, H/D scaling and the molecular-viscosity approximation are inherited; licensing remains to be determined",
+   "This is deliberately not source parity for zero/negative denominators: the canonical implementation floors the mixed drift and self-stress denominators and clips every Omega to nonnegative; this asset instead returns NaN with defined=False at a zero denominator and a negative_no_bgk_closure status for a negative ratio. The canonical zero-accumulator sentinel branch selection is replaced by explicit moment_state/target_distribution, so the target branch no longer depends on the sign of a global accumulated target."
+  ]
+ }
+}

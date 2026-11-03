@@ -1,0 +1,125 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+ "title": {
+  "en": "Atomic-hydrogen 1s radiative recombination rate coefficient",
+  "zh": "原子氢1s辐射复合速率系数"
+ },
+ "summary": "Evaluate the H+ + e -> H(1s) + hv analytic rate coefficient from electron temperature in eV.",
+ "taxonomy": [
+  "collisions",
+  "rate-coefficient",
+  "recombination",
+  "hydrogen",
+  "analytic-fit"
+ ],
+ "aliases": [
+  "sigmav_rec_h1s",
+  "H+ radiative recombination to H(1s)"
+ ],
+ "discovery": {
+  "capability": [
+   "Atomic-hydrogen 1s radiative recombination rate coefficient",
+   "Analytic H+ + e -> H(1s) + hv rate coefficient evaluated from electron temperature in eV."
+  ],
+  "operation": [
+   "Evaluate the H+ + e -> H(1s) radiative recombination rate coefficient",
+   "electron temperature in eV -> rate coefficient in m^3/s"
+  ],
+  "model": "Level-1 Storey-type analytic fit with fixed constants; no external-data interpolation or runtime cross-section integral.",
+  "geometry": "None; pointwise scalar or array material samples with no spatial axis inferred (coordinate: electron temperature in eV).",
+  "boundary": "Temperature must be finite and strictly positive; out-of-range values clip to the fit endpoints and the represented output must be finite and positive.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "H+ + e -> H(1s) + hv radiative recombination rate coefficient as a function of electron temperature",
+  "direction": "electron temperature in eV -> rate coefficient in m^3/s",
+  "definition": "Clip strictly positive electron temperature to [0.1, 2.01e4] eV. With Ry=13.58 eV, n=1, A_nl=3.92 and x_nl=0.35, set ionization_energy=Ry/n and b_n=ionization_energy/T. Return A_nl*1e-14*sqrt(ionization_energy/Ry)*(b_n^1.5/(b_n+x_nl))*1e-6 m^3/s in the declared arithmetic order.",
+  "model": "level-1 Storey-type analytic fit with fixed constants; no external-data interpolation or runtime cross-section integral",
+  "geometry": "none; pointwise scalar or array material samples",
+  "coordinates": "electron temperature in eV, with no spatial axis inferred",
+  "boundary": "finite real numeric temperature strictly positive; endpoint clipping; finite positive represented output",
+  "assumptions": [
+   "The Ry=13.58 eV, A_nl=3.92, x_nl=0.35 and n=1 constants and the arithmetic order define the fit on finite positive real inputs.",
+   "Only ground-state H(1s) radiative recombination is represented; excited levels and other recombination mechanisms are separate relations.",
+   "This callable rejects nonpositive temperature and does not coerce boolean or numeric-string inputs; the declared positive real input contract is the only accepted domain."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "electron_temperature_ev",
+   "description": "Electron temperature for the H(1s) radiative recombination fit.",
+   "units": "eV",
+   "shape": "scalar or array",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite and strictly positive; positive values outside [0.1, 2.01e4] eV are clipped to the nearest endpoint."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "rate_m3_s",
+   "description": "H(1s) radiative recombination rate coefficient.",
+   "units": "m^3/s",
+   "shape": "same as electron_temperature_ev",
+   "dtype": "float64 array or scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive on accepted inputs; no external physical accuracy is asserted."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller supplies electron temperature in eV and accepts endpoint clipping."
+  ],
+  "supported": [
+   "Scalar and array evaluation of the H(1s) analytic fit on or clipped to its declared temperature interval."
+  ],
+  "excluded": [
+   "Excited-level, three-body and dielectronic recombination, or electron-impact ionization.",
+   "A physically validated recombination model outside the compared domain or without an external atomic-physics reference."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real numeric, non-finite or nonpositive electron temperature. Boolean, complex and numeric-string coercions are rejected.",
+  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned.",
+  "nonconvergence": "Not applicable; no iteration.",
+  "partial_results": "Never returned."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.atomic_hydrogen_1s_radiative_recombination_rate",
+   "symbol": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
+   "signature": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperature_ev)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "evaluate_atomic_hydrogen_1s_radiative_recombination_rate"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate ground-state recombination and its clipped endpoints.",
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_atomic_hydrogen_1s_radiative_recombination_rate\nt = np.array([0.01, 1.0, 50000.0])\nr = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(t)\nedge = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(np.array([0.1, 1.0, 20100.0]))\nassert r.shape == (3,) and np.all(np.isfinite(r)) and np.all(r > 0.0)\nassert np.array_equal(r, edge)",
+  "expected": "Three positive H(1s) rates with values outside the fit interval exactly repeating the endpoints."
+ },
+ "verification": {
+  "scope": [
+   "Six fixed reference values and an independent closed-form evaluation hold to a 1e-15 relative tolerance, including on a holdout grid.",
+   "Direct tests cover monotonic temperature dependence on the sampled grid, clipping, scalar shape, invalid domain and non-real input rejection.",
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
+   "Low- and high-temperature logarithmic slopes converge to the analytic -1/2 and -3/2 asymptotic limits within the audited temperature windows."
+  ],
+  "tests": [
+   "tests/collisions/test_atomic_hydrogen_1s_radiative_recombination_rate.py"
+  ],
+  "evidence_ceiling": "The tests establish the discrete fit, clipping and failure contract on tested samples. Bit-exact agreement with the in-file independent evaluation of the same expressions holds on the compared grids only. No external atomic-physics oracle validates the fit; public distribution licensing is absent.",
+  "known_limitations": [
+   "No external physical-reference oracle is bound; this gap remains open.",
+   "Ry=13.58 eV is the fit constant and is not replaced with a modern re-derived value.",
+   "Out-of-fit-range positive temperatures silently repeat endpoint rates.",
+   "Public distribution licensing remains pending.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests."
+  ]
+ }
+}

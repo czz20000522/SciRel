@@ -1,0 +1,117 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.vp-evolve",
+ "title": {
+  "en": "Finite linear feedback evolution",
+  "zh": "有限步线性反馈演化"
+ },
+ "summary": "Exactly nt RK4 steps with ordered stage-wise field feedback; O(nv+nt) memory.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "vlasov-poisson"
+ ],
+ "aliases": [
+  "vp_evolve"
+ ],
+ "discovery": {
+  "capability": [
+   "Finite linear feedback evolution",
+   "Exactly nt RK4 steps with ordered stage-wise field feedback; O(nv+nt) memory."
+  ],
+  "operation": [
+   "advance the linear Vlasov-Poisson state by RK4 steps",
+   "initial perturbation and step controls -> evolved history"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "Fixed grid/step and finite step count; initial Poisson closure; no adaptive stepping.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Exactly nt RK4 steps with ordered stage-wise field feedback; O(nv+nt) memory.",
+  "direction": "Inputs to vp_evolve -> result",
+  "definition": "Exactly nt RK4 steps with ordered stage-wise field feedback; O(nv+nt) memory.",
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+  "boundary": "Fixed grid/step and finite step count; initial Poisson closure; no adaptive stepping.",
+  "assumptions": [
+   "Linear perturbations and homogeneous equilibrium.",
+   "Velocity-window truncation and recurrence are separate from temporal integration error."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "State mapping produced by vp_init, with df,dE,vv,df0dv,k,dv,dt,nt and source controls.",
+   "units": "dimensionless",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Complete VP state; finite aligned arrays; Poisson-closed initial field; integer nt>=0."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1]; scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and arrays are independently owned. Input is not mutated; repeated calls start a new local time trace from supplied df.",
+   "units": "dimensionless",
+   "shape": "As described in output mapping or tuple.",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Copied state with finite field history and closed initial field."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "state contains a finite Poisson-consistent vp_init mapping and integer nt>=0."
+  ],
+  "supported": [
+   "Exactly nt ordered RK4 steps with copied state and dEt/tt histories."
+  ],
+  "excluded": [
+   "Nonlinear evolution, multidimensional modes and adaptive time stepping."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for missing/invalid state controls or an initial Poisson inconsistency.",
+  "runtime_failure": "FloatingPointError propagated from a nonfinite RK4 state or field.",
+  "nonconvergence": "Not applicable; the step count is prescribed and no convergence test is run.",
+  "partial_results": "No evolved state is returned; the caller-supplied mapping is copied before stepping and is not mutated."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.vlasov_poisson",
+   "symbol": "vp_evolve",
+   "signature": "vp_evolve(state)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "vp_evolve"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "code": "from scirel.kinetic.vlasov_poisson import vp_init,vp_evolve\ns=vp_evolve(vp_init(nv=32,nt=5))\nassert s[\"dEt\"].shape == (6,)",
+  "description": "Initialize and evolve five finite RK4 steps on a 32-interval grid.",
+  "expected": "PASS: .venv/bin/python completed; dEt has shape (6,)."
+ },
+ "verification": {
+  "scope": [
+   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
+   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
+   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+  ],
+  "tests": [
+   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+  ],
+  "evidence_ceiling": "Bounded to exactly nt ordered RK4 steps with stage-wise field feedback and O(nv+nt) memory. Evidence: `test_vlasov_poisson_dispersion.py` contains 14 test functions, 1 of which references `vp_evolve`, and is shared by 9 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent semidiscrete mathematical checks and selected scenario regressions in the bound file. It does not establish nonlinear or multidimensional evolution, or adaptive time stepping.",
+  "known_limitations": [
+   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+  ]
+ }
+}

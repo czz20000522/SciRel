@@ -1,0 +1,22 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+build/
+dist/
+
+# Local machine configuration, credentials and runtime scratch are never source.
+/.runtime/
+/.scirel/credentials/*
+!/.scirel/credentials/README.md
+
+# Local agent state, editor metadata and generated instruction backups
+/.agents/
+*.DS_Store
+
+# Method skills are part of the published tree.
+
+# Local generated publish artifacts (HTML site, docs bundle)
+/dist/
+catalog/review/archive/

@@ -1,0 +1,172 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.multifluid-frequency-solve",
+ "title": {
+  "en": "Bounded multifluid frequency solve",
+  "zh": "带残差验证的多流体频率求解"
+ },
+ "summary": "Compute full fluid spectra in physical coordinates with componentwise pencil residual checks and explicit defective-zero metadata; numerical conditioning does not change the scientific pencil.",
+ "taxonomy": [
+  "kinetic",
+  "spectral-dispersion",
+  "examples"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Bounded multifluid frequency solve",
+   "Compute full fluid spectra in physical coordinates with componentwise pencil residual checks and explicit defective-zero metadata; numerical conditioning does not change the scientific pencil."
+  ],
+  "operation": [
+   "solve the Maxwell-fluid spectral frequencies",
+   "generalized pencil and controls -> frequencies and right eigenvectors"
+  ],
+  "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
+  "geometry": "k=(kx,0,kz), B0 along z.",
+  "boundary": "Local Fourier modes exp(i k.r-i omega t).",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Generalized Maxwell-fluid pencil to frequencies and right eigenvectors",
+  "direction": "generalized spectral solve",
+  "definition": "Solve each support block in scaled coordinates: a block whose inertia matrix is exactly identity uses the standard eigenproblem, other blocks use generalized QZ; verify zero multiplicities by exact rational rank powers of stored binary coefficients, refine nonzero pairs when needed, and check every pair against the assembled original M,A.",
+  "model": "Linear multi-species warm-fluid electromagnetic model with optional relativistic inertia.",
+  "geometry": "k=(kx,0,kz), B0 along z.",
+  "coordinates": "Cartesian fields; species density and velocity blocks followed by E and B.",
+  "boundary": "Local Fourier modes exp(i k.r-i omega t).",
+  "assumptions": [
+   "The rotating-pressure Bx contribution uses the direct divergence of the declared pressure tensor.",
+   "Relativistic inertia gamma I+gamma^3 vv^T/c^2 excludes the nonrelativistic collision generator.",
+   "Fluid constants profile: c2=(2.9979e8 m/s)^2, epsilon0=8.854e-12 F/m, mu0=1/(c2*epsilon0), gamma default5/3. Charge and mass are explicit SI deck inputs; packaged defaults use q=+/-1.602e-19 C, me=9.109e-31 kg and mp=1.673e-27 kg. Sound speeds are direct inputs; no kB or temperature-to-speed conversion is performed. This is distinct from current kinetic initialization epsilon0=8.8542e-12 F/m."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "Explicit equilibrium mapping; no global state is read. Fluid fields are produced by fluid_equilibrium_si or fluid_equilibrium_relative_rates.",
+   "units": "field-specific SI",
+   "shape": "mapping with S species",
+   "dtype": "mapping[str, numeric array or scalar]",
+   "required": true,
+   "constraints": "Required fluid fields q,m,n,v,csz2,csp2,epsnx,epsny,rho,B0,gamma,c2,epsilon0,mu0,Pz,Pp,Delta,pressure_frame,velocity_collision; retain nullable beta fields for rendering."
+  },
+  {
+   "name": "kx",
+   "description": "Signed x wavevector component.",
+   "units": "m^-1",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; complex spatial wavevector is supported by the fluid pencil."
+  },
+  {
+   "name": "kz",
+   "description": "Signed z wavevector component.",
+   "units": "m^-1",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; complex spatial wavevector is supported by the fluid pencil."
+  },
+  {
+   "name": "relativistic",
+   "description": "Use the derivative of relativistic momentum in each species velocity block.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "If true, all species speeds must be below c and velocity_collision must vanish.",
+   "default": false
+  },
+  {
+   "name": "state_scales",
+   "description": "Positive diagonal state-coordinate scales used only for numerical conditioning.",
+   "units": "field-specific SI",
+   "shape": "(4*S+6,) or null",
+   "dtype": "float64 array or None",
+   "required": false,
+   "constraints": "Finite positive entries. None selects physical density/velocity/electric/magnetic scales; eigenvectors return in original coordinates.",
+   "default": null
+  },
+  {
+   "name": "backward_tolerance",
+   "description": "Maximum accepted componentwise backward error in original units.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Finite and positive.",
+   "default": 1e-10
+  }
+ ],
+ "outputs": [
+  {
+   "name": "solution",
+   "description": "Pencil and sorted spectra/eigenvectors with full-original-unit backward-error and checked zero-structure metadata.",
+   "units": "omega rad/s; eigenvectors mixed state units",
+   "shape": "M,A:(d,d); w1,w2:(d,); X1,X2:(d,d); errors:(d,d)",
+   "dtype": "dict[str, numeric arrays or structured metadata]",
+   "required": true,
+   "constraints": "w1 sorted by descending real part, w2 by descending imaginary part; X1/X2 columns correspond. Errors use original solver order. Repeated defective zeros do not imply a complete eigenbasis or Jordan chain."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite inputs satisfying the declared units and shapes."
+  ],
+  "supported": [
+   "Full dense spectrum, original-unit eigenvectors, exact algebraic/geometric zero metadata.",
+   "Bounded high-precision refinement using mpmath when double refinement is insufficient."
+  ],
+  "excluded": [
+   "Complete eigenbasis at defective eigenvalues.",
+   "An 80-digit forward-accuracy claim from binary64 public outputs."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs.",
+  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider.",
+  "nonconvergence": "ArithmeticError when finite bounded refinement cannot satisfy the unchanged original-pencil tolerance.",
+  "partial_results": "No successful solution mapping is returned if any eigenpair fails validation."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.multifluid",
+   "symbol": "fluid_solve_state",
+   "signature": "fluid_solve_state(state, kx, kz, *, relativistic=False, state_scales=None, backward_tolerance=1e-10)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.multifluid-frequency-pencil"
+   }
+  ]
+ },
+ "example": {
+  "description": "Solve one physical SI point.",
+  "code": "from scirel.kinetic.dispersion.multifluid import fluid_equilibrium_si, fluid_solve_state\ns = fluid_solve_state(fluid_equilibrium_si(), 1e-5, 2e-5)\nassert s[\"w1\"].shape == (14,)\nassert s[\"componentwise_backward_errors\"].max() <= 1e-10",
+  "expected": "The SI point returned 14 frequencies; the observed maximum componentwise backward error was 3.13e-12, below the example bound 1e-10."
+ },
+ "verification": {
+  "scope": [
+   "External PDRF gate: test_external_pdrf_two_species_spectrum_keeps_all_14_modes compares all 14 real frequencies of fluid_solve_state with independent PDRF reference values at four (kx,kz) points; rtol=2e-9, backward error <=1e-10, zero-structure multiplicities checked.",
+   "Analytic/manufactured gates cover zero-field cold modes, generalized nonidentity inertia and a complex-wavevector cold analytic holdout.",
+   "The bounded example is a representative case only."
+  ],
+  "tests": [
+   "tests/kinetic/test_dispersion_multifluid_oracle.py",
+   "tests/kinetic/test_dispersion_multifluid.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared fluid frequency solve on the tested two-species/PDRF decks. The primary gate compares all 14 real frequencies against independent PDRF values at four (kx,kz) points (rtol 2e-9) and requires backward errors <=1e-10; analytic/manufactured gates cover zero-field cold modes, nonidentity inertia and complex-wavevector holdouts. It does not establish arbitrary-parameter parity, branch uniqueness, imaginary growth rates (the PDRF imaginary floor is not physical), or a global model.",
+  "known_limitations": [
+   "Residual qualification is backward accuracy, not forward conditioning of a near-multiple root.",
+   "No sparse selected-spectrum or branch-continuation semantics.",
+   "The PDRF oracle asserts real parts only; its imaginary-part floor (~1e-5..1e-4 s^-1) is not growth-rate evidence."
+  ]
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
+}

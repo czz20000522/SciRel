@@ -1,0 +1,138 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section",
+ "title": {
+  "en": "Molecular-hydrogen charge-exchange cross section",
+  "zh": "分子氢电荷交换截面"
+ },
+ "summary": "H2 + H2+ charge-exchange cross section in m^2 as a function of collision energy in eV: a Janev nine-coefficient logarithmic polynomial evaluated on the clipped [0.1, 2.01e4] eV domain, so endpoint values repeat outside the fit's range. Negative energies are rejected.",
+ "taxonomy": [
+  "collisions",
+  "cross-section",
+  "charge-exchange",
+  "hydrogen",
+  "molecular",
+  "tabulated-fit"
+ ],
+ "aliases": [
+  "sigma_cx_hh",
+  "H2-H2+ charge-exchange cross section",
+  "molecular Janev charge-exchange fit"
+ ],
+ "discovery": {
+  "capability": [
+   "Molecular-hydrogen charge-exchange cross section",
+   "H2 + H2+ charge-exchange cross section in m^2 from collision energy in eV."
+  ],
+  "operation": [
+   "Evaluate the H2 + H2+ charge-exchange cross section",
+   "collision energies -> cross section per energy"
+  ],
+  "model": "Single declared Janev nine-coefficient logarithmic-polynomial fit; no alternative branch, external-data interpolation or rate integration.",
+  "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
+  "boundary": "Energies must be finite and nonnegative; values outside the [0.1, 2.01e4] eV fit range clip to the endpoints; the fit is strictly positive and finite on its clipped domain.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "the H2 + H2+ charge-exchange cross section as a function of collision energy, given by the Janev logarithmic polynomial exp(polyval(log(E), a)) * 1e-4",
+  "direction": "collision energies -> cross section per energy",
+  "definition": "Energies are clipped to [0.1, 2.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the nine Janev coefficients a. Endpoint values repeat outside the clipped range.",
+  "model": "a single declared cross-section fit; no interpolation of external data, no alternative branch and no rate integration",
+  "geometry": "none; a scalar material function of collision energy",
+  "coordinates": "collision energy in eV; output cross section in m^2",
+  "boundary": "energies must be finite and nonnegative; in-domain values outside the fit range clip to the range endpoints; the fit is strictly positive and finite on its clipped domain",
+  "assumptions": [
+   "The Janev coefficients are the declared fit values, evaluated with the declared expression; they are not re-derived from any external reference.",
+   "The atomic H + H+ charge-exchange cross section (a sibling asset) is a different physical system: the two fits disagree and are not interchangeable.",
+   "Endpoint clipping is the declared behavior: a caller evaluating far outside the fit range silently obtains the endpoint value.",
+   "No external physical cross-section reference is bound; this residual stays open."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "energy_ev",
+   "description": "Collision energies at which the cross section is evaluated.",
+   "units": "eV",
+   "shape": "any (scalar or array)",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative. Values above or below the fit range are clipped to the range endpoints."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "cross_section_m2",
+   "description": "Charge-exchange cross section, one value per energy.",
+   "units": "m^2",
+   "shape": "same as energy_ev",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive for every accepted input, because the fit is evaluated only on its clipped positive domain."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller accepts the clipping convention: energies outside the fit range silently return the endpoint value rather than an error or an extrapolation."
+  ],
+  "supported": [
+   "H2 + H2+ charge-exchange cross sections on the fit within (or clamped to) its declared energy range.",
+   "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
+   "Rejecting negative energies."
+  ],
+  "excluded": [
+   "Maxwellian averaging of this cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, which accepts this callable as its cross_section_m2 port.",
+   "Atomic H + H+ charge exchange: a sibling asset with a different fit, not a variant of this relation.",
+   "Elastic momentum transfer or dissociation channels: different relations not provided by this asset.",
+   "Rate coefficients or collision frequencies: downstream caller-owned quantities.",
+   "A cross-section model validated against an external atomic-physics reference; none is bound."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError naming energy_ev for non-real, non-finite or negative energy inputs. There is no other failure mode.",
+  "runtime_failure": "Not reachable on the declared domain: the fit is evaluated only on its clipped positive range, so the result is finite and strictly positive for every accepted input. No iteration, no state and no partial results.",
+  "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no cross section."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.molecular_hydrogen_charge_exchange_cross_section",
+   "symbol": "evaluate_molecular_hydrogen_charge_exchange_cross_section",
+   "signature": "evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "evaluate_molecular_hydrogen_charge_exchange_cross_section"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the fit on a small energy grid, confirm the endpoint clipping, confirm it differs from the atomic sibling, and confirm that a negative energy is rejected.",
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_molecular_hydrogen_charge_exchange_cross_section, evaluate_atomic_hydrogen_charge_exchange_cross_section\n\nenergy = np.array([0.1, 1.0, 10.0, 100.0, 1.0e3, 1.0e4, 2.01e4])\ncross_section = evaluate_molecular_hydrogen_charge_exchange_cross_section(energy)\nassert cross_section.shape == energy.shape\nassert np.all(np.isfinite(cross_section)) and np.all(cross_section > 0.0)\nclipped = evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([0.01, 0.1, 3.0e4, 2.01e4]))\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\natomic = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy)\nassert not np.allclose(cross_section, atomic, rtol=1e-12, atol=0.0)\ntry:\n    evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')",
+  "expected": "Finite strictly positive cross sections in m^2 on the grid; endpoint repetition outside the clipped range; the molecular fit disagreeing with the atomic sibling; ValueError for a negative energy naming nonnegativity."
+ },
+ "verification": {
+  "scope": [
+   "That the fit equals an independent evaluation of exp(polyval(log(E), a)) * 1e-4 on the clipped domain to a relative tolerance of 1e-15 on in-domain and holdout grids.",
+   "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
+   "That the molecular fit materially differs from the atomic-hydrogen sibling asset's Janev branch.",
+   "The input contract: non-finite and negative energies are rejected with messages naming the quantity. A negative energy raises rather than being silently clipped.",
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids.",
+   "The composition contract: this callable serves directly as the cross_section_m2 port of scirel.collisions.maxwellian-relative-speed-rate-average and yields finite positive rate coefficients."
+  ],
+  "tests": [
+   "tests/collisions/test_molecular_hydrogen_charge_exchange_cross_section.py",
+   "tests/collisions/test_collision_cross_section_input_types.py"
+  ],
+  "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
+  "known_limitations": [
+   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
+   "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
+   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
+   "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
+   "Public distribution licensing remains pending a human decision.",
+   "The frozen high-energy branch is non-monotonic between about 978 and 8,291 eV: the cross section rises by about 27.7% there, with a maximum log-slope near 0.175. Monotonicity is not claimed, and no external oracle is bound that could justify changing the frozen fit."
+  ]
+ }
+}

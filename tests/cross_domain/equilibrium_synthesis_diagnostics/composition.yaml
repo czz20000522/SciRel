@@ -1,0 +1,136 @@
+kind: scientific_composition
+name: 平衡合成诊断
+entrypoint: composition_fixture.py::run_composition
+display_name:
+  zh: 平衡合成诊断
+  en: Equilibrium Synthetic Diagnostics
+framework_mapping:
+  primary_pfm_node: N9
+  coverage: full
+  related_pfm_nodes:
+  - N6
+inputs:
+- name: equilibrium
+  meaning: 只读平衡状态 mapping
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: fields on caller [N_Z,N_R] grid
+  fields:
+    psi:
+      meaning: 磁通 field
+      shape: '[N_Z,N_R] or null'
+      units: Wb
+      required: false
+      constraints: flux_loops requires it
+    profiles:
+      meaning: 压强及可选 profile fields
+      shape: mapping
+      units: mixed
+      required: false
+      constraints: thomson requires p_parallel/p_perp
+- name: R
+  meaning: 径向网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: axis 1 strictly increasing
+- name: Z
+  meaning: 竖直网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: axis 0 strictly increasing
+- name: observations
+  meaning: 诊断请求或观测 mapping
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: points [N,2]=[R,Z]
+  fields:
+    flux_loops:
+      meaning: 磁通环请求或观测
+      shape: mapping
+      units: mixed
+      required: false
+      constraints: points [N,2]=[R,Z]
+    thomson:
+      meaning: Thomson 请求或观测
+      shape: mapping
+      units: mixed
+      required: false
+      constraints: points [N,2]=[R,Z]
+outputs:
+- name: flux_loops
+  meaning: 磁通环预测
+  shape: '[N_flux] or absent'
+  units: Wb
+  required: false
+  constraints: same requested-point order
+- name: thomson
+  meaning: Thomson 型局域预测
+  shape: mapping or absent
+  units: mixed
+  required: false
+  constraints: pressure required; density/temperature optional
+execution:
+  mode: source_ordered_equilibrium_observation_sampling
+  order_policy: flux_loops_then_thomson_in_observation_key_order
+  state_policy: read_only_equilibrium_mapping_and_caller_owned_diagnostic_geometry
+  failure_policy: stop_on_missing_required_field_or_invalid_sampler_domain
+nodes:
+- id: equilibrium_state_projection
+  name: 显式平衡状态投影
+  kind: support_action
+  callable: composition_fixture.py::run_composition
+  inputs:
+  - equilibrium
+  outputs:
+  - psi
+  - profiles
+- id: flux_loop_sampling
+  name: 磁通环双线性采样
+  kind: scientific_function
+  callable: scirel.geometry.bilinear_grid_sampling::sample_rectilinear_field
+  asset_ref: scirel.geometry.bilinear_grid_sampling
+  inputs:
+  - R
+  - Z
+  - psi
+  - flux_loop_points
+  outputs:
+  - flux_loops
+- id: thomson_sampling
+  name: Thomson 型局域场采样
+  kind: scientific_function
+  callable: scirel.geometry.bilinear_grid_sampling::sample_rectilinear_field
+  asset_ref: scirel.geometry.bilinear_grid_sampling
+  inputs:
+  - R
+  - Z
+  - p_parallel
+  - p_perp
+  - density
+  - electron_temperature
+  - thomson_points
+  outputs:
+  - thomson
+edges:
+- from: equilibrium_state_projection
+  from_output: psi
+  to: flux_loop_sampling
+  to_input: psi
+  data: fixed equilibrium flux field [Z,R]
+  condition: observations contains flux_loops
+  required: false
+  transform: identity
+  closure: controlled_glue
+- from: equilibrium_state_projection
+  from_output: profiles
+  to: thomson_sampling
+  to_input: p_parallel,p_perp,density,electron_temperature
+  data: fixed pressure fields and optional profile fields [Z,R]
+  condition: observations contains thomson
+  required: false
+  transform: extract mandatory pressure and present optional fields
+  closure: controlled_glue

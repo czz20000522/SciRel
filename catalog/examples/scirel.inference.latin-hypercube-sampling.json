@@ -1,0 +1,148 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.inference.latin-hypercube-sampling",
+ "title": {
+  "en": "Seeded Latin-hypercube parameter samples",
+  "zh": "带种子的拉丁超立方参数采样"
+ },
+ "summary": "Generate one independently permuted stratum per fitted parameter and return bounded parameter dictionaries for optional inversion initialization.",
+ "taxonomy": [
+  "inference",
+  "sampling",
+  "latin-hypercube"
+ ],
+ "aliases": [
+  "stratified inversion initial design"
+ ],
+ "discovery": {
+  "capability": [
+   "Seeded Latin-hypercube parameter samples",
+   "One independently permuted stratum per fitted parameter, returned as bounded parameter dictionaries for inversion initialization."
+  ],
+  "operation": [
+   "Generate seeded Latin-hypercube parameter samples",
+   "bounds, n_samples, seed and fit_keys -> initial_samples"
+  ],
+  "model": "Independent-coordinate Latin-hypercube initialization, not a posterior or uncertainty model.",
+  "geometry": "Rectangular continuous parameter domain; each fit key is one independent parameter axis and no spatial geometry is assumed.",
+  "boundary": "Every selected interval must have finite low < high; samples lie at or above low and below high under ordinary finite arithmetic.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "parameter intervals and sample count to a stratified initial parameter design",
+  "direction": "bounds, n_samples, seed and fit_keys -> initial_samples",
+  "definition": "For each selected key, independently permute the n_samples strata and draw one uniform offset within each stratum using a NumPy default_rng. Affinely map the unit values into that key's [low, high) interval and combine columns in selected-key order into n_samples dictionaries.",
+  "model": "independent-coordinate Latin-hypercube initialization, not a posterior or uncertainty model",
+  "geometry": "rectangular continuous parameter domain; no spatial geometry",
+  "coordinates": "each fit key is one independent parameter axis, in fit_keys order or bounds insertion order",
+  "boundary": "Every selected interval must have finite low < high; samples lie at or above low and below high under ordinary finite arithmetic.",
+  "assumptions": [
+   "The caller supplies meaningful parameter units and bounds; this function does not interpret their physics.",
+   "A fixed seed and the same key order give a repeatable design under the installed NumPy generator implementation."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "bounds",
+   "description": "Mapping from parameter keys to lower and upper numeric endpoints.",
+   "units": "per-parameter caller units",
+   "shape": "mapping[key -> pair(low, high)]",
+   "dtype": "Python dict with float-convertible endpoints",
+   "required": true,
+   "constraints": "Must be dict; selected keys must exist and each selected pair must convert to finite floats with high > low. Unselected bounds are not checked."
+  },
+  {
+   "name": "n_samples",
+   "description": "Number of strata and returned parameter dictionaries.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "Python int",
+   "required": true,
+   "constraints": "At least one; Python bool is rejected with ValueError rather than leaking a NumPy TypeError."
+  },
+  {
+   "name": "seed",
+   "description": "Seed passed unchanged to numpy.random.default_rng.",
+   "units": "dimensionless",
+   "shape": "scalar or null",
+   "dtype": "NumPy-compatible seed or None",
+   "required": false,
+   "default": null,
+   "constraints": "None yields a nondeterministic generator; invalid seeds fail in NumPy."
+  },
+  {
+   "name": "fit_keys",
+   "description": "Optional ordered parameter-key subset; omitted means bounds insertion order.",
+   "units": "identifier",
+   "shape": "sequence of keys or null",
+   "dtype": "iterable of mapping keys or None",
+   "required": false,
+   "default": null,
+   "constraints": "Selected keys must be present in bounds; uniqueness and nonempty selection are not enforced."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "initial_samples",
+   "description": "Ordered sample dictionaries, each containing only selected parameter keys.",
+   "units": "per-parameter caller units",
+   "shape": "list[n_samples] of mapping[fit_key -> scalar]",
+   "dtype": "list of dict of float",
+   "required": true,
+   "constraints": "One draw in each stratum per selected coordinate; an empty fit_keys selection yields n_samples empty dictionaries."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The selected parameters admit finite increasing box bounds.",
+   "The caller has chosen a meaningful order for parameter keys and, if reproducibility is required, a seed."
+  ],
+  "supported": [
+   "Bounded initial-design samples with independently stratified continuous parameter coordinates.",
+   "A selected subset of bound keys without evaluating a scientific model."
+  ],
+  "excluded": [
+   "Correlated priors, constrained nonrectangular domains, posterior sampling or guaranteed optimizer convergence.",
+   "Validation of unselected parameter intervals or physical admissibility of sampled combinations."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for a non-dict bounds input, boolean/non-int or nonpositive n_samples, or selected nonfinite/nonincreasing endpoints. Missing selected keys raise KeyError; malformed pairs, conversion failures and invalid seeds propagate their native exceptions.",
+  "runtime_failure": "NumPy allocation or RNG failures propagate; no partial sample result is returned.",
+  "nonconvergence": "Not applicable; this is finite sampling, not optimization.",
+  "partial_results": "None after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.inference.latin_hypercube_sampling",
+   "symbol": "sample_latin_hypercube",
+   "signature": "sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None)",
+   "canonical_module": "scirel.inference",
+   "canonical_symbol": "sample_latin_hypercube"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "A fixed seed produces repeatable independent strata for two bounded coordinates.",
+  "code": "from scirel.inference import sample_latin_hypercube\nbounds = {'a': (0.0, 1.0), 'b': (10.0, 20.0)}\na = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']\nb = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']\nassert a == b\nassert sorted(int(row['a'] * 5) for row in a) == list(range(5))\nassert sorted(int((row['b'] - 10) / 10 * 5) for row in a) == list(range(5))",
+  "expected": "Five reproducible dictionaries with exactly one sample in each marginal stratum."
+ },
+ "verification": {
+  "scope": [
+   "Fixed-seed repeatability and one draw per stratum on two coordinates.",
+   "Subset selection and rejection of invalid sample count or selected bounds."
+  ],
+  "tests": [
+   "tests/inference/test_latin_hypercube_sampling.py"
+  ],
+  "evidence_ceiling": "Direct tests establish selected deterministic stratification and input failures only; they do not certify statistical quality across RNG implementations, physical parameter validity or expert approval.",
+  "known_limitations": [
+   "The implementation validates only selected bounds and does not enforce unique or nonempty fit_keys.",
+   "A fixed seed is not a promise of identical samples across different NumPy RNG versions.",
+   "Public distribution licensing and SciRel expert recognition remain pending."
+  ]
+ }
+}

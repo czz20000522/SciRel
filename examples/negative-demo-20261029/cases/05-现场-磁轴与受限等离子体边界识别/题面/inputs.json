@@ -1,0 +1,129 @@
+{
+  "executable": true,
+  "fixed_inputs": {
+    "synthetic_flux": {
+      "form": "psi0-delta*((R-R0)^2/a^2+(Z-Z0)^2/b^2)",
+      "psi0_Wb_per_rad": 0.05,
+      "delta_Wb_per_rad": 0.02,
+      "R0_m": 1.2,
+      "Z0_m": 0.1,
+      "a_m": 0.4,
+      "b_m": 0.65
+    },
+    "domain_R_m": [
+      0.5,
+      1.9
+    ],
+    "domain_Z_m": [
+      -1,
+      1.1
+    ]
+  },
+  "finite_instance": {
+    "identifier": "original-quadratic-limited-no-X-finite",
+    "grid": {
+      "R_count": 65,
+      "Z_count": 85,
+      "R_recipe": "R_i=1/2+7*i/320 m, i=0,...,64",
+      "Z_recipe": "Z_j=-1+j/40 m, j=0,...,84",
+      "array_axes": [
+        "R",
+        "Z"
+      ],
+      "R_mesh": "R[i,j]=R_i",
+      "Z_mesh": "Z[i,j]=Z_j",
+      "endpoints": "Both original domain endpoints included; no ghost nodes."
+    },
+    "numeric_convention": "Original literal constants and exact rational coordinate recipes determine input values. Convert scalar/grid/limiter input leaves once to nearest binary64, ties to even; construct each node psi by the original formula interpreted as a real expression in those constants/coordinates and round the final node leaf once. pi is the mathematical constant used by angular sampling. Subsequent finite algorithms operate on these inputs; no bitwise cross-platform solver equality or numerical tolerance is added.",
+    "node_flux_recipe": "psi[i,j]=psi0-delta*((R_i-R0)^2/a^2+(Z_j-Z0)^2/b^2), using unchanged fixed_inputs.synthetic_flux values; Wb/rad.",
+    "limiter": {
+      "vertices_RZ_m": [
+        [
+          0.85,
+          -0.63
+        ],
+        [
+          1.68,
+          -0.63
+        ],
+        [
+          1.68,
+          0.72
+        ],
+        [
+          0.85,
+          0.72
+        ],
+        [
+          0.85,
+          -0.63
+        ]
+      ],
+      "closure": "Last vertex is an exact copy of the first; consecutive four segments form the closed polygon.",
+      "domain_rule": "Every limiter vertex and segment is strictly inside original rectangular domain; original axis lies strictly inside polygon.",
+      "refinement": "For every segment, include its intersections with grid lines and its ending vertex, preserving the exact lower-cell/segment order in model.md; no arbitrary extra limiter sampling parameter.",
+      "mask_rule": "Closed polygon Path.contains_points with radius0 on grid nodes; general boundary-point ambiguity is not extended to boundary O candidates. The supported finite case uses an interior main O candidate; strict core psi comparison excludes first-contact wall nodes.",
+      "first_contact_rule": "current_sign=+1. Bilinearly interpolate node psi on all refined limiter points and take their signed maximum, as defined in model.md."
+    },
+    "critical_point_options": {
+      "current_sign": 1,
+      "mask_inside_limiter": true,
+      "discard_xpoints": true,
+      "candidate_stencil": "Strict eight-neighbor minimum of central-difference squared-gradient proxy, with boundary proxy0.",
+      "primary_O_order": "Increasing squared distance to original domain center; no new tie breaker.",
+      "ties_or_degenerate_candidates": "Outside supported normal limited case; retain original HOLD conditions, never fabricate a chosen point or repair determinant."
+    },
+    "boundary_trace": {
+      "composition": "New explicit finite sampling composition of an existing single-ray flux-surface mathematical primitive; not an assertion that an existing high-level empty-X wrapper is executable.",
+      "normalized_flux": "q=(psi-psi_A)/(psi_B-psi_A), using actual primary O candidate psi_A and actual limited boundary psi_B, not analytic prefilled answers.",
+      "spline": {
+        "degree_R": 3,
+        "degree_Z": 3,
+        "smoothing": 0,
+        "boundary_condition": "tensor-product cubic interpolating spline with not-a-knot endpoint constraints (RectBivariateSpline convention)",
+        "domain": "Original full rectangular grid"
+      },
+      "angle_count": 80,
+      "angle_offset_rad": 0,
+      "theta_recipe": "theta_k=2*pi*k/80, k=0,...,79; theta increases from+Z toward+R.",
+      "unclipped_ray_endpoint": "(R_A+10*sin(theta_k), Z_A+10*cos(theta_k)) m",
+      "ray_extension_m": 10,
+      "clip_order": "R first, then Z, preserving ray direction, exactly as model.md; each clipping axis is used only when its current absolute ray displacement exceeds1e-6m.",
+      "ray_points_including_endpoints": 1000,
+      "ray_sampling": "Uniform t_l=l/999, l=0,...,999 after clipping.",
+      "target_normalized_flux": 1,
+      "crossing_rule": "First strict q_l>1; interpolate between that sample and its immediately preceding sample. No nonlinear root solve.",
+      "closure": "Return80 ordered R/Z crossings then append an exact copy of point0, giving81x2. No X coordinates appended.",
+      "failure_domain": "Require finite nonzero normalization, first strict crossing index in1..999 and a finite nonzero adjacent flux difference. Otherwise explicit failure, not null or raw all-false argmax index0. This is the new composition contract, not a changed source kernel."
+    }
+  },
+  "public_problem_status": {
+    "limited_no_X_finite_request": "COMPLETE_FINITE_INPUTS_AND_MATHEMATICAL_OPERATORS",
+    "original_broader_topology_scope": "UNRESOLVED_CONDITIONS_RETAINED_SEPARATELY",
+    "reference_execution": "NOT_RUN"
+  },
+  "unresolved_items": [],
+  "original_scope_residuals": [
+    {
+      "condition": "diverted, single/double-null and multiple-null topology",
+      "status": "HOLD_NOT_COVERED",
+      "boundary": "No synthetic saddle, SOL leg or strike point is introduced into original quadratic input."
+    },
+    {
+      "condition": "degenerate Hessian detH==0 and undefined critical correction",
+      "status": "HOLD_SOURCE_DEFINITION_BOUNDARY",
+      "boundary": "No determinant floor, perturbation or replacement axis; existing held cases unchanged."
+    },
+    {
+      "condition": "exact equal-distance primary O candidates and other topology/contact ties",
+      "status": "HOLD_NOT_RESOLVED",
+      "boundary": "No new sorting tie breaker or winner is fabricated."
+    },
+    {
+      "condition": "existing held axis finite-value definitions",
+      "status": "HOLD_UNCHANGED_OUTSIDE_THIS_FINITE_CASE",
+      "boundary": "Normal finite O-candidate estimate is defined here; singular/held axis-value cases are not accepted or regularized."
+    }
+  ],
+  "engineering_pending": "Reference adapter/runtime chain remains NOT_RUN; existing high-level no-X support gap is separate from the complete finite four-output mathematical request."
+}

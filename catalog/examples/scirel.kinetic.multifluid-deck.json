@@ -1,0 +1,102 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.multifluid-deck",
+ "title": {
+  "en": "Stored two-species SI fluid deck",
+  "zh": "存储的双组分 SI 流体输入表"
+ },
+ "summary": "Return an independent copy of the packaged ten-column two-species fluid input table.",
+ "taxonomy": [
+  "kinetic",
+  "spectral-dispersion",
+  "examples"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Stored two-species SI fluid deck",
+   "Return an independent copy of the packaged ten-column two-species fluid input table."
+  ],
+  "operation": [
+   "read the packaged two-species fluid deck",
+   "no inputs -> packaged ten-column two-species fluid deck"
+  ],
+  "model": "Fixed electron/proton fluid input data.",
+  "geometry": "Uniform background, zero drift and zero density gradient.",
+  "boundary": "Declared local equilibrium input; no solution is inferred.",
+  "device_scope": "unclassified"
+ },
+ "identity": {
+  "relation": "Packaged fluid input data to an SI fluid deck",
+  "direction": "No caller inputs to an independent copy of the fixed packaged SI table.",
+  "definition": "Read the literal two-species ten-column fluid table without changing its physical numbers.",
+  "model": "Fixed electron/proton fluid input data.",
+  "geometry": "Uniform background, zero drift and zero density gradient.",
+  "coordinates": "Columns q,m,n,vx,vy,vz,cs_parallel,cs_perpendicular,epsnx,epsny.",
+  "boundary": "Declared local equilibrium input; no solution is inferred.",
+  "assumptions": [
+   "The zero-argument loader accepts no species, density, velocity, sound-speed or file-path parameters.",
+   "The fixed electron/proton table uses q=+/-1.602e-19 C, me=9.109e-31 kg, mp=1.673e-27 kg and density 8.7e6 m^-3 per species. Drift and density-gradient columns are zero; parallel and perpendicular sound speeds are equal within each species: 2.893e4 m/s for electrons and 6.757e2 m/s for protons. No temperature conversion or equilibrium solve is performed."
+  ]
+ },
+ "inputs": [],
+ "outputs": [
+  {
+   "name": "deck",
+   "description": "Independent electron/proton SI deck copy.",
+   "units": "C; kg; m^-3; m/s; m/s; m/s; m/s; m/s; m^-1; m^-1",
+   "shape": "(2,10)",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "Literal table: density 8.7e6 m^-3 per species; the declared physical constants and sound speeds are used as given."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "No caller inputs; the packaged fluid_SI.in resource must be available and readable."
+  ],
+  "supported": [
+   "Package-local input data; no checkout or network."
+  ],
+  "excluded": []
+ },
+ "failure_semantics": {
+  "invalid_input": "Supplying any arguments raises TypeError; the loader accepts no caller-supplied scientific inputs or file path.",
+  "runtime_failure": "File access and NumPy text-parsing errors propagate; no alternate data source is selected.",
+  "nonconvergence": "No iterative solve is performed.",
+  "partial_results": "No partial result is returned on failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.multifluid",
+   "symbol": "fluid_deck",
+   "signature": "fluid_deck()"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Load independent packaged data.",
+  "code": "from scirel.kinetic.dispersion.multifluid import fluid_deck\na, b = fluid_deck(), fluid_deck()\nassert a.shape == (2, 10)\nassert a is not b\nassert a.dtype.name == \"float64\"\nassert (a == b).all()",
+  "expected": "The packaged helper returned an independent float64 deck of shape (2,10); two calls returned distinct arrays with equal values."
+ },
+ "verification": {
+  "scope": [
+   "Direct gate: test_packaged_fluid_deck_is_loaded_directly binds fluid_deck() shape, finite SI fields, the fixed electron/proton rows and independent arrays with equal values.",
+   "The contract example and direct test both load the packaged table; no external calibration is claimed."
+  ],
+  "tests": [
+   "tests/kinetic/test_dispersion_multifluid.py"
+  ],
+  "evidence_ceiling": "Bounded to the packaged ten-column two-species table: direct test checks shape, finite values, electron/proton rows and conversion into fluid_equilibrium_si. It does not establish arbitrary deck correctness or experimental calibration.",
+  "known_limitations": [
+   "This is one attributed equilibrium fixture, not a plasma-parameter catalog.",
+   "No independent experimental or external-deck comparison is claimed."
+  ]
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
+}

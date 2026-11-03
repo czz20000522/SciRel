@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scirel.dev/schemas/capability-runtime-closure.v2.json",
+  "title": "SciRel capability runtime closure receipt v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "binding_status",
+    "binding_reasons",
+    "mode",
+    "target",
+    "source",
+    "source_after",
+    "probe_sha256",
+    "probe_sha256_after",
+    "python",
+    "platform",
+    "child",
+    "child_returncode",
+    "loaded_module_count",
+    "loaded_scirel_modules",
+    "external_import_roots",
+    "distributions",
+    "error",
+    "duration_ms"
+  ],
+  "properties": {
+    "schema": {"const": "scirel.capability-runtime-closure"},
+    "status": {"enum": ["PASS", "FAIL"]},
+    "binding_status": {"enum": ["BOUND", "UNBOUND"]},
+    "binding_reasons": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "mode": {"enum": ["import", "probe"]},
+    "target": {"type": "object", "minProperties": 1},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "revision", "dirty", "package_version", "content_sha256"],
+      "properties": {
+        "root": {"type": "string", "minLength": 1},
+        "revision": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "dirty": {"type": "boolean"},
+        "package_version": {"type": "string", "minLength": 1},
+        "content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "source_after": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "revision", "dirty", "package_version", "content_sha256"],
+      "properties": {
+        "root": {"type": "string", "minLength": 1},
+        "revision": {"type": ["string", "null"], "pattern": "^[0-9a-f]{40}$"},
+        "dirty": {"type": "boolean"},
+        "package_version": {"type": "string", "minLength": 1},
+        "content_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "probe_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "probe_sha256_after": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "python": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["implementation", "version", "executable"],
+      "properties": {
+        "implementation": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "executable": {"type": "string", "minLength": 1}
+      }
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["system", "machine"],
+      "properties": {
+        "system": {"type": "string", "minLength": 1},
+        "machine": {"type": "string", "minLength": 1}
+      }
+    },
+    "child": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "isolated", "executed"],
+      "properties": {
+        "argv": {"type": "array", "items": {"type": "string"}},
+        "isolated": {"type": "boolean"},
+        "executed": {"type": "boolean"}
+      }
+    },
+    "child_returncode": {"type": "integer"},
+    "loaded_module_count": {"type": "integer", "minimum": 0},
+    "loaded_scirel_modules": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "external_import_roots": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "distributions": {"type": "array", "items": {"type": "object"}},
+    "error": {"type": ["object", "null"]},
+    "duration_ms": {"type": "number", "minimum": 0}
+  }
+}

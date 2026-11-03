@@ -1,0 +1,136 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.physics.coulomb-ii",
+ "title": {
+  "en": "Ion-ion Coulomb logarithm",
+  "zh": "离子-离子库仑对数"
+ },
+ "summary": "Sauter ion-ion Coulomb logarithm estimate.",
+ "taxonomy": [
+  "physics",
+  "collisions",
+  "coulomb-log"
+ ],
+ "aliases": [
+  "calculate_log_lambda_ii"
+ ],
+ "discovery": {
+  "capability": [
+   "Sauter ion-ion Coulomb logarithm estimate.",
+   "Evaluate the Sauter ion-ion weak-coupling Coulomb logarithm from temperature, density and charge state."
+  ],
+  "operation": [
+   "evaluate the Sauter ion-ion Coulomb logarithm",
+   "ion temperature/density/charge -> dimensionless ln Lambda"
+  ],
+  "model": "Sauter/NRL Coulomb-log relation ln Lambda = 30 - 0.5 ln(n_i) + 1.5 ln(1000 T_i) - 3 ln(Z_i) with explicit numeric boundary checks.",
+  "geometry": "Homogeneous plasma point with all three input arrays broadcast; no spatial geometry is inferred.",
+  "boundary": "T_i in keV, n_i in m^-3 and Z_i must be finite and strictly positive.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "lnΛ=30-0.5 ln(n_i)+1.5 ln(1000*T_i)-3 ln(Z_i)",
+  "direction": "ion temperature, density and charge -> dimensionless logarithm",
+  "definition": "Sauter 1999 ion-ion weak-coupling fit 30-0.5*ln(n_i)+1.5*ln(1000*T_i)-3*ln(Z_i), not NRL 2013 Eq. c. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
+  "model": "Sauter ion-ion Coulomb-log relation with explicit SciRel numeric boundary checks",
+  "geometry": "homogeneous plasma point",
+  "coordinates": "broadcast all three input arrays",
+  "boundary": "strictly positive finite T_i in keV, n_i in m^-3, Z_i dimensionless",
+  "assumptions": [
+   "The caller decides whether the weak-coupling estimate is physically adequate.",
+   "Charge is a positive scalar or broadcast field, not a species mixture."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "T_i",
+   "description": "Ion temperature",
+   "units": "keV",
+   "shape": "broadcast",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  },
+  {
+   "name": "n_i",
+   "description": "Ion density",
+   "units": "m^-3",
+   "shape": "broadcast",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  },
+  {
+   "name": "Z_i",
+   "description": "Ion charge number",
+   "units": "dimensionless",
+   "shape": "broadcast",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Coulomb logarithm",
+   "units": "dimensionless",
+   "shape": "broadcast shape",
+   "dtype": "float64 scalar or array",
+   "required": true,
+   "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "strictly positive finite T_i in keV, n_i in m^-3, Z_i dimensionless"
+  ],
+  "supported": [
+   "Finite NumPy evaluation of the declared relation and broadcast shape."
+  ],
+  "excluded": [
+   "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
+   "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
+  "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
+  "partial_results": "No output is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.physics.coulomb_logs",
+   "symbol": "calculate_log_lambda_ii",
+   "signature": "calculate_log_lambda_ii(T_i, n_i, Z_i)",
+   "canonical_module": "scirel.physics",
+   "canonical_symbol": "calculate_log_lambda_ii"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run the relation on a finite declared-domain case.",
+  "code": "import numpy as np\nfrom scirel.physics import calculate_log_lambda_ii\nr=calculate_log_lambda_ii(3., 2e19, 2.)\nassert np.isfinite(r)",
+  "expected": "A finite dimensionless logarithm"
+ },
+ "verification": {
+  "scope": [
+   "Independent 60-digit Decimal logarithms verify the declared Sauter fit over temperature/density/charge scales, including smallest subnormal and largest float64; transformation/scaling identities.",
+   "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
+   "Agreement with the canonical SciRel callers and dependencies of this relation."
+  ],
+  "tests": [
+   "tests/cross_domain/test_algebra_grid.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish the declared Sauter 1999 ion-ion fit, shapes and numerical boundaries only. They do not establish global physical calibration or NRL 2013 Eq. c; an independent NRL transcription differs by +0.4388 in ln Lambda.",
+  "known_limitations": [
+   "No external calibration or collision-frequency composition is claimed.",
+   "Only the declared Sauter 1999 ion-ion fit algebra and numerical boundaries are covered; this is not a general Coulomb-log model.",
+   "This relation is not NRL 2013 Eq. c. An independent transcription of NRL 2013 Eq. c differs by a constant +0.4388 in ln Lambda on probes; the Sauter formula is retained and must not be cited as NRL 2013 Eq. c."
+  ]
+ }
+}

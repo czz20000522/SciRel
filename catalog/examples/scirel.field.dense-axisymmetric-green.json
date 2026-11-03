@@ -1,0 +1,153 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.dense-axisymmetric-green",
+ "title": {
+  "en": "Dense axisymmetric circular-filament Green matrices",
+  "zh": "轴对称圆电流丝稠密 Green 矩阵"
+ },
+ "summary": "Build dense target-row/source-column circular-filament response matrices for psi, BR, and BZ.",
+ "taxonomy": [
+  "field",
+  "green-function",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "dense three-component filament Green response"
+ ],
+ "discovery": {
+  "capability": [
+   "Dense axisymmetric circular-filament Green matrices",
+   "Build dense target-row/source-column circular-filament response matrices for psi, BR and BZ."
+  ],
+  "operation": [
+   "dense axisymmetric Green-matrix construction",
+   "target points and weighted source rows -> response matrices"
+  ],
+  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight and exact self conventions.",
+  "geometry": "Independent finite target and source point tables.",
+  "boundary": "Exact source-target entries are zeroed and zero-radius sources contribute zero; positive radii must be nonnegative.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "Dense axisymmetric Green matrices",
+  "direction": "target points and weighted source rows to response matrices",
+  "definition": "Evaluate the circular-filament response for each source column in caller order.",
+  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight, and exact self conventions.",
+  "geometry": "Independent finite target and source point tables.",
+  "coordinates": "R,Z in metres; source weight dimensionless; outputs Wb/rad/A and T/A.",
+  "boundary": "Exact source-target entries are zeroed; zero-radius sources contribute zero; positive radii must be nonnegative.",
+  "assumptions": [
+   "Targets and sources are finite real two-column/three-column tables.",
+   "An empty source list is represented by zero-column matrices.",
+   "No 2pi factor or finite-conductor model is added."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rz_pts",
+   "description": "Target rows [R_m,Z_m].",
+   "units": "m,m",
+   "shape": "[N_target,2]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite with nonnegative target radii; an empty target list must retain the two-column shape."
+  },
+  {
+   "name": "source_rzw",
+   "description": "Source rows [R0_m,Z0_m,dimensionless weight].",
+   "units": "m,m,dimensionless",
+   "shape": "[N_source,3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite with nonnegative source radii; [] is accepted as an empty-source shorthand."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "gpsi",
+   "description": "Weighted psi=R A_phi response for each target and source pair.",
+   "units": "Wb/rad/A",
+   "shape": "[N_target,N_source]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "axis-source columns are zero; no 2*pi factor is applied."
+  },
+  {
+   "name": "gBR",
+   "description": "Weighted radial-field response for each target and source pair.",
+   "units": "T/A",
+   "shape": "[N_target,N_source]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "axis-source columns are zero."
+  },
+  {
+   "name": "gBZ",
+   "description": "Weighted axial-field response for each target and source pair.",
+   "units": "T/A",
+   "shape": "[N_target,N_source]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "axis targets may retain the analytic finite limit."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Targets and sources are finite real two-column/three-column tables.",
+   "An empty source list is represented by zero-column matrices."
+  ],
+  "supported": [
+   "Weighted columns, empty sources, axis limits, source-column order, and direct kernel agreement."
+  ],
+  "excluded": [
+   "Finite-wire self-fields, arbitrary extreme-scale accuracy, and physical equilibrium claims."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, or negative-radius target/source arrays.",
+  "runtime_failure": "FloatingPointError from an unrepresentable kernel response propagates.",
+  "nonconvergence": "Not applicable; matrix entries are evaluated directly.",
+  "partial_results": "No response mapping is returned after validation or kernel failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.dense_axisymmetric_green",
+   "symbol": "dense_axisymmetric_green_response",
+   "signature": "dense_axisymmetric_green_response(rz_pts, source_rzw)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "dense_axisymmetric_green_response"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.electromagnetism.green-response-matrices"
+   }
+  ]
+ },
+ "example": {
+  "description": "Compare one source with a changed weight and an empty source set.",
+  "code": "import numpy as np\nfrom scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response\ntargets = [[0.0, -0.1], [0.2, 0.15]]\nunit = dense_axisymmetric_green_response(targets, [[0.35, -0.1, 1.0]])\nweighted = dense_axisymmetric_green_response(targets, [[0.35, -0.1, -2.5]])\nempty = dense_axisymmetric_green_response(targets, [])\nfor name in ('gpsi', 'gBR', 'gBZ'):\n    assert unit[name].shape == (2, 1)\n    np.testing.assert_allclose(weighted[name], -2.5 * unit[name])\n    assert empty[name].shape == (2, 0)",
+  "expected": "Each nonempty response has shape (2,1), scaling by -2.5 is exact within the assertion, and the empty source result has shape (2,0)."
+ },
+ "verification": {
+  "scope": [
+   "Source-weight scaling and empty-source shape.",
+   "Axis-source zero-column convention.",
+   "Circular-filament analytic axial-field limit.",
+   "Columnwise equality with the separately maintained circular-filament flux and field kernel.",
+   "Invalid radius and source-shape rejection.",
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
+  ],
+  "tests": [
+   "tests/field/test_dense_axisymmetric_green.py",
+   "tests/cross_domain/test_field_green_correction.py"
+  ],
+  "evidence_ceiling": "Bounded to the dense axisymmetric Green response preserving separate source columns. Evidence: `test_dense_axisymmetric_green.py` contains 9 test functions, 1 of which references `dense_axisymmetric_green_response`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `dense_axisymmetric_green_response`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: analytic axial-field limit and columnwise circular-filament kernel equality. It does not establish finite-wire self-fields, arbitrary extreme-scale accuracy, or equilibrium claims.",
+  "known_limitations": [
+   "The result preserves separate source columns and does not sum them.",
+   "The asset-private test file has nine functions but one direct example; `test_field_green_correction.py` is shared by five assets and contains no direct call, so the nonfinite-response path is contract-only."
+  ]
+ }
+}

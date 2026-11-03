@@ -1,0 +1,149 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.ronnmark-r-function",
+ "title": {
+  "en": "Ronnmark R function and companion columns",
+  "zh": "Ronnmark R 函数及伴随列"
+ },
+ "summary": "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Ronnmark R function and companion columns",
+   "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
+  ],
+  "operation": [
+   "evaluate the Ronnmark R function and companion matrix",
+   "dimensionless x and lambda to selected R branch and companion matrix"
+  ],
+  "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
+  "geometry": "no physical spatial grid",
+  "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "dimensionless x and lambda to selected R branch and companion matrix",
+  "direction": "dimensionless x and lambda to selected R branch and companion matrix",
+  "definition": "Ordered RYLA selector uses three Taylor tests, an asymptotic test, then a 16-point Gauss-Legendre integral fallback; RC[0,1]=d(lambda R)/d lambda.",
+  "model": "Ronnmark rational response for magnetized Maxwellian dispersion",
+  "geometry": "no physical spatial grid",
+  "coordinates": "dimensionless complex x and lambda plane",
+  "boundary": "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x",
+   "description": "Ronnmark argument Y, equal to (omega-kz*vt*czj)/wcs in the frozen source. Real or complex scalar. Units: dimensionless (normalized frequency). Validity constraint: must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real or complex numeric",
+   "required": true,
+   "constraints": "Must be finite (no `NaN`/`inf`); real inputs use real double-precision arithmetic and complex inputs use complex double-precision arithmetic (their rounding differs; see the Behavior and boundaries section); this operator accepts scalars only, so array inputs must be looped elementwise by the caller."
+  },
+  {
+   "name": "lambda_",
+   "description": "AL=lambda=(k_perp*rho_c)^2, the Ronnmark expansion parameter (frozen source). Shape/axis order: scalar (real or complex; with a nonzero imaginary part on the complex kx plane). Units: dimensionless. Validity constraint: must be finite; nonnegative real for real kx and complex for complex kx; lambda=0 makes RINT's C=YR/AL and XO diverge and lies in the source's own undefined domain.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real or complex numeric",
+   "required": true,
+   "constraints": "Must be finite; nonnegative real for real kx and complex for complex kx; lambda=0 makes RINT's C=YR/AL and XO diverge and lies in the source's own undefined domain."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "R",
+   "description": "R(x,lambda)=RC(1,1), the Ronnmark R-function value. Complex scalar. Units: dimensionless. Validity constraint: on the RTAY Y^2=I^2 pole (e.g. x=12, lambda=9) this branch returns `NaN`; the public selector follows the frozen source through RINT for the same parameters, so `scientific_function` still returns a finite value there.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "On the RTAY Y^2=I^2 pole (e.g. x=12, lambda=9) this branch returns `NaN`; the public selector follows the frozen source through RINT for the same parameters, so `scientific_function` still returns a finite value there."
+  },
+  {
+   "name": "dR_dlambda",
+   "description": "RC(1,2) column, the `dRsj` read by the frozen source. Complex scalar. Units: dimensionless. Validity constraint: computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda).",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Computed in the same branch as `R`; the source series expansion verifies analytically that this column equals d(lambda*R)/dlambda = R + lambda*dR/dlambda, not dR/dlambda itself (in the frozen source PN_I is proportional to lambda^(I-1) while the accumulation weight is I, so RC(1,2) = R + lambda*dR/dlambda)."
+  },
+  {
+   "name": "branch",
+   "description": "String identifying the branch actually selected; shape/axis order: scalar string (enumeration label, no array axis), one of `'RTAY(AL<4)'`, `'RTAY(|Y|^2>75*AL)'`, `'RTAY(|Y|>40+AL/3)'`, `'RASY'`, `'RINT'`. Units: dimensionless (enumeration label). Validity constraint: one of the five strings, corresponding one-to-one to the frozen source criteria.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "One of the five strings, corresponding one-to-one to the frozen source criteria."
+  },
+  {
+   "name": "RC",
+   "description": "Full 2x2 complex matrix (complex128, understood in the reference runtime's column-major order). Units: dimensionless. Validity constraint: `RC[0,0]==R` and `RC[0,1]==dR_dlambda`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source.",
+   "units": "dimensionless",
+   "shape": "(2,2)",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "`RC[0,0]==R` and `RC[0,1]==dR_dlambda`; `RC[1,0]` and `RC[1,1]` are companion columns computed in the same branch and are unused by the frozen source."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only"
+  ],
+  "supported": [
+   "Evaluate the source's Taylor, asymptotic or integral R-function branch and 2x2 companion matrix."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Source-compatible arithmetic may return nonfinite values at a singular wavepoint.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.ronnmark_r_function",
+   "symbol": "evaluate_ronnmark_r",
+   "signature": "evaluate_ronnmark_r(x, lambda_)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_ronnmark_r"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate one bounded source-method case.",
+  "code": "from scirel.kinetic import evaluate_ronnmark_r\nr=evaluate_ronnmark_r(0.5,0.25); assert r['branch']=='RTAY(AL<4)'",
+  "expected": "The asserted result follows the declared output contract."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_r43_kinetic.py"
+  ],
+  "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
+  "known_limitations": [
+   "branch comparisons and arithmetic follow source real/complex behavior; scalar finite inputs only",
+   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
+  ]
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
+}

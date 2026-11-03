@@ -1,0 +1,143 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.thermal-electron-momentum",
+ "title": {
+  "en": "Thermal electron normalized momentum",
+  "zh": "热电子归一化动量"
+ },
+ "summary": "Compute the non-relativistic thermal-electron normalized momentum p_Te = sqrt(2T/mc^2). It is a dimensionless speed ratio v/c, not a velocity in cm/s, and must not be passed directly as vnorm to normalized-momentum. Intermediate overflow and final non-representability are handled separately, so a representable result is neither falsely rejected nor lost to intermediate underflow.",
+ "taxonomy": [
+  "collisions",
+  "momentum-scales",
+  "normalized-momentum",
+  "thermal-electron"
+ ],
+ "aliases": [
+  "p_Te",
+  "thermal electron momentum scale",
+  "sqrt(2T/mc2)"
+ ],
+ "discovery": {
+  "capability": [
+   "Thermal electron normalized momentum",
+   "Non-relativistic thermal-electron normalized momentum p_Te = sqrt(2T/mc^2), a dimensionless speed ratio rather than a velocity."
+  ],
+  "operation": [
+   "Evaluate the thermal-electron normalized momentum",
+   "temperature_kev, restmkev -> p_Te"
+  ],
+  "model": "Independent closed-form definition, not a fit; dangerous intermediates are evaluated at high precision beyond binary64, with no automatic unit conversion.",
+  "geometry": "Not applicable; scalar algebraic evaluation with no spatial axis.",
+  "boundary": "The positive temperature-to-rest-energy ratio may underflow before the square root; the fallback preserves a representable positive root, and only a final value outside the binary64 range is rejected.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "the thermal-electron normalized momentum p_Te as a function of the electron temperature and the electron rest energy",
+  "direction": "temperature_kev, restmkev -> p_Te",
+  "definition": "Returns the dimensionless non-relativistic thermal speed ratio sqrt(2*temperature_kev/restmkev). The ordinary region retains the original binary64 evaluation order; when an intermediate value overflows or becomes subnormal, the exact input floats are evaluated with 100-digit Decimal and the final result is rounded to binary64.",
+  "model": "an independent closed-form definition, not a fit; beyond ordinary binary64 arithmetic, dangerous intermediates are evaluated at high precision, with no automatic unit conversion",
+  "geometry": "not applicable; a scalar algebraic evaluation",
+  "coordinates": "not applicable",
+  "boundary": "the ratio of positive temperature to rest energy may underflow before the square root; the fallback evaluation preserves a representable positive root, and only a final value outside the binary64 range is rejected",
+  "assumptions": [
+   "both inputs are energies in the same unit; the supplied keV numbers are not converted. The non-relativistic relation provides no relativistic correction.",
+   "the two leaf entries are independent. A thermal speed ratio must not be passed as vnorm; the direct composition divides by c twice, so the caller must first multiply it by the speed of light to recover a velocity.",
+   "the ordinary region retains the original floating-point operation order; bit-for-bit agreement with the erroneous earlier operation at dangerous extremes is not promised.",
+   "shapes and finite inputs are checked first; the existing float() behavior for convertible non-real values is preserved, without adding physical meaning."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "temperature_kev",
+   "description": "Electron temperature, in keV.",
+   "units": "keV",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive, and scalar-shaped: a list, a tuple or an array with one or more dimensions is rejected by parameter name rather than converted. No upper bound is imposed; a finite value so large that the closed form is not representable is accepted by this constraint and rejected by the runtime representability check."
+  },
+  {
+   "name": "restmkev",
+   "description": "Electron rest energy, in keV; 511.0 for an electron.",
+   "units": "keV",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive, and scalar-shaped. The value is the caller's: this asset states no rest energy of its own and performs no unit conversion."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "p_te",
+   "description": "The thermal-electron normalized momentum sqrt(2*T/mc^2), dimensionless, a speed in units of c.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "a Python float, finally finite and positive; not a velocity in cm/s. Intermediate floating-point overflow must not be misread as final closed-form non-representability"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller wants the non-relativistic thermal speed ratio sqrt(2T/mc^2) of an electron, or of a species whose rest energy the caller supplies in keV.",
+   "Both arguments are energies in the same unit, so the result is dimensionless."
+  ],
+  "supported": [
+   "ordinary inputs retain the original scientific relation and double-precision operation order",
+   "dangerous intermediates use a Decimal fallback evaluated from the exact input floats; the input domain is not narrowed and verification tolerances are not relaxed",
+   "inputs with an invalid shape or a violated finiteness or sign contract are rejected by parameter name; final overflow is rejected and no partial result is returned"
+  ],
+  "excluded": [
+   "Composition with scirel.collisions.normalized-momentum: the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is not provided.",
+   "Any relativistic correction to the thermal speed ratio.",
+   "Any statement of the electron rest energy, of the speed of light, or of any other physical constant; every constant is the caller's.",
+   "Any unit conversion, including the conversion of the returned ratio to a velocity.",
+   "The four Coulomb-log mappings of the same family: they are different relations and are not published with these two leaves.",
+   "a final result outside the binary64 representable range is rejected; an overflowing intermediate result is not itself excluded"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, or when either is not finite and strictly positive, with a message naming the offending parameter.",
+  "runtime_failure": "raises ValueError only when the final value is still non-finite after the fallback computation. Intermediate product or quotient overflow, underflow or subnormal precision loss triggers the high-precision fallback rather than directly rejecting the input.",
+  "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no value."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.momentum_scales",
+   "symbol": "thermal_electron_momentum",
+   "signature": "thermal_electron_momentum(*, temperature_kev, restmkev)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "thermal_electron_momentum"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "demonstrate the retained ordinary relation together with the final result after correcting extreme intermediates",
+  "code": "from scirel.collisions import thermal_electron_momentum\nimport math\np = thermal_electron_momentum(temperature_kev=250., restmkev=511.)\nassert p == 0.9891782353111633\nlarge = thermal_electron_momentum(temperature_kev=1e308, restmkev=511.)\nassert math.isfinite(large) and large > 1e152\ntiny = thermal_electron_momentum(temperature_kev=1e-300, restmkev=1e300)\nassert tiny > 0\nprint(p, large, tiny)",
+  "expected": "the ordinary value 0.9891782353111633; the dangerous large value is about 6.256112470898544e152 and the tiny value about 1.414213562373095e-300, all finite"
+ },
+ "verification": {
+  "scope": [
+   "the ordinary-domain numeric assertions, effective tolerances, input shapes and error messages are retained; ordinary results are bit-identical",
+   "of the 13 added extreme-value checks, 7 failed before the correction; they cover false rejection of finite large values, intermediate underflow to zero and sign preservation",
+   "independent 200-digit Decimal evaluation and genuine non-finite final-value rejection exercise the new behavior; the earlier rejection assertion for the thermal input 1e308/511 was empirically corrected and now supersedes the earlier record",
+   "the earlier external comparison is outside this contract's evidence scope; this contract binds only the two definitions and their independent scientific contracts"
+  ],
+  "tests": [
+   "tests/collisions/test_momentum_scales.py",
+   "tests/collisions/test_momentum_intermediate_extremes.py"
+  ],
+  "evidence_ceiling": "finite independent extreme-value and ordinary closed-form tests support the two definitions and their shape and representability contract; they do not establish arbitrary collision models, caller constants or units, or relativistic validity. The dangerous region uses 100-digit Decimal while outputs remain binary64; arbitrary-precision results are not claimed",
+  "known_limitations": [
+   "no automatic unit check or conversion exists; using a thermal speed ratio directly as a velocity divides by the speed of light twice",
+   "the physical applicability domain remains the caller's responsibility; at extremely high temperature the non-relativistic ratio is only a definition, not a relativistic velocity",
+   "final binary64 rounding and underflow of genuinely tiny grid results to zero retain floating-point meaning and do not mean the physical quantity is exactly zero",
+   "the license does not grant overall redistribution of the capability; current use is limited to internal authorized technical integration, not human scientific acceptance or public release",
+   "the earlier external comparison was not replayed, and the current installation tests do not replace it"
+  ]
+ }
+}

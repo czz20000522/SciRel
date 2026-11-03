@@ -1,0 +1,147 @@
+{
+ "aliases": [
+  "evaluate_fluid_special"
+ ],
+ "discovery": {
+  "capability": [
+   "Special-function responses",
+   "Evaluate the complete Gamma, Z and full R response contracts; four historical R method names share the corrected harmonic evaluator."
+  ],
+  "operation": [
+   "evaluate Gamma, Z and R special-function responses",
+   "method, argument and parameter -> scaled Gamma, Z and R responses"
+  ],
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "device_scope": "generic"
+ },
+ "applicability": {
+  "excluded": [
+   "No execution or fidelity claim for the Taylor/asymptotic/integral selector.",
+   "No certified entire-complex-plane precision claim."
+  ],
+  "preconditions": [
+   "Declared local Python runtime (Python 3.14, NumPy 2.5.4, SciPy 1.18.1); single-threaded BLAS environment.",
+   "Declared Python 3.14 runtime with NumPy 2.5.4 and SciPy 1.18.1; no external runtime is required.",
+   "Finite integer harmonic orders for Gamma; parameter is required for Gamma and R, ignored for Z."
+  ],
+  "supported": [
+   "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
+   "Z(z)=i*sqrt(pi)*wofz(z) via scipy.special; explicit overflow failure.",
+   "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
+  ]
+ },
+ "asset_id": "scirel.kinetic.fluid-special-functions",
+ "example": {
+  "code": "from scirel.kinetic.fluid_spectrum import evaluate_fluid_special\nvalue=evaluate_fluid_special('RTAY',2,0)\n",
+  "description": "Pure Python/NumPy implementation; executes on this macOS host without the reference runtime.",
+  "expected": "PASS: the example runs locally and returns the declared output structure."
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for non-finite/unsupported b or integer order, or an unsupported derivative/selector request.",
+  "runtime_failure": "FloatingPointError/ValueError for an unrepresentable derivative or neighbor identity; SciPy execution errors propagate.",
+  "nonconvergence": "No iterative solve is exposed; the fixed Bessel relation has no convergence claim.",
+  "partial_results": "No partial Gamma_n or derivative output is returned after failure."
+ },
+ "identity": {
+  "assumptions": [
+   "No flow or temperature anisotropy.",
+   "K=I−sigma/(i omega epsilon0); D=K+nnᵀ−(n·n)I.",
+   "Listed-species linear response; electron-only case2 does not establish global charge neutrality or a self-consistent background equilibrium."
+  ],
+  "boundary": "homogeneous linear response; explicit resonances and analytic removable limits",
+  "coordinates": "Cartesian SI; exp(i k·x−i ωt); signed gyrofrequency and radius",
+  "definition": "RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]. R=2Y/b sum_n>=1 n² Gamma_n/(Y²−n²); true poles fail.",
+  "direction": "forward",
+  "geometry": "uniform background B along z; wavevector (kx,0,kz)",
+  "model": "static isotropic Maxwellian plasma or its declared numerical approximation",
+  "relation": "scaled Bessel Gamma, plasma Z and R response"
+ },
+ "inputs": [
+  {
+   "constraints": "Gamman, Gammapn, zfun, RTAY, RASY, RINT or RYLA.",
+   "description": "Scientific method selector.",
+   "dtype": "string",
+   "name": "method",
+   "required": true,
+   "shape": "string",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Integer real Gamma order; finite other arguments.",
+   "description": "Integer Bessel order, Z argument or R argument Y.",
+   "dtype": "real/complex",
+   "name": "x",
+   "required": true,
+   "shape": "array for Gamma/Z; scalar for R",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Required for Gamma/R; finite.",
+   "default": null,
+   "description": "Bessel b or R b; unused for Z.",
+   "dtype": "real/complex or None",
+   "name": "parameter",
+   "required": false,
+   "shape": "array for Gamma; scalar for R; None for Z",
+   "units": "dimensionless"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "Finite or explicit precision/pole failure.",
+   "description": "Gamma/Gamma derivative or Z array, or full R response matrix.",
+   "dtype": "complex numeric array",
+   "name": "value",
+   "required": true,
+   "shape": "broadcast input shape or 2x2",
+   "units": "dimensionless"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_spectrum",
+   "signature": "evaluate_fluid_special(method, x, parameter=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_fluid_special",
+   "symbol": "evaluate_fluid_special"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Evaluate the complete Gamma, Z and full R response contracts; four historical R method names share the corrected harmonic evaluator.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-waves",
+  "fluid-dispersion"
+ ],
+ "title": {
+  "en": "Special-function responses",
+  "zh": "特殊函数响应"
+ },
+ "verification": {
+  "evidence_ceiling": "Bounded to the declared relation: RC=[R,d(bR)/db;Y dR/dY,Y d/dY(d(bR)/db)]. R=2Y/b sum_n>=1 n² Gamma_n/(Y²−n²); true poles fail. Evidence: test_fluid_spectrum_full.py (9 recorded test functions; shared-file coverage only; independent analytic/high-precision oracle); the contract example ran. Excluded scope: No execution or fidelity claim for the Taylor/asymptotic/integral selector; No certified entire-complex-plane precision claim.",
+  "known_limitations": [
+   "Only shared-file coverage is bound (test_fluid_spectrum_full.py); no asset-specific failure/limit probe is recorded.",
+   "No cross-thread/platform invariance, arbitrary precision, all physical-mode completeness or unconditional nonlinear convergence.",
+   "J/L pole and finite-harmonic approximation errors remain distinct from relation consistency and numerical residual.",
+   "The independent analytic comparison does not replace an external experimental reference.",
+   "Pure-Python execution is tested on this host; native parity is not claimed."
+  ],
+  "scope": [
+   "Gamma_n=e^-b I_n(b) and its neighbor-identity derivative for integer n; finite scalar/array b.",
+   "Z(z)=i*sqrt(pi)*wofz(z) via scipy.special; explicit overflow failure.",
+   "Full scalar R response for complex Y,b with tail and floating cancellation checks, bounded at 65536 terms; b=0 and Y=0 analytic limits."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_full.py"
+  ]
+ },
+ "version": {
+  "dependencies": [],
+  "implementation_version": "0.0.0"
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
+}

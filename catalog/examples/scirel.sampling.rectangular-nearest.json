@@ -1,0 +1,144 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.rectangular-nearest",
+ "title": {
+  "en": "Field query Separable xy grid axis nearest-neighbor sampling",
+  "zh": "可分离网格逐轴最近点采样"
+ },
+ "summary": "Choose x-column and y-row independently nearest each query",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "locs_to_vals"
+ ],
+ "discovery": {
+  "capability": [
+   "Separable rectangular-grid nearest query",
+   "Choose the x column and y row independently nearest each query on a separable rectangular grid."
+  ],
+  "operation": [
+   "separable axis nearest-neighbor field query",
+   "separable planar grid, field values and query points -> sampled field values"
+  ],
+  "model": "Separable x/y axis nearest-neighbor selection; no interpolation.",
+  "geometry": "Planar separable rectangular grid with x column and y row coordinates; queries are ordered coordinate pairs.",
+  "boundary": "No out-of-support interpolation is synthesized; finite matched samples and in-support queries are required, and equivalence with geometric nearest on irregular grids is not asserted.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Field query Separable xy grid axis nearest-neighbor sampling",
+  "direction": "Declared inputs to Sampled values",
+  "definition": "Choose x-column and y-row independently nearest each query",
+  "model": "Separable xy grid axis nearest-neighbor sampling",
+  "geometry": "planar separable rectangular grid and query points",
+  "coordinates": "X column coordinate, Y row coordinate or matched scattered point arrays",
+  "boundary": "No out-of-support interpolation synthesis",
+  "assumptions": [
+   "Finite matched planar sample arrays and fields",
+   "Requested grid/query points lie inside convex/interpolation support"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "X",
+   "description": "Point x coordinates",
+   "units": "coordinate units",
+   "shape": "matched grid/sample shape",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "For rectangular nearest X[0,:] is x axis"
+  },
+  {
+   "name": "Y",
+   "description": "Point y coordinates",
+   "units": "coordinate units",
+   "shape": "same as X",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "For rectangular nearest Y[:,0] is y axis"
+  },
+  {
+   "name": "Q",
+   "description": "Sample field",
+   "units": "field units",
+   "shape": "same as X",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite"
+  },
+  {
+   "name": "coord_list",
+   "description": "Desired coordinate pairs",
+   "units": "coordinate units",
+   "shape": "list of (x,y)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite queries"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "values",
+   "description": "Sampled values",
+   "units": "field units",
+   "shape": "query-count list or array",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Source list/array return preserved"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite matched planar sample arrays and fields",
+   "Requested grid/query points lie inside convex/interpolation support"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+   "Outside-support and nonfinite-field cases are unqualified"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "locs_to_vals",
+   "signature": "locs_to_vals(X, Y, Q, coord_list)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "locs_to_vals"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Query a separable rectangular grid by independently selecting the nearest x column and y row.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import locs_to_vals\n\nx, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])\nvalues = locs_to_vals(x, y, x + 2.0 * y, [(0.5, 0.5)])\nnp.testing.assert_allclose(values, [1.5])",
+  "expected": "The nearest rectangular-grid value is [1.5]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Rectangular and geometric nearest schemes are not asserted equivalent on irregular input",
+   "Outside-support and nonfinite-field cases are unqualified"
+  ]
+ }
+}

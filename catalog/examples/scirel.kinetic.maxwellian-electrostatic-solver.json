@@ -1,0 +1,207 @@
+{
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Seeded Maxwellian electrostatic mode",
+   "Solve one complex Maxwellian mode with a residual-checked bounded root graph."
+  ],
+  "operation": [
+   "solve one seeded Maxwellian electrostatic mode",
+   "(k,initial_omega,controls)->mode"
+  ],
+  "model": "Same normalized Maxwellian electrostatic response as the companion operator",
+  "geometry": "Electrostatic one-dimensional wave",
+  "boundary": "Only the branch reached from the supplied seed is claimed.",
+  "device_scope": "generic"
+ },
+ "applicability": {
+  "excluded": [
+   "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."
+  ],
+  "preconditions": [
+   "k is finite and strictly positive; outputs must remain representable in double precision."
+  ],
+  "supported": [
+   "Finite positive real scalar k and finite normalized frequency, including representable complex upper/lower-plane values."
+  ]
+ },
+ "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver",
+ "example": {
+  "code": "from scirel.kinetic import solve_maxwellian_electrostatic_mode\nr=solve_maxwellian_electrostatic_mode(0.4,1.45-0.1j)\nassert r[\"normalized_residual\"]+r[\"normalized_residual_error\"]<=1e-9\nassert r[\"normalized_residual_error\"]<=2.5e-10",
+  "description": "Solve one seeded mode.",
+  "expected": "The seeded solve returned omega=1.2850569696537468-0.066127958690749j after 15 evaluations; normalized_residual was 1.11e-15 and normalized_residual_error was 2.96e-13."
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs.",
+  "nonconvergence": "Raises RuntimeError when MINPACK fails, exceeds max_evaluations, or the normalized residual/error gate fails; no partial mode is returned.",
+  "partial_results": "No partial scientific result is returned after a failed call.",
+  "runtime_failure": "Unrepresentable evaluation raises ValueError; solver unrepresentable trial response raises RuntimeError. Unexpected SciPy execution errors propagate."
+ },
+ "identity": {
+  "assumptions": [
+   "MINPACK success is insufficient without the final residual check.",
+   "f0(v)=exp(-v²/2)/sqrt(2π), unit plasma frequency, thermal standard deviation one, perturbation convention exp(-i omega t)."
+  ],
+  "boundary": "Only the branch reached from the supplied seed is claimed.",
+  "coordinates": "Normalized complex frequency plane",
+  "definition": "Seeded solve of epsilon(omega,k)=0 using two real components, then a normalized residual and estimated-error gate independent of k² scaling.",
+  "direction": "(k,initial_omega,controls)->mode",
+  "geometry": "Electrostatic one-dimensional wave",
+  "model": "Same normalized Maxwellian electrostatic response as the companion operator",
+  "relation": "Seeded solve of epsilon(omega,k)=0 with error-aware normalized physical residual acceptance"
+ },
+ "inputs": [
+  {
+   "constraints": "Finite strictly positive real scalar; booleans, complex values and arrays rejected.",
+   "description": "Positive normalized wave number.",
+   "dtype": "positive real",
+   "name": "k",
+   "required": true,
+   "shape": "scalar",
+   "units": "inverse normalized length"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "description": "Complex root seed.",
+   "dtype": "complex numeric",
+   "name": "initial_omega",
+   "required": true,
+   "shape": "scalar",
+   "units": "normalized frequency"
+  },
+  {
+   "constraints": "Finite strictly positive real scalar, booleans and arrays rejected.",
+   "default": 1e-10,
+   "description": "MINPACK step tolerance.",
+   "dtype": "positive real",
+   "name": "xtol",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite strictly positive real scalar, booleans and arrays rejected.",
+   "default": 1e-09,
+   "description": "Acceptance threshold for normalized epsilon residual plus estimated error.",
+   "dtype": "positive real",
+   "name": "residual_tolerance",
+   "required": false,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Positive integer scalar; booleans rejected.",
+   "default": 200,
+   "description": "Maximum residual evaluations.",
+   "dtype": "positive integer",
+   "name": "max_evaluations",
+   "required": false,
+   "shape": "scalar",
+   "units": "count"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "Finite and representable.",
+   "description": "Converged complex mode.",
+   "dtype": "complex",
+   "name": "omega",
+   "required": true,
+   "shape": "scalar",
+   "units": "normalized frequency"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "description": "Final complex D.",
+   "dtype": "complex",
+   "name": "residual",
+   "required": true,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "description": "Residual evaluations.",
+   "dtype": "integer",
+   "name": "evaluations",
+   "required": true,
+   "shape": "scalar",
+   "units": "count"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "description": "Final dielectric.",
+   "dtype": "complex",
+   "name": "epsilon",
+   "required": true,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and accepted only below residual_tolerance after estimated-error gate.",
+   "description": "Absolute epsilon residual normalized by 1+|chi|.",
+   "dtype": "real",
+   "name": "normalized_residual",
+   "required": true,
+   "shape": "scalar",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and accepted only below residual_tolerance/4.",
+   "description": "Estimated epsilon error on the same normalization.",
+   "dtype": "real",
+   "name": "normalized_residual_error",
+   "required": true,
+   "shape": "scalar",
+   "units": "dimensionless"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.maxwellian_electrostatic",
+   "signature": "solve_maxwellian_electrostatic_mode(k, initial_omega, *, xtol=1e-10, residual_tolerance=1e-09, max_evaluations=200)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_maxwellian_electrostatic_mode",
+   "symbol": "solve_maxwellian_electrostatic_mode"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Solve one complex Maxwellian mode with a residual-checked bounded root graph.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "generalized-dispersion"
+ ],
+ "title": {
+  "en": "Seeded Maxwellian electrostatic mode",
+  "zh": "种子 Maxwellian 静电模态"
+ },
+ "verification": {
+  "evidence_ceiling": "Bounded to finite positive real k and representable complex frequency for the Maxwellian electrostatic mode. Evidence: `test_generalized_dispersion_d2.py` contains 4 test functions, 1 of which references `solve_maxwellian_electrostatic_mode`, and is shared by 3 assets; `test_generalized_dispersion_d2_successor.py` contains 7 test functions, 1 of which references `solve_maxwellian_electrostatic_mode`, and is shared by 3 assets; `test_generalized_dispersion_numerical_repair.py` contains 11 test functions, none of which references `solve_maxwellian_electrostatic_mode`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish global root scans or arbitrary analytic continuation.",
+  "known_limitations": [
+   "The estimated error is not a rigorous enclosure.",
+   "No uniqueness, least-damped branch or global root selection claim; supplied seeds select branches.",
+   "Only two direct functions exist across the three shared generalized-dispersion files (`test_maxwellian_root_checks_residual` and `test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected`); the eleven-test repair file contains no direct call."
+  ],
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_d2.py",
+   "tests/kinetic/test_generalized_dispersion_d2_successor.py",
+   "tests/kinetic/test_generalized_dispersion_numerical_repair.py"
+  ]
+ },
+ "version": {
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode"
+   }
+  ],
+  "implementation_version": "0.0.0"
+ },
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas 20 (2013), 092125."
+ ]
+}

@@ -1,0 +1,739 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.multi-coil-vacuum-field",
+ "title": {
+  "en": "Axisymmetric multi-coil vacuum field",
+  "zh": "轴对称多矩形线圈真空场"
+ },
+ "summary": "Expand rectangular coil records into weighted filaments, evaluate each coil response, and superpose the drive currents.",
+ "taxonomy": [
+  "field",
+  "vacuum-field",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "multi-coil vacuum synthesis",
+  "Helmholtz coil pair",
+  "coaxial coil vacuum field",
+  "coil axial field uniformity"
+ ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric multi-coil vacuum field",
+   "Expand rectangular coil records into weighted filaments, evaluate each coil response and superpose the drive currents."
+  ],
+  "operation": [
+   "ordered acyclic multi-coil vacuum-field composition",
+   "rectangular-coil records and target grid -> vacuum fields and filament table"
+  ],
+  "model": "Ordered acyclic composition of rectangular geometry, circular Green response and current contraction.",
+  "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns.",
+  "boundary": "Input validation or any dependency failure aborts the call without a fallback or partial field.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "Ordered multi-coil vacuum-field composition",
+  "direction": "rectangular-coil records and target grid to vacuum fields and filament table",
+  "definition": "Discretize each caller coil, attach filament weights, and evaluate its target-ordered Green response. Stack the responses as [N_target,N_coil] matrices with one coil per column, contract the [N_coil] drive-current vector along axis 1, and reshape to the input grid.",
+  "model": "Ordered acyclic composition of rectangular geometry, circular Green response, and current contraction.",
+  "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns.",
+  "coordinates": "Grid and coil geometry in metres; currents in amperes; output psi Wb/rad and fields tesla.",
+  "boundary": "Input validation or any dependency failure aborts the call without a fallback or partial field.",
+  "assumptions": [
+   "Target grids are finite, matching and nonempty, and their R and Z axes are strictly increasing; singleton axes are permitted.",
+   "Each coil mapping has the required finite fields and optional weights/angle.",
+   "Returned filament rows preserve coil and within-coil order."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Target cylindrical radius grid.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite nonempty rectilinear 2-D grid; radial axis is strictly increasing and nonnegative. N_R and N_Z are each at least one."
+  },
+  {
+   "name": "z_grid",
+   "description": "Target axial coordinate grid.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, nonempty, same shape as r_grid, and axial axis strictly increasing; singleton axes are permitted."
+  },
+  {
+   "name": "rectangular_coils",
+   "description": "Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m,current_a and optional angle_deg/weights.",
+   "units": "mixed SI",
+   "shape": "list[mapping]",
+   "dtype": "Python sequence of mappings",
+   "required": true,
+   "constraints": "Nonempty; one finite drive current and one optional finite weight per generated filament."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "psi_vac",
+   "description": "Vacuum poloidal flux on the target grid.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Same grid shape and C-order point mapping as inputs."
+  },
+  {
+   "name": "b_r_vac",
+   "description": "Vacuum radial magnetic field on the target grid.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Same grid shape and C-order point mapping as inputs."
+  },
+  {
+   "name": "b_z_vac",
+   "description": "Vacuum axial magnetic field on the target grid.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Same grid shape and C-order point mapping as inputs."
+  },
+  {
+   "name": "filaments",
+   "description": "Concatenated [R_m,Z_m,weight] rows in caller coil order.",
+   "units": "m,m,dimensionless",
+   "shape": "[N_filament,3]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Preserves each coil's filament order and the outer caller coil order."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Target grids are finite, matching and nonempty, and their R and Z axes are strictly increasing; singleton axes are permitted.",
+   "Each coil mapping has the required finite fields and optional weights/angle."
+  ],
+  "supported": [
+   "One or more rectangular coils, optional weights/rotation, C-order reshaping, and dependency failure propagation."
+  ],
+  "excluded": [
+   "Iterative coil solving, nonlinear materials, finite-wire effects, and malformed/empty coil lists."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for missing, empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, or currents.",
+  "runtime_failure": "Dependency ValueError/FloatingPointError propagates before any field is returned, including a nonrepresentable current-weighted Green contraction; no fallback or retry is performed.",
+  "nonconvergence": "Not applicable; the graph has no feedback loop.",
+  "partial_results": "No field or filament output is returned after a failed graph stage."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.multi_coil_vacuum_field",
+   "symbol": "solve_multi_coil_vacuum_field",
+   "signature": "solve_multi_coil_vacuum_field(inputs=None, **kwargs)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "solve_multi_coil_vacuum_field"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.field.circular-filament-green"
+   },
+   {
+    "asset_id": "scirel.field.current-green-superposition"
+   },
+   {
+    "asset_id": "scirel.field.rectangular-coil-filaments"
+   }
+  ]
+ },
+ "example": {
+  "description": "Expand one 2x2 rectangular coil on a 2x2 target grid and evaluate its vacuum field.",
+  "code": "import numpy as np\nfrom scirel.field import solve_multi_coil_vacuum_field\nr_grid, z_grid = np.meshgrid([0.0, 0.2], [-0.1, 0.1])\nresult = solve_multi_coil_vacuum_field(r_grid=r_grid, z_grid=z_grid, rectangular_coils=[{'r0_m': 0.45, 'z0_m': 0.0, 'nr': 2, 'nz': 2, 'dr_m': 0.04, 'dz_m': 0.05, 'current_a': 1000.0}])\nassert result['psi_vac'].shape == r_grid.shape\nassert result['filaments'].shape == (4, 3)\nassert np.isfinite(result['b_z_vac']).all()",
+  "expected": "The three field arrays have shape (2,2), the returned filament table has shape (4,3), and b_z_vac is finite."
+ },
+ "verification": {
+  "scope": [
+   "Linear scaling with coil drive current.",
+   "Independent response columns for multiple coils, aligned with the drive-current vector along axis 1.",
+   "Current-versus-filament-weight semantics.",
+   "Missing-current and empty-grid failures, with nonempty singleton-axis grids retained.",
+   "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields.",
+   "Fixed Pleiades two-coil reference values and the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py using the tracked domain fixture.",
+   "scripts/build_pleiades_truth.py writes only an explicitly named candidate from a caller-supplied source checkout; it never overwrites the tracked fixture or vendors source."
+  ],
+  "tests": [
+   "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
+   "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
+  ],
+  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: the tracked Pleiades simple-two-coil fixture (`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`) and its provenance; the full 9x9 arrays are compared on every run. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists.",
+  "known_limitations": [
+   "No field cache or device object is kept between calls.",
+   "No feedback, optimization, or conductor-material model is included.",
+   "The fixed Pleiades spot references and full-array comparison run on every test invocation; malformed/empty coil lists remain excluded."
+  ]
+ },
+ "composition": {
+  "nodes": [
+   {
+    "id": "coil_iteration",
+    "kind": "controlled_glue",
+    "description": "Iterate caller coil mappings and expose one validated parameter set in caller order.",
+    "inputs": [
+     "rectangular_coils"
+    ],
+    "outputs": [
+     "r0",
+     "z0",
+     "nr",
+     "nz",
+     "dr",
+     "dz",
+     "angle_deg",
+     "current_a",
+     "weights"
+    ]
+   },
+   {
+    "id": "rectangular_geometry",
+    "kind": "function",
+    "asset_id": "scirel.field.rectangular-coil-filaments",
+    "description": "Discretize one rectangular coil section.",
+    "inputs": [
+     "r0",
+     "z0",
+     "nr",
+     "nz",
+     "dr",
+     "dz",
+     "angle_deg"
+    ],
+    "outputs": [
+     "rz_pts"
+    ]
+   },
+   {
+    "id": "attach_weights",
+    "kind": "controlled_glue",
+    "description": "Append dimensionless filament weights and preserve one coil drive current.",
+    "inputs": [
+     "rz_pts",
+     "weights",
+     "current_a"
+    ],
+    "outputs": [
+     "rzw",
+     "drive_current"
+    ]
+   },
+   {
+    "id": "target_packing",
+    "kind": "controlled_glue",
+    "description": "Pack matching rectilinear grids into C-order R-Z target rows.",
+    "inputs": [
+     "r_grid",
+     "z_grid"
+    ],
+    "outputs": [
+     "rz_pts"
+    ]
+   },
+   {
+    "id": "green_response",
+    "kind": "function",
+    "asset_id": "scirel.field.circular-filament-green",
+    "description": "Evaluate one target-ordered Green response vector for the current coil block.",
+    "inputs": [
+     "rzw",
+     "rz_pts"
+    ],
+    "outputs": [
+     "gpsi",
+     "gBR",
+     "gBZ"
+    ]
+   },
+   {
+    "id": "stack_responses",
+    "kind": "controlled_glue",
+    "description": "Stack one completed target-ordered response vector per coil as a column of each [N_target,N_coil] matrix, preserving the aligned [N_coil] drive-current vector without multiplication.",
+    "inputs": [
+     "gpsi",
+     "gBR",
+     "gBZ",
+     "drive_current"
+    ],
+    "outputs": [
+     "gpsi",
+     "gBR",
+     "gBZ",
+     "currents"
+    ]
+   },
+   {
+    "id": "superposition",
+    "kind": "function",
+    "asset_id": "scirel.field.current-green-superposition",
+    "description": "Contract the drive-current vector with the coil columns of each [N_target,N_coil] response matrix along axis 1.",
+    "inputs": [
+     "currents",
+     "gpsi",
+     "gBR",
+     "gBZ"
+    ],
+    "outputs": [
+     "psi",
+     "BR",
+     "BZ"
+    ]
+   },
+   {
+    "id": "filament_concatenation",
+    "kind": "controlled_glue",
+    "description": "Concatenate weighted filament blocks only for the returned diagnostic table.",
+    "inputs": [
+     "rzw"
+    ],
+    "outputs": [
+     "filaments"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "rectangular_coils"
+    },
+    "to": {
+     "node": "coil_iteration",
+     "port": "rectangular_coils"
+    },
+    "description": "Caller coil declarations.",
+    "condition": "Always, once per call.",
+    "transform": "Ordered iteration only.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "r0"
+    },
+    "to": {
+     "node": "rectangular_geometry",
+     "port": "r0"
+    },
+    "description": "One coil center radius and its remaining geometry ports.",
+    "condition": "For each declared coil.",
+    "transform": "Field-name adaptation from r0_m/dr_m/dz_m to Operator parameters; no scientific conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "z0"
+    },
+    "to": {
+     "node": "rectangular_geometry",
+     "port": "z0"
+    },
+    "description": "One coil center axial coordinate.",
+    "condition": "For each declared coil.",
+    "transform": "Rename z0_m to z0 without numeric conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "nr"
+    },
+    "to": {
+     "node": "rectangular_geometry",
+     "port": "nr"
+    },
+    "description": "Radial filament count.",
+    "condition": "For each declared coil.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "nz"
+    },
+    "to": {
+     "node": "rectangular_geometry",
+     "port": "nz"
+    },
+    "description": "Axial filament count.",
+    "condition": "For each declared coil.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "dr"
+    },
+    "to": {
+     "node": "rectangular_geometry",
+     "port": "dr"
+    },
+    "description": "Radial center spacing.",
+    "condition": "For each declared coil.",
+    "transform": "Rename dr_m to dr without numeric conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "dz"
+    },
+    "to": {
+     "node": "rectangular_geometry",
+     "port": "dz"
+    },
+    "description": "Axial center spacing.",
+    "condition": "For each declared coil.",
+    "transform": "Rename dz_m to dz without numeric conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "angle_deg"
+    },
+    "to": {
+     "node": "rectangular_geometry",
+     "port": "angle_deg"
+    },
+    "description": "Optional section rotation.",
+    "condition": "For each declared coil; defaults to 0.0 when omitted.",
+    "transform": "Default insertion declared by the Operator contract.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "rectangular_geometry",
+     "port": "rz_pts"
+    },
+    "to": {
+     "node": "attach_weights",
+     "port": "rz_pts"
+    },
+    "description": "Ordered filament coordinates.",
+    "condition": "For each declared coil.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "weights"
+    },
+    "to": {
+     "node": "attach_weights",
+     "port": "weights"
+    },
+    "description": "Optional dimensionless filament weights.",
+    "condition": "For each declared coil; defaults to one per filament when omitted.",
+    "transform": "Default insertion and exact shape validation only.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "coil_iteration",
+     "port": "current_a"
+    },
+    "to": {
+     "node": "attach_weights",
+     "port": "current_a"
+    },
+    "description": "One drive current per coil response column.",
+    "condition": "For each declared coil.",
+    "transform": "Finite scalar conversion only.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "r_grid"
+    },
+    "to": {
+     "node": "target_packing",
+     "port": "r_grid"
+    },
+    "description": "Target radial grid.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_grid"
+    },
+    "to": {
+     "node": "target_packing",
+     "port": "z_grid"
+    },
+    "description": "Target axial grid.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "attach_weights",
+     "port": "rzw"
+    },
+    "to": {
+     "node": "green_response",
+     "port": "rzw"
+    },
+    "description": "One weighted filament block.",
+    "condition": "For each declared coil.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "target_packing",
+     "port": "rz_pts"
+    },
+    "to": {
+     "node": "green_response",
+     "port": "rz_pts"
+    },
+    "description": "Shared C-order target points.",
+    "condition": "For each declared coil.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "green_response",
+     "port": "gpsi"
+    },
+    "to": {
+     "node": "stack_responses",
+     "port": "gpsi"
+    },
+    "description": "One target-ordered flux response vector.",
+    "condition": "After each coil response completes.",
+    "transform": "Column-stack one vector per coil into a [N_target,N_coil] matrix; gpsi/gBR/gBZ use the same axis convention.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "green_response",
+     "port": "gBR"
+    },
+    "to": {
+     "node": "stack_responses",
+     "port": "gBR"
+    },
+    "description": "One target-ordered radial-field response vector.",
+    "condition": "After each coil response completes.",
+    "transform": "Column-stack one vector per coil into a [N_target,N_coil] matrix; gpsi/gBR/gBZ use the same axis convention.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "green_response",
+     "port": "gBZ"
+    },
+    "to": {
+     "node": "stack_responses",
+     "port": "gBZ"
+    },
+    "description": "One target-ordered axial-field response vector.",
+    "condition": "After each coil response completes.",
+    "transform": "Column-stack one vector per coil into a [N_target,N_coil] matrix; gpsi/gBR/gBZ use the same axis convention.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "attach_weights",
+     "port": "drive_current"
+    },
+    "to": {
+     "node": "stack_responses",
+     "port": "drive_current"
+    },
+    "description": "One current value per coil response column.",
+    "condition": "After each coil is expanded.",
+    "transform": "Preserve caller coil order.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "stack_responses",
+     "port": "currents"
+    },
+    "to": {
+     "node": "superposition",
+     "port": "currents"
+    },
+    "description": "Current vector [N_coil] aligned with response axis 1 (coil columns).",
+    "condition": "After all coil responses complete.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "stack_responses",
+     "port": "gpsi"
+    },
+    "to": {
+     "node": "superposition",
+     "port": "gpsi"
+    },
+    "description": "Flux response matrix with target rows and coil columns.",
+    "condition": "After all coil responses complete.",
+    "transform": "Identity; preserve [N_target,N_coil] shape and caller coil order.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "stack_responses",
+     "port": "gBR"
+    },
+    "to": {
+     "node": "superposition",
+     "port": "gBR"
+    },
+    "description": "Radial-field response matrix with target rows and coil columns.",
+    "condition": "After all coil responses complete.",
+    "transform": "Identity; preserve [N_target,N_coil] shape and caller coil order.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "stack_responses",
+     "port": "gBZ"
+    },
+    "to": {
+     "node": "superposition",
+     "port": "gBZ"
+    },
+    "description": "Axial-field response matrix with target rows and coil columns.",
+    "condition": "After all coil responses complete.",
+    "transform": "Identity; preserve [N_target,N_coil] shape and caller coil order.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "superposition",
+     "port": "psi"
+    },
+    "to": {
+     "node": "$output",
+     "port": "psi_vac"
+    },
+    "description": "Vacuum flux result.",
+    "condition": "On successful superposition.",
+    "transform": "Reshape C-order target vector to the input grid.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "superposition",
+     "port": "BR"
+    },
+    "to": {
+     "node": "$output",
+     "port": "b_r_vac"
+    },
+    "description": "Vacuum radial field result.",
+    "condition": "On successful superposition.",
+    "transform": "Reshape C-order target vector to the input grid.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "superposition",
+     "port": "BZ"
+    },
+    "to": {
+     "node": "$output",
+     "port": "b_z_vac"
+    },
+    "description": "Vacuum axial field result.",
+    "condition": "On successful superposition.",
+    "transform": "Reshape C-order target vector to the input grid.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "attach_weights",
+     "port": "rzw"
+    },
+    "to": {
+     "node": "filament_concatenation",
+     "port": "rzw"
+    },
+    "description": "Weighted filament blocks in caller order.",
+    "condition": "For every declared coil.",
+    "transform": "Concatenate without modifying values.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "filament_concatenation",
+     "port": "filaments"
+    },
+    "to": {
+     "node": "$output",
+     "port": "filaments"
+    },
+    "description": "Returned filament table.",
+    "condition": "On successful completion.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "ordered_dag_composition",
+   "ordering": "Validate the nonempty grids and coil records, discretize all coils in caller order, evaluate each target-ordered Green response independently, column-stack the responses as [N_target,N_coil], contract currents along axis 1 once, and reshape outputs.",
+   "branches": [],
+   "state_ownership": "Caller owns grid and coil declarations; the graph owns only local ordered lists for the current call and retains no mutable state.",
+   "failure_propagation": "Validation or dependency failure aborts the call immediately; no fallback, retry, or partial field result is produced.",
+   "feedback": []
+  }
+ }
+}

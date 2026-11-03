@@ -1,0 +1,129 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.thermal-speed-scale",
+ "title": {
+  "en": "Neutral species thermal-speed scale",
+  "zh": "中性物种热速度标度"
+ },
+ "summary": "The explicit second-moment thermal speed sqrt(2 e T / m) of a neutral species from its temperature in eV and a mass factor relative to the hydrogen mass, using frozen constants (hydrogen mass 1.6726231e-27 kg, elementary charge 1.602177e-19 J/eV).",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "thermal-speed",
+  "scale"
+ ],
+ "aliases": [
+  "compute_thermal_speed_m_s"
+ ],
+ "discovery": {
+  "capability": [
+   "Neutral species thermal-speed scale",
+   "The explicit second-moment thermal speed sqrt(2 e T / m) of a neutral species from its temperature in eV and a mass factor relative to the hydrogen mass, using frozen constants (hydrogen mass 1.6726231e-27 kg, elementary charge 1.602177e-19 J/eV)."
+  ],
+  "operation": [
+   "evaluate the neutral thermal-speed scale",
+   "temperature and mass -> one thermal-speed scalar"
+  ],
+  "model": "the explicit scalar relation",
+  "geometry": "none; a scalar material scale",
+  "boundary": "Both input scalars are finite and strictly positive; the final thermal speed must be finite and positive. Intermediate conversion underflow does not exclude a representable result.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "the second-moment thermal speed scale v = sqrt(2 e T_ev / (m_amu m_H)) with frozen constants",
+  "direction": "temperature and mass -> one thermal-speed scalar",
+  "definition": "v = sqrt(2 * 1.602177e-19 * T_ev / (m_amu * 1.6726231e-27)); the same Vth normalization the moment-reduction and boundary-flux relations consume",
+  "model": "the explicit scalar relation",
+  "geometry": "none; a scalar material scale",
+  "coordinates": "temperature in eV; mass_amu is a multiple of the hydrogen mass constant, not the standard atomic mass unit; speed in m/s",
+  "boundary": "Both input scalars are finite and strictly positive; the final thermal speed must be finite and positive. Intermediate conversion underflow does not exclude a representable result.",
+  "assumptions": [
+   "The frozen hydrogen mass and elementary charge are fixed historical values, not CODATA-current values.",
+   "This is a normalization scale, not a measured temperature diagnostic."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "temperature_ev",
+   "description": "Temperature of the species.",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
+  },
+  {
+   "name": "mass_amu",
+   "description": "Particle mass factor relative to the hydrogen mass constant, despite the historical parameter name.",
+   "units": "multiples of 1.6726231e-27 kg",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "A finite strictly positive real numeric scalar; booleans, strings, complex values and nonscalars are rejected."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "The thermal-speed mapping.",
+   "units": "m/s",
+   "shape": "mapping",
+   "dtype": "mapping with one float64 scalar",
+   "required": true,
+   "constraints": "Carries exactly one field thermal_speed_m_s; finite and strictly positive."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite positive temperature and mass scalars."
+  ],
+  "supported": [
+   "Thermal-speed normalization for a neutral species whose mass is supplied in hydrogen-mass multiples."
+  ],
+  "excluded": [
+   "Non-finite or nonpositive inputs; a non-finite result."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean, string, complex or nonscalar inputs, or when temperature_ev or mass_amu is non-finite or nonpositive.",
+  "runtime_failure": "Raises ValueError only if the final speed is non-finite or nonpositive. Dangerous intermediate range uses 100-digit Decimal evaluation of the defining relation with exact binary64 inputs before final float rounding.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.thermal_speed_scale",
+   "symbol": "compute_thermal_speed_m_s",
+   "signature": "compute_thermal_speed_m_s(temperature_ev, mass_amu)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "compute_thermal_speed_m_s"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the thermal speed for one temperature/mass pair and confirm the frozen-constant relation and the rejections.",
+  "code": "import math\nfrom scirel.kinetic import compute_thermal_speed_m_s\nresult = compute_thermal_speed_m_s(1.0, 2.0)\nassert result['thermal_speed_m_s'] == math.sqrt(2.0 * 1.602177e-19 / (2.0 * 1.6726231e-27))\nassert compute_thermal_speed_m_s(4.0, 2.0)['thermal_speed_m_s'] == 2.0 * result['thermal_speed_m_s']\ntry:\n    compute_thermal_speed_m_s(0.0, 1.0)\nexcept ValueError as error:\n    assert 'temperature_ev' in str(error)\nelse:\n    raise AssertionError('a nonpositive temperature must be rejected')",
+  "expected": "The frozen-constant thermal speed; quadrupling the temperature doubles the speed at fixed mass; a nonpositive temperature is rejected."
+ },
+ "verification": {
+  "scope": [
+   "That the speed equals the independent frozen-constant relation exactly.",
+   "Temperature square-root scaling and inverse-square-root mass scaling.",
+   "Input/type failures and high-precision recovery across intermediate underflow/overflow; true final overflow remains rejected.",
+   "Read-only digest-bound comparison at three finite positive scalar points."
+  ],
+  "tests": [
+   "tests/kinetic/test_thermal_speed_and_density_reduction.py",
+   "tests/cross_domain/test_legacy_admission_regressions.py"
+  ],
+  "evidence_ceiling": "Bounded to the explicit second-moment neutral thermal speed sqrt(2 e T/m) from eV temperature and hydrogen-mass multiples. Evidence: `test_thermal_speed_and_density_reduction.py` contains 11 test functions, 5 of which reference `compute_thermal_speed_m_s`, and is shared by 2 assets; `test_legacy_admission_regressions.py` contains 9 test functions, 2 of which reference `compute_thermal_speed_m_s`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: independent frozen-constant relation and Decimal-100 representability checks in the bound files. It does not establish non-finite/nonpositive inputs or a non-finite final speed.",
+  "known_limitations": [
+   "Two files bind the relation: `test_thermal_speed_and_density_reduction.py` has five direct functions covering the frozen formula, monotonicity, invalid/non-real inputs and underflow; `test_legacy_admission_regressions.py` adds representability/overflow checks.",
+   "The historical mass_amu name denotes hydrogen-mass multiples, not standard amu. Non-real coercions are rejected; dangerous intermediate range is evaluated at higher precision.",
+   "The historical `mass_amu` name means hydrogen-mass multiples; the dangerous intermediate range is evaluated by 100-digit Decimal arithmetic, not a modern CODATA conversion."
+  ]
+ }
+}

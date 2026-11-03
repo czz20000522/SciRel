@@ -1,0 +1,174 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.rectangular-coil-filaments",
+ "title": {
+  "en": "Rectangular coil filament discretization",
+  "zh": "矩形线圈电流丝离散"
+ },
+ "summary": "Discretize a rectangular coil section into ordered cylindrical filament centers with optional centroid rotation.",
+ "taxonomy": [
+  "field",
+  "coil-geometry",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "rectangular coil filaments"
+ ],
+ "discovery": {
+  "capability": [
+   "Rectangular coil filament discretization",
+   "Discretize a rectangular coil section into ordered cylindrical filament centres with optional centroid rotation."
+  ],
+  "operation": [
+   "finite rectangular centre lattice represented by ideal circular-filament locations",
+   "coil centre, counts, spacings and angle -> ordered R,Z points"
+  ],
+  "model": "Finite rectangular centre lattice represented by ideal circular-filament locations.",
+  "geometry": "R-Z centre lattice optionally rotated about (r0,z0).",
+  "boundary": "Any generated radius below zero is rejected.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "Rectangular coil filament discretization",
+  "direction": "coil center, counts, spacings, and angle to ordered R,Z points",
+  "definition": "Generate nr radial positions and nz axial positions with radial order outermost and axial order innermost.",
+  "model": "Finite rectangular center lattice represented by ideal circular-filament locations.",
+  "geometry": "R-Z center lattice optionally rotated about (r0,z0).",
+  "coordinates": "R,Z in metres; counts dimensionless; angle in degrees.",
+  "boundary": "Any generated radius below zero is rejected.",
+  "assumptions": [
+   "r0,z0,angle are finite; counts are positive integers; spacings are positive.",
+   "Rotation follows the row-vector convention.",
+   "The output contains nr*nz rows."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r0",
+   "description": "Coil-section center radius.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and nonnegative."
+  },
+  {
+   "name": "z0",
+   "description": "Coil-section center axial coordinate.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "nr",
+   "description": "Number of radial filament centers.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Positive integer; booleans and fractional values are rejected."
+  },
+  {
+   "name": "nz",
+   "description": "Number of axial filament centers.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Positive integer; booleans and fractional values are rejected."
+  },
+  {
+   "name": "dr",
+   "description": "Radial center spacing.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Positive finite value."
+  },
+  {
+   "name": "dz",
+   "description": "Axial center spacing.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Positive finite value."
+  },
+  {
+   "name": "angle_deg",
+   "description": "In-plane rotation using the maintained row-vector sign convention.",
+   "units": "degree",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": false,
+   "default": 0.0,
+   "constraints": "Finite."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "rz_pts",
+   "description": "Ordered filament center coordinates [R,Z].",
+   "units": "m,m",
+   "shape": "[nr*nz,2]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Radii are nonnegative; unrotated ordering is radial outer loop and axial inner loop."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "r0,z0,angle are finite; counts are positive integers; spacings are positive.",
+   "Rotation follows the row-vector convention."
+  ],
+  "supported": [
+   "Ordering, rotation sign, count/spacing validation, and axis-crossing rejection."
+  ],
+  "excluded": [
+   "Current assignment, finite-wire cross-sections, and material response."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for nonfinite center/angle, invalid counts or spacings, negative center radius, or axis-crossing output.",
+  "runtime_failure": "No iterative runtime failure is defined; direct geometry arithmetic fails closed.",
+  "nonconvergence": "Not applicable; discretization is direct.",
+  "partial_results": "No point array is returned after validation failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.rectangular_coil_filaments",
+   "symbol": "discretize_rectangular_coil",
+   "signature": "discretize_rectangular_coil(r0, z0, nr, nz, dr, dz, angle_deg=0.0)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "discretize_rectangular_coil"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Generate a 2-by-3 unrotated rectangular filament lattice.",
+  "code": "import numpy as np\nfrom scirel.field import discretize_rectangular_coil\npoints = discretize_rectangular_coil(1.0, 2.0, nr=2, nz=3, dr=0.4, dz=0.2)\nnp.testing.assert_allclose(points, [[0.8, 1.8], [0.8, 2.0], [0.8, 2.2], [1.2, 1.8], [1.2, 2.0], [1.2, 2.2]])",
+  "expected": "The output is a float64 array of shape (6,2) in radial-outer, axial-inner order."
+ },
+ "verification": {
+  "scope": [
+   "Source ordering.",
+   "Ninety-degree rotation convention.",
+   "Invalid count, spacing, and axis-crossing failures."
+  ],
+  "tests": [
+   "tests/field/test_rectangular_coil_filaments.py"
+  ],
+  "evidence_ceiling": "Bounded to rectangular-coil filament discretization with source ordering and ninety-degree rotation. Evidence: `test_rectangular_coil_filaments.py` contains 4 test functions, 1 of which references `discretize_rectangular_coil`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish current assignment, finite-wire cross-sections, or material response.",
+  "known_limitations": [
+   "Only uniform center spacing is supported.",
+   "Rotation is confined to the R-Z cross-section.",
+   "The returned centres preserve outer radial and inner axial ordering; no flux/field weighting or conductor cross-section is attached."
+  ]
+ }
+}

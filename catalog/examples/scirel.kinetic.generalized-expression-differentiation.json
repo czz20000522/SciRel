@@ -1,0 +1,121 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.generalized-expression-differentiation",
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Safe analytic density differentiation",
+   "Compile a restricted density expression into value and analytic first-derivative callables."
+  ],
+  "operation": [
+   "compile an analytic density and its derivative callable",
+   "expression -> callable density and derivative"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Only the restricted analytic expression syntax is supported.",
+  "device_scope": "generic"
+ },
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "generalized-dispersion"
+ ],
+ "title": {
+  "zh": "安全解析密度与链式法则求导",
+  "en": "Safe analytic density differentiation"
+ },
+ "summary": "Compile a restricted density expression into value and analytic first-derivative callables.",
+ "identity": {
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "relation": "f(v)=declared analytic expression; derivative(v)=df/dv",
+  "definition": "Parse finite real constants, pi, v, arithmetic and the declared elementary functions; propagate pairs (value, derivative) by exact analytic chain rules. MATLAB elementwise operators are normalized before parsing.",
+  "direction": "expression -> callable density and derivative",
+  "geometry": "One-dimensional velocity space",
+  "coordinates": "Dimensionless real velocity and complex phase or frequency",
+  "boundary": "Only the restricted analytic expression syntax is supported.",
+  "assumptions": [
+   "Density is real and integrable on the real contour.",
+   "No collective-mode uniqueness or certified global quadrature bound is asserted.",
+   "Expression has a valid analytic extension where continuation is requested.",
+   "Explicit increasing mesh resolves all density features and tails."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "expression",
+   "description": "Analytic density in v using finite real constants, pi, arithmetic and exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted.",
+   "dtype": "str",
+   "shape": "scalar",
+   "required": true,
+   "constraints": "Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or indexing.",
+   "units": "dimensionless"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "return",
+   "description": "DensityExpression instance. Calling instance(v) returns f(v); instance.derivative(v) returns analytic df/dv for scalar or NumPy-array real/complex v.",
+   "units": "dimensionless",
+   "shape": "callable object",
+   "dtype": "DensityExpression",
+   "constraints": "Arithmetic and domain constraints of the entered expression apply.",
+   "required": true
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.generalized_dispersion",
+   "symbol": "DensityExpression",
+   "signature": "DensityExpression(expression)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "DensityExpression"
+  }
+ },
+ "applicability": {
+  "supported": [
+   "Safe AST expression parsing, MATLAB point-operator normalization, analytic first derivatives and real/complex scalar or array evaluations."
+  ],
+  "excluded": [
+   "Arbitrary code, attributes, indexing, comparisons and piecewise expressions.",
+   "Symbolic simplification or guarantees of integrability."
+  ],
+  "preconditions": [
+   "Expression syntax is restricted to the declared arithmetic/functions.",
+   "Evaluation points lie in a finite domain where the entered expression and derivative are representable."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for unsupported AST nodes, non-finite constants, malformed expressions, or non-numeric velocity values.",
+  "runtime_failure": "NumPy overflow/invalid arithmetic propagates; no symbolic recovery or value repair is attempted.",
+  "nonconvergence": "Not applicable; parsing, evaluation and analytic differentiation are non-iterative.",
+  "partial_results": "No partial value or derivative is returned; the expression is parsed before evaluation."
+ },
+ "verification": {
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_models.py"
+  ],
+  "scope": [
+   "Lorentzian values and derivatives at real/complex points.",
+   "Explicit rejection of attributes, arbitrary calls, unknown names, indexing, lists and booleans."
+  ],
+  "known_limitations": [
+   "This parser does not prove integrability, positivity, normalization or analytic continuation validity.",
+   "Arithmetic exceptions and nonfinite expression evaluations are not converted into symbolic diagnoses.",
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Parse finite real constants, pi, v, arithmetic and the declared elementary functions; propagate pairs (value, derivative) by exact analytic chain rules. MATLAB elementwise operators are normalized before parsing. Evidence: test_generalized_dispersion_models.py (14 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Arbitrary code, attributes, indexing, comparisons and piecewise expressions; Symbolic simplification or guarantees of integrability."
+ },
+ "example": {
+  "description": "Compile a Lorentzian expression and compare its value and derivative with closed forms.",
+  "code": "import numpy as np\nfrom scirel.kinetic.generalized_dispersion import DensityExpression\nf=DensityExpression('1./(1+v.^2)/pi')\nv=.7\nassert abs(f(v)-1/(1+v*v)/np.pi)<1e-14\nassert abs(f.derivative(v)+2*v/(1+v*v)**2/np.pi)<1e-14\n",
+  "expected": "Observed PASS: the compiled Lorentzian value and analytic derivative agree with their closed forms at v=0.7."
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+ ]
+}

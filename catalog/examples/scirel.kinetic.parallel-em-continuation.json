@@ -1,0 +1,466 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.parallel-em-continuation",
+ "title": {
+  "en": "Parallel EM continuation",
+  "zh": "平行电磁根延续"
+ },
+ "summary": "Continue a single causal kinetic root through an explicit grid with accepted-seed feedback and diagnostic failure records. Failed or false-success roots never propagate.",
+ "taxonomy": [
+  "kinetic",
+  "spectral-dispersion",
+  "examples"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Parallel EM continuation",
+   "Continue a single causal kinetic root through an explicit grid with accepted-seed feedback and diagnostic failure records. Failed or false-success roots never propagate."
+  ],
+  "operation": [
+   "continue one parallel EM kinetic root",
+   "state, polarization and k grid -> continued kinetic root with diagnostics"
+  ],
+  "model": "Arbitrary-species drifting isotropic Maxwellian parallel electromagnetic response.",
+  "geometry": "Real nonzero k along signed z; equilibrium magnetic field along z.",
+  "boundary": "Retarded Landau analytic continuation from Im(omega)>0.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Ordered parallel wavevector grid to a continued kinetic root",
+  "direction": "bounded stateful root continuation",
+  "definition": "At each k, solve the two real components of f/scale with scipy.optimize.root(method=hybr). Accept only solver.success, finite output and the declared residual bound. Only an accepted root becomes the next initial guess.",
+  "model": "Arbitrary-species drifting isotropic Maxwellian parallel electromagnetic response.",
+  "geometry": "Real nonzero k along signed z; equilibrium magnetic field along z.",
+  "coordinates": "Temporal omega in rad/s; k in m^-1; pm fixed in the +z circular basis.",
+  "boundary": "Retarded Landau analytic continuation from Im(omega)>0.",
+  "assumptions": [
+   "The Gaussian velocity integral gives |k|*vt in both causal denominators, retaining signed k*vd.",
+   "No anisotropic or loss-cone substitution is made.",
+   "Kinetic constants are caller-owned initialized state: c2, wps2, wcs and vtzs are consumed without conversion; vtzs uses sqrt(2*kB*T/m). No fluid epsilon0/gamma/deck profile is substituted. The source current initialization uses c2=(2.9979e8)^2, epsilon0=8.8542e-12, kB=1.3807e-23, charge-unit=1.6022e-19 C, mass-unit=1.6726e-27 kg, eV-to-J=1.6022e-19; these define a possible predecessor, not new fixed constants in this residual."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "Explicit initialized isotropic drifting-Maxwellian kinetic state.",
+   "units": "wps2 s^-2; vds,vtzs m/s; wcs rad/s; c2 m^2/s^2",
+   "shape": "mapping with matching nonempty (S,) vectors",
+   "dtype": "mapping[str,numeric array or scalar]",
+   "required": true,
+   "constraints": "wps2 nonnegative; vtzs positive; finite c2. Optional Tzs,Tps must be equal and alphas must be one. Continuation defaults additionally require cwp[m], wcs1[rad/s]."
+  },
+  {
+   "name": "pm",
+   "description": "Circular-polarization sign about the fixed positive z basis.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "constraints": "Exactly +1 or -1. This is not helicity defined along k and is not swapped when k changes sign.",
+   "default": 1
+  },
+  {
+   "name": "k_grid",
+   "description": "Ordered signed real wavevector grid.",
+   "units": "m^-1",
+   "shape": "(K,) or null",
+   "dtype": "float64 array or None",
+   "required": false,
+   "constraints": "Finite nonzero points; explicit arrays are flattened. None uses 0.01*arange(1,51)/state[cwp]. The default source grid is best-effort; explicit arrays are flattened and both signs are supported.",
+   "default": null
+  },
+  {
+   "name": "initial_guess",
+   "description": "First complex temporal frequency seed.",
+   "units": "rad/s",
+   "shape": "scalar or null",
+   "dtype": "complex128 or None",
+   "required": false,
+   "constraints": "Finite; None uses the source best-effort seed (0.05+0.04j)*state[wcs1]. Callers claiming a branch should supply an explicit seed.",
+   "default": null
+  },
+  {
+   "name": "residual_tolerance",
+   "description": "Required scaled dispersion residual for every accepted point.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Finite positive; default 1e-10.",
+   "default": 1e-10
+  },
+  {
+   "name": "solver_options",
+   "description": "Options passed to the fixed SciPy hybr solver.",
+   "units": "option-specific",
+   "shape": "mapping or null",
+   "dtype": "dict or None",
+   "required": false,
+   "constraints": "No fallback solver or silent rescue. maxfev may set the finite evaluation budget.",
+   "default": null
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Accepted continuation mapping with k, omega and per-point solver records.",
+   "units": "k m^-1; omega rad/s; residual dimensionless",
+   "shape": "k,omega:(K,); records:length K",
+   "dtype": "dict[str,array or list[dict]]",
+   "required": true,
+   "constraints": "Only successful finite roots passing abs(f)/scale <= residual_tolerance are returned; order follows the supplied grid."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite inputs satisfying the declared units and shapes.",
+   "For a claimed continuation across a k grid, the caller supplies the branch seed (initial_guess) or explicitly accepts fail-closed termination; the source-shaped default seed/grid is convenience, not a completeness claim."
+  ],
+  "supported": [
+   "Finite ordered positive or negative grids, either fixed pm, and arbitrary admitted species count.",
+   "Genuine drifting-beam and independent three-species negative continuation."
+  ],
+  "excluded": [
+   "Automatic multi-branch discovery or crossing resolution.",
+   "Source-style carryover of a failed fsolve return into the next seed; automatic multi-branch discovery or crossing resolution."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError or a missing required mapping key rejects invalid inputs. A non-accepted continuation raises ContinuationFailure carrying attempted k, seed, solver success/status, scaled residual and the accepted prefix; no partial result is returned.",
+  "runtime_failure": "Dependency, numerical-library, or native-runtime errors propagate; no silent alternate provider. A declared ContinuationFailure (missing accepted root) is a scientific failure, not a dependency error.",
+  "nonconvergence": "ContinuationFailure carries k, seed, attempted root/status/residual when available, and the accepted prefix.",
+  "partial_results": "Failure exposes accepted_prefix diagnostically; it is not a successful complete continuation."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.parallel",
+   "symbol": "continue_em1d",
+   "signature": "continue_em1d(inputs)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.parallel-em-residual"
+   }
+  ]
+ },
+ "example": {
+  "description": "Continue a small zero-density vacuum branch.",
+  "code": "from scirel.kinetic.dispersion.parallel import continue_em1d\ns = dict(wps2=[0.0], vds=[0.0], vtzs=[1.0], wcs=[0.0], c2=1.0)\nr = continue_em1d(dict(state=s, k_grid=[0.2, 0.21], initial_guess=0.2+0j))\nassert len(r[\"omega\"]) == 2",
+  "expected": "The vacuum continuation returned k=[0.2,0.21], omega=[0.2+0j,0.21+0j], and zero scaled residuals for both accepted points."
+ },
+ "verification": {
+  "scope": [
+   "test_vacuum_continuation_matches_analytic_branch_and_zero_residual checks the vacuum analytic branch (omega=0.2,0.21 on the two-point grid with zero scaled residual); test_parallel_rejects_complex_and_unrepresentable_wavevectors covers malformed k grids; the residual itself has the direct Hermite-quadrature gate in the same file.",
+   "The bounded example covers one representative continuation; it does not extend applicability beyond the declared preconditions.",
+   "Regression pins the default-seed fail-closed record, an explicit-seed accepted continuation, and malformed-grid rejection; no non-vacuum source-trajectory parity is claimed."
+  ],
+  "tests": [
+   "tests/kinetic/test_dispersion_parallel.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared continuation on the tested vacuum two-point branch and failure contract. The vacuum analytic branch is reproduced with zero scaled residual, malformed k grids are rejected, and the underlying residual has a direct Hermite-quadrature gate. It does not establish non-vacuum continuation accuracy, seed-independent branch selection, uniqueness or largest-growth behavior.",
+  "known_limitations": [
+   "The analytic continuation check is a vacuum two-point case only; no non-vacuum accuracy claim is made.",
+   "A continued root is seed-dependent; no uniqueness or largest-growth claim.",
+   "The default 50-point grid retains source normalization but requires caller-supplied cwp and wcs1.",
+   "The default 50-point grid/seed can raise ContinuationFailure at an admissible k point; fail-closed stops instead of carrying a failed root, so a branch claim requires an explicit caller seed (or an accepted failure)."
+  ]
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ],
+ "composition": {
+  "nodes": [
+   {
+    "id": "continuation",
+    "kind": "controlled_glue",
+    "description": "Fixed hybr solve of normalized residual, finite acceptance check and accepted-seed update; no alternate solver or failed-seed propagation.",
+    "inputs": [
+     "state",
+     "pm",
+     "k_grid",
+     "initial_guess",
+     "residual_tolerance",
+     "solver_options",
+     "accepted_seed",
+     "f",
+     "scale"
+    ],
+    "outputs": [
+     "accepted_seed",
+     "result",
+     "state",
+     "omega",
+     "k",
+     "pm"
+    ]
+   },
+   {
+    "id": "response",
+    "kind": "function",
+    "description": "Causal isotropic kinetic EM residual at each trial omega/k.",
+    "inputs": [
+     "state",
+     "omega",
+     "k",
+     "pm"
+    ],
+    "outputs": [
+     "f",
+     "scale"
+    ],
+    "asset_id": "scirel.kinetic.parallel-em-residual"
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "state"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "state"
+    },
+    "description": "Explicit continuation input mapping port.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "pm"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "pm"
+    },
+    "description": "Explicit continuation input mapping port.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "k_grid"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "k_grid"
+    },
+    "description": "Explicit continuation input mapping port.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "initial_guess"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "initial_guess"
+    },
+    "description": "Explicit continuation input mapping port.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "residual_tolerance"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "residual_tolerance"
+    },
+    "description": "Explicit continuation input mapping port.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "solver_options"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "solver_options"
+    },
+    "description": "Explicit continuation input mapping port.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "continuation",
+     "port": "accepted_seed"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "accepted_seed"
+    },
+    "description": "Only an accepted root initializes the following grid point.",
+    "condition": "Prior point passed solver success, finite checks and the residual threshold.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "accepted-continuation"
+   },
+   {
+    "from": {
+     "node": "continuation",
+     "port": "result"
+    },
+    "to": {
+     "node": "$output",
+     "port": "result"
+    },
+    "description": "Complete accepted ordered continuation.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "continuation",
+     "port": "state"
+    },
+    "to": {
+     "node": "response",
+     "port": "state"
+    },
+    "description": "Unchanged trial state supplied to the causal response.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "continuation",
+     "port": "omega"
+    },
+    "to": {
+     "node": "response",
+     "port": "omega"
+    },
+    "description": "Unchanged trial omega supplied to the causal response.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "continuation",
+     "port": "k"
+    },
+    "to": {
+     "node": "response",
+     "port": "k"
+    },
+    "description": "Unchanged trial k supplied to the causal response.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "continuation",
+     "port": "pm"
+    },
+    "to": {
+     "node": "response",
+     "port": "pm"
+    },
+    "description": "Unchanged trial pm supplied to the causal response.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "response",
+     "port": "f"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "f"
+    },
+    "description": "Response f returned to the fixed root solve.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "root-evaluation"
+   },
+   {
+    "from": {
+     "node": "response",
+     "port": "scale"
+    },
+    "to": {
+     "node": "continuation",
+     "port": "scale"
+    },
+    "description": "Response scale returned to the fixed root solve.",
+    "condition": "Always.",
+    "transform": "Identity; no unit conversion.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "root-evaluation"
+   }
+  ],
+  "execution": {
+   "mode": "Sequential bounded root continuation; scientific response is a declared operator.",
+   "ordering": "Process supplied k_grid in order; evaluate trial response, certify result, append record, then update seed.",
+   "branches": [
+    "pm is fixed to +1 or -1 for the entire call.",
+    "An exception or rejected root stops immediately with diagnostic accepted prefix."
+   ],
+   "state_ownership": "Call-local seed, point index and accepted prefix; caller owns immutable physical input state.",
+   "failure_propagation": "ContinuationFailure stops feedback; no failed result becomes a subsequent initial guess.",
+   "feedback": [
+    {
+     "id": "root-evaluation",
+     "state": "Current two-real trial frequency and normalized f/scale.",
+     "initialization": "Supplied seed or source normalized default at the current k.",
+     "update_order": "hybr requests the declared response, then updates its trial.",
+     "continue_when": "The fixed hybr iteration remains within its finite evaluation budget.",
+     "stop_when": "Solver finishes or evaluation fails; acceptance is tested separately.",
+     "iteration_bound": "Finite SciPy hybr maxfev supplied in solver_options or its library default; no unbounded rescue loop.",
+     "nonconvergence": "Reject unsuccessful, nonfinite or excessive-residual roots with ContinuationFailure."
+    },
+    {
+     "id": "accepted-continuation",
+     "state": "Accepted complex seed, accepted prefix and next grid index.",
+     "initialization": "initial_guess or (0.05+0.04j)*wcs1.",
+     "update_order": "Solve, certify, append and then update the next seed.",
+     "continue_when": "The current point is accepted and an unprocessed grid point remains.",
+     "stop_when": "K accepted points are collected or the first point fails.",
+     "iteration_bound": "Exactly len(k_grid) point attempts at most; default K=50.",
+     "nonconvergence": "Expose the accepted prefix only as failure diagnostics."
+    }
+   ]
+  }
+ }
+}

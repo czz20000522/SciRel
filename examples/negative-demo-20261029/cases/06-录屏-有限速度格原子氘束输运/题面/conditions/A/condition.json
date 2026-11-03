@@ -1,0 +1,37 @@
+{
+  "case_id": "kn-atomic-slab-analytic-cx",
+  "condition_id": "A-arbitrary-positive-inlet",
+  "addendum_revision": "2026-10-27-atomic-condition-addendum-1",
+  "status": "STATIC_CONDITION_CANDIDATE_PRIMARY_REVIEW_PENDING",
+  "contract": "../README.md",
+  "base_inputs": "../../inputs.json",
+  "inherited_scientific_sections": [
+    "profiles",
+    "configuration",
+    "solver",
+    "molecular_inputs",
+    "pipe_diameter_m",
+    "constants",
+    "precision",
+    "units",
+    "axis_order"
+  ],
+  "change_kind": "Only select existing arbitrary-distribution inlet;SIMPLE_CX remains true and all elastic flags remain false",
+  "inlet_input": "input.json",
+  "inlet_definition": "arbitrary-inlet.md",
+  "mesh_E0": "Use the originaladvancedmode formula from input physicalminimumpositivevx;configuredextraenergybins=[];no energyvalue/grid evaluated",
+  "operators": {
+    "boundary-generations": "../../operators/boundary-generations.md",
+    "collisions": "../../operators/collisions.md",
+    "mesh-projection": "../../operators/mesh-projection.md"
+  },
+  "output_spec": "../../output-spec.json",
+  "acceptance": "../../acceptance.md",
+  "state_scope": "Fresh independent instance from baseline;keep originalsameconditionstate/order;not combined withB",
+  "review_materials": "Selected4x4samples;derivedE0recipe;futurederivedmesh;pre-density/rawinterpolant,densitynormalizedshape,derivedG and actuallowerappliedboundary;originaloutputs and firstfailurestage",
+  "reference": "NOT_RUN",
+  "scientific_acceptance": "pending",
+  "new_case_roots": 0,
+  "new_physical_families": 0,
+  "new_references": 0
+}

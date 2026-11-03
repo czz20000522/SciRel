@@ -1,0 +1,120 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.rational-z-poles",
+ "title": {
+  "en": "Rational plasma-dispersion poles",
+  "zh": "有理等离子体色散极点"
+ },
+ "summary": "Return ordered J4/J8 tables or the precision-corrected J12/I16/K8 pole-residue table.",
+ "taxonomy": [
+  "kinetic",
+  "magnetized-plasma",
+  "spectral-dispersion"
+ ],
+ "aliases": [
+  "pole_coefficients"
+ ],
+ "discovery": {
+  "capability": [
+   "Rational plasma-dispersion poles",
+   "Return ordered J4/J8 tables or the precision-corrected J12/I16/K8 pole-residue table."
+  ],
+  "operation": [
+   "return rational plasma-dispersion poles",
+   "J -> bzj,czj"
+  ],
+  "model": "Explicit rational approximation or two-Gaussian representation for magnetized kinetic response.",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Rational plasma-dispersion poles",
+  "direction": "J -> bzj,czj",
+  "definition": "Z_J(z)=sum_j bzj[j]/(z-czj[j]); paired tables obey sum b=-1,sum bc=0,sum bc^2=-1/2 within binary64 precision. J12 regenerates the prescribed Padé relation at 80 digits, checked against a 120-digit construction before rounding to binary64; the J4/J8 tabulated values are kept as given.",
+  "model": "Explicit rational approximation or two-Gaussian representation for magnetized kinetic response.",
+  "geometry": "Cartesian k=(kx,0,kz), B0 along signed z; non-spatial representation for pole/partition operators.",
+  "coordinates": "SI angular frequency rad/s and wave number m^-1; normalized source scan/selection quantities are labeled explicitly.",
+  "boundary": "Uniform/local plane-wave response; no spatial boundary-value problem or nonlinear saturation.",
+  "assumptions": [
+   "Linear small-amplitude response.",
+   "Caller retains the explicit truncation, state provenance and normalization."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "J",
+   "description": "Number of rational terms in Z(z)=sum_j bzj/(z-czj).",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer numeric",
+   "required": false,
+   "constraints": "Exactly4,8 or12; J12/I16/K8 table is intentionally regenerated at high precision and rounded to binary64.",
+   "default": 8
+  }
+ ],
+ "outputs": [
+  {
+   "name": "state",
+   "description": "J-pole table object; access J, bzj and czj through result.state.",
+   "units": "mixed (J dimensionless, bzj/czj complex coefficients)",
+   "shape": "object with a mapping state",
+   "dtype": "object",
+   "required": true,
+   "constraints": "Accessible in returned operator result.state; scientific meaning applies only to a compatible completed predecessor. Empty inactive arrays are preserved."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "J in{4,8,12}; causal physical mapping must still handle the sign of parallel k."
+  ],
+  "supported": [
+   "J in{4,8,12}; causal physical mapping must still handle the sign of parallel k."
+  ],
+  "excluded": [
+   "Global nonlinear plasma evolution and a guarantee of unique physical mode identification."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Declared Python guards raise ValueError; unsupported J is rejected without a table fallback.",
+  "runtime_failure": "Pure Python numeric errors propagate with operation context; no the reference runtime or source-runtime process is invoked.",
+  "nonconvergence": "No iterative solve is performed by fixed-table lookup; J12 construction is validated by the separate pure mpmath Padé operator.",
+  "partial_results": "No partial result is returned when validation or table loading fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.dispersion.magnetized",
+   "symbol": "pole_coefficients",
+   "signature": "pole_coefficients(J=8)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Return a pure-Python J-pole table and inspect its moments.",
+  "code": "from scirel.kinetic.dispersion import magnetized\nr = magnetized.pole_coefficients(8)\nassert r.state['bzj'].size == 8",
+  "expected": "The call returns a state object whose bzj table has J entries; the example executes locally without an external runtime."
+ },
+ "verification": {
+  "scope": [
+   "First three asymptotic moments retain the1e-10 gate; J12 raw80/120 construction yields stable binary64 coefficients.",
+   "Independent Z values and resolved kinetic responses bound the corrected J12 table; J4/J8 lower-order approximation errors remain explicit diagnostics."
+  ],
+  "tests": [
+   "tests/kinetic/test_dispersion_rational.py"
+  ],
+  "evidence_ceiling": "Direct contract tests and the declared finite cases bound the relation only where their numeric gates apply; the pure-Python execution runs on this macOS checkout without the declared local Python runtime.",
+  "known_limitations": [
+   "Local technical development; human scientific endorsement and publication clearance remain pending.",
+   "Finite harmonic N and rational-pole J approximations require independent convergence checks for a new physical regime.",
+   "Passing bounded response, state and backward-error tests does not establish unique physical-mode tracking, all-root forward accuracy or visual acceptance.",
+   "Lower-half-plane poles define a rational approximation; its global strong-damping accuracy is not established by bounded upper-half-plane response tests.",
+   "The pure-Python example and bounded verification run on this macOS host; arbitrary parameter regimes remain outside the evidence."
+  ]
+ },
+ "references": [
+  "Xie and Xiao, PDRK: A General Kinetic Dispersion Relation Solver for Magnetized Plasma, Plasma Science and Technology 18 (2016)."
+ ]
+}

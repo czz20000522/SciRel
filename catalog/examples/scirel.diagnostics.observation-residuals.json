@@ -1,0 +1,137 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.diagnostics.observation-residuals",
+ "title": {
+  "en": "Normalized observation residual reduction",
+  "zh": "归一化观测残差归约"
+ },
+ "summary": "Compute fixed-order, fixed-size normalized residuals for each predeclared observation channel; a missing prediction or an inconsistent unit is rejected.",
+ "taxonomy": [
+  "diagnostics",
+  "inference",
+  "observation-residual"
+ ],
+ "aliases": [
+  "flux-first inversion residual vector"
+ ],
+ "discovery": {
+  "capability": [
+   "Normalized observation residual reduction",
+   "Compute fixed-order, fixed-size normalized residuals for each predeclared observation channel."
+  ],
+  "operation": [
+   "diagonal sigma-weighted least-squares residual reduction",
+   "fully matched predictions and observations -> residual vector and squared sum"
+  ],
+  "model": "Diagonal sigma-weighted least squares with no covariance, degrees-of-freedom correction or instrument model.",
+  "geometry": "No geometry computation; the caller aligns observation and prediction locations.",
+  "boundary": "Values must be nonempty and finite, sigma finite and positive, residuals and chi2 representable, and an explicit unit must match predicted.units.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "fully matched predictions and observations to normalized residuals and a squared sum",
+  "direction": "predicted, observations -> residual_vector, chi2",
+  "definition": "First validate the observation layout, then take flux_loops, thomson.density, electron_temperature, p_parallel and p_perp in that fixed order. Every requested channel requires a prediction with exactly the same shape as values; compute (prediction-values)/sigma, flatten and concatenate in NumPy C order, and set chi2=r·r. sigma defaults to 1 and may broadcast; a channel whose prediction is missing is never skipped.",
+  "model": "diagonal sigma-weighted least squares with no covariance, degrees-of-freedom correction or instrument model",
+  "geometry": "no geometry computation; the caller is responsible for aligning observation and prediction locations",
+  "coordinates": "flux first, followed by the four profile channels in fixed order; within a channel, NumPy C order",
+  "boundary": "values must be nonempty and finite, sigma finite and positive, and residuals and chi2 representable; an explicit unit must match predicted.units.",
+  "assumptions": [
+   "Values and sigma share one unit and one sample correspondence.",
+   "Records without a declared unit remain usable as pure normalized algebra; this does not establish physical unit compatibility."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "predicted",
+   "description": "Per-channel predictions; when an observation declares a unit, matching units metadata must also be supplied.",
+   "units": "same as the corresponding values",
+   "shape": "mapping; flux_loops array and/or thomson mapping",
+   "dtype": "mapping and real arrays",
+   "required": true,
+   "constraints": "Every requested channel must be present, finite and exactly the same shape; a missing Thomson channel is not allowed."
+  },
+  {
+   "name": "observations",
+   "description": "flux_loops and/or thomson requests, each channel containing values, an optional sigma and an optional unit.",
+   "units": "values and sigma in the same unit",
+   "shape": "mapping",
+   "dtype": "mapping and real arrays",
+   "required": true,
+   "constraints": "Only known kinds/channels are allowed; values must be nonempty and finite; sigma defaults to 1 and must be positive and broadcastable; a unit, if present, must be a nonempty string."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "residual_vector",
+   "description": "Signed normalized residuals concatenated in the fixed channel order.",
+   "units": "dimensionless",
+   "shape": "[N_residual], N>0",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "N is determined by the total number of observation values, not by the available predictions; all entries are finite."
+  },
+  {
+   "name": "chi2",
+   "description": "Sum of squared residuals, without division by degrees of freedom.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite and nonnegative, equal to the inner product of residual_vector."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Predictions and observations refer to the same points, use the same units and are arranged in the same shapes."
+  ],
+  "supported": [
+   "Multi-channel normalized residuals with diagonal sigma weights.",
+   "Strict presence, shape and explicit-unit matching for every requested channel."
+  ],
+  "excluded": [
+   "Correlated-noise covariance, instrument calibration, degrees-of-freedom correction or fit-significance decisions.",
+   "Automatically shrinking the fit problem based on remaining predictions."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for empty or unknown observations, missing predictions, empty or nonfinite values, wrong shapes, nonpositive sigma or inconsistent explicit units.",
+  "runtime_failure": "Normalization or squared-sum overflow is detected and reported as ValueError.",
+  "nonconvergence": "No iteration; forward validity is judged separately by the trial layer.",
+  "partial_results": "No partial residual is returned after dropping a failing channel."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.diagnostics.observation_residuals",
+   "symbol": "reduce_observation_residuals",
+   "signature": "reduce_observation_residuals(*, predicted, observations)",
+   "canonical_module": "scirel.diagnostics",
+   "canonical_symbol": "reduce_observation_residuals"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Flux residuals precede the perpendicular-pressure residual; units are explicitly bound on both sides.",
+  "code": "import numpy as np\nfrom scirel.diagnostics import reduce_observation_residuals\nr=reduce_observation_residuals(predicted={'flux_loops':[3.],'thomson':{'p_perp':[5.]},'units':{'flux_loops':'Wb','thomson':{'p_perp':'Pa'}}}, observations={'flux_loops':{'values':[1.],'sigma':[2.],'unit':'Wb'},'thomson':{'p_perp':{'values':[3.],'sigma':[1.],'unit':'Pa'}}})\nnp.testing.assert_allclose(r['residual_vector'],[1.,2.])\nassert r['chi2']==5.",
+  "expected": "The fixed-order vector is [1,2] with squared sum 5; a missing p_perp prediction must fail."
+ },
+ "verification": {
+  "scope": [
+   "Retains the original normalization and sigma numerical assertions.",
+   "Rejects a mixed flux and Thomson request when any channel is missing; rejects unit conflicts and empty values.",
+   "Fixed-size trial composition with the real forward inversion."
+  ],
+  "tests": [
+   "tests/cross_domain/test_inference_physical_closure.py",
+   "tests/cross_domain/test_anisotropic_inference_independent.py"
+  ],
+  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
+  "known_limitations": [
+   "unit is a declared match only; units are not converted automatically and instrument calibration is not verified.",
+   "chi2 is only the algebraic squared sum under the stated diagonal weights; it cannot be interpreted alone as statistical significance."
+  ]
+ }
+}

@@ -1,0 +1,123 @@
+{
+ "schema": "scirel.asset-document",
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "verification": {
+  "scope": [
+   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+   "The executable constructor example stored in this contract"
+  ],
+  "tests": [
+   "tests/geometry/test_geometry_qualification.py",
+   "tests/geometry/test_runtime_lifecycle.py"
+  ],
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "known_limitations": [
+   "Mesh objects do not by themselves validate a physical field model or device geometry."
+  ]
+ },
+ "asset_id": "scirel.geometry.r-chord",
+ "title": {
+  "en": "Radial chord",
+  "zh": "径向弦"
+ },
+ "summary": "Points varying in R at fixed Z.",
+ "taxonomy": [
+  "geometry",
+  "coordinates"
+ ],
+ "aliases": [
+  "RChord"
+ ],
+ "discovery": {
+  "capability": [
+   "Radial chord points",
+   "Generate points varying in R at fixed Z."
+  ],
+  "operation": [
+   "cylindrical chord construction",
+   "rpts and z0 -> paired points"
+  ],
+  "model": "Cylindrical chord.",
+  "geometry": "Cylindrical R-Z chord at fixed Z.",
+  "boundary": "R must be nonnegative.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Radial chord relation",
+  "direction": "rpts,z0 to paired points",
+  "definition": "R coordinates vary while Z is constant",
+  "model": "Cylindrical chord",
+  "geometry": "Cylindrical chord",
+  "coordinates": "Cylindrical R-Z",
+  "boundary": "R nonnegative",
+  "assumptions": [
+   "Finite radial coordinates"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rpts",
+   "description": "Radial coordinates",
+   "units": "m",
+   "shape": "N",
+   "dtype": "Finite float64",
+   "required": true,
+   "constraints": "R >= 0"
+  },
+  {
+   "name": "z0",
+   "description": "Fixed axial coordinate",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Finite",
+   "default": 0.0
+  }
+ ],
+ "outputs": [
+  {
+   "name": "mesh",
+   "description": "Constructed RChord object. Available properties/methods: R: Radial coordinates [m], N; Z: Axial coordinates [m], N",
+   "units": "Object; property units as described",
+   "shape": "one object",
+   "dtype": "RChord",
+   "required": true,
+   "constraints": "Properties expose generated coordinates; field methods require configured or supplied target mesh"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+  ],
+  "supported": [
+   "Finite radial chord"
+  ],
+  "excluded": [
+   "Negative radius"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
+  "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
+  "partial_results": "A failed constructor returns no mesh object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry",
+   "symbol": "RChord",
+   "signature": "RChord(rpts: 'Iterable[float]', z0: 'float' = 0.0)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "RChord"
+  }
+ },
+ "example": {
+  "description": "Construct a radial chord at the fixed axial coordinate Z=0.3 m.",
+  "code": "import numpy as np\nfrom scirel.geometry import RChord\n\nmesh = RChord([0.2, 0.5], 0.3)\nnp.testing.assert_allclose(mesh.R, [0.2, 0.5])\nnp.testing.assert_allclose(mesh.Z, [0.3, 0.3])",
+  "expected": "The chord contains R=[0.2, 0.5] m and constant Z=[0.3, 0.3] m."
+ }
+}

@@ -1,0 +1,126 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.generalized-small-k",
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Langmuir small-k asymptotics",
+   "Evaluate source Langmuir frequency and damping asymptotics."
+  ],
+  "operation": [
+   "evaluate the Langmuir small-k asymptotics",
+   "small wave numbers k -> real frequency and damping rate"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "device_scope": "generic"
+ },
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "generalized-dispersion"
+ ],
+ "title": {
+  "zh": "Langmuir 小波数渐近频率",
+  "en": "Evaluate source Langmuir frequency and damping asymptotics."
+ },
+ "summary": "Evaluate source Langmuir frequency and damping asymptotics.",
+ "identity": {
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "relation": "omega_r=1+1.5k²; omega_i=-sqrt(pi/8) exp(-1/(2k²)-1.5)/k³",
+  "definition": "Logarithmic evaluation of the damping amplitude avoids the 0/0 form the direct expression takes when k³ underflows. Exact k=0 is rejected.",
+  "direction": "Declared inputs to declared scientific outputs",
+  "geometry": "One-dimensional velocity space",
+  "coordinates": "Dimensionless real velocity and complex phase or frequency",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "assumptions": [
+   "Maxwellian normalized thermal standard deviation and plasma frequency equal one.",
+   "Asymptotic use requires k much smaller than one."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "k",
+   "description": "Inverse Debye-length normalized small wavenumber.",
+   "dtype": "positive real",
+   "shape": "scalar or nonempty array",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "omega_real",
+   "description": "Leading Bohm-Gross real frequency.",
+   "dtype": "real array",
+   "shape": "same as k",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "omega_imag",
+   "description": "Leading small-k Landau damping.",
+   "dtype": "real array",
+   "shape": "same as k",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.generalized_dispersion",
+   "symbol": "evaluate_gpdf_small_k",
+   "signature": "evaluate_gpdf_small_k(k)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_gpdf_small_k"
+  }
+ },
+ "applicability": {
+  "supported": [
+   "Positive small wavenumbers, including exponentially underflowed damping returned as zero."
+  ],
+  "excluded": [
+   "Exact finite-k roots or a controlled global asymptotic remainder."
+  ],
+  "preconditions": [
+   "Maxwellian normalized thermal standard deviation and plasma frequency equal one.",
+   "Asymptotic use requires k much smaller than one."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real, boolean, string, complex, empty, nonfinite or nonpositive `k`.",
+  "runtime_failure": "Raises ValueError when the computed real frequency or damping is not representable as finite float64; there is no callback, quadrature or fallback path.",
+  "nonconvergence": "Not applicable; this is a direct asymptotic evaluation, not a root or quadrature solve.",
+  "partial_results": "Never returned; a rejected call produces no result mapping."
+ },
+ "verification": {
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_models.py"
+  ],
+  "scope": [
+   "Positive small wavenumbers, including exponentially underflowed damping returned as zero."
+  ],
+  "known_limitations": [
+   "Finite outputs at large k do not imply asymptotic validity.",
+   "Damping smaller than floating representation underflows to zero.",
+   "The bound file is shared by six assets and has two direct references: the small-k residual/mixture normalization and the integer-wrap case; no test binds an exact finite-k root or the asymptotic remainder."
+  ],
+  "evidence_ceiling": "Bounded to the small-k Langmuir real frequency and Landau-damping asymptotic. Evidence: `test_generalized_dispersion_models.py` contains 14 test functions, 2 of which reference `evaluate_gpdf_small_k`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen small-k values in the bound file. It does not establish exact finite-k roots or a controlled global asymptotic remainder."
+ },
+ "example": {
+  "description": "Evaluate the small-k Langmuir frequency and damping approximation.",
+  "code": "from scirel.kinetic.generalized_dispersion import evaluate_gpdf_small_k\nr=evaluate_gpdf_small_k(.1)\nassert abs(r['omega_real']-1.015)<1e-14\nassert r['omega_imag']<0\n",
+  "expected": "Observed PASS: k=0.1 returns omega_real=1.015 within 1e-14 and negative damping."
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+ ]
+}

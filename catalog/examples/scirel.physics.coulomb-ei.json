@@ -1,0 +1,126 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.physics.coulomb-ei",
+ "title": {
+  "en": "Electron-ion Coulomb logarithm",
+  "zh": "电子-离子库仑对数"
+ },
+ "summary": "Wesson Coulomb logarithm estimate for the declared collision pair.",
+ "taxonomy": [
+  "physics",
+  "collisions",
+  "coulomb-log"
+ ],
+ "aliases": [
+  "calculate_log_lambda_ei"
+ ],
+ "discovery": {
+  "capability": [
+   "Electron-ion Coulomb logarithm",
+   "Wesson Coulomb logarithm ln Lambda for electron-ion collisions from temperature in keV and density in m^-3."
+  ],
+  "operation": [
+   "Evaluate the Wesson electron-ion Coulomb logarithm",
+   "temperature and density -> dimensionless logarithm"
+  ],
+  "model": "Wesson Coulomb-log relation ln Lambda = 31.3 - 0.5 ln(n_e) + ln(1000 T_e) with explicit numeric boundary checks.",
+  "geometry": "Homogeneous plasma point with broadcast T_e and n_e arrays; no spatial geometry is inferred.",
+  "boundary": "T_e in keV and n_e in m^-3 must be finite and strictly positive.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "lnΛ=31.3-0.5 ln(n_e)+ln(1000*T_e)",
+  "direction": "temperature and density -> dimensionless logarithm",
+  "definition": "31.3-0.5*ln(n_e)+ln(1000*T_e); keV is converted to eV by the factor 1000. Evaluation uses ln(1000)+ln(T), avoiding intermediate overflow/underflow.",
+  "model": "Wesson Coulomb-log relation with explicit SciRel numeric boundary checks",
+  "geometry": "homogeneous plasma point",
+  "coordinates": "broadcast T_e and n_e arrays",
+  "boundary": "strictly positive finite T_e in keV and n_e in m^-3",
+  "assumptions": [
+   "This is a mathematical weak-coupling estimate.",
+   "The caller decides whether a positive/adequate Coulomb logarithm is physically applicable."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "T_e",
+   "description": "Electron temperature",
+   "units": "keV",
+   "shape": "broadcast",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  },
+  {
+   "name": "n_e",
+   "description": "Electron density",
+   "units": "m^-3",
+   "shape": "broadcast",
+   "dtype": "real integer/float numeric scalar or array-like; converted to float64",
+   "required": true,
+   "constraints": "finite and strictly positive; nonempty, boolean/string/complex/masked values rejected"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Coulomb logarithm",
+   "units": "dimensionless",
+   "shape": "broadcast shape",
+   "dtype": "float64 scalar or array",
+   "required": true,
+   "constraints": "Finite signed mathematical formula value; physical suitability for a collision model is caller-owned."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "strictly positive finite T_e in keV and n_e in m^-3"
+  ],
+  "supported": [
+   "Finite NumPy evaluation of the declared relation and broadcast shape."
+  ],
+  "excluded": [
+   "Whole-transport evolution, experimental calibration, and implicit coordinate reconstruction.",
+   "Interpreting zero or negative computed logarithms as valid weakly coupled collision physics; physical calibration or a regime-switching model."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for boolean/string/complex/masked or empty input, non-finite values, malformed or incompatible shape, and the nonpositive or singular domains named by the callable contract.",
+  "runtime_failure": "Raises FloatingPointError if accepted finite inputs produce an unrepresentable output; no fallback is returned.",
+  "nonconvergence": "Not applicable; this is a direct algebraic mapping.",
+  "partial_results": "No output is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.physics.coulomb_logs",
+   "symbol": "calculate_log_lambda_ei",
+   "signature": "calculate_log_lambda_ei(T_e, n_e)",
+   "canonical_module": "scirel.physics",
+   "canonical_symbol": "calculate_log_lambda_ei"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run the relation on a finite declared-domain case.",
+  "code": "import numpy as np\nfrom scirel.physics import calculate_log_lambda_ei\nr=calculate_log_lambda_ei(2., 1e19)\nassert np.isfinite(r)",
+  "expected": "A finite dimensionless logarithm"
+ },
+ "verification": {
+  "scope": [
+   "Independent 60-digit Decimal logarithms over temperature/density/charge scales including smallest subnormal and largest float64; transformation/scaling identities.",
+   "Declared failure cases for empty, boolean/string/complex/masked, nonfinite and incompatible inputs.",
+   "Agreement with the canonical SciRel callers and dependencies of this relation."
+  ],
+  "tests": [
+   "tests/cross_domain/test_algebra_grid.py"
+  ],
+  "evidence_ceiling": "Maintained tests establish the named relation, shape and selected boundary behavior only; they do not establish global physical calibration.",
+  "known_limitations": [
+   "No external calibration or collision-frequency composition is claimed.",
+   "Only the Wesson algebra and declared numerical boundaries are covered."
+  ]
+ }
+}

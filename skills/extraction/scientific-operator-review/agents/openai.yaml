@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Operator Review"
+  short_description: "Read-only fidelity or scientific correctness review"
+  default_prompt: "Use $scientific-operator-review for this exact operator or TaskGraph; D1 source_fidelity reviews fidelity and completeness, later scientific reviews challenge correctness claims. Return findings without editing or a stage decision."
+policy:
+  allow_implicit_invocation: false

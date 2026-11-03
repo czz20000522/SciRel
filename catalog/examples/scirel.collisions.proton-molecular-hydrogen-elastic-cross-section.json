@@ -1,0 +1,133 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section",
+ "title": {
+  "en": "H2-on-H+ elastic momentum-transfer cross section",
+  "zh": "分子氢质子弹性动量转移截面"
+ },
+ "summary": "H2-on-H+ elastic momentum-transfer cross section in m^2 as a function of collision energy in eV: a single five-coefficient logarithmic polynomial on the clipped [0.03, 1.01e4] eV domain. Negative energies are rejected.",
+ "taxonomy": [
+  "collisions",
+  "cross-section",
+  "elastic",
+  "momentum-transfer",
+  "hydrogen",
+  "molecular",
+  "proton",
+  "tabulated-fit"
+ ],
+ "aliases": [
+  "sigma_el_p_hh",
+  "H2-H+ elastic momentum-transfer cross section"
+ ],
+ "discovery": {
+  "capability": [
+   "H2-on-H+ elastic momentum-transfer cross section",
+   "H2-on-H+ elastic momentum-transfer cross section in m^2 from collision energy in eV."
+  ],
+  "operation": [
+   "Evaluate the H2-on-H+ elastic momentum-transfer cross section",
+   "collision energies -> cross section per energy"
+  ],
+  "model": "Single declared five-coefficient logarithmic-polynomial fit; no external-data interpolation and no rate integration.",
+  "geometry": "None; scalar material function of collision energy with no spatial axis (coordinate: collision energy in eV; output in m^2).",
+  "boundary": "Energies must be finite and nonnegative; values outside the [0.03, 1.01e4] eV fit range clip to the endpoints.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "the H2-on-H+ elastic momentum-transfer cross section as a function of collision energy",
+  "direction": "collision energies -> cross section per energy",
+  "definition": "Energies are clipped to [0.03, 1.01e4] eV and the cross section is exp(polyval(log(E_clipped), a)) * 1e-4 m^2 with the five coefficients. Endpoint values repeat outside the clipped range.",
+  "model": "a single declared cross-section fit; no interpolation of external data and no rate integration",
+  "geometry": "none; a scalar material function of collision energy",
+  "coordinates": "collision energy in eV; output cross section in m^2",
+  "boundary": "energies must be finite and nonnegative; in-domain values outside the fit range clip to the range endpoints",
+  "assumptions": [
+   "The coefficients are the declared fit values, evaluated with the declared expression; they are not re-derived from any external reference.",
+   "No external physical cross-section reference is bound; this residual stays open."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "energy_ev",
+   "description": "Collision energies at which the cross section is evaluated.",
+   "units": "eV",
+   "shape": "any (scalar or array)",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative. Values above or below the fit range are clipped to the range endpoints."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "cross_section_m2",
+   "description": "Elastic momentum-transfer cross section, one value per energy.",
+   "units": "m^2",
+   "shape": "same as energy_ev",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive for every accepted input."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller accepts the clipping convention: energies outside the fit range silently return the endpoint value."
+  ],
+  "supported": [
+   "H2-on-H+ elastic momentum-transfer cross sections on the fit within (or clamped to) its declared energy range.",
+   "Scalar and array evaluation of any shape, including zero-dimensional inputs.",
+   "Rejecting negative energies."
+  ],
+  "excluded": [
+   "Maxwellian averaging of this cross section: use scirel.collisions.maxwellian-relative-speed-rate-average, which accepts this callable as its cross_section_m2 port.",
+   "Charge-exchange or ionization channels: different relations, provided by sibling assets.",
+   "Elastic cross sections for other species pairs: separate assets, not variants of this relation.",
+   "A cross-section model validated against an external atomic-physics reference; none is bound."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError naming energy_ev for non-real, non-finite or negative energy inputs. There is no other failure mode.",
+  "runtime_failure": "Not reachable on the declared domain: the fit is evaluated only on its clipped positive range. No iteration, no state and no partial results.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.hydrogen2_proton_elastic_cross_section",
+   "symbol": "evaluate_hydrogen2_proton_elastic_cross_section",
+   "signature": "evaluate_hydrogen2_proton_elastic_cross_section(energy_ev)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "evaluate_hydrogen2_proton_elastic_cross_section"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the fit on a grid, confirm the endpoint clipping, and confirm the negative-energy rejection.",
+  "code": "import numpy as np\nfrom scirel.collisions import evaluate_hydrogen2_proton_elastic_cross_section\n\nenergy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])\nresult = evaluate_hydrogen2_proton_elastic_cross_section(energy)\nassert result.shape == energy.shape\nassert np.all(np.isfinite(result)) and np.all(result > 0.0)\nclipped = evaluate_hydrogen2_proton_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))\nassert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]\ntry:\n    evaluate_hydrogen2_proton_elastic_cross_section(np.array([1.0, -0.5]))\nexcept ValueError as error:\n    assert 'nonnegative' in str(error)\nelse:\n    raise AssertionError('a negative energy must be rejected')",
+  "expected": "Finite strictly positive cross sections in m^2; endpoint repetition outside the clipped range; ValueError naming nonnegativity for a negative energy."
+ },
+ "verification": {
+  "scope": [
+   "That the fit equals an independent evaluation of the coefficient set on the clipped domain to a relative tolerance of 1e-15, on in-domain and holdout grids.",
+   "The endpoint clipping: values below and above the fit range repeat the endpoint values exactly.",
+   "The input contract: non-finite and negative energies are rejected with messages naming the quantity; a negative energy raises rather than being silently clipped.",
+   "No external implementation comparison is maintained or replayed by this repository; the maintained tests validate the declared relation against an in-repository independent formulation and cover the stated rejection and clipping behaviour only on their tested grids."
+  ],
+  "tests": [
+   "tests/collisions/test_hydrogen2_proton_elastic_cross_section.py",
+   "tests/collisions/test_collision_cross_section_input_types.py"
+  ],
+  "evidence_ceiling": "An independent evaluation of the fit expressions covers every branch, clipping boundary and SI conversion; a NumPy-only installation passed scalar independent evaluation across 56 energies per branch, and all 62 fit/input tests passed with their original assertions and tolerances. This qualifies the stated empirical expression, not new experimental accuracy. No external experimental cross-section validation is bound, and redistribution permission remains separate.",
+  "known_limitations": [
+   "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
+   "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
+   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
+   "The negative-energy rejection is an explicit precondition of this contract: a negative energy raises ValueError rather than returning the clipped endpoint.",
+   "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
+   "Public distribution licensing remains pending a human decision."
+  ]
+ }
+}

@@ -1,0 +1,296 @@
+kind: scientific_composition
+name: 双温镜准中性闭合
+entrypoint: composition_fixture.py::run_composition
+display_name:
+  zh: 双温镜准中性闭合
+framework_mapping:
+  primary_pfm_node: N11
+  coverage: partial
+inputs:
+- name: b_t
+  meaning: 局部磁场
+  shape: '[N_Z,N_R] or [surface]'
+  units: T
+  required: true
+  constraints: finite positive field
+- name: psi
+  meaning: 通量标签
+  shape: same_as_b_t
+  units: Wb
+  required: true
+  constraints: finite
+- name: mass_kg
+  meaning: 离子质量
+  shape: scalar
+  units: kg
+  required: true
+  constraints: positive
+- name: charge_c
+  meaning: 正离子电荷
+  shape: scalar
+  units: C
+  required: true
+  constraints: positive
+- name: density_ref_m3
+  meaning: 离子参考密度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: m^-3
+  required: true
+  constraints: nonnegative scalar/array or vectorized caller profile(psi)
+- name: temperature_parallel_j
+  meaning: 离子平行参考温度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: J
+  required: true
+  constraints: positive scalar/array or vectorized caller profile(psi)
+- name: temperature_perpendicular_ref_j
+  meaning: 离子垂直参考温度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: J
+  required: true
+  constraints: positive scalar/array or vectorized caller profile(psi)
+- name: b_ref_t
+  meaning: 参考面磁场
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: T
+  required: true
+  constraints: positive scalar/array or vectorized caller profile(psi)
+- name: phi_ref_v
+  meaning: 离子参考电势
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: V
+  required: false
+  constraints: finite scalar/array or vectorized caller profile(psi); defaults to zero
+- name: b_plug_left_t
+  meaning: 左端镜塞磁场
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: T
+  required: false
+  constraints: 必须与 b_plug_right_t 成对提供且严格为正
+- name: b_plug_right_t
+  meaning: 右端镜塞磁场
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: T
+  required: false
+  constraints: 必须与 b_plug_left_t 成对提供且严格为正
+- name: phi_plug_left_v
+  meaning: 左端镜塞电势
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: V
+  required: false
+  constraints: 有限；未提供时为 0
+- name: phi_plug_right_v
+  meaning: 右端镜塞电势
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: V
+  required: false
+  constraints: 有限；未提供时为 0
+- name: loss_cone_refill
+  meaning: 损失锥再填充比例
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 位于 [0,1]；未提供时为 0
+- name: quadrature_order
+  meaning: 速度矩 Legendre 求积阶数
+  shape: scalar_integer
+  units: count
+  required: false
+  constraints: 整数且至少为 8；未提供时为 32
+- name: electron_temperature_j
+  meaning: 等温 Boltzmann 电子温度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: J
+  required: true
+  constraints: positive scalar/array or vectorized caller profile(psi)
+- name: electron_density_ref_m3
+  meaning: 电子参考密度
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: m^-3
+  required: false
+  constraints: nonnegative scalar/array or vectorized caller profile(psi); defaults to ion charge state times ion reference density
+- name: electron_phi_ref_v
+  meaning: 电子参考电势
+  shape: scalar_or_same_as_b_t_or_profile(psi)
+  units: V
+  required: false
+  constraints: finite scalar/array or vectorized caller profile(psi); defaults to phi_ref_v
+- name: potential_tolerance_v
+  meaning: 电势二分绝对容差
+  shape: scalar
+  units: V
+  required: false
+  constraints: positive; defaults to 1e-8
+- name: quasineutral_tolerance
+  meaning: 准中性残差容差
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: positive; defaults to 1e-10
+- name: max_iterations
+  meaning: 电势二分最大迭代次数
+  shape: scalar
+  units: count
+  required: false
+  constraints: integer >= 1; defaults to 100
+- name: initial_bracket_thermal
+  meaning: 初始热电势包围宽度
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: positive; defaults to 8.0
+outputs:
+- name: p_parallel
+  meaning: 离子加电子平行压强
+  shape: same_as_b_t
+  units: Pa
+- name: p_perpendicular
+  meaning: 离子加电子垂直压强
+  shape: same_as_b_t
+  units: Pa
+- name: ion_density
+  meaning: 动理学离子密度
+  shape: same_as_b_t
+  units: m^-3
+- name: electron_density
+  meaning: Boltzmann 电子密度
+  shape: same_as_b_t
+  units: m^-3
+- name: electrostatic_potential
+  meaning: 准中性电势
+  shape: same_as_b_t
+  units: V
+- name: relative_charge_residual
+  meaning: 电荷中性残差
+  shape: same_as_b_t
+  units: dimensionless
+- name: kinetic_moments
+  meaning: 最终双温镜动理学矩与积分摘要
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: 包含密度、平行/垂直压强、局域温度与三个无量纲俯仰积分；字段保持动理学算子返回的结构
+- name: iterations
+  meaning: 电势二分实际迭代次数
+  shape: scalar_integer
+  units: count
+- name: converged
+  meaning: 电势二分满足准中性停止条件的标志
+  shape: scalar_bool
+  units: boolean
+execution:
+  mode: sequential_state_feedback
+  order_policy: bracket_potential_then_bisect_then_evaluate_kinetic_and_electron_moments
+  state_policy: potential is composition-local iterative state; moment leaf is read-only
+  failure_policy: fail on unbracketed or unconverged quasineutrality
+nodes:
+- id: charge_state_adapter
+  name: 离子电荷态标量适配
+  kind: controlled_glue
+  callable: glue:_charge_state
+  inputs: [charge_c]
+  outputs: [ion_charge_state]
+- id: reference_electron_density
+  name: 准中性参考电子密度
+  kind: scientific_function
+  callable: scirel.closures.quasineutral_reference_density::compute_reference_electron_density
+  asset_ref: scirel.closures.quasineutral_reference_density
+  inputs: [density_ref_m3, ion_charge_state]
+  outputs: [electron_density_ref_m3]
+- id: profile_broadcast
+  name: 标量或磁通剖面形状适配
+  kind: controlled_glue
+  callable: glue:_field
+  inputs: [value, psi, name]
+  outputs: [field]
+- id: state_broadcast
+  name: 磁场与磁通同网格适配
+  kind: controlled_glue
+  callable: glue:_broadcast_state
+  inputs: [b_t, psi]
+  outputs: [b_t, psi]
+- id: kinetic_moments
+  name: 双温镜约束速度矩
+  kind: scientific_function
+  callable: scirel.kinetic.mirror_constrained_moments::evaluate_mirror_constrained_moments
+  asset_ref: scirel.kinetic.mirror_constrained_moments
+  inputs: [b_t, psi, potential_v, mass_kg, charge_c, density_ref_m3, temperature_parallel_j, temperature_perpendicular_ref_j, b_ref_t, phi_ref_v, b_plug_left_t, b_plug_right_t, phi_plug_left_v, phi_plug_right_v, loss_cone_refill, quadrature_order]
+  outputs: [density_m3, p_parallel_pa, p_perpendicular_pa, temperature_parallel_j, temperature_perpendicular_local_j, untruncated_density_m3, density_pitch_integral, parallel_pitch_integral, perpendicular_pitch_integral]
+- id: boltzmann_electron_response
+  name: 玻尔兹曼电子密度与准中性残差
+  kind: scientific_function
+  callable: scirel.closures.boltzmann_quasineutrality::compute_boltzmann_electron_state
+  asset_ref: scirel.closures.boltzmann_quasineutrality
+  inputs: [potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state]
+  outputs: [electron_density_m3, electron_pressure_pa, logarithmic_charge_residual, charge_residual_m3, relative_charge_residual]
+- id: potential_bisection
+  name: 准中性电势二分求根
+  kind: scientific_function
+  callable: scirel.closures.quasineutral_potential::solve_quasineutral_potential
+  asset_ref: scirel.closures.quasineutral_potential
+  inputs: [potential_reference_v, temperature_parallel_j, electron_temperature_j, charge_c, active, residual, potential_tolerance_v, quasineutral_tolerance, max_iterations, initial_bracket_thermal]
+  outputs: [potential_v, logarithmic_charge_residual, iterations, converged]
+- id: pressure_state_assembly
+  name: 双温镜总压强状态组装
+  kind: scientific_function
+  callable: scirel.kinetic.mirror_total_pressure::assemble_mirror_total_pressure
+  asset_ref: scirel.kinetic.mirror_total_pressure
+  inputs: [kinetic_moments, electron_state]
+  outputs: [p_parallel, p_perpendicular, ion_density, ion_p_parallel, ion_p_perpendicular, electron_density, electron_pressure, relative_charge_residual, kinetic_moments]
+edges:
+- from: charge_state_adapter
+  from_output: ion_charge_state
+  to: reference_electron_density
+  to_input: ion_charge_state
+  data: 无量纲正离子电荷态
+  condition: always
+  transform: charge_c divided by elementary charge
+  closure: controlled_glue
+- from: reference_electron_density
+  from_output: electron_density_ref_m3
+  to: boltzmann_electron_response
+  to_input: electron_density_ref_m3
+  data: 调用方电子参考密度缺省时的准中性参考值
+  condition: electron_density_ref_m3 is absent
+  transform: identity
+  closure: asset
+- from: potential_bisection
+  from_output: potential_v
+  to: kinetic_moments
+  to_input: potential_v
+  data: 当前二分电势
+  condition: each residual evaluation and final evaluation
+  transform: identity
+  closure: asset
+- from: kinetic_moments
+  from_output: density_m3
+  to: boltzmann_electron_response
+  to_input: ion_density_m3
+  data: 当前电势下的动理学离子密度
+  condition: each residual evaluation and final evaluation
+  transform: identity
+  closure: asset
+- from: boltzmann_electron_response
+  from_output: logarithmic_charge_residual
+  to: potential_bisection
+  to_input: residual
+  data: log(Z_i*n_i)-log(n_e) callable result
+  condition: each bisection evaluation
+  transform: bind state_at and electron_state as a caller-owned residual callable
+  closure: controlled_glue
+- from: kinetic_moments
+  from_output: p_parallel_pa
+  to: pressure_state_assembly
+  to_input: kinetic_moments
+  data: 完整离子矩映射
+  condition: final root evaluation
+  transform: pass the complete mapping, not only pressure fields
+  closure: asset
+- from: boltzmann_electron_response
+  from_output: electron_pressure_pa
+  to: pressure_state_assembly
+  to_input: electron_state
+  data: 完整电子状态映射
+  condition: final root evaluation
+  transform: pass the complete mapping
+  closure: asset

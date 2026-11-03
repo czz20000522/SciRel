@@ -1,0 +1,146 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.hydrogen-saha-equilibrium-population",
+ "title": {
+  "en": "Atomic-hydrogen Saha equilibrium population density",
+  "zh": "原子氢Saha平衡人口密度"
+ },
+ "summary": "Evaluate the declared atomic-hydrogen Saha level population from paired electron density and temperature using the implementation constants.",
+ "taxonomy": [
+  "kinetic",
+  "population",
+  "saha-equilibrium",
+  "hydrogen",
+  "analytic-relation"
+ ],
+ "aliases": [
+  "nh_saha",
+  "Saha equation population",
+  "equilibrium excited-level population"
+ ],
+ "discovery": {
+  "capability": [
+   "Atomic-hydrogen Saha equilibrium population density",
+   "Evaluate the declared atomic-hydrogen Saha level population from paired electron density and temperature using the implementation constants."
+  ],
+  "operation": [
+   "evaluate the Saha level population density",
+   "electron density in m^-3, electron temperature in eV, principal level -> population density in m^-3 per sample"
+  ],
+  "model": "Closed Saha equilibrium relation on its positive finite scientific branch with hydrogen-ion density identified with electron density; no dynamic state or non-equilibrium kinetics",
+  "geometry": "No spatial geometry; elementwise paired material samples",
+  "boundary": "Non-empty, same-shape one-dimensional real arrays, finite and strictly between zero and 1e32; scalar integral level >= 1; finite positive represented result. The source's 1e32 sentinel is never returned.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Saha equilibrium population density of atomic-hydrogen principal level n from paired electron density and temperature",
+  "direction": "electron density in m^-3, electron temperature in eV, principal level -> population density in m^-3 per sample",
+  "definition": "For level n, evaluate n_e*(3.310e-28*n_e)*n^2*exp(13.6057/(n^2*T_e))/T_e^1.5 in the stated operation order. The second n_e factor substitutes hydrogen-ion density n_H+ under the model assumption n_H+ = n_e. The constants are the Saha factor and ionization energy in eV.",
+  "model": "Closed Saha equilibrium relation on its positive finite scientific branch with hydrogen-ion density identified with electron density; no dynamic state or non-equilibrium kinetics",
+  "geometry": "No spatial geometry; elementwise paired material samples",
+  "coordinates": "One shared one-dimensional sample axis for electron density and temperature; principal level is scalar",
+  "boundary": "Non-empty, same-shape one-dimensional real arrays, finite and strictly between zero and 1e32; scalar integral level >= 1; finite positive represented result. The source's 1e32 sentinel is never returned.",
+  "assumptions": [
+   "The 3.310e-28 and 13.6057 eV constants and the formula order are fixed without external re-derivation.",
+   "This relation assumes Saha equilibrium; it does not establish that the caller's plasma is in equilibrium.",
+   "The n_e squared factor requires n_H+ = n_e for the modeled hydrogen population. Saha equilibrium alone does not establish that equality; the caller must establish it separately.",
+   "Non-scientific branches are rejected. SciRel also rejects boolean and numeric-string coercions under the declared real/integer input contract and preserves Python and NumPy integer principal levels before squaring."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "electron_density_m3",
+   "description": "Electron number density per sample, also used as hydrogen-ion density under n_H+ = n_e.",
+   "units": "m^-3",
+   "shape": "(N,), N >= 1",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, strictly positive and below 1e32; boolean and numeric-string coercions rejected."
+  },
+  {
+   "name": "electron_temperature_ev",
+   "description": "Electron temperature paired with each density.",
+   "units": "eV",
+   "shape": "(N,), same as electron_density_m3",
+   "dtype": "real numeric array-like",
+   "required": true,
+   "constraints": "Finite, strictly positive and below 1e32; boolean and numeric-string coercions rejected."
+  },
+  {
+   "name": "principal_level",
+   "description": "Atomic-hydrogen principal quantum level n.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric scalar representing an integer",
+   "required": true,
+   "constraints": "Integral value >= 1; booleans, strings and non-integral values rejected."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "population_m3",
+   "description": "Saha equilibrium population density per paired sample.",
+   "units": "m^-3",
+   "shape": "(N,), same as inputs",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and strictly positive; no sentinel or partial output."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller has established both the Saha-equilibrium idealization and n_H+ = n_e for the modeled hydrogen population; equality of hydrogen-ion and electron densities is not inferred from the supplied inputs.",
+   "The caller accepts one-dimensional paired samples and the strict 1e32 domain ceilings."
+  ],
+  "supported": [
+   "Pointwise atomic-hydrogen level populations for integral n >= 1 on the represented scientific domain."
+  ],
+  "excluded": [
+   "Non-equilibrium, molecular or ion populations; scalar or higher-rank carriers; use of the source's 1e32 sentinel as physical data.",
+   "Mixed or impurity plasma states where n_H+ differs from n_e; this callable has no separate hydrogen-ion-density input.",
+   "Physical accuracy without an external atomic-physics reference."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real or non-finite arrays, empty/non-1-D or mismatched shapes, density or temperature outside (0, 1e32), or a non-scalar, non-integral or below-one principal level.",
+  "runtime_failure": "Raises ValueError if the computed population is non-finite or nonpositive; no partial output is returned.",
+  "nonconvergence": "Not applicable; no iteration.",
+  "partial_results": "Never returned."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.hydrogen_saha_equilibrium_population",
+   "symbol": "evaluate_h_saha_equilibrium_population",
+   "signature": "evaluate_h_saha_equilibrium_population(electron_density_m3, electron_temperature_ev, principal_level)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_h_saha_equilibrium_population"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate level 2 on paired density and temperature samples.",
+  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_h_saha_equilibrium_population\ndensity = np.array([1.0e18, 1.0e19])\ntemperature = np.array([1.0, 2.0])\nactual = evaluate_h_saha_equilibrium_population(density, temperature, 2)\nexpected = density * (3.310e-28 * density) * 4.0 * np.exp(13.6057 / (4.0 * temperature)) / temperature**1.5\nnp.testing.assert_allclose(actual, expected, rtol=1e-15, atol=0.0)\nassert actual.shape == density.shape and np.all(np.isfinite(actual)) and np.all(actual > 0.0)\n",
+  "expected": "Observed PASS: Two finite positive level-2 population densities in m^-3 matching the frozen Saha expression."
+ },
+ "verification": {
+  "scope": [
+   "Frozen-constant formula and principal levels 1, 2 and 3 at 1e-15 relative tolerance, plus exact handling of integer levels 2^53+1 and 2^64.",
+   "One-dimensional paired shape, scientific-domain bounds, invalid levels, coercion rejection and non-finite result guard, including under caller np.errstate(all='raise').",
+   "An independent Saha evaluation built from CODATA constants reproduces the frozen-constant relation within a 1.5e-3 relative tolerance on representative density, temperature and principal-level grids."
+  ],
+  "tests": [
+   "tests/kinetic/test_hydrogen_saha_equilibrium_population.py"
+  ],
+  "evidence_ceiling": "Bounded to the frozen-constant atomic-hydrogen Saha level population for paired electron density and temperature. Evidence: `test_hydrogen_saha_equilibrium_population.py` contains 6 test functions, 6 of which reference `evaluate_h_saha_equilibrium_population`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: no external oracle recorded; the bound tests replay the frozen formula and its level scaling. It does not establish non-equilibrium/molecular/ion populations, mixed states with n_H+ different from n_e, or external atomic-physics accuracy.",
+  "known_limitations": [
+   "Saha equilibrium and n_H+ = n_e are separate assumptions, neither inferred from inputs; states with n_H+ different from n_e require a different relation.",
+   "The scalar/profile reading is not supported; this contract follows the one-dimensional restriction.",
+   "The bound file is asset-private with six direct functions covering the frozen relation, integral-level scaling, invalid/non-real/nonfinite rejection and strict-NumPy overflow; no external atomic-physics reference is bound.",
+   "The frozen prefactor `3.310e-28 m^3 eV^(3/2)` and Rydberg `13.6057 eV` differ from CODATA by up to 0.09%; the 1.5e-3 agreement bound is a constant-accuracy limit, not external validation.",
+   "The frozen prefactor 3.310e-28 m^3 eV^(3/2) and the 13.6057 eV Rydberg differ from current CODATA values by at most 0.09%; the 1.5e-3 agreement bound is the physical-constant limit of this asset, and the n_H+ = n_e assumption remains explicit."
+  ]
+ }
+}

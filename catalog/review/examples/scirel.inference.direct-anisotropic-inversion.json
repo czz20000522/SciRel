@@ -1,0 +1,1382 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.inference.direct-anisotropic-inversion",
+ "title": {
+  "en": "Direct anisotropic parameter inversion",
+  "zh": "直接各向异性参数反演"
+ },
+ "summary": "Connect a real anisotropic forward solve, unit-explicit diagnostics and bounded optimization into a single entry point that consistently preserves a fixed observation size and a valid terminal point.",
+ "taxonomy": [
+  "inference",
+  "anisotropic-equilibrium",
+  "parameter-fitting"
+ ],
+ "aliases": [
+  "anisotropic equilibrium diagnostic fit"
+ ],
+ "discovery": {
+  "capability": [
+   "Direct anisotropic parameter inversion",
+   "Single entry point connecting a real anisotropic forward solve, unit-explicit diagnostics and bounded optimization with a fixed observation size."
+  ],
+  "operation": [
+   "Invert anisotropic parameters directly",
+   "initial_params, bounds, observations, solver_config, forward/diagnostic ports and controls -> fit result and separated state"
+  ],
+  "model": "Direct inversion composition with caller-specified physical closure, reusing the qualified forward relation and not inventing another anisotropic equilibrium equation.",
+  "geometry": "Defined by the forward port; the validated case is an axisymmetric purely poloidal R-Z equilibrium with grid [Z, R].",
+  "boundary": "The forward port owns the physical state, pressure closure, boundary and convergence; the graph owns unit-compatible observation connections, the fixed residual protocol and valid parameter control.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "parameterized forward equilibrium and observations to an anisotropic fit validated at the actual terminal point",
+  "direction": "initial_params, bounds, observations, solver_config, forward/diagnostic ports and controls -> fit result and separated state",
+  "definition": "First freeze N from the standard observations, then compose the trial, strict residuals and bounded optimizer. The forward solver_config is deep-copied and params is added; nonconvergence short-circuits first, and failed trials do not participate in the valid best. Optional LHS and the total budget are executed uniformly in the optimizer, and the final parameters, residuals and state are bound to the same fresh evaluation. The current validation includes an analytic manufactured nonzero Green feedback and an independent Biot-Savart/tensor-divergence curved-field recovery.",
+  "model": "direct inversion composition with caller-specified physical closure, reusing the qualified forward relation and not inventing another anisotropic equilibrium equation",
+  "geometry": "defined by the forward port; the validated case is an axisymmetric purely poloidal R-Z equilibrium",
+  "coordinates": "grid [Z,R]; observation positions [R,Z]; optimization vector in fit_keys or bounds order",
+  "boundary": "The forward port remains responsible for the physical state, pressure closure, boundary and convergence; the graph is responsible for unit-compatible observation connections, the fixed residual protocol and valid parameter control.",
+  "assumptions": [
+   "The physical contracts of equilibrium_solver and diagnostic_evaluator are compatible with the observations.",
+   "When binding the current Picard, explicitly state the psi unit Wb/rad, then convert to Wb under the flux observation convention; arbitrary psi is not converted by default.",
+   "The penalty is not a physical solution; optimizer stop, forward fixed point, residual fit and identifiability are judged separately."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "initial_params",
+   "description": "Complete initial values; non-fitted parameters are deep-copied unchanged.",
+   "units": "per parameter contract",
+   "shape": "mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "All fitted values are finite and lie inside their corresponding bounds."
+  },
+  {
+   "name": "bounds",
+   "description": "Parameter lower and upper bounds and their default order.",
+   "units": "same as the parameters",
+   "shape": "mapping[key → (low,high)]",
+   "dtype": "mapping of finite real pairs",
+   "required": true,
+   "constraints": "Every supplied interval is finite with low<high."
+  },
+  {
+   "name": "method",
+   "description": "Local optimization method.",
+   "units": "identifier",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "Only least_squares or minimize; the latter explicitly uses L-BFGS-B."
+  },
+  {
+   "name": "observations",
+   "description": "Standard flux_loops and/or thomson multi-channel observations, validated and used to determine N before optimization.",
+   "units": "per channel units",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "values must be nonempty and finite, with positive sigma; every requested channel must be retained. Synthetic diagnostics include points, quantity/unit and profile units."
+  },
+  {
+   "name": "solver_config",
+   "description": "Fixed forward parameters and r_grid/z_grid.",
+   "units": "R/Z in m; psi in Wb/rad, B in T, g_psi in Wb/rad/A (current Picard binding)",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Must satisfy the actual forward contract; no external project environment is required or implied."
+  },
+  {
+   "name": "equilibrium_solver",
+   "description": "Actual physical forward port.",
+   "units": "per forward contract",
+   "shape": "callable(payload)",
+   "dtype": "callable",
+   "required": true,
+   "constraints": "Must return a boolean converged; if it is not converged and no reason is supplied, add a generic reason; diagnostics are not executed after failure."
+  },
+  {
+   "name": "diagnostic_evaluator",
+   "description": "Diagnostic port for a converged equilibrium.",
+   "units": "same as observations",
+   "shape": "callable({equilibrium,R,Z,observations})",
+   "dtype": "callable",
+   "required": true,
+   "constraints": "Cannot omit a requested channel; an explicit unit must be accompanied by matching prediction units; no Thomson instrument is assumed inside the graph."
+  },
+  {
+   "name": "fit_keys",
+   "description": "Ordered subset of fitted parameters.",
+   "units": "identifier",
+   "shape": "sequence or None",
+   "dtype": "sequence of strings or None",
+   "required": false,
+   "constraints": "Nonempty and duplicate-free, and present in both initial_params and bounds; defaults to the bounds keys.",
+   "default": null
+  },
+  {
+   "name": "n_initial_samples",
+   "description": "Number of LHS samples before optimization.",
+   "units": "count",
+   "shape": "integer or None",
+   "dtype": "integer or None",
+   "required": false,
+   "constraints": "From 1 to max_evaluations-3; booleans and non-integers are rejected; None does not call LHS.",
+   "default": null
+  },
+  {
+   "name": "seed",
+   "description": "Random seed passed to LHS.",
+   "units": "dimensionless",
+   "shape": "sampler-defined or None",
+   "dtype": "seed accepted by the sampler, or None",
+   "required": false,
+   "constraints": "Ignored when LHS is disabled; the same validated sampler and seed produce the same design.",
+   "default": null
+  },
+  {
+   "name": "failure_penalty",
+   "description": "Per-component penalty supplied to the optimizer for an invalid trial.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "constraints": "Finite and positive, with N*penalty^2 finite; default 1e12.",
+   "default": 1000000000000.0
+  },
+  {
+   "name": "max_evaluations",
+   "description": "Common upper bound on all actual scientific trial calls.",
+   "units": "count",
+   "shape": "integer",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "At least 3; includes LHS, differences and fresh terminal validation; it must not be confused with SciPy nfev.",
+   "default": 200
+  }
+ ],
+ "outputs": [
+  {
+   "name": "best_parameters",
+   "description": "The actual revalidated optimizer terminal point; on failure it may be a revalidated historical valid candidate.",
+   "units": "parameter units",
+   "shape": "mapping or None",
+   "dtype": "dict or None",
+   "required": true,
+   "constraints": "None if there is no valid candidate. A normal terminal point agrees with optimizer_summary.parameters; no claim is made that it is always the minimum over the whole log."
+  },
+  {
+   "name": "chi2",
+   "description": "Normalized squared sum of the returned state; N*penalty^2 when there is no valid solution.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite and nonnegative; a failure penalty must be read together with the state."
+  },
+  {
+   "name": "residual_vector",
+   "description": "Fixed-size residuals of the same trial that produced the returned state.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Parameters, state and residuals belong to the last validated trial; the penalty is returned when there is no valid solution."
+  },
+  {
+   "name": "converged",
+   "description": "The optimizer succeeded and the latest forward evaluation at its actual terminal point is valid.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "False on fallback, exhausted budget or an invalid terminal point; it does not mean small residuals, a global optimum or identifiability."
+  },
+  {
+   "name": "forward_converged",
+   "description": "The currently returned state has actually passed forward and trial validation.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "May be True while the optimizer has not converged, indicating a usable partial result."
+  },
+  {
+   "name": "optimizer_converged",
+   "description": "Raw boolean projection of SciPy success.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "A constant failure penalty can also stop the optimizer; it cannot be treated alone as physical success."
+  },
+  {
+   "name": "equilibrium",
+   "description": "Forward state validated in the same call as best_parameters and residual_vector.",
+   "units": "mixed",
+   "shape": "mapping or None",
+   "dtype": "mapping or None",
+   "required": true,
+   "constraints": "None when there is no valid returned candidate."
+  },
+  {
+   "name": "evaluation_log",
+   "description": "Parameters, chi2, valid, failure_reason and source of every actual evaluation.",
+   "units": "mixed",
+   "shape": "list[N_eval]",
+   "dtype": "list of records",
+   "required": true,
+   "constraints": "source is latin_hypercube, optimizer, terminal or best_valid_recheck."
+  },
+  {
+   "name": "failure_reason",
+   "description": "Reason for budget exhaustion, numerical failure, terminal failure or optimizer stop.",
+   "units": "identifier",
+   "shape": "string or None",
+   "dtype": "string or None",
+   "required": true,
+   "constraints": "None only when both succeed; contract errors are raised."
+  },
+  {
+   "name": "optimizer_summary",
+   "description": "Method, success, status, message, nfev and parameters from the actual result.x.",
+   "units": "mixed state and counts",
+   "shape": "mapping or None",
+   "dtype": "dict or None",
+   "required": true,
+   "constraints": "SciPy nfev is not the total number of scientific calls; it may be None when the budget is interrupted."
+  },
+  {
+   "name": "best_valid_trial",
+   "description": "Complete record of the valid historical trial with the lowest chi2.",
+   "units": "mixed",
+   "shape": "mapping or None",
+   "dtype": "dict or None",
+   "required": true,
+   "constraints": "An observation record only; it is separate from the returned terminal point and must not be assigned another point's convergence state."
+  },
+  {
+   "name": "scientific_evaluations",
+   "description": "Total number of actual trial calls.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Does not exceed max_evaluations; includes numerical differences and terminal validation."
+  },
+  {
+   "name": "max_evaluations",
+   "description": "The validated upper bound on scientific calls for this run.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Agrees with the input."
+  },
+  {
+   "name": "valid_trial_count",
+   "description": "Number of valid trials in the evaluation log.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Failed trials are not counted."
+  },
+  {
+   "name": "residual_size",
+   "description": "Fixed residual size for this run.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "All vectors have the same size."
+  },
+  {
+   "name": "identifiability",
+   "description": "General identifiability status.",
+   "units": "identifier",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "Fixed to not_established; a local stop is not an identifiability proof."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Declare a compatible forward relation, pressure closure, observation positions/units, parameter bounds and a fixed budget."
+  ],
+  "supported": [
+   "Composition of real anisotropic Picard -> unit-explicit point diagnostics -> fixed-size residuals -> bounded optimization.",
+   "A two-parameter analytic manufactured case with nonzero Green feedback, and a curved-field case using an independent discrete tensor/real loop Green."
+  ],
+  "excluded": [
+   "Complete reconstruction of an arbitrary experimental device, unknown closure selection, instrument calibration or automatic parameter identifiability.",
+   "Using a zero Green or a single-lambda output as the physical qualification of this composition."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Rejects invalid observation layouts, ports, methods, bounds or budgets first; scientific contract errors propagate, and wrong initial values are not retried.",
+  "runtime_failure": "Numerical exceptions are represented by the trial state; optimization budget and runtime failures are reported separately by the optimizer.",
+  "nonconvergence": "converged requires both optimizer success and a valid fresh terminal evaluation; optimizer_converged and forward_converged are reported separately.",
+  "partial_results": "May return a freshly validated partial valid candidate and log without treating it as a completed fit; on complete failure returns a None candidate."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.inference.direct_anisotropic_inversion",
+   "symbol": "solve_direct_anisotropic_inversion",
+   "signature": "solve_direct_anisotropic_inversion(inputs=None, **kwargs)"
+  }
+ },
+ "version": {
+  "implementation_version": "0.1.0.dev11",
+  "dependencies": [
+   {
+    "asset_id": "scirel.diagnostics.observation-residuals"
+   },
+   {
+    "asset_id": "scirel.inference.anisotropic-trial-evaluation"
+   },
+   {
+    "asset_id": "scirel.inference.anisotropic-parameter-optimization"
+   },
+   {
+    "asset_id": "scirel.inference.latin-hypercube-sampling"
+   }
+  ]
+ },
+ "example": {
+  "description": "A real anisotropic Picard recovers the radial pressure gradient and anisotropy ratio on an explicit rank-one nonzero Green manufactured model; observations come from independent analytic formulas. This Green is a test response, not a calibration of a specific device.",
+  "code": "\"\"\"Physical demonstration: two-parameter anisotropic equilibrium recovery driven by independent analytic observations.\n\nThe test model uses an explicitly manufactured nonzero rank-one Green response that produces a uniform axial magnetic field.\nIt verifies the connection among force balance, Green feedback, flux units and inference, and does not impersonate a specific coil device.\nNo external source code, network access or captured answer is required; observations are generated from independent analytic equations.\n\"\"\"\nimport json\nimport numpy as np\nfrom scirel.equilibrium import solve_axisymmetric_anisotropic_picard\nfrom scirel.diagnostics import synthesize_equilibrium_diagnostics\nfrom scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion\n\n\ndef case(n=7, true_gradient=1.7, true_ratio=1.6, with_failed_trials=True):\n    R,Z=np.meshgrid(np.linspace(.2,.6,n),np.linspace(-.2,.2,n))\n    B0,gain=1.,.6\n    # Trapezoidal integration is exact for Jphi=a*R/B: C=integral R dR dZ.\n    C=(.6**2-.2**2)/2*.4\n    B=(B0+np.sqrt(B0**2+4*gain*true_gradient*C))/2\n    points=np.array([[R[2,2],Z[2,2]],[R[-2,-2],Z[-2,-2]]])\n    psi=B*points[:,0]**2/2\n    pperp=5+true_gradient*points[:,0]**2/2\n    observations={'flux_loops':{'points':points,'quantity':'magnetic_flux','unit':'Wb',\n        'values':2*np.pi*psi,'sigma':1.e-3},\n        'thomson':{'points':points,'p_parallel':{'values':true_ratio*pperp,'sigma':.02,'unit':'Pa'},\n                   'p_perp':{'values':pperp,'sigma':.02,'unit':'Pa'}}}\n    config={'r_grid':R,'z_grid':Z,'psi_vac':B0*R**2/2,\n        'g_psi':gain*(R**2/2).ravel()[:,None]*np.ones((1,R.size)),\n        'tol':1.e-12,'maxiter':150,'relax':.2}\n    calls=[]\n    def forward(payload):\n        params=payload['params'];a,ratio=params['gradient'],params['ratio']\n        p=5+a*R**2/2\n        kwargs={k:v for k,v in payload.items() if k!='params'}\n        if with_failed_trials and a>2.5:\n            kwargs['maxiter']=1  # Deliberately insufficient iteration budget, not a physical bound.\n        state=solve_axisymmetric_anisotropic_picard(**kwargs,\n            pressure_closure=lambda _b,_psi:{'p_parallel':ratio*p,'p_perpendicular':p})\n        calls.append({'gradient':a,'ratio':ratio,'converged':state['converged'],\n                      'fixed_point_residual':state['fixed_point_residual'],'iterations':state['iterations']})\n        return {**state,'psi_unit':'Wb/rad',\n            'profiles':{'p_parallel':state['p_parallel'],'p_perp':state['p_perpendicular']},\n            'profile_units':{'p_parallel':'Pa','p_perp':'Pa'}}\n    result=solve_direct_anisotropic_inversion(initial_params={'gradient':1.,'ratio':1.2},\n        bounds={'gradient':(.2,3.),'ratio':(1.1,2.5)},method='least_squares',\n        n_initial_samples=8,seed=3,max_evaluations=140,\n        observations=observations,solver_config=config,\n        equilibrium_solver=forward,diagnostic_evaluator=synthesize_equilibrium_diagnostics)\n    expected={'gradient':true_gradient,'ratio':true_ratio,'B':B,'psi':B*R**2/2,\n              'J_phi':true_gradient*R/B,'C':C}\n    return result,expected,config,calls\n\n\ndef run():\n    result,expected,config,calls=case()\n    assert result['converged'] and result['forward_converged']\n    for key in ('gradient','ratio'):\n        np.testing.assert_allclose(result['best_parameters'][key],expected[key],rtol=1.e-6,atol=0.)\n    np.testing.assert_allclose(result['equilibrium']['psi'],expected['psi'],rtol=1.e-10,atol=1.e-12)\n    np.testing.assert_allclose(result['equilibrium']['J_phi'],expected['J_phi'],rtol=1.e-10,atol=1.e-12)\n    assert result['residual_vector'].shape==(6,)\n    assert result['chi2']<1.e-12\n    assert any(not x['converged'] for x in calls)\n    assert result['best_valid_trial']['valid']\n    assert np.max(np.abs(result['equilibrium']['psi']-config['psi_vac']))>1.e-3\n    return {'recovered':result['best_parameters'],'truth':{k:expected[k] for k in ('gradient','ratio','B')},\n            'chi2':result['chi2'],'residual_count':result['residual_size'],\n            'forward_fixed_point_residual':result['equilibrium']['fixed_point_residual'],\n            'scientific_evaluations':result['scientific_evaluations'],\n            'failed_trials':sum(not x['converged'] for x in calls),\n            'maximum_plasma_flux_increment':float(np.max(abs(result['equilibrium']['psi']-config['psi_vac']))),\n            'identifiability':'two-parameter manufactured case only; no general inference guarantee',\n            'green_model':'declared rank-one uniform-field response; not a calibrated device'}\n\nif __name__=='__main__':\n    print(json.dumps(run(),indent=2,ensure_ascii=False))\n\nexample_result = run()\nassert example_result['residual_count'] == 6\n",
+  "expected": "Recovers gradient≈1.7 Pa/m^2 and ratio≈1.6; 6 residuals, nonzero flux feedback, actual failed trials and a valid best state. The corresponding result and call budget come from the actual execution record and do not claim applicability to arbitrary devices."
+ },
+ "verification": {
+  "scope": [
+   "Analytic manufactured two-parameter recovery with 6 residuals; an actually iteration-limited failed trial must not become best.",
+   "9-observation independent Biot-Savart loop integral, independent cylindrical tensor divergence and discrete root solution, recovering gradient=4800 and anisotropy=1100, with the anisotropy actually changing the current.",
+   "Selected installed-package user calls without a source checkout or development checkout, offline, in a plain virtual environment."
+  ],
+  "tests": [
+   "tests/cross_domain/direct_anisotropic_inversion/test_composition_direct_anisotropic_inversion.py",
+   "tests/cross_domain/test_inference_physical_closure.py",
+   "tests/cross_domain/test_anisotropic_inference_independent.py"
+  ],
+  "evidence_ceiling": "Author regressions, independent analytic and independent discrete-reference comparisons, and selected installed-wheel user calls completed in the exact environment; they cover only the listed contract and examples. Root-level independent intake, human scientific recognition, redistribution permission and public release are separate decisions; they do not extend this to arbitrary closures, devices or global identifiability proofs.",
+  "known_limitations": [
+   "The independent curved-field reference validates the discrete equations on the current finite grid, not a continuum-limit error proof; the same-point zero self-action convention for Green is retained rather than a finite-wire self-field.",
+   "The manufactured model is identifiable only within the listed parameter range; the general output remains not_established.",
+   "An optimizer stop does not mean the experimental residual threshold is met; the user must judge it against observation noise and the problem itself.",
+   "Licensing and human scientific recognition remain independently pending."
+  ]
+ },
+ "composition": {
+  "nodes": [
+   {
+    "id": "observation_layout",
+    "kind": "controlled_glue",
+    "description": "Validate the standard observations before any scientific call and freeze N as the total element count of all values.",
+    "inputs": [
+     "observations"
+    ],
+    "outputs": [
+     "residual_size"
+    ]
+   },
+   {
+    "id": "equilibrium_port",
+    "kind": "caller_port",
+    "description": "Validate the actual forward port; only annotate a nonconverged state that lacks a reason.",
+    "inputs": [
+     "equilibrium_solver"
+    ],
+    "outputs": [
+     "equilibrium_solver"
+    ]
+   },
+   {
+    "id": "diagnostic_port",
+    "kind": "caller_port",
+    "description": "Validate the actual diagnostic port and retain responsibility for unit matching.",
+    "inputs": [
+     "diagnostic_evaluator"
+    ],
+    "outputs": [
+     "diagnostic_evaluator"
+    ]
+   },
+   {
+    "id": "residual_relation",
+    "kind": "function",
+    "asset_id": "scirel.diagnostics.observation-residuals",
+    "description": "Bind a normalized residual operator with a fixed layout that never drops a channel.",
+    "inputs": [],
+    "outputs": [
+     "residual_reducer"
+    ]
+   },
+   {
+    "id": "trial_relation",
+    "kind": "function",
+    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
+    "description": "Bind observations, fixed N, fixed configuration and ports; execute per trial through the optimizer and short-circuit diagnostics on nonconvergence.",
+    "inputs": [
+     "observations",
+     "solver_config",
+     "equilibrium_solver",
+     "diagnostic_evaluator",
+     "residual_reducer",
+     "residual_size",
+     "failure_penalty"
+    ],
+    "outputs": [
+     "trial_evaluator"
+    ]
+   },
+   {
+    "id": "lhs_sampler",
+    "kind": "function",
+    "asset_id": "scirel.inference.latin-hypercube-sampling",
+    "description": "Bind the existing LHS when a sample count is enabled; the optimizer validates the complete design first.",
+    "inputs": [
+     "n_initial_samples"
+    ],
+    "outputs": [
+     "lhs_sampler"
+    ]
+   },
+   {
+    "id": "direct_optimizer",
+    "kind": "function",
+    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
+    "description": "Validate finite bounds and budget, rank only valid trials; re-evaluate the actual terminal point and separate stop from physical state.",
+    "inputs": [
+     "initial_params",
+     "bounds",
+     "method",
+     "trial_evaluator",
+     "fit_keys",
+     "lhs_sampler",
+     "n_initial_samples",
+     "seed",
+     "residual_size",
+     "failure_penalty",
+     "max_evaluations",
+     "search_state"
+    ],
+    "outputs": [
+     "best_parameters",
+     "chi2",
+     "residual_vector",
+     "converged",
+     "forward_converged",
+     "optimizer_converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "optimizer_summary",
+     "best_valid_trial",
+     "scientific_evaluations",
+     "max_evaluations",
+     "valid_trial_count",
+     "residual_size",
+     "identifiability",
+     "search_state"
+    ]
+   },
+   {
+    "id": "status_annotation",
+    "kind": "controlled_glue",
+    "description": "Preserve the complete separated state and only annotate failure results that lack a reason.",
+    "inputs": [
+     "best_parameters",
+     "chi2",
+     "residual_vector",
+     "converged",
+     "forward_converged",
+     "optimizer_converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "optimizer_summary",
+     "best_valid_trial",
+     "scientific_evaluations",
+     "max_evaluations",
+     "valid_trial_count",
+     "residual_size",
+     "identifiability"
+    ],
+    "outputs": [
+     "best_parameters",
+     "chi2",
+     "residual_vector",
+     "converged",
+     "forward_converged",
+     "optimizer_converged",
+     "equilibrium",
+     "evaluation_log",
+     "failure_reason",
+     "optimizer_summary",
+     "best_valid_trial",
+     "scientific_evaluations",
+     "max_evaluations",
+     "valid_trial_count",
+     "residual_size",
+     "identifiability"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "equilibrium_solver"
+    },
+    "to": {
+     "node": "equilibrium_port",
+     "port": "equilibrium_solver"
+    },
+    "description": "Bind equilibrium_solver to the corresponding port of equilibrium_port.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "diagnostic_evaluator"
+    },
+    "to": {
+     "node": "diagnostic_port",
+     "port": "diagnostic_evaluator"
+    },
+    "description": "Bind diagnostic_evaluator to the corresponding port of diagnostic_port.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "observations"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "observations"
+    },
+    "description": "Bind observations to the corresponding port of trial_relation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "solver_config"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "solver_config"
+    },
+    "description": "Bind solver_config to the corresponding port of trial_relation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_port",
+     "port": "equilibrium_solver"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "equilibrium_solver"
+    },
+    "description": "Bind equilibrium_solver to the corresponding port of trial_relation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "diagnostic_port",
+     "port": "diagnostic_evaluator"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "diagnostic_evaluator"
+    },
+    "description": "Bind diagnostic_evaluator to the corresponding port of trial_relation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "residual_relation",
+     "port": "residual_reducer"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "residual_reducer"
+    },
+    "description": "Bind residual_reducer to the corresponding port of trial_relation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "trial_relation",
+     "port": "trial_evaluator"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "trial_evaluator"
+    },
+    "description": "Bind trial_evaluator to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "n_initial_samples"
+    },
+    "to": {
+     "node": "lhs_sampler",
+     "port": "n_initial_samples"
+    },
+    "description": "Bind n_initial_samples to the corresponding port of lhs_sampler.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "lhs_sampler",
+     "port": "lhs_sampler"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "lhs_sampler"
+    },
+    "description": "Bind lhs_sampler to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "initial_params"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "initial_params"
+    },
+    "description": "Bind initial_params to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "bounds"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "bounds"
+    },
+    "description": "Bind bounds to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "method"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "method"
+    },
+    "description": "Bind method to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "control",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "fit_keys"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "fit_keys"
+    },
+    "description": "Bind fit_keys to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "n_initial_samples"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "n_initial_samples"
+    },
+    "description": "Bind n_initial_samples to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "control",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "seed"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "seed"
+    },
+    "description": "Bind seed to the corresponding port of direct_optimizer.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "best_parameters"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "best_parameters"
+    },
+    "description": "Bind best_parameters to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "chi2"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "chi2"
+    },
+    "description": "Bind chi2 to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "residual_vector"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "residual_vector"
+    },
+    "description": "Bind residual_vector to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "converged"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "converged"
+    },
+    "description": "Bind converged to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "equilibrium"
+    },
+    "description": "Bind equilibrium to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "evaluation_log"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "evaluation_log"
+    },
+    "description": "Bind evaluation_log to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "failure_reason"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "failure_reason"
+    },
+    "description": "Bind failure_reason to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "optimizer_summary"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "optimizer_summary"
+    },
+    "description": "Bind optimizer_summary to the corresponding port of status_annotation.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "best_parameters"
+    },
+    "to": {
+     "node": "$output",
+     "port": "best_parameters"
+    },
+    "description": "Bind best_parameters to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "chi2"
+    },
+    "to": {
+     "node": "$output",
+     "port": "chi2"
+    },
+    "description": "Bind chi2 to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "residual_vector"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual_vector"
+    },
+    "description": "Bind residual_vector to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "converged"
+    },
+    "description": "Bind converged to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "$output",
+     "port": "equilibrium"
+    },
+    "description": "Bind equilibrium to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "evaluation_log"
+    },
+    "to": {
+     "node": "$output",
+     "port": "evaluation_log"
+    },
+    "description": "Bind evaluation_log to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "failure_reason"
+    },
+    "to": {
+     "node": "$output",
+     "port": "failure_reason"
+    },
+    "description": "Bind failure_reason to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "optimizer_summary"
+    },
+    "to": {
+     "node": "$output",
+     "port": "optimizer_summary"
+    },
+    "description": "Bind optimizer_summary to the corresponding port of $output.",
+    "condition": "Follow the execution order and optional branches declared for this node.",
+    "transform": "Preserve the port contents; only perform the declared mapping copy, callable binding or state-reason annotation when needed.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "residual_size"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residual_size"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "scientific_evaluations"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "scientific_evaluations"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "scientific_evaluations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "scientific_evaluations"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "forward_converged"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "forward_converged"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "forward_converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "forward_converged"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "identifiability"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "identifiability"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "identifiability"
+    },
+    "to": {
+     "node": "$output",
+     "port": "identifiability"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "valid_trial_count"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "valid_trial_count"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "valid_trial_count"
+    },
+    "to": {
+     "node": "$output",
+     "port": "valid_trial_count"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "best_valid_trial"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "best_valid_trial"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "best_valid_trial"
+    },
+    "to": {
+     "node": "$output",
+     "port": "best_valid_trial"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "max_evaluations"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "max_evaluations"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "max_evaluations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "max_evaluations"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "optimizer_converged"
+    },
+    "to": {
+     "node": "status_annotation",
+     "port": "optimizer_converged"
+    },
+    "description": "Preserve the corresponding optimization-result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "status_annotation",
+     "port": "optimizer_converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "optimizer_converged"
+    },
+    "description": "Return the same result field.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "observations"
+    },
+    "to": {
+     "node": "observation_layout",
+     "port": "observations"
+    },
+    "description": "Read the complete observations.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "observation_layout",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "residual_size"
+    },
+    "description": "Bind the fixed residual size.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "failure_penalty"
+    },
+    "to": {
+     "node": "trial_relation",
+     "port": "failure_penalty"
+    },
+    "description": "Bind a finite positive penalty.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "observation_layout",
+     "port": "residual_size"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "residual_size"
+    },
+    "description": "Bind the fixed residual size.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "failure_penalty"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "failure_penalty"
+    },
+    "description": "Bind a finite positive penalty.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "max_evaluations"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "max_evaluations"
+    },
+    "description": "Total scientific-call upper bound.",
+    "condition": "Normal execution.",
+    "transform": "Preserve this port value.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "direct_optimizer",
+     "port": "search_state"
+    },
+    "to": {
+     "node": "direct_optimizer",
+     "port": "search_state"
+    },
+    "description": "Bounded deferred-trial loop state internal to the optimizer; no public parameter is added.",
+    "condition": "A trial is still required and reserved terminal budget remains.",
+    "transform": "Advance parameters/log/budget state according to this trial's validity, residuals and the optimization algorithm.",
+    "kind": "feedback",
+    "required": true,
+    "feedback_id": "bounded_parameter_search"
+   }
+  ],
+  "execution": {
+   "mode": "ordered_dag_with_deferred_operator_calls",
+   "ordering": "First fix the observation layout and validate the ports, then bind the reducer/trial; optionally bind LHS; the optimizer validates controls and the complete sample design before executing trials and fresh terminal validation, and then returns the state.",
+   "branches": [
+    "When LHS is not enabled, no sampler is bound.",
+    "LHS uses only valid candidates as starting points; when no valid LHS candidate exists, the validated initial values are used.",
+    "Forward nonconvergence short-circuits diagnostics; a numerical-failure penalty preserves N; contract errors propagate.",
+    "When the optimizer's actual terminal point is invalid, only a freshly validated historical valid candidate may be returned, with converged=False."
+   ],
+   "state_ownership": "The trial deep-copies call inputs; the optimizer owns the log, budget and historical valid records. Each call has independent state and never reuses a failed equilibrium.",
+   "failure_propagation": "Static control errors are rejected first; fixed-size numerical failures are returned with state; budget exhaustion and optimizer stops are separated from forward success.",
+   "feedback": [
+    {
+     "id": "bounded_parameter_search",
+     "state": "Parameter vector, fixed N, log, valid best and actual scientific-call count.",
+     "initialization": "Initial values and bounds are validated first; the log is empty, best is undetermined and the scientific-call count is zero.",
+     "update_order": "Optional LHS; local optimizer trials and numerical differences; fresh terminal validation; freshly validate a valid historical candidate only when necessary.",
+     "continue_when": "The optimizer needs a new trial and budget remains after reserving the terminal call.",
+     "stop_when": "The optimizer stops, a numerical exception occurs or the budget is exhausted; only an optimizer success whose actual fresh terminal validation passes is marked converged.",
+     "iteration_bound": "max_evaluations is the upper bound on all actual scientific calls, default 200 and at least 3.",
+     "nonconvergence": "Return the freshly validated partial valid solution and separated state; on complete failure return a None candidate and an N-vector penalty; invalid configurations are not retried."
+    }
+   ]
+  }
+ }
+}

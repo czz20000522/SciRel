@@ -1,0 +1,22 @@
+This WORK candidate is an independent equation-oriented Python rewrite of the
+complete `z0nbistopfast` relation in METIS, frozen source revision name
+`80548b9e1281455e59dda7295cd4334a43f93d18`. The upstream file cites
+K. Okano, 28 EPS 2001. That paper was not retrieved or independently checked.
+
+The METIS archive contains the CeCILL-C Free Software License Agreement,
+version 1.0 dated 2006-09-05. Its exact bytes are retained at
+`LICENSE.txt` in this callable package. Preserve this notice and the agreement together
+with any reviewed derivative delivery. No patent, rights, human approval or
+release acceptance has been inferred from technical work.
+
+Modification/translation notice: extraction worker, 2026-10-27. The selected
+scientific relation was restated using coefficient data and explicit array
+arithmetic, without wrapping the source runtime or copying its implementation.
+The read-only source slice is retained solely for attributable source evidence;
+it is not imported by the Python candidate.
+
+The source license's liability and warranty provisions (Articles 8 and 9)
+apply as stated in the retained agreement. The source and this unqualified
+candidate are supplied without a technical or scientific warranty. D1 source
+comparison, independent D2 scientific review, human endorsement and release
+disposition remain separate and open.

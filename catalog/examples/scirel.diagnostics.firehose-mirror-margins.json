@@ -1,0 +1,289 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.diagnostics.firehose-mirror-margins",
+ "title": {
+  "en": "Firehose and mirror pressure margins",
+  "zh": "火蛇与磁镜压强裕度"
+ },
+ "summary": "Evaluate a local gyrotropic pressure diagnostic with an explicitly supplied fixed-flux derivative.",
+ "taxonomy": [
+  "diagnostics",
+  "anisotropic-pressure",
+  "stability-margin"
+ ],
+ "aliases": [
+  "firehose tension margin",
+  "mirror pressure-gradient margin"
+ ],
+ "discovery": {
+  "capability": [
+   "Firehose and mirror pressure margins",
+   "Evaluate local gyrotropic firehose and mirror margins with an explicitly supplied fixed-flux derivative."
+  ],
+  "operation": [
+   "local gyrotropic no-flow tension and long-wavelength total-pressure-slope criteria",
+   "anisotropic pressures, magnetic-field samples and derivative information -> firehose and mirror margins with stability flags"
+  ],
+  "model": "Local gyrotropic no-flow tension and long-wavelength total-pressure-slope criteria; no author-confirmed erratum is asserted for the printed derivative-sign conflict.",
+  "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
+  "boundary": "An explicit derivative may be scalar, broadcastable or callable(B,psi); otherwise B must be strictly monotone along each constant-psi line with at least two samples, and constant-field data require explicit derivative information.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Anisotropic pressures and magnetic-field samples to two sampled margin criteria",
+  "direction": "(p_parallel, p_perp, B, mu0) -> firehose_margin, mirror_margin, minima and positivity flags",
+  "definition": "firehose_margin=B^2/mu0+p_perp-p_parallel. mirror_margin=B*d[p_perp+B^2/(2*mu0)]/dB at fixed psi = B^2/mu0+B*dp_perp_dB. Strictly positive sampled minima set the two local flags. For an invariant bi-Maxwellian this mirror criterion is 1-beta_perp*(T_perp/T_parallel-1)>0. Normal non-cancelling values retain ordinary float64 operation order. If opposing contributions leave at most half the magnitude of the largest term, or an intermediate product/quotient loses range, the same complete relation is evaluated as an exact binary-rational expression and rounded once to float64. This protects finite cancellation residuals without a zero clamp or an equal-pressure special case; genuinely unrepresentable final margins fail.",
+  "model": "Local gyrotropic no-flow tension and long-wavelength total-pressure-slope criteria. The positive derivative sign follows this definition and the kinetic bi-Maxwellian threshold; it conflicts with the literal opposite sign printed in Frank2509.17288v4 Eq6. No author-confirmed erratum is asserted.",
+  "geometry": "Explicit fixed-psi pressure law or caller-designated sample lines whose flux label is constant along field_axis.",
+  "coordinates": "Magnetic-field magnitude B at fixed flux label psi; arrays are never flattened and globally sorted to infer this partial derivative.",
+  "boundary": "An explicit derivative may be scalar, broadcastable array, or callable(B,psi). Alternatively supply field_axis and psi: B must be strictly monotone along each line, with at least two samples, and psi exactly constant along that axis. Constant-field data require explicit derivative information; no zero-derivative fallback exists.",
+  "assumptions": [
+   "B is a positive magnitude in T and both pressures use Pa.",
+   "The caller supplies a true fixed-flux partial derivative or valid fixed-psi sampling geometry.",
+   "Finite differences have endpoint/sampling error; a successful numerical diagnostic is not a spatial force-balance or global-stability proof."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "p_parallel",
+   "description": "Parallel pressure samples.",
+   "units": "Pa",
+   "shape": "nonempty scalar or array; exactly the same shape as p_perp and magnetic_field",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite; negative values are not rejected."
+  },
+  {
+   "name": "p_perp",
+   "description": "Perpendicular pressure samples.",
+   "units": "Pa",
+   "shape": "exactly the same shape as p_parallel",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite; negative values are not rejected."
+  },
+  {
+   "name": "magnetic_field",
+   "description": "Positive magnetic-field magnitude at the pressure samples.",
+   "units": "T",
+   "shape": "exactly the same shape as p_parallel",
+   "dtype": "real numeric convertible to float64",
+   "required": true,
+   "constraints": "Finite strictly positive values, same shape as pressures. Duplicate B values are allowed with an explicit derivative; sampled fixed-flux lines require strict monotonicity."
+  },
+  {
+   "name": "mu0",
+   "description": "Magnetic permeability used in the B^2/mu0 terms.",
+   "units": "H/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "default": 1.2566370614359173e-06,
+   "constraints": "Finite and strictly positive; the default is 4*pi*1e-7."
+  },
+  {
+   "name": "parallel_equilibrium",
+   "description": "Optional diagnostic dictionary supplied alongside the margins; only error and max_relative_error fields are forwarded.",
+   "units": "mixed, defined by upstream fields",
+   "shape": "dict or None",
+   "dtype": "mapping or null",
+   "required": false,
+   "default": null,
+   "constraints": "When present, must be a dict. The two forwarded values are not independently validated for shape, units or finiteness."
+  },
+  {
+   "name": "dp_perp_dB",
+   "description": "Explicit fixed-psi pressure derivative.",
+   "units": "Pa/T",
+   "shape": "scalar/array broadcastable to B, callable(B,psi), or None",
+   "dtype": "real numeric/callable/null",
+   "required": false,
+   "constraints": "Required unless field_axis and psi are supplied; finite on evaluation. Cannot be combined with field_axis.",
+   "default": null
+  },
+  {
+   "name": "field_axis",
+   "description": "Axis along which each sample line varies B while holding psi fixed.",
+   "units": "axis index",
+   "shape": "scalar or None",
+   "dtype": "integer or null",
+   "required": false,
+   "constraints": "With no explicit derivative, requires >=2 samples, strictly monotone B on every line, and constant psi along the axis.",
+   "default": null
+  },
+  {
+   "name": "psi",
+   "description": "Flux labels for fixed-flux sample lines or explicit derivative callable.",
+   "units": "consistent caller flux coordinate",
+   "shape": "broadcastable to B, or None",
+   "dtype": "real numeric/null",
+   "required": false,
+   "constraints": "Mandatory and finite for field_axis mode, exactly constant along that axis. Forwarded to a derivative callable otherwise.",
+   "default": null
+  }
+ ],
+ "outputs": [
+  {
+   "name": "firehose_margin",
+   "description": "Pointwise B^2/mu0+p_perp-p_parallel.",
+   "units": "Pa",
+   "shape": "same shape as input samples",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite on successful return."
+  },
+  {
+   "name": "mirror_margin",
+   "description": "B^2/mu0+B*dp_perp_dB at fixed psi.",
+   "units": "Pa",
+   "shape": "same shape as input samples",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite local total-pressure-slope margin on successful return, not a general stability theorem."
+  },
+  {
+   "name": "firehose_stable",
+   "description": "True exactly when every supplied firehose margin is strictly positive.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "A sampled aggregate flag, not a spatially resolved stability field or sufficient physical stability theorem."
+  },
+  {
+   "name": "mirror_stable",
+   "description": "True exactly when every supplied mirror margin is strictly positive.",
+   "units": "boolean",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "A sampled aggregate flag, not a spatially resolved stability field or sufficient physical stability theorem."
+  },
+  {
+   "name": "min_firehose_margin",
+   "description": "Minimum firehose margin across all samples.",
+   "units": "Pa",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite on successful return."
+  },
+  {
+   "name": "min_mirror_margin",
+   "description": "Minimum mirror margin across all samples.",
+   "units": "Pa",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite on successful return."
+  },
+  {
+   "name": "parallel_equilibrium_error",
+   "description": "Unmodified parallel_equilibrium.error value, or None when absent.",
+   "units": "upstream-defined, normally Pa, or not applicable",
+   "shape": "upstream-defined or null",
+   "dtype": "unvalidated upstream value or null",
+   "required": true,
+   "constraints": "No independent numeric, unit, shape or finite check."
+  },
+  {
+   "name": "max_parallel_equilibrium_error",
+   "description": "Unmodified parallel_equilibrium.max_relative_error value, or None when absent.",
+   "units": "upstream-defined, normally dimensionless, or not applicable",
+   "shape": "upstream-defined or null",
+   "dtype": "unvalidated upstream value or null",
+   "required": true,
+   "constraints": "No independent numeric, unit or finite check."
+  },
+  {
+   "name": "dp_perp_dB",
+   "description": "Fixed-psi derivative used by the diagnostic.",
+   "units": "Pa/T",
+   "shape": "same shape as pressure",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "derivative_method",
+   "description": "How the fixed-flux derivative was obtained.",
+   "units": "text",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "Explicit derivative or fixed-psi axis finite difference."
+  },
+  {
+   "name": "criterion",
+   "description": "Physical interpretation of the local diagnostic.",
+   "units": "text",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "local_gyrotropic_tension_and_fixed_flux_total_pressure_slope"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Positive B with finite, shape-consistent pressure samples.",
+   "Explicit fixed-psi derivative or genuine constant-psi sample lines."
+  ],
+  "supported": [
+   "Scalars and arbitrary sample layouts with an explicit derivative.",
+   "Monotone B sampling independently along each fixed-psi line; at least two samples per line."
+  ],
+  "excluded": [
+   "Inferring a fixed-psi derivative from an unstructured spatial cloud or constant-B data alone.",
+   "General Hall-flow, finite-Larmor-radius, finite-wave-number or global stability conclusions."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for missing derivative information, conflicting derivative/axis inputs, nonfinite or nonpositive B, invalid shapes or nonmonotone/variable-psi derivative lines; other documented scalar controls are validated.",
+  "runtime_failure": "FloatingPointError when the final mathematical margin cannot be represented as finite float64; representable results are not rejected solely because an intermediate B square exceeds range. Other conversion/callback errors propagate.",
+  "nonconvergence": "No nonlinear solve; the caller is responsible for derivative sampling convergence.",
+  "partial_results": "None. Optional parallel-equilibrium values supplied alongside the margin API are forwarded without independent validation."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.diagnostics.firehose_mirror_margins",
+   "symbol": "compute_firehose_mirror_margins",
+   "signature": "compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field, mu0=1.2566370614359173e-06, parallel_equilibrium=None, *, dp_perp_dB=None, field_axis=None, psi=None)",
+   "canonical_module": "scirel.diagnostics",
+   "canonical_symbol": "compute_firehose_mirror_margins"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "An explicit anisotropic bi-Maxwellian local state fails the mirror criterion but retains positive firehose tension.",
+  "code": "from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins\nr=compute_firehose_mirror_margins(1.,2.,1.,mu0=1.,dp_perp_dB=-4.)\nassert abs(float(r['firehose_margin'])-2.)<1e-12\nassert abs(float(r['mirror_margin'])+3.)<1e-12\nassert r['firehose_stable'] and not r['mirror_stable']\nr=compute_firehose_mirror_margins(1e100,1e100,1.,mu0=1.,dp_perp_dB=0.)\nassert float(r['firehose_margin'])==1. and r['firehose_stable']",
+  "expected": "Firehose margin 2 and mirror margin -3; the derivative sign matches the explicit total-pressure derivative and kinetic threshold. Equal large pressures retain 1 Pa of magnetic tension and its strictly positive sampled flag."
+ },
+ "verification": {
+  "scope": [
+   "Explicit uniform-isotropic and fixed-psi multi-line polynomial regressions.",
+   "Sixty-three invariant bi-Maxwellian states cross-check pressure compatibility and total-pressure-slope threshold.",
+   "Four sample refinements demonstrate finite-difference convergence along fixed-psi lines.",
+   "Finite-input intermediate square overflow/underflow and cancellation are checked against an independent high-precision Decimal evaluation; genuinely unrepresentable final results still fail.",
+   "Finite equal and unequal-pressure cancellation, neighbouring binary64 inputs across dimensional scales, mirror residual signs, noncontiguous multidimensional arrays and exact-zero flags are checked against independent 2000-digit Decimal arithmetic in a no-source installed wheel."
+  ],
+  "tests": [
+   "tests/cross_domain/test_spectral_scientific_correction.py",
+   "tests/cross_domain/test_legacy_six_absorption.py",
+   "tests/diagnostics/test_pressure_margin_cancellation.py"
+  ],
+  "evidence_ceiling": "Analytic identities, explicit failure regressions and independent numerical comparisons establish the stated mathematical contract. They do not establish measured-plasma validity or a general stability theorem.",
+  "known_limitations": [
+   "The derivative/axis/psi keywords require callers to supply missing physical information; global-B sorting is not part of this contract.",
+   "Sampled flags and residuals are local model diagnostics, not proof of global equilibrium or kinetic stability.",
+   "The literal Frank Eq6 sign conflict is recorded; this implementation follows the stated total-pressure derivative and bi-Maxwellian criterion rather than asserting an author erratum."
+  ]
+ },
+ "references": [
+  "https://arxiv.org/html/2509.17288v4",
+  "https://arxiv.org/html/0902.1710v2",
+  "https://www.cambridge.org/core/journals/journal-of-plasma-physics/article/on-the-stability-of-the-m-1-rigid-ballooning-mode-in-a-mirror-trap-with-highbeta-sloshing-ions/3EAF658191C7552CDC1BA3332C5EF987"
+ ]
+}

@@ -1,0 +1,140 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
+ "title": {
+  "en": "Fixed N=64 Weideman plasma dispersion",
+  "zh": "固定 N=64 Weideman 等离子体色散函数"
+ },
+ "summary": "Evaluate the source-method N=64 rational Faddeeva approximation and its branch labels.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Fixed N=64 Weideman plasma dispersion",
+   "Evaluate the source-method N=64 rational Faddeeva approximation and its branch labels."
+  ],
+  "operation": [
+   "evaluate the fixed N=64 Weideman dispersion function",
+   "dimensionless complex z to approximate w(z), Z(z) and method flags"
+  ],
+  "model": "homogeneous Maxwellian plasma dispersion special function",
+  "geometry": "homogeneous plasma",
+  "boundary": "finite representable arguments outside numerical poles of the rational approximation",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "dimensionless complex z to approximate w(z), Z(z) and method flags",
+  "direction": "dimensionless complex z to approximate w(z), Z(z) and method flags",
+  "definition": "Z(z)=i sqrt(pi) w(z), with N=64 Weideman FFT coefficients and the source's pure-imaginary erfc and lower-half-plane reflection branches.",
+  "model": "homogeneous Maxwellian plasma dispersion special function",
+  "geometry": "homogeneous plasma",
+  "coordinates": "complex argument plane; array axes belong to the caller",
+  "boundary": "finite representable arguments outside numerical poles of the rational approximation",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "z",
+   "description": "Values of the complex variable to evaluate. May be a scalar or a real or complex `array_like` of any shape; axis meaning is caller-defined and this operator does not interpret physical axes. Units: dimensionless (normalized phase velocity z = omega/(k*vt)). Validity constraint: elements must be finite (no `NaN`/`inf`); elements with zero real part use the exact erfc branch, and elements with nonzero real part and negative imaginary part use the conjugate-reflection branch.",
+   "units": "dimensionless",
+   "shape": "scalar or nonempty array",
+   "dtype": "real or complex numeric",
+   "required": true,
+   "constraints": "Elements must be finite (no `NaN`/`inf`); elements with zero real part use the exact erfc branch, and elements with nonzero real part and negative imaginary part use the conjugate-reflection branch."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "Z",
+   "description": "Plasma dispersion function value Z(z)=1i*sqrt(pi)*w(z). Shape exactly matches `z` (a scalar input gives a 0-d array), complex-valued `ndarray` (complex128). Units: dimensionless. Validity constraint: numerically valid only when all `z` elements are finite and away from the expansion poles; real points with zero real part give purely imaginary results.",
+   "units": "dimensionless",
+   "shape": "same shape as z; scalar gives a zero-dimensional array",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Numerically valid only when all `z` elements are finite and away from the expansion poles; real points with zero real part give purely imaginary results."
+  },
+  {
+   "name": "w",
+   "description": "Faddeeva function w(z)=exp(-z^2)*erfc(-1i*z). Shape matches `z`; complex-valued `ndarray`. Units: dimensionless. Validity constraint: inputs with negative imaginary part and nonzero real part return the conjugated lower-half-plane value rather than the upper-half-plane analytic continuation.",
+   "units": "dimensionless",
+   "shape": "same shape as z; scalar gives a zero-dimensional array",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Inputs with negative imaginary part and nonzero real part return the conjugated lower-half-plane value rather than the upper-half-plane analytic continuation."
+  },
+  {
+   "name": "method",
+   "description": "Elementwise string label, `'erfc'` (real(z)==0) or `'rational'` (otherwise). Shape matches `z`; `object` array. Units: dimensionless (enumeration label). Validity constraint: must be one of these two strings.",
+   "units": "dimensionless",
+   "shape": "same shape as z; scalar gives a zero-dimensional array",
+   "dtype": "object array of string labels",
+   "required": true,
+   "constraints": "Must be one of these two strings."
+  },
+  {
+   "name": "all_purely_imaginary",
+   "description": "Boolean scalar; True means every `z` element satisfies real(z)==0, triggering the frozen source's early return. Units: dimensionless (boolean). Validity constraint: necessary and sufficient for `method` to be entirely `'erfc'`.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Necessary and sufficient for `method` to be entirely `'erfc'`."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "finite representable arguments outside numerical poles of the rational approximation"
+  ],
+  "supported": [
+   "Evaluate the source-method N=64 rational Faddeeva approximation and its branch labels."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Raises ValueError if the calculated tensor or function value is nonfinite.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.plasma_dispersion_weideman",
+   "symbol": "evaluate_plasma_dispersion_weideman",
+   "signature": "evaluate_plasma_dispersion_weideman(z)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_plasma_dispersion_weideman"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate one bounded source-method case.",
+  "code": "from scirel.kinetic import evaluate_plasma_dispersion_weideman\nr=evaluate_plasma_dispersion_weideman(0j); assert abs(r['Z']-1j*__import__('math').sqrt(__import__('math').pi))<1e-12",
+  "expected": "The asserted result follows the declared output contract."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_r43_variants.py"
+  ],
+  "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
+  "known_limitations": [
+   "finite representable arguments outside numerical poles of the rational approximation",
+   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
+  ]
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
+}

@@ -1,0 +1,177 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.neutral-total-collision-frequency",
+ "title": {
+  "en": "Neutral total-loss collision frequency assembly",
+  "zh": "中性总损失碰撞频率组装"
+ },
+ "summary": "Assemble the inverse-length neutral total-loss coefficient alpha=nu/Vth from optional charge exchange, base and elastic losses, and wall loss 2*u_r/D on a normalized cylindrical velocity grid.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "collision-frequency",
+  "wall-loss"
+ ],
+ "aliases": [
+  "assemble_neutral_total_collision_frequency"
+ ],
+ "discovery": {
+  "capability": [
+   "Neutral total-loss collision frequency assembly",
+   "Assemble the inverse-length neutral total-loss coefficient alpha=nu/Vth from optional charge exchange, base and elastic losses, and wall loss 2*u_r/D on a normalized cylindrical velocity grid."
+  ],
+  "operation": [
+   "assemble the neutral total-loss collision frequency",
+   "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency"
+  ],
+  "model": "the total-loss assembly; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "one radial and one axial velocity dimension over one spatial axis; velocity axes are dimensionless u=v/Vth on one common caller normalization",
+  "boundary": "finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "alpha_c[vr,vx,x] = optional CX[vr,vx,x] + base[x] + elastic[x] + wall[vr,x], with wall = 2 vr / D[x] where D[x] > 0 and zero where D[x] = 0",
+  "direction": "axes, base/elastic/diameter profiles and optional CX field -> (nvr,nvx,nx) total frequency",
+  "definition": "The assembly order (base + elastic + wall, then + CX when enabled); zero pipe diameter yields zero wall loss in those cells (the declared semantics, not an infinite-pipe limit); enabling charge exchange without a field fails closed",
+  "model": "the total-loss assembly",
+  "geometry": "one radial and one axial velocity dimension over one spatial axis",
+  "coordinates": "x and pipe diameter in m; vr and vx are dimensionless u=v/Vth; every collision coefficient and alpha are in m^-1.",
+  "boundary": "finite one-dimensional axes with positive radial nodes; finite nonnegative base/elastic/diameter profiles of one common spatial shape; CX field (when enabled) finite nonnegative (nvr,nvx,nx)",
+  "assumptions": [
+   "The normalized wall coefficient 2*u_r/D is the free-flight pipe escape frequency 2*v_r/D divided by Vth; it is not a surface-interaction model.",
+   "A zero pipe diameter means no wall loss in the stated arithmetic; whether the published contract should instead reject zero diameters is an open expert question.",
+   "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "vr",
+   "description": "The radial velocity axis.",
+   "units": "dimensionless (u=v/Vth)",
+   "shape": "[nvr]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, strictly positive nodes."
+  },
+  {
+   "name": "vx",
+   "description": "The axial velocity axis.",
+   "units": "dimensionless (u=v/Vth)",
+   "shape": "[nvx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "base_loss_frequency_m_inv",
+   "description": "The base ionization/dissociation loss profile. This is the physical frequency divided by the same caller Vth used to normalize vr and vx.",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative."
+  },
+  {
+   "name": "elastic_frequency_m_inv",
+   "description": "The elastic frequency profile. This is the physical frequency divided by the same caller Vth used to normalize vr and vx.",
+   "units": "m^-1",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative, same shape as the base loss."
+  },
+  {
+   "name": "pipe_diameter_m",
+   "description": "The pipe diameter profile.",
+   "units": "m",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; zero diameter cells get zero wall loss."
+  },
+  {
+   "name": "charge_exchange_frequency_m_inv",
+   "description": "The optional CX frequency field. This is the physical frequency divided by the same caller Vth used to normalize vr and vx.",
+   "units": "m^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": false,
+   "constraints": "When enabled: required, finite and nonnegative. When disabled: ignored even if supplied.",
+   "default": null
+  },
+  {
+   "name": "charge_exchange_enabled",
+   "description": "Whether the CX contribution is included.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "boolean scalar",
+   "required": false,
+   "constraints": "Whether the CX contribution is included.",
+   "default": true
+  }
+ ],
+ "outputs": [
+  {
+   "name": "total_frequency_m_inv",
+   "description": "Total inverse-length loss coefficient alpha=nu/Vth for the spatial advance; multiply by the caller Vth only when a physical frequency is needed.",
+   "units": "m^-1",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; nonnegative on the declared domain (all inputs nonnegative)."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite aligned profiles and axes with positive radial nodes.",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
+  ],
+  "supported": [
+   "Total-loss assembly for H and H2 spatial-advance schemes with optional wall and CX terms."
+  ],
+  "excluded": [
+   "Negative loss contributions; negative diameters; enabled CX without a field."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when the axes/profiles violate the real-value, finiteness, nonnegativity or alignment contract, when charge_exchange_enabled is not boolean, or when enabled charge exchange lacks its explicit field.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.neutral_total_collision_frequency",
+   "symbol": "assemble_neutral_total_collision_frequency",
+   "signature": "assemble_neutral_total_collision_frequency(vr, vx, base_loss_frequency_m_inv, elastic_frequency_m_inv, pipe_diameter_m, charge_exchange_frequency_m_inv=None, charge_exchange_enabled=True)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "assemble_neutral_total_collision_frequency"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Assemble the total loss with wall and CX terms, confirm the zero-diameter wall semantics and the enabled-CX fail-closed rule.",
+  "code": "import numpy as np\nfrom scirel.kinetic import assemble_neutral_total_collision_frequency\nresult = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], np.ones((2, 2, 2)))\nnp.testing.assert_allclose(result[:, :, 0], [[10.0, 10.0], [11.0, 11.0]])\nnp.testing.assert_allclose(result[:, :, 1], [[11.0, 11.0], [11.0, 11.0]])\ndisabled = assemble_neutral_total_collision_frequency([1.0, 2.0], [-1.0, 1.0], [3.0, 4.0], [5.0, 6.0], [2.0, 0.0], charge_exchange_enabled=False)\nnp.testing.assert_allclose(disabled[:, :, 0], [[9.0, 9.0], [10.0, 10.0]])\ntry:\n    assemble_neutral_total_collision_frequency([1.0], [1.0], [1.0], [1.0], [0.0])\nexcept ValueError as error:\n    assert 'charge exchange' in str(error)\nelse:\n    raise AssertionError('enabled CX without a field must fail closed')",
+  "expected": "The enabled-CX example returned the declared (2,2,2) totals, including wall loss only for positive diameters; enabled CX without a field raised ValueError."
+ },
+ "verification": {
+  "scope": [
+   "Direct tests bind wall/CX branches, zero-diameter disabling, required enabled CX, real-value and selector validation, and finite-output rejection.",
+   "The cross-domain tests connect the D=2 m, u_r=1 wall coefficient to one real transport step and a 5000/s physical loss, and compare prescribed physical attenuation and a stationary source balance at two Vth values.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+  ],
+  "tests": [
+   "tests/kinetic/test_neutral_frequency_assembly.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
+  ],
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind wall/CX branches, zero-diameter disabling, required enabled CX, real-value and selector validation, and finite-output rejection. The cross-domain tests connect the D=2 m, u_r=1 wall coefficient to one real transport step and a 5000/s physical loss, and compare prescribed physical attenuation and a stationary source balance at two Vth values. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "known_limitations": [
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+  ]
+ }
+}

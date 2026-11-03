@@ -1,0 +1,160 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.fusion.dd-neutron-lab-energy",
+ "title": {
+  "en": "DD neutron laboratory-frame energy",
+  "zh": "DD中子实验室系能量"
+ },
+ "summary": "Evaluate the unique outgoing laboratory-frame neutron kinetic energy of D(d,n)3He from two deuteron velocities and a detector line-of-sight unit vector, in non-relativistic two-body kinematics. The detector direction is a laboratory ray. The call returns one finite, strictly positive energy in keV only when that ray has one distinct positive neutron speed; unreachable rays, zero-speed-only configurations and rays with two distinct positive speeds raise ValueError.",
+ "taxonomy": [
+  "fusion",
+  "neutron-kinematics",
+  "two-body"
+ ],
+ "aliases": [
+  "DD neutron lab energy",
+  "get_dd_neutron_energy"
+ ],
+ "discovery": {
+  "capability": [
+   "DD neutron laboratory-frame energy",
+   "Laboratory-frame neutron kinetic energy of D(d,n)3He from two deuteron velocities and a detector line-of-sight unit vector."
+  ],
+  "operation": [
+   "Evaluate the DD neutron laboratory-frame energy",
+   "reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector -> neutron_energy_kev"
+  ],
+  "model": "Non-relativistic two-body kinematics with fixed masses and Q value; intersection of the CM neutron velocity sphere with a laboratory detector ray; no angular weighting.",
+  "geometry": "Three-component laboratory Cartesian velocities in cm/s and a reaction-to-detector unit direction in the same frame. The laboratory ray is intersected with the boosted CM velocity sphere.",
+  "boundary": "Stationary reactants return 2450.47589941598 keV. Exactly one distinct strictly positive laboratory speed is required; a positive tangent is accepted, zero speed is excluded, and two distinct positive roots are rejected.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "two deuteron velocities and a detector direction to the laboratory-frame neutron energy of the D(d,n)3He reaction",
+  "direction": "reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector -> neutron_energy_kev",
+  "definition": "Forms V=(v1+v2)/2 and the relative kinetic energy, adds Q=3.27 MeV, and partitions the available CM energy by m_He3/(m_n+m_He3) to obtain E_cm. For the accepted detector d, n=d/sqrt(d.d), u^2=E_cm/k_n, and k_n=0.5*m_n*m_u*1e-4/MEV_J in MeV per (cm/s)^2. Solve |s*n-V|^2=u^2, equivalently s=a+-sqrt(u^2-b^2) with a=V.n and b^2=|V-a*n|^2. Count strictly positive laboratory speeds: return 1000*k_n*s^2 only for one distinct positive root, including a positive tangent; reject no positive root or two distinct positive roots. Exact rational root-sign classification uses D=d.d, A=V.d, C=V.V-u^2 and discriminant numerator A^2-C*D. The unique nonzero-boost root is evaluated at bounded Decimal precision without subtractive cancellation. At zero boost the direct floating mass-partition expression is evaluated. No angular weighting is applied.",
+  "model": "non-relativistic two-body kinematics with fixed masses and Q value; a laboratory ray intersects the boosted CM neutron velocity sphere",
+  "geometry": "the detector points from the reaction point to the detector in the laboratory frame shared by both velocity inputs",
+  "coordinates": "three-component Cartesian vectors; the returned laboratory neutron velocity is s*n along the accepted detector ray",
+  "boundary": "Stationary reactants return 2450.47589941598 keV. Exactly one distinct strictly positive laboratory speed is required; a positive tangent is accepted, zero speed is excluded, and two distinct positive roots are rejected.",
+  "assumptions": [
+   "The reaction is the two-body D(d,n)3He channel with Q=3.27 MeV, and the non-relativistic model is applicable to the supplied velocities.",
+   "Only the deuteron velocities enter the kinematics; exchanging their input order does not change the result.",
+   "The real detector vector must pass the absolute 1e-12 unit-norm gate. Its accepted direction is then treated as the ray d/sqrt(d.d), so a norm error within the gate does not inflate the energy.",
+   "The detector direction is a laboratory line of sight, not a CM emission angle. The CM neutron velocity is s*n-V and has squared speed u^2.",
+   "A single returned energy requires one distinct strictly positive laboratory speed. An exact positive tangent is one root, two distinct positive roots remain ambiguous however close, and zero speed cannot reach a detector.",
+   "Numerical root classification uses the exact rational values of the input binary64 numbers and the declared binary64 mass, Q, MEV_J and 1e-4 numerical factor. The zero-boost expression retains its floating evaluation order; other unique roots use bounded Decimal evaluation. This fixes the numerical parameters without changing the definition of cm/s or keV."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "reactant1_velocity_cm_s",
+   "description": "First deuteron velocity in the laboratory frame.",
+   "units": "cm/s",
+   "shape": "[3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Real, finite and exactly three components. Complex-valued arrays are rejected before float conversion. No speed cutoff is imposed; the physical non-relativistic applicability limit remains the caller's responsibility."
+  },
+  {
+   "name": "reactant2_velocity_cm_s",
+   "description": "Second deuteron velocity in the laboratory frame.",
+   "units": "cm/s",
+   "shape": "[3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Real, finite and exactly three components. Complex-valued arrays are rejected before float conversion. No speed cutoff is imposed; the physical non-relativistic applicability limit remains the caller's responsibility."
+  },
+  {
+   "name": "detector_unit_vector",
+   "description": "Line-of-sight direction from the reaction point to the detector.",
+   "units": "dimensionless",
+   "shape": "[3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Real, finite, exactly three components, and unit Euclidean norm within absolute tolerance 1e-12. Complex-valued arrays and vectors outside that norm gate are rejected. An accepted vector defines the ray d/sqrt(d.d)."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "neutron_energy_kev",
+   "description": "Laboratory-frame neutron kinetic energy.",
+   "units": "keV",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "A Python float, finite and strictly positive, returned only for one distinct strictly positive laboratory neutron speed. A positive tangent root is accepted. Zero-speed-only, unreachable and two-positive-root rays produce no energy. Final overflow or positive-energy underflow to zero raises ValueError."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The two deuterons are at the same spatial point and the reaction is the two-body D(d,n)3He channel in the non-relativistic model.",
+   "The detector points from that reaction point toward the detector in the same laboratory Cartesian frame as the two velocities.",
+   "The caller needs a single outgoing energy and does not expect an angular distribution, yield, reaction rate or transport result.",
+   "The supplied vectors satisfy the real, finite shape and detector unit-norm requirements, and the selected positive energy is representable as a finite positive float."
+  ],
+  "supported": [
+   "Stationary, counter-streaming and moving deuteron pairs whose detector ray has exactly one distinct positive neutron speed.",
+   "Noncollinear laboratory rays, with the transverse CM boost included in the velocity-sphere intersection.",
+   "An exact positive tangent root; it is a single outgoing speed. A zero root is excluded when counting outgoing solutions.",
+   "Detector vectors within the absolute 1e-12 unit-norm gate on either side of one; their accepted direction is treated as an exact ray.",
+   "Large but arithmetically evaluable inputs without an imposed speed cutoff. Evaluation outside the non-relativistic regime does not establish physical validity there."
+  ],
+  "excluded": [
+   "Relativistic kinematics and any independent calibration of the declared masses or conversion constants.",
+   "Brown-Jarmie or other angular distributions, reaction rates, yields and neutron transport or scattering.",
+   "Reaction channels other than D(d,n)3He.",
+   "Detector rays with no strictly positive laboratory neutron speed, including zero-speed-only configurations.",
+   "Detector rays with two distinct positive laboratory speeds; this single-value API supplies no branch selector.",
+   "A selected positive energy whose final float representation overflows or underflows to zero, or whose bounded Decimal evaluation does not resolve a float result."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for complex-valued vectors, non-finite components, shapes other than exactly three components, or a detector norm differing from one by more than absolute 1e-12. Complex input is rejected before conversion to float; shape/finiteness checks precede the norm check.",
+  "runtime_failure": "Raises ValueError when the laboratory detector ray has no strictly positive speed or two distinct positive speeds. Positive tangency is accepted without merging nearby distinct roots. Raises ValueError when a selected positive energy has no finite positive float representation, or the unique-root Decimal evaluations at 80, 160 and 320 digits do not resolve a stable float. No partial energy, zero-speed result, speed cutoff or empirical clamp is substituted.",
+  "nonconvergence": "No physical iteration or feedback. Bounded Decimal precision refinement either resolves a float result or raises ValueError.",
+  "partial_results": "Never returned. Rejected input, an unreachable or ambiguous ray, and numerical failure all produce no energy."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.fusion.dd_neutron_lab_energy",
+   "symbol": "calculate_dd_neutron_lab_energy_kev",
+   "signature": "calculate_dd_neutron_lab_energy_kev(*, reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector)",
+   "canonical_module": "scirel.fusion",
+   "canonical_symbol": "calculate_dd_neutron_lab_energy_kev"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Check the stationary mass-partition anchor, reachable forward/reverse rays, a perpendicular laboratory ray, a tiny positive outgoing energy, rejection of ambiguous and unreachable rays, unit-norm and complex-vector gates, and a large representable energy.",
+  "code": "import numpy as np\nfrom scirel.fusion import calculate_dd_neutron_lab_energy_kev as energy\n\ndef E(v1, v2, d=(1.0, 0.0, 0.0)):\n    return energy(reactant1_velocity_cm_s=v1,\n                  reactant2_velocity_cm_s=v2,\n                  detector_unit_vector=d)\n\nassert E((0, 0, 0), (0, 0, 0)) == 2450.47589941598\nv1, v2 = (1.0e8, 0, 0), (5.0e7, 0, 0)\nassert E(v1, v2) > E(v1, v2, (-1, 0, 0)) > 0\nperpendicular = E((1.0e8, 0, 0), (1.0e8, 0, 0), (0, 1, 0))\nassert np.isclose(perpendicular, 2445.2488724565214, rtol=1e-12)\ntiny = (-2165199149.095298, 0, 0)\nassert 0 < E(tiny, tiny) < 1e-24\nassert np.isfinite(E((1.0e150, 0, 0), (0, 0, 0)))\nfor d in ((1, 0, 0), (-1, 0, 0), (0, 1, 0)):\n    try:\n        E((3.0e9, 0, 0), (3.0e9, 0, 0), d)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError('an ambiguous or unreachable ray must fail')\nfor bad in ((2, 0, 0), np.array([1+1j, 0, 0])):\n    try:\n        E((0, 0, 0), (0, 0, 0), bad)\n    except ValueError:\n        pass\n    else:\n        raise AssertionError('the detector contract must be enforced')",
+  "expected": "The stationary energy is exactly 2450.47589941598 keV; the reachable forward energy exceeds the reverse energy; the perpendicular laboratory energy is approximately 2445.2488724565214 keV; a near-stationary outgoing neutron has a positive energy below 1e-24 keV; a 1e150 cm/s single-beam call returns a finite energy; and ambiguous, unreachable, non-unit and complex detector cases raise ValueError."
+ },
+ "verification": {
+  "scope": [
+   "The direct tests are self-contained. Their independent high-precision oracle bisects the laboratory Cartesian velocity-conservation equation using exact input-float values; it does not call the production classifier or closed-root formula and needs no external checkout.",
+   "The stationary mass-partition anchor remains exactly 2450.47589941598 keV. Reachable collinear forward/reverse energies retain the two-body square-root limits at the existing numerical tolerance.",
+   "Perpendicular and other noncollinear laboratory rays are checked by velocity conservation. Independently generated CM neutron vectors are boosted into laboratory vectors, then energy and detector direction are reconstructed. Exchanging reactants and applying a common rotation preserve the result.",
+   "Three near-stationary outgoing configurations are checked against high-precision bracketed laboratory roots. They remain strictly positive rather than being assigned a floating-cancellation zero.",
+   "Constructed exact velocity-sphere geometries check positive tangency, zero-speed exclusion and two distinct roots one ulp from tangency. Public near-tangent calls separately check double-positive and unreachable rays without root-merging tolerance.",
+   "Large representable energies, including single-beam 1e150 and 1e161 cm/s inputs, are checked against the independent conservation oracle. A genuinely overflowing final energy and a constructed positive-energy underflow raise ValueError; this is arithmetic evidence, not physical validation of those speeds.",
+   "The input contract is checked directly: real sequences and float64 arrays, complex rejection at all three ports, shape/finiteness rejection, absolute 1e-12 detector norm boundary, a ray independent of accepted norm error, keyword-only calling convention and absence of angular weighting."
+  ],
+  "tests": [
+   "tests/fusion/test_dd_neutron_lab_energy.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared non-relativistic two-body D(d,n)3He model and a single outgoing energy along a laboratory detector ray. Direct tests compare bounded unique-root cases with independently bracketed high-precision velocity conservation and generated vector boosts, and exercise exact root-count geometry and input/numerical failures. They do not measure the fixed constants, validate relativistic extrapolation, establish angular distributions or yields, or replay historical source-parity evidence.",
+  "known_limitations": [
+   "The masses, atomic mass unit, MEV_J and Q=3.27 MeV are declared numerical parameters; their measurement accuracy is not independently established here.",
+   "The model is non-relativistic. No speed cutoff is imposed, so a finite returned value at very large velocities is not evidence that the physical approximation is valid there.",
+   "A laboratory ray can have no outgoing energy or two distinct outgoing energies. Both are rejected by this single-value API; no angular distribution or branch-selection rule is provided.",
+   "The root signs refer to exact values of the input and declared binary64 numerical parameters, including the 1e-4 factor used by the numerical kernel. This is distinct from replacing them by decimal idealizations; the SI definitions of the units remain unchanged.",
+   "The unique nonzero-boost energy is evaluated with bounded Decimal refinement at 80, 160 and 320 digits and requires a stable finite positive float. The bounded tests do not prove correct rounding over the entire accepted domain.",
+   "The zero-boost closed form uses its established floating mass-partition evaluation order. Different algebraically equivalent evaluation orders can differ in the final rounding.",
+   "The function returns energy only. It does not compute angular weighting, reaction rates, yields, a neutron spectrum or subsequent scattering and transport."
+  ]
+ }
+}

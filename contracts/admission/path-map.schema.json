@@ -1,0 +1,16 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "https://scirel.local/contracts/admission/path-map.schema.json",
+ "title": "SciRel stored-member aliases",
+ "description": "Empty object when no aliases are needed. Each logical alias maps directly to a stored non-control payload member. The validator additionally enforces target membership and rejects collisions and chains.",
+ "type": "object",
+ "propertyNames": {
+  "type": "string",
+  "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?:[^/\\\\\\x00-\\x1f:<>\"|?*]+/)*[^/\\\\\\x00-\\x1f:<>\"|?*]+(?![\\s\\S])"
+ },
+ "additionalProperties": {
+  "type": "string",
+  "minLength": 1,
+  "pattern": "^(?!/)(?!.*(?:^|/)\\.{1,2}(?:/|$))(?:[^/\\\\\\x00-\\x1f:<>\"|?*]+/)*[^/\\\\\\x00-\\x1f:<>\"|?*]+(?![\\s\\S])"
+ }
+}

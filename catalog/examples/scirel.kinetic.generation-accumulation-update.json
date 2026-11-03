@@ -1,0 +1,132 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.generation-accumulation-update",
+ "title": {
+  "en": "Neutral generation accumulation state update",
+  "zh": "中性代际累计状态更新"
+ },
+ "summary": "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "accumulation",
+  "state-update"
+ ],
+ "aliases": [
+  "update_neutral_generation_accumulation"
+ ],
+ "discovery": {
+  "capability": [
+   "Neutral generation accumulation state update",
+   "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index."
+  ],
+  "operation": [
+   "append one neutral generation to the accumulated state",
+   "prior state or None plus one generation distribution and density -> new accumulated state"
+  ],
+  "model": "Generation accumulation in the declared order with explicit caller-state validation",
+  "geometry": "two velocity axes and one spatial axis for distributions, one spatial axis for densities",
+  "boundary": "finite real 3-D generation distribution (signed cells allowed), aligned finite nonnegative 1-D generation density, and either None or a complete finite internally consistent prior accumulation state",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.",
+  "direction": "prior state or None plus one generation distribution and density -> new accumulated state",
+  "definition": "Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index.",
+  "model": "Generation accumulation in the declared order with explicit caller-state validation",
+  "geometry": "two velocity axes and one spatial axis for distributions, one spatial axis for densities",
+  "coordinates": "distribution in source-discrete units and density in m^-3; no coordinate conversion",
+  "boundary": "finite real 3-D generation distribution (signed cells allowed), aligned finite nonnegative 1-D generation density, and either None or a complete finite internally consistent prior accumulation state",
+  "assumptions": [
+   "The first call and the ordered additive update follow the declared accumulation order; caller-owned state is validated for shapes, index and ordered totals before reuse, and finite-input overflow fails closed.",
+   "No external atomic-physics reference is bound; the gap remains recorded as validation_oracle_gap."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "state",
+   "description": "The previous accumulation state (or None for first call).",
+   "units": "source-discrete",
+   "shape": "mapping or None",
+   "dtype": "mapping of arrays and an integer",
+   "required": true,
+   "constraints": "When supplied, must contain generation_distributions [ngen,nvr,nvx,nx], generation_density_m3 [ngen,nx], total_distribution [nvr,nvx,nx], total_density_m3 [nx], and a zero-based integer completed_generation_index equal to ngen-1. Arrays must be finite and aligned; densities nonnegative; totals must equal the ordered sum of their stacks."
+  },
+  {
+   "name": "generation_distribution",
+   "description": "The current generation distribution.",
+   "units": "source-discrete",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite three-dimensional array."
+  },
+  {
+   "name": "generation_density_m3",
+   "description": "The current generation density profile.",
+   "units": "m^-3",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "A finite nonnegative one-dimensional array aligned to the distribution spatial axis."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "A mapping with total_distribution, total_density_m3, generation_distributions (stacked), generation_density_m3 (stacked), and completed_generation_index.",
+   "units": "source-discrete",
+   "shape": "mapping",
+   "dtype": "mapping of arrays and an integer",
+   "required": true,
+   "constraints": "All arrays finite; total_distribution and total_density_m3 equal ordered sums of their generation stacks; density arrays nonnegative; completed_generation_index is the 0-based index of the last appended generation."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite aligned generation distribution and nonnegative density, plus None or an internally consistent prior state."
+  ],
+  "supported": [
+   "Explicit accumulation of H and H2 neutral generations without mutating caller state."
+  ],
+  "excluded": [
+   "Generation propagation, density reduction, stop decisions and external physical validation."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-real, non-finite or misaligned generation fields, negative density, or an incomplete or internally inconsistent supplied state.",
+  "runtime_failure": "Raises ValueError if adding finite generations overflows an accumulated total.",
+  "nonconvergence": "Not applicable; this relation appends one generation and does not iterate.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.generation_accumulation_update",
+   "symbol": "update_neutral_generation_accumulation",
+   "signature": "update_neutral_generation_accumulation(state, generation_distribution, generation_density_m3)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "update_neutral_generation_accumulation"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Accumulate two generations and verify the totals.",
+  "code": "import numpy as np\nfrom scirel.kinetic import update_neutral_generation_accumulation\ndist1 = np.ones((1, 1, 2))\ndens1 = np.array([1.0, 2.0])\nstate1 = update_neutral_generation_accumulation(None, dist1, dens1)\nassert state1['completed_generation_index'] == 0\ndist2 = np.ones((1, 1, 2)) * 2\ndens2 = np.array([2.0, 4.0])\nstate2 = update_neutral_generation_accumulation(state1, dist2, dens2)\nassert state2['completed_generation_index'] == 1\nnp.testing.assert_array_equal(state2['total_distribution'], dist1 + dist2)\nnp.testing.assert_array_equal(state2['total_density_m3'], dens1 + dens2)\n",
+  "expected": "Observed PASS: After two calls, total_distribution is the sum of both distributions and completed_generation_index is 1."
+ },
+ "verification": {
+  "scope": [
+   "Input and failure contracts."
+  ],
+  "tests": [
+   "tests/kinetic/test_convergence_accumulation.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Append one generation to the accumulated state: accumulates distribution, density, per-generation stacks, and the completed generation index. Evidence: test_convergence_accumulation.py (18 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Generation propagation, density reduction, stop decisions and external physical validation; external physical validation.",
+  "known_limitations": [
+   "Only shared-file coverage is bound (test_convergence_accumulation.py); no asset-specific failure/limit probe is recorded."
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+SciRel anisotropic inference scientific correction development selection
+
+The original equilibrium MIT copyright/license and the historical anisotropy
+extension provenance notice are retained alongside this notice. Historical
+local extension provenance is not a grant of additional redistribution rights.
+This internal development selection grants no human endorsement or release
+permission. These remain separate from numerical and package acceptance.
+
+This successor corrects observation units, requested-channel preservation,
+fixed-dimensional failed trials and valid bounded inverse-state selection.
+It reuses qualified SciRel anisotropic forward, field and Green implementations.
+The only third-party Python runtime requirements in this selection are NumPy
+and SciPy at the declared baseline versions. The retained anisotropy notice's
+reference to Matplotlib describes its historical larger selection; this wheel
+does not require or include Matplotlib, Git, PowerShell or source checkouts.

@@ -1,0 +1,128 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.nonuniform-first-derivative",
+ "title": {
+  "en": "Nonuniform interior first derivative",
+  "zh": "非均匀坐标内点一阶导数"
+ },
+ "summary": "Return first interior derivative using the shared quadratic nonuniform operator",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "diff_central"
+ ],
+ "discovery": {
+  "capability": [
+   "Nonuniform interior first derivative",
+   "Return the first interior derivative on a strictly increasing nonuniform one-dimensional grid."
+  ],
+  "operation": [
+   "shared quadratic nonuniform first-derivative operator",
+   "strictly increasing x and matched y -> interior first derivatives"
+  ],
+  "model": "Three-point unequal-spacing local quadratic finite-difference operator.",
+  "geometry": "One-dimensional nonuniform abscissa and ordinate samples with generic coherent coordinate and value units; only interior points are returned.",
+  "boundary": "N>=3 and strictly increasing finite x are required, with no fabricated endpoint values; periodic endpoints and noise inference are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Nonuniform interior first derivative",
+  "direction": "Declared inputs to First interior derivative",
+  "definition": "Return first interior derivative using the shared quadratic nonuniform operator",
+  "model": "Absorbed finite-difference implementation",
+  "geometry": "one-dimensional nonuniform abscissa and ordinate samples",
+  "coordinates": "Generic coherent coordinate/value units",
+  "boundary": "No endpoint values",
+  "assumptions": [
+   "Finite matched one-dimensional x,y with N>=3",
+   "x strictly increasing"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x",
+   "description": "Abscissae",
+   "units": "coordinate units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Strictly increasing finite"
+  },
+  {
+   "name": "y",
+   "description": "Samples",
+   "units": "value units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite matched N"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "derivative",
+   "description": "First interior derivative",
+   "units": "value per coordinate",
+   "shape": "(N-2,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Quadratic exactness"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite matched one-dimensional x,y with N>=3",
+   "x strictly increasing"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "diff_central",
+   "signature": "diff_central(x, y)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "diff_central"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.numerics.nonuniform-derivatives"
+   }
+  ]
+ },
+ "example": {
+  "description": "Compute the first derivative of y=x² at the interior point of a nonuniform grid.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import diff_central\n\nx = np.array([0.0, 0.3, 1.0])\nnp.testing.assert_allclose(diff_central(x, x * x), [0.6])",
+  "expected": "The returned interior derivative is [0.6]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Periodic endpoints, noisy-data inference and conditioning extremes are unqualified"
+  ]
+ }
+}

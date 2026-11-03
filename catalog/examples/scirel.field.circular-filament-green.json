@@ -1,0 +1,154 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.circular-filament-green",
+ "title": {
+  "en": "Axisymmetric circular-filament Green response",
+  "zh": "轴对称圆电流丝 Green 响应"
+ },
+ "summary": "Sum ordered weighted circular-filament responses at cylindrical target points.",
+ "taxonomy": [
+  "field",
+  "green-function",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "circular loop Green response",
+  "Biot-Savart circular loop",
+  "thin circular coil field"
+ ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric circular-filament Green response",
+   "Sum ordered weighted circular-filament responses at cylindrical target points."
+  ],
+  "operation": [
+   "weighted circular-filament Green superposition",
+   "source rows and target rows -> per-target psi, BR and BZ"
+  ],
+  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight and exact self conventions.",
+  "geometry": "Finite cylindrical source and target point tables.",
+  "boundary": "Exact positive-radius source/target coincidence is skipped as a discrete zero-self entry; axis targets retain analytic limits.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "Weighted circular-filament Green superposition",
+  "direction": "source rows and target rows to per-target psi, BR, and BZ",
+  "definition": "Apply each source row weight to the circular-filament Green response and sum in source order.",
+  "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight, and exact self conventions.",
+  "geometry": "Finite cylindrical source and target point tables.",
+  "coordinates": "R,Z in metres; weights dimensionless; outputs Wb/rad/A and T/A.",
+  "boundary": "Exact positive-radius source/target coincidence is skipped as a discrete zero-self entry; axis targets retain analytic limits.",
+  "assumptions": [
+   "Inputs are finite real arrays with nonnegative radii.",
+   "The returned arrays follow target order.",
+   "No finite-wire or permeability model is included."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "rzw",
+   "description": "Source rows [R_m,Z_m,weight].",
+   "units": "m,m,dimensionless",
+   "shape": "[N_filament,3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite with nonnegative source radii; an empty source set is allowed."
+  },
+  {
+   "name": "rz_pts",
+   "description": "Target rows [R_m,Z_m].",
+   "units": "m,m",
+   "shape": "[N_point,2]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite with nonnegative target radii."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "gpsi",
+   "description": "Flux response per drive current.",
+   "units": "Wb/rad/A",
+   "shape": "[N_point]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite under the maintained singular-value convention."
+  },
+  {
+   "name": "gBR",
+   "description": "Radial field response per drive current.",
+   "units": "T/A",
+   "shape": "[N_point]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite under the maintained singular-value convention."
+  },
+  {
+   "name": "gBZ",
+   "description": "Axial field response per drive current.",
+   "units": "T/A",
+   "shape": "[N_point]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite under the maintained singular-value convention."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs are finite real arrays with nonnegative radii.",
+   "The returned arrays follow target order."
+  ],
+  "supported": [
+   "Weighted source superposition, axis limits, empty sources, and finite output cases in direct tests."
+  ],
+  "excluded": [
+   "Finite-wire self-fields, arbitrary-input qualification, and persistent field blocks."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for malformed, complex, nonfinite, or negative-radius source/target arrays.",
+  "runtime_failure": "FloatingPointError is raised when the summed finite response is not representable.",
+  "nonconvergence": "Not applicable; this is a direct sum.",
+  "partial_results": "No result mapping is returned after validation or arithmetic failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.circular_filament_green",
+   "symbol": "circular_filament_green_response",
+   "signature": "circular_filament_green_response(rzw, rz_pts)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "circular_filament_green_response"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.electromagnetism.circular-filament-green"
+   }
+  ]
+ },
+ "example": {
+  "description": "Evaluate one unit-weight filament at two off-axis targets.",
+  "code": "import numpy as np\nfrom scirel.field import circular_filament_green_response\nresult = circular_filament_green_response([[0.35, 0.0, 1.0]], [[0.2, -0.1], [0.2, 0.1]])\nassert set(result) == {'gpsi', 'gBR', 'gBZ'}\nfor value in result.values():\n    assert value.shape == (2,)\n    assert np.isfinite(value).all()",
+  "expected": "The mapping contains gpsi, gBR, and gBZ; each is a finite float64 vector of shape (2,)."
+ },
+ "verification": {
+  "scope": [
+   "Axis-source skip convention.",
+   "Weighted-source linearity.",
+   "Midplane symmetry and analytic axis BZ check.",
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
+  ],
+  "tests": [
+   "tests/field/test_circular_filament_green.py",
+   "tests/cross_domain/test_field_green_correction.py"
+  ],
+  "evidence_ceiling": "Bounded to axis-source-skipping circular-filament Green response with weighted-source linearity. Evidence: `test_circular_filament_green.py` contains 3 test functions, 1 of which references `circular_filament_green_response`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `circular_filament_green_response`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: independent analytic recomputation and the axis-limit BZ check. It does not establish finite-wire self-fields, arbitrary-input qualification, or persistent field blocks.",
+  "known_limitations": [
+   "Targets exactly on a filament are not a resolved self-field model.",
+   "The example covers axis-source skip and weighted-source linearity; no test binds the nonfinite summed-response `FloatingPointError`.",
+   "The aggregate-sum entry and the per-source matrix entry keep different shape and empty-source interfaces; shared-kernel reuse does not merge those public contracts."
+  ]
+ }
+}

@@ -1,0 +1,304 @@
+kind: scientific_composition
+name: FrankEgedal各向异性压强闭合
+entrypoint: composition_fixture.py::run_composition
+display_name:
+  zh: Frank--Egedal 各向异性压强闭合
+  en: Frank--Egedal Anisotropic Pressure Closure
+framework_mapping:
+  primary_pfm_node: N4
+  coverage: full
+  related_pfm_nodes:
+  - N3
+inputs:
+- name: psi
+  meaning: 当前或最终磁通
+  shape: '[N_Z,N_R]'
+  units: Wb/rad
+  required: true
+  constraints: finite [Z,R] field
+- name: B
+  meaning: 局域或最终磁场强度
+  shape: '[N_Z,N_R]'
+  units: T
+  required: true
+  constraints: same grid as psi
+- name: params
+  meaning: 调用方拥有的 Frank-Egedal 闭合配置
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: no hidden files or global state
+  fields:
+    psi_axis:
+      meaning: 径向包络磁通轴值
+      shape: scalar
+      units: same_as_psi
+      required: false
+      constraints: default min(psi)
+    psi_edge:
+      meaning: 径向包络磁通边值
+      shape: scalar
+      units: same_as_psi
+      required: false
+      constraints: default max(psi); distinct from psi_axis
+    alpha:
+      meaning: 径向包络指数
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: default 1
+    B0:
+      meaning: 参考磁场
+      shape: scalar
+      units: T
+      required: false
+      constraints: default median(B); abs(B0) denominator
+    p0:
+      meaning: 热离子压强尺度别名
+      shape: scalar
+      units: Pa
+      required: false
+      constraints: alias hot_pressure_scale
+    hot_pressure_scale:
+      meaning: 热离子压强尺度
+      shape: scalar
+      units: Pa
+      required: false
+      constraints: p0 may supply same value
+    gas_dynamic_pressure:
+      meaning: 气体动力学压强尺度
+      shape: scalar
+      units: Pa
+      required: false
+      constraints: default 0
+    background_density:
+      meaning: 背景密度尺度别名
+      shape: scalar
+      units: m^-3
+      required: false
+      constraints: alias gas_dynamic_density
+    gas_dynamic_density:
+      meaning: 气体动力学密度尺度
+      shape: scalar
+      units: m^-3
+      required: false
+      constraints: background_density may supply same value
+    hot_density_scale:
+      meaning: 热离子密度尺度
+      shape: scalar
+      units: m^-3
+      required: false
+      constraints: optional
+    electron_temperature:
+      meaning: 常数电子能量尺度；与 density 相乘形成电子压强
+      shape: scalar
+      units: J
+      required: false
+      constraints: 必须为 J（或 Pa·m^3）；不接受未换算的 K
+    mirror_ratio:
+      meaning: 损失锥镜比
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: source-valid
+    turning_b:
+      meaning: 损失锥 turning-field 比
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: overrides mirror_ratio
+    vc_over_v0:
+      meaning: 慢化临界速度比
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: source-valid
+    velocity_lower:
+      meaning: 三个速度矩共同人口下限与v0的比值
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: '[0,1)；默认0；与perp_velocity_lower同时提供时须相等'
+    perp_velocity_lower:
+      meaning: 三个速度矩共同人口下限的历史别名
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: '[0,1)；默认0；等同velocity_lower并作用于密度、平行和垂直矩；两别名同时提供须相等'
+    zeff:
+      meaning: 有效离子电荷别名
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: alias beta_m
+    beta_m:
+      meaning: 损失锥参数覆盖项
+      shape: scalar
+      units: dimensionless
+      required: false
+      constraints: overrides zeff
+    legendre_degrees:
+      meaning: 调用方给定分数 Legendre degree
+      shape: '[mode]'
+      units: dimensionless
+      required: false
+      constraints: bypasses spectrum leaf
+    legendre_mode_count:
+      meaning: 缺省损失锥谱模态数
+      shape: scalar_integer
+      units: count
+      required: false
+      constraints: default 6
+    legendre_spectrum_grid_points:
+      meaning: 缺省损失锥谱角向单元数
+      shape: scalar_integer
+      units: count
+      required: false
+      constraints: default 256
+    source_coefficients:
+      meaning: NBI 模态幅度
+      shape: '[mode]'
+      units: dimensionless
+      required: false
+      constraints: same shape as degrees
+    nbi_pitch_angle_deg:
+      meaning: 缺省 NBI 源角
+      shape: scalar
+      units: deg
+      required: false
+      constraints: default 45
+    legendre_terms:
+      meaning: P/Q 多项式保留项数
+      shape: scalar_integer
+      units: count
+      required: false
+      constraints: default 15
+    legendre_backend:
+      meaning: 分数 Legendre 函数数值后端
+      shape: scalar_string
+      units: none
+      required: false
+      constraints: truncated or hypergeometric; default truncated
+    velocity_nodes:
+      meaning: 速度积分节点数
+      shape: scalar_integer
+      units: count
+      required: false
+      constraints: default 24
+    pitch_nodes:
+      meaning: pitch 积分节点数
+      shape: scalar_integer
+      units: count
+      required: false
+      constraints: default 24
+outputs:
+- name: p_parallel
+  meaning: 平行总压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+  required: true
+  constraints: caller pressure scale
+- name: p_perp
+  meaning: 垂直总压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+  required: true
+  constraints: caller pressure scale
+- name: density
+  meaning: 气体动力学加热离子密度
+  shape: '[N_Z,N_R] or null'
+  units: m^-3
+  required: true
+  constraints: null if density scale absent
+- name: electron_temperature
+  meaning: 常数电子能量尺度网格
+  shape: '[N_Z,N_R] or null'
+  units: J
+  required: true
+  constraints: null if unconfigured；与 density 相乘得到 Pa
+- name: closure_state
+  meaning: 可审查闭合中间状态
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: normalized fields [N_Z,N_R], mode arrays [mode]
+execution:
+  mode: source_ordered_loss_cone_spectrum_then_hot_ion_quadrature_then_b1_normalized_pressure_assembly
+  order_policy: derive_midplane_loss_cone_then_select_modes_then_integrate_each_B_then_normalize_then_assemble_profiles
+  state_policy: explicit_parameter_mapping_with_local_b_value_cache_only
+  failure_policy: stop_on_invalid_grid_or_invalid_loss_cone_configuration
+nodes:
+- id: radial_profile
+  name: 磁通径向包络
+  kind: scientific_function
+  callable: scirel.kinetic.frank_egedal_radial_envelope::evaluate_frank_egedal_radial_envelope
+  asset_ref: scirel.kinetic.frank_egedal_radial_envelope
+  inputs: [psi, params]
+  outputs: [radial_shape]
+- id: loss_cone_spectrum_port
+  name: 损失锥谱求解器依赖
+  kind: scientific_function
+  callable: scirel.kinetic.loss_cone_spectrum::solve_loss_cone_spectrum
+  asset_ref: scirel.kinetic.loss_cone_spectrum
+  inputs: [xi_tp, mode_count, grid_points, backend]
+  outputs: [spectrum_state]
+- id: source_mode_projection
+  name: Frank-Egedal 源模态投影
+  kind: scientific_function
+  callable: scirel.kinetic.frank_egedal_source_projection::project_frank_egedal_source_modes
+  asset_ref: scirel.kinetic.frank_egedal_source_projection
+  inputs: [params, spectrum_function]
+  outputs: [degrees, source_coefficients, legendre_terms, fractional_mode, xi_tp_mid, degree_source, legendre_backend]
+- id: hot_ion_moments
+  name: Frank-Egedal 热离子矩
+  kind: scientific_function
+  callable: scirel.kinetic.frank_egedal_hot_ion_moments::evaluate_frank_egedal_hot_ion_moments
+  asset_ref: scirel.kinetic.frank_egedal_hot_ion_moments
+  inputs: [B, params, degrees, source_coefficients, legendre_terms, fractional_mode]
+  outputs: [normalized_field, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, quadrature]
+- id: pressure_assembly
+  name: Frank-Egedal 压强状态组装
+  kind: scientific_function
+  callable: scirel.kinetic.frank_egedal_pressure_state::assemble_frank_egedal_pressure
+  asset_ref: scirel.kinetic.frank_egedal_pressure_state
+  inputs: [psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, params]
+  outputs: [p_parallel, p_perp, density, electron_temperature]
+edges:
+- from: radial_profile
+  from_output: radial_shape
+  to: pressure_assembly
+  to_input: radial_shape
+  data: 截断到声明磁通区间的径向包络
+  condition: always
+  transform: identity
+  closure: asset
+- from: loss_cone_spectrum_port
+  from_output: spectrum_state
+  to: source_mode_projection
+  to_input: spectrum_function
+  data: 损失锥谱 public callable
+  condition: source projection needs generated degrees
+  transform: callable binding; explicit legendre_degrees may bypass its invocation
+  closure: controlled_glue
+- from: source_mode_projection
+  from_output: degrees
+  to: hot_ion_moments
+  to_input: degrees
+  data: 分数 Legendre 阶数及源系数
+  condition: always
+  transform: pass degrees, source_coefficients, legendre_terms and fractional_mode together
+  closure: asset
+- from: hot_ion_moments
+  from_output: hot_parallel_shape
+  to: pressure_assembly
+  to_input: hot_parallel_shape
+  data: B 依赖的热离子矩
+  condition: always
+  transform: pass all three hot moment shapes; pressure assembly applies params scales and radial_shape
+  closure: asset
+
+common_population_contract:
+  velocity_domain: velocity_lower默认0，所有密度和压力矩共用[lower,1]；perp_velocity_lower只作相同下限的历史别名
+  critical_speed: vc_over_v0是慢化速度尺度，不是垂直矩专用积分下限；vc=1仍有非零共同人口
+  normalization: 三个原始矩先按相同人口算，压力除b=1平行矩，密度除b=1密度矩；随后乘径向包络和尺度
+  convergence: 逐次加倍速度和pitch节点验证原始矩，不允许发散归一化抵消；失败抛RuntimeError

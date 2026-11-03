@@ -1,0 +1,305 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.kinetic-dispersion-sum",
+ "title": {
+  "en": "Finite-harmonic Maxwellian kinetic dispersion tensor",
+  "zh": "有限谐波麦克斯韦动理学色散张量"
+ },
+ "summary": "Assemble the x-z-plane kinetic dielectric tensor, Maxwell dispersion tensor and determinant for a magnetized Maxwellian species mixture using a finite cyclotron-harmonic sum.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "dispersion"
+ ],
+ "aliases": [
+  "fluid conventional sum-n dispersion",
+  "magnetized Maxwellian harmonic-sum determinant"
+ ],
+ "discovery": {
+  "capability": [
+   "Finite-harmonic Maxwellian kinetic dispersion tensor",
+   "Assemble the x-z-plane kinetic dielectric tensor, Maxwell dispersion tensor and determinant for a magnetized Maxwellian species mixture using a finite cyclotron-harmonic sum."
+  ],
+  "operation": [
+   "assemble the finite-harmonic Maxwellian kinetic tensor",
+   "(B0, q_s, m_s, n_s, T_s, f, k_z, k_x, lmx) -> K, D, det(D) and derived scales"
+  ],
+  "model": "Truncated conventional cyclotron-harmonic sum for a homogeneous magnetized Maxwellian species mixture; analytic SciRel Faddeeva Z rather than a finite Weideman implementation",
+  "geometry": "Uniform background field along z with a real wavevector in the x-z plane; tensor axes are x, y, z",
+  "boundary": "Nonzero B0, f, kz and kx are required; all derived terms and the final tensors/determinant must be finite and representable. The harmonic cutoff is finite and caller-selected.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "SI species equilibrium and one real wave point to a complex kinetic dispersion tensor and determinant",
+  "direction": "(B0, q_s, m_s, n_s, T_s, f, k_z, k_x, lmx) -> K, D, det(D) and derived scales",
+  "definition": "omega=2*pi*f; vts=sqrt(2*kB*T_s/m_s); wcs=q_s*B0/m_s; wps2=n_s*q_s^2/(m_s*epsilon0); a_s=kx*sqrt(kB*T_s/m_s)/wcs; b_s=a_s^2; z_n=(omega-n*wcs)/(kz*vts). Sum n=-lmx..lmx with Gamma_n(b), Gamma_prime_n(b) and analytic Z(z_n), weighting each species term by (wps2/omega^2)*z_0*Z(z_n). Assemble the source-convention susceptibility components and K, then subtract the Maxwell curl terms to obtain D and its determinant. K_ij = delta_ij - sigma_ij/(i*omega*epsilon0).",
+  "model": "Truncated conventional cyclotron-harmonic sum for a homogeneous magnetized Maxwellian species mixture; analytic SciRel Faddeeva Z rather than a finite Weideman implementation",
+  "geometry": "Uniform background field along z with a real wavevector in the x-z plane; tensor axes are x, y, z",
+  "coordinates": "Signed B0 and charges; kx perpendicular, kz parallel; frequency f is in Hz and omega in rad/s",
+  "boundary": "Nonzero B0, f, kz and kx are required; all derived terms and the final tensors/determinant must be finite and representable. The harmonic cutoff is finite and caller-selected.",
+  "assumptions": [
+   "Each species has a Maxwellian equilibrium with positive mass, number density and temperature.",
+   "The caller judges whether the chosen lmx gives sufficient harmonic convergence for its case.",
+   "A determinant value is not by itself a selected physical mode or a root."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "B0",
+   "description": "Signed homogeneous background magnetic field along z.",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero; boolean and complex inputs are rejected."
+  },
+  {
+   "name": "qs",
+   "description": "Signed charges on the shared species axis.",
+   "units": "C",
+   "shape": "(S,), S >= 1",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero, with the same S as ms, ns0 and Ts0."
+  },
+  {
+   "name": "ms",
+   "description": "Species masses.",
+   "units": "kg",
+   "shape": "(S,), same S as qs",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "ns0",
+   "description": "Species absolute number densities.",
+   "units": "m^-3",
+   "shape": "(S,), same S as qs",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "Ts0",
+   "description": "Species equilibrium temperatures already converted to kelvin.",
+   "units": "K",
+   "shape": "(S,), same S as qs",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "f",
+   "description": "Real wave frequency before angular-frequency conversion.",
+   "units": "Hz",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "kz",
+   "description": "Wavevector component parallel to B0.",
+   "units": "m^-1",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero; no silent near-zero replacement."
+  },
+  {
+   "name": "kx",
+   "description": "Wavevector component perpendicular to B0 in the x-z plane.",
+   "units": "m^-1",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero because terms divide by a_s and b_s; zero is not regularized."
+  },
+  {
+   "name": "lmx",
+   "description": "Inclusive cyclotron-harmonic cutoff for n=-lmx..lmx.",
+   "units": "dimensionless integer",
+   "shape": "scalar",
+   "dtype": "Python or NumPy integer",
+   "required": false,
+   "default": 5,
+   "constraints": "Non-negative integer; booleans, floats and numeric strings are rejected."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "K",
+   "description": "Kinetic dielectric tensor with source sign convention.",
+   "units": "dimensionless",
+   "shape": "(3, 3), x-y-z component axes",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; K_yx=-K_xy, K_zy=-K_yz and K_zx=K_xz by assembly."
+  },
+  {
+   "name": "D",
+   "description": "Dispersion tensor after Maxwell curl terms.",
+   "units": "dimensionless",
+   "shape": "(3, 3), x-y-z component axes",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; D_xx=K_xx-nz^2, D_yy=K_yy-nx^2-nz^2, D_zz=K_zz-nx^2 and D_xz=D_zx=K_xz+nx*nz."
+  },
+  {
+   "name": "determinant",
+   "description": "Complex determinant of D.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex numeric",
+   "required": true,
+   "constraints": "Finite and representable; zero may indicate a candidate mode but no root selection occurs."
+  },
+  {
+   "name": "omega",
+   "description": "Angular frequency 2*pi*f.",
+   "units": "rad/s",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "nx",
+   "description": "Perpendicular refractive-index component c*kx/omega.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "nz",
+   "description": "Parallel refractive-index component c*kz/omega.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "vts",
+   "description": "Species thermal speeds with sqrt(2) convention.",
+   "units": "m/s",
+   "shape": "(S,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and positive."
+  },
+  {
+   "name": "wcs",
+   "description": "Signed species cyclotron angular frequencies.",
+   "units": "rad/s",
+   "shape": "(S,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "wps2",
+   "description": "Species plasma angular-frequency squared.",
+   "units": "rad^2/s^2",
+   "shape": "(S,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and positive."
+  },
+  {
+   "name": "b",
+   "description": "Species dimensionless squared Bessel arguments a_s^2.",
+   "units": "dimensionless",
+   "shape": "(S,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and positive for accepted nonzero kx."
+  },
+  {
+   "name": "lmx",
+   "description": "Echo of the used harmonic cutoff.",
+   "units": "dimensionless integer",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Non-negative."
+  },
+  {
+   "name": "tensor_convention",
+   "description": "Explicit sign-convention label.",
+   "units": "not applicable",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "Exactly K_ij = delta_ij - sigma_ij/(i*omega*epsilon0)."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "All species arrays have a shared nonempty axis and SI units; the temperature input is kelvin, not eV.",
+   "The real frequency and wavevector point are nonzero where required and the finite harmonic cutoff is adequate for the caller's target accuracy."
+  ],
+  "supported": [
+   "One or more homogeneous magnetized Maxwellian species at a real nonzero frequency and x-z-plane wavevector.",
+   "Finite harmonic sums with an explicit non-negative integer cutoff and analytic SciRel Z values."
+  ],
+  "excluded": [
+   "kx=0 or kz=0 limits, complex frequency/wavevector, drift, loss-cone or arbitrary velocity distributions.",
+   "Automatic harmonic-convergence assessment, source Weideman N=64 exact outputs, near-zero kz substitution, root finding or mode-branch selection."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite, boolean, complex or zero scalar fields where prohibited; empty/mismatched/nonfinite species vectors, zero charge, nonpositive mass/density/temperature, or lmx that is not a non-negative integer.",
+  "runtime_failure": "Raises ValueError if derived scales become nonfinite or zero where positivity is required, or if special-function contributions, tensors or determinant become nonfinite or unrepresentable; other unexpected NumPy/SciPy errors propagate.",
+  "nonconvergence": "No iterative solve occurs. A finite lmx is always evaluated; adequacy of harmonic truncation is not certified.",
+  "partial_results": "None; tensors and determinant are returned together only after the final finite check."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.kinetic_dispersion_sum_n",
+   "symbol": "evaluate_kinetic_dispersion_sum",
+   "signature": "evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_kinetic_dispersion_sum"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.bessel-gamma"
+   },
+   {
+    "asset_id": "scirel.kinetic.plasma-dispersion-function"
+   }
+  ]
+ },
+ "example": {
+  "description": "Assemble one single-electron tensor at a declared case point. The Python path runs locally; local execution covers this asset.",
+  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_kinetic_dispersion_sum\nr = evaluate_kinetic_dispersion_sum(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31], ns0=[6.075e19], Ts0=[1000.0 * 1.6022e-19 / 1.38064852e-23], f=175881684853.009 / (2*np.pi), kz=1326.1942478795652, kx=13261.94247879565)\nassert r['K'].shape == (3, 3) and r['D'].shape == (3, 3)\nassert abs(r['determinant'] - (1184249.3244493124 + 4322451.2861608062j)) < 1e-6",
+  "expected": "Python preflight returned finite 3x3 complex K and D tensors; the determinant was 1184249.3244493138 + 4322451.286160805j. local execution covers this asset."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Python preflight ran, but local execution covers this asset."
+  ],
+  "tests": [
+   "tests/kinetic/test_kinetic_signed_kz.py",
+   "tests/kinetic/test_kinetic_dispersion_sum_n.py"
+  ],
+  "evidence_ceiling": "Bounded to one or more homogeneous magnetized Maxwellian species with finite harmonic sums and analytic Z values. Evidence: `test_kinetic_dispersion_sum_n.py` contains 4 test functions, 4 of which reference `evaluate_kinetic_dispersion_sum`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: independent analytic/high-precision Z-function references plus frozen fluid-BW values. It does not establish kx=0/kz=0 limits, complex roots, drift/loss-cone distributions, or automatic harmonic convergence.",
+  "known_limitations": [
+   "The x-z-plane real-wavepoint contract excludes perpendicular/parallel zero-wavevector limits and complex root-search inputs.",
+   "No near-zero kz clamping is inherited from the source path.",
+   "The finite cutoff may be insufficient at larger kx*rho; callers must assess it independently.",
+   "This relation's local tensor tests do not establish an end-to-end closure of the terminal matrix outputs through a full pipeline.",
+   "The bound tests compare frozen fluid-BW determinants and analytic Z-based terms; no external kinetic code or full-parameter-space oracle is bound.",
+   "The model uses analytic SciRel `Z` values rather than a finite-order Weideman special-function implementation, so cross-code absolute parity is not claimed."
+  ]
+ }
+}

@@ -1,0 +1,165 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.relativistic-maxwellian-bessel-closure",
+ "title": {
+  "en": "Relativistic Maxwellian modified-Bessel closure",
+  "zh": "相对论Maxwellian修正Bessel闭合"
+ },
+ "summary": "Evaluate the three exponentially rescaled modified Bessel quantities the relativistic background-Maxwellian branch of the Coulomb collision coefficient chain needs: exp(x)K_0(x), exp(x)K_1(x), and the K_2 recurrence. The relation is evaluated directly rather than through a piecewise Abramowitz-Stegun approximation, which removes a 1.5e-3 relative discontinuity at the approximation's x = 2 branch boundary and removes the branch selector, branch label and per-branch accuracy metadata from the public contract. Every accepted call returns three finite floats; a valid argument for which the double-precision backend does not produce them is rejected rather than answered with a non-finite value.",
+ "taxonomy": [
+  "collisions",
+  "special-functions",
+  "modified-bessel",
+  "relativistic-maxwellian"
+ ],
+ "aliases": [
+  "cfpmodbe closure",
+  "rescaled modified Bessel K0 K1 K2"
+ ],
+ "discovery": {
+  "capability": [
+   "Relativistic Maxwellian modified-Bessel closure",
+   "Exponentially rescaled modified Bessel quantities exp(x)K_0(x), exp(x)K_1(x) and the K_2 recurrence for relativistic Maxwellian closures."
+  ],
+  "operation": [
+   "Evaluate the rescaled modified Bessel quantities K0, K1 and K2",
+   "Bessel argument x -> bk0, bk1, bk2"
+  ],
+  "model": "Exact rescaled modified Bessel functions of the second kind; no approximation and no branch.",
+  "geometry": "Not applicable; scalar special-function evaluation with no spatial axis.",
+  "boundary": "As x approaches zero from above, bk0 tends to -log(x/2) - gamma, bk1 grows as 1/x and bk2 as 2/x^2; as x grows all three decay as sqrt(pi/(2x)).",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "the Bessel argument to the exponentially rescaled modified Bessel quantities of orders zero, one and two",
+  "direction": "x -> bk0, bk1, bk2",
+  "definition": "Returns bk0 = exp(x)*K_0(x) and bk1 = exp(x)*K_1(x) evaluated directly, and bk2 = bk0 + 2*bk1/x, which is the K_2 recurrence and not an independent third approximation. The three values are computed and then checked once for finiteness; the call is rejected if any of them is not finite.",
+  "model": "exact rescaled modified Bessel functions of the second kind; no approximation and no branch",
+  "geometry": "not applicable; a scalar special-function evaluation",
+  "coordinates": "not applicable",
+  "boundary": "as x approaches zero from above, bk0 tends to -log(x/2) - gamma and bk1 grows as 1/x, so bk2 grows as 2/x^2; as x grows, all three quantities decay as sqrt(pi/(2x))",
+  "assumptions": [
+   "The argument is a positive finite scalar; the rescaled form exp(x)*K_order(x) is the quantity of interest because the unrescaled K_order(x) underflows over the range the closure is used at.",
+   "The K_2 recurrence is an identity for the true functions, so bk2 is defined by the recurrence rather than evaluated as a third independent approximation; the two agree to the last bit over the domain measured.",
+   "The relation is evaluated through scipy.special.kve, a double-precision routine whose representable domain is finite. The extent of that domain is a property of the installed SciPy build and the platform, not of the relation, so this asset states no bound for it and imposes no upper or lower bound of its own.",
+   "An argument the backend cannot evaluate is a backend failure rather than an input error: the caller's argument satisfies every stated precondition, and the caller can do nothing about the outcome except handle the rejection.",
+   "No physical accuracy claim is made: the closure is established as the rescaled Bessel functions, not as an adequate model for any particular distribution."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x",
+   "description": "Bessel argument of the rescaled modified Bessel functions.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Strictly positive and finite. No upper or lower bound is imposed beyond that; an argument the backend cannot evaluate is rejected as a backend failure rather than as an invalid input."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "bk0",
+   "description": "exp(x) times the modified Bessel function of the second kind of order zero.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "A finite Python float on every accepted call."
+  },
+  {
+   "name": "bk1",
+   "description": "exp(x) times the modified Bessel function of the second kind of order one.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "A finite Python float on every accepted call."
+  },
+  {
+   "name": "bk2",
+   "description": "The K_2 recurrence bk0 + 2*bk1/x.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Equals bk0 + 2*bk1/x exactly, and is a finite Python float on every accepted call. An argument at which the recurrence's 2*bk1/x term is not representable is rejected rather than answered with an infinity."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller wants the rescaled form exp(x)*K_order(x), which is the form the relativistic Maxwellian branch needs.",
+   "The argument is a positive finite scalar.",
+   "The installed SciPy can evaluate scipy.special.kve at the argument; the caller cannot determine this in advance from this asset, which states no bound for it."
+  ],
+  "supported": [
+   "Any positive finite argument the installed backend evaluates, including arguments spanning the removed approximation's x = 2 branch boundary.",
+   "The recurrence definition of bk2 and its agreement with the direct order-two value.",
+   "Distinguishing a malformed argument from an argument the backend could not evaluate, through the two rejection classes."
+  ],
+  "excluded": [
+   "Any physical accuracy claim for a distribution, temperature or relativistic parameter.",
+   "Unrescaled K_order(x), which underflows over the range of interest.",
+   "Orders other than zero, one and two.",
+   "A caller-selectable approximation branch or accuracy bound; both are absent from this contract.",
+   "Any statement of the backend's representable domain, which is a property of the installed SciPy rather than of the relation."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises InvalidBesselArgumentError, a subclass of ValueError, when the argument is not a strictly positive finite real scalar, including boolean, string, bytes, complex, higher-rank array and non-numeric inputs; the message names the argument. The exception class is narrow so a caller can tell its own mistake from a backend failure.",
+  "runtime_failure": "Raises BesselBackendEvaluationError, also a subclass of ValueError, when the argument is valid and scipy.special.kve did not return three finite quantities for it. The message reports the argument and the three values produced. It states no domain bound and names no threshold, because the argument at which a given SciPy build stops returning finite values is a property of that build and platform rather than of the relation. The rejection is whole-call: a partially non-finite closure is not a usable scientific result.",
+  "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no mapping."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.relativistic_maxwellian_bessel",
+   "symbol": "relativistic_maxwellian_bessel",
+   "signature": "relativistic_maxwellian_bessel(x)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "relativistic_maxwellian_bessel"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the closure at the removed approximation's branch boundary and one ulp below it, confirm that the two agree to rounding rather than jumping by 1.5e-3, confirm the three returned quantities are the rescaled Bessel functions with bk2 the recurrence, confirm that every accepted value is finite, and confirm that a malformed argument and a backend failure are distinguishable.",
+  "code": "import numpy as np\nfrom scipy.special import kve\nfrom scirel.collisions import (\n    BesselBackendEvaluationError,\n    InvalidBesselArgumentError,\n    relativistic_maxwellian_bessel,\n)\nboundary = 2.0\nbelow = float(np.nextafter(boundary, -np.inf))\nat = relativistic_maxwellian_bessel(boundary)\nnear = relativistic_maxwellian_bessel(below)\nassert set(at) == {'bk0', 'bk1', 'bk2'}\nassert all(type(value) is float for value in at.values())\nassert all(np.isfinite(value) for value in at.values())\nassert at['bk0'] == float(kve(0, boundary))\nassert at['bk1'] == float(kve(1, boundary))\nassert at['bk2'] == at['bk0'] + 2.0 * at['bk1'] / boundary\njump = abs(near['bk1'] - at['bk1']) / abs(at['bk1'])\nassert jump == 8.59408144671376e-16\nassert jump < 1.0e-12\nfor good in (1.0e-3, 0.5, 1.0, 60.0, 700.0):\n    assert all(np.isfinite(value) for value in relativistic_maxwellian_bessel(good).values())\ntry:\n    relativistic_maxwellian_bessel(0.0)\nexcept InvalidBesselArgumentError as error:\n    assert 'positive and finite' in str(error)\nelse:\n    raise AssertionError('a non-positive argument must be rejected')\nassert issubclass(InvalidBesselArgumentError, ValueError)\nassert issubclass(BesselBackendEvaluationError, ValueError)",
+  "expected": "bk0, bk1 and bk2 for x = 2 equal to scipy.special.kve(0, 2), kve(1, 2) and the recurrence bk0 + 2*bk1/2, all finite Python floats; the relative bk1 difference across the approximation's x = 2 boundary is 8.59408144671376e-16, where the piecewise approximation jumps by 1.5076691838017936e-03; every accepted argument in the sample returns three finite floats; and a non-positive argument raises InvalidBesselArgumentError, with both rejection classes being ValueError subclasses. The example makes no claim about where the backend stops returning finite values, because that is a property of the installed SciPy rather than of the relation."
+ },
+ "verification": {
+  "scope": [
+   "How this evidence is organised. Every claim below is measured by the tests in this repository or stated as a property of the declared relation. The tests protect the self-contained claims: the relation's runtime behaviour, its input and failure contracts, and its regression values. They depend on no external checkout, candidate directory or fixture payload.",
+   "How this evidence is organised (2/2). The maintained suite is tests/collisions/test_relativistic_maxwellian_bessel.py, and it is self-contained: it imports nothing outside SciRel, SciPy, NumPy and pytest, and it exercises the fail-closed contract by substituting the backend for the duration of a test rather than by probing where the installed SciPy stops being representable.",
+   "That the closure returns exactly the three rescaled Bessel quantities. The tests assert the returned mapping's keys are exactly bk0, bk1 and bk2 for arguments spanning the removed boundary; branch labels, applied switches and per-branch accuracy bounds are not returned.",
+   "That the signature takes a single positional argument. The tests assert the parameter list is exactly ('x',) and that a branch_switch keyword raises TypeError.",
+   "The removal of the branch discontinuity. The piecewise approximation jumps by 1.5076691838017936e-03 relative in bk1 across x = 2, its own stated per-branch accuracy bound and the largest error in its domain. The direct evaluation's jump at x = 2 is 8.59408144671376e-16, within the rounding scale of two adjacent doubles, and the closure is smooth across every sampled neighbourhood rather than at that one point.",
+   "That bk0 and bk1 are exactly scipy.special.kve(0, x) and kve(1, x) at arguments spanning the removed boundary. Protected by the maintained tests directly.",
+   "That bk2 is the K_2 recurrence evaluated exactly as bk0 + 2*bk1/x and agrees with the direct order-two value. Protected by the maintained tests directly.",
+   "That away from the boundary the direct evaluation agrees with the approximation to the approximation's own accuracy. Measured outside this repository, and not replayable from it: the worst relative differences from the piecewise approximation were 1.4592152808791253e-07 for bk0, 0.0007518301076547563 for bk1 and 0.00042540348489499393 for bk2, over 40000 points spanning (0, 1.9] and [2.1, 60]. This is what establishes that the difference lies in the approximation rather than in the relation.",
+   "The fail-closed contract, established by making the backend return NaN and Inf rather than by probing where the installed SciPy stops: the call raises BesselBackendEvaluationError for a non-finite bk0, bk1 or bk2, including when only the recurrence overflows. Protected by the maintained tests, which substitute the backend so the failure is unconditional and identical on every platform.",
+   "That the rejection message states the argument and the values produced and contains no domain bound, threshold or direction claim. Protected by the maintained tests, which read the message and assert the absence of every bound-shaped word.",
+   "That the implementation carries no backend threshold: no such constant, attribute or measured literal appears in the module. The tests check the module's attributes and its source for the literals the removed branch option carried.",
+   "That the two rejection classes are distinguishable and that both are ValueError subclasses, so a caller that only knows ValueError still catches everything the relation raises. Protected by the maintained tests directly.",
+   "The input contract is a strict positive finite real scalar: non-positive or non-finite arguments raise the named message, and boolean, string, bytes, complex and higher-rank array inputs raise InvalidBesselArgumentError rather than being coerced. Protected here directly against the public callable; this strict guard is an audit repair, not the retained route's bare-float conversion.",
+   "That every accepted call in a wide logarithmic sweep returns three finite Python floats. Protected by the maintained tests over 4000 arguments, which treat a backend rejection as a legitimate outcome rather than a failure.",
+   "The rescaled-function identity and the asymptotic form, and the monotone decrease of bk0 and bk1 in x. Protected by the maintained tests directly, independently of either route."
+  ],
+  "tests": [
+   "tests/collisions/test_relativistic_maxwellian_bessel.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Returns bk0 = exp(x)*K_0(x) and bk1 = exp(x)*K_1(x) evaluated directly, and bk2 = bk0 + 2*bk1/x, which is the K_2 recurrence and not an independent third approximation…. Evidence: test_relativistic_maxwellian_bessel.py (15 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Any physical accuracy claim for a distribution, temperature or relativistic parameter; Unrescaled K_order(x), which underflows over the range of interest.",
+  "known_limitations": [
+   "The relation is evaluated through scipy.special.kve, so this asset has a runtime dependency on SciPy. That dependency is deliberate, and the caller inherits it.",
+   "The direct evaluation's representable domain is a property of the installed SciPy build and the platform, and is narrower than a polynomial approximation's, which stays finite at arguments where the backend does not. This asset states no bound for it, deliberately: a bound measured from one build would be a false contract on another. A caller that needs one must derive it from its own platform, and a caller that samples a wide argument range must handle BesselBackendEvaluationError.",
+   "Rejection is whole-call and gives the caller no partial result, so a caller sweeping many arguments must decide per argument whether to skip it.",
+   "No physical accuracy claim is made for any distribution. The closure is established as a special-function evaluation, not as an adequate collision-coefficient model.",
+   "The replaced approximation's coefficients, its choice of Abramowitz-Stegun fits and its x = 2 split are taken as given; no reference is cited for any of them.",
+   "The independent analytic comparison does not replace an external experimental reference.",
+   "The comparisons against a piecewise approximation and against alternative formulations are not replayable from this repository: no public test requires an external checkout, and the tests here protect the self-contained subset only.",
+   "Boolean, string, bytes, complex and higher-rank array arguments are rejected as invalid rather than converted; this strict real-scalar guard is an audit repair of the retained route's float() coercion."
+  ]
+ }
+}

@@ -1,0 +1,172 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.vp-rk4-step",
+ "title": {
+  "en": "Poisson-closed RK4 step",
+  "zh": "Poisson 闭合 RK4 单步"
+ },
+ "summary": "f_new=P4(dt*A)f; A=-ik diag(v)+(i dv/k)g 1^T. Closure at all stages.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "vlasov-poisson"
+ ],
+ "aliases": [
+  "vp_rk4_step"
+ ],
+ "discovery": {
+  "capability": [
+   "Poisson-closed RK4 step",
+   "f_new=P4(dt*A)f; A=-ik diag(v)+(i dv/k)g 1^T. Closure at all stages."
+  ],
+  "operation": [
+   "apply one Poisson-closed RK4 step",
+   "one state and dt -> one Poisson-closed RK4 state"
+  ],
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "boundary": "One classical RK4 step; incoming field must satisfy discrete Poisson; finite velocity window.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "f_new=P4(dt*A)f; A=-ik diag(v)+(i dv/k)g 1^T. Closure at all stages.",
+  "direction": "Inputs to vp_rk4_step -> result",
+  "definition": "f_new=P4(dt*A)f; A=-ik diag(v)+(i dv/k)g 1^T. Closure at all stages.",
+  "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
+  "geometry": "One velocity coordinate and one spatial Fourier mode.",
+  "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
+  "boundary": "One classical RK4 step; incoming field must satisfy discrete Poisson; finite velocity window.",
+  "assumptions": [
+   "Linear perturbations and homogeneous equilibrium.",
+   "Velocity-window truncation and recurrence are separate from temporal integration error."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "df",
+   "description": "Complex perturbation on velocity nodes.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "complex array",
+   "required": true,
+   "constraints": "Finite one-dimensional N>=2."
+  },
+  {
+   "name": "dE",
+   "description": "Scalar Fourier electric field.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "complex scalar",
+   "required": true,
+   "constraints": "Finite scalar; RK4 requires Poisson consistency within rtol=1e-12,atol=1e-14."
+  },
+  {
+   "name": "vv",
+   "description": "Velocity nodes.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Finite one-dimensional; aligned with df and df0dv when applicable."
+  },
+  {
+   "name": "df0dv",
+   "description": "Equilibrium derivative or declared forcing on velocity nodes.",
+   "units": "dimensionless",
+   "shape": "[N]",
+   "dtype": "real array",
+   "required": true,
+   "constraints": "Finite one-dimensional aligned vector; can include quadrature-deposited jump masses."
+  },
+  {
+   "name": "k",
+   "description": "Nonzero spatial Fourier wavenumber.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "dv",
+   "description": "Uniform velocity quadrature spacing.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Positive finite."
+  },
+  {
+   "name": "dt",
+   "description": "Time step in inverse plasma frequency.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Positive finite."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "Tuple (new_df,new_dE), complex [N] vector and closed complex scalar; no input mutation.",
+   "units": "dimensionless",
+   "shape": "As described in output mapping or tuple.",
+   "dtype": "tuple",
+   "required": true,
+   "constraints": "Finite updated distribution and field preserving discrete Poisson closure."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "df, vv and df0dv are finite aligned one-dimensional vectors.",
+   "dE satisfies discrete Poisson closure; k and dv are finite with k nonzero and dv positive; dt is positive."
+  ],
+  "supported": [
+   "One classical RK4 step with Poisson closure recomputed at every stage."
+  ],
+  "excluded": [
+   "Nonlinear evolution, multidimensional modes and unconstrained incoming fields."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for invalid arrays/scalars or an incoming dE outside the declared Poisson tolerance.",
+  "runtime_failure": "FloatingPointError when an intermediate or updated state/field is nonfinite.",
+  "nonconvergence": "Not applicable; exactly one prescribed step is evaluated.",
+  "partial_results": "No updated tuple is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.vlasov_poisson",
+   "symbol": "vp_rk4_step",
+   "signature": "vp_rk4_step(df, dE, vv, df0dv, k, dv, dt)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "vp_rk4_step"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "code": "from scirel.kinetic.vlasov_poisson import vp_init,vp_rk4_step\ns=vp_init(nv=32)\nf,E=vp_rk4_step(*(s[n] for n in (\"df\",\"dE\",\"vv\",\"df0dv\",\"k\",\"dv\",\"dt\")))\nassert f.shape == (33,)",
+  "description": "Advance one Poisson-closed RK4 step from a 32-interval initial state.",
+  "expected": "PASS: .venv/bin/python completed; the updated distribution has shape (33,)."
+ },
+ "verification": {
+  "scope": [
+   "Discrete Poisson constraint and off-diagonal rank-one feedback.",
+   "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
+   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+  ],
+  "tests": [
+   "tests/kinetic/test_vlasov_poisson_dispersion.py"
+  ],
+  "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
+  "known_limitations": [
+   "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+   "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
+   "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
+  ]
+ }
+}

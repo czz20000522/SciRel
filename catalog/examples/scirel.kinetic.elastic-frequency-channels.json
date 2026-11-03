@@ -1,0 +1,121 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.elastic-frequency-channels",
+ "title": {
+  "en": "Elastic collision-frequency channel sum",
+  "zh": "弹性频率通道求和"
+ },
+ "summary": "Sum exactly three already normalized inverse-length elastic collision coefficients Omega=nu/Vth in caller channel order.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "elastic-frequency",
+  "reduction"
+ ],
+ "aliases": [
+  "sum_elastic_frequency_channels"
+ ],
+ "discovery": {
+  "capability": [
+   "Elastic collision-frequency channel sum",
+   "Sum exactly three already normalized inverse-length elastic collision coefficients Omega=nu/Vth in caller channel order."
+  ],
+  "operation": [
+   "sum three elastic collision-frequency channels",
+   "three caller-ordered channel profiles -> one total profile"
+  ],
+  "model": "the channel confluence; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "none; a pointwise reduction over caller-declared shapes; velocity axes are dimensionless u=v/Vth on one common caller normalization",
+  "boundary": "exactly three non-empty finite equal-shape profiles",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Omega_total = Omega_1 + Omega_2 + Omega_3 pointwise over equal-shape channel profiles",
+  "direction": "three caller-ordered channel profiles -> one total profile",
+  "definition": "The three channels are added left to right in caller order (float summation order preserved); exactly three channels are admitted",
+  "model": "the channel confluence",
+  "geometry": "none; a pointwise reduction over caller-declared shapes",
+  "coordinates": "All channel coefficients and the sum are in m^-1, using one common caller thermal-speed normalization.",
+  "boundary": "exactly three non-empty finite equal-shape profiles",
+  "assumptions": [
+   "The three-channel count defines one species family's elastic pairs; other counts are rejected.",
+   "Channels are expected nonnegative by physics, but only finiteness is enforced.",
+   "Three 1e308 channels would overflow to inf; this asset fail-closes on a non-finite total instead, per the declared finite-output contract. A regression test pins that behaviour.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "frequency_profiles_m_inv",
+   "description": "Exactly three elastic coefficient profiles Omega_q=nu_q/Vth, all normalized with the same Vth.",
+   "units": "m^-1",
+   "shape": "list[3] of equal-shape arrays",
+   "dtype": "sequence of real array-like",
+   "required": true,
+   "constraints": "Exactly three non-empty finite arrays of one common shape, in caller order."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "elastic_frequency_m_inv",
+   "description": "Summed inverse-length elastic coefficient for spatial transport.",
+   "units": "m^-1",
+   "shape": "common shape",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite; equals the pointwise sum in the declared order."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Three finite equal-shape caller-normalized channel profiles.",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
+  ],
+  "supported": [
+   "Confluence of the species-pair elastic Omega channels on one shared grid."
+  ],
+  "excluded": [
+   "Fewer or more than three channels; mismatched shapes; non-finite values."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when the channel count is not three, any channel is empty, shapes differ, or any value is non-real or non-finite; implicit boolean, string and complex conversion is rejected.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.elastic_frequency_channels",
+   "symbol": "sum_elastic_frequency_channels",
+   "signature": "sum_elastic_frequency_channels(frequency_profiles_m_inv)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "sum_elastic_frequency_channels"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Sum three channels pointwise, confirm zero channels pass through, and reject contract violations.",
+  "code": "import numpy as np\nfrom scirel.kinetic import sum_elastic_frequency_channels\nresult = sum_elastic_frequency_channels([np.array([1.0, 2.0]), np.array([0.5, 1.0]), np.array([0.25, 0.5])])\nnp.testing.assert_array_equal(result['elastic_frequency_m_inv'], [1.75, 3.5])\ntry:\n    sum_elastic_frequency_channels([np.ones(3), np.ones(3)])\nexcept ValueError as error:\n    assert 'exactly three' in str(error)\nelse:\n    raise AssertionError('a two-channel call must be rejected')\n",
+  "expected": "Observed PASS: The pointwise sum in caller order; a two-channel call is rejected."
+ },
+ "verification": {
+  "scope": [
+   "Direct tests bind caller addition order, a zero channel, channel-count/shape validation, implicit-real rejection and overflowing-total rejection.",
+   "The cross-domain tests divide three prescribed physical elastic frequencies by the common Vth, aggregate their regenerated source and recover the physical source in the RHS.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+  ],
+  "tests": [
+   "tests/kinetic/test_neutral_frequency_assembly.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
+  ],
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind caller addition order, a zero channel, channel-count/shape validation, implicit-real rejection and overflowing-total rejection. The cross-domain tests divide three prescribed physical elastic frequencies by the common Vth, aggregate their regenerated source and recover the physical source in the RHS. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "known_limitations": [
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+  ]
+ }
+}

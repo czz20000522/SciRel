@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Request Solving"
+  short_description: "Clarify a request, reason from the physics and report checked results with figures"
+  default_prompt: "Use $scirel-solving to clarify this scientific request, write the physical model and method in physics language and confirm it with the user, then compute and check the result, using SciRel capabilities where they apply and ordinary code elsewhere, and deliver a short technical report that answers the question first, explains the physics and includes figures."
+policy:
+  allow_implicit_invocation: true

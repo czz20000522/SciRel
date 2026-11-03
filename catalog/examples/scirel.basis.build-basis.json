@@ -1,0 +1,120 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.basis.build-basis",
+ "title": {
+  "en": "Basis evaluator factory",
+  "zh": "基函数求值器构造"
+ },
+ "summary": "Construct callable ascending-power polynomial or cubic-spline basis functions.",
+ "taxonomy": [
+  "analysis",
+  "basis"
+ ],
+ "aliases": [
+  "build_basis"
+ ],
+ "discovery": {
+  "capability": [
+   "Basis evaluator factory",
+   "Construct a list of callable ascending-power polynomial or cubic-spline basis functions."
+  ],
+  "operation": [
+   "basis selection to independent evaluators",
+   "basis selector and constructor options -> list of callable basis functions"
+  ],
+  "model": "Caller-selected ascending-power polynomial or C2 cubic-spline basis; the polynomial default has three basis functions (powers 0, 1 and 2), while the spline default has five knots and four intervals.",
+  "geometry": "One-dimensional scalar abscissa and ordinate samples; the returned evaluators are agnostic to the caller's coherent coordinate and ordinate units.",
+  "boundary": "Spline evaluation is zero outside the finite knot interval with no extrapolation; unsupported factory selections are rejected rather than approximated.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Basis evaluator factory",
+  "direction": "Declared inputs to List of independent basis evaluators",
+  "definition": "Construct a list of ascending-power polynomial or cubic-spline evaluators",
+  "model": "Basis-map selection with poly_deg=3 or n_knots=5 defaults",
+  "geometry": "one-dimensional scalar abscissa and ordinate samples",
+  "coordinates": "Generic coordinate and ordinate units",
+  "boundary": "Spline evaluation is zero outside the finite knot interval; no extrapolation is performed.",
+  "assumptions": [
+   "Finite constructor samples and boundary-specific assumptions",
+   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "basis",
+   "description": "Basis selector",
+   "units": "dimensionless",
+   "shape": "string",
+   "dtype": "str",
+   "required": false,
+   "constraints": "poly or cubic-spline selector; lowercased",
+   "default": "poly"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "basis_fns",
+   "description": "List of independent basis evaluators",
+   "units": "caller units",
+   "shape": "list(K)",
+   "dtype": "list",
+   "required": true,
+   "constraints": "Polynomial or spline callables"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite constructor samples and boundary-specific assumptions",
+   "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+  ],
+  "supported": [
+   "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
+  ],
+  "excluded": [
+   "Quartic and special-function factory selections are rejected; no invented implementations",
+   "Physical special-spline closures and unsupported knot domains remain unresolved"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate.",
+  "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
+  "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
+  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval return zero."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.basis",
+   "symbol": "build_basis",
+   "signature": "build_basis(basis='poly', **kwargs)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "build_basis"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Build the default ascending-power polynomial evaluators and evaluate all three at x=0.5.",
+  "code": "import numpy as np\nfrom scirel.geometry.basis import build_basis\n\nevaluators = build_basis()\nassert len(evaluators) == 3\nnp.testing.assert_allclose([fn(0.5) for fn in evaluators], [1.0, 0.5, 0.25])",
+  "expected": "Three evaluators are returned; their values at 0.5 are [1.0, 0.5, 0.25]."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
+  "known_limitations": [
+   "Quartic and special-function factory selections are rejected; no invented implementations",
+   "Physical special-spline closures and unsupported knot domains remain unresolved"
+  ]
+ }
+}

@@ -1,0 +1,217 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.compute-equilibrium",
+ "title": {
+  "en": "Bounded axisymmetric pressure current feedback",
+  "zh": "有界轴对称压力电流反馈"
+ },
+ "summary": "Iteratively updates plasma current from a pressure-versus-radius spline and a supplied Green matrix, returning explicit terminal status.",
+ "taxonomy": [
+  "equilibrium",
+  "axisymmetric-feedback",
+  "numerical-iteration"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Bounded axisymmetric pressure current feedback",
+   "Iteratively update plasma current from a pressure-versus-radius spline and a supplied Green matrix with explicit terminal status."
+  ],
+  "operation": [
+   "pressure-versus-radius feedback with spline fitting and a caller-supplied Green matrix",
+   "rectangular R-Z grids, pressure law, vacuum flux and Green matrix -> updated flux and current state"
+  ],
+  "model": "Pressure-versus-radius feedback using an interpolated univariate spline and a caller-supplied Green matrix.",
+  "geometry": "Finite rectangular uniformly spaced two-dimensional R-Z arrays with an exact Z=0 midplane.",
+  "boundary": "The pressure edge is the first exact zero traversed outward in physical radius and flux must strictly increase from the axis to it; descending storage coordinates reorder only the midplane fit indices while Green axes, currents and results keep caller order.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "I_target=R (dP/dpsi) abs(dR*dZ); I_new=(1-relax) I_target+relax I_old; psi_new=psi_vac+G I_new. P is re-fitted from the prescribed midplane P(R).",
+  "direction": "rectangular R,Z grids, pressure law, vacuum flux and Green matrix to updated flux/current state",
+  "definition": "Pressure-only axisymmetric current closure j_phi=R dP/dpsi under psi=R A_phi. Update residual is ||psi_new-psi_old||_2/abs(edge_new). Closure residual is ||I_new-I_target(psi_new,new fit)||_2/||I_target||_2, with zero target/zero error mapped to zero and zero target/nonzero current mapped to an infinite residual and nonfinite terminal failure. Convergence requires both residuals <=tol. State is call-local; update fit derivative, clip, relaxed currents, Green contraction, new flux, edge/fit and both residuals in order; stop on convergence, invalid state or maxiter.",
+  "model": "Pressure-versus-radius feedback with InterpolatedUnivariateSpline and a supplied Green matrix",
+  "geometry": "Finite rectangular uniformly spaced 2-D R,Z arrays with exact Z=0 midplane",
+  "coordinates": "Caller must supply coherent units and Green/pressure convention. The pressure-only SI interpretation is R,Z in m, P in Pa, psi=R A_phi in Wb/rad, I in A; arbitrary supplied G is not a verified physical equilibrium Green operator.",
+  "boundary": "The pressure boundary is the first exact zero encountered while traversing outward along physical radius; the flux from the axis side to the boundary must strictly increase. When the stored coordinate decreases, only the midplane fit indices are sorted by R; the Green axes, currents and results retain the caller's order.",
+  "assumptions": [
+   "Finite real arrays",
+   "Green matrix shape is (R.size,R.size)",
+   "Pressure-only closure; no toroidal F F-prime term, prescribed current profile or independent continuum force-balance certification.",
+   "relax is in [0,1) because relax=1 freezes zero initial currents"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "R",
+   "description": "Radial grid",
+   "units": "source-unspecified",
+   "shape": "2-D rectangular",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Column-consistent, uniformly spaced, at least 2x2"
+  },
+  {
+   "name": "Z",
+   "description": "Vertical grid",
+   "units": "source-unspecified",
+   "shape": "2-D rectangular",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Row-consistent, uniformly spaced, contains >=3 exact zero midplane points"
+  },
+  {
+   "name": "Pfunc",
+   "description": "Pressure versus radius callable",
+   "units": "source-unspecified",
+   "shape": "callable",
+   "dtype": "finite real outputs on midplane",
+   "required": true,
+   "constraints": "Must provide an exact zero pressure edge"
+  },
+  {
+   "name": "psi_vac",
+   "description": "Vacuum flux",
+   "units": "source-unspecified",
+   "shape": "R.shape",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Midplane flux strictly increasing through pressure edge"
+  },
+  {
+   "name": "g_psi",
+   "description": "Supplied Green matrix",
+   "units": "source-unspecified",
+   "shape": "(R.size,R.size)",
+   "dtype": "finite real",
+   "required": true,
+   "constraints": "Finite"
+  },
+  {
+   "name": "tol",
+   "description": "Threshold for both normalized flux-update and current-closure residuals",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "default": 1e-10,
+   "constraints": "positive finite"
+  },
+  {
+   "name": "maxiter",
+   "description": "Maximum feedback updates",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": false,
+   "default": 100,
+   "constraints": "nonnegative nonboolean integer"
+  },
+  {
+   "name": "relax",
+   "description": "Weight on old current",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": false,
+   "default": 0.0,
+   "constraints": "finite in [0,1)"
+  },
+  {
+   "name": "plas_clip",
+   "description": "Optional plasma-current exclusion mask",
+   "units": "dimensionless",
+   "shape": "R.shape or None",
+   "dtype": "bool array or None",
+   "required": false,
+   "default": null,
+   "constraints": "same grid shape and boolean"
+  },
+  {
+   "name": "plotit",
+   "description": "GUI plotting selector",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "default": false,
+   "constraints": "True is unsupported"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "EquilibriumResult",
+   "description": "Flux, plasma currents, final pressure fit, status, iteration count, original update residual, closure_residual and reason; immutable residual_history and closure_residual_history tuples for completed paired residual evaluations",
+   "units": "source-unspecified",
+   "shape": "psi/plas_currents R.shape",
+   "dtype": "dataclass",
+   "required": true,
+   "constraints": "status is converged, maxiter or nonfinite; history length may be less than attempted iterations when an update fails before residual evaluation"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "All finite real rectangular uniformly spaced inputs",
+   "Exact zero pressure edge"
+  ],
+  "supported": [
+   "Bounded update feedback with optional boolean plasma mask",
+   "Explicit terminal state for convergence, iteration cap and nonfinite update",
+   "Convergence cannot be triggered by a stationary flux when relaxed current still violates the pressure closure.",
+   "Coherent descending R/Z storage preserves the physical radial pressure traversal and caller-ordered outputs."
+  ],
+  "excluded": [
+   "Physical equilibrium correctness",
+   "Force-balance residual",
+   "Nonuniform/curvilinear grids",
+   "plotit=True",
+   "relax=1",
+   "Nonfinite Green matrices"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError before iteration for shape, dtype, grid, parameter, mask or contract violations.",
+  "runtime_failure": "nonfinite status for nonfinite derivative/current/Green/fit/residual; no nonfinite pressure derivative is silently replaced by zero.",
+  "nonconvergence": "maxiter status with last local state and residual; maxiter=0 has residual +inf.",
+  "partial_results": "nonfinite is explicitly not accepted; failed Green arithmetic retains the preceding finite flux/current pair. Histories contain only completed paired residual evaluations."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium",
+   "symbol": "compute_equilibrium",
+   "signature": "compute_equilibrium(R, Z, Pfunc: 'Callable[[float], float]', psi_vac, g_psi, tol=1e-10, maxiter=100, relax=0.0, plas_clip=None, plotit=False)",
+   "canonical_module": "scirel.equilibrium",
+   "canonical_symbol": "compute_equilibrium"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Run bounded manufactured feedback on a 2x5 grid.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import compute_equilibrium\nR = np.tile(np.arange(1.0, 6.0), (2, 1))\nZ = np.tile(np.array([-1.0, 0.0])[:, None], (1, 5))\nresult = compute_equilibrium(R, Z, lambda r: 5.0-r, R, np.zeros((10, 10)))\nassert result.status == \"converged\"",
+  "expected": "Explicit terminal result; status does not imply physical equilibrium."
+ },
+ "verification": {
+  "scope": [
+   "Manufactured update/residual and terminal status fixtures",
+   "Input boundary rejection regressions",
+   "Inherited equilibrium proposal tests",
+   "Analytic current closure and near-unit-relaxation false-convergence regression.",
+   "Ascending/descending paired nonzero-G pressure feedback and independent derivative/current closure."
+  ],
+  "tests": [
+   "tests/equilibrium/test_equilibrium_proposals.py",
+   "tests/equilibrium/test_equilibrium_boundaries.py",
+   "tests/equilibrium/test_equilibrium_governing_residual.py",
+   "tests/equilibrium/test_descending_pressure_equilibrium.py",
+   "tests/cross_domain/test_legacy_six_absorption.py"
+  ],
+  "evidence_ceiling": "Bounded numerical contract only; no scientific approval.",
+  "known_limitations": [
+   "No arbitrary pressure/Green physical closure validation",
+   "No independent continuum force-balance residual; supplied G controls the discrete model."
+  ]
+ }
+}

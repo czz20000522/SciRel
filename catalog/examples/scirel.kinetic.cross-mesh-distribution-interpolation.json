@@ -1,0 +1,251 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
+ "title": {
+  "en": "Cross-mesh distribution interpolation",
+  "zh": "跨网格分布插值"
+ },
+ "summary": "Remap a cylindrical velocity distribution between two phase-space meshes. The default branch preserves nonnegativity and spatially interpolated discrete density, axial momentum density and squared-speed energy density through a constrained relative-entropy projection; unrealizable destination moments fail explicitly.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "interpolation",
+  "mesh-handoff",
+  "distribution"
+ ],
+ "aliases": [
+  "interp_fvrvxx"
+ ],
+ "discovery": {
+  "capability": [
+   "Cross-mesh distribution interpolation",
+   "Remap a cylindrical velocity distribution between two phase-space meshes. The default branch preserves nonnegativity and spatially interpolated discrete density, axial momentum density and squared-speed energy density through a constrained relative-entropy projection; unrealizable destination moments fail explicitly."
+  ],
+  "operation": [
+   "remap a velocity distribution between phase-space meshes",
+   "nonnegative distribution and two normalized cylindrical phase-space meshes -> conservative destination distribution, or a typed infeasibility/convergence failure"
+  ],
+  "model": "stateless two-velocity/one-spatial-axis cell-overlap remap followed by a nonnegative relative-entropy projection; a corrected AN/BN projection, not a reproduction of the defective branch",
+  "geometry": "two velocity dimensions over one spatial axis, per phase-space mesh",
+  "boundary": "finite real strictly increasing axes with at least two nodes; nonnegative radial axes and two-sided axial axes; declared velocity-node and spatial overlap checks; finite positive Tnorm and representable scale ratio; aligned finite fa, nonnegative for correct=1; target mean velocity/energy must lie in the destination-node convex hull and the binary64 calculation must meet its return postcondition",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "nonnegative finite-grid remap with three extensive-moment constraints",
+  "direction": "nonnegative distribution and two normalized cylindrical phase-space meshes -> conservative destination distribution, or a typed infeasibility/convergence failure",
+  "definition": "Let w_ij = pi*(r_right^2-r_left^2)*dvx and fV = sqrt(Tnorm_b/Tnorm_a). On source nodes form M_a = sum w_a*fa*(1, vx_a/fV, (vr_a/fV)^2+(vx_a/fV)^2). At each destination x, linearly interpolate these three extensive moments first. For n=M_0>0, find cell probabilities p>=0, sum p=1, E_p[vx_b]=M_1/n and E_p[vr_b^2+vx_b^2]=M_2/n, minimizing sum p*log(p/q). q mixes 1e-12 normalized cell-volume probability with normalized overlap masses on the feasible face. Return fb=n*p/w_b. Zero density gives zero; identical velocity grids and normalization use convex spatial interpolation directly.",
+  "model": "stateless two-velocity/one-spatial-axis cell-overlap remap followed by a nonnegative relative-entropy projection; a corrected AN/BN projection, not a reproduction of the defective branch",
+  "geometry": "two velocity dimensions over one spatial axis, per phase-space mesh",
+  "coordinates": "velocity nodes and distributions in the source normalized units, spatial nodes in m; Tnorm in eV",
+  "boundary": "finite real strictly increasing axes with at least two nodes; nonnegative radial axes and two-sided axial axes; declared velocity-node and spatial overlap checks; finite positive Tnorm and representable scale ratio; aligned finite fa, nonnegative for correct=1; target mean velocity/energy must lie in the destination-node convex hull and the binary64 calculation must meet its return postcondition",
+  "assumptions": [
+   "The operator is stateless and recomputes cell-overlap weights per call; cache lifecycle and the surrounding neutral-transport state are outside the contract.",
+   "Cylindrical cell volumes are pi*(r_right^2-r_left^2)*dvx, using the shared SciRel quadrature. Conserved momentum and energy are discrete node moments, not analytic integrals over a continuous reconstructed distribution.",
+   "Source normalization is converted with fV=sqrt(Tnorm_b/Tnorm_a). Density, axial momentum density and squared-speed energy density are spatially interpolated before division by density; interpolating mean velocity or mean energy would be wrong when density varies.",
+   "For correct=1, finite nonnegative input is required. Positive reference probability (1e-12 cell-volume mixture) can put mass in previously zero-overlap cells; it selects a realizable entropy projection without relaxing moments, clipping negative output or preserving all higher moments.",
+   "Realizable normalized targets lie in conv{(vx_j, vr_i^2+vx_j^2)}. Targets on a face use only that face. Scaled geometric classification uses 64 binary64 eps; the final distribution must satisfy all three scaled moment residuals within 128 eps.",
+   "Damped Newton solves the entropy dual, with covariance Hessian and stable log-sum-exp. max_correction_iterations caps updates per spatial slice (default 1000); infeasibility and numerical nonconvergence are distinct failures, neither returns a partial distribution.",
+   "Zero-density slices are zero. Equal velocity grids and equal Tnorm use convex spatial interpolation and preserve identity at common spatial nodes; out-of-domain spatial nodes are zero-filled.",
+   "correct=0 retains the historical algebraic interpolation and conditional density rescale, including signed inputs. It does not provide the default branch's positivity or three-moment physical guarantee.",
+   "The corrected mathematical remap intentionally departs from the defective correction. It does not erase the external atomic-physics oracle gaps or the pending public licensing question."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "fa",
+   "description": "The input distribution on mesh_a.",
+   "units": "source-normalized",
+   "shape": "[nvra,nvxa,nxa]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real aligned three-dimensional array; nonnegative for correct=1. Signed finite inputs remain accepted only by the algebraic correct=0 branch. Boolean, string and complex coercions are rejected."
+  },
+  {
+   "name": "vr_a",
+   "description": "Mesh_a radial velocity nodes.",
+   "units": "source-normalized",
+   "shape": "[nvra]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real, nonnegative, strictly increasing, at least two nodes."
+  },
+  {
+   "name": "vx_a",
+   "description": "Mesh_a axial velocity nodes.",
+   "units": "source-normalized",
+   "shape": "[nvxa]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real, strictly increasing, at least two nodes, covering negative and positive axial velocities."
+  },
+  {
+   "name": "x_a",
+   "description": "Mesh_a spatial nodes.",
+   "units": "m",
+   "shape": "[nxa]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real, strictly increasing, at least two nodes."
+  },
+  {
+   "name": "Tnorm_a",
+   "description": "Mesh_a normalization temperature.",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite real and strictly positive; the ratio to Tnorm_b must yield a finite positive velocity scale."
+  },
+  {
+   "name": "vr_b",
+   "description": "Mesh_b radial velocity nodes.",
+   "units": "source-normalized",
+   "shape": "[nvrb]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real, nonnegative, strictly increasing, at least two nodes."
+  },
+  {
+   "name": "vx_b",
+   "description": "Mesh_b axial velocity nodes.",
+   "units": "source-normalized",
+   "shape": "[nvxb]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real, strictly increasing, at least two nodes, covering negative and positive axial velocities."
+  },
+  {
+   "name": "x_b",
+   "description": "Mesh_b spatial nodes.",
+   "units": "m",
+   "shape": "[nxb]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite real, strictly increasing, at least two nodes."
+  },
+  {
+   "name": "Tnorm_b",
+   "description": "Mesh_b normalization temperature.",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite real and strictly positive; the ratio to Tnorm_a must yield a finite positive velocity scale."
+  },
+  {
+   "name": "correct",
+   "description": "The moment-correction branch selector.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "constraints": "Integer 1 applies nonnegative conservative entropy projection; integer 0 retains the algebraic interpolation plus historical conditional density rescale without the physical moment guarantee. Boolean and coercible selectors are rejected.",
+   "default": 1
+  },
+  {
+   "name": "do_warn",
+   "description": "The source boundary-truncation warning switch.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "constraints": "None (default) skips warnings; an integer applies the do_warn * max(fb) threshold without changing output. Other selector types are rejected.",
+   "default": null
+  },
+  {
+   "name": "max_correction_iterations",
+   "description": "Maximum damped-Newton updates per target spatial node.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "integer scalar",
+   "required": false,
+   "constraints": "Positive integer; numerical exhaustion raises MomentCorrectionConvergenceError (a ValueError subclass) with no partial result. An unrealizable target instead raises InfeasibleMomentsError independently of this budget.",
+   "default": 1000
+  }
+ ],
+ "outputs": [
+  {
+   "name": "fb",
+   "description": "The interpolated distribution on mesh_b.",
+   "units": "source-normalized",
+   "shape": "[nvrb,nvxb,nxb]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "For correct=1: finite nonnegative distribution with discrete density, axial momentum density and squared-speed energy density matching the spatially interpolated source targets to scaled roundoff; zero outside the source x interval. correct=0 is a finite algebraic result without that physical guarantee."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Both meshes satisfy the declared axes, shape, overlap and representability contracts.",
+   "For correct=1, fa is nonnegative and each nonzero-density target moment lies inside the convex hull of destination velocity/energy nodes."
+  ],
+  "supported": [
+   "Nonuniform cylindrical velocity meshes, nonzero axial drift, unequal normalization temperatures and spatially varying density.",
+   "Simultaneous discrete density, axial momentum density and squared-speed energy-density conservation with nonnegative output in the default branch.",
+   "Zero density, equal-grid identity, convex spatial interpolation, exact hull edges/vertices and explicit infeasibility diagnostics.",
+   "Stateless correct=0 compatibility and the unchanged boundary-warning selector."
+  ],
+  "excluded": [
+   "Remapping a physically unrealizable moment target on a finite destination grid; no clipping, target relaxation or silent enlargement is performed.",
+   "Missing velocity-node/spatial overlap, two-dimensional spatial grids or three velocity dimensions.",
+   "Guaranteed preservation of higher moments, detailed distribution shape or entropy; the entropy objective chooses among feasible three-moment distributions.",
+   "Atomic-physics validation, complete neutral-transport capability and cache-state equivalence.",
+   "A physical conservation or positivity claim for the signed algebraic correct=0 branch."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for invalid axis/shape/real-type/temperature/selector/overlap contracts or negative fa in correct=1. InfeasibleMomentsError, a ValueError subclass, reports an unrealizable destination moment with x_b index, requested normalized means, maximum node energy and a separating-inequality residual.",
+  "runtime_failure": "Raises ValueError for nonrepresentable quadrature, overlap, source moments or final values. MomentCorrectionConvergenceError, a ValueError subclass, reports an unresolved hull face, singular covariance, missing descent/line-search step or failed finite nonnegative three-moment return postcondition.",
+  "nonconvergence": "The state is the entropy-dual parameter on the feasible hull face. Each bounded update computes moment residual and covariance Hessian, then takes a damped Newton step (at most 64 line-search trials). Stop when the scaled moment residual is at most 32 binary64 eps; return also requires the actual output three-moment postcondition within 128 eps. Exceeding max_correction_iterations updates per spatial slice raises MomentCorrectionConvergenceError with its index; infeasible targets use a separate error.",
+  "partial_results": "Never returned; any rejected spatial slice aborts the call without a partial distribution or input mutation."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.cross_mesh_distribution_interpolation",
+   "symbol": "interp_distribution_across_mesh",
+   "signature": "interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, Tnorm_a, vr_b, vx_b, x_b, Tnorm_b, correct=1, do_warn=None, max_correction_iterations=1000)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "interp_distribution_across_mesh"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.cylindrical-velocity-quadrature"
+   }
+  ]
+ },
+ "example": {
+  "description": "Transfer a drifting distribution with spatially varying density; check nonnegativity and all three independently assembled discrete moments.",
+  "code": "import numpy as np\nfrom scirel.kinetic import interp_distribution_across_mesh\n\ndef moments(f, r, v, T):\n    re = np.r_[0.0, (r[:-1] + r[1:]) / 2, r[-1] + (r[-1] - r[-2]) / 2]\n    ve = np.r_[v[0] - (v[1] - v[0]) / 2, (v[:-1] + v[1:]) / 2, v[-1] + (v[-1] - v[-2]) / 2]\n    mass = f * (np.pi * np.diff(re**2)[:, None] * np.diff(ve)[None, :])[:, :, None]\n    return np.array([mass.sum(axis=(0, 1)),\n                     (mass * (np.sqrt(T) * v)[None, :, None]).sum(axis=(0, 1)),\n                     (mass * (T * (r[:, None]**2 + v[None, :]**2))[:, :, None]).sum(axis=(0, 1))])\n\nra, va, xa = np.linspace(0.5, 2.0, 4), np.linspace(-1.5, 1.5, 6), np.linspace(0, 1, 5)\nrb, vb, xb = np.linspace(0.1, 2.8, 8), np.linspace(-2.7, 2.7, 11), np.linspace(0.1, 0.9, 4)\nfa = np.exp(-ra[:, None, None]**2 - (va[None, :, None] - 0.3)**2) * (1 + 2 * xa)[None, None, :]\nfb = interp_distribution_across_mesh(fa, ra, va, xa, 2.0, rb, vb, xb, 1.5)\nsource = moments(fa, ra, va, 2.0)\nexpected = np.array([np.interp(xb, xa, row) for row in source])\nactual = moments(fb, rb, vb, 1.5)\nassert fb.shape == (8, 11, 4) and np.isfinite(fb).all() and np.all(fb >= 0)\nnp.testing.assert_allclose(actual, expected, rtol=1e-11, atol=1e-13)\nprint(actual)\n",
+  "expected": "Observed PASS: A finite nonnegative array of shape (8,11,4). Independently assembled density, axial momentum density and squared-speed energy density match the spatially interpolated source profiles at rtol=1e-11, atol=1e-13. This is a discrete remap example, not an atomic-physics validation."
+ },
+ "verification": {
+  "scope": [
+   "The positive-input negative-output failure of the defective construction is recorded as RED evidence; a convex-hull energy bound proves the first two targets impossible on the grid of that case, and the corrected API explicitly rejects them.",
+   "The same random positive input on a wider feasible grid and the original feasible two-slice tail return nonnegative distributions with all three independently integrated moments.",
+   "Independent scalar cylindrical quadrature checks nonuniform grids, nonzero drift, unequal temperatures and interpolation of extensive moments when spatial density varies.",
+   "Exact zero-density and equal-grid identity/convex spatial interpolation are checked, including outside-source spatial zero fill.",
+   "Lower/upper convex-hull edges, a vertex and a near-face interior target are checked without clipping or relaxing targets.",
+   "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and the correct=0/warning behavior are checked."
+  ],
+  "tests": [
+   "tests/kinetic/test_cross_mesh_distribution.py",
+   "tests/kinetic/test_positive_conservative_remap.py",
+   "tests/kinetic/test_cylindrical_velocity_quadrature.py"
+  ],
+  "evidence_ceiling": "Bounded to positive conservative three-moment cross-mesh distribution interpolation and its infeasibility failures. Evidence: `test_cross_mesh_distribution.py` contains 14 test functions, 14 of which reference `interp_distribution_across_mesh`, and is bound only by this asset; `test_positive_conservative_remap.py` contains 11 test functions, none of which references `interp_distribution_across_mesh`, and is bound only by this asset; `test_cylindrical_velocity_quadrature.py` contains 17 test functions, none of which references `interp_distribution_across_mesh`, and is shared by 2 assets; the bounded example was executed by this audit. Oracle: analytic convex-hull infeasibility proof plus frozen construction values. It does not establish a physically unrealizable moment target, higher-moment/shape preservation, or entropy conservation.",
+  "known_limitations": [
+   "Finite destination nodes can make requested moments unrealizable; the caller must provide a feasible grid or handle InfeasibleMomentsError.",
+   "The entropy prior includes a 1e-12 cell-volume mixture and may populate zero-overlap cells. Higher moments and fine distribution shape are not conserved by the three-moment constraints.",
+   "Binary64 conditioning, very near hull faces and unrepresentable intermediates can cause explicit numerical failure; the iteration budget is not a universal convergence guarantee.",
+   "correct=0 is algebraic compatibility only and does not carry the default branch physical guarantees.",
+   "The correction stops on scaled moment residual `<=32 eps` and requires the actual output three-moment postcondition within `128 eps`; exhausting `max_correction_iterations` raises `MomentCorrectionConvergenceError` without a partial distribution."
+  ]
+ },
+ "references": [
+  "https://user.eng.umd.edu/~andre/ahot12.pdf",
+  "https://docs.scipy.org/doc/scipy/reference/generated/scipy.special.logsumexp.html"
+ ]
+}

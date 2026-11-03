@@ -1,0 +1,135 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.outer-seed-convergence",
+ "title": {
+  "en": "Outer seed convergence relation",
+  "zh": "中性外层种子收敛判据"
+ },
+ "summary": "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "convergence",
+  "outer-seed"
+ ],
+ "aliases": [
+  "evaluate_neutral_outer_seed_convergence"
+ ],
+ "discovery": {
+  "capability": [
+   "Outer seed convergence relation",
+   "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate."
+  ],
+  "operation": [
+   "evaluate the outer seed re-entry criterion",
+   "previous and current seed-pass density profiles plus truncate -> inner reentry decision"
+  ],
+  "model": "the inner seed-pass ratio-of-max relation with 10*truncate threshold and fail-closed domain tightenings",
+  "geometry": "one spatial axis for two aligned density profiles",
+  "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error and 10*truncate threshold",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate.",
+  "direction": "previous and current seed-pass density profiles plus truncate -> inner reentry decision",
+  "definition": "Evaluate the source outer seed re-entry condition: computes seed_error and reentry_threshold (10*truncate), returns whether the outer seed pass should re-iterate.",
+  "model": "the inner seed-pass ratio-of-max relation with 10*truncate threshold and fail-closed domain tightenings",
+  "geometry": "one spatial axis for two aligned density profiles",
+  "coordinates": "densities in m^-3, truncate dimensionless",
+  "boundary": "nonempty aligned finite nonnegative real 1-D density arrays, positive current maximum, finite positive real truncate, and representable finite seed_error and 10*truncate threshold",
+  "assumptions": [
+   "The relation applies the ratio-of-max test with a strict greater-than comparison against 10*truncate; SciRel rejects non-real coercions and non-finite derived values.",
+   "No external atomic-physics reference is bound: the residual is recorded as validation_oracle_gap."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "previous_density_m3",
+   "description": "The density profile before the pass.",
+   "units": "m^-3",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative, one-dimensional."
+  },
+  {
+   "name": "current_density_m3",
+   "description": "The density profile after the pass.",
+   "units": "m^-3",
+   "shape": "[nx]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative, one-dimensional, same shape as previous."
+  },
+  {
+   "name": "truncate",
+   "description": "The convergence threshold.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real scalar",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "result",
+   "description": "A mapping with seed_error (relative change), reentry_threshold (10*truncate), should_reiterate (bool), and reason ('reiterate' or 'converged').",
+   "units": "mixed (dimensionless ratio, boolean, string)",
+   "shape": "mapping",
+   "dtype": "mapping of scalars and a boolean",
+   "required": true,
+   "constraints": "Finite seed_error; reentry_threshold = 10*truncate; should_reiterate is a Python bool."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Nonempty finite nonnegative aligned density profiles, positive current maximum and positive truncate."
+  ],
+  "supported": [
+   "Inner seed-pass reentry decisions for H and H2 neutral transport."
+  ],
+  "excluded": [
+   "Non-density convergence criteria; external physical validation."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for empty, non-real, non-finite, negative or misaligned density vectors, nonpositive current maximum, or non-real/non-finite/nonpositive truncate.",
+  "runtime_failure": "Raises ValueError if finite inputs overflow seed_error or the 10*truncate threshold.",
+  "nonconvergence": "Not applicable; this relation reports convergence, it does not iterate.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.outer_seed_convergence",
+   "symbol": "evaluate_neutral_outer_seed_convergence",
+   "signature": "evaluate_neutral_outer_seed_convergence(previous_density_m3, current_density_m3, truncate)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_neutral_outer_seed_convergence"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate the outer seed re-entry condition.",
+  "code": "import numpy as np\nfrom scirel.kinetic import evaluate_neutral_outer_seed_convergence\nprev = np.array([100.0, 200.0])\ncurr = np.array([100.5, 200.5])\nresult = evaluate_neutral_outer_seed_convergence(prev, curr, truncate=0.1)\nassert result['should_reiterate'] is False\nassert result['reentry_threshold'] == 1.0\nprev2 = np.array([1000.0, 200.0])\ncurr2 = np.array([100.0, 200.0])\nresult2 = evaluate_neutral_outer_seed_convergence(prev2, curr2, truncate=0.1)\nassert result2['should_reiterate'] is True",
+  "expected": "The first case returned seed_error=0.0024937655860349127 and threshold=1.0 with no re-entry; the second returned seed_error=4.5 and re-entry=True."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/kinetic/test_convergence_accumulation.py"
+  ],
+  "evidence_ceiling": "Bounded to the inner seed-pass error ratio and 10*truncate re-entry decision. Evidence: `test_convergence_accumulation.py` contains 18 test functions, 3 of which reference `evaluate_neutral_outer_seed_convergence`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression against frozen seed ratios in the bound file. It does not establish non-density convergence criteria or external physical validation.",
+  "known_limitations": [
+   "Three direct functions in the four-asset-shared convergence file cover dict/reentry, ratio-of-maxima and overflowed-threshold rejection.",
+   "The relation reports a seed-pass decision and does not iterate; no density-profile or external-physics validation is performed.",
+   "The example is the only documented runtime output; no test binds a non-density convergence criterion."
+  ]
+ }
+}

@@ -1,0 +1,886 @@
+{
+ "schema": "scirel.handbook",
+ "title": "SciRel Scientific Handbook",
+ "introduction": "Start from the scientific problem you need to solve and look up individual scientific relations and composite solving entry points by discipline. Each topic provides a learning guide and formal function reference; complete worked cases show actual calls, results and interpretation. The version, input units, applicability, failure behavior and verification limits of each capability are defined by the linked formal documentation. Inclusion in this handbook does not mean that one installation contains every capability, nor that the associated physical problems have been generally validated.",
+ "chapters": [
+  {
+   "id": "electromagnetism",
+   "title": "Electromagnetism: magnetic fields and coils",
+   "discipline": [
+    "Physics",
+    "Electromagnetism"
+   ],
+   "introduction": "Start from the geometric representation of axisymmetric current sources, compute flux and the poloidal field, then handle current superposition, plasma response matrices and ideal-conductor boundaries. The filament models here do not resolve the self-field inside a conductor; when flux is passed to another solver, check normalization, reference values and coordinate order.",
+   "topics": [
+    {
+     "id": "coil-discretization",
+     "title": "Representing a coil cross-section as current filaments",
+     "introduction": "A rectangular cross-section can be discretized into ordered circular current filaments; the permanent-ring entry point supplies fixed surface-current filaments with opposite weights. Geometry discretization alone does not compute a magnetic field or determine the material magnetization.",
+     "assets": [
+      "scirel.field.rectangular-coil-filaments",
+      "scirel.field.permanent-ring-filaments"
+     ]
+    },
+    {
+     "id": "coil-vacuum-fields",
+     "title": "From a single ring to the vacuum field of a coil set",
+     "introduction": "First obtain the unit-current response, then superpose it with the driving currents; use the existing composite entry point when a rectangular coil set is needed. The complete case starts from the on-axis field of a circular ring and then compares coil pairs and cross-section discretization. Direct Green flux and radially integrated flux follow separate conventions and cannot be interchanged merely because both outputs are called flux.",
+     "assets": [
+      "scirel.field.circular-filament-green",
+      "scirel.field.current-green-superposition",
+      "scirel.field.dense-axisymmetric-green",
+      "scirel.field.multi-coil-vacuum-field",
+      "scirel.field.filament-vacuum-field",
+      "scirel.electromagnetism.circular-filament-green"
+     ]
+    },
+    {
+     "id": "elliptic-filament-response",
+     "title": "Constructing a ring response from elliptic integrals",
+     "introduction": "Geometric moduli, complete elliptic-integral approximations and field responses for given integral values form another explicit entry set. They retain specific regularizations and singular-point handling; when comparing them with the direct response of the previous topic, check the modulus definition, approximation range and failure behavior separately.",
+     "assets": [
+      "scirel.field.coil-green-geometry",
+      "scirel.field.complete-elliptic-integrals-approx",
+      "scirel.field.filament-coil-green-field"
+     ]
+    },
+    {
+     "id": "current-and-conductor-response",
+     "title": "Constructing plasma-current and conductor-boundary responses",
+     "introduction": "The physical-coordinate matrices retain target rows, source columns and source weights; the general matrix supports irregular coordinates, while the mirror-specific entry point still requires a uniform symmetric Z grid. Current and cell-area weights are applied explicitly by the caller; the truncated SVD of the conductor boundary does not guarantee zero residual for arbitrary systems.",
+     "assets": [
+      "scirel.field.mirror-plasma-green",
+      "scirel.field.ideal-conductor-boundary",
+      "scirel.electromagnetism.loop-flux-matrix",
+      "scirel.electromagnetism.green-response-matrices"
+     ]
+    },
+    {
+     "id": "flux-to-poloidal-field",
+     "title": "Recovering the poloidal field and field strength from flux",
+     "introduction": "On a cylindrical-coordinate grid, obtain the radial and axial magnetic fields from flux derivatives, then compute the magnitude and reference quantities. Check the Wb/rad flux convention, axis handling and boundary differences first; the numerical lower bound of the field-strength entry does not imply a nonzero physical field.",
+     "assets": [
+      "scirel.field.poloidal-field-from-flux",
+      "scirel.field.poloidal-field-magnitude"
+     ]
+    },
+    {
+     "id": "source-construction-and-lifecycle",
+     "title": "Constructing coils, magnet rings and mutable source sets",
+     "introduction": "Arbitrary source points, rectangular coils and magnet rings provide explicit geometries; Device combines child sources in registration order. Changes to parameters, coordinates, weights, currents and the target grid affect subsequent responses; a cache cannot replace the current source state. The fixed sixteen-filament entry point reuses the magnet-ring geometry, returning positions and opposite weights, and is not equivalent to solving for the magnetization.",
+     "assets": [
+      "scirel.electromagnetism.arbitrary-points",
+      "scirel.electromagnetism.rectangular-coil",
+      "scirel.electromagnetism.magnet-ring",
+      "scirel.electromagnetism.device"
+     ]
+    },
+    {
+     "id": "retained-device-configurations",
+     "title": "Using the TREX, BRB and WHAM source geometries",
+     "introduction": "These constructors retain the source filament arrangements and constants and do not provide experimental device calibration. WHAM defaults to a common current of 1 A; in BRB, intended currents must explicitly distinguish per-filament current from total ampere-turns and must not be guessed from invalid old attribute assignments.",
+     "assets": [
+      "scirel.electromagnetism.trex-coil",
+      "scirel.electromagnetism.brb",
+      "scirel.electromagnetism.wham"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "plasma-equilibrium",
+   "title": "Plasma equilibrium and confinement",
+   "discipline": [
+    "Physics",
+    "Plasma physics",
+    "MHD equilibrium"
+   ],
+   "introduction": "This chapter connects pressure relations, current responses and bounded equilibrium iteration, and distinguishes a given state, a closure relation, an iteration residual and physical compatibility. Composite entry points still rely on the caller to specify the vacuum field, Green matrices, species and boundaries; a finite result or a converged iteration does not by itself prove that the model applies.",
+   "topics": [
+    {
+     "id": "isotropic-pressure-equilibrium",
+     "title": "Iterating flux from an isotropic pressure profile",
+     "introduction": "Build a pressure–flux state from exact midplane pressure samples, inspect one current-feedback update, then use the bounded composite iteration. These entry points require a specific uniform grid, an exact zero-pressure boundary and flux-sample conditions; see the function reference for the meaning of the terminal state when convergence fails.",
+     "assets": [
+      "scirel.equilibrium.pressure-flux-state",
+      "scirel.equilibrium.isotropic-picard-step",
+      "scirel.equilibrium.isotropic-pressure-flux"
+     ]
+    },
+    {
+     "id": "gyrotropic-pressure-force",
+     "title": "Computing force and toroidal current from anisotropic pressure",
+     "introduction": "For a given poloidal field and parallel/perpendicular pressures, compute the cylindrical pressure-tensor divergence and current projection, then separate isotropic and anisotropic contributions. The toroidal projection cannot replace full parallel force balance; axis and weak-field conventions must be read together with the result.",
+     "assets": [
+      "scirel.equilibrium.anisotropic-force-balance",
+      "scirel.equilibrium.anisotropic-toroidal-current"
+     ]
+    },
+    {
+     "id": "anisotropic-equilibrium-feedback",
+     "title": "Combining anisotropic current, flux and boundary feedback",
+     "introduction": "Inspect current relaxation, flux relaxation and relative-state residuals separately, then enter the fixed-response or conductor-corrected Picard composite entry point. Single-step state changes and unrelaxed fixed-point residuals have different meanings; terminal pressure, fields and compatibility must be rechecked against each graph contract.",
+     "assets": [
+      "scirel.equilibrium.anisotropic-picard-feedback",
+      "scirel.equilibrium.axisymmetric-picard-update",
+      "scirel.diagnostics.picard-flux-residual",
+      "scirel.equilibrium.axisymmetric-anisotropic-picard",
+      "scirel.equilibrium.free-boundary-anisotropic-picard",
+      "scirel.equilibrium.compute-equilibrium"
+     ]
+    },
+    {
+     "id": "prescribed-pressure-closures",
+     "title": "Assembling two-fluid states with tabulated pressure laws",
+     "introduction": "The tabulated entry point interpolates pressure on a given field and flux; the two-fluid entry point organizes total pressure, species components, density and potential. Independently fitted components may leave residual stress, and strict species/mode checks are separate; these state assemblies do not solve the equilibrium themselves.",
+     "assets": [
+      "scirel.closures.tabulated-pressure",
+      "scirel.closures.hall-two-fluid-pressure"
+     ]
+    },
+    {
+     "id": "mirror-electrostatic-closures",
+     "title": "Solving quasineutrality and ambipolar potential in mirror confinement",
+     "introduction": "First distinguish the reference electron density, the Boltzmann response at a given potential and an actual potential root solve. Mirror end-loss flux balance and local quasineutrality are different conditions; the composite entry point connects mirror-constrained moments, electron response, endpoint and grid state but does not independently reconstruct the magnetic field or a global equilibrium.",
+     "assets": [
+      "scirel.closures.quasineutral-reference-density",
+      "scirel.closures.boltzmann-quasineutrality",
+      "scirel.closures.quasineutral-potential",
+      "scirel.closures.mirror-ambipolar-potential",
+      "scirel.kinetic.mirror-total-pressure",
+      "scirel.closures.mirror-quasineutral-closure",
+      "scirel.kinetic.grid-mirror-kinetic-closure"
+     ]
+    },
+    {
+     "id": "reference-population-pressure",
+     "title": "Constructing anisotropic pressure from a reference population",
+     "introduction": "Given a radial envelope and reference-population moments, assemble parallel and perpendicular pressures and an optional density state. The Frank–Egedal composite entry point uses the documented finite-mode nonnegative reference population; it is not a universally valid exact kinetic solution. Distribution and angular-mode entry points appear in the distribution-function chapter.",
+     "assets": [
+      "scirel.kinetic.frank-egedal-radial-envelope",
+      "scirel.kinetic.frank-egedal-pressure-state",
+      "scirel.kinetic.frank-egedal-pressure-closure"
+     ]
+    },
+    {
+     "id": "reduced-hall-equilibrium",
+     "title": "Feeding reduced Hall drift into equilibrium iteration",
+     "introduction": "First compute the reduced Hall current, drift and optional inertial correction, then combine them with flux feedback; the kinetic-mirror composite entry point further connects the grid mirror-end closure. Each layer has its own state, stopping condition and diagnostics; a successful nested solve does not prove that arbitrary species parameters or closures are mutually compatible.",
+     "assets": [
+      "scirel.closures.reduced-hall-drift",
+      "scirel.equilibrium.reduced-hall-anisotropic-picard",
+      "scirel.equilibrium.kinetic-mirror-hall-equilibrium"
+     ]
+    },
+    {
+     "id": "sampled-vector-feedback",
+     "title": "Running a discrete vector error feedback primitive",
+     "introduction": "Compute P/I/filtered-D state, an eleven-output current map and sample-and-hold branches on an explicit ten-channel reference/measurement sequence. This is a device-neutral discrete state primitive; it does not solve a device, actuator or plasma equilibrium and does not establish closed-loop stability.",
+     "assets": [
+      "scirel.closures.discrete-vector-error-feedback"
+     ]
+    },
+    {
+     "id": "local-pressure-compatibility",
+     "title": "Checking parallel-pressure compatibility and local stability indicators",
+     "introduction": "Pointwise firehose margins, fixed-flux pressure-derivative diagnostics and parallel-pressure residuals answer different questions. Entry points requiring derivatives must state the fixed-flux condition; these local indicators do not provide a verdict on global stability, growth rates or general Hall-flow stability.",
+     "assets": [
+      "scirel.diagnostics.pointwise-firehose-margin",
+      "scirel.diagnostics.firehose-mirror-margins",
+      "scirel.diagnostics.parallel-pressure-residual"
+     ]
+    },
+    {
+     "id": "finite-volume-transport",
+     "title": "Finite-volume transport operators",
+     "introduction": "The finite-volume entry points share an explicit face grid, boundary constraints and tridiagonal discretization; they express numerical flux and time-step contracts and do not automatically guarantee stability or positivity on arbitrary grids.",
+     "assets": [
+      "scirel.fvm.cell-variable",
+      "scirel.fvm.convection",
+      "scirel.fvm.diffusion",
+      "scirel.fvm.theta-step"
+     ]
+    },
+    {
+     "id": "neoclassical-bootstrap-current",
+     "title": "Neoclassical bootstrap current",
+     "introduction": "These entry points compute Sauter/Redl empirical fit coefficients and the parallel bootstrap current; collisionality, trapped fraction, pressure gradients and geometric consistency are the caller's responsibility.",
+     "assets": [
+      "scirel.neoclassical.bootstrap-current",
+      "scirel.neoclassical.redl-bootstrap-coefficients",
+      "scirel.neoclassical.sauter-bootstrap-coefficients"
+     ]
+    },
+    {
+     "id": "plasma-algebra-and-energy",
+     "title": "Plasma algebra and energy diagnostics",
+     "introduction": "These direct relations provide the Coulomb logarithm, a single-impurity dilution factor and stored energy from pressure profiles; a successful numerical relation is not a complete collision model or a plasma calibration.",
+     "assets": [
+      "scirel.physics.coulomb-ee",
+      "scirel.physics.coulomb-ei",
+      "scirel.physics.coulomb-ii",
+      "scirel.physics.dilution",
+      "scirel.physics.thermal-energy"
+     ]
+    },
+    {
+     "id": "source-profiles",
+     "title": "Normalized source profiles",
+     "introduction": "Exponential and Gaussian sources are normalized on caller-supplied nonuniform cell weights; width, total, grid and extreme-scale failure semantics must be read from each contract.",
+     "assets": [
+      "scirel.source.exponential",
+      "scirel.source.gaussian"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "plasma-waves",
+   "title": "Plasma waves and dielectric response",
+   "discipline": [
+    "Physics",
+    "Plasma physics",
+    "Waves and instabilities"
+   ],
+   "introduction": "Start from species scales and wavevector conventions, compute the cold-plasma or finite-harmonic kinetic response, then find fluid eigenbranches and complex wavenumber roots. Analytic special functions, fixed-pole approximations and different near-zero-wavenumber strategies remain separate entry points; a numerical root does not automatically carry a mode identity.",
+   "topics": [
+    {
+     "id": "wave-equilibrium-scales",
+     "title": "Preparing species scales and a plane wavevector",
+     "introduction": "Compute thermal speeds, frequencies and length scales from species densities, temperatures, masses, charges and magnetic field, and specify the plane wavevector magnitude or components. Scale normalization and sign conventions are fixed by the contract; geometric projection alone does not solve a dispersion relation.",
+     "assets": [
+      "scirel.kinetic.species-equilibrium-scales",
+      "scirel.geometry.planar-wavevector-projection"
+     ]
+    },
+    {
+     "id": "cold-dielectric-response",
+     "title": "Computing the local cold-plasma dielectric tensor",
+     "introduction": "Use the frequency, magnetic field and species list to compute the local cold response in a given Cartesian basis. Zero magnetic field, collisions and resonance branches have explicit handling; finite temperature, finite Larmor radius and kinetic effects require other models.",
+     "assets": [
+      "scirel.dielectric.cold-plasma-tensor"
+     ]
+    },
+    {
+     "id": "dispersion-response-functions",
+     "title": "Choosing dispersion special functions and pole representations",
+     "introduction": "Inspect the analytic plasma dispersion function, fixed-order Weideman approximations, Bessel harmonic terms, the Ronnmark response and fixed pole tables. The parameter domains, truncations and branches differ by method; do not silently substitute one when exact reproduction of a method is required.",
+     "assets": [
+      "scirel.kinetic.plasma-dispersion-function",
+      "scirel.kinetic.plasma-dispersion-weideman",
+      "scirel.kinetic.bessel-gamma",
+      "scirel.kinetic.ronnmark-r-function",
+      "scirel.kinetic.z-pole-coefficients",
+      "scirel.kinetic.gamma-lpole-coefficients"
+     ]
+    },
+    {
+     "id": "kinetic-dispersion-tensors",
+     "title": "Assembling kinetic dielectric tensors and dispersion determinants",
+     "introduction": "Assemble tensors for uniform magnetized Maxwellian species or compare two dispersion computation paths. Entry points differ in support for complex wavenumbers, zero wavenumbers, near-zero replacements and harmonic counts; finite-sum computations do not include automatic truncation-convergence verification.",
+     "assets": [
+      "scirel.kinetic.kinetic-dispersion-sum",
+      "scirel.kinetic.kinetic-dispersion-sum-fluid",
+      "scirel.kinetic.kinetic-dispersion-ronnmark",
+      "scirel.kinetic.dielectric-tensor-diagnostic",
+      "scirel.kinetic.kinetic-dispersion-relation"
+     ]
+    },
+    {
+     "id": "relativistic-codrift-spectrum",
+     "title": "Solving a normalized relativistic co-drift spectrum",
+     "introduction": "Assemble the 4S+6 generalized eigenproblem for declared normalized constants, drifting species and ky=0 wavevectors. Relativistic tangent inertia, zero collisions, superluminal rejection and two independent orderings belong to this specialized branch; a complete spectrum is not a mode-identification or stability result.",
+     "assets": [
+      "scirel.kinetic.relativistic-codrift-generalized-spectrum"
+     ]
+    },
+    {
+     "id": "fluid-wavevector-branches",
+     "title": "Solving fluid perpendicular-wavenumber branches",
+     "introduction": "First assemble the L/J pole matrix, then solve for complex eigenvalues and select branches by the given rule; the scan entry point connects equilibrium scales, frequency sequences and branch selection. Pole tables have a limited order range, and selection rules cannot replace physical mode identification.",
+     "assets": [
+      "scirel.kinetic.fluid-dispersion-matrix",
+      "scirel.kinetic.fluid-wavevector-eigensolve",
+      "scirel.kinetic.fluid-wavevector-scan"
+     ]
+    },
+    {
+     "id": "kinetic-wavevector-roots",
+     "title": "Solving and scanning complex kinetic wavenumber roots",
+     "introduction": "Solve for complex perpendicular-wavenumber roots of the Ronnmark determinant from a fixed initial value, and repeat this over a frequency sequence. Signs, residuals and exit flags are retained; multiple roots and unconverged results require explicit judgment by the caller.",
+     "assets": [
+      "scirel.kinetic.kinetic-wavevector-roots",
+      "scirel.kinetic.kinetic-wavevector-scan"
+     ]
+    },
+    {
+     "id": "multifluid-spectral-dispersion",
+     "title": "Constructing multifluid temporal dispersion and scans",
+     "introduction": "First build an effective multifluid plasma state from species and units, then construct the local Maxwell time matrix and conditioned eigen-spectrum, and finally scan on a bounded grid. Relativistic inertia, collisions, anisotropic mirror corrections, residual gates and scan order are all part of the declared contract; a successful scan does not replace external physical validation.",
+     "assets": [
+      "scirel.kinetic.spectral-plasma-state",
+      "scirel.kinetic.spectral-temporal-matrix",
+      "scirel.kinetic.spectral-temporal-spectrum",
+      "scirel.kinetic.spectral-dispersion-scan"
+     ]
+    },
+    {
+     "id": "analytic-response",
+     "title": "Analytic dispersion functions and integral responses",
+     "introduction": "The support domains of analytic continuation, causal prescriptions and numerical integration are recorded separately; seeded solves do not enumerate all roots.",
+     "assets": [
+      "scirel.kinetic.gpdf-cauchy-transform",
+      "scirel.kinetic.maxwellian-electrostatic-mode",
+      "scirel.kinetic.maxwellian-electrostatic-solver"
+     ]
+    },
+    {
+     "id": "complex-special-function-evaluators",
+     "title": "Complex error functions and Maxwellian response",
+     "introduction": "Choose the defining integral, FFT or finite-order pole approximation for the complex plane. Finite-order poles have their own applicability domain and error; when the final scaled result is unrepresentable, the whole evaluation is rejected rather than masked by finite intermediates.",
+     "assets": [
+      "scirel.kinetic.evaluate-faddeeva-dr",
+      "scirel.kinetic.evaluate-faddeeva-gpdf",
+      "scirel.kinetic.evaluate-maxwellian-fft",
+      "scirel.kinetic.evaluate-maxwellian-jpole"
+     ]
+    },
+    {
+     "id": "arbitrary-distribution-response",
+     "title": "General velocity distributions and causal response",
+     "introduction": "First specify the distribution, normalization and the upper/lower half-planes of the complex variable, then compute the Landau-continued Cauchy transform and its derivative. The expression uses a restricted grammar and the integration grid is a necessary numerical control; distribution corners and endpoints retain their own singular boundaries.",
+     "assets": [
+      "scirel.kinetic.generalized-expression-differentiation",
+      "scirel.kinetic.generalized-hilbert",
+      "scirel.kinetic.generalized-dispersion"
+     ]
+    },
+    {
+     "id": "electrostatic-roots-and-asymptotics",
+     "title": "Electrostatic-wave residuals, continuum roots and small-wavenumber asymptotics",
+     "introduction": "Track one root branch from an explicit initial guess through a sequence of wavenumbers. Convert the complex residual into two real components and check the solver terminal state and residual at every point; a failure rejects the whole scan. The result is neither all roots nor a uniqueness proof. Small-wavenumber asymptotics must be distinguished from the full residual.",
+     "assets": [
+      "scirel.kinetic.generalized-residual",
+      "scirel.kinetic.generalized-root-scans",
+      "scirel.kinetic.generalized-small-k"
+     ]
+    },
+    {
+     "id": "collisionless-initial-value",
+     "title": "Linear Vlasov–Poisson initial-value problem",
+     "introduction": "Build a discrete perturbed state from the velocity distribution and its derivatives, obtain the electric field from the Poisson constraint and evolve with explicit RK4. The state carries the grid, time step and history; envelope and damping diagnostics depend on available peaks, and the finite velocity box and discrete recurrence time limit long-time interpretation.",
+     "assets": [
+      "scirel.kinetic.vp-distribution",
+      "scirel.kinetic.vp-init",
+      "scirel.kinetic.vp-field",
+      "scirel.kinetic.vp-rhs",
+      "scirel.kinetic.vp-rk4-step",
+      "scirel.kinetic.vp-evolve",
+      "scirel.kinetic.vp-envelope",
+      "scirel.kinetic.vp-diagnostic",
+      "scirel.kinetic.vp-landau"
+     ]
+    },
+    {
+     "id": "causal-parallel",
+     "title": "Causal residuals and root continuation for parallel propagation",
+     "introduction": "The causal dispersion residual is used for a given distribution and polarization; root continuation preserves the seed, step and failure state.",
+     "assets": [
+      "scirel.kinetic.parallel-em-residual",
+      "scirel.kinetic.parallel-em-continuation"
+     ]
+    },
+    {
+     "id": "rational-construction",
+     "title": "Rational approximations, poles and Padé construction",
+     "introduction": "Fixed pole tables and high-precision generation are different entry points; coefficients, diagnostic grids and residuals together constrain the finite-order approximation.",
+     "assets": [
+      "scirel.kinetic.rational-z-poles",
+      "scirel.kinetic.rational-pole-table",
+      "scirel.kinetic.rational-jpole-coefficients",
+      "scirel.kinetic.rational-jpole-evaluate",
+      "scirel.kinetic.rational-jpole-grid-coordinates"
+     ]
+    },
+    {
+     "id": "rational-frequency",
+     "title": "Rational kinetic frequencies and ordered scans",
+     "introduction": "Recover equilibrium scales from the declared species table, construct the model-specific matrix, then compute an ordered spectrum with explicit root/pole classification.",
+     "assets": [
+      "scirel.kinetic.rational-default-deck",
+      "scirel.kinetic.rational-equilibrium",
+      "scirel.kinetic.rational-em-coordinates",
+      "scirel.kinetic.rational-point-matrix",
+      "scirel.kinetic.rational-solve-matrix"
+     ]
+    },
+    {
+     "id": "fluid-equilibrium",
+     "title": "Species input, fluid state and damping conventions",
+     "introduction": "Read two-species input or pass an explicit species state; zero-field anisotropy must have a physical definition and must not be assigned an arbitrary direction.",
+     "assets": [
+      "scirel.kinetic.multifluid-deck",
+      "scirel.kinetic.multifluid-equilibrium",
+      "scirel.kinetic.multifluid-relative-rate-equilibrium"
+     ]
+    },
+    {
+     "id": "fluid-pencils",
+     "title": "Generalized eigenfrequencies and physical scans",
+     "introduction": "Construct a frequency pencil with a non-identity inertia matrix, check the actual generalized residual and branches, and do not substitute a standard eigenvalue problem for the generalized one.",
+     "assets": [
+      "scirel.kinetic.multifluid-frequency-pencil",
+      "scirel.kinetic.multifluid-frequency-solve",
+      "scirel.kinetic.multifluid-scan"
+     ]
+    },
+    {
+     "id": "magnetized-spatial-dispersion",
+     "title": "Spatial dispersion in an isotropic magnetized plasma",
+     "introduction": "Starting from an explicit species state and SI normalization, construct the Maxwell response, perform a bounded wavevector search, or compute the full matrix spectrum of a finite rational model. Candidate roots must be verified independently; a finite spectrum and heuristic candidates are not all physical modes. The original-language runtime and approximation order each bound the computation.",
+     "assets": [
+      "scirel.kinetic.fluid-case-state",
+      "scirel.kinetic.fluid-special-functions",
+      "scirel.kinetic.fluid-dispersion-response",
+      "scirel.kinetic.fluid-em-matrix",
+      "scirel.kinetic.fluid-bonk-search",
+      "scirel.kinetic.fluid-em-spectrum"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "atomic-collisions",
+   "title": "Atomic collisions and reactions",
+   "discipline": [
+    "Physics",
+    "Atomic and molecular physics",
+    "Collision processes"
+   ],
+   "introduction": "Look up cross sections, rate coefficients and collision matrices by species and reaction channel, then connect them to collision-frequency reductions of distribution functions. Fitted energy ranges, endpoint clipping, array shapes and external reference evidence differ; comparison evidence that preserves the original formulas is not independent atomic-physics validation.",
+   "topics": [
+    {
+     "id": "hydrogen-charge-exchange-cross-sections",
+     "title": "Computing hydrogen charge-exchange cross sections",
+     "introduction": "Compute H/H+ or H2/H2+ charge-exchange cross sections from collision energy. When choosing different fits for the atomic branch, check their energy ranges and endpoint rules; a cross section is not yet a rate or collision frequency.",
+     "assets": [
+      "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
+      "scirel.collisions.molecular-hydrogen-charge-exchange-cross-section"
+     ]
+    },
+    {
+     "id": "hydrogen-elastic-cross-sections",
+     "title": "Computing elastic cross sections between hydrogen species",
+     "introduction": "Choose momentum-transfer or existing viscosity branches for H, H2 and H+ collision pairs. Entry points retain different output dimensions and piecewise behavior, including the atomic-hydrogen–proton relation at a specific energy; these relations cannot be collapsed into one undifferentiated cross-section function.",
+     "assets": [
+      "scirel.collisions.atomic-hydrogen-elastic-cross-section",
+      "scirel.collisions.atomic-molecular-hydrogen-elastic-cross-section",
+      "scirel.collisions.molecular-hydrogen-elastic-cross-section",
+      "scirel.collisions.proton-atomic-hydrogen-elastic-cross-section",
+      "scirel.collisions.proton-molecular-hydrogen-elastic-cross-section"
+     ]
+    },
+    {
+     "id": "reaction-rates-and-populations",
+     "title": "Reaction rates and level populations from temperature and energy",
+     "introduction": "Look up the given fits for charge exchange, ionization and radiative recombination, or compute Saha level populations under the stated assumptions. Temperature units, species pairing, density assumptions and numerical domains are retained separately; these leaf entry points do not constitute a complete collisional-radiative model.",
+     "assets": [
+      "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
+      "scirel.collisions.molecular-hydrogen-charge-exchange-rate-coefficient",
+      "scirel.collisions.janev-electron-impact-ionization-rate",
+      "scirel.collisions.atomic-hydrogen-1s-radiative-recombination-rate-coefficient",
+      "scirel.kinetic.hydrogen-saha-equilibrium-population"
+     ]
+    },
+    {
+     "id": "fast-ion-stopping-increment",
+     "title": "Evaluating an empirical fast-ion stopping increment",
+     "introduction": "Evaluate a fixed y=0.6 empirical area increment using local neutral-beam power density, a supplied electron slowing time and a birth-direction cosine relative to the magnetic axis. This does not calculate total stopping, attenuation, deposition or evolution; the qualitative low-density/high-energy setting supplies no calibrated interval or error bound.",
+     "assets": [
+      "scirel.collisions.fast-ion-stopping-increment"
+     ]
+    },
+    {
+     "id": "velocity-averaged-rates",
+     "title": "Averaging cross sections on a Maxwellian velocity grid",
+     "introduction": "Given a cross-section function, a cylindrical velocity grid and volume weights, compute the rate average of a directed monoenergetic particle against a discrete Maxwellian target population. Collision energy uses the documented particle-mass convention; whether the grid tail is sufficiently resolved requires a separate check.",
+     "assets": [
+      "scirel.collisions.maxwellian-relative-speed-rate-average"
+     ]
+    },
+    {
+     "id": "collision-matrices-and-frequencies",
+     "title": "From collision matrices and distributions to frequency channels",
+     "introduction": "Inspect the atomic and molecular collision matrices in turn, the Alpha fields obtained by distribution contraction, and the elastic Omega and frequency-channel reductions. Velocity axes, Fortran flattening order and signed intermediate quantities are part of the contract; these entry points do not manage a complete transport iteration or cache state.",
+     "assets": [
+      "scirel.collisions.atomic-hydrogen-collision-matrices",
+      "scirel.collisions.molecular-hydrogen-collision-matrices",
+      "scirel.kinetic.atomic-alpha-contraction",
+      "scirel.kinetic.molecular-alpha-contraction",
+      "scirel.collisions.atomic-hydrogen-omega-frequencies",
+      "scirel.collisions.molecular-hydrogen-omega-frequencies",
+      "scirel.kinetic.elastic-frequency-channels"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "kinetic-transport",
+   "title": "Distribution functions and neutral-particle transport",
+   "discipline": [
+    "Physics",
+    "Kinetic theory",
+    "Particle transport"
+   ],
+   "introduction": "Starting from velocity scales, discrete distributions and integral moments, connect mirror-constrained reference populations and the sources, propagation and generation states of one-dimensional spatial neutral transport. Each relation has explicit axis order and state boundaries; complete leaf coverage or one stopped iteration still cannot replace independent validation of a complete application.",
+   "topics": [
+    {
+     "id": "velocity-and-momentum-scales",
+     "title": "Distinguishing velocity, thermal-speed ratio and normalized momentum",
+     "introduction": "Thermal speed has velocity units, the thermal-electron momentum entry point returns a dimensionless thermal-speed ratio, and grid-normalized momentum additionally requires a velocity scale with units. Passing the dimensionless ratio directly as a velocity input divides by the speed of light twice; check units before composing.",
+     "assets": [
+      "scirel.kinetic.thermal-speed-scale",
+      "scirel.collisions.thermal-electron-momentum",
+      "scirel.collisions.normalized-momentum"
+     ]
+    },
+    {
+     "id": "velocity-mesh-and-measure",
+     "title": "Building a cylindrical velocity grid and integration measure",
+     "introduction": "Generate a velocity grid from temperatures and specified energies, then build the annular radial measure, cell volumes and difference coefficients from explicit axis nodes. Grid generation and integration weights are separate steps; these weights cannot be reused directly with other cell-face conventions.",
+     "assets": [
+      "scirel.kinetic.adaptive-neutral-velocity-mesh",
+      "scirel.kinetic.cylindrical-velocity-quadrature"
+     ]
+    },
+    {
+     "id": "maxwellian-distributions-and-moments",
+     "title": "Constructing Maxwellian initial values and reducing distribution moments",
+     "introduction": "A displaced discrete Maxwellian initial value, axisymmetric distribution moments and the scaled Bessel quantities needed by the relativistic background are different relations. The initial-value entry point does not include later moment compensation, and the special-function closure does not by itself establish a physical distribution; choose the appropriate reference for each problem.",
+     "assets": [
+      "scirel.kinetic.shifted-maxwellian-seed",
+      "scirel.kinetic.axisymmetric-neutral-moments",
+      "scirel.collisions.relativistic-maxwellian-bessel-closure"
+     ]
+    },
+    {
+     "id": "moment-compensated-maxwellian",
+     "title": "Compensating drift and energy moments on velocity slices",
+     "introduction": "Build shifted Maxwellian slices on one cylindrical quadrature, then apply the bounded discrete drift and energy correction to a slice or every shift. The correction retains source finite-volume and sign branches; it is not a complete transport solve or stability proof.",
+     "assets": [
+      "scirel.kinetic.velocity-slice-moment-compensation",
+      "scirel.kinetic.compensated-shifted-maxwellian"
+     ]
+    },
+    {
+     "id": "mirror-distributions-and-loss-cones",
+     "title": "Describing mirror populations and loss cones",
+     "introduction": "Inspect the invariant two-temperature distribution and its velocity moments separately, or construct regular angular modes, point-source projections and hot-ion moments for a given reference population. Loss-cone occupation, accessible orbits and normalization conditions must be explicit; computing a distribution or moments does not simultaneously solve the potential, collision evolution and magnetic field.",
+     "assets": [
+      "scirel.kinetic.mirror-invariant-distribution",
+      "scirel.kinetic.mirror-constrained-moments",
+      "scirel.kinetic.loss-cone-spectrum",
+      "scirel.kinetic.frank-egedal-source-projection",
+      "scirel.kinetic.frank-egedal-hot-ion-moments"
+     ]
+    },
+    {
+     "id": "neutral-sources-and-boundaries",
+     "title": "Preparing incident boundaries and scattering sources",
+     "introduction": "Normalize spatial sources and incident half-space fluxes, construct simplified charge-exchange and elastic-regeneration sources, and then reduce the atomic or molecular source channels. The measure used for normalization, the positive/negative velocity branches and each entry point's signed-value policy must be consistent with downstream propagation.",
+     "assets": [
+      "scirel.kinetic.spatial-source-shape-normalization",
+      "scirel.kinetic.incoming-boundary-flux-normalization",
+      "scirel.kinetic.simple-charge-exchange-source",
+      "scirel.kinetic.elastic-regeneration-aggregation",
+      "scirel.kinetic.atomic-scattered-sources-reduction",
+      "scirel.kinetic.molecular-scattered-sources-reduction"
+     ]
+    },
+    {
+     "id": "neutral-spatial-propagation",
+     "title": "Assembling neutral loss and bidirectional spatial propagation",
+     "introduction": "Construct spatial advance coefficients from the total loss frequency and source terms, then propagate the first flight or scattering generations; a separate entry point assembles the explicit Boltzmann right-hand side. This relation set uses a prescribed one-dimensional spatial discretization and implies neither higher-order corrections nor a complete nonlinear solver.",
+     "assets": [
+      "scirel.kinetic.neutral-total-collision-frequency",
+      "scirel.kinetic.neutral-upwind-transport-coefficients",
+      "scirel.kinetic.neutral-generation-propagation",
+      "scirel.kinetic.neutral-boltzmann-rhs"
+     ]
+    },
+    {
+     "id": "neutral-iteration-state",
+     "title": "Accumulating generations and deciding whether to continue",
+     "introduction": "First reduce the density and accumulated complete state from generation distributions, then compute density-change criteria separately for generations, seed re-entry and the top-level outer loop. The three stopping relations have different thresholds and denominators and are not general physical-conservation or error proofs.",
+     "assets": [
+      "scirel.kinetic.generation-density-reduction",
+      "scirel.kinetic.generation-accumulation-update",
+      "scirel.kinetic.neutral-generation-stopping",
+      "scirel.kinetic.outer-seed-convergence",
+      "scirel.kinetic.outer-convergence"
+     ]
+    },
+    {
+     "id": "species-mesh-transfer",
+     "title": "Transferring profiles and distributions between species meshes",
+     "introduction": "Scalar spatial interpolation and phase-space distribution transfer have different boundary and correction conventions. The distribution entry point's optional moment correction does not guarantee nonnegative results; the scalar entry point zeroes nodes outside the interval, which must not be read as general extrapolation.",
+     "assets": [
+      "scirel.kinetic.cross-mesh-scalar-interpolation",
+      "scirel.kinetic.cross-mesh-distribution-interpolation"
+     ]
+    },
+    {
+     "id": "terminal-neutral-state",
+     "title": "Computing flux, temperature and energy diagnostics from terminal distributions",
+     "introduction": "For a caller-selected terminal distribution, compute molecular flux, flow speed, pressure, temperature and heat flux, and combine a given reaction rate or collision right-hand side to obtain ion states and energy transfer. The final adjacent-cell energy diagnostic is not a complete proof of transport conservation.",
+     "assets": [
+      "scirel.kinetic.terminal-flux-velocity-reduction",
+      "scirel.kinetic.terminal-pressure-temperature-reduction",
+      "scirel.kinetic.terminal-heat-flux-reduction",
+      "scirel.kinetic.terminal-ion-state-reduction",
+      "scirel.kinetic.terminal-energy-transfer-reduction",
+      "scirel.kinetic.terminal-conservation-diagnostic"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "fusion-and-heating",
+   "title": "Fusion reactions and energy deposition",
+   "discipline": [
+    "Physics",
+    "Nuclear fusion and plasma heating"
+   ],
+   "introduction": "This chapter distinguishes the kinematic energy of reaction products, the heating partition of a given model and the normalized bookkeeping of a known absorbed power. They answer questions at different levels and cannot yet be combined automatically into a complete reaction-rate, particle-orbit or energy-transport model.",
+   "topics": [
+    {
+     "id": "dd-neutron-kinematics",
+     "title": "Computing the laboratory-frame energy of DD neutrons",
+     "introduction": "Compute the neutron energy of the non-relativistic two-body reaction from two deuteron velocities and a detector direction. This entry point does not compute angular-distribution weights, fusion reaction rates or subsequent neutron transport.",
+     "assets": [
+      "scirel.fusion.dd-neutron-lab-energy"
+     ]
+    },
+    {
+     "id": "heating-and-absorption-partitions",
+     "title": "Computing fast-ion heating and species absorption partitions",
+     "introduction": "The fast-ion entry point evaluates the prescribed local heating approximation; the absorption-fraction entry point converts an already given four-species power ledger into percentages. The latter does not compute absorption physics, and the former does not provide experimental calibration for general composition and collision conditions.",
+     "assets": [
+      "scirel.plasma.fast-ion-heating",
+      "scirel.diagnostics.species-absorption-fraction"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "diagnostics-and-inference",
+   "title": "Diagnostic modeling and parameter inversion",
+   "discipline": [
+    "Physics",
+    "Computational physics",
+    "Inverse problems"
+   ],
+   "introduction": "Generate predictions at specified observation points from a given equilibrium state, then pass the residuals to a bounded parameter search. Sampling, residuals, trials and optimization are each exposed here; instrument response, model selection and physical acceptability must still be made explicit by the actual problem.",
+   "topics": [
+    {
+     "id": "synthetic-observations",
+     "title": "Sampling equilibrium states and comparing observations",
+     "introduction": "Sample flux and profiles at specified R-Z positions, then reduce the prediction error against a given observation standard deviation. Flux sampling does not automatically apply the full-loop geometric factor and does not include line integrals, correlated errors or an instrument model.",
+     "assets": [
+      "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+      "scirel.diagnostics.observation-residuals"
+     ]
+    },
+    {
+     "id": "bounded-parameter-inversion",
+     "title": "From a single model trial to bounded parameter inversion",
+     "introduction": "First define the equilibrium and diagnostic calls, then inspect a single trial, optional Latin-hypercube initial values and the bounded-optimization composite entry point. The exception penalty is only a numerical device, and optimizer success does not guarantee a small residual, a global optimum or physical correctness.",
+     "assets": [
+      "scirel.inference.anisotropic-trial-evaluation",
+      "scirel.inference.latin-hypercube-sampling",
+      "scirel.inference.anisotropic-parameter-optimization",
+      "scirel.inference.direct-anisotropic-inversion"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "numerical-geometry",
+   "title": "Numerical geometry and field sampling",
+   "discipline": [
+    "Mathematics",
+    "Numerical analysis",
+    "Scientific computing"
+   ],
+   "introduction": "Interpolate existing field data onto grids, integrate along paths, query flux profiles and classify material regions. Geometry processing does not fill in unknown physics; out-of-domain rejection, clamping, zero filling and invalid-value marking are different policies and must be checked explicitly before composition.",
+   "topics": [
+    {
+     "id": "rectilinear-field-interpolation",
+     "title": "Querying real- and complex-valued fields on rectilinear grids",
+     "introduction": "Two-dimensional real-valued fields use bilinear sampling inside a closed grid domain; the three-dimensional complex-valued entry point uses trilinear interpolation and returns a validity mask. Their out-of-domain behavior differs, and neither reconstructs curvilinear coordinates or unstructured grids.",
+     "assets": [
+      "scirel.geometry.bilinear-grid-sampling",
+      "scirel.geometry.complex-rectilinear-interpolation"
+     ]
+    },
+    {
+     "id": "flux-profiles-and-path-averages",
+     "title": "Querying flux profiles and path-weighted averages",
+     "introduction": "The one-dimensional flux-profile entry point sorts samples and interpolates linearly; the path entry point computes the inverse-field measure and weighted averages along a given R-Z polyline. Whether the path closes or forms a complete flux surface is not determined automatically by either entry point.",
+     "assets": [
+      "scirel.geometry.flux-surface-profile",
+      "scirel.geometry.flux-surface-inverse-field-average"
+     ]
+    },
+    {
+     "id": "equilibrium-grid-and-material-support",
+     "title": "Mapping an axisymmetric equilibrium onto a solver grid",
+     "introduction": "First interpolate the axisymmetric field and flux onto a Cartesian grid, then classify material support from the given separatrix flux, PML and PEC conditions; the composite entry point preserves this order. Out-of-domain queries are clamped to the mapping boundary and reported, which does not imply that the field outside the boundary is known.",
+     "assets": [
+      "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+      "scirel.geometry.material-support-classification",
+      "scirel.geometry.axisymmetric-equilibrium-grid-support"
+     ]
+    },
+    {
+     "id": "volume-and-grid-measures",
+     "title": "Computing toroidal volume from an explicit masked grid",
+     "introduction": "Reduce caller-supplied R/Z coordinates and a core mask to a discrete toroidal volume. The mask may select cells or provide numeric weights; this entry point does not solve equilibrium, construct a boundary, or establish mesh convergence or physical volume validation.",
+     "assets": [
+      "scirel.geometry.masked-toroidal-volume"
+     ]
+    },
+    {
+     "id": "point-and-grid-constructors",
+     "title": "Constructing target point sets and rectangular grids",
+     "introduction": "PointsMesh retains paired coordinates, while RectMesh generates a regular grid from independent boundaries and node counts; setting parameters must preserve a valid state. Constructing coordinates does not mean the physical magnetic field has been computed.",
+     "assets": [
+      "scirel.geometry.points-mesh",
+      "scirel.geometry.rect-mesh"
+     ]
+    },
+    {
+     "id": "chord-geometry",
+     "title": "Defining sampling chords along radial, axial and polar directions",
+     "introduction": "Radial and axial chords fix the other cylindrical coordinate respectively; spherical-radius and polar-angle chords map from spherical coordinates to R and Z. Input polar angles are in degrees, and the generated cylindrical radius must still be nonnegative.",
+     "assets": [
+      "scirel.geometry.r-chord",
+      "scirel.geometry.z-chord",
+      "scirel.geometry.spherical-r-chord",
+      "scirel.geometry.theta-chord"
+     ]
+    },
+    {
+     "id": "planar-coordinate-transformations",
+     "title": "Rotating geometry and projecting meridional vectors",
+     "introduction": "Planar rotation uses a row-vector convention with clockwise positive; the polar-coordinate transform handles both positions and orthogonal vector components. The polar-angle origin and radius domain are restricted, and no magnetic-axis limit or three-dimensional physical rotation should be inferred from them.",
+     "assets": [
+      "scirel.geometry.rotate",
+      "scirel.sampling.meridional-polar-forward",
+      "scirel.sampling.meridional-polar-inverse"
+     ]
+    },
+    {
+     "id": "parametric-fieldline-objects",
+     "title": "Building field lines and boundaries from contour segments",
+     "introduction": "FieldLine and HelperFieldLine retain different construction and return contracts; the collection factory preserves each segment by contour level. Boundary parameter splines are used for finite searches, and construction alone cannot infer whether intersections exist, are unique or are topologically complete.",
+     "assets": [
+      "scirel.fieldline.fieldline",
+      "scirel.fieldline.helper-fieldline",
+      "scirel.fieldline.fieldline-set",
+      "scirel.fieldline.contour-points",
+      "scirel.fieldline.helper-contour-points",
+      "scirel.fieldline.boundary"
+     ]
+    },
+    {
+     "id": "path-order-and-integrals",
+     "title": "Selecting paths, accumulating distance and computing field-weighted reductions",
+     "introduction": "Select segments by exact contour level, specify the direction and endpoints, then accumulate adjacent distances. The inverse-field line integral and the weighted average of Q are defined by the given path and do not automatically certify a complete flux surface; open paths cannot be treated as closed-loop adjacencies.",
+     "assets": [
+      "scirel.sampling.select-fieldline",
+      "scirel.sampling.parse-segment",
+      "scirel.sampling.path-distance",
+      "scirel.sampling.weighted-line-integral"
+     ]
+    },
+    {
+     "id": "grid-and-point-sampling",
+     "title": "Choosing nearest-point, scattered or rectangular-spline sampling",
+     "introduction": "Per-axis nearest-point and flattened-plane nearest-point have different tie rules; scattered linear interpolation, scattered-to-regular-grid interpolation and rectangular bicubic splines also have their own support domains. A nearest out-of-domain node does not mean the physical field outside the domain is known.",
+     "assets": [
+      "scirel.sampling.rectangular-nearest",
+      "scirel.sampling.point-nearest",
+      "scirel.sampling.scattered-linear",
+      "scirel.sampling.rectangular-spline",
+      "scirel.sampling.regular-grid",
+      "scirel.geometry.face-to-cell"
+     ]
+    },
+    {
+     "id": "scalar-profiles-and-reflection",
+     "title": "Organizing flux profiles and scalar half-plane reflection",
+     "introduction": "Flux profiles are sorted, de-duplicated and linearly interpolated with explicit endpoint values outside the domain; half-plane reflection copies even scalars without duplicating the zero column. This reflection is not an automatic rule for vector parity or arbitrary geometric fields.",
+     "assets": [
+      "scirel.sampling.scalar-reflection"
+     ]
+    },
+    {
+     "id": "nonuniform-and-arclength-derivatives",
+     "title": "Distinguishing coordinate interior differences from true arc-length derivatives",
+     "introduction": "The nonuniform-coordinate entry point computes interior derivatives with a local quadratic; the arc-length entry point uses actual adjacent chord lengths and one-sided endpoint formulas. Descending coordinates should reverse inputs and outputs under the corresponding contract without additionally changing the sign of the physical derivative.",
+     "assets": [
+      "scirel.numerics.nonuniform-derivatives",
+      "scirel.sampling.nonuniform-first-derivative",
+      "scirel.fieldline.arclength-derivative"
+     ]
+    },
+    {
+     "id": "polynomial-and-spline-bases",
+     "title": "Constructing design matrices and splines with explicit boundaries",
+     "introduction": "Polynomial coefficients and design matrices are ordered by ascending power, and the SVD fit has an explicit truncation; the spline factory connects natural, two-end and one-end clamped relations. Cylindrical Robin equations and zero-origin restrictions must not be read as universal physical closures merely from their names.",
+     "assets": [
+      "scirel.sampling.polynomial-fit",
+      "scirel.basis.build-basis",
+      "scirel.basis.basis-matrix",
+      "scirel.basis.natural-cubic-spline",
+      "scirel.basis.clamped-cubic-spline",
+      "scirel.basis.first-clamped-cubic-spline",
+      "scirel.basis.second-clamped-cubic-spline"
+     ]
+    },
+    {
+     "id": "dense-linear-algebra",
+     "title": "Orthonormal modal bases and dense linear algebra",
+     "introduction": "The orthonormal Legendre modal basis on a reference hypercube provides member evaluation, reference-coordinate derivatives, reflection and projection on its own Gauss rule; truncated singular-value decomposition separately returns a Moore–Penrose pseudoinverse for finite real matrices. Physical meshes, Jacobians, limiters and statistical noise models are not supplied implicitly by these numerical entry points.",
+     "assets": [
+      "scirel.numerics.orthonormal-modal-basis",
+      "scirel.numerics.modal-projection",
+      "scirel.numerics.truncated-svd-inverse"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "scientific-data-and-display",
+   "title": "Scientific data exchange and plotting support",
+   "discipline": [
+    "Scientific computing",
+    "Scientific data and visualization"
+   ],
+   "introduction": "Exchange computation states with external text formats and provide a separate set of finite plotting transforms. The equilibrium extended EQDSK has explicit fields, units and dialect conventions and does not imply EFIT/COCOS/GENRAY compatibility; plotting support is non-core and does not replace physical computation.",
+   "topics": [
+    {
+     "id": "eqdsk-mapping-and-text",
+     "title": "Reading and writing extended EQDSK mappings",
+     "introduction": "The reader, writer and mutable mapping object retain the field order, dimensions and failure state of the same extended dialect; write-time validation and preservation of the old mapping on read failure must be checked separately.",
+     "assets": [
+      "scirel.io.read-eqdsk",
+      "scirel.io.write-eqdsk",
+      "scirel.io.eqdsk-class"
+     ]
+    }
+   ]
+  }
+ ]
+}

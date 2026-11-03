@@ -1,0 +1,1079 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.kinetic-wavevector-scan",
+ "title": {
+  "en": "Kinetic complex-wavenumber scan",
+  "zh": "动理学复波数扫描"
+ },
+ "summary": "Derive the frequency ladder and fixed seed, then solve a signed complex Ronnmark kx root at every frequency.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Kinetic complex-wavenumber scan",
+   "Derive the frequency ladder and fixed seed, then solve a signed complex Ronnmark kx root at every frequency."
+  ],
+  "operation": [
+   "scan complex kinetic kx roots over the frequency ladder",
+   "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots"
+  ],
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous magnetized plasma",
+  "boundary": "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots",
+  "direction": "SI equilibrium controls and dimensionless ladder bounds to signed complex kx roots",
+  "definition": "The graph derives its ordered frequency ladder from wn and a single kx_start=kx_scale*kn; the bounded root solver repeats that seed independently at every frequency.",
+  "model": "homogeneous magnetized Maxwellian multi-species plasma",
+  "geometry": "homogeneous magnetized plasma",
+  "coordinates": "complex perpendicular wavenumber plane; kz is an absolute input",
+  "boundary": "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable",
+  "assumptions": [
+   "All species controls describe one shared equilibrium snapshot."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "ms",
+   "description": "Species masses, entering the thermal speed and the cyclotron frequency",
+   "units": "kg",
+   "shape": "(S,) one-dimensional species axis",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive masses, one value per species."
+  },
+  {
+   "name": "qs",
+   "description": "Species charges, setting the sign of the cyclotron frequency",
+   "units": "C",
+   "shape": "(S,) one-dimensional species axis",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite nonzero charges, one value per species."
+  },
+  {
+   "name": "ns_unit",
+   "description": "Species densities as multiples of the reference density",
+   "units": "dimensionless",
+   "shape": "(S,) one-dimensional species axis",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive density ratios matching the species axis."
+  },
+  {
+   "name": "Ts_unit",
+   "description": "Species temperatures as multiples of the reference temperature",
+   "units": "dimensionless",
+   "shape": "(S,) one-dimensional species axis",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive temperature ratios matching the species axis."
+  },
+  {
+   "name": "B0",
+   "description": "Background magnetic-field strength, calibrating the cyclotron-frequency scale",
+   "units": "T",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite nonzero background field."
+  },
+  {
+   "name": "n00",
+   "description": "Reference number density",
+   "units": "m^-3",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive reference density."
+  },
+  {
+   "name": "T00",
+   "description": "Reference temperature",
+   "units": "eV",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite positive reference temperature in eV."
+  },
+  {
+   "name": "omega_scale",
+   "description": "Start multiple of the scanned frequency ladder; multiplied by wn it gives the first angular frequency",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite scan start; every derived angular frequency must be nonzero."
+  },
+  {
+   "name": "omega_step",
+   "description": "Step multiple of the scanned frequency ladder; multiplied by wn it gives the spacing between adjacent frequency points; both source scans use 0.05",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite strictly positive scan step."
+  },
+  {
+   "name": "omega_stop",
+   "description": "End multiple of the scanned frequency ladder (3.95 in the source); together with the start and step it fixes the source's colon expression, from which the number of ladder points follows",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite scan endpoint not below the start."
+  },
+  {
+   "name": "kz",
+   "description": "Absolute parallel wavenumber, the kz fixed by the source driver (2*5.0 for case 1 and 0.0 for case 2), entering the parallel resonance argument; the caller supplies this physical control directly, with no conversion from any reference wavenumber",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite absolute parallel wavenumber; zero is supported by the kinetic paths."
+  },
+  {
+   "name": "kx_scale",
+   "description": "Complex initial value shared by all frequency points as a fraction of kn; the source fixes it at 0.6 and performs no continuation between frequency points",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "Finite fixed-seed ratio.",
+   "default": 0.6
+  },
+  {
+   "name": "tol_fun",
+   "description": "Relative residual convergence tolerance corresponding to the reference runtime `TolFun`",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "Finite strictly positive residual tolerance.",
+   "default": 1e-16
+  },
+  {
+   "name": "tol_x",
+   "description": "Relative variable-step convergence tolerance corresponding to the reference runtime `Tolx`",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": false,
+   "constraints": "Finite strictly positive step tolerance.",
+   "default": 1e-16
+  },
+  {
+   "name": "max_iterations",
+   "description": "Maximum iterations per frequency point, corresponding to the reference runtime `MaxIter`",
+   "units": "dimensionless",
+   "shape": "scalar integer",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "Positive integer iteration bound.",
+   "default": 400
+  },
+  {
+   "name": "max_function_evals",
+   "description": "Maximum objective-function evaluations per frequency point, corresponding to the reference runtime `MaxFunEvals`",
+   "units": "dimensionless",
+   "shape": "scalar integer",
+   "dtype": "integer",
+   "required": false,
+   "constraints": "Positive integer function-evaluation bound.",
+   "default": 100
+  }
+ ],
+ "outputs": [
+  {
+   "name": "scales",
+   "description": "Per-species scales derived from the equilibrium inputs, shared by the wavenumber calibration and root finding",
+   "units": "mixed (each key carries its own units)",
+   "shape": "mapping dict",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "kz",
+   "description": "Parallel wavenumber actually used in this scan, taken directly from the caller's absolute control value",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "count",
+   "description": "Number of frequency points derived from the source colon ladder (omega_scale:omega_step:omega_stop)",
+   "units": "dimensionless",
+   "shape": "scalar integer",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "omegas",
+   "description": "Angular-frequency sequence actually used in this scan",
+   "units": "rad/s",
+   "shape": "(F,) one-dimensional frequency axis",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "kx_start",
+   "description": "Starting complex initial value for continuation root finding",
+   "units": "1/m",
+   "shape": "scalar complex",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "roots",
+   "description": "Complex perpendicular-wavenumber root obtained at each frequency point",
+   "units": "1/m",
+   "shape": "(F,) one-dimensional frequency-axis complex array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "residuals",
+   "description": "Dispersion-determinant residual at each root",
+   "units": "dimensionless",
+   "shape": "(F,) one-dimensional frequency-axis complex array",
+   "dtype": "complex128 array",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "determinant_scale",
+   "description": "Maximum modulus of the dielectric-tensor elements at each root, used as the cancellation scale for the residual",
+   "units": "dimensionless",
+   "shape": "(F,) one-dimensional frequency-axis floating-point array",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "exit_flags",
+   "description": "The reference runtime fsolve exit flag at each frequency point, restricted to {1,2,3,0,-2,-3}",
+   "units": "not applicable",
+   "shape": "(F,) one-dimensional frequency-axis integer array",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "iterations",
+   "description": "Iteration count actually used at each frequency point",
+   "units": "dimensionless",
+   "shape": "(F,) one-dimensional frequency-axis integer array",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "function_evals",
+   "description": "Objective-evaluation count actually used at each frequency point",
+   "units": "dimensionless",
+   "shape": "(F,) one-dimensional frequency-axis integer array",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "converged",
+   "description": "Whether the exit flag is positive at each frequency point, that is, whether the reference runtime judged convergence",
+   "units": "not applicable",
+   "shape": "(F,) one-dimensional frequency-axis boolean array",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "solver",
+   "description": "Root-finding algorithm label",
+   "units": "not applicable",
+   "shape": "scalar string",
+   "dtype": "string sequence",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  },
+  {
+   "name": "graph_order",
+   "description": "Fixed execution-order label for this graph",
+   "units": "not applicable",
+   "shape": "(4,) string sequence",
+   "dtype": "string sequence",
+   "required": true,
+   "constraints": "The returned value follows the stated shape and physical normalization."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable"
+  ],
+  "supported": [
+   "Derive the frequency ladder and fixed seed, then solve a signed complex Ronnmark kx root at every frequency."
+  ],
+  "excluded": [
+   "No unrequested mode identity or accuracy guarantee is inferred."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError from `scan_frequencies`/`seed_wavenumber` for nonfinite bounds, nonpositive `wn`/`kn`/`omega_step`, `omega_stop < omega_scale`, an empty ladder, or nonfinite `kz`; invalid equilibrium controls fail in `derive_species_equilibrium_scales` before the root graph is imported.",
+  "runtime_failure": "Root-solver numerical failures propagate from `solve_kinetic_wavevector_roots`; no fallback root, clamp or retry is substituted.",
+  "nonconvergence": "Each per-frequency root dictionary retains its `exit_flag` and residual (plus nonpositive-root flags); a nonconverged entry is observed, not silently replaced.",
+  "partial_results": "If the root graph raises, no partial scan mapping is returned; a completed scan may still contain nonconverged per-frequency entries."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.kinetic_wavevector_scan",
+   "symbol": "scan_kinetic_wavevectors",
+   "signature": "scan_kinetic_wavevectors(ms, qs, ns_unit, Ts_unit, B0, n00, T00, kz, omega_scale, omega_step, omega_stop, kx_scale=0.6, tol_fun=1e-16, tol_x=1e-16, max_iterations=400, max_function_evals=100)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "scan_kinetic_wavevectors"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.species-equilibrium-scales"
+   },
+   {
+    "asset_id": "scirel.kinetic.kinetic-wavevector-roots"
+   }
+  ]
+ },
+ "example": {
+  "description": "Evaluate one bounded declared-method graph case. Python preflight ran locally; fluid native/local execution covers this asset.",
+  "code": "from scirel.kinetic import scan_kinetic_wavevectors\nr=scan_kinetic_wavevectors(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000,kz=0,omega_scale=0.11,omega_step=0.05,omega_stop=0.11); assert r['count']==1",
+  "expected": "Python preflight returned count=1, one root about -0.17247987 - 0.12372616j, and converged=False for the bounded point. Fluid native/local execution covers this asset."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
+   "Python preflight ran, but fluid native/local execution covers this asset.",
+   "Near-integer colon-ladder endpoints are retained and covered by tests/kinetic/test_dispersion_scan_axes.py."
+  ],
+  "tests": [
+   "tests/cross_domain/test_fluid_spectrum_r43_compositions.py",
+   "tests/kinetic/test_dispersion_scan_axes.py"
+  ],
+  "evidence_ceiling": "Bounded to the deterministic colon-frequency ladder and signed complex Ronnmark kx roots over one equilibrium snapshot. Evidence: `test_fluid_spectrum_r43_compositions.py` contains 4 test functions, 1 of which references `scan_kinetic_wavevectors`, and is shared by 3 assets; `test_dispersion_scan_axes.py` contains 1 test function, none of which references `scan_kinetic_wavevectors`, and is shared by 2 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish unrequested mode identity or an accuracy guarantee.",
+  "known_limitations": [
+   "zero kz is allowed; roots retain sign and nonpositive exit flags remain observable",
+   "The colon-ladder count uses `floor((stop-start)/step + 1e-12*max(1,|ratio|)) + 1`; a stop that misses an exact step multiple by more than that relative tolerance is not a ladder point.",
+   "The scan's root diagnostics (`exit_flag`, residual) are per-frequency; no aggregate convergence flag or native/reference-runtime parity is provided."
+  ]
+ },
+ "composition": {
+  "nodes": [
+   {
+    "id": "species_equilibrium_scales",
+    "kind": "function",
+    "description": "Species equilibrium scales",
+    "inputs": [
+     "ms",
+     "qs",
+     "ns_unit",
+     "Ts_unit",
+     "B0",
+     "n00",
+     "T00"
+    ],
+    "outputs": [
+     "ns0",
+     "Ts0",
+     "vts",
+     "wcs",
+     "wps2",
+     "rhocs",
+     "kn",
+     "wn",
+     "scales"
+    ],
+    "asset_id": "scirel.kinetic.species-equilibrium-scales"
+   },
+   {
+    "id": "scan_frequencies",
+    "kind": "controlled_glue",
+    "description": "Scanned frequency ladder",
+    "inputs": [
+     "omega_scale",
+     "omega_step",
+     "omega_stop",
+     "wn"
+    ],
+    "outputs": [
+     "omegas",
+     "count"
+    ]
+   },
+   {
+    "id": "seed_wavenumber",
+    "kind": "controlled_glue",
+    "description": "Continuation root-finding initial value",
+    "inputs": [
+     "kx_scale",
+     "kn"
+    ],
+    "outputs": [
+     "kx_start"
+    ]
+   },
+   {
+    "id": "kinetic_wavevector_roots",
+    "kind": "function",
+    "description": "Kinetic perpendicular-wavenumber root finding",
+    "inputs": [
+     "B0",
+     "qs",
+     "ms",
+     "ns0",
+     "Ts0",
+     "omegas",
+     "kz",
+     "kx_start",
+     "tol_fun",
+     "tol_x",
+     "max_iterations",
+     "max_function_evals"
+    ],
+    "outputs": [
+     "roots",
+     "residuals",
+     "determinant_scale",
+     "exit_flags",
+     "iterations",
+     "function_evals",
+     "converged",
+     "omegas",
+     "kz",
+     "kx_start",
+     "tol_fun",
+     "tol_x",
+     "max_iterations",
+     "max_function_evals",
+     "solver"
+    ],
+    "asset_id": "scirel.kinetic.kinetic-wavevector-roots"
+   },
+   {
+    "id": "graph_order",
+    "kind": "controlled_glue",
+    "description": "Expose the fixed source-stage execution labels.",
+    "inputs": [],
+    "outputs": [
+     "graph_order"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "wn"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "wn"
+    },
+    "description": "The frequency ladder is scaled by the reference frequency wn, and its length follows the fixed colon expression; the scan and the equilibrium state must come from the same source",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "kn"
+    },
+    "to": {
+     "node": "seed_wavenumber",
+     "port": "kn"
+    },
+    "description": "The initial value is scaled by the same kn, keeping the continuation start consistent with the wavenumber normalization",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_frequencies",
+     "port": "omegas"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "omegas"
+    },
+    "description": "The frequency ladder is the independent-variable sequence for root finding; each point is solved independently with the same fixed initial value",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "seed_wavenumber",
+     "port": "kx_start"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "kx_start"
+    },
+    "description": "The fixed initial value determines which root is converged to and must be given explicitly; the source uses the same initial value at all frequency points",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "ns0"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "ns0"
+    },
+    "description": "Absolute number density enters the plasma frequency; root finding and the equilibrium state must come from the same source",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "Ts0"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "Ts0"
+    },
+    "description": "Kelvin temperature enters the thermal speed and the pole-resonance argument",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ms"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "ms"
+    },
+    "description": "Caller supplies ms to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "qs"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "qs"
+    },
+    "description": "Caller supplies qs to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ns_unit"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "ns_unit"
+    },
+    "description": "Caller supplies ns_unit to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "Ts_unit"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "Ts_unit"
+    },
+    "description": "Caller supplies Ts_unit to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "B0"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "B0"
+    },
+    "description": "Caller supplies B0 to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "n00"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "n00"
+    },
+    "description": "Caller supplies n00 to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "T00"
+    },
+    "to": {
+     "node": "species_equilibrium_scales",
+     "port": "T00"
+    },
+    "description": "Caller supplies T00 to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "omega_scale"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "omega_scale"
+    },
+    "description": "Caller supplies omega_scale to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "omega_step"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "omega_step"
+    },
+    "description": "Caller supplies omega_step to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "omega_stop"
+    },
+    "to": {
+     "node": "scan_frequencies",
+     "port": "omega_stop"
+    },
+    "description": "Caller supplies omega_stop to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "kx_scale"
+    },
+    "to": {
+     "node": "seed_wavenumber",
+     "port": "kx_scale"
+    },
+    "description": "Caller supplies kx_scale to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "B0"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "B0"
+    },
+    "description": "Caller supplies B0 to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "qs"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "qs"
+    },
+    "description": "Caller supplies qs to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "ms"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "ms"
+    },
+    "description": "Caller supplies ms to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "kz"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "kz"
+    },
+    "description": "Caller supplies kz to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "tol_fun"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "tol_fun"
+    },
+    "description": "Caller supplies tol_fun to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "tol_x"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "tol_x"
+    },
+    "description": "Caller supplies tol_x to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "max_iterations"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "max_iterations"
+    },
+    "description": "Caller supplies max_iterations to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "max_function_evals"
+    },
+    "to": {
+     "node": "kinetic_wavevector_roots",
+     "port": "max_function_evals"
+    },
+    "description": "Caller supplies max_function_evals to this stage.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "species_equilibrium_scales",
+     "port": "scales"
+    },
+    "to": {
+     "node": "$output",
+     "port": "scales"
+    },
+    "description": "Return the declared scales terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "kz"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kz"
+    },
+    "description": "Return the declared kz terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_frequencies",
+     "port": "count"
+    },
+    "to": {
+     "node": "$output",
+     "port": "count"
+    },
+    "description": "Return the declared count terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "scan_frequencies",
+     "port": "omegas"
+    },
+    "to": {
+     "node": "$output",
+     "port": "omegas"
+    },
+    "description": "Return the declared omegas terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "seed_wavenumber",
+     "port": "kx_start"
+    },
+    "to": {
+     "node": "$output",
+     "port": "kx_start"
+    },
+    "description": "Return the declared kx_start terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "roots"
+    },
+    "to": {
+     "node": "$output",
+     "port": "roots"
+    },
+    "description": "Return the declared roots terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "residuals"
+    },
+    "to": {
+     "node": "$output",
+     "port": "residuals"
+    },
+    "description": "Return the declared residuals terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "determinant_scale"
+    },
+    "to": {
+     "node": "$output",
+     "port": "determinant_scale"
+    },
+    "description": "Return the declared determinant_scale terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "exit_flags"
+    },
+    "to": {
+     "node": "$output",
+     "port": "exit_flags"
+    },
+    "description": "Return the declared exit_flags terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "iterations"
+    },
+    "to": {
+     "node": "$output",
+     "port": "iterations"
+    },
+    "description": "Return the declared iterations terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "function_evals"
+    },
+    "to": {
+     "node": "$output",
+     "port": "function_evals"
+    },
+    "description": "Return the declared function_evals terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "converged"
+    },
+    "to": {
+     "node": "$output",
+     "port": "converged"
+    },
+    "description": "Return the declared converged terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "kinetic_wavevector_roots",
+     "port": "solver"
+    },
+    "to": {
+     "node": "$output",
+     "port": "solver"
+    },
+    "description": "Return the declared solver terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "graph_order",
+     "port": "graph_order"
+    },
+    "to": {
+     "node": "$output",
+     "port": "graph_order"
+    },
+    "description": "Return the declared graph_order terminal.",
+    "condition": "always",
+    "transform": "identity",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "dag",
+   "ordering": "source stage order; each frequency independently evaluated",
+   "branches": [
+    "Each numerical method retains its own declared branches and failure behavior."
+   ],
+   "state_ownership": "One graph-local equilibrium and derived scan/probe state; no persistent state.",
+   "failure_propagation": "First dependency failure raises; no partial graph result is returned.",
+   "feedback": []
+  }
+ }
+}

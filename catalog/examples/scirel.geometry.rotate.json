@@ -1,0 +1,137 @@
+{
+ "schema": "scirel.asset-document",
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "verification": {
+  "scope": [
+   "Constructor and coordinate-shape invariants covered by the direct geometry tests",
+   "The executable constructor example stored in this contract"
+  ],
+  "tests": [
+   "tests/geometry/test_geometry_qualification.py",
+   "tests/geometry/test_runtime_lifecycle.py"
+  ],
+  "evidence_ceiling": "Named finite geometry cases only; no field-solver, experimental, or release claim is made.",
+  "known_limitations": [
+   "Mesh objects do not by themselves validate a physical field model or device geometry."
+  ]
+ },
+ "asset_id": "scirel.geometry.rotate",
+ "title": {
+  "en": "Planar cylindrical rotation",
+  "zh": "柱面平面旋转"
+ },
+ "summary": "Rotate row-vectors in the cylindrical R,Z plane.",
+ "taxonomy": [
+  "geometry",
+  "coordinates",
+  "transform"
+ ],
+ "aliases": [
+  "rotate"
+ ],
+ "discovery": {
+  "capability": [
+   "Planar cylindrical rotation",
+   "Rotate row-vectors in the cylindrical R,Z plane about a pivot."
+  ],
+  "operation": [
+   "rigid planar rotation relation",
+   "points, angle and pivot -> rotated points"
+  ],
+  "model": "Two-dimensional rigid rotation in the R,Z plane.",
+  "geometry": "Two-dimensional R,Z plane.",
+  "boundary": "Finite 2-vector pivot and finite points.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Rigid planar rotation relation",
+  "direction": "points and angle to rotated points",
+  "definition": "Clockwise-positive row-vector rotation in degrees",
+  "model": "Two-dimensional R,Z plane",
+  "geometry": "Two-dimensional R,Z plane",
+  "coordinates": "Cylindrical R,Z",
+  "boundary": "Finite 2-vector pivot and points",
+  "assumptions": [
+   "Finite final axis length 2"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "pts",
+   "description": "Point rows",
+   "units": "m",
+   "shape": "(...,2)",
+   "dtype": "Finite float64",
+   "required": true,
+   "constraints": "Final dimension length 2"
+  },
+  {
+   "name": "angle",
+   "description": "Rotation angle",
+   "units": "degree",
+   "shape": "scalar",
+   "dtype": "float",
+   "required": true,
+   "constraints": "Finite degrees"
+  },
+  {
+   "name": "pivot",
+   "description": "Rotation pivot",
+   "units": "m",
+   "shape": "(2,)",
+   "dtype": "Finite float64",
+   "required": false,
+   "constraints": "Finite R,Z pivot",
+   "default": [
+    0.0,
+    0.0
+   ]
+  }
+ ],
+ "outputs": [
+  {
+   "name": "rotated",
+   "description": "Rotated points",
+   "units": "m",
+   "shape": "(...,2)",
+   "dtype": "Finite float64",
+   "required": true,
+   "constraints": "Input shape preserved"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Inputs satisfy the documented finite cylindrical coordinate and shape contract"
+  ],
+  "supported": [
+   "Rigid rotation and inverse/metric invariants"
+  ],
+  "excluded": [
+   "3-D physical rotation",
+   "Nonfinite points"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.",
+  "runtime_failure": "Direct NumPy coordinate construction or transform exceptions propagate.",
+  "nonconvergence": "Not applicable; mesh construction and rotation are direct operations.",
+  "partial_results": "A failed constructor returns no mesh object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.transforms",
+   "symbol": "rotate",
+   "signature": "rotate(pts, angle, pivot=(0.0, 0.0))",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "rotate"
+  }
+ },
+ "example": {
+  "description": "Rotate one R-Z row vector by the documented clockwise-positive 90 degrees.",
+  "code": "import numpy as np\nfrom scirel.geometry import rotate\n\nrotated = rotate([[1.0, 0.0]], 90.0)\nnp.testing.assert_allclose(rotated, [[0.0, -1.0]], atol=1e-15)",
+  "expected": "The shape is preserved and the clockwise-positive result is [[0.0, -1.0]]."
+ }
+}

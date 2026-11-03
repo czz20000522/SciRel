@@ -1,0 +1,18 @@
+{
+  "project_id": "minimal-partial",
+  "decomposition_scope": "Partial wire-format example only; no scientific capability or source-fidelity claim.",
+  "limitations": [
+    "The identity callable illustrates payload mechanics only.",
+    "Scientific computation, source comparison and application qualification are NOT_RUN."
+  ],
+  "claim_ceiling": "Control-file generation and structural admission only; no scientific or human approval.",
+  "evidence_policy": "Keep the exact input, generated member bindings and validation result; do not infer scientific execution.",
+  "custody_note": "This new directory is a format-only example, not a replacement for a frozen delivery.",
+  "license": {
+    "spdx": "MIT",
+    "references": ["LICENSE.txt"]
+  },
+  "stage_evidence": {
+    "format_example": "evidence/status.json"
+  }
+}

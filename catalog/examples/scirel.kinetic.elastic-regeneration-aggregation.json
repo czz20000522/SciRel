@@ -1,0 +1,130 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.elastic-regeneration-aggregation",
+ "title": {
+  "en": "Elastic regeneration-source channel aggregation",
+  "zh": "弹性重生散射源聚合"
+ },
+ "summary": "Aggregate normalized elastic regeneration sources sum_q Omega_q[x]*M_q(u_r,u_x,x), with Omega_q=nu_q/Vth in m^-1 and caller distributions M_q in m^-3.",
+ "taxonomy": [
+  "kinetic",
+  "neutral-transport",
+  "elastic-scattering",
+  "aggregation"
+ ],
+ "aliases": [
+  "aggregate_elastic_regeneration_source"
+ ],
+ "discovery": {
+  "capability": [
+   "Elastic regeneration-source channel aggregation",
+   "Aggregate normalized elastic regeneration sources sum_q Omega_q[x]*M_q(u_r,u_x,x), with Omega_q=nu_q/Vth in m^-1 and caller distributions M_q in m^-3."
+  ],
+  "operation": [
+   "aggregate elastic regeneration-source channels",
+   "named channel frequency profiles plus regenerated distributions -> one aggregated source"
+  ],
+  "model": "the channel aggregation; normalized spatial transport with u=v/Vth and inverse-length collision coefficients",
+  "geometry": "two velocity dimensions over one spatial axis, one term per declared channel; velocity axes are dimensionless u=v/Vth on one common caller normalization",
+  "boundary": "matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions on one shared velocity and spatial mesh",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Beta_EL = sum over channels q of Omega_q[x] * M_q[vr,vx,x]",
+  "direction": "named channel frequency profiles plus regenerated distributions -> one aggregated source",
+  "definition": "The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the dict iteration order defines the float summation order",
+  "model": "the channel aggregation",
+  "geometry": "two velocity dimensions over one spatial axis, one term per declared channel",
+  "coordinates": "One normalized u=v/Vth velocity grid; elastic Omega profiles in m^-1 and regenerated distribution densities in m^-3; result is F/m.",
+  "boundary": "matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions on one shared velocity and spatial mesh",
+  "assumptions": [
+   "Channel keys are caller-declared identifiers (e.g. species-pair names); the asset does not interpret them. All channels must use one velocity mesh; singleton velocity dimensions that would broadcast are rejected.",
+   "Distributions and frequencies are expected nonnegative by physics and that expectation is enforced.",
+   "Fail-closed finiteness: extreme-but-valid inputs can overflow, so this asset rejects a non-finite result instead of returning it, per the declared finite-output contract. A bounded regression test pins that behaviour.",
+   "The public transport convention is u=v/Vth on one caller-selected thermal-speed scale: alpha=nu/Vth has units m^-1, F integrates over normalized velocity volume to number density in m^-3, and every spatial source coefficient is Q/Vth in F/m. Physical rates in s^-1 must be divided by that same Vth before this spatial operator; no automatic conversion is performed."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "frequencies_m_inv",
+   "description": "Per-channel inverse-length elastic coefficients Omega_q=nu_q/Vth, using one common Vth.",
+   "units": "m^-1",
+   "shape": "mapping name->[nx]",
+   "dtype": "mapping of real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; keys must match the distribution mapping exactly."
+  },
+  {
+   "name": "regenerated_distributions",
+   "description": "The per-channel regenerated distributions.",
+   "units": "m^-3",
+   "shape": "mapping name->[nvr,nvx,nx]",
+   "dtype": "mapping of real array-like",
+   "required": true,
+   "constraints": "Finite and nonnegative; all channels use the same (nvr,nvx,nx) shape, and each spatial axis matches its frequency profile."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "regeneration_source",
+   "description": "The aggregated regeneration source.",
+   "units": "m^-4 (F/m)",
+   "shape": "[nvr,nvx,nx]",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Finite and nonnegative; the channel sum in dict iteration order."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Matching nonempty channel key sets with finite nonnegative fields aligned to one shared velocity and spatial mesh.",
+   "Use one common Vth for normalized velocity nodes, inverse-length collision coefficients and spatial source coefficients; the callable performs no implicit unit conversion."
+  ],
+  "supported": [
+   "Elastic regeneration aggregation over caller-declared species-pair channels."
+  ],
+  "excluded": [
+   "Mismatched key sets; empty channel sets; negative or non-finite fields; spatial-axis mismatches. Broadcastable but unequal velocity meshes."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for non-mapping, mismatched or empty channels; implicit boolean, string or complex conversion; negative or non-finite fields; or distributions that do not share one (nvr,nvx,nx) mesh.",
+  "runtime_failure": "Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "Never returned; a rejected call produces no result."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.elastic_regeneration_aggregation",
+   "symbol": "aggregate_elastic_regeneration_source",
+   "signature": "aggregate_elastic_regeneration_source(frequencies_m_inv, regenerated_distributions)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "aggregate_elastic_regeneration_source"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Aggregate two named channels and confirm the key and field fail-closed contracts.",
+  "code": "import numpy as np\nfrom scirel.kinetic import aggregate_elastic_regeneration_source\nfreqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}\ndists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}\nresult = aggregate_elastic_regeneration_source(freqs, dists)\nnp.testing.assert_array_equal(result, [[[1.5, 3.0]]])\ntry:\n    aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})\nexcept ValueError as error:\n    assert 'channel keys must match' in str(error)\nelse:\n    raise AssertionError('mismatched keys must be rejected')\n",
+  "expected": "Observed PASS: The channel-weighted sum; mismatched keys are rejected."
+ },
+ "verification": {
+  "scope": [
+   "Direct tests bind channel-weighted values and mapping summation order, matching nonempty key sets, common meshes, implicit-real rejection and finite-output rejection.",
+   "The cross-domain tests consume the inverse-length elastic-channel sum, multiply it by a distribution density and compare Vth times the result against a prescribed physical elastic source.",
+   "The contract example covers one bounded representative call; numerical checks do not establish external physical validation or full-domain applicability."
+  ],
+  "tests": [
+   "tests/kinetic/test_neutral_scattered_sources.py",
+   "tests/cross_domain/test_neutral_transport_normalization.py"
+  ],
+  "evidence_ceiling": "Bounded to the stated normalized transport relation. Direct tests bind channel-weighted values and mapping summation order, matching nonempty key sets, common meshes, implicit-real rejection and finite-output rejection. The cross-domain tests consume the inverse-length elastic-channel sum, multiply it by a distribution density and compare Vth times the result against a prescribed physical elastic source. The listed direct and cross-domain tests are the current reproducible evidence; the example exercises one bounded call. Independent analytic and SI-unit comparisons are limited to the stated fixtures. Unbound historical source/parity receipts remain UNKNOWN and are not re-established here.",
+  "known_limitations": [
+   "No external collision-data calibration, source-project parity qualification or device-specific physical validation is established by these tests.",
+   "The normalization tests use bounded aligned meshes and prescribed rates; they do not certify full-distribution grid convergence, arbitrary-step positivity or the complete nonlinear transport model."
+  ]
+ }
+}

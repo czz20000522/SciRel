@@ -1,0 +1,76 @@
+{
+ "schema": "scirel.reader-translation",
+ "language": "zh-CN",
+ "records": [
+  {
+   "asset_id": "scirel.numerics.modal-projection",
+   "source_sha256": "f0fa2417000dff70c03baa80fadda20cf30bb0737ced5edf179095141f2ff1f5",
+   "summary": "构造正交归一模态基，并将高斯规则节点上的采样值投影为模态系数。",
+   "definition": "使用基自身声明的张量 Gauss-Legendre 规则，对每个正交归一成员计算加权内积。",
+   "model": "单个参考超立方体上的模态 L2 投影。",
+   "boundary": "不施加边界条件；参考单元没有物理边界。",
+   "assumptions": [
+    "采样值按所构造基的成员和节点顺序提供。",
+    "每个采样值和系数都可转换为有限 float64。"
+   ],
+   "inputs": [
+    {"name": "kind", "description": "基函数族选择器。", "constraints": "tensor 或 serendipity。", "dtype": "字符串"},
+    {"name": "ndim", "description": "参考单元维数。", "constraints": "整数 1 至 6。", "dtype": "整数"},
+    {"name": "order", "description": "每个坐标轴的多项式阶数。", "constraints": "非负整数。", "dtype": "整数"},
+    {"name": "values", "description": "所构造基自身高斯规则节点上的采样值。", "constraints": "形状必须等于该基的高斯权重形状，不进行广播。", "dtype": "可转换为有限 float64 的实数数组"}
+   ],
+   "outputs": [
+    {"name": "coefficients", "description": "按基成员顺序排列的 L2 投影模态系数。", "constraints": "有限；由同一基组合生成的采样值可精确恢复。", "dtype": "float64"}
+   ],
+   "applicability": {
+    "preconditions": ["采样数量等于 (order+1)**ndim，且顺序与基的高斯节点顺序一致。"],
+    "supported": ["精确恢复基所表示的任意成员组合。", "已测试的族、维数 1 至 3 和阶数 0 至 3。"],
+    "excluded": ["不支持任意散乱节点，只接受基自身的张量高斯节点。", "不应用物理网格、Jacobian 或单元测度；物理单元投影由调用者负责。", "不执行滤波、限制或正性修正。"]
+   },
+   "failure_semantics": {
+    "invalid_input": "基参数越界、样本形状错误或样本含非有限值时抛出 ValueError。",
+    "runtime_failure": "底层 Gauss-Legendre 根迭代不收敛时抛出 ValueError。",
+    "nonconvergence": "不替换为近似节点；规则直接报告失败。",
+    "partial_results": "要么返回完整系数数组，要么抛出异常；不返回部分或零填充系数。"
+   },
+   "verification": {
+    "scope": ["公共可调用签名及文档化的拒绝行为。", "tensor 和 serendipity 采样值的精确系数恢复。", "将文档化输入映射转发给科学委托函数。", "本合同所载可执行示例。"],
+    "known_limitations": ["只接受基自身的高斯节点，非节点采样值不在验证范围内。", "高于三阶或三维的投影精度未验证。"],
+    "evidence_ceiling": "精确恢复只建立同一基生成采样值时的文档关系；不建立任意采样数据的 L2 最优性、物理单元精度或与特定离散化软件的一致性。"
+   },
+   "example": {"description": "在自身高斯规则上采样已知成员组合，并确认投影返回原系数。", "expected": "coefficients recovered within 1e-12: True"}
+  },
+  {
+   "asset_id": "scirel.numerics.orthonormal-modal-basis",
+   "source_sha256": "6396176557c1760285b8cbe16fbe991d8fe1076e80676086f94458f7bc833e54",
+   "summary": "在参考超立方体上构造 tensor 或 serendipity 正交归一模态多项式基，并支持求值、求导、反射和投影。",
+   "definition": "成员是各参考坐标轴上一维正交归一 Legendre 多项式的乘积，并按声明的指数顺序排列。",
+   "model": "单个参考超立方体上的模态多项式离散化。",
+   "boundary": "不施加边界条件；参考单元没有物理边界。",
+   "assumptions": ["逻辑坐标转换为 float64，且必须有限。", "系数向量必须与生成它的族、维数、阶数和成员顺序配套。"],
+   "inputs": [
+    {"name": "kind", "description": "基函数族选择器。", "constraints": "tensor 或 serendipity。", "dtype": "字符串"},
+    {"name": "ndim", "description": "参考单元维数。", "constraints": "整数 1 至 6；拒绝布尔值。", "dtype": "整数"},
+    {"name": "order", "description": "每个坐标轴的多项式阶数。", "constraints": "非负整数；已验证阶数为 0 至 3，更高阶数不作资格声明。", "dtype": "整数"}
+   ],
+   "outputs": [{"name": "basis", "description": "提供 kind、ndim、order、num_basis、exponents()、evaluate、expand、gradient、flip_sign、quadrature 和 project 的 ModalBasis 句柄。", "constraints": "成员在参考单元无权内积下正交归一。", "dtype": "ModalBasis"}],
+   "applicability": {
+    "preconditions": ["逻辑坐标有限且位于 [-1,1]^ndim 内；这是调用者的参考单元，不是物理单元。"],
+    "supported": ["求值所有成员、一个展开式及其一个参考坐标导数。", "通过奇次幂变号将展开式关于参考轴反射。", "将自身张量高斯规则上的采样值投影回成员。", "已测试的族、维数 1 至 3 和阶数 0 至 3。"],
+    "excluded": ["不应用物理网格、Jacobian、度量或单元测度；物理单元映射由调用者负责。", "不提供边界条件、迎风、限制或正性处理。", "同阶 serendipity 与 tensor 不张成相同多项式空间，二者不可互换。", "投影只有在本基自身的高斯节点上才保证精确。"]
+   },
+   "failure_semantics": {
+    "invalid_input": "kind 非法、ndim 不在 1..6、order 为负或非整数、整数位置传入布尔值、坐标非有限或越界、坐标尾轴错误、系数或样本形状错误或非有限、direction 越界时抛出 ValueError。",
+    "runtime_failure": "Gauss-Legendre 根迭代不收敛时抛出 ValueError；不替换为近似节点。",
+    "nonconvergence": "Newton 迭代每个根最多 200 次，失败时报告不收敛。",
+    "partial_results": "构造失败不暴露成员；求值要么返回完整数组，要么抛出异常。"
+   },
+   "verification": {
+    "scope": ["公共可调用签名及文档化的拒绝行为。", "成员计数和一维成员字面量回归。", "具名样例上的正交归一性、求积精度和投影恢复。", "本合同所载可执行示例。"],
+    "known_limitations": ["回归夹具只覆盖维数 1 至 6、阶数 0 至 3。", "高阶 serendipity 成员选择未获验证。", "投影只在自身高斯节点上执行。", "高于三阶的 serendipity 指数规则不作资格声明。"],
+    "evidence_ceiling": "成员计数、正交归一性和投影恢复只在已测试的族、维数和阶数组合上建立文档关系；不建立物理网格收敛阶、任意阶排序或与特定离散化软件的一致性。"
+   },
+   "example": {"description": "构造二维二阶 serendipity 基，检查八个成员的正交归一性，并确认展开式采样投影后恢复系数。", "expected": "orthonormal within 1e-12: True\ncoefficients recovered within 1e-12: True"}
+  }
+ ]
+}

@@ -1,0 +1,167 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.z-pole-coefficients",
+ "title": {
+  "en": "Z-function pole coefficients",
+  "zh": "Z 函数极点系数"
+ },
+ "summary": "Return the fixed J=8 or J=12 complex residue and pole tables with conjugate completion.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Z-function pole coefficients",
+   "Return the fixed J=8 or J=12 complex residue and pole tables with conjugate completion."
+  ],
+  "operation": [
+   "return Z-function pole coefficient tables",
+   "integer pole count J to residues and complex pole positions"
+  ],
+  "model": "rational approximation of the Maxwellian plasma dispersion function",
+  "geometry": "homogeneous plasma",
+  "boundary": "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "integer pole count J to residues and complex pole positions",
+  "direction": "integer pole count J to residues and complex pole positions",
+  "definition": "Z(zeta) is approximated by sum_j bzj[j]/(zeta-czj[j]); the stored first half is completed by conjugation and negative conjugation, respectively.",
+  "model": "rational approximation of the Maxwellian plasma dispersion function",
+  "geometry": "homogeneous plasma",
+  "coordinates": "dimensionless complex zeta plane; one pole axis",
+  "boundary": "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "j_order",
+   "description": "Pole order J, selecting one fixed residue/position table and fixing the returned array length and the pole-block size of each species",
+   "units": "dimensionless",
+   "shape": "scalar integer",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Only 8 or 12 is allowed, corresponding to the source's 8-pole and 12-pole tables; other orders have no table in the source and must fail closed."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "bzj",
+   "description": "Pole residues used by the matrix to weight the resonance term along the pole axis",
+   "units": "dimensionless",
+   "shape": "`(J,)` one-dimensional pole axis",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite complex; the second half must equal the conjugate of the first half."
+  },
+  {
+   "name": "czj",
+   "description": "Pole positions giving the complex resonance offsets and entering the denominator of the resonance argument",
+   "units": "dimensionless",
+   "shape": "`(J,)` one-dimensional pole axis",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite complex; the second half must equal the negative conjugate of the first half."
+  },
+  {
+   "name": "j_order",
+   "description": "Pole order actually used in this call, echoing the input so the caller can check the matrix blocking",
+   "units": "dimensionless",
+   "shape": "scalar integer",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Takes the value 8 or 12."
+  },
+  {
+   "name": "half_order",
+   "description": "Number of first-half poles `J/2` fixed by the source, used to check the conjugate-completion boundary",
+   "units": "dimensionless",
+   "shape": "scalar integer",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Equals `j_order//2`."
+  },
+  {
+   "name": "sum_bzj",
+   "description": "Sum of residues, used to check the zeroth-moment condition",
+   "units": "dimensionless",
+   "shape": "scalar complex",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; ideal value -1."
+  },
+  {
+   "name": "sum_bzcj",
+   "description": "Sum of residue-pole-position products, used to check the first-moment condition",
+   "units": "dimensionless",
+   "shape": "scalar complex",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; ideal value 0."
+  },
+  {
+   "name": "sum_bzcj2",
+   "description": "Sum of residue-pole-position-squared products, used to check the second-moment condition",
+   "units": "dimensionless",
+   "shape": "scalar complex",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite; ideal value -1/2."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation"
+  ],
+  "supported": [
+   "Return the fixed J=8 or J=12 complex residue and pole tables with conjugate completion."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.z_pole_coefficients",
+   "symbol": "get_z_pole_coefficients",
+   "signature": "get_z_pole_coefficients(*, j_order)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "get_z_pole_coefficients"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate one bounded source-method case.",
+  "code": "from scirel.kinetic import get_z_pole_coefficients\nr=get_z_pole_coefficients(j_order=8); assert len(r['bzj'])==8 and len(r['czj'])==8",
+  "expected": "The asserted result follows the declared output contract."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
+  ],
+  "evidence_ceiling": "Direct Python tests establish only the listed finite cases and tolerances; source parity, arbitrary-parameter accuracy and release approval are outside that evidence.",
+  "known_limitations": [
+   "only the frozen J=8 and J=12 tables exist; no interpolation or extrapolation",
+   "Full source/runtime qualification that uses the declared local Python runtime on Linux amd64 is NOT_RUN in this macOS checkout."
+  ]
+ },
+ "references": [
+  "H. S. Xie, Phys. Plasmas 32, 082110 (2025)."
+ ]
+}

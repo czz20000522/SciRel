@@ -1,0 +1,711 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-support",
+ "title": {
+  "en": "Axisymmetric equilibrium to solver-grid material support",
+  "zh": "轴对称平衡到求解网格材料支撑"
+ },
+ "summary": "Reconstruct an axisymmetric equilibrium on a Cartesian solver grid and classify the material support of that grid, composing the mapping relation and the material-support relation in one ordered DAG with a single call.",
+ "taxonomy": [
+  "geometry",
+  "material-support",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "coarse CAD grid material support composition"
+ ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric equilibrium to solver-grid material support",
+   "Reconstruct an equilibrium on a Cartesian grid and classify its cold-plasma material support in one ordered composition."
+  ],
+  "operation": [
+   "ordered composition of equilibrium reconstruction and geometric material-support classification",
+   "equilibrium, solver-grid points, separatrix data and PEC mask -> field, flux and support masks"
+  ],
+  "model": "Composed tensor-product equilibrium reconstruction followed by geometric material-support classification; no field solve.",
+  "geometry": "Axisymmetric R-Z equilibrium map reconstructed on a rectilinear Cartesian solver box, then classified in that box.",
+  "boundary": "Union of the two dependency boundaries: out-of-map points are clamped and counted, and an empty material-support mask fails the call.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "an axisymmetric equilibrium mapping and a Cartesian solver grid to the static field, the poloidal flux, the material support mask, and the mapping's coverage and clamping diagnostics",
+  "direction": "equilibrium, x_m, y_m, z_m, xpoint_half_length_m, pml_cells, pec_mask -> magnetic_flux_density_t, poloidal_flux_wb_per_rad, material_support_mask, covered_mask, radially_clamped_point_count, axially_clamped_point_count, closed_flux_mask, axis_segment_mask",
+  "definition": "Reconstructs the static field and the poloidal flux on the solver grid, builds the cylindrical coordinates of that grid, reads the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping, and classifies material support from the reconstructed flux and those parameters.",
+  "model": "the composed tensor-product equilibrium reconstruction followed by the geometric material-support classification; no field solve is performed",
+  "geometry": "axisymmetric R-Z equilibrium map evaluated on a rectilinear Cartesian solver grid, then classified in the solver box",
+  "coordinates": "cylindrical for the map, Cartesian for the grid, with the axial coordinate shared between them",
+  "boundary": "the composition's boundary is the union of its two dependency boundaries: query points outside the map box are clamped and reported, and the support mask must be non-empty or the call fails",
+  "assumptions": [
+   "The equilibrium mapping carries both the map arrays and the flux-surface classification parameters, which is this operator's expected layout.",
+   "The grid axes are shared between the mapping relation and the coordinate glue, so both agree about the solver box.",
+   "The composition is a pure ordered DAG: it has no feedback loop, no iteration, and no state between calls.",
+   "The caller owns every array; the graph returns views of the dependencies' own results without copying them."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "equilibrium",
+   "description": "Caller-owned equilibrium mapping carrying the map arrays r_m, z_m, psi_wb_per_rad, br_t, bz_t and the classification parameters separatrix_flux_wb_per_rad and closed_flux_side.",
+   "units": "mixed SI",
+   "shape": "mapping of arrays and scalars",
+   "dtype": "Python mapping",
+   "required": true,
+   "constraints": "Must be a mapping. The map arrays must satisfy the mapping relation's contract; the two classification parameters must satisfy the material-support relation's contract."
+  },
+  {
+   "name": "x_m",
+   "description": "Cartesian solver grid x axis.",
+   "units": "m",
+   "shape": "[N_x]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
+  },
+  {
+   "name": "y_m",
+   "description": "Cartesian solver grid y axis.",
+   "units": "m",
+   "shape": "[N_y]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
+  },
+  {
+   "name": "z_m",
+   "description": "Cartesian solver grid axial axis.",
+   "units": "m",
+   "shape": "[N_z]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, one-dimensional, at least two points, strictly increasing."
+  },
+  {
+   "name": "xpoint_half_length_m",
+   "description": "Poloidal half length passed to the material-support relation.",
+   "units": "m",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "pml_cells",
+   "description": "PML frame thickness passed to the material-support relation.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "A positive integer."
+  },
+  {
+   "name": "pec_mask",
+   "description": "Caller-owned PEC mask passed to the material-support relation.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool array-like",
+   "required": true,
+   "constraints": "Must match the solver grid shape."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "magnetic_flux_density_t",
+   "description": "Static magnetic field on the solver grid.",
+   "units": "T",
+   "shape": "[N_x, N_y, N_z, 3]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite everywhere; the transverse pair is exactly zero on the grid axis."
+  },
+  {
+   "name": "poloidal_flux_wb_per_rad",
+   "description": "Poloidal flux per radian interpolated onto the solver grid.",
+   "units": "Wb/rad",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite everywhere, evaluated at the clamped query coordinates."
+  },
+  {
+   "name": "material_support_mask",
+   "description": "Grid points carrying cold-plasma material support.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Guaranteed non-empty; an empty classification fails the call."
+  },
+  {
+   "name": "covered_mask",
+   "description": "Grid points that lay inside the closed box spanned by the map axes.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "Produced by the mapping relation and passed through unchanged."
+  },
+  {
+   "name": "radially_clamped_point_count",
+   "description": "Grid points whose radius exceeded the outer map radius.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Produced by the mapping relation and passed through unchanged."
+  },
+  {
+   "name": "axially_clamped_point_count",
+   "description": "Grid points clamped onto an axial map face.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "int",
+   "required": true,
+   "constraints": "Produced by the mapping relation and passed through unchanged."
+  },
+  {
+   "name": "closed_flux_mask",
+   "description": "Covered grid points on the selected side of the separatrix flux, before the frame and conductor exclusions.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "An added diagnostic output; it is a subset of covered_mask and is what lets a caller attribute an empty support mask to the flux-surface choice."
+  },
+  {
+   "name": "axis_segment_mask",
+   "description": "Covered grid points at the grid's innermost radius within the poloidal half length, before the frame and conductor exclusions.",
+   "units": "dimensionless",
+   "shape": "[N_x, N_y, N_z]",
+   "dtype": "bool",
+   "required": true,
+   "constraints": "An added diagnostic output; it is empty whenever the equilibrium map's radial axis begins above the grid's minimum radius."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller's equilibrium mapping carries both the map arrays and the two flux-surface classification parameters, as this operator expects.",
+   "Both bound relations' preconditions hold for the supplied arrays.",
+   "The solver box has a genuine PML frame of at least one cell."
+  ],
+  "supported": [
+   "Any rectilinear Cartesian solver grid and any axisymmetric equilibrium map satisfying the two dependency contracts.",
+   "Either separatrix side, and any positive PML frame thickness that leaves a non-empty interior.",
+   "Both dependencies being replaced by caller-supplied callables with the same contracts."
+  ],
+  "excluded": [
+   "Field solves, wave propagation, and plasma response.",
+   "Non-axisymmetric equilibria.",
+   "Solver grids without a PML frame.",
+   "Any graph-level iteration, feedback, or state; this composition is a single ordered pass."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when inputs is not a mapping, when any of the seven required inputs is missing, when equilibrium is not a mapping, or when the equilibrium mapping does not carry the two classification parameters. Validation failures of either bound relation propagate unchanged, so the failing parameter is named by the relation that owns it.",
+  "runtime_failure": "A dependency failure aborts the graph and propagates; no fallback implementation is selected and no retry is attempted.",
+  "nonconvergence": "Not applicable; this TaskGraph is an ordered DAG with no feedback loop.",
+  "partial_results": "No partial result is returned after a node failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.axisymmetric_equilibrium_grid_support",
+   "symbol": "solve_axisymmetric_equilibrium_grid_mapping",
+   "signature": "solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "solve_axisymmetric_equilibrium_grid_mapping"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping"
+   },
+   {
+    "asset_id": "scirel.geometry.material-support-classification"
+   }
+  ]
+ },
+ "example": {
+  "description": "Compose equilibrium mapping and material-support classification on a synthetic 9x9x7 solver grid, checking every returned output mask and count.",
+  "code": "import numpy as np\nfrom scirel.geometry import solve_axisymmetric_equilibrium_grid_mapping\nr_axis = np.linspace(0.05, 1.0, 21)\nz_axis = np.linspace(-0.5, 0.5, 21)\nrr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')\nequilibrium = {\n    'r_m': r_axis,\n    'z_m': z_axis,\n    'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),\n    'br_t': 0.3 * rr - 0.1 * zz ** 2,\n    'bz_t': 1.0 - 0.4 * rr ** 2,\n    'separatrix_flux_wb_per_rad': 0.4,\n    'closed_flux_side': 'less_than',\n}\nresult = solve_axisymmetric_equilibrium_grid_mapping(inputs={\n    'equilibrium': equilibrium,\n    'x_m': np.linspace(-0.5, 0.5, 9),\n    'y_m': np.linspace(-0.5, 0.5, 9),\n    'z_m': np.linspace(-0.4, 0.4, 7),\n    'xpoint_half_length_m': 0.2,\n    'pml_cells': 1,\n    'pec_mask': np.zeros((9, 9, 7), dtype=bool),\n})\nassert result['magnetic_flux_density_t'].shape == (9, 9, 7, 3)\nassert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)\nassert result['covered_mask'].sum() == 560\nassert result['material_support_mask'].sum() > 0\nassert result['closed_flux_mask'].sum() >= result['material_support_mask'].sum()\nassert result['axis_segment_mask'].sum() == 0\nassert result['radially_clamped_point_count'] == 0\nassert result['axially_clamped_point_count'] == 0\nassert not result['material_support_mask'][0, :, :].any()\nassert not result['material_support_mask'][:, :, -1].any()",
+  "expected": "The finite field and flux have the declared shapes, 560 points are covered, support excludes solver-box faces, and the innermost-radius segment is empty."
+ },
+ "verification": {
+  "scope": [
+   "Exact agreement of the six outputs with the mapping and material-support relations applied directly to the same inputs.",
+   "Binding of exactly the two declared dependencies, verified by injected recording callables.",
+   "Rejection of unknown composition keywords and of a missing required input.",
+   "The graph's imports, and the absence of any file or configuration read at run time.",
+   "The declared dependency closure against the graph's own nodes, and the connectivity of every declared input and output.",
+   "Forwarding of the classification parameters from the equilibrium mapping verbatim, verified by moving the support mask while the mapping outputs stay fixed.",
+   "Agreement between the coordinate glue and the mapping relation's own coverage mask."
+  ],
+  "tests": [
+   "tests/cross_domain/axisymmetric_equilibrium_grid_support/test_composition_axisymmetric_equilibrium_grid_support.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Reconstructs the static field and the poloidal flux on the solver grid, builds the cylindrical coordinates of that grid, reads the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping, and classifies material support from…. Evidence: test_composition_axisymmetric_equilibrium_grid_support.py (16 recorded test functions; bound-file coverage; self-consistency/regression only); the contract example ran. Excluded scope: Field solves, wave propagation, and plasma response; Non-axisymmetric equilibria.",
+  "known_limitations": [
+   "The composition inherits both dependencies' limitations, including the clamped out-of-box policy and the innermost-radius proxy for the magnetic axis.",
+   "The two diagnostic masks are additions beyond the six declared outputs, so a caller comparing output key sets must account for them.",
+   "The graph has no feedback loop by design, so an equilibrium that would need to be re-derived from the reconstructed field is out of scope.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
+  ]
+ },
+ "composition": {
+  "nodes": [
+   {
+    "id": "cylindrical_coordinates",
+    "kind": "controlled_glue",
+    "description": "Validate the three caller-owned grid axes and build the radius and axial coordinate of every grid point.",
+    "inputs": [
+     "x_m",
+     "y_m",
+     "z_m"
+    ],
+    "outputs": [
+     "radii_m",
+     "axial_coordinate_m"
+    ]
+   },
+   {
+    "id": "equilibrium_grid_mapping",
+    "kind": "function",
+    "asset_id": "scirel.geometry.axisymmetric-equilibrium-grid-mapping",
+    "description": "Reconstruct the static field and poloidal flux on the solver grid and report coverage and clamping.",
+    "inputs": [
+     "equilibrium",
+     "x_m",
+     "y_m",
+     "z_m"
+    ],
+    "outputs": [
+     "magnetic_flux_density_t",
+     "poloidal_flux_wb_per_rad",
+     "covered_mask",
+     "radially_clamped_point_count",
+     "axially_clamped_point_count"
+    ]
+   },
+   {
+    "id": "classification_parameters",
+    "kind": "controlled_glue",
+    "description": "Read the separatrix flux and the selected flux-surface side off the caller's equilibrium mapping.",
+    "inputs": [
+     "equilibrium"
+    ],
+    "outputs": [
+     "separatrix_flux_wb_per_rad",
+     "closed_flux_side"
+    ]
+   },
+   {
+    "id": "material_support_classification",
+    "kind": "function",
+    "asset_id": "scirel.geometry.material-support-classification",
+    "description": "Classify material support from the reconstructed flux, the grid coordinates, and the caller's frame and conductor declarations.",
+    "inputs": [
+     "poloidal_flux_wb_per_rad",
+     "covered_mask",
+     "radii_m",
+     "axial_coordinate_m",
+     "separatrix_flux_wb_per_rad",
+     "closed_flux_side",
+     "xpoint_half_length_m",
+     "pml_cells",
+     "pec_mask"
+    ],
+    "outputs": [
+     "material_support_mask",
+     "closed_flux_mask",
+     "axis_segment_mask"
+    ]
+   }
+  ],
+  "edges": [
+   {
+    "from": {
+     "node": "$input",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "equilibrium_grid_mapping",
+     "port": "equilibrium"
+    },
+    "description": "Caller-owned equilibrium mapping carrying the map arrays.",
+    "condition": "Always, once per call.",
+    "transform": "Identity; the mapping relation reads only r_m, z_m, psi_wb_per_rad, br_t, and bz_t.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "equilibrium"
+    },
+    "to": {
+     "node": "classification_parameters",
+     "port": "equilibrium"
+    },
+    "description": "The same caller-owned equilibrium mapping, read for its classification parameters.",
+    "condition": "Always, once per call.",
+    "transform": "Field-name adaptation: separatrix_flux_wb_per_rad and closed_flux_side are taken verbatim.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "x_m"
+    },
+    "to": {
+     "node": "cylindrical_coordinates",
+     "port": "x_m"
+    },
+    "description": "Solver grid x axis.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "x_m"
+    },
+    "to": {
+     "node": "equilibrium_grid_mapping",
+     "port": "x_m"
+    },
+    "description": "The same solver grid x axis, consumed by the mapping relation.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "y_m"
+    },
+    "to": {
+     "node": "cylindrical_coordinates",
+     "port": "y_m"
+    },
+    "description": "Solver grid y axis.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "y_m"
+    },
+    "to": {
+     "node": "equilibrium_grid_mapping",
+     "port": "y_m"
+    },
+    "description": "The same solver grid y axis, consumed by the mapping relation.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_m"
+    },
+    "to": {
+     "node": "cylindrical_coordinates",
+     "port": "z_m"
+    },
+    "description": "Solver grid axial axis.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "z_m"
+    },
+    "to": {
+     "node": "equilibrium_grid_mapping",
+     "port": "z_m"
+    },
+    "description": "The same solver grid axial axis, consumed by the mapping relation.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "xpoint_half_length_m"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "xpoint_half_length_m"
+    },
+    "description": "Poloidal half length for the innermost-radius segment.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "pml_cells"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "pml_cells"
+    },
+    "description": "PML frame thickness.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "pec_mask"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "pec_mask"
+    },
+    "description": "Caller-owned PEC mask.",
+    "condition": "Always.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "cylindrical_coordinates",
+     "port": "radii_m"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "radii_m"
+    },
+    "description": "Cylindrical radius of every grid point.",
+    "condition": "After the axes validate.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "cylindrical_coordinates",
+     "port": "axial_coordinate_m"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "axial_coordinate_m"
+    },
+    "description": "Axial coordinate of every grid point.",
+    "condition": "After the axes validate.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_grid_mapping",
+     "port": "poloidal_flux_wb_per_rad"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "poloidal_flux_wb_per_rad"
+    },
+    "description": "Reconstructed poloidal flux, the sampled field the classification reads.",
+    "condition": "After the mapping completes.",
+    "transform": "Identity; no re-interpolation.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_grid_mapping",
+     "port": "covered_mask"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "covered_mask"
+    },
+    "description": "Coverage of the solver grid by the equilibrium map.",
+    "condition": "After the mapping completes.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "classification_parameters",
+     "port": "separatrix_flux_wb_per_rad"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "separatrix_flux_wb_per_rad"
+    },
+    "description": "Separatrix flux per radian.",
+    "condition": "After the parameters are read.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "classification_parameters",
+     "port": "closed_flux_side"
+    },
+    "to": {
+     "node": "material_support_classification",
+     "port": "closed_flux_side"
+    },
+    "description": "Selected flux-surface side.",
+    "condition": "After the parameters are read.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_grid_mapping",
+     "port": "magnetic_flux_density_t"
+    },
+    "to": {
+     "node": "$output",
+     "port": "magnetic_flux_density_t"
+    },
+    "description": "Reconstructed static field.",
+    "condition": "On successful completion.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_grid_mapping",
+     "port": "poloidal_flux_wb_per_rad"
+    },
+    "to": {
+     "node": "$output",
+     "port": "poloidal_flux_wb_per_rad"
+    },
+    "description": "Reconstructed poloidal flux, returned as well as consumed.",
+    "condition": "On successful completion.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_grid_mapping",
+     "port": "covered_mask"
+    },
+    "to": {
+     "node": "$output",
+     "port": "covered_mask"
+    },
+    "description": "Coverage diagnostic.",
+    "condition": "On successful completion.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_grid_mapping",
+     "port": "radially_clamped_point_count"
+    },
+    "to": {
+     "node": "$output",
+     "port": "radially_clamped_point_count"
+    },
+    "description": "Radial clamping diagnostic.",
+    "condition": "On successful completion.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "equilibrium_grid_mapping",
+     "port": "axially_clamped_point_count"
+    },
+    "to": {
+     "node": "$output",
+     "port": "axially_clamped_point_count"
+    },
+    "description": "Axial clamping diagnostic.",
+    "condition": "On successful completion.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "material_support_classification",
+     "port": "material_support_mask"
+    },
+    "to": {
+     "node": "$output",
+     "port": "material_support_mask"
+    },
+    "description": "Cold-plasma material support.",
+    "condition": "On successful classification.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "material_support_classification",
+     "port": "closed_flux_mask"
+    },
+    "to": {
+     "node": "$output",
+     "port": "closed_flux_mask"
+    },
+    "description": "Closed-flux diagnostic.",
+    "condition": "On successful classification.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   },
+   {
+    "from": {
+     "node": "material_support_classification",
+     "port": "axis_segment_mask"
+    },
+    "to": {
+     "node": "$output",
+     "port": "axis_segment_mask"
+    },
+    "description": "Innermost-radius segment diagnostic.",
+    "condition": "On successful classification.",
+    "transform": "Identity.",
+    "kind": "data",
+    "required": true
+   }
+  ],
+  "execution": {
+   "mode": "ordered_dag_composition",
+   "ordering": "Validate the caller's declarations, reconstruct the static field and poloidal flux on the solver grid, build the cylindrical coordinates of that grid, read the classification parameters off the equilibrium mapping, classify material support from the reconstructed flux and those parameters, and return.",
+   "branches": [],
+   "state_ownership": "The caller owns the equilibrium mapping, the grid axes, the PEC mask, and every returned array; the graph owns only the two coordinate arrays it builds for the current call and retains no mutable state between calls.",
+   "failure_propagation": "Validation or dependency failure aborts the call immediately; no fallback, retry, or partial result is produced.",
+   "feedback": []
+  }
+ }
+}

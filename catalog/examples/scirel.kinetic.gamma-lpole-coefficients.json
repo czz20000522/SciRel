@@ -1,0 +1,147 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.gamma-lpole-coefficients",
+ "title": {
+  "en": "Bessel-Gamma L-pole coefficients",
+  "zh": "贝塞尔伽马 L 极点系数"
+ },
+ "summary": "Return fixed rational residue and pole tables indexed by Bessel order |n|+1.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Bessel-Gamma L-pole coefficients",
+   "Return fixed rational residue and pole tables indexed by Bessel order |n|+1."
+  ],
+  "operation": [
+   "return Bessel-Gamma L-pole coefficient tables",
+   "maximum harmonic N to residue and pole tables for orders 0..N"
+  ],
+  "model": "rational approximation of Maxwellian finite-Larmor-radius terms",
+  "geometry": "no physical spatial grid",
+  "boundary": "frozen tables cover |n|=0..7; requests beyond them fail",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "maximum harmonic N to residue and pole tables for orders 0..N",
+  "direction": "maximum harmonic N to residue and pole tables for orders 0..N",
+  "definition": "The fixed L-pole residues and positions approximate Bessel-Gamma terms by rational pole sums; table key is |n|+1.",
+  "model": "rational approximation of Maxwellian finite-Larmor-radius terms",
+  "geometry": "no physical spatial grid",
+  "coordinates": "integer harmonic and complex pole axes",
+  "boundary": "frozen tables cover |n|=0..7; requests beyond them fail",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "max_harmonic",
+   "description": "Maximum Bessel order $N$ that the caller will assemble",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Nonnegative integer, and `max_harmonic+1` does not exceed 8, the largest coefficient order in the frozen table."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "orders",
+   "description": "Returned coefficient-order list, that is, $|n|+1$ from 1 to `max_harmonic+1`",
+   "units": "dimensionless",
+   "shape": "Integer list of length `max_harmonic+1`",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Ascending and contiguous."
+  },
+  {
+   "name": "order_lengths",
+   "description": "Number of poles at each coefficient order, $L(|n|+1)$",
+   "units": "dimensionless",
+   "shape": "Mapping keyed by order",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Values come from the frozen table."
+  },
+  {
+   "name": "residues",
+   "description": "Residue array $r_l$ at each order",
+   "units": "dimensionless",
+   "shape": "Mapping keyed by order whose values are complex arrays of length `order_lengths[order]`",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite complex numbers."
+  },
+  {
+   "name": "poles",
+   "description": "Pole array $p_l$ at each order",
+   "units": "dimensionless",
+   "shape": "Mapping keyed by order whose values are complex arrays of length `order_lengths[order]`",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite complex numbers; poles appear in complex-conjugate pairs."
+  },
+  {
+   "name": "total_poles",
+   "description": "Total number of poles returned, $\\sum_{|n|\\le N}L(|n|+1)$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Equal to the velocity-block dimension per species in the dispersion matrix."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "frozen tables cover |n|=0..7; requests beyond them fail"
+  ],
+  "supported": [
+   "Return fixed rational residue and pole tables indexed by Bessel order |n|+1."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.gamma_lpole_coefficients",
+   "symbol": "get_gamma_lpole_coefficients",
+   "signature": "get_gamma_lpole_coefficients(*, max_harmonic: 'int') -> 'dict'",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "get_gamma_lpole_coefficients"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Return the order-one L-pole table and check its declared length.",
+  "code": "from scirel.kinetic import get_gamma_lpole_coefficients\nr=get_gamma_lpole_coefficients(max_harmonic=0); assert r['order_lengths'][1]==12\n",
+  "expected": "Observed PASS: max_harmonic=0 returns order 1 with 12 residues/poles and the associated table metadata."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: The fixed L-pole residues and positions approximate Bessel-Gamma terms by rational pole sums; table key is |n|+1. Evidence: test_fluid_spectrum_r43_fluid.py (9 recorded test functions; shared-file coverage only; bounded source-method parity); the contract example ran. Excluded scope: No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method; external physical validation.",
+  "known_limitations": [
+   "frozen tables cover |n|=0..7; requests beyond them fail",
+   "Only shared-file coverage is bound (test_fluid_spectrum_r43_fluid.py); no asset-specific failure/limit probe is recorded.",
+   "No independent or external oracle is recorded; the evidence is self-consistency/regression only."
+  ]
+ }
+}

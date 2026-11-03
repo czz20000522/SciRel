@@ -1,0 +1,205 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.closures.boltzmann-quasineutrality",
+ "title": {
+  "en": "Boltzmann electron state and quasineutral residuals",
+  "zh": "玻尔兹曼电子态与准中性残差"
+ },
+ "summary": "Evaluate an unclipped Boltzmann electron response in log space and compare it with a supplied positive-ion density.",
+ "taxonomy": [
+  "closures",
+  "boltzmann-electrons",
+  "quasineutrality"
+ ],
+ "aliases": [
+  "Boltzmann electron response",
+  "logarithmic charge residual"
+ ],
+ "discovery": {
+  "capability": [
+   "Boltzmann electron state and quasineutral residuals",
+   "Evaluate an unclipped log-space Boltzmann electron response and compare it with a supplied positive-ion density."
+  ],
+  "operation": [
+   "prescribed-temperature pointwise Boltzmann electron response with neutrality residuals",
+   "potential, electron thermal energy, reference state and ion density -> electron density, pressure and charge residuals"
+  ],
+  "model": "Prescribed-temperature pointwise Boltzmann electron response; not a self-consistent potential solve.",
+  "geometry": "No geometry imposed; each broadcast cell is evaluated independently.",
+  "boundary": "Zero reference density gives zero electron density and pressure; underflow to zero is permitted and unrepresentable required finite outputs raise, with no physical exponent clipping.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Boltzmann electron density, pressure and residuals against a supplied positive-ion state",
+  "direction": "potential, electron thermal energy, reference density and potential, ion density and charge multiplier -> electron density, pressure and three neutrality residuals",
+  "definition": "With e=1.602176634e-19 C, L_e=log(n_ref)+e*(phi-phi_ref)/T_e for positive electron reference density, and L_i=log(n_i)+log(Z_i) for positive ions. Return n_e=exp(L_e), p_e=exp(L_e+log(T_e)), charge residual Z_i*n_i-n_e, log residual L_i-L_e and relative residual tanh((L_i-L_e)/2). Exactly absent species use signed finite log-diagnostic proxies with magnitude at least one and exact relative residual +/-1; joint vacuum returns zero residuals. Positive populations retain analytic logs even when a density underflows. The potential difference is formed before the elementary-charge product. Mantissa/exponent scaling and a range-edge exact fallback avoid cancellation of separately rounded absolute energies and premature overflow/underflow in e*(phi-phi_ref)/T_e.",
+  "model": "prescribed-temperature pointwise Boltzmann electron response; not a self-consistent potential solve",
+  "geometry": "none imposed; each broadcast cell is evaluated independently",
+  "coordinates": "five field inputs use NumPy broadcasting; coordinate alignment is not checked",
+  "boundary": "Zero reference density gives zero electron density/pressure. Underflow to zero is permitted; unrepresentable required finite outputs raise. No physical exponent clipping is used.",
+  "assumptions": [
+   "electron_temperature_j is thermal energy in joules, so n_e*T_e is pressure in pascals.",
+   "The caller supplies an ion number density and a positive scalar charge-state multiplier for the same physical state.",
+   "The runtime accepts any finite positive float-convertible charge multiplier; integer charge state is a physical assumption, not enforced by this callable."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "potential_v",
+   "description": "Potential where electron response is evaluated.",
+   "units": "V",
+   "shape": "scalar or array; common broadcast shape of five fields",
+   "dtype": "float64-convertible array-like",
+   "required": true,
+   "constraints": "Every converted value finite."
+  },
+  {
+   "name": "electron_temperature_j",
+   "description": "Electron thermal-energy scale.",
+   "units": "J",
+   "shape": "scalar or array; common broadcast shape",
+   "dtype": "float64-convertible array-like",
+   "required": true,
+   "constraints": "Every converted value finite and strictly positive."
+  },
+  {
+   "name": "electron_density_ref_m3",
+   "description": "Electron density at reference potential.",
+   "units": "m^-3",
+   "shape": "scalar or array; common broadcast shape",
+   "dtype": "float64-convertible array-like",
+   "required": true,
+   "constraints": "Every converted value finite and nonnegative; zero accepted."
+  },
+  {
+   "name": "electron_phi_ref_v",
+   "description": "Reference potential for the exponential response.",
+   "units": "V",
+   "shape": "scalar or array; common broadcast shape",
+   "dtype": "float64-convertible array-like",
+   "required": true,
+   "constraints": "Every converted value finite."
+  },
+  {
+   "name": "ion_density_m3",
+   "description": "Supplied positive-ion number density.",
+   "units": "m^-3",
+   "shape": "scalar or array; common broadcast shape",
+   "dtype": "float64-convertible array-like",
+   "required": true,
+   "constraints": "Every converted value finite and nonnegative; zero accepted."
+  },
+  {
+   "name": "ion_charge_state",
+   "description": "Positive-ion charge-state multiplier.",
+   "units": "dimensionless",
+   "shape": "scalar converted by float()",
+   "dtype": "finite positive float-convertible value",
+   "required": true,
+   "constraints": "Must convert to a finite positive float; integral charge state is not enforced."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "electron_density_m3",
+   "description": "Unclipped Boltzmann number density.",
+   "units": "m^-3",
+   "shape": "common broadcast shape of field inputs",
+   "dtype": "NumPy float64 scalar or array",
+   "required": true,
+   "constraints": "Finite on return; underflow may round to zero."
+  },
+  {
+   "name": "electron_pressure_pa",
+   "description": "Electron pressure evaluated from L_e+log(T_e), retaining representable pressure even if density underflows.",
+   "units": "Pa",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 scalar or array",
+   "required": true,
+   "constraints": "Finite on return; underflow may round to zero."
+  },
+  {
+   "name": "logarithmic_charge_residual",
+   "description": "L_i-L_e for positive populations; signed finite nonzero proxy for exactly one absent species.",
+   "units": "dimensionless",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 scalar or array",
+   "required": true,
+   "constraints": "Finite; joint vacuum gives zero. An absent species cannot manufacture a zero residual."
+  },
+  {
+   "name": "charge_residual_m3",
+   "description": "Ion charge-weighted number density minus electron number density, not C/m^3 charge density.",
+   "units": "m^-3",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 scalar or array",
+   "required": true,
+   "constraints": "Finite on successful return; units are number density, not electric charge density."
+  },
+  {
+   "name": "relative_charge_residual",
+   "description": "tanh((L_i-L_e)/2) for positive populations; exact +/-1 for one absent species and zero for joint vacuum.",
+   "units": "dimensionless",
+   "shape": "common broadcast shape",
+   "dtype": "NumPy float64 scalar or array",
+   "required": true,
+   "constraints": "Finite in [-1,1], without density-sum overflow."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The five field inputs refer to one compatible state and have broadcast-compatible shapes; the charge multiplier describes the same ion state."
+  ],
+  "supported": [
+   "Pointwise Boltzmann electron response and quasineutral residual diagnostics, including zero-density cells.",
+   "Evaluation at supplied potentials for a separately controlled ambipolar root solve."
+  ],
+  "excluded": [
+   "Solving potential or deriving ion density from kinetic moments.",
+   "Unreduced multiple-ion charge sums, non-Boltzmann electrons, or interpreting a prescribed state as a solved potential or physically verified equilibrium."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for nonfinite fields, nonpositive electron temperature, negative density, or nonfinite/nonpositive charge multiplier. Incompatible shapes or nonnumeric conversions may raise ValueError or TypeError.",
+  "runtime_failure": "FloatingPointError for a nonrepresentable dimensionless potential, required density/pressure or log residual. No artificial exponent cap substitutes a different state.",
+  "nonconvergence": "Not applicable; this callable evaluates one supplied potential without iteration.",
+  "partial_results": "An exception returns no mapping; successful calls return all five finite fields, with declared underflow and exact-vacuum conventions."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.closures.boltzmann_quasineutrality",
+   "symbol": "compute_boltzmann_electron_state",
+   "signature": "compute_boltzmann_electron_state(potential_v, electron_temperature_j, electron_density_ref_m3, electron_phi_ref_v, ion_density_m3, ion_charge_state)",
+   "canonical_module": "scirel.closures",
+   "canonical_symbol": "compute_boltzmann_electron_state"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate a supplied state at one electron thermal voltage above its reference.",
+  "code": "import numpy as np\nfrom scirel.closures import compute_boltzmann_electron_state\ne=1.602176634e-19\nr=compute_boltzmann_electron_state(np.log(2.0),e,3.0,0.0,3.0,2.0)\nnp.testing.assert_allclose(r['electron_density_m3'],6.0)\nnp.testing.assert_allclose(r['electron_pressure_pa'],6.0*e)\nnp.testing.assert_allclose(r['logarithmic_charge_residual'],0.0,atol=1e-14)\nnp.testing.assert_allclose(r['charge_residual_m3'],0.0,atol=1e-14)",
+  "expected": "Electron density is 6 m^-3, pressure is about 9.613059804e-19 Pa, and the displayed neutrality residuals are zero within floating-point tolerance."
+ },
+ "verification": {
+  "scope": [
+   "Representable densities from n_ref=1e-300, e*phi/T_e=+800 and n_ref=1e300, e*phi/T_e=-800 without clipping.",
+   "Overflow-safe relative residual, underflow-safe positive-population log residual, joint-vacuum behaviour and pressure preserved despite density underflow.",
+   "Ordinary analytic response, invalid-input and finite-output checks; the current regression preserves a strict no-clipping exp(701) witness and rejects an unrepresentable positive response. The no-clipping assertion is the discriminating witness: an unrepresentable positive response is rejected, not clamped.",
+   "Adjacent binary64 potentials near +/-1e20 reproduce the exact-rational dimensionless exponent; opposite-sign potentials of magnitude 1e308 and subnormal thermal-energy cases preserve representable final responses."
+  ],
+  "tests": [
+   "tests/closures/test_boltzmann_quasineutrality.py",
+   "tests/cross_domain/test_mirror_kinetic_scientific_correction.py",
+   "tests/cross_domain/test_mirror_gauge_scientific_correction.py"
+  ],
+  "evidence_ceiling": "The evaluated mathematical Boltzmann law, finite arithmetic behavior and declared residual conventions are tested. This does not establish a physical electron equilibrium or all plasma-model applicability.",
+  "known_limitations": [
+   "Exactly absent species have a finite signed diagnostic proxy, not the mathematically infinite logarithm; its magnitude is not a physical logarithmic ratio.",
+   "Binary64 underflow can round densities or pressures to zero; positive-population log diagnostics still use analytic log density.",
+   "Coordinate alignment, distribution rights and human scientific recognition remain separate."
+  ]
+ }
+}

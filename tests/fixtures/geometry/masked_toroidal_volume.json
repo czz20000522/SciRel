@@ -1,0 +1,22 @@
+{
+  "schema": "scirel.typed-volume-fixtures",
+  "version": 1,
+  "origin": "Constructed solely from frozen source Equilibrium.plasmaVolume lines 294-324, finite-grid axis contract lines 121-128, and its NumPy mask/error branches; no expected outputs or receiver material.",
+  "source_revision": "b93476044a30f5189f5e8a3bfd30e8e7e186f79f",
+  "cases": [
+    {"id": "boolean_mask_all", "R": {"dtype": "float64", "shape": [3,2], "values": ["1.0","1.0","1.5","1.5","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "bool", "shape": [3,2], "values": [true,true,true,true,true,true]}},
+    {"id": "boolean_mask_empty", "R": {"dtype": "float64", "shape": [3,2], "values": ["1.0","1.0","1.5","1.5","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "bool", "shape": [3,2], "values": [false,false,false,false,false,false]}},
+    {"id": "numeric_mask_weights", "R": {"dtype": "float64", "shape": [3,2], "values": ["1.0","1.0","1.5","1.5","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "float64", "shape": [3,2], "values": ["0.25","0.0","1.0","0.5","-0.25","2.0"]}},
+    {"id": "broadcast_mask_row", "R": {"dtype": "float64", "shape": [3,2], "values": ["1.0","1.0","1.5","1.5","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "float64", "shape": [2], "values": ["1.0","0.0"]}},
+    {"id": "mask_shape_failure", "R": {"dtype": "float64", "shape": [3,2], "values": ["1.0","1.0","1.5","1.5","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "float64", "shape": [4], "values": ["1.0","1.0","1.0","1.0"]}},
+    {"id": "nan_flux_grid_coordinate", "R": {"dtype": "float64", "shape": [2,2], "values": ["1.0","nan","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "bool", "shape": [2,2], "values": [true,true,true,true]}},
+    {"id": "positive_infinity", "R": {"dtype": "float64", "shape": [2,2], "values": ["1.0","1.0","inf","inf"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "bool", "shape": [2,2], "values": [true,true,true,true]}},
+    {"id": "infinity_times_zero", "R": {"dtype": "float64", "shape": [2,2], "values": ["1.0","1.0","inf","inf"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "bool", "shape": [2,2], "values": [true,true,false,false]}},
+    {"id": "float32_grid", "R": {"dtype": "float32", "shape": [2,2], "values": ["1.1","1.1","1.3","1.3"]}, "dR": "0.2", "dZ": "0.3", "profile_state": "present", "mask": {"dtype": "bool", "shape": [2,2], "values": [true,false,true,true]}},
+    {"id": "zero_spacing", "R": {"dtype": "float64", "shape": [2,2], "values": ["1.0","1.0","2.0","2.0"]}, "dR": "0.0", "dZ": "0.25", "profile_state": "present", "mask": {"dtype": "bool", "shape": [2,2], "values": [true,true,true,true]}},
+    {"id": "missing_profiles", "R": {"dtype": "float64", "shape": [2,2], "values": ["1.0","1.0","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "missing_profiles"},
+    {"id": "missing_core_mask", "R": {"dtype": "float64", "shape": [2,2], "values": ["1.0","1.0","2.0","2.0"]}, "dR": "0.5", "dZ": "0.25", "profile_state": "missing_core_mask"}
+  ],
+  "comparison_rule": "Finite outputs: exact IEEE binary64 value after scalar projection; NaN/Infinity: class and sign, with bits retained; exceptions: qualified class and exact message; side effects: exact stdout/stderr, warning category/message, and input state mutation.",
+  "scope": "Source leaf plus explicit state-to-port adapter. Degenerate grid spacings/nonfinite inputs are behavior probes, not a physical applicability expansion."
+}

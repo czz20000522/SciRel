@@ -1,0 +1,164 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.filament-vacuum-field",
+ "title": {
+  "en": "Circular-filament vacuum field on a cylindrical grid",
+  "zh": "柱坐标网格上的圆电流丝真空场"
+ },
+ "summary": "Evaluate ideal circular-filament fields on a uniform rectilinear R,Z grid and integrate radial flux from the first radial node.",
+ "taxonomy": [
+  "field",
+  "vacuum-field",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "filament vacuum field radial quadrature"
+ ],
+ "discovery": {
+  "capability": [
+   "Circular-filament vacuum field on a cylindrical grid",
+   "Evaluate ideal circular-filament fields on a uniform rectilinear R-Z grid and integrate radial flux from the first radial node."
+  ],
+  "operation": [
+   "filament vacuum-field evaluation with radial flux integration",
+   "grid coordinates and filament currents -> psi, BR and BZ grids"
+  ],
+  "model": "Ideal circular-filament vacuum field with no near-axis cutoff.",
+  "geometry": "Rectilinear grid with the radial coordinate varying along exactly one array axis.",
+  "boundary": "The first radial node is the psi reference and the axis radial field is zero; source-target coincidence remains singular.",
+  "device_scope": "device-parameterized"
+ },
+ "identity": {
+  "relation": "Filament vacuum field and radial flux integration",
+  "direction": "grid coordinates and filament currents to psi, BR, and BZ grids",
+  "definition": "Evaluate the Green kernel at grid points and integrate R*BZ with a radial trapezoid recurrence.",
+  "model": "Ideal circular-filament vacuum field with no near-axis cutoff.",
+  "geometry": "Rectilinear grid with the radial coordinate varying along exactly one array axis.",
+  "coordinates": "R,Z in metres; filament current in amperes; psi Wb/rad; fields tesla.",
+  "boundary": "The first radial node is the psi reference and axis radial field is zero; source-target coincidence remains singular.",
+  "assumptions": [
+   "The radial axis is nonnegative, strictly increasing, and uniformly spaced.",
+   "Sources have strictly positive radius.",
+   "No 2pi factor is applied to psi."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Target cylindrical radius grid.",
+   "units": "m",
+   "shape": "2-D, at least two points per axis",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite, nonnegative, rectilinear, uniformly spaced and strictly increasing along exactly one array axis."
+  },
+  {
+   "name": "z_grid",
+   "description": "Target axial coordinate grid.",
+   "units": "m",
+   "shape": "same as r_grid",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite and rectilinear along the other axis; axial order is not constrained."
+  },
+  {
+   "name": "filaments",
+   "description": "Ideal circular source rows [R0_m, Z0_m, current_A].",
+   "units": "m,m,A",
+   "shape": "[N_filament,3]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Finite with strictly positive source radius; an empty source set is allowed; no source may coincide with a target grid point."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "psi",
+   "description": "Psi=R A_phi from radial trapezoidal integration of R times B_Z, referenced to the first radial grid point.",
+   "units": "Wb/rad",
+   "shape": "same as r_grid",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero at the first radial grid point; no 2*pi factor is applied."
+  },
+  {
+   "name": "b_r",
+   "description": "Superposed radial magnetic field.",
+   "units": "T",
+   "shape": "same as r_grid",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero on the cylindrical axis R=0 under the Green-kernel axis limit."
+  },
+  {
+   "name": "b_z",
+   "description": "Superposed axial magnetic field.",
+   "units": "T",
+   "shape": "same as r_grid",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite on successful return."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The radial axis is nonnegative, strictly increasing, and uniformly spaced.",
+   "Sources have strictly positive radius."
+  ],
+  "supported": [
+   "Transposed rectilinear layouts, superposition, analytic axis BZ, and radial trapezoid recurrence."
+  ],
+  "excluded": [
+   "Nonrectilinear grids, finite-wire self-fields, and continuum convergence claims."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for malformed grids, nonfinite values, invalid axes, or source/target singularity.",
+  "runtime_failure": "FloatingPointError is raised for a nonfinite Green or integrated result.",
+  "nonconvergence": "Not applicable; kernel evaluation and quadrature are direct.",
+  "partial_results": "No field mapping is returned after validation or arithmetic failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.filament_vacuum_field",
+   "symbol": "integrate_filament_vacuum_field",
+   "signature": "integrate_filament_vacuum_field(r_grid, z_grid, filaments)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "integrate_filament_vacuum_field"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.electromagnetism.circular-filament-green"
+   }
+  ]
+ },
+ "example": {
+  "description": "Evaluate one off-grid filament on a 4x5 rectilinear grid.",
+  "code": "import numpy as np\nfrom scirel.field.filament_vacuum_field import integrate_filament_vacuum_field\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 5), np.linspace(-0.2, 0.2, 4))\nresult = integrate_filament_vacuum_field(r_grid, z_grid, [[0.45, -0.1, 1500.0]])\nassert set(result) == {'psi', 'b_r', 'b_z'}\nassert all(value.shape == r_grid.shape for value in result.values())\nassert np.isfinite(result['b_z']).all()\nnp.testing.assert_array_equal(result['psi'][:, 0], 0.0)\nnp.testing.assert_array_equal(result['b_r'][:, 0], 0.0)",
+  "expected": "All returned arrays have shape (4,5), psi and BR are zero on the first radial column, and BZ is finite."
+ },
+ "verification": {
+  "scope": [
+   "Filament-current superposition.",
+   "Circular-filament analytic axial-field limit.",
+   "Radial quadrature increment and first-grid-point reference.",
+   "Comparison with independent circular-filament psi=R A_phi Green values away from the source.",
+   "Transposed rectilinear layout and invalid radial grid.",
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
+  ],
+  "tests": [
+   "tests/field/test_filament_vacuum_field.py",
+   "tests/cross_domain/test_field_green_correction.py"
+  ],
+  "evidence_ceiling": "Bounded to filament-current superposition, first-grid-point psi reference and radial quadrature. Evidence: `test_filament_vacuum_field.py` contains 7 test functions, 1 of which references `integrate_filament_vacuum_field`, and is bound only by this asset; `test_field_green_correction.py` contains 9 test functions, none of which references `integrate_filament_vacuum_field`, and is shared by 5 assets; the bounded example was executed by this audit. Oracle: analytic circular-filament psi=R A_phi values away from the source. It does not establish nonrectilinear grids, finite-wire self-fields, or continuum convergence.",
+  "known_limitations": [
+   "The returned flux uses the first radial grid point as reference and omits a 2-pi flux factor.",
+   "The ideal source is singular at coincident targets, which are rejected.",
+   "The asset-private file has seven functions and one direct example; the shared correction file contains no direct call, so the nonfinite integrated-field path is contract-only.",
+   "The radial trapezoidal error in psi must be verified by grid refinement; even when the magnetic field uses the analytic relation, the discrete psi is not claimed to equal the analytic R*A_phi."
+  ]
+ }
+}

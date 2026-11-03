@@ -1,0 +1,49 @@
+name: "<task_graph_name>"
+display_name:
+  zh: "<中文任务图名>"
+framework_mapping:
+  primary_pfm_node: "N1"
+  coverage: "slice"
+  related_pfm_nodes: []
+inputs:
+  - name: input_name
+    meaning: "explicit scientific or configuration state"
+    shape: "scalar or declared axes"
+    units: "source convention or declared unit"
+    required: true
+outputs:
+  - name: output_name
+    meaning: "declared scientific result or state transition"
+    shape: "scalar or declared axes"
+    units: "source convention or declared unit"
+execution:
+  mode: dag
+  order_policy: yaml_order
+  state_policy: pass_state
+  failure_policy: raise
+nodes:
+  - id: input_contract
+    name: "<input_contract_name>"
+    kind: support_action
+    callable: "graph:project_state_contract"
+    inputs: [input_name]
+    outputs: [normalized_input]
+    evidence: "<source-relative/path.ext:1-5>"
+  - id: scientific_step
+    name: "<scientific_step_name>"
+    kind: scientific_operator
+    callable: "asset:scientific_operator"
+    asset_ref: "operators/<operator_name>"
+    inputs: [normalized_input]
+    outputs: [output_name]
+    evidence: "<source-relative/path.ext:6-10>"
+edges:
+  - from: input_contract
+    to: scientific_step
+    from_output: normalized_input
+    to_input: normalized_input
+    condition: always
+    required: true
+    data: "<scientific state or quantity>"
+    transform: identity
+    closure: asset

@@ -1,0 +1,114 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.fieldline.boundary",
+ "title": {
+  "en": "Parametric boundary interpolation",
+  "zh": "参数化边界插值"
+ },
+ "summary": "Fit a nonperiodic parametric spline to ordered planar boundary vertices.",
+ "taxonomy": [
+  "analysis",
+  "fieldline"
+ ],
+ "aliases": [
+  "Boundary"
+ ],
+ "discovery": {
+  "capability": [
+   "Parametric boundary interpolation",
+   "Fit a nonperiodic parametric spline to ordered planar boundary vertices."
+  ],
+  "operation": [
+   "ordered boundary vertices to an interpolable boundary object",
+   "ordered planar boundary vertices -> boundary object with stored 200 fitted samples"
+  ],
+  "model": "Nonperiodic quadratic splprep parametric spline with smoothing s=0; stored samples are 200 fitted points.",
+  "geometry": "Ordered planar boundary path; vertex coordinates are in caller length units.",
+  "boundary": "No periodic closure, polygon-interior test, crossing selection or intersection uniqueness is inferred.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Parametric boundary spline",
+  "direction": "ordered boundary vertices to an interpolable boundary object",
+  "definition": "Fit a SciPy parametric spline with s=0 and sample it at 200 parameters.",
+  "model": "Nonperiodic quadratic default splprep fit.",
+  "geometry": "Ordered planar boundary path.",
+  "coordinates": "Vertex coordinates in caller length units.",
+  "boundary": "No periodic closure or intersection uniqueness is inferred.",
+  "assumptions": [
+   "The input is finite and contains enough distinct points for splprep.",
+   "Stored samples are 200 fitted points.",
+   "The object exposes tck, u, verts, and interpolate."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "vertices",
+   "description": "Ordered boundary vertices",
+   "units": "length units",
+   "shape": "(N,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite ordered points sufficient for the default quadratic splprep fit (at least three distinct points)."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "boundary",
+   "description": "Object with verts,tck,u and interpolation",
+   "units": "length units",
+   "shape": "Python object",
+   "dtype": "Python object",
+   "required": true,
+   "constraints": "Stored verts have (200,2); interpolation returns coordinate arrays"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The input is finite and contains enough distinct points for splprep.",
+   "Stored samples are 200 fitted points."
+  ],
+  "supported": [
+   "Named finite boundary interpolation and endpoint behavior."
+  ],
+  "excluded": [
+   "Polygon interior tests, crossing selection, and uniqueness guarantees."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Underlying array or SciPy spline validation errors propagate for unsupported vertices.",
+  "runtime_failure": "Interpolation exceptions propagate.",
+  "nonconvergence": "Not applicable; fitting is a direct spline construction.",
+  "partial_results": "A failed constructor returns no boundary object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.fieldline",
+   "symbol": "Boundary",
+   "signature": "Boundary(vertices)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "Boundary"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Fit a nonperiodic boundary spline to four ordered vertices.",
+  "code": "import numpy as np\nfrom scirel.geometry.fieldline import Boundary\nb=Boundary(np.array([[0.,0.],[.3,.3],[.7,.7],[1.,1.]]))\nassert b.verts.shape==(200,2)",
+  "expected": "The boundary stores 200 fitted vertices with shape (200,2)."
+ },
+ "verification": {
+  "scope": [
+   "Only the explicitly stated finite input domain and direct-test fixtures"
+  ],
+  "tests": [
+   "tests/equilibrium/test_retained_fieldline_primitives.py"
+  ],
+  "evidence_ceiling": "Numerical evidence for the named fixtures only; it does not establish arbitrary-input correctness or experimental physical validation.",
+  "known_limitations": [
+   "No reliable intersection, polygon interior or uniqueness guarantee"
+  ]
+ }
+}

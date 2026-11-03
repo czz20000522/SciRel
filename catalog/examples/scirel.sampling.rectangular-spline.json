@@ -1,0 +1,143 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.rectangular-spline",
+ "title": {
+  "en": "Rectangular spline field query",
+  "zh": "矩形网格样条场查询"
+ },
+ "summary": "Evaluate bicubic rectangular field interpolation at ordered path vertices",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "interp"
+ ],
+ "discovery": {
+  "capability": [
+   "Rectangular spline field query",
+   "Evaluate bicubic rectangular field interpolation at ordered path vertices."
+  ],
+  "operation": [
+   "bicubic rectangular-grid field interpolation",
+   "separable grid, field values and ordered planar path vertices -> interpolated field samples"
+  ],
+  "model": "SciPy RectBivariateSpline with default degrees and smoothing.",
+  "geometry": "Planar separable rectangular grid and ordered planar path points; coordinates use xy row/column order.",
+  "boundary": "Queries must lie inside the grid support for a qualified result; out-of-grid spline extrapolation and arbitrary nonlinear interpolation errors are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Rectangular spline field query",
+  "direction": "Declared inputs to Interpolated field along path",
+  "definition": "Evaluate bicubic rectangular field interpolation at ordered path vertices",
+  "model": "RectBivariateSpline with source default degrees/smoothing",
+  "geometry": "planar rectangular grid and path points",
+  "coordinates": "xy row/column grid and planar flpoints",
+  "boundary": "Queries must lie inside the closed grid support; out-of-grid or nonfinite query points are rejected rather than extrapolated.",
+  "assumptions": [
+   "Finite separable xy grid with at least four distinct points per axis",
+   "Finite Q and interior query coordinates"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "Rho",
+   "description": "Rectangular radial x grid",
+   "units": "length units",
+   "shape": "(Nz,Nr)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Rho[0,:] strictly increasing"
+  },
+  {
+   "name": "Z",
+   "description": "Rectangular axial y grid",
+   "units": "length units",
+   "shape": "same as Rho",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Z[:,0] strictly increasing"
+  },
+  {
+   "name": "Q",
+   "description": "Rectangular field",
+   "units": "field units",
+   "shape": "same as Rho",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite"
+  },
+  {
+   "name": "flpoints",
+   "description": "Ordered planar path vertices",
+   "units": "length units",
+   "shape": "(N,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite supplied ordering; each query point must lie inside the closed grid support"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "values",
+   "description": "Interpolated field along path",
+   "units": "field units",
+   "shape": "(N,)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Ordering follows flpoints"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite separable xy grid with at least four distinct points per axis",
+   "Finite Q and finite query coordinates inside the closed grid support"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "Out-of-grid spline extrapolation is not provided (outside queries are rejected); arbitrary nonlinear interpolation errors are unqualified"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; out-of-grid or nonfinite query points are rejected with ValueError instead of being extrapolated; no input repair is inferred.",
+  "runtime_failure": "Numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "interp",
+   "signature": "interp(Rho, Z, Q, flpoints)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "interp"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Evaluate an affine field at two interior path points using rectangular spline interpolation.",
+  "code": "import numpy as np\nfrom scirel.geometry.sampling import interp\n\nrho, z = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(0.0, 1.0, 5))\npoints = np.array([[0.2, 0.3], [0.6, 0.7]])\nnp.testing.assert_allclose(interp(rho, z, rho + 2.0 * z, points), [0.8, 2.0])",
+  "expected": "The interpolated values are [0.8, 2.0] in path order."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract",
+   "Closed-support rejection of out-of-grid and nonfinite query points."
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Out-of-grid queries are rejected; arbitrary nonlinear interpolation errors remain unqualified"
+  ]
+ }
+}

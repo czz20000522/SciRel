@@ -1,0 +1,166 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.diagnostics.species-absorption-fraction",
+ "title": {
+  "en": "Species absorption fraction closure",
+  "zh": "物种吸收占比闭合"
+ },
+ "summary": "Close a four-species signed absorbed-power ledger into ordered percentage shares, using stable signed summation and exact rational evaluation at dangerous numerical extremes; reject zero total and nonrepresentable results.",
+ "taxonomy": [
+  "diagnostics",
+  "power-ledger",
+  "closure",
+  "rf-absorption"
+ ],
+ "aliases": [
+  "Wdot species fractions",
+  "E-star-dot-J species fractions"
+ ],
+ "discovery": {
+  "capability": [
+   "Species absorption fraction closure",
+   "Close a four-species signed absorbed-power ledger into ordered percentage shares with exact rational evaluation."
+  ],
+  "operation": [
+   "stable signed summation and exact rational closure of a four-species power ledger",
+   "four absorbed-power values -> total power, ordered species percentages, fraction-sum residual and branch"
+  ],
+  "model": "Absorbed-power split across exactly four species.",
+  "geometry": "Not applicable; the relation is a per-ledger scalar closure with no spatial dependence.",
+  "boundary": "The mathematical total must be nonzero and its returned binary64 value finite; all returned percentages and their reported sum must be finite, and severe signed cancellation may make the returned sum differ from 100 percent.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "four-species absorbed-power ledger to caller-ordered percentage shares and the closure residual",
+  "direction": "species_power_values -> total_power, species_fraction_percent, total_fraction_percent, fraction_sum_residual_percent, branch",
+  "definition": "Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction. Ordinary percentages retain divide-then-scale rounding. Severe cancellation or intermediate range loss triggers exact rational percentage evaluation. The residual uses the actual returned floating percentages, not unrounded theoretical shares.",
+  "model": "absorbed-power split across exactly four species",
+  "geometry": "not applicable; the relation is a per-ledger scalar closure with no spatial dependence",
+  "coordinates": "not applicable; entries are carried in the caller's species order and never reordered",
+  "boundary": "The mathematical total must be nonzero and its returned binary64 value finite. Every returned percentage and their reported sum must be finite. Severe signed cancellation can make the returned sum differ substantially from 100 because individual shares were rounded.",
+  "assumptions": [
+   "The four entries are the absorbed powers of one species ordering supplied by the caller; the operator never infers or reorders species.",
+   "A negative entry is a physically meaningful signed contribution and is reported as computed, not clipped.",
+   "The relation is the same for both entry points: the E-star-dot-J route and the Wdot route differ only in the entry-point variable."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "species_power_values",
+   "description": "Absorbed-power ledger in the caller's species order.",
+   "units": "source power units",
+   "shape": "[4]",
+   "dtype": "real array-like",
+   "required": true,
+   "constraints": "Exactly four entries convertible to finite float64. Complex, boolean, and string array dtypes are rejected; numeric object arrays are accepted when conversion succeeds. Object values that fail conversion or convert to non-finite values are rejected."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "total_power",
+   "description": "Sum of the four ledger entries in the same units as the input.",
+   "units": "source power units",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite and non-zero; the call is rejected otherwise."
+  },
+  {
+   "name": "species_fraction_percent",
+   "description": "Percentage share of each species, in the caller's species order.",
+   "units": "percent",
+   "shape": "[4]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Entry i equals 100 * value_i / total_power; entries may be negative when the corresponding ledger entry is negative. Every share must be finite; otherwise the call is rejected."
+  },
+  {
+   "name": "total_fraction_percent",
+   "description": "Sum of the returned percentage shares.",
+   "units": "percent",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Sum of the actual returned binary64 shares. Ordinary ledgers retain the floating reduction; severe cancellation or reduction overflow uses exact summation of those returned values. It need not be close to 100 under severe signed cancellation. A nonrepresentable sum is rejected."
+  },
+  {
+   "name": "fraction_sum_residual_percent",
+   "description": "Closure residual, equal to total_fraction_percent minus 100.0.",
+   "units": "percent",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Exactly the difference of the two reported values, not an independently recomputed quantity."
+  },
+  {
+   "name": "branch",
+   "description": "Label of the emitted branch.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "string",
+   "required": true,
+   "constraints": "Always the literal 'nonzero_total'; the zero-total branch is not represented as a value because it is rejected."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The four entries belong to one species ordering supplied by the caller.",
+   "The caller has already established that the ledger total is physically meaningful."
+  ],
+  "supported": [
+   "Positive ledgers, single-species ledgers, and ledgers with negative entries.",
+   "Ledgers whose total is small but non-zero."
+  ],
+  "excluded": [
+   "Ledgers whose total is exactly zero, for which no percentage result is defined.",
+   "Ledgers with fewer or more than four species.",
+   "Renormalizing or clipping negative shares."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when the ledger is not a length-four vector, is complex, boolean, or string typed, contains non-finite entries, or cannot be converted to float; and when the derived total is non-finite or exactly zero.",
+  "runtime_failure": "Raises ValueError only when the exact total is zero or a required final total/share/returned-share sum cannot be represented as finite binary64; dangerous intermediate overflow and underflow are evaluated using exact rational arithmetic.",
+  "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
+  "partial_results": "Never returned; a rejected ledger produces no mapping."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.diagnostics.species_absorption_fraction",
+   "symbol": "compute_species_absorption_fraction",
+   "signature": "compute_species_absorption_fraction(species_power_values)",
+   "canonical_module": "scirel.diagnostics",
+   "canonical_symbol": "compute_species_absorption_fraction"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Close a four-species ledger and show that a zero-total ledger is rejected rather than split.",
+  "code": "import numpy as np\nfrom scirel.diagnostics import compute_species_absorption_fraction\nresult = compute_species_absorption_fraction([1.0, 2.0, 3.0, 4.0])\nnp.testing.assert_allclose(result['species_fraction_percent'], [10.0, 20.0, 30.0, 40.0])\nassert result['total_power'] == 10.0\nassert result['branch'] == 'nonzero_total'\nassert abs(result['fraction_sum_residual_percent']) < 1e-12\ntry:\n    compute_species_absorption_fraction([0.0, 0.0, 0.0, 0.0])\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a zero-total ledger must be rejected')",
+  "expected": "A mapping with the four species shares in caller order and a zero-total ledger that raises ValueError."
+ },
+ "verification": {
+  "scope": [
+   "Ordinary ledger arithmetic and keys are the same for both entry points; extreme signed cancellation and intermediate range loss are corrected against exact rational arithmetic.",
+   "Caller species ordering and explicit residual of the returned shares; no unconditional numerical closure-to-100 claim for ill-conditioned signed ledgers.",
+   "Single-species ledgers, negative ledgers, and small-total ledgers.",
+   "Fail-closed behavior at the exact zero-total boundary and under signed cancellation.",
+   "Fail-closed validation of ledger length, dtype, and finiteness.",
+   "Exposure of exactly one public callable after the merge.",
+   "Exact zero despite overflowing partial sums; preservation of small terms in signed cancellation; finite final results despite partial sum overflow; subnormal shares; rejection of truly nonrepresentable percentages."
+  ],
+  "tests": [
+   "tests/diagnostics/test_species_absorption_fraction.py",
+   "tests/cross_domain/test_legacy_admission_regressions.py"
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction…. Evidence: test_species_absorption_fraction.py, test_legacy_admission_regressions.py (18 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Ledgers whose total is exactly zero, for which no percentage result is defined; Ledgers with fewer or more than four species.",
+  "known_limitations": [
+   "The species count is fixed at four; no general-length ledger is supported.",
+   "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
+   "The optional cross-implementation comparison runs only when an external implementation is reachable; it is skipped rather than silently passed when it is not.",
+   "The independent analytic comparison does not replace an external experimental reference."
+  ]
+ }
+}

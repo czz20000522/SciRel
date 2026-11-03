@@ -1,0 +1,310 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
+ "title": {
+  "en": "L/J-pole fluid dispersion matrix",
+  "zh": "L/J 极点流体色散矩阵"
+ },
+ "summary": "Assemble the dense first-order fluid eigenmatrix for fixed angular frequency and parallel wavenumber.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave"
+ ],
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "L/J-pole fluid dispersion matrix",
+   "Assemble the dense first-order fluid eigenmatrix for fixed angular frequency and parallel wavenumber."
+  ],
+  "operation": [
+   "assemble the L/J-pole fluid dispersion matrix",
+   "species scales and L/J pole tables to a complex kx eigenmatrix"
+  ],
+  "model": "homogeneous magnetized multi-species Maxwellian fluid pole expansion",
+  "geometry": "no physical spatial grid",
+  "boundary": "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes; source resonance denominators must not vanish and the assembled matrix must remain finite",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "species scales and L/J pole tables to a complex kx eigenmatrix",
+  "direction": "species scales and L/J pole tables to a complex kx eigenmatrix",
+  "definition": "Assemble M for kx X=M X in [vx_snl,vy_snl,vz_snl,Ey,Ez,By,Bz] order; its dimension is 3*S*sum(L)+4.",
+  "model": "homogeneous magnetized multi-species Maxwellian fluid pole expansion",
+  "geometry": "no physical spatial grid",
+  "coordinates": "wavevector x-z plane; z parallel to B0; component and pole blocks retain source ordering",
+  "boundary": "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes; source resonance denominators must not vanish and the assembled matrix must remain finite",
+  "assumptions": [
+   "Input units and normalization follow the declared ports; no physical parameters are inferred."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "omega",
+   "description": "Fixed angular frequency entering the resonance denominators and the Maxwell curl term",
+   "units": "rad/s",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "kz",
+   "description": "Parallel wavenumber entering the parallel resonance and curl term",
+   "units": "1/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "c2",
+   "description": "Speed of light squared in vacuum",
+   "units": "m^2/s^2",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "epsilon0",
+   "description": "Vacuum permittivity",
+   "units": "F/m",
+   "shape": "scalar",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "wps2",
+   "description": "Plasma-frequency squared of each species",
+   "units": "rad^2/s^2",
+   "shape": "`(S,)` one-dimensional species axis",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "wcs",
+   "description": "Signed cyclotron frequency of each species",
+   "units": "rad/s",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and nonzero."
+  },
+  {
+   "name": "vts",
+   "description": "Thermal speed of each species",
+   "units": "m/s",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "rhocs",
+   "description": "Signed gyroradius of each species",
+   "units": "m",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "sgns",
+   "description": "Gyroradius sign",
+   "units": "dimensionless",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Takes values `±1`."
+  },
+  {
+   "name": "absrhocs",
+   "description": "Absolute gyroradius",
+   "units": "m",
+   "shape": "`(S,)`",
+   "dtype": "real numeric",
+   "required": true,
+   "constraints": "Finite and strictly positive."
+  },
+  {
+   "name": "cn_residues",
+   "description": "L-pole residue table indexed by coefficient order 1..`max_harmonic+1`",
+   "units": "dimensionless",
+   "shape": "Mapping whose values are complex arrays",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Covers every required order and is finite."
+  },
+  {
+   "name": "cn_poles",
+   "description": "L-pole location table indexed like `cn_residues`",
+   "units": "dimensionless",
+   "shape": "Mapping whose values are complex arrays",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Covers every required order and is finite."
+  },
+  {
+   "name": "order_lengths",
+   "description": "Number of poles at each order",
+   "units": "dimensionless",
+   "shape": "Mapping",
+   "dtype": "mapping",
+   "required": true,
+   "constraints": "Array lengths match `cn_residues`/`cn_poles`."
+  },
+  {
+   "name": "bzj",
+   "description": "Residues of the Z-pole approximation",
+   "units": "dimensionless",
+   "shape": "`(J,)` one-dimensional pole axis",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite and nonempty."
+  },
+  {
+   "name": "czj",
+   "description": "Pole locations of the Z-pole approximation",
+   "units": "dimensionless",
+   "shape": "`(J,)`, the same length as `bzj`",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite."
+  },
+  {
+   "name": "max_harmonic",
+   "description": "Maximum Bessel harmonic order $N$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Nonnegative integer."
+  },
+  {
+   "name": "n_species",
+   "description": "Number of species $S$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "At least 1."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "M",
+   "description": "Eigenmatrix to solve",
+   "units": "Mixed dimensions (each block normalized to its own physical quantity)",
+   "shape": "`(3*NSL+4, 3*NSL+4)` complex square matrix, `NSL=n_species*sum(order_lengths)`",
+   "dtype": "complex128",
+   "required": true,
+   "constraints": "Finite complex numbers."
+  },
+  {
+   "name": "n_sl",
+   "description": "Velocity-expansion dimension of each species $\\sum_l L(l)$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Positive integer."
+  },
+  {
+   "name": "n_sl3",
+   "description": "Total dimension of the three velocity-component blocks $3\\,NSL$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Positive integer."
+  },
+  {
+   "name": "matrix_size",
+   "description": "Matrix order $3\\,NSL+4$",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Matches the number of rows of `M`."
+  },
+  {
+   "name": "n_l",
+   "description": "Total number of poles per species over all harmonics",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "Positive integer."
+  },
+  {
+   "name": "nonzero_entries",
+   "description": "Number of nonzero matrix entries, for structural checks",
+   "units": "dimensionless",
+   "shape": "integer scalar",
+   "dtype": "integer",
+   "required": true,
+   "constraints": "At most the total number of matrix entries."
+  },
+  {
+   "name": "state_layout",
+   "description": "State-vector block order",
+   "units": "not applicable",
+   "shape": "String list of length 7",
+   "dtype": "string",
+   "required": true,
+   "constraints": "Fixed to `vx_snl, vy_snl, vz_snl, Ey, Ez, By, Bz`."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes",
+   "Source 1/xsj and 1/(xsj^2-m^2) resonance denominators must not vanish; M must remain finite."
+  ],
+  "supported": [
+   "Assemble the dense first-order fluid eigenmatrix for fixed angular frequency and parallel wavenumber."
+  ],
+  "excluded": [
+   "No mode identity or arbitrary-parameter accuracy is inferred beyond the declared numerical method."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for declared invalid inputs and nonfinite assembled M, including singular source resonance denominators; numeric conversion errors may propagate for unsupported Python objects.",
+  "runtime_failure": "Numerical backend errors propagate; no fallback relation is substituted.",
+  "nonconvergence": "Not applicable; no iterative root solve is exposed.",
+  "partial_results": "No partial mapping is returned after an exception."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.fluid_dispersion_matrix",
+   "symbol": "assemble_fluid_dispersion_matrix",
+   "signature": "assemble_fluid_dispersion_matrix(*, omega, kz, c2, epsilon0, wps2, wcs, vts, rhocs, sgns, absrhocs, cn_residues, cn_poles, order_lengths, bzj, czj, max_harmonic, n_species)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "assemble_fluid_dispersion_matrix"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Build one zero-harmonic fluid matrix from the derived species scales and check its finite shape.",
+  "code": "from scirel.kinetic import derive_species_equilibrium_scales, get_gamma_lpole_coefficients, get_z_pole_coefficients\nfrom scirel.kinetic import assemble_fluid_dispersion_matrix\ns=derive_species_equilibrium_scales(ms=[9.1094e-31],qs=[-1.60217662e-19],ns_unit=[1],Ts_unit=[1],B0=1,n00=6.075e19,T00=1000); l=get_gamma_lpole_coefficients(max_harmonic=0); z=get_z_pole_coefficients(j_order=8); r=assemble_fluid_dispersion_matrix(omega=s['wn'],kz=0.1*s['kn'],c2=s['c2'],epsilon0=s['epsilon0'],wps2=s['wps2'],wcs=s['wcs'],vts=s['vts'],rhocs=s['rhocs'],sgns=s['sgns'],absrhocs=s['absrhocs'],cn_residues=l['residues'],cn_poles=l['poles'],order_lengths=l['order_lengths'],bzj=z['bzj'],czj=z['czj'],max_harmonic=0,n_species=1); assert r['M'].shape==(40,40)\n",
+  "expected": "Observed PASS: the one-species, zero-harmonic witness returns a finite 40x40 complex matrix and its declared size/layout metadata."
+ },
+ "verification": {
+  "scope": [
+   "Declared source-method numerical case and relevant failure boundaries."
+  ],
+  "tests": [
+   "tests/kinetic/test_fluid_spectrum_r43_fluid.py"
+  ],
+  "evidence_ceiling": "Bounded to the dense first-order fluid eigenmatrix at fixed angular frequency and parallel wavenumber. Evidence: `test_fluid_spectrum_r43_fluid.py` contains 9 test functions, 4 of which reference `assemble_fluid_dispersion_matrix`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: bounded source-method parity. It does not establish physical mode identity or arbitrary-parameter accuracy.",
+  "known_limitations": [
+   "finite nonzero omega, nonzero gyrofrequencies, positive pole radii and matched coefficient axes; source resonance denominators must not vanish and M must remain finite",
+   "The four direct functions in the shared fluid file cover block/eigen selection, nonfinite resonance, fractional dimension and fractional coefficient-index rejection.",
+   "The matrix assembly is not an eigensolve and does not identify physical modes; a singular source resonance with otherwise finite inputs is rejected by the assembly."
+  ]
+ }
+}

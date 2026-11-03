@@ -1,0 +1,203 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.loss-cone-spectrum",
+ "title": {
+  "en": "Loss-cone fractional Legendre spectrum",
+  "zh": "损失锥分数阶 Legendre 谱"
+ },
+ "summary": "Compute the lowest ordered even angular eigenmodes, returning integer degrees where they occur, with a regular initial-value solution.",
+ "taxonomy": [
+  "kinetic",
+  "loss-cone",
+  "angular-eigenproblem"
+ ],
+ "aliases": [
+  "loss-cone Legendre modes",
+  "fractional Legendre angular spectrum"
+ ],
+ "discovery": {
+  "capability": [
+   "Loss-cone fractional Legendre spectrum",
+   "Compute the lowest ordered even angular eigenmodes, returning integer degrees where they occur, with a regular initial-value solution."
+  ],
+  "operation": [
+   "compute the loss-cone Legendre angular eigenmodes",
+   "(xi_tp, mode_count, grid_points, backend) -> xi, degrees, eigenvalues, eigenfunctions, backend"
+  ],
+  "model": "Regular self-adjoint Neumann/Dirichlet angular Sturm-Liouville problem; no distribution or kinetic evolution is solved.",
+  "geometry": "One-dimensional pitch-cosine interval from the symmetry endpoint xi=0 toward a loss-cone boundary at xi_tp",
+  "boundary": "u(0)=1, u′(0)=0 and a numerically checked endpoint residual |u(xi_tp)|<=2e-8. The returned grid includes zero and excludes xi_tp.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Loss-cone pitch-cosine boundary and requested mode count to fractional Legendre angular eigenpairs",
+  "direction": "(xi_tp, mode_count, grid_points, backend) -> xi, degrees, eigenvalues, eigenfunctions, backend",
+  "definition": "Solve -[(1-xi^2)u′]′=lambda*u, u(0)=1, u′(0)=0, u(xi_tp)=0. Order roots through the continuous Sturm phase theta′=sqrt(lambda)[cos(theta)^2/(1-xi^2)+sin(theta)^2], theta(0)=pi/2, targeting theta(xi_tp)=(j+1)pi. Rayleigh bounds from p(xi)<=1 bracket each root. Evaluate u through an independent scaled linear initial-value equation; it is the regular even 2F1(-nu/2,(nu+1)/2;1/2;xi^2), lambda=nu(nu+1). Degrees are fractional in general; a root that coincides with an integer degree is returned as that integer. There is no finite polynomial truncation.",
+  "model": "Regular self-adjoint Neumann/Dirichlet angular Sturm-Liouville problem; no distribution or kinetic evolution is solved.",
+  "geometry": "One-dimensional pitch-cosine interval from the symmetry endpoint xi=0 toward a loss-cone boundary at xi_tp",
+  "coordinates": "Dimensionless pitch cosine xi; eigenfunctions are columns in increasing eigenvalue order.",
+  "boundary": "u(0)=1, u′(0)=0 and a numerically checked endpoint residual |u(xi_tp)|<=2e-8. The returned grid includes zero and excludes xi_tp.",
+  "assumptions": [
+   "0<xi_tp<1 and positive integer mode_count.",
+   "The two legacy backend names are aliases for the same corrected method, not different approximation orders."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "xi_tp",
+   "description": "Loss-cone pitch-cosine endpoint where the angular mode is set to zero.",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "float-convertible",
+   "required": true,
+   "constraints": "Converted with float; must satisfy 0 < xi_tp < 1."
+  },
+  {
+   "name": "mode_count",
+   "description": "Number of lowest ordered modes, including any integer degree.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "integer-valued real or integer",
+   "required": true,
+   "constraints": "Positive integer value; booleans and fractional values are rejected."
+  },
+  {
+   "name": "grid_points",
+   "description": "Requested number of pitch-cosine samples for returned eigenfunctions.",
+   "units": "count",
+   "shape": "scalar",
+   "dtype": "int-convertible",
+   "required": false,
+   "default": 256,
+   "constraints": "Integer value at least two; actual sample count is max(grid_points,mode_count+8)."
+  },
+  {
+   "name": "backend",
+   "description": "Backend selector; both accepted values select the same regular scaled evaluation.",
+   "units": "text",
+   "shape": "scalar",
+   "dtype": "string-convertible",
+   "required": false,
+   "default": "truncated",
+   "constraints": "Only 'truncated' and 'hypergeometric'; both use regular scaled initial-value evaluation and Sturm root ordering. No truncated series is used."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "xi",
+   "description": "Uniform pitch-cosine sample positions starting at the symmetry endpoint.",
+   "units": "dimensionless",
+   "shape": "(N_grid,)",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "xi[i]=i*xi_tp/N_grid for i=0..N_grid-1; xi_tp itself is not sampled."
+  },
+  {
+   "name": "eigenvalues",
+   "description": "Angular eigenvalue nu(nu+1) for each returned degree.",
+   "units": "dimensionless",
+   "shape": "(N_mode,)",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "Positive and ordered with degrees for successful finite solves."
+  },
+  {
+   "name": "degrees",
+   "description": "Nonnegative regular even-mode degree for each eigenvalue.",
+   "units": "dimensionless",
+   "shape": "(N_mode,)",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "Ordered with the eigenvalues; integer degrees are preserved."
+  },
+  {
+   "name": "eigenfunctions",
+   "description": "Angular mode samples, one column per degree.",
+   "units": "dimensionless",
+   "shape": "(N_grid, N_mode)",
+   "dtype": "float64 ndarray",
+   "required": true,
+   "constraints": "First row is numerically normalized to one; no boundary row at xi_tp is returned."
+  },
+  {
+   "name": "backend",
+   "description": "Requested legacy evaluator name; see evaluation_method for the actual numerical method.",
+   "units": "text",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "Either 'truncated' or 'hypergeometric'."
+  },
+  {
+   "name": "evaluation_method",
+   "description": "Actual common evaluator used by both legacy backend names.",
+   "units": "text",
+   "shape": "scalar",
+   "dtype": "str",
+   "required": true,
+   "constraints": "regular_even_scaled_ivp_with_sturm_phase_ordering"
+  },
+  {
+   "name": "boundary_residuals",
+   "description": "Regular-mode values at the Dirichlet endpoint.",
+   "units": "dimensionless",
+   "shape": "(N_mode,)",
+   "dtype": "float64 array",
+   "required": true,
+   "constraints": "Absolute value at most 2e-8 on successful return."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite interior xi_tp and valid integer counts."
+  ],
+  "supported": [
+   "The lowest ordered angular modes, including integer-root cases and small loss-cone intervals."
+  ],
+  "excluded": [
+   "Physical population validation, transport, global equilibrium or an arbitrarily large mode-count performance guarantee."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for invalid interval, counts or backend; native numeric conversion failures may propagate.",
+  "runtime_failure": "RuntimeError or FloatingPointError if phase or regular-mode integration fails or returns nonfinite values.",
+  "nonconvergence": "RuntimeError if an independently evaluated endpoint residual exceeds 2e-8; no incomplete eigenpair set is returned.",
+  "partial_results": "None."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.loss_cone_spectrum",
+   "symbol": "solve_loss_cone_spectrum",
+   "signature": "solve_loss_cone_spectrum(xi_tp, mode_count, grid_points=256, backend='truncated')",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "solve_loss_cone_spectrum"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Recover the exact lowest integer mode at xi_tp=1/sqrt(3).",
+  "code": "import numpy as np\nfrom scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum\nr=solve_loss_cone_spectrum(1/np.sqrt(3),2,grid_points=40)\nnp.testing.assert_allclose(r['eigenvalues'][0],6.,rtol=1e-10)\nnp.testing.assert_allclose(r['eigenfunctions'][:,0],1-3*r['xi']**2,atol=2e-10)\nassert np.max(np.abs(r['boundary_residuals']))<2e-8",
+  "expected": "At xi_tp=1/sqrt(3), the first two eigenvalues were 6.0 and 58.08747396, with endpoint residuals below 8e-14; the first eigenfunction matches 1-3*xi^2 within the example tolerance."
+ },
+ "verification": {
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/cross_domain/test_spectral_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Bounded to the lowest ordered angular modes, including integer-root and small loss-cone cases. Evidence: `test_spectral_scientific_correction.py` contains 16 test functions, 2 of which reference `solve_loss_cone_spectrum`, and is shared by 6 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish physical population validation, transport, or global equilibrium.",
+  "known_limitations": [
+   "Numerical residual checks are finite precision; the endpoint xi_tp=1 is excluded by the singular differential operator.",
+   "The legacy backend names no longer request a truncated approximation.",
+   "The two direct functions cover the integer ground mode and narrow-cone Rayleigh bounds; no test exercises the large-mode-count performance or backend-name compatibility branch."
+  ]
+ },
+ "references": [
+  "Frank and Egedal, arXiv:2509.17288 (2025)."
+ ]
+}

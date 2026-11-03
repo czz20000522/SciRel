@@ -1,0 +1,208 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.equilibrium.anisotropic-toroidal-current",
+ "title": {
+  "en": "Gyrotropic-pressure toroidal current decomposition",
+  "zh": "各向异性压强环向电流分解"
+ },
+ "summary": "Project axisymmetric gyrotropic pressure force onto toroidal current and separate the isotropic perpendicular-pressure contribution from the anisotropic remainder.",
+ "taxonomy": [
+  "equilibrium",
+  "anisotropic-pressure",
+  "toroidal-current",
+  "axisymmetric"
+ ],
+ "aliases": [
+  "anisotropic J_phi pressure-force decomposition"
+ ],
+ "discovery": {
+  "capability": [
+   "Gyrotropic-pressure toroidal current decomposition",
+   "Project axisymmetric gyrotropic pressure force onto toroidal current and separate isotropic and anisotropic contributions."
+  ],
+  "operation": [
+   "perpendicular projection of axisymmetric gyrotropic pressure force onto toroidal current",
+   "R-Z B field and pressures -> J_phi, gradient-pressure term, anisotropy-curvature term and B"
+  ],
+  "model": "Axisymmetric gyrotropic pressure tensor and perpendicular current projection; not a complete equilibrium.",
+  "geometry": "Rectilinear cylindrical R-Z grid with at least three nodes per axis; arrays indexed [Z,R].",
+  "boundary": "The bound force kernel uses regular-axis tensor limits and reports parallel force separately; the toroidal projection alone is not a complete equilibrium.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "R-Z poloidal field and gyrotropic pressures to toroidal current density and two additive contributions",
+  "direction": "R-Z grid, B_R, B_Z, p_parallel, p_perp -> j_phi, gradp_term, anisotropy_curvature_term, B",
+  "definition": "Evaluate the maintained gyrotropic force-balance projection twice: once with supplied p_parallel and p_perp and once with p_parallel=p_perp. The latter J_phi is gradp_term; anisotropy_curvature_term is the full J_phi minus gradp_term. The decomposition is defined by this discrete difference, not an independently discretized curvature formula.",
+  "model": "axisymmetric gyrotropic pressure tensor and perpendicular current projection",
+  "geometry": "rectilinear cylindrical R-Z grid with at least three nodes per axis",
+  "coordinates": "arrays indexed [Z,R]; R nonnegative and both axes strictly increasing",
+  "boundary": "The bound force kernel uses regular-axis tensor limits and reports the parallel force separately; its toroidal projection alone is not a complete equilibrium.",
+  "assumptions": [
+   "Both magnetic components and pressures refer to the same R-Z nodes and use T and Pa, respectively.",
+   "The parallel/perpendicular distinction is meaningful for the caller's gyrotropic model."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Cylindrical radius mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Rectilinear, nonnegative R, strictly increasing radial axis and at least three columns; same shape as other arrays."
+  },
+  {
+   "name": "z_grid",
+   "description": "Axial coordinate mesh.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Rectilinear, strictly increasing axial axis and at least three rows; same shape as other arrays."
+  },
+  {
+   "name": "br",
+   "description": "Radial poloidal magnetic-field component.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact grid shape; zero or tiny fields follow the dependency's numerical convention, not a physical validity gate."
+  },
+  {
+   "name": "bz",
+   "description": "Axial poloidal magnetic-field component.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact grid shape and co-located with br."
+  },
+  {
+   "name": "p_parallel",
+   "description": "Pressure parallel to the poloidal field.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact grid shape and nonnegative; scalar broadcasting is not performed."
+  },
+  {
+   "name": "p_perp",
+   "description": "Pressure perpendicular to the poloidal field.",
+   "units": "Pa",
+   "shape": "[N_Z,N_R]",
+   "dtype": "finite real array-like",
+   "required": true,
+   "constraints": "Exact grid shape and nonnegative; also supplies both pressures in the isotropic comparison."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "j_phi",
+   "description": "Full gyrotropic toroidal current-density projection.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Equals gradp_term plus anisotropy_curvature_term by construction; zero at an R=0 axis column."
+  },
+  {
+   "name": "gradp_term",
+   "description": "Toroidal current from the isotropic p_perp comparison.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Exactly the dependency's J_phi with both pressure inputs set to p_perp; not an independently evaluated gradient."
+  },
+  {
+   "name": "anisotropy_curvature_term",
+   "description": "Difference between full and isotropic-comparison current.",
+   "units": "A/m^2",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Computed as j_phi - gradp_term; zero for equal pressures up to arithmetic error."
+  },
+  {
+   "name": "B",
+   "description": "Magnitude of the supplied poloidal field.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Taken from the full force-balance evaluation."
+  },
+  {
+   "name": "force_diagnostics",
+   "description": "Full corrected tensor-force result, including raw and resolved compatibility diagnostics.",
+   "units": "mixed SI",
+   "shape": "mapping",
+   "dtype": "dict",
+   "required": true,
+   "constraints": "Full corrected tensor-force result, including raw and resolved compatibility diagnostics."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "All six arrays satisfy the exact shape, grid and pressure requirements of the bound anisotropic force-balance Operator.",
+   "The caller has a physically meaningful co-located axisymmetric gyrotropic pressure and field state."
+  ],
+  "supported": [
+   "Discrete total and isotropic-comparison toroidal current on the stated R-Z grid; constant pressure, radial isotropic-gradient and rotating-field anisotropic examples are directly tested."
+  ],
+  "excluded": [
+   "An independent analytic curvature formula or proof of parallel force balance.",
+   "Non-axisymmetric geometry, toroidal-field contribution or a complete equilibrium solver.",
+   "Masking current outside plasma cells; the caller must do that separately."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "The bound force-balance Operator raises ValueError for nonfinite, wrong-rank or mismatched arrays; invalid R-Z grid, negative pressure or insufficient samples. Both evaluations use active_mask=None.",
+  "runtime_failure": "Dependency and arithmetic failures propagate; extreme finite inputs are not guaranteed to yield finite projected currents.",
+  "nonconvergence": "Not applicable; this Operator performs no iteration.",
+  "partial_results": "No partial mapping is returned if either force-balance evaluation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.equilibrium.anisotropic_toroidal_current",
+   "symbol": "compute_anisotropic_toroidal_current",
+   "signature": "compute_anisotropic_toroidal_current(r_grid, z_grid, br, bz, p_parallel, p_perp)",
+   "canonical_module": "scirel.equilibrium",
+   "canonical_symbol": "compute_anisotropic_toroidal_current"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.equilibrium.anisotropic-force-balance"
+   }
+  ]
+ },
+ "example": {
+  "description": "An isotropic pressure increasing linearly in R gives an analytic current in a uniform 2 T axial field.",
+  "code": "import numpy as np\nfrom scirel.equilibrium import compute_anisotropic_toroidal_current\nr, z = np.meshgrid(np.linspace(0.2, 0.5, 5), np.linspace(-0.2, 0.2, 4))\np = 3.0 + r\nresult = compute_anisotropic_toroidal_current(r, z, np.zeros_like(r), np.full_like(r, 2.0), p, p)\nnp.testing.assert_allclose(result['j_phi'], 0.5)\nnp.testing.assert_allclose(result['gradp_term'], 0.5)\nnp.testing.assert_allclose(result['anisotropy_curvature_term'], 0.0, atol=1e-12)",
+  "expected": "The full and isotropic-comparison currents are 0.5 A/m^2, with zero anisotropic difference to tolerance."
+ },
+ "verification": {
+  "scope": [
+   "Constant-pressure zero-current limit.",
+   "Manufactured radial perpendicular-pressure gradient and isotropic decomposition.",
+   "Rotating constant-magnitude field produces a nonzero anisotropic difference.",
+   "The R=0 axis column is zero, and invalid negative pressure is rejected."
+  ],
+  "tests": [
+   "tests/equilibrium/test_anisotropic_toroidal_current.py",
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Bounded to separation of the isotropic perpendicular-pressure current from the anisotropic toroidal-current remainder. Evidence: `test_anisotropic_toroidal_current.py` contains 4 test functions, 1 of which references `compute_anisotropic_toroidal_current`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `compute_anisotropic_toroidal_current`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish an independent curvature formula or parallel-force proof, non-axisymmetric/toroidal-field geometry, or a complete equilibrium solver.",
+  "known_limitations": [
+   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+   "The private file has four functions and one direct example; the shared correction file contains no direct call, and both force-balance evaluations use `active_mask=None` as declared."
+  ]
+ }
+}

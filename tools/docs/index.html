@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SciRel · 科学关系手册</title>
+<style>
+:root{color-scheme:light;--ink:#000;--muted:#000;--line:#ddd;--paper:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.65 system-ui,-apple-system,sans-serif}
+header{padding:18px 5%;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:16px}
+header strong{font-size:22px}header span{margin-left:16px}
+a{color:inherit;text-underline-offset:3px}
+.hero{padding:24px 5% 20px;max-width:1250px;margin:auto}
+.eyebrow{font-size:12px}h1{font-size:28px;margin:8px 0}h2{font-size:24px;line-height:1.35;margin:12px 0}h3{font-size:17px;margin:28px 0 10px}
+.notice{border-left:2px solid #000;padding:8px 14px;font-size:13px}
+.toolbar{display:flex;gap:10px;margin:20px 0 12px;flex-wrap:wrap}
+input,select,button{font:inherit;border:1px solid #999;border-radius:0;padding:10px;background:#fff;color:#000}
+input{flex:1;min-width:220px}input::placeholder{color:#555;opacity:1}button{cursor:pointer}
+button:hover{border-color:#000;background:#f5f5f5}
+:focus-visible{outline:2px solid #000;outline-offset:3px}
+button:disabled{color:#666;border-color:#ddd;cursor:default;background:#fff}
+.layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:28px;max-width:1250px;margin:auto;padding:0 5% 50px}
+.results{display:flex;flex-direction:column;gap:8px}
+.card{text-align:left;padding:14px;border:1px solid var(--line);display:block;width:100%}
+.card.active{border-color:#000;border-left:4px solid #000;padding-left:11px}
+.card strong{display:block;font-size:16px}.card small{display:block;margin-top:5px;overflow-wrap:anywhere}
+.badge{font-size:11px;font-weight:600}
+.detail{min-width:0;padding:0 0 0 28px;border-left:1px solid var(--line);align-self:start;overflow-wrap:anywhere}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#fff;border:1px solid var(--line);padding:16px;font-size:12px;line-height:1.7}
+code{font:12px/1.6 ui-monospace,monospace}
+table{width:100%;border-collapse:collapse;font-size:13px}td,th{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:9px 7px}th{font-weight:600}
+.scroll{overflow-x:auto}.pair{margin:12px 0}.pair b{display:block;font-size:13px}ul{padding-left:20px}
+.pager{display:flex;justify-content:space-between;margin:16px 0}.empty{padding:30px;border:1px dashed var(--line)}
+details{margin:14px 0}summary{cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+footer{font-size:12px;padding:20px 5%;border-top:1px solid var(--line);overflow-wrap:anywhere}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.detail{padding:20px 0 0;border-left:0;border-top:1px solid var(--line)}.hero{padding-top:20px}h1{font-size:26px}header span{display:none}.results{max-height:400px;overflow:auto}}
+.code-block{position:relative;margin:18px 0;min-width:0}.code-block pre{margin:0;padding-top:48px}.copy-code{position:absolute;top:7px;right:8px;font-size:12px;padding:3px 10px;background:#fff;color:#000;border:1px solid #aaa;cursor:pointer}.copy-status{display:block;font-size:12px;overflow-wrap:anywhere}.formula{overflow-x:auto;padding:20px 0}.formula math{font-size:1.15em}.formula-note{font-size:14px}@media print{.copy-code,.copy-status{display:none}.code-block pre{padding-top:18px}}
+</style><link rel="stylesheet" href="/static/code.css"></head><body>
+<header><div><strong>SciRel</strong><span>Scientific Relations Library</span></div><a href="/">学习指南</a><a href="/api" target="_blank" rel="noopener">Agent 查询接口 ↗</a></header>
+<section class="hero"><div class="eyebrow">SCIENTIFIC REFERENCE · 开发文档</div><h1>科学关系手册</h1><p class="muted">按科学问题、中文名称或 API 检索。每条记录给出输入输出、适用条件、失败行为和可运行示例。</p><div class="notice" id="notice">正在核对文档快照…</div>
+<form class="toolbar" id="search"><input id="q" aria-label="搜索科学关系" placeholder="搜索：圆线圈、磁场、pressure、API 名称…"><select id="kind" aria-label="资产类型"><option value="">所有类型</option><option value="operator">算子</option><option value="task_graph">组合任务图</option></select><select id="domain" aria-label="科学领域"><option value="">所有领域</option></select><button>搜索</button></form><div id="count" class="muted" role="status" aria-live="polite"></div></section>
+<main class="layout"><aside><div class="results" id="results"></div><div class="pager"><button id="prev">← 上一页</button><button id="next">下一页 →</button></div></aside><article class="detail" id="detail"><h2>如何使用本手册</h2><p>先检索所需科学关系，查看它是否适用于你的模型、单位与边界条件，再读取示例与完整调用签名。</p><p>例如搜索 <button id="pleiades">线圈</button>，查看已收录的磁场、平衡与动理学关系。</p><h3>给 Agent 的同一份文档</h3><p>先查询摘要，再按资产 ID 读取完整合同与依赖。HTTP 和 CLI 返回同一快照标识；接口只查询文档。</p><pre>GET /api/search?q=线圈&amp;limit=10
+GET /api/asset?id=scirel.field.current-green-superposition</pre><p class="muted">每条文档保留其自身版本。验证与许可限制展示在详情中，文档快照不替代安装包资格证明。</p></article></main><footer id="binding"></footer>
+<script src="/static/vendor/highlightjs/highlight.min.js"></script>
+<script src="/static/presentation.js"></script>
+<script>
+'use strict';
+const $=s=>document.querySelector(s);let offset=0,nextOffset=null,selected='',searchGeneration=0,detailGeneration=0;
+const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n};
+async function api(path){const r=await fetch(path);const d=await r.json();if(!r.ok)throw Error(d.error||r.status);return d}
+function add(parent,tag,text,cls){const n=el(tag,text,cls);parent.append(n);return n}
+function value(parent,v){if(Array.isArray(v)){const u=add(parent,'ul');v.forEach(x=>value(add(u,'li'),x))}else if(v&&typeof v==='object'){Object.entries(v).forEach(([k,x])=>{const p=add(parent,'div',undefined,'pair');add(p,'b',labels[k]||k);value(p,x)})}else add(parent,'span',String(v))}
+const labels={supported:'支持范围',excluded:'不适用范围',preconditions:'前置条件',supported_scope:'支持范围',exclusions:'不适用范围',invalid_inputs:'输入错误',runtime_failures:'运行失败',nonconvergence:'不收敛',partial_results:'部分结果',relation:'科学关系',direction:'计算方向',definition:'定义',model:'模型',geometry:'几何',coordinates:'坐标',boundary:'边界与闭合',assumptions:'假设',lineage_summary:'来源说明',source_kinds:'来源类型',public_references:'公开参考',license_status:'许可状态',scope:'验证范围',tests:'对应测试',evidence_ceiling:'证据边界',known_limitations:'已知限制'};
+function section(a,title,v){add(a,'h3',title);value(a,v)}
+function ports(a,title,rows){add(a,'h3',title);const wrap=add(a,'div',undefined,'scroll'),t=add(wrap,'table'),h=add(t,'tr');['参数 / 单位','含义与形状','约束 / 默认值'].forEach(x=>add(h,'th',x));rows.forEach(p=>{const r=add(t,'tr'),c=add(r,'td');add(c,'code',p.name);add(c,'div',p.units);const m=add(r,'td');add(m,'div',p.description);add(m,'small',p.shape+' · '+p.dtype);add(r,'td',p.constraints+(title==='输入'?(p.required?' · 必填':(' · 默认 '+JSON.stringify(p.default))):''))})}
+async function detail(id){const generation=++detailGeneration;try{const d=await api('/api/asset?id='+encodeURIComponent(id));if(generation!==detailGeneration)return;const x=d.document,a=$('#detail');selected=id;history.replaceState(null,'','#'+encodeURIComponent(id));a.replaceChildren();add(a,'div',x.kind==='operator'?'算子 / OPERATOR':'组合任务图 / TASK GRAPH','badge');add(a,'h2',x.title.zh);add(a,'p',x.title.en,'muted');add(a,'code',x.asset_id);add(a,'p',x.summary);add(a,'div','实现版本 '+x.version.implementation_version+' · 许可 '+x.provenance.license_status,'notice');section(a,'适用范围',x.applicability);section(a,'已知限制',x.verification.known_limitations);add(a,'h3','Python 调用');add(a,'pre','from '+x.public_api.python.module+' import '+x.public_api.python.symbol+'\n\n'+x.public_api.python.signature).dataset.language='python';ports(a,'输入',x.inputs);ports(a,'输出',x.outputs);add(a,'h3','最小示例');add(a,'p',x.example.description);add(a,'pre',x.example.code).dataset.language='python';add(a,'p',x.example.expected);section(a,'失败行为',x.failure_semantics);section(a,'科学定义与假设',x.identity);section(a,'依赖关系',x.version.dependencies);if(x.graph){const g=add(a,'details');add(g,'summary','查看任务图与执行约束');value(g,x.graph)}section(a,'验证与证据边界',x.verification);section(a,'来源与许可',x.provenance);const more=add(a,'details');add(more,'summary','查看完整 JSON 合同');add(more,'pre',JSON.stringify(x,null,2)).dataset.language='json';add(a,'a','读取 Agent JSON').href='/api/asset?id='+encodeURIComponent(id);ScirelPresentation.enhance(a);document.querySelectorAll('.card').forEach(n=>n.classList.toggle('active',n.dataset.id===id))}catch(e){if(generation===detailGeneration){$('#detail').replaceChildren(el('h2','文档读取失败'),el('p',e.message))}}}
+async function search(){const gen=++searchGeneration;$('#count').textContent='查询中…';try{const p=new URLSearchParams({q:$('#q').value,kind:$('#kind').value,domain:$('#domain').value,offset:String(offset),limit:'12'});const d=await api('/api/search?'+p);if(gen!==searchGeneration)return;$('#results').replaceChildren();$('#count').textContent=d.total+' 条关系 · '+(d.total?offset+1:0)+'–'+Math.min(offset+12,d.total);nextOffset=d.next_offset;$('#prev').disabled=offset===0;$('#next').disabled=nextOffset===null;if(!d.items.length)add($('#results'),'p','没有匹配结果。试试更短的关键词或清除筛选。','empty');d.items.forEach(x=>{const b=add($('#results'),'button',undefined,'card'+(selected===x.asset_id?' active':''));b.dataset.id=x.asset_id;add(b,'span',x.taxonomy[0]+' · '+(x.kind==='operator'?'算子':'任务图'),'badge');add(b,'strong',x.title.zh);add(b,'small',x.title.en);add(b,'small',x.version.implementation_version);b.onclick=()=>detail(x.asset_id)})}catch(e){if(gen===searchGeneration){$('#count').textContent='查询失败：'+e.message;$('#results').replaceChildren();$('#prev').disabled=true;$('#next').disabled=true}}}
+$('#search').onsubmit=e=>{e.preventDefault();offset=0;search()};$('#prev').onclick=()=>{offset=Math.max(0,offset-12);search()};$('#next').onclick=()=>{if(nextOffset!==null){offset=nextOffset;search()}};$('#pleiades').onclick=()=>{$('#q').value='线圈';offset=0;search()};
+$('#q').value = new URLSearchParams(location.search).get('q') || '';
+ScirelPresentation.enhance();
+(async()=>{try{const m=await api('/api/manifest');$('#notice').textContent=m.notice;$('#binding').textContent=m.asset_count+' 条正式记录 · 来源提交 '+m.source_commit.slice(0,12)+' · 文档快照 '+m.snapshot_sha256.slice(0,16)+' · '+(m.source_dirty?'构建时工作区有开发改动':'构建时工作区洁净');const domains=new Set();let pos=0;do{const d=await api('/api/search?limit=100&offset='+pos);d.items.forEach(x=>domains.add(x.taxonomy[0]));pos=d.next_offset}while(pos!==null);[...domains].sort().forEach(x=>{const o=add($('#domain'),'option',x);o.value=x});await search();if(location.hash)detail(decodeURIComponent(location.hash.slice(1)))}catch(e){$('#notice').textContent='无法加载快照：'+e.message}})();
+</script></body></html>

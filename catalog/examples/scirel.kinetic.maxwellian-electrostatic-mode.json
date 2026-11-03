@@ -1,0 +1,159 @@
+{
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Maxwellian electrostatic response",
+   "Evaluate normalized Maxwellian dielectric with cancellation-free large-phase response."
+  ],
+  "operation": [
+   "evaluate the Maxwellian electrostatic response",
+   "(omega,k)->(epsilon,D,z)"
+  ],
+  "model": "One-dimensional homogeneous Maxwellian with normalized unit plasma response",
+  "geometry": "Electrostatic one-dimensional wave",
+  "boundary": "k is positive and omega finite; no global branch selection is performed.",
+  "device_scope": "generic"
+ },
+ "applicability": {
+  "excluded": [
+   "Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation."
+  ],
+  "preconditions": [
+   "k is finite and strictly positive; outputs must remain representable in double precision."
+  ],
+  "supported": [
+   "Finite positive real scalar k and finite normalized frequency, including representable complex upper/lower-plane values."
+  ]
+ },
+ "asset_id": "scirel.kinetic.maxwellian-electrostatic-mode",
+ "example": {
+  "code": "from scirel.kinetic import evaluate_maxwellian_electrostatic\nr=evaluate_maxwellian_electrostatic(1.2+0.3j,0.4)\nassert abs(r[\"D\"])>0",
+  "description": "Evaluate a residual.",
+  "expected": "The call returned epsilon=0.41279817+0.5976356j, D=0.06604770770539457+0.09562169612338128j, z=2.1213203435596424+0.5303300858899106j, and epsilon_error about 9.36e-14."
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError for invalid, nonfinite, singular or incompatible inputs.",
+  "nonconvergence": "Solver and quadrature limits are explicit; failed residual checks raise RuntimeError.",
+  "partial_results": "No partial scientific result is returned after a failed call.",
+  "runtime_failure": "Unrepresentable evaluation raises ValueError; solver unrepresentable trial response raises RuntimeError. Unexpected SciPy execution errors propagate."
+ },
+ "identity": {
+  "assumptions": [
+   "A mode is identified only by an explicit seed and final residual test.",
+   "f0(v)=exp(-v²/2)/sqrt(2π), unit plasma frequency, thermal standard deviation one, perturbation convention exp(-i omega t)."
+  ],
+  "boundary": "k is positive and omega finite; no global branch selection is performed.",
+  "coordinates": "Normalized frequency and wave number",
+  "definition": "epsilon=1+chi with chi=(1+z Z(z))/k²; for large |z| the equivalent Gaussian moment expansion is used to avoid cancellation, and D=k²epsilon remains a diagnostic.",
+  "direction": "(omega,k)->(epsilon,D,z)",
+  "geometry": "Electrostatic one-dimensional wave",
+  "model": "One-dimensional homogeneous Maxwellian with normalized unit plasma response",
+  "relation": "Maxwellian longitudinal dielectric epsilon=1+(1+z Z(z))/k²"
+ },
+ "inputs": [
+  {
+   "constraints": "Finite and representable.",
+   "description": "Complex normalized frequency, scalar or array.",
+   "dtype": "complex numeric",
+   "name": "omega",
+   "required": true,
+   "shape": "scalar or array",
+   "units": "normalized frequency"
+  },
+  {
+   "constraints": "Finite strictly positive real scalar; booleans, complex values and arrays rejected.",
+   "description": "Positive normalized wave number.",
+   "dtype": "positive real",
+   "name": "k",
+   "required": true,
+   "shape": "scalar",
+   "units": "inverse normalized length"
+  }
+ ],
+ "outputs": [
+  {
+   "constraints": "Finite and representable.",
+   "description": "Longitudinal dielectric.",
+   "dtype": "complex array",
+   "name": "epsilon",
+   "required": true,
+   "shape": "same as omega",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "description": "Scaled residual k² epsilon.",
+   "dtype": "complex array",
+   "name": "D",
+   "required": true,
+   "shape": "same as omega",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite and representable.",
+   "description": "Dimensionless phase argument omega/(sqrt(2)k).",
+   "dtype": "complex array",
+   "name": "z",
+   "required": true,
+   "shape": "same as omega",
+   "units": "dimensionless"
+  },
+  {
+   "constraints": "Finite estimate for accepted input.",
+   "description": "Estimated arithmetic/asymptotic error of epsilon; not a rigorous enclosure.",
+   "dtype": "real array",
+   "name": "epsilon_error",
+   "required": true,
+   "shape": "same as omega",
+   "units": "dimensionless"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.maxwellian_electrostatic",
+   "signature": "evaluate_maxwellian_electrostatic(omega, k)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_maxwellian_electrostatic",
+   "symbol": "evaluate_maxwellian_electrostatic"
+  }
+ },
+ "schema": "scirel.asset-document",
+ "summary": "Evaluate normalized Maxwellian dielectric with cancellation-free large-phase response.",
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "generalized-dispersion"
+ ],
+ "title": {
+  "en": "Maxwellian electrostatic response",
+  "zh": "Maxwellian 静电响应"
+ },
+ "verification": {
+  "evidence_ceiling": "Bounded to the declared relation: epsilon=1+chi with chi=(1+z Z(z))/k²; for large |z| the equivalent Gaussian moment expansion is used to avoid cancellation, and D=k²epsilon remains a diagnostic. Evidence: test_generalized_dispersion_d2.py, test_generalized_dispersion_d2_successor.py, test_generalized_dispersion_numerical_repair.py (22 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Source-project MATLAB behavior, graphics, global root scans and arbitrary analytic continuation; external physical validation.",
+  "known_limitations": [
+   "epsilon_error is an estimate rather than a rigorous enclosure.",
+   "Finite inputs can have unrepresentable complex response; no root is inferred from an evaluation.",
+   "Only shared-file coverage is bound (test_generalized_dispersion_d2.py); no asset-specific failure/limit probe is recorded."
+  ],
+  "scope": [
+   "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
+   "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions."
+  ],
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_d2.py",
+   "tests/kinetic/test_generalized_dispersion_d2_successor.py",
+   "tests/kinetic/test_generalized_dispersion_numerical_repair.py"
+  ]
+ },
+ "version": {
+  "dependencies": [
+   {
+    "asset_id": "scirel.kinetic.plasma-dispersion-function"
+   }
+  ],
+  "implementation_version": "0.0.0"
+ },
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas 20 (2013), 092125."
+ ]
+}

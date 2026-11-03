@@ -1,0 +1,152 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.collisions.normalized-momentum",
+ "title": {
+  "en": "Normalized momentum on a grid",
+  "zh": "网格归一化动量"
+ },
+ "summary": "Map a signed dimensionless grid to p_n = x*vnorm/clight; vnorm and clight must be velocities in the same unit, and a dimensionless thermal speed ratio must not be passed directly. Intermediate overflow and final non-representability are handled separately, so a representable result is neither falsely rejected nor lost to intermediate underflow.",
+ "taxonomy": [
+  "collisions",
+  "momentum-scales",
+  "normalized-momentum",
+  "grid-mapping"
+ ],
+ "aliases": [
+  "p_n",
+  "grid to momentum map",
+  "x vnorm over clight"
+ ],
+ "discovery": {
+  "capability": [
+   "Normalized momentum on a grid",
+   "Map a signed dimensionless grid to p_n = x*vnorm/clight without automatic unit conversion."
+  ],
+  "operation": [
+   "Map a signed dimensionless grid to normalized momentum",
+   "x, vnorm, clight -> p_n"
+  ],
+  "model": "Independent closed-form definition, not a fit; dangerous intermediates are evaluated at high precision beyond binary64, with no automatic unit conversion.",
+  "geometry": "Not applicable; an elementwise scaling of a caller-supplied one-dimensional dimensionless grid, not a spatial coordinate.",
+  "boundary": "A zero velocity scale returns signed zero and the map is odd in x; intermediate overflow does not cause false rejection; a genuinely tiny final value may round to signed zero, while final overflow is rejected.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "the normalized momentum profile p_n on a grid, from the grid, a velocity scale and the speed of light",
+  "direction": "x, vnorm, clight -> p_n",
+  "definition": "Returns the dimensionless p_n = x*vnorm/clight elementwise; vnorm and clight must be velocities in the same unit. The ordinary region retains the original binary64 evaluation order; when an intermediate value overflows or becomes subnormal, the exact input floats are evaluated with 100-digit Decimal and the final result is rounded to binary64.",
+  "model": "an independent closed-form definition, not a fit; beyond ordinary binary64 arithmetic, dangerous intermediates are evaluated at high precision, with no automatic unit conversion",
+  "geometry": "not applicable; an elementwise scaling of a one-dimensional grid",
+  "coordinates": "not applicable; the grid is a caller-supplied dimensionless coordinate, not a spatial coordinate",
+  "boundary": "a zero velocity scale gives signed zero, and the map is odd in x; intermediate product overflow does not cause false rejection. A genuinely tiny final value may round to signed zero in binary64, while final overflow is still rejected",
+  "assumptions": [
+   "x is a signed dimensionless one-dimensional grid; vnorm >= 0, clight > 0, and both velocities use the same unit. The implementation cannot verify units automatically.",
+   "the two leaf entries are independent. A thermal speed ratio must not be passed as vnorm; the direct composition divides by c twice, so the caller must first multiply it by the speed of light to recover a velocity.",
+   "the ordinary region retains the original floating-point operation order; bit-for-bit agreement with the erroneous earlier operation at dangerous extremes is not promised.",
+   "shapes and finite inputs are checked first; the existing float() behavior for convertible non-real values is preserved, without adding physical meaning."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "x",
+   "description": "The grid the map is evaluated on, dimensionless and signed.",
+   "units": "dimensionless",
+   "shape": "array",
+   "dtype": "real",
+   "required": true,
+   "constraints": "A finite one-dimensional array; it is converted with numpy.asarray and is not modified in place. A negative entry is accepted."
+  },
+  {
+   "name": "vnorm",
+   "description": "The velocity scale the grid is scaled by, in the same unit as clight.",
+   "units": "cm/s",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and nonnegative, and scalar-shaped: a list, a tuple or an array with one or more dimensions is rejected by parameter name rather than converted. A dimensionless speed ratio is not a velocity and is not a valid value here."
+  },
+  {
+   "name": "clight",
+   "description": "The speed of light in the unit the caller is working in; 2.99792458e10 for cm/s.",
+   "units": "cm/s",
+   "shape": "scalar",
+   "dtype": "real",
+   "required": true,
+   "constraints": "Finite and strictly positive, and scalar-shaped. The value is the caller's: this asset states no speed of light of its own and performs no unit conversion."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "p_n",
+   "description": "The normalized momentum profile x * vnorm / clight, dimensionless, with the grid's shape.",
+   "units": "dimensionless",
+   "shape": "array",
+   "dtype": "float",
+   "required": true,
+   "constraints": "a float64 array with the same shape as x; signed and finally finite, while a genuinely tiny value may round to zero under floating-point rules. Intermediate floating-point overflow must not be misread as final closed-form non-representability"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The caller has a grid of dimensionless momenta coordinates and a velocity scale for the species.",
+   "vnorm and clight are already expressed in the same velocity unit."
+  ],
+  "supported": [
+   "ordinary inputs retain the original scientific relation and double-precision operation order",
+   "dangerous intermediates use a Decimal fallback evaluated from the exact input floats; the input domain is not narrowed and verification tolerances are not relaxed",
+   "inputs with an invalid shape or a violated finiteness or sign contract are rejected by parameter name; final overflow is rejected and no partial result is returned"
+  ],
+  "excluded": [
+   "Composition with scirel.collisions.thermal-electron-momentum: the two leaves are dimensionally incompatible and the direct composition divides by c twice, so it is not provided. A caller that wants the dimensionless grid momentum x * p_Te must convert the ratio to a velocity first, for example vnorm = p_Te * clight, and that conversion is the caller's step.",
+   "Any unit conversion between vnorm and clight; the relation assumes a common unit and cannot verify it.",
+   "Any statement of the speed of light or of any other physical constant; every constant is the caller's.",
+   "Any requirement that the momentum be nonnegative, which belongs to the electron-ion leaf.",
+   "The four Coulomb-log mappings of the same family: they are different relations and are not published with these two leaves.",
+   "a final result outside the binary64 representable range is rejected; an overflowing intermediate result is not itself excluded"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError when x is not a finite one-dimensional array, when vnorm or clight is not scalar-shaped, or when vnorm is negative or non-finite or clight is non-positive or non-finite, with a message naming the offending parameter.",
+  "runtime_failure": "raises ValueError only when the final value is still non-finite after the fallback computation. Intermediate product or quotient overflow, underflow or subnormal precision loss triggers the high-precision fallback rather than directly rejecting the input.",
+  "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
+  "partial_results": "Never returned; a rejected call produces no profile."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.collisions.momentum_scales",
+   "symbol": "normalized_momentum",
+   "signature": "normalized_momentum(*, x, vnorm, clight)",
+   "canonical_module": "scirel.collisions",
+   "canonical_symbol": "normalized_momentum"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "demonstrate the retained ordinary relation together with the final result after correcting extreme intermediates",
+  "code": "from scirel.collisions import normalized_momentum\nimport numpy as np\np = normalized_momentum(x=[-1e308,0.,1e308],vnorm=1e308,clight=1e308)\nassert np.array_equal(p,[-1e308,0.,1e308])\nsmall = normalized_momentum(x=[1e-300],vnorm=1e-100,clight=1e-200)\nassert small[0] > 0\nprint(p,small)",
+  "expected": "returns [-1e308, 0, 1e308] and approximately [1.0000000000000001e-200]; intermediate product overflow or underflow does not lose a final representable result"
+ },
+ "verification": {
+  "scope": [
+   "the ordinary-domain numeric assertions, effective tolerances, input shapes and error messages are retained; ordinary results are bit-identical",
+   "of the 13 added extreme-value checks, 7 failed before the correction; they cover false rejection of finite large values, intermediate underflow to zero and sign preservation",
+   "independent 200-digit Decimal evaluation and genuine non-finite final-value rejection exercise the new behavior; the earlier rejection assertion for the thermal input 1e308/511 was empirically corrected and now supersedes the earlier record",
+   "the earlier external comparison is outside this contract's evidence scope; this contract binds only the two definitions and their independent scientific contracts"
+  ],
+  "tests": [
+   "tests/collisions/test_momentum_scales.py",
+   "tests/collisions/test_momentum_intermediate_extremes.py"
+  ],
+  "evidence_ceiling": "finite independent extreme-value and ordinary closed-form tests support the two definitions and their shape and representability contract; they do not establish arbitrary collision models, caller constants or units, or relativistic validity. The dangerous region uses 100-digit Decimal while outputs remain binary64; arbitrary-precision results are not claimed",
+  "known_limitations": [
+   "no automatic unit check or conversion exists; using a thermal speed ratio directly as a velocity divides by the speed of light twice",
+   "the physical applicability domain remains the caller's responsibility; at extremely high temperature the non-relativistic ratio is only a definition, not a relativistic velocity",
+   "final binary64 rounding and underflow of genuinely tiny grid results to zero retain floating-point meaning and do not mean the physical quantity is exactly zero",
+   "the license does not grant overall redistribution of the capability; current use is limited to internal authorized technical integration, not human scientific acceptance or public release",
+   "the earlier external comparison was not replayed, and the current installation tests do not replace it"
+  ]
+ }
+}

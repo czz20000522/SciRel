@@ -1,0 +1,36 @@
+{
+  "schema": "magnetic-error-current-feedback-discrete",
+  "time": "exact observation_time_s, ascending; last native record at each exact time; no undisclosed interpolation",
+  "fields": {
+    "total_current_A": {
+      "shape": [
+        121,
+        11
+      ],
+      "unit": "A"
+    },
+    "feedback_current_A": {
+      "shape": [
+        121,
+        11
+      ],
+      "unit": "A"
+    },
+    "pid_components": {
+      "shape": [
+        121,
+        30
+      ],
+      "unit": "T under the declared P/I/D units"
+    },
+    "error_T": {
+      "shape": [
+        121,
+        10
+      ],
+      "unit": "T"
+    }
+  },
+  "finite_real_only": true,
+  "acceptance": "HOLD: shape/finite validation and numeric difference diagnostics do not define a scientific error budget"
+}

@@ -1,0 +1,120 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.fieldline.fieldline-set",
+ "title": {
+  "en": "Contour field-line collection FieldLineSet",
+  "zh": "等值线场线集合"
+ },
+ "summary": "Construct a FieldLineSet that stores fitted FieldLine lists keyed by contour level.",
+ "taxonomy": [
+  "analysis",
+  "fieldline"
+ ],
+ "aliases": [
+  "FieldLineSet"
+ ],
+ "discovery": {
+  "capability": [
+   "Contour field-line set collection",
+   "Construct a field-line set storing fitted field-line lists keyed by contour level."
+  ],
+  "operation": [
+   "contour levels and segments to an ordered field-line set",
+   "contour object and optional line keywords -> ordered level-keyed collection object"
+  ],
+  "model": "Direct collection construction with FieldLine keyword forwarding; no field reconstruction.",
+  "geometry": "Planar contour segments and level labels; segment vertices use caller length units and levels use caller flux-label units.",
+  "boundary": "Every segment must be accepted by the FieldLine constructor; topology repair and physical flux-surface qualification are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Contour segment to FieldLineSet",
+  "direction": "contour levels and segments to an ordered collection object",
+  "definition": "Construct FieldLine instances for every segment and store them in the flset mapping.",
+  "model": "Direct collection construction with FieldLine keyword forwarding.",
+  "geometry": "Planar contour segments and level labels.",
+  "coordinates": "Segment vertices in caller length units; levels in caller flux-label units.",
+  "boundary": "Every segment must be accepted by the FieldLine constructor.",
+  "assumptions": [
+   "The contour object exposes matching levels and allsegs.",
+   "Optional kwargs are forwarded to each FieldLine.",
+   "Level and segment order are preserved."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "contourset",
+   "description": "Object exposing levels and allsegs",
+   "units": "levels in caller flux-label units; vertices length",
+   "shape": "contour object",
+   "dtype": "contour-like object",
+   "required": true,
+   "constraints": "Each allsegs entry contains finite planar segments"
+  }
+ ],
+ "outputs": [
+  {
+   "name": "collection",
+   "description": "Per-level lists of target line objects",
+   "units": "same as target line",
+   "shape": "FieldLineSet object",
+   "dtype": "Python object",
+   "required": true,
+   "constraints": "The flset mapping is keyed by contour level and preserves segment order."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "The contour object exposes matching levels and allsegs.",
+   "Optional kwargs are forwarded to each FieldLine."
+  ],
+  "supported": [
+   "Finite contour collections, keyword-forwarded sampling, and named FieldLine construction cases."
+  ],
+  "excluded": [
+   "Contour topology repair, field reconstruction, and physical flux-surface qualification."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Array or SciPy spline errors from malformed contour segments propagate.",
+  "runtime_failure": "Member FieldLine construction or later diagnostic exceptions propagate.",
+  "nonconvergence": "Not applicable; collection construction is direct.",
+  "partial_results": "A failed constructor returns no FieldLineSet object."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.fieldline",
+   "symbol": "FieldLineSet",
+   "signature": "FieldLineSet(contourset, **kwargs)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "FieldLineSet"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.fieldline.fieldline"
+   }
+  ]
+ },
+ "example": {
+  "description": "Build a FieldLineSet from one contour level and one segment.",
+  "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.fieldline import FieldLineSet\nc=SimpleNamespace(levels=[.2],allsegs=[[np.array([[.2,0.],[.6,0.],[1.,0.]])]])\nr=FieldLineSet(c)\nassert len(r.flset[.2])==1",
+  "expected": "flset[0.2] contains one FieldLine with 1000 fitted vertices."
+ },
+ "verification": {
+  "scope": [
+   "Only the explicitly stated finite input domain and direct-test fixtures"
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Numerical evidence for the named fixtures only; it does not establish arbitrary-input correctness or experimental physical validation.",
+  "known_limitations": [
+   "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
+   "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
+   "get_kappa_n_2 requires uniform xy grid and nonzero flux gradient"
+  ]
+ }
+}

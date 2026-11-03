@@ -1,0 +1,159 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.field.poloidal-field-from-flux",
+ "title": {
+  "en": "Axisymmetric poloidal field from flux",
+  "zh": "轴对称磁通导出极向场"
+ },
+ "summary": "Recover BR, BZ, and their magnitude from psi=R A_phi on a rectilinear cylindrical grid.",
+ "taxonomy": [
+  "field",
+  "axisymmetric",
+  "flux-gradient"
+ ],
+ "aliases": [
+  "poloidal field from psi"
+ ],
+ "discovery": {
+  "capability": [
+   "Axisymmetric poloidal field from flux",
+   "Recover BR, BZ and their magnitude from psi = R A_phi on a rectilinear cylindrical grid."
+  ],
+  "operation": [
+   "stable local finite-difference flux gradients on a cylindrical R-Z grid",
+   "R, Z and psi grids -> BR, BZ and B arrays"
+  ],
+  "model": "Stable local finite-difference gradients on a cylindrical R-Z grid.",
+  "geometry": "Two-dimensional rectilinear grid with increasing R and Z axes.",
+  "boundary": "At R=0, BR is set to zero and BZ uses the documented one-sided axis formula.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Axisymmetric field recovery from poloidal flux",
+  "direction": "R,Z,psi grids to BR, BZ, and B arrays",
+  "definition": "Differentiate psi on the rectilinear grid and divide by R, using the even-flux axis rule when R=0 is included.",
+  "model": "Stable local finite-difference gradients on a cylindrical R-Z grid.",
+  "geometry": "Two-dimensional rectilinear grid with increasing R and Z axes.",
+  "coordinates": "R,Z in metres; psi Wb/rad; fields tesla.",
+  "boundary": "At R=0, BR is set to zero and BZ uses 2*(psi[:,1]-psi[:,0])/R[1]^2.",
+  "assumptions": [
+   "All arrays are finite, matching, and at least 3 nodes per axis.",
+   "R and Z axes are strictly increasing.",
+   "psi is per-radian poloidal flux, not 2pi-linked flux."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "r_grid",
+   "description": "Cylindrical radius at each grid point.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array-like, converted to float64",
+   "required": true,
+   "constraints": "Finite rectilinear grid with nonnegative, strictly increasing R axis and N_R >= 3; same shape as z_grid and psi."
+  },
+  {
+   "name": "z_grid",
+   "description": "Axial coordinate at each grid point.",
+   "units": "m",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array-like, converted to float64",
+   "required": true,
+   "constraints": "Finite rectilinear grid with strictly increasing Z axis and N_Z >= 3; same shape as r_grid and psi."
+  },
+  {
+   "name": "psi",
+   "description": "Axisymmetric poloidal flux function R A_phi sampled on the R-Z grid, not full linked flux.",
+   "units": "Wb/rad",
+   "shape": "[N_Z,N_R]",
+   "dtype": "real array-like, converted to float64",
+   "required": true,
+   "constraints": "Finite values and exactly the same two-dimensional shape as the coordinate grids."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "B_R",
+   "description": "Radial poloidal magnetic-field component.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Zero at an included cylindrical-axis column."
+  },
+  {
+   "name": "B_Z",
+   "description": "Axial poloidal magnetic-field component.",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Uses the discrete axis rule if R=0 is included."
+  },
+  {
+   "name": "B",
+   "description": "Poloidal-field magnitude hypot(B_R,B_Z).",
+   "units": "T",
+   "shape": "[N_Z,N_R]",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "No fixed lower floor is applied."
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "All arrays are finite, matching, and at least 3 nodes per axis.",
+   "R and Z axes are strictly increasing."
+  ],
+  "supported": [
+   "Uniform and nonuniform rectilinear grids, axis regularization, rescaling, and finite large/subnormal values in direct tests."
+  ],
+  "excluded": [
+   "Nonrectilinear grids, arbitrary extrapolation, and field-model validation beyond the tested finite differences."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for complex/nonfinite/mismatched arrays, nonrectilinear grids, too few nodes, or invalid axes.",
+  "runtime_failure": "Floating-point failures propagate if a finite accepted calculation is not representable.",
+  "nonconvergence": "Not applicable; gradients and axis handling are direct.",
+  "partial_results": "No field mapping is returned after validation or arithmetic failure."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.field.poloidal_field_from_flux",
+   "symbol": "poloidal_field_from_flux",
+   "signature": "poloidal_field_from_flux(r_grid, z_grid, psi)",
+   "canonical_module": "scirel.field",
+   "canonical_symbol": "poloidal_field_from_flux"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Recover the field from psi=R^2 on a grid including R=0.",
+  "code": "import numpy as np\nfrom scirel.field import poloidal_field_from_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])\nresult = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)\nnp.testing.assert_allclose(result['B_R'], 0.0)\nnp.testing.assert_allclose(result['B_Z'], 2.0)\nnp.testing.assert_allclose(result['B'], 2.0)",
+  "expected": "B_R is zero everywhere and B_Z and B are 2 T everywhere, including the axis column."
+ },
+ "verification": {
+  "scope": [
+   "Quadratic-flux uniform-field and axis-rule regression on uniform and selected nonuniform grids.",
+   "A 2*pi rescaling of the psi input rescales the recovered axial field in a controlled quadratic example; full linked flux must be divided by 2*pi to recover psi=R A_phi.",
+   "Nonrectilinear and nonfinite-coordinate rejection.",
+   "Finite subnormal and large-magnitude hypot helper regression.",
+   "Constant psi=3.7 produces exactly zero field for three distinct grids.",
+   "A representable strong constant gauge on a manufactured even flux leaves BR/BZ invariant, including the axis."
+  ],
+  "tests": [
+   "tests/field/test_poloidal_field_from_flux.py",
+   "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
+  ],
+  "evidence_ceiling": "Manufactured and analytic discrete checks establish only the stated poloidal model and declared integration geometry. Arbitrary Green matrices, pressure closures, experimental plasma applicability and public release are not established by these tests.",
+  "known_limitations": [
+   "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
+   "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
+   "No expert scientific endorsement or public release follows from this numerical successor."
+  ]
+ }
+}

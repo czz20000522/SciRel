@@ -1,0 +1,218 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.kinetic.generalized-residual",
+ "aliases": [],
+ "discovery": {
+  "capability": [
+   "Electrostatic dispersion residuals",
+   "Evaluate Langmuir, ion-acoustic, beam and generalized residuals."
+  ],
+  "operation": [
+   "evaluate electrostatic dispersion residuals",
+   "density family, k and x -> dispersion residuals"
+  ],
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "geometry": "One-dimensional velocity space",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "device_scope": "generic"
+ },
+ "taxonomy": [
+  "kinetic",
+  "plasma-wave",
+  "generalized-dispersion"
+ ],
+ "title": {
+  "zh": "四类静电色散残差",
+  "en": "Evaluate Langmuir, ion-acoustic, beam and generalized residuals."
+ },
+ "summary": "Evaluate Langmuir, ion-acoustic, beam and generalized residuals.",
+ "identity": {
+  "model": "One-dimensional unmagnetized collisionless electrostatic plasma",
+  "relation": "D_langmuir=k²+1+x Z(x); D_generalized=k²-Zp(x)/2",
+  "definition": "IAW D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti with q=x/sqrt(Ti/mi). Beam D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)] with q=x/sqrt(Tb)-vd. Generalized D=k²-Zp/2. Vacuum and susceptibility normalization match the frozen scripts.",
+  "direction": "Declared inputs to declared scientific outputs",
+  "geometry": "One-dimensional velocity space",
+  "coordinates": "Dimensionless real velocity and complex phase or frequency",
+  "boundary": "Infinite real velocity contour with stated continuation or finite support.",
+  "assumptions": [
+   "Density is real and integrable on the real contour.",
+   "No collective-mode uniqueness or certified global quadrature bound is asserted.",
+   "k is finite positive scalar."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "kind",
+   "description": "langmuir, iaw, beam or generalized.",
+   "dtype": "str",
+   "shape": "scalar",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "x",
+   "description": "Phase omega/(sqrt(2)*k).",
+   "dtype": "complex numeric",
+   "shape": "scalar or nonempty array",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "k",
+   "description": "Inverse Debye-length normalized wavenumber.",
+   "dtype": "positive real",
+   "shape": "scalar",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  },
+  {
+   "name": "ion_temperature",
+   "description": "Ti/Te.",
+   "dtype": "positive real",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless",
+   "default": 1.0
+  },
+  {
+   "name": "ion_mass",
+   "description": "mi/me.",
+   "dtype": "positive real",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless",
+   "default": 1836.0
+  },
+  {
+   "name": "beam_fraction",
+   "description": "Beam density divided by total density.",
+   "dtype": "real",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "0<=beam_fraction<=1.",
+   "units": "dimensionless",
+   "default": 0.1
+  },
+  {
+   "name": "beam_temperature",
+   "description": "Tb/Te.",
+   "dtype": "positive real",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless",
+   "default": 1.0
+  },
+  {
+   "name": "beam_drift",
+   "description": "Beam drift divided by beam thermal speed.",
+   "dtype": "real",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless",
+   "default": 5.0
+  },
+  {
+   "name": "selector",
+   "description": "Generalized distribution selector.",
+   "dtype": "integer",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "0 through 6.",
+   "units": "dimensionless",
+   "default": 0
+  },
+  {
+   "name": "expression",
+   "description": "Analytic density in v using finite real constants, pi, arithmetic and exp/log/sqrt/sin/cos/sinh/cosh/tanh; MATLAB point operators accepted.",
+   "dtype": "str",
+   "shape": "scalar",
+   "required": false,
+   "constraints": "Real integrable density with decaying derivative; no arbitrary code, comparisons, attributes or indexing.",
+   "units": "dimensionless",
+   "default": "exp(-v.^2)/sqrt(pi)"
+  },
+  {
+   "name": "integration_mesh",
+   "description": "Feature-resolving finite increasing velocity mesh; infinite tails are also integrated.",
+   "dtype": "real vector",
+   "shape": "one-dimensional at least two points",
+   "required": false,
+   "constraints": "All material features resolved; no unresolved tail features.",
+   "units": "dimensionless",
+   "default": null
+  }
+ ],
+ "outputs": [
+  {
+   "name": "return",
+   "description": "Source-normalized D residual.",
+   "dtype": "complex array",
+   "shape": "same as x",
+   "required": true,
+   "constraints": "Finite and representable.",
+   "units": "dimensionless"
+  }
+ ],
+ "public_api": {
+  "python": {
+   "module": "scirel.kinetic.generalized_dispersion",
+   "symbol": "evaluate_gpdf_residual",
+   "signature": "evaluate_gpdf_residual(kind, x, k, *, ion_temperature=1.0, ion_mass=1836.0, beam_fraction=0.1, beam_temperature=1.0, beam_drift=5.0, selector=0, expression='exp(-v.^2)/sqrt(pi)', integration_mesh=None)",
+   "canonical_module": "scirel.kinetic",
+   "canonical_symbol": "evaluate_gpdf_residual"
+  }
+ },
+ "applicability": {
+  "supported": [
+   "Four original residual families with original temperature/mass/drift normalization.",
+   "Maxwellian Langmuir/generalized reuse the qualified cancellation-free small-k implementation."
+  ],
+  "excluded": [
+   "Directly accepting a small absolute D as proof of a small-k mode."
+  ],
+  "preconditions": [
+   "Density is real and integrable on the real contour.",
+   "No collective-mode uniqueness or certified global quadrature bound is asserted.",
+   "k is finite positive scalar."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError for an unknown kind, non-finite x/k, or invalid selector/expression/mesh; named IAW/beam parameters must satisfy the declared domain.",
+  "runtime_failure": "FloatingPointError for a non-representable Faddeeva/generalized response; bound quadrature errors propagate.",
+  "nonconvergence": "RuntimeError only where a bound generalized quadrature fails; IAW/beam use closed Faddeeva values.",
+  "partial_results": "No partial dielectric residual is returned after rejection."
+ },
+ "verification": {
+  "tests": [
+   "tests/kinetic/test_generalized_dispersion_models.py"
+  ],
+  "scope": [
+   "Four original residual families with original temperature/mass/drift normalization.",
+   "Maxwellian Langmuir/generalized reuse the qualified cancellation-free small-k implementation."
+  ],
+  "known_limitations": [
+   "IAW and beam use the ordinary Faddeeva response; extreme phase/temperature inputs can be unrepresentable.",
+   "Only shared-file coverage is bound (test_generalized_dispersion_models.py); no asset-specific failure/limit probe is recorded."
+  ],
+  "evidence_ceiling": "Bounded to the declared relation: IAW D=k²+[1+xZ(x)]+[1+qZ(q)]/Ti with q=x/sqrt(Ti/mi). Beam D=k²+(1-nb)[1+xZ(x)]+nb/Tb[1+qZ(q)] with q=x/sqrt(Tb)-vd. Generalized D=k²-Zp/2. Vacuum and susceptibility normalization match the frozen scripts. Evidence: test_generalized_dispersion_models.py (14 recorded test functions; shared-file coverage only; self-consistency/regression only); the contract example ran. Excluded scope: Directly accepting a small absolute D as proof of a small-k mode; external physical validation."
+ },
+ "example": {
+  "description": "Evaluate one Langmuir residual at a finite complex frequency.",
+  "code": "from scirel.kinetic.generalized_dispersion import evaluate_gpdf_residual\nr=evaluate_gpdf_residual('langmuir',1j,.3)\nassert abs(r.imag)<1e-12\n",
+  "expected": "Observed PASS: the Langmuir residual at z=i and k=0.3 has imaginary part below 1e-12."
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "references": [
+  "Hua-Sheng Xie, Generalized plasma dispersion function, Phys. Plasmas. 20 (2013), 092125 (scientific context)"
+ ]
+}

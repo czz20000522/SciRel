@@ -1,0 +1,169 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.sampling.select-fieldline",
+ "title": {
+  "en": "Contour field-line selection",
+  "zh": "等值场线选择"
+ },
+ "summary": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
+ "taxonomy": [
+  "analysis",
+  "sampling"
+ ],
+ "aliases": [
+  "get_fieldlines"
+ ],
+ "discovery": {
+  "capability": [
+   "Contour field-line selection",
+   "Select the largest-vertex-count contour segment at an exact level and parse its orientation and endpoints."
+  ],
+  "operation": [
+   "exact-level contour segment selection",
+   "contour set, exact level and optional endpoint/orientation controls -> selected parsed vertices"
+  ],
+  "model": "Contour-segment selection with the nearest-endpoint convention from segment parsing; idx_check is an ignored compatibility argument and no field is reconstructed.",
+  "geometry": "Planar contour-set segments with ordered vertices in caller length units and exact level labels in caller flux-label units.",
+  "boundary": "The requested level must exactly appear in the contour levels and at least one finite segment must exist; unique physical flux surfaces and connections between separate segments are not established.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Contour field-line selection",
+  "direction": "Declared inputs to Selected parsed vertices",
+  "definition": "Select largest vertex-count segment at exact contour level and parse its orientation/endpoints",
+  "model": "Source contour segment selection; idx_check is ignored compatibility argument",
+  "geometry": "planar contour-set segments",
+  "coordinates": "Planar segment vertices and exact level labels",
+  "boundary": "Nearest endpoint convention from parse_segment",
+  "assumptions": [
+   "Requested level exactly appears in contourset.levels",
+   "At least one finite segment exists"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "contourset",
+   "description": "Object exposing levels and allsegs",
+   "units": "levels in caller flux-label units; vertices length",
+   "shape": "contour object",
+   "dtype": "contour-like object",
+   "required": true,
+   "constraints": "Each allsegs entry contains finite planar segments"
+  },
+  {
+   "name": "level",
+   "description": "Requested contour level",
+   "units": "caller flux-label units",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Exact membership"
+  },
+  {
+   "name": "start_coord",
+   "description": "Nearest selected starting coordinate",
+   "units": "length units",
+   "shape": "(2,) or None",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Exact nearest-vertex selection",
+   "default": null
+  },
+  {
+   "name": "end_coord",
+   "description": "Nearest terminal coordinate included in output",
+   "units": "length units",
+   "shape": "(2,) or None",
+   "dtype": "float64",
+   "required": false,
+   "constraints": "Terminal vertex retained; no interpolated crossing",
+   "default": null
+  },
+  {
+   "name": "clockwise",
+   "description": "Desired signed polygon orientation",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "Signed shoelace-like source test",
+   "default": true
+  },
+  {
+   "name": "idx_check",
+   "description": "Unused source compatibility argument",
+   "units": "dimensionless",
+   "shape": "list",
+   "dtype": "list",
+   "required": false,
+   "constraints": "No effect on numerical selection",
+   "default": []
+  }
+ ],
+ "outputs": [
+  {
+   "name": "segment",
+   "description": "Selected parsed vertices",
+   "units": "length units",
+   "shape": "(M,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Largest segment selected by original point count"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Requested level exactly appears in contourset.levels",
+   "At least one finite segment exists"
+  ],
+  "supported": [
+   "Finite inputs satisfying the callable-specific shape, support, and boundary conditions"
+  ],
+  "excluded": [
+   "Does not establish unique physical flux surface or connect separate segments"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "Raises ValueError or the underlying NumPy/SciPy exception for nonfinite, mismatched, unsorted, out-of-domain, or malformed inputs; no input repair is inferred.",
+  "runtime_failure": "Unknown contour levels raise ValueError; numerical, interpolation, or optional-dependency exceptions propagate from the direct calculation.",
+  "nonconvergence": "Not applicable; the relation uses direct finite-difference, interpolation, selection, or quadrature operations.",
+  "partial_results": "No partial result is promised when input validation or the underlying numerical operation fails."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.sampling",
+   "symbol": "get_fieldlines",
+   "signature": "get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True, idx_check=[])",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "get_fieldlines"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.sampling.parse-segment"
+   }
+  ]
+ },
+ "example": {
+  "description": "Select the available contour segment at an exact level and return its vertices.",
+  "code": "import numpy as np\nfrom types import SimpleNamespace\nfrom scirel.geometry.sampling import get_fieldlines\n\nsegment = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 1.0], [1.0, 0.0]])\ncontours = SimpleNamespace(levels=[0.2], allsegs=[[segment]])\nselected = get_fieldlines(contours, 0.2)\nassert selected.shape == (4, 2)\nnp.testing.assert_array_equal(selected, segment)",
+  "expected": "The selected contour has shape (4, 2) and retains the four vertices."
+ },
+ "verification": {
+  "scope": [
+   "Public callable signature and documented finite-input behavior",
+   "The direct regression fixtures listed in verification.tests",
+   "The executable example stored in this contract",
+   "Unknown contour levels raise ValueError; direct regression test_select_fieldline_rejects_unknown_level_with_value_error binds this behavior."
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py"
+  ],
+  "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
+  "known_limitations": [
+   "Does not establish unique physical flux surface or connect separate segments"
+  ]
+ }
+}

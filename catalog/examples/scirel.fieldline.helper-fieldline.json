@@ -1,0 +1,137 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.fieldline.helper-fieldline",
+ "title": {
+  "en": "HelperFieldLine geometry and diagnostics",
+  "zh": "辅助场线几何与诊断"
+ },
+ "summary": "Fit a contour path and provide helper interpolation, arclength, gradient, field-curvature, and bounded-intersection diagnostics.",
+ "taxonomy": [
+  "analysis",
+  "fieldline"
+ ],
+ "aliases": [
+  "HelperFieldLine"
+ ],
+ "discovery": {
+  "capability": [
+   "Helper field-line geometry and diagnostics",
+   "Fit a contour path and provide helper interpolation, arclength, gradient, field-curvature and bounded-intersection diagnostics."
+  ],
+  "operation": [
+   "contour label and vertices to a fitted helper diagnostic line",
+   "psi contour label and ordered planar vertices -> fitted helper line object with geometry and field-based diagnostics"
+  ],
+  "model": "Fixed 1000-point quadratic default spline with selectable linear, nearest or cubic interpolation and a local polynomial field-curvature derivative; flux-gradient curvature is not provided.",
+  "geometry": "Open paths preserve order and closed paths use periodic splprep; planar R,Z in caller length units with psi as a contour label.",
+  "boundary": "Intersections search only fitted parameter intervals and reject zero or multiple crossings; arbitrary topology, magnetic-axis limits and universal error bounds are excluded.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "HelperFieldLine geometry and diagnostics",
+  "direction": "contour label and vertices to a fitted helper diagnostic object",
+  "definition": "Fit an ordered parametric line; helper interpolation preserves nonfinite query behavior while field curvature differentiates normalized BR,BZ along fitted geometry.",
+  "model": "Fixed 1000-point quadratic default spline with selectable linear/nearest/cubic interpolation and local polynomial curvature derivative.",
+  "geometry": "Open paths preserve order; closed paths use periodic splprep.",
+  "coordinates": "Planar R,Z in caller length units; psi is a contour label.",
+  "boundary": "Intersections search only fitted parameter intervals and reject zero or multiple crossings.",
+  "assumptions": [
+   "Finite vertices are sufficient for splprep and adjacent fitted samples remain distinct.",
+   "Field curvature needs finite nonzero B and nonzero tangent projection.",
+   "Queries should lie within the finite interpolation support of the supplied field."
+  ]
+ },
+ "inputs": [
+  {
+   "name": "psi",
+   "description": "Contour level label",
+   "units": "caller flux-label units",
+   "shape": "scalar",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Not a reconstructed flux field"
+  },
+  {
+   "name": "verts",
+   "description": "Contour vertices",
+   "units": "length units",
+   "shape": "(M,2)",
+   "dtype": "float64",
+   "required": true,
+   "constraints": "Finite ordered points sufficient for the default quadratic splprep fit; adjacent fitted samples must remain distinct."
+  }
+ ],
+ "outputs": [
+  {
+   "name": "line",
+   "description": "Object exposing verts,tck,u and arclength/field diagnostics",
+   "units": "length; gradient caller flux per length; curvature inverse length",
+   "shape": "line object",
+   "dtype": "Python object",
+   "required": true,
+   "constraints": "get_ds returns first segment length, not a uniform-step guarantee"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Finite vertices are sufficient for splprep and adjacent fitted samples remain distinct.",
+   "Field curvature needs finite nonzero B and nonzero tangent projection."
+  ],
+  "supported": [
+   "Named interpolation, curvature, derivative, boundary, and scale cases in the listed tests."
+  ],
+  "excluded": [
+   "Flux-gradient curvature, arbitrary contour topology, magnetic-axis limits, and universal error bounds."
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "ValueError is raised for undefined curvature support, duplicate vertices, or nonfinite tangent/field values; other SciPy errors propagate.",
+  "runtime_failure": "Underlying interpolation, linear-algebra, and floating-point exceptions propagate.",
+  "nonconvergence": "Intersection raises ValueError when no unique fitted-interval crossing is found; finite multistart search does not prove root completeness.",
+  "partial_results": "apply_boundary updates both bounds only after both intersections succeed; failed construction returns no helper line."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.geometry.fieldline",
+   "symbol": "HelperFieldLine",
+   "signature": "HelperFieldLine(psi, verts)",
+   "canonical_module": "scirel.geometry",
+   "canonical_symbol": "HelperFieldLine"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": [
+   {
+    "asset_id": "scirel.fieldline.arclength-derivative"
+   }
+  ]
+ },
+ "example": {
+  "description": "Fit one open HelperFieldLine from three ordered vertices.",
+  "code": "import numpy as np\nfrom scirel.geometry.fieldline import HelperFieldLine\nline=HelperFieldLine(.2,np.array([[.2,0.],[.6,0.],[1.,0.]]))\nassert line.verts.shape==(1000,2)",
+  "expected": "The default constructor produces a helper line with verts shape (1000,2)."
+ },
+ "verification": {
+  "scope": [
+   "Only the explicitly stated finite input domain and named direct/independent installed fixtures",
+   "Named fixtures use the 13x9 affine-gradient inputs and the 4e-9 absolute gate. Recorded maximum errors are 1.3323e-15 or less across the two variants. The circle case uses 401 points and spatial grids 40/80/160 on the same domain: field-curvature vector errors are 1.1787063e-5, 1.3972100e-6 and 1.6021077e-7, passing both >3.4 refinement ratios and final <.004 gates. These are named-fixture observations, not universal convergence rates.",
+   "A held-out ellipse on 71x83 unequal-spacing grids and 257 line points, including coherent descending coordinates, B reversal and vertex reversal, has maximum component error 1.329318e-7 or less in recorded cases. Boundary cases reject outside support, duplicate vertices, nonfinite fields and actual field nulls. Field-scale tests at signed 1e-180 and 1e180, with a translated geometry, pass unchanged finite-fixture criteria; no arbitrary-dynamic-range guarantee follows."
+  ],
+  "tests": [
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/equilibrium/test_analysis_corrections.py",
+   "tests/equilibrium/test_curvature_consumer.py",
+   "tests/equilibrium/test_fieldline_geometry_repair.py"
+  ],
+  "evidence_ceiling": "Named-fixture technical evidence for this repository's own tests. It does not establish arbitrary-input correctness, experimental validation or human endorsement.",
+  "known_limitations": [
+   "Intersection is bounded to fitted parameter intervals and rejects no-crossing/multiple-root cases; tangency/completeness remains unqualified",
+   "Arbitrary contour topology, magnetic-axis limit and physical stability are unqualified",
+   "Polar projection is supplied separately with explicit theta and origin failure; magnetic-axis limit remains unqualified.",
+   "HelperFieldLine has field-based curvature only; flux-gradient curvature belongs to the separate FieldLine variant. The explicit method selector is honored by interpolation and gradient/curvature consumers.",
+   "Refining path samples on a fixed interpolated field need not monotonically improve physical curvature error; four fixed-interpolant refinement cases remain recorded as failures and are distinct from the spatial-grid refinement gate.",
+   "Local quartic field-curvature derivatives assume a sufficiently smooth genuine field line. Public d_ds retains its polygonal three-point contract; neither implies a universal curvature-error bound."
+  ]
+ }
+}

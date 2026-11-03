@@ -1,0 +1,45 @@
+{
+  "case_id": "kn-atomic-slab-analytic-cx",
+  "addendum_revision": "2026-10-27-atomic-condition-addendum-1",
+  "status": "STATIC_CONDITION_CANDIDATES_PRIMARY_REVIEW_PENDING",
+  "contract": "README.md",
+  "baseline": {
+    "condition_id": "baseline-3eV-simpleCX",
+    "inputs": "../inputs.json",
+    "statement": "../problem.md",
+    "output_spec": "../output-spec.json",
+    "acceptance": "../acceptance.md",
+    "status": "EXISTING_COMPLETE_BOUNDED_STATEMENT_UNCHANGED",
+    "public_files_preserved": 7,
+    "scope": "Original50pointprofiles,3eVmonoenergeticincident,analyticionization/recombination,simpleCX,allElasticOff;referenceNOT_RUN"
+  },
+  "conditions": [
+    {
+      "condition_id": "A-arbitrary-positive-inlet",
+      "condition_file": "A/condition.json",
+      "input": "A/input.json",
+      "definition": "A/arbitrary-inlet.md",
+      "change": "Only arbitraryinlet;derivedE0follows the sameexistingadvancedbranch",
+      "status": "STATIC_CONDITION_CANDIDATE_PRIMARY_REVIEW_PENDING"
+    },
+    {
+      "condition_id": "B-direct-charge-exchange",
+      "condition_file": "B/condition.json",
+      "definition": "B/direct-cx.md",
+      "change": "Only SIMPLE_CX=false;retain original3eV inlet",
+      "status": "STATIC_CONDITION_CANDIDATE_PRIMARY_REVIEW_PENDING"
+    }
+  ],
+  "version_boundary": "Additive two independent condition candidates;original7publicfiles,50pointarrays,3eVbaseline,mesh6/.3,constants,zero states,.001/50generations,outputs/acceptance untouched. A and B are not composed.",
+  "counts": {
+    "case_roots": 13,
+    "engineering_references": 10,
+    "source_family_denominator": 12,
+    "historical_global_family_denominator": 148,
+    "new_condition_candidates": 2,
+    "new_case_roots": 0,
+    "new_families": 0,
+    "new_references": 0,
+    "new_scientifically_accepted": 0
+  }
+}
