@@ -1,19 +1,24 @@
-# Supplement uncovered calculations
+# 补充计算
 
-A transformation absent from the selected public capabilities is supplementary work (“glue”): a missing relation, a scientific near miss, an incompatible port, a public formula, external data or a derived task quantity. Try a compatible composition or defensible public method when the supplied science suffices. Otherwise name the missing input or decision and give the bounded result still possible.
+所选 SciRel 能力没有覆盖的步骤，由你自己补上，这里叫"补充计算"。例如缺少的物理关系、接近但不完全匹配的能力、端口不兼容、公开文献里的公式、外部数据或题目派生的量。这在实际任务中很常见，用 NumPy、SciPy 或普通代码实现即可。
 
-First distinguish a disqualifying scientific conflict from incomplete retrieval. A vacuum-field capability does not supply plasma response; a zero keyword hit says only that the inspected query returned no candidate. Record the small search scope actually used, without claiming exhaustive absence.
+## 先分清两种情况
 
-Choose checks according to what the supplementary calculation adds:
+- **科学上的冲突：** 能力本身不适用。例如真空场能力不包含等离子体响应。
+- **检索不完整：** 关键词检索零命中，只说明这次查询没有返回候选，不说明能力不存在。记录实际查过的范围，不要声称"库里没有"。
 
-| content | examples | discriminating checks |
+## 按补充内容选检查
+
+| 补充内容 | 例子 | 有区分度的检查 |
 | --- | --- | --- |
-| representation | declared unit conversion, axis permutation, format adaptation | factor substitution, round trip, information preservation |
-| numerical | interpolation, regridding, smoothing, discretization, iteration | refinement, conservation, a known profile or limit |
-| scientific | physical formula, closure, normalization, boundary completion, geometry or missing-state reconstruction | dimensions plus a known limit, symmetry, independent reference or supplied criterion |
+| 表示转换 | 声明过的单位换算、轴的置换、格式适配 | 替换换算因子、往返转换、信息不丢失 |
+| 数值处理 | 插值、重网格、平滑、离散化、迭代 | 加密、守恒、已知剖面或极限 |
+| 科学内容 | 物理公式、闭合、归一化、边界补全、几何或缺失状态的重构 | 量纲加已知极限、对称性、独立参考或用户给的判据 |
 
-Make the inputs/outputs and conventions explicit in the executable task work. Retain why the step is needed, its method, check result and strongest supported claim. A failed check remains failed; unchecked science remains unvalidated. Supplementary calculations do not inherit SciRel's validation, and human acceptance does not turn them into independent proof.
+在程序里写明输入、输出和约定。记录为什么需要这一步、用了什么方法、检查结果和能支持的最强结论。失败的检查仍是失败；没检查过的科学内容仍是未验证。补充计算不继承 SciRel 的验证。
 
-Disclose conclusion-relevant additions in plain language: “The field uses SciRel; this profile average is a supplementary calculation checked against the analytic constant-profile limit.” Where needed, give the number of library capabilities and supplementary steps used, identifying which additions carry science. Do not require a separate ledger or graph for a simple calculation.
+## 在报告里怎样说明
 
-Self-consistency and file replay check different things from independent physics. Reusing the same model or assumptions does not make a second calculation independent. The [FRC example](example-frc-flame.md) illustrates a bounded claim when supplementary equilibrium or performance work remains unvalidated.
+用一句平实的话说明影响结论的补充计算，例如："场由 SciRel 计算；剖面平均是补充计算，已用常数剖面的解析极限核对。"简单计算不需要单独的清单或图。
+
+自洽性和文件回放检查的是另一回事，不等于独立的物理验证。[FRC 示例](example-frc-flame.md)演示了补充计算尚未验证时如何给出有界的结论。

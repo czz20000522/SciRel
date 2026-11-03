@@ -1,77 +1,55 @@
 ---
 name: scirel-capability-discovery
-description: Discover SciRel public capabilities through the host-provided MCP tools or the bundled standard-library fallback, then read complete contracts before selecting an API.
+description: Find SciRel capabilities for a step of a physical method and read their complete public contracts, through the bundled read-only MCP server or its standard-library CLI, before using a SciRel API.
 ---
 
-# SciRel capability discovery
+# Find and read SciRel capabilities
 
-Use this skill before choosing a SciRel API. It is the discovery layer for the
-other SciRel outbound skills; it does not execute scientific calls.
+Use this after the physical method is written, for the steps where a tested operator would save work or add confidence. Many steps have no matching operator; NumPy, SciPy or your own code is a normal way to do them. Do not reshape the physics to fit an operator or map every step to one.
 
-Search after the physical method is written, for the steps where a reusable
-operator would save work or add confidence. Many steps have no matching operator,
-and NumPy, SciPy or ordinary code is a normal way to do them. Do not reshape the
-physics to fit an operator, or map every step to one.
+This skill only reads public contracts. It never runs scientific code; the SciRel wheel is installed and called separately.
 
-## Entry
+## Searching well
 
-The host should load this plugin's `.mcp.json`. That registers the bundled
-read-only server from `scripts/server.py`. If the host cannot register MCP, use
-`scripts/query.py` directly. Both paths use the same dispatcher and response
-envelope.
+- Search one physical step at a time, not the whole question.
+- Use one to three English physics words, such as `flux surface` or `plasma dispersion`. All terms must match and contracts are written mainly in English, so long phrases or other languages often return nothing.
+- On a zero hit, read `gap.closest_terms` and `gap.retry_hint`, drop a word, try a synonym, or `browse` by metadata. Two or three tries are usually enough.
+- A hit is a candidate, not proof that it applies. A zero hit does not prove the capability is absent; if nothing fits, write the step yourself and test it.
+- A query, access or integrity error is a failure to read the catalog, not an empty result.
+- Results may be paginated or truncated by a byte budget; fetch the rest (`next_cursor`) before relying on what is missing.
 
-Call `scirel_describe` first. Save `snapshot_sha256` and
-`runtime.wheel_sha256`. Every later `scirel_browse`, `scirel_search` and
-`scirel_get` call must carry both pins.
+## Reading a contract
 
-## Query sequence
+Call `get` for every candidate you may use and read the whole contract before writing code: inputs, outputs, units, shapes, sign and normalisation conventions, model, geometry, boundary conditions, applicability range and failure behaviour. Check that these match what your physics needs.
 
-1. Use `scirel_search` with one to three English physics words for one physical
-   step, or `scirel_browse` with metadata filters. All terms must match. On a zero
-   hit, read `gap.closest_terms` and `gap.retry_hint` and try fewer words or a
-   synonym.
-2. Treat returned cards as candidates, not proof of applicability.
-3. Call `scirel_get` for each selected `asset_id`.
-4. Read the complete contract before coding: inputs, outputs, units, shapes,
-   model, geometry, boundary, device scope, aliases and failure semantics.
-5. Record the asset IDs and identity pins in the task evidence.
+Record the asset IDs you used and the identity values below, so the result can be reproduced.
 
-A zero lexical hit is an unresolved discovery result. It does not prove that a
-capability is absent. A query or integrity error is an access failure, not an
-empty catalog. On `identity_mismatch`, describe again and explicitly select the
-new runtime before continuing.
+## Identity
 
-## MCP registration
+`describe` returns `snapshot_sha256` and `runtime.wheel_sha256`. Pass both to every later `browse`, `search` and `get` call so all answers come from the same package. On `identity_mismatch` or an integrity error, stop using earlier results, run `describe` again, and continue only if switching to that package is acceptable for the task.
 
-From the plugin root, the stdio entry is:
+## CLI
 
-```sh
-python skills/scirel-capability-discovery/scripts/server.py --root . --transport stdio
-```
-
-For a loopback HTTP host:
-
-```sh
-python skills/scirel-capability-discovery/scripts/server.py --root . --transport streamable-http --host 127.0.0.1 --port 8765
-```
-
-The server advertises only `scirel_describe`, `scirel_browse`,
-`scirel_search` and `scirel_get`. It reads public contracts and never executes
-user code or SciRel functions. Install `mcp-requirements.txt` in the adapter
-environment, separate from the scientific wheel environment.
-
-## CLI fallback
+From the package root (the directory that contains `runtime.json`):
 
 ```sh
 python skills/scirel-capability-discovery/scripts/query.py --root . describe
-python skills/scirel-capability-discovery/scripts/query.py --root . search \
-  --q '<short scientific phrase>' --limit 5 \
-  --expected-snapshot-sha256 <snapshot_sha256> \
-  --expected-wheel-sha256 <wheel_sha256>
+python skills/scirel-capability-discovery/scripts/query.py --root . search --q '<one to three words>' --limit 5 \
+  --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
 python skills/scirel-capability-discovery/scripts/query.py --root . get <asset_id> \
-  --expected-snapshot-sha256 <snapshot_sha256> \
-  --expected-wheel-sha256 <wheel_sha256>
+  --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
 ```
 
-The scientific wheel is installed separately from `wheel/`; the discovery
-adapter only tells the agent which public API and contract to use.
+`browse` takes the same pins plus metadata filters; run `query.py browse --help` for them.
+
+## Optional MCP server
+
+If the host supports MCP, register the entry in the package's `mcp-connections.json` with the package root as working directory, or start it yourself:
+
+```sh
+python -m pip install -r mcp-requirements.txt
+python skills/scirel-capability-discovery/scripts/server.py --root . --transport stdio
+# or, for an HTTP client: --transport streamable-http --host 127.0.0.1 --port 8765  → http://127.0.0.1:8765/mcp
+```
+
+It exposes the same four read-only tools: `scirel_describe`, `scirel_browse`, `scirel_search`, `scirel_get`. Install `mcp-requirements.txt` in the server's environment and keep it separate from the environment where the SciRel wheel and `runtime-requirements.txt` are installed.

@@ -1,11 +1,28 @@
-# Clarify choices that change the science
+# 澄清会改变结果的选择
 
-Read this when the supplied request supports competing physical interpretations.
+当用户的请求可以有几种不同的物理理解时读这一篇。
 
-Restate the intended result in the user's vocabulary, using facts already supplied. Ask only when an unresolved choice changes the calculation or acceptance: units/time alignment/calibration; sign or coordinate conventions; model/closure/boundary; reference case or criterion. Resolve contract facts by reading the contract first.
+## 怎么问
 
-Ask one to three related questions at a time, starting with the largest effect. Explain the physical alternatives and which result changes. A defensible default is useful for a reversible display choice; it must not silently choose a model, missing unit or acceptance rule. Do not ask the user to choose functions, asset IDs, code layout or a graph.
+先用用户自己的说法重述要得到的结果，尽量复用已经给出的事实。只在一个未定的选择会改变计算或结论时才问，常见的有：
 
-If the user cannot supply a fact, preserve it as unknown. Compute explicit conditional branches when they can be bounded; otherwise state the missing input and the bounded result still possible. Changing a conclusion-relevant assumption requires rerunning its affected calculations.
+- 单位、时间对齐、标定；
+- 符号和坐标约定；
+- 模型、闭合条件、边界条件；
+- 参考工况或判据。
 
-Example: “balance analysis” could mean reconstructing equilibrium from measurements or estimating zero-dimensional performance. Those have different inputs and claims. Settle that distinction before querying for the nearest named function. The [FRC example](example-frc-flame.md) illustrates it without claiming a real result.
+能从合同里查到的事实先查合同，不要拿去问用户。
+
+一次问一到三个相关问题，先问影响最大的。说明每种选择在物理上意味着什么、会改变哪个结果。对可逆的展示类选择可以给一个合理默认值；但不能用默认值悄悄决定模型、缺失的单位或用户的判据。不要让用户去选函数、资产编号、代码结构或依赖图。
+
+## 用户给不出的事实
+
+保留为未知。能界定范围时，计算明确的条件分支；不能界定时，说明缺什么，以及在现有输入下还能给出的有限结果。影响结论的假设一旦改变，要重算受影响的部分。
+
+## 记录口径的来源
+
+每条口径注明来自哪里：用户在对话中说的、题目或附件写明的、还是你的假设。只有用户真的回答过的，才写"用户已确认"。题目预先给定的写"题目已给定"。你的假设写成假设，并在报告里标明。
+
+## 例子
+
+"做平衡分析"可能指根据测量重构平衡，也可能只是零维性能估计。两者输入不同、能下的结论也不同。先把这个区别问清楚，再去检索最接近的函数。[FRC 示例](example-frc-flame.md)演示了这种情况（虚构场景，没有真实结果）。

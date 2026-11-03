@@ -1,18 +1,28 @@
-# Explain coupled dependencies
+# 说明耦合的依赖关系
 
-Use a diagram when several physical steps or feedback would otherwise be hard to follow. A single call with one output usually needs no diagram.
+几个物理步骤互相衔接、或者有反馈迭代、不画图就难以看懂时，用一张依赖图说明。只有一次调用、一个输出的计算通常不需要。
 
-Keep two views of one computation:
+## 两种视角
 
-| view | useful content |
+同一个计算保留两种视角：
+
+| 视角 | 内容 |
 | --- | --- |
-| user plan | supplied quantities, physical subproblems, outputs, unresolved decisions and checks, with units |
-| execution evidence | selected capabilities, supplementary calculations, actual calls, data and diagnostics |
+| 给用户的物理计划 | 给定的量、物理子问题、输出、未定的决定和检查，带单位 |
+| 执行记录 | 所选能力、补充计算、实际调用、数据和诊断 |
 
-The user plan explains the result in physical language. Keep it small enough to read; expand a subproblem when needed. Internal IDs, code paths and package bookkeeping belong in execution evidence unless requested.
+物理计划用物理语言解释结果，要小到能读完，必要时再展开某个子问题。内部编号、代码路径和包的管理信息放在执行记录里，除非用户要。
 
-For each composed connection, establish compatible units, normalization, axes, shape, sign/index convention, state, model and boundary. A conversion or missing transformation becomes an explicit [supplementary calculation](glue-gap.md). An unresolved edge stays unknown or `NOT_RUN`.
+## 每条连接都要核对
 
-For feedback, identify the iterated state, update rule, stopping criterion and convergence diagnostic. A converged iteration still needs an appropriate scientific check.
+每一条组合起来的连接，都要确认两侧的单位、归一化、坐标轴、形状、符号和指标约定、状态、模型和边界一致。需要转换或缺少变换时，作为明确的[补充计算](glue-gap.md)处理。无法确认的连接保持未知或未运行。
 
-A plan is a working explanation, not an additional schema or deliverable, and it does not replace the [physical method](method-design.md) in the report. Array shapes, axis order and call sequence stay in execution evidence. Keep only steps that support the requested result and its checks. The [FRC example](example-frc-flame.md) shows a physical outline.
+名称、形状和单位相同只是端口层面的一致，不说明物理上能连。典型的例子是把真空场接到平衡或材料计算：要确认两侧通量函数的定义（每弧度还是总通量，差一个 2π）、参考零点、边界条件、闭合关系和额外需要的物理输入都一致。真空场本身不提供分界面、密度分布、等离子体响应或加热。合同不能确立这个连接时，保留有界的真空场结果；额外的物理模型要有明确的理由、输入和检查。不要猜一个因子，也不要悄悄补进缺失的物理。
+
+## 反馈迭代
+
+写明被迭代的状态、更新规则、停止判据和收敛诊断。迭代收敛之后仍然需要合适的科学检查。
+
+## 定位
+
+物理计划是一份工作说明，不是额外的交付物，也不替代报告里的[物理方法](method-design.md)。数组形状、轴序和调用顺序留在执行记录。只保留支撑所求结果及其检查的步骤。[FRC 示例](example-frc-flame.md)给了一个物理层面的轮廓。

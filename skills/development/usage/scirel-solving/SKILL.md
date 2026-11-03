@@ -1,153 +1,44 @@
 ---
 name: scirel-solving
-description: Answer scientific questions by reasoning from the physics, computing and checking the result, and writing a short technical report with figures, using SciRel capabilities where they apply. Use for scientific problem solving, not library development or qualification.
+description: Answer a scientific or physics question for a user — clarify it, design the physical method, confirm it, compute and check the result, and deliver a short paper-style report with figures — using SciRel capabilities where they help and ordinary code (NumPy, SciPy) elsewhere.
 ---
 
-# Solve with SciRel
+# Solve a scientific question with SciRel
 
-Use the supplied public capabilities and authorized task inputs. Keep outputs in the task workspace. This skill shares one method between internal SciRel capability testing and external user solving; its linked references and helper stay inside this skill.
+The goal is a correct answer to the user's question that a physicist who does not read code can follow and check. SciRel is a set of tested scientific operators that can save work; it is not the subject of the report. NumPy, SciPy and your own code are normal for any step SciRel does not cover.
 
-The goal is a correct, understandable answer to the user's physics question. SciRel is a tool for that, not the point of the report. For capability discovery, load the `scirel-capability-discovery` skill before selecting an API. Its `scripts/` directory contains the transport helpers; they are not a second scientific API and do not replace this skill.
+## The five stages
 
-## Priority execution card
+Every task goes through the same stages, whatever plan or task template the host platform uses. Details, outputs and branches are in [workflow](references/workflow.md).
 
-This skill is the agent's task protocol. Start by writing the user requirement,
-expected inputs/outputs, assumptions and physical approach, then the capabilities
-that apply, glue surface, tests and stop condition. The real user does not provide a reference
-oracle. Use public contracts, physical constraints, invariants, diagnostics and
-tests generated for the task to decide whether the program behaves correctly.
-Reference answers belong only to separate benchmark evaluation.
+1. **Clarify.** Restate the question, reuse facts already given, and ask only about choices that change the numbers. See [clarification](references/clarification.md).
+2. **Design the physical method.** Before any code, write the physics: what decides the answer, the model and assumptions, the laws and formulas, the route to the requested quantities, and how you will know the result is right. See [physical method](references/method-design.md).
+3. **Confirm.** Show the user the assumptions and method and wait, unless they already confirmed it or asked you to skip this step.
+4. **Compute and check.** Look up a SciRel capability only where it saves work (see the `scirel-capability-discovery` skill), read its full contract, write the rest as ordinary code, and run checks that could catch a plausible wrong answer. See [result checks](references/result-checks.md) and [supplementary calculations](references/glue-gap.md).
+5. **Report.** Write a short technical report in seven sections — answer, problem and understanding, physical model and method, results with figures, discussion, conclusion, appendix. See [report format](references/report-format.md) and the [worked example](references/example-report.md).
 
-First classify the run as `internal` or `external`.
+## Rules that hold on every platform
 
-After discovery finds no directly applicable public contract, read [public
-capability gap intake](references/capability-gap-intake.md) and write one gap
-card before choosing a fallback. The card is the handoff between outbound and
-maintenance; it prevents an absent API, a task-specific glue step and a runtime
-failure from being reported as the same `HOLD`.
+- **A physical-method section exists before computing.** If the host's plan template has no place for it, add one. Data definitions, constraints and deliverable lists are not a method.
+- **Report confirmation truthfully.** Write "the user confirmed X" only if the user said so in this conversation. Facts fixed in advance by the task statement are written as "given in the task". Assumptions you could not confirm are labelled unconfirmed.
+- **Deliver what was asked.** The seven-section report is the main deliverable. A host platform's own summary, brief or interactive visualisation is optional and never replaces it. Do not add deliverables the user did not request.
+- **Checks must be independent and discriminate.** The expected value must come from a separate route: an analytic limit, an independent method or a conservation law. A relation that holds by definition, such as a magnitude computed from its own components, is not a check. Symmetry and finiteness alone are not enough, and the number of checks is not a goal. Fix tolerances before looking at results.
+- **Do not judge acceptability without the user's criterion.** Describe the effect in physical terms and say how the user can compare it with their own requirement.
+- **Resolve failures first.** When a check fails, find out why. If the physics result is wrong, fix the calculation and rerun. If the check is wrong (its reference formula, tolerance basis or comparison direction), fix the check, rerun, and say in the appendix in a sentence or two what changed. Only a failure that stays unresolved after that is reported as a failure. A check known to be wrong is never kept as a failure, and never reaches the answer or conclusion. Do not widen a tolerance just to pass. The latest run is the result.
+- **Explain the dominant mechanism.** The discussion names the physics that decides the result and tests the attribution with comparison runs that change one factor at a time, giving each factor's rough contribution. Watch for reversed cause and effect.
+- **Keep the answer clean.** The answer section states the result and only the limits that would change the conclusion. Process and check records belong in the appendix.
+- **Figures show physics, and you look at them.** Plot physical quantities only, never code flow or tool use. Choose axis ranges that make the key difference visible. Open each figure after generating it (pixel statistics do not count) and check for overlaps, legends covering data, and ranges.
 
-- `internal`: the owner is evaluating or extending SciRel itself. This is an
-  adversarial diagnostic line: a missing public capability, weak discovery,
-  boundary failure or misleading result is a useful finding. Record the gap,
-  stop the affected claim at the capability boundary, and route the finding to
-  merge/intake for a reusable capability decision. Do not quietly implement
-  missing scientific core as task glue.
-- `external`: the owner is a user of a distributed SciRel package. SciRel is an
-  optional accelerator, not a prerequisite for a solvable programming task. This
-  is a completion line: if discovery finds no applicable public capability,
-  continue with ordinary programming, numerical libraries and explicit glue
-  when the user request and environment permit it. Record the missing
-  capability as a task-level gap and test the replacement. Do not turn the
-  user's task into a SciRel intake hold.
+## Using SciRel
 
-The mode is selected from the task owner and package context, not from a
-keyword in the scientific request. An internal run has a SciRel development or
-benchmark owner and may write intake evidence; an external run has a user
-deliverable and must keep its solution in the user workspace.
+- Discover capabilities with the `scirel-capability-discovery` skill. Take the identity values from `describe` and use them consistently for the whole task. If an integrity or identity check fails, stop relying on that package and say so.
+- Install the wheel named by `describe` from the package's `wheel/` directory, in an environment that meets `runtime.requires_python`, and call the public Python API.
+- In the report, mention an operator in one short clause where a step uses it. Do not add operator lists or mapping tables.
+- Multi-step couplings: see [coupled dependencies](references/graph-model.md).
 
-For every user task, generate at least normal, lower-bound and upper-bound
-tests. Add degenerate, branch, failure and composition tests when the contract
-permits them. Test both SciRel calls and the glue around them. Keep the glue
-ordinary, visible and reproducible: data preparation, control flow, format
-conversion and presentation may be implemented by the agent, while reusable
-scientific relations remain in SciRel contracts.
+## Tools in this skill
 
-Before claiming completion, read back outputs, failures and test results. The
-result package must include the generated entrypoint, API trace, task tests,
-boundary coverage and uncovered relations. A result can be useful with a
-typed failure or a non-convergence state when that is the declared behavior;
-do not turn it into a success label.
+- `scripts/validate_report.py REPORT.md` checks report structure (section order, figures and captions, no implementation detail in the method, significant digits). It does not check physics.
+- `scripts/delivery.py` is an optional helper that turns saved CSV tables into bounded numerical statements and plots and replays them; see [delivery helper](references/delivery-tool.md).
 
-For a benchmark challenge, record every requested case as `ATTEMPTED`,
-`UNATTEMPTED`, `RUNTIME_GAP`, `CONTRACT_MISMATCH`, or `COMPLETED`; never
-inherit a missing run as a public capability gap. Keep the reference answer and
-hidden oracle outside the worker context and compare only after the clean run.
-A parseable output proves only that the task reached its output path; completion
-still requires generated tests, readback, failure semantics and the stated
-boundary matrix.
-
-When a public capability gap is found, record the full gap card before acting.
-Internal runs route reusable scientific relations to merge/intake and may stop
-the affected claim. External runs disclose the gap and may continue with
-ordinary, visible, tested glue; ask the user only when choosing glue versus a
-SciRel addition changes scope or scientific meaning. A glue success never
-retroactively proves that SciRel owns the missing relation.
-
-## Batch entry gate
-
-Before a new user run, apply the canonical baseline/outbound gate described in repository `RULES.md` section 12: record the current input/runtime identity and owner, keep evidence states explicit, and stop on an integrity failure or missing scientific assumption. The worker sees only the request and public contracts/docs. Follow **clarify → physical method → confirm → compute and check, using discovery where it helps → report → independent acceptance**; keep source identity, hidden oracle, and private acceptance material outside the task. This entry does not authorize package rebuilds, publication, or acceptance decisions.
-
-## Choose the supplied access
-
-For a source checkout, query its public contracts without building a package:
-
-```sh
-python -B scripts/scirel_docs.py query --source-root . --describe
-python -B scripts/scirel_docs.py query --source-root . --q '<scientific relation>' --limit 5
-python -B scripts/scirel_docs.py query --source-root . --asset <asset-id>
-```
-
-Reuse `source_identity_sha256` as `--expected-digest` to detect edits. Source identity does not bind an installed wheel. Read the selected complete contract before using its public API.
-
-Treat pagination, omitted sections and host truncation as delivery limits: retrieve the missing contract clauses
-before relying on the capability. Query, integrity or access failure is not an empty capability set. A complete
-response may still be a bounded search, so a zero hit does not prove absence. After an identity mismatch, stop the
-affected run. Rebind from a current description only when the task permits selecting a new input/runtime;
-do not use an older contract or reading page as proof of current availability.
-
-For a consumer package, select its root and inspect the declared runtime:
-
-```sh
-python <package>/skills/scirel-capability-discovery/scripts/query.py --root <package> describe
-python <package>/skills/scirel-capability-discovery/scripts/query.py --root <package> search --q '<scientific relation>' --limit 5 --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
-```
-
-Install the `runtime.wheel` reported by `describe` with `python -m pip install <package>/wheel/<wheel>` in an environment satisfying `runtime.requires_python`; scientific requirements are also in `runtime-requirements.txt`. Optional MCP uses `mcp-requirements.txt`. Take both pins from `describe`; preserve them on `browse`, `search` and `get`. Read the complete original JSON contract with `get <asset-id>`, including its byte digest and path. CLI and optional MCP expose these same four read-only operations. Pins bind supplied wheel bytes, not installed imports; verify the execution environment before claiming that wheel ran. Execute science through the installed public Python API.
-
-### Optional MCP discovery
-
-MCP is an adapter, not an implicit capability. If the host agent supports MCP,
-register the supplied `mcp-connections.json` entry with the public bundle as its working directory, or start the adapter yourself:
-
-```sh
-cd <public-package>\npython -m pip install -r mcp-requirements.txt\npython skills/scirel-capability-discovery/scripts/server.py --root . --transport stdio
-```
-
-Before starting the adapter, install its dependencies into that adapter environment with `python -m pip install -r mcp-requirements.txt`. The stdio server exposes four read-only tools: `scirel_describe`,
-`scirel_browse`, `scirel_search` and `scirel_get`. Install
-`mcp-requirements.txt` in the adapter environment only; keep the scientific
-wheel environment separate. For an HTTP MCP client, start:
-
-```sh
-cd <public-package>\npython skills/scirel-capability-discovery/scripts/server.py --root . --transport streamable-http --host 127.0.0.1 --port 8765
-```
-
-Then connect to `http://127.0.0.1:8765/mcp`. Call `scirel_describe` first and
-copy its `snapshot_sha256` and `runtime.wheel_sha256` into every later
-`scirel_browse`, `scirel_search` and `scirel_get` call. A normal discovery
-sequence is:
-
-1. `scirel_describe` with no required argument, or with `expected_wheel_sha256` when the wheel was supplied out of band.
-2. `scirel_search` with `q` and both identity pins.
-3. `scirel_get` for each selected `asset_id` with both identity pins.
-4. Inspect units, shapes, model, boundary, applicability and failure semantics before writing glue.
-
-The MCP search is bounded lexical retrieval. A hit does not establish
-scientific applicability, and a zero hit does not prove that no capability
-exists. If MCP is unavailable, use the `scirel-capability-discovery` skill and its CLI fallback with the
-same sequence and identity pins.
-
-Human API pages and tutorials are optional, separately supplied reading. Use an actual configured site/version or supplied generated paths when available; the asset ID is the logical lookup key. Do not infer a URL, fetch a site automatically, or assume that a site's “latest” matches the selected wheel. Their absence does not prevent structured discovery or contract retrieval.
-
-## Work toward the result
-
-Every task follows the same five stages. Read the [workflow](references/workflow.md) for their outputs, exit conditions and branches.
-
-1. **Clarify.** Reuse supplied facts and ask only about what changes the result; see [clarification](references/clarification.md). End when the agreed definitions fix the numbers. Record what remains unknown.
-2. **Design the physical method.** Before any code, write the physics: what decides the answer, the model and assumptions, the laws and formulas, the route to the requested quantities and how the result can be checked. See [physical method](references/method-design.md). A reader who knows physics but not the code must be able to follow it. Note a SciRel capability in passing only where a step happens to use one; steps done with NumPy, SciPy or ordinary code need no such note.
-3. **Confirm.** Show the user the physical assumptions and method, then wait, unless the user has already confirmed them or waived this step.
-4. **Compute and check.** Look for a reusable capability where it saves work, and read the complete contract before using it. Implement the rest as ordinary code and test it; see [supplementary calculations](references/glue-gap.md). For coupled work, a [physical plan](references/graph-model.md) can clarify dependencies, and [vacuum/equilibrium coupling](references/material-coupling.md) needs particular care. Use a discriminating reference, limit, symmetry, conservation or convergence check with tolerances fixed in advance, preserve failures and save results at full precision; see [result checks](references/result-checks.md). Saved CSVs may use the optional [delivery helper](references/delivery-tool.md).
-5. **Report.** Write a short technical report following the [report format](references/report-format.md), with a [worked example](references/example-report.md) of the expected style: answer, problem and understanding, physical model and method, results with figures, discussion, conclusion, and numerical tables in an appendix. Do not judge acceptability without a criterion from the user; state the effect in physical terms instead. For a replayable application, deliver the runnable entrypoint, agent-generated regression tests and their results; for handover, keep one concise [outbound record](references/outbound-evidence.md).
-
-Preserve the selected input/runtime identity across the run; stop relying on bytes that fail integrity checks. Use only public inputs, without private implementations, source history or hidden acceptance answers. The host owns permissions and execution lifecycle; this method grants no additional authority.
-
+Use only the inputs the user supplied and the public package. The host platform controls permissions; this skill grants none.

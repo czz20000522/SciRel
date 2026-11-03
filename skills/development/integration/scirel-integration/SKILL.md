@@ -9,7 +9,7 @@ Use the shared operating contract already loaded for this task mode. If it is
 not loaded, read [the shared operating contract](../../references/scirel-development-core.md)
 once before proceeding; do not reload it for each routed sub-skill.
 Outbound capability-gap cards use the shared format in
-[`scirel-solving/references/capability-gap-intake.md`](../../usage/scirel-solving/references/capability-gap-intake.md).
+[`capability-gap-intake.md`](../../scirel-outbound-evaluation/references/capability-gap-intake.md).
 Treat them as intake evidence: promote only reusable scientific relations;
 leave task-specific orchestration as explicit glue.
 Own the D2 queue and the durable development candidate: compare, deduplicate, route correctness, normalize,

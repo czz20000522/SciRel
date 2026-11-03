@@ -2,6 +2,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import re
 import sys
 
 import numpy as np
@@ -205,3 +206,22 @@ def test_delivered_skills_do_not_contain_answers_from_the_reference_demo():
         text = path.read_text(encoding="utf-8")
         hits += [f"{path.name}: {needle}" for needle in needles if needle in text]
     assert hits == []
+
+
+def test_delivered_skills_speak_to_any_user_and_stay_free_of_internal_content():
+    # Words that belong to maintainers and evaluation, not to a user's agent.
+    internal = re.compile(r"RULES\.md|AGENTS\.md|ARCHITECTURE\.md|benchmark|hidden oracle|gap card|缺口卡|intake|ATTEMPTED"
+                          r"|RUNTIME_GAP|internal run|external run|batch entry", re.I)
+    # A hand-written catalog size would go stale as the catalog grows.
+    catalog_size = re.compile(r"\b\d{2,4} (public |admitted )?(contracts|assets|capabilities)\b|\d{2,4} ?(份|个)合同")
+    hits = []
+    for name in ("scirel-solving", "scirel-capability-discovery", "scirel-result-validation"):
+        for path in (ROOT / "skills/development/usage" / name).rglob("*.md"):
+            text = path.read_text(encoding="utf-8")
+            hits += [f"{path.name}: {m.group(0)}" for pattern in (internal, catalog_size) for m in pattern.finditer(text)]
+    assert hits == []
+
+
+def test_wheel_metadata_readme_does_not_link_to_solved_examples():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    assert "examples/coil-offset" not in readme and "REPORT.md" not in readme

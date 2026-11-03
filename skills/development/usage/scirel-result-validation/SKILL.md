@@ -1,37 +1,19 @@
 ---
 name: scirel-result-validation
-description: Validate a SciRel-backed task result with boundary tests, readback, failure semantics and explicit glue evidence before delivery.
+description: Check a computed scientific result before delivering it — discriminating physics checks, boundary cases, readback, preserved failures and figure review — whether or not SciRel was used.
 ---
 
-# SciRel result validation
+# Check a result before delivery
 
-Use this skill after an agent has written a task solution and before claiming
-that the request is complete. Validate the whole user result, not only a SciRel
-call.
+Use this after the calculation runs and before telling the user the task is done. Check the whole result, not only the SciRel calls. Background and examples are in the `scirel-solving` skill's [result checks](../scirel-solving/references/result-checks.md).
 
-1. Run normal, lower-bound and upper-bound cases.
-2. Add degenerate, branch, failure and composition cases when the task permits.
-3. Test both public SciRel calls and agent-written glue, including units,
-   shapes, ordering, conversions and formatting.
-4. Read output files and stderr back after execution. Preserve typed failures
-   and declared non-convergence; do not replace them with fabricated success.
-5. Record the generated entrypoint, selected asset IDs, API trace, test matrix,
-   outputs, failures and uncovered relations.
-6. Compare against supplied benchmark material only after the clean run; the
-   benchmark is not a user input or a discovery oracle.
-7. Check the physics with something that can catch a plausible wrong answer: an
-   analytic limit, an independent method, a symmetry, a conservation law or a
-   convergence study. Fix tolerances from error estimates before reading results.
-   If a check fails, find out why. Improve a check that is itself too coarse and
-   say so; never widen a tolerance just to pass.
-8. Open every figure and check labels, overlaps, ranges and whether it answers
-   its stated question.
-9. Run the report validator from `scirel-solving`
-   (`scripts/validate_report.py`). It checks structure only; read the method and
-   discussion as a physicist would.
+1. **Independent physics checks.** Each expected value must come from a separate route: an analytic limit or known special case, an independent method, a conservation law, or a convergence study. It must be able to catch a wrong sign, normalisation or unit. A relation that holds by definition, such as a magnitude computed from its own components, is not a check. Symmetry alone is not enough, and the number of checks is not a goal. Fix tolerances from error estimates before looking at results.
+2. **When a check fails,** find out why before going on. If the physics result is wrong, fix the calculation and rerun. If the check is wrong (reference formula, tolerance basis or comparison direction), fix it, rerun, and note the change in the appendix in a sentence or two. Only a failure still unresolved after that is reported as a failure; a check known to be wrong is not kept as one. Never widen a tolerance just to pass. Use the latest run.
+3. **Limits of the inputs.** Where the problem has them, test the physical limits of the input range and any degenerate, branch or failure cases, with expected behaviour worked out independently. Do this for the cases that could change the result, not to fill a matrix.
+4. **Glue code too.** Test your own code around SciRel calls: units, shapes, ordering, conversions and formatting.
+5. **Read back.** Open the saved outputs and stderr after running. Check that every requested point or case is present. Keep real typed failures and non-convergence as they are; do not replace them with a success.
+6. **Figures.** Open every figure and look at it; pixel statistics do not count. Check that it shows physical quantities rather than code flow or tool use, that the axis range makes the key difference visible, that no legend or label covers data, and that it answers the question in its caption.
+7. **Report structure.** Run `python <scirel-solving>/scripts/validate_report.py REPORT.md`. It checks structure only; read the method and discussion as a physicist would.
+8. **Record** the entrypoint, the SciRel asset IDs used, the checks with pass, fail or not-run status, and what remains uncovered, in the report appendix.
 
-A parseable output proves only that an output path was reached. Completion
-requires the stated boundary matrix, readback and failure behavior. A missing
-public capability is a task-level gap for external use and a maintenance
-intake finding for internal use; it is not silently converted into a SciRel
-claim.
+A result that merely parses proves only that the program reached its output. A step SciRel does not cover is done as tested ordinary code and stated as such in the report; it does not become a SciRel result.

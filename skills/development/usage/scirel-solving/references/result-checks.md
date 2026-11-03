@@ -1,21 +1,48 @@
-# Check the result that will be delivered
+# 检查要交付的结果
 
-Choose a check that can distinguish a plausible wrong answer: a reference with known independence, an analytic limit, conservation, symmetry or numerical refinement. Finiteness and a successful import are insufficient. Check contract diagnostics and all nontrivial connections as well as the final quantity.
+## 选有区分度的检查
 
-Classify a failure before changing anything:
+检查的价值在于能否抓住一个看似合理的错误答案。数值有限、程序能导入、文件能回放，都不能说明物理对。对称性检查是必要的，但它对整体符号、归一化常数和单位换算通常不敏感，不能单独使用。
 
-| failure | consequence |
+| 检查 | 能抓住的错误 | 例子 |
+| --- | --- | --- |
+| 解析极限或已知特例 | 符号、归一化、单位、因子 2π 之类 | 在轴上、远场、小参数等极限下与闭式解对比 |
+| 独立方法 | 实现错误、模型用错 | 用另一种算法（如直接数值积分）重算几个点 |
+| 守恒量或积分关系 | 漏项、离散误差 | 通量守恒、能量平衡、散度为零 |
+| 收敛性 | 离散或截断不足 | 网格加密、积分阶数提高后结果稳定 |
+| 敏感性 | 输入或约定被误读 | 翻转电流方向、改变单位，结果应按预期变化 |
+| 对称性 | 坐标和几何设置错误 | 镜像对称下某分量为零、奇偶性 |
+
+期望值必须由独立途径得出。按定义恒等的关系（如由分量算模长）不算检查。不以检查数量为目标，几个能抓住真实错误的检查胜过一长串恒等式。复用同一个模型或同一组假设的第二次计算不算独立。合同里给出的诊断量也要检查，所有非平凡的中间连接都要检查，不只看最终量。
+
+## 先定容差
+
+在看结果之前，根据舍入、截断或数值积分误差估计定好容差，并写下依据。不要只为了通过而放宽容差。
+
+## 检查失败时先解决
+
+先查原因，再决定怎么办：
+
+- **物理结果错了：** 修正计算并重跑。
+- **检查本身错了**（参考式写错、容差依据不对、比较方向反了、方法太粗）：修正检查并重跑，在附录用一两句说明改了什么。
+- **查清原因后仍解决不了：** 这才是要如实保留的失败。写明原因和影响范围。
+
+已查明是检查错误的失败不能当作历史证据留着，也不能进入答案或结论。修复后必须重跑，以最新结果为准。
+
+## 失败先分类再处理
+
+| 失败类型 | 怎么处理 |
 | --- | --- |
-| invalid user data/domain | identify the inconsistent datum and required correction |
-| interface mismatch | adapt a scientifically equivalent representation or report the mismatch |
-| numerical/applicability limit | give the conditioning/range limit and a bounded alternative |
-| implementation defect | preserve the exception or failed diagnostic on valid inputs |
-| environment/integrity failure | repair the supplied installation/input boundary before relying on it |
+| 用户数据或定义域无效 | 指出哪个数据不一致、需要怎样修正 |
+| 接口不匹配 | 改成科学上等价的表示，或报告不匹配 |
+| 数值或适用范围限制 | 给出条件数或适用范围，以及可行的替代 |
+| 实现缺陷 | 在有效输入上保留异常或失败的诊断 |
+| 环境或完整性失败 | 先修好安装或输入，再依赖它 |
 
-Fix tolerances from a round-off, truncation or quadrature estimate before reading results. If a check fails, estimate why: improve a check that is too coarse and say so, and never widen a tolerance only to pass.
+## 读回与交付
 
-Read delivered tables back, checking quantities, units, row/coordinate coverage and failed points. Generate numerical prose, threshold decisions and plot labels from saved values. The optional [delivery helper](delivery-tool.md) performs bounded CSV-to-report consistency checks; it does not establish physical validity. Inspect requested figures and actually run a requested code entrypoint.
+把交付的表读回来，核对量、单位、点的覆盖和失败点。正文的数字、阈值判断和图上的标注都从保存的值生成。可选的[交付辅助工具](delivery-tool.md)可以做 CSV 到报告的一致性检查，但它不证明物理正确。打开每张图亲眼看（像素统计不算），检查重叠、图例遮挡和坐标范围；用户要可运行程序时，真的运行一次入口。
 
-Preserve original criteria and failures. A terminal-point diagnostic does not validate a scan; a partial spectrum does not establish agreement of the full spectrum. If representations differ, establish the requested scope before comparing. Do not explain a failed reference away with a generic limitation unless that explanation is checked for this run.
+查不出原因的失败要保留原始判据。终点的诊断不能代表整段扫描，部分谱不能代表全谱一致。表示方式不同时，先确定要比较的范围再比较。不要用一句笼统的"模型限制"来解释参考对照的失败，除非这个解释在本次计算中检查过。
 
-Report which checks passed, failed or were `NOT_RUN`, and separate self-consistency from independent evidence. Rerun affected computations and reporting after an input or assumption changes.
+报告里写明哪些检查通过、失败或未运行，并区分自洽性检查和独立证据。输入或假设改变后，重算受影响的计算和报告。

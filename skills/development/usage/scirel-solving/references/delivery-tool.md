@@ -1,10 +1,12 @@
-# Executable result delivery
+# 交付辅助工具（可选）
 
-This helper is an optional numerical consistency check on saved CSV tables. Its `ANSWER.md` and `REPORT.md` are check output: they do not replace the report the user reads, which follows the [report format](report-format.md). Keep them under `checked/` as evidence.
+[scripts/delivery.py](../scripts/delivery.py) 对保存的 CSV 表做数值一致性检查：读入数据，计算有界的数值陈述，生成 `ANSWER.md`、`REPORT.md` 和可选的图，并能回放核对。它没有科学求解器，也不判断文字、模型、单位声明是否正确。
 
-Use the [delivery helper](../scripts/delivery.py) from this skill. It reads saved CSV data, computes statements, and renders the answer/report and optional plots. It has no scientific solver or agent runtime. It does not evaluate arbitrary prose or certify a model, a declared unit, or the origin of a conversation file.
+它生成的 `ANSWER.md` 和 `REPORT.md` 是检查输出，不是给用户看的报告。用户报告仍按[报告格式](report-format.md)写。把这些输出放在 `checked/` 目录作为验证记录。
 
-Write a UTF-8 JSON specification beside the output CSVs. Paths are relative to that specification; absolute paths also work. Only the documented fields are accepted. No expected result values, PASS flags or free-form conclusions can be supplied.
+## 规格文件
+
+在输出 CSV 旁边写一个 UTF-8 的 JSON 规格。路径相对于规格文件（也可用绝对路径）。只接受下面列出的字段；不能填入预期结果、PASS 标记或自由文字结论。
 
 ```json
 {
@@ -25,39 +27,36 @@ Write a UTF-8 JSON specification beside the output CSVs. Paths are relative to t
 }
 ```
 
-The illustration is an input shape, not a default model or criterion. Choose columns, units and criteria from the confirmed request and selected scientific contract. CSV column names must be identifiers; units are short ASCII scientific expressions (`1` means dimensionless). No value conversion is implicit. Extra CSV columns may remain undeclared, but every column used by a claim, coordinate or plot needs units. All declared values must be finite and rows well formed.
+这只是输入格式的示意，不是默认模型或判据。列、单位和判据要来自用户确认的需求和所选的科学合同。CSV 列名必须是标识符；单位是简短的 ASCII 表达式（`1` 表示无量纲），不做隐式换算。未声明的多余列可以保留，但被陈述、坐标或图用到的列都要声明单位。所有值必须有限，行格式完整。
 
-## Coverage and conditions
+## 覆盖范围与前提
 
-- Set `expected_rows` from the requested output coverage, not from whatever the solver happened to return.
-- When particular coordinate groups are required, add `expected_groups` to the table: `{"columns":["coordinate_a","coordinate_b"],"values":[[0,0],[0,1]],"rows_each":3}`. The actual set and multiplicity must match exactly. This detects a terminal-point diagnostic offered as a scan. Do not attach a full-scan scope to a one-row diagnostic table.
-- Optional top-level `premises` is a list of `{"path":"request.txt","quote":"exact text from that file"}`. Save the supplied request/clarification faithfully, then quote it without inferred wiring, causes or conditions. The tool checks exact inclusion and binds bytes; the host remains responsible for conversation identity. These are quoted inputs, not verified physics.
+- `expected_rows` 按用户要求的输出覆盖范围设定，不按求解器碰巧返回的行数设定。
+- 需要特定的坐标组时，给表加 `expected_groups`，例如 `{"columns":["coordinate_a","coordinate_b"],"values":[[0,0],[0,1]],"rows_each":3}`。实际集合和重数必须完全一致，这样能发现把终点诊断当成整段扫描的情况。不要给只有一行的诊断表加整段扫描的范围。
+- 可选的顶层 `premises` 是 `{"path":"request.txt","quote":"该文件中的原文"}` 列表。把用户请求和澄清如实保存，再原样引用，不加推断出的条件。工具只检查原文包含关系并绑定字节；对话本身的真实性由宿主负责。这些是引用的输入，不是验证过的物理。
 
-## Statements
+## 数值陈述
 
-Each operation consumes the whole declared table, without a hidden row filter:
+每个操作作用于整张声明的表，没有隐藏的行过滤：
 
-- `range`: `op, table, column`; returns min, max, maximum absolute value and actual row scope.
-- `threshold`: adds `relation` (`>`, `>=`, `<`, `<=`) and finite `value`; counts matching rows. A zero count establishes only that no saved values meet this condition. Derive the scientific criterion from clarified intent.
-- `relative_deviation`: adds `at`, a coordinate-to-value mapping identifying exactly one saved reference row. Optional nonnegative `coordinate_atol` allows explicit coordinate rounding tolerance (default zero). Reports reference value and maximum absolute relative deviation; a zero reference is rejected. It does not assert engineering suitability or a scaling law.
-- `compare`: adds `reference` (another table), `keys` (coordinate columns), nonnegative `atol`, `rtol`. Requires unique, identical full key sets and identical declared units, then computes `abs(actual-reference) <= atol + rtol*abs(reference)`. Failed comparison remains failed. Same bytes are disclosed; a successful comparison is never called independent physics validation. Degenerate spectra needing multiset matching require their own scientific check; do not silently drop modes to fit unique keys.
+- `range`：`op, table, column`；返回最小值、最大值、最大绝对值和实际行范围。
+- `threshold`：再加 `relation`（`>`、`>=`、`<`、`<=`）和有限的 `value`；统计满足条件的行数。计数为零只说明保存的值里没有满足条件的，科学判据要来自澄清过的需求。
+- `relative_deviation`：再加 `at`，一个坐标到值的映射，恰好确定一行参考值；可选非负 `coordinate_atol` 允许坐标舍入（默认 0）。报告参考值和最大相对偏差；参考值为零时拒绝。它不判断工程适用性或标度律。
+- `compare`：再加 `reference`（另一张表）、`keys`（坐标列）、非负的 `atol`、`rtol`。要求键集合唯一且完全相同、单位相同，然后计算 `abs(actual-reference) <= atol + rtol*abs(reference)`。比较失败就是失败。两表字节相同时会注明；比较成功不等于独立的物理验证。简并谱需要多重集匹配时另做科学检查，不要为凑唯一键而丢掉模式。
 
-Diagnostics may be saved as a separate table with their actual coordinates. Its statement retains that table's scope. This tool does not reinterpret residuals, convert backward error to forward accuracy, or establish independence from field names. An unsupported scientific inference stays outside the checked report; establish a suitable domain method before delivering it as a conclusion.
+诊断量可以存成单独的表，带它实际的坐标，陈述只覆盖那张表的范围。工具不解释残差，不把后向误差换算成前向精度，也不根据列名推断独立性。
 
-## Build, replay and deliver
+## 构建、回放与交付
 
 ```sh
-python3 <skill>/scripts/delivery.py build result-spec.json --out checked
-python3 <skill>/scripts/delivery.py verify result-spec.json --out checked --answer checked/ANSWER.md
-cat checked/ANSWER.md
+python3 <本 skill 目录>/scripts/delivery.py build result-spec.json --out checked
+python3 <本 skill 目录>/scripts/delivery.py verify result-spec.json --out checked --answer checked/ANSWER.md
 ```
 
-Outputs: `ANSWER.md`, `REPORT.md`, `checks.json`, and optional `figure-1.png` etc. Plots read the saved coordinates without rescaling, and labels use those same declared columns/units. Matplotlib is required only for plots; use its installed environment. Plotting uses ASCII labels and avoids missing Chinese-font warning loops.
+输出 `ANSWER.md`、`REPORT.md`、`checks.json` 和可选的 `figure-1.png` 等。图直接读保存的坐标，不重新缩放，标注使用声明的列和单位。只有画图需要 matplotlib；图上用 ASCII 标签，避免缺少中文字体的警告。
 
-Verification re-reads current CSVs/conditions, recomputes statements and plots, and compares them with delivered artifacts. A changed CSV, condition, spec, report, answer or plot fails replay. The local hashes are consistency bindings, not signed receipts, authority or proof against an agent that rewrites inputs and rebuilds them.
+`verify` 会重新读入当前的 CSV 和前提，重算陈述和图，并与已交付的文件比对。CSV、前提、规格、报告、答案或图有任何改动，回放都会失败。这些本地哈希只是一致性绑定，不是签名或权威证明。
 
-Exit `0`: bounded statements consistent. Exit `3`: valid report with a failed numerical comparison; disclose it, do not claim completion. Exit `2`: invalid/incomplete input or altered output. Fix the real cause and rebuild; never edit a generated PASS flag, change a tolerance to pass, or reuse a stale report after failure.
+退出码 `0`：有界陈述一致。`3`：报告有效但数值比较失败，要如实说明，不能声称完成。`2`：输入无效、不完整或输出被改动。修正真正的原因后重建；不要编辑生成的 PASS 标记、为通过而改容差，或在失败后沿用旧报告。
 
-Verification returns `answer_text`, bounded numerical statements including generated data/figure links. Keep any number you quote from those statements unchanged. Additional scientific interpretation needs separate evidence and explicit limits. If the host exposes a draft answer file, pass that actual draft to `--answer`; the verifier does not intercept future chat text or control the host's final message. No host-specific integration is required to run this component.
-
-For a host that supports final-message checks, expose this same `verify --answer <actual-draft-file>` operation. The host passes the draft and handles retry/delivery; all numerical and statement checks remain in this plugin. A consistency result for ANSWER.md alone says nothing about a different message emitted later. This optional consumer contract is not a SciRel session, scheduler or interception service.
+引用这些陈述里的数字时保持原样；额外的科学解释需要另外的依据和明确的限制。如果宿主平台能提供答案草稿文件，可以把它传给 `--answer` 做一致性检查；这只检查这一份草稿，不检查之后发出的其他消息。
