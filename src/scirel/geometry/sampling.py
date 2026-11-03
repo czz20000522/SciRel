@@ -1,4 +1,5 @@
 """Grid sampling and line-integral utilities used by geometry diagnostics."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -6,10 +7,20 @@ import numpy as np
 from .numerics import diff_12_central
 
 __all__ = [
-    "transform_to_rtheta", "transform_to_rhoz", "regular_grid", "poly_fit",
-    "reflect_and_hstack", "locs_to_vals", "locs_to_vals_griddata", "locs_to_vals1D",
-    "get_fieldlines", "parse_segment", "get_fieldline_distance", "interp",
-    "flux_surface_avg", "diff_central",
+    "transform_to_rtheta",
+    "transform_to_rhoz",
+    "regular_grid",
+    "poly_fit",
+    "reflect_and_hstack",
+    "locs_to_vals",
+    "locs_to_vals_griddata",
+    "locs_to_vals1D",
+    "get_fieldlines",
+    "parse_segment",
+    "get_fieldline_distance",
+    "interp",
+    "flux_surface_avg",
+    "diff_central",
 ]
 
 
@@ -175,7 +186,9 @@ def transform_to_rhoz(R, Theta, r_component, theta_component):
     radius, theta, radial_component, angular_component = np.broadcast_arrays(
         *[np.asarray(value, dtype=float) for value in (R, Theta, r_component, theta_component)]
     )
-    if not all(np.isfinite(value).all() for value in (radius, theta, radial_component, angular_component)) or np.any(radius <= 0.0):
+    if not all(
+        np.isfinite(value).all() for value in (radius, theta, radial_component, angular_component)
+    ) or np.any(radius <= 0.0):
         raise ValueError("finite polar inputs and positive radius required; origin basis undefined")
     sin_theta, cos_theta = np.sin(theta), np.cos(theta)
     return (
@@ -199,6 +212,7 @@ def locs_to_vals(X, Y, Q, coord_list):
 def locs_to_vals_griddata(X, Y, Q, coord_list):
     """Interpolate a field at coordinate pairs with SciPy ``griddata``."""
     from scipy.interpolate import griddata
+
     xi, yi = zip(*coord_list)
     return griddata((X.flatten(), Y.flatten()), Q.flatten(), (xi, yi))
 
@@ -213,7 +227,14 @@ def locs_to_vals1D(X, Y, Q, coord_list):
     return values
 
 
-def get_fieldlines(contourset, level, start_coord=None, end_coord=None, clockwise=True, idx_check=[]):
+def get_fieldlines(
+    contourset,
+    level,
+    start_coord=None,
+    end_coord=None,
+    clockwise=True,
+    idx_check=[],  # noqa: B006 (public signature; never mutated)
+):
     """Return the longest contour segment at ``level`` in requested order."""
     if level not in list(contourset.levels):
         raise ValueError(f"level: {level} not found in contourset")
@@ -272,6 +293,7 @@ def get_fieldline_distance(flpoints):
 def interp(Rho, Z, Q, flpoints):
     """Evaluate a separable rectangular field at paired line points inside the grid."""
     from scipy.interpolate import RectBivariateSpline
+
     rho = np.asarray(Rho, dtype=float)
     z = np.asarray(Z, dtype=float)
     quantity = np.asarray(Q, dtype=float)
@@ -285,8 +307,10 @@ def interp(Rho, Z, Q, flpoints):
     r_axis = rho[0, :]
     z_axis = z[:, 0]
     inside = (
-        (points[:, 0] >= r_axis[0]) & (points[:, 0] <= r_axis[-1])
-        & (points[:, 1] >= z_axis[0]) & (points[:, 1] <= z_axis[-1])
+        (points[:, 0] >= r_axis[0])
+        & (points[:, 0] <= r_axis[-1])
+        & (points[:, 1] >= z_axis[0])
+        & (points[:, 1] <= z_axis[-1])
     )
     if not np.all(inside):
         raise ValueError("query points must lie inside the closed grid support")
@@ -301,6 +325,7 @@ def flux_surface_avg(Rho, Z, B, flpoints, Q=None):
     sampled path; nonpositive or nonfinite B is rejected before quadrature.
     """
     import scipy.integrate
+
     field = interp(Rho, Z, B, flpoints)
     if not np.all(np.isfinite(field)) or np.any(field <= 0.0):
         raise ValueError("interpolated B must be finite and positive along the sampled path")

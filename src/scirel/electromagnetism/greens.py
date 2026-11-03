@@ -7,6 +7,7 @@ caller order makes the resulting matrices suitable for direct current
 contraction and keeps the discrete zero-self rule visible at the assembly
 boundary.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -68,8 +69,7 @@ def _one_ring_response(source, targets, special):
             response[0, small] = scale * r**2 * h0
             response[1, small] = scale * (r / d) * (h / d) * (3.0 * h0 + 2.0 * m * h1)
             response[2, small] = scale * (
-                (2.0 - 3.0 * (r / d) * ((r + radius) / d)) * h0
-                + r * h1 * dm_dr
+                (2.0 - 3.0 * (r / d) * ((r + radius) / d)) * h0 + r * h1 * dm_dr
             )
 
         if np.any(~small):
@@ -81,11 +81,16 @@ def _one_ring_response(source, targets, special):
             k_value, e_value = ellipkm1(q), ellipe(1.0 - q)
             radial_gap2 = np.hypot(r - radius, h) ** 2
             response[0, ~small] = 1.0e-7 * d * ((2.0 - m) * k_value - 2.0 * e_value)
-            response[1, ~small] = 2.0e-7 * h / (r * d) * (
-                -k_value + (radius * radius + r * r + h * h) / radial_gap2 * e_value
+            response[1, ~small] = (
+                2.0e-7
+                * h
+                / (r * d)
+                * (-k_value + (radius * radius + r * r + h * h) / radial_gap2 * e_value)
             )
-            response[2, ~small] = 2.0e-7 / d * (
-                k_value + ((radius - r) * (radius + r) - h * h) / radial_gap2 * e_value
+            response[2, ~small] = (
+                2.0e-7
+                / d
+                * (k_value + ((radius - r) * (radius + r) - h * h) / radial_gap2 * e_value)
             )
     return weight * response
 
@@ -157,7 +162,9 @@ def _weighted_psi(rzw, rz_pts, *, zero_self=False, max_pairs=1_000_000):
                 rs = np.broadcast_to(r, m.shape)[small]
                 ms = m[small]
                 aa = np.broadcast_to(a, m.shape)[small]
-                values[small] = np.pi * 1.0e-7 * (aa / ds) ** 2 / ds * rs**2 * hyp2f1(1.5, 1.5, 3.0, ms)
+                values[small] = (
+                    np.pi * 1.0e-7 * (aa / ds) ** 2 / ds * rs**2 * hyp2f1(1.5, 1.5, 3.0, ms)
+                )
             if np.any(~small):
                 dl, ql, ml = d[~small], q[~small], m[~small]
                 k_value, e_value = ellipkm1(ql), ellipe(1.0 - ql)
@@ -199,8 +206,13 @@ def get_gpsi(R, Z):
     if np.iscomplexobj(R) or np.iscomplexobj(Z):
         raise ValueError("R,Z must be real coordinate arrays")
     radius, height = np.asarray(R, dtype=float), np.asarray(Z, dtype=float)
-    if (radius.ndim != 2 or height.shape != radius.shape or not np.all(np.isfinite(radius))
-            or not np.all(np.isfinite(height)) or np.any(radius < 0.0)):
+    if (
+        radius.ndim != 2
+        or height.shape != radius.shape
+        or not np.all(np.isfinite(radius))
+        or not np.all(np.isfinite(height))
+        or np.any(radius < 0.0)
+    ):
         raise ValueError("R,Z must be matching finite 2-D arrays with nonnegative R")
     points = np.column_stack((radius.ravel(), height.ravel()))
     active = points[points[:, 0] > 0.0]

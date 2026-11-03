@@ -1,11 +1,17 @@
 """Parametric field-line geometry and bounded diagnostic operations."""
+
 from __future__ import annotations
 
 import numpy as np
 
 __all__ = [
-    "d_ds_arclength", "FieldLineSet", "FieldLine", "HelperFieldLine",
-    "Boundary", "contour_points", "helper_contour_points",
+    "d_ds_arclength",
+    "FieldLineSet",
+    "FieldLine",
+    "HelperFieldLine",
+    "Boundary",
+    "contour_points",
+    "helper_contour_points",
 ]
 
 
@@ -27,8 +33,7 @@ def d_ds_arclength(vertices, values):
     right = coordinate[2:] - coordinate[1:-1]
     derivative = np.empty_like(values)
     derivative[1:-1] = (
-        left * (values[2:] - values[1:-1]) / right
-        + right * (values[1:-1] - values[:-2]) / left
+        left * (values[2:] - values[1:-1]) / right + right * (values[1:-1] - values[:-2]) / left
     ) / (left + right)
     h0, h1 = coordinate[1] - coordinate[0], coordinate[2] - coordinate[1]
     derivative[0] = (
@@ -52,8 +57,10 @@ def _sample_fieldline(vertices, R, Z, Q, method, filter_nonfinite):
     points = np.asarray(vertices, dtype=float)
     r_grid, z_grid, quantity = (np.asarray(value) for value in (R, Z, Q))
     rectangular = (
-        method == "cubic" and not np.iscomplexobj(quantity)
-        and r_grid.ndim == 2 and min(r_grid.shape) >= 4
+        method == "cubic"
+        and not np.iscomplexobj(quantity)
+        and r_grid.ndim == 2
+        and min(r_grid.shape) >= 4
         and r_grid.shape == z_grid.shape == quantity.shape
         and all(np.isfinite(value).all() for value in (r_grid, z_grid, quantity))
         and np.array_equal(r_grid, np.broadcast_to(r_grid[0], r_grid.shape))
@@ -68,9 +75,12 @@ def _sample_fieldline(vertices, R, Z, Q, method, filter_nonfinite):
         if np.all(np.diff(r_axis) > 0.0) and np.all(np.diff(z_axis) > 0.0):
             query_r, query_z = points[:, 0], points[:, 1]
             inside = (
-                np.isfinite(query_r) & np.isfinite(query_z)
-                & (query_r >= r_axis[0]) & (query_r <= r_axis[-1])
-                & (query_z >= z_axis[0]) & (query_z <= z_axis[-1])
+                np.isfinite(query_r)
+                & np.isfinite(query_z)
+                & (query_r >= r_axis[0])
+                & (query_r <= r_axis[-1])
+                & (query_z >= z_axis[0])
+                & (query_z <= z_axis[-1])
             )
             result = np.full(points.shape[0], np.nan)
             spline = RectBivariateSpline(z_axis, r_axis, values, kx=3, ky=3, s=0)
@@ -96,7 +106,12 @@ def _curve_curvature(vertices, br, bz):
     """Differentiate normalized field direction along a local curve parameter."""
     points = np.asarray(vertices, dtype=float)
     field = np.column_stack((br, bz))
-    if points.ndim != 2 or points.shape[1] != 2 or points.shape[0] < 3 or field.shape != points.shape:
+    if (
+        points.ndim != 2
+        or points.shape[1] != 2
+        or points.shape[0] < 3
+        or field.shape != points.shape
+    ):
         raise ValueError("curvature requires finite vertices (N,2), N >= 3")
     if not np.isfinite(points).all():
         raise ValueError("curvature requires finite vertices (N,2), N >= 3")
@@ -113,7 +128,9 @@ def _curve_curvature(vertices, br, bz):
     offsets = np.arange(width)
     target_moment = np.zeros(width)
     target_moment[1] = 1.0
-    starts = np.minimum(np.maximum(np.arange(points.shape[0]) - width // 2, 0), points.shape[0] - width)
+    starts = np.minimum(
+        np.maximum(np.arange(points.shape[0]) - width // 2, 0), points.shape[0] - width
+    )
     derivative = np.empty_like(samples)
     for begin in range(0, points.shape[0], 4096):
         end = min(begin + 4096, points.shape[0])
@@ -129,7 +146,12 @@ def _curve_curvature(vertices, br, bz):
     tangent, direction_derivative = derivative[:, :2], derivative[:, 2:]
     speed = np.linalg.norm(tangent, axis=1)
     sign = np.sign(np.sum(tangent * direction, axis=1))
-    if not np.isfinite(speed).all() or np.any(speed <= 0.0) or not np.isfinite(sign).all() or np.any(sign == 0.0):
+    if (
+        not np.isfinite(speed).all()
+        or np.any(speed <= 0.0)
+        or not np.isfinite(sign).all()
+        or np.any(sign == 0.0)
+    ):
         raise ValueError("curvature requires finite nonzero tangent-aligned field")
     return sign[:, None] * direction_derivative / speed[:, None]
 
@@ -143,14 +165,20 @@ def _bounded_intersection(line, boundary):
     tolerance = 1e-9 * max(1.0, float(np.max(np.ptp(geometry, axis=0))))
 
     def separation(parameter):
-        return np.asarray(line.interpolate(parameter[0])) - np.asarray(boundary.interpolate(parameter[1]))
+        return np.asarray(line.interpolate(parameter[0])) - np.asarray(
+            boundary.interpolate(parameter[1])
+        )
 
     roots = []
     for start_line in np.linspace(lower[0], upper[0], 7):
         for start_boundary in np.linspace(lower[1], upper[1], 7):
             result = least_squares(
-                separation, [start_line, start_boundary], bounds=(lower, upper),
-                xtol=1e-13, ftol=1e-13, gtol=1e-13,
+                separation,
+                [start_line, start_boundary],
+                bounds=(lower, upper),
+                xtol=1e-13,
+                ftol=1e-13,
+                gtol=1e-13,
             )
             if result.success and np.linalg.norm(separation(result.x)) <= tolerance:
                 if not any(np.linalg.norm(result.x - root) < 1e-6 for root in roots):
@@ -164,6 +192,7 @@ def _bounded_intersection(line, boundary):
 
 def _fit_parametric_curve(vertices, u=None, s=0.0, k=2, npts=1000, periodic=False):
     from scipy.interpolate import splev, splprep
+
     tck, fitted_u = splprep(np.asarray(vertices).T, u=u, k=k, s=s, per=int(periodic))
     sample_u = np.linspace(fitted_u.min(), fitted_u.max(), npts)
     fitted = np.column_stack(splev(sample_u, tck, der=0))
@@ -239,6 +268,7 @@ class FieldLine:
 
     def interpolate(self, u):
         from scipy.interpolate import splev
+
         return splev(u, self.tck, der=0)
 
     def reorder_verts(self, steptol=0.1):
@@ -259,23 +289,41 @@ class FieldLine:
         return _sample_fieldline(self.verts, R, Z, Q, method, filter_nonfinite=True)
 
     def get_kappa_n(self, R, Z, BR, BZ, method="cubic"):
-        return _curve_curvature(self.verts, self.interpolate_onto(R, Z, BR, method), self.interpolate_onto(R, Z, BZ, method))
+        return _curve_curvature(
+            self.verts,
+            self.interpolate_onto(R, Z, BR, method),
+            self.interpolate_onto(R, Z, BZ, method),
+        )
 
     def get_kappa_n_2(self, R, Z, psi, method="cubic"):
         if any(np.iscomplexobj(value) for value in (R, Z, psi)):
             raise ValueError("flux curvature requires real grid and flux")
         R, Z, psi = (np.asarray(value, dtype=float) for value in (R, Z, psi))
-        if (R.ndim != 2 or min(R.shape) < 3 or Z.shape != R.shape or psi.shape != R.shape
-                or not all(np.isfinite(value).all() for value in (R, Z, psi))):
-            raise ValueError("finite matching 2-D grid and flux, at least three nodes per axis required")
-        if not (np.array_equal(R, np.broadcast_to(R[0, :], R.shape)) and np.array_equal(Z, np.broadcast_to(Z[:, 0, None], Z.shape))):
+        if (
+            R.ndim != 2
+            or min(R.shape) < 3
+            or Z.shape != R.shape
+            or psi.shape != R.shape
+            or not all(np.isfinite(value).all() for value in (R, Z, psi))
+        ):
+            raise ValueError(
+                "finite matching 2-D grid and flux, at least three nodes per axis required"
+            )
+        if not (
+            np.array_equal(R, np.broadcast_to(R[0, :], R.shape))
+            and np.array_equal(Z, np.broadcast_to(Z[:, 0, None], Z.shape))
+        ):
             raise ValueError("flux curvature requires separable uniform xy grid")
         dx, dz = R[0, 1] - R[0, 0], Z[1, 0] - Z[0, 0]
         tolerance = np.finfo(float).eps
         rtol = 16 * tolerance * max(np.max(np.abs(R)), np.ptp(R))
         ztol = 16 * tolerance * max(np.max(np.abs(Z)), np.ptp(Z))
-        if (dx == 0.0 or dz == 0.0 or not np.allclose(np.diff(R[0]), dx, rtol=0, atol=rtol)
-                or not np.allclose(np.diff(Z[:, 0]), dz, rtol=0, atol=ztol)):
+        if (
+            dx == 0.0
+            or dz == 0.0
+            or not np.allclose(np.diff(R[0]), dx, rtol=0, atol=rtol)
+            or not np.allclose(np.diff(Z[:, 0]), dz, rtol=0, atol=ztol)
+        ):
             raise ValueError("flux curvature requires nondegenerate uniform xy grid")
         dpsi_dz, dpsi_dr = np.gradient(psi, dz, dx)
         gradient_magnitude = np.hypot(dpsi_dr, dpsi_dz)
@@ -295,7 +343,9 @@ class FieldLine:
         return d_ds_arclength(self.verts, Q)
 
     def get_gradpsi(self, R, Z, BR, BZ, method="cubic"):
-        return self.interpolate_onto(R, Z, R * BZ, method), -self.interpolate_onto(R, Z, R * BR, method)
+        return self.interpolate_onto(R, Z, R * BZ, method), -self.interpolate_onto(
+            R, Z, R * BR, method
+        )
 
     def intersection(self, boundary):
         return _bounded_intersection(self, boundary)
@@ -356,10 +406,13 @@ class Boundary:
         self._interpolate_verts(vertices)
 
     def _interpolate_verts(self, vertices, u=None, s=0.0, npts=200):
-        self.tck, self.u, self.verts = _fit_parametric_curve(vertices, u=u, s=s, npts=npts, periodic=False)
+        self.tck, self.u, self.verts = _fit_parametric_curve(
+            vertices, u=u, s=s, npts=npts, periodic=False
+        )
 
     def interpolate(self, u):
         from scipy.interpolate import splev
+
         return splev(u, self.tck, der=0)
 
 
@@ -402,6 +455,7 @@ class HelperFieldLine:
 
     def interpolate(self, u):
         from scipy.interpolate import splev
+
         return splev(u, self.tck, der=0)
 
     def reorder_verts(self, steptol=0.1):
@@ -423,7 +477,8 @@ class HelperFieldLine:
 
     def get_kappa_n(self, R, Z, BR, BZ, method="cubic"):
         curvature = _curve_curvature(
-            self.verts, self.interpolate_onto(R, Z, BR, method),
+            self.verts,
+            self.interpolate_onto(R, Z, BR, method),
             self.interpolate_onto(R, Z, BZ, method),
         )
         return curvature[:, 0], curvature[:, 1]
@@ -432,7 +487,9 @@ class HelperFieldLine:
         return d_ds_arclength(self.verts, Q)
 
     def get_gradpsi(self, R, Z, BR, BZ, method="cubic"):
-        return self.interpolate_onto(R, Z, R * BZ, method), -self.interpolate_onto(R, Z, R * BR, method)
+        return self.interpolate_onto(R, Z, R * BZ, method), -self.interpolate_onto(
+            R, Z, R * BR, method
+        )
 
     def intersection(self, boundary):
         return _bounded_intersection(self, boundary)
@@ -443,6 +500,7 @@ class HelperFieldLine:
 
     def get_bounded_fl(self, npts=1000):
         return self.interpolate(np.linspace(self.ubound0, self.ubound1, npts))
+
 
 def helper_contour_points(contourset):
     """Build a :class:`HelperFieldLine` list for each contour level.

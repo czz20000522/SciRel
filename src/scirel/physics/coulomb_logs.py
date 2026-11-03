@@ -11,6 +11,7 @@ The relations are evaluated in logarithmic form so the dimensional product
 the caller remains responsible for selecting a collision model and checking
 whether a returned logarithm is physically adequate.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -35,8 +36,7 @@ def _positive_broadcast(*values):
             or raw.size == 0
             or np.ma.isMaskedArray(value)
             or any(
-                isinstance(item, (bool, np.bool_))
-                for item in np.asarray(value, dtype=object).flat
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
             )
         ):
             raise ValueError(f"{name} must be a finite positive real value")
@@ -72,14 +72,10 @@ def calculate_log_lambda_ei(T_e, n_e):
         result = 31.3 + np.log(1000.0) + np.log(T) - 0.5 * np.log(n)
     return _finite_result(result, "electron-ion Coulomb logarithm")
 
+
 def calculate_log_lambda_ii(T_i, n_i, Z_i):
     """Return ``30 - .5 ln(n_i) + 1.5 ln(1000*T_i) - 3 ln(Z_i)``."""
     T, n, z = _positive_broadcast(("T_i", T_i), ("n_i", n_i), ("Z_i", Z_i))
     with np.errstate(over="ignore", invalid="ignore"):
-        result = (
-            30.0
-            + 1.5 * (np.log(1000.0) + np.log(T))
-            - 0.5 * np.log(n)
-            - 3.0 * np.log(z)
-        )
+        result = 30.0 + 1.5 * (np.log(1000.0) + np.log(T)) - 0.5 * np.log(n) - 3.0 * np.log(z)
     return _finite_result(result, "ion-ion Coulomb logarithm")

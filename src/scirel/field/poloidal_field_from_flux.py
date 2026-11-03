@@ -1,4 +1,5 @@
 """Recover poloidal magnetic components from ``psi = R A_phi``."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -19,16 +20,29 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     stencil.  At the cylindrical axis the even-flux limit is used for
     ``B_Z`` and ``B_R`` is set to zero.
     """
-    r_grid, z_grid, psi = (np.asarray(r_grid, dtype=float), np.asarray(z_grid, dtype=float), np.asarray(psi, dtype=float))
+    r_grid, z_grid, psi = (
+        np.asarray(r_grid, dtype=float),
+        np.asarray(z_grid, dtype=float),
+        np.asarray(psi, dtype=float),
+    )
     if r_grid.ndim != 2 or r_grid.shape != z_grid.shape or psi.shape != r_grid.shape:
         raise ValueError("R, Z, and psi must be equal-shape 2-D arrays")
     if not np.all(np.isfinite(r_grid)) or not np.all(np.isfinite(z_grid)):
         raise ValueError("R and Z coordinates must be finite")
     radial, axial = r_grid[0, :], z_grid[:, 0]
-    if (radial.size < 3 or axial.size < 3 or not np.allclose(r_grid, radial[None, :])
-            or not np.allclose(z_grid, axial[:, None])):
+    if (
+        radial.size < 3
+        or axial.size < 3
+        or not np.allclose(r_grid, radial[None, :])
+        or not np.allclose(z_grid, axial[:, None])
+    ):
         raise ValueError("a rectilinear R-Z grid with at least 3 points per axis is required")
-    if np.any(np.diff(radial) <= 0.0) or np.any(np.diff(axial) <= 0.0) or radial[0] < 0.0 or not np.all(np.isfinite(psi)):
+    if (
+        np.any(np.diff(radial) <= 0.0)
+        or np.any(np.diff(axial) <= 0.0)
+        or radial[0] < 0.0
+        or not np.all(np.isfinite(psi))
+    ):
         raise ValueError("grid axes and psi are invalid")
 
     dpsi_dz = _source_gradient(psi, axial, axis=0)

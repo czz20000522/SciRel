@@ -1,4 +1,5 @@
 """Validated vector evaluation of the dimensionless plasma dispersion function."""
+
 from __future__ import annotations
 
 import numpy as np
