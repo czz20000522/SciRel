@@ -20,6 +20,7 @@ def steps(output: Path) -> list[tuple[str, list[str]]]:
         ('review registry', [*python, 'scripts/review_gate.py', '--check']),
         ('contracts and examples', [*python, 'scripts/validate_asset_documents.py', 'catalog/examples',
                                     '--check-runtime', '--execute-examples']),
+        ('contract sync', [*python, 'skills/development/scirel-acceptance/scripts/check_contract_sync.py']),
         ('documentation build', [*python, 'scripts/scirel_docs.py', 'build', '--output', str(output / 'docs')]),
     ]
     for report in sorted(ROOT.glob('examples/*/REPORT.md')):

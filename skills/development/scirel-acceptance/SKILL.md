@@ -17,7 +17,13 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 
 `check_all.py` prints `ALL GREEN` when everything passes. Any other ending means the tree is not green.
 
-It runs lint and format, the full test suite, the review registry gate, contract signatures and examples, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
+It runs lint and format, the full test suite, the review registry gate, contract signatures and examples, the contract sync check, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
+
+## Docstring and contract: one source of truth
+
+For each operator, the code signature and its numpydoc docstring are the source of truth for parameter names, order, defaults, units, return entries, raised exceptions and the example. The JSON contract keeps what is only for agents (model, scope, applicability, failure semantics, evidence, limitations), and its fields that overlap the docstring are derived from it. When you change one, change the other in the same commit.
+
+`scripts/check_contract_sync.py` enforces this for the assets listed in `scripts/contract_sync_scope.json`: signature and input names, required flags and defaults; Parameters, Returns, Raises, See Also and Examples sections; every contract unit written as `[unit]` in the matching docstring entry; every exception in `failure_semantics` listed under Raises; Examples that run as doctests and are the same code as `example.code`; the Chinese reader record bound to the current contract; and phrases listed as stale for the asset. Add an asset to the scope list once its docstring passes; the goal is the whole catalog.
 
 ## Set up once per clone
 

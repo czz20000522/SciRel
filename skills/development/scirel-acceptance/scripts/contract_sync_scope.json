@@ -1,0 +1,95 @@
+{
+ "schema": "scirel.contract-sync-scope",
+ "note": "Assets whose code docstring and JSON contract are checked for agreement by check_contract_sync.py. Start with the operators the showcase cases use; extend this list until it covers the catalog.",
+ "assets": [
+  {
+   "asset_id": "scirel.io.read-geqdsk"
+  },
+  {
+   "asset_id": "scirel.neoclassical.sauter-bootstrap-coefficients"
+  },
+  {
+   "asset_id": "scirel.neoclassical.redl-bootstrap-coefficients"
+  },
+  {
+   "asset_id": "scirel.neoclassical.bootstrap-current",
+   "forbidden_phrases": [
+    "First current face",
+    "psi total flux Wb",
+    "total-flux/field"
+   ]
+  },
+  {
+   "asset_id": "scirel.physics.coulomb-ee"
+  },
+  {
+   "asset_id": "scirel.physics.coulomb-ei"
+  },
+  {
+   "asset_id": "scirel.physics.coulomb-ii"
+  },
+  {
+   "asset_id": "scirel.field.poloidal-field-from-flux"
+  },
+  {
+   "asset_id": "scirel.geometry.flux-surface-inverse-field-average"
+  },
+  {
+   "asset_id": "scirel.sampling.weighted-line-integral"
+  },
+  {
+   "asset_id": "scirel.field.multi-coil-vacuum-field"
+  },
+  {
+   "asset_id": "scirel.electromagnetism.circular-filament-green"
+  },
+  {
+   "asset_id": "scirel.electromagnetism.wham"
+  },
+  {
+   "asset_id": "scirel.closures.mirror-ambipolar-potential"
+  },
+  {
+   "asset_id": "scirel.kinetic.plasma-dispersion-function"
+  },
+  {
+   "asset_id": "scirel.kinetic.generalized-dispersion",
+   "forbidden_phrases": [
+    "normalized gamma"
+   ]
+  },
+  {
+   "asset_id": "scirel.kinetic.maxwellian-electrostatic-solver"
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-distribution"
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-init"
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-field"
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-evolve"
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-diagnostic"
+  },
+  {
+   "asset_id": "scirel.kinetic.vp-landau"
+  },
+  {
+   "asset_id": "scirel.fieldline.fieldline"
+  },
+  {
+   "asset_id": "scirel.fieldline.helper-fieldline"
+  },
+  {
+   "asset_id": "scirel.fieldline.contour-points"
+  },
+  {
+   "asset_id": "scirel.fieldline.helper-contour-points"
+  }
+ ]
+}
