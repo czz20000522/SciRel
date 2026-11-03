@@ -179,7 +179,7 @@ def compute_equilibrium(
 
     try:
         fitted = fit_state(psi_zero)
-    except Exception as exc:
+    except (ValueError, ArithmeticError, np.linalg.LinAlgError) as exc:
         return make_result(None, "nonfinite", 0, np.nan, np.nan, str(exc))
     edge = float(psi_zero[midplane][limiter])
     if not np.isfinite(edge) or edge == 0.0:
@@ -205,7 +205,7 @@ def compute_equilibrium(
         try:
             edge = float(psi[midplane][limiter])
             fitted = fit_state(psi)
-        except Exception as exc:
+        except (ValueError, ArithmeticError, np.linalg.LinAlgError) as exc:
             return make_result(None, "nonfinite", iteration, np.nan, np.nan, str(exc))
         if not np.isfinite(edge) or edge == 0.0:
             return make_result(

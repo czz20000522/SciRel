@@ -241,7 +241,7 @@ class ClampedCubicSpline(CubicSpline):
     selectors retain the value-evaluation compatibility behavior.
     """
 
-    def __init__(self, x_data, y_data, yp=[0, 0]):
+    def __init__(self, x_data, y_data, yp=(0, 0)):
         CubicSpline.__init__(self, x_data, y_data)
         assert len(yp) == 2, "yp must be a vector of length 2"
         if not np.all(np.isfinite(yp)):
@@ -362,6 +362,8 @@ class SecondClampedCubicSpline(CubicSpline):
 
     def __init__(self, x_data, y_data, m=1):
         CubicSpline.__init__(self, x_data, y_data)
+        if self.x_data[0] != 0.0 or not self.x_data[-1] > 0.0:
+            raise ValueError("x_data must start at 0 and end above 0")
         if not np.isfinite(m):
             raise ValueError("m must be finite")
         h = self.d_x

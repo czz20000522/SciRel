@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from scirel._result import Result
+
 
 def compute_poloidal_field_magnitude(br, bz):
     """Return a finite ``B`` magnitude and its default reference value.
@@ -25,7 +27,7 @@ def compute_poloidal_field_magnitude(br, bz):
     upper = magnitude.size // 2
     ordered = np.partition(magnitude.ravel(), (lower, upper))
     reference = ordered[lower] + 0.5 * (ordered[upper] - ordered[lower])
-    return {"B": magnitude, "B0_default": float(reference)}
+    return Result({"B": magnitude, "B0_default": float(reference)})
 
 
 __all__ = ["compute_poloidal_field_magnitude"]

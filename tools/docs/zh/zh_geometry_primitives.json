@@ -134,7 +134,7 @@
   },
   {
    "asset_id": "scirel.basis.clamped-cubic-spline",
-   "source_sha256": "56760203fc3262c90dff09d499a795a1bb4cb27c491b0dc6dee8eeef3096b881",
+   "source_sha256": "510341ec3077be1c7a7f2c88481adbac0c51c8b1455520ccbd06ba0fdc764089",
    "summary": "使用两端指定一阶导数的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -364,7 +364,7 @@
   },
   {
    "asset_id": "scirel.basis.second-clamped-cubic-spline",
-   "source_sha256": "7ad29d05464e851c79705ad69ca864c6de231d37b1d0ac2a25a2f53304bd9789",
+   "source_sha256": "6f037e59f8f65e59501221fb97417e09c78f6d172d9bd997a3ab0d9a8e43966e",
    "summary": "使用指定原点行和柱坐标右端方程的分段三次 Hermite 插值。",
    "definition": "通过特定边界的斜率线性系统进行分段三次 Hermite 插值。",
    "model": "C² 连续的三次样条；Clamped/FirstClamped 使用修正后的非等距节点连续性方程。",
@@ -378,7 +378,7 @@
     {
      "name": "x_data",
      "description": "插值节点。",
-     "constraints": "有限、严格递增且 N≥3。",
+     "constraints": "有限、严格递增且 N≥3；x_data[0] 必须为 0，x_data[-1] 必须为正",
      "dtype": "float64"
     },
     {
@@ -1966,10 +1966,10 @@
   },
   {
    "asset_id": "scirel.sampling.select-fieldline",
-   "source_sha256": "d2be2319a0bebfb6cb2f19143f272cd3a1e9cb31d5a5d787b899dcc04e836c4b",
+   "source_sha256": "a87015bc84997cd0c8158f49ddcc6326ef8f1c5069fcd168b82ab89988fb3657",
    "summary": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
    "definition": "在精确等值级别处选择顶点数最多的轮廓线段，并解析其方向与端点。",
-   "model": "沿用原实现的轮廓线段选择；idx_check 是为兼容而保留、会被忽略的参数。采用平面线段顶点及精确等值标签。",
+   "model": "沿用原实现的轮廓线段选择。采用平面线段顶点及精确等值标签。",
    "boundary": "采用 parse_segment 的最近端点约定。",
    "assumptions": [
     "请求的等值精确出现在 contourset.levels 中。",
@@ -2005,12 +2005,6 @@
      "description": "期望的有符号多边形方向。",
      "constraints": "采用原实现中类似鞋带公式的有符号检验。",
      "dtype": "布尔"
-    },
-    {
-     "name": "idx_check",
-     "description": "为兼容而保留、未使用的参数。",
-     "constraints": "对数值选择无影响。",
-     "dtype": "列表"
     }
    ],
    "outputs": [

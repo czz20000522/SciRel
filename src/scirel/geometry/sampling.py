@@ -233,7 +233,6 @@ def get_fieldlines(
     start_coord=None,
     end_coord=None,
     clockwise=True,
-    idx_check=[],  # noqa: B006 (public signature; never mutated)
 ):
     """Return the longest contour segment at ``level`` in requested order."""
     if level not in list(contourset.levels):

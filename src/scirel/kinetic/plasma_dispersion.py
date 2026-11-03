@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
+
 __all__ = ["evaluate_plasma_dispersion"]
 
 
@@ -76,4 +78,4 @@ def evaluate_plasma_dispersion(z):
         dispersion = np.asarray(1j * np.sqrt(np.pi) * w_value, dtype=np.complex128)
     if not np.all(np.isfinite(w_value)) or not np.all(np.isfinite(dispersion)):
         raise ValueError("plasma dispersion value is not representable")
-    return {"w": w_value, "Z": dispersion}
+    return Result({"w": w_value, "Z": dispersion})
