@@ -1144,7 +1144,7 @@
   },
   {
    "asset_id": "scirel.io.read-geqdsk",
-   "source_sha256": "ab5b74f45301aa6b7a22e606de12fefcfb1a67088f969f7839f3c0f5232e5ba1",
+   "source_sha256": "6f0a4826e683956331310c1ea6c8a01394364cb85a423c5bfa73c6fbd21d415f",
    "summary": "把一份标准 EFIT G-EQDSK 平衡文件解析为带名称的数组和网格坐标。",
    "definition": "首行：48 字符说明，之后的整数中最后两个为 NW、NH；四条标量记录（RDIM ZDIM RCENTR RLEFT ZMID / RMAXIS ZMAXIS SIMAG SIBRY BCENTR / CURRENT 及重复值）；FPOL、PRES、FFPRIM、PPRIME（各 NW 个）；PSIRZ（NW×NH，R 下标变化最快）；QPSI（NW 个）；NBBBS、LIMITR；边界和限制器的 (R,Z) 坐标对。",
    "model": "按公开格式规范的 EFIT G-EQDSK 记录布局。",
@@ -1211,7 +1211,8 @@
     "known_limitations": [
      "不推断 COCOS 和符号约定。",
      "不核对文件头里的重复值。",
-     "有些写出程序偏离布局（例如更宽的整数字段），这类文件可能需要 strict=False 或读取失败。"
+     "有些写出程序偏离布局（例如更宽的整数字段），这类文件可能需要 strict=False 或读取失败。",
+     "磁通约定：psirz、simag、sibry 和 psi 都是每弧度磁通（Wb/rad，psi = R*A_phi）。以 Wb 为单位接受总极向磁通的算子需要乘以 2π；scirel.neoclassical.calculate_bootstrap_current 可以直接用 dpsi_per_radian_drho_face 接受每弧度形式。"
     ]
    }
   },

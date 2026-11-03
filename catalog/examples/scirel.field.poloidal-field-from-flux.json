@@ -153,7 +153,8 @@
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "No expert scientific endorsement or public release follows from this numerical successor."
+   "No expert scientific endorsement or public release follows from this numerical successor.",
+   "psi is flux per radian (Wb/rad); a total-flux quantity in Wb is 2*pi times larger. Check which convention a downstream operator expects (for example scirel.neoclassical.calculate_bootstrap_current takes either, under different names)."
   ]
  }
 }

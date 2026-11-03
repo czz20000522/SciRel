@@ -42,6 +42,7 @@ def test_current_axis_sign_and_midpoint():
     one = np.ones(3)
     zero = np.zeros(3)
     out = calculate_bootstrap_current(
+        rho_face=[0.0, 0.5, 1.0],
         F_face=one,
         B0=2.0,
         dpsi_drho_face=one,
@@ -63,6 +64,7 @@ def test_current_axis_sign_and_midpoint():
 def test_current_requires_nonzero_interior_flux_gradient():
     with pytest.raises(ValueError, match="nonzero away"):
         calculate_bootstrap_current(
+            rho_face=[0.0, 0.5, 1.0],
             F_face=[1, 1, 1],
             B0=1,
             dpsi_drho_face=[0, 0, 1],
@@ -89,6 +91,7 @@ def test_current_finite_extreme_midpoints():
     one = np.ones(3)
     zero = np.zeros(3)
     x = calculate_bootstrap_current(
+        rho_face=[0.0, 0.5, 1.0],
         F_face=one,
         B0=2.0,
         dpsi_drho_face=np.full(3, np.pi / 1e308),
@@ -115,6 +118,7 @@ def test_scalar_and_mixed_boolean_input_contract():
     for invalid in ("2.0", True, [2.0], 2j, np.ma.array(2.0, mask=True)):
         with pytest.raises(ValueError):
             calculate_bootstrap_current(
+                rho_face=[0.0, 0.5, 1.0],
                 F_face=one,
                 B0=invalid,
                 dpsi_drho_face=one,
@@ -129,3 +133,64 @@ def test_scalar_and_mixed_boolean_input_contract():
                 L34=one,
                 alpha=one,
             )
+
+
+def _current_inputs(**overrides):
+    one, zero = np.ones(3), np.zeros(3)
+    values = dict(
+        rho_face=[0.0, 0.5, 1.0],
+        F_face=one,
+        B0=2.0,
+        p_e_face=one,
+        p_i_face=one,
+        dlnne_drho_face=one,
+        dlnni_drho_face=zero,
+        dlnte_drho_face=zero,
+        dlnti_drho_face=zero,
+        L31=one,
+        L32=zero,
+        L34=one,
+        alpha=one,
+    )
+    values.update(overrides)
+    return values
+
+
+def test_per_radian_flux_derivative_equals_total_flux_divided_by_two_pi():
+    total = calculate_bootstrap_current(
+        **_current_inputs(dpsi_drho_face=2 * np.pi * np.array([0.0, 0.3, 0.7]))
+    )
+    per_radian = calculate_bootstrap_current(
+        **_current_inputs(dpsi_per_radian_drho_face=[0.0, 0.3, 0.7])
+    )
+    np.testing.assert_allclose(
+        per_radian["j_parallel_bootstrap_face"], total["j_parallel_bootstrap_face"], rtol=1e-15
+    )
+    np.testing.assert_allclose(
+        per_radian["j_parallel_bootstrap_face"], [0.0, -1 / (2 * 0.3), -1 / (2 * 0.7)]
+    )
+
+
+@pytest.mark.parametrize(
+    "flux", [{}, {"dpsi_drho_face": np.ones(3), "dpsi_per_radian_drho_face": np.ones(3)}]
+)
+def test_flux_derivative_must_be_given_in_exactly_one_convention(flux):
+    with pytest.raises(ValueError, match="exactly one of dpsi_drho_face"):
+        calculate_bootstrap_current(**_current_inputs(**flux))
+
+
+def test_only_a_face_at_rho_zero_is_treated_as_the_axis():
+    off_axis = calculate_bootstrap_current(
+        **_current_inputs(rho_face=[0.1, 0.5, 1.0], dpsi_per_radian_drho_face=np.ones(3))
+    )
+    np.testing.assert_allclose(off_axis["j_parallel_bootstrap_face"], [-0.5, -0.5, -0.5])
+    with pytest.raises(ValueError, match="nonzero away from the axis"):
+        calculate_bootstrap_current(
+            **_current_inputs(rho_face=[0.1, 0.5, 1.0], dpsi_per_radian_drho_face=[0.0, 1.0, 1.0])
+        )
+
+
+@pytest.mark.parametrize("rho", [[0.0, 0.5, 0.5], [0.5, 0.2, 1.0], [-0.1, 0.5, 1.0]])
+def test_rho_face_must_be_nonnegative_and_increasing(rho):
+    with pytest.raises(ValueError, match="rho_face"):
+        calculate_bootstrap_current(**_current_inputs(rho_face=rho, dpsi_drho_face=np.ones(3)))

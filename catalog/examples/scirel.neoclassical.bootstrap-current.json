@@ -21,14 +21,14 @@
    "explicit face profiles, gradients and fit coefficients -> parallel current density"
   ],
   "model": "Bounded analytic empirical tokamak fit (Sauter PoP 1999 Eq. 12 or Redl PoP 2021 Eq. 5); not a first-principles neoclassical solve.",
-  "geometry": "Caller-supplied axisymmetric tokamak face data on normalized radius rho and total flux psi (Wb); no device geometry is built in.",
-  "boundary": "The first current face at the magnetic axis is exactly zero and all other gradients are explicit; coefficients are evaluated for the supplied faces only.",
+  "geometry": "Caller-supplied axisymmetric tokamak face data on a radius rho_face, with the poloidal-flux derivative given either as total flux (Wb) or per radian (Wb/rad); no device geometry is built in.",
+  "boundary": "Only a face at rho_face == 0 is the magnetic axis and gets exactly zero current; all gradients are explicit; coefficients are evaluated for the supplied faces only.",
   "device_scope": "device-parameterized"
  },
  "identity": {
   "relation": "Sauter PoP1999 Eq12 / Redl PoP2021 Eq5",
   "direction": "Explicit inputs to fit coefficients/current",
-  "definition": "j_face=-F*2*pi*multiplier/(B0*dpsi_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi]. First axis face is exactly zero. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation.",
+  "definition": "j_face=-F*multiplier/(B0*dpsi_per_radian_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi], with dpsi_per_radian_drho = dpsi_drho/(2*pi) when the total-flux form is given. Exactly one flux-derivative convention is accepted; both or neither raise ValueError. A face with rho_face == 0 is the axis and is set exactly to zero; no other face is zeroed. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation.",
   "model": "Bounded analytic empirical tokamak fit",
   "geometry": "Caller-supplied axisymmetric tokamak face data",
   "coordinates": "rho normalized radius; psi total flux Wb",
@@ -47,6 +47,15 @@
    "required": false,
    "constraints": "Finite real scalar; physical source configuration uses nonnegative multiplier",
    "default": 1.0
+  },
+  {
+   "name": "rho_face",
+   "description": "Radial coordinate of the faces. A face at rho_face == 0 is the magnetic axis and gets zero current; no other face is treated as the axis.",
+   "units": "1",
+   "shape": "N+1",
+   "dtype": "real numeric converted to float64",
+   "required": true,
+   "constraints": "Finite, nonnegative and strictly increasing; sets the face shape of every other array"
   },
   {
    "name": "F_face",
@@ -68,12 +77,23 @@
   },
   {
    "name": "dpsi_drho_face",
-   "description": "Derivative of total poloidal flux (not flux/radian) wrt normalized radius",
+   "description": "Derivative of the TOTAL poloidal flux (2*pi times the per-radian psi = R*A_phi) with respect to rho_face. Give this or dpsi_per_radian_drho_face, not both.",
    "units": "Wb",
    "shape": "N+1",
    "dtype": "real numeric converted to float64",
-   "required": true,
-   "constraints": "Finite matching faces; nonzero away from axis"
+   "required": false,
+   "default": null,
+   "constraints": "Exactly one of dpsi_drho_face or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever rho_face > 0"
+  },
+  {
+   "name": "dpsi_per_radian_drho_face",
+   "description": "Derivative of the poloidal flux per radian psi = R*A_phi (the G-EQDSK and scirel.io.read_geqdsk convention) with respect to rho_face. Give this or dpsi_drho_face, not both.",
+   "units": "Wb/rad",
+   "shape": "N+1",
+   "dtype": "real numeric converted to float64",
+   "required": false,
+   "default": null,
+   "constraints": "Exactly one of dpsi_drho_face or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever rho_face > 0"
   },
   {
    "name": "p_e_face",
@@ -169,7 +189,7 @@
  "outputs": [
   {
    "name": "j_parallel_bootstrap_face",
-   "description": "Parallel current density; first entry zero at magnetic axis",
+   "description": "Parallel current density <j.B>/B0 on faces; zero at a face with rho_face == 0",
    "units": "A/m^2",
    "shape": "N+1",
    "dtype": "real numeric converted to float64",
@@ -209,7 +229,7 @@
   "python": {
    "module": "scirel.neoclassical.bootstrap",
    "symbol": "calculate_bootstrap_current",
-   "signature": "calculate_bootstrap_current(*, bootstrap_multiplier=1.0, F_face, B0, dpsi_drho_face, p_e_face, p_i_face, dlnne_drho_face, dlnni_drho_face, dlnte_drho_face, dlnti_drho_face, L31, L32, L34, alpha)",
+   "signature": "calculate_bootstrap_current(*, bootstrap_multiplier=1.0, rho_face, F_face, B0, dpsi_drho_face=None, dpsi_per_radian_drho_face=None, p_e_face, p_i_face, dlnne_drho_face, dlnni_drho_face, dlnte_drho_face, dlnti_drho_face, L31, L32, L34, alpha)",
    "canonical_module": "scirel.neoclassical",
    "canonical_symbol": "calculate_bootstrap_current"
   }
@@ -223,13 +243,14 @@
   ]
  },
  "example": {
-  "description": "Minimal analytic/invariant check",
-  "code": "import numpy as np\nfrom scirel.neoclassical import calculate_bootstrap_current\none=np.ones(3); zero=np.zeros(3)\nx=calculate_bootstrap_current(F_face=one,B0=2.,dpsi_drho_face=one,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)\nnp.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])",
-  "expected": "Assertions complete without error."
+  "description": "Check the axis zero and that the total-flux and per-radian forms agree.",
+  "code": "import numpy as np\nfrom scirel.neoclassical import calculate_bootstrap_current\none=np.ones(3); zero=np.zeros(3)\nkw=dict(rho_face=[0.,.5,1.],F_face=one,B0=2.,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)\nx=calculate_bootstrap_current(dpsi_drho_face=one,**kw)\nnp.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])\ny=calculate_bootstrap_current(dpsi_per_radian_drho_face=one/(2*np.pi),**kw)\nnp.testing.assert_allclose(y['j_parallel_bootstrap_face'],x['j_parallel_bootstrap_face'])",
+  "expected": "Face current is [0,-pi,-pi] in both conventions."
  },
  "verification": {
   "scope": [
-   "Independent Decimal fit checks, source-bound coefficient/caller parity and finite arithmetic regressions"
+   "Independent Decimal fit checks, source-bound coefficient/caller parity and finite arithmetic regressions",
+   "Total-flux and per-radian flux derivatives agree; giving both or neither, a non-increasing or negative rho_face, or a zero flux derivative off the axis raise ValueError; an off-axis first face is not zeroed."
   ],
   "tests": [
    "tests/tooling/test_bootstrap.py"

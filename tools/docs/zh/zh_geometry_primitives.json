@@ -2054,7 +2054,7 @@
   },
   {
    "asset_id": "scirel.sampling.weighted-line-integral",
-   "source_sha256": "7958d74fe99bdbc16833c915fe58d4074891af3b288f723a8ca71e3a66bb22d2",
+   "source_sha256": "a7043f654743e71113188297324497cb440af8dced239793c787dd7d4e64f4fb",
    "summary": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "definition": "计算 ∫ (1/B) ds，或在给定 Q 时计算 ∫ (Q/B) ds / ∫ (1/B) ds。",
    "model": "沿用原实现的矩形样条采样和折线梯形求积。采用 xy 矩形网格及具有显式弦长的平面路径。",
@@ -2138,7 +2138,9 @@
     "evidence_ceiling": "直接示例和具名回归样例只在这些输入上建立文档所述关系；不代表任意输入正确性、实验验证或发行批准。",
     "known_limitations": [
      "物理磁通体积归一化/闭合曲面解释未经验证。",
-     "B 为零/非有限或查询位于支持范围外，不在声明范围内。"
+     "B 为零/非有限或查询位于支持范围外，不在声明范围内。",
+     "权重是沿给定 R-Z 路径的 dl/|B|：当路径是无环向分量的场（真空场或磁镜场）的磁力线时，就是磁力线平均。它不是托卡马克的磁面平均 <X> = ∮X dl/|B_p| / ∮dl/|B_p|；有环向场时应直接计算那个积分。精度取决于 B 的样条插值和路径采样：在磁轴附近或粗网格上误差可达百分之几，应加密网格和路径来确认。",
+     "与 scirel.geometry.flux-surface-inverse-field-average（compute_flux_surface_inverse_field_average）是同一关系，后者会校验输入并同时返回 dl_B 和平均值；新代码优先用它。"
     ]
    }
   },

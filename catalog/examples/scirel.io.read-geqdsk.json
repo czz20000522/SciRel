@@ -131,7 +131,8 @@
   "known_limitations": [
    "COCOS and sign conventions are not inferred",
    "Repeated header values are not cross-checked",
-   "Some writers deviate from the layout (for example wider integer fields); such files may need strict=False or fail"
+   "Some writers deviate from the layout (for example wider integer fields); such files may need strict=False or fail",
+   "Flux convention: psirz, simag, sibry and psi are flux per radian (Wb/rad, psi = R*A_phi). Operators that take the total poloidal flux in Wb need 2*pi times these values; scirel.neoclassical.calculate_bootstrap_current accepts the per-radian form directly as dpsi_per_radian_drho_face."
   ]
  },
  "references": [

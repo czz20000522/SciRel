@@ -3429,7 +3429,7 @@
   },
   {
    "asset_id": "scirel.field.poloidal-field-from-flux",
-   "source_sha256": "66e5d18eb914885b549fcc3907b9986a841ce6f24802718aa5eaad1a5dcb459e",
+   "source_sha256": "8fc1b4fa4146714c922d711ae25ca6c1d77d61099a36198466c65639c54f8e1c",
    "summary": "在柱坐标 R–Z 直角网格上由 psi=R A_phi 恢复 BR、BZ 及其大小。",
    "definition": "在直角网格上对 psi 求导并除以 R；包含 R=0 时使用偶对称磁通轴规则。",
    "model": "柱坐标 R-Z 网格上的稳定局部有限差分梯度。",
@@ -3514,7 +3514,8 @@
     "known_limitations": [
      "调用者闭合和格林响应须自有证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入界不等于离散误差界或实验不确定度。",
-     "此数值后继不自动获得专家认可或公开发行资格。"
+     "此数值后继不自动获得专家认可或公开发行资格。",
+     "psi 是每弧度磁通（Wb/rad）；以 Wb 计的总磁通大 2π 倍。使用下游算子时先核对它要哪种约定（例如 scirel.neoclassical.calculate_bootstrap_current 两种都接受，但参数名不同）。"
     ]
    }
   },

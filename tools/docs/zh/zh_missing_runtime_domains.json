@@ -537,10 +537,10 @@
     "输入转为 binary64 后须有限；调用者提供一致单位和归一化。"
    ],
    "boundary": "电流的第一个磁轴面严格为零，其他位置梯度显式提供。",
-   "definition": "平行电流密度逐面计算：四项分别是密度梯度项 L31*pe*dlnne、离子密度梯度项 L31*pi*dlnni、电子温度梯度项 (L31+L32)*pe*dlnTe 和离子温度梯度项 (L31+alpha*L34)*pi*dlnTi；四项相加后乘以系数 -F*2*pi*multiplier/(B0*dpsi_drho)。磁轴处的第一个面严格为零。单元电流取相邻面的算术平均，并采用可防溢出的有限中点实现。",
+   "definition": "平行电流密度逐面计算：四项分别是密度梯度项 L31*pe*dlnne、离子密度梯度项 L31*pi*dlnni、电子温度梯度项 (L31+L32)*pe*dlnTe 和离子温度梯度项 (L31+alpha*L34)*pi*dlnTi；四项相加后乘以 -F*multiplier/(B0*dpsi_per_radian_drho)，给出总磁通形式时 dpsi_per_radian_drho = dpsi_drho/(2π)。两种磁通导数约定只接受一种，两者都给或都不给抛出 ValueError。只有 rho_face == 0 的面视为磁轴并严格取零。单元电流取相邻面的算术平均，并采用可防溢出的有限中点实现。",
    "example": {
-    "description": "检查磁轴零值与 2*pi 归一化。",
-    "expected": "面电流为 [0,-pi,-pi]。"
+    "description": "检查磁轴零值，以及总磁通与每弧度两种写法一致。",
+    "expected": "两种约定下面电流都是 [0,-pi,-pi]。"
    },
    "failure_semantics": {
     "invalid_input": "形状、定义域、非有限或掩码输入抛出 ValueError；不返回部分结果。",
@@ -555,6 +555,14 @@
      "constraints": "有限实标量；物理配置使用非负乘数。",
      "dtype": "实数数值，转换为 float64",
      "shape": "标量",
+     "units": "无量纲"
+    },
+    {
+     "name": "rho_face",
+     "description": "各面的径向坐标。rho_face == 0 的面是磁轴，电流取零；其他面都不当作磁轴。",
+     "constraints": "有限、非负、严格递增；决定其余数组的面形状。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
      "units": "无量纲"
     },
     {
@@ -575,11 +583,19 @@
     },
     {
      "name": "dpsi_drho_face",
-     "description": "总极向磁通对归一化半径的导数，不是每弧度磁通",
-     "constraints": "有限匹配面数组；磁轴以外非零。",
+     "description": "**总**极向磁通（每弧度磁通 psi = R*A_phi 的 2π 倍）对 rho_face 的导数；与 dpsi_per_radian_drho_face 二选一。",
+     "constraints": "dpsi_drho_face 与 dpsi_per_radian_drho_face 只能给一个；有限匹配面数组，rho_face > 0 处非零。",
      "dtype": "实数数值，转换为 float64",
      "shape": "N+1",
      "units": "Wb"
+    },
+    {
+     "name": "dpsi_per_radian_drho_face",
+     "description": "每弧度极向磁通 psi = R*A_phi（G-EQDSK 与 scirel.io.read_geqdsk 的约定）对 rho_face 的导数；与 dpsi_drho_face 二选一。",
+     "constraints": "dpsi_drho_face 与 dpsi_per_radian_drho_face 只能给一个；有限匹配面数组，rho_face > 0 处非零。",
+     "dtype": "实数数值，转换为 float64",
+     "shape": "N+1",
+     "units": "Wb/rad"
     },
     {
      "name": "p_e_face",
@@ -666,7 +682,7 @@
    "outputs": [
     {
      "name": "j_parallel_bootstrap_face",
-     "description": "面平行电流密度，磁轴首项为零",
+     "description": "面上的平行电流密度 <j·B>/B0；rho_face == 0 的面为零",
      "constraints": "有限、显式、一维，面形状须匹配，不广播。",
      "dtype": "实数数值，转换为 float64",
      "shape": "N+1",
@@ -681,7 +697,7 @@
      "units": "A/m^2"
     }
    ],
-   "source_sha256": "863ea3d1582237b9c1fdb6ffd36e0b2604ce4db14c822a6acb6eade7b6fcdf77",
+   "source_sha256": "8807d99b409f0d8ea4e85b000fd640def6a2214787c7b1a71b83ca2eb047f973",
    "summary": "由压强、对数梯度及拟合系数组装平行自举电流。",
    "verification": {
     "evidence_ceiling": "仅证明拟合代数与显式组装，不构成经验模型的全面物理资格。",
@@ -691,7 +707,8 @@
      "物理解释要求轴对称托卡马克、非负标量热压强、取对数前密度和温度为正，以及一致的总磁通和磁场符号。有符号输入仅有代数意义。"
     ],
     "scope": [
-     "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。"
+     "独立 Decimal 拟合检查、系数与调用者对照以及有限算术回归。",
+     "总磁通与每弧度磁通导数两种写法一致；两者都给或都不给、rho_face 不递增或为负、磁轴外磁通导数为零时抛出 ValueError；不在磁轴上的第一个面不被置零。"
     ],
     "tests": [
      "tests/tooling/test_bootstrap.py"

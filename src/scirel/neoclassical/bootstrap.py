@@ -190,9 +190,11 @@ def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
 def calculate_bootstrap_current(
     *,
     bootstrap_multiplier=1.0,
+    rho_face,
     F_face,
     B0,
-    dpsi_drho_face,
+    dpsi_drho_face=None,
+    dpsi_per_radian_drho_face=None,
     p_e_face,
     p_i_face,
     dlnne_drho_face,
@@ -204,11 +206,51 @@ def calculate_bootstrap_current(
     L34,
     alpha,
 ):
-    """Evaluate parallel bootstrap current on faces and arithmetic cell means."""
+    """Evaluate the parallel bootstrap current density on faces and cell means.
+
+    ``<j.B>/B0 = -(F / (B0 dpsi/drho)) [L31 p_e dln n_e + L31 p_i dln n_i
+    + (L31 + L32) p_e dln T_e + (L31 + alpha L34) p_i dln T_i]`` with the
+    gradients taken with respect to the same radius as ``dpsi/drho``, and
+    ``psi`` the poloidal flux per radian (``R * A_phi``, Wb/rad).
+
+    Parameters
+    ----------
+    rho_face : array_like
+        Radial coordinate of the faces, nonnegative and strictly increasing.
+        A face at ``rho_face == 0`` is the magnetic axis; its current is set
+        to zero there (the trapped fraction and the gradients vanish). No
+        other face is treated as the axis, so a grid that starts off-axis
+        keeps its first value.
+    dpsi_drho_face, dpsi_per_radian_drho_face : array_like
+        Give exactly one. ``dpsi_drho_face`` is the derivative of the total
+        poloidal flux in Wb (``2*pi`` times the per-radian flux);
+        ``dpsi_per_radian_drho_face`` is the derivative of ``psi = R*A_phi``
+        in Wb/rad, the convention of G-EQDSK files and of
+        ``scirel.io.read_geqdsk``. Both or neither raise ``ValueError``.
+        Must be nonzero on every face except an axis face.
+
+    The remaining face arrays (``F_face`` in T m, pressures in Pa,
+    dimensionless logarithmic gradients and fit coefficients) must all have
+    the shape of ``rho_face``. ``B0`` is a nonzero scalar in T.
+
+    Returns
+    -------
+    dict
+        ``j_parallel_bootstrap_face`` (A/m^2 on faces) and
+        ``j_parallel_bootstrap`` (arithmetic means of adjacent faces).
+    """
+    if (dpsi_drho_face is None) == (dpsi_per_radian_drho_face is None):
+        raise ValueError(
+            "give exactly one of dpsi_drho_face (total poloidal flux, Wb) or "
+            "dpsi_per_radian_drho_face (flux per radian, Wb/rad)"
+        )
+    per_radian = dpsi_per_radian_drho_face is not None
     names = locals()
+    flux_name = "dpsi_per_radian_drho_face" if per_radian else "dpsi_drho_face"
     array_names = (
+        "rho_face",
         "F_face",
-        "dpsi_drho_face",
+        flux_name,
         "p_e_face",
         "p_i_face",
         "dlnne_drho_face",
@@ -221,17 +263,22 @@ def calculate_bootstrap_current(
         "alpha",
     )
     arrays = {name: _face(name, names[name]) for name in array_names}
-    shape = arrays["F_face"].shape
+    shape = arrays["rho_face"].shape
     if any(value.shape != shape for value in arrays.values()):
-        raise ValueError("all bootstrap face arrays must have the same shape")
+        raise ValueError("all bootstrap face arrays must have the shape of rho_face")
+    rho = arrays["rho_face"]
+    if np.any(rho < 0.0) or np.any(np.diff(rho) <= 0.0):
+        raise ValueError("rho_face must be nonnegative and strictly increasing")
     b0 = _scalar("B0", B0)
     multiplier = _scalar("bootstrap_multiplier", bootstrap_multiplier)
     if b0 == 0.0:
         raise ValueError("B0 must be finite and nonzero; multiplier must be finite")
-    if np.any(arrays["dpsi_drho_face"][1:] == 0.0):
-        raise ValueError("dpsi_drho_face must be nonzero away from the axis")
+    axis = rho == 0.0
+    if np.any(arrays[flux_name][~axis] == 0.0):
+        raise ValueError(f"{flux_name} must be nonzero away from the axis (rho_face > 0)")
+    turn = 1.0 if per_radian else 2.0 * np.pi
     with np.errstate(divide="ignore", invalid="ignore", over="ignore"):
-        prefactor = -arrays["F_face"] * multiplier * 2.0 * np.pi / b0 / arrays["dpsi_drho_face"]
+        prefactor = -arrays["F_face"] * multiplier * turn / b0 / arrays[flux_name]
         pressure_gradient = (
             arrays["L31"] * arrays["p_e_face"] * arrays["dlnne_drho_face"]
             + arrays["L31"] * arrays["p_i_face"] * arrays["dlnni_drho_face"]
@@ -242,7 +289,7 @@ def calculate_bootstrap_current(
         )
         current = prefactor * pressure_gradient
     current = np.asarray(current, dtype=float)
-    current[0] = 0.0
+    current[axis] = 0.0
     if not np.all(np.isfinite(current)):
         raise FloatingPointError("bootstrap current is not finite")
     return {"j_parallel_bootstrap_face": current, "j_parallel_bootstrap": face_to_cell(current)}

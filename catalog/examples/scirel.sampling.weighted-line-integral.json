@@ -158,7 +158,9 @@
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [
    "Physical flux-volume normalization/closed-surface interpretation remains unqualified",
-   "Zero/nonfinite B and outside-support queries are outside claim"
+   "Zero/nonfinite B and outside-support queries are outside claim",
+   "Weight is dl/|B| along the supplied R-Z path: the field-line average when the path is a field line of a field with no toroidal component (vacuum or mirror fields). It is not the tokamak flux-surface average <X> = closed-integral X dl/|B_p| / closed-integral dl/|B_p|; with a toroidal field compute that quadrature directly. Accuracy is set by spline interpolation of B and by the path sampling: near a magnetic axis or on coarse grids the error can reach several percent, so confirm by refining grid and path.",
+   "Same relation as scirel.geometry.flux-surface-inverse-field-average (compute_flux_surface_inverse_field_average), which validates its inputs and returns dl_B and the average together; prefer that one for new code."
   ]
  }
 }

@@ -4938,7 +4938,7 @@
   },
   {
    "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
-   "source_sha256": "d3299d53bc981ceeaf04243b147ed2f4b0fcd6fc89f3720c405cc62ad8560d8a",
+   "source_sha256": "a4e86663dcb56b3d5ce4cffe8bc7fce2b400c2023d6e7741017f6d3fcf44dffa",
    "summary": "沿给定R–Z折线插值正磁场模，以梯形求积计算∫dl/B，并可计算同权标量平均。",
    "definition": "用三次RectBivariateSpline在路径点插值B及可选quantity；累计R–Z欧氏线段长度，梯形积分1/B；可选平均为∫quantity/B dl除以∫1/B dl。",
    "model": "二维采样场插值及离散逆磁场路径求积。",
@@ -5030,7 +5030,9 @@
      "不追踪磁力线或闭合磁面，输出名保留历史关系名称。",
      "实现不拒绝负半径，但其不具物理柱坐标解释。",
      "即使网格B全正，样条插值仍可能违反正性前提。",
-     "公开分发许可与专家认可待决定。"
+     "公开分发许可与专家认可待决定。",
+     "权重是沿给定 R-Z 路径的 dl/|B|：当路径是无环向分量的场（真空场或磁镜场）的磁力线时，就是磁力线平均。它不是托卡马克的磁面平均 <X> = ∮X dl/|B_p| / ∮dl/|B_p|；有环向场时应直接计算那个积分。精度取决于 B 的样条插值和路径采样：在磁轴附近或粗网格上误差可达百分之几，应加密网格和路径来确认。",
+     "与 scirel.sampling.weighted-line-integral（flux_surface_avg）是同一关系；本资产会校验输入并同时返回 dl_B 和平均值，优先用它。"
     ]
    }
   },
