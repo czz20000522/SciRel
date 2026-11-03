@@ -1,4 +1,5 @@
 """Ordered composition for a collection of rectangular vacuum coils."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -21,7 +22,9 @@ def _target_points(r_grid, z_grid):
 
 def _stack_response_columns(responses):
     """Turn one target-ordered response mapping per coil into source columns."""
-    return {name: np.column_stack([item[name] for item in responses]) for name in ("gpsi", "gBR", "gBZ")}
+    return {
+        name: np.column_stack([item[name] for item in responses]) for name in ("gpsi", "gBR", "gBZ")
+    }
 
 
 def run_composition(inputs, *, asset_loader):
@@ -32,14 +35,27 @@ def run_composition(inputs, *, asset_loader):
     missing = [name for name in required_inputs if name not in inputs]
     if missing:
         raise ValueError("r_grid, z_grid, and rectangular_coils are required")
-    r_grid, z_grid = np.asarray(inputs["r_grid"], dtype=float), np.asarray(inputs["z_grid"], dtype=float)
-    if r_grid.ndim != 2 or z_grid.shape != r_grid.shape or not np.all(np.isfinite(r_grid)) or not np.all(np.isfinite(z_grid)):
+    r_grid, z_grid = (
+        np.asarray(inputs["r_grid"], dtype=float),
+        np.asarray(inputs["z_grid"], dtype=float),
+    )
+    if (
+        r_grid.ndim != 2
+        or z_grid.shape != r_grid.shape
+        or not np.all(np.isfinite(r_grid))
+        or not np.all(np.isfinite(z_grid))
+    ):
         raise ValueError("r_grid and z_grid must be equal-shape finite 2-D arrays")
     if not r_grid.size:
         raise ValueError("r_grid and z_grid must be nonempty 2-D arrays")
     r_axis, z_axis = r_grid[0], z_grid[:, 0]
-    if (np.any(r_axis < 0.0) or np.any(np.diff(r_axis) <= 0.0) or np.any(np.diff(z_axis) <= 0.0)
-            or not np.allclose(r_grid, r_axis[None, :]) or not np.allclose(z_grid, z_axis[:, None])):
+    if (
+        np.any(r_axis < 0.0)
+        or np.any(np.diff(r_axis) <= 0.0)
+        or np.any(np.diff(z_axis) <= 0.0)
+        or not np.allclose(r_grid, r_axis[None, :])
+        or not np.allclose(z_grid, z_axis[:, None])
+    ):
         raise ValueError("r_grid and z_grid must define a strictly increasing rectilinear R-Z grid")
     coils = inputs["rectangular_coils"]
     if not isinstance(coils, (list, tuple)) or not coils:
@@ -49,16 +65,30 @@ def run_composition(inputs, *, asset_loader):
     source_blocks, currents = [], []
     required_coil = {"r0_m", "z0_m", "nr", "nz", "dr_m", "dz_m", "current_a"}
     for index, coil in enumerate(coils):
-        missing = sorted(required_coil.difference(coil)) if isinstance(coil, dict) else sorted(required_coil)
+        missing = (
+            sorted(required_coil.difference(coil))
+            if isinstance(coil, dict)
+            else sorted(required_coil)
+        )
         if not isinstance(coil, dict) or missing:
             raise ValueError(f"rectangular_coils[{index}] misses {', '.join(missing)}")
-        points = geometry(coil["r0_m"], coil["z0_m"], coil["nr"], coil["nz"], coil["dr_m"], coil["dz_m"], coil.get("angle_deg", 0.0))
+        points = geometry(
+            coil["r0_m"],
+            coil["z0_m"],
+            coil["nr"],
+            coil["nz"],
+            coil["dr_m"],
+            coil["dz_m"],
+            coil.get("angle_deg", 0.0),
+        )
         current = float(coil["current_a"])
         if not np.isfinite(current):
             raise ValueError(f"rectangular_coils[{index}].current_a must be finite")
         weights = np.asarray(coil.get("weights", np.ones(len(points))), dtype=float)
         if weights.shape != (len(points),) or not np.all(np.isfinite(weights)):
-            raise ValueError(f"rectangular_coils[{index}].weights must be finite with one value per filament")
+            raise ValueError(
+                f"rectangular_coils[{index}].weights must be finite with one value per filament"
+            )
         block, drive = _attach_coil_current(points, current, weights)
         source_blocks.append(block)
         currents.append(drive)
@@ -89,11 +119,18 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     from scirel.field.current_green_superposition import superpose_current_green_field
     from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
 
-    return compose(run_composition, inputs, kwargs, {"asset_loader": {
-        "scirel.field.circular_filament_green": circular_filament_green_response,
-        "scirel.field.current_green_superposition": superpose_current_green_field,
-        "scirel.field.rectangular_coil_filaments": discretize_rectangular_coil,
-    }})
+    return compose(
+        run_composition,
+        inputs,
+        kwargs,
+        {
+            "asset_loader": {
+                "scirel.field.circular_filament_green": circular_filament_green_response,
+                "scirel.field.current_green_superposition": superpose_current_green_field,
+                "scirel.field.rectangular_coil_filaments": discretize_rectangular_coil,
+            }
+        },
+    )
 
 
 __all__ = ["solve_multi_coil_vacuum_field"]

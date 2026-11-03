@@ -1,21 +1,35 @@
 import inspect
 
 from scirel.field.multi_coil_vacuum_field import solve_multi_coil_vacuum_field
-import scirel
-from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import (
+    load_asset as _load_asset,
+)
 import numpy as np
 import pytest
 
 from scirel.field.multi_coil_vacuum_field import run_composition
+
+
 def _assets(asset_ref):
     return _load_asset(asset_ref)
+
 
 def _inputs(current=1000.0):
     r_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 5), np.linspace(-0.2, 0.2, 4))
     return {
         "r_grid": r_grid,
         "z_grid": z_grid,
-        "rectangular_coils": [{"r0_m": 0.45, "z0_m": 0.0, "nr": 2, "nz": 2, "dr_m": 0.04, "dz_m": 0.05, "current_a": current}],
+        "rectangular_coils": [
+            {
+                "r0_m": 0.45,
+                "z0_m": 0.0,
+                "nr": 2,
+                "nz": 2,
+                "dr_m": 0.04,
+                "dz_m": 0.05,
+                "current_a": current,
+            }
+        ],
     }
 
 
@@ -43,8 +57,16 @@ def test_current_is_one_set_drive_not_sum_divided_filament_current():
     points = geometry(0.45, 0.0, 2, 2, 0.04, 0.05, 0.0)
     r_grid = _inputs()["r_grid"]
     z_grid = _inputs()["z_grid"]
-    expected = green(np.column_stack((points, np.ones(points.shape[0]))), np.column_stack((r_grid.ravel(), z_grid.ravel())))
-    np.testing.assert_allclose(result["psi_vac"], (1000.0 * expected["gpsi"]).reshape(r_grid.shape), rtol=2.0e-14, atol=1.0e-300)
+    expected = green(
+        np.column_stack((points, np.ones(points.shape[0]))),
+        np.column_stack((r_grid.ravel(), z_grid.ravel())),
+    )
+    np.testing.assert_allclose(
+        result["psi_vac"],
+        (1000.0 * expected["gpsi"]).reshape(r_grid.shape),
+        rtol=2.0e-14,
+        atol=1.0e-300,
+    )
 
 
 def test_rejects_missing_current_contract():
@@ -81,10 +103,17 @@ def test_unrepresentable_vacuum_field_fails_closed():
     values = {
         "r_grid": r_grid,
         "z_grid": z_grid,
-        "rectangular_coils": [{
-            "r0_m": 0.45, "z0_m": 0.0, "nr": 2, "nz": 2,
-            "dr_m": 0.04, "dz_m": 0.05, "current_a": 1e308,
-        }],
+        "rectangular_coils": [
+            {
+                "r0_m": 0.45,
+                "z0_m": 0.0,
+                "nr": 2,
+                "nz": 2,
+                "dr_m": 0.04,
+                "dz_m": 0.05,
+                "current_a": 1e308,
+            }
+        ],
     }
 
     with pytest.raises(FloatingPointError, match="not representable"):
