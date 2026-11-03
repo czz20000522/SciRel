@@ -5,7 +5,7 @@ description: Check a computed scientific result before delivering it — discrim
 
 # Check a result before delivery
 
-Use this after the calculation runs and before telling the user the task is done. Check the whole result, not only the SciRel calls. Background and examples are in the `scirel-solving` skill's [result checks](../scirel-solving/references/result-checks.md).
+Use this after the calculation runs and before telling the user the task is done. Check the whole result, not only the SciRel calls. The `scirel-solving` skill has more background in its result checks reference.
 
 1. **Independent physics checks.** Each expected value must come from a separate route: an analytic limit or known special case, an independent method, a conservation law, or a convergence study. It must be able to catch a wrong sign, normalisation or unit. A relation that holds by definition, such as a magnitude computed from its own components, is not a check. Symmetry alone is not enough, and the number of checks is not a goal. Fix tolerances from error estimates before looking at results.
 2. **When a check fails,** find out why before going on. If the physics result is wrong, fix the calculation and rerun. If the check is wrong (reference formula, tolerance basis or comparison direction), fix it, rerun, and note the change in the appendix in a sentence or two. Only a failure still unresolved after that is reported as a failure; a check known to be wrong is not kept as one. Never widen a tolerance just to pass. Use the latest run.

@@ -39,7 +39,6 @@ src/scirel/            # 科学实现，按领域组织
 tests/                 # 功能测试（占绝大多数）与少量发布测试
 catalog/examples/      # 每个功能的正式资产合同（machine-readable）
 catalog/review/        # 审查状态和被 hold 的合同与代码（不进入安装包）
-examples/              # 求解样例和报告
 skills/                # 求解、开发和提取方法
 tools/docs/            # 手写用户指南、API 参考构建器与中文阅读层
 scripts/               # 构建、catalog、文档与安装校验工具
