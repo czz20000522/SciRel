@@ -10,7 +10,65 @@ __all__ = ["compute_flux_surface_inverse_field_average"]
 def compute_flux_surface_inverse_field_average(
     r_grid, z_grid, magnetic_field, field_line_points, quantity=None
 ):
-    """Compute ``integral(ds/B)`` and optionally ``integral(Q ds/B) / integral(ds/B)``."""
+    """Compute ``integral(ds/B)`` and optionally ``integral(Q ds/B) / integral(ds/B)``.
+
+    Parameters
+    ----------
+    r_grid : real array-like, shape [N_Z,N_R]
+        Rectilinear cylindrical radius coordinate grid [m]. Finite, strictly
+        increasing across columns and rectilinear within NumPy allclose
+        tolerance; N_R and N_Z each at least four. Nonnegative radius is a
+        physical caller precondition, not an implementation check.
+    z_grid : real array-like, shape [N_Z,N_R]
+        Rectilinear axial coordinate grid [m]. Finite, strictly increasing down
+        rows and constant across columns; same shape as r_grid.
+    magnetic_field : real array-like, shape [N_Z,N_R]
+        Magnetic-field magnitude sampled on the R-Z grid [T]. Finite and
+        strictly positive at grid nodes; same shape as r_grid; interpolated path
+        values must also remain positive and finite.
+    field_line_points : real array-like, shape [N_point,2]
+        Ordered path coordinates [R_m,Z_m] for the discrete integral [m,m]. At
+        least two finite points within the grid rectangle; no repeated
+        consecutive points.
+    quantity : real array-like or None, shape [N_Z,N_R] or null, default None
+        Optional scalar field to average using the dl/B path weight
+        [caller-defined scalar unit]. None omits flux_surface_average; otherwise
+        finite and exactly the grid shape.
+
+    Returns
+    -------
+    dl_B : float
+        Trapezoidal integral of 1/B over cumulative polyline length [m/T].
+        Finite and strictly positive on successful return.
+    flux_surface_average : float or None, shape scalar or null, default None
+        Trapezoidal integral of quantity/B divided by dl_B, present only when
+        quantity is supplied [same as quantity]. Absent from the result mapping
+        when quantity is None; otherwise finite.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for wrong shapes, nonfinite values,
+        nonrectilinear/undersized grid, nonpositive grid or interpolated B,
+        out-of-grid or repeated path points, or nonpositive/nonfinite dl_B.
+        SciPy interpolation and quadrature errors propagate; a nonfinite
+        interpolated quantity or weighted mean raises ValueError.
+
+    See Also
+    --------
+    scirel.geometry.flux_surface_avg : Overlapping dl/|B| weighted line integral.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average
+    >>> r_grid, z_grid = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-1.0, 1.0, 5))
+    >>> line = np.array([[0.2, -0.5], [0.4, 0.0], [0.6, 0.5]])
+    >>> result = compute_flux_surface_inverse_field_average(r_grid, z_grid, np.full_like(r_grid, 2.0), line, np.full_like(r_grid, 3.0))
+    >>> length = np.linalg.norm(np.diff(line, axis=0), axis=1).sum()
+    >>> np.testing.assert_allclose(result['dl_B'], length / 2.0)
+    >>> np.testing.assert_allclose(result['flux_surface_average'], 3.0)
+    """
     r_grid = np.asarray(r_grid, dtype=float)
     z_grid = np.asarray(z_grid, dtype=float)
     magnetic_field = np.asarray(magnetic_field, dtype=float)

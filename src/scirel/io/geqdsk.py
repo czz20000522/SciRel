@@ -90,7 +90,7 @@ class _Stream:
 
 
 def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
-    """Read a standard EFIT G-EQDSK file.
+    r"""Read a standard EFIT G-EQDSK file.
 
     Parameters
     ----------
@@ -120,6 +120,11 @@ def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
         shape ``(nh,)`` from ``zmid - zdim/2`` to ``zmid + zdim/2`` (m);
         ``rbbbs``, ``zbbbs`` (m), the plasma boundary; ``rlim``, ``zlim``
         (m), the limiter; ``nbbbs``, ``limitr`` (int), their lengths.
+    mapping : dict[str,Any], shape dict
+        Specification-named scalars, profiles fpol/pres/ffprim/pprime/qpsi,
+        psirz (nh, nw), r, z, psi, boundary rbbbs/zbbbs and limiter rlim/zlim
+        [m, Wb/rad, m T, N/m^2, A, T as in the specification]. Finite values;
+        positive RDIM, ZDIM; SIMAG differs from SIBRY.
 
     Raises
     ------
@@ -128,12 +133,36 @@ def read_geqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
         non-negative integer, a grid extent is not positive, the axis and
         boundary flux coincide, or ``strict`` is True and extra numbers follow.
 
+    See Also
+    --------
+    scirel.field.poloidal_field_from_flux : Poloidal field from the per-radian flux psi(R, Z).
+
     Notes
     -----
     The specification repeats ``simag``, ``sibry``, ``rmaxis`` and ``zmaxis``
     in the third and fourth scalar records.  The values from the second record
     are returned; the repeats are not compared because several writers store
     zeros there.  Sign conventions (COCOS) are not inferred.
+
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> from tempfile import TemporaryDirectory
+    >>> import numpy as np
+    >>> from scirel.io import read_geqdsk
+    >>> rec = lambda v: [''.join('%16.9E' % x for x in v[i:i+5]) for i in range(0, len(v), 5)]
+    >>> lines = ['EXAMPLE'.ljust(48) + '   0   3   2']
+    >>> for values in ([2., 3., 1.5, .25, 0.], [1.2, 0., -.75, .5, -2.5], [1e6, -.75, 0., 1.2, 0.], [0., 0., .5, 0., 0.]):
+    ...     lines += rec(values)
+    >>> for _ in range(4):
+    ...     lines += rec([1., 2., 3.])
+    >>> lines += rec([11., 21., 31., 12., 22., 32.]) + rec([1., 2., 3.]) + ['    0    0']
+    >>> with TemporaryDirectory() as directory:
+    ...     path = Path(directory) / 'g.eqdsk'
+    ...     _ = path.write_text('\n'.join(lines) + '\n')
+    ...     g = read_geqdsk(path)
+    ...     assert g['psirz'].shape == (2, 3) and g['psirz'][1, 2] == 32.0
+    ...     assert np.allclose(g['r'], [.25, 1.25, 2.25]) and np.allclose(g['z'], [-1.5, 1.5])
     """
     text = Path(filename).read_text()
     first, _, rest = text.partition("\n")

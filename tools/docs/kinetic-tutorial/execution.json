@@ -18,8 +18,8 @@
  },
  "results_sha256": "93541b672e985b39225a0367bc9ef1595df2beca4d54b79c5adcbe2b14673a80",
  "source_files": {
-  "src/scirel/kinetic/generalized_dispersion.py": "7ddadf38f9e18f2da9b2a6865fd43c879ae5542888a5b8bf974a3f85b7794ee1",
-  "src/scirel/kinetic/vlasov_poisson.py": "cef9f9ffe50d544d886a9d04b5cd791d76b689e56e1eda20f4e20070939ae693"
+  "src/scirel/kinetic/generalized_dispersion.py": "e2175c0ac3cbfb2609000e3d07ca856b37cef2eca15806494766c53aac4019f0",
+  "src/scirel/kinetic/vlasov_poisson.py": "5f30e882a1cbd6ed0036eff522f0a2cd7938c7b40842923e0547057c9dfbe7d0"
  },
  "document_files": {
   "catalog/examples/scirel.kinetic.generalized-root-scans.json": "53ec5904bac98a1ca8603c8cbc64211cc49a165924b278525063f60180dd4cde",
@@ -32,7 +32,7 @@
   "scipy": "1.18.1",
   "matplotlib": null,
   "platform": "macOS arm64",
-  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; tutorial code blocks rerun from source; Rebound on 2026-11-03 after documentation and explicit-argument changes (multi-coil ampere_turns_a, vp_init df_initial/df0dv, docstrings, ruff formatting): replayed on Linux x86_64 with CPython/NumPy/SciPy 3.14.10 2.5.4 1.18.1; all chapter checks passed, magnetostatics values agree with results.json to 1.3e-18 T, and the kinetic tutorial reproduced its printed Vlasov-Poisson outputs exactly (its root-scan residual printed 1.038893e-12 against the recorded 1.038967e-12, platform rounding far below the 1e-9 assertion). Results and figures retained unchanged.",
+  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; tutorial code blocks rerun from source; Rebound on 2026-11-03 after documentation and explicit-argument changes (multi-coil ampere_turns_a, vp_init df_initial/df0dv, docstrings, ruff formatting): replayed on Linux x86_64 with CPython/NumPy/SciPy 3.14.10 2.5.4 1.18.1; all chapter checks passed, magnetostatics values agree with results.json to 1.3e-18 T, and the kinetic tutorial reproduced its printed Vlasov-Poisson outputs exactly (its root-scan residual printed 1.038893e-12 against the recorded 1.038967e-12, platform rounding far below the 1e-9 assertion). Results and figures retained unchanged.; Rebound on 2026-11-03 after docstring-only changes (numpydoc Parameters/Returns/Raises/See Also/Examples) and ruff formatting: replayed on Linux x86_64; outputs identical to the previous replay.",
   "network": "none during tutorial execution",
   "source_or_saved_answers": false,
   "exit_code": 0,
@@ -42,5 +42,5 @@
  },
  "human_approval": false,
  "release_approval": false,
- "previous_execution_sha256": "509a277a0b1f11b558cb5ca17265a5de2e5d6b68d5b8ebd05c5390f043573a3a"
+ "previous_execution_sha256": "c9fd775b87f18811a3974eb00e614212fd4ab5795158bbad4caec533f4c6974c"
 }

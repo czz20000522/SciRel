@@ -1144,7 +1144,7 @@
   },
   {
    "asset_id": "scirel.io.read-geqdsk",
-   "source_sha256": "6f0a4826e683956331310c1ea6c8a01394364cb85a423c5bfa73c6fbd21d415f",
+   "source_sha256": "8fd17a219f56bf04941e5f60298996d37b5107363544e90a1d20be8424e4a643",
    "summary": "把一份标准 EFIT G-EQDSK 平衡文件解析为带名称的数组和网格坐标。",
    "definition": "首行：48 字符说明，之后的整数中最后两个为 NW、NH；四条标量记录（RDIM ZDIM RCENTR RLEFT ZMID / RMAXIS ZMAXIS SIMAG SIBRY BCENTR / CURRENT 及重复值）；FPOL、PRES、FFPRIM、PPRIME（各 NW 个）；PSIRZ（NW×NH，R 下标变化最快）；QPSI（NW 个）；NBBBS、LIMITR；边界和限制器的 (R,Z) 坐标对。",
    "model": "按公开格式规范的 EFIT G-EQDSK 记录布局。",

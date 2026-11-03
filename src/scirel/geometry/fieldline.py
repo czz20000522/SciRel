@@ -233,9 +233,9 @@ class FieldLine:
     Parameters
     ----------
     psi : scalar
-        Contour level label.
+        Contour level label [caller flux-label units].
     verts : array_like, shape (N, 2)
-        Ordered planar contour vertices.
+        Ordered planar contour vertices (R, Z) [length units].
     **kwargs
         Spline parameters accepted by the interpolation helper.
 
@@ -250,6 +250,18 @@ class FieldLine:
         Invalid diagnostic support, duplicate vertices, or rejected crossings.
     Exception
         Underlying SciPy spline and interpolation failures.
+
+    See Also
+    --------
+    HelperFieldLine : Same fit with helper interpolation.
+    contour_points : Build FieldLine objects from a contour set.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry.fieldline import FieldLine
+    >>> line=FieldLine(.2,np.array([[.2,0.],[.6,0.],[1.,0.]]))
+    >>> assert line.verts.shape==(1000,2)
     """
 
     def __init__(self, psi, verts, **kwargs):
@@ -364,17 +376,36 @@ def contour_points(contourset):
     Parameters
     ----------
     contourset : object
-        Object exposing ``levels`` and matching ``allsegs`` sequences.
+        Object exposing ``levels`` and matching ``allsegs`` sequences
+        [levels in caller flux-label units; vertices length].
 
     Returns
     -------
     dict
         Mapping from contour levels to fitted lines.
+    collection : Python object, shape dict[level, list[line]]
+        Per-level lists of target line objects [same as target line]. Keys and
+        segment lists follow contourset.levels/allsegs; each value is a
+        constructed line list.
 
     Raises
     ------
     Exception
         Construction errors from the spline fit.
+
+    See Also
+    --------
+    FieldLine : The fitted line class.
+    helper_contour_points : Same for HelperFieldLine.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from types import SimpleNamespace
+    >>> from scirel.geometry.fieldline import contour_points
+    >>> c=SimpleNamespace(levels=[.2],allsegs=[[np.array([[.2,0.],[.6,0.],[1.,0.]])]])
+    >>> r=contour_points(c)
+    >>> assert len(r[.2])==1
     """
     return {
         level: [FieldLine(level, segment) for segment in contourset.allsegs[index]]
@@ -422,9 +453,9 @@ class HelperFieldLine:
     Parameters
     ----------
     psi : scalar
-        Contour level label.
+        Contour level label [caller flux-label units].
     verts : array_like, shape (N, 2)
-        Ordered planar contour vertices.
+        Ordered planar contour vertices (R, Z) [length units].
 
     Attributes
     ----------
@@ -437,6 +468,18 @@ class HelperFieldLine:
         Invalid diagnostic support, duplicate vertices, or rejected crossings.
     Exception
         Underlying SciPy spline and interpolation failures.
+
+    See Also
+    --------
+    FieldLine : Same fit with standard interpolation.
+    helper_contour_points : Build HelperFieldLine objects from a contour set.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry.fieldline import HelperFieldLine
+    >>> line=HelperFieldLine(.2,np.array([[.2,0.],[.6,0.],[1.,0.]]))
+    >>> assert line.verts.shape==(1000,2)
     """
 
     def __init__(self, psi, verts):
@@ -508,17 +551,36 @@ def helper_contour_points(contourset):
     Parameters
     ----------
     contourset : object
-        Object exposing ``levels`` and matching ``allsegs`` sequences.
+        Object exposing ``levels`` and matching ``allsegs`` sequences
+        [levels in caller flux-label units; vertices length].
 
     Returns
     -------
     dict
         Mapping from contour levels to ``HelperFieldLine`` objects.
+    collection : Python object, shape dict[level, list[line]]
+        Per-level lists of target line objects [same as target line]. Keys and
+        segment lists follow contourset.levels/allsegs; each value is a
+        constructed line list.
 
     Raises
     ------
     Exception
         Construction errors from the spline fit.
+
+    See Also
+    --------
+    HelperFieldLine : The fitted line class.
+    contour_points : Same for FieldLine.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from types import SimpleNamespace
+    >>> from scirel.geometry.fieldline import helper_contour_points
+    >>> c=SimpleNamespace(levels=[.2],allsegs=[[np.array([[.2,0.],[.6,0.],[1.,0.]])]])
+    >>> r=helper_contour_points(c)
+    >>> assert len(r[.2])==1
     """
     return {
         level: [HelperFieldLine(level, segment) for segment in contourset.allsegs[index]]

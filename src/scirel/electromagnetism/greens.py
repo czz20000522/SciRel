@@ -105,6 +105,42 @@ def compute_greens(rzw, rz_pts):
     rejected because a line-current self field is outside this discrete
     contract.  Arithmetic overflow and invalid floating-point results are
     reported as :class:`FloatingPointError`.
+
+    Parameters
+    ----------
+    rzw : finite float64, shape (Ns,3) or list of (Ns,3)
+        Source rows or a list of independent source sets [m, m, dimensionless
+        weight]. Non-negative source radius; signed weights; list output
+        preserves set dimension.
+    rz_pts : finite float64, shape (Nt,2)
+        Target cylindrical coordinates [m]. Non-negative target radius.
+
+    Returns
+    -------
+    response : float64, shape three arrays of (Nt,) or (Nset,Nt)
+        Tuple psi, BR, BZ; list source input returns one target axis per set
+        [Wb/rad per ampere; T per ampere]. Finite output or explicit
+        FloatingPointError.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError is raised when the finite response cannot be
+        represented.
+    ValueError
+        ValueError is raised for malformed, complex, nonfinite, negative-radius,
+        or coincident active inputs.
+
+    See Also
+    --------
+    scirel.field.solve_multi_coil_vacuum_field : Field of rectangular coil blocks built from these filaments.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.electromagnetism import compute_greens
+    >>> psi, br, bz = compute_greens(np.array([[1.0, 0.0, 1.0]]), np.array([[0.2, 0.3], [0.4, -0.2]]))
+    >>> assert psi.shape == br.shape == bz.shape == (2,)
     """
     targets = _as_real_table(rz_pts, 2, "rz_pts")
     if isinstance(rzw, list):

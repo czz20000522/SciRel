@@ -19,6 +19,53 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     A rectilinear grid is differentiated with the package's stable local
     stencil.  At the cylindrical axis the even-flux limit is used for
     ``B_Z`` and ``B_R`` is set to zero.
+
+    Parameters
+    ----------
+    r_grid : real array-like, converted to float64, shape [N_Z,N_R]
+        Cylindrical radius at each grid point [m]. Finite rectilinear grid with
+        nonnegative, strictly increasing R axis and N_R >= 3; same shape as
+        z_grid and psi.
+    z_grid : real array-like, converted to float64, shape [N_Z,N_R]
+        Axial coordinate at each grid point [m]. Finite rectilinear grid with
+        strictly increasing Z axis and N_Z >= 3; same shape as r_grid and psi.
+    psi : real array-like, converted to float64, shape [N_Z,N_R]
+        Axisymmetric poloidal flux function R A_phi sampled on the R-Z grid, not
+        full linked flux [Wb/rad]. Finite values and exactly the same
+        two-dimensional shape as the coordinate grids.
+
+    Returns
+    -------
+    B_R : float64, shape [N_Z,N_R]
+        Radial poloidal magnetic-field component [T]. Zero at an included
+        cylindrical-axis column.
+    B_Z : float64, shape [N_Z,N_R]
+        Axial poloidal magnetic-field component [T]. Uses the discrete axis rule
+        if R=0 is included.
+    B : float64, shape [N_Z,N_R]
+        Poloidal-field magnitude hypot(B_R,B_Z) [T]. No fixed lower floor is
+        applied.
+
+    Raises
+    ------
+    ValueError
+        ValueError is raised for complex/nonfinite/mismatched arrays,
+        nonrectilinear grids, too few nodes, or invalid axes.
+
+    See Also
+    --------
+    scirel.io.read_geqdsk : Reads psi(R, Z) per radian from a G-EQDSK file.
+    scirel.field.solve_multi_coil_vacuum_field : Vacuum psi and field from coils.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.field import poloidal_field_from_flux
+    >>> r_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])
+    >>> result = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)
+    >>> np.testing.assert_allclose(result['B_R'], 0.0)
+    >>> np.testing.assert_allclose(result['B_Z'], 2.0)
+    >>> np.testing.assert_allclose(result['B'], 2.0)
     """
     r_grid, z_grid, psi = (
         np.asarray(r_grid, dtype=float),

@@ -55,6 +55,54 @@ def vp_distribution(vv, Fn=2, *, k=0.15, kappa=1.0, cutoff_mode="weak"):
     * ``Fn=4``: cutoff slowing-down distribution (see the contract).
 
     Returns ``(f0_prime, wr, wi)``; ``wr, wi`` are None except for the Lorentzian.
+
+    Parameters
+    ----------
+    vv : real array, shape [N]
+        Velocity nodes. Finite one-dimensional; aligned with df and df0dv when
+        applicable.
+    Fn : integer, default 2
+        Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi)
+        (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi
+        kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance
+        2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4
+        cutoff slowing-down. One of 1,2,3,4.
+    k : real scalar, default 0.15
+        Spatial Fourier wavenumber in inverse Debye length. Positive finite.
+    kappa : real scalar, default 1.0
+        Kappa index of the Fn=2 family. The family is not rescaled to unit
+        variance; for a kappa distribution at a prescribed temperature pass its
+        derivative as df0dv to vp_init. For Fn=2 finite >1/2.
+    cutoff_mode : string, default 'weak'
+        Fn4 weak derivative or explicit source smooth-only forcing. weak or
+        smooth; weak Fn4 requires increasing uniform grid.
+
+    Returns
+    -------
+    result : tuple, shape As described in output mapping or tuple.
+        Tuple (g,wr,wi): g [N], theoretical wr=1 and wi=-k sqrt(2) only for
+        Fn=2,kappa=1; otherwise theory is None. Tuple of finite derivative and
+        optional theoretical frequencies; no hidden state.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError when the derivative is not finite.
+    ValueError
+        ValueError for unsupported Fn/cutoff_mode, nonfinite or non-vector vv,
+        invalid kappa, invalid k or a non-increasing/nonuniform weak-cutoff
+        grid.
+
+    See Also
+    --------
+    vp_init : Build an initial state from this family.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import vp_distribution
+    >>> import numpy as np
+    >>> g,wr,wi=vp_distribution(np.linspace(-6,6,101),4)
+    >>> assert g.shape == (101,)
     """
     if cutoff_mode not in ("weak", "smooth"):
         raise ValueError("cutoff_mode must be weak or smooth")
@@ -135,7 +183,41 @@ def _deposit_point_mass(values, grid, location, mass, spacing):
 
 
 def vp_field(df, k, dv):
-    """Close Poisson's equation, ``E = i * dv * sum(df) / k``."""
+    """Close Poisson's equation, ``E = i * dv * sum(df) / k``.
+
+    Parameters
+    ----------
+    df : complex array, shape [N]
+        Complex perturbation on velocity nodes. Finite one-dimensional N>=2.
+    k : real scalar
+        Nonzero spatial Fourier wavenumber. Finite and nonzero.
+    dv : real scalar
+        Uniform velocity quadrature spacing. Positive finite.
+
+    Returns
+    -------
+    result : complex scalar, shape As described in output mapping or tuple.
+        Complex scalar electric field satisfying ikE=-dv sum(df). Finite complex
+        scalar equal to the discrete Poisson field.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError when the computed field is not finite.
+    ValueError
+        ValueError for non-vector/nonfinite df, nonfinite or zero k, or
+        nonpositive/nonfinite dv.
+
+    See Also
+    --------
+    vp_init : Initial state with a Poisson-consistent field.
+    vp_evolve : Uses this closure at every step.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import vp_field
+    >>> assert vp_field([1,2],.5,.1) == .6000000000000001j
+    """
     _positive_scalar(dv, "dv")
     if not np.isfinite(k) or k == 0:
         raise ValueError("k must be finite and nonzero")
@@ -167,20 +249,65 @@ def vp_init(
 
     Parameters
     ----------
-    Fn, kappa
-        Built-in equilibrium (see :func:`vp_distribution`). Pass ``Fn=None``
-        together with ``df0dv`` to use your own equilibrium.
-    df0dv : array_like, optional
-        Equilibrium derivative ``f0'(v)`` sampled on ``vv`` (length ``nv + 1``),
-        used instead of a built-in family. Requires ``Fn=None``.
+    Fn : int or None, default 2
+        Built-in equilibrium family (see :func:`vp_distribution`). Pass
+        ``Fn=None`` together with ``df0dv`` to use your own equilibrium.
+    kappa : float, default 1.0
+        Kappa index or family parameter used by the built-in family.
+    nv : int, default 2048
+        Number of equal velocity intervals; at least 2.
+    dt : float, default 0.01
+        Time step in inverse plasma frequency; positive.
+    nt : int, default 2000
+        Number of time steps; nonnegative.
+    k : float, default 0.15
+        Spatial Fourier wavenumber in inverse Debye length; positive.
+    vmax : float, default 20.0
+        Half-width of the velocity window, in the grid's velocity units.
     df_initial : array_like, optional
         Initial perturbation ``df(v, 0)`` on ``vv`` (length ``nv + 1``, real or
         complex). The default is ``0.1 * exp(-v**2)``, a fixed Gaussian in the
         grid's velocity units that is *not* proportional to ``f0``; pass your
         own when the initial condition matters.
+    df0dv : array_like, optional
+        Equilibrium derivative ``f0'(v)`` sampled on ``vv`` (length ``nv + 1``),
+        used instead of a built-in family. Requires ``Fn=None``.
 
+    Returns
+    -------
+    result : dict, shape As described in output mapping or tuple.
+        State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1];
+        scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and
+        arrays are independently owned. State mapping with finite arrays and an
+        initial field satisfying discrete Poisson closure.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError if the generated derivative or Poisson field is not
+        finite.
+    ValueError
+        ValueError for invalid scalar controls, a distribution branch that
+        rejects the selected parameters, df_initial or df0dv of the wrong length
+        or nonfinite, a complex df0dv, or df0dv given together with Fn (or
+        Fn=None without df0dv).
+
+    See Also
+    --------
+    vp_distribution : Built-in equilibrium families.
+    vp_evolve : Advance the returned state.
+    solve_vlasov_poisson : vp_init followed by vp_evolve.
+
+    Notes
+    -----
     The state records ``TR = 2*pi/(k*dv)``, the recurrence time of the
     discrete velocity grid; fit damping only well before it.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import vp_init
+    >>> s=vp_init(nv=32,nt=5)
+    >>> assert s["df"].shape == (33,)
     """
     if isinstance(nv, bool) or not isinstance(nv, (int, np.integer)) or nv < 2:
         raise ValueError("nv must be an integer >= 2")
@@ -279,6 +406,42 @@ def vp_evolve(state):
     ``vp_init`` rather than editing the mapping; an edited ``df`` must come
     with ``dE = vp_field(df, k, dv)`` or the call raises. The input is not
     mutated.
+
+    Parameters
+    ----------
+    state : dict, shape mapping
+        State mapping produced by vp_init. To start from another perturbation or
+        equilibrium pass df_initial or df0dv to vp_init; an edited df needs dE =
+        vp_field(df,k,dv) or the call raises. Complete VP state; finite aligned
+        arrays; Poisson-closed initial field; integer nt>=0.
+
+    Returns
+    -------
+    result : dict, shape As described in output mapping or tuple.
+        State mapping: Fn,kappa,nv,dt,nt,k,vmax,vmin,dv,TR; vv,df,df0dv [nv+1];
+        scalar dE; dEt,tt [nt+1]; wr,wi are kappa=1 theory or None. Fields and
+        arrays are independently owned. Input is not mutated; repeated calls
+        start a new local time trace from supplied df. Copied state with finite
+        field history and closed initial field.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError propagated from a nonfinite RK4 state or field.
+    ValueError
+        ValueError for missing/invalid state controls or an initial Poisson
+        inconsistency.
+
+    See Also
+    --------
+    vp_init : Build the state.
+    vp_diagnostic : Fit damping and frequency from the history.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import vp_init,vp_evolve
+    >>> s=vp_evolve(vp_init(nv=32,nt=5))
+    >>> assert s["dEt"].shape == (6,)
     """
     evolved = {
         key: value.copy() if isinstance(value, np.ndarray) else value
@@ -319,7 +482,47 @@ def vp_envelope(dEt, tt, *, wr=None, wi=None):
 
 
 def vp_diagnostic(dEt, tt, *, start=None, end=None):
-    """Fit peak spacing and logarithmic damping from an oscillatory field."""
+    """Fit peak spacing and logarithmic damping from an oscillatory field.
+
+    Parameters
+    ----------
+    dEt : complex array, shape [T]
+        Complex electric field time series. Finite one-dimensional T>=2.
+    tt : real array, shape [T]
+        Sampling times. Finite strictly increasing, same shape as dEt.
+    start : real scalar or None, default None
+        Window start; None means 5% of actual time span. Finite; see
+        function-specific scientific conditions.
+    end : real scalar or None, default None
+        Window end; None means 80% of actual time span. Finite; see
+        function-specific scientific conditions.
+
+    Returns
+    -------
+    result : dict, shape As described in output mapping or tuple.
+        Mapping peak_indices,peak_times,peak_log_magnitudes [P>=2], scalar
+        omega,gamma,gammas; gammas aliases gamma. Diagnostic mapping with finite
+        fit when enough peaks are available; otherwise the declared status.
+
+    Raises
+    ------
+    ValueError
+        ValueError for misaligned/nonfinite vectors, non-real/non-increasing
+        times, or fewer than two isolated nonzero peaks.
+
+    See Also
+    --------
+    vp_evolve : Produces the field history.
+    solve_maxwellian_electrostatic_mode : Dispersion-relation root to compare with.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic.vlasov_poisson import vp_diagnostic
+    >>> t=np.linspace(0,30,3001)
+    >>> r=vp_diagnostic(np.exp(-.1*t)*np.cos(t),t)
+    >>> assert abs(r["gamma"]+.1) < 1e-4
+    """
     field, times = _finite_vectors(dEt, tt)
     if np.iscomplexobj(times) or np.any(np.diff(times) <= 0):
         raise ValueError("tt must be real and strictly increasing")
@@ -349,7 +552,62 @@ def vp_diagnostic(dEt, tt, *, start=None, end=None):
 
 
 def solve_vlasov_poisson(Fn=2, kappa=1.0, nv=2048, dt=0.01, nt=2000, *, k=0.15, vmax=20.0):
-    """Compose initialization, evolution, envelope, and an optional diagnostic."""
+    """Compose initialization, evolution, envelope, and an optional diagnostic.
+
+    Parameters
+    ----------
+    Fn : integer, default 2
+        Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi)
+        (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi
+        kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance
+        2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4
+        cutoff slowing-down. One of 1,2,3,4.
+    kappa : real scalar, default 1.0
+        Kappa index of the Fn=2 family. The family is not rescaled to unit
+        variance; for a kappa distribution at a prescribed temperature pass its
+        derivative as df0dv to vp_init. For Fn=2 finite >1/2.
+    nv : integer, default 2048
+        Number of equal velocity intervals. Integer >=2, boolean rejected.
+    dt : real scalar, default 0.01
+        Time step in inverse plasma frequency. Positive finite.
+    nt : integer, default 2000
+        Exact number of ordered time steps. Nonnegative integer, boolean
+        rejected.
+    k : real scalar, default 0.15
+        Spatial Fourier wavenumber in inverse Debye length. Positive finite.
+    vmax : real scalar, default 20.0
+        Symmetric velocity window extent. Positive finite.
+
+    Returns
+    -------
+    result : dict, shape As described in output mapping or tuple.
+        Mapping state (complete VP state), envelope, diagnostic,
+        diagnostic_status. For nt=0 envelope and diagnostic are None; inadequate
+        peaks give diagnostic=None and reason while retaining evolution.
+        Composed final state and diagnostics; no claim beyond the declared time
+        window and grid.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError from a nonfinite derivative, field or RK4 state is
+        propagated.
+    ValueError
+        ValueError from initialization, state validation or Poisson closure is
+        propagated.
+
+    See Also
+    --------
+    vp_init : Initialization step.
+    vp_evolve : Time advance.
+    vp_diagnostic : Rate and frequency fit.
+
+    Examples
+    --------
+    >>> from scirel.kinetic.vlasov_poisson import solve_vlasov_poisson
+    >>> r=solve_vlasov_poisson(nv=32,nt=5)
+    >>> assert r["state"]["dEt"].shape == (6,)
+    """
     state = vp_evolve(vp_init(Fn, kappa, nv, dt, nt, k=k, vmax=vmax))
     if nt == 0:
         return {

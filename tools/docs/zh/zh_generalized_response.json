@@ -1769,7 +1769,7 @@
   },
   {
    "asset_id": "scirel.kinetic.vp-init",
-   "source_sha256": "0d9ccdfb84e533cb4e683077572201b89d29aa5a9f744a061d0ac568f0bcc9b7",
+   "source_sha256": "235f4256bb7c2941c86f93131bf03e9bb3479cb648c268035b5fe39f16fbdcd7",
    "summary": "以 v=linspace(-vmax,vmax,nv+1) 建立速度网格，取 df=.1 exp(-v²)，并用 E=i dv sum(df)/k 闭合电场。",
    "definition": "v=linspace(-vmax,vmax,nv+1)；f0' 取内置分布 Fn，或调用者给的 df0dv（Fn=None）；df=df_initial，默认 .1 exp(-v^2)；E=i dv sum(df)/k。",
    "model": "固定离子背景下，一维单空间 Fourier 模式的线性电子模型。",
@@ -1864,7 +1864,7 @@
    ],
    "applicability": {
     "preconditions": [
-     "Fn、kappa、nv、dt、nt、k 与 vmax 满足所声明的标量定义域。"
+     "Fn、kappa、nv、dt、nt、k 与 vmax 满足所声明的标量定义域；给出 df_initial、df0dv 时须为长度 nv+1 的有限数组，且当且仅当 Fn 为 None 时给出 df0dv。"
     ],
     "supported": [
      "在有限速度网格上初始化，并给出满足离散 Poisson 闭合的 dE 及空或有限长度的时间历史。"
@@ -1874,7 +1874,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "标量控制无效，或所选参数不被分布分支接受时抛出 ValueError。",
+    "invalid_input": "标量控制无效、所选参数不被分布分支接受、df_initial 或 df0dv 长度不对或非有限、df0dv 为复数，或 df0dv 与 Fn 同时给出（或 Fn=None 却未给 df0dv）时抛出 ValueError。",
     "runtime_failure": "生成的导数或 Poisson 场非有限时抛出 FloatingPointError。",
     "nonconvergence": "不适用；初始化不迭代。",
     "partial_results": "异常后不返回状态。"

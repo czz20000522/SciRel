@@ -88,7 +88,49 @@ def _alpha_sauter(f, nu):
 
 
 def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
-    """Return Sauter's ``(L31, L32, L34, alpha)`` arrays on faces."""
+    """Return Sauter's ``(L31, L32, L34, alpha)`` arrays on faces.
+
+    Parameters
+    ----------
+    f_trap : real numeric converted to float64, shape N+1
+        Caller-supplied trapped-particle fraction, not inverse aspect ratio. 0
+        <= f_trap <= 1; finite faces.
+    nu_e_star : real numeric converted to float64, shape N+1
+        Caller-supplied electron collision/bounce frequency ratio under the
+        model convention. Nonnegative finite faces.
+    Z_eff : real numeric converted to float64, shape N+1
+        Effective ionic charge for the fit. Sauter positive; Redl >=1; physical
+        quasineutral fully ionized plasma Z_eff>=1.
+    nu_i_star : real numeric converted to float64, shape N+1
+        Caller-supplied ion collision/bounce frequency ratio under the model
+        convention. Nonnegative finite faces.
+
+    Returns
+    -------
+    coefficients : real numeric converted to float64, shape 4-tuple of (N+1,)
+        Tuple in exact order (L31,L32,L34,alpha), each dimensionless face array.
+        Finite; equal explicit one-dimensional face shape; no broadcasting.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError for nonfinite coefficient/current arithmetic; no
+        fallback is returned.
+    ValueError
+        ValueError for malformed, nonfinite, masked, mismatched or out-of-domain
+        face inputs; no partial result.
+
+    See Also
+    --------
+    calculate_redl_coefficients : Redl et al. (2021) refit of the same coefficients.
+    calculate_bootstrap_current : Assemble the current from these coefficients.
+
+    Examples
+    --------
+    >>> from scirel.neoclassical import calculate_sauter_coefficients
+    >>> L31,L32,L34,alpha=calculate_sauter_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
+    >>> assert (L31==0).all() and (L32==0).all() and (L34==0).all()
+    """
     f, nue, z = _common(f_trap, nu_e_star, Z_eff)
     nui = _face("nu_i_star", nu_i_star)
     if nui.shape != f.shape or np.any(nui < 0.0):
@@ -137,7 +179,49 @@ def _alpha_redl(f, nu, z):
 
 
 def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
-    """Return Redl's ``(L31, L32, L34, alpha)`` arrays on faces."""
+    """Return Redl's ``(L31, L32, L34, alpha)`` arrays on faces.
+
+    Parameters
+    ----------
+    f_trap : real numeric converted to float64, shape N+1
+        Caller-supplied trapped-particle fraction, not inverse aspect ratio. 0
+        <= f_trap <= 1; finite faces.
+    nu_e_star : real numeric converted to float64, shape N+1
+        Caller-supplied electron collision/bounce frequency ratio under the
+        model convention. Nonnegative finite faces.
+    Z_eff : real numeric converted to float64, shape N+1
+        Effective ionic charge for the fit. Sauter positive; Redl >=1; physical
+        quasineutral fully ionized plasma Z_eff>=1.
+    nu_i_star : real numeric converted to float64, shape N+1
+        Caller-supplied ion collision/bounce frequency ratio under the model
+        convention. Nonnegative finite faces.
+
+    Returns
+    -------
+    coefficients : real numeric converted to float64, shape 4-tuple of (N+1,)
+        Tuple in exact order (L31,L32,L34,alpha), each dimensionless face array.
+        Finite; equal explicit one-dimensional face shape; no broadcasting.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError for nonfinite coefficient/current arithmetic; no
+        fallback is returned.
+    ValueError
+        ValueError for malformed, nonfinite, masked, mismatched or out-of-domain
+        face inputs; no partial result.
+
+    See Also
+    --------
+    calculate_sauter_coefficients : Sauter et al. (1999) coefficients.
+    calculate_bootstrap_current : Assemble the current from these coefficients.
+
+    Examples
+    --------
+    >>> from scirel.neoclassical import calculate_redl_coefficients
+    >>> L31,L32,L34,alpha=calculate_redl_coefficients([0.,0.],[0.,0.],[1.,1.],[0.,0.])
+    >>> assert (L31==0).all() and (L32==0).all() and (L34==0).all()
+    """
     f, nue, z = _common(f_trap, nu_e_star, Z_eff)
     nui = _face("nu_i_star", nu_i_star)
     if nui.shape != f.shape or np.any(nui < 0.0) or np.any(z < 1.0):
@@ -215,29 +299,91 @@ def calculate_bootstrap_current(
 
     Parameters
     ----------
-    rho_face : array_like
-        Radial coordinate of the faces, nonnegative and strictly increasing.
-        A face at ``rho_face == 0`` is the magnetic axis; its current is set
-        to zero there (the trapped fraction and the gradients vanish). No
-        other face is treated as the axis, so a grid that starts off-axis
-        keeps its first value.
-    dpsi_drho_face, dpsi_per_radian_drho_face : array_like
-        Give exactly one. ``dpsi_drho_face`` is the derivative of the total
-        poloidal flux in Wb (``2*pi`` times the per-radian flux);
-        ``dpsi_per_radian_drho_face`` is the derivative of ``psi = R*A_phi``
-        in Wb/rad, the convention of G-EQDSK files and of
-        ``scirel.io.read_geqdsk``. Both or neither raise ``ValueError``.
-        Must be nonzero on every face except an axis face.
-
-    The remaining face arrays (``F_face`` in T m, pressures in Pa,
-    dimensionless logarithmic gradients and fit coefficients) must all have
-    the shape of ``rho_face``. ``B0`` is a nonzero scalar in T.
+    bootstrap_multiplier : real numeric converted to float64, default 1.0
+        Dimensionless multiplicative scale; signed algebra preserved. Finite
+        real scalar; physical source configuration uses nonnegative multiplier.
+    rho_face : real numeric converted to float64, shape N+1
+        Radial coordinate of the faces. A face at rho_face == 0 is the magnetic
+        axis and gets zero current; no other face is treated as the axis.
+        Finite, nonnegative and strictly increasing; sets the face shape of
+        every other array.
+    F_face : real numeric converted to float64, shape N+1
+        Toroidal flux function R*B_toroidal on faces [T m]. Finite explicit
+        matching faces.
+    B0 : real numeric converted to float64
+        Reference toroidal magnetic field with a signed convention [T]. Finite
+        nonzero scalar.
+    dpsi_drho_face : real numeric converted to float64, shape N+1, default None
+        Derivative of the TOTAL poloidal flux (2*pi times the per-radian psi =
+        R*A_phi) with respect to rho_face. Give this or
+        dpsi_per_radian_drho_face, not both [Wb]. Exactly one of dpsi_drho_face
+        or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever
+        rho_face > 0.
+    dpsi_per_radian_drho_face : real numeric converted to float64, shape N+1, default None
+        Derivative of the poloidal flux per radian psi = R*A_phi (the G-EQDSK
+        and scirel.io.read_geqdsk convention) with respect to rho_face. Give
+        this or dpsi_drho_face, not both [Wb/rad]. Exactly one of dpsi_drho_face
+        or dpsi_per_radian_drho_face; finite matching faces, nonzero wherever
+        rho_face > 0.
+    p_e_face : real numeric converted to float64, shape N+1
+        Electron scalar thermal pressure [Pa]. Finite explicit matching faces.
+    p_i_face : real numeric converted to float64, shape N+1
+        Ion scalar thermal pressure [Pa]. Finite explicit matching faces.
+    dlnne_drho_face : real numeric converted to float64, shape N+1
+        Electron density logarithmic gradient. Finite explicit matching faces.
+    dlnni_drho_face : real numeric converted to float64, shape N+1
+        Main-ion density logarithmic gradient. Finite explicit matching faces.
+    dlnte_drho_face : real numeric converted to float64, shape N+1
+        Electron temperature logarithmic gradient. Finite explicit matching
+        faces.
+    dlnti_drho_face : real numeric converted to float64, shape N+1
+        Ion temperature logarithmic gradient. Finite explicit matching faces.
+    L31 : real numeric converted to float64, shape N+1
+        Density-gradient fit coefficient. Finite explicit matching faces.
+    L32 : real numeric converted to float64, shape N+1
+        Electron-temperature coefficient correction. Finite explicit matching
+        faces.
+    L34 : real numeric converted to float64, shape N+1
+        Ion-temperature coefficient; Redl must use L31. Finite explicit matching
+        faces.
+    alpha : real numeric converted to float64, shape N+1
+        Ion temperature-gradient fit multiplier. Finite explicit matching faces.
 
     Returns
     -------
-    dict
-        ``j_parallel_bootstrap_face`` (A/m^2 on faces) and
-        ``j_parallel_bootstrap`` (arithmetic means of adjacent faces).
+    j_parallel_bootstrap_face : real numeric converted to float64, shape N+1
+        Parallel current density <j.B>/B0 on faces; zero at a face with rho_face
+        == 0 [A/m^2]. Finite; equal explicit one-dimensional face shape; no
+        broadcasting.
+    j_parallel_bootstrap : real numeric converted to float64, shape N
+        Arithmetic adjacent-face cell current density [A/m^2]. Finite; equal
+        explicit one-dimensional face shape; no broadcasting.
+
+    Raises
+    ------
+    FloatingPointError
+        FloatingPointError for nonfinite coefficient/current arithmetic; no
+        fallback is returned.
+    ValueError
+        ValueError for malformed, nonfinite, masked, mismatched or out-of-domain
+        face inputs; no partial result.
+
+    See Also
+    --------
+    calculate_sauter_coefficients : Sauter et al. (1999) L31, L32, L34 and alpha.
+    calculate_redl_coefficients : Redl et al. (2021) L31, L32, L34 and alpha.
+    scirel.io.read_geqdsk : G-EQDSK flux is per radian (Wb/rad).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.neoclassical import calculate_bootstrap_current
+    >>> one=np.ones(3); zero=np.zeros(3)
+    >>> kw=dict(rho_face=[0.,.5,1.],F_face=one,B0=2.,p_e_face=one,p_i_face=one,dlnne_drho_face=one,dlnni_drho_face=zero,dlnte_drho_face=zero,dlnti_drho_face=zero,L31=one,L32=zero,L34=one,alpha=one)
+    >>> x=calculate_bootstrap_current(dpsi_drho_face=one,**kw)
+    >>> np.testing.assert_allclose(x['j_parallel_bootstrap_face'],[0,-np.pi,-np.pi])
+    >>> y=calculate_bootstrap_current(dpsi_per_radian_drho_face=one/(2*np.pi),**kw)
+    >>> np.testing.assert_allclose(y['j_parallel_bootstrap_face'],x['j_parallel_bootstrap_face'])
     """
     if (dpsi_drho_face is None) == (dpsi_per_radian_drho_face is None):
         raise ValueError(

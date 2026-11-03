@@ -31,8 +31,8 @@
   "definition": "j_face=-F*multiplier/(B0*dpsi_per_radian_drho) * [L31*pe*dlnne+L31*pi*dlnni+(L31+L32)*pe*dlnTe+(L31+alpha*L34)*pi*dlnTi], with dpsi_per_radian_drho = dpsi_drho/(2*pi) when the total-flux form is given. Exactly one flux-derivative convention is accepted; both or neither raise ValueError. A face with rho_face == 0 is the axis and is set exactly to zero; no other face is zeroed. Cells use adjacent arithmetic face midpoints with the overflow-safe finite midpoint implementation.",
   "model": "Bounded analytic empirical tokamak fit",
   "geometry": "Caller-supplied axisymmetric tokamak face data",
-  "coordinates": "rho normalized radius; psi total flux Wb",
-  "boundary": "First current face at magnetic axis exactly zero; other gradients explicit",
+  "coordinates": "rho_face normalized radius (nonnegative, strictly increasing); poloidal-flux derivative as total flux dpsi_drho_face [Wb] or per radian dpsi_per_radian_drho_face [Wb/rad]",
+  "boundary": "Only a face with rho_face == 0 is the magnetic axis and gets exactly zero current; all gradients are explicit",
   "assumptions": [
    "Finite converted-binary64 input quantities; caller supplies consistent units and normalization"
   ]
@@ -216,7 +216,7 @@
   "excluded": [
    "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
-   "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
+   "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible poloidal-flux/field sign conventions. Signed inputs retain algebra only."
   ]
  },
  "failure_semantics": {
@@ -259,7 +259,7 @@
   "known_limitations": [
    "Empirical coefficients are not experimentally calibrated here. Caller must supply model-consistent collisionalities and trapped fraction; no geometry reconstruction, edge pedestal or full-transport physics qualification.",
    "Large finite charge/collisionality combinations may have nonrepresentable intermediate or final arithmetic and fail explicitly. Float64 conversion cannot recover prior lost precision.",
-   "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible total-flux/field sign conventions. Signed inputs retain algebra only."
+   "Physical interpretation assumes axisymmetric tokamak geometry, nonnegative scalar thermal pressures, positive density/temperature before forming their logarithms, and compatible poloidal-flux/field sign conventions. Signed inputs retain algebra only."
   ]
  }
 }

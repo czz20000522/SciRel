@@ -145,6 +145,73 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     The returned ``psi_vac`` is Wb/rad (``R * A_phi``) and ``b_r_vac``/``b_z_vac``
     are tesla; all arrays have the shape of the supplied ``r_grid`` and ``z_grid``.
     Raises ``ValueError`` for missing or malformed grid and coil records.
+
+    Parameters
+    ----------
+    r_grid : real array-like, shape [N_Z,N_R]
+        Target cylindrical radius grid [m]. Finite nonempty rectilinear 2-D
+        grid; radial axis is strictly increasing and nonnegative. N_R and N_Z
+        are each at least one.
+    z_grid : real array-like, shape [N_Z,N_R]
+        Target axial coordinate grid [m]. Finite, nonempty, same shape as
+        r_grid, and axial axis strictly increasing; singleton axes are
+        permitted.
+    rectangular_coils : Python sequence of mappings, shape list[mapping]
+        Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m, exactly one of current_a
+        or ampere_turns_a, and optional angle_deg/weights. current_a is the
+        current in EACH filament (filament j carries current_a*weights[j];
+        weights default to 1, so a coil's total ampere-turns are
+        nr*nz*current_a). ampere_turns_a is the total current of the whole coil
+        block, split over its filaments in proportion to weights. Passing a
+        coil's total ampere-turns as current_a makes its field nr*nz times too
+        large [mixed SI]. Nonempty; each coil gives exactly one finite current_a
+        or ampere_turns_a (both or neither raise ValueError) and optionally one
+        finite weight per generated filament; ampere_turns_a needs weights with
+        a nonzero sum.
+
+    Returns
+    -------
+    psi_vac : float64, shape [N_Z,N_R]
+        Vacuum poloidal flux on the target grid [Wb/rad]. Same grid shape and
+        C-order point mapping as inputs.
+    b_r_vac : float64, shape [N_Z,N_R]
+        Vacuum radial magnetic field on the target grid [T]. Same grid shape and
+        C-order point mapping as inputs.
+    b_z_vac : float64, shape [N_Z,N_R]
+        Vacuum axial magnetic field on the target grid [T]. Same grid shape and
+        C-order point mapping as inputs.
+    filaments : float64, shape [N_filament,3]
+        Concatenated [R_m,Z_m,weight] rows in caller coil order
+        [m,m,dimensionless]. Preserves each coil's filament order and the outer
+        caller coil order.
+
+    Raises
+    ------
+    FloatingPointError
+        Dependency ValueError/FloatingPointError propagates before any field is
+        returned, including a nonrepresentable current-weighted Green
+        contraction; no fallback or retry is performed.
+    ValueError
+        ValueError is raised for missing, empty or malformed grids,
+        empty/nonmapping coils, invalid geometry, weights, or currents.
+        Dependency ValueError/FloatingPointError propagates before any field is
+        returned, including a nonrepresentable current-weighted Green
+        contraction; no fallback or retry is performed.
+
+    See Also
+    --------
+    scirel.electromagnetism.compute_greens : Circular-filament Green functions.
+    scirel.configurations.WHAM : Fixed WHAM coil geometry preset.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.field import solve_multi_coil_vacuum_field
+    >>> r_grid, z_grid = np.meshgrid([0.0, 0.2], [-0.1, 0.1])
+    >>> result = solve_multi_coil_vacuum_field(r_grid=r_grid, z_grid=z_grid, rectangular_coils=[{'r0_m': 0.45, 'z0_m': 0.0, 'nr': 2, 'nz': 2, 'dr_m': 0.04, 'dz_m': 0.05, 'current_a': 1000.0}])
+    >>> assert result['psi_vac'].shape == r_grid.shape
+    >>> assert result['filaments'].shape == (4, 3)
+    >>> assert np.isfinite(result['b_z_vac']).all()
     """
     from scirel._composition import compose
     from scirel.field.circular_filament_green import circular_filament_green_response

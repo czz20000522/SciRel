@@ -27,7 +27,45 @@ def _complex_input(value):
 
 
 def evaluate_plasma_dispersion(z):
-    """Return Faddeeva ``w(z)`` and ``Z(z)=i*sqrt(pi)*w(z)``."""
+    """Return Faddeeva ``w(z)`` and ``Z(z)=i*sqrt(pi)*w(z)``.
+
+    Parameters
+    ----------
+    z : real or complex numeric array-like, shape scalar or any nonempty array shape
+        Already normalized complex phase argument; evaluated elementwise. All
+        elements finite after complex128 conversion; booleans, strings and empty
+        arrays are rejected.
+
+    Returns
+    -------
+    w : complex128, shape same as z; scalar input yields a zero-dimensional array
+        Analytic Faddeeva value w(z). Finite and representable for accepted
+        input.
+    Z : complex128, shape same as z; scalar input yields a zero-dimensional array
+        Plasma dispersion value i sqrt(pi) w(z). Finite and representable for
+        accepted input.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for empty, boolean, string, nonnumeric or nonfinite
+        input, or values that become nonfinite on complex128 conversion. Raises
+        ValueError when w or Z is not finite and representable; other unexpected
+        SciPy execution errors propagate.
+
+    See Also
+    --------
+    evaluate_generalized_dispersion : Transform of non-Maxwellian densities.
+    solve_maxwellian_electrostatic_mode : Langmuir/Landau root from this function.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import evaluate_plasma_dispersion
+    >>> result = evaluate_plasma_dispersion(0j)
+    >>> assert result['w'] == 1
+    >>> assert np.isclose(result['Z'], 1j * np.sqrt(np.pi))
+    """
     values = _complex_input(z)
     # SciPy is loaded only after validation so namespace discovery and rejected
     # calls remain independent of the optional numerical backend import path.

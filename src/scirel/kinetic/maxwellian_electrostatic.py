@@ -111,6 +111,68 @@ def solve_maxwellian_electrostatic_mode(
     This relative backward residual measures cancellation between vacuum and
     susceptibility independently of k². It does not prove root uniqueness or
     select the least damped branch. Numerical error is estimated, not certified.
+
+    Parameters
+    ----------
+    k : positive real
+        Positive normalized wave number [inverse normalized length]. Finite
+        strictly positive real scalar; booleans, complex values and arrays
+        rejected.
+    initial_omega : complex numeric
+        Complex root seed [normalized frequency]. Finite and representable.
+    xtol : positive real, default 1e-10
+        MINPACK step tolerance. Finite strictly positive real scalar, booleans
+        and arrays rejected.
+    residual_tolerance : positive real, default 1e-09
+        Acceptance threshold for normalized epsilon residual plus estimated
+        error. Finite strictly positive real scalar, booleans and arrays
+        rejected.
+    max_evaluations : positive integer, default 200
+        Maximum residual evaluations [count]. Positive integer scalar; booleans
+        rejected.
+
+    Returns
+    -------
+    omega : complex
+        Converged complex mode [normalized frequency]. Finite and representable.
+    residual : complex
+        Final complex D. Finite and representable.
+    evaluations : integer
+        Residual evaluations [count]. Finite and representable.
+    epsilon : complex
+        Final dielectric. Finite and representable.
+    normalized_residual : real
+        Absolute epsilon residual normalized by 1+|chi|. Finite and accepted
+        only below residual_tolerance after estimated-error gate.
+    normalized_residual_error : real
+        Estimated epsilon error on the same normalization. Finite and accepted
+        only below residual_tolerance/4.
+
+    Raises
+    ------
+    RuntimeError
+        Raises RuntimeError when MINPACK fails, exceeds max_evaluations, or the
+        normalized residual/error gate fails; no partial mode is returned.
+        Unrepresentable evaluation raises ValueError; solver unrepresentable
+        trial response raises RuntimeError. Unexpected SciPy execution errors
+        propagate.
+    ValueError
+        Raises ValueError for invalid, nonfinite, singular or incompatible
+        inputs. Unrepresentable evaluation raises ValueError; solver
+        unrepresentable trial response raises RuntimeError. Unexpected SciPy
+        execution errors propagate.
+
+    See Also
+    --------
+    evaluate_plasma_dispersion : The Z function used in the dispersion relation.
+    solve_vlasov_poisson : Time-domain Landau damping.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import solve_maxwellian_electrostatic_mode
+    >>> r=solve_maxwellian_electrostatic_mode(0.4,1.45-0.1j)
+    >>> assert r["normalized_residual"]+r["normalized_residual_error"]<=1e-9
+    >>> assert r["normalized_residual_error"]<=2.5e-10
     """
     seed = complex(_numeric(initial_omega, "initial_omega", scalar=True))
     if (

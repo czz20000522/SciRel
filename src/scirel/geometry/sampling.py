@@ -323,6 +323,49 @@ def flux_surface_avg(Rho, Z, B, flpoints, Q=None):
 
     The interpolated field must stay finite and strictly positive along the
     sampled path; nonpositive or nonfinite B is rejected before quadrature.
+
+    Parameters
+    ----------
+    Rho : float64, shape (Nz,Nr)
+        Rectangular radial x grid [length units]. Rho[0,:] strictly increasing.
+    Z : float64, shape same as Rho
+        Rectangular axial y grid [length units]. Z[:,0] strictly increasing.
+    B : float64, shape same as Rho
+        Positive weight field [field units]. Finite and strictly positive on the
+        sampled path; nonpositive or nonfinite interpolated values are rejected
+        before quadrature.
+    flpoints : float64, shape (N,2)
+        Ordered planar path vertices [length units]. Finite supplied ordering.
+    Q : float64 array or None, shape grid-shaped or None, default None
+        Optional quantity to average [quantity units]. Finite matched shape when
+        supplied.
+
+    Returns
+    -------
+    reduction : float64
+        Scalar weighted integral or average [length/field when Q absent;
+        quantity units when present]. No volume-per-flux interpretation without
+        external closure.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError or the underlying NumPy/SciPy exception for nonfinite,
+        mismatched, unsorted, out-of-domain, or malformed inputs; nonpositive or
+        nonfinite interpolated B and nonfinite Q are rejected before quadrature;
+        no input repair is inferred.
+
+    See Also
+    --------
+    scirel.geometry.compute_flux_surface_inverse_field_average : Overlapping dl/|B| path average.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry.sampling import flux_surface_avg
+    >>> rho, z = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-0.2, 0.2, 5))
+    >>> path = np.column_stack([np.linspace(0.0, 1.0, 33), np.zeros(33)])
+    >>> np.testing.assert_allclose(flux_surface_avg(rho, z, np.ones_like(rho), path), 1.0)
     """
     import scipy.integrate
 

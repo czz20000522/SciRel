@@ -80,7 +80,166 @@ def solve_mirror_ambipolar_potential(
     explicit current_balance_solved flag is False and the current residual
     must not be interpreted as a solved equilibrium. Fluxes use relative
     potentials before species scaling, and finite stable midpoints retain a
-    large common gauge without changing the residual/width gates. Nonfinite states fail."""
+    large common gauge without changing the residual/width gates. Nonfinite states fail.
+
+    Parameters
+    ----------
+    b_reference_t : real array-like converted to float64, shape scalar or array; jointly broadcast with b_plug_t, psi and phi_reference_v
+        Reference magnetic-field magnitude [T]. Finite and strictly positive at
+        every surface.
+    b_plug_t : real array-like converted to float64, shape scalar or array; common broadcast shape
+        Plug magnetic-field magnitude [T]. Finite and strictly positive at every
+        surface; the implementation does not require b_plug_t >= b_reference_t.
+    psi : real array-like converted to float64, shape scalar or array; common broadcast shape
+        Caller-defined flux-surface coordinate for profiles [caller-defined flux
+        coordinate]. Finite; no monotonicity or normalization requirement is
+        enforced.
+    ion_mass_kg : finite real scalar
+        Mass of the positive ion species [kg]. Strictly positive.
+    ion_charge_c : finite real scalar
+        Positive ion charge; divided by elementary charge to form the
+        charge-state multiplier [C]. Strictly positive; integer charge state is
+        not enforced.
+    ion_density_ref_m3 : real array-like or Python callable returning real array-like, shape scalar, array or callable output broadcastable to common shape
+        Ion reference number density, optionally a callable of psi [m^-3].
+        Finite and nonnegative. In solve mode it must be positive exactly where
+        electron reference density is positive.
+    ion_temperature_parallel_j : real array-like or Python callable returning real array-like, shape scalar, array or callable output broadcastable to common shape
+        Ion parallel thermal-energy scale, optionally a callable of psi [J].
+        Finite and strictly positive.
+    ion_temperature_perpendicular_j : real array-like or Python callable returning real array-like, shape scalar, array or callable output broadcastable to common shape
+        Ion perpendicular thermal-energy scale, optionally a callable of psi
+        [J]. Finite and strictly positive.
+    electron_temperature_j : real array-like or Python callable returning real array-like, shape scalar, array or callable output broadcastable to common shape
+        Electron thermal-energy scale used in both pitch directions, optionally
+        a callable of psi [J]. Finite and strictly positive.
+    phi_reference_v : real array-like converted to float64, shape scalar or array; common broadcast shape, default 0.0
+        Reference potential and returned potential on joint-vacuum surfaces in
+        solve mode [V]. Finite; the solve bracket is centered on this field.
+    electron_density_ref_m3 : real array-like or Python callable returning real array-like, shape scalar, array or callable output broadcastable to common shape, default None
+        Optional electron reference density, or callable of psi [m^-3]. If
+        absent, charge_state times ion_density_ref_m3 is used; if supplied,
+        finite and nonnegative. Solve mode requires paired positive or paired
+        zero density on each surface.
+    ion_loss_refill : finite real scalar, default 1.0
+        Multiplier of the modeled one-way ion loss flux. In [0,1]; solve mode
+        requires strictly positive value, while evaluate mode permits zero.
+    electron_loss_refill : finite real scalar, default 1.0
+        Multiplier of the modeled one-way electron loss flux. In (0,1].
+    potential_tolerance_v : finite real scalar, default 1e-06
+        Maximum half-width of the active returned-potential bracket [V].
+        Strictly positive; used together with current_tolerance.
+    current_tolerance : finite real scalar, default 1e-10
+        Maximum absolute log-current ratio at the tested midpoint. Strictly
+        positive; a separate relative_current_residual is returned for
+        diagnosis.
+    max_iterations : Python or NumPy integer scalar, excluding bool, default 100
+        Maximum number of shared vectorized bisection updates [iterations].
+        Integer >= 1; float values are not truncated.
+    initial_bracket_thermal : finite real scalar, default 8.0
+        Initial bracket half-width in combined ion/electron thermal voltages.
+        Strictly positive; expansion is additionally bounded to eight rounds.
+    mode : string, default 'solve'
+        Choose plug-potential solve or prescribed-potential flux evaluation
+        [enum]. Exactly 'solve' or 'evaluate'; evaluate requires phi_plug_v.
+    phi_plug_v : real array-like or Python callable returning real array-like, shape scalar, array or callable output broadcastable to common shape, default None
+        Prescribed plug potential for evaluate mode, optionally a callable of
+        psi [V]. Required and finite in evaluate mode. Ignored in solve mode.
+
+    Returns
+    -------
+    potential_v : NumPy float64 array, shape common broadcast shape
+        Plug potential phi_plug in the caller's voltage origin (not the drop);
+        the drop is potential_v - phi_reference_v. Solved or prescribed;
+        joint-vacuum surfaces retain phi_reference_v in solve mode [V]. Evaluate
+        mode returns supplied phi_plug_v; solve mode returns only after all
+        active surfaces meet the implemented stopping test.
+    ion_particle_flux_m2_s : NumPy float64 array, shape common broadcast shape
+        Modeled one-way ion end-loss particle flux after ion_loss_refill [m^-2
+        s^-1]. Finite nonnegative; zero for absent ions or zero refill;
+        underflow may round to zero.
+    electron_particle_flux_m2_s : NumPy float64 array, shape common broadcast shape
+        Modeled one-way electron end-loss particle flux after
+        electron_loss_refill [m^-2 s^-1]. Finite nonnegative; zero for absent
+        electrons; underflow may round to zero.
+    log_current_ratio : NumPy float64 array, shape common broadcast shape
+        Analytic log charge-weighted ion flux minus log electron flux for
+        positive populations; inactive evaluation uses finite tiny-floor
+        diagnostics. Finite. Active positive populations retain analytic logs
+        when a reported flux underflows.
+    relative_current_residual : NumPy float64 array, shape common broadcast shape
+        tanh(log_current_ratio/2), avoiding flux-sum overflow. Evaluate mode can
+        be unbalanced. Solve mode checks log_current_ratio at the very returned
+        potential.
+    iterations : Python int
+        Shared bisection update count, or zero in evaluate mode [iterations].
+        Evaluate returns 0; solve mode returns at least one update even if all
+        surfaces are joint vacuum.
+    converged : Python bool
+        Whether the solve stopping test passed, or whether evaluate mode
+        completed without solving [boolean]. Always True in a returned mapping.
+        In evaluate mode this does not assert ambipolar balance; solve failures
+        raise.
+    evaluation_complete : Python bool
+        The requested numerical evaluation completed [boolean]. True on
+        successful return.
+    current_balance_solved : Python bool
+        Whether a bounded current-balance solve was performed [boolean]. True in
+        solve mode, False in prescribed evaluate mode; not a model validity
+        certificate.
+
+    Raises
+    ------
+    FloatingPointError
+        Raises RuntimeError if an active surface cannot be bracketed after eight
+        expansion rounds. Nonfinite dimensionless barriers, fluxes or residuals
+        raise FloatingPointError or ValueError; no NaN success is returned.
+    RuntimeError
+        Raises RuntimeError if an active surface cannot be bracketed after eight
+        expansion rounds. Nonfinite dimensionless barriers, fluxes or residuals
+        raise FloatingPointError or ValueError; no NaN success is returned.
+        Raises RuntimeError unless all active surfaces meet half-bracket-width
+        and absolute log-current-ratio tests at the same returned potential
+        within max_iterations. A mathematically desired root that cannot be
+        represented at the requested width and residual resolution still fails;
+        no ULP-sized tolerance floor is silently introduced.
+    TypeError
+        Raises ValueError for unsupported mode, nonfinite/nonpositive required
+        scalar controls, refill values outside their mode-specific bounds,
+        nonfinite or nonpositive fields/temperatures, negative densities, absent
+        evaluate-mode phi_plug_v, or one-sided-vacuum solve surfaces. Noninteger
+        max_iterations raises ValueError; incompatible broadcasts, numeric
+        conversion and caller profile failures may raise ValueError or
+        TypeError.
+    ValueError
+        Raises ValueError for unsupported mode, nonfinite/nonpositive required
+        scalar controls, refill values outside their mode-specific bounds,
+        nonfinite or nonpositive fields/temperatures, negative densities, absent
+        evaluate-mode phi_plug_v, or one-sided-vacuum solve surfaces. Noninteger
+        max_iterations raises ValueError; incompatible broadcasts, numeric
+        conversion and caller profile failures may raise ValueError or
+        TypeError. Raises RuntimeError if an active surface cannot be bracketed
+        after eight expansion rounds. Nonfinite dimensionless barriers, fluxes
+        or residuals raise FloatingPointError or ValueError; no NaN success is
+        returned.
+
+    See Also
+    --------
+    scirel.field.solve_multi_coil_vacuum_field : Vacuum mirror field giving b_reference_t and b_plug_t.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.closures import solve_mirror_ambipolar_potential
+    >>> e = 1.602176634e-19
+    >>> m_i = 1.67262192595e-27
+    >>> m_e = 9.1093837139e-31
+    >>> r = solve_mirror_ambipolar_potential(1.0, 1.0, 0.0, m_i, e, 2.0e18, 2.0*e, 3.0*e, e, electron_density_ref_m3=3.0e18, ion_loss_refill=0.25, electron_loss_refill=0.5, mode='evaluate', phi_plug_v=1.0)
+    >>> np.testing.assert_allclose(r['ion_particle_flux_m2_s'], 2.0e18*np.sqrt(2.0*e/(2.0*np.pi*m_i))*np.exp(-0.5)*0.25)
+    >>> np.testing.assert_allclose(r['electron_particle_flux_m2_s'], 3.0e18*np.sqrt(e/(2.0*np.pi*m_e))*0.5)
+    >>> assert r['iterations'] == 0 and r['converged']
+    >>> assert r['evaluation_complete'] and not r['current_balance_solved']
+    """
     if mode not in {"solve", "evaluate"}:
         raise ValueError("mode must be solve or evaluate")
     ion_mass_kg = _require_finite_scalar(ion_mass_kg, "ion_mass_kg", positive=True)

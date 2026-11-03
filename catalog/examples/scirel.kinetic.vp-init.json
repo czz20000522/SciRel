@@ -17,7 +17,7 @@
  "discovery": {
   "capability": [
    "Poisson-consistent initialization",
-   "v=linspace(-vmax,vmax,nv+1); df=.1 exp(-v^2); E=i dv sum(df)/k."
+   "v=linspace(-vmax,vmax,nv+1); f0' from family Fn or caller df0dv (Fn=None); df=df_initial, default .1 exp(-v^2); E=i dv sum(df)/k."
   ],
   "operation": [
    "initialize a Poisson-consistent perturbation",
@@ -146,7 +146,7 @@
  ],
  "applicability": {
   "preconditions": [
-   "Fn, kappa, nv, dt, nt, k and vmax satisfy the declared scalar domains."
+   "Fn, kappa, nv, dt, nt, k and vmax satisfy the declared scalar domains; df_initial and df0dv, when given, are finite arrays of length nv+1, and df0dv is given exactly when Fn is None."
   ],
   "supported": [
    "Finite velocity-grid initialization with discrete Poisson-consistent dE and empty or finite-length time history."
@@ -156,7 +156,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError for invalid scalar controls or a distribution branch that rejects the selected parameters.",
+  "invalid_input": "ValueError for invalid scalar controls, a distribution branch that rejects the selected parameters, df_initial or df0dv of the wrong length or nonfinite, a complex df0dv, or df0dv given together with Fn (or Fn=None without df0dv).",
   "runtime_failure": "FloatingPointError if the generated derivative or Poisson field is not finite.",
   "nonconvergence": "Not applicable; initialization has no iteration.",
   "partial_results": "No state is returned after an exception."

@@ -270,7 +270,7 @@
     "scirel.equilibrium.anisotropic_force_balance": "5db10ba8812314c3936a2d07ce02405f2da5f1ad1684607f42dbee82e6c66b6a",
     "scirel.equilibrium.axisymmetric_anisotropic_picard": "5d3b18c7199c99767d588a387e8e496f0970ab1536099d379a897812df50ba47",
     "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
-    "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
+    "scirel.field.poloidal_field_from_flux": "84f311bbce66445965f596cef2a8bc89cad3252a677b2da7c141447cc919271e"
    },
    "review_basis": "run_composition requires R,Z,vacuum psi,Green and pressure callable; explicit scalar parsers define tolerance1e-8,maxiter200,relax0.5,minimumB1e-8,firehose0,compatibility0.05,strictTrue. Optional mask and cell_edges pass to the field/current feedback; terminal convergence uses the accepted fixed point residual."
   },
@@ -635,7 +635,7 @@
     "scirel.closures.reduced_hall_drift": "ecbcc6e454d92d2cc70667f11627ee4ce075bd6d32eeaf6e8a07732595360072",
     "scirel.equilibrium.axisymmetric_picard_update": "a54782fdf571a53c149baa467c29ca43a255bc322e0cbe869783f2415ea64c8e",
     "scirel.equilibrium.reduced_hall_anisotropic_picard": "0b45151359aab2d2faba28014561de3c83802553ae09ec22f1cd3613fa717571",
-    "scirel.field.poloidal_field_from_flux": "ed1a2c9ab51a614e02f039db9bf091c8a8808a7679301e4a0c89ac6cf8a5c6f2"
+    "scirel.field.poloidal_field_from_flux": "84f311bbce66445965f596cef2a8bc89cad3252a677b2da7c141447cc919271e"
    },
    "review_basis": "run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
   },
@@ -660,7 +660,7 @@
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
     "scirel.field.circular_filament_green": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
     "scirel.field.current_green_superposition": "7505b1dc85ec968bbe6e3b1531d603d3289bd2de4fe1912de0cc3afa0980ca5c",
-    "scirel.field.multi_coil_vacuum_field": "a2d266f8162b76e0c62e68c39f2e43fe465e845ef2f8f63d84b98c9781fef3f5",
+    "scirel.field.multi_coil_vacuum_field": "fceacac2bbb1e2a03a3ea0538ceff9536fe73afb8c36a0cf6118524c1e01ac6e",
     "scirel.field.rectangular_coil_filaments": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d"
    },
    "review_basis": "run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."
@@ -822,7 +822,7 @@
    ],
    "modules": {
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
-    "scirel.closures.mirror_ambipolar_potential": "a7fb57ba70b6a7a09a98228be11622ce924edc781a45551f3cf8fa56ed879194",
+    "scirel.closures.mirror_ambipolar_potential": "a5b84a6616cf729e064f69d074f6a4b93b8d4172ea98c1b5d96a82936716f942",
     "scirel.closures.mirror_quasineutral_closure": "f89f29f58305c5f83be3aece4216988becd16877a967d67f54bb2af9bc39a20e",
     "scirel.geometry.flux_surface_profile": "a8e021c5b8aff7e1e3c189c1bcd925304e91c50b204df97d6678bc96cd1ad173",
     "scirel.kinetic.grid_mirror_kinetic_closure": "84a54db506ac9011abdde1aacb4f226c6c6e5609b2610a3e3ffc7c72540ab674"
@@ -1047,7 +1047,7 @@
     }
    ],
    "modules": {
-    "scirel.kinetic.generalized_dispersion": "7ddadf38f9e18f2da9b2a6865fd43c879ae5542888a5b8bf974a3f85b7794ee1"
+    "scirel.kinetic.generalized_dispersion": "e2175c0ac3cbfb2609000e3d07ca856b37cef2eca15806494766c53aac4019f0"
    },
    "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
   }
