@@ -18,7 +18,7 @@ operator would save work. Many steps have no operator, and NumPy, SciPy or ordin
 code is a normal way to do them. Do not reshape the physics to fit an operator.
 
 - Search one physical step at a time, not the whole question.
-- Use one to three English physics words, such as `circular coil` or `plasma
+- Use one to three English physics words, such as `flux surface` or `plasma
   dispersion`. All terms must match, and contract text is mainly English, so long
   phrases and other languages often return nothing.
 - On a zero hit, read `gap.closest_terms` and `gap.retry_hint`, drop a word, try a

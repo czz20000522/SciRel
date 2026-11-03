@@ -192,3 +192,16 @@ def test_gap_response_offers_the_closest_terms_and_a_way_forward():
     assert result["gap"]["retry_hint"]
     assert result["gap"]["closest_terms"]
     assert all(item["matched_terms"] for item in result["gap"]["closest_terms"])
+
+
+def test_delivered_skills_do_not_contain_answers_from_the_reference_demo():
+    summary = json.loads((CASE / "data/summary.json").read_text(encoding="utf-8"))
+    nominal, offset = summary["states"]["nominal"], summary["states"]["offset"]
+    values = [100 * nominal["U"], 100 * offset["U"], 1e3 * nominal["bref_T"], 1e3 * offset["bref_T"],
+              1e3 * nominal["tilt_max_rad"], 1e3 * offset["tilt_max_rad"]]
+    needles = {f"{value:.2f}" for value in values} | {f"{nominal['bref_T']:.8f}", f"{offset['bref_T']:.8f}"}
+    hits = []
+    for path in (ROOT / "skills/development/usage").rglob("*.md"):
+        text = path.read_text(encoding="utf-8")
+        hits += [f"{path.name}: {needle}" for needle in needles if needle in text]
+    assert hits == []
