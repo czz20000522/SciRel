@@ -20,7 +20,8 @@ SECTIONS = (
     ("附录", "Appendix"),
 )
 MAX_BODY_TABLE_ROWS = 10
-MAX_BODY_SIGNIFICANT_DIGITS = 5
+MAX_BODY_SIGNIFICANT_DIGITS = 4
+MAX_APPENDIX_SIGNIFICANT_DIGITS = 6
 IMAGE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)\)")
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s#]+)(?:#[^)]*)?\)")
 FENCE = re.compile(r"^```.*?^```[ \t]*$", re.M | re.S)
@@ -86,6 +87,9 @@ def validate(path: Path) -> list[str]:
 
     for name, body in sections:
         if name == expected[6]:
+            for match in NUMBER.finditer(body):
+                if _significant_digits(match.group(0)) > MAX_APPENDIX_SIGNIFICANT_DIGITS:
+                    errors.append(f"{name}: too many significant digits for the appendix: {match.group(0)}")
             continue
         rows = sum(1 for line in body.splitlines() if line.lstrip().startswith("|") and not set(line) <= set("|- :"))
         if rows - 1 > MAX_BODY_TABLE_ROWS:

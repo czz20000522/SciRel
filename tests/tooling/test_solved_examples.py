@@ -42,7 +42,7 @@ GOOD = """# t
 结论。
 
 ## 附录
-x 0.123456789
+x 0.123457
 """
 
 
@@ -62,7 +62,9 @@ def test_validator_accepts_a_minimal_report(tmp_path):
     [
         (("## 答案\n影响约 3%。\n\n", ""), "missing section"),
         (("## 讨论", "## 结论2\n\n## 讨论"), None),
-        (("影响约 3%", "影响约 1.2345678%"), "significant digits"),
+        (("影响约 3%", "影响约 1.2345%"), "significant digits"),
+        (("影响约 3%", "影响约 1.234%"), None),
+        (("x 0.123457", "x 0.1234567"), "digits for the appendix"),
         (("用 $B=\\mu_0 I$。", "先做转置。"), "implementation detail"),
         (("用 $B=\\mu_0 I$。", "只有文字。"), "no formula"),
         (("![图](f.png)\n\n*图 1　说明。*", "无图"), "no figure"),
