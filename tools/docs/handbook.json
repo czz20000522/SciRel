@@ -875,7 +875,7 @@
     "科学计算",
     "科学数据与可视化"
    ],
-   "introduction": "将计算状态与外部文本交换，并单独提供有限绘图片变换。equilibrium 扩展 EQDSK 有明确字段、单位和方言约定，不表示 EFIT／COCOS／GENRAY 兼容；绘图辅助属于非核心支持，不替代物理计算。",
+   "introduction": "将计算状态与外部文本交换，并单独提供有限绘图片变换。equilibrium 扩展 EQDSK 有明确字段、单位和方言约定，不表示 EFIT／COCOS／GENRAY 兼容；标准 EFIT G-EQDSK 由单独的读取器按公开格式读取；绘图辅助属于非核心支持，不替代物理计算。",
    "topics": [
     {
      "id": "eqdsk-mapping-and-text",
@@ -885,6 +885,14 @@
       "scirel.io.read-eqdsk",
       "scirel.io.write-eqdsk",
       "scirel.io.eqdsk-class"
+     ]
+    },
+    {
+     "id": "geqdsk-standard-reader",
+     "title": "读取标准 EFIT G-EQDSK",
+     "introduction": "按公开格式规范读取托卡马克平衡文件：磁通图 ψ(R,Z)、F、p、q 剖面、边界与限制器，以及 R、Z 网格；数值按文件原样返回，不推断 COCOS。",
+     "assets": [
+      "scirel.io.read-geqdsk"
      ]
     }
    ]

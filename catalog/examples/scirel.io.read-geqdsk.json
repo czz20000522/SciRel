@@ -1,0 +1,140 @@
+{
+ "schema": "scirel.asset-document",
+ "asset_id": "scirel.io.read-geqdsk",
+ "title": {
+  "en": "Read standard G-EQDSK",
+  "zh": "读取标准 G-EQDSK"
+ },
+ "summary": "Parse one standard EFIT G-EQDSK equilibrium file into named arrays with grid coordinates.",
+ "taxonomy": [
+  "io",
+  "eqdsk",
+  "geqdsk",
+  "equilibrium",
+  "serialization"
+ ],
+ "aliases": [
+  "read_geqdsk",
+  "gEQDSK",
+  "g-file",
+  "EFIT equilibrium file"
+ ],
+ "discovery": {
+  "capability": [
+   "Read standard EFIT G-EQDSK",
+   "Load a tokamak equilibrium g-file: poloidal flux map psi(R,Z), F(psi), p(psi), q(psi), boundary and limiter."
+  ],
+  "operation": [
+   "Parse G-EQDSK text",
+   "G-EQDSK text -> dictionary of scalars, flux-grid profiles, psi(R,Z) and R, Z grids"
+  ],
+  "model": "EFIT G-EQDSK record layout (Lao 1997): (6a8,3i4) first record, 5e16.9 real records, 2i5 boundary/limiter counts.",
+  "geometry": "Rectangular NW by NH grid: R from RLEFT to RLEFT+RDIM, Z from ZMID-ZDIM/2 to ZMID+ZDIM/2; profiles on NW uniform flux points from SIMAG to SIBRY.",
+  "boundary": "Values are returned as written: units are the specification's (m, Wb/rad, m T, Pa, A, T); no COCOS sign convention is inferred and no flux-surface quantity is computed.",
+  "device_scope": "generic"
+ },
+ "identity": {
+  "relation": "Deterministic deserialization of standard EFIT G-EQDSK records",
+  "direction": "G-EQDSK text to dictionary",
+  "definition": "First record: 48-character description, then integers with NW and NH last; four scalar records (RDIM ZDIM RCENTR RLEFT ZMID / RMAXIS ZMAXIS SIMAG SIBRY BCENTR / CURRENT and repeats); FPOL, PRES, FFPRIM, PPRIME (NW each); PSIRZ (NW*NH, R index fastest); QPSI (NW); NBBBS, LIMITR; boundary and limiter (R,Z) pairs",
+  "model": "EFIT G-EQDSK record layout from the published format specification.",
+  "geometry": "psirz[j, i] is the flux at (r[i], z[j]); r and z are uniform; psi is the uniform flux grid of the profiles",
+  "coordinates": "Cylindrical (R, Z) in m; flux per radian; signs as written in the file",
+  "boundary": "No COCOS inference, no consistency check between the repeated header values, no equilibrium reconstruction or interpolation.",
+  "assumptions": [
+   "Numbers appear in specification order; each value is a Fortran real with optional E or D exponent",
+   "Fields may run together when a value starts with a minus sign",
+   "NW and NH are the last two integers of the first record"
+  ]
+ },
+ "inputs": [
+  {
+   "name": "filename",
+   "description": "G-EQDSK file path",
+   "units": "n/a",
+   "shape": "path",
+   "dtype": "filesystem path",
+   "required": true,
+   "constraints": "Readable text file"
+  },
+  {
+   "name": "strict",
+   "description": "Reject numbers after the limiter section",
+   "units": "dimensionless",
+   "shape": "scalar",
+   "dtype": "bool",
+   "required": false,
+   "constraints": "False ignores appended records but still requires every standard record",
+   "default": true
+  }
+ ],
+ "outputs": [
+  {
+   "name": "mapping",
+   "description": "Specification-named scalars, profiles fpol/pres/ffprim/pprime/qpsi, psirz (nh, nw), r, z, psi, boundary rbbbs/zbbbs and limiter rlim/zlim",
+   "units": "m, Wb/rad, m T, N/m^2, A, T as in the specification",
+   "shape": "dict",
+   "dtype": "dict[str,Any]",
+   "required": true,
+   "constraints": "Finite values; positive RDIM, ZDIM; SIMAG differs from SIBRY"
+  }
+ ],
+ "applicability": {
+  "preconditions": [
+   "Standard EFIT G-EQDSK text with at least two grid points in R and Z"
+  ],
+  "supported": [
+   "Fixed-width 5e16.9 records including fields joined by a minus sign",
+   "Free-format whitespace-separated numbers and D exponents",
+   "Empty boundary or limiter lists",
+   "Appended records with strict=False"
+  ],
+  "excluded": [
+   "COCOS identification or conversion",
+   "Flux-surface tracing, averages or interpolation",
+   "Writing G-EQDSK files",
+   "The extended SciRel dialect read by read_eqdsk"
+  ]
+ },
+ "failure_semantics": {
+  "invalid_input": "EQDSKFormatError for a missing, truncated, non-numeric or non-finite record, a non-integer count, non-positive RDIM or ZDIM, equal SIMAG and SIBRY, or extra numbers when strict.",
+  "runtime_failure": "Filesystem errors propagate.",
+  "nonconvergence": "Not applicable.",
+  "partial_results": "None; a failed read returns nothing."
+ },
+ "public_api": {
+  "python": {
+   "module": "scirel.io.geqdsk",
+   "symbol": "read_geqdsk",
+   "signature": "read_geqdsk(filename: 'str | Path', *, strict: 'bool' = True) -> 'dict[str, Any]'",
+   "canonical_module": "scirel.io",
+   "canonical_symbol": "read_geqdsk"
+  }
+ },
+ "version": {
+  "implementation_version": "0.0.0",
+  "dependencies": []
+ },
+ "example": {
+  "description": "Write a 3-by-2 G-EQDSK file by hand and read the flux at R index 2, Z index 1.",
+  "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nimport numpy as np\nfrom scirel.io import read_geqdsk\nrec = lambda v: [''.join('%16.9E' % x for x in v[i:i+5]) for i in range(0, len(v), 5)]\nlines = ['EXAMPLE'.ljust(48) + '   0   3   2']\nfor values in ([2., 3., 1.5, .25, 0.], [1.2, 0., -.75, .5, -2.5], [1e6, -.75, 0., 1.2, 0.], [0., 0., .5, 0., 0.]):\n    lines += rec(values)\nfor _ in range(4):\n    lines += rec([1., 2., 3.])\nlines += rec([11., 21., 31., 12., 22., 32.]) + rec([1., 2., 3.]) + ['    0    0']\nwith TemporaryDirectory() as directory:\n    path = Path(directory) / 'g.eqdsk'\n    path.write_text('\\n'.join(lines) + '\\n')\n    g = read_geqdsk(path)\n    assert g['psirz'].shape == (2, 3) and g['psirz'][1, 2] == 32.0\n    assert np.allclose(g['r'], [.25, 1.25, 2.25]) and np.allclose(g['z'], [-1.5, 1.5])",
+  "expected": "psirz has shape (nh, nw) = (2, 3), psirz[1, 2] = 32.0, r = [0.25, 1.25, 2.25] m and z = [-1.5, 1.5] m."
+ },
+ "verification": {
+  "scope": [
+   "Hand-written records following the published layout: scalar positions, profile and flux-map order, grids, boundary and limiter, joined fields, free format, strict trailing policy and malformed input"
+  ],
+  "tests": [
+   "tests/io/test_geqdsk.py"
+  ],
+  "evidence_ceiling": "Structural I/O only; no physical interpretation or sign convention is claimed.",
+  "known_limitations": [
+   "COCOS and sign conventions are not inferred",
+   "Repeated header values are not cross-checked",
+   "Some writers deviate from the layout (for example wider integer fields); such files may need strict=False or fail"
+  ]
+ },
+ "references": [
+  "L. L. Lao, G EQDSK FORMAT, 7 February 1997, EFIT format specification."
+ ]
+}

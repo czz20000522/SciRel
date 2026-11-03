@@ -879,6 +879,14 @@
       "scirel.io.write-eqdsk",
       "scirel.io.eqdsk-class"
      ]
+    },
+    {
+     "id": "geqdsk-standard-reader",
+     "title": "Reading standard EFIT G-EQDSK",
+     "introduction": "Read a tokamak equilibrium file by the published layout: flux map psi(R,Z), F, p and q profiles, boundary and limiter, and the R, Z grids; values are returned as written and no COCOS convention is inferred.",
+     "assets": [
+      "scirel.io.read-geqdsk"
+     ]
     }
    ]
   }

@@ -125,7 +125,7 @@
   "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [
    "This reader does not select raw contours or write them; that writer is a separate contract.",
-   "Not standard EFIT gEQDSK",
+   "Not standard EFIT gEQDSK; read standard files with scirel.io.read_geqdsk",
    "No units/COCOS"
   ]
  },

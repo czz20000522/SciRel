@@ -3,7 +3,7 @@ Scientific data exchange and display boundaries: an extended EQDSK record
 
 This chapter answers two questions: **how does an extended EQDSK text file become a Python mapping, and when a write or read fails, can the old state and the old file be preserved?** It also explains why this is not a plotting tutorial: the public entry points in this chapter deal only with text, fields and arrays — not with axes, units, color maps, contours or graphics objects.
 
-The current asset set for this chapter has only three entry points: ``read_eqdsk``, ``write_eqdsk`` and the mutable mapping wrapper ``EQDSK``. They operate on the extended dialect declared by this project, not on standard EFIT gEQDSK, and they do not assign COCOS, units or physical meaning. The so-called "display boundary" is exactly which display decisions the data contract can and cannot support; the code below does not produce any figures.
+The extended dialect has three entry points: ``read_eqdsk``, ``write_eqdsk`` and the mutable mapping wrapper ``EQDSK``. They operate on the extended dialect declared by this project, not on standard EFIT gEQDSK, and they do not assign COCOS, units or physical meaning. Standard EFIT G-EQDSK files are read with ``read_geqdsk``, which returns the specification-named arrays and grids and likewise infers no COCOS convention. The so-called "display boundary" is exactly which display decisions the data contract can and cannot support; the code below does not produce any figures.
 
 What a minimal record looks like
 --------------------------------

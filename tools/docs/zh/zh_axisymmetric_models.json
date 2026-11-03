@@ -1070,7 +1070,7 @@
   },
   {
    "asset_id": "scirel.io.read-eqdsk",
-   "source_sha256": "cbc12b54e40dd9ccf37e71c688a13a09ab16c3713c1190fe97d7d5199798d05f",
+   "source_sha256": "3b8ebcb0b6a39b23b9153a6211baa1ecd1fefa6451e2b210db60469dca12eebd",
    "summary": "解析一份已验证的扩展 EQDSK 文本文件。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
@@ -1136,8 +1136,81 @@
     "evidence_ceiling": "仅有结构性 I/O 边界；不主张物理解释或发行批准。",
     "known_limitations": [
      "此读取器不负责原始轮廓的选择或写入；那属于独立的写入器合同。",
-     "不是标准 EFIT gEQDSK。",
+     "不是标准 EFIT gEQDSK；标准文件用 scirel.io.read_geqdsk 读取。",
      "没有单位/COCOS。"
+    ]
+   }
+  },
+  {
+   "asset_id": "scirel.io.read-geqdsk",
+   "source_sha256": "ab5b74f45301aa6b7a22e606de12fefcfb1a67088f969f7839f3c0f5232e5ba1",
+   "summary": "把一份标准 EFIT G-EQDSK 平衡文件解析为带名称的数组和网格坐标。",
+   "definition": "首行：48 字符说明，之后的整数中最后两个为 NW、NH；四条标量记录（RDIM ZDIM RCENTR RLEFT ZMID / RMAXIS ZMAXIS SIMAG SIBRY BCENTR / CURRENT 及重复值）；FPOL、PRES、FFPRIM、PPRIME（各 NW 个）；PSIRZ（NW×NH，R 下标变化最快）；QPSI（NW 个）；NBBBS、LIMITR；边界和限制器的 (R,Z) 坐标对。",
+   "model": "按公开格式规范的 EFIT G-EQDSK 记录布局。",
+   "boundary": "不推断 COCOS，不核对文件头里的重复值，不做平衡重建或插值。",
+   "assumptions": [
+    "数值按规范顺序出现；每个值是 Fortran 实数，指数可用 E 或 D。",
+    "以负号开头的字段可以与前一字段相连。",
+    "NW 和 NH 是首行最后两个整数。"
+   ],
+   "inputs": [
+    {
+     "name": "filename",
+     "description": "G-EQDSK 文件路径。",
+     "constraints": "可读文本文件。",
+     "dtype": "文件系统路径"
+    },
+    {
+     "name": "strict",
+     "description": "拒绝限制器之后的多余数值。",
+     "constraints": "False 忽略追加记录，但仍要求全部标准记录。",
+     "dtype": "布尔"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "mapping",
+     "description": "按规范命名的标量，剖面 fpol/pres/ffprim/pprime/qpsi，psirz（形状 (nh, nw)），r、z、psi 网格，边界 rbbbs/zbbbs 和限制器 rlim/zlim。",
+     "constraints": "数值有限；RDIM、ZDIM 为正；SIMAG 与 SIBRY 不同。",
+     "dtype": "字典（字符串键）"
+    }
+   ],
+   "applicability": {
+    "preconditions": [
+     "标准 EFIT G-EQDSK 文本，R 与 Z 方向各至少两个网格点。"
+    ],
+    "supported": [
+     "定宽 5e16.9 记录，包括以负号相连的字段。",
+     "空白分隔的自由格式数值和 D 指数。",
+     "空的边界或限制器列表。",
+     "strict=False 时允许追加记录。"
+    ],
+    "excluded": [
+     "COCOS 识别或转换。",
+     "磁面追踪、磁面平均或插值。",
+     "写出 G-EQDSK 文件。",
+     "read_eqdsk 读取的 SciRel 扩展方言。"
+    ]
+   },
+   "failure_semantics": {
+    "invalid_input": "记录缺失、截断、非数值或非有限，计数不是整数，RDIM 或 ZDIM 不为正，SIMAG 等于 SIBRY，或严格模式下有多余数值时，抛 EQDSKFormatError。",
+    "runtime_failure": "文件系统错误照常抛出。",
+    "nonconvergence": "不适用。",
+    "partial_results": "无；读取失败不返回任何内容。"
+   },
+   "example": {
+    "description": "手写一个 3×2 的 G-EQDSK 文件，读出 R 下标 2、Z 下标 1 处的磁通。",
+    "expected": "psirz 形状为 (nh, nw) = (2, 3)，psirz[1, 2] = 32.0，r = [0.25, 1.25, 2.25] m，z = [-1.5, 1.5] m。"
+   },
+   "verification": {
+    "scope": [
+     "按公开布局手写的记录：标量位置、剖面和磁通图顺序、网格、边界与限制器、相连字段、自由格式、严格模式的尾随策略和畸形输入。"
+    ],
+    "evidence_ceiling": "仅为结构性 I/O；不主张物理解释或符号约定。",
+    "known_limitations": [
+     "不推断 COCOS 和符号约定。",
+     "不核对文件头里的重复值。",
+     "有些写出程序偏离布局（例如更宽的整数字段），这类文件可能需要 strict=False 或读取失败。"
     ]
    }
   },

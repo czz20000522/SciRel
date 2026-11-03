@@ -150,7 +150,7 @@ def test_english_handbook_file_matches_canonical_structure():
 
     assert structure(english) == structure(canonical)
     assert len(english["chapters"]) == 9
-    assert sum(len(chapter["topics"]) for chapter in english["chapters"]) == 74
+    assert sum(len(chapter["topics"]) for chapter in english["chapters"]) == 75
     held = set(
         json.loads((ROOT / "catalog/review/HOLD.json").read_text(encoding="utf-8"))["assets"]
     )
