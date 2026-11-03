@@ -660,7 +660,7 @@
     "scirel._composition": "636878a81bebafa19e15e2414112c24a43e4b3e03811ec91120490f186877514",
     "scirel.field.circular_filament_green": "c38aec875c74ffbcd378918d1417ed71058ed04ba8fef34ec2f9a78b668d4374",
     "scirel.field.current_green_superposition": "7505b1dc85ec968bbe6e3b1531d603d3289bd2de4fe1912de0cc3afa0980ca5c",
-    "scirel.field.multi_coil_vacuum_field": "b82dde02975437ad1f2986e1c5c142013203bae21719daa6a692f10c63a3d454",
+    "scirel.field.multi_coil_vacuum_field": "a2d266f8162b76e0c62e68c39f2e43fe465e845ef2f8f63d84b98c9781fef3f5",
     "scirel.field.rectangular_coil_filaments": "4586962b6666b613bc591644da80973c83ef7bb6817abd3180e18331610cb08d"
    },
    "review_basis": "run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."
@@ -1047,7 +1047,7 @@
     }
    ],
    "modules": {
-    "scirel.kinetic.generalized_dispersion": "87a56aa9e052243796cc48e789556513ac2c441942ccb2e94d4dc5f2dc070869"
+    "scirel.kinetic.generalized_dispersion": "7ddadf38f9e18f2da9b2a6865fd43c879ae5542888a5b8bf974a3f85b7794ee1"
    },
    "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
   }

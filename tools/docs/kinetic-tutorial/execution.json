@@ -18,12 +18,12 @@
  },
  "results_sha256": "93541b672e985b39225a0367bc9ef1595df2beca4d54b79c5adcbe2b14673a80",
  "source_files": {
-  "src/scirel/kinetic/generalized_dispersion.py": "87a56aa9e052243796cc48e789556513ac2c441942ccb2e94d4dc5f2dc070869",
-  "src/scirel/kinetic/vlasov_poisson.py": "87a6bbe77e9dff5994f1d03b8aad85d8935fe8524e3c180b22eddc550d27fe5b"
+  "src/scirel/kinetic/generalized_dispersion.py": "7ddadf38f9e18f2da9b2a6865fd43c879ae5542888a5b8bf974a3f85b7794ee1",
+  "src/scirel/kinetic/vlasov_poisson.py": "cef9f9ffe50d544d886a9d04b5cd791d76b689e56e1eda20f4e20070939ae693"
  },
  "document_files": {
   "catalog/examples/scirel.kinetic.generalized-root-scans.json": "53ec5904bac98a1ca8603c8cbc64211cc49a165924b278525063f60180dd4cde",
-  "catalog/examples/scirel.kinetic.vp-landau.json": "529c982bc61e091fe8b3fe7b81cad237fdd54b20c0f221d45fceab9140ed51d3"
+  "catalog/examples/scirel.kinetic.vp-landau.json": "01a09c422abd668f6d30f18de85f5f22b60393edb1c9874ab5623cae34a0dbed"
  },
  "tutorial_rst_sha256": "c530762eebd036b6c082b9b828f03f237a449e9e6e926eff2de73f5210788eea",
  "environment": {
@@ -32,7 +32,7 @@
   "scipy": "1.18.1",
   "matplotlib": null,
   "platform": "macOS arm64",
-  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; tutorial code blocks rerun from source",
+  "execution_environment": "macOS arm64 CPython 3.14.7 source checkout with locked development dependencies; tutorial code blocks rerun from source; Rebound on 2026-11-03 after documentation and explicit-argument changes (multi-coil ampere_turns_a, vp_init df_initial/df0dv, docstrings, ruff formatting): replayed on Linux x86_64 with CPython/NumPy/SciPy 3.14.10 2.5.4 1.18.1; all chapter checks passed, magnetostatics values agree with results.json to 1.3e-18 T, and the kinetic tutorial reproduced its printed Vlasov-Poisson outputs exactly (its root-scan residual printed 1.038893e-12 against the recorded 1.038967e-12, platform rounding far below the 1e-9 assertion). Results and figures retained unchanged.",
   "network": "none during tutorial execution",
   "source_or_saved_answers": false,
   "exit_code": 0,
@@ -42,5 +42,5 @@
  },
  "human_approval": false,
  "release_approval": false,
- "previous_execution_sha256": "35427b2680d608843deeebd2d2993ed7d0d845360f796f36ef866a50dccb0f6d"
+ "previous_execution_sha256": "509a277a0b1f11b558cb5ca17265a5de2e5d6b68d5b8ebd05c5390f043573a3a"
 }
