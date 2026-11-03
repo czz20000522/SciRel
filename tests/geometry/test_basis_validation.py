@@ -32,4 +32,3 @@ def test_spline_constructors_reject_unsupported_knot_geometry(constructor):
     for x_data, y_data in cases:
         with pytest.raises(ValueError, match="finite|strictly increasing|at least 3"):
             constructor(x_data, y_data)
-

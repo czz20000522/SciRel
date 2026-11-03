@@ -376,7 +376,7 @@
     "scirel.equilibrium.anisotropic_toroidal_current": "d8fd81f1f18bacce98fda40e53319b776a3ac142527c0c502deb6329ff88267e",
     "scirel.equilibrium.free_boundary_anisotropic_picard": "57d92fbf78d602a1ef664649829ff477047a46d7f40fb147c681361985a87f00",
     "scirel.field.ideal_conductor_boundary": "d966303dd1d15cd6e34d8f5311a9938943f32569bdf0b291310e38772bf982c9",
-    "scirel.field.poloidal_field_magnitude": "ea873e93a80c82f7af8d47427ccbd4726b9314947b6f1dfeace35a304ca583f7"
+    "scirel.field.poloidal_field_magnitude": "7425a338a5cf134318251f7eee31fa947a69191bbbcd2c6f360a5cd33a5a830c"
    },
    "review_basis": "run_composition requires grid,vacuum psi/Br/Bz,Green psi,params,pressure callable and tol/maxiter/relax. g_br/g_bz may be omitted; wall/current/full-state feedback uses existing accepted behavior. b0 can derive from initial field; mask/wall/cell_edges absent are None; compatibility/minimumB/strict defaults are explicit scalar parsers."
   },
@@ -972,7 +972,7 @@
     "scirel._validation": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee",
     "scirel.equilibrium.isotropic_pressure_flux": "8f58099dbbaa4f31473d8d22607d8a8f826d9efa2897d2fb4151839339f78422",
     "scirel.equilibrium.pressure_flux_state": "04e9a4d3b3d0191dabd002b6f3d6e419c3fca6df7ba8313e3aa0b0c74d6007d8",
-    "scirel.equilibrium.equilibrium_state": "eda95c6632cda07f7f2dbe8490dc95795754a70a93178ea9b024aeeda7b37380",
+    "scirel.equilibrium.equilibrium_state": "44c9facad343c5c5909d00d27e245a1d7fbc8cdb8df3633431f6c843807457ec",
     "scirel.equilibrium._pressure_current": "f8d3aa51b8da07a0f555031b27d21789db33ab44473df3c75f68f2b365749212"
    },
    "review_basis": "Port identity only: explicit mapping requires grids, pressure callable, vacuum flux, Green matrix and tol/maxiter/relax; optional boolean plasma_mask defaults to None. Named calls to the qualified shared solver and exact terminal serializer are source-bound. Feedback has one owner; no second adapter loop. Scientific qualification requires the separate exact successor receipt."

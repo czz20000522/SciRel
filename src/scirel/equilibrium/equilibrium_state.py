@@ -4,6 +4,7 @@ The solver is deliberately a discrete Green-map iteration.  It owns the
 pressure spline, cell-current assembly, relaxation, and finite-state checks;
 it does not claim a continuum force-balance solution.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -25,6 +26,7 @@ __all__ = ["EquilibriumResult", "compute_equilibrium"]
 @dataclass(frozen=True)
 class EquilibriumResult:
     """Terminal state and both fixed-point residual histories."""
+
     psi: np.ndarray
     plas_currents: np.ndarray
     p_psifit: object
@@ -60,18 +62,19 @@ def _validate_uniform_grid(R, Z, psi_vac, green):
     """Validate the real, rectangular, uniformly spaced grid contract."""
     if any(np.iscomplexobj(value) for value in (R, Z, psi_vac, green)):
         raise ValueError("R, Z, psi_vac, and g_psi must be real arrays")
-    R, Z, psi_vac, green = [np.asarray(value, dtype=float)
-                              for value in (R, Z, psi_vac, green)]
+    R, Z, psi_vac, green = [np.asarray(value, dtype=float) for value in (R, Z, psi_vac, green)]
     if R.ndim != 2 or Z.shape != R.shape or psi_vac.shape != R.shape:
         raise ValueError("R, Z, and psi_vac must have equal 2-D shapes")
     size = R.size
-    if green.shape != (size, size) or not all(np.all(np.isfinite(value))
-                                              for value in (R, Z, psi_vac, green)):
+    if green.shape != (size, size) or not all(
+        np.all(np.isfinite(value)) for value in (R, Z, psi_vac, green)
+    ):
         raise ValueError("finite Green matrix and grids matching flattened shape required")
     if min(R.shape) < 2:
         raise ValueError("at least a 2x2 rectangular grid is required")
-    if (not np.array_equal(R, np.broadcast_to(R[0:1, :], R.shape))
-            or not np.array_equal(Z, np.broadcast_to(Z[:, 0:1], Z.shape))):
+    if not np.array_equal(R, np.broadcast_to(R[0:1, :], R.shape)) or not np.array_equal(
+        Z, np.broadcast_to(Z[:, 0:1], Z.shape)
+    ):
         raise ValueError("R must be column-consistent and Z row-consistent")
     for axis in (R[0], Z[:, 0]):
         spacing = np.diff(axis)
@@ -79,16 +82,27 @@ def _validate_uniform_grid(R, Z, psi_vac, green):
             raise ValueError("R and Z spacing must be nonzero")
         scale = max(float(np.max(np.abs(axis))), abs(float(axis[-1] - axis[0])))
         bound = 8.0 * np.finfo(float).eps * scale
-        if (not np.isfinite(bound) or bound >= abs(float(spacing[0])) / 4.0
-                or not np.all(spacing * spacing[0] > 0.0)
-                or np.any(np.abs(spacing - spacing[0]) > bound)):
+        if (
+            not np.isfinite(bound)
+            or bound >= abs(float(spacing[0])) / 4.0
+            or not np.all(spacing * spacing[0] > 0.0)
+            or np.any(np.abs(spacing - spacing[0]) > bound)
+        ):
             raise ValueError("R and Z axes must be uniformly spaced and resolvable")
     return R, Z, psi_vac, green
 
 
 def compute_equilibrium(
-    R, Z, Pfunc: Callable[[float], float], psi_vac, g_psi,
-    tol=1e-10, maxiter=100, relax=0.0, plas_clip=None, plotit=False,
+    R,
+    Z,
+    Pfunc: Callable[[float], float],
+    psi_vac,
+    g_psi,
+    tol=1e-10,
+    maxiter=100,
+    relax=0.0,
+    plas_clip=None,
+    plotit=False,
 ):
     """Run bounded pressure/current feedback and return its terminal state.
 
@@ -103,9 +117,13 @@ def compute_equilibrium(
     n_points = R.size
     if not callable(Pfunc):
         raise ValueError("Pfunc must be callable")
-    if (not np.isfinite(tol) or tol <= 0.0
-            or isinstance(maxiter, (bool, np.bool_))
-            or not isinstance(maxiter, Integral) or maxiter < 0):
+    if (
+        not np.isfinite(tol)
+        or tol <= 0.0
+        or isinstance(maxiter, (bool, np.bool_))
+        or not isinstance(maxiter, Integral)
+        or maxiter < 0
+    ):
         raise ValueError("tol must be positive finite and maxiter a nonnegative integer")
     if not np.isfinite(relax) or not 0.0 <= relax < 1.0:
         raise ValueError("relax must lie in [0, 1)")
@@ -143,14 +161,21 @@ def compute_equilibrium(
 
     def make_result(pfit, status, iterations, residual, closure, reason):
         return EquilibriumResult(
-            psi.reshape(R.shape), currents.reshape(R.shape), pfit, status,
-            iterations, residual, closure, reason,
-            tuple(update_history), tuple(closure_history),
+            psi.reshape(R.shape),
+            currents.reshape(R.shape),
+            pfit,
+            status,
+            iterations,
+            residual,
+            closure,
+            reason,
+            tuple(update_history),
+            tuple(closure_history),
         )
 
     def fit_state(current_psi):
-        samples = current_psi[midplane][:limiter + 1]
-        return fit_pressure_spline(samples, pressure[:limiter + 1])
+        samples = current_psi[midplane][: limiter + 1]
+        return fit_pressure_spline(samples, pressure[: limiter + 1])
 
     try:
         fitted = fit_state(psi_zero)
@@ -183,10 +208,14 @@ def compute_equilibrium(
         except Exception as exc:
             return make_result(None, "nonfinite", iteration, np.nan, np.nan, str(exc))
         if not np.isfinite(edge) or edge == 0.0:
-            return make_result(fitted, "nonfinite", iteration, np.nan, np.nan, "zero or nonfinite edge flux")
+            return make_result(
+                fitted, "nonfinite", iteration, np.nan, np.nan, "zero or nonfinite edge flux"
+            )
         residual = float(np.linalg.norm(psi - old_psi) / abs(edge))
         if not np.isfinite(residual):
-            return make_result(fitted, "nonfinite", iteration, residual, np.nan, "nonfinite update residual")
+            return make_result(
+                fitted, "nonfinite", iteration, residual, np.nan, "nonfinite update residual"
+            )
         try:
             target_new = target_current(psi, fitted, edge)
         except FloatingPointError as exc:
@@ -195,7 +224,23 @@ def compute_equilibrium(
         update_history.append(residual)
         closure_history.append(closure_residual)
         if not np.isfinite(closure_residual):
-            return make_result(fitted, "nonfinite", iteration, residual, closure_residual, "nonfinite pressure-current closure residual")
+            return make_result(
+                fitted,
+                "nonfinite",
+                iteration,
+                residual,
+                closure_residual,
+                "nonfinite pressure-current closure residual",
+            )
         if residual <= tol and closure_residual <= tol:
-            return make_result(fitted, "converged", iteration, residual, closure_residual, "update and pressure-current closure residuals <= tol")
-    return make_result(fitted, "maxiter", int(maxiter), residual, closure_residual, "iteration bound reached")
+            return make_result(
+                fitted,
+                "converged",
+                iteration,
+                residual,
+                closure_residual,
+                "update and pressure-current closure residuals <= tol",
+            )
+    return make_result(
+        fitted, "maxiter", int(maxiter), residual, closure_residual, "iteration bound reached"
+    )

@@ -381,9 +381,7 @@ class SecondClampedCubicSpline(CubicSpline):
         right_hand_side = np.zeros(n, dtype=float)
         right_hand_side[1:-1] = rhs
         right_hand_side[0] = 3.0 * self.y_data[1] / self.x_data[1]
-        right_hand_side[-1] = (
-            6.0 * delta[-1] / h[-1] ** 2 + m**2 * y_last / x_last**2
-        )
+        right_hand_side[-1] = 6.0 * delta[-1] / h[-1] ** 2 + m**2 * y_last / x_last**2
         self.k = np.linalg.solve(matrix, right_hand_side)
 
 

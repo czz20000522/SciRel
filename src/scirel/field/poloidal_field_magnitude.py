@@ -1,4 +1,5 @@
 """Poloidal magnetic-field magnitude on a two-dimensional grid."""
+
 import numpy as np
 
 
