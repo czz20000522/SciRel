@@ -5,7 +5,7 @@ description: Find SciRel capabilities for a step of a physical method and read t
 
 # Find and read SciRel capabilities
 
-Use this after the physical method is written, for the steps where a tested operator would save work or add confidence. Many steps have no matching operator; NumPy, SciPy or your own code is a normal way to do them. Do not reshape the physics to fit an operator or map every step to one.
+Use this after the physical method is written (`method.md` comes first), for the steps where a tested operator would save work or add confidence. Many steps have no matching operator; NumPy, SciPy or your own code is a normal way to do them. Do not reshape the physics to fit an operator or map every step to one. If a contract shows that the method needs to change, update `method.md` first, then code.
 
 This skill only reads public contracts. It never runs scientific code; the SciRel wheel is installed and called separately.
 
@@ -13,14 +13,30 @@ This skill only reads public contracts. It never runs scientific code; the SciRe
 
 - Search one physical step at a time, not the whole question.
 - Use one to three English physics words, such as `flux surface` or `plasma dispersion`. All terms must match and contracts are written mainly in English, so long phrases or other languages often return nothing.
-- On a zero hit, read `gap.closest_terms` and `gap.retry_hint`, drop a word, try a synonym, or `browse` by metadata. Two or three tries are usually enough.
+- On a zero hit, read `result.gap.closest_terms` and `result.gap.retry_hint`, drop a word, try a synonym, or `browse` by metadata. Two or three tries are usually enough.
 - A hit is a candidate, not proof that it applies. A zero hit does not prove the capability is absent; if nothing fits, write the step yourself and test it.
 - A query, access or integrity error is a failure to read the catalog, not an empty result.
 - Results may be paginated or truncated by a byte budget; fetch the rest (`next_cursor`) before relying on what is missing.
 
+## What the commands return
+
+All commands print one JSON object with `command`, `outcome`, `snapshot_sha256` and `wheel_sha256` at the top level.
+
+- `describe`: catalog facts and `runtime` (`wheel`, `wheel_sha256`, `requires_python`, `requires_dist`).
+- `search` and `browse`: `outcome` is `match` or `no_candidates`; hits are in `result.items` (each with `asset_id`, `symbol`, `capability_summary`, model, geometry and boundary tags), the totals and `next_offset` are in `result`, zero-hit advice is in `result.gap`, and `next_cursor`, `truncated` and `response_bytes` are at the top level. Pass `--cursor` to continue; `--max-bytes` sets the budget.
+- `get`: the contract is in `document`, with `identity`, `public_api`, `inputs`, `outputs`, `applicability`, `failure_semantics`, `verification`, `example` and, for multi-step assets, `composition`.
+
 ## Reading a contract
 
-Call `get` for every candidate you may use and read the whole contract before writing code: inputs, outputs, units, shapes, sign and normalisation conventions, model, geometry, boundary conditions, applicability range and failure behaviour. Check that these match what your physics needs.
+Some contracts are long, mostly because of their `composition` section. Save each `get` result to a file and read it from there instead of from a terminal that may cut it off.
+
+Call `get` for every candidate you may use and read the contract before writing code, in this order: `identity` and `public_api` (definition and signature), `inputs` and `outputs` (units, shapes, sign and normalisation conventions), `applicability`, `failure_semantics`, `verification.known_limitations`, and `example`. Read `composition` when the asset couples several steps. Check that model, geometry, boundary conditions and range match what your physics needs.
+
+Watch for conventions that differ by a known factor: per element or total (a current per filament or per coil, a flux per radian or total), per unit length or area or integrated, and which reference a potential or energy is measured from. Convert at the call and check the call against a hand value that the factor would change.
+
+## Presets and task geometry
+
+Some assets are device presets with built-in geometry, currents or parameters. When the task specifies its own geometry or parameters, build the inputs from the task and use a generic operator; use a preset only after comparing its definition item by item with the task, and say in the method which you used and why.
 
 Record the asset IDs you used and the identity values below, so the result can be reproduced.
 
@@ -40,7 +56,9 @@ python skills/scirel-capability-discovery/scripts/query.py --root . get <asset_i
   --expected-snapshot-sha256 <snapshot_sha256> --expected-wheel-sha256 <wheel_sha256>
 ```
 
-`browse` takes the same pins plus metadata filters; run `query.py browse --help` for them.
+`browse` takes the same pins plus metadata filters; run `query.py browse --help` for them. Redirect `get` to a file, for example `... get <asset_id> ... > contract.json`.
+
+To run SciRel itself, install the wheel named by `describe.runtime.wheel` into a Python that satisfies `runtime.requires_python`; the discovery scripts themselves need only the standard library.
 
 ## Optional MCP server
 

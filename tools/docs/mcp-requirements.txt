@@ -1,5 +1,6 @@
 # Optional MCP adapter dependencies, separate from the SciRel scientific core.
-# Resolved with CPython 3.14 on macOS arm64; Linux installation remains NOT_RUN.
+# Resolved with CPython 3.14 on macOS arm64; installed on Linux x86_64 with CPython 3.13 on
+# 2026-11-03, where the SciRel consumer MCP tests passed against it.
 # Exact installed transitive versions; no dependency wheels are bundled.
 # pywin32 is a Windows-only SDK dependency and is excluded from this Linux/macOS lock.
 annotated-types==0.8.0
