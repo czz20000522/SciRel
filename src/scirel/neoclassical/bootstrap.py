@@ -3,6 +3,7 @@
 The functions accept already evaluated face quantities.  They do not infer
 collisionality, trapped fraction, magnetic geometry, or pressure profiles.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -57,8 +58,7 @@ def _common(f_trap, nu_e_star, z_eff):
     charge = _face("Z_eff", z_eff)
     if not (trapped.shape == electron.shape == charge.shape):
         raise ValueError("f_trap, nu_e_star and Z_eff must have equal shapes")
-    if (np.any((trapped < 0.0) | (trapped > 1.0))
-            or np.any(electron < 0.0) or np.any(charge <= 0.0)):
+    if np.any((trapped < 0.0) | (trapped > 1.0)) or np.any(electron < 0.0) or np.any(charge <= 0.0):
         raise ValueError("require 0 <= f_trap <= 1, nu_e_star >= 0 and Z_eff > 0")
     return trapped, electron, charge
 
@@ -96,14 +96,16 @@ def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
         d31 = 1.0 + (1.0 - 0.1 * f) * np.sqrt(nue) + 0.5 * (1.0 - f) * nue / z
         ft31 = f / d31
-        l31 = ((1.0 + 1.4 / (z + 1.0)) * ft31
-               - 1.9 / (z + 1.0) * ft31**2
-               + 0.3 / (z + 1.0) * ft31**3
-               + 0.2 / (z + 1.0) * ft31**4)
-        ee = f / (1.0 + 0.26 * (1.0 - f) * np.sqrt(nue)
-                  + 0.18 * (1.0 - 0.37 * f) * nue / np.sqrt(z))
-        ei = f / (1.0 + (1.0 + 0.6 * f) * np.sqrt(nue)
-                  + 0.85 * (1.0 - 0.37 * f) * nue * (1.0 + z))
+        l31 = (
+            (1.0 + 1.4 / (z + 1.0)) * ft31
+            - 1.9 / (z + 1.0) * ft31**2
+            + 0.3 / (z + 1.0) * ft31**3
+            + 0.2 / (z + 1.0) * ft31**4
+        )
+        ee = f / (
+            1.0 + 0.26 * (1.0 - f) * np.sqrt(nue) + 0.18 * (1.0 - 0.37 * f) * nue / np.sqrt(z)
+        )
+        ei = f / (1.0 + (1.0 + 0.6 * f) * np.sqrt(nue) + 0.85 * (1.0 - 0.37 * f) * nue * (1.0 + z))
         l32 = (
             (0.05 + 0.62 * z) / (z * (1.0 + 0.44 * z)) * (ee - ee**4)
             + 1.0 / (1.0 + 0.22 * z) * (ee**2 - ee**4 - 1.2 * (ee**3 - ee**4))
@@ -114,10 +116,12 @@ def calculate_sauter_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
         )
         d34 = 1.0 + (1.0 - 0.1 * f) * np.sqrt(nue) + 0.5 * (1.0 - 0.5 * f) * nue / z
         ft34 = f / d34
-        l34 = ((1.0 + 1.4 / (z + 1.0)) * ft34
-               - 1.9 / (z + 1.0) * ft34**2
-               + 0.3 / (z + 1.0) * ft34**3
-               + 0.2 / (z + 1.0) * ft34**4)
+        l34 = (
+            (1.0 + 1.4 / (z + 1.0)) * ft34
+            - 1.9 / (z + 1.0) * ft34**2
+            + 0.3 / (z + 1.0) * ft34**3
+            + 0.2 / (z + 1.0) * ft34**4
+        )
     result = (l31, l32, l34, _alpha_sauter(f, nui))
     if not all(np.all(np.isfinite(value)) for value in result):
         raise FloatingPointError("Sauter coefficients are not finite for the supplied faces")
@@ -140,26 +144,42 @@ def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
         raise ValueError("Redl requires nu_i_star >= 0 and Z_eff >= 1")
     with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
         root_nu = np.sqrt(nue)
-        fe31 = f / (1.0 + 0.67 * (1.0 - 0.7 * f) * root_nu / (0.56 + 0.44 * z)
-                      + (0.52 + 0.086 * root_nu) * (1.0 + 0.87 * f) * nue
-                      / (1.0 + 1.13 * np.sqrt(z - 1.0)))
+        fe31 = f / (
+            1.0
+            + 0.67 * (1.0 - 0.7 * f) * root_nu / (0.56 + 0.44 * z)
+            + (0.52 + 0.086 * root_nu) * (1.0 + 0.87 * f) * nue / (1.0 + 1.13 * np.sqrt(z - 1.0))
+        )
         denominator = z**1.2 - 0.71
-        l31 = ((1.0 + 0.15 / denominator) * fe31
-               - 0.22 / denominator * fe31**2
-               + 0.01 / denominator * fe31**3
-               + 0.06 / denominator * fe31**4)
-        fee = f / (1.0 + 0.23 * (1.0 - 0.96 * f) * root_nu / np.sqrt(z)
-                   + (0.13 * (1.0 - 0.38 * f) * nue / z**2)
-                   * (np.sqrt(1.0 + 2.0 * np.sqrt(z - 1.0))
-                      + f**2 * np.sqrt((0.075 + 0.25 * (z - 1.0)**2) * nue)))
-        l32ee = ((0.1 + 0.6 * z) / (z * (0.77 + 0.63 * (1.0 + (z - 1.0)**1.1))) * (fee - fee**4)
-                 + 0.7 / (1.0 + 0.2 * z) * (fee**2 - fee**4 - 1.2 * (fee**3 - fee**4))
-                 + 1.3 / (1.0 + 0.5 * z) * fee**4)
-        fei = f / (1.0 + 0.87 * (1.0 + 0.39 * f) * root_nu / (1.0 + 2.95 * (z - 1.0)**2)
-                   + 1.53 * (1.0 - 0.37 * f) * nue * (2.0 + 0.375 * (z - 1.0)))
-        l32ei = (-(0.4 + 1.93 * z) / (z * (0.8 + 0.6 * z)) * (fei - fei**4)
-                 + 5.5 / (1.5 + 2.0 * z) * (fei**2 - fei**4 - 0.8 * (fei**3 - fei**4))
-                 - 1.3 / (1.0 + 0.5 * z) * fei**4)
+        l31 = (
+            (1.0 + 0.15 / denominator) * fe31
+            - 0.22 / denominator * fe31**2
+            + 0.01 / denominator * fe31**3
+            + 0.06 / denominator * fe31**4
+        )
+        fee = f / (
+            1.0
+            + 0.23 * (1.0 - 0.96 * f) * root_nu / np.sqrt(z)
+            + (0.13 * (1.0 - 0.38 * f) * nue / z**2)
+            * (
+                np.sqrt(1.0 + 2.0 * np.sqrt(z - 1.0))
+                + f**2 * np.sqrt((0.075 + 0.25 * (z - 1.0) ** 2) * nue)
+            )
+        )
+        l32ee = (
+            (0.1 + 0.6 * z) / (z * (0.77 + 0.63 * (1.0 + (z - 1.0) ** 1.1))) * (fee - fee**4)
+            + 0.7 / (1.0 + 0.2 * z) * (fee**2 - fee**4 - 1.2 * (fee**3 - fee**4))
+            + 1.3 / (1.0 + 0.5 * z) * fee**4
+        )
+        fei = f / (
+            1.0
+            + 0.87 * (1.0 + 0.39 * f) * root_nu / (1.0 + 2.95 * (z - 1.0) ** 2)
+            + 1.53 * (1.0 - 0.37 * f) * nue * (2.0 + 0.375 * (z - 1.0))
+        )
+        l32ei = (
+            -(0.4 + 1.93 * z) / (z * (0.8 + 0.6 * z)) * (fei - fei**4)
+            + 5.5 / (1.5 + 2.0 * z) * (fei**2 - fei**4 - 0.8 * (fei**3 - fei**4))
+            - 1.3 / (1.0 + 0.5 * z) * fei**4
+        )
         l32 = l32ee + l32ei
     result = (l31, l32, l31.copy(), _alpha_redl(f, nui, z))
     if not all(np.all(np.isfinite(value)) for value in result):
@@ -168,16 +188,37 @@ def calculate_redl_coefficients(f_trap, nu_e_star, Z_eff, nu_i_star):
 
 
 def calculate_bootstrap_current(
-    *, bootstrap_multiplier=1.0, F_face, B0, dpsi_drho_face,
-    p_e_face, p_i_face, dlnne_drho_face, dlnni_drho_face,
-    dlnte_drho_face, dlnti_drho_face, L31, L32, L34, alpha
+    *,
+    bootstrap_multiplier=1.0,
+    F_face,
+    B0,
+    dpsi_drho_face,
+    p_e_face,
+    p_i_face,
+    dlnne_drho_face,
+    dlnni_drho_face,
+    dlnte_drho_face,
+    dlnti_drho_face,
+    L31,
+    L32,
+    L34,
+    alpha,
 ):
     """Evaluate parallel bootstrap current on faces and arithmetic cell means."""
     names = locals()
     array_names = (
-        "F_face", "dpsi_drho_face", "p_e_face", "p_i_face",
-        "dlnne_drho_face", "dlnni_drho_face", "dlnte_drho_face",
-        "dlnti_drho_face", "L31", "L32", "L34", "alpha",
+        "F_face",
+        "dpsi_drho_face",
+        "p_e_face",
+        "p_i_face",
+        "dlnne_drho_face",
+        "dlnni_drho_face",
+        "dlnte_drho_face",
+        "dlnti_drho_face",
+        "L31",
+        "L32",
+        "L34",
+        "alpha",
     )
     arrays = {name: _face(name, names[name]) for name in array_names}
     shape = arrays["F_face"].shape
@@ -196,7 +237,8 @@ def calculate_bootstrap_current(
             + arrays["L31"] * arrays["p_i_face"] * arrays["dlnni_drho_face"]
             + (arrays["L31"] + arrays["L32"]) * arrays["p_e_face"] * arrays["dlnte_drho_face"]
             + (arrays["L31"] + arrays["alpha"] * arrays["L34"])
-            * arrays["p_i_face"] * arrays["dlnti_drho_face"]
+            * arrays["p_i_face"]
+            * arrays["dlnti_drho_face"]
         )
         current = prefactor * pressure_gradient
     current = np.asarray(current, dtype=float)
