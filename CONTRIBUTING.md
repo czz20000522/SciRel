@@ -10,15 +10,26 @@ SciRel 是一个自包含的科学计算库。贡献的核心单位是一个**�
 
 ## 环境
 
-- 开发和验收使用 Python 3.14（见 `.python-version`）；包声明支持 `>=3.12`；
-- 使用仓库内 `.venv` 或重建环境：
+可复现环境使用项目内的 Python 3.14.7 容器，包声明支持 `>=3.12`。本地容器跟随 Docker engine 架构；
+Apple Silicon 应使用原生 arm64 engine 快速开发，GitHub CI 固定跑 Linux/amd64。宿主机只需要 Git、
+Python 3 launcher 和 Docker-compatible engine：
 
 ```bash
-python3.14 -m venv .venv
-.venv/bin/python -m pip install -e . --group test
-# 或
-uv sync --locked --group test
+python3 scripts/dev_container.py prepare   # Windows: py -3
+python3 scripts/dev_container.py check
+python3 scripts/dev_container.py shell
+git config core.hooksPath .githooks
 ```
+
+`prepare` 会在项目命名的容器卷中执行 `uv sync --locked --group test`，不会在宿主仓库里生成 `.venv`。
+`check` 是完整本地 CI。只跑一个测试文件时使用：
+
+```bash
+python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
+```
+
+容器只挂载当前 checkout，不挂用户主目录。删除该 checkout 的容器卷使用
+`python3 scripts/dev_container.py clean`。原生 `.venv` 只用于临时探索，不作为交付证据。
 
 ## 修改前
 
@@ -38,20 +49,18 @@ uv sync --locked --group test
 ## 验证
 
 ```bash
-# 受影响的功能测试（推荐先跑最贴近的测试文件）
-.venv/bin/python -B -m pytest tests/<domain>/test_<asset>.py -q
+# 最接近的测试
+python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 
-# 根据实际改动选择受影响域和通用层，再执行输出的命令
-.venv/bin/python -B scripts/test_scope.py --changed src/scirel/<domain>/<module>.py
+# 根据实际改动选择受影响域和通用层，再在容器内执行打印出的命令
+python3 scripts/dev_container.py shell
+python -B scripts/test_scope.py --changed src/scirel/<domain>/<module>.py
 
-# 合并前的完整验收：全量测试、门禁、合同示例、文档构建、样例报告
-.venv/bin/python -B skills/development/scirel-acceptance/scripts/check_all.py
-
-# 合同与文档
-.venv/bin/python scripts/validate_asset_documents.py catalog/examples
-.venv/bin/python scripts/scirel_docs.py build --output dist/docs-check
+# 合并前完整验收：全量测试、门禁、合同示例、文档与 wheel 暴露检查
+python3 scripts/dev_container.py check
 ```
 
+`check` 必须在最终提交上通过并打印 `ALL GREEN`。GitHub Actions 使用同一个容器定义再次运行它。
 文档检查使用本次任务独占且不存在的输出目录；核对页面与实际输出后按
 [`catalog/RECORDS.md`](catalog/RECORDS.md) 清理。不能覆盖仍在使用的快照。
 
@@ -78,4 +87,4 @@ uv sync --locked --group test
 
 ## Issue 和 PR
 
-任务用 `.github/ISSUE_TEMPLATE/agent-task.md` 写明方法、范围和验收标准，PR 用 `.github/pull_request_template.md`。评审按[评审清单](skills/development/scirel-code-style/references/review-checklist.md)判断。仓库没有 CI，PR 里要贴出在最终提交上运行 `check_all.py` 的最后几行。
+任务用 `.github/ISSUE_TEMPLATE/agent-task.md` 写明方法、写入范围和验收标准，PR 用 `.github/pull_request_template.md`。评审按[评审清单](skills/development/scirel-code-style/references/review-checklist.md)判断。GitHub Actions 会运行完整容器检查；本地仍须在最终提交上贴出 `ALL GREEN` 的最后几行。

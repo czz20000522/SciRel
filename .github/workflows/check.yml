@@ -1,0 +1,49 @@
+name: Check
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
+      SCIReL_IMAGE_KEY: ci-${{ github.run_id }}
+      COMPOSE_PROJECT_NAME: scirel-ci-${{ github.run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the development image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: containers/dev/Dockerfile
+          load: true
+          tags: scirel-dev-python:ci-${{ github.run_id }}
+          cache-from: type=gha,scope=scirel-dev
+          cache-to: type=gha,mode=max,scope=scirel-dev
+      - name: Run repository checks in the development container
+        shell: bash
+        run: |
+          set -euo pipefail
+          compose=(docker compose --file containers/dev/compose.yaml)
+          cleanup() {
+            "${compose[@]}" down --volumes --remove-orphans || true
+          }
+          trap cleanup EXIT
+          "${compose[@]}" run --rm dev bash -lc '
+            uv sync --locked --group test &&
+            uv run --frozen python -B skills/development/scirel-acceptance/scripts/check_all.py
+          '

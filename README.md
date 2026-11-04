@@ -57,6 +57,14 @@ licenses/              # 许可与来源署名
 测试以数值对照为准，修改实现必须保持既有断言与容差。开发环境、验证命令和贡献规则见
 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
+可复现环境使用项目内的 Python 3.14.7 容器；本地使用宿主 Docker engine 的 CPU 架构，
+GitHub CI 固定跑 Linux/amd64：
+
+```bash
+python3 scripts/dev_container.py prepare   # Windows: py -3
+python3 scripts/dev_container.py check
+```
+
 当前处于首次公开发布前的开发阶段；wheel 仅用于本地 development 验收，发布基线确定后再统一冻结。
 
 ## English

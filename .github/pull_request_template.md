@@ -16,8 +16,10 @@
 Paste the final lines of this command, run in the foreground on the final commit:
 
 ```sh
-.venv/bin/python -B skills/development/scirel-acceptance/scripts/check_all.py
+python3 scripts/dev_container.py check
 ```
+
+Windows uses `py -3 scripts/dev_container.py check`. GitHub Actions runs the same container check.
 
 ```text
 
@@ -27,5 +29,7 @@ Paste the final lines of this command, run in the foreground on the final commit
 
 - [ ] I read the issue's `Read first` list.
 - [ ] I went through `skills/development/scirel-code-style/references/review-checklist.md`.
+- [ ] All changed paths are inside the issue's declared write scope.
+- [ ] I rebased on the latest `origin/main` and ran the check on the final commit.
 - [ ] Formatting changes are in their own commit.
 - [ ] Commit messages say what changed and why, in the imperative, one change per commit.
