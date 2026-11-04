@@ -131,7 +131,6 @@ def assemble_fluid_dispersion_matrix(
         if not np.all(np.isfinite(residues[order])) or not np.all(np.isfinite(poles[order])):
             raise ValueError(f"coefficient order {order} must be finite")
 
-    J = int(bzj.size)
     n_l = sum(order_lengths[order] for order in range(1, max_harmonic + 2))
     n_sl = n_species * n_l
     n_sl3 = 3 * n_sl
