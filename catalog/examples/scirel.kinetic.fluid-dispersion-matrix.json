@@ -54,7 +54,7 @@
    "shape": "scalar",
    "dtype": "real numeric",
    "required": true,
-   "constraints": "Finite."
+   "constraints": "Finite; either sign, and the kx roots are the same for +kz and -kz."
   },
   {
    "name": "c2",

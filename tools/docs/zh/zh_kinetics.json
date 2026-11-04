@@ -8097,7 +8097,7 @@
   },
   {
    "asset_id": "scirel.kinetic.velocity-slice-moment-compensation",
-   "source_sha256": "48b8808a61ec364759faa194cebe937556690b50a0e48d5397bf73ff5fb47cf5",
+   "source_sha256": "b1b345f6f8c3fafeb43dc7dbad13a97e979df267569e79f96ed550d83d870016",
    "summary": "对一个圆柱速度分布切片施加有界离散修正，使轴向漂移和能量矩接近目标。",
    "definition": "按源顺序计算矩、有限体积差分和四种符号组合，必要时施加带符号缩放，返回修正切片及缩放因子。",
    "model": "离散有限体积双分量矩补偿；没有非线性收敛循环。",
@@ -8161,6 +8161,12 @@
      "description": "是否假设切片为正。",
      "constraints": "控制有符号截断和缩放。",
      "dtype": "布尔值"
+    },
+    {
+     "name": "moment_rtol",
+     "description": "返回矩允许的最大相对误差",
+     "constraints": "正数",
+     "dtype": "float64"
     }
    ],
    "outputs": [
@@ -8215,7 +8221,7 @@
   },
   {
    "asset_id": "scirel.kinetic.compensated-shifted-maxwellian",
-   "source_sha256": "4a6b436e22cd2807a958cb73743ee8fe88df908d68b356caf36872001047185e",
+   "source_sha256": "7cc66799676e950beb71dcdb30a4669f5185384a7f8784ea5ebd4876d63ecbbe",
    "summary": "构造裁剪并按圆柱求积归一化的平移 Maxwell 分布切片，再应用有界离散漂移/能量补偿阶段。",
    "definition": "计算热速度和裁剪指数，按求积归一化每个切片，施加 compensate_velocity_slice 后再次归一化。",
    "model": "固定氢质量/电荷常数的离散平移 Maxwell 分布与源形状矩补偿。",
@@ -8267,6 +8273,12 @@
      "description": "归一化温度。",
      "constraints": "参与热速度。",
      "dtype": "实数标量"
+    },
+    {
+     "name": "moment_rtol",
+     "description": "返回矩允许的最大相对误差",
+     "constraints": "正数",
+     "dtype": "float64"
     }
    ],
    "outputs": [

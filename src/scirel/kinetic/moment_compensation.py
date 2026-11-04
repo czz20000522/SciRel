@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import warnings
+
 import numpy as np
 
 from .cylindrical_velocity_quadrature import make_cylindrical_velocity_quadrature
 
 __all__ = ["compensate_velocity_slice", "build_compensated_shifted_maxwellian"]
+
 
 HYDROGEN_MASS = 1.6726231e-27
 CHARGE = 1.602177e-19
@@ -40,6 +43,17 @@ def _cell_fields(quadrature):
     return {name: getattr(quadrature, name) for name in required}
 
 
+def _slice_moments(f_slice, fields, vx, vth):
+    """Return density, mean vx [m/s] and mean speed squared [m^2/s^2] of one slice."""
+    dvr_vol, dvx = fields["dvr_vol"], fields["dvx"]
+    density = np.sum(dvr_vol * np.matmul(f_slice, dvx))
+    mean_vx = vth * np.sum(dvr_vol * np.matmul(f_slice, vx * dvx)) / density
+    mean_energy = (
+        vth**2 * np.sum(dvr_vol * np.matmul(fields["speed_squared"] * f_slice, dvx)) / density
+    )
+    return density, mean_vx, mean_energy
+
+
 def compensate_velocity_slice(
     f_slice,
     quadrature,
@@ -50,13 +64,51 @@ def compensate_velocity_slice(
     target_energy,
     nb=1.0,
     assume_pos=True,
+    moment_rtol=0.01,
 ):
     """Adjust one slice toward target drift and energy moments.
 
     The caller supplies the output of :func:`make_cylindrical_velocity_quadrature`.
     The four sign combinations and optional signed-distribution cutoff follow
     the bounded source transcription; no iterative convergence claim is made.
+
+    Warns
+    -----
+    RuntimeWarning
+        If the corrected slice misses the targets by more than ``moment_rtol``
+        once normalized by its own density, or its density changed by more than
+        that. The correction is linear in the targets and does not conserve
+        density, so a mesh too small for the distribution can miss badly.
+
+    Notes
+    -----
+    Errors are relative: the drift to ``sqrt(target_energy)``, the energy and the
+    density to the target energy and ``nb``.
     """
+    result, scale = _compensate_slice(
+        f_slice, quadrature, vr, vx, vth, target_vx, target_energy, nb, assume_pos
+    )
+    fields = _cell_fields(quadrature)
+    density, mean_vx, mean_energy = _slice_moments(result, fields, np.asarray(vx), vth)
+    speed = np.sqrt(abs(target_energy))
+    errors = (
+        abs(density / nb - 1.0),
+        abs(mean_vx - target_vx) / speed if speed > 0.0 else 0.0,
+        abs(mean_energy / target_energy - 1.0) if target_energy != 0.0 else 0.0,
+    )
+    if max(errors) > moment_rtol:
+        warnings.warn(
+            "velocity slice missed its moment targets: relative density, drift and energy errors "
+            f"{errors[0]:.3g}, {errors[1]:.3g}, {errors[2]:.3g} exceed {moment_rtol:g}; "
+            "the velocity mesh may not represent this distribution",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    return result, scale
+
+
+def _compensate_slice(f_slice, quadrature, vr, vx, vth, target_vx, target_energy, nb, assume_pos):
+    """Apply the source-shaped two-coefficient correction once."""
     fields = _cell_fields(quadrature)
     dvr_vol, dvx = fields["dvr_vol"], fields["dvx"]
     dvr, volume = fields["dvr"], fields["volume"]
@@ -141,10 +193,57 @@ def compensate_velocity_slice(
     return result, float(scale)
 
 
+def _require_moments(f_slice, cells, vx, vth, drift, temperature_eV, mass, rtol):
+    """Raise unless a normalized slice has its Maxwellian's drift and temperature."""
+    _, mean_vx, mean_energy = _slice_moments(f_slice, _cell_fields(cells), vx, vth)
+    temperature = (mean_energy - mean_vx**2) * mass / (3 * CHARGE)
+    thermal = np.sqrt(3 * CHARGE * temperature_eV / mass)
+    wrong_drift = abs(mean_vx - drift) > rtol * max(abs(drift), thermal)
+    wrong_temperature = abs(temperature - temperature_eV) > rtol * temperature_eV
+    negative = np.min(f_slice) < -rtol * np.max(f_slice)
+    if wrong_drift or wrong_temperature or negative:
+        raise ValueError(
+            f"velocity mesh cannot represent T={temperature_eV:g} eV with drift {drift:g} m/s: "
+            f"got T={temperature:.4g} eV, drift {mean_vx:.4g} m/s, min/max f={np.min(f_slice) / np.max(f_slice):.3g}; "
+            "use a larger velocity mesh"
+        )
+
+
 def build_compensated_shifted_maxwellian(
-    *, vr, vx, temperatures_eV, shifts_ms, mu, molecularity, tnorm_eV
+    *, vr, vx, temperatures_eV, shifts_ms, mu, molecularity, tnorm_eV, moment_rtol=0.01
 ):
-    """Build and moment-compensate shifted Maxwellian slices."""
+    """Build and moment-compensate shifted Maxwellian slices.
+
+    Parameters
+    ----------
+    moment_rtol : float, default=0.01
+        Largest accepted relative error of each returned slice. See Raises.
+
+    Raises
+    ------
+    ValueError
+        If a returned slice misses its temperature by more than ``moment_rtol``
+        relative to the temperature, misses its drift by more than that relative
+        to the larger of the drift and the thermal speed, or goes negative below
+        ``-moment_rtol`` times its peak. This happens when the mesh is too small
+        for the temperature, typically ``vmax`` under about twice the thermal
+        speed. The correction then changes the density, and normalizing afterwards
+        can give any drift or temperature, including a negative one. Use a larger
+        velocity mesh.
+
+    Notes
+    -----
+    A Maxwellian with drift ``U`` and temperature ``T`` has mean ``vx = U`` and
+    mean speed squared ``U**2 + 3 T / m``. These exact moments are the targets
+    and the acceptance test. The correction follows LaBombard's shifted-Maxwellian
+    construction, which compensates for velocity-mesh discretization error; it
+    is not meant to represent a distribution the mesh cannot hold.
+
+    References
+    ----------
+    B. LaBombard, "KN1D: A 1-D Space, Kinetic Transport Algorithm for Atomic and
+    Molecular Hydrogen in an Ionizing Plasma", MIT PSFC report RR-01-3 (2001).
+    """
     vr, vx = np.asarray(vr), np.asarray(vx)
     temperatures_eV, shifts_ms = np.asarray(temperatures_eV), np.asarray(shifts_ms)
     out = np.zeros((vr.size, vx.size, shifts_ms.size), dtype=float)
@@ -166,8 +265,18 @@ def build_compensated_shifted_maxwellian(
         target_energy = shifts_ms[k] ** 2 + 3 * CHARGE * temperatures_eV[k] / (
             molecularity * mu * HYDROGEN_MASS
         )
-        out[:, :, k], _ = compensate_velocity_slice(
-            out[:, :, k], cells, vr, vx, thermal_speed, shifts_ms[k], target_energy
+        out[:, :, k], _ = _compensate_slice(
+            out[:, :, k], cells, vr, vx, thermal_speed, shifts_ms[k], target_energy, 1.0, True
         )
         out[:, :, k] /= np.sum(cells["radial_measure"] * np.matmul(out[:, :, k], cells["dvx"]))
+        _require_moments(
+            out[:, :, k],
+            cells,
+            vx,
+            thermal_speed,
+            shifts_ms[k],
+            temperatures_eV[k],
+            molecularity * mu * HYDROGEN_MASS,
+            moment_rtol,
+        )
     return out

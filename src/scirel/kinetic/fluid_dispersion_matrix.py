@@ -43,6 +43,18 @@ def assemble_fluid_dispersion_matrix(
     ``X = [vx_snl, vy_snl, vz_snl, Ey, Ez, By, Bz]``; the electric current components
     ``Jx, Jy, Jz`` are the sums over the ``v*_snl`` blocks. ``M`` is a dense complex
     ``(3*NSL+4, 3*NSL+4)`` matrix with ``NSL = n_species * sum(order_lengths)``.
+
+    Notes
+    -----
+    ``kz`` may have either sign. Reflecting z leaves B_z unchanged, so eps_xz and eps_yz are
+    odd in kz and the other tensor elements even, and the kx roots are the same for +kz and
+    -kz. The Landau prescription sets the damping for either sign, so the rational fit of the
+    plasma dispersion function is used with its poles below the omega axis in both cases.
+
+    References
+    ----------
+    T. H. Stix, Waves in Plasmas (AIP, 1992), ch. 10.
+    D. G. Swanson, Plasma Waves, 2nd ed. (IOP, 2003), ch. 4.
     """
 
     omega = float(omega)
@@ -126,6 +138,10 @@ def assemble_fluid_dispersion_matrix(
     size = n_sl3 + 4
     mat = np.zeros((size, size), dtype=complex)
 
+    # The rational fit of Z holds for Im(zeta) > 0 only, so the poles must stay below the
+    # omega axis for either sign of kz. Using |kz| here and flipping the kz-odd elements is
+    # the same as mapping v_par -> -v_par in the velocity integral.
+    czj = -czj if kz < 0.0 else czj
     snl = 0
     for s in range(n_species):
         xsj = (omega - kz * vts[s] * czj) / wcs[s]

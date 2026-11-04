@@ -1415,7 +1415,7 @@
   },
   {
    "asset_id": "scirel.kinetic.fluid-dispersion-matrix",
-   "source_sha256": "8f6688270db04a2e02f8f63a0d0c3e6beda3e48247c4d9a31a8280d6ccbc0e9e",
+   "source_sha256": "464fe01273d208eae6fb2be1711a55c94e90543eda5b48a4a2c245ee8e12b8d4",
    "summary": "给定角频率和平行波数，组装稠密的一阶流体本征矩阵。",
    "definition": "按 [vx_snl,vy_snl,vz_snl,Ey,Ez,By,Bz] 的状态顺序组装 kx X=M X 中的 M；维数为 3*S*sum(L)+4。",
    "model": "均匀磁化多组分 Maxwellian 流体极点展开",
@@ -1433,7 +1433,7 @@
     {
      "name": "kz",
      "description": "平行波数，进入平行共振与旋度项",
-     "constraints": "有限。",
+     "constraints": "有限；可取任一符号，正负 kz 的 kx 根相同。",
      "dtype": "实数"
     },
     {
