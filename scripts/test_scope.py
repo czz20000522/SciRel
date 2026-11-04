@@ -49,6 +49,7 @@ SCRIPT_LAYERS = {
     "check_wheel_exposure.py": ("delivery",),
     "code_digest.py": ("tooling", "docs", "delivery"),
     "consumer_tools.py": ("delivery",),
+    "dev_container.py": ("tooling", "architecture"),
     "exposure.py": ("tooling", "architecture", "docs", "delivery"),
     "export_admission_tools.py": ("delivery",),
     "mapping_interface_bindings.json": ("tooling", "architecture", "docs", "delivery"),
@@ -71,6 +72,9 @@ SCRIPT_LAYERS = {
 }
 PACKAGING_FILES = {"pyproject.toml", "setup.py", "setup.cfg", "MANIFEST.in"}
 GLOBAL_PATHS = {"tests/conftest.py"}
+INFRASTRUCTURE_FILES = {".dockerignore", ".gitattributes", ".gitignore"}
+INFRASTRUCTURE_PREFIXES = (".githooks/", ".github/", "containers/")
+MAINTAINER_DOCS = {"AGENTS.md", "ARCHITECTURE.md", "CONTRIBUTING.md", "README.md", "RULES.md"}
 TEST_HARNESS_TARGETS = {
     "tests/_review_bindings.py": ("tests/cross_domain",),
     "tests/fs_links.py": ("tests/delivery", "tests/docs"),
@@ -115,7 +119,9 @@ def _domain_scope(domain: str) -> list[str]:
     """Tests that observe a domain, falling back to referencing test owners."""
     if (TESTS / domain).is_dir():
         return [f"tests/{domain}"]
-    dependents = [owner for owner in _test_dependents(f"scirel.{domain}") if (TESTS / owner).is_dir()]
+    dependents = [
+        owner for owner in _test_dependents(f"scirel.{domain}") if (TESTS / owner).is_dir()
+    ]
     if dependents:
         return [f"tests/{owner}" for owner in dependents]
     raise UnresolvedPath(
@@ -127,9 +133,7 @@ def _source_domains() -> set[str]:
     return {
         path.name
         for path in SOURCE.iterdir()
-        if path.is_dir()
-        and not path.name.startswith("_")
-        and (path / "__init__.py").is_file()
+        if path.is_dir() and not path.name.startswith("_") and (path / "__init__.py").is_file()
     }
 
 
@@ -172,21 +176,22 @@ def _classify_tests(relative: Path) -> tuple[list[str], list[str]]:
     parts = relative.parts
     if parts and parts[0] == "fixtures":
         owners = [
-            owner for owner in _test_dependents(relative.name)
+            owner
+            for owner in _test_dependents(relative.name)
             if owner != "fixtures" and (TESTS / owner).is_dir()
         ]
         if owners:
-            return [f"tests/{owner}" for owner in owners], ["shared fixture: referencing test owners"]
+            return [f"tests/{owner}" for owner in owners], [
+                "shared fixture: referencing test owners"
+            ]
         raise UnresolvedPath(f"shared fixture has no referencing tests: {relative}")
     if len(parts) < 2:
-        owners = [
-            owner
-            for owner in _test_dependents(parts[0])
-            if (TESTS / owner).is_dir()
-        ]
+        owners = [owner for owner in _test_dependents(parts[0]) if (TESTS / owner).is_dir()]
         if owners:
             return [f"tests/{owner}" for owner in owners], ["shared test fixture"]
-        raise UnresolvedPath(f"file directly under tests/ is not owned by a layer or domain: {relative}")
+        raise UnresolvedPath(
+            f"file directly under tests/ is not owned by a layer or domain: {relative}"
+        )
     owner = parts[0]
     if owner in LAYERS:
         return [_layer_target(owner)], []
@@ -214,9 +219,12 @@ def _review_scope(module: str | None = None, asset_id: str | None = None) -> lis
     try:
         documents = load_review_documents(ROOT)
         if module is not None:
-            documents = [document for document in documents
-                         if document["public_api"]["python"]["module"] == module
-                         or document["public_api"]["python"]["module"].startswith(module + ".")]
+            documents = [
+                document
+                for document in documents
+                if document["public_api"]["python"]["module"] == module
+                or document["public_api"]["python"]["module"].startswith(module + ".")
+            ]
         if asset_id is not None:
             documents = [document for document in documents if document["asset_id"] == asset_id]
         if (module is not None or asset_id is not None) and not documents:
@@ -235,6 +243,16 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
 
     if relative.as_posix() in GLOBAL_PATHS:
         return ["<full-suite>"], ["global test configuration affects every scope"]
+    if relative.as_posix() in INFRASTRUCTURE_FILES or relative.as_posix().startswith(
+        INFRASTRUCTURE_PREFIXES
+    ):
+        return [_layer_target("tooling"), _layer_target("architecture")], [
+            "development infrastructure changes hooks, CI, containers or checkout metadata"
+        ]
+    if relative.as_posix() in MAINTAINER_DOCS:
+        return [_layer_target("architecture"), _layer_target("docs")], [
+            "maintainer-facing repository rules"
+        ]
     if relative.as_posix() in TEST_HARNESS_TARGETS:
         return list(TEST_HARNESS_TARGETS[relative.as_posix()]), ["shared test harness"]
 
@@ -246,12 +264,18 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
             module_parts = list(parts[4:-1])
             if relative.stem != "__init__":
                 module_parts.append(relative.stem)
-            return _review_scope(module=".".join(module_parts)), ["held implementation: tests bound by its review contract"]
+            return _review_scope(module=".".join(module_parts)), [
+                "held implementation: tests bound by its review contract"
+            ]
         if len(parts) == 4 and parts[1:3] == ("review", "examples") and relative.suffix == ".json":
-            return _review_scope(asset_id=relative.stem), ["held contract: direct tests and review boundaries"]
+            return _review_scope(asset_id=relative.stem), [
+                "held contract: direct tests and review boundaries"
+            ]
         if len(parts) >= 3 and parts[1] == "examples":
             targets, notes = _classify_catalog(ROOT / relative)
-            notes.append(f"validate the asset: python scripts/validate_asset_documents.py {relative}")
+            notes.append(
+                f"validate the asset: python scripts/validate_asset_documents.py {relative}"
+            )
             return targets, notes
         return [_layer_target("tooling"), _layer_target("architecture")], [
             "catalog tooling changes are covered by the tooling and architecture layers"
@@ -269,7 +293,9 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
             _layer_target("architecture"),
             _layer_target("tooling"),
             _layer_target("docs"),
-        ], ["asset schema change: affected domains are not derivable, run the full suite before merge"]
+        ], [
+            "asset schema change: affected domains are not derivable, run the full suite before merge"
+        ]
 
     if parts[0] == "scripts":
         if len(parts) != 2:
@@ -317,9 +343,7 @@ def classify(relative: Path) -> tuple[list[str], list[str]]:
         if head not in _source_domains():
             raise UnresolvedPath(f"unknown domain {head!r}")
         if remainder[-1] == "__init__.py":
-            return [_layer_target("architecture"), *_domain_scope(head)], [
-                "public package facade"
-            ]
+            return [_layer_target("architecture"), *_domain_scope(head)], ["public package facade"]
         return _domain_scope(head), []
 
     if relative.suffix == ".md":
@@ -345,11 +369,11 @@ def _git_name_only(arguments: list[str]) -> list[str]:
         capture_output=True,
     )
     if result.returncode != 0:
-        raise SystemExit(f"cannot read changes from git: {result.stderr.decode('utf-8', 'replace').strip()}")
+        raise SystemExit(
+            f"cannot read changes from git: {result.stderr.decode('utf-8', 'replace').strip()}"
+        )
     return [
-        entry
-        for entry in result.stdout.decode("utf-8", "surrogateescape").split("\0")
-        if entry
+        entry for entry in result.stdout.decode("utf-8", "surrogateescape").split("\0") if entry
     ]
 
 

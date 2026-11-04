@@ -11,9 +11,11 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 
 | Moment | Command | What it covers | Time |
 | --- | --- | --- | --- |
-| While working | `.venv/bin/python -B scripts/test_scope.py --changed <path>`, then run the command it prints | The affected tests | Seconds to minutes |
-| Before each commit | `.venv/bin/python -B skills/development/scirel-acceptance/scripts/precommit_check.py` | Lint and format on staged Python, no private paths or secrets in staged text | Seconds |
-| Before each push, and before saying a change is done | `.venv/bin/python -B skills/development/scirel-acceptance/scripts/check_all.py` | Everything listed below | About 5 minutes |
+| While working | `python3 scripts/dev_container.py shell`, then run `python -B scripts/test_scope.py --changed <path>` and the command it prints | The affected tests | Seconds to minutes |
+| Before asking for review | `python3 scripts/dev_container.py check` on the host-native container architecture | Full local acceptance, fastest on Apple Silicon arm64 | About 5 minutes on native CPU |
+| Final merge evidence | GitHub Actions on Linux/amd64 | Same full acceptance on the cross-device canonical platform | About 5-15 minutes |
+| Before each commit | `python3 scripts/dev_container.py precommit` | Lint and format on staged Python, no private paths or secrets in staged text | Seconds |
+| Before each push, and before saying a change is done | `python3 scripts/dev_container.py check` | Everything listed below | About 5 minutes |
 
 `check_all.py` prints `ALL GREEN` when everything passes. Any other ending means the tree is not green.
 
@@ -30,11 +32,13 @@ For each operator, the code signature and its numpydoc docstring are the source 
 ## Set up once per clone
 
 ```sh
-uv sync --locked --group test
+python3 scripts/dev_container.py prepare
 git config core.hooksPath .githooks
 ```
 
-The hooks then run the pre-commit check on `git commit` and the full check on `git push`. They are a safety net, not a replacement for running the checks yourself. Do not bypass them with `--no-verify`. If a hook is wrong, fix the hook.
+The hooks call the same container entry point: the staged-file check on `git commit` and the full check on
+`git push`. They are a safety net, not a replacement for running the checks yourself. Do not bypass them with
+`--no-verify`. If a hook is wrong, fix the hook.
 
 ## Ratchets
 
@@ -55,8 +59,9 @@ Two lists only tighten.
 Also confirm the package builds from a clean commit:
 
 ```sh
+python3 scripts/dev_container.py shell
 uv build --wheel --out-dir <tmp>
-.venv/bin/python -B scripts/build_pure_delivery.py --wheel <tmp>/scirel-*.whl --output <new-dir>
+uv run --frozen python -B scripts/build_pure_delivery.py --wheel <tmp>/scirel-*.whl --output <new-dir>
 ```
 
 Skills under `skills/development/usage/` are what users' agents receive. `scirel-outbound-evaluation` covers testing them.

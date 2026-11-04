@@ -14,7 +14,13 @@ labels: agent-task
 
 <!-- A checklist of concrete items: module, function or contract, and what to do with each. -->
 
-- [ ] 
+- [ ]
+
+## Write scope
+
+<!-- Exact repository paths this task may change. Anything outside this list needs a separate task. -->
+
+- [ ]
 
 ## Done when
 
@@ -30,8 +36,10 @@ labels: agent-task
 
 ## Rules for every PR
 
-- Set up with `uv sync --locked --group test` and `git config core.hooksPath .githooks`.
-- Run `.venv/bin/python -B skills/development/scirel-acceptance/scripts/check_all.py` in the foreground and paste its final lines in the PR. It must end with `ALL GREEN`. There is no CI, so this is the evidence.
+- Use one issue, one temporary branch and one worktree per agent; do not share a mutable worktree.
+- Set up with `python3 scripts/dev_container.py prepare` (Windows: `py -3`) and `git config core.hooksPath .githooks`.
+- Run `python3 scripts/dev_container.py check` in the foreground and paste the final lines in the PR. It must end with `ALL GREEN`. GitHub Actions reruns the same container check.
+- Write only inside the issue's declared repository paths. Do not change the user home, sibling projects, global Git/Docker configuration or another worktree.
 - Interface and style work must not change results. If you find a result you think is wrong, stop and comment here.
 - Physics changes need a reference and the maintainer's decision. Never widen a tolerance to pass.
 - Put the explanation in the commit message. Do not add change-log files.

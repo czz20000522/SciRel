@@ -43,11 +43,44 @@ licenses/          许可和署名
 
 ## 环境和验收
 
+可复现开发环境由项目内的 Python 3.14.7 容器定义。本地容器跟随 Docker engine 架构，GitHub CI 固定
+Linux/amd64。宿主机只需要 Git、Python 3 启动器和 Docker-compatible engine；依赖、缓存和虚拟环境都留在
+项目自己的容器卷里。
+
 ```sh
-uv sync --locked --group test      # 需要 Python 3.14，见 .python-version
+python3 scripts/dev_container.py prepare   # Windows 可用 py -3
+python3 scripts/dev_container.py check
+python3 scripts/dev_container.py pytest tests/<domain>/test_<asset>.py
 ```
 
-检查的入口是 [`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
+本机原生 `.venv` 可以用于快速探索，但交付证据必须来自容器内同一条检查。检查入口是
+[`scirel-acceptance` skill](skills/development/scirel-acceptance/SKILL.md)，改代码前先读它。
+不再维护 WSL、Windows 或 macOS 专属的隐藏测试环境。
+
+## 写入边界
+
+- 一个 agent 只能修改分配给它自己的 worktree 和 issue 明确要求的仓库内路径。
+- 不写用户主目录、`Projects` 的同级目录、`.codex`、全局 Git 配置、SSH、Docker 配置、包管理器配置或其他项目。
+- 临时输出写到容器内临时目录，或仓库中已被忽略且能立即清理的运行目录；提交前必须清掉。
+- 容器只挂载当前 checkout 和项目命名的依赖卷，不挂载用户主目录。需要改动宿主机 Docker 引擎或安装系统软件时，
+  属于环境操作，先单独获得任务授权并报告，不把它伪装成项目改动。
+- 仓库文件是唯一交付物；聊天记录、私人路径和某台机器的环境事实不能成为运行依赖。
+
+## 并行开发与合并
+
+- 一个 issue 对应一个临时分支和至少一个独立 worktree。分支名用 `agent/<issue>-<short-topic>`。
+- 每个 agent 从最新的 `origin/main` 开始；不要多人共用一个可变 worktree。
+- 功能或整理完成前先在独立 worktree 内做局部验证；PR 前 rebase 到最新 `origin/main`，再在最终提交上跑完整容器检查。
+- `main` 只接收通过 PR 和 CI 的合并。涉及多个候选时，由集成者另开干净的 integration worktree 重新验证组合结果。
+- 合并后删除临时分支和 worktree。只有确实会丢失历史指针时才保留 `refs/archive/*` 存档引用。
+
+## 设备独立性
+
+- 代码、脚本和文档只使用仓库相对路径；禁止盘符、WSL 内部路径、固定用户名和机器专属目录。
+- Python 路径处理使用 `pathlib`；Git hook 只使用 POSIX `sh` 和 Python launcher，Windows 走 Git Bash。
+- 本地容器跟随当前 Docker engine 的 CPU 架构，Apple Silicon 默认使用原生 arm64，避免模拟器拖慢开发。
+- GitHub CI 固定使用 Linux/amd64；PR 合并前以该 CI 结果作为跨设备最终验收。
+- 新增脚本必须能在容器中运行；如果必须依赖某个宿主系统能力，先说明原因、替代方案和删除条件。
 ## 必须遵守
 
 这些规则多数由 `tests/architecture/test_repository_skeleton.py` 和 `scripts/review_gate.py` 检查。
