@@ -1,0 +1,38 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.terminal-conservation-diagnostic",
+  "kind": "operator",
+  "title": {"en": "Terminal molecular total-energy conservation diagnostic", "zh": "终态分子总能量守恒诊断"},
+  "summary": "Compare the axial difference of a caller-owned total H2 heat-flux profile with the adjacent-cell mean of a caller-owned total energy-transfer profile.",
+  "taxonomy": ["kinetic", "neutral-transport", "terminal-diagnostics", "conservation"],
+  "aliases": ["reduce_qh2_total_conservation_diagnostic"],
+  "identity": {
+    "relation": "source-defined normalized axial total-energy balance residual",
+    "direction": "axial positions, total H2 heat flux and total H2 energy transfer -> dimensionless nodal error profile",
+    "definition": "For each interval k from 0 through nx-2, q1[k]=(flux[k+1]-flux[k])/(x[k+1]-x[k]) and q2[k]=0.5*(transfer[k+1]+transfer[k]). Set q1[nx-1]=q2[nx-1]=0. Let N=max(abs(q1),abs(q2)) over both whole arrays; require N>0 and finite. Return abs(q1-q2)/N. The final zero is an endpoint convention, not a checked boundary equation. The global normalization can make an individual residual exceed one.",
+    "model": "saved KN1DPy terminal H2 total-energy profile diagnostic with caller-owned upstream profiles",
+    "geometry": "one-dimensional axial spatial mesh; one result per supplied node",
+    "coordinates": "adjacent axial positions in metres; no monotonicity requirement beyond nonzero adjacent spacing",
+    "boundary": "at least two finite aligned nodes; each adjacent represented spacing is finite and nonzero; signed flux and transfer are allowed; finite positive global normalization",
+    "assumptions": [
+      "The caller supplies both total profiles on the same axial mesh. This leaf does not calculate heat flux, energy transfer or a terminal generation, and has no runtime dependency on their producers.",
+      "The named input units W/m^2 and W/m^3 give compatible axial derivative and transfer units when the upstream profile normalizations support those physical interpretations. The diagnostic alone does not verify them.",
+      "Boolean, complex and numeric-string coercions accepted by the saved implementation are excluded by the maintained real-numeric input contract."
+    ]
+  },
+  "inputs": [
+    {"name":"axial_position_m","description":"Axial nodes associated with both supplied profiles.","units":"m","shape":"[nx]","dtype":"real numeric array-like","required":true,"constraints":"Finite one-dimensional profile with nx>=2 and finite nonzero adjacent represented differences; decreasing and locally nonmonotonic positions are accepted."},
+    {"name":"total_heat_flux_profile_w_m2","description":"Caller-owned signed total axial H2 heat-flux profile.","units":"source-labeled W/m^2","shape":"[nx]","dtype":"real numeric array-like","required":true,"constraints":"Finite and exactly aligned with axial_position_m; no nonnegativity restriction."},
+    {"name":"total_energy_transfer_rate_profile_w_m3","description":"Caller-owned signed total H2 energy-transfer rate profile.","units":"source-labeled W/m^3","shape":"[nx]","dtype":"real numeric array-like","required":true,"constraints":"Finite and exactly aligned with axial_position_m; no nonnegativity restriction."}
+  ],
+  "outputs": [
+    {"name":"total_energy_conservation_error_profile_dimensionless","description":"Globally normalized absolute difference of the interval flux gradient and adjacent transfer mean, with zero at the final node by convention.","units":"dimensionless on the supplied profile normalization","shape":"[nx]","dtype":"float64 array","required":true,"constraints":"Finite and nonnegative; last element is exactly zero; individual entries can exceed one."}
+  ],
+  "applicability": {"preconditions":["Caller supplies aligned total heat-flux and energy-transfer profiles whose physical normalization and axial coordinate are compatible.","At least one represented interval gradient or adjacent transfer mean is nonzero so the global normalization is positive."],"supported":["Stateless source-defined discrete residual on finite signed profiles and nonzero adjacent axial spacings."],"excluded":["Terminal distribution or RHS production, boundary-flux closure, absolute physical validation, and any inference that a zero diagnostic establishes full transport conservation."]},
+  "failure_semantics": {"invalid_input":"Raises ValueError for non-real numeric, non-finite, malformed or nonaligned profiles; fewer than two nodes; zero or non-finite represented adjacent spacing; or zero global normalization.","runtime_failure":"Raises ValueError if the derived global normalization or output is non-finite; no partial mapping is returned.","nonconvergence":"Not applicable; no iteration.","partial_results":"Never returned."},
+  "provenance": {"lineage_summary":"Development relation compared with saved KN1DPy 终态分子总能量守恒诊断, source anchor kinetic_h2.py:2063-2070 as recorded by the saved package. Saved implementation SHA-256 258ef36f7d265f5a7cc08f021cbf91fbd83ad9ce6876a1c56d1064655d4c2af3. Strict D1 qualification is withdrawn; this is bounded historical development comparison. Finite real arithmetic retains source order; non-real coercion rejection is a maintained repair. The saved operator document's scalar/profile, input/output-unit and single-node example statements contradict its callable and are not adopted.","source_kinds":["saved L1 operator document and implementation","independent interval residual tests","SHA-gated historical replay"],"public_references":[],"license_status":"pending-human-decision"},
+  "public_api": {"python":{"module":"scirel.kinetic.terminal_conservation_diagnostic","symbol":"reduce_qh2_total_conservation_diagnostic","signature":"reduce_qh2_total_conservation_diagnostic(axial_position_m, total_heat_flux_profile_w_m2, total_energy_transfer_rate_profile_w_m3)"}},
+  "version": {"implementation_version":"0.1.0.dev5","dependencies":[]},
+  "example": {"description":"A linear flux gradient equal to a constant transfer profile has zero source-defined residual.","code":"import numpy as np\nfrom scirel.kinetic import reduce_qh2_total_conservation_diagnostic\nx = np.array([0.0, 1.0, 2.0])\nr = reduce_qh2_total_conservation_diagnostic(x, np.array([0.0, 2.0, 4.0]), np.array([2.0, 2.0, 2.0]))\nassert np.array_equal(r['total_energy_conservation_error_profile_dimensionless'], np.zeros(3))","expected":"Three exact zero errors; the final zero is the endpoint convention."},
+  "verification": {"scope":["Independent interval slopes, adjacent transfer means and global normalization on signed nonuniform profiles; linear-balance and decreasing-grid witnesses.","Direct rejection tests cover shape, spacing, non-real inputs, zero normalization and non-finite derived gradient.","Three optional SHA-gated historical cases compare two finite carriers exactly and document boolean-coercion divergence."],"tests":["tests/operator_contracts/test_terminal_molecular_conservation.py","tests/operator_contracts/test_terminal_molecular_conservation_l1.py"],"evidence_ceiling":"Direct tests and optional saved replay establish this discrete diagnostic on tested profiles, not the upstream total profile normalization, full boundary balance, whole-source D1 qualification or expert approval.","known_limitations":["The saved source's strict D1 qualification is withdrawn; replay is historical development evidence only.","Absolute physical meaning of the upstream total profiles and their unit labels requires expert review.","The final node is not independently checked and a zero error does not establish a complete conservation law.","Public distribution licensing remains pending."]}
+}

@@ -1,0 +1,214 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.shifted-maxwellian-seed",
+  "kind": "operator",
+  "title": {
+    "en": "Shifted-Maxwellian discrete seed",
+    "zh": "平移Maxwellian离散初值"
+  },
+  "summary": "The normalized exponential distribution on a cylindrical (vr, vx) velocity mesh before any moment compensation: one temperature per axial shift, the molecule-count factor in the exponent, the saved source's strict-interior -80 clamp, and normalization by the caller-supplied cylindrical cell volumes. Composes with the cylindrical velocity quadrature upstream and documents the seed stage that precedes the saved source's moment-compensation loop.",
+  "taxonomy": [
+    "kinetic",
+    "velocity-mesh",
+    "maxwellian",
+    "initial-condition"
+  ],
+  "aliases": [
+    "create_shifted_maxwellian seed",
+    "shifted Maxwellian seed",
+    "N1 seed leaf"
+  ],
+  "identity": {
+    "relation": "the normalized exponential seed of the saved create_shifted_maxwellian relation on a cylindrical velocity mesh, before moment compensation",
+    "direction": "vr, vx, normalization temperature, axial shifts in m/s, per-shift temperatures, mass, molecule count and cell volumes -> per-shift normalized distribution, thermal speed and raw exponent",
+    "definition": "With m_H = 1.6726231e-27 kg, the saved hydrogen mass, vth = sqrt(2 e T_norm / (m m_H)). The raw exponent is -(vr^2 + (vx - shift/vth)^2) * molecule_count * T_norm / T_shift per shift. The raw seed is exp(argument) where -80 < argument < 0 and exp(-80) everywhere else -- a strict interior clamp under which a mesh node exactly at the shifted peak (argument == 0) is floored like the far tail while the returned exponent still reports the raw value. The distribution is normalized per shift by the supplied cell volumes: sum(volume * distribution) = 1 per shift.",
+    "model": "discretized shifted Maxwellian exponential seed on an explicit mesh; the saved source's downstream moment-compensation loop is deliberately outside this leaf",
+    "geometry": "velocity space, cylindrical: radial speed vr and axial velocity vx; the axial shift is applied to the vx axis",
+    "coordinates": "vr and vx in the caller's normalized velocity unit; shifts in m/s are divided by the thermal speed into mesh units",
+    "boundary": "argument == 0 is floored to exp(-80) like the far tail (strict interior clamp); the distribution is never exactly zero; molecule_count must be exactly 1 or 2; every accepted call returns finite distributions",
+    "assumptions": [
+      "The cell volumes are the caller's; the cylindrical velocity quadrature produces exactly the measure this normalization consumes.",
+      "The seed is the pre-compensation stage: a caller that needs the saved source's moment-compensated distribution must not treat this seed as final.",
+      "AMU_KG = 1.6726231e-27 kg is the saved hydrogen mass, not the standard atomic mass unit; its historical name is retained for compatibility. ELEMENTARY_CHARGE_C = 1.602177e-19 C is also frozen from the saved source. Neither constant is a current CODATA estimate.",
+      "molecule_count is a saved-source convention: the exponent carries a factor 2 for molecular hydrogen relative to atomic hydrogen."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "vr",
+      "description": "Normalized radial-speed mesh.",
+      "units": "v/vth (caller's normalized unit)",
+      "shape": "[nvr]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite nonempty one-dimensional array."
+    },
+    {
+      "name": "vx",
+      "description": "Normalized axial-velocity mesh; the shift is applied to this axis.",
+      "units": "v/vth (caller's normalized unit)",
+      "shape": "[nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite nonempty one-dimensional array."
+    },
+    {
+      "name": "tnorm_ev",
+      "description": "Normalization temperature fixing the thermal speed that converts shifts into mesh units.",
+      "units": "eV",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "shifted_vx_m_s",
+      "description": "Axial shifts of the Maxwellian peaks, one per layer.",
+      "units": "m/s",
+      "shape": "[n_shifts]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite nonempty one-dimensional array."
+    },
+    {
+      "name": "temperature_ev",
+      "description": "Per-shift temperatures, same length as the shifts.",
+      "units": "eV",
+      "shape": "[n_shifts]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "A finite one-dimensional array with strictly positive entries and the shifts' shape."
+    },
+    {
+      "name": "mass_amu",
+      "description": "Species mass factor relative to the saved hydrogen mass, despite the historical parameter name; fixes the thermal speed.",
+      "units": "multiples of 1.6726231e-27 kg",
+      "shape": "scalar",
+      "dtype": "real scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive."
+    },
+    {
+      "name": "molecule_count",
+      "description": "Molecule-count factor of the exponent: 1 for atomic, 2 for molecular hydrogen.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "integer",
+      "required": true,
+      "constraints": "Exactly 1 or 2."
+    },
+    {
+      "name": "cylindrical_volume",
+      "description": "Cell volumes of the cylindrical velocity mesh, rows matched to vr and columns to vx.",
+      "units": "normalized velocity-space measure",
+      "shape": "[nvr, nvx]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly positive, shape (vr.size, vx.size)."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "distribution",
+      "description": "The normalized exponential seed, one layer per shift.",
+      "units": "normalized distribution density",
+      "shape": "[nvr, nvx, n_shifts]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and strictly positive; sum(volume * distribution) = 1 per shift."
+    },
+    {
+      "name": "thermal_speed_m_s",
+      "description": "The thermal speed sqrt(2 e T_norm / (m m_H)), with m_H the saved hydrogen mass, used to convert the shifts.",
+      "units": "m/s",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and positive."
+    },
+    {
+      "name": "exponent",
+      "description": "The raw (unclamped) exponent per mesh node and shift.",
+      "units": "dimensionless",
+      "shape": "[nvr, nvx, n_shifts]",
+      "dtype": "float64 array",
+      "required": true,
+      "constraints": "Finite and nonpositive for accepted input; a zero entry marks a mesh node exactly at the shifted peak, which the seed floors to exp(-80)."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The caller supplies a consistent velocity mesh and the cylindrical cell-volume measure, in the source's N1 convention.",
+      "The caller understands the seed is the pre-compensation stage of the saved chain and does not treat it as a moment-compensated distribution."
+    ],
+    "supported": [
+      "Per-shift Maxwellian seeds on an explicit cylindrical mesh with per-shift temperatures, for molecule_count 1 or 2.",
+      "The far-shift limit where every exponent sits below the -80 floor: the normalized seed becomes exactly the uniform distribution over the mesh.",
+      "Composition with the cylindrical velocity quadrature upstream and with the Maxwellian relative-speed rate average on the same mesh snapshot."
+    ],
+    "excluded": [
+      "The saved source's downstream moment-compensation loop: this leaf returns the seed before compensation.",
+      "Non-Maxwellian or non-exponential seeds, and any collision or field model.",
+      "Mesh or volume generation: both are caller inputs.",
+      "Unit conversion between mesh units and m/s beyond the shift division by the thermal speed."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError when vr, vx or shifted_vx_m_s is empty, when array shapes are inconsistent, when an array contains non-real, non-numeric or non-finite values, when tnorm_ev or mass_amu is not a real numeric finite positive scalar, when molecule_count is not an integer scalar equal to 1 or 2, when a temperature is nonpositive, or when a volume is nonpositive. Boolean and numeric-string arrays are not coerced.",
+    "runtime_failure": "Raises ValueError when the thermal speed, the raw exponent or the normalized distribution is not representable in double precision for finite inputs that satisfy the stated domain -- for example a normalization temperature at 1e308 whose thermal speed overflows, a tiny normalization temperature with a huge shift whose quotient overflows to an infinite exponent, a 1e-320 cell volume whose normalization denominator underflows so the divided distribution overflows to infinity, or cell volumes near the float64 ceiling whose weighted raw seed sums overflow so the divided distribution collapses to exact zeros. Every accepted call then returns finite strictly-positive distributions with a unit volume-weighted sum by construction of the clamp and the checked normalization. There is no iteration and no callback.",
+    "nonconvergence": "Not applicable; no iteration. The saved source's moment-compensation loop is outside this leaf.",
+    "partial_results": "Never returned; a rejected call produces no outputs."
+  },
+  "provenance": {
+    "lineage_summary": "Development integration from the saved KN1DPy create_shifted_maxwellian seed leaf, package 平移Maxwellian离散初值, source anchor KN1DPy/create_shifted_maxwellian_include.py:58-76 (implementation file pinned by SHA-256 c495a86822c02dbb4bd84fe11f5cffb6093a85906be3dae66773d2e334641051). The saved bundle carries an ACCEPT_OPERATOR-style package test (volume normalization, positive-shift moment, strict-interior clamp oracle, fail-closed temperature) plus evidence-only independent seed-equation and limit audits (N62/N81/N82 in the bundle's extraction ledger). A separately executed intake replay compares the distribution, exponent and thermal speed for single- and double-molecule holdouts; the maintained tests compare against an in-file loop-per-shift formulation. KN1DPy's strict D1 qualification has been withdrawn and the bundle sits in the re-review archive, so all of this is bounded historical development comparison, not qualified-L1 provenance and not expert approval. The saved implementation checked array finiteness, but accepted boolean and numeric-string coercion, non-integer molecule factors such as 1.0, and an empty shift list; SciRel rejects these under its declared input contract and reports invalid scalar inputs with ValueError.",
+    "source_kinds": [
+      "saved L1 operator document and implementation",
+      "saved extraction ledger and package-test evidence",
+      "separately executed environment-gated intake replay",
+      "scientific regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.shifted_maxwellian_seed",
+      "symbol": "build_shifted_maxwellian_seed",
+      "signature": "build_shifted_maxwellian_seed(*, vr, vx, tnorm_ev, shifted_vx_m_s, temperature_ev, mass_amu, molecule_count, cylindrical_volume)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Build the seed for one shift on a small mesh, verify the volume-weighted normalization and the strict-interior clamp witness, and compose the quadrature, the seed and the Maxwellian rate average on one mesh snapshot.",
+    "code": "import numpy as np\nfrom scirel.kinetic import build_shifted_maxwellian_seed, make_cylindrical_velocity_quadrature\nfrom scirel.collisions import average_cross_section_over_maxwellian\n\nvr = np.array([0.5, 1.5])\nvx = np.array([-1.5, -0.5, 0.5, 1.5])\nquadrature = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)\nvolume = quadrature['volume']\nseed = build_shifted_maxwellian_seed(\n    vr=vr, vx=vx, tnorm_ev=20.0,\n    shifted_vx_m_s=np.array([0.0]),\n    temperature_ev=np.array([10.0]),\n    mass_amu=2.0, molecule_count=1,\n    cylindrical_volume=volume,\n)\nassert seed['distribution'].shape == (2, 4, 1)\nassert np.sum(volume * seed['distribution'][:, :, 0]) == 1.0\nassert np.all(np.isfinite(seed['distribution']))\nrate = average_cross_section_over_maxwellian(\n    particle_energy_ev=np.array([0.0, 10.0]),\n    particle_mass_amu=1.0,\n    target_temperature_ev=10.0,\n    target_mass_amu=2.0,\n    vx=vx, vr=vr, tnorm_ev=20.0,\n    cylindrical_volume=volume,\n    cross_section_m2=lambda energy: np.full_like(energy, 3.0e-20),\n)\nassert np.all(np.isfinite(rate)) and np.all(rate > 0.0)\ntry:\n    build_shifted_maxwellian_seed(\n        vr=vr, vx=vx, tnorm_ev=20.0,\n        shifted_vx_m_s=np.array([0.0]),\n        temperature_ev=np.array([10.0]),\n        mass_amu=2.0, molecule_count=3,\n        cylindrical_volume=volume,\n    )\nexcept ValueError as error:\n    assert 'physical' in str(error)\nelse:\n    raise AssertionError('molecule_count 3 must be rejected')",
+    "expected": "The seed distribution has shape (2, 4, 1) with a volume-weighted sum of exactly 1 over the mesh, finite everywhere; the same mesh snapshot's quadrature volumes also feed the Maxwellian rate average to finite positive rates; and molecule_count 3 raises ValueError naming the physical-input contract."
+  },
+  "verification": {
+    "scope": [
+      "That the public callable reproduces the saved seed relation exactly: distribution, exponent and thermal speed compared against an in-file loop-per-shift formulation of the same discrete relation at rtol 1e-15.",
+      "Volume-weighted normalization: sum(volume * distribution) = 1 per shift for the supplied cell volumes.",
+      "The strict-interior clamp witness: a mesh node exactly at the shifted peak (argument == 0) is floored to exp(-80) in the distribution while the exponent output reports the raw zero.",
+      "The far-shift limit: when every exponent sits below the -80 floor, the normalized seed is exactly the uniform distribution over the mesh.",
+      "The molecule-count factor: molecule_count 2 doubles the exponent and the distribution matches the independent formulation at molecule_count 2 with unit normalization.",
+      "A positive shift moves the volume-weighted axial moment positive.",
+      "The composition contract: the cylindrical quadrature's volumes normalize the seed and feed the Maxwellian relative-speed rate average on one immutable mesh snapshot.",
+      "Output representability: a normalization temperature at 1e308 (thermal-speed overflow), a tiny normalization temperature with a 1e308 shift (infinite raw exponent), a 1e-320 cell volume (normalization denominator underflows, divided distribution overflows) and cell volumes near the float64 ceiling (weighted raw seed sums overflow, divided distribution collapses to zeros) are each rejected with a ValueError. Ordinary inputs produce unchanged numbers.",
+      "The input contract: nonempty shift layers, shape consistency, real numeric finite values, positive temperatures/masses/tnorm, integer molecule_count exactly 1 or 2, and strictly positive volumes; every out-of-domain value is rejected.",
+      "Bounded historical replay against the saved KN1DPy implementation, pinned by SHA-256, reproducing the distribution, exponent and thermal speed for single- and double-molecule holdouts at rtol 1e-15. This replay is environment-gated and is historical development evidence, not qualified-L1 provenance."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_shifted_maxwellian_seed.py"
+    ],
+    "evidence_ceiling": "The maintained tests establish the seed relation against an in-file independent formulation, the clamp and far-shift limits, the molecule-count scaling, the input contract, and the composition chain with the quadrature and the rate average. The separately executed intake replay establishes bounded numerical agreement with the saved KN1DPy implementation on the compared holdouts only. No test establishes that the pre-compensation seed is physically adequate for any caller purpose without the saved source's moment-compensation loop, that any caller mesh or volume measure is physically valid, or that the source project behaves correctly outside the compared domain. KN1DPy's strict D1 qualification is withdrawn; the saved bundle supports bounded historical development comparison only. Expert recognition, version-level trust and distribution licensing remain pending.",
+    "known_limitations": [
+      "The seed is explicitly the pre-compensation stage: the saved source's moment-compensation loop is outside this leaf, and the saved chain does not end at this distribution.",
+      "The constants are the saved source's historical values, not current best estimates; AMU_KG names the saved hydrogen mass rather than standard amu, and no conversion is performed.",
+      "The exponent floor is a numerical device: distribution values in the floored region carry no exponential resolution, and the uniform-limit regime must not be read as a physical Maxwellian.",
+      "The saved bundle sits in the re-review archive and KN1DPy's strict D1 qualification is withdrawn; the historical replay evidence cannot be upgraded to qualified-L1 provenance without a new strict freeze and independent review of the source project.",
+      "Public distribution licensing remains pending a human decision."
+    ]
+  }
+}

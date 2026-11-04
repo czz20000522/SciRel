@@ -1,0 +1,1911 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.closures.mirror-quasineutral-closure",
+  "kind": "task_graph",
+  "title": {
+    "en": "Bi-Maxwellian mirror quasineutral closure",
+    "zh": "双温镜准中性闭合"
+  },
+  "summary": "Compose mirror-constrained ion moments, a Boltzmann electron response and a bounded potential bisection; evaluate both states again at the converged potential and assemble total parallel and perpendicular pressures.",
+  "taxonomy": [
+    "closures",
+    "mirror-plasma",
+    "quasineutrality",
+    "task-graph"
+  ],
+  "aliases": [
+    "mirror ambipolar pressure closure",
+    "two-temperature mirror quasineutral solve"
+  ],
+  "identity": {
+    "relation": "Positive-ion mirror kinetic moments and Boltzmann electrons closed by local quasineutral potential",
+    "direction": "(magnetic field, flux label, ion and electron reference states, optional plug profiles, solver controls) -> quasineutral potential, terminal moments and total pressures",
+    "definition": "For each active sample, the graph solves the potential at which log(Z_i*n_i(phi))-log(n_e(phi)) is zero, where Z_i=charge_c/e, n_i comes from the mirror-constrained bi-Maxwellian moment operator and n_e from the Boltzmann electron operator. Positive ion and electron reference densities make a sample active; both zero make it inactive and preserve the ion reference potential. The potential solver uses bounded bracket expansion and at most max_iterations bisection steps. After success the graph reevaluates ion and electron states at the returned potential and adds electron pressure equally to ion parallel and perpendicular pressures.",
+    "model": "One positive-ion invariant bi-Maxwellian with optional two-plug loss-cone reduction, paired with prescribed-temperature Boltzmann electrons. Charge neutrality is solved locally through the explicit logarithmic residual, not an equilibrium field solve.",
+    "geometry": "Local mirror magnetic-field magnitudes and optional left/right plug fields; no field-line geometry, spatial metric or flux-surface reconstruction is computed.",
+    "coordinates": "b_t is scalar or exactly psi-shaped; other field/profile values are scalar, exactly psi-shaped or caller callables of the current psi array. The historical psi label is Wb, but the callable does not check flux normalization, coordinate alignment or a [Z,R] axis order.",
+    "boundary": "Both plug fields are supplied together for the loss-cone branch; absent plugs or refill equal to one bypass it. The ion/electron reference densities must be simultaneously positive or simultaneously zero at each sample. Bisection brackets must contain the root after the solver's finite expansion budget.",
+    "assumptions": [
+      "The caller's ion and electron reference states, magnetic-field and flux-label fields describe the same samples and share a consistent flux convention.",
+      "The composed logarithmic charge residual is finite and has the positive-lower, negative-upper orientation expected by the bisection operator over the selected brackets.",
+      "The mirror kinetic and Boltzmann electron models are appropriate to the requested plasma state; running the graph does not establish their physical applicability."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "b_t",
+      "description": "Local mirror magnetic-field magnitude.",
+      "units": "T",
+      "shape": "scalar or exactly psi-shaped array",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Must be finite and strictly positive when evaluated by the ion-moment operator."
+    },
+    {
+      "name": "psi",
+      "description": "Caller flux-profile label and output-shape carrier.",
+      "units": "Wb (historical source label, not runtime-enforced)",
+      "shape": "scalar or array; defines the graph sample shape",
+      "dtype": "real array-like converted to float64",
+      "required": true,
+      "constraints": "Finite; no axis, range or Wb-versus-Wb/rad convention check."
+    },
+    {
+      "name": "mass_kg",
+      "description": "Positive-ion mass passed to the mirror moment operator.",
+      "units": "kg",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive; validated but does not enter the current moment formulas."
+    },
+    {
+      "name": "charge_c",
+      "description": "Positive ion charge; also converted to charge state Z_i = charge_c/e.",
+      "units": "C",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": true,
+      "constraints": "Finite and strictly positive, with a finite positive derived charge state."
+    },
+    {
+      "name": "density_ref_m3",
+      "description": "Ion reference number density.",
+      "units": "m^-3",
+      "shape": "scalar, exactly psi-shaped array or callable(psi) returning either",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated field finite and nonnegative; must be positive exactly where the selected electron reference density is positive."
+    },
+    {
+      "name": "temperature_parallel_j",
+      "description": "Ion parallel reference thermal energy and ion bracket scale.",
+      "units": "J",
+      "shape": "scalar, exactly psi-shaped array or callable(psi) returning either",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated field finite and strictly positive."
+    },
+    {
+      "name": "temperature_perpendicular_ref_j",
+      "description": "Ion perpendicular reference thermal energy.",
+      "units": "J",
+      "shape": "scalar, psi-compatible array or callable(psi)",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated by the moment operator; finite, strictly positive, and yielding a positive integrability coefficient."
+    },
+    {
+      "name": "b_ref_t",
+      "description": "Ion reference magnetic-field magnitude.",
+      "units": "T",
+      "shape": "scalar, psi-compatible array or callable(psi)",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated by the moment operator; finite and strictly positive."
+    },
+    {
+      "name": "electron_temperature_j",
+      "description": "Prescribed Boltzmann electron thermal energy and electron bracket scale.",
+      "units": "J",
+      "shape": "scalar, exactly psi-shaped array or callable(psi) returning either",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": true,
+      "constraints": "Evaluated field finite and strictly positive."
+    },
+    {
+      "name": "phi_ref_v",
+      "description": "Ion reference potential, also returned where both reference densities are zero.",
+      "units": "V",
+      "shape": "scalar, exactly psi-shaped array or callable(psi) returning either",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0,
+      "constraints": "Evaluated field finite."
+    },
+    {
+      "name": "b_plug_left_t",
+      "description": "Left mirror-plug field for optional loss-cone moments.",
+      "units": "T or not applicable",
+      "shape": "None, scalar, psi-compatible array or callable(psi)",
+      "dtype": "null, real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": null,
+      "constraints": "Supply with b_plug_right_t; evaluated for finite positive values when plug integration is active."
+    },
+    {
+      "name": "b_plug_right_t",
+      "description": "Right mirror-plug field for optional loss-cone moments.",
+      "units": "T or not applicable",
+      "shape": "None, scalar, psi-compatible array or callable(psi)",
+      "dtype": "null, real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": null,
+      "constraints": "Supply with b_plug_left_t; evaluated for finite positive values when plug integration is active."
+    },
+    {
+      "name": "phi_plug_left_v",
+      "description": "Left plug electrostatic potential.",
+      "units": "V",
+      "shape": "scalar, psi-compatible array or callable(psi)",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0,
+      "constraints": "Evaluated for finiteness only in the active plug branch."
+    },
+    {
+      "name": "phi_plug_right_v",
+      "description": "Right plug electrostatic potential.",
+      "units": "V",
+      "shape": "scalar, psi-compatible array or callable(psi)",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": 0,
+      "constraints": "Evaluated for finiteness only in the active plug branch."
+    },
+    {
+      "name": "loss_cone_refill",
+      "description": "Fraction restoring full bi-Maxwellian pitch occupation.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "float-convertible scalar",
+      "required": false,
+      "default": 0,
+      "constraints": "Finite within [0,1]; one bypasses plug integration."
+    },
+    {
+      "name": "quadrature_order",
+      "description": "Legendre order for active plug pitch integration.",
+      "units": "count",
+      "shape": "scalar",
+      "dtype": "float- and int-convertible scalar",
+      "required": false,
+      "default": 32,
+      "constraints": "Validated by the ion-moment leaf on every call as finite with int(value) at least 8; exact integer value is not enforced, and nodes are used only when plug integration is active."
+    },
+    {
+      "name": "electron_density_ref_m3",
+      "description": "Optional electron reference density; None derives Z_i times ion reference density.",
+      "units": "m^-3",
+      "shape": "None, scalar, exactly psi-shaped array or callable(psi) returning either",
+      "dtype": "null, real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": null,
+      "constraints": "If supplied, evaluated field finite and nonnegative and has the same zero/nonzero mask as ion reference density."
+    },
+    {
+      "name": "electron_phi_ref_v",
+      "description": "Optional Boltzmann electron reference potential; omission uses ion phi_ref_v.",
+      "units": "V",
+      "shape": "scalar, exactly psi-shaped array or callable(psi) returning either",
+      "dtype": "real array-like or callable yielding float64-convertible values",
+      "required": false,
+      "default": null,
+      "constraints": "If explicitly supplied, the field must be finite; explicit None is invalid, while the document's null default represents omission."
+    },
+    {
+      "name": "potential_tolerance_v",
+      "description": "Maximum active bisection bracket width.",
+      "units": "V",
+      "shape": "scalar",
+      "dtype": "finite float-convertible scalar",
+      "required": false,
+      "default": 1e-8,
+      "constraints": "Strictly positive."
+    },
+    {
+      "name": "quasineutral_tolerance",
+      "description": "Maximum active absolute logarithmic charge residual.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "finite float-convertible scalar",
+      "required": false,
+      "default": 1e-10,
+      "constraints": "Strictly positive."
+    },
+    {
+      "name": "max_iterations",
+      "description": "Maximum number of bisection midpoint evaluations.",
+      "units": "iterations",
+      "shape": "scalar",
+      "dtype": "Python or NumPy integer, excluding bool",
+      "required": false,
+      "default": 100,
+      "constraints": "The graph checks integer >= 1; the bound potential operator requires >= 2, which is the effective public contract."
+    },
+    {
+      "name": "initial_bracket_thermal",
+      "description": "Initial potential bracket half-width as a multiple of combined ion and electron thermal voltage.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "finite float-convertible scalar",
+      "required": false,
+      "default": 8,
+      "constraints": "Strictly positive."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "p_parallel",
+      "description": "Final ion parallel pressure plus isotropic electron pressure.",
+      "units": "Pa",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "From terminal pressure assembly; addition has no separate finite-output check."
+    },
+    {
+      "name": "p_perpendicular",
+      "description": "Final ion perpendicular pressure plus isotropic electron pressure.",
+      "units": "Pa",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "From terminal pressure assembly; addition has no separate finite-output check."
+    },
+    {
+      "name": "ion_density",
+      "description": "Mirror-constrained ion number density at the returned potential.",
+      "units": "m^-3",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Passed through from the final ion moment mapping."
+    },
+    {
+      "name": "electron_density",
+      "description": "Boltzmann electron number density at the returned potential.",
+      "units": "m^-3",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Passed through from the final electron state."
+    },
+    {
+      "name": "electrostatic_potential",
+      "description": "Converged potential on active samples and reference potential on zero-density samples.",
+      "units": "V",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Overwrites the pressure assembler's absent-potential placeholder with the solver result."
+    },
+    {
+      "name": "relative_charge_residual",
+      "description": "Final (Z_i*n_i-n_e)/max(Z_i*n_i+n_e,tiny) from the Boltzmann response.",
+      "units": "dimensionless",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Not the logarithmic residual used for bisection; zero-density or clipped extremes require care in physical interpretation."
+    },
+    {
+      "name": "kinetic_moments",
+      "description": "Complete final mirror ion-moment mapping including density, pressures, local temperatures and pitch integrals.",
+      "units": "mixed; see bound ion-moment asset",
+      "shape": "dict of psi-shaped fields",
+      "dtype": "Python dict of NumPy arrays",
+      "required": true,
+      "constraints": "Refers to the final ion mapping; field meanings and units follow the mirror-constrained-moments contract."
+    },
+    {
+      "name": "ion_p_parallel",
+      "description": "Final ion parallel pressure component before electron pressure is added.",
+      "units": "Pa",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Converted and broadcast by terminal pressure assembly."
+    },
+    {
+      "name": "ion_p_perpendicular",
+      "description": "Final ion perpendicular pressure component before electron pressure is added.",
+      "units": "Pa",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Converted and broadcast by terminal pressure assembly."
+    },
+    {
+      "name": "electron_pressure",
+      "description": "Boltzmann electron pressure added to each ion pressure component.",
+      "units": "Pa",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Converted and broadcast by terminal pressure assembly."
+    },
+    {
+      "name": "density_m3",
+      "description": "Final ion density retained as the original ion-moment field, alongside ion_density.",
+      "units": "m^-3",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Copied from the final ion-moment mapping without extra validation by the assembler."
+    },
+    {
+      "name": "p_parallel_pa",
+      "description": "Final ion parallel pressure retained under its original moment-field name.",
+      "units": "Pa",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Copied from the final ion-moment mapping; not the total p_parallel."
+    },
+    {
+      "name": "p_perpendicular_pa",
+      "description": "Final ion perpendicular pressure retained under its original moment-field name.",
+      "units": "Pa",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Copied from the final ion-moment mapping; not the total p_perpendicular."
+    },
+    {
+      "name": "temperature_parallel_j",
+      "description": "Evaluated ion parallel thermal-energy parameter retained from final moments.",
+      "units": "J",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Not reconstructed as depleted parallel pressure divided by depleted density."
+    },
+    {
+      "name": "temperature_perpendicular_local_j",
+      "description": "Untruncated local perpendicular thermal-energy parameter retained from final moments.",
+      "units": "J",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Follows the bound mirror moment relation B/C."
+    },
+    {
+      "name": "untruncated_density_m3",
+      "description": "Final ion density before plug pitch reduction.",
+      "units": "m^-3",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "Retained from final ion moments; includes the clipped potential exponent."
+    },
+    {
+      "name": "density_pitch_integral",
+      "description": "Final dimensionless ion density pitch factor.",
+      "units": "dimensionless",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "One when plug integration is bypassed."
+    },
+    {
+      "name": "parallel_pitch_integral",
+      "description": "Final dimensionless ion parallel-pressure pitch factor.",
+      "units": "dimensionless",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "One when plug integration is bypassed."
+    },
+    {
+      "name": "perpendicular_pitch_integral",
+      "description": "Final dimensionless ion perpendicular-pressure pitch factor.",
+      "units": "dimensionless",
+      "shape": "psi sample shape",
+      "dtype": "NumPy float64 array",
+      "required": true,
+      "constraints": "One when plug integration is bypassed."
+    },
+    {
+      "name": "iterations",
+      "description": "Shared vectorized potential-bisection iteration count.",
+      "units": "iterations",
+      "shape": "scalar",
+      "dtype": "Python int",
+      "required": true,
+      "constraints": "Zero if all samples are inactive; not a per-sample count."
+    },
+    {
+      "name": "converged",
+      "description": "Whether the potential solver completed successfully.",
+      "units": "dimensionless",
+      "shape": "scalar",
+      "dtype": "Python bool",
+      "required": true,
+      "constraints": "True on successful return; bracket or convergence failures raise instead of returning False."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "One positive-ion species and compatible ion/electron reference profiles are supplied on the same caller-owned psi samples.",
+      "Ion and electron reference densities are both positive or both zero at each sample, and the selected root is bracketable under the potential-solver sign convention.",
+      "The mirror moment integrability coefficient is positive; if a plug branch is active, both plug fields and valid pitch-integration parameters are supplied."
+    ],
+    "supported": [
+      "Local quasineutral potential and gyrotropic total pressures for the declared mirror bi-Maxwellian and Boltzmann electron model.",
+      "Optional two-plug loss-cone moments, caller-supplied profile(psi) values, and inactive zero-density samples retaining phi_ref_v."
+    ],
+    "excluded": [
+      "Multi-ion charge sums, non-Boltzmann electron responses, global equilibrium or electric-field reconstruction.",
+      "Inferring flux normalization, [Z,R] axis order, field-line geometry or compatibility with functions using a Wb/rad poloidal-flux convention."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Missing required graph inputs, incompatible b_t/psi or evaluated profile shapes, invalid positive-ion/thermal inputs, mismatched zero/nonzero reference-density masks, unpaired plug fields or invalid dependency inputs raise ValueError or a propagated numeric-conversion error. max_iterations=1 passes the graph's preliminary integer check but is rejected by the potential operator, which requires at least 2.",
+    "runtime_failure": "An ion-moment, electron-response, reference-density or pressure-assembly exception propagates. The potential operator raises RuntimeError if a root cannot be bracketed after bounded expansion; no alternate model or root finder is selected.",
+    "nonconvergence": "If all active surfaces do not satisfy both potential-width and logarithmic-residual tolerances within max_iterations, the potential operator raises RuntimeError and this TaskGraph returns no state.",
+    "partial_results": "No result mapping is returned after a validation, dependency, bracketing or nonconvergence failure; intermediate trial moments are local to the call."
+  },
+  "provenance": {
+    "lineage_summary": "The current SciRel-maintained mirror quasineutral TaskGraph, its five independently documented leaves, direct graph regressions, historical Pleiades composition descriptor and pending intake development candidate were compared. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery. This record documents current graph control flow and explicitly bounded potential feedback without asserting source-runtime identity or general physical closure.",
+    "source_kinds": [
+      "historical Pleiades development TaskGraph descriptor and migration mapping",
+      "pending intake development candidate",
+      "current SciRel graph implementation and scientific regressions"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.closures.mirror_quasineutral_closure",
+      "symbol": "solve_mirror_quasineutral_closure",
+      "signature": "solve_mirror_quasineutral_closure(inputs=None, **kwargs)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": [
+      {
+        "asset_id": "scirel.closures.boltzmann-quasineutrality"
+      },
+      {
+        "asset_id": "scirel.closures.quasineutral-potential"
+      },
+      {
+        "asset_id": "scirel.closures.quasineutral-reference-density"
+      },
+      {
+        "asset_id": "scirel.kinetic.mirror-constrained-moments"
+      },
+      {
+        "asset_id": "scirel.kinetic.mirror-total-pressure"
+      }
+    ]
+  },
+  "example": {
+    "description": "Solve a three-sample no-plug mirror state against Boltzmann electrons.",
+    "code": "import numpy as np\nfrom scirel.closures import solve_mirror_quasineutral_closure\ne = 1.602176634e-19\nr = solve_mirror_quasineutral_closure(b_t=np.array([1.0, 1.4, 2.0]), psi=np.zeros(3), mass_kg=1.67262192595e-27, charge_c=e, density_ref_m3=2e18, temperature_parallel_j=1200*e, temperature_perpendicular_ref_j=2400*e, b_ref_t=1.0, electron_temperature_j=600*e)\nb = np.array([1.0, 1.4, 2.0])\nt_perp = b / ((b-1.0)/(1200*e) + 1.0/(2400*e))\nexpected = np.log(t_perp/(2400*e)) / (e/(1200*e) + e/(600*e))\nnp.testing.assert_allclose(r['electrostatic_potential'], expected, atol=2e-8)\nassert np.max(np.abs(r['relative_charge_residual'])) < 1e-10\nassert r['p_parallel'].shape == (3,) and r['converged']",
+    "expected": "A three-sample potential matching the no-plug analytic limit within 2e-8 V, relative charge residual below 1e-10 and psi-shaped total pressure."
+  },
+  "verification": {
+    "scope": [
+      "No-plug analytic potential and quasineutral residual, plug loss-cone behavior, zero-density reference-potential fallback and caller profile(psi) evaluation.",
+      "Propagation of invalid and fractional potential iteration budgets through the graph.",
+      "Injected dependency tracing confirms final ion and electron reevaluation after the potential solver and terminal pressure assembly only afterward.",
+      "Graph regressions assert all-inactive zero-iteration terminal state, explicit electron reference-density override, and propagation of a solver RuntimeError without pressure assembly."
+    ],
+    "tests": [
+      "tests/graph_contracts/mirror_quasineutral_closure/test_graph_mirror_quasineutral_closure.py"
+    ],
+    "evidence_ceiling": "Direct graph regressions establish selected no-plug and loss-cone results, a zero-density fallback, one callable psi profile, two invalid iteration controls, final dependency order, a supplied electron-reference branch and an injected solver failure path. They do not establish all profile shapes, unique roots, arbitrary dependency failures, model validity for arbitrary plasmas, a flux normalization convention, or current expert recognition. The historical total-pressure descriptor implies stronger density and residual validation than the maintained assembler performs; this graph document describes the latter.",
+    "known_limitations": [
+      "The historical psi unit label is Wb while other SciRel poloidal-flux functions can use Wb/rad; the graph performs no conversion or convention validation.",
+      "The total-pressure assembler checks three pressure inputs but passes density and relative residual through without an independent finite or shape check; the graph obtains them from its bound ion and electron operators. The assembler can retain a supplied electron-state potential, but this graph passes no such field and then sets electrostatic_potential from the solver.",
+      "Numerical clipping and quadrature limits in the bound ion and electron operators carry into the closure; extremely large finite inputs may yield nonfinite derived fields or propagated failure.",
+      "Only one positive-ion species and a Boltzmann electron response are represented.",
+      "Public distribution licensing and expert recognition remain pending."
+    ]
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "state_grid",
+        "kind": "controlled_glue",
+        "description": "Apply _broadcast_state: expand scalar b_t to psi shape or require an exact shape match; preserve caller axes.",
+        "inputs": [
+          "b_t",
+          "psi"
+        ],
+        "outputs": [
+          "b_t",
+          "psi"
+        ]
+      },
+      {
+        "id": "profile_fields",
+        "kind": "controlled_glue",
+        "description": "Evaluate scalar, exact-shape field or callable(psi) reference profiles using _field; preserve absence for optional electron overrides.",
+        "inputs": [
+          "psi",
+          "density_ref_m3",
+          "temperature_parallel_j",
+          "electron_temperature_j",
+          "phi_ref_v",
+          "electron_density_ref_m3",
+          "electron_phi_ref_v"
+        ],
+        "outputs": [
+          "n_i_ref",
+          "t_parallel",
+          "t_e",
+          "phi_i_ref",
+          "n_e_override",
+          "phi_e_override"
+        ]
+      },
+      {
+        "id": "charge_state",
+        "kind": "controlled_glue",
+        "description": "Validate positive ion charge state Z_i = charge_c/e using _charge_state.",
+        "inputs": [
+          "charge_c"
+        ],
+        "outputs": [
+          "z_i"
+        ]
+      },
+      {
+        "id": "reference_density",
+        "kind": "operator",
+        "asset_id": "scirel.closures.quasineutral-reference-density",
+        "description": "Compute the default electron reference density Z_i*n_i_ref; runtime asset_loader names this operator with an underscored identity.",
+        "inputs": [
+          "n_i_ref",
+          "z_i"
+        ],
+        "outputs": [
+          "n_e_computed"
+        ]
+      },
+      {
+        "id": "reference_selection",
+        "kind": "controlled_glue",
+        "description": "Choose supplied or computed electron reference density, choose the electron reference potential, validate density masks, and form the active mask.",
+        "inputs": [
+          "n_i_ref",
+          "n_e_computed",
+          "n_e_override",
+          "phi_i_ref",
+          "phi_e_override"
+        ],
+        "outputs": [
+          "n_e_ref",
+          "phi_e_ref",
+          "active"
+        ]
+      },
+      {
+        "id": "moment_packing",
+        "kind": "controlled_glue",
+        "description": "Collect declared ion-moment keyword inputs; replace only the raw parallel-temperature profile with its evaluated field and retain the original optional ion reference-potential value when supplied.",
+        "inputs": [
+          "b_t",
+          "psi",
+          "mass_kg",
+          "charge_c",
+          "density_ref_m3",
+          "temperature_parallel_j",
+          "temperature_perpendicular_ref_j",
+          "b_ref_t",
+          "phi_ref_v",
+          "b_plug_left_t",
+          "b_plug_right_t",
+          "phi_plug_left_v",
+          "phi_plug_right_v",
+          "loss_cone_refill",
+          "quadrature_order"
+        ],
+        "outputs": [
+          "moment_inputs"
+        ]
+      },
+      {
+        "id": "kinetic_moments",
+        "kind": "operator",
+        "asset_id": "scirel.kinetic.mirror-constrained-moments",
+        "description": "Expand moment_inputs and evaluate the mirror ion mapping at each trial potential and once more at the final potential.",
+        "inputs": [
+          "moment_inputs",
+          "potential_v"
+        ],
+        "outputs": [
+          "state",
+          "density_m3"
+        ]
+      },
+      {
+        "id": "electron_response",
+        "kind": "operator",
+        "asset_id": "scirel.closures.boltzmann-quasineutrality",
+        "description": "Evaluate the Boltzmann electron mapping at trial and final potential; expose its logarithmic residual for the solver.",
+        "inputs": [
+          "potential_v",
+          "t_e",
+          "n_e_ref",
+          "phi_e_ref",
+          "density_m3",
+          "z_i"
+        ],
+        "outputs": [
+          "state",
+          "logarithmic_charge_residual"
+        ]
+      },
+      {
+        "id": "potential_solver",
+        "kind": "operator",
+        "asset_id": "scirel.closures.quasineutral-potential",
+        "description": "Bind the ion/electron evaluator as residual callback and run bounded bracket expansion and vectorized bisection.",
+        "inputs": [
+          "phi_i_ref",
+          "t_parallel",
+          "t_e",
+          "charge_c",
+          "active",
+          "residual",
+          "potential_tolerance_v",
+          "quasineutral_tolerance",
+          "max_iterations",
+          "initial_bracket_thermal"
+        ],
+        "outputs": [
+          "potential_v",
+          "iterations",
+          "converged"
+        ]
+      },
+      {
+        "id": "pressure_assembly",
+        "kind": "operator",
+        "asset_id": "scirel.kinetic.mirror-total-pressure",
+        "description": "Assemble final ion/electron mappings and add electron pressure to both ion pressure components.",
+        "inputs": [
+          "kinetic_moments",
+          "electron_state"
+        ],
+        "outputs": [
+          "state"
+        ]
+      },
+      {
+        "id": "finalize",
+        "kind": "controlled_glue",
+        "description": "Expose all terminal pressure-state and retained ion-moment fields; overwrite its potential placeholder with the solver potential, iterations and converged flag.",
+        "inputs": [
+          "state",
+          "potential_v",
+          "iterations",
+          "converged"
+        ],
+        "outputs": [
+          "p_parallel",
+          "p_perpendicular",
+          "ion_density",
+          "electron_density",
+          "electrostatic_potential",
+          "relative_charge_residual",
+          "kinetic_moments",
+          "ion_p_parallel",
+          "ion_p_perpendicular",
+          "electron_pressure",
+          "density_m3",
+          "p_parallel_pa",
+          "p_perpendicular_pa",
+          "temperature_parallel_j",
+          "temperature_perpendicular_local_j",
+          "untruncated_density_m3",
+          "density_pitch_integral",
+          "parallel_pitch_integral",
+          "perpendicular_pitch_integral",
+          "iterations",
+          "converged"
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "from": {
+          "node": "$input",
+          "port": "b_t"
+        },
+        "to": {
+          "node": "state_grid",
+          "port": "b_t"
+        },
+        "description": "Local field.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "psi"
+        },
+        "to": {
+          "node": "state_grid",
+          "port": "psi"
+        },
+        "description": "Flux-profile label.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "state_grid",
+          "port": "b_t"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "b_t"
+        },
+        "description": "Validated same-shape field.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "state_grid",
+          "port": "psi"
+        },
+        "to": {
+          "node": "profile_fields",
+          "port": "psi"
+        },
+        "description": "Current profile arguments.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "state_grid",
+          "port": "psi"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "psi"
+        },
+        "description": "Common sample shape.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "density_ref_m3"
+        },
+        "to": {
+          "node": "profile_fields",
+          "port": "density_ref_m3"
+        },
+        "description": "Ion reference profile for activity and default electron density.",
+        "condition": "Always.",
+        "transform": "Evaluate on psi.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "density_ref_m3"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "density_ref_m3"
+        },
+        "description": "Original ion profile for the moment operator.",
+        "condition": "Always.",
+        "transform": "Preserve supplied scalar, array or callable.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "temperature_parallel_j"
+        },
+        "to": {
+          "node": "profile_fields",
+          "port": "temperature_parallel_j"
+        },
+        "description": "Ion parallel thermal energy.",
+        "condition": "Always.",
+        "transform": "Evaluate on psi.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "electron_temperature_j"
+        },
+        "to": {
+          "node": "profile_fields",
+          "port": "electron_temperature_j"
+        },
+        "description": "Electron thermal energy.",
+        "condition": "Always.",
+        "transform": "Evaluate on psi.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "phi_ref_v"
+        },
+        "to": {
+          "node": "profile_fields",
+          "port": "phi_ref_v"
+        },
+        "description": "Ion reference potential.",
+        "condition": "When supplied, otherwise 0 V.",
+        "transform": "Evaluate on psi.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "phi_ref_v"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "phi_ref_v"
+        },
+        "description": "Original optional ion reference-potential profile.",
+        "condition": "When supplied; otherwise the moment operator uses its 0 V default.",
+        "transform": "Preserve the supplied scalar, array or callable.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "electron_density_ref_m3"
+        },
+        "to": {
+          "node": "profile_fields",
+          "port": "electron_density_ref_m3"
+        },
+        "description": "Optional electron reference density.",
+        "condition": "When supplied, otherwise None.",
+        "transform": "Evaluate on psi when supplied.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "electron_phi_ref_v"
+        },
+        "to": {
+          "node": "profile_fields",
+          "port": "electron_phi_ref_v"
+        },
+        "description": "Optional electron reference potential.",
+        "condition": "When supplied; omission selects the ion reference potential.",
+        "transform": "Evaluate on psi when supplied; explicit None fails numeric conversion.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "charge_c"
+        },
+        "to": {
+          "node": "charge_state",
+          "port": "charge_c"
+        },
+        "description": "Positive ion charge.",
+        "condition": "Always.",
+        "transform": "Divide by elementary charge and validate.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "charge_c"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "charge_c"
+        },
+        "description": "Moment ion charge.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "charge_c"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "charge_c"
+        },
+        "description": "Bracket ion charge.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "mass_kg"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "mass_kg"
+        },
+        "description": "Ion mass.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "temperature_perpendicular_ref_j"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "temperature_perpendicular_ref_j"
+        },
+        "description": "Perpendicular thermal profile.",
+        "condition": "Always.",
+        "transform": "Preserve input for the moment operator.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "b_ref_t"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "b_ref_t"
+        },
+        "description": "Reference magnetic field.",
+        "condition": "Always.",
+        "transform": "Preserve input for the moment operator.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "b_plug_left_t"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "b_plug_left_t"
+        },
+        "description": "Optional left plug field.",
+        "condition": "When supplied.",
+        "transform": "Omit from keyword mapping when absent.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "b_plug_right_t"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "b_plug_right_t"
+        },
+        "description": "Optional right plug field.",
+        "condition": "When supplied.",
+        "transform": "Omit from keyword mapping when absent.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "phi_plug_left_v"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "phi_plug_left_v"
+        },
+        "description": "Optional left plug potential.",
+        "condition": "When supplied.",
+        "transform": "Omit from keyword mapping when absent.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "phi_plug_right_v"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "phi_plug_right_v"
+        },
+        "description": "Optional right plug potential.",
+        "condition": "When supplied.",
+        "transform": "Omit from keyword mapping when absent.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "loss_cone_refill"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "loss_cone_refill"
+        },
+        "description": "Optional refill fraction.",
+        "condition": "When supplied.",
+        "transform": "Omit from keyword mapping when absent.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "quadrature_order"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "quadrature_order"
+        },
+        "description": "Optional pitch quadrature order.",
+        "condition": "When supplied.",
+        "transform": "Omit from keyword mapping when absent.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "t_parallel"
+        },
+        "to": {
+          "node": "moment_packing",
+          "port": "temperature_parallel_j"
+        },
+        "description": "Pre-evaluated ion parallel temperature.",
+        "condition": "Always.",
+        "transform": "Replace original profile with its evaluated field.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "n_i_ref"
+        },
+        "to": {
+          "node": "reference_density",
+          "port": "n_i_ref"
+        },
+        "description": "Reference ion density.",
+        "condition": "Only when electron_density_ref_m3 is None.",
+        "transform": "Bind as density_ref_m3.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "charge_state",
+          "port": "z_i"
+        },
+        "to": {
+          "node": "reference_density",
+          "port": "z_i"
+        },
+        "description": "Positive charge state.",
+        "condition": "Only when electron_density_ref_m3 is None.",
+        "transform": "Bind as ion_charge_state.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "n_i_ref"
+        },
+        "to": {
+          "node": "reference_selection",
+          "port": "n_i_ref"
+        },
+        "description": "Reference ion density mask.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "reference_density",
+          "port": "n_e_computed"
+        },
+        "to": {
+          "node": "reference_selection",
+          "port": "n_e_computed"
+        },
+        "description": "Computed default electron density.",
+        "condition": "Used only when the electron override is absent.",
+        "transform": "Select without recomputation.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "n_e_override"
+        },
+        "to": {
+          "node": "reference_selection",
+          "port": "n_e_override"
+        },
+        "description": "Caller electron density override.",
+        "condition": "When supplied.",
+        "transform": "Select without recomputation.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "phi_i_ref"
+        },
+        "to": {
+          "node": "reference_selection",
+          "port": "phi_i_ref"
+        },
+        "description": "Default electron reference potential.",
+        "condition": "When electron override absent.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "phi_e_override"
+        },
+        "to": {
+          "node": "reference_selection",
+          "port": "phi_e_override"
+        },
+        "description": "Caller electron reference potential.",
+        "condition": "When supplied.",
+        "transform": "Select without changing units.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "reference_selection",
+          "port": "n_e_ref"
+        },
+        "to": {
+          "node": "electron_response",
+          "port": "n_e_ref"
+        },
+        "description": "Selected electron reference density.",
+        "condition": "Each residual evaluation and final evaluation.",
+        "transform": "Bind as electron_density_ref_m3.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "reference_selection",
+          "port": "phi_e_ref"
+        },
+        "to": {
+          "node": "electron_response",
+          "port": "phi_e_ref"
+        },
+        "description": "Selected electron reference potential.",
+        "condition": "Each residual evaluation and final evaluation.",
+        "transform": "Bind as electron_phi_ref_v.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "reference_selection",
+          "port": "active"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "active"
+        },
+        "description": "Both densities positive mask.",
+        "condition": "Always.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "t_parallel"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "t_parallel"
+        },
+        "description": "Ion thermal bracket scale.",
+        "condition": "Always.",
+        "transform": "Bind as temperature_parallel_j.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "t_e"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "t_e"
+        },
+        "description": "Electron thermal bracket scale.",
+        "condition": "Always.",
+        "transform": "Bind as electron_temperature_j.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "t_e"
+        },
+        "to": {
+          "node": "electron_response",
+          "port": "t_e"
+        },
+        "description": "Electron response temperature.",
+        "condition": "Each residual evaluation and final evaluation.",
+        "transform": "Bind as electron_temperature_j.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "profile_fields",
+          "port": "phi_i_ref"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "phi_i_ref"
+        },
+        "description": "Ion reference potential and inactive fallback.",
+        "condition": "Always.",
+        "transform": "Bind as potential_reference_v.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "potential_tolerance_v"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "potential_tolerance_v"
+        },
+        "description": "Width tolerance.",
+        "condition": "When supplied, otherwise default 1e-8 V.",
+        "transform": "Validate as finite positive scalar.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "quasineutral_tolerance"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "quasineutral_tolerance"
+        },
+        "description": "Log residual tolerance.",
+        "condition": "When supplied, otherwise default 1e-10.",
+        "transform": "Validate as finite positive scalar.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "max_iterations"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "max_iterations"
+        },
+        "description": "Finite bisection bound.",
+        "condition": "When supplied, otherwise default 100.",
+        "transform": "Validate integer; bound operator requires at least 2.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "$input",
+          "port": "initial_bracket_thermal"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "initial_bracket_thermal"
+        },
+        "description": "Initial bracket half-width scale.",
+        "condition": "When supplied, otherwise default 8.",
+        "transform": "Validate as finite positive scalar.",
+        "kind": "data",
+        "required": false
+      },
+      {
+        "from": {
+          "node": "moment_packing",
+          "port": "moment_inputs"
+        },
+        "to": {
+          "node": "kinetic_moments",
+          "port": "moment_inputs"
+        },
+        "description": "Moment keyword inputs.",
+        "condition": "Each residual evaluation and final evaluation.",
+        "transform": "Expand mapping as operator keywords.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "charge_state",
+          "port": "z_i"
+        },
+        "to": {
+          "node": "electron_response",
+          "port": "z_i"
+        },
+        "description": "Positive ion charge state.",
+        "condition": "Each residual evaluation and final evaluation.",
+        "transform": "Bind as ion_charge_state.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "potential_solver",
+          "port": "potential_v"
+        },
+        "to": {
+          "node": "kinetic_moments",
+          "port": "potential_v"
+        },
+        "description": "Current trial potential, then converged potential for final recomputation.",
+        "condition": "Each bounded callback evaluation and once after success.",
+        "transform": "Identity.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "potential-root"
+      },
+      {
+        "from": {
+          "node": "potential_solver",
+          "port": "potential_v"
+        },
+        "to": {
+          "node": "electron_response",
+          "port": "potential_v"
+        },
+        "description": "Current trial or final potential.",
+        "condition": "Each bounded callback evaluation and once after success.",
+        "transform": "Identity.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "potential-root"
+      },
+      {
+        "from": {
+          "node": "kinetic_moments",
+          "port": "density_m3"
+        },
+        "to": {
+          "node": "electron_response",
+          "port": "density_m3"
+        },
+        "description": "Ion density at the same trial or final potential.",
+        "condition": "Each bounded callback evaluation and once after success.",
+        "transform": "Bind as ion_density_m3.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "electron_response",
+          "port": "logarithmic_charge_residual"
+        },
+        "to": {
+          "node": "potential_solver",
+          "port": "residual"
+        },
+        "description": "Log ion-charge minus electron-density residual.",
+        "condition": "For each active bracket or midpoint evaluation.",
+        "transform": "Bind a callback returning the complete electron mapping, including logarithmic_charge_residual.",
+        "kind": "feedback",
+        "required": true,
+        "feedback_id": "potential-root"
+      },
+      {
+        "from": {
+          "node": "kinetic_moments",
+          "port": "state"
+        },
+        "to": {
+          "node": "pressure_assembly",
+          "port": "kinetic_moments"
+        },
+        "description": "Complete final ion mapping.",
+        "condition": "After successful potential solve and final reevaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "electron_response",
+          "port": "state"
+        },
+        "to": {
+          "node": "pressure_assembly",
+          "port": "electron_state"
+        },
+        "description": "Complete final electron mapping.",
+        "condition": "After successful potential solve and final reevaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "pressure_assembly",
+          "port": "state"
+        },
+        "to": {
+          "node": "finalize",
+          "port": "state"
+        },
+        "description": "Assembled terminal state.",
+        "condition": "After final moment evaluation.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "potential_solver",
+          "port": "potential_v"
+        },
+        "to": {
+          "node": "finalize",
+          "port": "potential_v"
+        },
+        "description": "Converged potential field.",
+        "condition": "After successful solve.",
+        "transform": "Set electrostatic_potential.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "potential_solver",
+          "port": "iterations"
+        },
+        "to": {
+          "node": "finalize",
+          "port": "iterations"
+        },
+        "description": "Bisection iteration count.",
+        "condition": "After successful solve.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "potential_solver",
+          "port": "converged"
+        },
+        "to": {
+          "node": "finalize",
+          "port": "converged"
+        },
+        "description": "Successful convergence flag.",
+        "condition": "After successful solve.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "p_parallel"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_parallel"
+        },
+        "description": "Total parallel pressure.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "p_perpendicular"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_perpendicular"
+        },
+        "description": "Total perpendicular pressure.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "ion_density"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ion_density"
+        },
+        "description": "Final ion density.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "electron_density"
+        },
+        "to": {
+          "node": "$output",
+          "port": "electron_density"
+        },
+        "description": "Final electron density.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "electrostatic_potential"
+        },
+        "to": {
+          "node": "$output",
+          "port": "electrostatic_potential"
+        },
+        "description": "Final potential field.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "relative_charge_residual"
+        },
+        "to": {
+          "node": "$output",
+          "port": "relative_charge_residual"
+        },
+        "description": "Terminal relative charge residual.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "kinetic_moments"
+        },
+        "to": {
+          "node": "$output",
+          "port": "kinetic_moments"
+        },
+        "description": "Complete final ion moments.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "ion_p_parallel"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ion_p_parallel"
+        },
+        "description": "Ion parallel pressure component.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "ion_p_perpendicular"
+        },
+        "to": {
+          "node": "$output",
+          "port": "ion_p_perpendicular"
+        },
+        "description": "Ion perpendicular pressure component.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "electron_pressure"
+        },
+        "to": {
+          "node": "$output",
+          "port": "electron_pressure"
+        },
+        "description": "Electron pressure component.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "density_m3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "density_m3"
+        },
+        "description": "Original ion density field.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "p_parallel_pa"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_parallel_pa"
+        },
+        "description": "Original ion parallel pressure field.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "p_perpendicular_pa"
+        },
+        "to": {
+          "node": "$output",
+          "port": "p_perpendicular_pa"
+        },
+        "description": "Original ion perpendicular pressure field.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "temperature_parallel_j"
+        },
+        "to": {
+          "node": "$output",
+          "port": "temperature_parallel_j"
+        },
+        "description": "Ion parallel thermal parameter.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "temperature_perpendicular_local_j"
+        },
+        "to": {
+          "node": "$output",
+          "port": "temperature_perpendicular_local_j"
+        },
+        "description": "Local perpendicular thermal parameter.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "untruncated_density_m3"
+        },
+        "to": {
+          "node": "$output",
+          "port": "untruncated_density_m3"
+        },
+        "description": "Ion density before plug reduction.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "density_pitch_integral"
+        },
+        "to": {
+          "node": "$output",
+          "port": "density_pitch_integral"
+        },
+        "description": "Density pitch factor.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "parallel_pitch_integral"
+        },
+        "to": {
+          "node": "$output",
+          "port": "parallel_pitch_integral"
+        },
+        "description": "Parallel pitch factor.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "perpendicular_pitch_integral"
+        },
+        "to": {
+          "node": "$output",
+          "port": "perpendicular_pitch_integral"
+        },
+        "description": "Perpendicular pitch factor.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "iterations"
+        },
+        "to": {
+          "node": "$output",
+          "port": "iterations"
+        },
+        "description": "Iteration count.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      },
+      {
+        "from": {
+          "node": "finalize",
+          "port": "converged"
+        },
+        "to": {
+          "node": "$output",
+          "port": "converged"
+        },
+        "description": "Convergence flag.",
+        "condition": "On success.",
+        "transform": "Identity.",
+        "kind": "data",
+        "required": true
+      }
+    ],
+    "execution": {
+      "mode": "bounded_sequential_state_feedback",
+      "ordering": "Validate graph inputs; prepare same-shape fields, charge state and reference-density selection; bind the kinetic/electron residual callback; let the potential operator bracket and bisect; then reevaluate both states at its returned potential, assemble pressures and attach potential, iterations and convergence flag.",
+      "branches": [
+        "When electron_density_ref_m3 is absent or None, call the reference-density operator; otherwise use the evaluated caller override without calling it.",
+        "When electron_phi_ref_v is omitted, use phi_ref_v; otherwise evaluate the supplied value (explicit None is invalid).",
+        "Both reference densities positive: solve locally; both zero: retain phi_ref_v while evaluating a final state.",
+        "Both plug fields absent or loss_cone_refill=1: bypass loss-cone integration; otherwise evaluate the two-plug pitch integrals."
+      ],
+      "state_ownership": "The graph owns local normalized fields, active mask, callback and intermediate mappings. The potential operator owns trial brackets and midpoint state; the caller owns inputs and any profile(psi) callable. No state persists between calls.",
+      "failure_propagation": "Input or dependency failure, unbracketed root or exhausted potential iteration budget aborts the call without a partial result or fallback.",
+      "feedback": [
+        {
+          "id": "potential-root",
+          "state": "Active-sample lower/upper potential brackets and their logarithmic residuals, plus the current full-shape trial potential; inactive samples stay at phi_ref_v.",
+          "initialization": "Use phi_ref_v +/- initial_bracket_thermal*(T_parallel/charge_c + T_e/e) on active samples; evaluate the composed ion/electron residual at both endpoints, expanding at most eight rounds when signs do not bracket a root.",
+          "update_order": "For each midpoint, evaluate mirror ion density at trial potential, evaluate Boltzmann electron state at that potential and density, return logarithmic_charge_residual to the potential solver, test both tolerances, then replace the signed bracket endpoint if continuing.",
+          "continue_when": "Any active bracket width exceeds potential_tolerance_v or any active absolute logarithmic residual exceeds quasineutral_tolerance, while the validated iteration budget remains.",
+          "stop_when": "All active bracket widths are at most potential_tolerance_v and all active midpoint absolute logarithmic residuals are at most quasineutral_tolerance; with no active samples the solver returns zero bisection iterations, after which the graph still evaluates final ion and electron states.",
+          "iteration_bound": "At most max_iterations midpoint evaluations, default 100 and effectively required to be an integer >= 2; bracket expansion has at most eight rounds after initial endpoint evaluation.",
+          "nonconvergence": "Raise RuntimeError for an unbracketed root or for exhausted midpoint iterations; return no partial terminal state."
+        }
+      ]
+    }
+  }
+}

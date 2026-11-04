@@ -1,0 +1,2885 @@
+{
+  "schema": "scirel.admitted-integrations.v1",
+  "distribution_status": "development_full_admission_candidate",
+  "integration_baseline_commit": "9013128",
+  "admission_batch": {
+    "source": "CodeFusion ScientificAssetLibraryOwner exact admission export",
+    "tenant_id": "tenant_spark_dev",
+    "asset_count": 52,
+    "operator_count": 41,
+    "task_graph_count": 11
+  },
+  "support_modules": [
+    {
+      "module": "scirel._composition",
+      "library_source_lf_sha256": "6367cc40b7f91c0dd5d45f342646151cce5347587737416ab9b84a0ba0d96f77"
+    },
+    {
+      "module": "scirel._validation",
+      "library_source_lf_sha256": "08d251465f9e03ea5e9e26066dd08fa5bbc70ec7deed2b6009dc2719345b94ee"
+    }
+  ],
+  "integrations": [
+    {
+      "public_callable": "scirel.closures.boltzmann_quasineutrality.compute_boltzmann_electron_state",
+      "input_implementation_path": "operators/玻尔兹曼电子密度与准中性残差/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "e8a74ff9e0f6563095134aa1ebe3c1d1cf2f39f32be713aeb3c3df0fc350f71a",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_21b3320ade7866247cb467a7",
+          "case_ref": "asset_review_case_2f9e5ccaf23f0ca63a2595d2",
+          "decision_ref": "review_decision_83fcb522c19085f830c1f7dc",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_6ecd5598618fe50351590151",
+          "root_digest": "sha256:cda8a662527b799ab263b458945d0f6cd8001790d9b160203e2cf9de573f1816",
+          "operator_revision_ref": "operator_revision_7f3c9493bdb6d847",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-ab1cf52b3ccf20edb1ddc738934952bbfa2de7b80cc0dca4536fda748287e9bc",
+          "candidate_digest": "sha256:49ae815063358bd66fcee7fa7546b6fd9617a325af5057fd368e82025badbaa2",
+          "candidate_package_ref": "scientific_candidate_package_repair_40f6de035da3e5f9c0dbaf3a",
+          "candidate_package_digest": "sha256:a3173bb57aa0adb460632933f7da7243723e2b2d576c270ced58ea0d181573d1"
+        },
+        "version_tree_ref": "vtree_1b3441e6055c83d946510bb1",
+        "version_tree_root_digest": "sha256:cda8a662527b799ab263b458945d0f6cd8001790d9b160203e2cf9de573f1816",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/玻尔兹曼电子密度与准中性残差/operator.md",
+            "sha256": "sha256:f8ac7c14eae1005f7b762328fa4d9c2222d2e58583728cef31a78142867f55f0",
+            "size_bytes": 2888
+          },
+          {
+            "path": "operators/玻尔兹曼电子密度与准中性残差/scientific_operator.py",
+            "sha256": "sha256:360b894a7365231f42854c139c78e3f52b0f9ffa07c7dd38dff097f0acd4ca50",
+            "size_bytes": 2380
+          },
+          {
+            "path": "operators/玻尔兹曼电子密度与准中性残差/test_scientific_operator.py",
+            "sha256": "sha256:7907f7ac1736deba20f89ae60c84629d73088eb0a0d429a834260c86dd7b4c66",
+            "size_bytes": 2097
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.closures.hall_two_fluid_pressure.close_hall_two_fluid_pressure",
+      "input_implementation_path": "operators/Hall双流体压强状态闭合/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "d2e9082f25c5791775653d7be24368cc872b7bf0dba7954fd7e95552ed6650f1",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_e1c961c736a3350db9792279",
+          "case_ref": "asset_review_case_3bc5a2a42ddd12c1ebb0071b",
+          "decision_ref": "review_decision_fb913b214f1686561b77e95b",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_de7c8cf987801740d0e3d540",
+          "root_digest": "sha256:62ab2f410810652bed811f23a9a98cff79a703d2de0c217029d33609f38757af",
+          "operator_revision_ref": "operator_revision_c0a50940be8877d4",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-e180e7a3f3304b92b458685c-6cdbe4b8d60db076",
+          "candidate_digest": "sha256:cc6ce223a1ffdcdb8f3de95cfe8cf8fb65fd51fa9adce12cff3ec6f176025bc9",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_e8ca509668f4d1521dce2768",
+        "version_tree_root_digest": "sha256:62ab2f410810652bed811f23a9a98cff79a703d2de0c217029d33609f38757af",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/Hall双流体压强状态闭合/operator.md",
+            "sha256": "sha256:790bdeb083b3d6d051863d9081dfd19feed38e1f582daf400e1e024af51b3daa",
+            "size_bytes": 3222
+          },
+          {
+            "path": "operators/Hall双流体压强状态闭合/scientific_operator.py",
+            "sha256": "sha256:84a682fbfeddf791e1f0f11c46a7b846f082d5defde2a22a3169644e79506bde",
+            "size_bytes": 3158
+          },
+          {
+            "path": "operators/Hall双流体压强状态闭合/test_scientific_operator.py",
+            "sha256": "sha256:fca31751e61f9a759d718cb9b7c1b8492a51053b3aa012f3ac58051cebfc4d4b",
+            "size_bytes": 1777
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.closures.mirror_ambipolar_potential.solve_mirror_ambipolar_potential",
+      "input_implementation_path": "operators/镜端双极损失电势闭合/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "5c5718e670877085fbfdc778b0e4c4b5beee32266cb07724d66ad4f9b13f3d1d",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_8ea54605c8f46957b36b60e3",
+          "case_ref": "asset_review_case_6887385bdbdc8edba2ef8f06",
+          "decision_ref": "review_decision_4d3486c0ff47418869bb21a8",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_16379474e03c2777f0673c6b",
+          "root_digest": "sha256:1ae1ed357dcb53c7ea17cbc2d45cb83ae527aee7c1899e0f648f65bc562a2e1d",
+          "operator_revision_ref": "operator_revision_7e7058c6f8b022b1",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-071938927448b3185d464d9d84e0b8ee70c852968f71d120de387df4a0b1b240",
+          "candidate_digest": "sha256:84232fc233f0b8ecd531520667995fd46ad567f1c14b1bc12ffc287b885494b8",
+          "candidate_package_ref": "scientific_candidate_package_repair_8ada4d7a64f5132b42d81d31",
+          "candidate_package_digest": "sha256:65f8139e0efd9a5a2cb0e51476085ec6f999dfe8b27ce3706c40b9bae56b69a8"
+        },
+        "version_tree_ref": "vtree_12f3bd0a0aac861eba42d83c",
+        "version_tree_root_digest": "sha256:1ae1ed357dcb53c7ea17cbc2d45cb83ae527aee7c1899e0f648f65bc562a2e1d",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/镜端双极损失电势闭合/operator.md",
+            "sha256": "sha256:5564c7ff39c75ddd6adb64a4c9b3d91f21420fec9f231b15f9b8df6bd464a320",
+            "size_bytes": 8784
+          },
+          {
+            "path": "operators/镜端双极损失电势闭合/scientific_operator.py",
+            "sha256": "sha256:65145d217277004683d5bb3293e19948d4481ccafa4f4fdad03fb85e837bbdfa",
+            "size_bytes": 9581
+          },
+          {
+            "path": "operators/镜端双极损失电势闭合/test_scientific_operator.py",
+            "sha256": "sha256:ddc833970f2369de9cd890d6d7c4313605a94586e9d34a88a7c7085740cddf0f",
+            "size_bytes": 3998
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.closures.mirror_quasineutral_closure.solve_mirror_quasineutral_closure",
+      "input_implementation_path": "task_graphs/双温镜准中性闭合/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "fb8304cdc3fa73e38c6b500908bbe5619497276df7d646cf8adb87d6c2a88166",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_21b3320ade7866247cb467a7",
+        "scientific_asset_admission_355d4a73b57e5ff0414ca9d5",
+        "scientific_asset_admission_531c71bf64f80f1fe0e90e3a",
+        "scientific_asset_admission_5aa7ff472d2000f6ef3dc61e",
+        "scientific_asset_admission_efd6a2c5fdac5df7dca16dbb"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_298a314d74d4f87cebaaf86d",
+          "case_ref": "asset_review_case_aa6d2536e5b2209fde2e8c41",
+          "decision_ref": "review_decision_028e13d0db9dafe6642e6fbc",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_b613da5f4f8d70e4b17fe502",
+          "root_digest": "sha256:26245f65d51c42be9fc64d7150e5e6111457c51d66db2eb0ba52d41f126c2626",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_0e692ed9c32a132e",
+          "candidate_ref": "candidate-revision-9173cdf2582b93c883fb051698028d945c83f2cb8255f38e920cac45675e1396",
+          "candidate_digest": "sha256:b97092e9d9c5eb512364f84ff38bb9929126246c43e36f99a91d483acfef2ec8",
+          "candidate_package_ref": "scientific_candidate_package_repair_6ba104522209886dd86cc676",
+          "candidate_package_digest": "sha256:52d1d1ed3f9ab793d3c83cc43c0c6f9fe10d182a9181cb4aee09adbd7604a4bd"
+        },
+        "version_tree_ref": "vtree_f47a2687929ff1b94297feff",
+        "version_tree_root_digest": "sha256:26245f65d51c42be9fc64d7150e5e6111457c51d66db2eb0ba52d41f126c2626",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-3cc7dda712d0bd255af4aa7e-b2c5c1adf91d70d9",
+            "operator_revision_ref": "operator_revision_a853bce455277782",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_e12cbf155d85dd28e8500732"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-a07b3caafd7c633da8f554dc-ae50dca3aa811cc8",
+            "operator_revision_ref": "operator_revision_0e1ecf5a8e077386",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_0918e5dc0d1013b149438d50"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-a1937d2ec443ea81ab3bf4f0c86c2a017c68ee2fcb9367da4653356cfe8498d4",
+            "operator_revision_ref": "operator_revision_a7ced5e7abd4fa65",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_646a1cb2b99e1787e5db6a90"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-ab1cf52b3ccf20edb1ddc738934952bbfa2de7b80cc0dca4536fda748287e9bc",
+            "operator_revision_ref": "operator_revision_7f3c9493bdb6d847",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_6ecd5598618fe50351590151"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-eb5596dca581492387c2d324be6fabb89b04244f5637229687b673fed4226072",
+            "operator_revision_ref": "operator_revision_48dbaabd704f7c35",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_886845ded90ff75b09af4fb9"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/双温镜准中性闭合/graph.py",
+            "sha256": "sha256:18f8b10feed80fa575523e5aadb14a958b24232d506429f5e06cb14c57cd21fb",
+            "size_bytes": 5839
+          },
+          {
+            "path": "task_graphs/双温镜准中性闭合/task_graph.md",
+            "sha256": "sha256:790cc9e219163b642aadb8c0d8423a1be9fa4d3651f5e2131714eba61a41155e",
+            "size_bytes": 5856
+          },
+          {
+            "path": "task_graphs/双温镜准中性闭合/task_graph.yaml",
+            "sha256": "sha256:d133b84ee18a1adae3e5f9ad4501d5a8ecd3fb307533237ae92e6ac84b5e816e",
+            "size_bytes": 8906
+          },
+          {
+            "path": "task_graphs/双温镜准中性闭合/test_task_graph.py",
+            "sha256": "sha256:960fe053c9836f06ab7bae213f1ff1aeffeb4808273b291e16f411dcc5d15c8d",
+            "size_bytes": 3519
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.closures.quasineutral_potential.solve_quasineutral_potential",
+      "input_implementation_path": "operators/准中性电势二分求根/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "9f10e5b648fb870f4cf72898dc27eb214696554d1be2c06d65b6141df8afd2dd",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_efd6a2c5fdac5df7dca16dbb",
+          "case_ref": "asset_review_case_9a9783326981f74691f9e602",
+          "decision_ref": "review_decision_d61d34abb0af902dfd6271e8",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_886845ded90ff75b09af4fb9",
+          "root_digest": "sha256:09eb4accab65cdcc6eea025fbccc2a6391534ea8afa21ceec7b038d73d6b81f2",
+          "operator_revision_ref": "operator_revision_48dbaabd704f7c35",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-eb5596dca581492387c2d324be6fabb89b04244f5637229687b673fed4226072",
+          "candidate_digest": "sha256:844d1801f4c9a207acfcc404db943efc8ab9e6dbcf8647aec6b42e653a6b034e",
+          "candidate_package_ref": "scientific_candidate_package_repair_3481aa60900e827b3d60b6a7",
+          "candidate_package_digest": "sha256:91d173251273670e7cb93b9c343de86c9c8506d6826720db4a242fa1fe3c3472"
+        },
+        "version_tree_ref": "vtree_3db68298e7bdfb4503ea5a15",
+        "version_tree_root_digest": "sha256:09eb4accab65cdcc6eea025fbccc2a6391534ea8afa21ceec7b038d73d6b81f2",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/准中性电势二分求根/operator.md",
+            "sha256": "sha256:7bde445c522a9b728821d55b6427159aee5aea4e99b87f271cc219bd58baf857",
+            "size_bytes": 3904
+          },
+          {
+            "path": "operators/准中性电势二分求根/scientific_operator.py",
+            "sha256": "sha256:23473beaf1b340fa0f4f8fa0ff0d871484123a3fb38205785879d6dae9646f17",
+            "size_bytes": 4517
+          },
+          {
+            "path": "operators/准中性电势二分求根/test_scientific_operator.py",
+            "sha256": "sha256:28befc67643eac2d996e7fe24df5bd60aca42f80e0e505c5490c12ff949cb211",
+            "size_bytes": 2009
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.closures.quasineutral_reference_density.compute_reference_electron_density",
+      "input_implementation_path": "operators/准中性参考电子密度/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "12e37f757c4db444f9a1d965191a2eecd6c8ad640dc366c41b55d78433c7ef60",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_355d4a73b57e5ff0414ca9d5",
+          "case_ref": "asset_review_case_4aca7f1cca15e361f0b54b95",
+          "decision_ref": "review_decision_ddded3600b004da5d77fc2a1",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_e12cbf155d85dd28e8500732",
+          "root_digest": "sha256:b7f98da96d368d79b07851782af4bf5c14dc1ad7f05baebd6d376dd50c5fbdb3",
+          "operator_revision_ref": "operator_revision_a853bce455277782",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-3cc7dda712d0bd255af4aa7e-b2c5c1adf91d70d9",
+          "candidate_digest": "sha256:5fb6e77c54e5ae2b5f959d38c9d1da3fdd284834770ed6e6f389e3894a04b3d9",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_323c016931002c1522ab2129",
+        "version_tree_root_digest": "sha256:b7f98da96d368d79b07851782af4bf5c14dc1ad7f05baebd6d376dd50c5fbdb3",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/准中性参考电子密度/operator.md",
+            "sha256": "sha256:6e025d616e084adf8cd50cf8f00f3124ae2a5a0d1b9d7019adcc2896a8681f87",
+            "size_bytes": 1698
+          },
+          {
+            "path": "operators/准中性参考电子密度/scientific_operator.py",
+            "sha256": "sha256:3d25cad1caec9564f0acbd093fb7646ad027febd04b411eb899bafe6589282ab",
+            "size_bytes": 894
+          },
+          {
+            "path": "operators/准中性参考电子密度/test_scientific_operator.py",
+            "sha256": "sha256:a97643d26d4ccfdaa2c441e02c17be46e2cc409324b4387ddde25f8c39b734ef",
+            "size_bytes": 1533
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.closures.reduced_hall_drift.close_reduced_hall_drift",
+      "input_implementation_path": "operators/约化Hall环向漂移闭合/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "8cd8a3859e09825a470be49d1aed894d5712d1f693de55caa649b037e96ea370",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_11300b06127d0ad337bc2d8f",
+          "case_ref": "asset_review_case_2686940df2eb1759ed470d9c",
+          "decision_ref": "review_decision_215ff867ff89b90ec27667fb",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_6bf3a556318cdf3040c3804e",
+          "root_digest": "sha256:893302dc7774b9f1508be736e7a7379a1fb1671dcf38fb27561a0b0255f9a568",
+          "operator_revision_ref": "operator_revision_c128017c6645726f",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-03677c865cd16fa6a753e996-c23cf6bd050587bd",
+          "candidate_digest": "sha256:0b4621bebadf2b6d70f439985d6afe8296f166ecc6a36bd0a99477e729390c8d",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_e9ed9be3fd4ae50f5fb871b6",
+        "version_tree_root_digest": "sha256:893302dc7774b9f1508be736e7a7379a1fb1671dcf38fb27561a0b0255f9a568",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/约化Hall环向漂移闭合/operator.md",
+            "sha256": "sha256:84cac394c7deee56e8db68d7811fbd591287a9dde54def2325d850a58df9ec79",
+            "size_bytes": 2847
+          },
+          {
+            "path": "operators/约化Hall环向漂移闭合/scientific_operator.py",
+            "sha256": "sha256:5249aa94bc4f97cc45387e77a6b5d4e5d9005bda3b717fac77b0400cb9203c16",
+            "size_bytes": 16575
+          },
+          {
+            "path": "operators/约化Hall环向漂移闭合/test_scientific_operator.py",
+            "sha256": "sha256:b8dd610ff81b5050de8e8e6e0ac539e86e28355afee801f858b57257c19a5c9f",
+            "size_bytes": 3108
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.closures.tabulated_pressure_closure.evaluate_tabulated_pressure",
+      "input_implementation_path": "operators/磁场磁通表压强闭合/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "f9ff0edc3ea2616ed1207ce7a74fcc5e31a308a0da8adbb687f424e5b570b5e2",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_0082015ee0c547c96e9c95a8",
+          "case_ref": "asset_review_case_167cbe4a0e6d691052d82cbc",
+          "decision_ref": "review_decision_c2a587738107afe42de56b58",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_45d5368422f0d5a9e243dca5",
+          "root_digest": "sha256:857db807a044e10b2e24252c0770ffb9d2753a9e6c44e304aa2a5bea9660e2e4",
+          "operator_revision_ref": "operator_revision_dcc481cd8362c5f4",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-fbccd1828e965038f02b092f-341c865d0c256ee0",
+          "candidate_digest": "sha256:11808ccc2f1406acae6689f7388aee40ba0cd740e2e223ff50e5a781a36baf8f",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_c460a3883cee48c7d71e41f4",
+        "version_tree_root_digest": "sha256:857db807a044e10b2e24252c0770ffb9d2753a9e6c44e304aa2a5bea9660e2e4",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/磁场磁通表压强闭合/operator.md",
+            "sha256": "sha256:cc63bc902c971332021d7f563680886dc7be9f73329dcb9962d2af9daf11c830",
+            "size_bytes": 3015
+          },
+          {
+            "path": "operators/磁场磁通表压强闭合/scientific_operator.py",
+            "sha256": "sha256:7d73d245ffaf3cc0ca1a88fa380b1e8e97146d59de2071c06fc569b50e170b87",
+            "size_bytes": 3143
+          },
+          {
+            "path": "operators/磁场磁通表压强闭合/test_scientific_operator.py",
+            "sha256": "sha256:a3395cab0d9878488b8a3e6f77cee892a97a7487704ac841e4e6ccc8acdb7e04",
+            "size_bytes": 1865
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.diagnostics.equilibrium_synthesis_diagnostics.synthesize_equilibrium_diagnostics",
+      "input_implementation_path": "task_graphs/平衡合成诊断/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "082b779eb0654a941c6fa3eb94a37fd3465ebde051b9593fd206c8ec72d84806",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_334818661dea9196d81e23b1"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_c891682480f11e6b3116ce04",
+          "case_ref": "asset_review_case_ac1fbe7497170bcceea0da52",
+          "decision_ref": "review_decision_589d1a842408dd6812eda9ce",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_1ae0aed526b35aceeb70689b",
+          "root_digest": "sha256:aec7f643012546a7b5c8de839348db1403d921e96eec6a4467c165c777ea8b81",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_64400b128c8d9535",
+          "candidate_ref": "candidate-revision-3906632ebd1ca4ac511404844eac0cd5ee86ed14b61def4de53056538a4d1995",
+          "candidate_digest": "sha256:92c7318819ea2c139289e1c7510c2914ce3a1ee1352701e109fb9d5cce99cc85",
+          "candidate_package_ref": "scientific_candidate_package_repair_239160e1bd956552be987853",
+          "candidate_package_digest": "sha256:3476188f63ccf3356ee546a355e602d49f7f2747d613c191c853c0945a69fc74"
+        },
+        "version_tree_ref": "vtree_ead490c2bbcb3aa244321c5f",
+        "version_tree_root_digest": "sha256:aec7f643012546a7b5c8de839348db1403d921e96eec6a4467c165c777ea8b81",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-b4e6409003562cd941b5aa0f-9eecab84cdd2ac14",
+            "operator_revision_ref": "operator_revision_cc7a8182fc370253",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_7124a0a5ff8c866bb84b20e2"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/平衡合成诊断/graph.py",
+            "sha256": "sha256:6cde8bac503c531ead2ba9ac2842ccfb17481e654c44322a654779924db3a62a",
+            "size_bytes": 3362
+          },
+          {
+            "path": "task_graphs/平衡合成诊断/task_graph.md",
+            "sha256": "sha256:9a02d4e7659147e30a340247cc11270a0900943e01245ddb4e5d9f3753223bb6",
+            "size_bytes": 4135
+          },
+          {
+            "path": "task_graphs/平衡合成诊断/task_graph.yaml",
+            "sha256": "sha256:5a567a8c2056f0cdb3be31d5d0c2c423ff95c298884d23261fa17a19f866d0d9",
+            "size_bytes": 3956
+          },
+          {
+            "path": "task_graphs/平衡合成诊断/test_task_graph.py",
+            "sha256": "sha256:c5c1f6e6c12e38de7221bc975d17699ab007d1a1c7f710d118f2e8b3af997bf4",
+            "size_bytes": 6047
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.diagnostics.firehose_mirror_margins.compute_firehose_mirror_margins",
+      "input_implementation_path": "operators/火焰管与镜像稳定裕度/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "3a9b28d155bd0ee315b24543406fe82128d7a8d744877a905fd4ab3f7c41988e",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_6fc6690661cbb77d9055267f",
+          "case_ref": "asset_review_case_4ac7f7b4b58ceef426e3b7cc",
+          "decision_ref": "review_decision_1b3e731f3a02a0e5b327f186",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_2005ec53cb1c3a22644aef2a",
+          "root_digest": "sha256:9722d7a25b99714f1a9a1df6d489718e013088dfbadb63631f6f8e4783805a89",
+          "operator_revision_ref": "operator_revision_d45d27ecac675f90",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-74e772d095ac34eca3ed328b-b07d55f2b1c0510a",
+          "candidate_digest": "sha256:5f55f3579b9f0dc1d0354f8ed8b4954619c8d20281b369d96fc2365444f53d64",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_1b90b594e8443626ef1a1a0b",
+        "version_tree_root_digest": "sha256:9722d7a25b99714f1a9a1df6d489718e013088dfbadb63631f6f8e4783805a89",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/火焰管与镜像稳定裕度/operator.md",
+            "sha256": "sha256:a0cccdb3065bcf9acd33bc74cbb8648b87e3528ba86f2468a78e2b11b5651d55",
+            "size_bytes": 5242
+          },
+          {
+            "path": "operators/火焰管与镜像稳定裕度/scientific_operator.py",
+            "sha256": "sha256:a3be02e9ce4585a6a6b3cfcb093d4ac472797818ceb5f0c0f05fbf1b59468553",
+            "size_bytes": 3321
+          },
+          {
+            "path": "operators/火焰管与镜像稳定裕度/test_scientific_operator.py",
+            "sha256": "sha256:013a89e03933519dc318f517383db7504e8333ff2fef0cd3f2cb3a9584c8879e",
+            "size_bytes": 3192
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.diagnostics.observation_residuals.reduce_observation_residuals",
+      "input_implementation_path": "operators/各向异性诊断残差归约/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "7309f5e6f4841b8541535b1e318d4f074d3a51b8d1ec369ea5e8e8402e88061a",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_50060da84a99b8ee0be09350",
+          "case_ref": "asset_review_case_821ba07b19a72698f50d73cc",
+          "decision_ref": "review_decision_582ee78e1ae392b994502dde",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_d196fbe74e20d36c0435d3d1",
+          "root_digest": "sha256:61c0d0ce7fb920bd6005914be634dba0640fbc1ce96e8a79d6eb89a14dada4ca",
+          "operator_revision_ref": "operator_revision_1c74653730847016",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-b2181ea4b2734975e7da112771843fcd4304b8278a3d33d8fa7c81005f5df577",
+          "candidate_digest": "sha256:972007ed03f7b041041e2117606e94904ef66b473f093766135c3ed586980604",
+          "candidate_package_ref": "scientific_candidate_package_repair_755735ab7229d696e21f422e",
+          "candidate_package_digest": "sha256:0b0a38d601560fd5b4e3548dea0c70cabddfcbc0f4d0a857d94e70b079955e6b"
+        },
+        "version_tree_ref": "vtree_14fac1511a97e103983938d5",
+        "version_tree_root_digest": "sha256:61c0d0ce7fb920bd6005914be634dba0640fbc1ce96e8a79d6eb89a14dada4ca",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/各向异性诊断残差归约/operator.md",
+            "sha256": "sha256:c6b54c2fadcb0a2cef18b76bea514a4e120266d460485378b16c256f89f37b62",
+            "size_bytes": 2464
+          },
+          {
+            "path": "operators/各向异性诊断残差归约/scientific_operator.py",
+            "sha256": "sha256:62d2caf32a661406056083838ab27b46f14ef0ee964b31cdcc3cb8b010cd57e1",
+            "size_bytes": 1025
+          },
+          {
+            "path": "operators/各向异性诊断残差归约/test_scientific_operator.py",
+            "sha256": "sha256:234e584a562df2230b61aa5c296d18e74f6f8b9e226447ddeac946f5cd26252d",
+            "size_bytes": 1215
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.diagnostics.parallel_pressure_residual.compute_parallel_pressure_residual",
+      "input_implementation_path": "operators/平行压强平衡残差/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "14914c30fd8786740fedfb6262203ab995978ac1b1980183568fa81f0e40be74",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_c999f668273ac6555e6551cb",
+          "case_ref": "asset_review_case_dfdbd0db67a2cb123f2f435a",
+          "decision_ref": "review_decision_20fe8f8f7f6f483601d9ff1b",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_e9a54d3b476ff7819c09a3b3",
+          "root_digest": "sha256:54da9b17c90699b5554464fd8032ec0893f34cb2835032ab4acf42800d0884d0",
+          "operator_revision_ref": "operator_revision_da9865f1dcb17803",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-de2686dae071953aa797a785-727af6b673ef4a5f",
+          "candidate_digest": "sha256:0d2ae0b2ac0366abb9ff2ec8c76d5009135cf0724e1c864ca4e830798f96e3dd",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_59c74abce3ddb18b921f1d5f",
+        "version_tree_root_digest": "sha256:54da9b17c90699b5554464fd8032ec0893f34cb2835032ab4acf42800d0884d0",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/平行压强平衡残差/operator.md",
+            "sha256": "sha256:b7f4eaacd96f578b278768eb569c0ceb1051e792ac012b204e6ec97829c2e9c5",
+            "size_bytes": 4191
+          },
+          {
+            "path": "operators/平行压强平衡残差/scientific_operator.py",
+            "sha256": "sha256:4349c3009956b5dca3c63ea052edeabd04174c1fa77ed1cec85772ea61a5c2af",
+            "size_bytes": 3022
+          },
+          {
+            "path": "operators/平行压强平衡残差/test_scientific_operator.py",
+            "sha256": "sha256:b864a3e0296c0de08b14d167ce180bd1eb8c052a784cf59766a57a467dc6a15c",
+            "size_bytes": 2732
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.diagnostics.picard_flux_residual.compute_picard_flux_residual",
+      "input_implementation_path": "operators/Picard磁通相对残差/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "e6ff451623be3aa6b92028eea930f4bc91edfc364a47015bd82307b4c4e5c82e",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_6e1a99f76b6e034137f3cfd3",
+          "case_ref": "asset_review_case_45a6e17fc631831519044feb",
+          "decision_ref": "review_decision_763195fd84b93422aa7752c3",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_1d3a5c7f354f13b23fe1598b",
+          "root_digest": "sha256:0655137c14fe3c86528e43def8256ae6d006424a6625f2562be1986af7168de9",
+          "operator_revision_ref": "operator_revision_256fc56fc2be73d1",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-efc37f335af0d52e9bfc3eb68f7ebe909170d166f377b510d118a703932b9c00",
+          "candidate_digest": "sha256:e193a8d1032c856d1a7dd8166a6948ddda25526eef53d893e87d8cd89709e67a",
+          "candidate_package_ref": "scientific_candidate_package_repair_28152bc8cfab5824828d0873",
+          "candidate_package_digest": "sha256:9cc97927577840339b40aeafdbaf5036673a17e286ed0af8ac93f841a7ff9e96"
+        },
+        "version_tree_ref": "vtree_c58aeddf9b05e2a51a5a91d6",
+        "version_tree_root_digest": "sha256:0655137c14fe3c86528e43def8256ae6d006424a6625f2562be1986af7168de9",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/Picard磁通相对残差/operator.md",
+            "sha256": "sha256:277b922562dd06c331d18a8580bba27ebfe2c2233ee4c60a56c6c12f7e1432e7",
+            "size_bytes": 1903
+          },
+          {
+            "path": "operators/Picard磁通相对残差/scientific_operator.py",
+            "sha256": "sha256:19c5c837e7aca3770690814727bd677da625dd6fc6b952a8754d22fd07c8fd0b",
+            "size_bytes": 838
+          },
+          {
+            "path": "operators/Picard磁通相对残差/test_scientific_operator.py",
+            "sha256": "sha256:aa5a58dc3109e53668c8040b4765eadc1377823dc9b0a6505d3b0c75e1c20584",
+            "size_bytes": 1227
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.anisotropic_force_balance.compute_anisotropic_force_balance",
+      "input_implementation_path": "operators/轴对称各向异性压强张量力平衡/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "b25995caed9803f981851204a0731d5f4a7aaa64259d953da8b67e2bb2f30edd",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_c70b9a3bb20a4721f2c5f5fe",
+          "case_ref": "asset_review_case_ffa641872f9567a325d05228",
+          "decision_ref": "review_decision_d39e10b2b8f4850b93cb373c",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_cbc24b93592aa0e05501f17e",
+          "root_digest": "sha256:e32dd4dad6d16c4f75101ea7a1216bfd132d2fc6745d61730baae6b9d9556292",
+          "operator_revision_ref": "operator_revision_45b307cb68747a2c",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-da204d0f6418609d33c11ca0-63a33e1a4e698807",
+          "candidate_digest": "sha256:f80409bfe9eb4e7d162d74255887ad18dcd29adacbe51d4092258f011e62324e",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_7dd7a14eeed14edead28144e",
+        "version_tree_root_digest": "sha256:e32dd4dad6d16c4f75101ea7a1216bfd132d2fc6745d61730baae6b9d9556292",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/轴对称各向异性压强张量力平衡/operator.md",
+            "sha256": "sha256:82d5ec17e79d945ff6b8889bf9de39c88bbd9449121af0fd148ff8d3958f2c13",
+            "size_bytes": 3337
+          },
+          {
+            "path": "operators/轴对称各向异性压强张量力平衡/scientific_operator.py",
+            "sha256": "sha256:11d16df11702b4a99bbe7c8430d91f8cb04b78d3f9cb49ab7de6da2920d7f7a8",
+            "size_bytes": 6994
+          },
+          {
+            "path": "operators/轴对称各向异性压强张量力平衡/test_scientific_operator.py",
+            "sha256": "sha256:c8956d413723614735b90646a572bf9e61206c2485e12d9354df55de2a512727",
+            "size_bytes": 2445
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.anisotropic_picard_feedback.update_anisotropic_picard_flux",
+      "input_implementation_path": "operators/各向异性Picard电流Green反馈/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "a30f4d15ea6d19f7a325d6e778358d697ef911d2dd8d845b08606e04f60821bb",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_7669fd99ebdc9bdccd15c1a0",
+          "case_ref": "asset_review_case_6b4b56756817ec368b244543",
+          "decision_ref": "review_decision_d3e603eeb080f95100dffc1b",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_32a31bb51526c84e1c00de83",
+          "root_digest": "sha256:2fac4abaa8eb54dd46420e68674550f23ae0d5c4f9f00ca02f0201700531d942",
+          "operator_revision_ref": "operator_revision_7c1c37e0c19b1a8d",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-71ab33faefb6d7d59864b218-ebcfdf6f318e31d9",
+          "candidate_digest": "sha256:ae1fa0eb11df52c25ceb6ddc0f9ce6b83e8df978a276a17572756637e7e80f59",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_8122c4c6c978eb8828f37042",
+        "version_tree_root_digest": "sha256:2fac4abaa8eb54dd46420e68674550f23ae0d5c4f9f00ca02f0201700531d942",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/各向异性Picard电流Green反馈/operator.md",
+            "sha256": "sha256:37dbc691f971f12a6fa050c57d454e57ff2ea64e58394eb7c61706784a580ea9",
+            "size_bytes": 4037
+          },
+          {
+            "path": "operators/各向异性Picard电流Green反馈/scientific_operator.py",
+            "sha256": "sha256:60a05f3a454d0237eaa47b4bc3424f552d02176a9a70dfa2ab00718a108f864a",
+            "size_bytes": 3133
+          },
+          {
+            "path": "operators/各向异性Picard电流Green反馈/test_scientific_operator.py",
+            "sha256": "sha256:c15c26e853aa2ec895d32d3ba3ea8dc8ae7715c587587b3cc15e05f81161d0bb",
+            "size_bytes": 1581
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.anisotropic_toroidal_current.compute_anisotropic_toroidal_current",
+      "input_implementation_path": "operators/各向异性压强张量环向电流/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "a1046a870f3db2c4239ad70fe3437d15224ff2a830d29d29be2e2aff6cbbda9f",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_eed9b4fbbbaad2812fb93ef7",
+          "case_ref": "asset_review_case_d2b354061d1c1bb2c2448b0b",
+          "decision_ref": "review_decision_bede0c9cf3cbbcb86612583a",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_878dd569be62add630a56bd8",
+          "root_digest": "sha256:de7618d9be5e15fb9bebd31101bcf347cdb711b23e204529e73c8e55c59b8f19",
+          "operator_revision_ref": "operator_revision_a3cc8e3fd91074d1",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-357f24011669b619d357c9c7-93451770c59c6a44",
+          "candidate_digest": "sha256:6a4e08a359fa8111d529172f0e2c06d6849e0d75176a9d60dfa5aa7295916949",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_d6b0f1ee21c5dd25ae33032a",
+        "version_tree_root_digest": "sha256:de7618d9be5e15fb9bebd31101bcf347cdb711b23e204529e73c8e55c59b8f19",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/各向异性压强张量环向电流/operator.md",
+            "sha256": "sha256:60647c21db89eea0cfc07fc30911127fe38aa96c295b47a1d7f966a66958797a",
+            "size_bytes": 4247
+          },
+          {
+            "path": "operators/各向异性压强张量环向电流/scientific_operator.py",
+            "sha256": "sha256:672f5bb348ece8f94f8c6438eb2f3513806dd8577cda7e0e036e81757d69cd4b",
+            "size_bytes": 2988
+          },
+          {
+            "path": "operators/各向异性压强张量环向电流/test_scientific_operator.py",
+            "sha256": "sha256:d8a64cd7fa3f58def482a146062b3604223bc8b626bf0904d54b2345d2ba7b02",
+            "size_bytes": 3047
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.axisymmetric_anisotropic_picard.solve_axisymmetric_anisotropic_picard",
+      "input_implementation_path": "task_graphs/新版轴对称各向异性Picard平衡/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "6fe816c3097263c77696a618293779cb2fcab953ecd51403e8394c104b4e3121",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_b950dfa699d9608899cd6a5f",
+        "scientific_asset_admission_c70b9a3bb20a4721f2c5f5fe",
+        "scientific_asset_admission_fd676b9aa01971feab719261"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_d14c695407a62759832c4f10",
+          "case_ref": "asset_review_case_8ce88925903cc79c1f253d0b",
+          "decision_ref": "review_decision_b851043562f540f829a3dcf8",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_b764241b0de726849e82cb92",
+          "root_digest": "sha256:740d3c812c7023978d6238e0aea9e8da60c7ed96b2c3786a2e5bfd0217e3b307",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_34d7506f170423e7",
+          "candidate_ref": "candidate-revision-62a0c392d37932f40c87b55e567bdb4c5da9192a8a5ef1bd1e1695f52b371933",
+          "candidate_digest": "sha256:14481d2a5ae33a7bc806031c07e3ccc74d557f0360a52dbe2e398582b3961b71",
+          "candidate_package_ref": "scientific_candidate_package_repair_de9eb941a525c756abb22a0d",
+          "candidate_package_digest": "sha256:82c0cf0499187db1459aa596e427eeb9300b482dae8ddd2002fdf8442a98e480"
+        },
+        "version_tree_ref": "vtree_8be555adb8719a3db12da7ec",
+        "version_tree_root_digest": "sha256:740d3c812c7023978d6238e0aea9e8da60c7ed96b2c3786a2e5bfd0217e3b307",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-795222b8f73866e3e094863f-0107cc9bd1042a47",
+            "operator_revision_ref": "operator_revision_4e3900210055d1c7",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_f4e8f072d4e9309509e46d1a"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-da204d0f6418609d33c11ca0-63a33e1a4e698807",
+            "operator_revision_ref": "operator_revision_45b307cb68747a2c",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_cbc24b93592aa0e05501f17e"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-209f8541e51b7f7958be1376bdf750f1eadffe9388e558ee785646892395db65",
+            "operator_revision_ref": "operator_revision_072e03ba6bcda8ec",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_9ed34fda66feb2cd55150a9f"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/新版轴对称各向异性Picard平衡/graph.py",
+            "sha256": "sha256:3de0fc07404243ac9db9c5a1438d7af9a4d4f1f91f6a4c4ae23da4e925515650",
+            "size_bytes": 7535
+          },
+          {
+            "path": "task_graphs/新版轴对称各向异性Picard平衡/task_graph.md",
+            "sha256": "sha256:83febbb06e2347a81f111c2acfb9bd348e1654b0a516042ffd634b68df7f77cf",
+            "size_bytes": 5757
+          },
+          {
+            "path": "task_graphs/新版轴对称各向异性Picard平衡/task_graph.yaml",
+            "sha256": "sha256:3410647a8d47afa3f16bae8e2f795733ee87c9461d44eaf4b413e3b2988effac",
+            "size_bytes": 9296
+          },
+          {
+            "path": "task_graphs/新版轴对称各向异性Picard平衡/test_task_graph.py",
+            "sha256": "sha256:a0fd592b8c3a560a3cd377e509ab797cf5bde5ab1915e7783cb7422dbc1cab05",
+            "size_bytes": 4025
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.axisymmetric_picard_update.update_axisymmetric_picard_flux",
+      "input_implementation_path": "operators/轴对称Picard磁通Green更新/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "17948d0f7274a32e0a357eceadfc03c1d7802228095a38f3c12516caf5e24af8",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_fd676b9aa01971feab719261",
+          "case_ref": "asset_review_case_1662be5142ec656bb9c1f8e3",
+          "decision_ref": "review_decision_be24271597ed07a06f26c584",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_9ed34fda66feb2cd55150a9f",
+          "root_digest": "sha256:720fec0e13c3af091aae92ad03d26a673f4951d87533ba6afa04cf3bb1af1aae",
+          "operator_revision_ref": "operator_revision_072e03ba6bcda8ec",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-209f8541e51b7f7958be1376bdf750f1eadffe9388e558ee785646892395db65",
+          "candidate_digest": "sha256:54f1556088b092b11dd6884f0a2c8031ef2f0ece032062fbef206ab7c6daf4af",
+          "candidate_package_ref": "scientific_candidate_package_repair_e6792ebf0181668ac3019625",
+          "candidate_package_digest": "sha256:89d493adf43c9d23387423ec9217d5fe7aecb99357db0ad1dbb107af0009d8d7"
+        },
+        "version_tree_ref": "vtree_be24cbd9641867bec536711d",
+        "version_tree_root_digest": "sha256:720fec0e13c3af091aae92ad03d26a673f4951d87533ba6afa04cf3bb1af1aae",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/轴对称Picard磁通Green更新/operator.md",
+            "sha256": "sha256:851ec2c2fabf1e32b998c5f763606106612723fc91eb89b709deb838fb9cd5e1",
+            "size_bytes": 2832
+          },
+          {
+            "path": "operators/轴对称Picard磁通Green更新/scientific_operator.py",
+            "sha256": "sha256:ba2d23bc040bc024b0080a94c20b1fc0da0c0e36eac7e7ab092af2fcd5992982",
+            "size_bytes": 2300
+          },
+          {
+            "path": "operators/轴对称Picard磁通Green更新/test_scientific_operator.py",
+            "sha256": "sha256:3dc15b256e0658b96fe7c7e9485f68851a0f7d595eaa613989c94b2a197c4b91",
+            "size_bytes": 1700
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.free_boundary_anisotropic_picard.solve_free_boundary_anisotropic_picard",
+      "input_implementation_path": "task_graphs/各向异性自由边界Picard平衡/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "8989fdd1574b59325db57cda82f6743c3c4340b0bf2cd4db3037eaab36585669",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_23922e08361a4d2973858c89",
+        "scientific_asset_admission_6e1a99f76b6e034137f3cfd3",
+        "scientific_asset_admission_7669fd99ebdc9bdccd15c1a0",
+        "scientific_asset_admission_b979f4cb5b6b527d7e4610d1",
+        "scientific_asset_admission_eed9b4fbbbaad2812fb93ef7"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_67c65b5f557ce035829dfddb",
+          "case_ref": "asset_review_case_a6e5dd778bc8482e0e3fab2c",
+          "decision_ref": "review_decision_a4b02c96ef8e321ff7fb5956",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_a510b605c8a33a1b7ef59104",
+          "root_digest": "sha256:a1da6aa4bd7daf0415f7204a0e40cde34868f4e79fb68b45c92ae8496e9af814",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_9e6fe16937f758a1",
+          "candidate_ref": "candidate-revision-a98abb17088f25b061cac18b42da5720435853cf90f31a7c21b1cb476c0a719a",
+          "candidate_digest": "sha256:c0343383d655b49c7d321446391207e18e05d4acd6bd7968b53f5af32ad5b089",
+          "candidate_package_ref": "scientific_candidate_package_repair_02699d4e1c297e0a659ecac6",
+          "candidate_package_digest": "sha256:d9d1d3db036cec36aaf279c17488b69ce8987c150edab3107e0ddeedf7176b75"
+        },
+        "version_tree_ref": "vtree_805043b8e815857fd8695c4c",
+        "version_tree_root_digest": "sha256:a1da6aa4bd7daf0415f7204a0e40cde34868f4e79fb68b45c92ae8496e9af814",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-2f034480cd26ecff5516985f-d2ecd20efd7f1e03",
+            "operator_revision_ref": "operator_revision_32e87ec6534e02d3",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_0b6f20dd199af2be27941e40"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-357f24011669b619d357c9c7-93451770c59c6a44",
+            "operator_revision_ref": "operator_revision_a3cc8e3fd91074d1",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_878dd569be62add630a56bd8"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-71ab33faefb6d7d59864b218-ebcfdf6f318e31d9",
+            "operator_revision_ref": "operator_revision_7c1c37e0c19b1a8d",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_32a31bb51526c84e1c00de83"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-7b93773493199dbcc73371682de84d182765ab7ca43924f8e20fc58e34d549e1",
+            "operator_revision_ref": "operator_revision_ccae3acbd084028f",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_8f5ce2b551b515c9c42b8f49"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-efc37f335af0d52e9bfc3eb68f7ebe909170d166f377b510d118a703932b9c00",
+            "operator_revision_ref": "operator_revision_256fc56fc2be73d1",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_1d3a5c7f354f13b23fe1598b"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/各向异性自由边界Picard平衡/graph.py",
+            "sha256": "sha256:a8768818b5b136344138a520d56376d7b1e3899323600a07e3c06887dbea2fa2",
+            "size_bytes": 7290
+          },
+          {
+            "path": "task_graphs/各向异性自由边界Picard平衡/task_graph.md",
+            "sha256": "sha256:b0127e52601a3a1d2d72c01285b388934c90391656b5a2ab8908fa7840289928",
+            "size_bytes": 11224
+          },
+          {
+            "path": "task_graphs/各向异性自由边界Picard平衡/task_graph.yaml",
+            "sha256": "sha256:28bf5357d2fe86377dfb6ae76ab8980b7b39fd0eda2d2102240951734c80b736",
+            "size_bytes": 19291
+          },
+          {
+            "path": "task_graphs/各向异性自由边界Picard平衡/test_task_graph.py",
+            "sha256": "sha256:3197ef4618aa3f870b50cf53c0dd655d66c996bc285944be4a130eacd47318c3",
+            "size_bytes": 16761
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.isotropic_picard_step.pressure_flux_picard_step",
+      "input_implementation_path": "operators/历史Picard电流磁通残差单步/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "4a06372ddd8b884f4ba54856efa2c60258ca9229d2ff50c3c614977205a8dccc",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_bd19aa9782ea52047404b0da",
+          "case_ref": "asset_review_case_23c13020c1aa7286f214268f",
+          "decision_ref": "review_decision_cb05e53a6d8b1d897f634490",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_b7096280d7e4366e1ea39657",
+          "root_digest": "sha256:ba836e14333b5f9a848ac4200b10a7886c7d53578009fe6345c2644fe0542208",
+          "operator_revision_ref": "operator_revision_19277b354d01fb9d",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-d365a8cf46a22a9ad140d52c216a1e1a560e69dc31739ffdd6805fe3e0b448a9",
+          "candidate_digest": "sha256:35c30e9c1a23a276ad18b6397aa462289d5399bafe130eb8f2941214a61d5851",
+          "candidate_package_ref": "scientific_candidate_package_repair_7ed28c31bf42ae05d4a95fe5",
+          "candidate_package_digest": "sha256:4d837aa26161d68dedcdb2f11b5d15e1c4fec9a3455b3447a15ffdf438127ec1"
+        },
+        "version_tree_ref": "vtree_64b022bde02aee2655e0e779",
+        "version_tree_root_digest": "sha256:ba836e14333b5f9a848ac4200b10a7886c7d53578009fe6345c2644fe0542208",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/历史Picard电流磁通残差单步/operator.md",
+            "sha256": "sha256:68f3ce76457bc2a6455cb2a51ecdf04ede1e400c40974a789ca4381a291fcbd5",
+            "size_bytes": 5722
+          },
+          {
+            "path": "operators/历史Picard电流磁通残差单步/scientific_operator.py",
+            "sha256": "sha256:f7374de2d120328db08f8a171eee3dbf955569873042ac03b4fa82c3690a13f8",
+            "size_bytes": 5351
+          },
+          {
+            "path": "operators/历史Picard电流磁通残差单步/test_scientific_operator.py",
+            "sha256": "sha256:05c49e1da9f6e3dca488363c650c074c0e410f82b6006f6bba2fb8fc858443dc",
+            "size_bytes": 6164
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.isotropic_pressure_flux.solve_isotropic_pressure_flux",
+      "input_implementation_path": "task_graphs/历史各向同性压力通量Picard平衡/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "ff33d164e47c57e1776f64cd1b9af5c3af0c1b233328d098a7b8dc0ea92883dc",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_ba5107b4fb3881ddffe70722",
+        "scientific_asset_admission_bd19aa9782ea52047404b0da"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_02390a017992305303f94cf4",
+          "case_ref": "asset_review_case_9bc7da0a910abe3d2070ed71",
+          "decision_ref": "review_decision_906239766c3f97203e0cf416",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_22f1f6d42b14afd52812bc72",
+          "root_digest": "sha256:43ee0baca61a5721b49938aa85fbd09067fd48bb075e30ab1cea56aa535db9da",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_1b3cf3b175b785c5",
+          "candidate_ref": "candidate-revision-a3baf76e093ab90e4eb3d9615348f892a0b182604929cae280ddcdd3efb4a58f",
+          "candidate_digest": "sha256:8bb01494cedcb1fb14c18ad526f645378bd60bec10673a5e684b19b70078f4dc",
+          "candidate_package_ref": "scientific_candidate_package_repair_eb36633f9d19e41784453673",
+          "candidate_package_digest": "sha256:81989585717fd8db7e00085050c3c28428f2b2c66baf6ae268c40388cba34990"
+        },
+        "version_tree_ref": "vtree_ae69683d1edce24b3ca06dd3",
+        "version_tree_root_digest": "sha256:43ee0baca61a5721b49938aa85fbd09067fd48bb075e30ab1cea56aa535db9da",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-e5c91ab0669345c59689d051-d0317e4d261e4df4",
+            "operator_revision_ref": "operator_revision_aee56309215d7482",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_7266005695c72d3749c920d1"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-d365a8cf46a22a9ad140d52c216a1e1a560e69dc31739ffdd6805fe3e0b448a9",
+            "operator_revision_ref": "operator_revision_19277b354d01fb9d",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_b7096280d7e4366e1ea39657"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/历史各向同性压力通量Picard平衡/graph.py",
+            "sha256": "sha256:2f5d26c2b934e15519ccf793c41af9992483c4bcc923ef85b4d6739ea2111c49",
+            "size_bytes": 2940
+          },
+          {
+            "path": "task_graphs/历史各向同性压力通量Picard平衡/task_graph.md",
+            "sha256": "sha256:97224cb4bf40afa2d96fafa855f26b20d07d47340bbc111a07efcd5b25fc56fc",
+            "size_bytes": 9276
+          },
+          {
+            "path": "task_graphs/历史各向同性压力通量Picard平衡/task_graph.yaml",
+            "sha256": "sha256:05a1b203bcf4b5991f7dbc4f7c7004ba22c1d078d0c56c648fc480b34090d959",
+            "size_bytes": 6060
+          },
+          {
+            "path": "task_graphs/历史各向同性压力通量Picard平衡/test_task_graph.py",
+            "sha256": "sha256:22ec83121dff39793a07a2e4aec871af8dc1141928a06be715640e5f250389e4",
+            "size_bytes": 5762
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.kinetic_mirror_hall_equilibrium.solve_kinetic_mirror_hall_equilibrium",
+      "input_implementation_path": "task_graphs/动理学镜约化Hall平衡/graph.py",
+      "integration_action": "normalize_task_graph_wrapper",
+      "library_source_lf_sha256": "af2fb303fb562f735180a030a6ad21f24bbf491c493b39ba0fcf4951c39c3753",
+      "comparison": "The admitted graph was normalized into a source-free public wrapper. Its two admitted nested TaskGraphs remain explicit dependencies; the package does not ship or read YAML at runtime.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_aee0cfe508b6cb2261ec9dc3",
+        "scientific_asset_admission_b4884046857dbec4b4b6b1ce"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_d0d51ac3af33949baf30a811",
+          "case_ref": "asset_review_case_250eb72249ddd6cf553f94d7",
+          "decision_ref": "review_decision_ad849221be359f07bbfc7a85",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_a4204c68a17bf17a59655a79",
+          "root_digest": "sha256:eb268b3027230aa3a2e56d6cddf68d9172a578e581ef4b568c4aa5cc7842a38b",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_14d937b3f2a04291",
+          "candidate_ref": "candidate-revision-35ce35d491d7dc23113cf8c53bfe20a070f99c4a43eafd1bde420fee5a1490a3",
+          "candidate_digest": "sha256:6651d5a73dc0154a9554275dcdcee62b28169134c4042a3cc1ba341fa903813b",
+          "candidate_package_ref": "scientific_candidate_package_repair_8ad840e58231fb9c5b45ea7f",
+          "candidate_package_digest": "sha256:d6deb56e50bc7e152a6cc4346408007e2eae31df10bc89319c332e1578bc9942"
+        },
+        "version_tree_ref": "vtree_97eb8a66ac0f78c3080e56cb",
+        "version_tree_root_digest": "sha256:eb268b3027230aa3a2e56d6cddf68d9172a578e581ef4b568c4aa5cc7842a38b",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": "task_graph_revision_40e7c3d1ee12d8a7",
+            "node_key": "candidate-revision-3c4cee3c10bf360704650c9888c3c6784ee37e426227a9563af5784f28ce0d35",
+            "operator_revision_ref": null,
+            "target_kind": "task_graph_revision",
+            "version_commit_ref": "vcommit_298bbb34b7d57634f909c996"
+          },
+          {
+            "nested_task_graph_revision_ref": "task_graph_revision_b6aafefdfac7b0bb",
+            "node_key": "candidate-revision-a53df513140e12d8639df9cb2cdcffd42f904838c29c3856493d1cf345016436",
+            "operator_revision_ref": null,
+            "target_kind": "task_graph_revision",
+            "version_commit_ref": "vcommit_b3532b3155e2daa0b4e0badc"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/动理学镜约化Hall平衡/graph.py",
+            "sha256": "sha256:12623489c7fb0c0ce8d2b67d8e670f7a26cfdea9d422dc28bd48af480a05846d",
+            "size_bytes": 1493
+          },
+          {
+            "path": "task_graphs/动理学镜约化Hall平衡/task_graph.md",
+            "sha256": "sha256:28a49c117698e3a7e55b860cb6f9784fcf0921c4d7e9d55619e0137ddcfa70e2",
+            "size_bytes": 4986
+          },
+          {
+            "path": "task_graphs/动理学镜约化Hall平衡/task_graph.yaml",
+            "sha256": "sha256:ed26c29628268497ec5b60b9bd1c31b8bc48fd962dbd5c01347266c045ebdef2",
+            "size_bytes": 2809
+          },
+          {
+            "path": "task_graphs/动理学镜约化Hall平衡/test_task_graph.py",
+            "sha256": "sha256:4617d706ce1bae3fdb8678d781d3d30a06882d3855ab082c8a6e8ebb3230473f",
+            "size_bytes": 2493
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.pressure_flux_state.build_pressure_flux_state",
+      "input_implementation_path": "operators/历史中平面压力样条状态/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "694d082c26d367c609287f6fde23e0af18fed4f886fdb204d4aa4543884ad211",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_ba5107b4fb3881ddffe70722",
+          "case_ref": "asset_review_case_01c36e79ba78184a6b99eb53",
+          "decision_ref": "review_decision_24ef2b2867c06ecca57d2ed9",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_7266005695c72d3749c920d1",
+          "root_digest": "sha256:18649c772676670a5cabcfbd6572a3a035c72db3c0fbe318b7f50578a1b4e0bf",
+          "operator_revision_ref": "operator_revision_aee56309215d7482",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-e5c91ab0669345c59689d051-d0317e4d261e4df4",
+          "candidate_digest": "sha256:c123652a9210f26f6622dbbf77b1abe51e3221d3df937db6d9b788a707dfae25",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_2b87aa17020074451d213894",
+        "version_tree_root_digest": "sha256:18649c772676670a5cabcfbd6572a3a035c72db3c0fbe318b7f50578a1b4e0bf",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/历史中平面压力样条状态/operator.md",
+            "sha256": "sha256:fd70936327a481d483df1fb93eaf7aaaabf562a6b49e2caa9e396d5447f3f81d",
+            "size_bytes": 4707
+          },
+          {
+            "path": "operators/历史中平面压力样条状态/scientific_operator.py",
+            "sha256": "sha256:7802008198fac539259005c2fdc79d678a07b078bba6224221248151a57f4eac",
+            "size_bytes": 3089
+          },
+          {
+            "path": "operators/历史中平面压力样条状态/test_scientific_operator.py",
+            "sha256": "sha256:7ecbc3615ef3a8100a013c24bceddf682012972137f9fcdd46551c131876e957",
+            "size_bytes": 2250
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.equilibrium.reduced_hall_anisotropic_picard.solve_reduced_hall_anisotropic_picard",
+      "input_implementation_path": "task_graphs/约化Hall各向异性Picard平衡/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "9123f5568c0e4567c5511b1305aaf2ba7e9c6de4e6a0477cd1950b3db23e46aa",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_11300b06127d0ad337bc2d8f",
+        "scientific_asset_admission_b950dfa699d9608899cd6a5f",
+        "scientific_asset_admission_fd676b9aa01971feab719261"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_aee0cfe508b6cb2261ec9dc3",
+          "case_ref": "asset_review_case_2a67c2c518275fe09a113581",
+          "decision_ref": "review_decision_23764c0119740cda74a6d455",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_b3532b3155e2daa0b4e0badc",
+          "root_digest": "sha256:a2c692d2ba0f67df03d12da384cd48516ded2db75fe77d0ec18c9b7adcf0af7a",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_b6aafefdfac7b0bb",
+          "candidate_ref": "candidate-revision-a53df513140e12d8639df9cb2cdcffd42f904838c29c3856493d1cf345016436",
+          "candidate_digest": "sha256:e74f1fc3d61454a6fe2348cf2e7daf330867aefebb38c3e2b7317c00b1215f4f",
+          "candidate_package_ref": "scientific_candidate_package_repair_01934530a3de43de80db9117",
+          "candidate_package_digest": "sha256:d70d1bb3b04c3ac3ffefad0910ffa71bb0d7b7b7a42ab2789c267e144113e9bc"
+        },
+        "version_tree_ref": "vtree_cd9939fcc2b9862bc238742c",
+        "version_tree_root_digest": "sha256:a2c692d2ba0f67df03d12da384cd48516ded2db75fe77d0ec18c9b7adcf0af7a",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-03677c865cd16fa6a753e996-c23cf6bd050587bd",
+            "operator_revision_ref": "operator_revision_c128017c6645726f",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_6bf3a556318cdf3040c3804e"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-795222b8f73866e3e094863f-0107cc9bd1042a47",
+            "operator_revision_ref": "operator_revision_4e3900210055d1c7",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_f4e8f072d4e9309509e46d1a"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-209f8541e51b7f7958be1376bdf750f1eadffe9388e558ee785646892395db65",
+            "operator_revision_ref": "operator_revision_072e03ba6bcda8ec",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_9ed34fda66feb2cd55150a9f"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/约化Hall各向异性Picard平衡/graph.py",
+            "sha256": "sha256:0cdf6a3ebd1e2898e56264ed458639c3de95426ba53928b9d134a51ad864d1d0",
+            "size_bytes": 8495
+          },
+          {
+            "path": "task_graphs/约化Hall各向异性Picard平衡/task_graph.md",
+            "sha256": "sha256:4b215b48ffa3b67172a36fa87330f76963bd76030b02714480002f9a6faff916",
+            "size_bytes": 5947
+          },
+          {
+            "path": "task_graphs/约化Hall各向异性Picard平衡/task_graph.yaml",
+            "sha256": "sha256:7f1ac7ddd9bee010181cfbdc969b516700f806a44987df7f8642ce466d78947a",
+            "size_bytes": 7070
+          },
+          {
+            "path": "task_graphs/约化Hall各向异性Picard平衡/test_task_graph.py",
+            "sha256": "sha256:4a7a330b557356d175fe68994a44644b47ea9635f6dd8b8578d9e600c1d56624",
+            "size_bytes": 4406
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.circular_filament_green.circular_filament_green_response",
+      "input_implementation_path": "operators/轴对称圆电流Green响应/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "4be4663adfabc8df207421c5365853a4fa1dc67a5e9da515f438a8cfd9433947",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_85d656ab68da454a018caa9d",
+          "case_ref": "asset_review_case_4e1c288d561a86edb1eef1f9",
+          "decision_ref": "review_decision_d2fe0ca504c020e7790ba1cd",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_d9af4058f30ec023b78229a3",
+          "root_digest": "sha256:eb0a7cc536f7363ff5620be371cb1203e13bcc26e326fbbbba5c4c9a5eb2e400",
+          "operator_revision_ref": "operator_revision_a6a978bf1157aade",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-09787e71d451fc447a005f97-78d00b1032142552",
+          "candidate_digest": "sha256:ee46dc1734b7fff9c276ccd403727f6e651759a76e832a17358257f09cfbd5fa",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_ac1dd72fd4531e15862cdc30",
+        "version_tree_root_digest": "sha256:eb0a7cc536f7363ff5620be371cb1203e13bcc26e326fbbbba5c4c9a5eb2e400",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/轴对称圆电流Green响应/operator.md",
+            "sha256": "sha256:2fc48ae666753e19734d91e42a25aa8e7b0758875c9fa5c9b5b495bc6ab39a38",
+            "size_bytes": 2736
+          },
+          {
+            "path": "operators/轴对称圆电流Green响应/scientific_operator.py",
+            "sha256": "sha256:dc76f06e921d0da3d91f50e6fdbb51c9070b3f906eea26d98d0939a8d056b889",
+            "size_bytes": 2366
+          },
+          {
+            "path": "operators/轴对称圆电流Green响应/test_scientific_operator.py",
+            "sha256": "sha256:8e739bd88f49b7ff9a3a839150904d3b999d18af86f042863ecaf7edf2da229e",
+            "size_bytes": 2146
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.current_green_superposition.superpose_current_green_field",
+      "input_implementation_path": "operators/电流加权磁通磁场叠加/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "ef48b26b1e552fa11d54509d280ce16df4542517a833ea99e0b9a060941adf1e",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_3d8b195fa123ee961d4feed5",
+          "case_ref": "asset_review_case_01b6e4a233cb03fe2964bc0e",
+          "decision_ref": "review_decision_ca39c84d8a5123e1ed78918e",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_4516e276645a42d1f99cfeef",
+          "root_digest": "sha256:5287b66a970986ce6beadf747265edf5c223c8bea0c61077bd60b35f81497147",
+          "operator_revision_ref": "operator_revision_340fa31d0a8f6bfa",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-d2f06ea8199ef41f1acff7c9-36e871fccd69199a",
+          "candidate_digest": "sha256:96ee23d4067bf7da8f28b5a329235c54e9791fd2981454b9d5e494bf6928b03c",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_b62120c812910ce9c2e62cad",
+        "version_tree_root_digest": "sha256:5287b66a970986ce6beadf747265edf5c223c8bea0c61077bd60b35f81497147",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/电流加权磁通磁场叠加/operator.md",
+            "sha256": "sha256:1e74971ef7527cd55d8c74d8a7a2f56e6dc3e3b517ca4a29a15b7e80d6f2d10f",
+            "size_bytes": 2844
+          },
+          {
+            "path": "operators/电流加权磁通磁场叠加/scientific_operator.py",
+            "sha256": "sha256:ae2a3d448d8c263ed39ba7288f8c83da7c646005e5ad9fcdb5c5084614f760d9",
+            "size_bytes": 1394
+          },
+          {
+            "path": "operators/电流加权磁通磁场叠加/test_scientific_operator.py",
+            "sha256": "sha256:b4b51ec17fdb9fadc28f60529d2be6423a96d27c4fe3dbe2a65a1b4518289a57",
+            "size_bytes": 2123
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.dense_axisymmetric_green.dense_axisymmetric_green_response",
+      "input_implementation_path": "operators/轴对称稠密三分量Green矩阵/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "63d2f4b49392f6b7a863729e9a250f55a7b79145b12510be75a417e646e2f9f7",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_08050b7dccbd7c09fcefbf6f",
+          "case_ref": "asset_review_case_209dc5e73982eb860b5d4206",
+          "decision_ref": "review_decision_9996373e011f22ae93e4dfb3",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_75b724c64800db31cbc5d367",
+          "root_digest": "sha256:0df33e63705852edb114cee75123243552d9d1134919321b9b14875f3e39e8cc",
+          "operator_revision_ref": "operator_revision_9556c082181a8a0e",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-3167534de7d2ef504a03a7cf-17f6270729d54bdd",
+          "candidate_digest": "sha256:66184fa7662d8469314b162e2e52d8224c61dcbd3d00e9e4e44e09dc2e457cb1",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_3cb3f0612cf580718e803100",
+        "version_tree_root_digest": "sha256:0df33e63705852edb114cee75123243552d9d1134919321b9b14875f3e39e8cc",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/轴对称稠密三分量Green矩阵/operator.md",
+            "sha256": "sha256:7652710a12b0858a8f45e144a5b4718fa10f2ffdbfc609eec576b124f982112d",
+            "size_bytes": 2620
+          },
+          {
+            "path": "operators/轴对称稠密三分量Green矩阵/scientific_operator.py",
+            "sha256": "sha256:5517852e1365b0d21fb53b589a938236bb310e256b2f47e3d82f179e2d495fd3",
+            "size_bytes": 2899
+          },
+          {
+            "path": "operators/轴对称稠密三分量Green矩阵/test_scientific_operator.py",
+            "sha256": "sha256:899f239876fd41a913ad50e1e0f2530153b37491e1c7e21ced7d3394ee8478aa",
+            "size_bytes": 2740
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.filament_vacuum_field.integrate_filament_vacuum_field",
+      "input_implementation_path": "operators/轴对称电流丝真空场径向积分/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "a4d082c5f20a440c48396ee9366f42793907de8e6e8ec7b67e74942f10a23cc0",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_87b5c866f65e8bc334d78368",
+          "case_ref": "asset_review_case_ea14d3cd0b5cb80b425bc4fd",
+          "decision_ref": "review_decision_a7c6ba250d3e274f57a7092c",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_405255342568bc2ae4288449",
+          "root_digest": "sha256:38da286764d0d0a8d3b034e830e30ca131cdee5f40f65a69e3c6baf7205485b5",
+          "operator_revision_ref": "operator_revision_8dcc05a9b7e0ad1d",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-48da9a23d1a36f20916265260a3bfe995de82a8a959f31f2fe45bca8d2600cbd",
+          "candidate_digest": "sha256:dc8bacdd5b4ce597d28ec437de06f90ba659d01974e4d11efdc77eb4b11a7969",
+          "candidate_package_ref": "scientific_candidate_package_repair_9cbb3c12f4971e2aebdb2525",
+          "candidate_package_digest": "sha256:b9db3e2a59b1c0e2b37e2f1a5379b26dfb79a99948f7820e8d8bf6b216af5eb2"
+        },
+        "version_tree_ref": "vtree_0db6274eee929d680593acd1",
+        "version_tree_root_digest": "sha256:38da286764d0d0a8d3b034e830e30ca131cdee5f40f65a69e3c6baf7205485b5",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/轴对称电流丝真空场径向积分/operator.md",
+            "sha256": "sha256:27ea9b1e0cc5d670e7ec15bccb963b31fb5e65e6fff4055c784bab77c7c92640",
+            "size_bytes": 3085
+          },
+          {
+            "path": "operators/轴对称电流丝真空场径向积分/scientific_operator.py",
+            "sha256": "sha256:8f43c0e1db920ea23f7921bf2a2bd5af3d7474270df3d418d1d522789f18277b",
+            "size_bytes": 3565
+          },
+          {
+            "path": "operators/轴对称电流丝真空场径向积分/test_scientific_operator.py",
+            "sha256": "sha256:6a7d8a90714605c4f985ce02dd39f3ad69e51788a41651980a10d2c6f8a7e0da",
+            "size_bytes": 2929
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.ideal_conductor_boundary.correct_ideal_conductor_boundary_flux",
+      "input_implementation_path": "operators/理想导体边界磁通修正/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "980478014b184580351244dbb7e53911ef4c867e513986aac624fab26ef9fa37",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_23922e08361a4d2973858c89",
+          "case_ref": "asset_review_case_8f71b804ddf45262b689e5a4",
+          "decision_ref": "review_decision_0da9f20305d773e3b3ce5d91",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_0b6f20dd199af2be27941e40",
+          "root_digest": "sha256:4fcf377ceb00052cc1cda157a7130bd2cbf49b08f0925638cfb005930461bc6f",
+          "operator_revision_ref": "operator_revision_32e87ec6534e02d3",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-2f034480cd26ecff5516985f-d2ecd20efd7f1e03",
+          "candidate_digest": "sha256:0c8bdbdeaa00996dbfa542d646f5790b5504ce802cd422f5869e5314adef5967",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_731aa397cf53f57a7838144f",
+        "version_tree_root_digest": "sha256:4fcf377ceb00052cc1cda157a7130bd2cbf49b08f0925638cfb005930461bc6f",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/理想导体边界磁通修正/operator.md",
+            "sha256": "sha256:8372f03d3f5be7e540e1d45ad92e9a000110c1c23c946305d5df4ee2795f1172",
+            "size_bytes": 4213
+          },
+          {
+            "path": "operators/理想导体边界磁通修正/scientific_operator.py",
+            "sha256": "sha256:4dfb7931c8e2e0dfc8b329b5c2e6c2fd1d11bf07c5e00b75d1671dff382baf98",
+            "size_bytes": 2672
+          },
+          {
+            "path": "operators/理想导体边界磁通修正/test_scientific_operator.py",
+            "sha256": "sha256:870cadf15d83d0ec40edbc561a12effb60d6f6dfd5f53a8c73ccb4961a5466b1",
+            "size_bytes": 2638
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.mirror_plasma_green.build_mirror_plasma_flux_green",
+      "input_implementation_path": "operators/镜像对称轴向等离子体Green磁通矩阵/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "200341abd8cdaa519515bed42b79c4f7bf1d97df07907ea42149b9fc7e87154f",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_18abd644cf9f0daecf31d6dd",
+          "case_ref": "asset_review_case_b42dad078aac6fd799a78eb6",
+          "decision_ref": "review_decision_fffdf374274f6c55188fe086",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_a3b8e1f0e1552b08be254dcc",
+          "root_digest": "sha256:9aabcbc7fb5db1d3e35bfe15d026c8212a417ed30a8baacb8e8a61c2f78f284b",
+          "operator_revision_ref": "operator_revision_98aa9a86483d3044",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-67f443525f4ddea13dd40166-4bb7f89884fbc607",
+          "candidate_digest": "sha256:4befda8e416f1371596d3cb20e3490a504796479c9923e9d1bb29e8b70b69349",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_f8aed3e144f0f563bcd1e6ef",
+        "version_tree_root_digest": "sha256:9aabcbc7fb5db1d3e35bfe15d026c8212a417ed30a8baacb8e8a61c2f78f284b",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/镜像对称轴向等离子体Green磁通矩阵/operator.md",
+            "sha256": "sha256:4e10dfddca6f590396756bc8885a5b0ba460f88439ce2c0f0fcda6072ede192e",
+            "size_bytes": 2901
+          },
+          {
+            "path": "operators/镜像对称轴向等离子体Green磁通矩阵/scientific_operator.py",
+            "sha256": "sha256:178dcc425367ffb2cdc6490c1187efd499853055004a60c27f5020f7d3ff5548",
+            "size_bytes": 3058
+          },
+          {
+            "path": "operators/镜像对称轴向等离子体Green磁通矩阵/test_scientific_operator.py",
+            "sha256": "sha256:ea58fb04fdf71e58875db955561d8440dd6560ada59a0c909b08acc62771d7fd",
+            "size_bytes": 3127
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.multi_coil_vacuum_field.solve_multi_coil_vacuum_field",
+      "input_implementation_path": "task_graphs/轴对称多矩形线圈真空场/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "bfc04c817742d7bc935c88bc9f92c78036083d793ef9db94d794d2bbecb73acc",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_3849278378ad7f14266456e1",
+        "scientific_asset_admission_3d8b195fa123ee961d4feed5",
+        "scientific_asset_admission_85d656ab68da454a018caa9d"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_553fcd71c31d3bd4a0106495",
+          "case_ref": "asset_review_case_c677a9967ae29ede58820e47",
+          "decision_ref": "review_decision_936b23a2b40c643130e603c5",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_b8919d3ffdd740e7bbb0e928",
+          "root_digest": "sha256:2c0cc95ed89cb7944357330a316218dddcf18c6edfccce7ac77074cbcb6774fd",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_ea0fefb5742d0128",
+          "candidate_ref": "candidate-32164ca70fb0678f2c9950b0-d4c6c7d0f4486397",
+          "candidate_digest": "sha256:c4d474985bcbe2d2fffee87f365bb5e38c80ac946a7929d8643f6a36a8c72d11",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_2b29d5ef8fb8cc084cc5b53b",
+        "version_tree_root_digest": "sha256:2c0cc95ed89cb7944357330a316218dddcf18c6edfccce7ac77074cbcb6774fd",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-09787e71d451fc447a005f97-78d00b1032142552",
+            "operator_revision_ref": "operator_revision_a6a978bf1157aade",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_d9af4058f30ec023b78229a3"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-8aecd319480c5c45842428e2-ecb255441ed5f2dc",
+            "operator_revision_ref": "operator_revision_310c1f08651c53c4",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_997f81c6428c86fbc3e6f369"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-d2f06ea8199ef41f1acff7c9-36e871fccd69199a",
+            "operator_revision_ref": "operator_revision_340fa31d0a8f6bfa",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_4516e276645a42d1f99cfeef"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/轴对称多矩形线圈真空场/graph.py",
+            "sha256": "sha256:0443e9b025ea7d0fbfd56107adbc80bf84752bc51b6a2ae30a0052a8567a70b1",
+            "size_bytes": 4742
+          },
+          {
+            "path": "task_graphs/轴对称多矩形线圈真空场/task_graph.md",
+            "sha256": "sha256:06ff7aec697aab2fbd8b9aedadad0d4867db39293bdf481264c5639f6cc10f19",
+            "size_bytes": 3089
+          },
+          {
+            "path": "task_graphs/轴对称多矩形线圈真空场/task_graph.yaml",
+            "sha256": "sha256:9d91204c2cc877a9264358290b29c2cefc0c93416905e2efa5cb4510b38aa158",
+            "size_bytes": 4875
+          },
+          {
+            "path": "task_graphs/轴对称多矩形线圈真空场/test_task_graph.py",
+            "sha256": "sha256:d629a51fe3fb35db3bc2d829f0fd6aa66822e6c5ce40f954650229111b181b66",
+            "size_bytes": 3536
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.permanent_ring_filaments.discretize_permanent_ring",
+      "input_implementation_path": "operators/永磁环表面电流丝离散/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "8ff9a065c82b9945caea168e9c51e5a6c477c59c7b47fc141b59e8891251f522",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_4eb035774fb93bdc33bb614f",
+          "case_ref": "asset_review_case_56a260f6de38d3486a081abd",
+          "decision_ref": "review_decision_863c8075bacaa14653471d73",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_4e18cdeb70241e4ebd1ced3e",
+          "root_digest": "sha256:62b15fdf235c02d7f6e79e6c94f34c1048cf8a36f9449f55ae41347b39bb26be",
+          "operator_revision_ref": "operator_revision_0a47328a82f5666f",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-48740cc2911ab672cc558005-35003b55b335b84d",
+          "candidate_digest": "sha256:0880b56ff13970cc6dd7314018a0d2259d0906904e05bc155c5a1cefaeb9813d",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_d2f8729768523f3f9fe67f62",
+        "version_tree_root_digest": "sha256:62b15fdf235c02d7f6e79e6c94f34c1048cf8a36f9449f55ae41347b39bb26be",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/永磁环表面电流丝离散/operator.md",
+            "sha256": "sha256:142d0c4d2641b9b0bb94dd7c4a372e9e676281029e89f45af3ae6825c21bcc43",
+            "size_bytes": 3162
+          },
+          {
+            "path": "operators/永磁环表面电流丝离散/scientific_operator.py",
+            "sha256": "sha256:f65e049183f87d77f69e8dbc329286bb6c193a6e7735c7f0f7f920fcc8e856b6",
+            "size_bytes": 1699
+          },
+          {
+            "path": "operators/永磁环表面电流丝离散/test_scientific_operator.py",
+            "sha256": "sha256:014b24d927c9fe78e0759fc9bb1108348e507eb1ccc9e6d9dfbbf9210940d4a1",
+            "size_bytes": 2767
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.poloidal_field_from_flux.poloidal_field_from_flux",
+      "input_implementation_path": "operators/轴对称磁通极向场/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "e980735889783e01214ee5f5c7c60a463abe67b4bf3cf4412d54a7d89e6cc03f",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_b950dfa699d9608899cd6a5f",
+          "case_ref": "asset_review_case_4795da6499c86d13cd0443f5",
+          "decision_ref": "review_decision_2070de029d2ea99aeb14297a",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_f4e8f072d4e9309509e46d1a",
+          "root_digest": "sha256:bd4d2919e1f5685733c0be60f3c918cf69243648aabf0a5fd0a59f1bf47339e1",
+          "operator_revision_ref": "operator_revision_4e3900210055d1c7",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-795222b8f73866e3e094863f-0107cc9bd1042a47",
+          "candidate_digest": "sha256:02869bfbb546a73385b0786b66eb57a5f368b5cdd121baf72694084700f720e9",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_3e98c7d3426ff6a3f422d525",
+        "version_tree_root_digest": "sha256:bd4d2919e1f5685733c0be60f3c918cf69243648aabf0a5fd0a59f1bf47339e1",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/轴对称磁通极向场/operator.md",
+            "sha256": "sha256:36e913c71971f62de0c1db1e8b301751b047bd9959334eaba39180419798ca20",
+            "size_bytes": 1610
+          },
+          {
+            "path": "operators/轴对称磁通极向场/scientific_operator.py",
+            "sha256": "sha256:63433486e7c85675e9bda21e56462fb298c15d1e40831b7bd9d8ef9fd47d05d6",
+            "size_bytes": 5289
+          },
+          {
+            "path": "operators/轴对称磁通极向场/test_scientific_operator.py",
+            "sha256": "sha256:861f3162849a7054d16ab53f17e77cbc299d4d5b6892bb9fd5eca944cd7d01e9",
+            "size_bytes": 1926
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.poloidal_field_magnitude.compute_poloidal_field_magnitude",
+      "input_implementation_path": "operators/极向磁场幅值/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "ff631596e0ceeb52925c7e19ebc560f677cf2fa50c0edebd45f69190380c9e3c",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_b979f4cb5b6b527d7e4610d1",
+          "case_ref": "asset_review_case_5534e35616858c2b6a6cab1d",
+          "decision_ref": "review_decision_f8c9126298141cf3c1b2b1de",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_8f5ce2b551b515c9c42b8f49",
+          "root_digest": "sha256:e276463184b729cccce3c9aefab495ecf0b665dc85254f76ab9723c12b342abb",
+          "operator_revision_ref": "operator_revision_ccae3acbd084028f",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-7b93773493199dbcc73371682de84d182765ab7ca43924f8e20fc58e34d549e1",
+          "candidate_digest": "sha256:07ff6032de808e4ea0d396728fd6275595b9806d0a949cfd30de5c4079029e83",
+          "candidate_package_ref": "scientific_candidate_package_repair_96f3e630fded0f647f5ca799",
+          "candidate_package_digest": "sha256:88c55e3fb7bf41ea4ee95691af7c6a90ae4ffc79d673ead721ec7cbd2b876e2c"
+        },
+        "version_tree_ref": "vtree_cb52a18664a16e08e8dc8ca3",
+        "version_tree_root_digest": "sha256:e276463184b729cccce3c9aefab495ecf0b665dc85254f76ab9723c12b342abb",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/极向磁场幅值/operator.md",
+            "sha256": "sha256:7f7c92f03bdb7c309d27b4fbfded0020de0113cbaa75a9689a437a70631d7d4e",
+            "size_bytes": 1460
+          },
+          {
+            "path": "operators/极向磁场幅值/scientific_operator.py",
+            "sha256": "sha256:c734c535616dbe2ada4fe52ceb571d5920d0214f819b024981d503472d70d04b",
+            "size_bytes": 888
+          },
+          {
+            "path": "operators/极向磁场幅值/test_scientific_operator.py",
+            "sha256": "sha256:6b9030efebec9eed106a7afd1f817a64a4935a880f4ccf493171e6b32ce5456e",
+            "size_bytes": 1195
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.field.rectangular_coil_filaments.discretize_rectangular_coil",
+      "input_implementation_path": "operators/矩形线圈电流丝离散/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "1615ade92a272170d0799eab6779917e2c236ce698056a4f7efeb71c080c2ecb",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_3849278378ad7f14266456e1",
+          "case_ref": "asset_review_case_9729220ff72171b74f90ad75",
+          "decision_ref": "review_decision_fe190a721734a5f8ef7ad7ba",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_997f81c6428c86fbc3e6f369",
+          "root_digest": "sha256:175f84a5e1a21b457b9aaeba31145c93510d9968d8a874a030b3c95767b50bd8",
+          "operator_revision_ref": "operator_revision_310c1f08651c53c4",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-8aecd319480c5c45842428e2-ecb255441ed5f2dc",
+          "candidate_digest": "sha256:8133877e79d1b31e9a7945eca81ca9656bf57ac9ac825a6c7dea1b04fe4c969c",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_ca12fdec1b7522c033ebaab1",
+        "version_tree_root_digest": "sha256:175f84a5e1a21b457b9aaeba31145c93510d9968d8a874a030b3c95767b50bd8",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/矩形线圈电流丝离散/operator.md",
+            "sha256": "sha256:3fa0491edccb48d7aa9d88126bd0457d915df6446c221302c8c2021fb299355c",
+            "size_bytes": 3121
+          },
+          {
+            "path": "operators/矩形线圈电流丝离散/scientific_operator.py",
+            "sha256": "sha256:1d8aaaffbb28c187d0c3d0f16b0d4f533bdcb253ccb409cde88261a08dcf1246",
+            "size_bytes": 1845
+          },
+          {
+            "path": "operators/矩形线圈电流丝离散/test_scientific_operator.py",
+            "sha256": "sha256:8a11745f73dcf0b4c550c998ce2bee90eacb312cd79d5ccb9de4393323088ffb",
+            "size_bytes": 2432
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.geometry.bilinear_grid_sampling.sample_rectilinear_field",
+      "input_implementation_path": "operators/直角网格双线性诊断采样/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "8b4f3506833e1cc4a00369959352d80e8dd45cc7f138f0304ac047bb84b4c251",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_334818661dea9196d81e23b1",
+          "case_ref": "asset_review_case_f0e0b07652a4013e755c7fff",
+          "decision_ref": "review_decision_e1fe6334a281096bd0d34335",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_7124a0a5ff8c866bb84b20e2",
+          "root_digest": "sha256:73c793570bd178c0efc9c5c690ada7d827ee38389db16d5970a25b2a898ba49f",
+          "operator_revision_ref": "operator_revision_cc7a8182fc370253",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-b4e6409003562cd941b5aa0f-9eecab84cdd2ac14",
+          "candidate_digest": "sha256:ef82571c8820bd11c02a96cd2f75cdd737775d9487e11ab4fd3cc1b9a058f0f2",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_5369f51686cc72831b718512",
+        "version_tree_root_digest": "sha256:73c793570bd178c0efc9c5c690ada7d827ee38389db16d5970a25b2a898ba49f",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/直角网格双线性诊断采样/operator.md",
+            "sha256": "sha256:e7d1e32912690fa52b3e66cfc1a5b1beaa50e663f24e3dd33aac7e2caf5507e0",
+            "size_bytes": 2269
+          },
+          {
+            "path": "operators/直角网格双线性诊断采样/scientific_operator.py",
+            "sha256": "sha256:13d99d57a3b837357b38df2fdee9f499505a4a0aca615bc1cb207141ac282042",
+            "size_bytes": 2937
+          },
+          {
+            "path": "operators/直角网格双线性诊断采样/test_scientific_operator.py",
+            "sha256": "sha256:06c5b6bc1a9208283eb2c6a3a26c07237fbee594903c4c3ace7db78099703144",
+            "size_bytes": 1980
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.geometry.flux_surface_inverse_field_average.compute_flux_surface_inverse_field_average",
+      "input_implementation_path": "operators/磁面一除B测度与加权平均/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "5f54008eceeff7645b8f0f52343cefeb212df891fbcd5eeaca84a59628ad7616",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_93f72dcb528797415c0e5cea",
+          "case_ref": "asset_review_case_f136552da85b8f28cf07dd7f",
+          "decision_ref": "review_decision_6d0c0e8861245ca98f2256b7",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_6505368b2932abc75186e089",
+          "root_digest": "sha256:0e4d0a95a3e2d46697e5fd8ed67faf430e7a2f4760fcfde77766f71ed0ac13d7",
+          "operator_revision_ref": "operator_revision_c71783ab89b89351",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-0e6c114bdc67b294a3b4d256-d0f37657a6b5506d",
+          "candidate_digest": "sha256:8be8f1a279175600599828a9df60b092aec3a4437fb656f0084313351c4d5193",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_db8b36fabb6933ad19b530a0",
+        "version_tree_root_digest": "sha256:0e4d0a95a3e2d46697e5fd8ed67faf430e7a2f4760fcfde77766f71ed0ac13d7",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/磁面一除B测度与加权平均/operator.md",
+            "sha256": "sha256:38bd25ff45e796a5ef2d251cc099e83e6ababc78f178d71490411b47164690dd",
+            "size_bytes": 2406
+          },
+          {
+            "path": "operators/磁面一除B测度与加权平均/scientific_operator.py",
+            "sha256": "sha256:327227fcf568cb8106c38250ab84371f370116a5fcf374c910e49bd571e3accb",
+            "size_bytes": 3232
+          },
+          {
+            "path": "operators/磁面一除B测度与加权平均/test_scientific_operator.py",
+            "sha256": "sha256:0b4330e43b7052f0de04547a2791e482bd4c081e7dc9d23064f2a41acb0eae2a",
+            "size_bytes": 2297
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.geometry.flux_surface_profile.evaluate_flux_surface_profile",
+      "input_implementation_path": "operators/磁面标量剖面线性延拓/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "d36f3c36e773a00cab5f38114f2a53cb763e2c254b8864683bb61e697cede26f",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_4242d3e1ea9ccf754f78db8b",
+          "case_ref": "asset_review_case_395914af12d57af334aba3ad",
+          "decision_ref": "review_decision_77f0458f406ad9ed6b7ede46",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_cb6fe71bc8722a9f8ba1f868",
+          "root_digest": "sha256:bea3e4b54bb585261b258b0934aca635e147d77ea39127d149004adad8e43d07",
+          "operator_revision_ref": "operator_revision_d633c0e604feb077",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-f279a421934b2f8cabdd3f4e-8b92c289129bbee4",
+          "candidate_digest": "sha256:e58e2e25d4ecd661821df026292eba1d53a98a68353499a28caf9b80d5143e6a",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_3b10424c5e7ab6555acba978",
+        "version_tree_root_digest": "sha256:bea3e4b54bb585261b258b0934aca635e147d77ea39127d149004adad8e43d07",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/磁面标量剖面线性延拓/operator.md",
+            "sha256": "sha256:e561907a13d8b314594858238c4343ea96603b4e0ab9c61f2f1d59ad78d7c926",
+            "size_bytes": 2092
+          },
+          {
+            "path": "operators/磁面标量剖面线性延拓/scientific_operator.py",
+            "sha256": "sha256:2b3fde0eea76ba2d2815a2dcc263fcd6e7b34fd5c78f820e5c5a1da815f4695f",
+            "size_bytes": 1648
+          },
+          {
+            "path": "operators/磁面标量剖面线性延拓/test_scientific_operator.py",
+            "sha256": "sha256:3985b5c066d174ddd5a4d82951516f337223edbd1edc7b90cab6eb7f92fa1ef7",
+            "size_bytes": 1518
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.inference.anisotropic_parameter_optimization.optimize_anisotropic_parameters",
+      "input_implementation_path": "operators/各向异性直接优化/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "7e3798409b4c3796536a3ec0a4ef9d424ced3ceb6d0dc27eae076d83835397f0",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_e97cfbcc66eac8a7f99ae5e3",
+          "case_ref": "asset_review_case_fe64d67ca0dee91d7d89a884",
+          "decision_ref": "review_decision_6c41dbab5e8f82b5a31c234f",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_46d66dc92b213855a4706526",
+          "root_digest": "sha256:5442a5fd6fc43a82d6a518ad89aacf368221ffd3a7cd74f77586bfbf69a13fde",
+          "operator_revision_ref": "operator_revision_5da3bd8954b9abc7",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-9936df3269f3ba0997855216-9751ced07a583118",
+          "candidate_digest": "sha256:d984a2883517d24cf77670f2ba0d9e22828b1a9491e4c38f3889cb2e38c694b3",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_364239608cadcef3bf805e85",
+        "version_tree_root_digest": "sha256:5442a5fd6fc43a82d6a518ad89aacf368221ffd3a7cd74f77586bfbf69a13fde",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/各向异性直接优化/operator.md",
+            "sha256": "sha256:a06d668c27d9e50a1119d466e4925f2f3cdf0a72a8b62b0bacff81666b14d15b",
+            "size_bytes": 4757
+          },
+          {
+            "path": "operators/各向异性直接优化/scientific_operator.py",
+            "sha256": "sha256:4bd478a65d23ca9492a9815fa75d3867d856ebe193fda6d6b19f7731fb61a509",
+            "size_bytes": 3465
+          },
+          {
+            "path": "operators/各向异性直接优化/test_scientific_operator.py",
+            "sha256": "sha256:c6fd9063387d1fa3779a5acfe56d39019ae60057c414d8d760ca655938f489e4",
+            "size_bytes": 1524
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.inference.anisotropic_trial_evaluation.evaluate_anisotropic_trial",
+      "input_implementation_path": "operators/各向异性试探评估/scientific_operator.py",
+      "integration_action": "add_admitted_implementation",
+      "library_source_lf_sha256": "02d4f2a0423741b1833b9408f2ad89d9f776fd47d46210519da7bb86cb4a5e7d",
+      "comparison": "The admitted operator was added as its own public module. Formatting, module documentation and __all__ were normalized without changing the admitted callable body.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_85494a0e1232135e3e6ff19b",
+          "case_ref": "asset_review_case_aee0f87b2dd601b83e0f5cc1",
+          "decision_ref": "review_decision_778d8a8901c2d7ebba6d5a0d",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_29b3044ebd8a792ba485d039",
+          "root_digest": "sha256:759f07dc438a71c3705a4a100734620b135c53877220e099c81775512fb0a761",
+          "operator_revision_ref": "operator_revision_4c856f1ed2f2ae08",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-d3bebcbcde0c00afa4219c2e-7981a862393a4ee3",
+          "candidate_digest": "sha256:c6f97c28920621253d1665b9070d382ae1311bad680255d8ca4fe2b5cb106240",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_2d0f1102178c78bf0ffe8d33",
+        "version_tree_root_digest": "sha256:759f07dc438a71c3705a4a100734620b135c53877220e099c81775512fb0a761",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/各向异性试探评估/operator.md",
+            "sha256": "sha256:c76ad43570ef8d0205175f86cdcc4f29fe44e25cddf941e889a351de9aa6f8e3",
+            "size_bytes": 4157
+          },
+          {
+            "path": "operators/各向异性试探评估/scientific_operator.py",
+            "sha256": "sha256:fb7569c61a242364319a95ea342b0c9c8ca6d38935cbba3f98920ddb0b897e69",
+            "size_bytes": 1488
+          },
+          {
+            "path": "operators/各向异性试探评估/test_scientific_operator.py",
+            "sha256": "sha256:0496ff22ca31def726a688d9bd48cac550e08eb2edc6c5bade62c96b32421748",
+            "size_bytes": 1711
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.inference.direct_anisotropic_inversion.solve_direct_anisotropic_inversion",
+      "input_implementation_path": "task_graphs/直接各向异性参数反演/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "cfeef6483b1aa6f0b05d63fa32680e50342190e0e5eab4ee543bb4c176012a3c",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_2f7d1baa9ddfd181a709a2c3",
+        "scientific_asset_admission_50060da84a99b8ee0be09350",
+        "scientific_asset_admission_85494a0e1232135e3e6ff19b",
+        "scientific_asset_admission_e97cfbcc66eac8a7f99ae5e3"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_84d22f69bd86390b6ea5592f",
+          "case_ref": "asset_review_case_82277703768068361735db42",
+          "decision_ref": "review_decision_29faee26ec5eecd3741f3628",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_d050a196a1dd19d22216ad78",
+          "root_digest": "sha256:c05c820b3b8f684a0c6a3caa87ca8beae95e9df406eff743a74403d3c811af8f",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_0fcf39fd2972ce92",
+          "candidate_ref": "candidate-revision-3b51e17809111262b02982f04a9e95c44bc2915085c2c0223a5b5f0e5304e6af",
+          "candidate_digest": "sha256:b9d079ddc69f4d71713810181e198410ad291fddaf0c4f540c907c2a530b0f44",
+          "candidate_package_ref": "scientific_candidate_package_repair_4afa65ae8aa63fd7ae2231b6",
+          "candidate_package_digest": "sha256:a2c89a87d812a1261a998494bddc90f2dd97ab060ac1a0cef91d7db681296a58"
+        },
+        "version_tree_ref": "vtree_b911ee96dd54cbe8018ac8a7",
+        "version_tree_root_digest": "sha256:c05c820b3b8f684a0c6a3caa87ca8beae95e9df406eff743a74403d3c811af8f",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-9936df3269f3ba0997855216-9751ced07a583118",
+            "operator_revision_ref": "operator_revision_5da3bd8954b9abc7",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_46d66dc92b213855a4706526"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-d3bebcbcde0c00afa4219c2e-7981a862393a4ee3",
+            "operator_revision_ref": "operator_revision_4c856f1ed2f2ae08",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_29b3044ebd8a792ba485d039"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-350513601f64940273b44be027a9e91ddc145efbee073a8d981fce6cdf7312b6",
+            "operator_revision_ref": "operator_revision_47da69311ad4a149",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_b3962819cee8d0cc24252f00"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-b2181ea4b2734975e7da112771843fcd4304b8278a3d33d8fa7c81005f5df577",
+            "operator_revision_ref": "operator_revision_1c74653730847016",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_d196fbe74e20d36c0435d3d1"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/直接各向异性参数反演/graph.py",
+            "sha256": "sha256:6d1c3b52b5244ab34110256dd90461d86328a3ac1c4405264a2d07341d328324",
+            "size_bytes": 2932
+          },
+          {
+            "path": "task_graphs/直接各向异性参数反演/task_graph.md",
+            "sha256": "sha256:51658cb897912688db315168dee598e146c9e986f98d337b268c12d3cba1e79e",
+            "size_bytes": 6754
+          },
+          {
+            "path": "task_graphs/直接各向异性参数反演/task_graph.yaml",
+            "sha256": "sha256:997b3335ca64f1c0be99ca666148990cdf84ed7dd5f77571bc7f1c0f055ee2ce",
+            "size_bytes": 9958
+          },
+          {
+            "path": "task_graphs/直接各向异性参数反演/test_task_graph.py",
+            "sha256": "sha256:bef479b95e3226f05c7797ecbad1afe7adc98ab61f4316a8c905557e3843dba2",
+            "size_bytes": 8859
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.inference.latin_hypercube_sampling.sample_latin_hypercube",
+      "input_implementation_path": "operators/各向异性参数LHS初始设计/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "dd8171f58e24391f858b7bbf7edfd37c7e6a89c73d0c0aff594e75c7b27f99f1",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_2f7d1baa9ddfd181a709a2c3",
+          "case_ref": "asset_review_case_46aef2fdcdbf205641d0d37c",
+          "decision_ref": "review_decision_82d530d5e6c5d059bebe181b",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_b3962819cee8d0cc24252f00",
+          "root_digest": "sha256:62675715751f8a0afd6ceecb5e726df29b38d7b629b328b64bf3ad851759dbef",
+          "operator_revision_ref": "operator_revision_47da69311ad4a149",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-350513601f64940273b44be027a9e91ddc145efbee073a8d981fce6cdf7312b6",
+          "candidate_digest": "sha256:3b2f5d1a8033b43f91f90a418c6f198910f1d8b3bfbea0ada5760eb5821efe95",
+          "candidate_package_ref": "scientific_candidate_package_repair_50b0f8b3113552809857a439",
+          "candidate_package_digest": "sha256:b2bfa4031c954fa51770ad7ce707808c731f48658c25fe1758ac57a62296d8fb"
+        },
+        "version_tree_ref": "vtree_67de8b21b29e2fa3811655ef",
+        "version_tree_root_digest": "sha256:62675715751f8a0afd6ceecb5e726df29b38d7b629b328b64bf3ad851759dbef",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/各向异性参数LHS初始设计/operator.md",
+            "sha256": "sha256:4a8841bfabb030fd46916814c93a9a5bfe7adb4fafe6cdf2ddf74d59b484e2c4",
+            "size_bytes": 1883
+          },
+          {
+            "path": "operators/各向异性参数LHS初始设计/scientific_operator.py",
+            "sha256": "sha256:fb173c81674e28e29ad99dde14c16f23a6af50ab88c7bba279ee2436caa046cf",
+            "size_bytes": 1008
+          },
+          {
+            "path": "operators/各向异性参数LHS初始设计/test_scientific_operator.py",
+            "sha256": "sha256:2a016798858724e1a9997e1378eca3897da0052429f33ce7e9cd8f86c17fdcef",
+            "size_bytes": 1170
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.frank_egedal_hot_ion_moments.evaluate_frank_egedal_hot_ion_moments",
+      "input_implementation_path": "operators/FrankEgedal热离子矩/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "06bcaeb62f137ffe57946a5126ccc2ad05f557d5819c56182f366b6741c7f6ef",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_da300a63992ae0b5fe7e9dba",
+          "case_ref": "asset_review_case_c55de499043077665a00de66",
+          "decision_ref": "review_decision_f6cd9976b36b9cafb815e214",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_f2c9fd1e16cde2aa61825b5a",
+          "root_digest": "sha256:f78d15ed5aa7047abe0ca2b60b6d4b8fc44a30eb4b566f73a0c7ac0b0c374195",
+          "operator_revision_ref": "operator_revision_fe2406006556c9e6",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-fda0c027f5239188734cf05088e370f839d5b46d97a38a78c157ff6924ec7dac",
+          "candidate_digest": "sha256:943d8b50a981adaceef480b5fba6b1c8c005217a3e6c144a8a0ab227cb470aaf",
+          "candidate_package_ref": "scientific_candidate_package_repair_a27290a3722730d4453af6c6",
+          "candidate_package_digest": "sha256:87aff9e34cc118e1dd2d6bf24b2740e76166b680288a992b4cd2b1a4cb094816"
+        },
+        "version_tree_ref": "vtree_e7880305b922e089619476e9",
+        "version_tree_root_digest": "sha256:f78d15ed5aa7047abe0ca2b60b6d4b8fc44a30eb4b566f73a0c7ac0b0c374195",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/FrankEgedal热离子矩/operator.md",
+            "sha256": "sha256:f8e57269f330ccb33f60be1f2a6f7ca0568e8e3ba5c6d7ee55e25e7850f65936",
+            "size_bytes": 5696
+          },
+          {
+            "path": "operators/FrankEgedal热离子矩/scientific_operator.py",
+            "sha256": "sha256:db34e9d2f352bd150fbffc644f2e7582d904a8f1fc6dc05c6a895111cd02897c",
+            "size_bytes": 7902
+          },
+          {
+            "path": "operators/FrankEgedal热离子矩/test_scientific_operator.py",
+            "sha256": "sha256:6f86fd58bcb8cc314adf1176b4d0e0faf56331ab8df0ccc15920e0aa6fdb08f5",
+            "size_bytes": 5800
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.frank_egedal_pressure_closure.solve_frank_egedal_pressure_closure",
+      "input_implementation_path": "task_graphs/FrankEgedal各向异性压强闭合/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "2780315ac4f22294187b7c134ec8a34df061b4e775092bee094af25aeff2604a",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_228680d26bb6ce03dcc82274",
+        "scientific_asset_admission_35282840168fd977a57abc41",
+        "scientific_asset_admission_712b382e8a4a2442270d510f",
+        "scientific_asset_admission_b2994b5db66dbacf627654a7",
+        "scientific_asset_admission_da300a63992ae0b5fe7e9dba"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_b4416f2a2b1cc2c049cd58b5",
+          "case_ref": "asset_review_case_21f9c542577f92822cbf2564",
+          "decision_ref": "review_decision_85f9e55c978ef677d481c0d2",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_5bcf604edfc02ebc6aea0ea3",
+          "root_digest": "sha256:1ffafef5403bc3ed3fc036e935646712c3c4087788ed27648b023a82ddfbfde6",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_800bb4909304ccf3",
+          "candidate_ref": "candidate-revision-f041d02b347d50c9ef8756da9a26d2734d3550fc6f4f139df6ac87aa86ec4efd",
+          "candidate_digest": "sha256:59f7a86c22ecdae464376e0aa9c1bc18136c32de83062dcf12acfbeb40ec990e",
+          "candidate_package_ref": "scientific_candidate_package_repair_bafb6a2892f611fa649c8d36",
+          "candidate_package_digest": "sha256:d97f87887c2372defa1d585557922adf1880daa38356048f2fabf37b2eadca6c"
+        },
+        "version_tree_ref": "vtree_892e38e35fc139e2a857f8aa",
+        "version_tree_root_digest": "sha256:1ffafef5403bc3ed3fc036e935646712c3c4087788ed27648b023a82ddfbfde6",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-5e1b8b585b5e5ee518cae3e7-2760caa42276eb80",
+            "operator_revision_ref": "operator_revision_11873f3e6da00a17",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_c41aaf6fa0f74fb08e69ff08"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-7eea0f2279c56e76e4459dbf-2d4dc9aabbd599ba",
+            "operator_revision_ref": "operator_revision_d55853c081b1a633",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_db1ba782bb464a07f54a5fa7"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-9e71e0cf86b2d0b34e0110dc-3957288b96836148",
+            "operator_revision_ref": "operator_revision_77831edd33c3c450",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_52b219f40ae5cecccd21dcf4"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-fdf8fd700525b65d01cd64d1-298c7a62296b5768",
+            "operator_revision_ref": "operator_revision_af64ceaebecf5b79",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_9c9e11d91606f1907a47d0c6"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-fda0c027f5239188734cf05088e370f839d5b46d97a38a78c157ff6924ec7dac",
+            "operator_revision_ref": "operator_revision_fe2406006556c9e6",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_f2c9fd1e16cde2aa61825b5a"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/FrankEgedal各向异性压强闭合/graph.py",
+            "sha256": "sha256:c31b7476b1a88f2cf26cf179ff11027bedbbcbff89c47bf4d70ec7dc54db75d2",
+            "size_bytes": 2517
+          },
+          {
+            "path": "task_graphs/FrankEgedal各向异性压强闭合/task_graph.md",
+            "sha256": "sha256:34ede1c510083d177b7748c893288d9ae4751db1d5d6cc1acf5fa2715bb5096f",
+            "size_bytes": 6984
+          },
+          {
+            "path": "task_graphs/FrankEgedal各向异性压强闭合/task_graph.yaml",
+            "sha256": "sha256:3e6a621ba17fdf5e68f4550821bf1218969c05b530b68b457c1a67d30e22889c",
+            "size_bytes": 10863
+          },
+          {
+            "path": "task_graphs/FrankEgedal各向异性压强闭合/test_task_graph.py",
+            "sha256": "sha256:c9ce6484fd5bc24e3f09b1a34b92dfd0063ab980761c7bfd58411286ba6832f7",
+            "size_bytes": 6898
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.frank_egedal_pressure_state.assemble_frank_egedal_pressure",
+      "input_implementation_path": "operators/FrankEgedal压强组装/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "0b082d23c12387a57429ff88969ab199b1d2da03f246b4032e9b2aa2c206b5ba",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_35282840168fd977a57abc41",
+          "case_ref": "asset_review_case_934862a6feb99a74c94341ee",
+          "decision_ref": "review_decision_70b58640aaf1be2ae3a57ff5",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_9c9e11d91606f1907a47d0c6",
+          "root_digest": "sha256:f89d55ceeed3918e302812d1e2ffde8283cb88f557d3ff39767974a7a3747007",
+          "operator_revision_ref": "operator_revision_af64ceaebecf5b79",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-fdf8fd700525b65d01cd64d1-298c7a62296b5768",
+          "candidate_digest": "sha256:562ca48065a2a794355170a2cd6061feb4ed22a82c34c5f8cf6930591fd8e49f",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_0a10612a2be62658b6476a86",
+        "version_tree_root_digest": "sha256:f89d55ceeed3918e302812d1e2ffde8283cb88f557d3ff39767974a7a3747007",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/FrankEgedal压强组装/operator.md",
+            "sha256": "sha256:d944fa8cc0d8f412fbddfc99d33af3b440b4262e1b5ccbcaca66e6c7aa5e48a8",
+            "size_bytes": 4304
+          },
+          {
+            "path": "operators/FrankEgedal压强组装/scientific_operator.py",
+            "sha256": "sha256:626322a78400808e3fc10882dda69ee5f9167f918b8343ff7b52588f899ba22f",
+            "size_bytes": 2650
+          },
+          {
+            "path": "operators/FrankEgedal压强组装/test_scientific_operator.py",
+            "sha256": "sha256:10bcd5bbecfd77ca9c06c20af32109da91c8f01b9b6872b178d2a6ea1b36edca",
+            "size_bytes": 2444
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.frank_egedal_radial_envelope.evaluate_frank_egedal_radial_envelope",
+      "input_implementation_path": "operators/FrankEgedal径向包络/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "20680282fc2808fdbb5debd2e3a1bd86a0d84dfec00f2b1d01b9306c9db23223",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_b2994b5db66dbacf627654a7",
+          "case_ref": "asset_review_case_f0d1c34768e3cfa74bbec3a3",
+          "decision_ref": "review_decision_4e52ae8e21891d65073d4880",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_52b219f40ae5cecccd21dcf4",
+          "root_digest": "sha256:d67410fc3addc47ab2bb854b52dd8ba4fa694815ee63c72fe6a8a1be9d9ccf8f",
+          "operator_revision_ref": "operator_revision_77831edd33c3c450",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-9e71e0cf86b2d0b34e0110dc-3957288b96836148",
+          "candidate_digest": "sha256:5405df705baa3ad9dedc6781a6a4f2d8f771245ba63da561734dfaec0f0f3b6c",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_a965dd3be7d67c48428e7896",
+        "version_tree_root_digest": "sha256:d67410fc3addc47ab2bb854b52dd8ba4fa694815ee63c72fe6a8a1be9d9ccf8f",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/FrankEgedal径向包络/operator.md",
+            "sha256": "sha256:fb23e6d5c64a9c66a719de6fdc29cb4333dafdd3f56ca7536b8d64102d98fbd6",
+            "size_bytes": 2460
+          },
+          {
+            "path": "operators/FrankEgedal径向包络/scientific_operator.py",
+            "sha256": "sha256:f1f39cdd825365f0437fb9e451876d3b2ea43f4d0832446a7a35313e4cdb8ab8",
+            "size_bytes": 1011
+          },
+          {
+            "path": "operators/FrankEgedal径向包络/test_scientific_operator.py",
+            "sha256": "sha256:f2dd279f950c39045a931a060fe0a1dadf02780ebaf5770be643f9647dd0025b",
+            "size_bytes": 1869
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.frank_egedal_source_projection.project_frank_egedal_source_modes",
+      "input_implementation_path": "operators/FrankEgedal源模态投影/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "83db3a672b233f5d85af202ec440d98b7065a2a62821c2f62605bc4d6fc2780a",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_228680d26bb6ce03dcc82274",
+          "case_ref": "asset_review_case_6c400acf676042d1ae75eb3b",
+          "decision_ref": "review_decision_373354000f60cc51f199b21a",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_c41aaf6fa0f74fb08e69ff08",
+          "root_digest": "sha256:57acfc3cf11ab9407612899d4dadd3bb70e40dc13c784be51ead40d4a32e4b82",
+          "operator_revision_ref": "operator_revision_11873f3e6da00a17",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-5e1b8b585b5e5ee518cae3e7-2760caa42276eb80",
+          "candidate_digest": "sha256:6789ad3718635426bc4aeafa621c4b9da2e458aade8e1284d5d96b04bffda6be",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_8d4d793b25e7c5694c3b88c1",
+        "version_tree_root_digest": "sha256:57acfc3cf11ab9407612899d4dadd3bb70e40dc13c784be51ead40d4a32e4b82",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/FrankEgedal源模态投影/operator.md",
+            "sha256": "sha256:c8a7fdd3f7ec515a6b4873e16b86980d3cb1b6f3d5cf7e8fe288949b82e90748",
+            "size_bytes": 4600
+          },
+          {
+            "path": "operators/FrankEgedal源模态投影/scientific_operator.py",
+            "sha256": "sha256:4c7adf97f7bc055bfdbcff15c4c1466e9e1d1a346e01d55246cf1a30452a1447",
+            "size_bytes": 5477
+          },
+          {
+            "path": "operators/FrankEgedal源模态投影/test_scientific_operator.py",
+            "sha256": "sha256:8af3b36a4084566ac44f93b3812184410b5cf93d3d801f57a1401726f0544c84",
+            "size_bytes": 2168
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.grid_mirror_kinetic_closure.solve_grid_mirror_kinetic_closure",
+      "input_implementation_path": "task_graphs/网格镜端动理学闭合/graph.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "04dafa1d91ca3ac4e1dd3769ae4ea96eac9907b27e5b9857c347378e91132761",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [
+        "scientific_asset_admission_298a314d74d4f87cebaaf86d",
+        "scientific_asset_admission_4242d3e1ea9ccf754f78db8b",
+        "scientific_asset_admission_8ea54605c8f46957b36b60e3"
+      ],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_b4884046857dbec4b4b6b1ce",
+          "case_ref": "asset_review_case_6e8ec3ab9ff86469d4215c80",
+          "decision_ref": "review_decision_287cd2ccdbfaf3b13e0ce2aa",
+          "asset_kind": "task_graph",
+          "version_commit_ref": "vcommit_298bbb34b7d57634f909c996",
+          "root_digest": "sha256:5e7a6dc292fcac5da9d024e2b814ca002318b1503de95256fc5788fa46c6063d",
+          "operator_revision_ref": null,
+          "task_graph_revision_ref": "task_graph_revision_40e7c3d1ee12d8a7",
+          "candidate_ref": "candidate-revision-3c4cee3c10bf360704650c9888c3c6784ee37e426227a9563af5784f28ce0d35",
+          "candidate_digest": "sha256:7c7af91b13c4850d58b65ad5ab0bc079d9f4d345dcf4f3f6dd860165581aba10",
+          "candidate_package_ref": "scientific_candidate_package_repair_f4af5d5e6117e575bf1775e3",
+          "candidate_package_digest": "sha256:ec482ed3880ec9d7d612102c88a87ff0bec28747730fe0168f9b88fbb3fe0492"
+        },
+        "version_tree_ref": "vtree_92025ae6d15d4a0781f85724",
+        "version_tree_root_digest": "sha256:5e7a6dc292fcac5da9d024e2b814ca002318b1503de95256fc5788fa46c6063d",
+        "dependency_bindings": [
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-f279a421934b2f8cabdd3f4e-8b92c289129bbee4",
+            "operator_revision_ref": "operator_revision_d633c0e604feb077",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_cb6fe71bc8722a9f8ba1f868"
+          },
+          {
+            "nested_task_graph_revision_ref": null,
+            "node_key": "candidate-revision-071938927448b3185d464d9d84e0b8ee70c852968f71d120de387df4a0b1b240",
+            "operator_revision_ref": "operator_revision_7e7058c6f8b022b1",
+            "target_kind": "operator_revision",
+            "version_commit_ref": "vcommit_16379474e03c2777f0673c6b"
+          },
+          {
+            "nested_task_graph_revision_ref": "task_graph_revision_0e692ed9c32a132e",
+            "node_key": "candidate-revision-9173cdf2582b93c883fb051698028d945c83f2cb8255f38e920cac45675e1396",
+            "operator_revision_ref": null,
+            "target_kind": "task_graph_revision",
+            "version_commit_ref": "vcommit_b613da5f4f8d70e4b17fe502"
+          }
+        ],
+        "files": [
+          {
+            "path": "task_graphs/网格镜端动理学闭合/graph.py",
+            "sha256": "sha256:1d0860d800602474609942d1235a24926895332f952dc3e145dffec5ed575af0",
+            "size_bytes": 7122
+          },
+          {
+            "path": "task_graphs/网格镜端动理学闭合/task_graph.md",
+            "sha256": "sha256:5dfb993c8ea1ae68bed84a82f908290b207d5611453c1ed5eb49c092095d3e41",
+            "size_bytes": 5824
+          },
+          {
+            "path": "task_graphs/网格镜端动理学闭合/task_graph.yaml",
+            "sha256": "sha256:d4de6aaf88e85f375614544b76eba3cdaccd45c7a3301a3f47dd04a03cb36b72",
+            "size_bytes": 6896
+          },
+          {
+            "path": "task_graphs/网格镜端动理学闭合/test_task_graph.py",
+            "sha256": "sha256:d802205daa5ac6b43917eee0568ffd3a275ee26ebefc28bdccc95889f72c8fb6",
+            "size_bytes": 2893
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.loss_cone_spectrum.solve_loss_cone_spectrum",
+      "input_implementation_path": "operators/损失锥Legendre谱/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "1a904005de2402674ddf1f2bc263e5479adb87061d1910a7a1086eda94e1f760",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_712b382e8a4a2442270d510f",
+          "case_ref": "asset_review_case_b67d009a81193af21dba89d6",
+          "decision_ref": "review_decision_ff80b8ff8f4767470de99e7c",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_db1ba782bb464a07f54a5fa7",
+          "root_digest": "sha256:9e257d8278d7cf233239e8326a03541ba33a31fe8d7e0926e882f1f3309cb445",
+          "operator_revision_ref": "operator_revision_d55853c081b1a633",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-7eea0f2279c56e76e4459dbf-2d4dc9aabbd599ba",
+          "candidate_digest": "sha256:d9be17178d32aaae4095c201ad17dc3eef14ff125ffc09f7d8ba251662df5b7a",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_f15e2e3e3a838d531ef98d52",
+        "version_tree_root_digest": "sha256:9e257d8278d7cf233239e8326a03541ba33a31fe8d7e0926e882f1f3309cb445",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/损失锥Legendre谱/operator.md",
+            "sha256": "sha256:22e48b36d44f00ba97bcf4ec1550c773e85d3f73df0b8afb006cd5b3d261ee9e",
+            "size_bytes": 4024
+          },
+          {
+            "path": "operators/损失锥Legendre谱/scientific_operator.py",
+            "sha256": "sha256:846fb90b016122c41674261385c5ec9735910e65633be6b7a4e67e3dfffcf5db",
+            "size_bytes": 4222
+          },
+          {
+            "path": "operators/损失锥Legendre谱/test_scientific_operator.py",
+            "sha256": "sha256:e4f78b3aac596deb43c4a2e81fcea36830bc05ae3dcf5cba6bbc829ddb482cce",
+            "size_bytes": 3577
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.mirror_constrained_moments.evaluate_mirror_constrained_moments",
+      "input_implementation_path": "operators/双温镜约束速度矩/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "f487d7372ac619af1ead48977ee2d6f7307dd99d6f7a8bdc9144873f69627889",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_531c71bf64f80f1fe0e90e3a",
+          "case_ref": "asset_review_case_88eafe64626d72a763c2bde8",
+          "decision_ref": "review_decision_f240c3630e888377363a06b7",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_646a1cb2b99e1787e5db6a90",
+          "root_digest": "sha256:704d6b5c5c8b1266817d13283acd9f6f499e4b3fe9a1ff1d619b8a1422a0dc99",
+          "operator_revision_ref": "operator_revision_a7ced5e7abd4fa65",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-a1937d2ec443ea81ab3bf4f0c86c2a017c68ee2fcb9367da4653356cfe8498d4",
+          "candidate_digest": "sha256:c141f7e6d9cb46ed25aa8f592c2172c7cd86e1707811502c563244194a17bc5d",
+          "candidate_package_ref": "scientific_candidate_package_repair_f4e786cde5dea73210204c98",
+          "candidate_package_digest": "sha256:b24be9a67d0fb21208c2a88d7f8f7598683a19ff348e1f53016221033adf366b"
+        },
+        "version_tree_ref": "vtree_79145879660ea1c6d7fd329f",
+        "version_tree_root_digest": "sha256:704d6b5c5c8b1266817d13283acd9f6f499e4b3fe9a1ff1d619b8a1422a0dc99",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/双温镜约束速度矩/operator.md",
+            "sha256": "sha256:de64eccf7ee4bbca71231724009d9f621e4cce5de3781ff2ae390a236fbb0305",
+            "size_bytes": 3791
+          },
+          {
+            "path": "operators/双温镜约束速度矩/scientific_operator.py",
+            "sha256": "sha256:1c860bf0ffd89efe531249720bfa148ce218d2d60fe375046a5bd2bb0416f041",
+            "size_bytes": 7941
+          },
+          {
+            "path": "operators/双温镜约束速度矩/test_scientific_operator.py",
+            "sha256": "sha256:8bc4122ef6320e88d61d7b70787844838de709ee05b2c89c8c5c2d6545916150",
+            "size_bytes": 3245
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.mirror_invariant_distribution.evaluate_mirror_invariant_distribution",
+      "input_implementation_path": "operators/双温镜不变量分布函数/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "771351c118e4acb7a3ac104be2807690948a5fb9d090b0fb27a0d7f4caadce8d",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_bffc961e153eab34f53a1a9d",
+          "case_ref": "asset_review_case_13f2e4cacd94b62b43009f84",
+          "decision_ref": "review_decision_bebce86c34856fd6084ad713",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_053461d488ef6b333fa0d147",
+          "root_digest": "sha256:af6b60223d5e50da46abeb2c85f2d092b6b0cc4ec9f3a79851223adf84462fa9",
+          "operator_revision_ref": "operator_revision_27ffd0b7a6ffe5a3",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-revision-f5a44c6cb18b12b6ddcd7462a43a7ba8ba2da7e54538073acd3c5dbb0da73d03",
+          "candidate_digest": "sha256:f74f020fceac0ab053c45a42a77d0136322c0caa644b43b6be9fb62fb5a21b64",
+          "candidate_package_ref": "scientific_candidate_package_repair_d3a3af763a7dc748e062d041",
+          "candidate_package_digest": "sha256:bb31b44a7b480844fa1ba1e6573d5cf7e387a8288473d510ed5e1816f669ddc1"
+        },
+        "version_tree_ref": "vtree_10b7b3fae6970397ca5d6150",
+        "version_tree_root_digest": "sha256:af6b60223d5e50da46abeb2c85f2d092b6b0cc4ec9f3a79851223adf84462fa9",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/双温镜不变量分布函数/operator.md",
+            "sha256": "sha256:3c3e2fcde1280cf61a66a6b305ee0782762f487ecf80ec01a873e65489a55881",
+            "size_bytes": 2334
+          },
+          {
+            "path": "operators/双温镜不变量分布函数/scientific_operator.py",
+            "sha256": "sha256:eaade88e2a13cc8f1a03f3520d673bd8f31b2f6ef38b4013344b64fb061a83f9",
+            "size_bytes": 3322
+          },
+          {
+            "path": "operators/双温镜不变量分布函数/test_scientific_operator.py",
+            "sha256": "sha256:6731c966e527399e1804fbfa455910b6f551d16f488236f1e784fbce6ca28141",
+            "size_bytes": 2706
+          }
+        ]
+      }
+    },
+    {
+      "public_callable": "scirel.kinetic.mirror_total_pressure.assemble_mirror_total_pressure",
+      "input_implementation_path": "operators/双温镜总压强状态组装/scientific_operator.py",
+      "integration_action": "maintain_compatible_library_implementation",
+      "library_source_lf_sha256": "c5138095b45d6cc9dafccff1bebe58a83e55342c4081c6507056c740e711071e",
+      "comparison": "The admitted input and maintained SciRel module are not asserted byte-identical. This mapping preserves the pre-existing Pleiades scientific identity and public callable and is gated by replay of the admitted contract tests plus the maintained SciRel regression suite.",
+      "review_rationale": "Development-loop human review accepted this assembly mapping after the CodeFusion machine/AI/human admission closed. The admission remains the governance fact; this record binds the separately maintained SciRel implementation and does not create a new approval.",
+      "verification_scope": "Exact admission manifest and dependency closure; admitted package-local contract replay; SciRel public API, graph, regression, deterministic wheel and source-free install checks.",
+      "dependency_admission_refs": [],
+      "admitted_input": {
+        "schema": "scirel.admitted-asset-export.v1",
+        "tenant_id": "tenant_spark_dev",
+        "admission": {
+          "admission_ref": "scientific_asset_admission_5aa7ff472d2000f6ef3dc61e",
+          "case_ref": "asset_review_case_7efcf20476def61873b59520",
+          "decision_ref": "review_decision_9e75ae686ce48ad718f85098",
+          "asset_kind": "operator",
+          "version_commit_ref": "vcommit_0918e5dc0d1013b149438d50",
+          "root_digest": "sha256:dcb83c8ce6abd2c9ea5a1b8a21cca4c5fa914020b5e5ab155ef472867663b17b",
+          "operator_revision_ref": "operator_revision_0e1ecf5a8e077386",
+          "task_graph_revision_ref": null,
+          "candidate_ref": "candidate-a07b3caafd7c633da8f554dc-ae50dca3aa811cc8",
+          "candidate_digest": "sha256:6318ca5fc73ed468c8cd82935fac48b7c3879e4feacb9a508ebc436c9d412ea0",
+          "candidate_package_ref": "scientific_candidate_package_review_c98f1388a734bdc51d2d5da1",
+          "candidate_package_digest": "sha256:1417f2af3093b3b15c74773dc5894a2ba381be170d6b248e2288cadad2e79dc9"
+        },
+        "version_tree_ref": "vtree_dc6441c63be2d13830600a55",
+        "version_tree_root_digest": "sha256:dcb83c8ce6abd2c9ea5a1b8a21cca4c5fa914020b5e5ab155ef472867663b17b",
+        "dependency_bindings": [],
+        "files": [
+          {
+            "path": "operators/双温镜总压强状态组装/operator.md",
+            "sha256": "sha256:665f3fc95e11d9542fb677cf1a7f05cb852d04851ab5c764c64a917185d6c7f2",
+            "size_bytes": 2257
+          },
+          {
+            "path": "operators/双温镜总压强状态组装/scientific_operator.py",
+            "sha256": "sha256:885642a10e92d31431dc4bc2ac9ff12d293fc6d7a90a1df5dd2d268bcd9e0017",
+            "size_bytes": 1923
+          },
+          {
+            "path": "operators/双温镜总压强状态组装/test_scientific_operator.py",
+            "sha256": "sha256:00139a8cf1a4729860aa66e1916410e5afd544c9bd81c90f931cfaeb3c610a6b",
+            "size_bytes": 1651
+          }
+        ]
+      }
+    }
+  ]
+}

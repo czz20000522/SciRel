@@ -1,0 +1,103 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-26-p2-conflict-claude-forward",
+  "status": "development_evaluation_autonomous_clarification_and_partial_delivery_two_review_assisted_repair",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "autonomous_science_bounded_success",
+    "strict_blind_isolation",
+    "offline_dependency_reinstallation",
+    "confirmed_underlying_model_identity",
+    "device_physics_validation",
+    "total_magnetic_field_validation",
+    "stable_generalization"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "cli_canonical_model": "claude-fable-5",
+    "assistant_message_model_tag": "GLM-5.3-Flash",
+    "model_tag_discrepancy_unresolved": true,
+    "session_id": "38bec7e4-5e19-4078-b0ba-d3310fa15b75",
+    "permission_mode": "bypassPermissions",
+    "budget_or_call_limit_set": false,
+    "reviewer_feedback_before_stage1": false,
+    "reviewer_feedback_before_stage2": false,
+    "reviewer_feedback_rounds_after_stage2": 2
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev24",
+    "wheel_digest": "a0c665a7d2920650fce832c448c49d4c866260daec0cba0102dd60e3e56c95a0",
+    "catalog_coverage": "74/74 complete",
+    "catalog_root_digest": "sha256:030f8a3704c5388e8d08d005ff8067129cb3f998926c37f7a9e0c5ce64974b90",
+    "solver_skill_digest": "a03e11559d2757915b1a7a9996340ce96be65c3c14dcb7dc198a5db7ce288641",
+    "navigation_skill_digest": "0f557cebf9518b0a7798d61c8208a5832af02efc4e36f5ab90dac13f1078695d",
+    "project_skill_digest": "c088544a86e2828961a28fc0aed5ed3a5620ae8caa4479cde57dee0068413ed9"
+  },
+  "fixture": {
+    "generator": "docs/evaluations/outbound-progressive-projects/fixtures/generate_p2_conflict_npz_variant.py",
+    "generator_sha256": "57926230e7c2fe29fc0fd658f34c9eec741b2b8e8e137b8052ed5a9eb321133c"
+  },
+  "archives": {
+    "stage0_inputs": "build/verification/p2-conflict-claude-forward/stage0-inputs.tgz",
+    "stage0_inputs_sha256": "4e0d0c8539950002599b5580ea3e495637cdc3f06ec146c9fb0b696563f9231b",
+    "stage1_autonomous": "build/verification/p2-conflict-claude-forward/stage1-autonomous-delivery.tgz",
+    "stage1_autonomous_sha256": "bb571672353c6c4f67fcd575692818f7bb1ddf957f1d1d3da9c87201e03411d4",
+    "stage2_inputs": "build/verification/p2-conflict-claude-forward/stage2-inputs.tgz",
+    "stage2_inputs_sha256": "ea5ced0e39614b361318d2d3362729a9f3ae66aef71544c0b6e5c50f25a67f99",
+    "stage2_autonomous": "build/verification/p2-conflict-claude-forward/stage2-autonomous-delivery.tgz",
+    "stage2_autonomous_sha256": "c0f4b2d42d36f7dc433d29fa4ad3f4debd3b2046f64752d4cc80347093229377",
+    "stage3_reviewed": "build/verification/p2-conflict-claude-forward/stage3-reviewed-delivery.tgz",
+    "stage3_reviewed_sha256": "c43a27a5d6c3fa0014a00017aecc161fbc68bbe277fcef188955241b2e035bb9",
+    "stage4_reviewed_final": "build/verification/p2-conflict-claude-forward/stage4-reviewed-final.tgz",
+    "stage4_reviewed_final_sha256": "90fdf0be23f027d79db34cbb980d6bc1aad6a2ef409e553d97bfbf9d7e54e0c2"
+  },
+  "traces": {
+    "round1_autonomous": "build/verification/p2-conflict-claude-forward/round1-autonomous.jsonl",
+    "round1_autonomous_sha256": "3716a9291df62c0058def60122ea0532ec986dbeb914544269e5448c96095c23",
+    "round2_autonomous": "build/verification/p2-conflict-claude-forward/round2-autonomous.jsonl",
+    "round2_autonomous_sha256": "688fa0dc91462810f70b582c31297d44fc12775d2b1064b3a8d336a5bc96c750",
+    "round3_reviewed": "build/verification/p2-conflict-claude-forward/round3-reviewed.jsonl",
+    "round3_reviewed_sha256": "fcf0c9d11132b4b922e9a800ce35b1c9a66be1e7728d341101ca012ab7ffe185",
+    "round4_reviewed": "build/verification/p2-conflict-claude-forward/round4-reviewed.jsonl",
+    "round4_reviewed_sha256": "cd321da86c793a57c4a0d8b25475bacb0fe6ef175428e1091e9c065d67538223"
+  },
+  "examiner_evidence": {
+    "opening": "build/verification/p2-conflict-claude-forward/examiner-private/opening.txt",
+    "opening_sha256": "44a51892bc76d1fa6d3ab32dd25ee154a71bf4f1c3f0af03f7a0c4c07d0b8cca",
+    "owner_reply": "build/verification/p2-conflict-claude-forward/examiner-private/reply.txt",
+    "owner_reply_sha256": "13100caf929d1cbd95263a211d59685984e428ae6e5e2514cd3b86e60792f1b1",
+    "owner_confirmation_file": "build/verification/p2-conflict-claude-forward/examiner-private/epsilon-owner-confirmation.txt",
+    "owner_confirmation_file_sha256": "59346576d8fb6cfab0694fbc1badc14a7d0908fd74014585b83a2467e576cc52",
+    "second_grid": "build/verification/p2-conflict-claude-forward/examiner-private/view-two.json",
+    "second_grid_sha256": "9a8469bf767e5b0b0603df9b1aa1f0acf44b0c2b2ef6dc97b981901a57bf0fd6",
+    "review_feedback": "build/verification/p2-conflict-claude-forward/examiner-private/review-feedback.txt",
+    "review_feedback_sha256": "093ddb2c10910ec47766f919c574f61beb55dcba60f8dda31f89c0448ade7ca7",
+    "final_gate_feedback": "build/verification/p2-conflict-claude-forward/examiner-private/final-gate-feedback.txt",
+    "final_gate_feedback_sha256": "12710c3946498006897f415cf1e2981ea9a5010771cfb8832eda438538e7db22"
+  },
+  "independent_evidence": {
+    "stage1_finding": "build/verification/p2-conflict-claude-forward/independent-stage1-finding.txt",
+    "stage1_finding_sha256": "27e4c204be294823e5c164b335523a2f0046ef03bff86e3f347eabde1e9df95e",
+    "stage2_finding": "build/verification/p2-conflict-claude-forward/independent-stage2-finding.txt",
+    "stage2_finding_sha256": "9e1844726e27afefe3989c0aca4d509e4821dbd7140b9ab3a95aec5f4628927a",
+    "stage3_finding": "build/verification/p2-conflict-claude-forward/independent-stage3-finding.txt",
+    "stage3_finding_sha256": "0ee9570b32def09dc6ac6402204e61be789fab09567a8438e3223c7adc908e27",
+    "direct_checker": "build/verification/p2-conflict-claude-forward/independent_stage4_check.py",
+    "direct_checker_sha256": "7a6be6a997201ed5152c9811dfc9077148a73bb6d2d863830d2a008e21ff9331",
+    "final_check": "build/verification/p2-conflict-claude-forward/independent-stage4-check.txt",
+    "final_check_sha256": "05ca9e380e02cb91996292f3d003d72905e79e5edeb40a683e36b11dd96a59f2"
+  },
+  "outcome": {
+    "autonomous_stage1": "Recognized two tentative conflicting epsilon claims, asked one material question, delivered only delta; scientific 2*pi explanation was wrong.",
+    "autonomous_stage2": "After owner clarification, preserved delta reader NPZ, rejected epsilon on both grids with labelled diagnostics, but silently accepted stale source bytes and rewrote old diagnostic files.",
+    "reviewed_stage4": "After two reviewer feedback messages, corrected flux-convention interpretation, required source-byte bindings, preserved old outputs on rerun and rejected collisions; independent source-free replay and negative checks passed.",
+    "project_tests_passed": 11,
+    "delivered_delta_support_cells_per_grid": 72,
+    "epsilon_reader_npz_count": 0,
+    "frozen_output_file_count_unchanged_on_replay": 12
+  }
+}

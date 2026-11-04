@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scirel.dev/contracts/candidate-package-dev.schema.json",
+  "title": "SciRel development candidate package",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "candidate_id", "run_id", "source_artifact_ref", "source_digest", "project_id", "assets", "automated_checks", "gaps", "status", "automated_next_action"],
+  "properties": {
+    "schema": {"const": "scirel.candidate-package.dev"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "source_artifact_ref": {"type": "string", "minLength": 1},
+    "source_digest": {"type": "string", "minLength": 1},
+    "project_id": {"type": "string"},
+    "assets": {"type": "array", "items": {"type": "object"}},
+    "automated_checks": {"type": "array", "items": {"type": "object"}},
+    "gaps": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "status": {"const": "candidate"},
+    "automated_next_action": {"type": "string"}
+  }
+}

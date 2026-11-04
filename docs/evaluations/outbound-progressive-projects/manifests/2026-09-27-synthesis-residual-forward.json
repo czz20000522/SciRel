@@ -1,0 +1,109 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-27-synthesis-residual-forward",
+  "status": "two_autonomous_turns_with_correct_nominal_outputs_but_false_green_port_witnesses; two_review_assisted_repair_turns",
+  "not_claims": [
+    "autonomous_complete_delivery",
+    "general_source_to_port_reliability",
+    "physical_equilibrium_validation",
+    "real_diagnostic_agreement",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "offline_dependency_installation",
+    "strict_examiner_isolation",
+    "confirmed_underlying_model_identity",
+    "codefusion_integration"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "session_id": "a7fb6038-9404-417e-9914-0dc89d63cf0a",
+    "cli_init_model_label": "claude-fable-5",
+    "assistant_message_model_label": "GLM-5.3-Flash",
+    "underlying_model_confirmed": false,
+    "budget_or_call_limit_set": false,
+    "review_feedback_rounds": 2
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev39",
+    "wheel_digest": "sha256:be5a2a2b40461ded5c486d9c9689ceaaed987923b9ba428da73ab59ca1eef9b8",
+    "integration_review_manifest_digest": "sha256:d0b70682df281647f64ca927276cf147e5fe495814752274010cd75d21140e59",
+    "catalog_coverage": "complete 126/126, pending_unapproved",
+    "catalog_root_digest": "sha256:434249fe5f6df457b712992182a0d5631918a1002861db9d415723fcd86e3fca",
+    "selected_asset_ids": [
+      "scirel.diagnostics.equilibrium-synthesis-diagnostics",
+      "scirel.geometry.bilinear-grid-sampling",
+      "scirel.diagnostics.observation-residuals"
+    ],
+    "solver_skill_digests": {
+      "scirel-solving": "sha256:d1739f71c9b5258a1fc33475df38f91fb38b7b08ea77606d1d57b89b0b403705",
+      "scientific-asset-navigation": "sha256:049146ae5eac80eab72c4b0024d1a34505e7032c75953ced85f0cefe4c4e644f",
+      "scientific-project-implementation": "sha256:fa5330a867133f032452338605e4fe27087aa4e08550d36a975e48ab7916e5ab",
+      "scientific-computation-validation": "sha256:eb90496efaf5cd6bf8ffc2d624823f59d3c9d8a6dc298a7d5de623b0da66941f"
+    }
+  },
+  "fixture_member_digests": {
+    "host_environment": "sha256:799cbfbf08d24dd90ff9324eacd8eed17bdd350e268865f43f6411353397b8aa",
+    "request_stage1": "sha256:243cc170b9bfd171afecd033f07d3f0ea03cd39c9e36bfeaa6da5bcd1a0e0478",
+    "request_stage2": "sha256:63194b5ddb57e6bb74d102bf5ca5e03796f76ca6c5876d22d6cf6897644ebc17",
+    "saved_state_csv": "sha256:0f42db8f4fd3c764311b159f0b5377f8b8f21ad279b7731b7c02c54f9ee40ee4",
+    "stage1_points_csv": "sha256:a6e015d374feab07fd0d27c00daffc06873c0c703b3f7651bc0595247dd525e6",
+    "stage2_points_csv": "sha256:32c3b42bb9958ca8590854c10ef292b661c82124471838150103f0b9c358c994",
+    "measurements_csv": "sha256:38ae0560b3a217d4e06b60c5dee92345c903bb45e044a3d9724145f36092984e"
+  },
+  "archives": {
+    "stage1_autonomous": "build/verification/synthesis-residual-forward/stage1-autonomous.tgz",
+    "stage1_autonomous_sha256": "6d3f4a8f7f9851f98999089d2c79b843d90a429255c63fda4172ca4bf298e8bf",
+    "stage2_autonomous": "build/verification/synthesis-residual-forward/stage2-autonomous.tgz",
+    "stage2_autonomous_sha256": "0628d7427071661961daa99043c6143a9298f18b67028707687bac3a1c39d24e",
+    "stage3_reviewed": "build/verification/synthesis-residual-forward/stage3-reviewed.tgz",
+    "stage3_reviewed_sha256": "535e760887a5f91586a2964c075b3613244f0103629d84c873ac05b23658f021",
+    "stage4_reviewed_final": "build/verification/synthesis-residual-forward/stage4-reviewed-final.tgz",
+    "stage4_reviewed_final_sha256": "9d86c39bd77fb1a049cf20e5861101e30d076a05c0294647a3e8a26a9991bffe",
+    "independent_probes": "build/verification/synthesis-residual-forward/independent-probes.tgz",
+    "independent_probes_sha256": "f45a4b67ec9e5d64333936fc34c16fdcfad251c65a2f8c42b1e3b37168b8f7ee"
+  },
+  "traces": {
+    "round1_autonomous": "build/verification/synthesis-residual-forward/round1-autonomous.jsonl",
+    "round1_autonomous_sha256": "1bfd3e9aa68eb896373c857851f920004a9514d754773d1c4c6558fef1e3ca78",
+    "round2_autonomous": "build/verification/synthesis-residual-forward/round2-autonomous.jsonl",
+    "round2_autonomous_sha256": "2f32bdc11a1b8af041dc3ac9459deced689bec472bfccbda8fc24732fca8e5cb",
+    "round3_reviewed": "build/verification/synthesis-residual-forward/round3-reviewed.jsonl",
+    "round3_reviewed_sha256": "80f8dc4c4fa8a7fa2531d224951ce2afbe0141ddb8b0acb495c98c9be6738229",
+    "round4_reviewed": "build/verification/synthesis-residual-forward/round4-reviewed.jsonl",
+    "round4_reviewed_sha256": "c3f911efbb70f735c54e9724198c58967f9465c667242b03c913231509825029"
+  },
+  "review_evidence": {
+    "stage1_finding": "build/verification/synthesis-residual-forward/independent-stage1-finding.md",
+    "stage1_finding_sha256": "49db13c0f341972df346a68546219eb4d51bea43c573d252bf906da1fc1f7b88",
+    "stage2_finding": "build/verification/synthesis-residual-forward/independent-stage2-finding.md",
+    "stage2_finding_sha256": "db9a7eb5446233aba3d73498213fcfc189f78fd9682b923c14266039be6c2add",
+    "stage3_finding": "build/verification/synthesis-residual-forward/independent-stage3-finding.md",
+    "stage3_finding_sha256": "16c80482e7d4e1522a00d75eafcd7d1b0fed3ae900cedc8f868b822ca5f5ffff",
+    "stage4_check": "build/verification/synthesis-residual-forward/independent-stage4-check.md",
+    "stage4_check_sha256": "b3302706c1611f29d5356dc60bfd7231f018745e62af849a92b2ef96024ba787",
+    "feedback1": "build/verification/synthesis-residual-forward/review-feedback-1.txt",
+    "feedback1_sha256": "5e86cbc9439a00e9bfb478e87f6517032034796f21156d9e5a966d1031496163",
+    "feedback2": "build/verification/synthesis-residual-forward/review-feedback-2.txt",
+    "feedback2_sha256": "76cf864cd8839f5fcb0d2d42f7896a3cb9eefb9e03c807864265dcfa85148e27",
+    "stage1_checker": "build/verification/synthesis-residual-forward/independent-stage1-check.ps1",
+    "stage1_checker_sha256": "68fc8dfb5956ba0e0e41fa9bb65faa895a77d2aa02dea45fbf91e18d99311543",
+    "stage2_checker": "build/verification/synthesis-residual-forward/independent-stage2-check.ps1",
+    "stage2_checker_sha256": "0935bd88a8407bbd2f47b9b3f2b8cbe8b99cfea381dad9c541641959d07d02da"
+  },
+  "outcome": {
+    "autonomous_stage1_nominal_predictions_correct": true,
+    "autonomous_stage1_actual_port_swap_rejected": false,
+    "autonomous_stage1_near_boundary_partial_delivery": false,
+    "autonomous_stage2_new_catalog_asset_found": true,
+    "autonomous_stage2_nominal_chi2": 2.6,
+    "autonomous_stage2_old_prediction_csv_preserved": true,
+    "autonomous_stage2_wrong_sigma_port_rejected": false,
+    "reviewed_final_tests_passed": 27,
+    "reviewed_final_near_boundary_partial_delivery": true,
+    "reviewed_final_wrong_sigma_port_exit_code": 1,
+    "reviewed_final_old_outputs_preserved_on_port_failure": true,
+    "trusted_release_or_physical_validation": false
+  }
+}

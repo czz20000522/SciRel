@@ -1,0 +1,72 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-27-synthesis-residual-followup",
+  "parent_case_id": "2026-09-27-synthesis-residual-forward",
+  "status": "environment_assisted_continuation_of_two_review_assisted_project",
+  "not_claims": [
+    "fresh_autonomous_project",
+    "unassisted_first_pass",
+    "general_old_result_versioning",
+    "multi_file_transaction",
+    "confirmed_underlying_model_identity",
+    "strict_examiner_isolation",
+    "offline_dependency_installation",
+    "physical_equilibrium_validation",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "codefusion_integration"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "session_id": "6f73b86f-24cf-4e39-a492-b68e87cb0f9c",
+    "cli_model_label": "claude-fable-5",
+    "assistant_message_model_label": "GLM-5.3-Flash",
+    "underlying_model_confirmed": false,
+    "budget_or_call_limit_set": false,
+    "initial_permission_mode": "acceptEdits; execution denied",
+    "resumed_permission_mode": "bypassPermissions in isolated project copy",
+    "scientific_reviewer_feedback_rounds": 0
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev39",
+    "wheel_digest": "sha256:be5a2a2b40461ded5c486d9c9689ceaaed987923b9ba428da73ab59ca1eef9b8",
+    "catalog_coverage": "complete 126/126, pending_unapproved",
+    "catalog_root_digest": "sha256:434249fe5f6df457b712992182a0d5631918a1002861db9d415723fcd86e3fca",
+    "solver_skill_digests": {
+      "scirel-solving": "sha256:d1739f71c9b5258a1fc33475df38f91fb38b7b08ea77606d1d57b89b0b403705",
+      "scientific-asset-navigation": "sha256:049146ae5eac80eab72c4b0024d1a34505e7032c75953ced85f0cefe4c4e644f",
+      "scientific-project-implementation": "sha256:fa5330a867133f032452338605e4fe27087aa4e08550d36a975e48ab7916e5ab",
+      "scientific-computation-validation": "sha256:eb90496efaf5cd6bf8ffc2d624823f59d3c9d8a6dc298a7d5de623b0da66941f"
+    }
+  },
+  "fixture_member_digests": {
+    "request_stage3": "sha256:a5a5c2b5bd2325ae2856c4b2e90a55ba765462c5aaddfb57b12f3469266ed64a",
+    "corrected_measurements_csv": "sha256:ac1cdf522c25d7e4b98710a691233a11ae3bf8bcdd0b2eb7223c3fbd0bce954",
+    "saved_state_csv": "sha256:0f42db8f4fd3c764311b159f0b5377f8b8f21ad279b7731b7c02c54f9ee40ee4",
+    "points_csv": "sha256:32c3b42bb9958ca8590854c10ef292b661c82124471838150103f0b9c358c994",
+    "original_measurements_csv": "sha256:38ae0560b3a217d4e06b60c5dee92345c903bb45e044a3d9724145f36092984e"
+  },
+  "artifacts": {
+    "archive": "build/verification/synthesis-residual-followup-20260927/stage3-corrected-readings.tgz",
+    "archive_sha256": "bb79f926635c611bf9e836d2e197ae31e95e5a608f5183342855c03174e351a2",
+    "trace": "build/verification/synthesis-residual-followup-20260927/claude-session.jsonl",
+    "trace_sha256": "99c23e8ae09a0c0a58c33529456d095f0a9c49895c6592e25bcba6852818b5f6"
+  },
+  "outcome": {
+    "first_invocation_executed_tests": false,
+    "permission_rescue_before_success": true,
+    "resumed_project_tests_passed": 32,
+    "ordinary_entrypoint_exit_code": 0,
+    "compared_rows": 6,
+    "excluded_rows": 1,
+    "old_chi2": 2.6,
+    "corrected_chi2": 2.940277777777781,
+    "old_prediction_and_comparison_bytes_preserved": true,
+    "unchanged_rerun_bytes_preserved": true,
+    "independent_cli_sheet_override_matched_old_archive": true,
+    "future_changed_sheet_history_automatic": false,
+    "trusted_release_or_physical_validation": false
+  }
+}

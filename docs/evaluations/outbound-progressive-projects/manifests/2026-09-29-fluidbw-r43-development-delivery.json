@@ -1,0 +1,62 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-29-fluidbw-r43-development-delivery",
+  "status": "development_delivery_bounded_candidate",
+  "binding": {
+    "archive": "build/verification/fluidbw-r43-development-delivery-20260929/fluidbw-r43-development-delivery.tgz",
+    "archive_sha256": "51864f4fe401b4995847bff533f26244304e0bfd264f9286337dbbd83e4f63e5",
+    "receipt": "build/verification/fluidbw-r43-development-delivery-20260929/freeze-receipt.json",
+    "receipt_sha256": "1afcf1e3a62d00c50d5a5b9ddc8677d7a3fb6cee5f13c50b611d1dee0b73232b",
+    "file_manifest": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/file-manifest.json",
+    "file_manifest_sha256": "45c3559c48de6490bf0e47669406f0e62a9da6876f41096fdfc6335420619c57",
+    "release_binding": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/release-binding.json",
+    "release_binding_sha256": "5f9c4b0690cf3f69aa4c97a8182a6f1b9955dd3cc07cd321fbff49d0a6d38e18",
+    "replay_entrypoint": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/replay.ps1",
+    "replay_entrypoint_sha256": "39d7a5bb41c8530345c66aae6141d2caf5feaf72fda5ec9499a5b13fde49e04f"
+  },
+  "runtime": {
+    "wheel": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/wheels/scirel-0.1.0.dev5-py3-none-any.whl",
+    "wheel_sha256": "927b33e4a1051d71698714b30d80dfe9da46c7647ebe25fd9c2fedfc6025deda",
+    "numpy_wheel": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/wheels/numpy-2.5.3-cp314-cp314-win_amd64.whl",
+    "numpy_wheel_sha256": "2c25dfa72943e4336ddb6b0ee4277b47a0c85bede0807530ec68103bf58e2c10",
+    "scipy_wheel": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/wheels/scipy-1.18.1-cp314-cp314-win_amd64.whl",
+    "scipy_wheel_sha256": "78a0d7c918e74a232394117160e7e3db503377572a45bcef8826e4ab8a35feba",
+    "catalog_release": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/catalog/release.json",
+    "catalog_release_sha256": "fece59b88ad39480a58b3c35f7678b2007a578f5918a74533f5b0cae6dfe2d02",
+    "catalog_root_digest": "sha256:1bd47cc5cce3155cb8ec17676eb4f0296374d85939c7396c8be9a9ee06e7cdfb",
+    "approval_state": "pending_unapproved"
+  },
+  "methods": {
+    "scirel_solving": {
+      "path": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/skills/usage/scirel-solving/SKILL.md",
+      "sha256": "b988367cbd38fa687bcc4af33d6bd26174cda67b0de9e9c1161e14162e7bf73a"
+    },
+    "scientific_project_implementation": {
+      "path": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/skills/usage/scientific-project-implementation/SKILL.md",
+      "sha256": "c70b48d6229effbc550bfe6962b141012b83ee68ea92e9eb6b55f7e96dd93b77"
+    },
+    "navigation_support": {
+      "path": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/skills/usage/scientific-asset-navigation/SKILL.md",
+      "sha256": "049146ae5eac80eab72c4b0024d1a34505e7032c75953ced85f0cefe4c4e644f"
+    }
+  },
+  "observed": {
+    "archive_members_content_verified": 178,
+    "catalog_partitions_verified": 135,
+    "installed_package_files_byte_equal_to_wheel": 147,
+    "external_source_free_replay_exit_code": 0,
+    "reference_csvs_reproduced_byte_identically": 4
+  },
+  "not_claims": [
+    "all_132_assets_source_qualified",
+    "adapter_cc2fa_wheel_interchangeable",
+    "measured_or_user_supplied_plasma_data",
+    "arbitrary_parameter_source_parity",
+    "dispersion_root_or_growth_rate",
+    "physical_stability_verdict",
+    "long_term_availability",
+    "expert_approval",
+    "trusted_release",
+    "public_v1"
+  ]
+}

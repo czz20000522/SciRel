@@ -1,0 +1,18 @@
+{
+  "schema": "scirel.l1-payload.dev",
+  "project": "pleiades",
+  "framework_node": "vacuum_field",
+  "assets": [
+    {
+      "candidate_asset_id": "pleiades.vacuum_field",
+      "kind": "task_graph",
+      "source_path": "l1/vacuum_field"
+    }
+  ],
+  "automated_checks": [
+    {"name": "source_replay", "status": "passed"},
+    {"name": "dependency_resolution", "status": "passed"},
+    {"name": "direct_test_replay", "status": "passed"}
+  ],
+  "gaps": []
+}

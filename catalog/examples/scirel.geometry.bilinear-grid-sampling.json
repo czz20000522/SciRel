@@ -1,0 +1,143 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.geometry.bilinear-grid-sampling",
+  "kind": "operator",
+  "title": {
+    "en": "Rectilinear R-Z bilinear sampling",
+    "zh": "直角网格双线性诊断采样"
+  },
+  "summary": "Sample a finite real scalar field at caller-selected points inside a rectilinear cylindrical R-Z grid using cellwise bilinear interpolation.",
+  "taxonomy": [
+    "geometry",
+    "interpolation",
+    "diagnostics"
+  ],
+  "aliases": [
+    "R-Z bilinear field sampler"
+  ],
+  "identity": {
+    "relation": "real scalar field on a rectilinear R-Z grid to point samples",
+    "direction": "R-Z grids, field and [R,Z] query points -> ordered samples",
+    "definition": "Within each enclosing cell, blend its four [Z,R]-indexed corner values with the bilinear weights from the point's R and Z fractions. Return one value per point in input order.",
+    "model": "piecewise bilinear scalar interpolation without a field equation",
+    "geometry": "two-dimensional rectilinear cylindrical R-Z grid",
+    "coordinates": "grid arrays indexed [Z,R]; each query point ordered [R,Z]",
+    "boundary": "Points on the closed grid boundary are accepted; points outside are rejected rather than clamped or extrapolated.",
+    "assumptions": [
+      "The caller supplies the same length unit for the grid coordinates and query points.",
+      "quantity is a real scalar sampled at the grid nodes."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "r_grid",
+      "description": "Radius coordinate mesh with a common R axis along each row.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite, rectilinear, strictly increasing radial axis and N_R >= 2; same shape as z_grid and quantity."
+    },
+    {
+      "name": "z_grid",
+      "description": "Axial coordinate mesh with a common Z axis along each column.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite, rectilinear, strictly increasing axial axis and N_Z >= 2; same shape as r_grid and quantity."
+    },
+    {
+      "name": "quantity",
+      "description": "Real scalar field sampled at each grid node.",
+      "units": "same as sampled field",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite and exactly the same shape as the coordinate grids."
+    },
+    {
+      "name": "points",
+      "description": "Ordered query coordinates [R,Z].",
+      "units": "m,m",
+      "shape": "[N_point,2]",
+      "dtype": "real array-like, converted to float64",
+      "required": true,
+      "constraints": "Finite; each point must lie within the closed R-Z grid box. An empty [0,2] array is accepted."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "samples",
+      "description": "Bilinearly interpolated scalar values in query order.",
+      "units": "same as quantity",
+      "shape": "[N_point]",
+      "dtype": "float64",
+      "required": true,
+      "constraints": "One-dimensional array; empty for zero query points."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "The real field and query coordinates use the declared [Z,R] grid and [R,Z] point conventions.",
+      "The caller has already selected a meaningful quantity and consistent length units."
+    ],
+    "supported": [
+      "In-domain point sampling of a real scalar on a strictly ordered rectilinear R-Z grid."
+    ],
+    "excluded": [
+      "Extrapolation or out-of-domain clamping.",
+      "Complex or vector-valued interpolation.",
+      "Interpolation on curvilinear, unstructured, or three-dimensional grids."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for invalid grid rank/shape, nonfinite inputs, insufficient or nonmonotonic axes, nonrectilinear coordinates, invalid point shape, or any point outside the grid.",
+    "runtime_failure": "Unexpected NumPy arithmetic errors propagate. The implementation does not separately reject overflow in a computed sample.",
+    "nonconvergence": "Not applicable; no iteration is performed.",
+    "partial_results": "No partial samples dictionary is returned if any query point fails."
+  },
+  "provenance": {
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "source_kinds": [
+      "historical Pleiades development descriptor and migration mapping",
+      "pending intake development candidate",
+      "current SciRel implementation and direct regression tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.bilinear_grid_sampling",
+      "symbol": "sample_rectilinear_field",
+      "signature": "sample_rectilinear_field(r_grid, z_grid, quantity, points)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Sample an affine R-Z scalar field at an interior point and the upper grid corner.",
+    "code": "import numpy as np\nfrom scirel.geometry import sample_rectilinear_field\nr_grid, z_grid = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])\nquantity = 3.0*r_grid - 2.0*z_grid + 1.0\nresult = sample_rectilinear_field(r_grid, z_grid, quantity, [[1.5, 0.0], [4.0, 1.0]])\nnp.testing.assert_allclose(result['samples'], [5.5, 11.0])",
+    "expected": "samples is a length-two float64 vector [5.5, 11.0] in query order."
+  },
+  "verification": {
+    "scope": [
+      "Exact recovery of an affine R-Z field at interior and boundary points.",
+      "Rejection of a query point outside the grid.",
+      "Direct regression for a bilinear R*Z field and output order.",
+      "An empty [0,2] query returns an empty sample vector; an invalid later query rejects the whole call."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_bilinear_grid_sampling.py"
+    ],
+    "evidence_ceiling": "Direct SciRel tests establish interpolation arithmetic and selected boundary behavior on small rectilinear grids, not the physical validity of any quantity supplied by a caller or expert recognition of this development record.",
+    "known_limitations": [
+      "Only one real scalar quantity is sampled per call.",
+      "No coordinate-unit conversion or extrapolation is performed.",
+      "Public distribution licensing and SciRel expert recognition remain pending."
+    ]
+  }
+}

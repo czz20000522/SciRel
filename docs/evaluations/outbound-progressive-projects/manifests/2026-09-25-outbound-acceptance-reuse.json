@@ -1,0 +1,60 @@
+{
+  "schema": "scirel.outbound-acceptance-reuse.v1",
+  "status": "development_evaluation",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "device_physics_validation"
+  ],
+  "workdir": "D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\20260925-outbound-acceptance-reuse-v3",
+  "archive": "D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\scirel-outbound-acceptance-reuse-20260925.tgz",
+  "archive_sha256": "16e169f8456e5981d7d52305a715d1ce49a2c96605882a7c923037be5c8c5c3b",
+  "wheel": {
+    "path": "D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\20260925-outbound-acceptance-reuse-v3\\wheel\\scirel-0.1.0.dev5-py3-none-any.whl",
+    "sha256": "697f3a896ac30af3cead302cc20d8629fa46572740dde96cca83a01fede33fbc",
+    "version": "0.1.0.dev5",
+    "install_status": "development_wheel_not_admitted_release",
+    "verified_python_files": 76
+  },
+  "command": "D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\20260925-outbound-acceptance-reuse-v3\\.venv\\Scripts\\python.exe D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel/examples/user_acceptance.py --wheel D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\20260925-outbound-acceptance-reuse-v3\\wheel\\scirel-0.1.0.dev5-py3-none-any.whl --output D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\20260925-outbound-acceptance-reuse-v3\\output",
+  "outputs": {
+    "acceptance_json_sha256": "eb8d0f7e37a1cc959c75da3451aada51b92d32f6af263f5e85fa0a9be319ba46",
+    "profile_json_sha256": "1f9d9d3f83ffac2d2356d4141cd138884df5657714ddfb3cdc1a4c26e9f1ae39",
+    "intermediate_npz_sha256": "4a651115f32900e516e4e1233f4fc4967de1f5e2afa5396f96d21973c96b62a0"
+  },
+  "reusable_complex_field_profile": {
+    "rows": 3,
+    "finite_rows": 1,
+    "status_counts": {
+      "outside_grid_box": 1,
+      "sampled": 1,
+      "stencil_touches_unsupported_cell": 1
+    },
+    "sampling_asset_id": "scirel.geometry.complex-rectilinear-interpolation",
+    "metadata": {
+      "source_axes_m": [
+        "x_m",
+        "y_m",
+        "z_m"
+      ],
+      "coordinate_basis": "cartesian_m",
+      "support_mask_name": "support_mask",
+      "generation_plan_version": "acceptance.reusable_complex_field_profile.v1",
+      "intermediate_digest": "sha256:4a651115f32900e516e4e1233f4fc4967de1f5e2afa5396f96d21973c96b62a0",
+      "axis_digest": "sha256:b757eed315b89e0ae01ed02edc6df3269ed4440a8c39613cebc29c7c40ac68a4",
+      "support_mask_digest": "sha256:0f7c0599fa595c2a480a865e2995658c919ba3335438d090895a51e4551bc8de"
+    }
+  },
+  "failed_attempts": [
+    {
+      "workdir": "D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\20260925-outbound-acceptance-reuse",
+      "failure": "offline no-index install could not resolve numpy/scipy"
+    },
+    {
+      "workdir": "D:\\software\\PyCharm 2025.3.3\\workspace\\SciRel\\build\\verification\\20260925-outbound-acceptance-reuse-v2",
+      "failure": "system-site-packages exposed source checkout SciRel and verify_installation rejected it"
+    }
+  ]
+}

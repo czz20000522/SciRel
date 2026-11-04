@@ -1,0 +1,165 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.geometry.flux-surface-inverse-field-average",
+  "kind": "operator",
+  "title": {
+    "en": "Polyline inverse-field measure and weighted mean",
+    "zh": "折线一除磁场测度与加权平均"
+  },
+  "summary": "Interpolate positive magnetic-field magnitude along a caller-supplied R-Z polyline, integrate dl/B by trapezoidal quadrature, and optionally average another scalar field with the same weight.",
+  "taxonomy": [
+    "geometry",
+    "field-line",
+    "weighted-quadrature"
+  ],
+  "aliases": [
+    "flux-surface inverse-field average"
+  ],
+  "identity": {
+    "relation": "R-Z magnetic-field grid and ordered polyline to inverse-field path measure and optional weighted scalar mean",
+    "direction": "rectilinear R-Z grids, positive B magnitude, path points and optional quantity -> dl_B and optional flux_surface_average",
+    "definition": "Use cubic RectBivariateSpline interpolation of B and optional quantity at each supplied path point. Form cumulative Euclidean segment length in the R-Z plane and trapezoidally integrate 1/B, with an optional ratio of trapezoidal integrals of quantity/B and 1/B.",
+    "model": "two-dimensional sampled-field interpolation and discrete inverse-B path quadrature",
+    "geometry": "ordered R-Z polyline within a rectilinear cylindrical grid",
+    "coordinates": "SI cylindrical R-Z coordinates; path order is supplied by the caller",
+    "boundary": "path points lie inside the closed grid rectangle; adjacent path points differ; no automatic closure or periodic wrap is applied",
+    "assumptions": [
+      "Magnetic-field magnitude is in tesla and strictly positive at grid and interpolated path points.",
+      "The caller establishes whether the supplied polyline approximates a physical field line or flux surface.",
+      "An optional quantity has one consistent caller-defined unit across the grid."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "r_grid",
+      "description": "Rectilinear cylindrical radius coordinate grid.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing across columns and rectilinear within NumPy allclose tolerance; N_R and N_Z each at least four. Nonnegative radius is a physical caller precondition, not an implementation check."
+    },
+    {
+      "name": "z_grid",
+      "description": "Rectilinear axial coordinate grid.",
+      "units": "m",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite, strictly increasing down rows and constant across columns; same shape as r_grid."
+    },
+    {
+      "name": "magnetic_field",
+      "description": "Magnetic-field magnitude sampled on the R-Z grid.",
+      "units": "T",
+      "shape": "[N_Z,N_R]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "Finite and strictly positive at grid nodes; same shape as r_grid; interpolated path values must also remain positive and finite."
+    },
+    {
+      "name": "field_line_points",
+      "description": "Ordered path coordinates [R_m,Z_m] for the discrete integral.",
+      "units": "m,m",
+      "shape": "[N_point,2]",
+      "dtype": "real array-like",
+      "required": true,
+      "constraints": "At least two finite points within the grid rectangle; no repeated consecutive points."
+    },
+    {
+      "name": "quantity",
+      "description": "Optional scalar field to average using the dl/B path weight.",
+      "units": "caller-defined scalar unit",
+      "shape": "[N_Z,N_R] or null",
+      "dtype": "real array-like or None",
+      "required": false,
+      "default": null,
+      "constraints": "None omits flux_surface_average; otherwise finite and exactly the grid shape."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "dl_B",
+      "description": "Trapezoidal integral of 1/B over cumulative polyline length.",
+      "units": "m/T",
+      "shape": "scalar",
+      "dtype": "float",
+      "required": true,
+      "constraints": "Finite and strictly positive on successful return."
+    },
+    {
+      "name": "flux_surface_average",
+      "description": "Trapezoidal integral of quantity/B divided by dl_B, present only when quantity is supplied.",
+      "units": "same as quantity",
+      "shape": "scalar or null",
+      "dtype": "float or None",
+      "required": false,
+      "default": null,
+      "constraints": "Absent from the result mapping when quantity is None; otherwise finite."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "Finite strictly increasing rectilinear grid with at least four samples per coordinate axis; the caller must supply nonnegative radii for physical cylindrical interpretation.",
+      "The discrete path is inside the grid, nondegenerate, and samples strictly positive interpolated B."
+    ],
+    "supported": [
+      "Discrete inverse-B measure and optional inverse-B weighted scalar mean along the exact supplied R-Z polyline."
+    ],
+    "excluded": [
+      "Finding or closing a magnetic field line or flux surface.",
+      "Proving the path is a complete flux-surface contour.",
+      "Three-dimensional or time-dependent field effects."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for wrong shapes, nonfinite values, nonrectilinear/undersized grid, nonpositive grid or interpolated B, out-of-grid or repeated path points, or nonpositive/nonfinite dl_B.",
+    "runtime_failure": "SciPy interpolation and quadrature errors propagate; a nonfinite interpolated quantity or weighted mean raises ValueError.",
+    "nonconvergence": "Not applicable; interpolation and quadrature have no iterative convergence criterion.",
+    "partial_results": "No partial result mapping is returned after a failed call; omission of the optional average when quantity is None is normal behavior."
+  },
+  "provenance": {
+    "lineage_summary": "The current SciRel implementation and direct tests were compared with the historical Pleiades development mapping and pending intake candidate; SciRel and intake source text matched after LF normalization. Historical admission labels and intake r81-v1 do not establish current expert approval or qualified D1 delivery.",
+    "source_kinds": [
+      "historical Pleiades development descriptor and migration mapping",
+      "pending intake development candidate",
+      "current SciRel implementation and direct tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.geometry.flux_surface_inverse_field_average",
+      "symbol": "compute_flux_surface_inverse_field_average",
+      "signature": "compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, field_line_points, quantity=None)"
+    }
+  },
+  "version": {
+    "implementation_version": "0.1.0.dev5",
+    "dependencies": []
+  },
+  "example": {
+    "description": "Use constant B and quantity on a three-point polyline to check the path measure and weighted mean.",
+    "code": "import numpy as np\nfrom scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 1.0, 5), np.linspace(-1.0, 1.0, 5))\nline = np.array([[0.2, -0.5], [0.4, 0.0], [0.6, 0.5]])\nresult = compute_flux_surface_inverse_field_average(r_grid, z_grid, np.full_like(r_grid, 2.0), line, np.full_like(r_grid, 3.0))\nlength = np.linalg.norm(np.diff(line, axis=0), axis=1).sum()\nnp.testing.assert_allclose(result['dl_B'], length / 2.0)\nnp.testing.assert_allclose(result['flux_surface_average'], 3.0)",
+    "expected": "The inverse-field path measure equals polyline length divided by 2 T and the weighted mean equals the constant quantity 3."
+  },
+  "verification": {
+    "scope": [
+      "Constant-B analytic path measure and weighted mean.",
+      "Optional quantity omission.",
+      "Path reversal, repeated segments and undersized grid cases.",
+      "Nonpositive field and outside-grid rejection."
+    ],
+    "tests": [
+      "tests/operator_contracts/test_flux_surface_inverse_field_average.py"
+    ],
+    "evidence_ceiling": "Direct tests cover maintained cubic interpolation and discrete polyline quadrature on small grids; they do not validate the caller's path as a complete magnetic flux surface or prove source-project completeness.",
+    "known_limitations": [
+      "The callable does not trace field lines or close a flux surface; its output name retains the historical relation name.",
+      "Negative radius coordinates are not rejected by the implementation and are outside the physical cylindrical interpretation.",
+      "Spline interpolation can fail the positivity precondition even when grid-node B values are positive.",
+      "Public distribution licensing and expert recognition remain pending."
+    ]
+  }
+}

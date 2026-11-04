@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scirel.workflow-state.dev",
+  "title": "SciRel development workflow state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "candidate",
+    "draft",
+    "review",
+    "drafts",
+    "reviews",
+    "automated_results",
+    "release"
+  ],
+  "properties": {
+    "schema": { "const": "scirel.workflow-state.dev" },
+    "status": { "type": "string" },
+    "candidate": { "type": "object" },
+    "draft": { "type": ["object", "null"] },
+    "review": { "type": ["object", "null"] },
+    "drafts": { "type": "array", "items": { "type": "object" } },
+    "reviews": { "type": "array", "items": { "type": "object" } },
+    "automated_results": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "release": { "type": ["object", "null"] },
+    "no_change_submission": { "type": "object" }
+  }
+}

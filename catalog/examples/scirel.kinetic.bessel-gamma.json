@@ -1,0 +1,108 @@
+{
+  "schema": "scirel.asset-document.v1",
+  "asset_id": "scirel.kinetic.bessel-gamma",
+  "kind": "operator",
+  "title": {"en": "Exponentially scaled Bessel-Gamma terms", "zh": "指数缩放贝塞尔伽马项"},
+  "summary": "Evaluate the dimensionless modified-Bessel harmonic term Gamma_n(x) and its neighbor-combination derivative with broadcast integer order and real or complex argument.",
+  "taxonomy": ["kinetic", "plasma-wave", "special-function"],
+  "aliases": ["Gamma_n Bessel term", "fluidBW Gamman and Gammapn"],
+  "identity": {
+    "relation": "Integer cyclotron harmonic order and dimensionless argument to Bessel-Gamma term and derivative",
+    "direction": "(n, x) -> Gamma_n(x), Gamma_prime_n(x)",
+    "definition": "Gamma_n=ive(n,x)*exp(-x+abs(Re(x))); Gamma_prime_n=[ive(n-1,x)/2+ive(n+1,x)/2-ive(n,x)]*exp(-x+abs(Re(x))). Here ive is the exponentially scaled modified Bessel I. For representable values this is exp(-x) I_n(x) and its derivative with respect to x.",
+    "model": "Integer-order modified-Bessel terms used in a finite Maxwellian cyclotron-harmonic sum",
+    "geometry": "No spatial geometry; elementwise special-function evaluation",
+    "coordinates": "NumPy-broadcast axes have caller-defined meaning; no physical axis is inferred",
+    "boundary": "Arguments and outputs must be finite and representable as complex128; orders must be exactly representable integers of magnitude at most 2^53.",
+    "assumptions": [
+      "The caller has already formed dimensionless x, such as b=(k_perp*rho_c)^2 for the fluidBW dispersion relation.",
+      "The exponentially scaled Bessel backend is retained; this callable does not select a harmonic truncation."
+    ]
+  },
+  "inputs": [
+    {
+      "name": "n", "description": "Integer Bessel order; broadcasts against x.",
+      "units": "dimensionless integer", "shape": "scalar or nonempty array, broadcastable with x",
+      "dtype": "real numeric with exactly integral values", "required": true,
+      "constraints": "Finite, not boolean or complex, exactly integral after float64 conversion, and absolute value no greater than 2^53."
+    },
+    {
+      "name": "x", "description": "Dimensionless Bessel argument; broadcasts against n.",
+      "units": "dimensionless", "shape": "scalar or nonempty array, broadcastable with n",
+      "dtype": "real or complex numeric", "required": true,
+      "constraints": "Finite after complex128 conversion; boolean, string and empty inputs are rejected."
+    }
+  ],
+  "outputs": [
+    {
+      "name": "Gamma_n", "description": "Exponentially weighted modified-Bessel term.",
+      "units": "dimensionless", "shape": "broadcast shape of n and x; scalar inputs yield a zero-dimensional array",
+      "dtype": "complex128", "required": true,
+      "constraints": "Finite and representable for accepted inputs."
+    },
+    {
+      "name": "Gamma_prime_n", "description": "Neighbor-combination derivative of Gamma_n with respect to x.",
+      "units": "dimensionless", "shape": "broadcast shape of n and x; scalar inputs yield a zero-dimensional array",
+      "dtype": "complex128", "required": true,
+      "constraints": "Finite and representable for accepted inputs."
+    }
+  ],
+  "applicability": {
+    "preconditions": [
+      "n and x are finite nonempty numeric inputs that broadcast to a common shape.",
+      "The chosen argument x and integer harmonic order have the caller's intended normalization."
+    ],
+    "supported": [
+      "Negative, zero and positive integer orders; x=0 and finite real or complex x.",
+      "Scalar and array evaluation with NumPy broadcasting and no input mutation."
+    ],
+    "excluded": [
+      "Noninteger Bessel orders or automatic interpretation of arbitrary x as a physical wave parameter.",
+      "Harmonic truncation, Maxwellian dispersion tensor assembly and mode/root selection."
+    ]
+  },
+  "failure_semantics": {
+    "invalid_input": "Raises ValueError for empty, boolean, string, nonnumeric, nonbroadcastable or nonfinite inputs, complex/noninteger/unrepresentable orders, or nonfinite x.",
+    "runtime_failure": "Raises ValueError if the scaled Bessel result or derivative is nonfinite or unrepresentable; other unexpected SciPy execution errors propagate.",
+    "nonconvergence": "Not applicable; no iterative solve is exposed.",
+    "partial_results": "None; both outputs are returned only after all broadcast elements pass validation."
+  },
+  "provenance": {
+    "lineage_summary": "The development relation originated from the archived fluidBW bessel_gamma_functions implementation (SHA-256 2aa8a7079c0d248b25832dc15a09e5c2e019244afd62a721581c9e032c1e080c). The later bounded fluidBW r43 handoff (SHA-256 3c514298bd46be501a097e53766868285928c9e3cdb5f66c06a291289ec26f9a) was independently accepted for read-only D2 intake. D2 found the same scaled Bessel-Gamma relation and retained SciRel's stricter validation. This source lineage does not establish arbitrary complex-argument parity, expert approval or distribution rights.",
+    "source_kinds": [
+      "saved historical fluidBW Gamman/Gammapn operator contract and implementation",
+      "saved finite 98-point source oracle and digest-bound comparison",
+      "bounded fluidBW r43 source handoff and independent D1 review",
+      "independent local modified-Bessel definition tests"
+    ],
+    "public_references": [],
+    "license_status": "pending-human-decision"
+  },
+  "public_api": {
+    "python": {
+      "module": "scirel.kinetic.bessel_gamma",
+      "symbol": "evaluate_bessel_gamma",
+      "signature": "evaluate_bessel_gamma(n, x)"
+    }
+  },
+  "version": {"implementation_version": "0.1.0.dev5", "dependencies": []},
+  "example": {
+    "description": "Evaluate the zero-order term and derivative at the origin.",
+    "code": "from scirel.kinetic import evaluate_bessel_gamma\nr = evaluate_bessel_gamma(0, 0.0)\nassert r['Gamma_n'] == 1 and r['Gamma_prime_n'] == -1",
+    "expected": "Gamma_0(0)=1 and Gamma_prime_0(0)=-1, each in a zero-dimensional complex128 array."
+  },
+  "verification": {
+    "scope": [
+      "Finite-grid comparison to the modified-Bessel definition, origin identities and complex broadcast behavior.",
+      "Read-only comparison with the saved fluidBW 98-point real-argument oracle and digest-bound implementation.",
+      "Invalid-order, invalid-argument and unrepresentable-output rejection."
+    ],
+    "tests": ["tests/operator_contracts/test_bessel_gamma.py"],
+    "evidence_ceiling": "Direct SciRel tests establish listed identities and failure behavior. The read-only archived-source comparison covers only a finite 98-point real-argument grid with stated absolute and relative tolerances. The independently reviewed r43 handoff supports read-only D2 intake for its declared source scope; neither layer establishes arbitrary complex-plane SciRel parity, a physical choice of x or expert approval.",
+    "known_limitations": [
+      "Floating-point underflow or a nonrepresentable result can bound extreme inputs; the callable raises rather than returning nonfinite outputs.",
+      "The source implementation accepted some noninteger orders implicitly; SciRel intentionally restricts n to exactly representable integers.",
+      "Public distribution license and expert scientific recognition remain open."
+    ]
+  }
+}

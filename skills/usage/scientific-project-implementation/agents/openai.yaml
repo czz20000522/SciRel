@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Project Implementation"
+  short_description: "Build or extend scientific software with optional assets"
+  default_prompt: "Use $scientific-project-implementation to turn this scientific requirement into a completed user project or source extension; when an authorized scientific catalog is supplied, delegate only catalog routing to $scientific-asset-navigation and preserve its bounded evidence."
+policy:
+  allow_implicit_invocation: false

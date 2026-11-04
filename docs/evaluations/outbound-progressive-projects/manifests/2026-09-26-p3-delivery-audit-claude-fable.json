@@ -1,0 +1,85 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-26-p3-delivery-audit-claude-fable",
+  "status": "development_evaluation_autonomous_execution_review_assisted_interpretation",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "unqualified_autonomous_success",
+    "strict_blind_isolation",
+    "offline_dependency_reinstallation",
+    "confirmed_underlying_model_identity",
+    "physical_device_absorption_prediction",
+    "stable_generalization"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "cli_canonical_model": "claude-fable-5",
+    "assistant_message_model_tag": "GLM-5.3-Flash",
+    "model_tag_discrepancy_unresolved": true,
+    "session_id": "16f362f3-387c-40a4-be99-91e6da69b40a",
+    "permission_mode": "bypassPermissions",
+    "budget_or_call_limit_set": false,
+    "reviewer_feedback_before_first_delivery": false,
+    "reviewer_feedback_before_final_delivery": true
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev5",
+    "wheel_digest": "09521a918b875e81c9f17b236f52f4c225fad538155dc9e1b78ed1da7efb23a6",
+    "catalog_coverage": "14/62 partial",
+    "catalog_release_digest": "8c96bfa5180f030c88af1bbccd62568b87e1f6ad17c3c1df599a23705616c577",
+    "project_skill_digest": "c088544a86e2828961a28fc0aed5ed3a5620ae8caa4479cde57dee0068413ed9",
+    "solver_skill_digest": "d0a30da09b0b757307754c4e7a4e1f04d6603b42583a17285ad04def813092b3"
+  },
+  "archives": {
+    "stage0_inputs": "build/verification/p3-delivery-audit-claude-evaluation/stage0-inputs.tgz",
+    "stage0_inputs_sha256": "e70439111ef3e1ac68c7bf8c040402da138d5ec6773422f08419668bc3a8675d",
+    "stage1_autonomous": "build/verification/p3-delivery-audit-claude-evaluation/stage1-autonomous-delivery.tgz",
+    "stage1_autonomous_sha256": "8f0079af79556fc573d18f6b4ddad343cc3a9f28c3479df42631915afd60e048",
+    "stage2_reviewed": "build/verification/p3-delivery-audit-claude-evaluation/stage2-reviewed-delivery.tgz",
+    "stage2_reviewed_sha256": "eb74cec7bb8eee467cefbe953cde1cac3882f4b1e1341ed1fd7a3a5172d6d137"
+  },
+  "traces": {
+    "round1_autonomous": "build/verification/p3-delivery-audit-claude-evaluation/round1-autonomous.jsonl",
+    "round1_autonomous_sha256": "e0ca3c53efd114e25b7537040b9fc617b1decf7a427f12f88cad50aae5d6ab6b",
+    "round2_reviewed": "build/verification/p3-delivery-audit-claude-evaluation/round2-reviewed.jsonl",
+    "round2_reviewed_sha256": "8803ce92b847c8b4ea4d636778d9c5bdaa4704daa523d51bdd85fe7b20dd896d"
+  },
+  "examiner_evidence": {
+    "feedback": "build/verification/p3-delivery-audit-claude-evaluation/examiner-private/round2-feedback.txt",
+    "feedback_sha256": "ed4d235a5a0a279c8f0489f410fd39586958151c0fbdd66c86e48329e9b6d937",
+    "independent_checker": "build/verification/p3-delivery-audit-claude-evaluation/examiner-private/verify_stage1.py",
+    "independent_checker_sha256": "a2da542a975ee09c57ad86e4e8532cea327abdf194bbdf38b5d0287a028e215a",
+    "stage1_check": "build/verification/p3-delivery-audit-claude-evaluation/independent-stage1-check.txt",
+    "stage1_check_sha256": "945ea71776a019248f3bdfce144e307aabf4ebc099ae62a2532ea9dae0423a7f",
+    "stage2_check": "build/verification/p3-delivery-audit-claude-evaluation/independent-stage2-check.txt",
+    "stage2_check_sha256": "e5bbefb0fe7a21854cea9557130163eee03b40aeade65d0d533f43bc850478c8",
+    "affected_rerun": "build/verification/p3-delivery-audit-claude-evaluation/affected-rerun.txt",
+    "affected_rerun_sha256": "3b1eafeb52aa44b3861fc82a5584ac7048655600d3237ca5cda7f945c71ad0d2"
+  },
+  "outcome": {
+    "stage1_project_tests": 13,
+    "stage1_runtime_checks": 7,
+    "stage1": "The first autonomous project preserved old files and correctly bounded the five unavailable site rows, but its report used released terminology for a development wheel and made an unsubstantiated any-electric-field dissipation assertion.",
+    "stage2_project_tests": 15,
+    "stage2_runtime_checks": 9,
+    "stage2": "After one reviewer feedback, the report labels the development build and supports the local conditional dissipation statement with a positive-definite anti-Hermitian tensor at the sole evaluated site for both supplied settings. It still rejects any actual power or absorption-map claim.",
+    "supported_site_rows": 1,
+    "unsupported_site_rows": 5,
+    "independent_on_grid_real_imag_components": 12,
+    "earlier_files_byte_identical_after_final_replay": 3,
+    "independent_min_anti_hermitian_eigenvalues": [0.0003863762411742341, 0.00011045477723192331]
+  },
+  "limitations": [
+    "This is a synthetic follow-up to an existing project, not greenfield construction or a measured-device run.",
+    "Only one listed location is a supported grid node. Interior off-grid density and material support are not declared by the supplied RF note; three such rows have diagnostic static-field samples only.",
+    "The first delivery passed project tests yet needed reviewer feedback on scientific wording and development-build trust status; the reviewed version must not be counted as an unassisted pass.",
+    "The original byte-preserved grid report retains older released wording; the new report explains that it refers to the same development build.",
+    "The examiner and solver paths lacked operating-system-enforced read isolation.",
+    "The independent venv installed the archived wheel but reused system scientific dependencies; offline dependency installation was not established.",
+    "The local material response does not supply RF field amplitudes, wave propagation, deposited power, a spatial absorption map, or a device-physics adequacy claim."
+  ]
+}

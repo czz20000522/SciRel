@@ -1,0 +1,93 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-26-cx-progressive-claude-fable",
+  "status": "development_evaluation_autonomous_numeric_delivery_two_review_assisted_science_bounded",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "autonomous_science_bounded_success",
+    "strict_blind_isolation",
+    "offline_dependency_reinstallation",
+    "confirmed_underlying_model_identity",
+    "external_atomic_physics_validation",
+    "quadrature_error_bound",
+    "clipping_error_bound",
+    "stable_generalization"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "cli_canonical_model": "claude-fable-5",
+    "assistant_message_model_tag": "GLM-5.3-Flash",
+    "model_tag_discrepancy_unresolved": true,
+    "session_id": "6f3c6d83-495d-4ef8-9886-9c2a9b12fc75",
+    "permission_mode": "bypassPermissions",
+    "budget_or_call_limit_set": false,
+    "reviewer_feedback_before_first_delivery": false,
+    "reviewer_feedback_before_second_autonomous_delivery": false,
+    "reviewer_feedback_rounds_after_second_delivery": 2
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev24",
+    "wheel_digest": "a0c665a7d2920650fce832c448c49d4c866260daec0cba0102dd60e3e56c95a0",
+    "catalog_coverage": "74/74 complete",
+    "catalog_root_digest": "sha256:030f8a3704c5388e8d08d005ff8067129cb3f998926c37f7a9e0c5ce64974b90",
+    "catalog_release_document_digest": "6e2aa58e731777620d060452354b60aa777996ab3c7e529f0a3fc4ebf69f87df",
+    "evaluated_solver_skill_digest": "d0a30da09b0b757307754c4e7a4e1f04d6603b42583a17285ad04def813092b3",
+    "evaluated_navigation_skill_digest": "0f557cebf9518b0a7798d61c8208a5832af02efc4e36f5ab90dac13f1078695d",
+    "evaluated_project_skill_digest": "c088544a86e2828961a28fc0aed5ed3a5620ae8caa4479cde57dee0068413ed9",
+    "untested_followup_solver_skill_digest": "a03e11559d2757915b1a7a9996340ce96be65c3c14dcb7dc198a5db7ce288641"
+  },
+  "archives": {
+    "stage0_inputs": "build/verification/cx-progressive-claude-evaluation/stage0-inputs.tgz",
+    "stage0_inputs_sha256": "515c67d78803376c9eb3e9504f17c035c513267fe058ef8a8dc60951288058bc",
+    "stage1_autonomous": "build/verification/cx-progressive-claude-evaluation/stage1-autonomous-delivery.tgz",
+    "stage1_autonomous_sha256": "d7a211aec4b457ab8b8edcd7257c8ccddb6bd86273ba6d1ed03b3c64b007f33a",
+    "stage2_inputs": "build/verification/cx-progressive-claude-evaluation/stage2-inputs.tgz",
+    "stage2_inputs_sha256": "a517bdf0648bee6c320212fae3bf4aeb2216546488270d9c08c08fbaf119e192",
+    "stage2_autonomous": "build/verification/cx-progressive-claude-evaluation/stage2-autonomous-delivery.tgz",
+    "stage2_autonomous_sha256": "4fd660a86b49d2ecf7d48caafd990929337458691516542d0922779e4543a7c2",
+    "stage3_reviewed": "build/verification/cx-progressive-claude-evaluation/stage3-reviewed-delivery.tgz",
+    "stage3_reviewed_sha256": "262ed1b8d0f2f46aa33a6dba8397d9557d9825849f9919bdc1c1c204f4c09991",
+    "stage4_final_reviewed": "build/verification/cx-progressive-claude-evaluation/stage4-reviewed-delivery.tgz",
+    "stage4_final_reviewed_sha256": "60af2c19f9a1a1a9b79371a4813b8e8eb7c09325f4b066d6ceba53f39f9aab32"
+  },
+  "traces": {
+    "round1_autonomous": "build/verification/cx-progressive-claude-evaluation/round1-autonomous.jsonl",
+    "round1_autonomous_sha256": "b943919b22f886d406f48b5fc4a232d57640fd7de995b0e615136d32bf3445fc",
+    "round2_autonomous": "build/verification/cx-progressive-claude-evaluation/round2-autonomous.jsonl",
+    "round2_autonomous_sha256": "2cc4621073eeb1d196cbcbbc70d0107c071e42df8c942ae33dd9b5000f2a3bbb",
+    "round3_reviewed": "build/verification/cx-progressive-claude-evaluation/round3-reviewed.jsonl",
+    "round3_reviewed_sha256": "c2adfb5fafdac044294378f0ca08fdef7eb78da18e04ac5f1cf2738ae0a8d787",
+    "round4_reviewed": "build/verification/cx-progressive-claude-evaluation/round4-reviewed.jsonl",
+    "round4_reviewed_sha256": "f2ca035e056c65bd695ff6d0aafce079a9872059688fb1cc6920ec944d3fc541"
+  },
+  "examiner_evidence": {
+    "first_review_feedback": "build/verification/cx-progressive-claude-evaluation/examiner-private/round3-feedback.txt",
+    "first_review_feedback_sha256": "113c4d2a0b2dbdf60f3c6c799389a215770c8c90b966334c804e73eb5b83509d",
+    "second_review_feedback": "build/verification/cx-progressive-claude-evaluation/examiner-private/round4-feedback.txt",
+    "second_review_feedback_sha256": "2c01247c4088532ad60608ed22233c3972dec1572615c5be302fb9b1de0306fa",
+    "stage2_autonomous_finding": "build/verification/cx-progressive-claude-evaluation/independent-stage2-finding.txt",
+    "stage2_autonomous_finding_sha256": "c04b67c09d48800e13f0116ff97abbd12bb4df628e94d4768f937252cab140c6",
+    "stage3_review_finding": "build/verification/cx-progressive-claude-evaluation/independent-stage3-finding.txt",
+    "stage3_review_finding_sha256": "9c11cec363a2761db5a7470e6b3b4cd39b9b96ff9caa0e8462b366d2557dc017",
+    "independent_checker": "build/verification/cx-progressive-claude-evaluation/independent_stage3_check.py",
+    "independent_checker_sha256": "f2e146d5c011cb4562bc3ce5a8c6454f5e60dad6d4262677b1f769b820dd3aae",
+    "final_check": "build/verification/cx-progressive-claude-evaluation/independent-stage4-check.txt",
+    "final_check_sha256": "e9a6c0959809f2aa44eb31489654038ade73c7f226fe8c22c3614ae370bf1d25"
+  },
+  "outcome": {
+    "complete_rows": 3,
+    "needs_scientific_input_rows": 1,
+    "independent_quadrature_calls": 12,
+    "independent_maxwellian_average_calls": 6,
+    "independent_fit_calls": 3,
+    "independent_cross_section_calls": 9,
+    "first_csv_sha256_after_final_replay": "a070ea3e6806cf56c8993ee77a414cfb1669b4f5fcf84ab453c9d062357de57e",
+    "comparison_csv_sha256_after_final_replay": "d203b15284a4b879dcd1e1b6eb7c37e0c2a3802ec28d37cf7a46119a0193909e",
+    "stage2": "Numerically correct autonomous comparison and old-file preservation; missed catalog quadrature producer and overstated refinement and clipping interpretations.",
+    "stage4": "After two separate reviewer messages, the project composes the catalog quadrature and states only observed refinement and computed clipped contribution, without an error bound or physical validation claim."
+  }
+}

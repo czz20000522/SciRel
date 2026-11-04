@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Operator Review"
+  short_description: "Read-only challenge of scientific correctness evidence"
+  default_prompt: "Use $scientific-operator-review to challenge this exact operator or TaskGraph and return evidence-bound correctness findings without editing or making a stage decision."
+policy:
+  allow_implicit_invocation: false

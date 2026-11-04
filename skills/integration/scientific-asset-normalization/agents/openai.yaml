@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Asset Normalization"
+  short_description: "Generalize and normalize cross-source scientific assets"
+  default_prompt: "Use $scientific-asset-normalization to compare this candidate batch, preserve material variants, and prepare document, code, and test proposals for expert review."
+policy:
+  allow_implicit_invocation: false

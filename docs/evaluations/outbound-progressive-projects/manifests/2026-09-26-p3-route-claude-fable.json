@@ -1,0 +1,95 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-26-p3-route-claude-fable",
+  "status": "development_evaluation_two_reviewed_repairs_science_bounded",
+  "not_claims": [
+    "trusted_release",
+    "expert_approval",
+    "public_v1",
+    "codefusion_integration",
+    "autonomous_full_success",
+    "strict_blind_isolation",
+    "offline_dependency_reinstallation",
+    "confirmed_underlying_model_identity",
+    "physical_interpolation_error_bound",
+    "rf_absorption_prediction",
+    "stable_generalization"
+  ],
+  "harness": {
+    "kind": "claude_code",
+    "version": "2.1.281",
+    "cli_canonical_model": "claude-fable-5",
+    "assistant_message_model_tag": "GLM-5.3-Flash",
+    "model_tag_discrepancy_unresolved": true,
+    "session_id": "79acc3ff-7f05-40d5-a750-3afa2f8ad2ed",
+    "permission_mode": "bypassPermissions",
+    "budget_or_call_limit_set": false,
+    "reviewer_feedback_before_first_delivery": false,
+    "reviewer_feedback_before_final_delivery": true
+  },
+  "scirel_inputs": {
+    "wheel_version": "0.1.0.dev5",
+    "wheel_digest": "09521a918b875e81c9f17b236f52f4c225fad538155dc9e1b78ed1da7efb23a6",
+    "catalog_coverage": "14/62 partial",
+    "catalog_release_digest": "8c96bfa5180f030c88af1bbccd62568b87e1f6ad17c3c1df599a23705616c577",
+    "project_skill_digest": "830827b02f5af6a07faf2745bd2285aacc7941e128ec9034fac2e489a37c45cc",
+    "solver_skill_digest": "d0a30da09b0b757307754c4e7a4e1f04d6603b42583a17285ad04def813092b3"
+  },
+  "archives": {
+    "stage0_inputs": "build/verification/p3-route-claude-evaluation/stage0-inputs.tgz",
+    "stage0_inputs_sha256": "6128b165aac98b0a1d32051b153550413cd4c20cee6a7f299be76dcced3a7f9b",
+    "stage1_autonomous": "build/verification/p3-route-claude-evaluation/stage1-autonomous-delivery.tgz",
+    "stage1_autonomous_sha256": "f425a0767474910f0511c13b98bcd2cc746afd9c4abd95d62db9b3849f073ec0",
+    "stage2_history_reviewed": "build/verification/p3-route-claude-evaluation/stage2-reviewed-delivery.tgz",
+    "stage2_history_reviewed_sha256": "07b778d79776cb7b88cbe87249cc795e6b60246e69ea52cdb1b07ff90c7cfb09",
+    "stage3_science_reviewed": "build/verification/p3-route-claude-evaluation/stage3-reviewed-science.tgz",
+    "stage3_science_reviewed_sha256": "8c14eedd65d0ba250b56d6b36134c7842ea2dd7dbf37723e3ef8578365840d8d"
+  },
+  "traces": {
+    "round1_autonomous": "build/verification/p3-route-claude-evaluation/round1-autonomous.jsonl",
+    "round1_autonomous_sha256": "250c9e251d0eadff336c4e65e0ea331d6b308ad85a0466c477482bc4dae94b59",
+    "round2_history_reviewed": "build/verification/p3-route-claude-evaluation/round2-reviewed.jsonl",
+    "round2_history_reviewed_sha256": "35a6a310dcc874e4873b4ce815b2e3005aa263d884814c3e48f7ef4b7d80ac15",
+    "round3_science_reviewed": "build/verification/p3-route-claude-evaluation/round3-reviewed-science.jsonl",
+    "round3_science_reviewed_sha256": "5118be2543ec38a390abcf2828c97e37471fa715de73bb0fbcb501b0e1aa2ef7"
+  },
+  "examiner_evidence": {
+    "history_feedback": "build/verification/p3-route-claude-evaluation/examiner-private/round2-user-feedback.txt",
+    "history_feedback_sha256": "4c6d174fb030b074167d1bedfdf68a7a3014733042678e185fb5e06fd9db26e0",
+    "science_feedback": "build/verification/p3-route-claude-evaluation/examiner-private/round3-science-feedback.txt",
+    "science_feedback_sha256": "ec68148fab37d04eda755e0c526a2fce18aca49bd071c10ca6ab83f81cdb821b",
+    "first_two_stage_checker": "build/verification/p3-route-claude-evaluation/examiner-private/verify_autonomous.py",
+    "first_two_stage_checker_sha256": "a2bfd89f79d1ef586b25b49b0a4a262ba1c5f9447b2c67df9defd0af8151f8f1",
+    "final_science_checker": "build/verification/p3-route-claude-evaluation/examiner-private/verify_reviewed_science.py",
+    "final_science_checker_sha256": "40b08bf8649e4fa61240808ae64ef08614fc915734d59d4bda4d2182ad37257d",
+    "stage1_finding": "build/verification/p3-route-claude-evaluation/independent-stage1-finding.txt",
+    "stage1_finding_sha256": "45e6e75c0d8e1b98b97b0b9930b5c5b8140ca7fd1e1a2f7c6740c4fe8fa64341",
+    "stage2_check": "build/verification/p3-route-claude-evaluation/independent-stage2-check.txt",
+    "stage2_check_sha256": "d527130eac817f3c62de980f1f836effd6472d422e0075ec4e5957942d038cfe",
+    "stage3_check": "build/verification/p3-route-claude-evaluation/independent-stage3-check.txt",
+    "stage3_check_sha256": "3055b096bee2e96e78a6c8de6dbe51bcf0453d8b04c66dcffa18ae8e56f2af9f",
+    "final_user_entrypoint_replay": "build/verification/p3-route-claude-evaluation/independent-final-replay.txt",
+    "final_user_entrypoint_replay_sha256": "df2dc71c7fd8089239d07870c961ecfd4e29807fca1dfe809805a031d6e48f9c"
+  },
+  "outcome": {
+    "routing_observed": "Claude read scirel-solving, reopened the partial catalog, read the exact complex-rectilinear-interpolation record and invoked that asset.",
+    "stage1": "18 complex S/D/P values matched the chosen off-grid recomputation path, but the path assumed density between grid points without authorization; report.md and results.json were overwritten, while per-point-response.csv remained byte-identical.",
+    "stage2": "After the examiner supplied exact old files and feedback, all three earlier files were recovered byte-identically and independent replay passed; the off-grid density assumption remained.",
+    "stage3": "After a separate scientific-boundary review, only the supported on-grid site receives S/D/P; five rows have empty S/D/P with reasons, while in-box off-grid B samples are labelled diagnostic. Two actual tensor calls each receive one supported grid-node field.",
+    "final_project_tests": 17,
+    "final_runtime_checks": 13,
+    "final_supported_site_rows": 1,
+    "final_unsupported_site_rows": 5,
+    "independent_on_grid_real_imag_components": 12,
+    "earlier_files_byte_identical_after_final_replay": 3
+  },
+  "limitations": [
+    "The starting project already implemented the grid support and tensor comparison; this is an existing-project follow-up, not greenfield construction.",
+    "The first numeric check established arithmetic consistency with Claude's chosen assumption, not scientific authorization for off-grid density.",
+    "The stage2 and stage3 successes required explicit reviewer feedback; the exact original files were supplied from the examiner's stage0 archive after Claude had overwritten two of them.",
+    "The final project does not deliver off-grid S/D/P without a user- or asset-backed density rule; it does deliver the supported grid-node result and labelled static-field diagnostics.",
+    "The examiner and solver directories had no operating-system-enforced read isolation.",
+    "The wheel was force-installed into a local venv that reused system scientific dependencies; offline dependency installation was not established.",
+    "The synthetic state and partial catalog do not establish device physics, RF wave propagation, absorbed power or an interpolation-error bound."
+  ]
+}

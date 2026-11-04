@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Runtime Dataset Construction"
+  short_description: "Build source-backed scientific closure datasets"
+  default_prompt: "Use $scientific-runtime-dataset-construction to design and capture a boundary-complete source-observation dataset for this scientific gap."
+policy:
+  allow_implicit_invocation: false

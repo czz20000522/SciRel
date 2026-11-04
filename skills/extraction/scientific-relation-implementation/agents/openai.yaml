@@ -1,0 +1,6 @@
+interface:
+  display_name: "Scientific Relation Implementation"
+  short_description: "Implement an evidenced scientific relation or asset gap"
+  default_prompt: "Use $scientific-relation-implementation to implement this scientific relation or supplied asset gap and prepare it for independent validation."
+policy:
+  allow_implicit_invocation: false

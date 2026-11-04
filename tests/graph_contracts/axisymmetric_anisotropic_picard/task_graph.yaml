@@ -1,0 +1,298 @@
+kind: scientific_task_graph
+name: 新版轴对称各向异性Picard平衡
+entrypoint: graph.py::run_graph
+display_name:
+  zh: 新版轴对称各向异性 Picard 平衡
+  en: Current Axisymmetric Anisotropic Picard Equilibrium
+framework_mapping:
+  primary_pfm_node: N6
+  coverage: current_source_branch
+  related_pfm_nodes:
+  - N1
+  - N4
+  - N5
+inputs:
+- name: r_grid
+  meaning: 柱坐标 R 网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: rectilinear; axis 1 strictly increasing; at least 3 points
+- name: z_grid
+  meaning: 柱坐标 Z 网格
+  shape: '[N_Z,N_R]'
+  units: m
+  required: true
+  constraints: rectilinear; axis 0 strictly increasing; at least 3 points
+- name: psi_vac
+  meaning: 真空磁通 psi=R*A_phi
+  shape: '[N_Z,N_R]'
+  units: Wb
+  required: true
+  constraints: finite; same grid
+- name: g_psi
+  meaning: cell current 到磁通的稠密 Green 矩阵
+  shape: '[N_Z*N_R,N_Z*N_R]'
+  units: Wb/A
+  required: true
+  constraints: C-order [Z,R] source and field axes
+- name: pressure_closure
+  meaning: 当前场的压强闭合
+  shape: callable(B,psi)->mapping
+  units: caller_adapter
+  required: true
+  constraints: returns finite nonnegative p_parallel,p_perpendicular on the current grid
+- name: tol
+  meaning: 相对磁通停止阈值
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且严格为正的标量
+- name: maxiter
+  meaning: 最大 Picard 轮数
+  shape: scalar_integer
+  units: iteration
+  required: false
+  constraints: 必须为大于等于 1 的整数标量；不接受浮点数或布尔值
+- name: relax
+  meaning: 当前磁通状态保留权重
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限标量，且满足 0 <= relax < 1
+- name: plasma_mask
+  meaning: 可选固定或动态等离子体区域 selector
+  shape: '[N_Z,N_R] or callable(B,psi)->[N_Z,N_R]'
+  units: boolean
+  required: false
+  constraints: false cells set J_phi=0 before Green update
+- name: minimum_field
+  meaning: 动理学闭合可逆场下界
+  shape: scalar
+  units: T
+  required: false
+  constraints: 必须为有限且严格为正的标量
+- name: minimum_firehose_margin
+  meaning: active cells 的 firehose 下界
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限标量
+- name: compatibility_tol
+  meaning: 平行 div(P) 相容误差上界
+  shape: scalar
+  units: dimensionless
+  required: false
+  constraints: 必须为有限且非负的标量
+- name: strict_compatibility
+  meaning: 超出相容误差是否失败
+  shape: boolean
+  units: dimensionless
+  required: false
+  constraints: 必须为布尔值；不接受用 0/1 代替布尔值
+outputs:
+- name: psi
+  meaning: 返回磁通状态
+  shape: '[N_Z,N_R]'
+  units: Wb
+  required: true
+  constraints: same returned state used to recompute all final fields
+- name: plasma_cell_currents
+  meaning: 返回状态对应的未松弛 cell current
+  shape: '[N_Z,N_R]'
+  units: A
+  required: true
+  constraints: J_phi*dR*dZ
+- name: J_phi
+  meaning: 返回状态上的已 mask 环向电流密度
+  shape: '[N_Z,N_R]'
+  units: A/m^2
+  required: true
+  constraints: active cells only
+- name: B_R
+  meaning: 返回磁通导出的径向磁场
+  shape: '[N_Z,N_R]'
+  units: T
+  required: true
+  constraints: psi derivative, including axis rule
+- name: B_Z
+  meaning: 返回磁通导出的轴向磁场
+  shape: '[N_Z,N_R]'
+  units: T
+  required: true
+  constraints: psi derivative, including axis rule
+- name: B
+  meaning: 返回状态场强
+  shape: '[N_Z,N_R]'
+  units: T
+  required: true
+  constraints: hypot(B_R,B_Z)
+- name: p_parallel
+  meaning: 返回状态的平行压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+  required: true
+  constraints: closure result
+- name: p_perpendicular
+  meaning: 返回状态的垂直压强
+  shape: '[N_Z,N_R]'
+  units: Pa
+  required: true
+  constraints: closure result
+- name: parallel_force
+  meaning: 返回状态上的平行 div(P) 残差
+  shape: '[N_Z,N_R]'
+  units: Pa/m
+  required: true
+  constraints: observer value; does not modify psi
+- name: force_R
+  meaning: 返回状态的压强力 R 分量
+  shape: '[N_Z,N_R]'
+  units: Pa/m
+  required: true
+  constraints: complete cylindrical div(P)
+- name: force_Z
+  meaning: 返回状态的压强力 Z 分量
+  shape: '[N_Z,N_R]'
+  units: Pa/m
+  required: true
+  constraints: complete cylindrical div(P)
+- name: converged
+  meaning: 是否在 maxiter 内达到 tol
+  shape: scalar
+  units: boolean
+  required: true
+  constraints: declared-order relative psi change
+- name: iterations
+  meaning: 已执行 Picard 轮数
+  shape: scalar_integer
+  units: iteration
+  required: true
+  constraints: 1..maxiter
+- name: relative_psi_change
+  meaning: 最后一轮相对磁通变化
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: source denominator convention
+- name: parallel_force_error
+  meaning: active domain RMS 平行力比例
+  shape: scalar
+  units: dimensionless
+  required: true
+  constraints: used by compatibility gate
+- name: closure_state
+  meaning: 原样保留调用方的最终闭合状态
+  shape: mapping
+  units: mixed
+  required: true
+  constraints: includes normalized pressure fields
+- name: firehose_margin
+  meaning: 返回状态 firehose 裕度
+  shape: '[N_Z,N_R]'
+  units: dimensionless
+  required: true
+  constraints: active cells checked
+- name: iteration_history
+  meaning: 每轮磁通与电流变化记录
+  shape: '[iterations] mapping'
+  units: mixed
+  required: true
+  constraints: observer-only
+execution:
+  mode: sequential_state_feedback_picard
+  order_policy: psi_to_poloidal_field_to_pressure_closure_to_cylindrical_divP_to_masked_current_to_flux_Green_update_to_next_psi
+  state_policy: graph owns psi and previous unrelaxed cell currents; caller owns closure, grid, Green matrix and mask policy
+  failure_policy: invalid ports fail closed; nonconvergence returns last state with converged false
+nodes:
+- id: field_from_psi
+  name: 磁通导出极向场
+  kind: scientific_operator
+  asset_ref: scirel.field.poloidal_field_from_flux
+  callable: scirel.field.poloidal_field_from_flux::poloidal_field_from_flux
+  inputs: [r_grid, z_grid, psi_state]
+  outputs: [B_R, B_Z, B]
+- id: pressure_closure
+  name: 调用方当前场压强闭合
+  kind: io_config_action
+  callable: caller:pressure_closure
+  inputs: [B, psi_state]
+  outputs: [p_parallel, p_perpendicular, closure_state]
+- id: pressure_scalar_broadcast
+  name: 标量压强广播与网格形状校验
+  kind: controlled_glue
+  callable: glue:_coerce_pressure
+  inputs: [p_parallel, p_perpendicular, psi_state]
+  outputs: [p_parallel, p_perpendicular]
+  glue_contract:
+    operation: shape_embedding
+    ownership: caller owns pressure values in Pa; scalar values are copied unchanged across the grid, and non-scalar values must already have the exact grid shape
+- id: cylindrical_pressure_force
+  name: 轴对称各向异性压强张量力平衡
+  kind: scientific_operator
+  asset_ref: scirel.equilibrium.anisotropic_force_balance
+  callable: scirel.equilibrium.anisotropic_force_balance::compute_anisotropic_force_balance
+  inputs: [r_grid, z_grid, B_R, B_Z, p_parallel, p_perpendicular, active_mask]
+  outputs: [force_R, force_Z, parallel_force, J_phi]
+- id: active_current_mask
+  name: 等离子体区域电流 mask
+  kind: controlled_glue
+  callable: glue:_apply_active_mask
+  inputs: [J_phi, active_mask]
+  outputs: [j_phi]
+  glue_contract:
+    operation: component_selection
+    ownership: graph applies caller-declared boolean active_mask; no physical current formula is performed
+- id: flux_green_update
+  name: 轴对称 Picard 磁通 Green 更新
+  kind: scientific_operator
+  asset_ref: scirel.equilibrium.axisymmetric_picard_update
+  callable: scirel.equilibrium.axisymmetric_picard_update::update_axisymmetric_picard_flux
+  inputs: [r_grid, z_grid, J_phi, psi_state, psi_vac, g_psi, relax, previous_cell_currents]
+  outputs: [psi_next, plasma_cell_currents, relative_psi_change, relative_current_change]
+edges:
+- from: field_from_psi
+  from_output: B
+  to: pressure_closure
+  to_input: B
+  data: current psi-derived field magnitude
+  condition: every iteration and final reevaluation
+  required: true
+  transform: identity
+  closure: asset
+- from: pressure_closure
+  from_output: p_parallel
+  to: cylindrical_pressure_force
+  to_input: p_parallel
+  data: current closure pressure
+  condition: every iteration and final reevaluation
+  required: true
+  transform: identity
+  closure: asset
+- from: pressure_closure
+  from_output: p_perpendicular
+  to: cylindrical_pressure_force
+  to_input: p_perpendicular
+  data: current closure pressure
+  condition: every iteration and final reevaluation
+  required: true
+  transform: identity
+  closure: asset
+- from: cylindrical_pressure_force
+  from_output: J_phi
+  to: flux_green_update
+  to_input: j_phi
+  data: active-cell toroidal current density
+  condition: every iteration
+  required: true
+  transform: bounded controlled_glue applies declared plasma_mask before the source-equivalent update
+  closure: controlled_glue
+- from: flux_green_update
+  from_output: psi_next
+  to: field_from_psi
+  to_input: psi_state
+  data: sequential next flux state
+  condition: relative_psi_change > tol and iteration < maxiter
+  required: true
+  transform: state feedback only
+  closure: controlled_glue
