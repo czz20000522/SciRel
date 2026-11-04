@@ -24,6 +24,8 @@ from .contract import (
     PluginConnectorDescriptor,
     PluginEventEnvelope,
     PluginRegistration,
+    PluginReviewerEntryDescriptor,
+    PluginReviewerIntakeDescriptor,
     PluginReleaseSnapshot,
     PluginRunResult,
     PluginRunSubmitEnvelope,
@@ -34,12 +36,12 @@ from .contract import (
 from .host import ArtifactRef, HostServices, JobRef, ReviewView
 from .adapter import (
     SERVICE_PRINCIPAL_SCOPES,
+    review_item_detail,
     review_item_index_entry,
-    review_item_ref,
-    review_item_snapshot,
+    review_item_from_body,
+    review_items_from_body,
     review_ui_projection as build_review_ui_projection,
-    validate_review_item_snapshot_payload,
-    workflow_from_review_payload,
+    validate_review_item_detail_payload,
 )
 
 
@@ -157,11 +159,17 @@ class SciRelPlugin:
             release=self._release_snapshot,
             capabilities=(
                 "plugin.dispatch",
+                "plugin.view.read",
+                "plugin.view.write",
+                "plugin.ui_action",
                 "artifact.read",
                 "artifact.write",
             ),
             required_scopes=(
                 "plugin.dispatch",
+                "plugin.view.read",
+                "plugin.view.write",
+                "plugin.ui_action",
                 "artifact.read",
                 "artifact.write",
             ),
@@ -170,6 +178,21 @@ class SciRelPlugin:
                 PluginViewDescriptor(
                     view_ref="scirel.review",
                     open_operation="scirel.review.open_item",
+                    reviewer_entry=PluginReviewerEntryDescriptor(
+                        label="SciRel review",
+                        intakes=(
+                            PluginReviewerIntakeDescriptor(
+                                intake_ref="scirel.import-l1",
+                                label="Import L1 package",
+                                operation="scirel.import_l1",
+                            ),
+                            PluginReviewerIntakeDescriptor(
+                                intake_ref="scirel.review-index",
+                                label="Open review index",
+                                operation="scirel.review.list_items",
+                            ),
+                        ),
+                    ),
                 ),
             ),
         )
@@ -195,6 +218,8 @@ class SciRelPlugin:
                 "scirel.standardize",
                 "scirel.review.list_items",
                 "scirel.review.open_item",
+                "scirel.review.list_completed",
+                "plugin.review.action",
                 "scirel.review",
                 "scirel.release",
             ],
@@ -212,16 +237,13 @@ class SciRelPlugin:
         CodeFusion may render and route actions for this document, but it does
         not derive scientific state or action availability from platform run
         status. The embedded workflow snapshot remains the single source for
-        candidate, check, draft, review and release data. A host must apply
-        ``start_review`` before rendering full ``review_pending`` detail to an
-        expert; projecting queued state for backend routing is not observation.
+        candidate, check, draft, review and release data. The current
+        single-draft fixture exposes ``start_review`` as a domain transition;
+        the target batch workbench opens uploaded item detail read-only and
+        must not copy that fixture transition into its generic queue contract.
         """
 
         return build_review_ui_projection(workflow)
-
-    @staticmethod
-    def _review_item_ref(workflow: SciRelWorkflow) -> str:
-        return review_item_ref(workflow)
 
     def _read_json_artifact(
         self, source: ArtifactRef | ArtifactReference
@@ -242,10 +264,6 @@ class SciRelPlugin:
             raise ValueError("review state artifact must contain a JSON object")
         return reference, payload
 
-    @staticmethod
-    def _workflow_from_review_payload(payload: Mapping[str, Any]) -> SciRelWorkflow:
-        return workflow_from_review_payload(payload)
-
     def list_review_items(
         self,
         current_states: tuple[ArtifactRef | ArtifactReference, ...],
@@ -258,16 +276,22 @@ class SciRelPlugin:
             raise ValueError("review item limit must be between 1 and 100")
         indexed: list[dict[str, Any]] = []
         for source in current_states:
-            reference, payload = self._read_json_artifact(source)
-            workflow = self._workflow_from_review_payload(payload)
-            if workflow.status is not WorkflowStatus.REVIEW_PENDING:
-                continue
-            indexed.append(review_item_index_entry(workflow, reference.digest))
+            reference, _ = self._read_json_artifact(source)
+            body = self.host.read_artifact(reference.artifact_ref)
+            indexed.extend(
+                review_item_index_entry(item, reference.digest)
+                for item in review_items_from_body(body)
+            )
         indexed.sort(key=lambda item: item["item_ref"])
         return {
-            "schema": "scirel.review-item-index.dev",
+            "schema": "codefusion.plugin-view-index.v1",
             "items": indexed[:limit],
             "has_more": len(indexed) > limit,
+            **(
+                {"next_cursor": indexed[limit - 1]["item_ref"]}
+                if len(indexed) > limit
+                else {}
+            ),
         }
 
     def open_review_item(
@@ -277,42 +301,39 @@ class SciRelPlugin:
         item_ref: str,
         revision: str,
     ) -> ArtifactRef:
-        """Observe one queued item and return its exact immutable view/state.
+        """Read one exact item version without mutating SciRel domain state.
 
         The generic host owns current-state CAS and idempotency. Replaying this
         method with the same immutable input creates the same content-addressed
-        snapshot; this method never advances a host pointer itself.
+        snapshot; this method never advances a host pointer itself. Observation,
+        claim and lease history remain host-owned coordination facts.
         """
 
         reference, payload = self._read_json_artifact(current_state)
         if revision != reference.digest:
             raise ValueError("review item revision does not match current artifact")
-        workflow = self._workflow_from_review_payload(payload)
-        if workflow.status is not WorkflowStatus.REVIEW_PENDING:
-            raise ValueError("only a queued review item can be opened")
-        if item_ref != self._review_item_ref(workflow):
-            raise ValueError("review item ref does not match current artifact")
-
-        workflow.start_review()
-        snapshot = review_item_snapshot(
-            workflow,
+        item = review_item_from_body(
+            self.host.read_artifact(reference.artifact_ref), item_ref=item_ref
+        )
+        detail = review_item_detail(
+            item,
             item_ref=item_ref,
             artifact_ref=reference.artifact_ref,
             revision=reference.digest,
         )
-        return self.host.put_artifact("scirel.review-item-snapshot.dev", snapshot)
+        return self.host.put_artifact("scirel.review-item-detail.dev", detail)
 
-    def validate_review_item_snapshot(
+    def validate_review_item_detail(
         self,
         source: ArtifactRef | ArtifactReference,
         *,
         item_ref: str,
         revision: str,
-    ) -> SciRelWorkflow:
+    ) -> dict[str, Any]:
         """Validate that an open result is bound to the requested item/revision."""
 
         _, payload = self._read_json_artifact(source)
-        return validate_review_item_snapshot_payload(
+        return validate_review_item_detail_payload(
             payload,
             item_ref=item_ref,
             revision=revision,
@@ -326,7 +347,7 @@ class SciRelPlugin:
             "scirel.automated_check",
             (artifact.ref,),
             plugin_id=self.plugin_id,
-            workflow_run_id=candidate.run_id,
+            plugin_context_ref=candidate.run_id,
             payload={
                 "operation": "scirel.automated_check",
                 "candidate_id": candidate.candidate_id,
@@ -342,7 +363,7 @@ class SciRelPlugin:
         *,
         tenant_id: str,
         project_id: str,
-        workflow_run_id: str,
+        plugin_context_ref: str,
     ) -> PluginRunSubmitEnvelope:
         """Build the host run envelope that imports one saved L1 artifact.
 
@@ -361,10 +382,10 @@ class SciRelPlugin:
                 tenant_id=tenant_id,
                 project_id=project_id,
                 plugin_id=self.plugin_id,
-                workflow_run_id=workflow_run_id,
+                plugin_context_ref=plugin_context_ref,
             ),
             idempotency_key=(
-                f"{self.plugin_id}:l1:{workflow_run_id}:{artifact.digest}"
+                f"{self.plugin_id}:l1:{plugin_context_ref}:{artifact.digest}"
             ),
             input_artifacts=(artifact,),
             payload={
@@ -397,7 +418,7 @@ class SciRelPlugin:
                 tenant_id=tenant_id,
                 project_id=project_id,
                 plugin_id=self.plugin_id,
-                workflow_run_id=candidate.run_id,
+                plugin_context_ref=candidate.run_id,
             ),
             idempotency_key=(
                 f"{self.plugin_id}:run:{candidate.run_id}:{candidate.package_digest}"
@@ -405,9 +426,6 @@ class SciRelPlugin:
             input_artifacts=(artifact.as_contract(),),
             payload={
                 "operation": "scirel.automated_check",
-                "candidate_id": candidate.candidate_id,
-                "candidate_digest": candidate.package_digest,
-                "source_digest": candidate.source_digest,
             },
         )
 
@@ -505,7 +523,7 @@ class SciRelPlugin:
         result: AutomatedCheckResult,
         artifact: ArtifactRef,
         *,
-        workflow_run_id: str,
+        plugin_context_ref: str,
         correlation_id: str,
     ) -> PluginEventEnvelope:
         """Publish the minimal opaque host event for a result artifact."""
@@ -525,7 +543,7 @@ class SciRelPlugin:
         return self.host.emit_event(
             plugin_id=self.plugin_id,
             event_type="scirel.automated_check.result",
-            workflow_run_id=workflow_run_id,
+            plugin_context_ref=plugin_context_ref,
             correlation_id=correlation_id,
             artifact_refs=(artifact.ref,),
             payload={
@@ -654,6 +672,8 @@ class SciRelPlugin:
                 operations=(
                     "scirel.review.list_items",
                     "scirel.review.open_item",
+                    "scirel.review.list_completed",
+                    "plugin.review.action",
                 ),
             ),
         )
@@ -689,7 +709,7 @@ class SciRelPlugin:
         event = self.host.emit_event(
             plugin_id=self.plugin_id,
             event_type="scirel.review_action.recorded",
-            workflow_run_id=workflow.record.candidate.run_id,
+            plugin_context_ref=workflow.record.candidate.run_id,
             correlation_id=correlation_id,
             artifact_refs=(decision_artifact.ref, state_artifact.ref),
             payload={
@@ -730,7 +750,7 @@ class SciRelPlugin:
         release: ReleaseManifest,
         artifact: ArtifactRef,
         *,
-        workflow_run_id: str,
+        plugin_context_ref: str,
         correlation_id: str,
     ) -> PluginEventEnvelope:
         """Publish a release completion bound to its exact manifest artifact."""
@@ -742,7 +762,7 @@ class SciRelPlugin:
         return self.host.emit_event(
             plugin_id=self.plugin_id,
             event_type="scirel.release.completed",
-            workflow_run_id=workflow_run_id,
+            plugin_context_ref=plugin_context_ref,
             correlation_id=correlation_id,
             artifact_refs=(artifact.ref,),
             payload={
@@ -757,7 +777,7 @@ class SciRelPlugin:
     def publish_release_failed_event(
         self,
         *,
-        workflow_run_id: str,
+        plugin_context_ref: str,
         correlation_id: str,
         failure_code: str,
     ) -> PluginEventEnvelope:
@@ -768,7 +788,7 @@ class SciRelPlugin:
         return self.host.emit_event(
             plugin_id=self.plugin_id,
             event_type="scirel.release.failed",
-            workflow_run_id=workflow_run_id,
+            plugin_context_ref=plugin_context_ref,
             correlation_id=correlation_id,
             payload={"failure_code": failure_code},
         )
@@ -800,7 +820,7 @@ class SciRelPlugin:
         event = self.publish_release_completed_event(
             release,
             release_artifact,
-            workflow_run_id=workflow.record.candidate.run_id,
+            plugin_context_ref=workflow.record.candidate.run_id,
             correlation_id=correlation_id,
         )
         return PluginReleaseResult(

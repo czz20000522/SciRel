@@ -26,7 +26,7 @@ Compare, in order:
 | `parameterized_variant` | A material model, domain, geometry, boundary, lifecycle, discretization, or applicability dimension differs by declared parameter. | Keep separate and expose the discriminator in the contract. |
 | `lossless_adapter_proposal` | The only changes are information-preserving naming, unit/dtype, axis/index, component, storage, or file-format conversions. | State direction, conversion, invertibility/information preservation, and failure behavior. |
 | `composition_proposal` | Exact compatible dependencies produce a capability under a declared order and state contract. | Lock exact dependency refs, ports, ownership, lifecycle, feedback/convergence, and failure propagation. |
-| `conflict` | Sources make incompatible claims or contracts for the same proposed identity. | Preserve both lineages and request an expert decision; do not merge. |
+| `conflict` | Sources make incompatible claims or contracts for the same proposed identity. | Preserve both lineages and investigate with scientific-asset-correctness; keep separate while unresolved, reserving human judgment for genuinely unavailable facts or final approval. |
 | `unresolved` | The available descriptors cannot decide the relationship. | Name the smallest missing fact and keep both candidates separate. |
 
 ## Never hide science in glue

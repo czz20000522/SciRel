@@ -8,6 +8,8 @@ import numpy as np
 import pytest
 
 from scirel.equilibrium import reduced_hall_anisotropic_picard as graph
+from scirel.field.circular_filament_green import circular_filament_green_response
+from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green
 M, E = 1.67262192595e-27, 1.602176634e-19
 
 
@@ -45,8 +47,62 @@ def test_nonzero_green_uses_previous_actual_state_feedback():
     inputs['g_psi'] = np.eye(inputs['r_grid'].size) * 1e-9
     result = graph.run_graph(inputs, asset_loader=_loader)
     assert result['iterations'] == 2
+    assert not result['converged']
     assert not np.array_equal(result['psi'], inputs['psi_vac'])
     assert len(result['iteration_history']) == 2
+
+
+def test_per_radian_filament_and_mirror_green_feed_hall_disabled_graph():
+    radial = np.linspace(0.1, 0.5, 17)
+    axial = np.linspace(-0.2, 0.2, 17)
+    r_grid, z_grid = np.meshgrid(radial, axial)
+    points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
+    vacuum_source = [0.7, 0.0, 3.0]
+    psi_vac = circular_filament_green_response([vacuum_source], points)['gpsi'].reshape(r_grid.shape)
+    g_psi = build_mirror_plasma_flux_green(r_grid, z_grid)['g_psi']
+    source_index = (8, 12)
+    active = np.zeros_like(r_grid, dtype=bool)
+    active[source_index] = True
+    slope = 10.0
+
+    def pressure_closure(_b, psi):
+        pressure = 10.0 + slope * psi
+        return {
+            'p_parallel': pressure,
+            'p_perpendicular': pressure,
+            'ion_p_parallel': pressure,
+            'ion_p_perpendicular': pressure,
+            'ion_density': np.full_like(psi, 1e18),
+            'electron_pressure': np.zeros_like(psi),
+            'electrostatic_potential': np.zeros_like(psi),
+        }
+
+    result = graph.run_graph({
+        'r_grid': r_grid,
+        'z_grid': z_grid,
+        'psi_vac': psi_vac,
+        'g_psi': g_psi,
+        'ion_mass_kg': M,
+        'ion_charge_c': E,
+        'pressure_closure': pressure_closure,
+        'plasma_mask': active,
+        'hall_multiplier': 0.0,
+        'maxiter': 1,
+        'tol': 1e-12,
+        'relax': 0.0,
+    }, asset_loader=_loader)
+
+    cell_current = slope * r_grid[source_index] * (radial[1] - radial[0]) * (axial[1] - axial[0])
+    np.testing.assert_allclose(result['J_phi'][source_index], slope * r_grid[source_index], rtol=1e-8)
+    target_index = (12, 4)
+    target = points[np.ravel_multi_index(target_index, r_grid.shape)]
+    plasma_source = [r_grid[source_index], z_grid[source_index], cell_current]
+    direct = circular_filament_green_response([vacuum_source, plasma_source], [target])
+    plasma_flux = circular_filament_green_response([plasma_source], [target])['gpsi'][0]
+    assert np.max(np.abs(result['psi'] - psi_vac)) / np.max(np.abs(psi_vac)) > 1e-6
+    np.testing.assert_allclose(result['psi'][target_index] - psi_vac[target_index], plasma_flux, rtol=1e-10, atol=1e-18)
+    np.testing.assert_allclose(result['B_R'][target_index], direct['gBR'][0], rtol=0.02, atol=0.0)
+    np.testing.assert_allclose(result['B_Z'][target_index], direct['gBZ'][0], rtol=0.02, atol=0.0)
 
 
 def test_scalar_pressure_broadcast_preserves_pa_value():

@@ -1,0 +1,133 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-28-unseen-probe-sampling-dev58",
+  "status": "two_rescue_assisted_development_project",
+  "not_claims": [
+    "autonomous_stage2_sampling_pass",
+    "whole_package_agent_approval",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "plasma_or_stability_verdict",
+    "codefusion_host_comparison",
+    "os_enforced_examiner_isolation"
+  ],
+  "runtime": {
+    "r81_manifest_sha256": "a9924e8926ad240b1e6c3aaaf57cc2896a262c3776ea33daa786cd6884ab4dc0",
+    "wheel": {
+      "path": "build/verification/unseen-probe-sampling-20260928/solver/host-assets/scirel-0.1.0.dev58-py3-none-any.whl",
+      "sha256": "60ce811067e2c808b7ed0176bdb4572bf8bea322badc40b7eca3e8f42bc7090a"
+    },
+    "catalog_root_digest": "sha256:61bb7e828098e244a0285bfb772f59a9f43e3d3576caa907d9ca769c09e5ae4d",
+    "catalog_coverage": "169/169 pending_unapproved development assets",
+    "review_scope": "multi-coil current_a/weights contract and three direct dependencies only"
+  },
+  "harness": {
+    "cli": "Claude Code 2.1.281",
+    "requested_model_alias": "fable",
+    "trace_model_label": "GLM-5.3-Flash",
+    "session_id": "0a97ae81-7901-427e-bbed-97afdfdb67d4",
+    "solver_used_bash_despite_pwsh_instruction": true,
+    "prompt_workspace_separation_only": true
+  },
+  "opening": {
+    "binding": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/launch-binding.md",
+      "sha256": "cf59180286d9e920b33b91dbda07117130ad6fee1a8104e80591983028151ff1"
+    },
+    "oracle": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/expected.json",
+      "sha256": "a9c253ce27658b8492b4f6423500de1ae6e79a669aa074c81a64a4aa9d0dc733"
+    },
+    "stage1_prompt": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/evaluation_prompt_stage1.txt",
+      "sha256": "f89d9d9994ddf7e0a7ed2885333fadcc6b808d46a6f98f79d418e60ada66cc5e"
+    },
+    "stage2_prompt": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/evaluation_prompt_stage2.txt",
+      "sha256": "a11575d35be2d69948af0bb6a29634c40dfea5358c491cc28be210480183ac9c"
+    }
+  },
+  "evidence": {
+    "stage1_archive": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/stage1-solver.tgz",
+      "sha256": "3ef1980b672df0b573c19a6a991e1c801f9510096b3f0c5990382638b233a514"
+    },
+    "stage1_trace": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/stage1-trace.jsonl",
+      "sha256": "85acc07bbcb3a86552cfe165fd4ff2c5880aa4b7f0e2204d20ad8b9f7225ba42"
+    },
+    "autonomous_stage2_archive": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/stage2-autonomous-solver.tgz",
+      "sha256": "253a600cca1b8596c328dc1bd1600e7bca67cdf601342b142b3ff5f1dcae38f1"
+    },
+    "autonomous_stage2_trace": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/stage2-trace.jsonl",
+      "sha256": "11048dce05fa0b8c4d28fa0a0f6aa263f75095b4da0a55738a824142b4202345"
+    },
+    "autonomous_failure_receipt": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/stage2-autonomous-oracle-check.txt",
+      "sha256": "6af72165a992a907c1383bb021403632504e7980458863b779ae1361607a2ca5"
+    },
+    "rescue1_prompt": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/evaluation_prompt_rescue1.txt",
+      "sha256": "2dc13cf71454414f3c0d98955bb5641ec657247e2cb115a7697efe45c661278f"
+    },
+    "rescue1_archive": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/rescue1-solver.tgz",
+      "sha256": "03ae2dc5d228080d32db0800868ae3d2f910c56606668a16f082b72f14e1868c"
+    },
+    "rescue1_trace": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/rescue1-trace.jsonl",
+      "sha256": "cbeb8b0763905e316aa116e26518e200e60c250f9e4e5792fbd35526517a2fcf"
+    },
+    "rescue1_failure_receipt": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/rescue1-oracle-check.txt",
+      "sha256": "4ce527d4b5765ecf7b303b3ce7822a5f5613ce87644ef37308770abbb37c1202"
+    },
+    "rescue2_prompt": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/evaluation_prompt_rescue2.txt",
+      "sha256": "574c116fa555771f1869277aaa140f8d419e4a29a348165649fd615dcc999daa"
+    },
+    "rescue2_trace": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/rescue2-trace.jsonl",
+      "sha256": "f66c4bbe5aa6542988d5f1e17d78e4c6214bd3ab22fe6945fc608c30a4522115"
+    },
+    "final_archive": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/final-solver.tgz",
+      "sha256": "71609f5e07c4a89e2db1cc626ec75b2d7f9446e3dabf9e7eb8c242c316d37498"
+    },
+    "final_file_manifest": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/final-file-manifest.json",
+      "sha256": "f92c660a6810f56b78b808077e8d35333f6b6b5e4a091564dd180b2a0229e451"
+    }
+  },
+  "neutral_host_handoff": {
+    "stage1_package": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/neutral-stage1.tgz",
+      "sha256": "d99e7d06fa65835a770745c661deca73a12730d3f654dfb82a3872799e3a5684"
+    },
+    "stage2_package": {
+      "path": "build/verification/unseen-probe-sampling-20260928/examiner/neutral-stage2.tgz",
+      "sha256": "470ecf35132ebeeb8356195ce5b91ce90409aa994e15a01e7f01739428a3696e"
+    },
+    "stage1_file_members": 185,
+    "stage2_file_members": 3
+  },
+  "observed": {
+    "stage1_project_tests_passed": 6,
+    "stage1_grid_oracle_matched": true,
+    "autonomous_stage2_project_tests_passed": 9,
+    "autonomous_stage2_sampling_oracle_mismatches": 14,
+    "rescue_rounds": 2,
+    "rescue1_sampling_oracle_mismatches": 0,
+    "rescue1_exact_csv_nonnumeric_rows": 8,
+    "final_project_tests_passed": 11,
+    "final_ordinary_entrypoint_exit_code": 0,
+    "final_ordinary_entrypoint_checks_passed": 47,
+    "final_sampling_oracle_mismatches": 0,
+    "final_exact_csv_nonnumeric_rows": 0,
+    "stage1_grid_files_byte_identical_after_followup": 5,
+    "final_archive_file_members_verified": 208
+  }
+}

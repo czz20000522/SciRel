@@ -1,0 +1,56 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-29-fluidbw-r43-cc2fa21-outbound-check",
+  "status": "development_installed_wheel_acceptance",
+  "source_revision": "cc2fa21e03fa7e5152c29f0769165863429e1693",
+  "runtime": {
+    "wheel": "build/verification/fluidbw-r43-cc2fa21-outbound-acceptance-20260929/wheels/scirel-0.1.0.dev5-py3-none-any.whl",
+    "wheel_sha256": "b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684",
+    "catalog_release": "build/verification/fluidbw-r43-development-delivery-20260929/bundle/catalog/release.json",
+    "catalog_release_sha256": "fece59b88ad39480a58b3c35f7678b2007a578f5918a74533f5b0cae6dfe2d02",
+    "catalog_root_digest": "sha256:1bd47cc5cce3155cb8ec17676eb4f0296374d85939c7396c8be9a9ee06e7cdfb",
+    "selected_asset_id": "scirel.kinetic.plasma-dispersion-weideman",
+    "selected_document_sha256": "e5a916a0ec770b5774cc0b3d3977605a9d8819c34661c690283ac808e3dec44f",
+    "approval_state": "pending_unapproved"
+  },
+  "review_observation": {
+    "candidate_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14",
+    "workflow_revision": "sha256:a9099aa88aee7256e1d1e841b28779b458c2f39d192d672a1d6a40e10c82cb6a",
+    "weideman_request_evidence_successor": "sha256:cad374f922e0b7ea4bed6d2141244bc3b86450ee162163a46b1523c27d24c475",
+    "host_export_digest": "sha256:9ed3e5d329bee9d01dc0f7f128bb55abd69bcbfdd59903da08e5a78aca37fe99",
+    "approved_items": 0,
+    "binding_status": "candidate_source_only; reviewed content is not approved or bound to this wheel"
+  },
+  "evidence": {
+    "source_zip_sha256": "fc3300c61f5dce85de006643c9c4f2fa82518c04a319f1d4e4b209e8c310fa34",
+    "science_junit": "build/verification/fluidbw-r43-cc2fa21-outbound-acceptance-20260929/science-tests.xml",
+    "science_junit_sha256": "7f9da05d583c4cc526f5522dd856afe29e7e154f176ce5712340a03ae3b2ec66",
+    "adapter_probe": "build/verification/fluidbw-r43-cc2fa21-outbound-acceptance-20260929/adapter_probe.py",
+    "adapter_probe_sha256": "9d7491324e022a590d59167165331f314c809e06f4683fbc7c836a80491ca2b6",
+    "adapter_result": "build/verification/fluidbw-r43-cc2fa21-outbound-acceptance-20260929/adapter-probe.json",
+    "adapter_result_sha256": "fad773a290a9fda277c53ed684ec6b05bf8836ec4b907d6bd781582bd87c76d3"
+  },
+  "observed": {
+    "runtime": "Windows amd64 CPython 3.14.3, isolated venv, pip --no-index",
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "pytest": "9.1.1",
+    "scientific_tests_passed": 51,
+    "scientific_tests_failed": 0,
+    "adapter_operations": ["catalog.discover", "asset.read", "callable.invoke"],
+    "adapter_discover_pages": 4,
+    "weideman_methods": ["erfc", "rational"],
+    "max_abs_error_vs_wofz": 1.1102230246251565e-16
+  },
+  "not_claims": [
+    "old_927b_wheel_D3_results_transfer",
+    "all_132_assets_source_qualified",
+    "expert_approval",
+    "expert_scientific_approval",
+    "distribution_license_decision",
+    "same_tuple_product_dual_chain",
+    "trusted_release",
+    "public_v1",
+    "trusted_or_public_release"
+  ]
+}

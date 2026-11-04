@@ -14,6 +14,12 @@ def test_zero_ion_density_is_valid():
     assert result["electron_density_ref_m3"].item() == 0.0
 
 
+def test_finite_inputs_with_overflowing_product_fail_closed():
+    with np.errstate(over="ignore"):
+        with pytest.raises(FloatingPointError, match="overflowed"):
+            scientific_operator(np.finfo(float).max, 2.0)
+
+
 @pytest.mark.parametrize(
     "density, charge_state",
     [([-1.0], 1.0), ([np.inf], 1.0), ([1.0], 0.0), ([1.0], np.nan)],

@@ -1,0 +1,35 @@
+{
+  "schema": "scirel.review-host-registration-acceptance.dev",
+  "candidate_entry_id": "candidate:1d02ae5282f0947a40f5e15bb30df1ca9613fdd491d5012ab7b204f88d6c2218",
+  "development_entry_id": "development:c9a63b3f8068626417895ecfdc45787045a46a2a78ff6972642f6e8164de0463",
+  "workflow_revision": "sha256:0d252fbef7a0d55f70d4943c369440c7e3e0bc8e523f25b1248e4d26b052c03b",
+  "scirel_source_revision": "cc2fa21e03fa7e5152c29f0769165863429e1693",
+  "catalog_root_digest": "sha256:1bd47cc5cce3155cb8ec17676eb4f0296374d85939c7396c8be9a9ee06e7cdfb",
+  "host_source_revision": "2d3de66e04d81fcbb94fd069bb7f4d93630cd844",
+  "host_project_ref": "prj_0b4158c393a55f538dae18802c15770ef756",
+  "host_container_id": "43794e50e78f45431adfd9f792a67c323293bdf0e615f24527a4eaec7c2324c0",
+  "host_plugin_release_ref": "plugin-release://scirel/0.1.0.dev5/source-cc2fa21e03fa7e5152c29f0769165863429e1693/wheel-b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684/catalog-afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5",
+  "registration_digest": "sha256:40a83e4f18e0a4e621912ea61d2d2b8d96831d3701a8b8a4d44011774efbdcf2",
+  "host_artifacts": [
+    {
+      "role": "wheel",
+      "artifact_ref": "cf://artifact/upload_3b6cf72adddd592f6edba784eaf7a0977ff69fd4bce4bdb3",
+      "digest": "sha256:b1abff574c870e17dd4e24adc952ca4279561aa43adcc92250d019e42b2b3684",
+      "media_type": "application/octet-stream"
+    },
+    {
+      "role": "catalog_snapshot_zip",
+      "artifact_ref": "cf://artifact/upload_4b8246a7369ee9581e0e241830f0ea69c3a16cf934cdcc56",
+      "digest": "sha256:afee7fcf2d5bca4e04179aaaa1e1d98bdd689a8439c965f1b1c4580993c097e5",
+      "media_type": "application/vnd.scirel.catalog-snapshot+zip"
+    }
+  ],
+  "runtime_dependency_refs": [],
+  "database_registration_md5": "b62e57826fba2a9b73ed6d274c43896a",
+  "owner_evidence_locator": "CodeFusion/.runtime/m3-b1ab-registration-evidence.md",
+  "owner_evidence_digest": "sha256:14827a232fdc6b21806c67dee5a9e023ba477996649380f26c13905534bb4a49",
+  "approved_items": 0,
+  "approval_state": "pending_unapproved",
+  "verification_boundary": "CodeFusion owner read the running isolated container registration and the product_plugin_releases persistence row in the same project, and reported the same immutable release ref and two neutral Artifact references. D2 checked the saved owner evidence file hash, current candidate/workflow and development wheel/catalog root bindings, and prior Artifact readback receipts. D2's direct read-only container inspection was denied by host permissions; it did not recompute the reported canonical registration digest or query the database. The database MD5 identifies the reported row but is not an Artifact integrity digest.",
+  "not_claims": ["expert_approval", "license_clearance", "approved_dependency_closure", "stable_release", "formal_same_tuple_release_acceptance"]
+}

@@ -1,6 +1,6 @@
 interface:
   display_name: "SciRel Integration"
-  short_description: "Prepare review candidates from saved L1 bundles"
-  default_prompt: "Use $scirel-integration to compare these saved L1 bundles with SciRel and prepare expert-reviewable document, code, and test candidates."
+  short_description: "Integrate saved L1 into a tested development library"
+  default_prompt: "Use $scirel-integration to compare these saved L1 bundles with SciRel, integrate retained changes, and verify the development package."
 policy:
   allow_implicit_invocation: true

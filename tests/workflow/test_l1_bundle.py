@@ -177,6 +177,60 @@ def test_missing_real_test_file_is_reported_instead_of_marked_passed(tmp_path):
     ]
 
 
+def test_import_accepts_scientific_packages_before_formal_markdown(tmp_path):
+    project = _write_project(tmp_path)
+    (project / "operators" / "极向磁场幅值" / "operator.md").unlink()
+    (project / "task_graphs" / "平衡图" / "task_graph.md").unlink()
+    body = canonical_l1_bundle_bytes(project, project_id="Pleiades")
+    response = execute_body_import(
+        SciRelBodyImportRequest(
+            operation="scirel.import_l1",
+            artifact_ref="cf://artifact/l1/without-formal-markdown",
+            artifact_digest="sha256:" + hashlib.sha256(body).hexdigest(),
+            media_type="application/json",
+            body=body,
+        )
+    )
+    candidate = json.loads(response.body)
+    assets = {item["asset_kind"]: item for item in candidate["assets"]}
+    assert candidate["gaps"] == []
+    assert assets["operator"]["contract_path"] is None
+    assert assets["operator"]["documentation_path"] is None
+    assert assets["task_graph"]["documentation_path"] is None
+    assert assets["task_graph"]["dependency_refs"] == ["operators/极向磁场幅值"]
+    assert all(check["status"] == "passed" for check in candidate["automated_checks"])
+
+
+def test_missing_graph_dependency_contract_still_blocks_import(tmp_path):
+    project = _write_project(tmp_path)
+    (project / "task_graphs" / "平衡图" / "task_graph.yaml").unlink()
+    payload = l1_bundle_to_payload(build_l1_bundle(project, project_id="Pleiades"))
+    graph = next(item for item in payload["assets"] if item["asset_kind"] == "task_graph")
+    checks = {check["name"]: check for check in payload["automated_checks"]}
+    assert graph["contract_path"] is None
+    assert "missing_contract:task_graphs/平衡图/task_graph.yaml" in graph["gaps"]
+    assert checks["asset_records"]["status"] == "failed"
+
+
+def test_final_report_is_not_required_for_scientific_input_bundle(tmp_path):
+    project = _write_project(tmp_path)
+    (project / "extraction_report.md").unlink()
+    payload = l1_bundle_to_payload(build_l1_bundle(project))
+    assert payload["gaps"] == []
+
+
+@pytest.mark.parametrize("filename,check", [
+    ("scientific_operator.py", "asset_records"),
+    ("test_scientific_operator.py", "direct_test_mapping"),
+])
+def test_empty_asset_material_does_not_pass_transport_checks(tmp_path, filename, check):
+    project = _write_project(tmp_path)
+    (project / "operators" / "极向磁场幅值" / filename).write_text("", encoding="utf-8")
+    payload = l1_bundle_to_payload(build_l1_bundle(project))
+    checks = {item["name"]: item for item in payload["automated_checks"]}
+    assert checks[check]["status"] == "failed"
+
+
 def test_bundle_rejects_content_tampering_and_unsafe_zip_paths(tmp_path):
     project = _write_project(tmp_path)
     bundle = build_l1_bundle(project, project_id="Pleiades")

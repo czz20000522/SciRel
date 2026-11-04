@@ -24,13 +24,16 @@ DIRECT_TEST_OVERRIDES = {
 }
 
 FULL_SUITE_PATHS = {
-    "provenance/admitted-assets.json",
     "pyproject.toml",
 }
 
-EXTERNAL_TOOLING_FILES = {
-    "scripts/build_extraction_skill_bundle.py",
-    "scripts/install_extraction_skill_bundle.py",
+EXTERNAL_TOOLING_TESTS = {
+    "scripts/build_extraction_skill_bundle.py": "skills/extraction/tests/test_extraction_skill_bundle.py",
+    "scripts/install_extraction_skill_bundle.py": "skills/extraction/tests/test_extraction_skill_bundle.py",
+    "skills/extraction/tests/test_extraction_skill_bundle.py": "skills/extraction/tests/test_extraction_skill_bundle.py",
+    "scripts/build_admitted_distribution.py": "provenance/tests/test_admitted_distribution_builder.py",
+    "provenance/admitted-assets.json": "provenance/tests/test_admitted_distribution_builder.py",
+    "provenance/tests/test_admitted_distribution_builder.py": "provenance/tests/test_admitted_distribution_builder.py",
 }
 
 ENGINEERING_TESTS = {
@@ -56,21 +59,36 @@ ENGINEERING_TESTS = {
         "tests/test_scientific_request_workflow_docs.py",
     ),
     "examples/user_acceptance.py": ("tests/test_user_acceptance.py",),
-    "scripts/build_admitted_distribution.py": (
-        "tests/test_admitted_distribution_builder.py",
-    ),
     "scripts/build_catalog.py": ("tests/test_asset_documentation.py",),
-    "scripts/finalize_release.py": ("tests/test_release_finalization.py",),
+    "scripts/finalize_release.py": (
+        "tests/test_release_finalization.py", "tests/test_release_index.py",
+    ),
+    "scripts/verify_review_selection.py": ("tests/test_review_selection.py",),
+    "scripts/prepare_reviewed_distribution.py": (
+        "tests/test_release_environment.py", "tests/test_release_index.py",
+    ),
+    "scripts/release_index.py": ("tests/test_release_index.py",),
+    "provenance/release-index.dev.json": ("tests/test_release_index.py",),
+    "contracts/release-index-dev.schema.json": ("tests/test_release_index.py",),
+    "contracts/reviewed-release-manifest-dev.schema.json": (
+        "tests/test_release_index.py",
+    ),
     "scripts/check.ps1": (
         "tests/test_affected_test_selection.py",
         "tests/test_release_environment.py",
         "tests/test_release_finalization.py",
+        "tests/test_release_index.py",
     ),
     "scripts/check_helpers.ps1": ("tests/test_release_environment.py",),
     "scripts/select_affected_tests.py": ("tests/test_affected_test_selection.py",),
     "scripts/build_l1_inventory.py": ("tests/workflow/test_l1_inventory.py",),
     "scripts/build_l1_wire_fixture.py": ("tests/test_l1_wire_smoke.py",),
     "scripts/run_l1_wire_smoke.py": ("tests/test_l1_wire_smoke.py",),
+    "scripts/build_l1_bundle.py": ("tests/workflow/test_l1_bundle.py",),
+    "scripts/submit_standardization.py": (
+        "tests/workflow/test_standardization_submission.py",
+        "tests/test_workflow_contracts.py",
+    ),
     "scripts/verify_outbound_evaluation_manifests.py": (
         "tests/test_outbound_evaluation_manifests.py",
     ),
@@ -82,6 +100,8 @@ WORKFLOW_TESTS = (
     "tests/workflow/test_workflow.py",
     "tests/workflow/test_vertical_slice.py",
     "tests/workflow/test_l1_inventory.py",
+    "tests/workflow/test_l1_bundle.py",
+    "tests/workflow/test_standardization_submission.py",
     "tests/test_workflow_contracts.py",
 )
 
@@ -95,9 +115,15 @@ WORKFLOW_CONTRACTS = {
     "contracts/body-wire-request-dev.schema.json",
     "contracts/candidate-package-dev.schema.json",
     "contracts/automated-check-result-dev.schema.json",
+    "contracts/l1-bundle-dev.schema.json",
     "contracts/l1-inventory-dev.schema.json",
     "contracts/standardized-draft-dev.schema.json",
+    "contracts/standardization-submission-dev.schema.json",
     "contracts/review-decision-dev.schema.json",
+    "contracts/review-item-dev.schema.json",
+    "contracts/review-item-decision-dev.schema.json",
+    "contracts/review-item-detail-dev.schema.json",
+    "contracts/review-completed-results-dev.schema.json",
     "contracts/release-manifest-dev.schema.json",
     "contracts/review-ui-extension-dev.schema.json",
     "contracts/workflow-state-dev.schema.json",
@@ -351,7 +377,10 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
         path_tests: set[str] = set()
         reason = ""
 
-        if path in EXTERNAL_TOOLING_FILES or path.startswith("skills/extraction/"):
+        if path in EXTERNAL_TOOLING_TESTS:
+            path_tests.add(EXTERNAL_TOOLING_TESTS[path])
+            reason = "external_tooling"
+        elif path.startswith(("skills/extraction/", "provenance/tests/")):
             reason = "external_tooling"
         elif path in FULL_SUITE_PATHS:
             full_suite_reasons.append(f"{path} changes the test/dependency baseline")
@@ -426,6 +455,8 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
             path_tests.update(
                 ("tests/test_asset_documentation.py", "tests/test_public_surface.py")
             )
+            if path == "src/scirel/collisions/__init__.py":
+                path_tests.add("tests/operator_contracts/test_momentum_scales.py")
             reason = "public_exports"
         elif path.startswith("src/scirel/") and path.endswith(".py"):
             direct_source_tests = SOURCE_DIRECT_TESTS.get(path, ())
@@ -449,7 +480,6 @@ def select(changed_paths: Iterable[str]) -> dict[str, object]:
                 path_tests.update(
                     test for asset in selected_for_path for test in asset.direct_tests
                 )
-                path_tests.add("tests/test_admitted_integrations.py")
                 reason = reason or "asset_and_reverse_dependencies"
             elif not path_tests:
                 full_suite_reasons.append(f"{path} is SciRel source without an asset/test mapping")

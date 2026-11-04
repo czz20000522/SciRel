@@ -208,160 +208,132 @@ ALLOWED_EDGE_CLOSURES = {
     "extraction_gap",
 }
 
+def _package_directories(root: Path, kind: str) -> list[Path]:
+    """Discover packages from their asset directories, never from prose files."""
+    family = "operators" if kind == "operator" else "task_graphs"
+    container = root if root.name == family else root / family
+    if container.is_dir():
+        return sorted(path for path in container.iterdir() if path.is_dir())
+    markers = (
+        ("scientific_operator.py", "scientific_operator.c", "scientific_operator.h", "operator.md")
+        if kind == "operator" else ("task_graph.yaml", "graph.py", "task_graph.md")
+    )
+    return [root] if any((root / name).is_file() for name in markers) else []
+
+
+def _validate_package_source_mapping(
+    directory: Path, *, root: Path, source_index: dict[str, set[str]] | None,
+    evidence_matrix: str, errors: list[str],
+) -> None:
+    # Read existing anchors in implementation, tests, YAML or legacy documents.
+    # A matrix row can be the sole source mapping; do not duplicate it per asset.
+    texts = [
+        path.read_text(encoding="utf-8") for path in directory.iterdir()
+        if path.is_file() and path.suffix.lower() in {".py", ".c", ".h", ".yaml", ".md"}
+    ]
+    asset_ref = directory.relative_to(root).as_posix()
+    if asset_ref == ".":
+        family = "task_graphs" if (directory / "task_graph.yaml").is_file() else "operators"
+        asset_ref = f"{family}/{directory.name}"
+    row_pattern = re.compile(r"(?<![\w/])" + re.escape(asset_ref) + r"(?![\w/])")
+    texts.extend(line for line in evidence_matrix.splitlines() if row_pattern.search(line))
+    refs = [
+        match.group("path").strip("`").replace("\\", "/")
+        for match in LINE_REF_RE.finditer("\n".join(texts))
+        if Path(match.group("path").strip("`")).name not in {
+            "scientific_operator.py", "scientific_operator.c", "scientific_operator.h",
+            "graph.py", "test_scientific_operator.py", "test_scientific_operator.c", "test_task_graph.py",
+        }
+    ]
+    if not refs:
+        errors.append(f"package requires an original-source anchor in code, tests or its existing evidence-matrix row: {asset_ref}")
+    elif source_index is not None and not any(
+        ref in source_index["source_paths"] or Path(ref).name in source_index["source_paths"]
+        for ref in refs
+    ):
+        errors.append(f"package source anchors must match the supplied source-index: {asset_ref}")
+
+
+def _validate_python_material(path: Path, *, root: Path, test: bool, errors: list[str]) -> None:
+    if not path.is_file() or path.suffix != ".py":
+        return
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except SyntaxError as exc:
+        errors.append(f"invalid Python asset: {path.relative_to(root)}:{exc.lineno}")
+        return
+    if test:
+        executable = [node for node in ast.walk(tree) if isinstance(node, (ast.Assert, ast.Call))]
+        if not executable:
+            errors.append(f"test artifact contains no executable test material: {path.relative_to(root)}")
+    else:
+        public = [node.name for node in tree.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                  and not node.name.startswith("_")]
+        expected = "run_graph" if path.name == "graph.py" else "scientific_operator"
+        if expected not in public and not (expected == "scientific_operator" and len(public) == 1):
+            errors.append(f"implementation requires {expected} or an unambiguous operator callable: {path.relative_to(root)}")
+
+
 def validate_import_intake_package(
     root: Path,
     *,
     source_index_path: Path | None = None,
     operator_only: bool = False,
+    evidence_matrix_path: Path | None = None,
 ) -> dict[str, Any]:
     errors: list[str] = []
-    operator_packages: list[str] = []
-    relation_packages: list[str] = []
-    task_graph_packages: list[str] = []
-    task_graph_yaml_files: list[Path] = []
-    gap_notes: list[str] = []
-
-    if not root.exists():
-        return {"valid": False, "errors": [f"root does not exist: {root}"]}
     if not root.is_dir():
         return {"valid": False, "errors": [f"root is not a directory: {root}"]}
+    if root.is_symlink() or any(path.is_symlink() for path in root.rglob("*")):
+        return {"valid": False, "errors": ["candidate packages may not contain symlinks"]}
     source_index = _load_source_index(source_index_path, errors=errors)
-    for project_document in (
-        "program_framework_map.md",
-        "extraction_report.md",
-        "extraction_ledger.md",
-    ):
-        path = root / project_document
-        if path.is_file() and _document_language(path.read_text(encoding="utf-8")) != "zh-CN":
-            errors.append(f"{project_document} requires language: zh-CN during intake")
-    asset_roots = _asset_roots(root)
-    for asset_root in asset_roots:
-        _validate_no_generated_artifacts(asset_root, errors=errors)
-        for markdown_file in asset_root.rglob("*.md"):
-            if not markdown_file.read_text(encoding="utf-8").strip():
-                errors.append(f"empty markdown file: {markdown_file.relative_to(root)}")
-            if markdown_file.name not in {"operator.md", "task_graph.md"}:
-                errors.append(
-                    "unexpected markdown artifact in candidate asset package: "
-                    f"{markdown_file.relative_to(root)}"
-                )
-
-    for asset_root in asset_roots:
-      for operator_file in asset_root.rglob("operator.md"):
-        operator_dir = operator_file.parent
-        operator_packages.append(str(operator_dir.relative_to(root)))
-        operator_markdown = operator_file.read_text(encoding="utf-8")
-        operator_relpath = operator_file.relative_to(root).as_posix()
-        if _document_language(operator_markdown) != "zh-CN":
-            errors.append(f"operator.md requires language: zh-CN during intake: {operator_relpath}")
-        _validate_operator_markdown(
-            operator_markdown,
-            source_path=operator_relpath,
-            implementation_path=operator_dir / "scientific_operator.py",
-            errors=errors,
-        )
-        _validate_machine_readable_io(
-            operator_markdown,
-            section_name=_operator_section_name(operator_markdown, "inputs"),
-            display_name="Inputs",
-            source_path=operator_relpath,
-            errors=errors,
-        )
-        _validate_machine_readable_io(
-            operator_markdown,
-            section_name=_operator_section_name(operator_markdown, "outputs"),
-            display_name="Outputs",
-            source_path=operator_relpath,
-            errors=errors,
-        )
-        _validate_operator_evidence(
-            operator_markdown,
-            source_path=operator_relpath,
-            source_index=source_index,
-            errors=errors,
-        )
-        artifacts = [
-            path for path in operator_dir.iterdir()
-            if path.is_file() and path.name != "operator.md"
-        ]
-        if not artifacts:
-            errors.append(
-                "operator package requires at least one non-markdown artifact "
-                "(implementation/test/build artifact; language-specific quality "
-                "is reviewed later): "
-                f"{operator_dir.relative_to(root)}"
-            )
-        for artifact in artifacts:
-            _require_non_empty_file(artifact, root=root, errors=errors)
-            if artifact.name in BANNED_PROFILE_ARTIFACT_NAMES:
-                errors.append(
-                    "operator package uses a legacy profile artifact name; use "
-                    "scientific_operator.* and test_scientific_operator.* instead: "
-                    f"{artifact.relative_to(root)}"
-                )
-        test_artifacts = [
-            artifact for artifact in artifacts
-            if artifact.name.casefold().startswith("test")
-            or artifact.name.casefold().startswith("operator_test")
-        ]
-        if not test_artifacts:
-            errors.append(
-                "operator package requires at least one test-like artifact name "
-                "(for example test_scientific_operator.*): "
-                f"{operator_dir.relative_to(root)}"
-            )
-        for artifact in test_artifacts:
-            _validate_test_artifact(
-                artifact,
-                root=root,
-                require_header=True,
-                errors=errors,
-            )
-
-    for asset_root in asset_roots:
-      for task_graph_file in asset_root.rglob("task_graph.md"):
-        task_graph_dir = task_graph_file.parent
-        task_graph_packages.append(str(task_graph_dir.relative_to(root)))
-        if _document_language(task_graph_file.read_text(encoding="utf-8")) != "zh-CN":
-            errors.append(f"task_graph.md requires language: zh-CN during intake: {task_graph_file.relative_to(root)}")
-        task_graph_yaml_files.append(task_graph_dir / "task_graph.yaml")
-        _validate_task_graph_package(
-            task_graph_dir,
-            task_graph_file,
-            root=root,
-            errors=errors,
-        )
-
-    _validate_task_graph_framework_mapping_membership(
-        root,
-        task_graph_yaml_files=task_graph_yaml_files,
-        errors=errors,
-    )
-    # Standalone operator/TaskGraph packages deliberately have no sibling asset
-    # tree to resolve. Apply the cross-package closure gate only when the selected
-    # root is a bundle or an asset-root containing package siblings.
+    evidence_matrix = ""
+    if evidence_matrix_path is not None:
+        try:
+            evidence_matrix = evidence_matrix_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            errors.append(f"evidence matrix is not readable: {exc}")
+    operator_dirs = _package_directories(root, "operator")
+    graph_dirs = _package_directories(root, "task_graph")
+    for directory in operator_dirs:
+        implementation = directory / "scientific_operator.py"
+        required = [implementation]
+        if not implementation.is_file() and (directory / "scientific_operator.c").is_file():
+            required = [directory / "scientific_operator.c", directory / "scientific_operator.h"]
+        for path in required:
+            _require_non_empty_file(path, root=root, errors=errors)
+            _validate_python_material(path, root=root, test=False, errors=errors)
+        tests = sorted(path for path in directory.iterdir() if path.is_file()
+                       and path.name.startswith("test") and path.suffix in {".py", ".c"})
+        if not tests:
+            errors.append(f"operator requires a direct test artifact: {directory.relative_to(root)}")
+        for path in tests:
+            _require_non_empty_file(path, root=root, errors=errors)
+            _validate_python_material(path, root=root, test=True, errors=errors)
+        _validate_package_source_mapping(directory, root=root, source_index=source_index,
+                                         evidence_matrix=evidence_matrix, errors=errors)
+    yaml_files = []
+    for directory in graph_dirs:
+        yaml_files.append(directory / "task_graph.yaml")
+        _validate_task_graph_package(directory, directory / "task_graph.md", root=root, errors=errors)
+        _validate_package_source_mapping(directory, root=root, source_index=source_index,
+                                         evidence_matrix=evidence_matrix, errors=errors)
+    _validate_task_graph_framework_mapping_membership(root, task_graph_yaml_files=yaml_files, errors=errors)
     if _has_asset_tree(root):
-        _validate_task_graph_dependency_closure(
-            root,
-            task_graph_yaml_files=task_graph_yaml_files,
-            errors=errors,
-        )
-
-    if not operator_packages and not task_graph_packages:
-        errors.append("no operator.md or task_graph.md candidate output found")
-    if operator_only:
-        if task_graph_packages:
-            errors.append("operator-only delivery must not contain task_graph.md packages")
-        if not (root / "operator.md").is_file() and not (root / "task_graph.md").is_file():
-            _validate_operator_only_root_files(root, errors=errors)
-
+        _validate_task_graph_dependency_closure(root, task_graph_yaml_files=yaml_files, errors=errors)
+    if not operator_dirs and not graph_dirs:
+        errors.append("no operator or task-graph candidate package found")
+    if operator_only and graph_dirs:
+        errors.append("operator-only delivery must not contain task-graph packages")
     return {
         "valid": not errors,
         "errors": errors,
-        "relation_packages": sorted(relation_packages),
-        "operator_packages": sorted(operator_packages),
-        "task_graph_packages": sorted(task_graph_packages),
-        "gap_notes": sorted(gap_notes),
+        "validation_scope": "structure_and_source_mapping",
+        "scientific_validation": "requires_source_and_numerical_review",
+        "relation_packages": [],
+        "operator_packages": sorted(path.relative_to(root).as_posix() for path in operator_dirs),
+        "task_graph_packages": sorted(path.relative_to(root).as_posix() for path in graph_dirs),
+        "gap_notes": [],
     }
 
 
@@ -380,15 +352,13 @@ def _validate_task_graph_dependency_closure(
     """
     if not _has_asset_tree(root):
         return
-    operator_root = root if root.name == "operators" else root / "operators"
     graph_dirs = {
         path.parent.name: path.parent
         for path in task_graph_yaml_files
         if path.is_file()
     }
     operator_dirs = {
-        path.parent.name: path.parent
-        for path in operator_root.glob("*/operator.md")
+        path.name: path for path in _package_directories(root, "operator")
     }
     graph_edges: dict[str, set[str]] = {name: set() for name in graph_dirs}
 
@@ -562,7 +532,7 @@ def _require_non_empty_file(path: Path, *, root: Path, errors: list[str]) -> Non
     if not path.is_file():
         errors.append(f"missing required file: {path.relative_to(root)}")
         return
-    if not path.read_text(encoding="utf-8").strip():
+    if not path.read_bytes().strip():
         errors.append(f"empty required file: {path.relative_to(root)}")
 
 
@@ -636,47 +606,7 @@ def _validate_task_graph_package(
     root: Path,
     errors: list[str],
 ) -> None:
-    markdown_text = task_graph_file.read_text(encoding="utf-8")
-    task_graph_relpath = task_graph_file.relative_to(root).as_posix()
-    if re.search(r"\bkind\s*[:=]\s*internal_kernel\b", markdown_text, flags=re.IGNORECASE):
-        errors.append(
-            "task_graph.md must not describe scientific nodes as internal_kernel; "
-            "the YAML and document must name an emitted operator or nested task graph: "
-            f"{task_graph_relpath}"
-        )
-    for heading in CHINESE_TASK_GRAPH_HEADINGS:
-        if not _section_text(markdown_text, heading):
-            errors.append(f"task_graph.md requires {heading.title()}: {task_graph_relpath}")
-    _validate_chinese_task_graph_contract(markdown_text, source_path=task_graph_relpath, errors=errors)
-    _validate_contract_prose_structure(
-        markdown_text,
-        source_path=task_graph_relpath,
-        asset_kind="task_graph.md",
-        errors=errors,
-    )
-    if LOCAL_RUNTIME_TERMS_RE.search(markdown_text):
-        errors.append(
-            "task_graph.md must not prescribe local runtime harnesses "
-            "(Docker/container/mount paths belong in test headers): "
-            f"{task_graph_relpath}"
-        )
-    evidence_text = _section_text(
-        markdown_text,
-        "验证与溯源",
-    )
-    line_refs = list(LINE_REF_RE.finditer(evidence_text))
-    if not line_refs:
-        if not re.search(r"(?i)source[_ -]?unavailable|源码对照状态[^\n]*不可用", evidence_text):
-            errors.append(
-                "task_graph.md Evidence References require concrete file line anchors "
-                f"like pkg/module.py:20-30 or src/file.f90:10-50: {task_graph_relpath}"
-            )
-    elif all(Path(match.group("path").strip("`").replace("\\", "/")).name == "graph.py" for match in line_refs) and not _declares_independent_evidence(evidence_text):
-        errors.append(
-            "task_graph.md Evidence References must include an original-source anchor, not only graph.py: "
-            f"{task_graph_relpath}"
-        )
-
+    task_graph_relpath = task_graph_dir.relative_to(root).as_posix()
     for required_name in ("task_graph.yaml", "graph.py"):
         _require_non_empty_file(
             task_graph_dir / required_name,
@@ -691,13 +621,8 @@ def _validate_task_graph_package(
             root=root,
             errors=errors,
         )
-        _validate_task_graph_markdown_ports_against_yaml(
-            markdown_text,
-            yaml_file=yaml_file,
-            source_path=task_graph_relpath,
-            errors=errors,
-        )
     if graph_file.is_file():
+        _validate_python_material(graph_file, root=root, test=False, errors=errors)
         _validate_graph_entrypoint_contract(
             graph_file,
             root=root,
@@ -728,12 +653,8 @@ def _validate_task_graph_package(
         )
     for artifact in test_artifacts:
         _require_non_empty_file(artifact, root=root, errors=errors)
-        _validate_test_artifact(
-            artifact,
-            root=root,
-            require_header=True,
-            errors=errors,
-        )
+        _validate_python_material(artifact, root=root, test=True, errors=errors)
+
 
 
 def _validate_task_graph_yaml_contract(
@@ -1000,6 +921,9 @@ def _validate_graph_entrypoint_contract(
         )
     elif digest_match:
         yaml_path = path.with_name("task_graph.yaml")
+        if not yaml_path.is_file():
+            errors.append(f"graph.py requires its bound task_graph.yaml: {path.relative_to(root)}")
+            return
         actual = hashlib.sha256(yaml_path.read_bytes()).hexdigest()
         if digest_match.group(1).casefold() != actual:
             errors.append(
@@ -2233,7 +2157,7 @@ def _markdown_sections(markdown_text: str) -> dict[str, list[str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Validate the Chinese ImportIntake package directory shape used by this skill."
+        description="Validate D1 code/YAML package structure and existing source anchors without executing input code."
     )
     parser.add_argument("root", type=Path, help="ImportIntake package directory")
     parser.add_argument(
@@ -2242,12 +2166,13 @@ def main() -> int:
         default=None,
         help="Optional sandbox source_index.json used to validate evidence chunk ids.",
     )
+    parser.add_argument("--evidence-matrix", type=Path, default=None,
+                        help="Existing capability-evidence matrix; source anchors may remain in the asset row.")
     parser.add_argument(
         "--operator-only",
         action="store_true",
         help=(
-            "Require operator-only delivery: no root report/gap files and each "
-            "test artifact has top-of-file test evidence comments."
+            "Require operator-only delivery without task-graph packages."
         ),
     )
     args = parser.parse_args()
@@ -2256,6 +2181,7 @@ def main() -> int:
         args.root,
         source_index_path=args.source_index,
         operator_only=args.operator_only,
+        evidence_matrix_path=args.evidence_matrix,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0 if result["valid"] else 1

@@ -1,13 +1,6 @@
-"""Shared fixtures for the U1 review unit.
-
-The candidate package is loaded from the review unit's own ``src`` directory, so
-the tests never import the frozen SciRel tree.  The retained read-only source
-checkout is loaded by file path only, for the comparison tests, and those tests
-skip loudly rather than passing silently when the checkout is unreachable.
-"""
+"""Shared fixtures for maintained SciRel scientific contracts."""
 from __future__ import annotations
 
-import importlib.util
 import os
 import sys
 from pathlib import Path
@@ -17,24 +10,6 @@ import pytest
 
 UNIT_ROOT = Path(__file__).resolve().parents[1]
 CANDIDATE_SRC = UNIT_ROOT / "src"
-
-_RETAINED_OPERATOR = "轴对称平衡到求解网格材料支撑映射"
-_L1_CANDIDATES = (
-    os.environ.get("SCIREL_L1_AORSA3D"),
-    r"D:\Users\26569\Desktop\归档_项目\codefusion\最小闭环压测环境\aorsa3d",
-    str(UNIT_ROOT / "build" / "l1" / "aorsa3d"),
-)
-
-
-def _retained_root():
-    for raw in _L1_CANDIDATES:
-        if not raw:
-            continue
-        candidate = Path(raw)
-        if (candidate / "operators" / _RETAINED_OPERATOR).is_dir():
-            return candidate
-    return None
-
 
 @pytest.fixture(scope="session")
 def candidate():
@@ -68,19 +43,6 @@ def candidate():
     }
     if not installed_runtime:
         sys.path.remove(str(CANDIDATE_SRC))
-
-
-@pytest.fixture(scope="session")
-def retained():
-    """Load the read-only retained operator by file path, or skip."""
-    root = _retained_root()
-    if root is None:
-        pytest.skip("read-only L1 aorsa3d checkout not found; set SCIREL_L1_AORSA3D")
-    path = root / "operators" / _RETAINED_OPERATOR / "scientific_operator.py"
-    spec = importlib.util.spec_from_file_location("u1_retained_grid_mapping", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
 
 
 @pytest.fixture

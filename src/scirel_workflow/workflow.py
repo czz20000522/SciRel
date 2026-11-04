@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Mapping
 
@@ -11,6 +12,7 @@ from .models import (
     ReleaseManifest,
     ReviewDecision,
     ReviewOutcome,
+    StandardizationSubmission,
     StandardizedDraft,
     WorkflowStatus,
 )
@@ -29,6 +31,7 @@ class WorkflowRecord:
     reviews: list[ReviewDecision] = field(default_factory=list)
     automated_results: list[AutomatedCheckResult] = field(default_factory=list)
     release: ReleaseManifest | None = None
+    no_change_submission: StandardizationSubmission | None = None
 
     def to_dict(self, *, status: WorkflowStatus) -> dict[str, Any]:
         """Serialize only SciRel-owned workflow state.
@@ -38,7 +41,7 @@ class WorkflowRecord:
         the payload remains a SciRel domain record.
         """
 
-        return {
+        result = {
             "schema": "scirel.workflow-state.dev",
             "status": status.value,
             "candidate": self.candidate.to_dict(),
@@ -51,6 +54,10 @@ class WorkflowRecord:
             ],
             "release": self.release.to_dict() if self.release is not None else None,
         }
+        if self.no_change_submission is not None:
+            result["no_change_submission"] = self.no_change_submission.to_dict()
+            return deepcopy(result)
+        return result
 
 
 class SciRelWorkflow:
@@ -81,6 +88,8 @@ class SciRelWorkflow:
             ):
                 return self.record.draft.status
             return WorkflowStatus.DRAFT
+        if self.record.no_change_submission is not None:
+            return WorkflowStatus.NO_CHANGES
         candidate = self.record.candidate
         if candidate.automated_ready:
             return WorkflowStatus.AUTOMATED_READY
@@ -119,7 +128,7 @@ class SciRelWorkflow:
         if not isinstance(payload, Mapping):
             raise WorkflowError("workflow snapshot must be an object")
         missing = required.difference(payload)
-        unknown = set(payload).difference(required)
+        unknown = set(payload).difference(required | {"no_change_submission"})
         if missing:
             raise WorkflowError(
                 "workflow snapshot is missing fields: " + ", ".join(sorted(missing))
@@ -130,6 +139,8 @@ class SciRelWorkflow:
             )
         if payload["schema"] != "scirel.workflow-state.dev":
             raise WorkflowError(f"unsupported workflow snapshot schema: {payload['schema']}")
+        if "no_change_submission" in payload:
+            payload = deepcopy(payload)
 
         candidate_payload = payload["candidate"]
         if not isinstance(candidate_payload, Mapping):
@@ -193,6 +204,11 @@ class SciRelWorkflow:
                 if current_release is not None
                 else None
             )
+            workflow.record.no_change_submission = (
+                StandardizationSubmission.from_mapping(payload["no_change_submission"])
+                if "no_change_submission" in payload
+                else None
+            )
         except (KeyError, TypeError, ValueError) as error:
             raise WorkflowError(f"invalid workflow snapshot: {error}") from error
 
@@ -213,6 +229,12 @@ class SciRelWorkflow:
 
         record = self.record
         candidate = record.candidate
+        if record.no_change_submission is not None:
+            if any((record.draft, record.review, record.drafts, record.reviews, record.release)):
+                raise WorkflowError("no-change completion cannot contain review or release records")
+            self._validate_submission(record.no_change_submission)
+            if record.no_change_submission.review_units or record.no_change_submission.gaps:
+                raise WorkflowError("no-change completion cannot contain review units or gaps")
         result_ids: set[str] = set()
         for result in record.automated_results:
             if result.result_id in result_ids:
@@ -339,6 +361,8 @@ class SciRelWorkflow:
         evidence: list[Mapping[str, Any]] | tuple[Mapping[str, Any], ...] = (),
         gaps: list[str] | tuple[str, ...] = (),
     ) -> StandardizedDraft:
+        if self.record.no_change_submission is not None:
+            raise WorkflowError("completed no-change workflow cannot create a draft")
         if self.record.release is not None:
             raise WorkflowError("released workflow cannot create another draft")
         if self.record.draft is not None and self.record.review is None:
@@ -371,14 +395,11 @@ class SciRelWorkflow:
         evidence: list[Mapping[str, Any]] | tuple[Mapping[str, Any], ...] = (),
         gaps: list[str] | tuple[str, ...] = (),
     ) -> StandardizedDraft:
-        """Replace an unsubmitted draft while preserving its review identity."""
+        """Replace a pre-upload draft while preserving its candidate identity."""
 
         current = self._require_draft()
-        if self.status not in (
-            WorkflowStatus.DRAFT,
-            WorkflowStatus.REVIEW_PENDING,
-        ):
-            raise WorkflowError("only an open draft can be updated")
+        if self.status is not WorkflowStatus.DRAFT:
+            raise WorkflowError("only a pre-upload draft can be updated")
         if (
             not self.record.drafts
             or self.record.drafts[-1].draft_id != current.draft_id
@@ -409,6 +430,8 @@ class SciRelWorkflow:
                     "automated result_id was reused with different content"
                 )
             return self.record.candidate
+        if self.record.no_change_submission is not None:
+            raise WorkflowError("automated results cannot change a completed no-change workflow")
         if self.record.draft is not None or self.record.release is not None:
             raise WorkflowError("automated results cannot change a drafted workflow")
         try:
@@ -426,8 +449,160 @@ class SciRelWorkflow:
         draft.status = WorkflowStatus.REVIEW_PENDING
         return draft
 
+    def _validate_submission(
+        self,
+        submission: StandardizationSubmission,
+        *,
+        expected_scirel_git_base: str | None = None,
+        expected_candidate_pool_digest: str | None = None,
+        expected_skill_digest: str | None = None,
+    ) -> None:
+        """Check identity and complete accounting independently of review packaging."""
+        candidate = self.record.candidate
+        if not candidate.automated_ready:
+            raise WorkflowError("candidate automated checks are not ready")
+        if submission.candidate_id != candidate.candidate_id:
+            raise WorkflowError("standardization submission refers to another candidate")
+        if submission.candidate_digest != candidate.package_digest:
+            raise WorkflowError("standardization submission candidate digest does not match")
+        if submission.source_digest != candidate.source_digest:
+            raise WorkflowError("standardization submission source digest does not match")
+        if (
+            expected_scirel_git_base is not None
+            and submission.scirel_git_base != expected_scirel_git_base
+        ):
+            raise WorkflowError("standardization submission SciRel Git base does not match")
+        if (
+            expected_candidate_pool_digest is not None
+            and submission.candidate_pool_digest != expected_candidate_pool_digest
+        ):
+            raise WorkflowError("standardization submission candidate-pool digest does not match")
+        skill_digest = submission.producer["skill"]["digest"]
+        if expected_skill_digest is not None and skill_digest != expected_skill_digest:
+            raise WorkflowError("standardization submission skill digest does not match")
+
+        candidate_asset_ids: set[str] = set()
+        for index, asset in enumerate(candidate.assets):
+            asset_id = asset.get("l1_asset_id") or asset.get("candidate_asset_id")
+            if not isinstance(asset_id, str) or not asset_id.strip():
+                raise WorkflowError(
+                    f"candidate asset[{index}] has no stable source asset id"
+                )
+            candidate_asset_ids.add(asset_id)
+        submitted_source_ids: set[str] = set()
+        duplicate_source_ids: set[str] = set()
+        source_groups = [unit.source_asset_ids for unit in submission.review_units]
+        source_groups.extend(item["source_asset_ids"] for item in submission.input_dispositions)
+        for source_ids in source_groups:
+            for source_asset_id in source_ids:
+                if source_asset_id in submitted_source_ids:
+                    duplicate_source_ids.add(source_asset_id)
+                submitted_source_ids.add(source_asset_id)
+        if duplicate_source_ids:
+            raise WorkflowError(
+                "standardization submission claims source assets more than once: "
+                + ", ".join(sorted(duplicate_source_ids))
+            )
+        unknown = submitted_source_ids.difference(candidate_asset_ids)
+        if unknown:
+            raise WorkflowError(
+                "standardization submission refers to unknown source assets: "
+                + ", ".join(sorted(unknown))
+            )
+        missing = candidate_asset_ids.difference(submitted_source_ids)
+        if missing:
+            raise WorkflowError(
+                "standardization submission does not account for source assets: "
+                + ", ".join(sorted(missing))
+            )
+
+    def submit_standardization(
+        self,
+        submission: StandardizationSubmission,
+        *,
+        expected_scirel_git_base: str | None = None,
+        expected_candidate_pool_digest: str | None = None,
+        expected_skill_digest: str | None = None,
+    ) -> StandardizedDraft | None:
+        """Queue changed assets, or finish unchanged reuse without inventing review items.
+
+        No-change completion only records comparison and lineage. It grants no
+        scientific approval, modifies no library, and creates no release.
+        """
+        if self.record.no_change_submission is not None:
+            raise WorkflowError("completed no-change workflow cannot accept another submission")
+        if self.record.draft is not None:
+            raise WorkflowError("workflow already has a standardized draft")
+        self._validate_submission(
+            submission,
+            expected_scirel_git_base=expected_scirel_git_base,
+            expected_candidate_pool_digest=expected_candidate_pool_digest,
+            expected_skill_digest=expected_skill_digest,
+        )
+        if not submission.review_units:
+            if submission.gaps:
+                raise WorkflowError("no-change completion cannot hide unresolved gaps")
+            self.record.no_change_submission = StandardizationSubmission.from_mapping(
+                deepcopy(submission.to_dict())
+            )
+            return None
+
+        evidence: list[dict[str, Any]] = [
+            {
+                "kind": "standardization_submission",
+                "submission_id": submission.submission_id,
+                "submission_digest": submission.submission_digest,
+                "candidate_digest": submission.candidate_digest,
+                "source_digest": submission.source_digest,
+                "scirel_git_base": submission.scirel_git_base,
+                "candidate_pool_ref": submission.candidate_pool_ref,
+                "candidate_pool_digest": submission.candidate_pool_digest,
+                "producer": dict(submission.producer),
+                "run_evidence": list(submission.run_evidence),
+            }
+        ]
+        evidence.extend(
+            {"kind": "standardization_input_disposition", **item}
+            for item in submission.input_dispositions
+        )
+        gaps = list(submission.gaps)
+        assets: list[dict[str, Any]] = []
+        for unit in submission.review_units:
+            asset = dict(unit.asset_document)
+            asset_id = str(asset["asset_id"])
+            assets.append(asset)
+            evidence.append(
+                {
+                    "kind": "standardization_review_unit",
+                    "asset_id": asset_id,
+                    "review_unit_id": unit.review_unit_id,
+                    "source_asset_ids": list(unit.source_asset_ids),
+                    "disposition": unit.disposition,
+                    "candidate_document": dict(unit.candidate_document),
+                    "candidate_code": dict(unit.candidate_code),
+                    "candidate_tests": dict(unit.candidate_tests),
+                    "dependency_asset_ids": list(unit.dependency_asset_ids),
+                    "comparison_evidence": list(unit.evidence),
+                    "gaps": list(unit.gaps),
+                }
+            )
+            gaps.extend(f"{asset_id}:{gap}" for gap in unit.gaps)
+
+        draft = self.create_draft(
+            draft_id=submission.draft_id,
+            assets=assets,
+            evidence=evidence,
+            gaps=gaps,
+        )
+        return self.submit_for_review()
+
     def start_review(self) -> StandardizedDraft:
-        """Freeze the queued draft immediately before an expert sees it."""
+        """Advance the current single-draft fixture into manual review.
+
+        Upload has already fixed the draft content. This transition is not the
+        target batch workbench's observation boundary; its item open is
+        read-only and human edits are versioned under a separate item lease.
+        """
 
         draft = self._require_draft()
         if self.status is not WorkflowStatus.REVIEW_PENDING:

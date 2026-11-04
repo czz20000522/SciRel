@@ -14,6 +14,23 @@ and request truth. The method may consume an authorized published capability, bu
 candidate, review, catalog, or release state. A runnable user project is not automatically a reusable or published
 scientific capability.
 
+For evaluator-owned disposable copies in an outbound trial, put simulated user projects, negative probes and
+independent reruns under SciRel's ignored `build/verification/<case>/` or a designated system temporary directory
+when checkout isolation requires it. Reuse the pinned wheel, catalog and environment across copies when their runtime
+contract permits; freeze trial states and traces through the existing case archive and manifest. This does not move
+or replace a user's persistent project workspace.
+
+## D3 stage boundary
+
+Use the [development process](../../../docs/development-process.md) for D1/D2/D3 responsibilities.
+Consume an exact development or trusted wheel/catalog with its trust status explicit; development use does not
+wait for final human approval. Keep upstream deliveries read-only. Put task-specific assumptions, source references,
+repairs and implementation notes in this project's code comments/docstrings or run record; write the human-facing
+result from the actual stable implementation and observations.
+Return library gaps to scirel-integration and source-only evidence gaps to the D1 owner. Do not rerun valid D1
+source comparisons or require new per-source formal documents for an application task.
+Final library endorsement belongs to scirel-review-preparation; a successful user case supports only its declared scope.
+
 ## Decide once, then act
 
 Inspect the current project and supplied material first. A complete request needs no confirmation. Concrete
@@ -63,8 +80,16 @@ answer. If the user delegated the choice, select the narrowest defensible model 
    failure proves a new material scientific ambiguity.
 7. Read back the primary user-facing files, not only test summaries. Trace a representative value and, when
    present, an unavailable row from supplied input through the declared units, applicability and displayed
-   result or reason. Check that physical conclusions follow from quantities actually computed; sampling a
-   field at a new location does not establish that every other material input is defined there. Report only
+   result or reason. Use the format's ordinary independent reader to parse written numeric columns, rather than
+   trusting the serializer's in-memory values or its own round-trip helper. Rerun the user-facing entrypoint with
+   unchanged inputs and check the files it actually regenerates. If the project promises this file check on every
+   rerun, put it in the ordinary delivery path; an optional test alone does not establish that guarantee. Check that
+   physical conclusions follow from quantities actually computed. For a consequential rate-to-probability, cumulative
+   event or changing-inventory claim, request an independent interpretation review before user delivery when an Agent
+   is available. Check each finding and proposed replacement separately against the original inputs, model state,
+   and actual outputs; a valid criticism need not make the reviewer's substitute answer valid. Record whether the
+   solver, that reviewer or later user feedback found the issue. Sampling a field at a new location does not establish
+   that every other material input is defined there. Report only
    commands, exit states, output, and artifacts actually observed. Do not claim success from generated text alone.
 
 Keep interim chat concise. Do not narrate every tool call, and do not substitute displayed snippets for

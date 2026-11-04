@@ -27,9 +27,26 @@ Require the exact target digest, exact dependency versions, scientific and port 
 tests/evidence, declared claim ceiling, applicability, and requested review scope. Review only supplied material.
 Do not claim source, network, runtime, or external-reference access that the invocation did not provide.
 
+The scientific contract may be expressed in code, YAML, docstrings, function/module comments and exact existing
+records. Do not require a formal page or repeat recoverable facts. Inspect upstream deliveries read-only; findings
+and any later corrections belong to the receiving stage's derived candidate.
+
 Read [the correctness criteria](references/review_criteria.md) for detailed finding tests. Use
 `scientific-computation-validation` only in a separate validation task when a proposed or executed gate needs
 specialist assessment.
+
+## Efficient review focus
+
+Use exact-digest structural indexes, claim/evidence matrices, prior findings, and predecessor diffs to navigate the
+target and identify the affected scientific cone. They may prioritize reading but cannot replace inspection of the
+material contract, implementation, tests, and evidence anchors. Mechanical similarity, unchanged filenames, or a
+clean diff does not establish scientific equivalence.
+
+Reuse a prior review conclusion only when the target digest, dependency versions, claim, applicability, evidence,
+and review scope are identical. For a successor, concentrate repeated inspection on changed formulas, ports, state,
+branches, evidence, and reverse dependencies while still accounting for every claimed dimension. Do not repeat a
+full unchanged review merely to produce new activity, and do not skip a material risk because it was absent from an
+index.
 
 ## Review order
 

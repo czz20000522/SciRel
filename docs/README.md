@@ -1,29 +1,53 @@
 # SciRel 项目文档
 
-SciRel 按长期独立 Python 项目维护。文档只保存稳定合同、可复用流程和当前实现边界；单次任务参数、临时进度与重复状态不进入这里。
+SciRel 将已有科研代码整理为可复用的科学算子与任务图，供 Agent 分解用户需求、匹配能力并生成胶水代码，
+形成满足需求的可执行程序。单项目内的自定义组合与跨项目组合都使用这一方法，核心科学实现通过资产复用，
+本次程序负责正确连接和执行。
 
-- [架构与科学资产合同](architecture.md)：Operator、TaskGraph、科学身份、公共 API 和治理边界。
-- [规模化目录合同](catalog.md)：数万资产下的分片、渐进检索、依赖索引与一致性要求。
-- [标准化资产文档需求](requirements/asset-documentation.md)：每条资产必须提供的科学、调用、证据和 provenance 字段。
-- [薄 MCP 适配合同](requirements/thin-mcp-adapter.md)：固定 catalog 的发现、文档读取、callable 绑定与调用边界。
-- [科学请求工作流需求](requirements/scientific-request-workflow.md)：从用户需求规范化、能力匹配和动态组合到结果检查与解释的出库行为。
-- [Catalog 与适配器设计](design/catalog-and-adapters.md)：framework-neutral 投影、MCP/CLI/云适配边界和 CodeFusion 交付清单。
-- [科学请求工作流设计](design/scientific-request-workflow.md)：四类逻辑产物、harness/SciRel 职责和轴对称平衡首轮样例。
-- [保存的 L1 inventory 参考探针](design/l1-inventory.md)：可选多项目结构索引的能力与边界。
-- [外部 Agent 整合方法](integration/external-harness-workflow.md)：Claude Code、Codex、CodeFusion 等 harness 使用同一 SciRel skill 对照 L1 与当前库的方法边界。
-- [CodeFusion 消费合同](integration/codefusion-consumer-contract.md)：发行绑定、导出集合、文档入口、callable/MCP、错误语义及跨项目职责差异。
-- [开发与增量整合流程](development-process.md)：首次/增量整合、验证分层和发行候选流程。
-- [SciRel L1 到 Release 需求](requirements/scirel-workflow.md)：领域生命周期、状态、标准化、审核和 release 门禁。
-- [CodeFusion 宿主插件需求](requirements/codefusion-plugin.md)：中性 Agent 调用与专家审核插件边界。
-- [SciRel Workflow 设计](design/scirel-workflow.md)：host-independent workflow 与 artifact 适配设计。
-- [CodeFusion Plugin Contract](integration/codefusion-plugin-contract.md)：中性 invocation、审核 UI 和领域/平台失败边界。
-- [CodeFusion 中性 Agent 验收](integration/codefusion-runner-acceptance.md)：与 Claude Code/Codex 使用同一输入和 skill 的对照方法。
-- [SciRel 求解 skill](../skills/usage/scirel-solving/SKILL.md)：供不同 harness 规范化、规划、执行和解释用户科学请求的共同方法。
-- [L1 wire smoke](../scripts/run_l1_wire_smoke.py)：开发期确定性 body 合同测试工具，不是语义整合入口。
-- [贡献指南](../CONTRIBUTING.md)：开发环境、改动分类、兼容性和提交前检查。
+## 理解项目与使用方法
+
+- [项目定位](../README.md)：为什么拆解已有代码，以及科学资产、Agent 和胶水代码各自负责什么。
+- [架构与科学资产合同](architecture.md)：Operator、可复用 TaskGraph 与本次运行实例的区别，以及科学实现和编排的边界。
+- [科学请求工作流](requirements/scientific-request-workflow.md)：需求规范化、能力匹配、动态组合、执行和结果解释。
+- [开发流程](development-process.md)：来源拆解、库整合与用户应用如何交接，怎样扩充和验证能力。
+
+以下文档按工作入口组织。需求描述目标，设计描述实现边界，测试和运行证据决定当前能声称什么。
+单次 L1 批次、harness 参数和临时进度不提升为长期合同。
+
+## 维护科学库
+
+- [架构与科学资产合同](architecture.md)：Operator、TaskGraph、科学身份、公共 API 与治理边界。
+- [规模化目录合同](catalog.md)：分片索引、渐进检索和依赖索引。
+- [标准化资产文档需求](requirements/asset-documentation.md)与[Catalog/适配器设计](design/catalog-and-adapters.md)：exact document、可验证 catalog 和消费投影。
+- [科学领域能力](domains/README.md)：供专家完善的问题域导航；不替代 exact document，也不代表完整覆盖。
+- [开发与增量整合流程](development-process.md)及[贡献指南](../CONTRIBUTING.md)：科学变更、受影响测试、固化和发行门禁。
+
+## 从 L1 到审核
+
+- [领域需求](requirements/scirel-workflow.md)与[Workflow 设计](design/scirel-workflow.md)：开发整合、无变化记账、最终冻结审核和 release 的所有权与状态。
+- [开发、待审与可信版本](design/development-trust-versions.md)：新政策的目标语义及现有需求、设计和 skill 的最小调整切片；尚非已交付的 workflow。
+- [SciRel 整合 skill](../skills/integration/scirel-integration/SKILL.md)与[外部 Agent 整合方法](integration/external-harness-workflow.md)：模型比较 L1、冻结基线和未发布候选，产出文档、代码、测试；脚本不替代语义判断。
+- [L1 inventory 参考探针](design/l1-inventory.md)：可选结构检查及不同时间、目录的压测快照；它不是整合协议，也不证明科学覆盖。
+- [L1 wire smoke](../scripts/run_l1_wire_smoke.py)：确定性 body/fixture 检查，不是实际项目的科学整合或专家批准。
+
+## 发行与使用
+
+- [科学请求需求](requirements/scientific-request-workflow.md)、[设计](design/scientific-request-workflow.md)和[求解 skill](../skills/usage/scirel-solving/SKILL.md)：用户需求到能力匹配、组合、执行与证据有界解释。
+- [薄 MCP 适配需求](requirements/thin-mcp-adapter.md)及[CodeFusion 消费合同](integration/codefusion-consumer-contract.md)：适配器只消费已发布的 catalog/wheel，不定义新的科学身份。
+- [CodeFusion 宿主插件需求](requirements/codefusion-plugin.md)、[插件合同](integration/codefusion-plugin-contract.md)及[中性 Agent 验收](integration/codefusion-runner-acceptance.md)：宿主提供执行、artifact、身份和审核 UI；SciRel 拥有领域结论。
 
 ## 当前实现边界
 
-当前 `0.1.0.dev5` 包含 52 条历史资产候选和 10 条本阶段新增的开发资产；其中 14 条已有 catalog exact document。workflow 已具备 host-independent 状态协调、artifact 关联、审核/release 门禁和最小 fixture；真实 L1 的理解与整合由 skill 驱动的模型完成，不属于状态机能力。生产审核插件接线、完整 L1 整合、v1 合同冻结、固定发行工具链和正式发布授权尚未完成。
+- `src/scirel/` 是可独立调用的科学库；`src/scirel_workflow/` 与 `src/scirel_plugin/` 已有本地状态、合同及 fixture 测试。它们不等于真实 L1 项目经模型整合、专家审核和宿主产品链路联调已完成。
+- `catalog/examples/` 仍为部分 exact-document pilot，不代表全部库能力；不能从 catalog 缺项推断没有对应算子，也不能把维护树中的所有代码视为可发布资产。
+- `provenance/admitted-assets.json` 与 `scripts/build_admitted_distribution.py` 用于复核历史开发样本，不是新流程的批准事实或发布入口。隔离开发分支允许先集成和验证；最终冻结版本经专家认可及发行验证后才能晋级可信/发布版本。`scripts/release_index.py` 和 `scripts/finalize_release.py` 承担开发期候选索引与逐项固化门禁；旧单 draft release fixture 仅用于生命周期测试。
+- 开发期 workflow/plugin 合同仍用 `.dev`；正式上线前应统一冻结为 `v1`。许可证、完整 exact documents、真实宿主接线和发行环境证据均须分别验收，不因本地 fixture 通过而自动获得。
 
-新增长期机制时，优先扩展上述权威文档和可执行检查。只有出现独立 owner、不同生命周期或明显不同读者时才拆新文档，避免用报告数量代替项目治理。
+需要判断某一轮是否完成时，以该轮的 L1 输入树、SciRel 基线与候选池、skill 内容、候选三件套、实际测试、专家记录和 release artifact 为证据；不要把历史压测数量当作当前状态。
+
+## 目录职责
+
+- `requirements/`、`design/`、`integration/` 保存可复用的需求、设计和跨系统合同；具体批次的状态、日志及参数不在这里维护。设计中的历史样本只说明当时的适用条件，不是当前进度。
+- `domains/` 保存有依据的领域草稿与待专家裁定问题；资产级科学合同以 exact document 为准。
+- `evaluations/` 保存带日期和证据引用的评估结论；大体积运行产物、临时工作副本及 wheel 留在 `build/verification/<run>/` 等对应运行目录。`scripts/` 保存可复用的工具，单次运行命令与探针随运行证据保存。
+- 已有 manifest、测试或其他工作树引用的证据不直接移动；确需迁移时先核引用方与文件摘要，再在所属线路更新引用并复验。多人工作区中归属不明的文件保持原位。

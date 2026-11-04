@@ -18,6 +18,26 @@ def test_flux_relaxation_and_cell_area_follow_declared_source_order():
     assert result["relative_current_change"] == 0.75
 
 
+def test_nonuniform_grid_uses_first_spacings_for_every_cell_current():
+    r_grid, z_grid = np.meshgrid([0.0, 0.2, 0.7], [-0.5, -0.2, 0.6])
+    result = scientific_operator(
+        r_grid, z_grid, np.ones((3, 3)), np.zeros((3, 3)),
+        np.zeros((3, 3)), np.eye(9), 0.0,
+    )
+    np.testing.assert_allclose(result["plasma_cell_currents"], 0.06)
+    np.testing.assert_allclose(result["psi_next"], 0.06)
+
+
+def test_previous_currents_change_only_the_current_diagnostic():
+    inputs = _inputs()
+    baseline = scientific_operator(**inputs)
+    repeated = scientific_operator(**inputs, previous_cell_currents=np.full((3, 3), 0.25))
+    for key in ("psi_next", "plasma_cell_currents", "relative_psi_change"):
+        np.testing.assert_allclose(repeated[key], baseline[key])
+    assert repeated["relative_current_change"] == 0.0
+    assert baseline["relative_current_change"] == 0.75
+
+
 def test_relax_one_is_rejected():
     with pytest.raises(ValueError, match="relax"):
         scientific_operator(**_inputs(relax=1.0))

@@ -36,6 +36,12 @@ Require:
 - authorized runtime/profile and output locations; and
 - whether the request is test design, execution, or evidence assessment.
 
+A contract need not be a Markdown page: read exact code/YAML/docstring anchors and supplement only necessary
+physical facts that cannot be recovered reliably. Preserve prior-stage deliveries read-only; new results belong
+to the current derived candidate/evidence. For an attributable result with a defective assertion, path or packaging
+binding, preserve the original observation and repair the affected checker/binding. Rerun its cheap comparison,
+not unchanged science; never relax tolerances or fabricate old identity/independence.
+
 Never substitute a mutable `latest` target, infer an omitted scientific equation from candidate output, or expand
 the claim beyond the caller's scope.
 

@@ -32,6 +32,16 @@ def test_rejects_degenerate_or_negative_dimensions(width, height):
         scientific_operator(1.0, 0.0, width, height)
 
 
+def test_axis_crossing_is_rejected_and_near_zero_angle_is_unrotated():
+    with pytest.raises(ValueError, match="crosses the cylindrical axis"):
+        scientific_operator(0.1, 0.0, 1.0, 1.0)
+
+    reference = scientific_operator(2.0, 3.0, 4.0, 2.0)
+    near_zero = scientific_operator(2.0, 3.0, 4.0, 2.0, mu_hat_deg=5e-13)
+    np.testing.assert_array_equal(near_zero["rz_pts"], reference["rz_pts"])
+    np.testing.assert_array_equal(near_zero["default_weights"], reference["default_weights"])
+
+
 def test_reviewed_relation_example():
     import numpy as np
     from scirel.field.permanent_ring_filaments import discretize_permanent_ring

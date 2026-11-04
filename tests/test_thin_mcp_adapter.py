@@ -27,7 +27,7 @@ def catalog(tmp_path):
         catalog_id="scirel-development-pilot",
         release_version="0.1.0.dev5",
         coverage_status="partial",
-        declared_total=62,
+        declared_total=len(list(EXAMPLES.glob("*.json"))) + 1,
     )
     return output, result["root_digest"]
 
@@ -168,6 +168,41 @@ def test_callable_binding_and_invocation_are_document_driven(catalog):
     serialized = json.dumps(response, sort_keys=True)
     for forbidden in ("session_id", "project_id", "workbench_id", "admission_ref"):
         assert forbidden not in serialized
+
+
+def test_complex_scientific_result_preserves_components_in_json(catalog):
+    from scirel.kinetic.plasma_dispersion_weideman import (
+        evaluate_plasma_dispersion_weideman,
+    )
+
+    points = [0j, 0.5 + 0.25j]
+    response = _adapter(catalog).handle(
+        {
+            "operation": "callable.invoke",
+            "asset_id": "scirel.kinetic.plasma-dispersion-weideman",
+            "arguments": {"z": points},
+        }
+    )
+    expected = evaluate_plasma_dispersion_weideman(points)
+    for field in ("Z", "w"):
+        assert len(response["result"][field]) == len(points)
+        for encoded, value in zip(response["result"][field], expected[field]):
+            assert set(encoded) == {"real", "imag"}
+            assert complex(encoded["real"], encoded["imag"]) == pytest.approx(value)
+    assert response["result"]["method"] == ["erfc", "rational"]
+    assert json.loads(json.dumps(response, allow_nan=False)) == response
+
+    scalar = _adapter(catalog).invoke(
+        "scirel.kinetic.plasma-dispersion-weideman", {"z": 0j}
+    )["result"]
+    assert set(scalar["Z"]) == {"real", "imag"}
+    assert scalar["method"] == "erfc"
+
+
+def test_nonfinite_complex_result_fails_closed():
+    with pytest.raises(ThinMcpAdapterError, match="non-finite") as failure:
+        ThinMcpAdapter._materialize(complex(float("inf"), 1.0))
+    assert failure.value.code == "result_not_serializable"
 
 
 def test_task_graph_document_ports_are_passed_through_the_inputs_mapping(

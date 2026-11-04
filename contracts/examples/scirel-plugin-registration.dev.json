@@ -50,11 +50,17 @@
   },
   "capabilities": [
     "plugin.dispatch",
+    "plugin.view.read",
+    "plugin.view.write",
+    "plugin.ui_action",
     "artifact.read",
     "artifact.write"
   ],
   "required_scopes": [
     "plugin.dispatch",
+    "plugin.view.read",
+    "plugin.view.write",
+    "plugin.ui_action",
     "artifact.read",
     "artifact.write"
   ],
@@ -64,7 +70,22 @@
   "view_descriptors": [
     {
       "view_ref": "scirel.review",
-      "open_operation": "scirel.review.open_item"
+      "open_operation": "scirel.review.open_item",
+      "reviewer_entry": {
+        "label": "SciRel review",
+        "intakes": [
+          {
+            "intake_ref": "scirel.import-l1",
+            "label": "Import L1 package",
+            "operation": "scirel.import_l1"
+          },
+          {
+            "intake_ref": "scirel.review-index",
+            "label": "Open review index",
+            "operation": "scirel.review.list_items"
+          }
+        ]
+      }
     }
   ]
 }

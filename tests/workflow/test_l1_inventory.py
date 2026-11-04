@@ -9,6 +9,52 @@ from scirel_plugin import execute_automated_check
 from scirel_workflow import CandidatePackage, build_inventory, build_project_inventory
 
 
+def test_inventory_accepts_code_anchors_without_formal_operator_document(tmp_path):
+    project = write_project(tmp_path)
+    (project / "operators/leaf/operator.md").unlink()
+    inventory = build_inventory(tmp_path)
+    assert inventory.gaps() == ()
+    assert inventory.projects[0].assets[0].contract_path is None
+
+
+def test_inventory_marks_empty_asset_tree_as_incomplete(tmp_path):
+    project = tmp_path / "empty"
+    project.mkdir()
+    for name in ("operators", "task_graphs"):
+        (project / name).mkdir()
+    for name in ("extraction_ledger.md", "program_framework_map.md"):
+        (project / name).write_text("record", encoding="utf-8")
+    inventory = build_inventory(tmp_path)
+    assert inventory.asset_count == 0
+    assert "empty: no_scientific_assets" in inventory.gaps()
+    assert any(check["status"] == "failed" for check in inventory.automated_checks())
+
+
+def test_inventory_accepts_standalone_c_operator_family(tmp_path):
+    project = tmp_path / "c_project"
+    operator = project / "operators/leaf"
+    operator.mkdir(parents=True)
+    for name in ("extraction_ledger.md", "program_framework_map.md"):
+        (project / name).write_text("record", encoding="utf-8")
+    for name in ("scientific_operator.c", "scientific_operator.h", "test_scientific_operator.c"):
+        (operator / name).write_text("/* source-backed asset */", encoding="utf-8")
+    inventory = build_inventory(tmp_path)
+    assert inventory.gaps() == ()
+    asset = inventory.projects[0].assets[0]
+    assert asset.implementation_path == "operators/leaf/scientific_operator.c"
+    assert asset.direct_test_path == "operators/leaf/test_scientific_operator.c"
+
+
+def test_inventory_rejects_empty_implementation_and_test(tmp_path):
+    project = write_project(tmp_path)
+    (project / "operators/leaf/scientific_operator.py").write_text("", encoding="utf-8")
+    (project / "operators/leaf/test_scientific_operator.py").write_text("", encoding="utf-8")
+    inventory = build_inventory(tmp_path)
+    checks = {check["name"]: check for check in inventory.automated_checks()}
+    assert checks["asset_records"]["status"] == "failed"
+    assert checks["direct_test_mapping"]["status"] == "failed"
+
+
 def write_asset(root: Path, kind: str, name: str, *, missing: set[str] | None = None) -> None:
     missing = missing or set()
     directory = root / ("operators" if kind == "operator" else "task_graphs") / name

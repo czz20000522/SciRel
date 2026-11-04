@@ -18,7 +18,7 @@ The snapshot contains:
 - `records/<prefix>/<asset-id>.json`: exact standardized documents; and
 - `reverse-dependencies/*.jsonl`: direct consumers used for impact and closure analysis.
 
-The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The pilot must remain `partial` with 14 included assets and 62 declared current assets.
+The v1 release schema is [`contracts/scientific-catalog-release.schema.json`](../../contracts/scientific-catalog-release.schema.json). An output directory must be new; a failed build cannot replace the previous snapshot. `coverage.status=complete` is valid only when included and declared totals match. The pilot must remain `partial` with 24 included assets and 71 declared current assets.
 
 The catalog does not participate in `import scirel` and does not import every module at startup. Exact runtime callable resolution occurs only after selection and must match the selected record's module, symbol, signature and implementation version. Exact content binding belongs to the enclosing catalog release, whose partition and root digests cover the record.
 
@@ -58,6 +58,8 @@ For execution, the adapter must own authentication, authorization, input seriali
 Codex and Claude Code can consume files directly or through MCP. A CLI can map the same operations to commands. A cloud batch adapter can resolve once, pin the wheel/catalog digests in a job specification, and execute in its managed environment. CodeFusion may add natural-language orchestration and product projections, but those are consumer behavior rather than SciRel catalog fields.
 
 The implemented development slice is the SDK-free core in the separate `scirel_adapter` package, with the request/response surface defined by the [thin MCP adapter contract](../requirements/thin-mcp-adapter.md). Keeping it outside the `scirel` runtime package prevents discovery from triggering SciRel's public scientific imports. It verifies a catalog release and partitions before serving operations, reads route/summary/document projections, resolves only a selected callable, and materializes JSON-compatible results. A production MCP server remains a separate transport and execution-policy layer.
+
+Result materialization preserves complex values as finite real/imaginary component pairs within the original array shape. The adapter performs this transport conversion after the selected scientific callable returns; it does not change that callable's result or infer a scientific quantity from the pair.
 
 ## Adapter compatibility
 

@@ -27,6 +27,7 @@
       "type": "array",
       "items": { "type": "object" }
     },
-    "release": { "type": ["object", "null"] }
+    "release": { "type": ["object", "null"] },
+    "no_change_submission": { "type": "object" }
   }
 }

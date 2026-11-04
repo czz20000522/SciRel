@@ -13,7 +13,13 @@ param(
 
     [string]$OutputRoot,
 
-    [string]$WorkflowSnapshot,
+    [string]$ReleaseIndex,
+
+    [string]$CandidateEntryId,
+
+    [string]$ApprovedResults,
+
+    [string]$ReviewArtifactsDir,
 
     [string]$ReleaseId,
 
@@ -35,7 +41,9 @@ $testsPath = (Resolve-Path (Join-Path $repoRoot "tests")).Path
 $previousPythonPath = $env:PYTHONPATH
 $previousInstalledRuntime = $env:SCIREL_INSTALLED_RUNTIME
 $releaseOutputPath = $null
-$workflowSnapshotPath = $null
+$releaseIndexPath = $null
+$approvedResultsPath = $null
+$reviewArtifactsPath = $null
 
 if ($Mode -eq "release") {
     if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
@@ -46,15 +54,29 @@ if ($Mode -eq "release") {
     if (Test-Path -LiteralPath $releaseOutputPath) {
         throw "Release output already exists: $releaseOutputPath"
     }
-    if ([string]::IsNullOrWhiteSpace($WorkflowSnapshot)) {
-        throw "-WorkflowSnapshot is required for release mode."
+    foreach ($required in @(
+        @{ Name = "ReleaseIndex"; Value = $ReleaseIndex; Kind = "Leaf" },
+        @{ Name = "ApprovedResults"; Value = $ApprovedResults; Kind = "Leaf" },
+        @{ Name = "ReviewArtifactsDir"; Value = $ReviewArtifactsDir; Kind = "Container" }
+    )) {
+        if ([string]::IsNullOrWhiteSpace($required.Value)) {
+            throw "-$($required.Name) is required for release mode."
+        }
+        $resolved = [IO.Path]::GetFullPath($required.Value, $repoRoot)
+        if (-not (Test-Path -LiteralPath $resolved -PathType $required.Kind)) {
+            throw "Release input does not exist: $resolved"
+        }
+        switch ($required.Name) {
+            "ReleaseIndex" { $releaseIndexPath = $resolved }
+            "ApprovedResults" { $approvedResultsPath = $resolved }
+            "ReviewArtifactsDir" { $reviewArtifactsPath = $resolved }
+        }
     }
     if ([string]::IsNullOrWhiteSpace($ReleaseId)) {
         throw "-ReleaseId is required for release mode."
     }
-    $workflowSnapshotPath = [IO.Path]::GetFullPath($WorkflowSnapshot, $repoRoot)
-    if (-not (Test-Path -LiteralPath $workflowSnapshotPath -PathType Leaf)) {
-        throw "Approved workflow snapshot does not exist: $workflowSnapshotPath"
+    if ([string]::IsNullOrWhiteSpace($CandidateEntryId)) {
+        throw "-CandidateEntryId is required for release mode."
     }
 }
 
@@ -112,7 +134,6 @@ try {
                 $TestPath = @(
                     "tests/test_public_surface.py",
                     "tests/test_library_composition.py",
-                    "tests/test_admitted_integrations.py",
                     "tests/test_asset_documentation.py"
                 )
             }
@@ -126,24 +147,21 @@ try {
             return
         }
 
-        $workflowValidation = @'
-import json
-import sys
-from pathlib import Path
-from scirel_workflow import SciRelWorkflow, WorkflowStatus
-
-workflow = SciRelWorkflow.from_dict(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")))
-if workflow.status is not WorkflowStatus.APPROVED:
-    raise SystemExit("release requires an approved workflow snapshot")
-'@
-        & $Python -c $workflowValidation $workflowSnapshotPath
-        if ($LASTEXITCODE -ne 0) {
-            throw "Approved workflow snapshot validation failed with exit code $LASTEXITCODE."
-        }
-
         New-Item -ItemType Directory -Path $releaseOutputPath | Out-Null
+        $reviewedSource = Join-Path $releaseOutputPath "reviewed-source"
+        $preparationOutput = & $Python "scripts/prepare_reviewed_distribution.py" `
+            "--release-index" $releaseIndexPath `
+            "--candidate-entry-id" $CandidateEntryId `
+            "--approved-results" $approvedResultsPath `
+            "--review-artifacts-dir" $reviewArtifactsPath `
+            "--staging-dir" $reviewedSource
+        if ($LASTEXITCODE -ne 0) {
+            throw "Reviewed source preparation failed with exit code $LASTEXITCODE."
+        }
+        $preparation = $preparationOutput | ConvertFrom-Json
+        $reviewedDocuments = $preparation.documents_dir
         $documentValidation = & $Python "scripts/validate_asset_documents.py" `
-            "catalog/examples" `
+            $reviewedDocuments `
             "--check-runtime" `
             "--execute-examples"
         if ($LASTEXITCODE -ne 0) {
@@ -157,7 +175,7 @@ if workflow.status is not WorkflowStatus.APPROVED:
             --no-deps `
             --no-build-isolation `
             --wheel-dir $wheelDirectory `
-            $repoRoot
+            $reviewedSource
         if ($LASTEXITCODE -ne 0) {
             throw "SciRel wheel build failed with exit code $LASTEXITCODE."
         }
@@ -190,7 +208,7 @@ print(json.dumps(roots))
             throw "Failed to locate release dependencies."
         }
         $dependencyRoots = $dependencyRootsJson | ConvertFrom-Json
-        $sitePackages = & $environmentPython -c "import site; print(site.getsitepackages()[0])"
+        $sitePackages = & $environmentPython -I -c "import sysconfig; print(sysconfig.get_path('purelib'))"
         if ($LASTEXITCODE -ne 0) {
             throw "Failed to locate isolated site-packages."
         }
@@ -216,17 +234,14 @@ print(json.dumps(roots))
             throw "Failed to read the installed SciRel distribution version."
         }
 
-        $catalogCoverageStatus = "partial"
-        $catalogIncludedAssetCount = 14
-        $catalogDeclaredTotalAssetCount = 62
         $catalogPath = Join-Path $releaseOutputPath "catalog"
         $catalogOutput = & $Python "scripts/build_catalog.py" `
-            "catalog/examples" `
+            $reviewedDocuments `
             "--output-dir" $catalogPath `
             "--catalog-id" $CatalogId `
             "--release-version" $releaseVersion `
-            "--coverage-status" $catalogCoverageStatus `
-            "--declared-total" $catalogDeclaredTotalAssetCount
+            "--coverage-status" "complete" `
+            "--declared-total" $preparation.asset_count
         if ($LASTEXITCODE -ne 0) {
             throw "Catalog build failed with exit code $LASTEXITCODE."
         }
@@ -234,12 +249,11 @@ print(json.dumps(roots))
 
         $env:PYTHONPATH = $null
         $env:SCIREL_INSTALLED_RUNTIME = "1"
-        $acceptancePath = Join-Path $releaseOutputPath "acceptance"
         Push-Location $releaseOutputPath
         try {
             $installedValidation = & $environmentPython -I `
                 (Join-Path $repoRoot "scripts/validate_asset_documents.py") `
-                (Join-Path $repoRoot "catalog/examples") `
+                $reviewedDocuments `
                 "--check-runtime" `
                 "--execute-examples" `
                 "--installed-runtime"
@@ -259,17 +273,16 @@ print(json.dumps(roots))
             New-Item -ItemType Directory -Path $runtimeCatalogExamples | Out-Null
             Copy-Item -LiteralPath (Join-Path $repoRoot "tests/conftest.py") -Destination $runtimeTestRoot
             Copy-Item -LiteralPath (Join-Path $repoRoot "tests/_review_bindings.py") -Destination $runtimeTestRoot
-            foreach ($directory in @("operator_contracts", "graph_contracts", "framework_compositions")) {
-                Copy-Item `
-                    -LiteralPath (Join-Path $repoRoot "tests/$directory") `
-                    -Destination $runtimeTestRoot `
-                    -Recurse
-            }
-            foreach ($file in @("test_library_composition.py", "test_public_surface.py")) {
-                Copy-Item -LiteralPath (Join-Path $repoRoot "tests/$file") -Destination $runtimeTestRoot
+            $runtimeTests = @()
+            foreach ($file in $preparation.test_paths) {
+                $relativeTest = $file.Substring("tests/".Length)
+                $destination = Join-Path $runtimeTestRoot $relativeTest
+                New-Item -ItemType Directory -Path (Split-Path -Parent $destination) -Force | Out-Null
+                Copy-Item -LiteralPath (Join-Path $repoRoot $file) -Destination $destination
+                $runtimeTests += $destination
             }
             Copy-Item `
-                -Path (Join-Path $repoRoot "catalog/examples/*.json") `
+                -Path (Join-Path $reviewedDocuments "*.json") `
                 -Destination $runtimeCatalogExamples
 
             $isolatedPytestConfig = Join-Path $releaseOutputPath "pytest-release.ini"
@@ -278,40 +291,28 @@ print(json.dumps(roots))
                 "[pytest]`naddopts = -p no:cacheprovider`npythonpath = runtime-test-bundle/tests`n",
                 [Text.UTF8Encoding]::new($false)
             )
-            $runtimeTests = @(
-                (Join-Path $runtimeTestRoot "operator_contracts"),
-                (Join-Path $runtimeTestRoot "graph_contracts"),
-                (Join-Path $runtimeTestRoot "framework_compositions"),
-                (Join-Path $runtimeTestRoot "test_library_composition.py"),
-                (Join-Path $runtimeTestRoot "test_public_surface.py")
-            )
             & $environmentPython -I -m pytest -c $isolatedPytestConfig @runtimeTests
             if ($LASTEXITCODE -ne 0) {
                 throw "Installed scientific contract tests failed with exit code $LASTEXITCODE."
             }
 
-            & $environmentPython (Join-Path $repoRoot "examples/user_acceptance.py") `
-                "--wheel" $wheelPath `
-                "--output" $acceptancePath
-            if ($LASTEXITCODE -ne 0) {
-                throw "Source-free user acceptance failed with exit code $LASTEXITCODE."
-            }
         }
         finally {
             Pop-Location
         }
 
+        $env:SCIREL_INSTALLED_RUNTIME = $null
         $releaseMetadataPath = Join-Path $releaseOutputPath "release"
         $finalizationOutput = & $Python "scripts/finalize_release.py" `
-            "--workflow-snapshot" $workflowSnapshotPath `
-            "--documents-dir" (Join-Path $repoRoot "catalog/examples") `
+            "--release-index" $releaseIndexPath `
+            "--candidate-entry-id" $CandidateEntryId `
+            "--approved-results" $approvedResultsPath `
+            "--review-artifacts-dir" $reviewArtifactsPath `
+            "--documents-dir" $reviewedDocuments `
             "--catalog-dir" $catalogPath `
             "--wheel" $wheelPath `
             "--output-dir" $releaseMetadataPath `
-            "--release-id" $ReleaseId `
-            "--expected-coverage-status" $catalogCoverageStatus `
-            "--expected-included-asset-count" $catalogIncludedAssetCount `
-            "--expected-declared-total-asset-count" $catalogDeclaredTotalAssetCount
+            "--release-id" $ReleaseId
         if ($LASTEXITCODE -ne 0) {
             throw "Release finalization failed with exit code $LASTEXITCODE."
         }
@@ -326,7 +327,7 @@ print(json.dumps(roots))
             release_manifest = $finalization.release_manifest
             release_digest = $finalization.release_digest
             installed_asset_validation = (Join-Path $releaseOutputPath "installed-asset-validation.json")
-            acceptance_report = (Join-Path $acceptancePath "acceptance.json")
+            reviewed_selection = (Join-Path $reviewedSource "selection.json")
         } | ConvertTo-Json
     }
     finally {

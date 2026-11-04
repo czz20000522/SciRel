@@ -26,6 +26,23 @@ def test_axis_rule_and_mask_shape_are_enforced():
         scientific_operator(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2, np.ones((2, 2), dtype=bool))
 
 
+def test_mask_affects_diagnostic_only_and_invalid_fields_fail():
+    r_grid, z_grid = _grid()
+    br = np.zeros_like(r_grid)
+    bz = np.ones_like(r_grid)
+    pressure = 2.0 + z_grid
+    all_cells = scientific_operator(r_grid, z_grid, br, bz, pressure, pressure)
+    no_cells = scientific_operator(r_grid, z_grid, br, bz, pressure, pressure, active_mask=np.zeros_like(r_grid, dtype=bool))
+    np.testing.assert_array_equal(no_cells["J_phi"], all_cells["J_phi"])
+    assert no_cells["parallel_force_error"] == 0.0
+    assert all_cells["parallel_force_error"] > 0.0
+
+    with pytest.raises(ValueError, match="grid axes and pressures"):
+        scientific_operator(r_grid, z_grid, br, bz, -pressure, pressure)
+    with pytest.raises(ValueError, match="finite same-shape"):
+        scientific_operator(r_grid, z_grid, br, np.full_like(bz, np.nan), pressure, pressure)
+
+
 def test_source_hypot_preserves_finite_subnormal_and_large_results():
     result = _source_hypot(np.array([1.0e-308, 1.0e308]), np.array([1.0e-308, 1.0e308]))
     assert result[0] != 0.0

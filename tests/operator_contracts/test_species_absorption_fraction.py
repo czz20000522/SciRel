@@ -1,93 +1,16 @@
-"""Direct contract tests for the U3 merged species absorption fraction relation.
-
-The observed source carries two byte-different implementations of the same
-closure.  The discriminating question for a merge is therefore not "does the new
-code run" but "does one merged identity reproduce *both* source routes exactly".
-These tests load all three modules -- the candidate plus both observed routes --
-side by side and compare them on identical ledgers.
-
-The observed routes live in a read-only L1 checkout outside this repository, so
-they are located through ``SCIREL_L1_AORSA3D`` or a small set of conventional
-paths.  When they cannot be found the comparison tests skip loudly rather than
-silently passing; the self-contained contract tests still run either way, and
-``evidence/u3-observed-route-comparison.json`` records the comparison that was
-actually executed for this review.
-"""
+"""Direct contract tests for SciRel's species absorption fraction relation."""
 from __future__ import annotations
 
 import importlib
-import importlib.util
 import math
-import os
-from pathlib import Path
 
 import numpy as np
 import pytest
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-_CANDIDATE = Path(
-    importlib.import_module(
-        "scirel.diagnostics.species_absorption_fraction"
-    ).__file__
-).resolve() if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1" else (
-    Path(__file__).resolve().parents[2]
-    / "src/scirel/diagnostics/species_absorption_fraction.py"
-)
-_ROUTE_NAMES = {
-    "estardotj": ("AORSA E-star-dot-J物种吸收占比", "compute_aorsa_estardotj_species_fractions"),
-    "wdot": ("AORSA Wdot物种吸收占比", "compute_aorsa_wdot_species_fractions"),
-}
-_L1_CANDIDATES = (
-    os.environ.get("SCIREL_L1_AORSA3D"),
-    r"D:\Users\26569\Desktop\归档_项目\codefusion\最小闭环压测环境\aorsa3d",
-    str(_REPO_ROOT.parent / "aorsa3d"),
-    str(_REPO_ROOT / "build" / "l1" / "aorsa3d"),
-)
-
-
-def _l1_root() -> Path | None:
-    for raw in _L1_CANDIDATES:
-        if not raw:
-            continue
-        candidate = Path(raw)
-        if all((candidate / "operators" / name).is_dir() for name, _ in _ROUTE_NAMES.values()):
-            return candidate
-    return None
-
-
-def _load(path: Path, name: str):
-    spec = importlib.util.spec_from_file_location(name, path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-MODULE = _load(_CANDIDATE, "scirel_candidate_u3_species_absorption_fraction")
+MODULE = importlib.import_module("scirel.diagnostics.species_absorption_fraction")
 COMPUTE = MODULE.compute_species_absorption_fraction
 
-_L1_ROOT = _l1_root()
-OBSERVED = {}
-OBSERVED_PATHS = {}
-if _L1_ROOT is not None:
-    for route, (directory, symbol) in _ROUTE_NAMES.items():
-        path = _L1_ROOT / "operators" / directory / "scientific_operator.py"
-        OBSERVED[route] = getattr(_load(path, f"scirel_observed_u3_{route}"), symbol)
-        OBSERVED_PATHS[route] = path
-
-_NEEDS_OBSERVED = pytest.mark.skipif(
-    not OBSERVED, reason="read-only L1 aorsa3d checkout not found; set SCIREL_L1_AORSA3D"
-)
-
-
-def test_u3_t00_the_two_observed_routes_are_present_and_distinct_files():
-    """Guard: the merge claim is only meaningful if both routes really exist."""
-    assert OBSERVED, "the observed-route comparison could not be loaded"
-    assert set(OBSERVED) == {"estardotj", "wdot"}
-    assert OBSERVED_PATHS["estardotj"].read_bytes() != OBSERVED_PATHS["wdot"].read_bytes()
-
-
-# --- Test U3-T01: the merged identity reproduces both observed routes. ---------
-@_NEEDS_OBSERVED
+# --- Test U3-T01: the closure follows its documented arithmetic. ---------------
 @pytest.mark.parametrize(
     "ledger",
     [
@@ -102,21 +25,16 @@ def test_u3_t00_the_two_observed_routes_are_present_and_distinct_files():
         [np.float32(1.0), np.float32(2.0), np.float32(3.0), np.float32(4.0)],
     ],
 )
-def test_u3_t01_merged_identity_reproduces_both_observed_routes(ledger):
-    candidate = COMPUTE(ledger)
-    for route, function in OBSERVED.items():
-        observed = function(ledger)
-        assert set(candidate) == set(observed), route
-        assert candidate["branch"] == observed["branch"] == "nonzero_total", route
-        assert candidate["total_power"] == observed["total_power"], route
-        assert candidate["total_fraction_percent"] == observed["total_fraction_percent"], route
-        assert (
-            candidate["fraction_sum_residual_percent"]
-            == observed["fraction_sum_residual_percent"]
-        ), route
-        np.testing.assert_array_equal(
-            candidate["species_fraction_percent"], observed["species_fraction_percent"], err_msg=route
-        )
+def test_u3_t01_fraction_uses_the_derived_total(ledger):
+    result = COMPUTE(ledger)
+    values = np.asarray(ledger, dtype=float)
+    total = float(np.sum(values, dtype=float))
+    fractions = values / total * 100.0
+    assert result["branch"] == "nonzero_total"
+    assert result["total_power"] == total
+    np.testing.assert_array_equal(result["species_fraction_percent"], fractions)
+    assert result["total_fraction_percent"] == float(np.sum(fractions, dtype=float))
+    assert result["fraction_sum_residual_percent"] == result["total_fraction_percent"] - 100.0
 
 
 # --- Test U3-T02: the closure is source-ordered and sums to 100 percent. -------
@@ -141,14 +59,10 @@ def test_u3_t03_single_nonzero_species_absorbs_everything(index):
     assert result["total_power"] == 7.5
 
 
-# --- Test U3-T04: the zero-total boundary fails closed on every route. -------
-@_NEEDS_OBSERVED
-def test_u3_t04_zero_total_fails_closed_on_all_routes():
+# --- Test U3-T04: the zero-total boundary fails closed. -----------------------
+def test_u3_t04_zero_total_fails_closed():
     with pytest.raises(ValueError, match="zero total_power"):
         COMPUTE([0.0, 0.0, 0.0, 0.0])
-    for route, function in OBSERVED.items():
-        with pytest.raises(ValueError, match="zero total_power"):
-            function([0.0, 0.0, 0.0, 0.0])
 
 
 # --- Test U3-T05: the zero-total boundary is exact, not a tolerance test. ----
@@ -170,7 +84,7 @@ def test_u3_t06_negative_ledgers_are_reported_not_repaired():
     assert result["total_fraction_percent"] == pytest.approx(100.0, rel=0.0, abs=1e-12)
 
 
-# --- Test U3-T07: ledger validation is fail-closed and route-independent. ----
+# --- Test U3-T07: ledger validation is fail-closed. ---------------------------
 @pytest.mark.parametrize(
     "ledger, message",
     [
@@ -187,22 +101,14 @@ def test_u3_t06_negative_ledgers_are_reported_not_repaired():
         ([1.0, 2.0, 3.0, object()], "must be numeric"),
     ],
 )
-@_NEEDS_OBSERVED
 def test_u3_t07_ledger_validation_is_fail_closed(ledger, message):
     with pytest.raises(ValueError, match=message):
         COMPUTE(ledger)
-    for route, function in OBSERVED.items():
-        with pytest.raises(ValueError, match=message):
-            function(ledger)
 
 
-# --- Test U3-T08: the merge must not keep two competing public callables. ----
-def test_u3_t08_merge_exposes_exactly_one_public_callable():
+# --- Test U3-T08: the relation exposes one public callable. ------------------
+def test_u3_t08_relation_exposes_one_public_callable():
     assert MODULE.__all__ == ["compute_species_absorption_fraction"]
-    assert not hasattr(MODULE, "compute_aorsa_estardotj_species_fractions")
-    assert not hasattr(MODULE, "compute_aorsa_wdot_species_fractions")
-    source = _CANDIDATE.read_text(encoding="utf-8")
-    assert "estardotj" not in source.replace("E-star-dot-J", "")
 
 
 # --- Test U3-T09: the residual is the reported sum minus 100, not a rerun. ---

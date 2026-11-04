@@ -30,7 +30,7 @@ The coordinator continuously performs these actions:
 4. assign an item to one owner or claim it locally;
 5. review and integrate a handoff against the current dependency revisions;
 6. freeze each complete candidate into project staging; and
-7. declare extraction complete only after the declared project scope reaches `full_freeze`.
+7. declare extraction complete only after the declared project scope reaches `full_freeze` with source comparison.
 
 ## Pipeline queue
 
@@ -41,7 +41,7 @@ Useful work-item kinds include:
 - operator contract and source-free implementation;
 - source-fidelity and relation-sensitive extraction checks;
 - TaskGraph composition after exact dependencies are ready;
-- contract or root-document drafting from already confirmed scientific facts; and
+- recovery of missing semantic anchors, or final concise root-summary derivation from stable evidence; and
 - integration or repair of a named candidate/edge.
 
 An item moves through the states appropriate to its kind:
@@ -74,8 +74,9 @@ Do not assign broad ownership such as "all operators" when a scientific relation
 named. Discovery workers are normally read-only. Candidate workers write private staging paths. Only the
 coordinator changes the live bundle, project map, ledger, aggregate progress, current digests, or lifecycle signal.
 For parallel regions, name the target outputs, source anchors, dependencies, and expected handoff separately so
-overlapping physics is reconciled once by the coordinator. A document worker may prepare a private draft from a
-confirmed contract or validated snapshot; it may not infer missing physics or edit the shared root report.
+overlapping physics is reconciled once by the coordinator. A worker may fill a missing scientific anchor in code
+comments or summarize stable evidence privately; it may not infer missing physics or edit shared records. Formal
+asset-page drafting is routed to the later D2/final-review preparation stage after deduplication and assembly.
 
 Shared reads are part of the ownership contract. Allowlist the frozen source and only the exact frozen references
 needed by the item; exclude coordinator state, unrelated lanes, and aggregate evidence. Candidate workers may
@@ -133,6 +134,11 @@ Reuse unchanged, digest-bound source probes, frozen candidate evidence, and prio
 inputs, runtime conditions, claim, and consumer still match. A source, contract, dependency, or implementation
 change invalidates its affected slice and downstream consumers, not every unrelated region. Reuse never turns a
 canonical case into an independently sealed holdout or bypasses a required final whole-bundle gate.
+An attributable computation with a failed path, assertion, format, digest, or handoff wrapper remains failed as
+an attempt. Check its code, inputs, outputs, and runtime conditions independently; preserve the old evidence and
+add a traceable correction if science still corresponds. Rerun only the affected cheap comparison or gate, not
+the scientific computation. If correspondence is unproved or science changed, rerun the affected computation.
+This repair can close a mechanical freeze blocker but cannot waive source-wide scientific validation.
 
 An accepted implementation handoff is not automatically a staged candidate. Freeze a candidate only after its scientific
 contract, source-free callable, dependency closure, provenance, targeted evidence, and claim ceiling agree in one

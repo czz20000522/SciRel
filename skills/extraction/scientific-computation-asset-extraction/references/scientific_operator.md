@@ -4,7 +4,13 @@
 
 First principle: extracted assets are the source-backed scientific capabilities that a production system can reconfigure, reinitialize, and recompose. They are not a copy of the source program's default run shell. Treat case-specific initialization, file layouts, concrete benchmark values, and representation adapters as configuration or glue unless they encode source-specific scientific or numerical semantics.
 
-A `scientific_relation` is a source- or document-evidenced semantic/model-layer asset. It names a stable governing equation, closure law, diagnostic definition, state transition family, model family, or scientific constraint. It does not execute. It should record variables or state, assumptions, applicability, known directions, evidence, and links to implementing operators or task graphs when they exist.
+A `scientific_relation` is a source- or document-evidenced semantic/model concept: governing equations, a closure
+law, diagnostic definition, state transition family, model family or scientific constraint. It may be implicit,
+coupled, differential or integral; it does not execute. Preserve variables/state, assumptions, applicability,
+known directions and evidence in existing scientific anchors; this concept does not require another asset package.
+An operator is an executable realization of a directed mapping, not the relation itself. "Minimal" is relative to
+source scope and required recomposition, not a unique physical atom. Apply the
+[boundary criteria and examples](asset_projection_decision_manual.md#scientific-relation-and-boundary-meaning).
 
 A scientific_operator is a governed, reusable, implementation-backed scientific computation identity.
 
@@ -21,7 +27,13 @@ It must have:
 - an executable implementation draft
 - validation checks that prove behavior rather than file shape
 
-A scientific_operator implements one direction of a scientific relation. It is not merely a relation description, source function, helper, wrapper, workflow label, utility transform, file IO helper, plot helper, notebook cell, API adapter, broad research task, or review decision. A stable numerical calculation alone does not qualify: a one-line `abs`/real-or-imaginary-part extraction, special-function invocation, scalar scale, cache lookup, loop helper, or local array transform has no independent scientific handoff and must remain internal to the nearest operator that owns the complete directed scientific mapping. Do not manufacture an asset only to make a graph structurally formula-free.
+A scientific_operator implements one complete directed scientific mapping. It may contain multiple equations or
+numerical steps and return a vector, coupled state or result with companion diagnostics. It is not merely a source
+function, helper, wrapper, workflow label, IO/plot helper, notebook cell, API adapter or review decision. An `abs`,
+component extraction, special-function call, scale or array transform does not qualify solely because it runs or
+has a test; without an independent scientific contract it stays inside the operator owning the complete mapping.
+Conversely, a one-line source-backed named observable/rate can qualify under the same boundary criteria. Do not
+manufacture an asset only to make a graph structurally formula-free.
 
 A `scientific_task_graph` is a governed, reusable, implementation-backed composite scientific computation identity. From the outside it is a black-box capability with explicit inputs and outputs; from the inside it expands into `scientific_operator` nodes, nested task graphs, IO/config actions, support actions, diagnostics, controlled glue, state-contract nodes, and evidence-bounded gaps. This skill may emit task-graph candidate packages only when the composite boundary is stable, source-backed, callable, and testable. A candidate graph contract or standard-case oracle harness may support discovery and validation, but it must stay in the report or validation evidence until a callable entrypoint computes, dispatches, or safely wraps the composite behavior. Do not collapse a task graph into one operator merely because it is meaningful, and do not split a framework node below the point where the scientific mapping disappears. Do not flatten a nested task graph by default when the child graph has a stable reusable identity; preserve it as a node and expose the expansion through `task_graph.yaml`.
 
@@ -190,12 +202,12 @@ Use the smallest package set that preserves real scientific identities without m
 
 Whole-project extraction should not start by deciding which few routines are easiest to package. Start broad, then go deep.
 
-Before candidate census, whole-project extraction must produce `program_framework_map.md`. The map is the stable
-project-level decomposition used to make later LLM outputs less random. It contains a Level 0 Physics Mermaid as a
-domain-expert readable projection for downstream review and a Level 1 source-anchored map with node ledger, edge ledger,
-ledger-derived Mermaid, split decisions, and standard-case fixture plan. The producer generates Level 0 automatically;
-it is not an expert-in-the-loop checkpoint. Level 1 drives candidate selection.
-Neither diagram proves operator identity by itself; source evidence, node/edge ledgers, and the operator definition do.
+Build the source-backed framework understanding while forming the candidate census. Reuse code/YAML and current
+records for physical capabilities, nodes/edges, source/state anchors, split decisions and validation targets;
+neither `program_framework_map.md` nor a Mermaid diagram is a prerequisite to discovery or implementation.
+The Level 0 physical overview and Level 1 source map can be projected from those facts for final handoff.
+This is not an expert-in-the-loop checkpoint. Source evidence and scientific boundary criteria establish operator
+identity; a diagram or a particular record layout cannot establish it.
 
 The broad pass builds a code-structure map and candidate census:
 
@@ -217,7 +229,7 @@ The deep pass is iterative:
 2. extract its source evidence and stable input/output contract;
 3. implement one operator or task-graph candidate package;
 4. run tests and source parity or blocker analysis;
-5. update the engineering ledger, validation matrix, and executive report summary before continuing.
+5. update the existing candidate/validation anchors and minimal resume notes; derive the root summary at handoff.
 
 Do not generate all packages in one unverified burst. The iteration may take multiple internal passes or turns, but whole-project delivery is complete only when the census has been exhausted: every extractor-accepted candidate has an emitted package, and every non-emitted candidate is merged, downgraded, rejected, rework-only, or blocked for a concrete evidence/runtime reason. A final-extraction backlog is not a parking lot for "not done yet" work. Rework-only or blocked task graphs are report entries, not `task_graphs/` packages.
 
@@ -233,11 +245,12 @@ Before a `final_extraction` claim, run an omission sweep from the program framew
 
 ## Operator Selection Invariants
 
-Treat these as the general extraction law. Concrete project outcomes should be explained as consequences of these invariants, not as rules in themselves.
+Apply these criteria within the declared source scope and required recomposition. Concrete project outcomes do
+not establish a universal package granularity.
 
 - Scientific centrality: prefer computations that carry the source family's primary scientific transformation from inputs/state to scientifically meaningful outputs. Helpers that merely supply constants, table values, formatting, or plumbing are subordinate unless the source family is itself a coefficient library.
-- Framework-node fitness: prefer boundaries that are anchored in `program_framework_map.md`, can become reusable capability nodes with explicit scientific inputs, explicit outputs, artifact-like data handoff, downstream consumption value, and validation checks that let another workflow call, replace, or compose the computation without running the full original application.
-- Irreducible identity: choose the smallest boundary that preserves the named physical quantity, governing equation term, residual, source/transport contribution, diagnostic response, or solver step. Do not split below the level where the scientific meaning disappears; do not merge beyond the level where independent review, testing, or reuse is lost.
+- Framework-node fitness: prefer boundaries anchored in the source-backed framework records, with explicit scientific inputs/outputs, downstream consumption value and validation that permits independent calling, replacement or composition without the full original application. The record need not be a separate Markdown document.
+- Coherent scientific boundary: preserve a complete directed mapping and any internal subcomputation that needs its own source-backed scientific contract. Do not split vector components or algebraic fragments merely to claim minimality; do not merge independent scientific capabilities whose required composition would be lost. Equivalent granularity choices are not missing physics.
 - Nested graph composability: when several accepted operators or task graphs form a stable larger mapping, treat the larger mapping as a candidate task graph rather than leaving composition only as prose. Its nodes may stay nested; the package should expose black-box reuse first and expansion second.
 - Framework edge closure: when a high-value framework edge moves scientific state, coefficients, residual terms, rows, indices, boundary selections, or diagnostics between nodes, the edge itself needs a closure decision. It may be implemented by an emitted asset, controlled internal glue/kernel inside a task graph, post-extraction AI-completable glue from emitted contracts, configuration demand, validation-only need, terminal non-emitted decision, or extraction gap. Endpoint node packages do not prove the edge is covered.
 - AI-completable glue boundary: do not emit a standalone asset for generic code an LLM can reasonably recreate without source-specific scientific evidence, such as ordinary IO, parsing, format conversion, array reshaping, loop scheduling, error handling, or DAG dispatch. Keep it as controlled completion inside the nearest task graph or adapter.
@@ -270,7 +283,12 @@ Not safely AI-completable without source evidence:
 
 Short code can still be emitted when it locks down a source-specific scientific or numerical convention. The package or ledger must say why the candidate is not merely generic glue. Examples of valid reasons include a named physical quantity, a source-local normalization, a grid or timestep convention consumed by a solver, a boundary rule, a diagnostic contract, or a reusable task-graph node whose behavior reviewers must verify.
 
-Do not block a task graph only because its missing pieces are AI-completable glue or generic numerical infrastructure. Supply those pieces as controlled completion and record the boundary. Coupling through common blocks, callbacks, file formats, external ODE solvers, or interpolation helpers is a reason to explicitize state, not a terminal blocker. A finite source-backed loop, branch table, index map, row emitter, or scatter/gather transform that is too local to be a standalone asset can live as an internal computational kernel inside the nearest task graph. Block only when the missing piece is scientific semantics, source-specific numerical behavior, source data/state needed by the equation, a validation oracle, or implementation evidence that the agent cannot infer safely.
+Do not block a task graph only because its missing pieces are controlled glue. Supply the permitted adapters and
+make state explicit. Generic numerical infrastructure belongs inside the operator that owns its scientific
+mapping; it need not become another scientific asset. A source-specific loop, row emitter or scatter/gather rule
+that performs scientific computation likewise belongs in that complete operator, or in independently meaningful
+nodes if their coordination is a TaskGraph. Do not hide it in graph glue or invent a helper operator to satisfy
+graph purity. Missing scientific semantics, source state or validation evidence remains a substantive gap.
 
 If the future agent could not recreate the behavior from the extracted package and sidecars, either materialize it as controlled completion inside the package, emit it as an operator or internal task-graph node, merge it into a larger accepted task graph, or record an evidence-bounded gap. Do not downgrade it to glue merely because the extractor or gap-completion skill can infer it from source context.
 
@@ -489,10 +507,15 @@ Use when evidence is too weak, the candidate is only glue, or the proposed opera
 
 ## Candidate Operator Packages
 
-Create `operator.md` plus language-profile implementation/test artifacts only for implementation-backed candidates that pass all extraction-eligibility gates:
+Create language-profile implementation/test artifacts only for source-backed candidates that pass all
+extraction-eligibility gates. Necessary science is anchored in code, YAML, docstrings and existing evidence;
+D1 does not require `operator.md`. Formal pages are generated after D2 deduplication, correction and assembly,
+only for retained new/changed assets before final review freeze. See [stage boundaries](stage_boundary_contract.md).
+A documentation correction alone does not rerun science when code, inputs and relevant environment remain
+attributable and unchanged; preserve old observations and repair the affected binding or comparison.
 
 - the candidate maps to a concrete source path, symbol, line range, or cohesive source routine;
-- the reviewer artifact explains strong physical semantics, scientific role, and physical relevance;
+- the delivered scientific anchors make physical semantics, scientific role and physical relevance explicit;
 - the candidate has stable typed inputs and outputs with machine-readable ASCII identifiers;
 - the candidate has independent scientific computation meaning beyond utility glue;
 - the implementation artifact is an implementation-backed extraction or adaptation whose behavior is proven by its own executed tests;
@@ -512,7 +535,7 @@ Controlled completion can help pass the implementation standard gate only when t
 
 ## Project-Level Extraction Report
 
-A whole-project or source-snapshot extraction is incomplete without candidate asset packages for every package-worthy operator or task-graph candidate and a report outside the asset package directories. Use `extraction_report_template.md`.
+A complete whole-project extraction accounts for every source-backed capability with candidates or evidence-based dispositions, plus a concise handoff summary outside asset directories. Reuse exact source-coverage and validation records; do not maintain duplicate narrative tables during implementation. Use `extraction_report_template.md` only at handoff.
 
 Report granularity follows the accountability boundary of the extraction universe:
 
@@ -530,7 +553,7 @@ The report must cover:
 - source execution attempts, oracle choice, and numerical metrics or blockers.
 - extraction completion status: complete only when no package-worthy candidate remains merely unprocessed.
 
-The report is a global sidecar artifact. It is not a replacement for `operator.md`, implementation files, or tests; not a gap note inside the operator package root; and not a place to invent system-owned lifecycle metadata. A report-only or candidate-map-only run is discovery/partial output unless the user explicitly requested that phase.
+The report is a global sidecar artifact. It does not replace scientific anchors, implementation files or tests; not a gap note inside the operator package root; and not a place to invent system-owned lifecycle metadata. A report-only or candidate-map-only run is discovery/partial output unless the user explicitly requested that phase.
 
 ## Required Operator Package Content
 
@@ -551,11 +574,9 @@ requiring the reader to know its source program, PFM node, or task-graph parents
 - controlled-completion notes under boundaries only for supplementation, non-obvious numerical choices, or reviewer-relevant limitations
 - for controlled completions, the source-backed core, each Agent-supplemented repair, where the supplement appears, why it was needed, and any physics or data the agent explicitly did not infer
 
-Do not include these headings in `operator.md`: `Admission Classification`, `Operator Source`, `Source Scenario`, `Source Path`, `Evidence Chunk IDs`, `Self-Test Evidence`, or `Gaps`.
-
-Also do not use legacy extraction-report headings in `operator.md`, including `Admission`, `Scientific Intent`, `Evidence`, `Numerical Contract`, or `Implementation`.
-
-Use `assets/artifact_template_pack/` as the only fill-in shape for `operator.md` and `task_graph.md`. Use `operator_templates.md` only for writing guidance and test evidence headers, and `language_profiles.md` to select implementation/test file names.
+Keep D1 workflow dispositions in project records, not in the callable's scientific definition. Use
+[documentation routing](operator_templates.md) for the later formal document and
+[language profiles](language_profiles.md) for implementation/test files. No D1 gate depends on page headings.
 
 ## Evidence References
 
@@ -599,11 +620,12 @@ The test artifact must not stop at:
 - docstring exists
 - `assert True`
 
-`operator.md` should record validation intent in its single-language `Validation and Source Basis` / `验证与溯源` section; latest executed command/result and source-comparison status belong only in the top comments of the test artifact.
+Record validation intent with the test or existing scientific anchor; bind executed commands, source identity,
+actual per-output metrics and runtime conditions in the existing evidence record. Do not duplicate these facts
+in a mandatory test-header format or an extra Markdown page. Use `direct_source_runnable` when the test actually
+imports, compiles or subprocess-runs source and compares candidate values; compiled parity needs no new token.
 
-Use `direct_source_runnable` in the test header whenever the test imports, compiles, or subprocess-runs the source and compares candidate values. Describe compile/run details in `对照依据`, `命令`, and `运行环境`; do not create new status tokens for compiled parity.
-
-If direct parity only covers a source-runnable subdomain because the original source crashes or is undefined on another path, do not invent a new source status. Keep `direct_source_runnable` only when the source is actually run, state the subdomain in `对照依据`, document the repair under `Boundaries / 边界`, and test the repaired path separately.
+If direct parity only covers a source-runnable subdomain because the original source crashes or is undefined on another path, do not invent a new source status. Keep `direct_source_runnable` only when the source is actually run, state the subdomain and correction in the scientific/evidence anchor, and test the repaired path separately.
 
 ## Hard Reject Rules
 

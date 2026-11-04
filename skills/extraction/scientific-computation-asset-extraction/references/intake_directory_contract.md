@@ -1,94 +1,70 @@
 # ImportIntake Directory Contract
 
-`assets/artifact_template_pack/` defines the only package layout, file names, and heading order.
-This document defines how that layout becomes a structurally valid extraction bundle. Do not create another template from it.
+This is the D1 callable-package layout. The [stage boundary](stage_boundary_contract.md) owns the scientific
+handoff; [artifact templates](artifact_template_pack.md) illustrate this layout without adding document gates.
 
-## Callable Units
+## Callable units and minimum layout
 
-Only callable assets freeze as independent package units:
-
-- an `operator` is an atomic reusable scientific or numerical mapping;
-- a `TaskGraph` is a composite callable asset whose YAML binds exact operators or nested TaskGraphs.
-
-Both have a complete black-box contract. A TaskGraph remains distinct from an operator because it owns ordered
-composition and exact dependency bindings, but a source-free consumer may invoke either through the same
-callable-asset surface.
-
-## Project Context
-
-For project extraction, these root files are immutable project context:
-
-```text
-program_framework_map.md
-extraction_report.md
-extraction_ledger.md
-configs/
-docker/
-```
-
-They explain project scope, asset relationships, candidate decisions, runtime evidence, and gaps.
-They bind the project commit and may be shown from any asset case in that project. They never form a
-separate callable package or whole-project completion shortcut.
-
-## Project Bundle Layout
+An operator is an independently meaningful scientific or numerical mapping. A TaskGraph is a composite callable
+whose YAML declares exact dependencies and scientifically necessary order/state semantics.
 
 ```text
 <bundle_root>/
-  operators/                         # present when the project emits operators
-    <operator_name>/
-      operator.md
-      scientific_operator.py | scientific_operator.c + scientific_operator.h
-      test_scientific_operator.py | test_scientific_operator.c
-  task_graphs/                       # present when the project emits composite assets
-    <task_graph_name>/
-      task_graph.md
-      task_graph.yaml
-      graph.py
-      test_task_graph.py
-  configs/                           # optional project context
-  docker/                            # optional project context
+  operators/<operator_name>/
+    scientific_operator.py | scientific_operator.c + scientific_operator.h
+    test_scientific_operator.py | test_scientific_operator.c
+  task_graphs/<task_graph_name>/
+    task_graph.yaml
+    graph.py
+    test_task_graph.py
   program_framework_map.md
   extraction_report.md
   extraction_ledger.md
-  asset_entry.py                     # optional path loader; no scientific logic
+  asset_entry.py                     # required for the existing full_freeze loader contract
+  configs/                           # only runtime-required shared schema
+  docker/                            # optional legacy runtime-metadata location, not a Docker requirement
 ```
 
-A project bundle contains at least one operator or TaskGraph package. Do not add a second project
-directory under `operators/` or `task_graphs/`. Package directories contain only their callable
-contract, implementation, runtime-required data, and tests. Source copies, reports, validation
-logs, generated caches, and private probes stay outside the formal package tree.
+A project bundle contains at least one actual operator or TaskGraph. Do not discover assets from the presence of
+`operator.md` or `task_graph.md`: both are optional inherited material in D1. An independent asset package has its
+implementation/test and, for a graph, YAML at its root; it needs no artificial project reports. Python and C profiles
+are defined in [language profiles](language_profiles.md).
 
-## Standalone Asset Layout
+Packages contain source-free callable code, necessary semantic anchors, tests and runtime-required data.
+Source copies, probes, captured answers, logs, build outputs and private working notes remain outside the package.
+Do not create another project directory below `operators/` or `task_graphs/`.
 
-An independent operator or TaskGraph ZIP has the asset package at its root. It contains no empty
-project reports, framework map, ledger, or artificial project folder. It uses the same Chinese
-contract, implementation, test, and structural checks as the corresponding package in a project
-bundle.
+## Scientific contract without duplicate pages
 
-## Contract Rules
+The delivered code, YAML, docstrings and linked scientific records jointly identify the relation, every real port,
+units/normalization, axes, applicability, boundaries, state ownership, source anchors and validation basis. Where
+these facts are reliably recoverable, reference their exact location. State missing or ambiguous facts once in a
+compact anchor. A filename or type alone does not define a physical quantity.
 
-- Every Intake Markdown document declares `language: zh-CN`.
-- `operator.md` uses the heading order from `artifact_template_pack.md`. It contains no project
-  membership, parent TaskGraph, workflow state, storage reference, or run history.
-- `task_graph.md` and `task_graph.yaml` use the heading and schema rules from
-  `artifact_template_pack.md`. The graph has explicit external ports and only uses
-  `scientific_operator`, `nested_task_graph`, `configuration`, `support_action`,
-  `io_config_action`, or `blocked_gap` node kinds.
-- Scientific formulas and numerical mappings belong to operators. `graph.py` only validates
-  ports, dispatches declared assets, schedules branches or feedback, maintains explicit state,
-  and collects diagnostics.
-- A TaskGraph node that carries scientific or numerical meaning must have an exact `asset_ref` to
-  an emitted operator or same-primary-node nested TaskGraph. Do not introduce `internal_kernel`,
-  `solver_update`, or `diagnostic_response` as alternate executable asset kinds.
-- Project context explains why assets relate. It never supplies omitted operator inputs or turns an
-  incomplete package into a callable asset.
+For TaskGraphs, YAML retains explicit external ports, node/edge bindings and one of the existing node kinds:
+`scientific_operator`, `nested_task_graph`, `configuration`, `support_action`, `io_config_action`, or `blocked_gap`.
+Every scientific node resolves to an emitted operator or permitted nested graph. Graph code schedules declared
+assets and bounded glue; it does not hide a formula, normalization, scientific state update or source global.
+Project context cannot supply omitted callable inputs or turn an incomplete package into a runnable asset.
 
-## Validation Boundary
+Formal `operator.md`, `task_graph.md` or canonical SciRel asset documents are produced after D2 comparison,
+deduplication, correction and assembly stabilize the retained new/changed assets, before final review freeze.
+Existing pages may be retained as provenance but their language, heading order or absence is not a D1 gate.
 
-`scripts/validate_import_intake_package.py` checks the Chinese document contract, package shape,
-TaskGraph structure, exact asset references, and generated-artifact exclusion. It is a structural
-gate only. Runtime behavior, scientific meaning, source parity, and oracle strength require their declared
-extraction tests and evidence; this structural validator proves none of them.
+## Project context and validation
 
-The validator operates on the immutable package tree selected for the Intake. It must not infer
-meaning from a project report, host path, source tree, storage location, or producer prose.
+The existing root map, report and ledger carry source coverage, dispositions, evidence locators and the truthful
+claim ceiling. During execution, keep minimal resumable records and reuse the scientific census rather than
+maintaining duplicate tables. Write the concise delivery summary at handoff/freeze; formatting and narrative
+polish do not establish source coverage. These files never form a separate callable asset.
+
+`validate_import_intake_package.py` checks package shape, executable entry structure, TaskGraph bindings and
+dependency closure, and generated-artifact exclusion. Structural success does not establish source fidelity,
+scientific correctness or full source coverage; the D1 scientific gates and independent review own those claims.
+
+For `full_freeze`, preserve the existing discovery-only `asset_entry.py` contract and validate it in the source-free
+runtime. It must enumerate real packages and expose their callable/semantic anchors without requiring formal
+Markdown. It cannot contain scientific relations, hidden state construction or project computation.
+
+An attributable result with a bad path, assertion or stale packaging digest is repaired under the stage-boundary
+evidence rule. Correcting such a defect does not automatically require repeating valid scientific computation.

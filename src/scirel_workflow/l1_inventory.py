@@ -376,15 +376,28 @@ class L1Inventory:
 
 
 def _asset_entry(project_id: str, root: Path, kind: str, directory: Path) -> L1AssetEntry:
+    if directory.is_symlink() or any(path.is_symlink() for path in directory.rglob("*")):
+        raise ValueError(f"L1 asset may not contain symlinks: {_path(directory, root)}")
+
+    def has_content(path: Path) -> bool:
+        return path.is_file() and bool(path.read_bytes().strip())
+
     files = {
         "contract": directory / ("operator.md" if kind == "operator" else "task_graph.yaml"),
         "implementation": directory / ("scientific_operator.py" if kind == "operator" else "graph.py"),
         "test": directory / ("test_scientific_operator.py" if kind == "operator" else "test_task_graph.py"),
     }
+    if kind == "operator" and not has_content(files["implementation"]):
+        c_source = directory / "scientific_operator.c"
+        c_header = directory / "scientific_operator.h"
+        if has_content(c_source) and has_content(c_header):
+            files["implementation"] = c_source
+            files["header"] = c_header
+            files["test"] = directory / "test_scientific_operator.c"
     gaps = tuple(
         f"missing_{label}:{_path(path, root)}"
         for label, path in files.items()
-        if not path.is_file()
+        if (label != "contract" or kind == "task_graph") and not has_content(path)
     )
     digest_files = [(key, path) for key, path in files.items() if path.is_file()]
     dependency_refs = _dependency_refs(files["contract"]) if kind == "task_graph" else ()
@@ -396,10 +409,10 @@ def _asset_entry(project_id: str, root: Path, kind: str, directory: Path) -> L1A
         contract_path=_path(files["contract"], root) if files["contract"].is_file() else None,
         implementation_path=(
             _path(files["implementation"], root)
-            if files["implementation"].is_file()
+            if has_content(files["implementation"])
             else None
         ),
-        direct_test_path=_path(files["test"], root) if files["test"].is_file() else None,
+        direct_test_path=_path(files["test"], root) if has_content(files["test"]) else None,
         dependency_refs=dependency_refs,
         source_digest=_file_digest(digest_files),
         gaps=gaps,
@@ -442,9 +455,13 @@ def _dependency_cycles(graph: dict[str, tuple[str, ...]]) -> tuple[str, ...]:
 def build_project_inventory(project_root: Path, *, project_id: str | None = None) -> L1ProjectInventory:
     """Index one saved project and preserve missing records as explicit gaps."""
 
+    if project_root.is_symlink():
+        raise ValueError("L1 project root may not be a symlink")
     project_root = project_root.resolve()
     if not project_root.is_dir():
         raise ValueError(f"L1 project directory does not exist: {project_root}")
+    if any(path.is_symlink() for path in project_root.rglob("*")):
+        raise ValueError("L1 project may not contain symlinks")
     project_id = project_id or project_root.name
     ledger = project_root / "extraction_ledger.md"
     framework = project_root / "program_framework_map.md"
@@ -456,13 +473,16 @@ def build_project_inventory(project_root: Path, *, project_id: str | None = None
     assets: list[L1AssetEntry] = []
     for kind, dirname in (("operator", "operators"), ("task_graph", "task_graphs")):
         parent = project_root / dirname
+        if parent.is_symlink():
+            raise ValueError(f"L1 asset directory may not be a symlink: {dirname}")
         if not parent.is_dir():
-            gaps.append(f"missing_{dirname}_directory")
             continue
         for directory in sorted(
             (item for item in parent.iterdir() if item.is_dir()), key=lambda item: item.name
         ):
             assets.append(_asset_entry(project_id, project_root, kind, directory))
+    if not assets:
+        gaps.append("no_scientific_assets")
     return L1ProjectInventory(
         project_id=project_id,
         ledger_path=_path(ledger, project_root) if ledger.is_file() else None,

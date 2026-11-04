@@ -11,8 +11,11 @@ from scirel_plugin import (
     PluginCommandEnvelope,
     PluginContractError,
     PluginEventEnvelope,
+    PluginReviewerEntryDescriptor,
+    PluginReviewerIntakeDescriptor,
     PluginReleaseSnapshot,
     PluginScope,
+    PluginViewDescriptor,
     PluginRunSubmitEnvelope,
     PluginRunResult,
     SciRelPlugin,
@@ -21,8 +24,9 @@ from scirel_plugin import (
     SciRelBodyImportRequest,
     execute_body_import,
     execute_body_import_wire,
-    validate_review_item_snapshot_body,
+    validate_review_item_detail_body,
 )
+from scirel_plugin.adapter import review_item_from_workflow
 
 
 ASSET_DOCUMENT = json.loads(
@@ -71,7 +75,7 @@ def test_plugin_publishes_candidate_as_artifact_and_job():
     assert isinstance(command, PluginCommandEnvelope)
     assert command.command == "scirel.automated_check"
     assert command.scope.plugin_id == "scirel"
-    assert command.scope.workflow_run_id == "run-plugin"
+    assert command.scope.plugin_context_ref == "run-plugin"
     assert command.input_artifacts[0].artifact_ref == handoff.artifact.ref
     assert command.input_artifacts[0].media_type == "application/json"
     assert command.payload == {
@@ -428,7 +432,7 @@ def test_review_list_and_open_use_one_exact_state_body_wire():
         {"operation": "scirel.review.list_items", **base}
     )
     index = json.loads(listed["body"])
-    assert listed["artifact_kind"] == "scirel.review-item-index.dev"
+    assert listed["artifact_kind"] == "codefusion.plugin-view-index.v1"
     assert len(index["items"]) == 1
     assert "workflow" not in index
     item = index["items"][0]
@@ -447,19 +451,20 @@ def test_review_list_and_open_use_one_exact_state_body_wire():
     snapshot = json.loads(opened["body"])
 
     assert opened == replay
-    assert opened["artifact_kind"] == "scirel.review-item-snapshot.dev"
+    assert opened["artifact_kind"] == "scirel.review-item-detail.dev"
     assert snapshot["item_ref"] == item["item_ref"]
-    assert snapshot["opened_from"] == {
+    assert snapshot["current_artifact"] == {
         "artifact_ref": base["artifact_ref"],
-        "revision": revision,
+        "digest": revision,
+        "media_type": "application/json",
     }
-    assert snapshot["view"]["workflow"]["status"] == "review_in_progress"
-    restored = validate_review_item_snapshot_body(
+    assert snapshot["item"]["status"] == "review_pending"
+    restored = validate_review_item_detail_body(
         opened["body"].encode("utf-8"),
         item_ref=item["item_ref"],
         revision=item["revision"],
     )
-    assert restored.status is WorkflowStatus.REVIEW_IN_PROGRESS
+    assert restored["status"] == "review_pending"
 
 
 def test_review_open_wire_rejects_missing_payload_and_stale_revision():
@@ -492,6 +497,392 @@ def test_review_open_wire_rejects_missing_payload_and_stale_revision():
                 },
             }
         )
+
+
+def _review_wire_base(workflow, artifact_ref="cf://state/review-batch"):
+    import hashlib
+
+    body = json.dumps(
+        workflow.to_dict(), ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return {
+        "artifact_ref": artifact_ref,
+        "artifact_digest": "sha256:" + hashlib.sha256(body).hexdigest(),
+        "media_type": "application/json",
+        "body": body.decode("utf-8"),
+    }
+
+
+def test_review_body_projects_assets_as_independent_readonly_items():
+    second_asset = dict(ASSET_DOCUMENT)
+    second_asset["asset_id"] = "scirel.field.circular-filament-green.variant"
+    second_asset["title"] = {"en": "Variant", "zh": "变体"}
+    workflow = SciRelWorkflow(candidate())
+    workflow.create_draft(
+        draft_id="draft-two-items",
+        assets=[ASSET_DOCUMENT, second_asset],
+    )
+    workflow.submit_for_review()
+    base = _review_wire_base(workflow)
+
+    listed = execute_body_import_wire(
+        {"operation": "scirel.review.list_items", **base}
+    )
+    index = json.loads(listed["body"])
+
+    assert len(index["items"]) == 2
+    assert len({item["item_ref"] for item in index["items"]}) == 2
+    assert {item["revision"] for item in index["items"]} == {
+        base["artifact_digest"]
+    }
+
+    opened = execute_body_import_wire(
+        {
+            "operation": "scirel.review.open_item",
+            **base,
+            "operation_payload": {
+                "item_ref": index["items"][1]["item_ref"],
+                "revision": base["artifact_digest"],
+            },
+        }
+    )
+    detail = json.loads(opened["body"])
+    assert detail["schema"] == "scirel.review-item-detail.dev"
+    assert detail["item"]["asset"]["asset_id"].endswith(".variant")
+    assert detail["item"]["status"] == "review_pending"
+    assert workflow.status is WorkflowStatus.REVIEW_PENDING
+
+
+def test_review_body_fails_closed_above_codefusion_index_page_limit():
+    workflow = SciRelWorkflow(candidate())
+    workflow.create_draft(
+        draft_id="draft-too-large-for-one-source",
+        assets=[
+            {"asset_id": f"scirel.test.asset-{index}"}
+            for index in range(101)
+        ],
+    )
+    workflow.submit_for_review()
+    base = _review_wire_base(workflow, "cf://state/review-too-large")
+
+    with pytest.raises(ValueError, match="cannot expose more than 100"):
+        execute_body_import_wire(
+            {"operation": "scirel.review.list_items", **base}
+        )
+
+
+def test_review_action_requires_host_identity_and_returns_exact_successor():
+    workflow = SciRelWorkflow(candidate())
+    workflow.create_draft(draft_id="draft-action", assets=[ASSET_DOCUMENT])
+    workflow.submit_for_review()
+    base = _review_wire_base(workflow, "cf://state/review-action")
+    index = json.loads(
+        execute_body_import_wire(
+            {"operation": "scirel.review.list_items", **base}
+        )["body"]
+    )
+    item = index["items"][0]
+    descriptor = item["actions"][0]
+    action = {
+        "operation": "plugin.review.action",
+        **base,
+        "operation_payload": {
+            "item_ref": item["item_ref"],
+            "revision": base["artifact_digest"],
+            "extension_ref": "scirel.review",
+            "action_ref": descriptor["action_ref"],
+            "reviewer": {"actor_ref": "actor://reviewer/expert-a"},
+            "payload": descriptor["payload"],
+        },
+    }
+
+    response = execute_body_import_wire(action)
+    assert execute_body_import_wire(action) == response
+    successor = json.loads(response["body"])
+
+    assert response["artifact_kind"] == "codefusion.plugin-reviewer-successor-snapshot.v1"
+    assert successor["schema"] == "codefusion.plugin-reviewer-successor-snapshot.v1"
+    assert successor["item_ref"] == item["item_ref"]
+    assert successor["predecessor"] == {
+        "artifact_ref": base["artifact_ref"],
+        "digest": base["artifact_digest"],
+        "media_type": "application/json",
+    }
+    assert successor["lease_disposition"] == "release"
+    assert successor["actions"] == []
+    domain_item = successor["payload"]
+    assert domain_item["schema"] == "scirel.review-item.dev"
+    assert domain_item["asset"] == ASSET_DOCUMENT
+    assert domain_item["status"] == "approved"
+    assert domain_item["decision"]["schema"] == "scirel.review-item-decision.dev"
+    assert domain_item["decision"]["reviewer_actor_ref"] == "actor://reviewer/expert-a"
+    assert domain_item["decision"]["submitted_revision"] == base["artifact_digest"]
+
+    without_context = dict(action)
+    without_context["operation_payload"] = dict(action["operation_payload"])
+    without_context["operation_payload"].pop("reviewer")
+    with pytest.raises(ValueError, match="reviewer"):
+        execute_body_import_wire(without_context)
+
+    mismatched_action = dict(action)
+    mismatched_action["operation_payload"] = dict(action["operation_payload"])
+    mismatched_action["operation_payload"]["payload"] = {
+        "outcome": "rejected",
+        "notes": "",
+    }
+    with pytest.raises(ValueError, match="does not match its outcome"):
+        execute_body_import_wire(mismatched_action)
+
+
+def test_review_action_rejects_stale_or_wrong_item_and_blocks_gap_approval():
+    workflow = SciRelWorkflow(candidate())
+    incomplete = {"asset_id": "scirel.field.incomplete"}
+    workflow.create_draft(draft_id="draft-gap-action", assets=[incomplete])
+    workflow.submit_for_review()
+    base = _review_wire_base(workflow, "cf://state/review-gap-action")
+    item = json.loads(
+        execute_body_import_wire(
+            {"operation": "scirel.review.list_items", **base}
+        )["body"]
+    )["items"][0]
+    assert item["actions"] == [
+        {
+            "action_ref": "plugin://scirel/review/request-evidence",
+            "label": "Request evidence",
+            "payload": {"outcome": "needs_evidence", "notes": ""},
+        },
+        {
+            "action_ref": "plugin://scirel/review/request-rework",
+            "label": "Request rework",
+            "payload": {"outcome": "rework_requested", "notes": ""},
+        },
+        {
+            "action_ref": "plugin://scirel/review/reject",
+            "label": "Reject",
+            "payload": {"outcome": "rejected", "notes": ""},
+        },
+    ]
+
+    def request(item_ref=item["item_ref"], revision=base["artifact_digest"]):
+        return {
+            "operation": "plugin.review.action",
+            **base,
+            "operation_payload": {
+                "item_ref": item_ref,
+                "revision": revision,
+                "extension_ref": "scirel.review",
+                "action_ref": "plugin://scirel/review/approve",
+                "reviewer": {"actor_ref": "actor://reviewer/expert-b"},
+                "payload": {"outcome": "approved", "notes": ""},
+            },
+        }
+
+    with pytest.raises(ValueError, match="revision does not match"):
+        execute_body_import_wire(request(revision="sha256:" + "0" * 64))
+    with pytest.raises(ValueError, match="item ref"):
+        execute_body_import_wire(request(item_ref="scirel-review-item:" + "0" * 64))
+    with pytest.raises(ValueError, match="unresolved gaps"):
+        execute_body_import_wire(request())
+
+
+def test_review_item_gaps_are_attributed_to_exact_asset_ids():
+    workflow = SciRelWorkflow(candidate())
+    workflow.create_draft(
+        draft_id="draft-prefix-gaps",
+        assets=[
+            {**ASSET_DOCUMENT, "asset_id": "scirel.x"},
+            {"asset_id": "scirel.x2"},
+        ],
+        gaps=["scirel.x2:missing evidence", "batch evidence missing"],
+    )
+    workflow.submit_for_review()
+
+    first = review_item_from_workflow(workflow, 0)
+    second = review_item_from_workflow(workflow, 1)
+
+    assert "scirel.x2:missing evidence" not in first["gaps"]
+    assert "scirel.x2:missing evidence" in second["gaps"]
+    assert "scientific_contract_missing:scirel.x2:schema" not in first["gaps"]
+    assert "scientific_contract_missing:scirel.x2:schema" in second["gaps"]
+    assert "batch evidence missing" in first["gaps"]
+    assert "batch evidence missing" in second["gaps"]
+
+
+def test_completed_results_return_only_exact_approved_item_versions():
+    import hashlib
+
+    workflow = SciRelWorkflow(candidate())
+    workflow.create_draft(
+        draft_id="draft-completed",
+        assets=[ASSET_DOCUMENT],
+        dependency_asset_ids=["scirel.shared.dependency"],
+    )
+    workflow.submit_for_review()
+    base = _review_wire_base(workflow, "cf://state/review-completed")
+    item = json.loads(
+        execute_body_import_wire(
+            {"operation": "scirel.review.list_items", **base}
+        )["body"]
+    )["items"][0]
+    before_decision = json.loads(
+        execute_body_import_wire(
+            {"operation": "scirel.review.list_completed", **base}
+        )["body"]
+    )
+    assert before_decision["completed_items"] == []
+    assert before_decision["approved_items"] == []
+    successor_response = execute_body_import_wire(
+        {
+            "operation": "plugin.review.action",
+            **base,
+            "operation_payload": {
+                "item_ref": item["item_ref"],
+                "revision": base["artifact_digest"],
+                "extension_ref": "scirel.review",
+                "action_ref": "plugin://scirel/review/approve",
+                "reviewer": {"actor_ref": "actor://reviewer/expert-c"},
+                "payload": {"outcome": "approved", "notes": "accepted"},
+            },
+        }
+    )
+    successor_body = successor_response["body"].encode("utf-8")
+    successor_base = {
+        "artifact_ref": "cf://state/review-completed/successor",
+        "artifact_digest": "sha256:" + hashlib.sha256(successor_body).hexdigest(),
+        "media_type": "application/json",
+        "body": successor_body.decode("utf-8"),
+    }
+
+    completed = json.loads(
+        execute_body_import_wire(
+            {"operation": "scirel.review.list_completed", **successor_base}
+        )["body"]
+    )
+
+    assert completed["schema"] == "scirel.review-completed-results.dev"
+    assert completed["completed_items"] == completed["approved_items"]
+    assert completed["approved_items"] == [
+        {
+            "item_ref": item["item_ref"],
+            "revision": successor_base["artifact_digest"],
+            "asset": ASSET_DOCUMENT,
+            "dependency_asset_ids": ["scirel.shared.dependency"],
+            "decision": completed["approved_items"][0]["decision"],
+            "evidence": [],
+        }
+    ]
+    assert completed["approved_items"][0]["decision"]["submitted_revision"] == base["artifact_digest"]
+
+    tampered_successor = json.loads(successor_response["body"])
+    tampered_successor["display_index"]["title"] = "misleading projection"
+    tampered_body = json.dumps(
+        tampered_successor,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    with pytest.raises(ValueError, match="display_index does not match"):
+        execute_body_import_wire(
+            {
+                "operation": "scirel.review.list_completed",
+                "artifact_ref": "cf://state/review-completed/tampered",
+                "artifact_digest": (
+                    "sha256:"
+                    + hashlib.sha256(tampered_body).hexdigest()
+                ),
+                "media_type": "application/json",
+                "body": tampered_body.decode("utf-8"),
+            }
+        )
+
+    tampered_successor = json.loads(successor_response["body"])
+    tampered_successor["actions"] = item["actions"]
+    tampered_body = json.dumps(
+        tampered_successor,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    with pytest.raises(ValueError, match="actions do not match"):
+        execute_body_import_wire(
+            {
+                "operation": "scirel.review.list_completed",
+                "artifact_ref": "cf://state/review-completed/tampered-actions",
+                "artifact_digest": (
+                    "sha256:" + hashlib.sha256(tampered_body).hexdigest()
+                ),
+                "media_type": "application/json",
+                "body": tampered_body.decode("utf-8"),
+            }
+        )
+
+
+def test_two_review_items_receive_independent_decisions():
+    import hashlib
+
+    second_asset = dict(ASSET_DOCUMENT)
+    second_asset["asset_id"] = "scirel.field.circular-filament-green.rejected"
+    second_asset["title"] = {"en": "Rejected variant", "zh": "拒绝变体"}
+    workflow = SciRelWorkflow(candidate())
+    workflow.create_draft(
+        draft_id="draft-independent-decisions",
+        assets=[ASSET_DOCUMENT, second_asset],
+    )
+    workflow.submit_for_review()
+    base = _review_wire_base(workflow, "cf://state/review-independent")
+    items = json.loads(
+        execute_body_import_wire(
+            {"operation": "scirel.review.list_items", **base}
+        )["body"]
+    )["items"]
+
+    def submit(item, outcome, actor):
+        return json.loads(
+            execute_body_import_wire(
+                {
+                    "operation": "plugin.review.action",
+                    **base,
+                    "operation_payload": {
+                        "item_ref": item["item_ref"],
+                        "revision": base["artifact_digest"],
+                        "extension_ref": "scirel.review",
+                        "action_ref": {
+                            "approved": "plugin://scirel/review/approve",
+                            "rejected": "plugin://scirel/review/reject",
+                        }[outcome],
+                        "reviewer": {"actor_ref": actor},
+                        "payload": {"outcome": outcome, "notes": outcome},
+                    },
+                }
+            )["body"]
+        )
+
+    approved = submit(items[0], "approved", "actor://reviewer/one")
+    rejected = submit(items[1], "rejected", "actor://reviewer/two")
+
+    assert approved["item_ref"] != rejected["item_ref"]
+    assert approved["payload"]["status"] == "approved"
+    assert rejected["payload"]["status"] == "rejected"
+    assert approved["payload"]["decision"]["reviewer_actor_ref"].endswith("/one")
+    assert rejected["payload"]["decision"]["reviewer_actor_ref"].endswith("/two")
+
+    rejected_body = json.dumps(
+        rejected, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    rejected_results = json.loads(
+        execute_body_import_wire(
+            {
+                "operation": "scirel.review.list_completed",
+                "artifact_ref": "cf://state/review-independent/rejected",
+                "artifact_digest": "sha256:" + hashlib.sha256(rejected_body).hexdigest(),
+                "media_type": "application/json",
+                "body": rejected_body.decode("utf-8"),
+            }
+        )["body"]
+    )
+    assert len(rejected_results["completed_items"]) == 1
+    assert rejected_results["completed_items"][0]["decision"]["outcome"] == "rejected"
+    assert rejected_results["approved_items"] == []
 
 
 @pytest.mark.parametrize(
@@ -560,11 +951,13 @@ def test_plugin_builds_generic_run_submission_for_candidate_artifact():
     envelope.validate(plugin.registration())
 
     assert isinstance(envelope, PluginRunSubmitEnvelope)
-    assert envelope.scope.workflow_run_id == candidate_value.run_id
+    assert envelope.scope.plugin_context_ref == candidate_value.run_id
     assert envelope.input_artifacts[0].artifact_ref == artifact.ref
     assert envelope.input_artifacts[0].digest == artifact.digest
-    assert envelope.payload["operation"] == "scirel.automated_check"
-    assert envelope.payload["candidate_id"] == candidate_value.candidate_id
+    # CodeFusion's generic body wire carries only the operation. The candidate
+    # identity and source digest are already authenticated by the content-
+    # addressed input artifact and are re-derived by SciRel from its body.
+    assert envelope.payload == {"operation": "scirel.automated_check"}
 
 
 def test_candidate_run_rejects_cross_project_scope_and_wrong_artifact():
@@ -626,11 +1019,11 @@ def test_plugin_builds_explicit_l1_import_run_submission():
         source,
         tenant_id="tenant-a",
         project_id="project-a",
-        workflow_run_id="run-l1-import",
+        plugin_context_ref="run-l1-import",
     )
     envelope.validate(plugin.registration())
 
-    assert envelope.scope.workflow_run_id == "run-l1-import"
+    assert envelope.scope.plugin_context_ref == "run-l1-import"
     assert envelope.input_artifacts == (source.as_contract(),)
     assert envelope.payload == {
         "operation": "scirel.import_l1",
@@ -655,6 +1048,8 @@ def test_plugin_publishes_draft_and_registers_scientific_review_view():
     assert view.operations == (
         "scirel.review.list_items",
         "scirel.review.open_item",
+        "scirel.review.list_completed",
+        "plugin.review.action",
     )
 
 
@@ -668,7 +1063,7 @@ def test_review_list_is_bounded_minimal_and_does_not_observe_candidate():
 
     result = plugin.list_review_items((current,), limit=1)
 
-    assert result["schema"] == "scirel.review-item-index.dev"
+    assert result["schema"] == "codefusion.plugin-view-index.v1"
     assert result["has_more"] is False
     assert len(result["items"]) == 1
     item = result["items"][0]
@@ -677,10 +1072,33 @@ def test_review_list_is_bounded_minimal_and_does_not_observe_candidate():
         "revision",
         "display_index",
         "detail_action_ref",
+        "actions",
     }
     assert item["revision"] == current.digest
     assert item["item_ref"].startswith("scirel-review-item:")
     assert item["detail_action_ref"].startswith("plugin://scirel/review/open/")
+    assert item["actions"] == [
+        {
+            "action_ref": "plugin://scirel/review/approve",
+            "label": "Approve",
+            "payload": {"outcome": "approved", "notes": ""},
+        },
+        {
+            "action_ref": "plugin://scirel/review/request-evidence",
+            "label": "Request evidence",
+            "payload": {"outcome": "needs_evidence", "notes": ""},
+        },
+        {
+            "action_ref": "plugin://scirel/review/request-rework",
+            "label": "Request rework",
+            "payload": {"outcome": "rework_requested", "notes": ""},
+        },
+        {
+            "action_ref": "plugin://scirel/review/reject",
+            "label": "Reject",
+            "payload": {"outcome": "rejected", "notes": ""},
+        },
+    ]
     assert "workflow" not in result
     assert workflow.status is WorkflowStatus.REVIEW_PENDING
 
@@ -706,13 +1124,17 @@ def test_review_open_returns_idempotent_exact_snapshot_without_host_side_state()
     )
 
     assert opened == replay
-    assert opened.kind == "scirel.review-item-snapshot.dev"
-    restored = plugin.validate_review_item_snapshot(
+    assert opened.kind == "scirel.review-item-detail.dev"
+    restored = plugin.validate_review_item_detail(
         opened,
         item_ref=item["item_ref"],
         revision=item["revision"],
     )
-    assert restored.status is WorkflowStatus.REVIEW_IN_PROGRESS
+    detail = json.loads(host.read_artifact(opened.ref))
+    assert detail["available_actions"] == [
+        action["action_ref"] for action in item["actions"]
+    ]
+    assert restored["status"] == "review_pending"
     assert workflow.status is WorkflowStatus.REVIEW_PENDING
 
 
@@ -768,7 +1190,7 @@ def test_plugin_imports_l1_from_saved_host_artifact():
     handoff = plugin.import_l1_artifact(source, run_id="run-artifact-import")
 
     assert handoff.artifact.ref in host.artifacts
-    assert host.commands[0].scope.workflow_run_id == "run-artifact-import"
+    assert host.commands[0].scope.plugin_context_ref == "run-artifact-import"
     assert host.commands[0].input_artifacts[0].digest == handoff.artifact.digest
 
 
@@ -788,7 +1210,7 @@ def test_plugin_imports_l1_from_host_supplied_body():
     )
 
     assert handoff.artifact.ref in host.artifacts
-    assert host.commands[0].scope.workflow_run_id == "run-body-import"
+    assert host.commands[0].scope.plugin_context_ref == "run-body-import"
 
     with pytest.raises(ValueError, match="digest does not match"):
         plugin.import_l1_body(
@@ -1126,6 +1548,80 @@ def test_registration_maps_codefusion_host_fields():
     assert tuple(plugin.descriptor()["service_principal_scopes"]) == SERVICE_PRINCIPAL_SCOPES
 
 
+def test_reviewer_registration_declares_host_resolved_intakes():
+    descriptor = SciRelPlugin.for_development(FakeHost()).registration().view_descriptors[0]
+
+    assert descriptor.reviewer_entry is not None
+    assert descriptor.reviewer_entry.to_dict() == {
+        "label": "SciRel review",
+        "intakes": [
+            {
+                "intake_ref": "scirel.import-l1",
+                "label": "Import L1 package",
+                "operation": "scirel.import_l1",
+            },
+            {
+                "intake_ref": "scirel.review-index",
+                "label": "Open review index",
+                "operation": "scirel.review.list_items",
+            },
+        ],
+    }
+
+
+def test_reviewer_entry_rejects_empty_fields_and_duplicate_intake_refs():
+    with pytest.raises(PluginContractError, match="reviewer_entry.label"):
+        PluginReviewerEntryDescriptor(label="", intakes=()).validate()
+
+    with pytest.raises(PluginContractError, match="reviewer intake refs must be unique"):
+        PluginReviewerEntryDescriptor(
+            label="SciRel review",
+            intakes=(
+                PluginReviewerIntakeDescriptor(
+                    intake_ref="scirel.import-l1",
+                    label="Import L1 package",
+                    operation="scirel.import_l1",
+                ),
+                PluginReviewerIntakeDescriptor(
+                    intake_ref="scirel.import-l1",
+                    label="Duplicate",
+                    operation="scirel.review.list_items",
+                ),
+            ),
+        ).validate()
+
+    with pytest.raises(PluginContractError, match="reviewer_intake.operation"):
+        PluginReviewerIntakeDescriptor(
+            intake_ref="scirel.invalid",
+            label="Invalid",
+            operation="",
+        ).validate()
+
+
+def test_view_descriptor_omits_optional_reviewer_entry_when_absent():
+    descriptor = PluginViewDescriptor(
+        view_ref="sample.view",
+        open_operation="sample.view.open",
+    )
+
+    assert descriptor.to_dict() == {
+        "view_ref": "sample.view",
+        "open_operation": "sample.view.open",
+    }
+
+
+def test_reviewer_registration_declares_required_host_capabilities():
+    registration = SciRelPlugin.for_development(FakeHost()).registration()
+    reviewer_capabilities = {
+        "plugin.view.read",
+        "plugin.view.write",
+        "plugin.ui_action",
+    }
+
+    assert reviewer_capabilities <= set(registration.capabilities)
+    assert reviewer_capabilities <= set(registration.required_scopes)
+
+
 def test_runtime_registration_uses_the_admitted_release_snapshot():
     release = PluginReleaseSnapshot(
         plugin_release_ref="plugin-release://scirel/0.1.0.dev5/admitted",
@@ -1170,7 +1666,6 @@ def test_review_ui_projection_is_domain_owned_and_status_driven():
 
     workflow.submit_for_review()
     assert plugin.review_ui_projection(workflow)["available_actions"] == [
-        "update_draft",
         "start_review",
     ]
 
@@ -1413,7 +1908,7 @@ def test_automated_result_event_carries_artifact_and_opaque_summary():
     event = plugin.publish_automated_result_event(
         result,
         artifact,
-        workflow_run_id=candidate_value.run_id,
+        plugin_context_ref=candidate_value.run_id,
         correlation_id="job://check-event",
     )
 
@@ -1434,7 +1929,7 @@ def test_automated_result_event_carries_artifact_and_opaque_summary():
         plugin.publish_automated_result_event(
             result,
             wrong,
-            workflow_run_id=candidate_value.run_id,
+            plugin_context_ref=candidate_value.run_id,
             correlation_id="job://check-event-wrong",
         )
 
@@ -1446,7 +1941,7 @@ def test_automated_result_event_carries_artifact_and_opaque_summary():
                 kind="scirel.candidate-package.dev",
                 digest=artifact.digest,
             ),
-            workflow_run_id=candidate_value.run_id,
+            plugin_context_ref=candidate_value.run_id,
             correlation_id="job://check-event-kind",
         )
 
@@ -1459,7 +1954,7 @@ def test_host_generates_event_system_fields_and_preserves_domain_payload():
     event = host.emit_event(
         plugin_id=plugin.plugin_id,
         event_type="scirel.candidate.automated_check_submitted",
-        workflow_run_id=candidate().run_id,
+        plugin_context_ref=candidate().run_id,
         correlation_id=handoff.job.ref,
         artifact_refs=(handoff.artifact.ref,),
         payload={"candidate_id": candidate().candidate_id},
@@ -1562,11 +2057,11 @@ def test_release_events_bind_manifest_and_use_bounded_failure_codes():
     completed = plugin.publish_release_completed_event(
         release,
         artifact,
-        workflow_run_id="run-release-event",
+        plugin_context_ref="run-release-event",
         correlation_id="build://release-event",
     )
     failed = plugin.publish_release_failed_event(
-        workflow_run_id="run-release-failed",
+        plugin_context_ref="run-release-failed",
         correlation_id="build://release-failed",
         failure_code="validation_failed",
     )
@@ -1586,12 +2081,12 @@ def test_release_events_bind_manifest_and_use_bounded_failure_codes():
         plugin.publish_release_completed_event(
             release,
             wrong,
-            workflow_run_id="run-release-event",
+        plugin_context_ref="run-release-event",
             correlation_id="build://release-event",
         )
     with pytest.raises(ValueError, match="unsupported release failure code"):
         plugin.publish_release_failed_event(
-            workflow_run_id="run-release-failed",
+        plugin_context_ref="run-release-failed",
             correlation_id="build://release-failed",
             failure_code="platform_timeout",
         )

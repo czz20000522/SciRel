@@ -22,9 +22,23 @@ from scirel.inference.anisotropic_parameter_optimization import optimize_anisotr
 from scirel.diagnostics.observation_residuals import reduce_observation_residuals
 from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
 from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
+from scirel.kinetic.plasma_dispersion import evaluate_plasma_dispersion
+from scirel.kinetic.bessel_gamma import evaluate_bessel_gamma
+from scirel.kinetic.kinetic_dispersion_sum_n import evaluate_kinetic_dispersion_sum
+from scirel.kinetic.species_equilibrium_scales import derive_species_equilibrium_scales
+from scirel.kinetic.thermal_speed_scale import compute_thermal_speed_m_s
+from scirel.kinetic.generation_density_reduction import reduce_generation_density
+from scirel.kinetic.incoming_boundary_flux_normalization import normalize_incoming_neutral_boundary
+from scirel.kinetic.spatial_source_shape_normalization import normalize_spatial_source_shape
 from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
+from scirel.field import (
+    compute_axisymmetric_coil_modulus,
+    evaluate_complete_elliptic_integrals,
+    evaluate_filament_coil_green_field,
+)
 from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 from scirel.diagnostics.firehose_mirror_margins import compute_firehose_mirror_margins
+from scirel.diagnostics.pointwise_firehose_margin import compute_pointwise_firehose_margin
 from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux
 from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
 from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
@@ -96,8 +110,12 @@ def test_all_normalized_public_callables_are_importable():
         compute_parallel_pressure_residual,
         solve_loss_cone_spectrum,
         compute_poloidal_field_magnitude,
+        compute_axisymmetric_coil_modulus,
+        evaluate_complete_elliptic_integrals,
+        evaluate_filament_coil_green_field,
         discretize_permanent_ring,
         compute_firehose_mirror_margins,
+        compute_pointwise_firehose_margin,
         correct_ideal_conductor_boundary_flux,
         compute_boltzmann_electron_state,
         discretize_rectangular_coil,
@@ -153,6 +171,56 @@ def test_root_namespace_supports_normal_python_imports():
     namespace = {}
     exec('from scirel import *', namespace)
     assert all(callable(namespace[name]) for name in scirel.__all__ if not hasattr(scirel, name) or not hasattr(getattr(scirel, name), '__path__'))
+
+
+def test_plasma_dispersion_is_exported_from_both_public_namespaces():
+    assert scirel.evaluate_plasma_dispersion is evaluate_plasma_dispersion
+    assert scirel.kinetic.evaluate_plasma_dispersion is evaluate_plasma_dispersion
+    assert "evaluate_plasma_dispersion" in scirel.__all__
+    assert "evaluate_plasma_dispersion" in scirel.kinetic.__all__
+
+
+def test_bessel_gamma_is_exported_from_both_public_namespaces():
+    assert scirel.evaluate_bessel_gamma is evaluate_bessel_gamma
+    assert scirel.kinetic.evaluate_bessel_gamma is evaluate_bessel_gamma
+    assert "evaluate_bessel_gamma" in scirel.__all__
+    assert "evaluate_bessel_gamma" in scirel.kinetic.__all__
+
+
+def test_kinetic_dispersion_sum_is_exported_from_both_public_namespaces():
+    assert scirel.evaluate_kinetic_dispersion_sum is evaluate_kinetic_dispersion_sum
+    assert scirel.kinetic.evaluate_kinetic_dispersion_sum is evaluate_kinetic_dispersion_sum
+    assert "evaluate_kinetic_dispersion_sum" in scirel.__all__
+    assert "evaluate_kinetic_dispersion_sum" in scirel.kinetic.__all__
+
+
+def test_species_equilibrium_scales_is_exported_from_both_public_namespaces():
+    assert scirel.derive_species_equilibrium_scales is derive_species_equilibrium_scales
+    assert scirel.kinetic.derive_species_equilibrium_scales is derive_species_equilibrium_scales
+    assert "derive_species_equilibrium_scales" in scirel.__all__
+    assert "derive_species_equilibrium_scales" in scirel.kinetic.__all__
+
+
+def test_neutral_scale_and_density_are_exported_from_both_public_namespaces():
+    for name, function in (
+        ("compute_thermal_speed_m_s", compute_thermal_speed_m_s),
+        ("reduce_generation_density", reduce_generation_density),
+    ):
+        assert getattr(scirel, name) is function
+        assert getattr(scirel.kinetic, name) is function
+        assert name in scirel.__all__
+        assert name in scirel.kinetic.__all__
+
+
+def test_neutral_normalizations_are_exported_from_both_public_namespaces():
+    for name, function in (
+        ("normalize_incoming_neutral_boundary", normalize_incoming_neutral_boundary),
+        ("normalize_spatial_source_shape", normalize_spatial_source_shape),
+    ):
+        assert getattr(scirel, name) is function
+        assert getattr(scirel.kinetic, name) is function
+        assert name in scirel.__all__
+        assert name in scirel.kinetic.__all__
 
 
 def test_poloidal_field_and_magnitude_smoke():

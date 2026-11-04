@@ -17,7 +17,7 @@ from .adapter import execute_body_import_wire
 
 
 DEFAULT_PATH = "/scirel/body"
-DEFAULT_MAX_BODY_BYTES = 1024 * 1024
+DEFAULT_MAX_BODY_BYTES = 16 * 1024 * 1024
 
 
 def _json_bytes(value: Mapping[str, Any]) -> bytes:

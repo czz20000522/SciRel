@@ -18,6 +18,10 @@ while Level 1 supplies their source anchors, ports, hidden state, branch guards,
 
 ## Required normalized evidence
 
+Reuse existing source indexes, code/YAML and scientific records for these facts; the names below are information
+roles, not a requirement for one new file or table per role. Supplement only missing facts. A final human-readable
+map is a projection produced at handoff, not an extra document to rewrite during every implementation iteration.
+
 Freeze one evidence package before comparing or combining AI results:
 
 ```text
@@ -49,25 +53,28 @@ Different evidence packages are different extraction runs and must not be used t
 8. **Reconcile scientific identity.** Bind every equation anchor and scientific node to source/state evidence and every glue edge to its source port movement. Promote an apparent edge to a node whenever it computes interpolation, boundary synthesis, closure, discretization, scientific normalization, or a state update.
 9. **Emit normalized node records.** Assign one allowed node role and one asset-projection status. A task-graph candidate denotes a required local subweb, not an indivisible scientific leaf; retain its participating node and edge identities.
 10. **Emit state/port edges.** Create edges only from evidenced data/state movement; attach shape, axes, units, sign, normalization, index base, branch selector, and hidden state.
-11. **Derive the Mermaid from ledgers.** Never use a drawing as the sole source of Level 1 truth.
+11. **Project a map when needed.** At handoff, derive a diagram from existing records if it helps its reader. A drawing is not the sole source of scientific truth and is not a D1 formatting gate.
 12. **Record coverage and ambiguity.** Uncovered source families, unbound web nodes/edges, and unresolved split decisions remain visible; do not force a green completeness result.
 
 ## Split rules
 
-Split a cluster when any condition holds:
+Use the [scientific boundary decision](asset_projection_decision_manual.md#scientific-relation-and-boundary-meaning)
+before splitting. The following are reasons to inspect a boundary, not automatic split triggers. Split when the
+subcomputations have distinct, complete scientific contracts with independent composition/replacement value and
+meaningful validation:
 
-- it produces different primary scientific outputs or relation directions;
+- it produces distinct primary scientific result contracts or relation directions, not merely vector components or return fields;
 - it owns independent state transitions or feedback boundaries;
-- it implements different physical models, branches, boundary policies, units, signs, or normalization conventions;
-- it has an independently callable port contract, consumer, replacement boundary, or oracle;
+- it implements independently meaningful physical models or boundary/normalization conventions; a branch of one piecewise law is not enough;
+- it has an independent scientific port contract and consumer, replacement or composition boundary, not just a separately callable helper;
 - its output fans out to multiple scientific consumers and has stable meaning outside the current caller.
 
 ## Merge rules
 
 Merge implementation fragments when all material conditions hold:
 
-- they implement one scientific relation and one primary output;
-- intermediates have no independent scientific consumer or oracle;
+- they implement one directed scientific mapping with one coherent result, which may be a vector, coupled state or structured result;
+- intermediates have no complete independent scientific contract with source-backed consumption/replacement value;
 - separation would expose only array plumbing, iteration mechanics, or storage layout;
 - they share state ownership, branch policy, boundary convention, and validation boundary.
 
@@ -120,7 +127,11 @@ source_anchors
 
 ## Deterministic ordering and ambiguity
 
-Order nodes by Level 0 parent, target-relation priority, primary output, then normalized `node_key`. Apply split rules before merge rules. When evidence supports more than one scientific boundary after tie-breaking, emit `needs_domain_ruling` with both bounded alternatives and the evidence that would decide them.
+Order nodes by Level 0 parent, target-relation priority, primary result, then normalized `node_key`. Apply the
+scientific contract criteria before split/merge heuristics. Multiple equivalent package boundaries do not require
+a domain ruling: retain the stable coherent boundary and its source coverage. Use `needs_domain_ruling` only for
+unresolved scientific identity or coordination semantics, with the bounded alternatives and missing evidence;
+the coordinator investigates it without automatically adding a human checkpoint.
 
 ## Fallbacks and scale
 

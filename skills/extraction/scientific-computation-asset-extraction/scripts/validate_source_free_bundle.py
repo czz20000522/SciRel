@@ -82,6 +82,8 @@ def validate_source_free_bundle(
     require_docker: bool = False,
     standalone_kind: str | None = None,
 ) -> dict[str, Any]:
+    if root.is_symlink() or any(path.is_symlink() for path in root.rglob("*")):
+        return {"valid": False, "errors": ["source-free packages may not contain symbolic links"]}
     if standalone_kind is not None:
         return _validate_standalone_bundle(
             root,
@@ -96,9 +98,6 @@ def validate_source_free_bundle(
         return {"valid": False, "errors": [f"root is not a directory: {root}"]}
 
     root_entries = {path.name for path in root.iterdir()}
-    for required in sorted(FORMAL_DIRS):
-        if not (root / required).is_dir():
-            errors.append(f"formal bundle requires directory: {required}")
     allowed_root_dirs = FORMAL_DIRS | PROJECT_DIRS | OPTIONAL_ROOT_DIRS
     for entry in sorted(root_entries):
         if entry in allowed_root_dirs or entry in OPTIONAL_ROOT_FILES:
@@ -106,7 +105,7 @@ def validate_source_free_bundle(
         if entry in PROJECT_FILES:
             continue
         errors.append(f"unexpected root entry in formal bundle: {entry}")
-    for project_file in sorted(PROJECT_FILES):
+    for project_file in sorted(PROJECT_FILES - {"extraction_report.md"}):
         if not (root / project_file).is_file():
             errors.append(f"formal bundle requires project sidecar: {project_file}")
     docker_root = root / "docker"
@@ -177,6 +176,17 @@ def validate_source_free_bundle(
             continue
         families = sorted(path for path in family_root.iterdir() if path.is_dir())
         family_count += len(families)
+        for family in families:
+            if kind == "task_graphs":
+                required = ("task_graph.yaml", "graph.py")
+            elif (family / "scientific_operator.py").is_file():
+                required = ("scientific_operator.py",)
+            else:
+                required = ("scientific_operator.c", "scientific_operator.h")
+            for name in required:
+                path = family / name
+                if not path.is_file() or not path.read_bytes().strip():
+                    errors.append(f"asset package requires non-empty file: {path.relative_to(root)}")
         package_results[kind] = {
             "family_count": len(families),
             "families": [family.relative_to(root).as_posix() for family in families],
@@ -229,15 +239,16 @@ def _validate_standalone_bundle(
     if not root.is_dir():
         return {"valid": False, "errors": [f"root is not a directory: {root}"]}
 
-    required_files = (
-        {"operator.md"}
-        if kind == "operator"
-        else {"task_graph.md", "task_graph.yaml", "graph.py"}
-    )
+    required_files = {"task_graph.yaml", "graph.py"}
+    if kind == "operator":
+        required_files = (
+            {"scientific_operator.py"} if (root / "scientific_operator.py").is_file()
+            else {"scientific_operator.c", "scientific_operator.h"}
+        )
     allowed_dirs = {"adapters", "nodes"} if kind == "task_graph" else set()
     root_entries = list(root.iterdir())
     for required in sorted(required_files):
-        if not (root / required).is_file():
+        if not (root / required).is_file() or not (root / required).read_bytes().strip():
             errors.append(f"standalone {kind} requires file: {required}")
     for entry in sorted(root_entries, key=lambda path: path.name):
         if entry.is_dir() and entry.name in allowed_dirs:

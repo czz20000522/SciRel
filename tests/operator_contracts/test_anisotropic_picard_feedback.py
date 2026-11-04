@@ -22,6 +22,19 @@ def test_rejects_unpaired_field_green_matrices():
         scientific_operator(**_inputs(g_br=np.eye(4)))
 
 
+def test_full_old_state_retention_and_zero_initialization():
+    old = np.array([0.2, 0.3, 0.4, 0.5])
+    retained = scientific_operator(**_inputs(currents_old=old, relax=1.0, g_psi=np.eye(4)))
+    np.testing.assert_allclose(retained["picard_current_state"], old)
+    np.testing.assert_allclose(retained["plasma_currents"], 0.04)
+    np.testing.assert_allclose(retained["psi"], _inputs()["psi_vac"] + old.reshape(2, 2))
+    np.testing.assert_array_equal(retained["initial_picard_current_state"], np.zeros(4))
+
+    initialized = scientific_operator(**_inputs(currents_old=None, relax=1.0))
+    np.testing.assert_array_equal(initialized["picard_current_state"], np.zeros(4))
+    np.testing.assert_allclose(initialized["plasma_currents"], 0.04)
+
+
 def test_reviewed_relation_example():
     import numpy as np
     from scirel.equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux

@@ -31,7 +31,10 @@ declared dependency injection and do not receive scientific ports. The callable 
 adapter supplies only the `inputs` mapping; any additional named parameters must therefore be optional. The scientific callable remains responsible for
 the documented unit, shape, dtype, applicability and numerical checks because v1 port constraints are human-readable
 rather than an executable value schema. The adapter converts mappings, sequences and array-like `tolist()` results
-to JSON-compatible values without renaming outputs or changing values. Scientific failures remain the causal
+to JSON-compatible values without renaming outputs or changing scientific values. A finite complex scalar is
+represented as `{"real": <number>, "imag": <number>}`; each complex array element uses the same representation
+inside shape-preserving nested lists. Non-finite components fail with `result_not_serializable`. Consumers use
+the selected output port's declared dtype to interpret this pair. Scientific failures remain the causal
 exception of an adapter `invocation_failed` error.
 
 ## Common binding and forbidden fields
@@ -46,7 +49,7 @@ Every successful response carries:
     "catalog_id": "scirel-development-pilot",
     "release_version": "0.1.0.dev5",
     "root_digest": "sha256:<catalog-release-root>",
-    "coverage": {"status": "partial", "included_asset_count": 14, "declared_total_asset_count": 62}
+    "coverage": {"status": "partial", "included_asset_count": 24, "declared_total_asset_count": 71}
   }
 }
 ```

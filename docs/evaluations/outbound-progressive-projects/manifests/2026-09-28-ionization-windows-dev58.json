@@ -1,0 +1,94 @@
+{
+  "schema": "scirel.outbound-evaluation-manifest.v1",
+  "case_id": "2026-09-28-ionization-windows-dev58",
+  "status": "one_rescue_assisted_development_project",
+  "not_claims": [
+    "autonomous_scientific_interpretation_pass",
+    "expert_approval",
+    "trusted_release",
+    "public_v1",
+    "external_atomic_physics_validation",
+    "codefusion_host_comparison",
+    "os_enforced_examiner_isolation"
+  ],
+  "runtime": {
+    "r81_manifest_sha256": "a9924e8926ad240b1e6c3aaaf57cc2896a262c3776ea33daa786cd6884ab4dc0",
+    "wheel": {
+      "path": "build/verification/unseen-ionization-windows-20260928/solver/host-assets/scirel-0.1.0.dev58-py3-none-any.whl",
+      "sha256": "60ce811067e2c808b7ed0176bdb4572bf8bea322badc40b7eca3e8f42bc7090a"
+    },
+    "catalog_root_digest": "sha256:61bb7e828098e244a0285bfb772f59a9f43e3d3576caa907d9ca769c09e5ae4d",
+    "catalog_coverage": "169/169 pending_unapproved development assets"
+  },
+  "harness": {
+    "cli": "Claude Code 2.1.281",
+    "requested_model_alias": "fable",
+    "trace_model_label": "GLM-5.3-Flash",
+    "session_id": "55cdad36-38ee-4c4b-8ef5-69b46b1eaa0c",
+    "solver_used_bash_despite_pwsh_instruction": true,
+    "prompt_workspace_separation_only": true
+  },
+  "opening": {
+    "binding": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/launch-binding.md",
+      "sha256": "0c59ce9bc0922277a5d604fb94fd2a593134319774edb0fe3c181ebcf5c2b0e7"
+    },
+    "oracle": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/expected.json",
+      "sha256": "55524990992929518c97b7318ac40d794ab70d3c91057cf10aee0bd6be529b73"
+    },
+    "stage1_prompt": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/evaluation_prompt_stage1.txt",
+      "sha256": "41f454c82eadde61241db5c962a4d8460726ace740e9ef9d1221ec1755f3fdb0"
+    },
+    "stage2_prompt": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/evaluation_prompt_stage2.txt",
+      "sha256": "06df00edf0409ad44a58c5df0650aad6f0e64c4c1064c27b1e2374ad29fd5cf2"
+    }
+  },
+  "evidence": {
+    "stage1_archive": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/stage1-frozen.tgz",
+      "sha256": "6443d3dcce13bc3b01a89600f0153cb022b3a3289b347e6d2bbe06c924b6716c"
+    },
+    "stage1_trace": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/stage1-trace.jsonl",
+      "sha256": "38a2dc344242984fc116423b94089e6b41a16634e7287991a90dad352c14f491"
+    },
+    "autonomous_stage2_archive": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/stage2-autonomous-frozen.tgz",
+      "sha256": "e97a5c80f7fa0114bfce2131e4bc6922d9bc7dbd7bdd3a1fe4210a50f21eeff1"
+    },
+    "autonomous_stage2_trace": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/stage2-trace.jsonl",
+      "sha256": "69eddd70759d9c683920cd5a6c3d934858270be64c37c17df727032f1fb5cdcf"
+    },
+    "rescue_prompt": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/evaluation_prompt_rescue1.txt",
+      "sha256": "d0dbb99b5c23eebe747afad21f9f75c4831a0f707bc6459a453837e32d4c3fe1"
+    },
+    "rescue_trace": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/rescue1-trace.jsonl",
+      "sha256": "35823257cd06a091b6ab62b6078714a28630dbca3fa1651b94cc249f5361ac10"
+    },
+    "final_archive": {
+      "path": "build/verification/unseen-ionization-windows-20260928/examiner/final-frozen.tgz",
+      "sha256": "ab6e94e7a4302b2b4f0589b21df13af7cd9bbca6f4b5091801972d1c97bf59ef"
+    }
+  },
+  "observed": {
+    "stage1_project_tests_passed": 8,
+    "stage1_csv_oracle_matched": true,
+    "autonomous_stage2_project_tests_passed": 13,
+    "autonomous_stage2_numeric_oracle_matched": true,
+    "stage1_csv_byte_identical_after_stage2": true,
+    "autonomous_interpretation_error": "integrated hazard labelled as repeat ionizations of one H0 atom",
+    "rescue_rounds": 1,
+    "final_project_tests_passed": 17,
+    "final_ordinary_entrypoint_exit_code": 0,
+    "final_numeric_csv_oracle_matched": true,
+    "original_stage1_files_preserved": true,
+    "final_result_files_byte_identical_after_rerun": 4,
+    "method_affected_tests_passed": 7
+  }
+}

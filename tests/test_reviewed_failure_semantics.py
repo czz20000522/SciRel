@@ -53,6 +53,7 @@ def test_prescribed_end_loss_evaluation_still_exposes_unbalanced_current():
     result = _end_loss([1e18, 1e18], [0., 0.], mode='evaluate', phi_plug_v=0.)
     np.testing.assert_allclose(result['relative_current_residual'], 1.)
     assert result['iterations'] == 0
+    assert result['converged'] is True
 
 
 def test_constant_field_retains_declared_zero_derivative():

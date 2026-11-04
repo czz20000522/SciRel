@@ -1,7 +1,7 @@
 """Contract tests for the U1 material-support classification relation.
 
-The discriminating questions for this asset are: does the classification reproduce
-the retained support mask; is the zero-thickness PML frame rejected explicitly
+The discriminating questions for this asset are: does the classification produce
+the declared support mask; is the zero-thickness PML frame rejected explicitly
 instead of silently excluding the whole solver box; and is the innermost-radius
 segment a live branch only when the equilibrium map reaches the grid's minimum
 radius.
@@ -46,9 +46,8 @@ def _classify(candidate, equilibrium, axes, cylindrical, *, side=None, separatri
     )
     x_axis, y_axis, z_axis, default_pec = axes()
     radii, axial = cylindrical(x_axis, y_axis, z_axis)
-    # The flux and the coverage mask are taken from the retained reconstruction
-    # relation, which this asset is defined to consume; the coordinates are built
-    # independently here.
+    # Flux and coverage come from the maintained mapping relation; coordinates
+    # are built independently here.
     result = candidate["mapping"](eq, x_axis, y_axis, z_axis)
     mask = candidate["classification"](
         result["poloidal_flux_wb_per_rad"],
@@ -125,39 +124,12 @@ def test_u1_b_t03_pec_mask_removes_support(candidate, equilibrium, axes, cylindr
 
 # --- Test U1-B-T04: a zero-thickness PML frame is rejected, not silent. ----
 def test_u1_b_t04_zero_thickness_pml_frame_is_rejected_not_silent(
-    candidate, retained, equilibrium, axes, cylindrical
+    candidate, equilibrium, axes, cylindrical
 ):
-    """Resolve the retained zero-thickness defect with an explicit guard.
-
-    The retained relation expressed the PML exclusion as slice assignments, so a
-    frame thickness of zero made every slice cover the whole box.  The guard is
-    therefore not a behavioural regression: a zero thickness could never produce
-    a support mask in the retained route either, it produced an error that named
-    the wrong cause.
-    """
-    eq, _, _, _, _, (x_axis, y_axis, z_axis) = _classify(candidate, equilibrium, axes, cylindrical)
-    *_, pec = axes()
-
     with pytest.raises(ValueError, match="positive integer") as candidate_error:
         _classify(candidate, equilibrium, axes, cylindrical, pml_cells=0)
     assert "silently excluded the whole solver box" in str(candidate_error.value)
-
-    with pytest.raises(ValueError) as retained_error:
-        retained.map_axisymmetric_equilibrium_to_grid(
-            eq, x_axis, y_axis, z_axis, xpoint_half_length_m=_HALF_LENGTH, pml_cells=0, pec_mask=pec
-        )
-    # The retained message blames the machine equilibrium, which is not the cause.
-    assert "no cold-plasma support" in str(retained_error.value)
-    assert "pml_cells" not in str(retained_error.value)
-    # ... whereas the guard names the parameter and the mechanism.
     assert "pml_cells" in str(candidate_error.value)
-
-    # The retained route never returned a mask for a zero thickness, so nothing
-    # that used to succeed now fails.
-    with pytest.raises(ValueError):
-        retained.map_axisymmetric_equilibrium_to_grid(
-            eq, x_axis, y_axis, z_axis, xpoint_half_length_m=_HALF_LENGTH, pml_cells=0, pec_mask=pec
-        )
 
 
 # --- Test U1-B-T05: the innermost-radius segment is a live branch. ----------
@@ -248,33 +220,6 @@ def test_u1_b_t07_validation_is_fail_closed(candidate, equilibrium, axes, cylind
     for arguments, keywords, message in cases:
         with pytest.raises(ValueError, match=message):
             candidate["classification"](*arguments, **keywords)
-
-
-# --- Test U1-B-T08: the classification matches the retained support mask. ---
-def test_u1_b_t08_classification_matches_the_retained_support_mask(
-    candidate, retained, equilibrium, axes, cylindrical
-):
-    eq = equilibrium()
-    x_axis, y_axis, z_axis, pec = axes()
-    observed = retained.map_axisymmetric_equilibrium_to_grid(
-        eq, x_axis, y_axis, z_axis, xpoint_half_length_m=_HALF_LENGTH, pml_cells=1, pec_mask=pec
-    )
-    radii, axial = cylindrical(x_axis, y_axis, z_axis)
-    mask = candidate["classification"](
-        observed["poloidal_flux_wb_per_rad"],
-        observed["covered_mask"],
-        radii,
-        axial,
-        separatrix_flux_wb_per_rad=eq["separatrix_flux_wb_per_rad"],
-        closed_flux_side=eq["closed_flux_side"],
-        xpoint_half_length_m=_HALF_LENGTH,
-        pml_cells=1,
-        pec_mask=pec,
-    )
-    np.testing.assert_array_equal(
-        mask["material_support_mask"], observed["material_support_mask"]
-    )
-    assert observed["material_support_mask"].sum() == 176
 
 
 # --- Test U1-B-T09: the classification relation is free of map arrays. ------

@@ -54,7 +54,7 @@ The generated file is task-local evidence, not a standardized asset document,
 an Agent protocol, or evidence of expert approval. Standardization still has to
 produce exact `scirel.asset-document.v1` records and pass scientific review.
 
-## Current stress input
+## Historical stress snapshots
 
 The historical saved development pressure snapshot contains six projects:
 `aorsa3d`, `cql3d`, `FIDASIM`, `gseq`, `KN1DPy`, and `Pleiades`. Its inventory
@@ -63,12 +63,12 @@ blocking findings were reported across two projects and therefore keep their
 candidates from becoming ready. This is historical pressure evidence, not a
 claim about every current archive directory.
 
-The currently available CodeFusion archive snapshot contains four projects:
+The separately inspected CodeFusion archive snapshot contained four projects:
 `aorsa3d`, `FIDASIM`, `KN1DPy`, and `Pleiades`. A fresh rescan produced 423
 operators, 257 task graphs, 680 assets, and zero gaps. It is a separate input
 snapshot and must not be combined with the six-project totals above.
 
-The current `材料/extracted_assets` saved-L1 root is a third snapshot. A
+The `材料/extracted_assets` saved-L1 root was a third snapshot. A
 2026-09-19 rescan produced 920 operators and 355 task graphs across eight
 projects (1275 assets, zero gaps): `aorsa3d`, `aorsa_tokamak`, `cql3d`,
 `FIDASIM`, `genray`, `gseq`, `KN1DPy`, and `Pleiades`. In this snapshot cql3d
@@ -77,6 +77,9 @@ findings below remain regression cases; they are not claims about this current
 archive. The similarly named `最小闭环/cql3d` and `最小闭环/gseq` directories
 are source/reference projects rather than saved-L1 roots and must not be used
 as substitutes.
+
+The following table describes the historical six-project snapshot, not either
+of the later archive scans:
 
 | project | operators | task graphs | assets | candidate gate |
 | --- | ---: | ---: | ---: | --- |

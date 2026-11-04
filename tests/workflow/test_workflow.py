@@ -11,9 +11,11 @@ from scirel_workflow import (
     ReviewDecision,
     ReviewOutcome,
     SciRelWorkflow,
+    StandardizationSubmission,
     WorkflowError,
     WorkflowStatus,
 )
+from scirel_workflow.models import digest
 
 
 ASSET_DOCUMENT = json.loads(
@@ -30,6 +32,68 @@ def ready_candidate() -> CandidatePackage:
         source_artifact_ref="artifact://l1/pleiades",
         source_digest="sha256:l1",
         run_id="run-1",
+    )
+
+
+def standardization_submission(
+    candidate: CandidatePackage,
+    *,
+    source_asset_ids: tuple[str, ...] = ("candidate-field",),
+) -> StandardizationSubmission:
+    candidate_document = {"content": "# Candidate\n\nReview the normalized relation."}
+    candidate_document["digest"] = digest(candidate_document)
+    candidate_code = {
+        "kind": "none",
+        "content": None,
+        "rationale": "The existing public implementation is reused unchanged.",
+    }
+    candidate_code["digest"] = digest(candidate_code)
+    candidate_tests = {
+        "content": {"files": {"tests/test_relation.py": "def test_relation(): pass\n"}},
+        "commands": [{"command": "pytest tests/test_relation.py"}],
+        "results": [{"command": "pytest tests/test_relation.py", "exit_code": 0}],
+    }
+    candidate_tests["digest"] = digest(candidate_tests)
+    return StandardizationSubmission.from_mapping(
+        {
+            "schema": "scirel.standardization-submission.dev",
+            "submission_id": "submission-1",
+            "draft_id": "draft-submission-1",
+            "candidate_id": candidate.candidate_id,
+            "candidate_digest": candidate.package_digest,
+            "source_digest": candidate.source_digest,
+            "scirel_git_base": "a" * 40,
+            "candidate_pool_ref": "artifact://scirel/candidate-pool/empty",
+            "candidate_pool_digest": "sha256:" + "b" * 64,
+            "producer": {
+                "harness": {"name": "claude-code", "version": "1"},
+                "model": {"name": "deepseek-v4.1-flash", "version": "proxy"},
+                "skill": {
+                    "name": "scirel-integration",
+                    "version": "dev",
+                    "digest": "sha256:" + "c" * 64,
+                },
+            },
+            "review_units": [
+                {
+                    "review_unit_id": "unit-field",
+                    "source_asset_ids": list(source_asset_ids),
+                    "disposition": "reuse",
+                    "asset_document": ASSET_DOCUMENT,
+                    "candidate_document": candidate_document,
+                    "candidate_code": candidate_code,
+                    "candidate_tests": candidate_tests,
+                    "dependency_asset_ids": [
+                        item["asset_id"]
+                        for item in ASSET_DOCUMENT["version"]["dependencies"]
+                    ],
+                    "evidence": [{"kind": "comparison", "ref": "run://comparison/1"}],
+                    "gaps": [],
+                }
+            ],
+            "run_evidence": [{"kind": "harness_run", "ref": "run://standardize/1"}],
+            "gaps": [],
+        }
     )
 
 
@@ -68,6 +132,344 @@ def test_l1_candidate_moves_through_review_and_release():
     assert release.release_digest.startswith("sha256:")
 
 
+def test_model_submission_is_bound_and_queued_for_item_review():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization",
+    )
+    submission = standardization_submission(candidate)
+    workflow = SciRelWorkflow(candidate)
+
+    draft = workflow.submit_standardization(
+        submission,
+        expected_scirel_git_base="a" * 40,
+        expected_candidate_pool_digest="sha256:" + "b" * 64,
+        expected_skill_digest="sha256:" + "c" * 64,
+    )
+
+    assert workflow.status is WorkflowStatus.REVIEW_PENDING
+    assert draft.status is WorkflowStatus.REVIEW_PENDING
+    assert draft.assets == (ASSET_DOCUMENT,)
+    batch_evidence, unit_evidence = draft.evidence
+    assert batch_evidence["submission_digest"] == submission.submission_digest
+    assert unit_evidence["asset_id"] == ASSET_DOCUMENT["asset_id"]
+    assert unit_evidence["candidate_document"]["content"].startswith("# Candidate")
+    assert unit_evidence["candidate_code"]["kind"] == "none"
+    assert unit_evidence["candidate_tests"]["results"][0]["exit_code"] == 0
+
+
+def no_change_submission_payload(*source_asset_ids: str):
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": item} for item in source_asset_ids],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/reuse",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-reuse",
+    )
+    payload = standardization_submission(candidate).to_dict()
+    payload["review_units"] = []
+    payload["input_dispositions"] = [{
+        "source_asset_ids": list(source_asset_ids),
+        "disposition": "exact_duplicate",
+        "target_asset_id": ASSET_DOCUMENT["asset_id"],
+        "target_ref": "git://" + "a" * 40 + "/catalog/examples/field.json",
+        "target_digest": digest(ASSET_DOCUMENT),
+        "evidence": [{"kind": "comparison", "ref": "run://comparison/1"}],
+    }]
+    return candidate, payload
+
+
+def test_no_change_submission_finishes_without_a_review_item_or_release():
+    from scirel_plugin.adapter import review_items_from_body, review_ui_projection
+
+    candidate, payload = no_change_submission_payload("candidate-field")
+    submission = StandardizationSubmission.from_mapping(payload)
+    workflow = SciRelWorkflow(candidate)
+
+    assert workflow.submit_standardization(submission) is None
+    assert workflow.status is WorkflowStatus.NO_CHANGES
+    snapshot = workflow.to_dict()
+    assert snapshot["draft"] is None
+    assert snapshot["review"] is None
+    assert snapshot["release"] is None
+    assert snapshot["no_change_submission"] == submission.to_dict()
+    assert SciRelWorkflow.from_dict(snapshot).to_dict() == snapshot
+    assert review_items_from_body(json.dumps(snapshot).encode()) == []
+    assert review_ui_projection(workflow)["available_actions"] == []
+    with pytest.raises(WorkflowError):
+        workflow.release(
+            release_id="not-a-release",
+            catalog_ref="artifact://catalog/dev",
+            catalog_digest="sha256:" + "c" * 64,
+            wheel_ref="artifact://wheel/dev",
+            wheel_digest="sha256:" + "d" * 64,
+            release_version="0.1.0.dev5",
+        )
+    with pytest.raises(WorkflowError, match="no-change"):
+        workflow.create_draft(draft_id="unexpected", assets=[ASSET_DOCUMENT])
+    with pytest.raises(WorkflowError, match="no-change"):
+        workflow.submit_standardization(submission)
+    with pytest.raises(WorkflowError, match="no-change"):
+        workflow.apply_automated_result(AutomatedCheckResult(
+            "new-result", candidate.candidate_id, candidate.source_digest,
+            ({"name": "later", "status": "passed"},),
+        ))
+
+
+def test_no_change_completion_owns_nested_input_and_exported_snapshot():
+    candidate, payload = no_change_submission_payload("candidate-field")
+    payload["input_dispositions"][0]["evidence"][0]["metrics"] = {"error": 0.0}
+    payload["run_evidence"][0]["runtime"] = {"version": "fixed"}
+    submission = StandardizationSubmission.from_mapping(payload)
+    original_submission = json.loads(json.dumps(submission.to_dict()))
+    payload["input_dispositions"][0]["evidence"][0]["metrics"]["error"] = 99.0
+    assert submission.to_dict() == original_submission
+
+    workflow = SciRelWorkflow(candidate)
+    workflow.submit_standardization(submission)
+    expected = json.loads(json.dumps(workflow.to_dict()))
+    expected_digest = workflow.record.no_change_submission.submission_digest
+
+    # Mutating either the supplied model or its original payload cannot edit a
+    # completed comparison, including metadata nested outside dispositions.
+    submission.input_dispositions[0]["target_asset_id"] = "changed-after-submit"
+    submission.input_dispositions[0]["evidence"][0]["metrics"]["error"] = 1.0
+    submission.producer["skill"]["version"] = "changed-after-submit"
+    payload["run_evidence"][0]["runtime"]["version"] = "changed-after-submit"
+    assert workflow.to_dict() == expected
+    assert workflow.record.no_change_submission.submission_digest == expected_digest
+
+    exported = workflow.to_dict()
+    exported["no_change_submission"]["input_dispositions"][0]["target_asset_id"] = "changed-export"
+    exported["no_change_submission"]["input_dispositions"][0]["evidence"][0]["metrics"]["error"] = 2.0
+    exported["no_change_submission"]["producer"]["skill"]["version"] = "changed-export"
+    exported["candidate"]["assets"][0]["candidate_asset_id"] = "changed-export"
+    assert workflow.to_dict() == expected
+    assert workflow.record.no_change_submission.submission_digest == expected_digest
+
+
+def test_no_change_restoration_owns_its_input_snapshot():
+    candidate, payload = no_change_submission_payload("candidate-field")
+    payload["run_evidence"][0]["runtime"] = {"version": "fixed"}
+    workflow = SciRelWorkflow(candidate)
+    workflow.submit_standardization(StandardizationSubmission.from_mapping(payload))
+    snapshot = workflow.to_dict()
+    restored = SciRelWorkflow.from_dict(snapshot)
+    expected = json.loads(json.dumps(restored.to_dict()))
+    expected_digest = restored.record.no_change_submission.submission_digest
+    snapshot["no_change_submission"]["run_evidence"][0]["runtime"]["version"] = "modified"
+    snapshot["no_change_submission"]["producer"]["skill"]["version"] = "modified"
+    snapshot["no_change_submission"]["input_dispositions"][0]["target_asset_id"] = "modified"
+    assert restored.to_dict() == expected
+    assert restored.record.no_change_submission.submission_digest == expected_digest
+
+
+def test_mixed_submission_queues_only_changed_assets_and_retains_reuse_lineage():
+    from scirel_plugin.adapter import review_items_from_body
+
+    candidate, payload = no_change_submission_payload("candidate-field", "duplicate")
+    payload["input_dispositions"][0]["source_asset_ids"] = ["duplicate"]
+    payload["review_units"] = standardization_submission(candidate).to_dict()["review_units"]
+    payload["review_units"][0]["disposition"] = "new_capability"
+    workflow = SciRelWorkflow(candidate)
+
+    draft = workflow.submit_standardization(StandardizationSubmission.from_mapping(payload))
+
+    assert workflow.status is WorkflowStatus.REVIEW_PENDING
+    assert len(draft.assets) == 1
+    disposition_evidence = [
+        item for item in draft.evidence if item["kind"] == "standardization_input_disposition"
+    ]
+    assert disposition_evidence == [
+        {"kind": "standardization_input_disposition", **payload["input_dispositions"][0]}
+    ]
+    snapshot = workflow.to_dict()
+    assert "no_change_submission" not in snapshot
+    assert len(review_items_from_body(json.dumps(snapshot).encode())) == 1
+    assert SciRelWorkflow.from_dict(snapshot).to_dict() == snapshot
+
+
+def test_mixed_submission_owns_new_disposition_evidence_on_input_and_export():
+    candidate, payload = no_change_submission_payload("candidate-field", "duplicate")
+    payload["input_dispositions"][0]["source_asset_ids"] = ["duplicate"]
+    payload["input_dispositions"][0]["evidence"][0]["metrics"] = {"error": 0.0}
+    payload["review_units"] = standardization_submission(candidate).to_dict()["review_units"]
+    payload["review_units"][0]["disposition"] = "new_capability"
+    submission = StandardizationSubmission.from_mapping(payload)
+    workflow = SciRelWorkflow(candidate)
+    draft = workflow.submit_standardization(submission)
+    expected_digest = draft.draft_digest
+
+    submission.input_dispositions[0]["source_asset_ids"].append("unvalidated-source")
+    submission.input_dispositions[0]["evidence"][0]["metrics"]["error"] = 1.0
+    assert draft.draft_digest == expected_digest
+
+    snapshot = workflow.to_dict()
+    for draft_record in (snapshot["draft"], *snapshot["drafts"]):
+        item = next(
+            item for item in draft_record["evidence"]
+            if item["kind"] == "standardization_input_disposition"
+        )
+        item["source_asset_ids"].append("unvalidated-export")
+        item["evidence"][0]["metrics"]["error"] = 2.0
+    assert draft.draft_digest == expected_digest
+
+
+@pytest.mark.parametrize("mutation", ["missing", "duplicate", "unknown"])
+def test_input_dispositions_do_not_bypass_complete_unique_source_accounting(mutation):
+    candidate, payload = no_change_submission_payload("candidate-field", "second")
+    if mutation == "missing":
+        payload["input_dispositions"][0]["source_asset_ids"] = ["candidate-field"]
+        message = "does not account"
+    elif mutation == "duplicate":
+        payload["review_units"] = standardization_submission(candidate).to_dict()["review_units"]
+        message = "more than once"
+    else:
+        payload["input_dispositions"][0]["source_asset_ids"].append("another-run")
+        message = "unknown source"
+    with pytest.raises(WorkflowError, match=message):
+        SciRelWorkflow(candidate).submit_standardization(StandardizationSubmission.from_mapping(payload))
+
+
+@pytest.mark.parametrize("field,value", [
+    ("target_ref", ""), ("target_digest", "invalid"), ("evidence", []),
+    ("disposition", "unresolved"),
+])
+def test_reuse_disposition_requires_exact_target_and_comparison_basis(field, value):
+    _, payload = no_change_submission_payload("candidate-field")
+    payload["input_dispositions"][0][field] = value
+    with pytest.raises(ValueError):
+        StandardizationSubmission.from_mapping(payload)
+
+
+def test_no_change_submission_cannot_hide_unresolved_science():
+    candidate, payload = no_change_submission_payload("candidate-field")
+    payload["gaps"] = ["unresolved units"]
+    with pytest.raises(WorkflowError, match="gaps"):
+        SciRelWorkflow(candidate).submit_standardization(StandardizationSubmission.from_mapping(payload))
+
+
+@pytest.mark.parametrize("mutation", ["source", "coverage", "checks", "gaps", "draft"])
+def test_no_change_snapshot_revalidates_completion_and_cannot_gain_review_authority(mutation):
+    candidate, payload = no_change_submission_payload("candidate-field")
+    workflow = SciRelWorkflow(candidate)
+    workflow.submit_standardization(StandardizationSubmission.from_mapping(payload))
+    snapshot = workflow.to_dict()
+    if mutation == "source":
+        snapshot["no_change_submission"]["source_digest"] = "sha256:" + "0" * 64
+    elif mutation == "coverage":
+        snapshot["no_change_submission"]["input_dispositions"][0]["source_asset_ids"] = ["unknown"]
+    elif mutation == "checks":
+        snapshot["candidate"]["automated_checks"] = [{"name": "replay", "status": "failed"}]
+    elif mutation == "gaps":
+        snapshot["no_change_submission"]["gaps"] = ["unresolved science"]
+    else:
+        draft_workflow = SciRelWorkflow(candidate)
+        draft = draft_workflow.create_draft(draft_id="injected", assets=[ASSET_DOCUMENT])
+        snapshot["draft"] = draft.to_dict()
+        snapshot["drafts"] = [draft.to_dict()]
+        snapshot["status"] = "draft"
+    with pytest.raises(WorkflowError):
+        SciRelWorkflow.from_dict(snapshot)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("candidate_digest", "sha256:" + "0" * 64, "candidate digest"),
+        ("source_digest", "sha256:" + "0" * 64, "source digest"),
+        ("scirel_git_base", "d" * 40, "Git base"),
+        ("candidate_pool_digest", "sha256:" + "d" * 64, "candidate-pool digest"),
+    ],
+)
+def test_model_submission_rejects_stale_or_unrelated_bindings(field, value, message):
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-bindings",
+    )
+    payload = standardization_submission(candidate).to_dict()
+    payload[field] = value
+    submission = StandardizationSubmission.from_mapping(payload)
+
+    with pytest.raises(WorkflowError, match=message):
+        SciRelWorkflow(candidate).submit_standardization(
+            submission,
+            expected_scirel_git_base="a" * 40,
+            expected_candidate_pool_digest="sha256:" + "b" * 64,
+            expected_skill_digest="sha256:" + "c" * 64,
+        )
+
+
+def test_model_submission_must_account_for_every_candidate_asset():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [
+                {"candidate_asset_id": "candidate-field"},
+                {"candidate_asset_id": "candidate-unaccounted"},
+            ],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-coverage",
+    )
+
+    with pytest.raises(WorkflowError, match="does not account"):
+        SciRelWorkflow(candidate).submit_standardization(
+            standardization_submission(candidate)
+        )
+
+
+def test_model_submission_rejects_source_claimed_by_multiple_review_units():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-duplicate-source",
+    )
+    payload = standardization_submission(candidate).to_dict()
+    second = dict(payload["review_units"][0])
+    second["review_unit_id"] = "unit-second"
+    second["asset_document"] = {**ASSET_DOCUMENT, "asset_id": "scirel.field.second"}
+    payload["review_units"].append(second)
+    submission = StandardizationSubmission.from_mapping(payload)
+
+    with pytest.raises(WorkflowError, match="more than once"):
+        SciRelWorkflow(candidate).submit_standardization(submission)
+
+
+def test_model_submission_rejects_modified_three_piece_content():
+    candidate = CandidatePackage.from_l1(
+        {
+            "assets": [{"candidate_asset_id": "candidate-field"}],
+            "automated_checks": [{"name": "replay", "status": "passed"}],
+        },
+        source_artifact_ref="artifact://l1/standardization",
+        source_digest="sha256:" + "1" * 64,
+        run_id="run-standardization-materials",
+    )
+    payload = standardization_submission(candidate).to_dict()
+    payload["review_units"][0]["candidate_tests"]["content"] = {"files": {}}
+
+    with pytest.raises(ValueError, match="candidate_tests.digest does not match"):
+        StandardizationSubmission.from_mapping(payload)
+
+
 def test_open_draft_can_be_replaced_without_creating_review_history():
     workflow = SciRelWorkflow(ready_candidate())
     original = workflow.create_draft(
@@ -96,32 +498,22 @@ def test_open_draft_can_be_replaced_without_creating_review_history():
     assert len(restored.record.drafts) == 1
 
 
-def test_queued_draft_can_be_updated_until_expert_observes_it():
+def test_uploaded_draft_cannot_be_updated_before_expert_opens_it():
     workflow = SciRelWorkflow(ready_candidate())
-    original = workflow.create_draft(
+    workflow.create_draft(
         draft_id="draft-frozen", assets=[ASSET_DOCUMENT]
     )
     workflow.submit_for_review()
 
-    updated = workflow.update_open_draft(
-        assets=[ASSET_DOCUMENT],
-        evidence=[{"kind": "queue-revision", "ref": "artifact://candidate/a-plus"}],
-    )
+    with pytest.raises(WorkflowError, match="only a pre-upload draft"):
+        workflow.update_open_draft(
+            assets=[ASSET_DOCUMENT],
+            evidence=[
+                {"kind": "queue-revision", "ref": "artifact://candidate/a-plus"}
+            ],
+        )
 
-    assert updated.draft_id == original.draft_id
-    assert updated.draft_digest != original.draft_digest
     assert workflow.status is WorkflowStatus.REVIEW_PENDING
-
-    workflow = SciRelWorkflow.from_dict(workflow.to_dict())
-    assert workflow.status is WorkflowStatus.REVIEW_PENDING
-    assert len(workflow.record.drafts) == 1
-    assert workflow.record.draft is not None
-    assert workflow.record.draft.draft_digest == updated.draft_digest
-
-    workflow.start_review()
-
-    with pytest.raises(WorkflowError, match="only an open draft"):
-        workflow.update_open_draft(assets=[ASSET_DOCUMENT])
 
 
 def test_l1_candidate_preserves_one_project_id():
@@ -763,6 +1155,6 @@ def test_review_event_requires_registered_plugin():
         host.emit_event(
             plugin_id="unregistered",
             event_type="scirel.test",
-            workflow_run_id="run-1",
+            plugin_context_ref="run-1",
             correlation_id="job-1",
         )

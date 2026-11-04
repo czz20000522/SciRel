@@ -1,0 +1,28 @@
+{
+  "schema": "scirel.review-host-export-acceptance.dev",
+  "candidate_entry_id": "candidate:a90a56d6c69390d65c38b7ac8de7597ea5d6f5ef7cc7776377668daa8a7d3c14",
+  "workflow_revision": "sha256:a9099aa88aee7256e1d1e841b28779b458c2f39d192d672a1d6a40e10c82cb6a",
+  "item_count": 13,
+  "review_pending_items": 13,
+  "needs_evidence_items": 0,
+  "approved_items": 0,
+  "approval_state": "pending_unapproved",
+  "applied_transitions": 0,
+  "host_source_revision": "2d3de66e04d81fcbb94fd069bb7f4d93630cd844",
+  "host_environment": "isolated_development_service_new_database",
+  "host_project_ref": "prj_290e904e17aba15361caa5eb3d86d254289a",
+  "host_export_artifact_ref": "cf://artifact/upload_fa5c81ba0673533e29f0a09d47e376b55e19e9566762efb6",
+  "host_export_artifact_digest": "sha256:6e46b5fc63b0ab4287aaead559b656a3f97e5c97b6eeee3e7b0d60da0ae52bd5",
+  "host_export_bytes": 9110,
+  "same_key_replay": true,
+  "ordinary_export_status": 403,
+  "ordinary_cross_project_read_status": 400,
+  "host_receipt_digest": "sha256:04d71ccf70fc4e3fb39633fa15d31d944cc713a8f878f10da107909189c63888",
+  "verification_boundary": "D2 checked the local host receipt, CodeFusion Git revision, workflow revision, and 13-item candidate count. The CodeFusion owner checked the downloaded host Artifact bytes against its digest. D2 did not independently download the host Artifact or compare all exported item refs with the SciRel candidate.",
+  "not_claims": [
+    "complete_unpublished_candidate_census",
+    "scientific_approval",
+    "public_release",
+    "stable_outbound_acceptance"
+  ]
+}

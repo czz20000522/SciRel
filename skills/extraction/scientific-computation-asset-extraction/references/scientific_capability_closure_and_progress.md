@@ -7,7 +7,19 @@ not add a formal asset type or replace Level 0/Level 1.
 
 ## 1. Discover scientific closure, not source structure
 
-Start from each declared terminal scientific output or state. Identify the governing equation or coupled
+Before freezing the denominator, make a source-first terminal-output inventory independently of the current
+candidate list. Follow public callable returns, physically meaningful diagnostics, tested/example call paths,
+model selectors, and versioned or archived source trees included in the bound source digest. For each named output
+or branch, point to its source anchor and either a target path, an asset that already covers the same relation,
+or a specific non-candidate/version disposition. A whole archive, public routine group, or selector cannot be
+dismissed by a broad label such as `harness`, `external producer`, or `default not used` when it contains executable
+physics. A distinct source version may have its own freeze claim, but then the current source scope and completion
+claim must say so explicitly. Conversely, an alternate hard-coded parameter fixture of an already source-supported
+generic relation is not automatically a new capability. An independent reviewer repeats this source-first pass
+without deriving its search denominator from the candidate's target list; compare the two inventories before M0
+or `full_freeze` is accepted. A structural index helps find anchors but does not decide the scientific disposition.
+
+Start from each inventoried terminal scientific output or state. Identify the governing equation or coupled
 equation system, place it at the center, and expand outward to the smallest well-posed closure slice that
 can produce the target under one declared case:
 
@@ -168,8 +180,14 @@ the declared source scope must not be recorded as M0--M4 extraction progress.
 Milestone completion is ordered: M1 requires M0, M2 requires M1, and M3 requires M2. M2 `edge_ids` must
 equal every material edge incident to the selected capabilities within their declared target-path scope;
 an empty list is valid only when that derived set is empty. M3 `partition_ids` must equal the complete
-declared coverage denominator. A `terminally_classified` target path blocks M4; an intentionally excluded
-path must be removed by an explicit scope revision and new census rather than counted as passing closure.
+declared coverage denominator. A `terminally_classified` target path blocks M4; it is not a passed reassembly.
+If source evidence establishes that a path itself cannot execute to its declared terminal result, record its
+anchors, exact defect, scientific role, and recoverable subrelations as a non-candidate disposition. An explicit
+source-derived scope revision may then remove only that path from the executable target denominator while keeping
+it visible in the source census and disposition record. Rebind the manifest, matrix, source scope digest, and fresh
+`1.0` snapshot before recomputing M0--M4. Missing dependencies, incomplete extraction, difficult numerics, and
+missing tests are not evidence that a source path is non-executable. Every remaining executable core path still
+requires canonical and independently sealed-holdout reassembly against the exact frozen bundle.
 
 Schema `1.0` is the sole progress contract. It carries a validator-derived milestone projection and
 source-backed target-path reassembly evidence. Superseded meanings and temporary version labels must be
@@ -395,10 +413,71 @@ oracle may be a bounded source runtime, an authoritative source fixture, or a so
 derivation is itself retained as evidence. Internal package tests or captured intermediate state are not a
 substitute for this record.
 Every evidence reference carries its SHA-256 digest. Current validation resolves these files relative to the
-authoritative run root and rejects missing, escaping, symlinked, or digest-mismatched evidence. The comparison
-receipt is JSON with schema `scirel.extraction-reassembly-comparison.v1`; it repeats the target, case kind,
-source-scope digest, bundle digest, identical input digests, tolerance-contract digest, ordered terminal-output
-IDs, and one `status=passed` comparison record per output.
+authoritative run root and rejects missing, escaping, symlinked, or digest-mismatched evidence. Existing
+`scirel.extraction-reassembly-comparison.v1` receipts remain historical or working evidence; a current
+`bounded_delivery` or `full_freeze` claim uses `scirel.extraction-reassembly-comparison.v2`. The `.v2` JSON
+repeats the target, case kind, source-scope digest, bundle digest, identical input digests, tolerance-contract
+digest, ordered terminal-output IDs, and one comparison record per output. Each record names the metric and
+its finite, non-negative observed and allowed quantities, with the actual comparison passing. It repeats the
+same `bundle_execution_ref` and SHA-256 as the case and binds a run-relative
+`bundle_execution_receipt_ref` with its SHA-256 digest; that execution receipt must report integer
+`exit_code=0`.
+
+Choose the metric from the output and tolerance semantics: use a defined `mismatch_count` for discrete or
+Boolean outputs; use a scalar maximum absolute or relative error only when that scalar tolerance applies
+uniformly; for mixed per-element tolerances, use a genuine `max_normalized_error` or retain the individual
+element comparisons. `max_error <= max_tol` does not prove a mixed-tolerance pass. The independent reviewer
+checks the metric against the retained raw outputs, elementwise tolerance contract, and complete source-derived
+terminal-output denominator. The deterministic `.v2` checks reject internally inconsistent pass claims but
+cannot establish those scientific facts or an appropriate tolerance by themselves.
+
+When the original source and candidate execution, explicit inputs, per-output results, tolerances, and bound
+source/bundle digests are retained and unchanged, derive a `.v2` receipt from that evidence without rerunning
+the physics solely because the receipt shape changed. Record the derivation and new digest; do not infer missing
+raw values, independence, or a passing comparison from a `.v1` status flag alone. If the retained data cannot
+support the required metric or execution binding, leave the affected gate open and rerun only the necessary
+slice with a fresh attempt.
+
+The following rebind protocol applies when existing project reports or optional legacy package pages change in a new working snapshot; it does not require D1 to create formal asset pages or authorize editing a frozen upstream delivery. Such an edit changes the exact bundle-tree digest, but need not repeat a scientific execution. Before
+editing, retain a `scirel.bundle-file-manifest.v1` record with the old exact bundle digest and SHA-256 of every
+non-cache file. If the old execution names that digest, compare the manifest to the current tree. The existing
+`scirel.execution-rebind.v1` permits edits only to the three root project reports (`program_framework_map.md`,
+`extraction_report.md`, `extraction_ledger.md`), including their deferred first creation or removal, with exact
+`changed_report_paths`. Every file outside those root reports must retain the same path and bytes.
+`scirel.execution-rebind.v2` additionally permits adding or correcting only package `operators/<name>/operator.md`
+and `task_graphs/<name>/task_graph.md`, with exact `changed_document_paths` and a SHA-256-bound
+`scirel.documentation-rebind-review.v1` receipt. That independent read-only review must bind the old and current
+bundle digests, source scope, unchanged-file identity, and all changed document paths, and affirm that the final
+pages agree with the frozen source, fixed code, real inputs/outputs, tests, and retained raw evidence. That review
+receipt requires `review_id`, `reviewer_role=independent_subagent`, `verdict=pass`,
+`code_and_science_consistent=true`, `reviewed_document_paths`, and a findings list. Neither
+version permits implementation, test, config, asset-entry, or runtime-metadata edits. Preserve the old execution
+and probe receipts, including the runtime image ID, and issue a new comparison receipt at the new exact bundle
+digest. The rebind names both bundle digests, the old manifest reference and digest, the SHA-256 identity of
+unchanged files, target/case identity, source-scope/input/tolerance digests, execution and probe references/digests,
+and the probe image ID. The retained execution must itself record the matching case input digest. The validator
+checks the file comparison and bound review shape; the independent scientific reviewer checks that raw results
+still support the comparison. A real change to scientific meaning, code, dependency, input, source, or environment
+requires fresh validation of the affected closure. Keep old receipts and whole-bundle digests as history.
+
+The identical-input requirement is within each case: source and candidate receive the same explicit inputs.
+Canonical and sealed-holdout evidence must remain independently prepared and sealed from candidate tuning.
+When a candidate-aware coordinator has already seen comparison results, a hash written before the next probe
+proves only that the case was fixed for that probe. To establish independence for a new variable-input case,
+use a source-only author or a source-derived selection rule insulated from candidate code, digests, prior results,
+known failing branches, and target-output hints that could steer the choice. Give the author the source's
+admissible input domain without those candidate-specific cues. Retain the exact case bytes, selection rationale,
+and a commitment made before that case's source/candidate comparison or tolerance/harness adjustment. After the
+author exits, seal an independently owned copy that the author cannot rewrite; verify its digest and chronology
+before candidate-aware reassembly. If choosing from several sealed cases after seeing candidate results,
+predeclare the selection rule or compare the whole sealed set rather than selecting a convenient pass.
+An independently fixed case or source-derived reference established before candidate feedback need not use a
+separate author when its origin and immutable seal are verifiable. If the runtime cannot isolate case authoring
+or seal its output, leave independence open while continuing other source-led work.
+If the source exposes only one fixed admissible input, do not invent a tunable parameter or label an identical
+rerun as a new holdout case. A separately established, source-derived reference or independent observation may
+support a holdout for that fixed domain only when its origin, sealing, and distinct evidentiary role are recorded;
+otherwise keep the holdout gate open as `validation_oracle_gap`. This does not extend the claim to other inputs.
 
 Use only the canonical gap labels for `classification`. For every non-passed target path, record exactly
 one earliest unresolved capability or edge with reason, next action, and owner. This answers “why is the
@@ -455,12 +534,23 @@ M0--M4 milestone projection or the conservative progress vector:
 | Kind | Meaning | Required evidence and next action |
 | --- | --- | --- |
 | `active` | work remains actionable in the current scope | non-empty `active_frontier`, named owner and next action |
-| `bounded_delivery` | named target paths are runnable and deliverable under an explicit claim ceiling; remaining scope is not silently included | non-empty `delivered_target_ids`, unresolved IDs or an explicit empty remainder, holdout/evidence refs, and a reopen condition |
+| `bounded_delivery` | an independent subagent has reviewed a finite, source-backed delivery slice under an explicit claim ceiling; remaining scope is not silently included | non-empty `delivered_target_ids`; digest-bound bounded-delivery review receipt with `verdict=pass`; reviewed targets and canonical/sealed-holdout evidence; unresolved IDs or an explicit empty remainder; and a reopen condition |
 | `blocked_external` | no safe action remains under the current snapshot | non-empty frontier, named external/human/source dependency, and exact reopen condition |
-| `full_freeze` | the declared scope is fully extracted | frozen census, `progress.overall=1.0`, completed M4, and empty frontier |
+| `full_freeze` | the declared scope is fully extracted | frozen census, `progress.overall=1.0`, completed M4, empty frontier, and a fixed-sandbox-validated root `asset_entry.py` |
 
 Use `bounded_delivery` when a useful source-free slice can be handed to users without pretending that
-the project is complete. Use `blocked_external` when the remaining work cannot advance until a source
+the project is complete. A separate read-only subagent must review the source-derived census, selected bundle,
+reassembly evidence, and deferred register and issue the pass receipt. It is not valid to place the missing science
+only in `extraction_report.md`: the delivered target must execute from the bundle and pass the same reassembly
+contract used by `full_freeze`. The review receipt must list the closure signal's evidence references and the
+source-oracle, bundle-execution, comparison, and tolerance references for every delivered case. Its
+`claim_ceiling` and `reopen_condition` must match the closure signal.
+Do not promote an `active` or `reopened` project with missing source comparison or scientific coverage to a
+qualified complete L1 handoff. A failed wrapper or receipt field is evidence about that attempt, not proof that
+its actual scientific output is wrong: inspect the bound code, inputs, environment, and results, preserve the
+failure, and repair only the affected mapping or check when independent evidence supports reuse. The scientific
+comparison and whole-source denominator still must close before `full_freeze`.
+Use `blocked_external` when the remaining work cannot advance until a source
 revision, external producer, missing schema, or human decision arrives. A task may stop at either
 signal; it must not continue indefinitely with an unqualified “still working” status. The signal must
 state the claim ceiling and the exact condition that reopens work.
@@ -472,6 +562,19 @@ contains `state`, it must equal the signal kind (or be `reopened` while the sign
 worker, derives eligibility for `full_freeze`. The project intake gate must also resolve
 every machine-readable `task_graphs/...` and `operators/...` asset reference and reject
 nested TaskGraph cycles; package-local tests do not establish this cross-package closure.
+External binding validation rejects a `full_freeze` bundle without a regular, non-symlinked
+root `asset_entry.py`. Before freezing, execute `scripts/validate_asset_entry.py` in the fixed
+source-free asset sandbox with the expected operator and TaskGraph counts. Bind its JSON execution receipt
+under `closure_signal.asset_entry_validation` by run-relative path and SHA-256. The receipt records
+`validator=validate_asset_entry.py`, `sandbox=CODEFUSION_ASSET_SANDBOX=1`, integer `exit_code=0`, the exact
+`asset_entry_sha256`, `bundle_digest`, `operators`, and `task_graphs`. This final-delivery gate does not
+require an entry from ordinary active or incomplete snapshots.
+
+Deterministic validation is intentionally incomplete. It protects stable structural invariants and binds evidence;
+it does not attempt to encode an exhaustive scientific understanding of every source language or implementation
+shortcut. For `bounded_delivery`, an independent subagent owns the semantic exit review. The same delegation pattern
+may be used for non-enumerable checks during `full_freeze`, alongside its unchanged deterministic gates. Record the
+review as evidence, but do not treat a subagent verdict as expert approval or release.
 
 Use the shared [stage boundary contract](stage_boundary_contract.md) for structured
 `boundary_event` records. Provider/worker failures and validator defects are recoverable
@@ -491,6 +594,14 @@ Generate a fresh snapshot whenever any of these changes:
 Do not edit an older snapshot in place; create a new snapshot identity and retain the old one as evidence.
 The executive report cites the latest validated snapshot and repeats only its vector and active frontier.
 Historical completion claims remain in the event ledger and may not override the current snapshot.
+Keep compact resumable notes and the minimum source-version, scientific-scope, definition/port and validation
+anchors during extraction. Code comments, docstrings, YAML and existing evidence are valid homes; do not create
+another draft page for recoverable facts. Derive the concise root handoff from the stable final snapshot.
+Formal asset pages are produced after D2 deduplication, correction and assembly, before final review freeze;
+they are not a D1 `full_freeze` prerequisite. D2 annotates only its derived candidate, never the read-only L1 input.
+Private notes can change without rebinding science. A changed cited claim, source scope, code, input or consumed
+evidence requires a successor snapshot and affected-slice validation. The rebind above applies to optional
+legacy pages/root records in a successor; preserve all prior frozen evidence and avoid unrelated recomputation.
 
 Package/file/test totals remain freeze diagnostics. They are never the numerator or denominator of
 scientific extraction progress.

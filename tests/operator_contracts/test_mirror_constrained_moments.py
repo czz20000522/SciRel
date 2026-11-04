@@ -1,5 +1,6 @@
 # 覆盖：无损失锥解析极限、端塞损失锥、单侧端塞拒绝、caller profile(psi) 与显式数组等价。
 import numpy as np
+import pytest
 
 from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments, evaluate_mirror_constrained_moments as scientific_operator
 
@@ -38,6 +39,43 @@ def test_single_plug_field_is_rejected():
     except ValueError:
         return
     raise AssertionError('expected invalid one-sided plug contract to fail')
+
+
+def test_refill_one_skips_plug_profiles_but_still_validates_quadrature_control():
+    args = (1.25, 0.0, 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
+
+    def unexpected_profile(_psi):
+        raise AssertionError('refill-one branch must not evaluate plug profiles')
+
+    baseline = scientific_operator(*args)
+    restored = scientific_operator(
+        *args, b_plug_left_t=unexpected_profile,
+        b_plug_right_t=unexpected_profile,
+        phi_plug_left_v=unexpected_profile,
+        phi_plug_right_v=unexpected_profile,
+        loss_cone_refill=1.0,
+    )
+    np.testing.assert_allclose(restored['density_m3'], baseline['density_m3'])
+    np.testing.assert_allclose(restored['p_parallel_pa'], baseline['p_parallel_pa'])
+    np.testing.assert_allclose(restored['p_perpendicular_pa'], baseline['p_perpendicular_pa'])
+    with pytest.raises(ValueError, match='quadrature_order'):
+        scientific_operator(*args, quadrature_order=7.9)
+
+
+def test_fractional_quadrature_order_uses_its_integer_part():
+    args = (1.25, 0.0, 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
+    plugs = dict(b_plug_left_t=4.0, b_plug_right_t=5.0,
+                 phi_plug_left_v=800.0, phi_plug_right_v=-800.0)
+    integer = scientific_operator(*args, quadrature_order=16, **plugs)
+    fractional = scientific_operator(*args, quadrature_order=16.9, **plugs)
+    for field in ('density_pitch_integral', 'parallel_pitch_integral',
+                  'perpendicular_pitch_integral'):
+        np.testing.assert_array_equal(fractional[field], integer[field])
+
+
+def test_signed_negative_charge_is_supported_by_the_leaf():
+    result = scientific_operator(1.0, 0.0, 1.0, M, -E, 1e18, E, E, 1.0)
+    np.testing.assert_allclose(result['density_m3'], 1e18 * np.e)
 
 
 def test_vectorized_psi_profile_matches_its_explicit_array_values():

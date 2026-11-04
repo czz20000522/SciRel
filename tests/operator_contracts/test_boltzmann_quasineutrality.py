@@ -18,6 +18,15 @@ def test_array_broadcast_and_zero_density_are_finite():
     )
     assert np.all(np.isfinite(result["logarithmic_charge_residual"]))
     assert result["electron_density_m3"].shape == (2,)
+    assert result["electron_density_m3"][0] == 0.0
+    assert result["electron_pressure_pa"][0] == 0.0
+    assert result["logarithmic_charge_residual"][0] == 0.0
+    assert result["relative_charge_residual"][0] == 0.0
+
+
+def test_exponent_is_clipped_before_electron_density():
+    result = scientific_operator(1.0e6, 1.0e-19, 1.0, 0.0, 0.0, 1.0)
+    np.testing.assert_allclose(result["electron_density_m3"], np.exp(700.0), rtol=0.0)
 
 
 @pytest.mark.parametrize("kwargs", [{"electron_temperature_j": 0.0}, {"ion_density_m3": -1.0}])
