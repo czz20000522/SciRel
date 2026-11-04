@@ -32,17 +32,20 @@ is the source's momentum-transfer surrogate, not measured independent viscosity.
 The default five-angle midpoint rule is approximate; n_theta permits explicit
 convergence studies. These model assumptions are retained, not hidden quirks.
 """
+
 from __future__ import annotations
-
-
 
 
 import numpy as np
 
-from .molecular_hydrogen_charge_exchange_cross_section import evaluate_molecular_hydrogen_charge_exchange_cross_section
+from .molecular_hydrogen_charge_exchange_cross_section import (
+    evaluate_molecular_hydrogen_charge_exchange_cross_section,
+)
 from .hydrogen_h2_elastic_cross_section import evaluate_hydrogen_h2_elastic_cross_section
 from .hydrogen2_proton_elastic_cross_section import evaluate_hydrogen2_proton_elastic_cross_section
-from .hydrogen2_hydrogen2_elastic_cross_section import evaluate_hydrogen2_hydrogen2_elastic_cross_section
+from .hydrogen2_hydrogen2_elastic_cross_section import (
+    evaluate_hydrogen2_hydrogen2_elastic_cross_section,
+)
 from ._velocity_geometry import averaged_matrix, predecessor_state
 
 __all__ = ["assemble_molecular_hydrogen_collision_matrices"]
@@ -73,7 +76,9 @@ def _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta=5):
 # --------------------------------------------------------------------------- #
 # Public operator.                                                             #
 # --------------------------------------------------------------------------- #
-def assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5):
+def assemble_molecular_hydrogen_collision_matrices(
+    vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5
+):
     """Assemble the molecular H2 four-family SIG collision matrices.
 
     Parameters
@@ -103,7 +108,9 @@ def assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm,
         raw_arrays = tuple(np.asarray(value) for value in carriers)
         if any(value.dtype.kind not in "iuf" for value in raw_arrays) or any(
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
             for value in carriers
         ):
             raise ValueError("carrier arrays must have real numeric dtypes")
@@ -113,21 +120,38 @@ def assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm,
     except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError("invalid velocity-space carrier for molecular SIG assembly") from exc
     if (
-        vr.ndim != 1 or vx.ndim != 1 or Vr2pidVr.ndim != 1 or dVx.ndim != 1
-        or vr.size < 1 or vx.size < 1
-        or vr.size != Vr2pidVr.size or vx.size != dVx.size
-        or not np.all(np.isfinite(vr)) or not np.all(np.isfinite(vx))
-        or not np.all(np.isfinite(Vr2pidVr)) or not np.all(np.isfinite(dVx))
-        or np.any(vr <= 0.0) or not np.all(np.diff(vr) > 0.0)
+        vr.ndim != 1
+        or vx.ndim != 1
+        or Vr2pidVr.ndim != 1
+        or dVx.ndim != 1
+        or vr.size < 1
+        or vx.size < 1
+        or vr.size != Vr2pidVr.size
+        or vx.size != dVx.size
+        or not np.all(np.isfinite(vr))
+        or not np.all(np.isfinite(vx))
+        or not np.all(np.isfinite(Vr2pidVr))
+        or not np.all(np.isfinite(dVx))
+        or np.any(vr <= 0.0)
+        or not np.all(np.diff(vr) > 0.0)
         or not np.all(np.diff(vx) > 0.0)
-        or np.any(Vr2pidVr < 0.0) or np.any(dVx <= 0.0)
-        or temperature.ndim != 0 or mass.ndim != 0
-        or temperature.dtype.kind not in "iuf" or mass.dtype.kind not in "iuf"
-        or not np.isfinite(temperature) or float(temperature) <= 0.0
-        or not np.isfinite(mass) or float(mass) <= 0.0
+        or np.any(Vr2pidVr < 0.0)
+        or np.any(dVx <= 0.0)
+        or temperature.ndim != 0
+        or mass.ndim != 0
+        or temperature.dtype.kind not in "iuf"
+        or mass.dtype.kind not in "iuf"
+        or not np.isfinite(temperature)
+        or float(temperature) <= 0.0
+        or not np.isfinite(mass)
+        or float(mass) <= 0.0
     ):
         raise ValueError("invalid velocity-space carrier for molecular SIG assembly")
-    if isinstance(n_theta, (bool, np.bool_)) or not isinstance(n_theta, (int, np.integer)) or n_theta < 1:
+    if (
+        isinstance(n_theta, (bool, np.bool_))
+        or not isinstance(n_theta, (int, np.integer))
+        or n_theta < 1
+    ):
         raise ValueError("n_theta must be a positive integer")
     angular_weights = np.ones(n_theta) / n_theta
     Tnorm = float(temperature)
@@ -146,7 +170,9 @@ def assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm,
     if not np.isfinite(Vth2) or Vth2 <= 0.0:
         raise ValueError("thermal normalization is not representable")
 
-    v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx = _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta)
+    v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx = _build_predecessor_state(
+        vr, vx, Vr2pidVr, dVx, n_theta
+    )
 
     # Energy factors (verbatim, source kinetic_h2.py:1045,1061,1078,1108).
     ecx = H_MASS * Vth2 / Q
@@ -158,25 +184,36 @@ def assemble_molecular_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm,
     # SIG_CX (source kinetic_h2.py:1044-1049)
     sig["SIG_CX"] = averaged_matrix(
         v_v * evaluate_molecular_hydrogen_charge_exchange_cross_section(v_v2 * ecx),
-        Vr2pidVrdVx, angular_weights, nsig,
+        Vr2pidVrdVx,
+        angular_weights,
+        nsig,
     )
 
     # SIG_H2_H (source kinetic_h2.py:1060-1066)
     sig["SIG_H2_H"] = averaged_matrix(
         v_v * evaluate_hydrogen_h2_elastic_cross_section(v_v2 * e_half),
-        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+        Vr2pidVrdVx * vx_vx,
+        angular_weights,
+        nsig,
     )
 
     # SIG_H2_P (source kinetic_h2.py:1077-1091)
     sig["SIG_H2_P"] = averaged_matrix(
         v_v * evaluate_hydrogen2_proton_elastic_cross_section(v_v2 * e_half),
-        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+        Vr2pidVrdVx * vx_vx,
+        angular_weights,
+        nsig,
     )
 
     # SIG_H2_H2 (source kinetic_h2.py:1107-1120)
     sig["SIG_H2_H2"] = averaged_matrix(
-        vr2_vx2 * v_v * evaluate_hydrogen2_hydrogen2_elastic_cross_section(v_v2 * eh2, viscosity=True) / 8.0,
-        Vr2pidVrdVx, angular_weights, nsig,
+        vr2_vx2
+        * v_v
+        * evaluate_hydrogen2_hydrogen2_elastic_cross_section(v_v2 * eh2, viscosity=True)
+        / 8.0,
+        Vr2pidVrdVx,
+        angular_weights,
+        nsig,
     )
 
     for key, value in sig.items():

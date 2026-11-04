@@ -17,14 +17,28 @@ approximation; finite-grid quadrature does not guarantee exact Maxwell balance.
 
 from ._elastic_moments import reduce_elastic_moments
 
-__all__ = ['assemble_molecular_hydrogen_omega_frequencies']
+__all__ = ["assemble_molecular_hydrogen_omega_frequencies"]
 
 
 def assemble_molecular_hydrogen_omega_frequencies(
-    fH2, nH2, Alpha_H2_P, Alpha_H2_H, SIG_H2_H2,
-    Vr2pidVr, dVx, vr, vx, Vth, vxi, VxH, *,
-    moment_state='central', target_distribution=None,
-    H2_P_EL=True, H2_H_EL=True, H2_H2_EL=True,
+    fH2,
+    nH2,
+    Alpha_H2_P,
+    Alpha_H2_H,
+    SIG_H2_H2,
+    Vr2pidVr,
+    dVx,
+    vr,
+    vx,
+    Vth,
+    vxi,
+    VxH,
+    *,
+    moment_state="central",
+    target_distribution=None,
+    H2_P_EL=True,
+    H2_H_EL=True,
+    H2_H2_EL=True,
 ):
     """Reduce physical nonnegative velocity distributions on a common grid.
 
@@ -74,9 +88,23 @@ def assemble_molecular_hydrogen_omega_frequencies(
         target invariants, nonboolean flags or unrepresentable finite results.
     """
     return reduce_elastic_moments(
-        fH2, nH2, Alpha_H2_P, Alpha_H2_H, SIG_H2_H2,
-        Vr2pidVr, dVx, vr, vx, Vth, vxi, VxH,
-        moment_state=moment_state, target_distribution=target_distribution,
-        enabled=(H2_P_EL, H2_H_EL, H2_H2_EL), names=('H2_P', 'H2_H', 'H2_H2'),
-        flow_name='VxH2', stress_name='Wperp_paraH2', mass_fractions=(1/3, 1/3),
+        fH2,
+        nH2,
+        Alpha_H2_P,
+        Alpha_H2_H,
+        SIG_H2_H2,
+        Vr2pidVr,
+        dVx,
+        vr,
+        vx,
+        Vth,
+        vxi,
+        VxH,
+        moment_state=moment_state,
+        target_distribution=target_distribution,
+        enabled=(H2_P_EL, H2_H_EL, H2_H2_EL),
+        names=("H2_P", "H2_H", "H2_H2"),
+        flow_name="VxH2",
+        stress_name="Wperp_paraH2",
+        mass_fractions=(1 / 3, 1 / 3),
     )

@@ -10,7 +10,9 @@ def finite_nonnegative_energy(value):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         energy = np.asarray(raw, dtype=float)
@@ -39,8 +41,9 @@ def positive_real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_))
-                    for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         result = np.asarray(raw, dtype=float)

@@ -21,14 +21,15 @@ E_D. Thus mixed/CX factors are Tnorm/mu and self viscosity is Tnorm.
 Default five-angle midpoint integration is approximate. n_theta enables an
 explicit angular convergence study; fit fidelity is not universal accuracy.
 """
+
 from __future__ import annotations
-
-
 
 
 import numpy as np
 
-from .atomic_hydrogen_charge_exchange_cross_section import evaluate_atomic_hydrogen_charge_exchange_cross_section
+from .atomic_hydrogen_charge_exchange_cross_section import (
+    evaluate_atomic_hydrogen_charge_exchange_cross_section,
+)
 from .atomic_hydrogen_elastic_cross_section import evaluate_atomic_hydrogen_elastic_cross_section
 from .hydrogen_h2_elastic_cross_section import evaluate_hydrogen_h2_elastic_cross_section
 from .hydrogen_proton_elastic_cross_section import evaluate_hydrogen_proton_elastic_cross_section
@@ -91,7 +92,9 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
         raw_arrays = tuple(np.asarray(value) for value in carriers)
         if any(value.dtype.kind not in "iuf" for value in raw_arrays) or any(
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
             for value in carriers
         ):
             raise ValueError("carrier arrays must have real numeric dtypes")
@@ -101,21 +104,38 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     except (TypeError, ValueError, OverflowError) as exc:
         raise ValueError("invalid velocity-space carrier for SIG assembly") from exc
     if (
-        vr.ndim != 1 or vx.ndim != 1 or Vr2pidVr.ndim != 1 or dVx.ndim != 1
-        or vr.size < 1 or vx.size < 1
-        or vr.size != Vr2pidVr.size or vx.size != dVx.size
-        or not np.all(np.isfinite(vr)) or not np.all(np.isfinite(vx))
-        or not np.all(np.isfinite(Vr2pidVr)) or not np.all(np.isfinite(dVx))
-        or np.any(vr <= 0.0) or not np.all(np.diff(vr) > 0.0)
+        vr.ndim != 1
+        or vx.ndim != 1
+        or Vr2pidVr.ndim != 1
+        or dVx.ndim != 1
+        or vr.size < 1
+        or vx.size < 1
+        or vr.size != Vr2pidVr.size
+        or vx.size != dVx.size
+        or not np.all(np.isfinite(vr))
+        or not np.all(np.isfinite(vx))
+        or not np.all(np.isfinite(Vr2pidVr))
+        or not np.all(np.isfinite(dVx))
+        or np.any(vr <= 0.0)
+        or not np.all(np.diff(vr) > 0.0)
         or not np.all(np.diff(vx) > 0.0)
-        or np.any(Vr2pidVr < 0.0) or np.any(dVx <= 0.0)
-        or temperature.ndim != 0 or mass.ndim != 0
-        or temperature.dtype.kind not in "iuf" or mass.dtype.kind not in "iuf"
-        or not np.isfinite(temperature) or float(temperature) <= 0.0
-        or not np.isfinite(mass) or float(mass) <= 0.0
+        or np.any(Vr2pidVr < 0.0)
+        or np.any(dVx <= 0.0)
+        or temperature.ndim != 0
+        or mass.ndim != 0
+        or temperature.dtype.kind not in "iuf"
+        or mass.dtype.kind not in "iuf"
+        or not np.isfinite(temperature)
+        or float(temperature) <= 0.0
+        or not np.isfinite(mass)
+        or float(mass) <= 0.0
     ):
         raise ValueError("invalid velocity-space carrier for SIG assembly")
-    if isinstance(n_theta, (bool, np.bool_)) or not isinstance(n_theta, (int, np.integer)) or n_theta < 1:
+    if (
+        isinstance(n_theta, (bool, np.bool_))
+        or not isinstance(n_theta, (int, np.integer))
+        or n_theta < 1
+    ):
         raise ValueError("n_theta must be a positive integer")
     angular_weights = np.ones(n_theta) / n_theta
     Tnorm = float(temperature)
@@ -134,7 +154,9 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     if not np.isfinite(Vth2) or Vth2 <= 0.0:
         raise ValueError("thermal normalization is not representable")
 
-    v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx = _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta)
+    v_v2, v_v, vr2_vx2, vx_vx, Vr2pidVrdVx = _build_predecessor_state(
+        vr, vx, Vr2pidVr, dVx, n_theta
+    )
 
     # Energy factor shared by SIG_CX / SIG_H_H2 / SIG_H_P (0.5*H_MASS*Vth2/Q).
     # SIG_H_H uses the mu-scaled factor 0.5*H_MASS*mu*Vth2/Q (source kinetic_h.py:957).
@@ -146,25 +168,36 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
     # SIG_CX (source kinetic_h.py:939-945)
     sig["SIG_CX"] = averaged_matrix(
         v_v * evaluate_atomic_hydrogen_charge_exchange_cross_section(v_v2 * ecx),
-        Vr2pidVrdVx, angular_weights, nsig,
+        Vr2pidVrdVx,
+        angular_weights,
+        nsig,
     )
 
     # SIG_H_H (source kinetic_h.py:956-965)
     sig["SIG_H_H"] = averaged_matrix(
-        vr2_vx2 * v_v * evaluate_atomic_hydrogen_elastic_cross_section(v_v2 * ehh, viscosity=True) / 8,
-        Vr2pidVrdVx, angular_weights, nsig,
+        vr2_vx2
+        * v_v
+        * evaluate_atomic_hydrogen_elastic_cross_section(v_v2 * ehh, viscosity=True)
+        / 8,
+        Vr2pidVrdVx,
+        angular_weights,
+        nsig,
     )
 
     # SIG_H_H2 (source kinetic_h.py:979-988)
     sig["SIG_H_H2"] = averaged_matrix(
         v_v * evaluate_hydrogen_h2_elastic_cross_section(v_v2 * ecx),
-        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+        Vr2pidVrdVx * vx_vx,
+        angular_weights,
+        nsig,
     )
 
     # SIG_H_P (source kinetic_h.py:1004-1011)
     sig["SIG_H_P"] = averaged_matrix(
         v_v * evaluate_hydrogen_proton_elastic_cross_section(v_v2 * ecx),
-        Vr2pidVrdVx * vx_vx, angular_weights, nsig,
+        Vr2pidVrdVx * vx_vx,
+        angular_weights,
+        nsig,
     )
 
     for key, value in sig.items():

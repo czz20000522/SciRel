@@ -35,8 +35,8 @@ reference: the saved package records that residual as ``validation_oracle_gap``.
 This module evaluates no velocity mesh, no rate coefficient and no transport
 source; those are separate relations.
 """
-from __future__ import annotations
 
+from __future__ import annotations
 
 
 import numpy as np
@@ -47,11 +47,19 @@ __all__ = [
     "evaluate_atomic_hydrogen_charge_exchange_cross_section",
 ]
 
-_JANE_COEFFICIENTS = np.array([
-    -3.274123792568e1, -8.916456579806e-2, -3.016990732025e-2,
-    9.205482406462e-3, 2.400266568315e-3, -1.927122311323e-3,
-    3.654750340106e-4, -2.788866460622e-5, 7.422296363524e-7,
-])
+_JANE_COEFFICIENTS = np.array(
+    [
+        -3.274123792568e1,
+        -8.916456579806e-2,
+        -3.016990732025e-2,
+        9.205482406462e-3,
+        2.400266568315e-3,
+        -1.927122311323e-3,
+        3.654750340106e-4,
+        -2.788866460622e-5,
+        7.422296363524e-7,
+    ]
+)
 
 
 def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=False):
@@ -88,5 +96,10 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
         raise ValueError("freeman must be a scalar branch selector, not an array")
     energy = clipped_energy(energy_ev, 0.1, 1.0e5 if bool(selector) else 2.01e4)
     if bool(selector):
-        return 1.0e-4 * 0.6937e-14 * (1.0 - 0.155 * np.log10(energy)) ** 2 / (1.0 + 0.1112e-14 * energy**3.3)
+        return (
+            1.0e-4
+            * 0.6937e-14
+            * (1.0 - 0.155 * np.log10(energy)) ** 2
+            / (1.0 + 0.1112e-14 * energy**3.3)
+        )
     return np.exp(log_polynomial(np.log(energy), _JANE_COEFFICIENTS)) * 1.0e-4
