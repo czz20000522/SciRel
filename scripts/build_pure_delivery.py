@@ -25,7 +25,7 @@ BUILD_INPUTS = (
     'build_pure_delivery.py', 'capability_catalog.py', 'capability_query.py',
     'query.py', 'consumer_tools.py', 'serve_consumer_mcp.py', 'solving_skill.py',
     'validate_asset_documents.py', 'public_api_binding.py', 'check_wheel_exposure.py',
-    'validate_installed_wheel.py', 'exposure.py',
+    'validate_installed_wheel.py', 'exposure.py', 'code_digest.py',
 )
 
 

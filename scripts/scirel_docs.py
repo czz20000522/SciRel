@@ -30,6 +30,7 @@ from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
 from capability_catalog import (PublicCatalog, build_capability_index, capability_record,
                                 capability_search_text, load_translations)
 from build_capability_matrix import build_matrix, render_markdown
+from code_digest import contract_digest, source_digest
 from capability_query import (CAPABILITY_INDEX_SCHEMA, CAPABILITY_QUERY_SCHEMA,
                               CAPABILITY_REQUEST_SCHEMA, DEVICE_SCOPES, FILTER_ORDER,
                               REQUEST_SCHEMA, RESPONSE_SCHEMA,
@@ -65,7 +66,7 @@ def sha(data):
 
 
 DOCUMENTATION_BUILD_SCRIPTS = (
-    'scirel_docs.py', 'build_scirel_sphinx.py', 'build_capability_matrix.py',
+    'code_digest.py', 'scirel_docs.py', 'build_scirel_sphinx.py', 'build_capability_matrix.py',
     'capability_query.py', 'capability_catalog.py', 'validate_asset_documents.py', 'public_api_binding.py',
     'exposure.py',
 )
@@ -277,7 +278,7 @@ def chapter_files(asset_ids, *, expected_source_revision=None,
     if expected_wheel_sha256 is not None and execution.get('wheel_sha256') != expected_wheel_sha256:
         raise ValueError('selected chapter execution wheel digest differs from current release')
     for path, digest in execution['files'].items():
-        if sha((ROOT/path).read_bytes()) != digest:
+        if source_digest(ROOT/path) != digest:
             raise ValueError('chapter implementation changed; rerun examples: ' + path)
     for name in ('example', 'results'):
         suffix = '.py' if name == 'example' else '.json'
@@ -287,7 +288,7 @@ def chapter_files(asset_ids, *, expected_source_revision=None,
         if sha((root/name).read_bytes()) != digest:
             raise ValueError('chapter figure binding changed: ' + name)
     for path, digest in execution['document_files'].items():
-        if sha((ROOT/path).read_bytes()) != digest:
+        if contract_digest(ROOT/path) != digest:
             raise ValueError('chapter contract changed; review examples: ' + path)
     chapter = json.loads((root/'chapter.json').read_bytes())
     if chapter.get('id') != 'magnetostatics':

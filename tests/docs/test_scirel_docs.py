@@ -158,7 +158,10 @@ def test_chapter_build_rejects_stale_execution(tmp_path, monkeypatch):
     asset_ids = {x['id'] for x in json.loads((copy/'tools/docs/magnetostatics/chapter.json').read_text())['assets']}
     scirel_docs.chapter_files(asset_ids)
     path = copy/next(iter(binding['files']))
-    path.write_text(path.read_text()+'\n# changed\n')
+    # Evidence is bound to behaviour: a comment does not invalidate it, code does.
+    path.write_text(path.read_text()+'\n# a comment\n')
+    scirel_docs.chapter_files(asset_ids)
+    path.write_text(path.read_text()+'\nCHANGED = 1\n')
     with pytest.raises(ValueError, match='implementation changed'):
         scirel_docs.chapter_files(asset_ids)
 

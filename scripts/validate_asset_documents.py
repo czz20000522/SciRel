@@ -17,6 +17,8 @@ import sys
 import textwrap
 from typing import Any, Iterable
 
+from code_digest import source_digest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSET_SCHEMA = "scirel.asset-document"
@@ -712,7 +714,7 @@ def _explicit_mapping_signature(document: dict[str, Any], function: Any) -> insp
         _fail(document["asset_id"], "complex mapping callable binding differs")
     for name, expected in binding["modules"].items():
         module = importlib.import_module(name)
-        if hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest() != expected:
+        if source_digest(module.__file__) != expected:
             _fail(document["asset_id"], f"complex mapping source binding differs: {name}")
     actual = [{key: port[key] for key in ("name", "required", "default") if key in port}
               for port in document["inputs"]]

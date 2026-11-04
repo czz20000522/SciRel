@@ -25,6 +25,7 @@ import tomllib
 import xml.etree.ElementTree as ET
 
 from capability_catalog import load_translations
+from code_digest import contract_digest, source_digest
 
 LANGUAGE_TAGS = {'zh': 'zh-CN', 'en': 'en-US'}
 ENGLISH_GUIDE_PLACEHOLDER = (
@@ -775,12 +776,13 @@ def render_site(root, docs, book, translations, chapter, *, figure_files=None, m
         else:
             proof_path = kinetic_tutorial_proof(root)
             proof = json.loads(proof_path.read_bytes())
-            bound_paths = dict(proof['source_files'], **proof['document_files'])
-            bound_paths['tools/docs/sphinx/tutorials/kinetic-initial-value.rst'] = proof['tutorial_rst_sha256']
+            bound_paths = {relative: (source_digest, digest) for relative, digest in proof['source_files'].items()}
+            bound_paths.update({relative: (contract_digest, digest) for relative, digest in proof['document_files'].items()})
+            bound_paths['tools/docs/sphinx/tutorials/kinetic-initial-value.rst'] = (source_digest, proof['tutorial_rst_sha256'])
             if not proof['results']['all_checks_passed'] or proof['environment']['exit_code'] != 0:
                 raise ValueError('kinetic tutorial has no successful execution')
-            for relative, digest in bound_paths.items():
-                if hashlib.sha256((root/relative).read_bytes()).hexdigest() != digest:
+            for relative, (measure, digest) in bound_paths.items():
+                if measure(root/relative) != digest:
                     raise ValueError('kinetic tutorial execution binding changed: ' + relative)
         cards = [('用户指南','user-guide/index','从科学概念与输入约定入手，阅读领域导读和完整计算案例。'),('API 参考','reference/index','按科学领域查询调用签名、参数、返回值、失败行为、适用范围及示例。'),('开始使用','getting-started','了解精确安装包、单位约定，以及如何选择并验证一个科学关系。'),('Agent 查询','agent','按主题或精确资产标识读取与页面绑定的正式合同及中文说明。')]
         if matrix is not None:
