@@ -25,7 +25,7 @@ It runs the full test suite, the review registry gate, contract signatures and e
 
 For each operator, the code signature and its numpydoc docstring are the source of truth for parameter names, order, defaults, units, return entries, raised exceptions and the example. The JSON contract keeps what is only for agents (model, scope, applicability, failure semantics, evidence, limitations), and its fields that overlap the docstring are derived from it. When you change one, change the other in the same commit.
 
-`skills/development/scirel-acceptance/scripts/check_contract_sync.py` enforces this for the assets listed in `scripts/contract_sync_scope.json`: signature and input names, required flags and defaults; Parameters, Returns, Raises, See Also and Examples sections; every contract unit written as `[unit]` in the matching docstring entry; every exception in `failure_semantics` listed under Raises; Examples that run as doctests and are the same code as `example.code`; the Chinese reader record bound to the current contract; and phrases listed as stale for the asset. Add an asset to the scope list once its docstring passes; the goal is the whole catalog.
+`skills/development/scirel-acceptance/scripts/check_contract_sync.py` enforces this for the assets listed in `skills/development/scirel-acceptance/scripts/contract_sync_scope.json`: signature and input names, required flags and defaults; Parameters, Returns, Raises, See Also and Examples sections; every contract unit written as `[unit]` in the matching docstring entry; every exception in `failure_semantics` listed under Raises; Examples that run as doctests and are the same code as `example.code`; the Chinese reader record bound to the current contract; and phrases listed as stale for the asset. Add an asset to the scope list once its docstring passes; the goal is the whole catalog.
 
 ## Set up once per clone
 
@@ -40,8 +40,8 @@ The hooks then run the pre-commit check on `git commit` and the full check on `g
 
 Two lists only tighten.
 
-- `scripts/contract_sync_scope.json` lists the assets whose docstring and contract are checked for agreement. Add to it; do not remove from it.
-- `hazard_baseline.json` lists accepted hits of the hazard scan. A new hit fails the check. Read it with the `api-design-method` skill's checklist. Fix it, or if it is intended, regenerate the baseline with `scan_hazards.py src/scirel --write-baseline <file>` and say why in the commit message.
+- `skills/development/scirel-acceptance/scripts/contract_sync_scope.json` lists the assets whose docstring and contract are checked for agreement. Add to it; do not remove from it.
+- `skills/development/scirel-acceptance/hazard_baseline.json` lists accepted hits of the hazard scan. A new hit fails the check. Read it with the `api-design-method` skill's checklist. Fix it, or if it is intended, regenerate the baseline with `scan_hazards.py src/scirel --write-baseline <file>` and say why in the commit message.
 
 ## When a check fails
 
