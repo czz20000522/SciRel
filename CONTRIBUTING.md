@@ -75,3 +75,7 @@ uv sync --locked --group test
 - 提交说明写清改了什么、为什么、可观察行为、验证命令与未验证边界；
 - 不提交生成物（HTML 快照、wheel、缓存）与本机配置；
 - 不要在未经授权时改写冻结的来源、审核或准入记录。
+
+## Issue 和 PR
+
+任务用 `.github/ISSUE_TEMPLATE/agent-task.md` 写明方法、范围和验收标准，PR 用 `.github/pull_request_template.md`。评审按[评审清单](skills/development/scirel-code-style/references/review-checklist.md)判断。仓库没有 CI，PR 里要贴出在最终提交上运行 `check_all.py` 的最后几行。

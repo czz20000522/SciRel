@@ -17,6 +17,10 @@ SciRel is pre-release, so public names can still change without compatibility al
 - Keep physics readable: name intermediate quantities after what they are, and put the formula or source in a comment or the docstring.
 - A broad `except Exception` needs a comment explaining why a narrower type cannot work. It must not turn a programming error into a physics status.
 
+## Review
+
+Judge a pull request with [the review checklist](references/review-checklist.md).
+
 ## Public API
 
 The method for reviewing an API is in the `api-design-method` skill. SciPy's standard practice is SciRel's standard. Follow [the API rules](references/api-spec.md). In short:
