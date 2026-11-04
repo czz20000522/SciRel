@@ -1,4 +1,5 @@
 """Discrete velocity moment compensation for a supplied cylindrical mesh."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -13,9 +14,15 @@ CHARGE = 1.602177e-19
 
 def _cell_fields(quadrature):
     required = (
-        "dvr_vol", "dvx", "dvr", "volume", "speed_squared",
-        "vx_pos_first_index", "vx_pos_last_index",
-        "vx_neg_first_index", "vx_neg_last_index",
+        "dvr_vol",
+        "dvx",
+        "dvr",
+        "volume",
+        "speed_squared",
+        "vx_pos_first_index",
+        "vx_pos_last_index",
+        "vx_neg_first_index",
+        "vx_neg_last_index",
     )
     if isinstance(quadrature, dict):
         radial_measure = quadrature["radial_measure"]
@@ -85,16 +92,16 @@ def compensate_velocity_slice(
     vth_diffs[:, :, 1] = rolled[rs, xs]
     ps, pe = fields["vx_pos_first_index"], fields["vx_pos_last_index"]
     ns, ne = fields["vx_neg_first_index"], fields["vx_neg_last_index"]
-    vrvx_diffs[:, ps + 1:pe + 1, 0] = vx_dist[rs, ps + 1:pe + 1] - vx_dist[rs, ps + 2:pe + 2]
+    vrvx_diffs[:, ps + 1 : pe + 1, 0] = vx_dist[rs, ps + 1 : pe + 1] - vx_dist[rs, ps + 2 : pe + 2]
     vrvx_diffs[:, ps, 0] = -vx_dist[rs, ps + 1]
     vrvx_diffs[:, ne, 0] = vx_dist[rs, ne + 1]
-    vrvx_diffs[:, ns:ne, 0] = -vx_dist[rs, ns + 2:ne + 2] + vx_dist[rs, ns + 1:ne + 1]
+    vrvx_diffs[:, ns:ne, 0] = -vx_dist[rs, ns + 2 : ne + 2] + vx_dist[rs, ns + 1 : ne + 1]
     vrvx_diffs[:, :, 0] += vr_dist[:vr_n, xs] - vr_dist[rs, xs]
-    vrvx_diffs[:, ps + 1:pe + 1, 1] = -vx_dist[rs, ps + 3:pe + 3] + vx_dist[rs, ps + 2:pe + 2]
+    vrvx_diffs[:, ps + 1 : pe + 1, 1] = -vx_dist[rs, ps + 3 : pe + 3] + vx_dist[rs, ps + 2 : pe + 2]
     vrvx_diffs[:, ps, 1] = -vx_dist[rs, ps + 2]
     vrvx_diffs[:, ne, 1] = vx_dist[rs, ne]
-    vrvx_diffs[:, ns:ne, 1] = vx_dist[rs, ns:ne] - vx_dist[rs, ns + 1:ne + 1]
-    vrvx_diffs[1:vr_n, :, 1] += vr_dist[2:vr_n + 1, xs] - vr_dist[3:vr_n + 2, xs]
+    vrvx_diffs[:, ns:ne, 1] = vx_dist[rs, ns:ne] - vx_dist[rs, ns + 1 : ne + 1]
+    vrvx_diffs[1:vr_n, :, 1] += vr_dist[2 : vr_n + 1, xs] - vr_dist[3 : vr_n + 2, xs]
     vrvx_diffs[0, :, 1] -= vr_dist[2, xs]
     if allow_neg:
         vrvx_diffs[0, :, 1] -= vr_dist[1, xs]
@@ -115,7 +122,9 @@ def compensate_velocity_slice(
             vrvx_scalar = 0.0
             vth_scalar = 0.0
             if denom != 0 and ta1 != 0:
-                vrvx_scalar = (ta2 * (target_vx - vx_moment) - ta1 * (target_energy - energy_moment)) / denom
+                vrvx_scalar = (
+                    ta2 * (target_vx - vx_moment) - ta1 * (target_energy - energy_moment)
+                ) / denom
                 vth_scalar = (target_vx - vx_moment - tb1[ib] * vrvx_scalar) / ta1
             do_break = (vth_scalar * signs[ia] > 0) and (vrvx_scalar * signs[ib] > 0)
             if do_break:
@@ -144,12 +153,21 @@ def build_compensated_shifted_maxwellian(
     for k in range(shifts_ms.size):
         if temperatures_eV[k] <= 0:
             continue
-        argument = -(vr[:, None] ** 2 + (vx - shifts_ms[k] / thermal_speed) ** 2) * molecularity * tnorm_eV / temperatures_eV[k]
+        argument = (
+            -(vr[:, None] ** 2 + (vx - shifts_ms[k] / thermal_speed) ** 2)
+            * molecularity
+            * tnorm_eV
+            / temperatures_eV[k]
+        )
         argument = np.where((argument > -80) & (argument < 0.0), argument, -80)
         out[:, :, k] = np.exp(argument)
         integral = np.sum(cells["radial_measure"] * np.matmul(out[:, :, k], cells["dvx"]))
         out[:, :, k] /= np.nansum(integral)
-        target_energy = shifts_ms[k] ** 2 + 3 * CHARGE * temperatures_eV[k] / (molecularity * mu * HYDROGEN_MASS)
-        out[:, :, k], _ = compensate_velocity_slice(out[:, :, k], cells, vr, vx, thermal_speed, shifts_ms[k], target_energy)
+        target_energy = shifts_ms[k] ** 2 + 3 * CHARGE * temperatures_eV[k] / (
+            molecularity * mu * HYDROGEN_MASS
+        )
+        out[:, :, k], _ = compensate_velocity_slice(
+            out[:, :, k], cells, vr, vx, thermal_speed, shifts_ms[k], target_energy
+        )
         out[:, :, k] /= np.sum(cells["radial_measure"] * np.matmul(out[:, :, k], cells["dvx"]))
     return out

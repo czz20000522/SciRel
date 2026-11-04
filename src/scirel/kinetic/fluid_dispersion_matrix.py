@@ -1,4 +1,5 @@
 """Local assembly of the fluid wavevector matrix from species scales, pole residues, and harmonic response terms."""
+
 from __future__ import annotations
 
 import operator
@@ -69,8 +70,16 @@ def assemble_fluid_dispersion_matrix(
     absrhocs = np.asarray(absrhocs, dtype=float)
     bzj = np.asarray(bzj, dtype=complex)
     czj = np.asarray(czj, dtype=complex)
-    for name, arr in (("wps2", wps2), ("wcs", wcs), ("vts", vts), ("rhocs", rhocs),
-                      ("sgns", sgns), ("absrhocs", absrhocs), ("bzj", bzj), ("czj", czj)):
+    for name, arr in (
+        ("wps2", wps2),
+        ("wcs", wcs),
+        ("vts", vts),
+        ("rhocs", rhocs),
+        ("sgns", sgns),
+        ("absrhocs", absrhocs),
+        ("bzj", bzj),
+        ("czj", czj),
+    ):
         if arr.shape != (n_species,) and name not in ("bzj", "czj"):
             raise ValueError(f"{name} must have shape (n_species,)")
         if not np.all(np.isfinite(arr)):
@@ -82,20 +91,30 @@ def assemble_fluid_dispersion_matrix(
     if np.any(wcs == 0.0):
         raise ValueError("wcs must be non-zero: the resonance denominator divides by wcs")
 
-    residues = {_integer(k, "cn_residues order"): np.asarray(v, dtype=complex)
-                for k, v in cn_residues.items()}
-    poles = {_integer(k, "cn_poles order"): np.asarray(v, dtype=complex)
-             for k, v in cn_poles.items()}
-    order_lengths = {_integer(k, "order_lengths order"): _integer(v, "order_lengths value")
-                     for k, v in order_lengths.items()}
+    residues = {
+        _integer(k, "cn_residues order"): np.asarray(v, dtype=complex)
+        for k, v in cn_residues.items()
+    }
+    poles = {
+        _integer(k, "cn_poles order"): np.asarray(v, dtype=complex) for k, v in cn_poles.items()
+    }
+    order_lengths = {
+        _integer(k, "order_lengths order"): _integer(v, "order_lengths value")
+        for k, v in order_lengths.items()
+    }
     required = set(range(1, max_harmonic + 2))
-    if (not required.issubset(residues) or not required.issubset(poles)
-            or not required.issubset(order_lengths)):
+    if (
+        not required.issubset(residues)
+        or not required.issubset(poles)
+        or not required.issubset(order_lengths)
+    ):
         raise ValueError("coefficient tables and lengths must cover orders 1..max_harmonic+1")
     for order in required:
         if order_lengths[order] < 1:
             raise ValueError(f"order_lengths[{order}] must be positive")
-        if residues[order].shape != (order_lengths[order],) or poles[order].shape != (order_lengths[order],):
+        if residues[order].shape != (order_lengths[order],) or poles[order].shape != (
+            order_lengths[order],
+        ):
             raise ValueError(f"coefficient order {order} does not match order_lengths[{order}]")
         if not np.all(np.isfinite(residues[order])) or not np.all(np.isfinite(poles[order])):
             raise ValueError(f"coefficient order {order} must be finite")
@@ -135,16 +154,21 @@ def assemble_fluid_dispersion_matrix(
                     bzj
                     * (
                         xsj / pln**2 * nn**2 / (xsj2 - nn**2)
-                        + pln**2 / xsj
+                        + pln**2
+                        / xsj
                         * (
-                            -(nn + 1.0) ** 2 / (xsj2 - (nn + 1.0) ** 2)
+                            -((nn + 1.0) ** 2) / (xsj2 - (nn + 1.0) ** 2)
                             + (nn >= 1.0) * 2.0 * nn**2 / (xsj2 - nn**2)
                             - (nn >= 2.0) * (nn - 1.0) ** 2 / (xsj2 - (nn - 1.0) ** 2)
                         )
                     )
                 )
                 ctmpyz = np.sum(
-                    sgns[s] * pln * bzj * czj / xsj
+                    sgns[s]
+                    * pln
+                    * bzj
+                    * czj
+                    / xsj
                     * (
                         0.5 * (nn + 1.0) ** 2 / (xsj2 - (nn + 1.0) ** 2)
                         - (nn >= 1.0) * nn**2 / (xsj2 - nn**2)
