@@ -761,7 +761,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-omega-frequencies",
-   "source_sha256": "b1e07a921e7f50fe579fbd4c499759f40ec58829de55c9f2aae11623a94c5f4f",
+   "source_sha256": "d6f8ee283d9e6046ba06b17f5c1afa159fb2970a35411f8cb8ad1e232faa11a9",
    "summary": "在每个空间单元独立归约原子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -1059,7 +1059,8 @@
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
      "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。",
-     "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。"
+     "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。",
+     "当 SIG 取自碰撞矩阵资产时，自碰撞 nu 和 moment_rate 是使用 3/8 前因子的玻尔兹曼物理速率，是 KN1D 值的三倍。"
     ]
    }
   },
@@ -1799,7 +1800,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "0e4cab8afb86e891fec0a05da9837eedaa32010364dc8955b16fb89e5fe6f13e",
+   "source_sha256": "b21340cfe3cfa3367e27552022d9d90cf62d6a270548b906e55f7699c5fdecd7",
    "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）：默认使用九系数 Janev 对数多项式，freeman=True 时改用 Freeman–Jones 解析拟合。两个分支各自在截断后的能量范围上求值，因此拟合域外返回端点值。负能量和非标量分支选择器被拒绝。",
    "definition": "默认分支将能量截断至 [0.1, 2.01e4] eV，返回 exp(polyval(log(E_clipped), a))×1e-4 m²（a 为九系数 Janev 表）。freeman=True 分支截断至 [0.1, 1e5] eV，返回 1e-4×0.6937e-14×(1−0.155 log10(E_clipped))²/(1+0.1112e-14 E_clipped^3.3) m²。两个截断范围之外都返回端点值。",
    "model": "两个独立的所声明截面拟合；不插值外部数据，也不对速率做积分。",
@@ -1850,7 +1851,7 @@
    },
    "failure_semantics": {
     "invalid_input": "非实数、非有限或负能量引发指明 energy_ev 的 ValueError；复数、布尔值和数字字符串不做隐式转换。freeman 为数组时引发指明该参数的 ValueError。",
-    "runtime_failure": "在声明域内不可达：两个拟合只在截断后的正区间求值，合法输入必得有限正结果；无迭代、无分支状态、无部分结果。",
+    "runtime_failure": "在声明域内不可达：两个拟合只在截断后的正区间求值，合法输入必得有限正结果；无迭代、无分支状态、无部分结果。 能量高于所选拟合上限时发出 RuntimeWarning。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
@@ -1871,7 +1872,7 @@
     "known_limitations": [
      "统一输入检查在转浮点之前拒绝复数、布尔和数值字符串能量，不做强制转换；合法实数输入的拟合算术不变。",
      "两个分支都没有对照外部原子物理参考做验证；此处不闭合任何外部验证缺口。",
-     "拟合范围外的能量静默返回端点值；这是所声明的截断约定，不是错误。",
+     "高于拟合上限时返回端点值并发出 RuntimeWarning，因为真实截面继续下降：100 keV 时 Janev 分支约为 Freeman-Jones 分支的 50 倍。低于下限时返回端点值，不发警告。20 到 100 keV 请用 freeman=True。",
      "两分支是不同拟合而非等价形式，误选是运行检查不能识别的科学错误。",
      "负能量和标量选择器拒绝是本合同的显式前提：负能量或数组选择器抛出 ValueError，而不是返回截断端点或做数组归约的分支选择。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
@@ -2132,9 +2133,9 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-collision-matrices",
-   "source_sha256": "275367a4f56b17ee21ba78a14a816aa48b00b7ccdb0ee8705f742cbc8d0e5d0b",
+   "source_sha256": "b61b2ab32887b1c17597e91fe14fac5f7e21e921c9ae83d351999e3a54aa1270",
    "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。",
-   "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>/8。Vth²=2Q*Tnorm/(mu*H_MASS)。分子 CX 拟合能量为 g²*2Tnorm/mu，H2-H 与 H2-P 为 g²*Tnorm/mu，自黏性为 g²*2Tnorm。",
+   "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>*3/8。Vth²=2Q*Tnorm/(mu*H_MASS)。分子 CX 拟合能量为 g²*2Tnorm/mu，H2-H 与 H2-P 为 g²*Tnorm/mu，自黏性为 g²*2Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
    "assumptions": [
     "常数 H_MASS=1.6726231e-27 kg、Q=1.602177e-19 C；Vth=sqrt(2Q*Tnorm/(mu*H_MASS))，全部节点用 v/Vth。",
@@ -2209,7 +2210,7 @@
     },
     {
      "name": "SIG_H2_H2",
-     "description": "带符号自碰撞应力核，包含黏性截面和 1/8。",
+     "description": "带符号自碰撞应力核，包含黏性截面和 3/8。",
      "constraints": "有限，保留正、负及零值。",
      "dtype": "float64 数组"
     },
@@ -2283,7 +2284,8 @@
     "known_limitations": [
      "拟合端点裁剪和分子黏性替代属于模型近似。",
      "默认五角没有普适精度保证；高阶验证不替代用户网格收敛。",
-     "人类科学认可和再分发许可单独决定；验证缺口不因本文件而闭合。"
+     "人类科学认可和再分发许可单独决定；验证缺口不因本文件而闭合。",
+     "自碰撞前因子取玻尔兹曼值 3/8，可复现 Chapman-Enskog 硬球 p/μ。KN1D 报告（LaBombard，PSFC/RR-01-3，附录 B）取 1/8，因为它把 BGK 的 (2v_x²−v_r²) 积分（等于 v_x² 积分的三倍）直接等同于 v_x² 变化率；因此这一通道的结果与 KN1D 相差这一倍数。"
     ]
    }
   },
@@ -3384,7 +3386,7 @@
   },
   {
    "asset_id": "scirel.collisions.molecular-hydrogen-omega-frequencies",
-   "source_sha256": "39cb4dc85a9d1e271a19588d3dfffd2d5a08a4dc22a09ede6eacabb2ea663047",
+   "source_sha256": "dbc4a05320d52a1b65ddbbd872abe04ceacc086dc8cf23ee24d10d3606f42068",
    "summary": "在每个空间单元独立归约分子氢弹性碰撞动量与应力矩，返回归一化系数 Omega（m⁻¹）、物理频率 nu（s⁻¹）及可定义性。零分母保留碰撞矩并显式返回未定义频率，不用人为下限或截正掩盖。",
    "definition": "令 w_ij=Vr2pidVr_i*dVx_j，n=Σwf，u=Σwf vx/n，U=Vth*u，K=vr²−2(vx−u)²。central 状态取 W=ΣwfK/n；target 状态取 W=Σw(f−M)K/n，M 必须保持本单元粒子数、平均速度与总动能。两混合通道 N=Σwf Alpha/n、d=(U−U_background)/Vth；自碰撞 Alpha=SIG_self@F(f)，N=Σwf Alpha/n、d=W。Omega=N/d，nu=Vth*Omega，不截负、不加下限。混合物理加速度 moment_rate=−β Vth² N，自碰撞应力变化率=−Vth³ N；原子 β=(1/2,2/3)，分子 β=(1/3,1/3)。d=0 时 Omega/nu=NaN、defined=False；有限 N 与 moment_rate 仍返回。关闭通道为精确零且状态 disabled。总频率为三通道之和，传播启用通道的未定义值。",
    "model": "动量/应力矩匹配的 BGK 近似；不是完整 Boltzmann 碰撞算子，也不由单点 0/0 推断唯一线性化率。",
@@ -3682,7 +3684,8 @@
      "矩比在接近零的分母处可能病态；没有任意下限，也不由单点数据虚构平衡线性化率。",
      "有限角/速度网格可能产生 Maxwell 应力残差，需按应用收敛检查。",
      "截面拟合、H/D 缩放与分子黏性近似的限制继承；许可仍待判断。",
-     "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。canonical 的零累积 sentinel 分支选择由显式 moment_state/target_distribution 取代，目标分支不再依赖全局累积目标的符号。"
+     "该实现在零/负分母分支上刻意不追求 source parity：canonical 实现会为混合漂移与自应力分母设下限，并把所有 Omega 裁剪为非负；本资产在零分母时返回 NaN 与 defined=False，负比值返回 negative_no_bgk_closure 状态。canonical 的零累积 sentinel 分支选择由显式 moment_state/target_distribution 取代，目标分支不再依赖全局累积目标的符号。",
+     "当 SIG 取自碰撞矩阵资产时，自碰撞 nu 和 moment_rate 是使用 3/8 前因子的玻尔兹曼物理速率，是 KN1D 值的三倍。"
     ]
    }
   },
@@ -4352,7 +4355,7 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
-   "source_sha256": "b9f92d91f763d24fedeae57fbecbc0231304dced604fffa9c40a69d9d0ff7b6f",
+   "source_sha256": "75e1bd1a9cd4a9e1bb1b9a98f2454b7fe3836eb20b13949ccb4d2901dd367bc8",
    "summary": "由成对的等离子体温度和碰撞能量样本（eV）计算 H + H⁺ 电荷交换 Maxwell 速率系数拟合。",
    "definition": "先将正温度和不可负的碰撞能量依次截断至 [0.1, 2.01e4] eV。令 L_T=log(T)、L_E=log(E)，按能量外层、温度内层的累加顺序和 9×9 系数表累加 log_rate=Σ_j=0..8 Σ_i=0..8 a[i,j]*L_E^j*L_T^i。返回 exp(log_rate)×1e-6 m³/s。输出保持成对输入形状。",
    "model": "9×9 二元对数速率拟合，不是在速度网格上积分 Maxwell 分布。",
@@ -4398,7 +4401,7 @@
    },
    "failure_semantics": {
     "invalid_input": "非实数、非有限、形状不等、非正温度或负能量引发 ValueError；拒绝布尔、复数及数字字符串。",
-    "runtime_failure": "派生速率非有限或非正时引发 ValueError。",
+    "runtime_failure": "派生速率非有限或非正时引发 ValueError。 温度或能量高于 2.01e4 eV 时发出 RuntimeWarning。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
@@ -4419,7 +4422,8 @@
      "速率并非运行时由独立截面或速度平均算子推导。",
      "公开分发许可仍待人工决定。",
      "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
-     "冻结的二元拟合对碰撞能量非单调：在 1000 eV、[0.1, 2.01e4] eV 的 500 个对数能量点上，其对數导数变号 6 次，最小值/最大值约 0.66。这是拟合性质而非经验证的物理阈值；调用方不得假定速率单调。"
+     "冻结的二元拟合对碰撞能量非单调：在 1000 eV、[0.1, 2.01e4] eV 的 500 个对数能量点上，其对數导数变号 6 次，最小值/最大值约 0.66。这是拟合性质而非经验证的物理阈值；调用方不得假定速率单调。",
+     "温度或能量高于 2.01e4 eV 时返回端点值并发出 RuntimeWarning；真实速率不同，在 T=5e4 eV、E=1e5 eV 处与直接积分相差约 4.7 倍。"
     ]
    }
   },
@@ -4570,9 +4574,9 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-collision-matrices",
-   "source_sha256": "1b6eb0909a34ea3c2f36c194e9910d3dcae801d92a7649d2281d7af265ec0385",
+   "source_sha256": "8ad5f2c3e37d78cd8cfd92a159f8cb591d894a254bcc42467c2e099be5d3130a",
    "summary": "在圆柱归一化速度网格上组装电荷交换、两路动量传递和自碰撞应力矩阵。明确 H/D 实验室能量缩放；弹性矩阵保留符号，支持显式增加角节点以检查收敛。",
-   "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>/8。Vth²=2Q*Tnorm/(mu*H_MASS)。原子 CX 和混合动量拟合能量为 g²*Tnorm/mu，自黏性为 g²*Tnorm。",
+   "definition": "令 g²=vr_i²+vr_k²−2vr_i vr_k cosθ+(vx_j−vx_l)²，θ_m=π(m+1/2)/n_theta。矩阵列权重为 Vr2pidVr_k*dVx_l，Fortran 排序 row=i+nvr*j、col=k+nvr*l。CX 核为 <g σ_CX>，混合动量核为 (vx_j−vx_l)<g σ_mt>，自碰撞应力核为 <(g_perp²−2g_x²)g σ_vis>*3/8。Vth²=2Q*Tnorm/(mu*H_MASS)。原子 CX 和混合动量拟合能量为 g²*Tnorm/mu，自黏性为 g²*Tnorm。",
    "model": "轴对称速度积分核；动量传递截面与黏性截面采用不同同位素缩放。",
    "assumptions": [
     "常数 H_MASS=1.6726231e-27 kg、Q=1.602177e-19 C；Vth=sqrt(2Q*Tnorm/(mu*H_MASS))，全部节点用 v/Vth。",
@@ -4635,7 +4639,7 @@
     },
     {
      "name": "SIG_H_H",
-     "description": "带符号自碰撞应力核，包含黏性截面和 1/8。",
+     "description": "带符号自碰撞应力核，包含黏性截面和 3/8。",
      "constraints": "有限，保留正、负及零值。",
      "dtype": "float64 数组"
     },
@@ -4721,7 +4725,8 @@
     "known_limitations": [
      "拟合端点裁剪和分子黏性替代属于模型近似。",
      "默认五角没有普适精度保证；高阶验证不替代用户网格收敛。",
-     "人类科学认可和再分发许可单独决定；验证缺口不因本文件而闭合。"
+     "人类科学认可和再分发许可单独决定；验证缺口不因本文件而闭合。",
+     "自碰撞前因子取玻尔兹曼值 3/8，可复现 Chapman-Enskog 硬球 p/μ。KN1D 报告（LaBombard，PSFC/RR-01-3，附录 B）取 1/8，因为它把 BGK 的 (2v_x²−v_r²) 积分（等于 v_x² 积分的三倍）直接等同于 v_x² 变化率；因此这一通道的结果与 KN1D 相差这一倍数。"
     ]
    }
   },

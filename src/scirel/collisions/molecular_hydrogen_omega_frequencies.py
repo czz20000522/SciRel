@@ -1,7 +1,7 @@
 """Cell-local molecular hydrogen elastic moments and explicitly qualified rates.
 
 The mixed-channel SIG matrices include target quadrature and signed axial
-relative speed; the self kernel includes the signed stress projector / 8.
+relative speed; the self kernel includes the signed stress projector * 3/8.
 Alpha and Omega use normalized velocities and have units m^-1. nu = Vth*Omega
 is s^-1. Negative ratios are retained with negative_no_bgk_closure status:
 the moment is defined but a nonnegative BGK relaxation cannot represent it.

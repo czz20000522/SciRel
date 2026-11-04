@@ -33,7 +33,7 @@
  "identity": {
   "relation": "molecular H2 four-family normalized collision-kernel matrix assembly",
   "direction": "normalized cylindrical velocity axes, cell weights, normalization energy and mass ratio -> four SIG matrices and the accompanying geometry",
-  "definition": "Let g^2 = vr_i^2 + vr_k^2 - 2*vr_i*vr_k*cos(theta) + (vx_j - vx_l)^2 and theta_m = pi*(m + 1/2)/n_theta. Matrix column weights are Vr2pidVr_k*dVx_l, with Fortran ordering row = i + nvr*j and col = k + nvr*l. The CX kernel is <g*sigma_CX>, the mixed momentum kernel is (vx_j - vx_l)*<g*sigma_mt>, and the self-collision stress kernel is <(g_perp^2 - 2*g_x^2)*g*sigma_vis>/8. Vth^2 = 2*Q*Tnorm/(mu*H_MASS). The molecular CX fit energy is g^2*2*Tnorm/mu, H2-H and H2-P are g^2*Tnorm/mu, and the self viscosity is g^2*2*Tnorm.",
+  "definition": "Let g^2 = vr_i^2 + vr_k^2 - 2*vr_i*vr_k*cos(theta) + (vx_j - vx_l)^2 and theta_m = pi*(m + 1/2)/n_theta. Matrix column weights are Vr2pidVr_k*dVx_l, with Fortran ordering row = i + nvr*j and col = k + nvr*l. The CX kernel is <g*sigma_CX>, the mixed momentum kernel is (vx_j - vx_l)*<g*sigma_mt>, and the self-collision stress kernel is <(g_perp^2 - 2*g_x^2)*g*sigma_vis>*3/8. Vth^2 = 2*Q*Tnorm/(mu*H_MASS). The molecular CX fit energy is g^2*2*Tnorm/mu, H2-H and H2-P are g^2*Tnorm/mu, and the self viscosity is g^2*2*Tnorm.",
   "model": "axisymmetric velocity-space integration kernels; momentum-transfer and viscosity cross sections use different isotope scalings",
   "geometry": "cylindrical velocity space with a uniform midpoint azimuthal average, five points by default; n_theta can be increased explicitly",
   "coordinates": "vr and vx are dimensionless v/Vth; source and target velocity pairs flatten in Fortran order",
@@ -143,7 +143,7 @@
   },
   {
    "name": "SIG_H2_H2",
-   "description": "signed self-collision stress kernel, including the viscosity cross section and the 1/8 factor",
+   "description": "signed self-collision stress kernel, including the viscosity cross section and the 3/8 factor",
    "units": "m^2 in normalized kernel convention",
    "shape": "[nvr*nvx,nvr*nvx]",
    "dtype": "float64 array",
@@ -269,7 +269,8 @@
   "known_limitations": [
    "fit endpoint clipping and the molecular viscosity surrogate are model approximations",
    "the default five-angle rule has no universal accuracy guarantee; higher-order checks do not replace the caller's grid convergence",
-   "human scientific acceptance and redistribution licensing are decided separately; the verification gap is not closed by this file"
+   "human scientific acceptance and redistribution licensing are decided separately; the verification gap is not closed by this file",
+   "The self-collision prefactor is the Boltzmann value 3/8, which reproduces the Chapman-Enskog hard-sphere p/mu. The KN1D report (LaBombard, PSFC/RR-01-3, Appendix B) has 1/8 because it equates the BGK integral of (2 v_x^2 - v_r^2), three times that of v_x^2, to the v_x^2 rate; results here therefore differ from KN1D by that factor in this channel."
   ]
  }
 }

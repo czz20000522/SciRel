@@ -160,7 +160,7 @@ def _independent_oracle(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0):
 
     return {
         "SIG_CX": contract(v_v * _sigma_cx(v_v2 * ecx), None),
-        "SIG_H_H": contract(vr2_vx2 * v_v * _sigma_h_h(v_v2 * ehh) / 8, None),
+        "SIG_H_H": contract(vr2_vx2 * v_v * _sigma_h_h(v_v2 * ehh) * 3.0 / 8.0, None),
         "SIG_H_H2": contract(v_v * _sigma_h_hh(v_v2 * ecx), None, with_vx_vx=True),
         "SIG_H_P": contract(v_v * _sigma_p_h(v_v2 * ecx), None, with_vx_vx=True),
         "v_v2": v_v2,

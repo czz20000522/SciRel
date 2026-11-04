@@ -19,7 +19,7 @@ Source-exact energy factors (verbatim from ``kinetic_h2.py:1045,1061,1078,1108``
 - ``SIG_CX``    : ``v_v2 * (H_MASS*Vth2/Q)``            -- NOTE: no 0.5, and no mu.
 - ``SIG_H2_H``  : ``v_v2 * (0.5*H_MASS*Vth2/Q)``       -- tabulated as H -> H2.
 - ``SIG_H2_P``  : ``v_v2 * (0.5*H_MASS*Vth2/Q)``       -- tabulated as p -> H2.
-- ``SIG_H2_H2`` : ``v_v2 * (H_MASS*mu*Vth2/Q)`` with ``/8.0`` and ``vis=1``
+- ``SIG_H2_H2`` : ``v_v2 * (H_MASS*mu*Vth2/Q)`` with ``3/8`` and ``vis=1``
   (kinetic_h2.py:1108, ``sigma_el_hh_hh`` called with ``vis=1``).
 
 Energy is projectile laboratory energy for a stationary target, not a generic
@@ -102,6 +102,23 @@ def assemble_molecular_hydrogen_collision_matrices(
     ``(nvr*nvx, nvr*nvx)``, plus the captured predecessor state ``v_v2``,
     ``v_v``, ``vr2_vx2``, ``vx_vx``, ``Vr2pidVrdVx`` and the thermal
     normalization ``Vth2`` for forensic parity checks.
+
+    Notes
+    -----
+    The self-collision kernel uses the Boltzmann prefactor 3/8. With
+    ``Q(g) = g_perp^2 - 2 g_x^2``, an equal-mass collision changes ``Q`` of one
+    particle by ``-(3/8) sin^2(chi) Q(g)`` after the azimuth average, and a BGK
+    term changes it by ``-nu <Q>``. The KN1D report has 1/8, so this channel is
+    three times its value; the mixed channels match it.
+
+    References
+    ----------
+    .. [1] B. LaBombard, "KN1D: A 1-D Space, 2-D Velocity, Kinetic Transport
+       Algorithm for Atomic and Molecular Hydrogen in an Ionizing Plasma",
+       MIT report PSFC/RR-01-3, 2001, Appendix B.
+    .. [2] S. Chapman and T. G. Cowling, "The Mathematical Theory of Non-uniform
+       Gases", hard-sphere viscosity (cited from memory; the formula is
+       re-derived in ``tests/collisions/test_self_collision_rate_reference.py``).
     """
     try:
         carriers = (vr, vx, Vr2pidVr, dVx)
@@ -205,11 +222,17 @@ def assemble_molecular_hydrogen_collision_matrices(
         nsig,
     )
 
-    # SIG_H2_H2 (source kinetic_h2.py:1107-1120)
+    # Self-collision stress kernel. For equal masses a collision changes v_x^2 by
+    # Q(g)/8 sin^2(chi), with Q(g) = g_perp^2 - 2 g_x^2. Energy conservation makes the BGK
+    # change of Q three times that of v_x^2 with opposite sign, so the frequency that matches
+    # the stress relaxation carries 3/8. The KN1D report's Appendix B equates the BGK integral
+    # of (2 v_x^2 - v_r^2) to the v_x^2 rate and so has 1/8, three times too low; this library
+    # uses the Boltzmann value, which reproduces the Chapman-Enskog hard-sphere viscosity.
     sig["SIG_H2_H2"] = averaged_matrix(
         vr2_vx2
         * v_v
         * evaluate_hydrogen2_hydrogen2_elastic_cross_section(v_v2 * eh2, viscosity=True)
+        * 3.0
         / 8.0,
         Vr2pidVrdVx,
         angular_weights,

@@ -9,7 +9,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import bivariate_log_fit, finite_nonnegative_energy, positive_real_array
+from ._energy_input import (
+    warn_above_fit,
+    bivariate_log_fit,
+    finite_nonnegative_energy,
+    positive_real_array,
+)
 
 __all__ = ["evaluate_atomic_hydrogen_charge_exchange_rate"]
 
@@ -126,6 +131,10 @@ def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
     if temperature.shape != energy.shape:
         raise ValueError("temperature_ev and energy_ev must have the same shape")
 
+    warn_above_fit(energy, 2.01e4, "evaluate_atomic_hydrogen_charge_exchange_rate")
+    warn_above_fit(
+        temperature, 2.01e4, "evaluate_atomic_hydrogen_charge_exchange_rate", "temperature"
+    )
     clipped_temperature = np.minimum(np.maximum(temperature, 0.1), 2.01e4)
     clipped_energy = np.minimum(np.maximum(energy, 0.1), 2.01e4)
     log_temperature = np.log(clipped_temperature)

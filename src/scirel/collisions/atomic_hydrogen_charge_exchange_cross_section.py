@@ -41,7 +41,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ._energy_input import clipped_energy, log_polynomial
+from ._energy_input import clipped_energy, log_polynomial, warn_above_fit
 
 __all__ = [
     "evaluate_atomic_hydrogen_charge_exchange_cross_section",
@@ -94,7 +94,9 @@ def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=Fa
     selector = np.asarray(freeman)
     if selector.ndim != 0:
         raise ValueError("freeman must be a scalar branch selector, not an array")
-    energy = clipped_energy(energy_ev, 0.1, 1.0e5 if bool(selector) else 2.01e4)
+    upper = 1.0e5 if bool(selector) else 2.01e4
+    energy = clipped_energy(energy_ev, 0.1, upper)
+    warn_above_fit(energy_ev, upper, "evaluate_atomic_hydrogen_charge_exchange_cross_section")
     if bool(selector):
         return (
             1.0e-4

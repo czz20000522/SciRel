@@ -73,7 +73,7 @@ def test_adaptive_angular_oracle_and_weighted_exchange(make, reduce, names, fits
                     if ci in (1, 2):
                         value *= xi - xj
                     elif ci == 3:
-                        value *= (perp - 2 * (xi - xj) ** 2) / 8
+                        value *= (perp - 2 * (xi - xj) ** 2) * 3 / 8
                     return value
 
                 expected[i, j] = (

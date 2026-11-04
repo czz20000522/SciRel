@@ -98,7 +98,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError naming energy_ev for non-real, non-finite or negative energy inputs, or naming freeman when that selector is an array rather than a scalar. There is no other failure mode.",
-  "runtime_failure": "Not reachable on the declared domain: both fits are evaluated only on their clipped positive ranges, so the result is finite and strictly positive for every accepted input. No iteration, no branch state and no partial results.",
+  "runtime_failure": "Not reachable on the declared domain: both fits are evaluated only on their clipped positive ranges, so the result is finite and strictly positive for every accepted input. No iteration, no branch state and no partial results. Emits RuntimeWarning for energies above the selected fit limit.",
   "nonconvergence": "Not applicable; the relation has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no cross section."
  },
@@ -137,7 +137,7 @@
   "known_limitations": [
    "The integrated input check rejects complex, boolean and numeric-string energies before float conversion; no coercion is performed. Valid real-input fit arithmetic is unchanged.",
    "Neither branch is validated against an external atomic-physics reference; no external validation gap is closed here.",
-   "Energies outside the fit range silently return the endpoint value; this is the declared clipping convention, not an error.",
+   "Above the upper fit limit the endpoint value is returned and a RuntimeWarning is emitted, because the true cross section keeps falling: at 100 keV the Janev branch reads about 50 times the Freeman-Jones branch. Below the lower limit the endpoint is returned without a warning. Use freeman=True for 20 to 100 keV.",
    "The two branches are different fits, not equivalent forms; selecting the wrong one for an application is a scientific error no runtime check can detect.",
    "The negative-energy and scalar-selector rejections are explicit preconditions of this contract: a negative energy or an array selector raises ValueError rather than returning the clipped endpoint or an array-reduced branch selection.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",

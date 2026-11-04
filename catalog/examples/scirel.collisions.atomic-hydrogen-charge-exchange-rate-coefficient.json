@@ -90,7 +90,7 @@
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError for non-real numeric, non-finite or unequal-shape inputs, nonpositive temperature or negative energy. Boolean, complex and numeric-string coercions are rejected.",
-  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned.",
+  "runtime_failure": "Raises ValueError if the derived rate is non-finite or nonpositive; no partial output is returned. Emits RuntimeWarning for temperature or energy above 2.01e4 eV.",
   "nonconvergence": "Not applicable; no iteration.",
   "partial_results": "Never returned."
  },
@@ -128,7 +128,8 @@
    "The fitted rate is not derived at runtime from the separate cross-section asset or the mesh rate-average asset.",
    "Public distribution licensing remains pending.",
    "No environment-gated external-implementation comparison exists in this repository; any earlier external comparison is not replayed by the maintained tests.",
-   "The frozen bivariate fit is non-monotonic in impact energy: at 1000 eV, over 500 logarithmically spaced energies in [0.1, 2.01e4] eV, its log-derivative changes sign six times and its minimum/maximum ratio is about 0.66. This is a fit property, not a validated physical threshold; callers must not assume a monotone rate."
+   "The frozen bivariate fit is non-monotonic in impact energy: at 1000 eV, over 500 logarithmically spaced energies in [0.1, 2.01e4] eV, its log-derivative changes sign six times and its minimum/maximum ratio is about 0.66. This is a fit property, not a validated physical threshold; callers must not assume a monotone rate.",
+   "Above 2.01e4 eV in temperature or energy the endpoint value is returned and a RuntimeWarning is emitted; the true rate differs, by about 4.7 times at T=5e4 eV, E=1e5 eV against direct quadrature."
   ]
  }
 }
