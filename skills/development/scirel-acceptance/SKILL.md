@@ -17,6 +17,8 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 
 `check_all.py` prints `ALL GREEN` when everything passes. Any other ending means the tree is not green.
 
+It prints the time of each step and takes about five minutes. Much longer means the machine is busy: look for other runs before suspecting the code. Only one run per checkout is allowed. Run it in the foreground, so that you see the result.
+
 It runs the full test suite, the review registry gate, contract signatures and examples, the docstring and contract sync check, the scan for new hazard patterns, the documentation build, the report validator on every solved example, the lockfile check, and a wheel build with its exposure check.
 
 ## Docstring and contract: one source of truth
