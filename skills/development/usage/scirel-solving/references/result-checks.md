@@ -61,3 +61,5 @@
 查不出原因的失败要保留原始判据。终点的诊断不能代表整段扫描，部分谱不能代表全谱一致。表示方式不同时，先确定要比较的范围再比较。不要用一句笼统的"模型限制"来解释参考对照的失败，除非这个解释在本次计算中检查过。
 
 报告里写明哪些检查通过、失败或未运行，并区分自洽性检查和独立证据。输入或假设改变后，重算受影响的计算和报告。
+
+For frequencies and rates fitted from a simulated time series, see [time-series fits](time-series-fits.md).
