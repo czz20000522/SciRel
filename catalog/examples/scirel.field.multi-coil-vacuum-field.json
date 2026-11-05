@@ -27,8 +27,8 @@
    "rectangular-coil records and target grid -> vacuum fields and filament table"
   ],
   "model": "Ordered acyclic composition of rectangular geometry, circular Green response and current contraction.",
-  "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns.",
-  "boundary": "Input validation or any dependency failure aborts the call without a fallback or partial field.",
+  "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns. Active nonzero-current filament coincidences with target nodes are rejected.",
+  "boundary": "Input validation, an active filament/target coincidence, or any dependency failure aborts the call without a fallback or partial field.",
   "device_scope": "device-parameterized"
  },
  "identity": {
@@ -38,10 +38,11 @@
   "model": "Ordered acyclic composition of rectangular geometry, circular Green response, and current contraction.",
   "geometry": "Matching nonempty rectilinear target grid and nonempty ordered coil list; response matrices have target rows and caller-ordered coil columns.",
   "coordinates": "Grid and coil geometry in metres; current_a is amperes per filament, ampere_turns_a is amperes per coil; output psi Wb/rad and fields tesla.",
-  "boundary": "Input validation or any dependency failure aborts the call without a fallback or partial field.",
+  "boundary": "Input validation, an active filament/target coincidence, or any dependency failure aborts the call without a fallback or partial field.",
   "assumptions": [
    "Target grids are finite, matching and nonempty, and their R and Z axes are strictly increasing; singleton axes are permitted.",
    "Each coil mapping has the required finite fields and optional weights/angle.",
+   "No active nonzero-current filament exactly coincides with a target grid node.",
    "Returned filament rows preserve coil and within-coil order."
   ]
  },
@@ -66,12 +67,12 @@
   },
   {
    "name": "rectangular_coils",
-   "description": "Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m, exactly one of current_a or ampere_turns_a, and optional angle_deg/weights. current_a is the current in EACH filament (filament j carries current_a*weights[j]; weights default to 1, so a coil's total ampere-turns are nr*nz*current_a). ampere_turns_a is the total current of the whole coil block, split over its filaments in proportion to weights. Passing a coil's total ampere-turns as current_a makes its field nr*nz times too large.",
+   "description": "Coil mappings with r0_m,z0_m,nr,nz,dr_m,dz_m, exactly one of current_a or ampere_turns_a, and optional angle_deg/weights. current_a is the current in EACH filament (filament j carries current_a*weights[j]; weights default to 1, so a coil's total ampere-turns are nr*nz*current_a). ampere_turns_a is the total current of the whole coil block, split over its filaments in proportion to weights. Passing a coil's total ampere-turns as current_a makes its field nr*nz times too large. Active nonzero-current filaments must not be exactly coincident with a target grid node.",
    "units": "mixed SI",
    "shape": "list[mapping]",
    "dtype": "Python sequence of mappings",
    "required": true,
-   "constraints": "Nonempty; each coil gives exactly one finite current_a or ampere_turns_a (both or neither raise ValueError) and optionally one finite weight per generated filament; ampere_turns_a needs weights with a nonzero sum."
+   "constraints": "Nonempty; each coil gives exactly one finite current_a or ampere_turns_a (both or neither raise ValueError) and optionally one finite weight per generated filament; ampere_turns_a needs weights with a nonzero sum. A nonzero-current, nonzero-weight filament coincident with a target grid node raises ValueError."
   }
  ],
  "outputs": [
@@ -115,17 +116,20 @@
  "applicability": {
   "preconditions": [
    "Target grids are finite, matching and nonempty, and their R and Z axes are strictly increasing; singleton axes are permitted.",
-   "Each coil mapping has the required finite fields and optional weights/angle."
+   "Each coil mapping has the required finite fields and optional weights/angle.",
+   "No active nonzero-current filament exactly coincides with a target grid node."
   ],
   "supported": [
-   "One or more rectangular coils, optional weights/rotation, C-order reshaping, and dependency failure propagation."
+   "One or more rectangular coils, optional weights/rotation, C-order reshaping, and dependency failure propagation.",
+   "Exact active filament/target coincidences fail closed; zero-current or zero-weight filaments remain inactive."
   ],
   "excluded": [
-   "Iterative coil solving, nonlinear materials, finite-wire effects, and malformed/empty coil lists."
+   "Iterative coil solving, nonlinear materials, finite-wire effects, and malformed/empty coil lists.",
+   "Line-current self-field regularization at an exact filament/target coincidence."
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for missing, empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, or currents.",
+  "invalid_input": "ValueError is raised for missing, empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, currents, or an active filament exactly coincident with a target grid node.",
   "runtime_failure": "Dependency ValueError/FloatingPointError propagates before any field is returned, including a nonrepresentable current-weighted Green contraction; no fallback or retry is performed.",
   "nonconvergence": "Not applicable; the graph has no feedback loop.",
   "partial_results": "No field or filament output is returned after a failed graph stage."
@@ -167,17 +171,20 @@
    "Unrepresentable near-wire or high-current responses fail closed instead of returning nonfinite fields.",
    "Fixed Pleiades two-coil reference values and the full 9x9 truth arrays are covered by tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py using the tracked domain fixture.",
    "scripts/build_pleiades_truth.py writes only an explicitly named candidate from a caller-supplied source checkout; it never overwrites the tracked fixture or vendors source.",
-   "Per-filament current_a versus total ampere_turns_a: both forms give the same field, a single filament matches the on-axis loop formula, and both or neither raise ValueError."
+   "Per-filament current_a versus total ampere_turns_a: both forms give the same field, a single filament matches the on-axis loop formula, and both or neither raise ValueError.",
+   "Active filament/target exact coincidences are rejected, while zero-weight coincidences remain inactive."
   ],
   "tests": [
    "tests/cross_domain/multi_coil_vacuum_field/test_composition_multi_coil_vacuum_field.py",
-   "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py"
+   "tests/cross_domain/multi_coil_vacuum_field/test_pleiades_two_coil_truth.py",
+   "tests/field/test_multi_coil_filament_coincidence.py"
   ],
-  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: the tracked Pleiades simple-two-coil fixture (`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`) and its provenance; the full 9x9 arrays are compared on every run. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists.",
+  "evidence_ceiling": "Bounded to linear multi-coil vacuum field and Green response columns with independent coil currents. Evidence: `test_composition_multi_coil_vacuum_field.py` exercises independent coil-column responses, current scaling, empty-grid rejection and singleton-axis acceptance; `test_pleiades_two_coil_truth.py` contains 4 test functions, 2 of which reference `solve_multi_coil_vacuum_field`, and is bound only by this asset; the bounded example was executed by this audit. Oracle: the tracked Pleiades simple-two-coil fixture (`tests/fixtures/multi_coil_vacuum_field/pleiades_simple_two_coil`) and its provenance; the full 9x9 arrays are compared on every run. It does not establish iterative coil solving, nonlinear materials, finite-wire effects, or malformed/empty coil lists. The coincidence regression covers exact active and inactive filament cases only; finite-wire self-field behavior remains outside scope.",
   "known_limitations": [
    "No field cache or device object is kept between calls.",
    "No feedback, optimization, or conductor-material model is included.",
-   "The fixed Pleiades spot references and full-array comparison run on every test invocation; malformed/empty coil lists remain excluded."
+   "The fixed Pleiades spot references and full-array comparison run on every test invocation; malformed/empty coil lists remain excluded.",
+   "Exact active filament/target coincidences are rejected rather than regularized as finite-wire self fields."
   ]
  },
  "composition": {

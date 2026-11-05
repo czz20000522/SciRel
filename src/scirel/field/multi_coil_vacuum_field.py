@@ -63,6 +63,8 @@ def _run_composition(inputs, *, asset_loader):
     if not isinstance(coils, (list, tuple)) or not coils:
         raise ValueError("rectangular_coils must be a nonempty list of configuration mappings")
 
+    target_r = set(r_axis.tolist())
+    target_z = set(z_axis.tolist())
     geometry = asset_loader("scirel.field.rectangular_coil_filaments")
     source_blocks, currents = [], []
     required_coil = {"r0_m", "z0_m", "nr", "nz", "dr_m", "dz_m"}
@@ -107,6 +109,16 @@ def _run_composition(inputs, *, asset_loader):
                 )
             current = value / total_weight
         block, drive = _attach_coil_current(points, current, weights)
+        if current != 0.0:
+            active = (block[:, 0] > 0.0) & (block[:, 2] != 0.0)
+            coincident = any(
+                float(radius) in target_r and float(height) in target_z
+                for radius, height in block[active, :2]
+            )
+            if coincident:
+                raise ValueError(
+                    f"rectangular_coils[{index}] has an active filament coincident with a target grid node"
+                )
         source_blocks.append(block)
         currents.append(drive)
 
@@ -144,7 +156,9 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
 
     The returned ``psi_vac`` is Wb/rad (``R * A_phi``) and ``b_r_vac``/``b_z_vac``
     are tesla; all arrays have the shape of the supplied ``r_grid`` and ``z_grid``.
-    Raises ``ValueError`` for missing or malformed grid and coil records.
+    An active nonzero-current filament exactly coincident with a target grid
+    node raises ``ValueError`` instead of dropping that singular source. Raises
+    ``ValueError`` for missing or malformed grid and coil records.
 
     Parameters
     ----------
@@ -167,7 +181,8 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
         large [mixed SI]. Nonempty; each coil gives exactly one finite current_a
         or ampere_turns_a (both or neither raise ValueError) and optionally one
         finite weight per generated filament; ampere_turns_a needs weights with
-        a nonzero sum.
+        a nonzero sum. A nonzero-current, nonzero-weight filament must not be
+        exactly coincident with a target grid node.
 
     Returns
     -------
@@ -193,10 +208,11 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
         contraction; no fallback or retry is performed.
     ValueError
         ValueError is raised for missing, empty or malformed grids,
-        empty/nonmapping coils, invalid geometry, weights, or currents.
-        Dependency ValueError/FloatingPointError propagates before any field is
-        returned, including a nonrepresentable current-weighted Green
-        contraction; no fallback or retry is performed.
+        empty/nonmapping coils, invalid geometry, weights, currents, or an
+        active filament exactly coincident with a target grid node. Dependency
+        ValueError/FloatingPointError propagates before any field is returned,
+        including a nonrepresentable current-weighted Green contraction; no
+        fallback or retry is performed.
 
     See Also
     --------

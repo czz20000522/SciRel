@@ -660,10 +660,10 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.field.circular_filament_green": "ca46d03aa389ffd50cd6e26b634e538dd3eaca83c43db88e12c6d2218173cef9",
     "scirel.field.current_green_superposition": "d0c820fd1b5a0337e1711d9fe2b5434c696cc74afd015ad9be95cc857856dbf9",
-    "scirel.field.multi_coil_vacuum_field": "ebc43969088ec8871e690578b0675368a6e232f51ceee907bea13b8e775d3efd",
+    "scirel.field.multi_coil_vacuum_field": "4dc06c9703d16a28de50e600a8524a977c61441702a4ad1d2d507a0a9dc7e99b",
     "scirel.field.rectangular_coil_filaments": "ee6206ae5432e6fae2e9cdc03da323249ddf1f8ec04b2c62c378ae204b35c34a"
    },
-   "review_basis": "_run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Bound discretizer,analytic Green and signed superposition implement the existing graph."
+   "review_basis": "_run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Active nonzero-current filaments coincident with target grid nodes are rejected before Green evaluation. Bound discretizer, analytic Green and signed superposition implement the existing graph."
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
