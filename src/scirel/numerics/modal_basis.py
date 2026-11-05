@@ -170,7 +170,75 @@ def _exponents(kind, ndim, order):
 
 
 class ModalBasis:
-    """An orthonormal modal polynomial basis on ``[-1, 1] ** ndim``."""
+    """An orthonormal modal polynomial basis on the reference hypercube.
+
+    Parameters
+    ----------
+    kind : {"tensor", "serendipity"}
+        Basis family selector [1]. ``tensor`` keeps the full tensor product;
+        ``serendipity`` keeps members that do not have degree at least two on
+        two or more axes.
+    ndim : int
+        Dimension of the logical reference cell [1]. It must be an integer
+        from 1 through 6; booleans are rejected.
+    order : int
+        Polynomial order per axis [1]. It must be a non-negative integer;
+        booleans are rejected. Orders zero through three have regression
+        evidence; higher orders are accepted but unqualified.
+
+    Returns
+    -------
+    basis : ModalBasis
+        A constructed basis handle [1] exposing the member order, evaluation,
+        differentiation, reflection, quadrature, and projection operations.
+
+    Attributes
+    ----------
+    kind : {"tensor", "serendipity"}
+        The selected basis family [1].
+    ndim : int
+        Dimension of the logical reference cell [1].
+    order : int
+        Polynomial order per axis [1].
+    num_basis : int
+        Number of members in the selected basis [1].
+
+    Raises
+    ------
+    ValueError
+        If ``kind`` is not ``tensor`` or ``serendipity``, if ``ndim`` is not an
+        integer from 1 through 6, or if ``order`` is not a non-negative
+        integer.
+
+    See Also
+    --------
+    modal_basis : Construct a basis with optional defaults.
+    modal_projection : Project samples on a basis's own Gauss rule.
+
+    Notes
+    -----
+    The reference cell is ``[-1, 1] ** ndim``. The members are products of
+    one-dimensional orthonormal Legendre polynomials and satisfy the
+    unweighted inner-product identity
+
+    .. math:: \\int_{[-1,1]^{n}} b_i(z)b_j(z)\\,dz = \\delta_{ij}.
+
+    The cell is logical and dimensionless: no physical mesh, Jacobian, metric,
+    boundary condition, limiting, or positivity treatment is applied. A
+    coefficient vector is meaningful only with the same family, dimension,
+    order, and member order that produced it. The regression evidence covers
+    dimensions one through three and orders zero through three; construction
+    accepts dimensions one through six but does not qualify the untested
+    combinations.
+
+    Examples
+    --------
+    >>> basis = ModalBasis("serendipity", 2, 2)
+    >>> basis.num_basis
+    8
+    >>> basis.exponents()[:4]
+    [(0, 0), (1, 0), (0, 1), (2, 0)]
+    """
 
     __slots__ = ("_exponents", "_kind", "_ndim", "_order")
 
@@ -203,7 +271,31 @@ class ModalBasis:
         return len(self._exponents)
 
     def exponents(self):
-        """Per-member exponent tuples, in the declared member order."""
+        """Return per-member exponent tuples in the declared member order.
+
+        Returns
+        -------
+        exponents : list of tuple of int, length num_basis
+            Exponent tuple for each member [1]. Each tuple has ``ndim`` entries
+            and records the polynomial degree on each reference axis.
+
+        See Also
+        --------
+        evaluate : Evaluate the members at logical coordinates.
+        quadrature : Return the tensor Gauss-Legendre rule for the basis.
+
+        Notes
+        -----
+        The order is part of the basis definition. Sorting is by total degree,
+        then by descending exponent on the first axis, then the second, and so
+        on; do not reorder a coefficient vector independently of this list.
+
+        Examples
+        --------
+        >>> basis = ModalBasis("tensor", 1, 1)
+        >>> basis.exponents()
+        [(0,), (1,)]
+        """
         return list(self._exponents)
 
     def _coordinates(self, z):
@@ -232,17 +324,43 @@ class ModalBasis:
         return np.multiply.reduce(factors)
 
     def evaluate(self, z):
-        """Evaluate every member at the logical coordinates ``z``.
+        """Evaluate every basis member at logical coordinates.
 
-        Args:
-            z: Array with trailing axis of length ``ndim`` inside ``[-1, 1]``.
+        Parameters
+        ----------
+        z : array_like, shape (..., ndim)
+            Logical coordinates [1]. The trailing axis must have length
+            ``ndim``; values are converted to float64 and must be finite and
+            lie inside ``[-1, 1]`` on every axis.
 
-        Returns:
-            Array of shape ``z.shape[:-1] + (num_basis,)``.
+        Returns
+        -------
+        members : ndarray, shape (..., num_basis)
+            Member values [1]. The leading shape is the leading shape of
+            ``z`` and the final axis follows :meth:`exponents`.
 
-        Raises:
-            ValueError: If the trailing shape is wrong, a value is not finite,
-                or a coordinate leaves the reference cell.
+        Raises
+        ------
+        ValueError
+            If the trailing shape is wrong, a coordinate is not finite, or a
+            coordinate lies outside the reference cell.
+
+        See Also
+        --------
+        expand : Evaluate a coefficient-weighted expansion.
+        gradient : Evaluate one reference-coordinate derivative.
+
+        Notes
+        -----
+        ``z`` is a logical coordinate, not a physical coordinate. No mesh,
+        Jacobian, cell measure, or boundary condition is applied.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> basis = ModalBasis("tensor", 1, 1)
+        >>> np.allclose(basis.evaluate([[0.0]]), [[1.0 / np.sqrt(2.0), 0.0]])
+        True
         """
         coordinates = self._coordinates(z)
         per_axis = self._axis_values(coordinates)
@@ -258,34 +376,104 @@ class ModalBasis:
         return weights
 
     def expand(self, z, coefficients):
-        """Evaluate the expansion ``sum_i c_i b_i(z)`` at ``z``.
+        """Evaluate a modal expansion at logical coordinates.
 
-        Args:
-            z: Array with trailing axis of length ``ndim``.
-            coefficients: Array of shape ``(num_basis,)``.
+        The expansion is :math:`\\sum_i c_i b_i(z)`, where ``b_i`` are the
+        members returned by :meth:`evaluate`.
 
-        Returns:
-            Array of shape ``z.shape[:-1]``.
+        Parameters
+        ----------
+        z : array_like, shape (..., ndim)
+            Logical coordinates [1]. The trailing axis must have length
+            ``ndim``; values are converted to float64 and must be finite and
+            lie inside ``[-1, 1]`` on every axis.
+        coefficients : array_like, shape (num_basis,)
+            Modal coefficients [field]. The array must have exactly one entry
+            per basis member and must contain only finite values.
 
-        Raises:
-            ValueError: If the coefficient shape is wrong or not finite.
+        Returns
+        -------
+        values : ndarray, shape (...,)
+            Expansion values [field]. The leading shape is the leading shape
+            of ``z``.
+
+        Raises
+        ------
+        ValueError
+            If ``coefficients`` has the wrong shape or contains a non-finite
+            value, or if ``z`` fails the coordinate checks described in
+            :meth:`evaluate`.
+
+        See Also
+        --------
+        evaluate : Evaluate all basis members.
+        gradient : Evaluate one reference-coordinate derivative.
+
+        Notes
+        -----
+        The coefficients are not normalized by the method; they are multiplied
+        by the already orthonormal members. No physical cell measure or
+        boundary condition is applied.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> basis = ModalBasis("tensor", 1, 1)
+        >>> coefficients = np.array([1.0, 0.0])
+        >>> np.allclose(basis.expand([[0.0]], coefficients), [1.0 / np.sqrt(2.0)])
+        True
         """
         weights = self._checked_coefficients(coefficients)
         return np.einsum("...i,i->...", self.evaluate(z), weights)
 
     def gradient(self, z, coefficients, direction):
-        """Evaluate the ``direction`` derivative of the expansion at ``z``.
+        """Evaluate one reference-coordinate derivative of a modal expansion.
 
-        Args:
-            z: Array with trailing axis of length ``ndim``.
-            coefficients: Array of shape ``(num_basis,)``.
-            direction: Reference-coordinate axis in ``range(ndim)``.
+        Parameters
+        ----------
+        z : array_like, shape (..., ndim)
+            Logical coordinates [1]. The trailing axis must have length
+            ``ndim``; values are converted to float64 and must be finite and
+            lie inside ``[-1, 1]`` on every axis.
+        coefficients : array_like, shape (num_basis,)
+            Modal coefficients [field]. The array must have exactly one entry
+            per basis member and must contain only finite values.
+        direction : int
+            Reference-coordinate axis in ``range(ndim)`` [1]. The derivative
+            is with respect to the logical coordinate on this axis, not a
+            physical-coordinate derivative.
 
-        Returns:
-            Array of shape ``z.shape[:-1]``.
+        Returns
+        -------
+        values : ndarray, shape (...,)
+            Derivative values [field]. The leading shape is the leading shape
+            of ``z``.
 
-        Raises:
-            ValueError: If the axis is out of range or coefficients are invalid.
+        Raises
+        ------
+        ValueError
+            If ``direction`` is not an axis index, ``coefficients`` has the
+            wrong shape or a non-finite value, or ``z`` fails the coordinate
+            checks described in :meth:`evaluate`.
+
+        See Also
+        --------
+        evaluate : Evaluate all basis members.
+        expand : Evaluate a coefficient-weighted expansion.
+
+        Notes
+        -----
+        The result is a derivative in the dimensionless logical coordinate. To
+        obtain a physical derivative, the caller must apply the physical mesh
+        Jacobian or metric; this class does not do so.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> basis = ModalBasis("tensor", 1, 1)
+        >>> coefficients = np.array([0.0, 1.0])
+        >>> np.allclose(basis.gradient([[0.0]], coefficients, 0), [np.sqrt(1.5)])
+        True
         """
         if isinstance(direction, bool) or not isinstance(direction, int):
             raise ValueError("direction must be an axis index of the reference cell")
@@ -301,17 +489,45 @@ class ModalBasis:
         return np.einsum("...i,i->...", columns, weights)
 
     def flip_sign(self, coefficients, direction):
-        """Sign-flip odd powers in ``direction``, as a cell-reflection update.
+        """Reflect an expansion across one reference axis.
 
-        Args:
-            coefficients: Array of shape ``(num_basis,)``.
-            direction: Reference-coordinate axis whose odd powers change sign.
+        Parameters
+        ----------
+        coefficients : array_like, shape (num_basis,)
+            Modal coefficients [field]. The array must have exactly one entry
+            per basis member and must contain only finite values.
+        direction : int
+            Reference-coordinate axis across which the expansion is reflected
+            [1]. It must be in ``range(ndim)``.
 
-        Returns:
-            Array of shape ``(num_basis,)``.
+        Returns
+        -------
+        reflected_coefficients : ndarray, shape (num_basis,)
+            Coefficients after sign-flipping every member with odd exponent on
+            ``direction`` [field].
 
-        Raises:
-            ValueError: If the axis or coefficient shape is invalid.
+        Raises
+        ------
+        ValueError
+            If ``direction`` is not an axis index, or if ``coefficients`` has
+            the wrong shape or contains a non-finite value.
+
+        See Also
+        --------
+        evaluate : Evaluate the reflected expansion on the reference cell.
+        gradient : Evaluate a reference-coordinate derivative.
+
+        Notes
+        -----
+        Reflection maps a logical coordinate ``z_direction`` to
+        ``-z_direction``. Only odd powers change sign, so this operation does
+        not evaluate the expansion or alter the basis member order.
+
+        Examples
+        --------
+        >>> basis = ModalBasis("tensor", 1, 1)
+        >>> basis.flip_sign([1.0, 2.0], 0)
+        array([ 1., -2.])
         """
         weights = self._checked_coefficients(coefficients)
         if isinstance(direction, bool) or not isinstance(direction, int):
@@ -325,11 +541,42 @@ class ModalBasis:
         return weights * signs
 
     def quadrature(self):
-        """Tensor Gauss-Legendre rule that integrates member products exactly.
+        """Return a tensor Gauss-Legendre rule for the basis.
 
-        Returns:
-            ``(nodes, weights)`` of shapes ``((order + 1) ** ndim, ndim)`` and
-            ``((order + 1) ** ndim,)``.
+        Returns
+        -------
+        nodes : ndarray, shape ((order + 1) ** ndim, ndim)
+            Quadrature nodes on ``[-1, 1] ** ndim`` [1]. The node order follows
+            the tensor product of the one-dimensional rules.
+        weights : ndarray, shape ((order + 1) ** ndim,)
+            Tensor-product quadrature weights [1]. They are the product of the
+            one-dimensional Gauss-Legendre weights.
+
+        Raises
+        ------
+        ValueError
+            If the internal Gauss-Legendre root iteration does not converge.
+
+        See Also
+        --------
+        project : Project samples on this rule back onto the basis.
+        gauss_legendre : Return the one-dimensional rule used by this method.
+
+        Notes
+        -----
+        The rule uses ``order + 1`` points per axis. Because each member has
+        degree at most ``order`` on every axis, the tensor rule integrates all
+        member products exactly. The rule is still logical and dimensionless;
+        no physical-cell Jacobian is included.
+
+        Examples
+        --------
+        >>> basis = ModalBasis("tensor", 1, 1)
+        >>> nodes, weights = basis.quadrature()
+        >>> print(nodes.shape, weights.shape)
+        (2, 1) (2,)
+        >>> print(round(float(weights.sum()), 12))
+        2.0
         """
         points, one_dimensional = gauss_legendre(self._order + 1)
         nodes = np.array(list(itertools.product(points, repeat=self._ndim)), dtype=float)
@@ -339,17 +586,48 @@ class ModalBasis:
         return nodes, weights
 
     def project(self, values):
-        """Modal coefficients of the ``L2`` projection of values on the Gauss rule.
+        """Project samples on this basis's own Gauss rule onto the basis.
 
-        Args:
-            values: Sampled values with shape ``(num_quad,)`` matching this
-                basis's own tensor Gauss rule.
+        Parameters
+        ----------
+        values : array_like, shape (num_quad,)
+            Values sampled at the nodes returned by :meth:`quadrature` [field].
+            The sample order must match that rule; the array must contain only
+            finite values.
 
-        Returns:
-            Coefficient array of shape ``(num_basis,)``.
+        Returns
+        -------
+        coefficients : ndarray, shape (num_basis,)
+            Modal coefficients of the unweighted L2 projection [field], in the
+            basis member order.
 
-        Raises:
-            ValueError: If the shape disagrees or a sample is not finite.
+        Raises
+        ------
+        ValueError
+            If ``values`` has the wrong shape or contains a non-finite value.
+
+        See Also
+        --------
+        quadrature : Return the required sample nodes and weights.
+        modal_projection : Build a basis and perform this operation directly.
+
+        Notes
+        -----
+        The projection uses the quadrature weights and orthonormality of the
+        members. It is exact for values generated by the same basis on its own
+        quadrature nodes, but it does not provide an arbitrary scattered-node
+        projection. No physical mesh, Jacobian, cell measure, filtering,
+        limiting, or positivity correction is applied.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> basis = ModalBasis("tensor", 1, 1)
+        >>> expected = np.array([1.0, -2.0])
+        >>> nodes, _ = basis.quadrature()
+        >>> samples = basis.expand(nodes, expected)
+        >>> print(bool(np.allclose(basis.project(samples), expected)))
+        True
         """
         nodes, weights = self.quadrature()
         samples = np.asarray(values, dtype=float)
@@ -362,21 +640,70 @@ class ModalBasis:
 
 
 def modal_basis(kind="tensor", ndim=1, order=1):
-    """Construct an orthonormal modal basis on ``[-1, 1] ** ndim``.
+    """Construct an orthonormal modal basis on the reference hypercube.
 
-    Args:
-        kind: ``tensor`` for the full tensor product, ``serendipity`` for the
-            tensor product without the monomials that reach the maximum order
-            on two or more axes.
-        ndim: Reference-cell dimension, 1 through 6.
-        order: Polynomial order, at least 0.
+    Parameters
+    ----------
+    kind : {"tensor", "serendipity"}, default "tensor"
+        Basis family selector [1]. ``tensor`` keeps the full tensor product;
+        ``serendipity`` keeps members that do not have degree at least two on
+        two or more axes.
+    ndim : int, default 1
+        Dimension of the logical reference cell [1]. It must be an integer
+        from 1 through 6; booleans are rejected.
+    order : int, default 1
+        Polynomial order per axis [1]. It must be a non-negative integer;
+        booleans are rejected. Orders zero through three have regression
+        evidence; higher orders are accepted but unqualified.
 
-    Returns:
-        A :class:`ModalBasis` whose members are orthonormal with unit norm under
-        the unweighted inner product on the reference cell.
+    Returns
+    -------
+    basis : ModalBasis
+        A basis whose members are orthonormal with unit norm under the
+        unweighted inner product on ``[-1, 1] ** ndim`` [1]. The returned
+        handle exposes the member order, evaluation, differentiation,
+        reflection, quadrature, and projection operations.
 
-    Raises:
-        ValueError: If ``kind``, ``ndim`` or ``order`` is outside its domain.
+    Raises
+    ------
+    ValueError
+        If ``kind`` is not ``tensor`` or ``serendipity``, if ``ndim`` is not an
+        integer from 1 through 6, or if ``order`` is not a non-negative
+        integer.
+
+    See Also
+    --------
+    ModalBasis : The basis handle with evaluation and projection methods.
+    modal_projection : Build a basis and project samples in one call.
+    project_on_modal_basis : Explicit-argument projection convenience function.
+
+    Notes
+    -----
+    The reference cell is logical and dimensionless: no physical mesh,
+    Jacobian, metric, boundary condition, limiting, or positivity handling is
+    applied. Members are ordered by total degree, then by descending exponent
+    on the first axis, then the second, and so on. A coefficient vector is
+    meaningful only with the same family, dimension, order, and member order
+    that produced it. Regression evidence covers dimensions one through three
+    and orders zero through three; higher accepted values are unqualified.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.numerics.modal_basis import modal_basis
+
+    >>> basis = modal_basis("serendipity", 2, 2)
+    >>> assert basis.num_basis == 8
+
+    >>> nodes, weights = basis.quadrature()
+    >>> members = basis.evaluate(nodes)
+    >>> gram = np.einsum("q,qi,qj->ij", weights, members, members)
+    >>> coefficients = np.arange(8, dtype=float) - 3.5
+    >>> recovered = basis.project(basis.expand(nodes, coefficients))
+    >>> print("orthonormal within 1e-12:", bool(np.abs(gram - np.eye(8)).max() < 1e-12))
+    orthonormal within 1e-12: True
+    >>> print("coefficients recovered within 1e-12:", bool(np.abs(recovered - coefficients).max() < 1e-12))
+    coefficients recovered within 1e-12: True
     """
     return ModalBasis(kind, ndim, order)
 
@@ -411,11 +738,11 @@ def modal_projection(kind, ndim, order, values):
     Parameters
     ----------
     kind : {"tensor", "serendipity"}
-        Basis family selector.
+        Basis family selector [1].
     ndim : int
-        Reference-cell dimension, from 1 through 6.
+        Reference-cell dimension [1], from 1 through 6.
     order : int
-        Polynomial order per axis, at least 0.
+        Polynomial order per axis [1], at least 0.
     values : array_like, shape ((order + 1) ** ndim,)
         Samples at the nodes of the constructed basis's own tensor
         Gauss-Legendre rule, ordered as returned by ``ModalBasis.quadrature``.
