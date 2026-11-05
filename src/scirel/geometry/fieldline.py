@@ -268,7 +268,6 @@ class FieldLine:
         self.psi = psi
         self._verts = verts
         self._interpolate_verts(**kwargs)
-        self.reorder_verts()
 
     def is_closed(self):
         return np.all(self._verts[0, :] == self._verts[-1, :])
@@ -282,9 +281,6 @@ class FieldLine:
         from scipy.interpolate import splev
 
         return splev(u, self.tck, der=0)
-
-    def reorder_verts(self, steptol=0.1):
-        return None
 
     def get_svec(self):
         distance = np.zeros(self.verts.shape[0])
@@ -486,7 +482,6 @@ class HelperFieldLine:
         self.psi = psi
         self._verts = verts
         self._interpolate_verts()
-        self.reorder_verts()
 
     def is_closed(self):
         return np.all(self._verts[0, :] == self._verts[-1, :])
@@ -500,9 +495,6 @@ class HelperFieldLine:
         from scipy.interpolate import splev
 
         return splev(u, self.tck, der=0)
-
-    def reorder_verts(self, steptol=0.1):
-        return None
 
     def get_svec(self):
         distance = np.zeros(self.verts.shape[0])
