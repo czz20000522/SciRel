@@ -8,7 +8,55 @@ __all__ = ["TriDiagonal", "make_diffusion_terms"]
 
 
 class TriDiagonal:
-    """Store the three diagonals of a square nearest-neighbour operator."""
+    """Store a square nearest-neighbour operator as three diagonals.
+
+    Parameters
+    ----------
+    diagonal : array-like, shape (N,)
+        Main diagonal coefficients [coefficient unit].  The input is copied to
+        a finite float64 array.
+    above : array-like, shape (N-1,)
+        Superdiagonal coefficients coupling each row to the next column
+        [coefficient unit].  The input is copied to a finite float64 array.
+    below : array-like, shape (N-1,)
+        Subdiagonal coefficients coupling each row to the previous column
+        [coefficient unit].  The input is copied to a finite float64 array.
+
+    Returns
+    -------
+    operator : TriDiagonal
+        Tridiagonal operator container [coefficient unit].
+
+    Raises
+    ------
+    TypeError
+        If a coefficient array cannot be converted to real numeric data.
+    ValueError
+        If the diagonal is empty, is not one-dimensional, the off-diagonal
+        lengths do not match, or any coefficient is non-finite.
+
+    See Also
+    --------
+    make_diffusion_terms : Build a diffusion operator represented by this
+        container.
+    make_convection_terms : Build a convection operator represented by this
+        container.
+
+    Notes
+    -----
+    The matrix has ``above`` on the first superdiagonal and ``below`` on the
+    first subdiagonal.  ``to_dense`` is intended for diagnostics and small
+    systems; ``to_banded`` returns the layout accepted by
+    ``scipy.linalg.solve_banded``.  ``matvec`` preserves trailing dimensions
+    when the first axis of the input has one entry per row.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.fvm import TriDiagonal
+    >>> matrix=TriDiagonal([2.,2.],[-1.],[-1.])
+    >>> np.testing.assert_allclose(matrix.matvec([1.,1.]),[1.,1.])
+    """
 
     def __init__(self, diagonal, above, below):
         diagonal = np.asarray(diagonal, dtype=float)
@@ -52,12 +100,57 @@ class TriDiagonal:
 
 
 def make_diffusion_terms(d_face, var):
-    """Return ``(M, b)`` for ``d/dx(D*du/dx)`` on cell point values.
+    """Assemble two-point diffusion terms as a tridiagonal operator and forcing.
 
-    Interior gradients use the distance between adjacent cell centres.
-    Dirichlet faces use a half-cell secant; Neumann data are positive-axis
-    gradients.  Flux differences are divided by each cell width, which makes
-    the shared internal flux cancel in a weighted sum.
+    Parameters
+    ----------
+    d_face : array-like, shape (N+1,)
+        Face-centred diffusivity [X^2/time].  The input is converted to finite
+        float64 data and must have one value per cell face.
+    var : CellVariable
+        Cell values and boundary data for the same explicit one-dimensional
+        face grid [Q].
+
+    Returns
+    -------
+    matrix : TriDiagonal
+        Cell operator for ``d/dx(D*du/dx)`` [1/time].
+    forcing : ndarray of float64, shape (N,)
+        Explicit boundary contribution to add to ``matrix @ var.value``
+        [Q/time].
+
+    Raises
+    ------
+    TypeError
+        If ``var`` is not a ``CellVariable`` or an input cannot be converted
+        to real numeric data.
+    ValueError
+        If an input is masked, non-finite, or has the wrong shape.
+    FloatingPointError
+        If the assembled coefficients contain a non-finite result.
+
+    See Also
+    --------
+    CellVariable : Cell and face data used by this operator.
+    make_convection_terms : Assemble the conservative convection operator.
+    theta_step : Combine old and new operators in a theta step.
+
+    Notes
+    -----
+    Interior fluxes use the diffusivity at each face and the distance between
+    adjacent cell centres.  Dirichlet faces use a half-cell secant, whereas
+    Neumann data are positive-coordinate gradients.  Dividing each flux
+    difference by the cell width makes the shared internal flux cancel in the
+    cell-weighted sum.  The returned matrix and forcing are an ordinary pair;
+    no fallback or clipping of a non-finite result is applied.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.fvm import CellVariable,make_diffusion_terms
+    >>> v=CellVariable([.5,1.5],[0.,1.,2.],left_face_grad_constraint=1.,right_face_grad_constraint=1.)
+    >>> m,b=make_diffusion_terms([1.,1.,1.],v)
+    >>> np.testing.assert_allclose(m.matvec(v.value)+b,0.)
     """
     if not isinstance(var, CellVariable):
         raise TypeError("var must be CellVariable")
