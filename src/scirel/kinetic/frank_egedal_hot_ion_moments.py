@@ -21,27 +21,132 @@ def evaluate_frank_egedal_hot_ion_moments(
 ):
     """Integrate density and both pressure moments of one common population.
 
-    The default normalized speed interval is [0,1], as in the common-f
+    Parameters
+    ----------
+    magnetic_field : array_like
+        Local magnetic-field magnitude ``B`` on a ``[N_Z, N_R]`` grid [T].
+        Every present value must be finite and strictly positive.
+    params : mapping
+        Scalar model, compatibility and quadrature controls with mixed units
+        [B0: T; ratios and beta_m: dimensionless; nodes: count]. ``B0``
+        defaults to ``median(B)``. ``mirror_ratio`` falls back to ``turning_b``
+        and then ``2``. ``vc_over_v0`` defaults to ``0.25``.
+        ``velocity_lower`` falls back to ``perp_velocity_lower`` and then ``0``.
+        ``beta_m`` falls back to ``zeff / 2`` and then ``0.5``. Initial
+        ``velocity_nodes`` and ``pitch_nodes`` default to ``24``.
+        ``quadrature_rtol`` defaults to ``1e-7``. ``max_quadrature_nodes``
+        defaults to ``max(768, 2 * max(initial node counts))``. Canonical
+        ``mirror_ratio`` and ``beta_m`` take precedence over their legacy
+        aliases; both speed-lower aliases must agree when supplied. These are
+        declared model, compatibility and numerical-control defaults, not
+        inferred measurements.
+    degrees : array_like
+        Nonempty finite fractional angular-mode degrees [dimensionless] with
+        shape ``[N_mode]``; values must be nonnegative.
+    source_coefficients : array_like
+        Finite source-mode amplitudes [dimensionless in this normalized closure]
+        with the same shape as ``degrees``; signs are allowed.
+    legendre_terms : scalar
+        Legacy retained-term count [count] passed unchanged to
+        ``fractional_mode``.
+    fractional_mode : callable
+        Callable invoked as ``fractional_mode(degree, xi0, legendre_terms)``.
+        It must return finite values [dimensionless output] broadcast-compatible
+        with the quadrature grid.
+
+    Returns
+    -------
+    normalized_field : ndarray
+        Positive ``B / B0`` samples [dimensionless] with shape ``[N_Z, N_R]``.
+    xi_tp_mid : float
+        Reference trapped-pitch cosine [dimensionless],
+        ``sqrt(1 - 1 / mirror_ratio)``.
+    hot_parallel_shape : ndarray
+        Parallel pressure relative to its reference value [dimensionless] with
+        shape ``[N_Z, N_R]``.
+    hot_perpendicular_shape : ndarray
+        Perpendicular pressure relative to the reference *parallel* pressure
+        [dimensionless] with shape ``[N_Z, N_R]``.
+    hot_density_shape : ndarray
+        Density relative to its reference value [dimensionless] with shape
+        ``[N_Z, N_R]``.
+    quadrature : dict
+        Requested initial Gaussian node counts [count].
+    velocity_domain : dict
+        Common speed domain [normalized speed], including lower and upper bounds.
+    quadrature_convergence : dict
+        Raw-moment refinement diagnostics [counts and relative tolerance].
+    reference_raw_moments : dict
+        Raw reference moments [dimensionless in the stated normalized distribution].
+
+    Raises
+    ------
+    ValueError
+        If field, configuration, degrees, speed aliases or normalizers violate
+        the declared constraints.
+    FloatingPointError
+        If the reference-population distribution is not finite at quadrature
+        nodes.
+    RuntimeError
+        If raw-moment refinement does not converge within the node cap.
+
+    See Also
+    --------
+    project_frank_egedal_source_modes
+        Build fractional modes and source coefficients.
+    assemble_frank_egedal_pressure
+        Assemble physical pressure and density fields from normalized shapes.
+    solve_frank_egedal_pressure_closure
+        Run the source-to-pressure composition.
+
+    Notes
+    -----
+    The default normalized speed interval is [0, 1], as in the common-f
     moment definitions of Frank2509.17288v4 Eq16. Its Eq19b prints a
     perpendicular-only vc lower bound, inconsistent with that unchanged
     speed-variable substitution; no author-confirmed erratum is assumed.
     ``velocity_lower`` may select a common truncated population. The legacy
-    ``perp_velocity_lower`` is a compatibility alias for this SAME lower
-    bound for all three moments, not an independent tensor-component cut.
+    ``perp_velocity_lower`` is a compatibility alias for this same lower bound
+    for all three moments, not an independent tensor-component cut.
     Normalization still uses parallel pressure and density at b=1.
+
     For b<1 the supplied reference population has support only where
-    xi>=sqrt(1-b); other orbits cannot reach B0 and are not supplied. The
+    ``xi >= sqrt(1-b)``; other orbits cannot reach B0 and are not supplied. The
     modal sum uses its declared nonnegative part, not an unmodified exact
-    kinetic solution. With vc=0 the speed factor equals one and density
-    diverges logarithmically at a zero lower cutoff; positive lower cutoffs
-    remain supported. Empty or zero-normalization populations are rejected.
-    Integrable zero-speed powers are factored into a Gauss-Jacobi weight,
-    including admissible negative beta. Raw moments are refined before normalization; unresolved or divergent
-    quadrature raises RuntimeError. A refinement agreement is a numerical
-    estimate, not proof for an arbitrary caller-provided angular callable.
-    Only the internal source-projection callback marked ``_scirel_batch_safe``
-    uses batched field evaluation; unmarked callbacks retain scalar calls.
-    This reconstruction does not validate a measured plasma population.
+    kinetic solution. With vc=0 the speed factor equals one and density diverges
+    logarithmically at a zero lower cutoff; positive lower cutoffs remain
+    supported. Empty or zero-normalization populations are rejected. Integrable
+    zero-speed powers are factored into a Gauss-Jacobi weight, including
+    admissible negative beta. Raw moments are refined before normalization;
+    unresolved or divergent quadrature raises RuntimeError. A refinement
+    agreement is a numerical estimate, not proof for an arbitrary
+    caller-provided angular callable. Only the internal source-projection
+    callback marked ``_scirel_batch_safe`` uses batched field evaluation;
+    unmarked callbacks retain scalar calls. This reconstruction does not
+    validate a measured plasma population.
+
+    References
+    ----------
+    Frank and Egedal, arXiv:2509.17288 (2025).
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments
+    >>> r = evaluate_frank_egedal_hot_ion_moments(
+    ...     [[1.0, 0.25]],
+    ...     {'B0': 1.0, 'mirror_ratio': 4.0, 'beta_m': 0.0, 'velocity_lower': 0.2},
+    ...     [0.0],
+    ...     [1.0],
+    ...     2,
+    ...     lambda degree, xi, terms: np.ones_like(xi),
+    ... )
+    >>> a = np.sqrt(0.75)
+    >>> lo = np.sqrt(0.75)
+    >>> hi = np.sqrt(1 - 0.25 / 4)
+    >>> np.testing.assert_allclose(r['hot_density_shape'], [[1.0, (hi - lo) / a]], rtol=2e-11)
+    >>> np.testing.assert_allclose(r['hot_perpendicular_shape'][0, 0], 1.5, rtol=2e-11)
+    >>> assert r['velocity_domain']['common_to_density_and_both_pressures']
     """
     magnetic_field = np.asarray(magnetic_field, dtype=float)
     if magnetic_field.ndim != 2 or not np.all(np.isfinite(magnetic_field)):

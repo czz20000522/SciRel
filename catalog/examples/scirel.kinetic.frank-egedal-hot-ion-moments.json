@@ -56,12 +56,12 @@
   },
   {
    "name": "params",
-   "description": "B0, mirror_ratio/turning_b, vc_over_v0, velocity_lower (legacy alias perp_velocity_lower), beta_m/zeff, initial velocity_nodes/pitch_nodes, quadrature_rtol and max_quadrature_nodes.",
+   "description": "Intentional scalar model, compatibility and quadrature controls: B0, mirror_ratio/turning_b, vc_over_v0, velocity_lower (legacy alias perp_velocity_lower), beta_m/zeff, initial velocity_nodes/pitch_nodes, quadrature_rtol and max_quadrature_nodes. These defaults are declared caller contract, not inferred measurements.",
    "units": "B0: T; ratios and beta_m: dimensionless; nodes: count",
    "shape": "mapping with scalar values",
    "dtype": "mapping with get and numeric-convertible selected values",
    "required": true,
-   "constraints": "B0 defaults to median(B), positive; R defaults to 2, finite >1; vc defaults to .25, finite >=0. Common lower speed defaults to 0 and lies in [0,1); specifying both aliases with different values is rejected. vc=0 with lower=0 has divergent density and is rejected; positive lower retains vc=0. beta_m defaults to zeff/2 (zeff=1) and is finite. Initial node counts int-convert to >=2. quadrature_rtol defaults to 1e-7 and is positive; max_quadrature_nodes defaults to max(768,2*max(initial counts)) and must allow at least one refinement. Negative beta is not uniformly excluded, but unresolved/nonintegrable raw moments fail convergence."
+   "constraints": "B0 defaults to median(B) and must be positive. mirror_ratio falls back to turning_b and then 2, and must be finite >1; mirror_ratio takes precedence when both names are supplied. vc_over_v0 defaults to 0.25 and must be finite >=0. velocity_lower falls back to perp_velocity_lower and then 0, lies in [0,1), and both speed-lower names must agree when supplied. vc=0 with lower=0 has divergent density and is rejected; positive lower retains vc=0. beta_m falls back to zeff/2 and then 0.5, and must be finite; beta_m takes precedence when both names are supplied. Initial velocity_nodes and pitch_nodes int-convert to >=2 and default to 24. quadrature_rtol defaults to 1e-7 and must be positive. max_quadrature_nodes defaults to max(768,2*max(initial counts)) and must allow at least one refinement. Negative beta is not uniformly excluded, but unresolved/nonintegrable raw moments fail convergence."
   },
   {
    "name": "degrees",
@@ -224,6 +224,7 @@
  },
  "verification": {
   "scope": [
+   "Declared defaults and legacy-alias precedence, including exact default-versus-explicit result regressions and the default quadrature node cap.",
    "Same-population tensor and lower-cutoff regression.",
    "Thirty-six independent polynomial moment/support cases, including b<1, closed cone and vc=0 with positive cutoff.",
    "A divergent negative-beta raw density is rejected while a demonstrated integrable negative-beta input remains supported.",
@@ -233,12 +234,12 @@
    "tests/cross_domain/test_spectral_scientific_correction.py",
    "tests/kinetic/test_frank_egedal_hot_ion_moments.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Let b=B/B0, xi_max=sqrt(max(0,1-b/R)), xi_min=sqrt(max(0,1-b)), and xi0=sqrt((xi^2-(1-b))/b). Only xi_min<=xi<=xi_max belongs to the population specified at B0; for b>=R moments are zero…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py (22 recorded test functions; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Unspecified populations on orbits that cannot reach B0, arbitrary callback feature discovery, zero normalizers and divergent or unresolved integrals; A claim that the printed Eq19b discrepancy has been confirmed as an author erratum.",
+  "evidence_ceiling": "Bounded to the declared relation: Let b=B/B0, xi_max=sqrt(max(0,1-b/R)), xi_min=sqrt(max(0,1-b)), and xi0=sqrt((xi^2-(1-b))/b). Only xi_min<=xi<=xi_max belongs to the population specified at B0; for b>=R moments are zero…. Evidence: test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py (25 recorded test functions; shared-file plus direct composition/test coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Unspecified populations on orbits that cannot reach B0, arbitrary callback feature discovery, zero normalizers and divergent or unresolved integrals; A claim that the printed Eq19b discrepancy has been confirmed as an author erratum.",
   "known_limitations": [
    "The positive part of a finite modal sum is an explicitly modified mathematical model; arbitrary mode truncation does not establish physical positivity or kinetic equivalence.",
    "Raw quadrature refinement is a finite numerical agreement test and cannot discover arbitrary unresolved caller-function features.",
    "The common-domain correction changes legacy density/parallel values when perp_velocity_lower was set.",
-   "Only shared-file coverage is bound (test_spectral_scientific_correction.py); no asset-specific failure/limit probe is recorded."
+   "The bounded probes cover declared defaults, representative relation and limit cases, but do not establish arbitrary callback features or physical calibration of the defaults."
   ]
  },
  "references": [

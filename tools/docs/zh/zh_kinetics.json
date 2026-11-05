@@ -3042,7 +3042,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-hot-ion-moments",
-   "source_sha256": "3231f2e02660924b34221706c614455b62f3ec4cb361457ae2a4c75e596e946d",
+   "source_sha256": "58888b4b1ced329060d936a661adbd2f071d865e219e60094b41a73548df6493",
    "summary": "在共同速度域上，对明确定义的非负参考群体同时积分密度和平行/垂直压力。",
    "definition": "b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除 n(b=1)；先细化原始矩再除。零下限且 vc>0 时提取最小速度幂 q=min(β_mν(ν+1))，q>−3 可用 v^(2+q) Gauss–Jacobi 权重处理可积奇点。",
    "model": "有限模参考分布非负部分的数学矩，不宣称精确 Frank–Egedal 动力学解或实测群体。",
@@ -3062,8 +3062,8 @@
     },
     {
      "name": "params",
-     "description": "B0、镜比、临界速比、共同下限、β及求积控制。",
-     "constraints": "B0默认median(B)>0；R默认2且>1；vc默认.25且≥0；两下限别名不能冲突，范围[0,1)；vc=0需正下限；β有限可负；初始节点int≥2；rtol默认1e-7>0；最大节点允许至少一次细化，默认max(768,2×初始最大数)。",
+     "description": "有意声明的标量模型、兼容和求积控制：B0、mirror_ratio/turning_b、vc_over_v0、velocity_lower（旧别名 perp_velocity_lower）、beta_m/zeff、初始 velocity_nodes/pitch_nodes、quadrature_rtol 和 max_quadrature_nodes。默认值是公开调用合同，不是推断的测量值。",
+     "constraints": "B0 默认 median(B)>0；mirror_ratio 缺键时取 turning_b，再默认 2，须有限且 >1；两键并存时 mirror_ratio 优先。vc_over_v0 默认 0.25 且须有限非负。velocity_lower 缺键时取旧别名 perp_velocity_lower，再默认 0，须在 [0,1)；两速度下限键并存时须相等。vc=0 且下限 0 的密度发散须拒绝；正下限仍允许 vc=0。beta_m 缺键时取 zeff/2，再默认 0.5，须有限；两键并存时 beta_m 优先。初始 velocity_nodes 与 pitch_nodes 经 int 转换后须 >=2，默认各 24。quadrature_rtol 默认 1e-7 且须为正。max_quadrature_nodes 默认 max(768,2×初始最大值)，须至少允许一次细化。负 beta 未被统一排除，但发散或未解析的原始矩必须失败。",
      "dtype": "支持 get 的映射，所选值可数值转换"
     },
     {
@@ -3174,17 +3174,18 @@
    },
    "verification": {
     "scope": [
+     "声明默认值与旧别名优先顺序，并回归默认调用和显式参数调用结果完全一致及默认求积节点上限。",
      "同一粒子群张量与下截断回归。",
      "36个独立多项式矩/支撑例，含b<1、闭锥及vc=0配正下截断。",
      "拒绝发散负beta密度，同时支持已证明可积的负beta用例。",
      "独立70位不完全Beta原始矩：degree2、beta=−0.1、−0.3、−0.4、−0.4999、0、0.5，含密度可积边界附近。"
     ],
-    "evidence_ceiling": "限于所声明关系：b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除…。证据：test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py（记录 22 个测试函数；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：排除不能到达B0轨道上的未指定粒子群、任意回调特征发现、零归一化及发散/未解析积分；不宣称印刷Eq19b差异已由作者确认为勘误。",
+    "evidence_ceiling": "限于所声明关系：b=B/B0，ξ_max=sqrt(max(0,1−b/R))、ξ_min=sqrt(max(0,1−b))、ξ0=sqrt((ξ²−(1−b))/b)。只计可达 B0 的俯仰域，b≥R 时矩为0。共同 s=v/v0∈[s_min,1]；f=max(Σc_j u_νj(ξ0)U(s)^[νj(νj+1)]/(s³+vc³),0)，U=[(1+vc³)s³/(s³+vc³)]^(β_m/3)。n=4π∫s²f，P∥=4π∫s⁴ξ²f，P⊥=2π∫s⁴(1−ξ²)f，积分域完全相同。两压力同除 P∥(b=1)，密度除…。证据：test_spectral_scientific_correction.py, test_frank_egedal_hot_ion_moments.py（记录 25 个测试函数；共享文件加直接组合/测试覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：排除不能到达B0轨道上的未指定粒子群、任意回调特征发现、零归一化及发散/未解析积分；不宣称印刷Eq19b差异已由作者确认为勘误。",
     "known_limitations": [
      "有限模和的非负部分是修改模型，不证明动力学等价。",
      "有限求积细化不能发现任意未解析回调特征。",
      "共同域纠正改变设置旧垂直下限时的密度/平行值。",
-     "仅绑定共享文件覆盖（test_spectral_scientific_correction.py）；未记录资产专属失败/边界探针。"
+     "有限探针覆盖声明默认值、代表性关系和边界情形，但不建立任意回调特征或默认值的物理解释。"
     ]
    }
   },
