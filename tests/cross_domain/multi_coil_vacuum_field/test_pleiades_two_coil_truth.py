@@ -108,9 +108,7 @@ def _assert_reference(actual, field):
 
 def test_fixed_reference_values_match_multi_coil_graph():
     r_grid, z_grid = _grid()
-    result = solve_multi_coil_vacuum_field(
-        {"r_grid": r_grid, "z_grid": z_grid, "rectangular_coils": _coil_records()}
-    )
+    result = solve_multi_coil_vacuum_field(r_grid, z_grid, _coil_records())
     for field in ("psi_vac", "b_r_vac", "b_z_vac"):
         _assert_reference(result[field], field)
 
@@ -176,8 +174,6 @@ def test_multi_coil_matches_full_pleiades_truth_arrays():
         }
         for coil in truth["coils"]
     ]
-    result = solve_multi_coil_vacuum_field(
-        {"r_grid": r_grid, "z_grid": z_grid, "rectangular_coils": coils}
-    )
+    result = solve_multi_coil_vacuum_field(r_grid, z_grid, coils)
     for field in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(result[field], arrays[field], rtol=1.0e-13, atol=1.0e-17)

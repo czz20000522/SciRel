@@ -129,7 +129,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "ValueError is raised for missing, empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, currents, or an active filament exactly coincident with a target grid node.",
+  "invalid_input": "TypeError when a required argument is missing, the removed mapping or **kwargs form is used, or an unknown keyword is supplied. ValueError is raised for empty or malformed grids, empty/nonmapping coils, invalid geometry, weights, currents, or an active filament exactly coincident with a target grid node.",
   "runtime_failure": "Dependency ValueError/FloatingPointError propagates before any field is returned, including a nonrepresentable current-weighted Green contraction; no fallback or retry is performed.",
   "nonconvergence": "Not applicable; the graph has no feedback loop.",
   "partial_results": "No scirel._result.Result field or filament output is returned after a failed graph stage."
@@ -138,7 +138,7 @@
   "python": {
    "module": "scirel.field.multi_coil_vacuum_field",
    "symbol": "solve_multi_coil_vacuum_field",
-   "signature": "solve_multi_coil_vacuum_field(inputs=None, **kwargs)",
+   "signature": "solve_multi_coil_vacuum_field(r_grid, z_grid, rectangular_coils)",
    "canonical_module": "scirel.field",
    "canonical_symbol": "solve_multi_coil_vacuum_field"
   }
@@ -164,6 +164,7 @@
  },
  "verification": {
   "scope": [
+   "Explicit public signature with three required positional-or-keyword physical inputs; legacy mapping, inputs keyword and unknown keyword calls raise TypeError.",
    "Linear scaling with coil drive current.",
    "Independent response columns for multiple coils, aligned with the drive-current vector along axis 1.",
    "Current-versus-filament-weight semantics.",

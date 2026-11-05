@@ -31,17 +31,11 @@ def _stack_response_columns(responses):
     }
 
 
-def _run_composition(inputs, *, asset_loader):
+def _run_composition(r_grid, z_grid, rectangular_coils, *, asset_loader):
     """Expand coil records, evaluate local Green blocks, then contract currents."""
-    if not isinstance(inputs, dict):
-        raise ValueError("r_grid, z_grid, and rectangular_coils are required")
-    required_inputs = ("r_grid", "z_grid", "rectangular_coils")
-    missing = [name for name in required_inputs if name not in inputs]
-    if missing:
-        raise ValueError("r_grid, z_grid, and rectangular_coils are required")
     r_grid, z_grid = (
-        np.asarray(inputs["r_grid"], dtype=float),
-        np.asarray(inputs["z_grid"], dtype=float),
+        np.asarray(r_grid, dtype=float),
+        np.asarray(z_grid, dtype=float),
     )
     if (
         r_grid.ndim != 2
@@ -61,7 +55,7 @@ def _run_composition(inputs, *, asset_loader):
         or not np.allclose(z_grid, z_axis[:, None])
     ):
         raise ValueError("r_grid and z_grid must define a strictly increasing rectilinear R-Z grid")
-    coils = inputs["rectangular_coils"]
+    coils = rectangular_coils
     if not isinstance(coils, (list, tuple)) or not coils:
         raise ValueError("rectangular_coils must be a nonempty list of configuration mappings")
 
@@ -138,7 +132,7 @@ def _run_composition(inputs, *, asset_loader):
     }
 
 
-def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
+def solve_multi_coil_vacuum_field(r_grid, z_grid, rectangular_coils):
     """Compute vacuum fields from coil records as a named result.
 
     Each coil mapping gives ``r0_m, z0_m, nr, nz, dr_m, dz_m`` (an ``nr`` x ``nz``
@@ -164,13 +158,6 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
 
     Parameters
     ----------
-    inputs : mapping, optional
-        Mapping containing ``r_grid``, ``z_grid`` and ``rectangular_coils``.
-        The default None is allowed only when those entries are supplied as
-        keywords.
-    **kwargs
-        Named entries merged into ``inputs`` by the composition boundary; a
-        keyword takes precedence over the same key in the mapping.
     r_grid : real array-like, shape [N_Z,N_R]
         Target cylindrical radius grid [m]. Finite nonempty rectilinear 2-D
         grid; radial axis is strictly increasing and nonnegative. N_R and N_Z
@@ -214,14 +201,17 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
 
     Raises
     ------
+    TypeError
+        If a required argument is missing, the removed mapping or ``**kwargs``
+        form is used, or an unknown keyword is supplied.
     FloatingPointError
         Dependency ValueError/FloatingPointError propagates before any field is
         returned, including a nonrepresentable current-weighted Green
         contraction; no fallback or retry is performed.
     ValueError
-        ValueError is raised for missing, empty or malformed grids,
-        empty/nonmapping coils, invalid geometry, weights, currents, or an
-        active filament exactly coincident with a target grid node. Dependency
+        ValueError is raised for empty or malformed grids, empty/nonmapping
+        coils, invalid geometry, weights, currents, or an active filament
+        exactly coincident with a target grid node. Dependency
         ValueError/FloatingPointError propagates before any field is returned,
         including a nonrepresentable current-weighted Green contraction; no
         fallback or retry is performed.
@@ -260,23 +250,21 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     >>> assert result['filaments'].shape == (4, 3)
     >>> assert np.isfinite(result['b_z_vac']).all()
     """
-    from scirel._composition import compose
     from scirel.field.circular_filament_green import circular_filament_green_response
     from scirel.field.current_green_superposition import superpose_current_green_field
     from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
 
+    asset_functions = {
+        "scirel.field.circular_filament_green": circular_filament_green_response,
+        "scirel.field.current_green_superposition": superpose_current_green_field,
+        "scirel.field.rectangular_coil_filaments": discretize_rectangular_coil,
+    }
     return Result(
-        compose(
-            _run_composition,
-            inputs,
-            kwargs,
-            {
-                "asset_loader": {
-                    "scirel.field.circular_filament_green": circular_filament_green_response,
-                    "scirel.field.current_green_superposition": superpose_current_green_field,
-                    "scirel.field.rectangular_coil_filaments": discretize_rectangular_coil,
-                }
-            },
+        _run_composition(
+            r_grid,
+            z_grid,
+            rectangular_coils,
+            asset_loader=asset_functions.__getitem__,
         )
     )
 
