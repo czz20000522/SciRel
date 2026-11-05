@@ -1,15 +1,15 @@
-from scirel.equilibrium.isotropic_pressure_flux import solve_isotropic_pressure_flux
-import scirel
-from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
-import importlib.util
+from cross_domain._review_bindings import load_asset as _load_asset
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from scirel.equilibrium import isotropic_pressure_flux as composition
+
+
 def _asset_loader(asset_ref):
     return _load_asset(asset_ref)
+
 
 def _run_composition(inputs):
     return composition.run_composition(inputs)
@@ -102,6 +102,7 @@ def test_review_gate_validates_grid_before_zero_iteration_return():
                 maxiter=0,
             )
         )
+
 
 def test_review_gate_linear_pressure_flux_produces_analytic_cell_current():
     values = _inputs()

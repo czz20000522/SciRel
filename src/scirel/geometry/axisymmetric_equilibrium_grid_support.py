@@ -1,4 +1,5 @@
 """Compose axisymmetric equilibrium mapping with material classification."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -10,7 +11,13 @@ from .material_support import classify_material_support
 
 __all__ = ["run_composition", "solve_axisymmetric_equilibrium_grid_mapping"]
 _REQUIRED_INPUTS = (
-    "equilibrium", "x_m", "y_m", "z_m", "xpoint_half_length_m", "pml_cells", "pec_mask"
+    "equilibrium",
+    "x_m",
+    "y_m",
+    "z_m",
+    "xpoint_half_length_m",
+    "pml_cells",
+    "pec_mask",
 )
 
 
@@ -59,7 +66,10 @@ def run_composition(
     radius, axial = _cylindrical_coordinates(inputs["x_m"], inputs["y_m"], inputs["z_m"])
     separatrix, side = _classification_parameters(equilibrium)
     classified = material_support_classification(
-        mapped["poloidal_flux_wb_per_rad"], mapped["covered_mask"], radius, axial,
+        mapped["poloidal_flux_wb_per_rad"],
+        mapped["covered_mask"],
+        radius,
+        axial,
         separatrix_flux_wb_per_rad=separatrix,
         closed_flux_side=side,
         xpoint_half_length_m=inputs["xpoint_half_length_m"],
@@ -84,4 +94,6 @@ def solve_axisymmetric_equilibrium_grid_mapping(inputs=None, **kwargs):
     classification = kwargs.pop("material_support_classification", classify_material_support)
     if kwargs:
         raise ValueError(f"unexpected composition keyword arguments: {sorted(kwargs)}")
-    return run_composition(inputs, equilibrium_grid_mapping=mapping, material_support_classification=classification)
+    return run_composition(
+        inputs, equilibrium_grid_mapping=mapping, material_support_classification=classification
+    )

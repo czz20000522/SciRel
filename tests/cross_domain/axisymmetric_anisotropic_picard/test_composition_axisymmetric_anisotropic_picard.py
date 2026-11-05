@@ -1,13 +1,11 @@
 import inspect
 
 from scirel.equilibrium.axisymmetric_anisotropic_picard import solve_axisymmetric_anisotropic_picard
-import scirel
-from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset
 from pathlib import Path
 
 import numpy as np
 import pytest
-
 
 
 def _run(values):
@@ -15,7 +13,11 @@ def _run(values):
 
 
 def _closure(b, psi):
-    return {"p_parallel": 1.0 + 0.1 * psi, "p_perpendicular": 1.0 + 0.2 * psi, "closure_marker": float(np.mean(b))}
+    return {
+        "p_parallel": 1.0 + 0.1 * psi,
+        "p_perpendicular": 1.0 + 0.2 * psi,
+        "closure_marker": float(np.mean(b)),
+    }
 
 
 def _scalar_closure(b, psi):
@@ -31,7 +33,17 @@ def test_public_callable_documents_the_catalog_contract():
 
 def _inputs(**overrides):
     r_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 5), np.linspace(-0.3, 0.3, 5))
-    values = {"r_grid": r_grid, "z_grid": z_grid, "psi_vac": 0.5 * r_grid**2, "g_psi": 1.0e-3 * np.eye(r_grid.size), "pressure_closure": _closure, "maxiter": 2, "tol": 1.0e-30, "relax": 0.2, "strict_compatibility": False}
+    values = {
+        "r_grid": r_grid,
+        "z_grid": z_grid,
+        "psi_vac": 0.5 * r_grid**2,
+        "g_psi": 1.0e-3 * np.eye(r_grid.size),
+        "pressure_closure": _closure,
+        "maxiter": 2,
+        "tol": 1.0e-30,
+        "relax": 0.2,
+        "strict_compatibility": False,
+    }
     values.update(overrides)
     return values
 
@@ -47,7 +59,9 @@ def test_yaml_declares_current_n6_source_order_and_leaf_assets():
 def test_feedback_rederives_final_field_and_reevaluates_closure_at_returned_psi():
     values = _inputs()
     result = _run(values)
-    field = _load_asset("scirel.field.poloidal_field_from_flux")(values["r_grid"], values["z_grid"], result["psi"])
+    field = _load_asset("scirel.field.poloidal_field_from_flux")(
+        values["r_grid"], values["z_grid"], result["psi"]
+    )
     np.testing.assert_allclose(result["B_R"], field["B_R"])
     np.testing.assert_allclose(result["B_Z"], field["B_Z"])
     np.testing.assert_allclose(result["p_parallel"], 1.0 + 0.1 * result["psi"])
@@ -85,6 +99,7 @@ def test_missing_closure_and_invalid_relax_fail_closed():
     with pytest.raises(ValueError, match="Picard controls"):
         _run(_inputs(relax=1.0))
 
+
 def test_review_gate_uniform_bz_linear_isotropic_pressure_has_analytic_current():
     r_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.6, 5), np.linspace(-0.2, 0.2, 5))
 
@@ -92,23 +107,25 @@ def test_review_gate_uniform_bz_linear_isotropic_pressure_has_analytic_current()
         pressure = 3.0 + r_grid
         return {"p_parallel": pressure, "p_perpendicular": pressure}
 
-    result = _run({
-        "r_grid": r_grid,
-        "z_grid": z_grid,
-        "psi_vac": r_grid**2,
-        "g_psi": np.zeros((r_grid.size, r_grid.size)),
-        "pressure_closure": linear_isotropic_pressure,
-        "maxiter": 1,
-        "tol": 1.0e-12,
-        "relax": 0.0,
-        "strict_compatibility": True,
-    })
+    result = _run(
+        {
+            "r_grid": r_grid,
+            "z_grid": z_grid,
+            "psi_vac": r_grid**2,
+            "g_psi": np.zeros((r_grid.size, r_grid.size)),
+            "pressure_closure": linear_isotropic_pressure,
+            "maxiter": 1,
+            "tol": 1.0e-12,
+            "relax": 0.0,
+            "strict_compatibility": True,
+        }
+    )
     np.testing.assert_allclose(result["B_Z"], 2.0, rtol=0.0, atol=2.0e-14)
     np.testing.assert_allclose(result["J_phi"], 0.5, rtol=2.0e-13, atol=2.0e-13)
     # Constant J=.5 integrates over the declared rectangle [.2,.6]x[-.2,.2].
-    weights = np.outer([.05, .1, .1, .1, .05], [.05, .1, .1, .1, .05])
-    np.testing.assert_allclose(result["plasma_cell_currents"], .5 * weights)
-    np.testing.assert_allclose(np.sum(result["plasma_cell_currents"]), .08)
+    weights = np.outer([0.05, 0.1, 0.1, 0.1, 0.05], [0.05, 0.1, 0.1, 0.1, 0.05])
+    np.testing.assert_allclose(result["plasma_cell_currents"], 0.5 * weights)
+    np.testing.assert_allclose(np.sum(result["plasma_cell_currents"]), 0.08)
 
 
 def test_review_gate_firehose_and_parallel_compatibility_fail_closed():
@@ -123,18 +140,25 @@ def test_review_gate_firehose_and_parallel_compatibility_fail_closed():
         "relax": 0.0,
     }
     with pytest.raises(FloatingPointError, match="firehose"):
-        _run({**base, "pressure_closure": lambda _b, _psi: {"p_parallel": 1.0e8, "p_perpendicular": 1.0}})
+        _run(
+            {
+                **base,
+                "pressure_closure": lambda _b, _psi: {"p_parallel": 1.0e8, "p_perpendicular": 1.0},
+            }
+        )
     with pytest.raises(ValueError, match="unbalanced parallel"):
-        _run({
-            **base,
-            "pressure_closure": lambda _b, _psi: {
-                "p_parallel": 3.0 + z_grid,
-                "p_perpendicular": 3.0 + z_grid,
-            },
-            "minimum_firehose_margin": -1.0,
-            "compatibility_tol": 0.0,
-            "strict_compatibility": True,
-        })
+        _run(
+            {
+                **base,
+                "pressure_closure": lambda _b, _psi: {
+                    "p_parallel": 3.0 + z_grid,
+                    "p_perpendicular": 3.0 + z_grid,
+                },
+                "minimum_firehose_margin": -1.0,
+                "compatibility_tol": 0.0,
+                "strict_compatibility": True,
+            }
+        )
 
 
 def test_axisymmetric_terminal_floor_precedes_terminal_closure():
@@ -162,7 +186,9 @@ def test_axisymmetric_terminal_floor_precedes_terminal_closure():
         return field
 
     with pytest.raises(FloatingPointError, match="returned terminal state"):
-        composition.run_composition(_inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure), asset_loader=loader)
+        composition.run_composition(
+            _inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure), asset_loader=loader
+        )
     assert calls["field"] == 2
     # The terminal field gate must run before the terminal closure evaluation;
     # only the iteration closure may observe a field.
@@ -178,20 +204,26 @@ def test_review_gate_rejects_nonfinite_and_coerced_control_values():
         _run(_inputs(strict_compatibility=0))
 
 
-@pytest.mark.parametrize("mask", [
-    np.ones((5, 5), dtype=int),
-    np.ones((5, 5), dtype=float),
-    [[1, 0], [0, 1]],
-])
+@pytest.mark.parametrize(
+    "mask",
+    [
+        np.ones((5, 5), dtype=int),
+        np.ones((5, 5), dtype=float),
+        [[1, 0], [0, 1]],
+    ],
+)
 def test_plasma_mask_rejects_integer_and_float_coercion(mask):
     with pytest.raises(ValueError, match="boolean"):
         _run(_inputs(plasma_mask=mask, maxiter=1))
 
 
-@pytest.mark.parametrize("mask", [
-    lambda _b, psi: np.zeros_like(psi, dtype=int),
-    lambda _b, psi: np.zeros_like(psi, dtype=float),
-])
+@pytest.mark.parametrize(
+    "mask",
+    [
+        lambda _b, psi: np.zeros_like(psi, dtype=int),
+        lambda _b, psi: np.zeros_like(psi, dtype=float),
+    ],
+)
 def test_plasma_mask_callable_return_must_be_boolean(mask):
     with pytest.raises(ValueError, match="boolean"):
         _run(_inputs(plasma_mask=mask, maxiter=1))
