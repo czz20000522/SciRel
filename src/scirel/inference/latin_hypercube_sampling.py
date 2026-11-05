@@ -6,16 +6,71 @@ import numpy as np
 
 
 def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
-    """Generate one uniformly jittered point in every selected stratum.
+    """Generate a seeded Latin-hypercube design over bounded parameters.
 
-    ``bounds`` maps parameter names to finite increasing ``(low, high)``
-    pairs.  ``fit_keys`` fixes the sampled column order; omitted keys follow
-    mapping insertion order.  The returned ``initial_samples`` list is ready
-    for the optimizer graph and contains no hidden parameters.
+    Parameters
+    ----------
+    bounds : dict
+        Mapping from parameter keys to finite increasing ``(low, high)``
+        intervals [per-parameter caller units]. Only selected keys are read;
+        unselected intervals are not validated.
+    n_samples : int
+        Number of strata and returned parameter dictionaries [count]. It must
+        be a positive Python integer; Boolean values are rejected.
+    seed : NumPy-compatible seed or None, optional
+        Seed passed unchanged to ``numpy.random.default_rng`` [dimensionless].
+        ``None`` selects a non-deterministic generator. The default is None.
+    fit_keys : iterable of keys or None, optional
+        Ordered parameter-key subset [identifier]. If None, use the insertion
+        order of ``bounds``. Duplicate keys are not rejected; an output mapping
+        keeps only the last column for a duplicate key. The default is None.
 
-    Raises ``ValueError`` for malformed bounds or a non-positive sample count.
-    A boolean ``n_samples`` is rejected explicitly instead of leaking a
-    ``TypeError`` from NumPy array allocation.
+    Returns
+    -------
+    initial_samples : list of dict
+        ``n_samples`` dictionaries in draw order. Each contains only the
+        selected keys and one independently jittered value in every stratum
+        [per-parameter caller units].
+
+    Raises
+    ------
+    ValueError
+        If ``bounds`` is not a dict, ``n_samples`` is not a positive Python
+        integer, or a selected interval is non-finite or not strictly
+        increasing. A malformed interval also raises ``ValueError``.
+    KeyError
+        If a selected key is absent from ``bounds``.
+    TypeError
+        If ``fit_keys`` is not iterable, ``bounds`` uses an unsupported key
+        type, or a conversion raises ``TypeError``. A nonnumeric selected bound
+        may instead propagate ``ValueError`` from its conversion.
+
+    See Also
+    --------
+    optimize_anisotropic_parameters : Fit bounded parameters using an initial
+        design and a caller-owned trial evaluator.
+    evaluate_anisotropic_trial : Validate one physical trial with a fixed
+        residual dimension.
+
+    Notes
+    -----
+    Each coordinate independently permutes the strata ``0, ..., n_samples -
+    1`` and adds one uniform offset inside every stratum. Affine mapping of
+    the unit value into ``[low, high)`` gives one sample dictionary per row.
+    This is an initial design only: it does not encode correlations, priors,
+    posterior uncertainty, physical admissibility, or optimizer convergence.
+    The selected key order, installed NumPy generator, and seed define the
+    realized design.
+
+    Examples
+    --------
+    >>> from scirel.inference import sample_latin_hypercube
+    >>> bounds = {'a': (0.0, 1.0), 'b': (10.0, 20.0)}
+    >>> a = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']
+    >>> b = sample_latin_hypercube(bounds=bounds, n_samples=5, seed=4)['initial_samples']
+    >>> assert a == b
+    >>> assert sorted(int(row['a'] * 5) for row in a) == list(range(5))
+    >>> assert sorted(int((row['b'] - 10) / 10 * 5) for row in a) == list(range(5))
     """
     if (
         not isinstance(bounds, dict)

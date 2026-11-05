@@ -31,13 +31,13 @@
  "identity": {
   "relation": "bounded parameters and a fixed-size trial to a local fit record validated by a fresh call",
   "direction": "initial_params, bounds, method, trial_evaluator and budget -> parameters, residuals, forward/optimization state and log",
-  "definition": "Validate every static control first. For optional LHS, check the complete design against the bounds and count, then evaluate it in order and use only valid samples as starting points. least_squares uses residuals; minimize uses L-BFGS-B with the squared sum. An invalid trial supplies an N-vector penalty to the optimizer but never participates in best_valid_trial. The budget counts LHS, numerical differences and terminal calls, reserving two slots for terminal/valid-fallback validation. A normally returned optimizer x must be revalidated with a fresh forward call; if the terminal point is invalid, only a revalidated historical valid candidate may be returned, with converged=False.",
+  "definition": "Validate every static control first. For optional LHS, check the complete design against the bounds and count, then evaluate it in order and use the valid sample with the lowest chi2 as the optimizer start; if none is valid, keep the submitted initial point. least_squares uses residuals; minimize uses L-BFGS-B with the squared sum. An invalid trial supplies an N-vector penalty to the optimizer but never participates in best_valid_trial. The budget counts LHS, numerical differences and terminal calls, reserving two slots for terminal/valid-fallback validation. A normally returned optimizer x must be revalidated with a fresh forward call; if the terminal point is invalid, only a revalidated historical valid candidate may be returned, with converged=False.",
   "model": "bounded local numerical optimization, with no equilibrium equation, global search or statistical identifiability proof",
   "geometry": "defined by trial_evaluator",
   "coordinates": "fit_keys order or bounds insertion order forms the optimization vector; non-fitted parameters are retained",
   "boundary": "All bounds must be finite and strictly increasing, and initial values must lie inside them. A wrong method, wrong LHS or invalid control is rejected directly, with no out-of-bounds fallback.",
   "assumptions": [
-   "The trial returns a fixed N-vector of finite residuals, a matching chi2, a forward state and a failure reason.",
+   "The trial returns a fixed N-vector of finite residuals, a matching chi2, a forward state and an optional failure reason; a failed state supplies a reason.",
    "A valid trial must have a real converged=True forward state, no failure_reason, and valid not set to False.",
    "The penalty is only for numerical control and cannot serve as a physical solution or identifiability information."
   ]
@@ -77,7 +77,7 @@
    "shape": "callable(*,params) → mapping",
    "dtype": "callable",
    "required": true,
-   "constraints": "Must supply residuals, chi2, equilibrium and failure_reason; valid, if present, must be boolean."
+   "constraints": "Must supply residuals and chi2. equilibrium may be omitted or None, but such a trial is invalid; when present it must map converged=True for a valid trial. failure_reason may be omitted or None on a valid trial. valid, if present, must be boolean."
   },
   {
    "name": "fit_keys",
@@ -309,8 +309,8 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError before any scientific call for an invalid method, bounds, initial values, keys, samples or budget; trial contract errors propagate.",
-  "runtime_failure": "A numerical exception in a custom trial with explicit residual_size is recorded as a fixed-size failure and consumes the actual call budget; when N has not been established, the exception propagates rather than inventing a dimension. Optimizer numerical exceptions and budget stops are reported separately; contract ValueError/TypeError/KeyError are not swallowed.",
+  "invalid_input": "Raises ValueError before any scientific call for an invalid method, bounds, initial values, keys, samples or budget, or when a numeric conversion raises ValueError. TypeError may propagate when a conversion or injected port raises TypeError; trial contract ValueError/TypeError/KeyError propagate.",
+  "runtime_failure": "An ArithmeticError/RuntimeError from a custom trial with explicit residual_size is recorded as a fixed-size failure and consumes the actual call budget; when N has not been established, the exception propagates rather than inventing a dimension. Optimizer ArithmeticError/RuntimeError and budget stops are reported separately; contract ValueError/TypeError/KeyError are not swallowed.",
   "nonconvergence": "Optimizer stop and forward validity are returned separately; a fallback is never called converged.",
   "partial_results": "best_valid_trial stores the historical valid minimum; best_parameters comes only from a fresh terminal or fallback validation; both are None when everything fails."
  },

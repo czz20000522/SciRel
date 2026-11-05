@@ -6045,7 +6045,7 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-trial-evaluation",
-   "source_sha256": "60290413277212d824ce63183d9ead754ffc3acf9d1fc202fb73b131fc4f2c87",
+   "source_sha256": "44d00c9bc0a947129d72c860b048315d54b49055986b00ef4bdb4d489937fbe9",
    "summary": "以预先确定的残差维数评估一次前向平衡试探，区分有效、数值失败和不收敛；合同错误直接报告。",
    "definition": "在科学调用前由标准观测布局取得 N，或由自定义端口显式给定 residual_size。深复制调用输入，执行一次 equilibrium_solver；未收敛时立即返回 N 维正罚值，不执行诊断。收敛时执行诊断与 reducer，并检查残差形状/有限性和 chi2=r·r。ArithmeticError/RuntimeError 记录为数值失败；ValueError/TypeError/KeyError 等合同错误传播。",
    "model": "调用者前向模型、诊断与残差端口的受验证组合，不内置压强闭合",
@@ -6175,7 +6175,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "静态输入、端口、维数和罚值不合法时抛 ValueError；嵌套 ValueError/TypeError/KeyError 传播。",
+    "invalid_input": "静态结构、端口或维数不合法，或数值转换抛出 ValueError 时抛 ValueError；转换或嵌套端口抛出 TypeError 时传播 TypeError。嵌套 ValueError/TypeError/KeyError 传播。",
     "runtime_failure": "嵌套 ArithmeticError（含 FloatingPointError）或 RuntimeError 返回同 N 的 numerical_failure，保留失败端口和异常类。进程级异常不捕获。",
     "nonconvergence": "前向 False 直接返回 forward_nonconvergence；绝不执行该状态的诊断。",
     "partial_results": "保留实际已有前向状态供调查，但 valid=False；不丢失维数、不参与有效 best 排序。"
@@ -7562,13 +7562,13 @@
   },
   {
    "asset_id": "scirel.inference.anisotropic-parameter-optimization",
-   "source_sha256": "81816c6c2b706f9be160675e3c9c6f9d2cd7253c6b6139350b7b1cbda305ca7d",
+   "source_sha256": "23328df6241b205c46f4ea20bab4335d4fdb4025a90e27c2305b21b15831cf09",
    "summary": "在有限合法边界与总科学调用预算内作局部拟合，失败试探不可成为最优，返回实际终点的重新验证状态。",
-   "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，只取有效样本作起点。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
+   "definition": "全部静态控制先验证。可选 LHS 的完整设计先核边界与数量，再按顺序评估，取 chi2 最低的有效样本作优化起点；若没有有效样本则保留提交的初值。least_squares 使用残差，minimize 使用 L-BFGS-B 与平方和；无效 trial 对优化器提供 N 维罚值，但永不参与 best_valid_trial。预算计入 LHS、数值差分与终点调用，预留两次终点/有效 fallback 验证。正常返回的优化器 x 必须重新调用前向验证；如终点无效，仅可返回重新验证的历史有效候选，且 converged=False。",
    "model": "有界局部数值优化，不包含平衡方程、全球搜索或统计可辨识性证明",
    "boundary": "所有 bounds 均须有限严格递增，初值在边界内。错误方法、错误 LHS 或非法控制直接拒绝，不补做越界 fallback。",
    "assumptions": [
-    "trial 返回固定 N 维有限残差、相符 chi2、前向状态及失败原因。",
+    "trial 返回固定 N 维有限残差、相符 chi2、前向状态及可选失败原因；失败状态须提供原因。",
     "有效 trial 必须有真实 converged=True 前向状态，无 failure_reason，且 valid 不为 False。",
     "罚值只用于数值控制，不能作为物理解或可辨识性信息。"
    ],
@@ -7594,7 +7594,7 @@
     {
      "name": "trial_evaluator",
      "description": "单次物理评估端口。",
-     "constraints": "必须提供 residuals、chi2、equilibrium、failure_reason；valid 如存在必须为布尔。",
+     "constraints": "必须提供 residuals、chi2；equilibrium 可省略或为 None，但该 trial 无效；提供时须为映射且 converged=True 才有效。有效 trial 可省略 failure_reason 或设为 None。valid 如存在必须为布尔。",
      "dtype": "可调用对象"
     },
     {
@@ -7751,8 +7751,8 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "方法、边界、初值、键、样本或预算不合法时在科学调用前抛 ValueError；trial 合同错误传播。",
-    "runtime_failure": "带显式 residual_size 的自定义 trial 数值异常记录为固定维失败，并消耗实际调用预算；未建立 N 时传播异常，不伪造维数。优化器自身数值异常和预算停止单独报告；合同 ValueError/TypeError/KeyError 不吞掉。",
+    "invalid_input": "方法、边界、初值、键、样本或预算不合法，或数值转换抛出 ValueError 时，在科学调用前抛 ValueError；转换或注入端口抛出 TypeError 时传播 TypeError；trial 合同 ValueError/TypeError/KeyError 传播。",
+    "runtime_failure": "带显式 residual_size 的自定义 trial 的 ArithmeticError/RuntimeError 记录为固定维失败，并消耗实际调用预算；未建立 N 时传播异常，不伪造维数。优化器自身 ArithmeticError/RuntimeError 和预算停止单独报告；合同 ValueError/TypeError/KeyError 不吞掉。",
     "nonconvergence": "优化停止和前向有效性分开返回；fallback 从不称 converged。",
     "partial_results": "best_valid_trial 保存历史有效最小值；best_parameters 只来自新的终点或 fallback 验证；全失败时两者均 None。"
    },
