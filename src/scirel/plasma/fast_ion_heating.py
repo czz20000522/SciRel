@@ -47,7 +47,8 @@ def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     if not np.all(np.isfinite(x2)):
         raise FloatingPointError("dimensionless energy ratio is not finite")
     small = x2 < 0.01
-    y = np.where(small, x2, 0.0) ** 1.5
+    y = np.zeros_like(x2)
+    y[small] = x2[small] ** 1.5
     out = np.zeros_like(x2)
     if np.any(small):
         # The series is only used for small x².  Avoid evaluating all twelve
