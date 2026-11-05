@@ -144,7 +144,8 @@ def check(asset: dict, root: Path = ROOT) -> list[str]:
     live_signature = inspect.signature(obj)
     signature = live_signature
     if "inputs" in signature.parameters and not any(
-        parameter.kind is inspect.Parameter.VAR_KEYWORD for parameter in signature.parameters.values()
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in signature.parameters.values()
     ):
         try:
             signature = _mapping_signature(document, obj) or signature
