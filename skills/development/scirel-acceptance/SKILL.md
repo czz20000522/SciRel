@@ -46,8 +46,10 @@ git config core.hooksPath .githooks
 ```
 
 The hooks call the same container entry point: the staged-file check on `git commit` and the full check on
-`git push`. They are a safety net, not a replacement for running the checks yourself. Do not bypass them with
-`--no-verify`. If a hook is wrong, fix the hook.
+`git push`. A push containing only remote-ref deletions skips the full check because it uploads no source tree;
+mixed deletion/update pushes and normal updates still require acceptance. Hooks are a safety net, not a
+replacement for running the checks yourself. Do not bypass them with `--no-verify`. If a hook is wrong,
+fix the hook.
 
 ## Ratchets
 
