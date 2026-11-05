@@ -65,10 +65,10 @@
  "outputs": [
   {
    "name": "electron_density_ref_m3",
-   "description": "Charge-state-weighted electron reference number density.",
+   "description": "Named result containing the charge-state-weighted reference electron number density.",
    "units": "m^-3",
    "shape": "common broadcast shape of both inputs, including scalar shape ()",
-   "dtype": "NumPy float64 scalar or array",
+   "dtype": "scirel._result.Result mapping; electron_density_ref_m3 is NumPy float64 scalar or array",
    "required": true,
    "constraints": "Finite and nonnegative if returned; non-finite multiplication raises FloatingPointError."
   }
@@ -88,7 +88,7 @@
   "invalid_input": "Raises ValueError for non-finite or negative density, non-finite or nonpositive charge state, or incompatible broadcast shapes; NumPy conversion may raise TypeError or ValueError for nonnumeric input.",
   "runtime_failure": "Raises FloatingPointError when validated finite inputs produce a non-finite product, such as float64 overflow.",
   "nonconvergence": "Not applicable; no iteration.",
-  "partial_results": "No mapping is returned after an exception."
+  "partial_results": "No result mapping is returned after an exception."
  },
  "public_api": {
   "python": {
