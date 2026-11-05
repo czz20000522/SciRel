@@ -24,7 +24,7 @@
   ],
   "model": "C2 piecewise-cubic Hermite spline with the origin row x_data[0]=y_data[0]=0 and the right cylindrical equation fdd+fd/x-m^2 f/x^2=0.",
   "geometry": "One-dimensional strictly increasing scalar knots and ordinate values with the origin row fixed and a positive last knot; coordinate units are caller-defined.",
-  "boundary": "The origin row and right cylindrical equation are imposed; x_data[-1]>0 is required, and the physical magnetic-fitting interpretation remains unresolved.",
+  "boundary": "The origin row x_data[0]=y_data[0]=0 and the right cylindrical equation are imposed; x_data[-1]>0 is required. Finite queries outside the closed knot interval return zero, while nonfinite queries are zero-filled. The physical magnetic-fitting interpretation remains unresolved.",
   "device_scope": "generic"
  },
  "identity": {
@@ -38,7 +38,9 @@
   "assumptions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
    "In-domain deriv=0/1/2 for the qualified numerical claim",
-   "x_data[0]=y_data[0]=0 and x_data[-1]>0"
+   "x_data[0]=y_data[0]=0 and x_data[-1]>0",
+   "The origin ordinate y_data[0] must be exactly zero",
+   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ]
  },
  "inputs": [
@@ -58,7 +60,7 @@
    "shape": "(N,)",
    "dtype": "float64",
    "required": true,
-   "constraints": "Finite, same N as x_data"
+   "constraints": "Finite, same N as x_data; y_data[0] must be 0"
   },
   {
    "name": "m",
@@ -79,14 +81,16 @@
    "shape": "object",
    "dtype": "Python callable object",
    "required": true,
-   "constraints": "Query array shape preserved; zero outside knot interval"
+   "constraints": "Query array shape preserved; finite values outside the closed knot interval return zero; nonfinite queries are zero-filled"
   }
  ],
  "applicability": {
   "preconditions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
    "In-domain deriv=0/1/2 for the qualified numerical claim",
-   "x_data[0]=y_data[0]=0 and x_data[-1]>0"
+   "x_data[0]=y_data[0]=0 and x_data[-1]>0",
+   "The origin ordinate y_data[0] must be exactly zero",
+   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ],
   "supported": [
    "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
@@ -94,15 +98,18 @@
   "excluded": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
-   "Source left row is not a natural boundary for arbitrary nonzero first knot/ordinate",
-   "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved"
+   "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved",
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
+   "Knot-interval membership is exact; a point one representable step outside returns zero",
+   "Nonzero origin ordinates are rejected rather than silently ignored",
+   "The retained origin row is not a physical cylindrical fitting model"
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
-  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
+  "partial_results": "A failed constructor returns no evaluator; finite values outside the knot interval and nonfinite query values follow the zero-fill convention."
  },
  "public_api": {
   "python": {
@@ -136,8 +143,11 @@
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
    "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
-   "The left row is not a natural boundary for an arbitrary nonzero first knot/ordinate",
-   "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved"
+   "Physical cylindrical magnetic-fitting boundary interpretation remains unresolved",
+   "Knot-interval membership is exact; a point one representable step outside returns zero",
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
+   "Nonzero y_data[0] is outside the implemented origin boundary",
+   "The retained origin row is not a physical cylindrical fitting model"
   ]
  }
 }

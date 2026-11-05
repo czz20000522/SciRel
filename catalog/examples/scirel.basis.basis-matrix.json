@@ -24,7 +24,7 @@
   ],
   "model": "Caller-selected ascending-power polynomial or C2 cubic-spline basis; construction delegates to the explicit basis factory.",
   "geometry": "One-dimensional scalar abscissa and ordinate samples; rows follow the input domain and columns follow the basis order. No multidimensional geometry is reconstructed.",
-  "boundary": "Spline basis evaluation is zero outside the finite knot interval with no extrapolation; unsupported quartic and special-function selections are rejected.",
+  "boundary": "Spline basis evaluation is zero for finite queries outside the finite knot interval; nonfinite queries are zero-filled. Nonzero endpoint slopes for clamped bases are rejected because the columns would be an affine family, not a linear basis.",
   "device_scope": "generic"
  },
  "identity": {
@@ -38,7 +38,11 @@
   "assumptions": [
    "Finite constructor samples and boundary-specific assumptions",
    "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
-   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match",
+   "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
+   "The second-clamped default basis has n_knots-1 columns because y_data[0] is fixed to zero",
+   "Spline basis construction requires n_knots>=3",
+   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ]
  },
  "inputs": [
@@ -60,28 +64,34 @@
    "shape": "(M,K)",
    "dtype": "Python callable object",
    "required": true,
-   "constraints": "Caller provides one-dimensional domain"
+   "constraints": "Caller provides a finite one-dimensional domain; K follows the selected basis; finite domain-outside and nonfinite query rows are zero-filled"
   }
  ],
  "applicability": {
   "preconditions": [
    "Finite constructor samples and boundary-specific assumptions",
    "Polynomial coefficients are ascending-power columns; poly_deg default3 means three basis functions",
-   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match"
+   "Spline keyword defaults n_knots=5,domain=(0,1); xdata/ydata supplied arrays must match",
+   "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
+   "The second-clamped default basis has n_knots-1 columns because y_data[0] is fixed to zero",
+   "Spline basis construction requires n_knots>=3",
+   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ],
   "supported": [
    "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
   ],
   "excluded": [
    "Quartic and special-function factory selections are rejected; no invented implementations",
-   "Physical special-spline closures and unsupported knot domains remain unresolved"
+   "Physical special-spline closures and unsupported knot domains remain unresolved",
+   "Nonzero endpoint slopes for clamped basis construction are rejected",
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention"
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate.",
+  "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
-  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval return zero."
+  "partial_results": "A failed constructor returns no evaluator; finite values outside the knot interval and nonfinite query values follow the zero-fill convention."
  },
  "public_api": {
   "python": {
@@ -117,7 +127,9 @@
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [
    "Quartic and special-function factory selections are rejected; no invented implementations",
-   "Physical special-spline closures and unsupported knot domains remain unresolved"
+   "Physical special-spline closures and unsupported knot domains remain unresolved",
+   "Nonzero clamped endpoint slopes are outside the linear-basis contract",
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention"
   ]
  }
 }

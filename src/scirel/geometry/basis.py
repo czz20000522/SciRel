@@ -2,8 +2,9 @@
 
 The spline classes implement piecewise cubic Hermite interpolation.  Knot
 slopes are obtained from the declared natural, clamped, or retained
-cylindrical boundary equations; evaluation is zero outside the finite knot
-interval.  The module intentionally keeps the public selector and failure
+cylindrical boundary equations.  Finite queries outside the closed knot
+interval are zero-filled exactly, and nonfinite query values use the same
+convention.  The module intentionally keeps the public selector and failure
 contracts of the geometry basis API, while all numerical assembly is local to
 SciRel and uses NumPy only.
 """
@@ -197,6 +198,10 @@ class NaturalCubicSpline(CubicSpline):
 
     Notes
     -----
+    The knot interval is closed and exact: finite queries outside it, even by
+    one representable step, are zero-filled.  Nonfinite query values are also
+    zero-filled; callers that need missing-data detection must validate them
+    first.
     ``deriv=1`` and ``deriv=2`` select derivative evaluations.  Other
     selectors retain the value-evaluation compatibility behavior.
     """
@@ -237,6 +242,10 @@ class ClampedCubicSpline(CubicSpline):
 
     Notes
     -----
+    The knot interval is closed and exact: finite queries outside it, even by
+    one representable step, are zero-filled.  Nonfinite query values are also
+    zero-filled; callers that need missing-data detection must validate them
+    first.
     ``deriv=1`` and ``deriv=2`` select derivative evaluations.  Other
     selectors retain the value-evaluation compatibility behavior.
     """
@@ -289,7 +298,9 @@ class FirstClampedCubicSpline(CubicSpline):
     Notes
     -----
     The qualified domain includes ``x_data[-1] > 0`` and in-domain
-    ``deriv=0/1/2``.  Other derivative selectors retain source behavior.
+    ``deriv=0/1/2``.  The knot interval is closed and exact: finite queries
+    outside it, even by one representable step, are zero-filled.  Nonfinite
+    queries are zero-filled.  Other derivative selectors retain source behavior.
     The cylindrical boundary interpretation remains an implementation
     convention rather than a physical qualification.
     """
@@ -348,22 +359,26 @@ class SecondClampedCubicSpline(CubicSpline):
     ------
     ValueError
         If the knots or ordinates violate the finite, increasing, matched
-        input contract, or ``m`` is nonfinite.
+        input contract, ``y_data[0]`` is not zero, or ``m`` is nonfinite.
     numpy.linalg.LinAlgError
         If the origin/Robin slope system cannot be solved.
 
     Notes
     -----
     The qualified domain includes ``x_data[-1] > 0`` and in-domain
-    ``deriv=0/1/2``.  Other derivative selectors retain source behavior.
-    The boundary row is not a natural boundary for arbitrary nonzero origin
-    data and does not establish a physical cylindrical fitting model.
+    ``deriv=0/1/2``.  The knot interval is closed and exact: finite queries
+    outside it, even by one representable step, are zero-filled.  Nonfinite
+    queries are zero-filled.  Other derivative selectors retain source behavior.
+    The origin row is homogeneous, so nonzero ``y_data[0]`` is rejected; the
+    retained boundary does not establish a physical cylindrical fitting model.
     """
 
     def __init__(self, x_data, y_data, m=1):
         CubicSpline.__init__(self, x_data, y_data)
         if self.x_data[0] != 0.0 or not self.x_data[-1] > 0.0:
             raise ValueError("x_data must start at 0 and end above 0")
+        if self.y_data[0] != 0.0:
+            raise ValueError("y_data[0] must be 0 for the origin-natural boundary")
         if not np.isfinite(m):
             raise ValueError("m must be finite")
         h = self.d_x
@@ -424,6 +439,11 @@ def build_basis(basis="poly", **kwargs):
     **kwargs
         Basis-specific options such as ``poly_deg``/``coeffs`` for polynomial
         bases or ``n_knots``, ``domain``, ``xdata`` and ``ydata`` for splines.
+        Clamped spline bases must use zero endpoint slopes ``yp``; nonzero
+        slopes define an affine family rather than a linear basis.  Spline
+        construction requires ``n_knots >= 3``.  The second-clamped selector
+        omits the nonhomogeneous origin column when it builds the default
+        identity data.
 
     Returns
     -------
@@ -439,6 +459,9 @@ def build_basis(basis="poly", **kwargs):
     NotImplementedError
         If a retained selector such as the quartic or special-function path
         has no supported basis construction in this package.
+    ValueError
+        If a clamped spline selector receives a nonzero endpoint slope
+        because its columns are then an affine family, not a linear basis.
     """
 
     basis = basis.lower()
@@ -462,7 +485,21 @@ def _poly_basis(**kwargs):
 
 
 def _spline_basis(spline_fn, **kwargs):
+    if spline_fn is ClampedCubicSpline:
+        yp = np.asarray(kwargs["yp"] if "yp" in kwargs else (0.0, 0.0), dtype=float)
+        if np.any(yp != 0.0):
+            raise ValueError(
+                "clamped spline basis requires yp=0 (zero endpoint slopes); nonzero slopes make an affine family"
+            )
+    elif spline_fn is FirstClampedCubicSpline:
+        yp = np.asarray(kwargs["yp"] if "yp" in kwargs else 0.0, dtype=float)
+        if np.any(yp != 0.0):
+            raise ValueError(
+                "clamped spline basis requires yp=0 (zero endpoint slopes); nonzero slopes make an affine family"
+            )
     n_knots = kwargs.pop("n_knots", 5)
+    if n_knots < 3:
+        raise ValueError("n_knots must be at least 3 for spline basis construction")
     domain = tuple(kwargs.pop("domain", (0, 1)))
     xdata = kwargs.pop("xdata", None)
     ydata = kwargs.pop("ydata", None)
@@ -470,6 +507,10 @@ def _spline_basis(spline_fn, **kwargs):
         xdata = np.linspace(domain[0], domain[1], n_knots)
     if ydata is None:
         ydata = np.eye(n_knots)
+        if spline_fn is SecondClampedCubicSpline:
+            # The origin boundary is homogeneous.  The first identity column
+            # has y_data[0] == 1 and therefore cannot belong to this basis.
+            ydata = ydata[:, 1:]
     if len(xdata.squeeze().shape) == 1:
         xdata = xdata.squeeze()
         return [spline_fn(xdata, ydata[:, i], **kwargs) for i in range(ydata.shape[1])]
@@ -486,7 +527,8 @@ class BasisMatrix(object):
     **kwargs
         Basis-specific construction options.  Polynomial bases accept
         ``poly_deg`` and ``coeffs``; spline bases accept their knot/domain
-        options and boundary parameters.
+        options and boundary parameters.  Spline construction requires
+        ``n_knots >= 3``.
 
     Attributes
     ----------
@@ -505,7 +547,9 @@ class BasisMatrix(object):
     ------
     KeyError, TypeError, ValueError, NotImplementedError
         Exceptions from the selected :func:`build_basis` path propagate for
-        unknown selectors, unsupported options or invalid basis data.
+        unknown selectors, unsupported options or invalid basis data.  A
+        nonzero ``yp`` for a clamped spline raises ``ValueError`` because the
+        resulting columns are not a linear basis.
     """
 
     def __init__(self, basis, **kwargs):
