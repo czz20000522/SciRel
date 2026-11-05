@@ -6050,9 +6050,9 @@
   },
   {
    "asset_id": "scirel.closures.boltzmann-quasineutrality",
-   "source_sha256": "19e9122de82e00919464b89275244a343a6de98370fe374c1c660857e2332937",
-   "summary": "在对数空间计算不截断指数的 Boltzmann 电子响应，并与给定正离子密度比较。",
-   "definition": "正参考电子密度时 L_e=log(n_ref)+e(phi−phi_ref)/T_e，正离子时 L_i=log(n_i)+log(Z_i)，e=1.602176634e-19 C。返回 exp(L_e)、exp(L_e+log T_e)、Z_i n_i−n_e、L_i−L_e 和 tanh((L_i−L_e)/2)。单一物种精确缺失时用绝对值至少 1 的有符号有限对数代理及精确 ±1 相对残差，双真空残差零。先形成势差，结合尾数/指数缩放和范围边缘精确回退，避免绝对能量分别舍入及过早溢出/下溢。",
+   "source_sha256": "aee1fc4ffff6782dad877397799187197eaa316df04394d20c560b991be107f7",
+   "summary": "在对数空间计算不截断指数的 Boltzmann 电子响应，并与给定正离子密度比较，五个命名字段统一以 scirel._result.Result 映射返回。",
+   "definition": "正参考电子密度时 L_e=log(n_ref)+e(phi−phi_ref)/T_e，正离子时 L_i=log(n_i)+log(Z_i)，e=1.602176634e-19 C。返回 exp(L_e)、exp(L_e+log T_e)、Z_i n_i−n_e、L_i−L_e 和 tanh((L_i−L_e)/2)。五个字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。单一物种精确缺失时用绝对值至少 1 的有符号有限对数代理及精确 ±1 相对残差，双真空残差零。先形成势差，结合尾数/指数缩放和范围边缘精确回退，避免绝对能量分别舍入及过早溢出/下溢。",
    "model": "给定温度下逐点 Boltzmann 电子响应，不是自洽电势求解。",
    "assumptions": [
     "电子温度为焦耳热能，使 n_e T_e 为 Pa。",
@@ -6101,31 +6101,31 @@
    "outputs": [
     {
      "name": "electron_density_m3",
-     "description": "未截断的 Boltzmann 数密度。",
+     "description": "Result 字段：未截断的 Boltzmann 数密度。",
      "constraints": "返回时有限，可下溢到零。",
      "dtype": "NumPy float64 标量或数组"
     },
     {
      "name": "electron_pressure_pa",
-     "description": "由 L_e+log(T_e) 求压力，即使密度下溢仍保留可表示压力。",
+     "description": "Result 字段：由 L_e+log(T_e) 求压力，即使密度下溢仍保留可表示压力。",
      "constraints": "返回时有限，可下溢到零。",
      "dtype": "NumPy float64 标量或数组"
     },
     {
      "name": "logarithmic_charge_residual",
-     "description": "正物种的 L_i−L_e；仅一物种缺失时为有符号有限非零代理。",
+     "description": "Result 字段：正物种的 L_i−L_e；仅一物种缺失时为有符号有限非零代理。",
      "constraints": "有限，双真空为零；缺失物种不能伪造零残差。",
      "dtype": "NumPy float64 标量或数组"
     },
     {
      "name": "charge_residual_m3",
-     "description": "荷态加权离子数密度减电子数密度，不是 C/m³ 的电荷密度。",
+     "description": "Result 字段：荷态加权离子数密度减电子数密度，不是 C/m³ 的电荷密度。",
      "constraints": "成功时有限，单位为数密度。",
      "dtype": "NumPy float64 标量或数组"
     },
     {
      "name": "relative_charge_residual",
-     "description": "正物种时 tanh((L_i−L_e)/2)，单物种缺失精确 ±1，双真空零。",
+     "description": "Result 字段：正物种时 tanh((L_i−L_e)/2)，单物种缺失精确 ±1，双真空零。",
      "constraints": "有限且在 [−1,1]，避免密度和溢出。",
      "dtype": "NumPy float64 标量或数组"
     }
@@ -6147,18 +6147,19 @@
     "invalid_input": "场非有限、温度非正、密度为负、荷态非正或非有限抛 ValueError；不兼容形状或非数值转换可抛 ValueError/TypeError。",
     "runtime_failure": "无量纲电势、必要密度/压力或对数残差不可表示时抛 FloatingPointError，不用人工指数上限替代原态。",
     "nonconvergence": "不适用；只求给定电势，无迭代。",
-    "partial_results": "异常不返回映射；成功返回五个有限场，并遵循下溢及精确真空约定。"
+    "partial_results": "异常不返回 scirel._result.Result 映射；成功返回五个有限场，并遵循下溢及精确真空约定。"
    },
    "example": {
     "description": "在高于参考值一个电子热电压的给定状态求值。",
-    "expected": "电子密度为 6 m⁻³，电子压力为 6×1.602176634×10⁻¹⁹ ≈ 9.613×10⁻¹⁹ Pa，所列中性残差在浮点容差内为零。"
+    "expected": "返回带五个命名字段的 scirel._result.Result 映射，按键和属性读取同一个值；电子密度为 6 m⁻³，电子压力为 6×1.602176634×10⁻¹⁹ ≈ 9.613×10⁻¹⁹ Pa，所列中性残差在浮点容差内为零。"
    },
    "verification": {
     "scope": [
      "n_ref=1e-300、指数 +800 和 n_ref=1e300、指数 −800 的可表示密度，不截断指数。",
      "相对残差抗溢出、正物种对数残差抗下溢、双真空及密度下溢仍保留压力。",
      "普通解析响应、非法输入及有限输出；严格验证不截断的 exp(701)，拒绝不可表示的正响应。不截断断言是判别性见证：不可表示的正响应被拒绝而非截断。",
-     "±1e20 邻近 binary64 势差复现精确有理指数；±1e308 异号势及次正规热能保持可表示最终响应。"
+     "±1e20 邻近 binary64 势差复现精确有理指数；±1e308 异号势及次正规热能保持可表示最终响应。",
+     "Result 改造后保持五键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
     "evidence_ceiling": "测试支持数学 Boltzmann 定律、有限算术及所述残差约定，不建立真实电子平衡或全部等离子体模型适用性。",
     "known_limitations": [
