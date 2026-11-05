@@ -47,6 +47,14 @@ def update_anisotropic_picard_flux(
 
     ``g_br`` and ``g_bz`` may be omitted together; in that case the field
     increment is differentiated from the same Green-produced flux increment.
+
+    Notes
+    -----
+    ``plasma_mask`` is an explicit domain selector. For a supplied boolean
+    ``[N_Z,N_R]`` mask, True cells preserve ``j_phi`` and False cells are
+    replaced by zero before cell weighting and current relaxation. ``None``
+    treats every cell as active. Invalid masks raise ``ValueError``; the zero
+    values are a declared domain boundary, not a numerical-failure fallback.
     """
     r_grid = np.asarray(r_grid, dtype=float)
     if r_grid.ndim != 2:

@@ -93,6 +93,25 @@ def test_zero_green_performs_one_iteration_without_changing_vacuum_flux():
     assert result["profiles"]["p_parallel"].shape == (3, 3)
 
 
+def test_plasma_mask_zeroes_only_inactive_terminal_current_cells():
+    mask = np.array(
+        [[True, False, False], [False, True, False], [False, False, True]],
+        dtype=bool,
+    )
+
+    # With zero Green response the terminal psi/B state is mask-independent,
+    # so the unmasked run supplies the pre-mask terminal current density.
+    unmasked = _run(_inputs())
+    masked = _run(_inputs(plasma_mask=mask))
+
+    assert np.any(unmasked["j_phi"][~mask] != 0.0)
+    expected_density = np.where(mask, unmasked["j_phi"], 0.0)
+    np.testing.assert_array_equal(masked["j_phi"], expected_density)
+    np.testing.assert_array_equal(masked["j_phi"][mask], unmasked["j_phi"][mask])
+    assert masked["converged"]
+    assert masked["failure_reason"] is None
+
+
 def test_isotropic_limit_has_zero_anisotropic_source_and_preserves_vacuum():
     values = _inputs(
         pressure_closure=_isotropic_limit_closure,

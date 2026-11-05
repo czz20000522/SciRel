@@ -94,6 +94,11 @@ def _run_composition(inputs, *, asset_loader):
     and its magnetic derivatives. The unrelaxed target, including wall fields,
     controls termination; relaxed flux change remains a diagnostic only.
     Returned pressure/current and force compatibility use the returned fields.
+    ``plasma_mask`` is a declared domain selector: True cells retain the
+    computed feedback and terminal current, False cells are zeroed before
+    feedback and in terminal ``j_phi``, and None treats all cells as active.
+    Invalid masks fail before iteration; these zeros do not hide numerical
+    failures.
     压力闭合对给定状态须确定且不修改输入；每次求值前检查B下界。
     全状态残差比较未松弛目标与当前态：各场分量的L2分母为目标、
     当前及真空范数的最大值，电流分母为目标和当前范数的最大值；
@@ -398,7 +403,10 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     state, not only the relaxed flux increment.  ``maxiter=0`` returns a
     nonconverged terminal evaluation.  The composition owns iteration and state
     composition; it does not certify the physical wall model or a global
-    equilibrium.
+    equilibrium. ``plasma_mask`` is a declared domain selector: True cells
+    retain the computed feedback and terminal current, False cells are zeroed
+    in both, and None treats every cell as active. Invalid masks fail before
+    iteration starts.
     """
 
     from scirel._composition import compose

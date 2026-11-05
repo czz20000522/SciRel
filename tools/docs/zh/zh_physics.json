@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.equilibrium.free-boundary-anisotropic-picard",
-   "source_sha256": "9c7b1bb049efd2221ff4fdd21b47f2ded982d44ea4bc4065163cb33f0bc4f15b",
+   "source_sha256": "a2f8c6a34047bca1065dd297c5058428cb3e9ddbef97af5f7c5cc8dee3ee3b82",
    "summary": "执行显式各向异性压力、电流与 Green 场的有界 Picard 反馈；可选墙磁通和对应磁场导数共同更新，以全部未松弛反馈状态残差及平行力相容性决定收敛。",
    "definition": "当前 psi、BR、BZ 上重求确定性压力闭合与环向电流，按节点梯形或显式单元边界积分并松弛电流后投影 Green 场。缺少场 Green 对时对新增磁通求场导数，墙分支同步加墙磁通及离散场。判停要求 psi、BR、BZ 和电流的未松弛目标全部闭合，返回态再重求闭合、电流及力相容性；零步不声称收敛。",
    "model": "外供 N4 压力闭合和可选线性理想导体壁修正的轴对称旋磁压力 Picard 组合。",
@@ -104,7 +104,7 @@
     {
      "name": "plasma_mask",
      "description": "反馈及末态电流的激活选择器。",
-     "constraints": "若提供须精确同形且 bool；False 处电流置零。",
+     "constraints": "若提供须精确同形且 bool；True 处保留计算电流，False 处在反馈与末态电流中都置零。",
      "dtype": "布尔数组或 None"
     },
     {
@@ -172,7 +172,7 @@
     {
      "name": "j_phi",
      "description": "经可选掩码处理的末环向电流密度。",
-     "constraints": "在末 psi 和 B 重算，掩码外为零。",
+     "constraints": "在末 psi 和 B 重算；True 处保留计算值，False 处为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
@@ -333,9 +333,10 @@
      "真实平行压力不平衡不能被标为平衡收敛。",
      "relax=1 的完全保留不能将非零固定点残差伪装为收敛。",
      "解析秩一 Green 检查两步状态传递及 I²+I−K=0 终态；接近完全保留的松弛不能因小步幅提前退出。",
-     "磁通不变而场和电流仍变化时不声称收敛；空场在压力回调前拒绝。"
+     "磁通不变而场和电流仍变化时不声称收敛；空场在压力回调前拒绝。",
+     "部分掩码保留激活区末态 j_phi，仅将非激活单元置零。"
     ],
-    "evidence_ceiling": "限于带可选壁磁通与磁场导数的有界各向异性 Picard 反馈。证据：`test_composition_free_boundary_anisotropic_picard.py` 含 20 个测试函数，其中 1 个引用 `solve_free_boundary_anisotropic_picard`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `solve_free_boundary_anisotropic_picard`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定组合文件与修正文件中的独立制造解/解析离散检查。不建立：内置 Frank-Egedal 闭合、对调用者压力物理的独立验证，或物理边界/壁模型。",
+    "evidence_ceiling": "限于带可选壁磁通与磁场导数的有界各向异性 Picard 反馈。证据：`test_composition_free_boundary_anisotropic_picard.py` 含 21 个测试函数，其中 1 个引用 `solve_free_boundary_anisotropic_picard`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `solve_free_boundary_anisotropic_picard`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定组合文件与修正文件中的独立制造解/解析离散检查。不建立：内置 Frank-Egedal 闭合、对调用者压力物理的独立验证，或物理边界/壁模型。",
     "known_limitations": [
      "外供物理闭合和格林响应须有独立证据，并一致使用 psi=R A_phi（Wb/rad）。",
      "浮点舍入包络不约束离散误差或实验不确定度。",
@@ -1747,7 +1748,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.anisotropic-picard-feedback",
-   "source_sha256": "dd7896829843caec25c09e6a1066290ac8c07e1840fce103e57dd902b898c8ab",
+   "source_sha256": "4fc834ce5a1b02bb5f917bac69dd9c24c347f72c305a45b1b0a109d212eeb49b",
    "summary": "将环向电流密度按掩码和网格积分为单元电流，与旧电流松弛后投影到稠密格林磁通及可选磁场响应。",
    "definition": "默认复合梯形权重恰覆盖给定节点矩形域，边界为半间隔；显式 cell_edges 则定义包围中心的单元面积。电流不乘 2πR。非激活密度置零，I=(1−relax)I_raw+relax I_old。磁通用 G_psi；成对 G_BR/G_BZ 求场，缺失时对同一新增磁通求导，再加真空场。",
    "model": "使用调用者稠密线性格林响应的一次显式单元电流 Picard 反馈。",
@@ -1762,7 +1763,7 @@
     {
      "name": "j_phi",
      "description": "可选等离子体截断前的环向电流密度。",
-     "constraints": "同形；有掩码时非激活单元变零。",
+     "constraints": "同形；有掩码时 True 处保留输入值，False 处在单元加权前变零。",
      "dtype": "有限实数数组"
     },
     {
@@ -1780,7 +1781,7 @@
     {
      "name": "plasma_mask",
      "description": "可选激活单元选择器，不使用时须显式 None。",
-     "constraints": "None 代表全激活；否则必须严格同形且 bool 类型，不广播或强制转换 0/1。",
+     "constraints": "None 代表全激活；否则必须严格同形且 bool 类型，不广播或强制转换 0/1；True 保留 j_phi，False 将其置零。",
      "dtype": "布尔数组或 None"
     },
     {
@@ -1860,7 +1861,7 @@
     {
      "name": "j_phi",
      "description": "掩码截断后的电流密度。",
-     "constraints": "有掩码时 True 以外为零。",
+     "constraints": "有掩码时 True 处保留输入值，False 处为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
@@ -1907,13 +1908,14 @@
    "verification": {
     "scope": [
      "显式单元均匀行为、非均匀节点域积分、双节点及降序轴支持。",
-     "缺少场格林对时，以新增等离子体磁通的导数产生磁场增量，保留真空参考。"
+     "缺少场格林对时，以新增等离子体磁通的导数产生磁场增量，保留真空参考。",
+     "部分掩码保留激活区 j_phi，仅在单元加权前将非激活单元置零。"
     ],
-    "evidence_ceiling": "限于单次带掩码的环向电流反馈步及磁通/可选场投影。证据：`test_anisotropic_picard_feedback.py` 含 8 个测试函数，其中 2 个引用 `update_anisotropic_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_anisotropic_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：Green 响应的自动构造或物理验证，或完整平衡/壁求解。",
+    "evidence_ceiling": "限于单次带掩码的环向电流反馈步及磁通/可选场投影。证据：`test_anisotropic_picard_feedback.py` 含 9 个测试函数，其中 3 个引用 `update_anisotropic_picard_flux`，仅由本资产绑定; `test_anisotropic_core_scientific_correction.py` 含 17 个测试函数，其中没有函数引用 `update_anisotropic_picard_flux`，由 8 个资产共享；本审计已执行有界示例。真值来源：绑定私有文件与修正文件中的独立制造解/解析离散检查。不建立：Green 响应的自动构造或物理验证，或完整平衡/壁求解。",
     "known_limitations": [
      "外供闭合和格林需要独立证据及一致 Wb/rad 归一化。",
      "舍入包络不是离散误差或实验不确定度界。",
-     "私有文件有八个函数和两个直接引用：关系示例与无单元面积网格拒绝；共享修正文件没有直接符号调用。"
+     "私有文件有九个函数和三个直接引用：掩码保留回归、关系示例与无单元面积网格拒绝；共享修正文件没有直接符号调用。"
     ],
     "tests": [
      "tests/equilibrium/test_anisotropic_picard_feedback.py",

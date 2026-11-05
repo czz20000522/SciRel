@@ -53,6 +53,20 @@ def test_full_old_state_retention_and_zero_initialization():
     np.testing.assert_allclose(initialized["plasma_currents"], 0.01)
 
 
+def test_plasma_mask_zeroes_only_inactive_current_cells():
+    j_phi = np.array([[1.0, -2.0], [3.0, 4.0]])
+    mask = np.array([[True, False], [False, True]])
+
+    result = update_anisotropic_picard_flux(**_inputs(j_phi=j_phi, plasma_mask=mask))
+
+    expected_density = np.array([[1.0, 0.0], [0.0, 4.0]])
+    np.testing.assert_array_equal(result["j_phi"], expected_density)
+    np.testing.assert_array_equal(result["j_phi"][mask], j_phi[mask])
+    np.testing.assert_allclose(
+        result["plasma_currents"], expected_density * 0.01, rtol=1e-15, atol=0.0
+    )
+
+
 def test_reviewed_relation_example():
     import numpy as np
     from scirel.equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux
