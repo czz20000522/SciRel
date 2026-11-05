@@ -69,6 +69,23 @@ def test_vectors_do_not_change_spectrum_path_and_residuals():
     assert np.max(np.abs(residual)) < 1e-12
 
 
+def test_active_component_residual_mask_keeps_errors_fail_closed():
+    from scirel.kinetic.spectral_evolution import _residuals
+
+    M = np.array([[1.0e-14, 0.0], [1.0, 0.0]])
+    A = np.array([[0.0, 0.0], [1.0, 0.0]])
+    values = np.array([0.75, 0.0])
+    vectors = np.eye(2)
+
+    errors, worst = _residuals(M, A, values, vectors)
+    np.testing.assert_allclose(errors[0], 0.25 / 1.75, rtol=1e-15, atol=0.0)
+    np.testing.assert_allclose(worst, 0.25 / 1.75, rtol=1e-15, atol=0.0)
+
+    nonfinite_vectors = np.array([[1.0, 0.0], [np.nan, 1.0]])
+    with pytest.raises(ArithmeticError, match="nonfinite"):
+        _residuals(M, A, values, nonfinite_vectors)
+
+
 @pytest.mark.parametrize("method", [0, 1, 5, 99])
 def test_single_point_selectors(method):
     result = evaluate_spectral_dispersion(method=method)

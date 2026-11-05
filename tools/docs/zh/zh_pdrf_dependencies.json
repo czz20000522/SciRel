@@ -4,7 +4,7 @@
  "records": [
   {
    "asset_id": "scirel.kinetic.spectral-temporal-matrix",
-   "source_sha256": "9c9bddc600b95cc1e4c754a497cc34d72680b7de1981747dfd696926190f1e7e",
+   "source_sha256": "246e9393efbb884678189302c9c3c280a2c125ebfe65717ed8496cc262ea965d",
    "summary": "组装独立修正后的局域流体/Maxwell 生成器与相对论惯性。",
    "definition": "对 k=(kx,0,kz)、eps=(epsx,epsy,0)：dn_dot=-i(k·v0)dn-n0*(i*k+eps)·dv。动量方程 A_v*d(v)_dot=-i(k·v0)A_v*dv+(q/m)*(dv×B0+v0×dB+dE)-i*diag(csp2,csp2,csz2)*k*dn/n0+diag(csp2,csp2,csz2)*eps*dn/(gamma*n0)+collision。当 B0!=0 时，令 D=(Psz-Psp)/B0/rho，并加入 [-i*kz*D*dBx, -i*kz*D*dBy, -2*D*((i*kx+epsx)*dBx+epsy*dBy)]。Maxwell 方程：dE_dot=i*c2*(k×dB)-sum(q*(n0*dv+v0*dn))/epsilon0；dB_dot=-i*(k×dE)。当 rel=1 时，A_v=gamma_rel*I+gamma_rel^3*v0*v0^T/c2。额外的密度项和磁系数梯度项补上了此前遗漏的背景压强加速度导数。正的自身强迫项改由耗散摩擦表示。不声称对 Lorentz 覆盖作修正：原始 Lorentz 项与各向异性项使用不同的列。",
    "model": "带经验纵向磁压因子 2 的代数各向异性多流体闭合。",
@@ -129,7 +129,7 @@
      "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
      "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
     ],
-    "evidence_ceiling": "限于含相对论切向惯性与代数各向异性压力的局部流体/麦克斯韦生成元。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 6 个引用 `assemble_spectral_matrix`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或无协变修正的热力学。",
+    "evidence_ceiling": "限于含相对论切向惯性与代数各向异性压力的局部流体/麦克斯韦生成元。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 6 个引用 `assemble_spectral_matrix`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或无协变修正的热力学。",
     "known_limitations": [
      "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
      "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
@@ -145,7 +145,7 @@
   },
   {
    "asset_id": "scirel.kinetic.spectral-dispersion-scan",
-   "source_sha256": "5e3308c2acec6169ce6dfe572fde9e028a1b9a6d89a738086c4d14077ff64d68",
+   "source_sha256": "2a08db4f62687dba44865fbb6478944af40071856b709306733658070d6a1fd6",
    "summary": "用修正后的算子运行完整扫描族，并显式给出状态与限制。",
    "definition": "初始化一次；对每个按方法选定的 k 点组装修正矩阵并计算条件化本征谱；收集全部排序后的模式，并记录最后一点的 M、A、w1、w2、state。方法 2 在归一化/SI 单位下分别使用 101/196 个幅值点，方法 3 使用 51 个角度，方法 4 使用 50×75 笛卡尔网格并按先 kz 后 kx 的行主序扫描；method 为 0、1 或未知非负整数时走单点分支。随后为 2/3/4 返回双面板图形元数据；其他选择器保持零坐标轴。可选的 SI 位置返回前缀为 (M,A,w1,w2,kk,ww1,ww2,betasz,vA,csz2,c2,rhos0,wcs,qs,ms,wps,B0)，各字段均有定义。",
    "model": "由新建状态、修正后的局域多流体矩阵和条件化谱组合而成；扫描网格遵循声明的方法默认值。",
@@ -550,7 +550,7 @@
      "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
      "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
     ],
-    "evidence_ceiling": "限于局部归一化/SI 多流体色散映射及其扫描选择器。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 3 个引用 `evaluate_spectral_dispersion`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
+    "evidence_ceiling": "限于局部归一化/SI 多流体色散映射及其扫描选择器。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 3 个引用 `evaluate_spectral_dispersion`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
     "known_limitations": [
      "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
      "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",
@@ -569,15 +569,16 @@
   },
   {
    "asset_id": "scirel.kinetic.spectral-temporal-spectrum",
-   "source_sha256": "856ff5a9acfb05fc33c12c9cead7523d1359deab6c05541e8193f54f5ad0dbc5",
+   "source_sha256": "a5c727e1b2500efde666a9766e90c442602d6124a981e9743771475016746eaa",
    "summary": "求解时间模式并独立排序，保持成对的值与向量，并以实数精度做精化。",
-   "definition": "lambda*A*X=M*X；omega=i*lambda。对两个矩阵先施加正对角物理相似变换，再做二进制相似平衡。先做双精度 eig；当分量残差 >1e-12 时，在私有克隆上下文中用 50 位十进制 mpmath 做实际求逆和 eig。最终全局残差或活动分量残差 >1e-10 时拒绝。转换为 complex128，并在不使未缩放幅值溢出的前提下归一化向量。排序按实部/虚部频率独立且稳定。",
+   "definition": "lambda*A*X=M*X；omega=i*lambda。对两个矩阵先施加正对角物理相似变换，再做二进制相似平衡。先做双精度 eig；当分量残差 >1e-12 时，在私有克隆上下文中用 50 位十进制 mpmath 做实际求逆和 eig。最终全局残差或活动分量残差 >1e-10 时拒绝。活动分量的 worst 指标忽略低于各列全局尺度 1e-12 的行，但这些行仍进入全局误差和有限性检查；非有限残差仍抛出 ArithmeticError。转换为 complex128，并在不使未缩放幅值溢出的前提下归一化向量。排序按实部/虚部频率独立且稳定。",
    "model": "稠密线性广义本征问题，并以向后误差控制算术精化。",
    "boundary": "矩阵或解非有限、惯性矩阵奇异或残差过大时失败；重根模式的基不唯一。",
    "assumptions": [
     "使用 SciPy 双精度算术，并以 mpmath 核心在需要时真正回退到高精度。",
     "精度受条件数和已舍入输入系数限制；高精度不是普遍的前向误差证明。",
-    "四个/六个输出的 vpa 阶次拆分被有意不采用；eig 之后的符号转换没有带来额外精度。"
+    "四个/六个输出的 vpa 阶次拆分被有意不采用；eig 之后的符号转换没有带来额外精度。",
+    "活动分量 mask 只影响 worst 指标；所有行仍进入全局误差和有限性检查，非有限残差不会被清零。"
    ],
    "inputs": [
     {
@@ -731,9 +732,10 @@
     "scope": [
      "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
      "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。",
-     "外部 PDRF 实频参考点由 tests/kinetic/test_dispersion_multifluid_oracle.py 覆盖。"
+     "外部 PDRF 实频参考点由 tests/kinetic/test_dispersion_multifluid_oracle.py 覆盖。",
+     "合成残差检查确认低尺度非活动行不会设置 worst 指标，而非活动行的非有限残差仍抛出 ArithmeticError。"
     ],
-    "evidence_ceiling": "限于带实/虚部排序与后向残差的稠密广义时间本征问题。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 2 个引用 `solve_temporal_spectrum`，由 4 个资产共享; `test_dispersion_multifluid_oracle.py` 含 4 个测试函数，其中 1 个引用 `solve_temporal_spectrum`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：自洽/回归，外加一个固定外部 PDRF 真值情形。不建立：通用前向本征值精度、唯一简并极化或模追踪。",
+    "evidence_ceiling": "限于带实/虚部排序与后向残差的稠密广义时间本征问题。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 2 个引用 `solve_temporal_spectrum`，由 4 个资产共享; `test_dispersion_multifluid_oracle.py` 含 4 个测试函数，其中 1 个引用 `solve_temporal_spectrum`，由 3 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：自洽/回归，外加一个固定外部 PDRF 真值情形。不建立：通用前向本征值精度、唯一简并极化或模追踪。",
     "known_limitations": [
      "后向残差界不能证明普遍的前向精度；已舍入的输入矩阵限制了可用信息。",
      "不做分支追踪，也不给出唯一相位或退化基。",
@@ -749,7 +751,7 @@
   },
   {
    "asset_id": "scirel.kinetic.spectral-plasma-state",
-   "source_sha256": "1ef70d99c0ef8e75538b0ca5e391e87e6d5ace39bd22c0f041052d77b35b5fea",
+   "source_sha256": "6fa72b9edd45414610e41cfe918c4d4ae434c65021c29b95cf5bdd2d475838ca",
    "summary": "从主数据派生新状态、诊断量及耗散互易碰撞矩阵。",
    "definition": "rho=m*n；Q=sum(q*n)；J=sum(q*n*v)；平行/垂直压强=rho*cs^2/gamma；omega_c=q*B0/m；omega_p=sqrt(n*q^2/(epsilon0*m))。配对摩擦：acceleration_i=sum_j rate_ij*(dv_j-dv_i)-drag_i*dv_i，且 rho_i rate_ij=rho_j rate_ji。",
    "model": "带外部支撑背景的局域多流体代数热状态有效模型。",
@@ -1138,7 +1140,7 @@
      "本合同项下的 SciRel 实现与所列仓库测试覆盖声明的公共端口及数值关系。",
      "示例只运行一个有界代表性算例，不把适用性扩展到声明的前置条件之外。"
     ],
-    "evidence_ceiling": "限于不计算本征谱的全新归一化/SI 等离子体态导出及诊断。证据：`test_spectral_evolution.py` 含 12 个测试函数，其中 10 个引用 `initialize_plasma_state`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
+    "evidence_ceiling": "限于不计算本征谱的全新归一化/SI 等离子体态导出及诊断。证据：`test_spectral_evolution.py` 含 13 个测试函数，其中 10 个引用 `initialize_plasma_state`，由 4 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：仅自洽/回归。不建立：完整熵/CGL/动理学演化，或非均匀全局麦克斯韦-高斯边界求解。",
     "known_limitations": [
      "局域代数热模型为有效模型，并非完整熵演化、CGL、动理学或未磁化漂移导向的附录 A 模型。",
      "背景源项与按质量给定的加速度对扰动响应为零。梯度定义局域/eikonal 符号，而不是非齐次全局 Maxwell-Gauss 边值解。",

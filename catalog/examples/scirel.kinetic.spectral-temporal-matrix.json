@@ -189,7 +189,7 @@
   "tests": [
    "tests/kinetic/test_spectral_evolution.py"
   ],
-  "evidence_ceiling": "Bounded to the local fluid/Maxwell generator with relativistic tangent inertia and algebraic anisotropic pressure. Evidence: `test_spectral_evolution.py` contains 12 test functions, 6 of which reference `assemble_spectral_matrix`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish full entropy/CGL/kinetic evolution, or noncovariant-free thermodynamics.",
+  "evidence_ceiling": "Bounded to the local fluid/Maxwell generator with relativistic tangent inertia and algebraic anisotropic pressure. Evidence: `test_spectral_evolution.py` contains 13 test functions, 6 of which reference `assemble_spectral_matrix`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish full entropy/CGL/kinetic evolution, or noncovariant-free thermodynamics.",
   "known_limitations": [
    "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
    "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
