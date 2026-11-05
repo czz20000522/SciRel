@@ -820,21 +820,19 @@ def _run_simple_operator() -> tuple[dict[str, Any], list[str]]:
         z_axis = np.array([-0.3, 0.3], dtype=float)
         r_grid, z_grid = np.meshgrid(r_axis, z_axis)
         result = solve_multi_coil_vacuum_field(
-            {
-                "r_grid": r_grid,
-                "z_grid": z_grid,
-                "rectangular_coils": [
-                    {
-                        "r0_m": 1.0,
-                        "z0_m": 0.0,
-                        "nr": 1,
-                        "nz": 1,
-                        "dr_m": 0.04,
-                        "dz_m": 0.05,
-                        "current_a": 1000.0,
-                    }
-                ],
-            }
+            r_grid,
+            z_grid,
+            [
+                {
+                    "r0_m": 1.0,
+                    "z0_m": 0.0,
+                    "nr": 1,
+                    "nz": 1,
+                    "dr_m": 0.04,
+                    "dz_m": 0.05,
+                    "current_a": 1000.0,
+                }
+            ],
         )
         expected_shape = tuple(r_grid.shape)
         details = {

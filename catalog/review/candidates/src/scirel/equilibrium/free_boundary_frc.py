@@ -27,7 +27,7 @@ def solve_finite_frc_feedback(inputs: dict) -> dict:
         coils.append({"r0_m": radius, "z0_m": z0, "nr": nr_s, "nz": nz_s,
                       "dr_m": width / (nr_s - 1), "dz_m": height / (nz_s - 1),
                       "current_a": current, "weights": [1.0 / (nr_s * nz_s)] * (nr_s * nz_s)})
-    vacuum = solve_multi_coil_vacuum_field({"r_grid": r_grid, "z_grid": z_grid, "rectangular_coils": coils})
+    vacuum = solve_multi_coil_vacuum_field(r_grid, z_grid, coils)
     points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
     unit_sources = np.column_stack((r_grid.ravel(), z_grid.ravel(), np.ones(r_grid.size)))
     green = dense_axisymmetric_green_response(points, unit_sources)

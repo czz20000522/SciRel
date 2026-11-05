@@ -640,32 +640,6 @@
    "review_basis": "_run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
   },
   {
-   "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "callable": "scirel.field.multi_coil_vacuum_field.solve_multi_coil_vacuum_field",
-   "ports": [
-    {
-     "name": "r_grid",
-     "required": true
-    },
-    {
-     "name": "z_grid",
-     "required": true
-    },
-    {
-     "name": "rectangular_coils",
-     "required": true
-    }
-   ],
-   "modules": {
-    "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
-    "scirel.field.circular_filament_green": "fcba85a0e0625ff2c211dbca20743d19c132f15101a0c9b50eef7eccdf6c5656",
-    "scirel.field.current_green_superposition": "4629e14f77539f13fa3665115d91aca8b4160d921a42cf54a1e4846c63b2788c",
-    "scirel.field.multi_coil_vacuum_field": "e7c2d28563f247597aef16f9945e08ef646011cf1d75afff25659663968a2c53",
-    "scirel.field.rectangular_coil_filaments": "ee6206ae5432e6fae2e9cdc03da323249ddf1f8ec04b2c62c378ae204b35c34a"
-   },
-   "review_basis": "_run_composition requires r_grid,z_grid,rectangular_coils. Each coil requires center,counts,widths,current; angle defaults0 and weights defaultones inside nested coil configuration, not undocumented top-level ports. Active nonzero-current filaments coincident with target grid nodes are rejected before Green evaluation. Bound discretizer, analytic Green and signed superposition implement the existing graph."
-  },
-  {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
    "callable": "scirel.kinetic.frank_egedal_pressure_closure.solve_frank_egedal_pressure_closure",
    "ports": [

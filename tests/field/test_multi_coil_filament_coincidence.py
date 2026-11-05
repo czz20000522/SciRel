@@ -27,12 +27,21 @@ def _coincident_inputs(*, weight=1.0):
 
 
 def test_active_filament_coincident_with_target_node_fails_closed():
-    with pytest.raises(ValueError, match="coincident"):
-        solve_multi_coil_vacuum_field(_coincident_inputs())
+    values = _coincident_inputs()
+    with pytest.raises(ValueError) as raised:
+        solve_multi_coil_vacuum_field(
+            values["r_grid"], values["z_grid"], values["rectangular_coils"]
+        )
+    assert str(raised.value) == (
+        "rectangular_coils[0] has an active filament coincident with a target grid node"
+    )
 
 
 def test_zero_weight_filament_coincidence_is_inactive():
-    result = solve_multi_coil_vacuum_field(_coincident_inputs(weight=0.0))
+    values = _coincident_inputs(weight=0.0)
+    result = solve_multi_coil_vacuum_field(
+        values["r_grid"], values["z_grid"], values["rectangular_coils"]
+    )
 
     np.testing.assert_array_equal(result["psi_vac"], 0.0)
     np.testing.assert_array_equal(result["b_r_vac"], 0.0)

@@ -9639,7 +9639,7 @@
   },
   {
    "asset_id": "scirel.field.multi-coil-vacuum-field",
-   "source_sha256": "150746cba7af21c359c7b5408d879d647145626eb4fa5c284192482399c1303d",
+   "source_sha256": "4f52159a0ddb6cdf1c5773db47fe45a2a41b87a094b930b0392bf2e6a1eb0eda",
    "summary": "将矩形线圈记录展开为加权电流丝，计算各线圈的 Green 响应并按驱动电流叠加。各命名字段作为同一个 scirel._result.Result 映射返回。",
    "definition": "逐个离散调用者线圈、附加电流丝权重并计算按目标点排序的 Green 响应。每个线圈的驱动量是每根电流丝的电流（current_a，或 ampere_turns_a 除以该线圈权重之和）。每个线圈占一列，组成 [N_target,N_coil] 矩阵，沿轴 1 与 [N_coil] 驱动电流向量收缩，再重塑回输入网格。 各字段存于同一个 scirel._result.Result 映射；按键和属性读取同一值，不引入嵌套 Result。",
    "model": "矩形几何、圆电流丝 Green 响应和电流收缩的有序无环组合。",
@@ -9712,7 +9712,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "缺失、空或格式错误的网格、空/非映射线圈、非法几何、权重、电流，或活动电流丝与目标节点精确重合时抛出 ValueError。",
+    "invalid_input": "缺少必需参数、使用已删除的 mapping 或 **kwargs 入口、或传入未知关键字时抛出 TypeError；空或格式错误的网格、空/非映射线圈、非法几何、权重、电流，或活动电流丝与目标节点精确重合时抛出 ValueError。",
     "runtime_failure": "依赖产生的 ValueError/FloatingPointError 会在返回任何场之前传播，包括不可表示的电流加权 Green 收缩；不执行回退或重试。",
     "nonconvergence": "不适用；图没有反馈环。",
     "partial_results": "任一步骤失败后不返回 scirel._result.Result 场或电流丝输出。"
@@ -9723,6 +9723,7 @@
    },
    "verification": {
     "scope": [
+     "显式公开签名包含三个必需的位置或关键字物理输入；旧 mapping、inputs 关键字和未知关键字调用抛出 TypeError。",
      "驱动电流的线性缩放。",
      "多个线圈具有独立响应列，与驱动电流向量沿轴 1 对齐。",
      "电流与电流丝权重的区分。",
