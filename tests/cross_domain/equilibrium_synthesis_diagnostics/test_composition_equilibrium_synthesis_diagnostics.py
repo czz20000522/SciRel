@@ -1,8 +1,7 @@
 import inspect
 
 from scirel.diagnostics.equilibrium_synthesis_diagnostics import synthesize_equilibrium_diagnostics
-import scirel
-from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset
 from copy import deepcopy
 from pathlib import Path
 
@@ -10,8 +9,11 @@ import numpy as np
 import pytest
 
 from scirel.diagnostics import equilibrium_synthesis_diagnostics as composition
+
+
 def _asset_loader(asset_ref):
     return _load_asset(asset_ref)
+
 
 def _run(inputs):
     return composition.run_composition(inputs, asset_loader=_asset_loader)
@@ -38,7 +40,12 @@ def _inputs():
         "equilibrium": {
             "psi": R + 2.0 * Z,
             "psi_unit": "Wb/rad",
-            "profile_units": {"p_parallel":"Pa", "p_perp":"Pa", "density":"m^-3", "electron_temperature":"eV"},
+            "profile_units": {
+                "p_parallel": "Pa",
+                "p_perp": "Pa",
+                "density": "m^-3",
+                "electron_temperature": "eV",
+            },
             "profiles": {
                 "p_parallel": 10.0 + R + Z,
                 "p_perp": 20.0 + 2.0 * R + Z,
@@ -47,8 +54,18 @@ def _inputs():
             },
         },
         "observations": {
-            "flux_loops": {"points": np.array([[0.5, 0.5]]), "quantity":"raw_psi", "unit":"Wb/rad"},
-            "thomson": {"points": np.array([[0.5, 0.5]]), "p_parallel":{"unit":"Pa"}, "p_perp":{"unit":"Pa"}, "density":{"unit":"m^-3"}, "electron_temperature":{"unit":"eV"}},
+            "flux_loops": {
+                "points": np.array([[0.5, 0.5]]),
+                "quantity": "raw_psi",
+                "unit": "Wb/rad",
+            },
+            "thomson": {
+                "points": np.array([[0.5, 0.5]]),
+                "p_parallel": {"unit": "Pa"},
+                "p_perp": {"unit": "Pa"},
+                "density": {"unit": "m^-3"},
+                "electron_temperature": {"unit": "eV"},
+            },
         },
     }
 
@@ -65,7 +82,9 @@ def test_yaml_declares_observer_only_sampling_contract():
 # 验证：flux 分支读取 psi，结果按 source 的 flux-first key 顺序出现。
 def test_predicts_flux_loop_from_equilibrium_flux_only():
     inputs = _inputs()
-    inputs["observations"] = {"flux_loops": {"points": np.array([[0.5, 0.5]]), "quantity":"raw_psi", "unit":"Wb/rad"}}
+    inputs["observations"] = {
+        "flux_loops": {"points": np.array([[0.5, 0.5]]), "quantity": "raw_psi", "unit": "Wb/rad"}
+    }
     result = _run(inputs)
     assert list(result) == ["flux_loops", "units"]
     np.testing.assert_allclose(result["flux_loops"], [1.5])
@@ -105,7 +124,13 @@ def test_empty_or_unknown_observations_return_empty_mapping():
     [
         lambda value: {**value, "observations": {"flux_loops": {"points": np.array([[2.0, 0.5]])}}},
         lambda value: {**value, "equilibrium": {"profiles": value["equilibrium"]["profiles"]}},
-        lambda value: {**value, "equilibrium": {"psi": value["equilibrium"]["psi"], "profiles": {"p_perp": value["equilibrium"]["profiles"]["p_perp"]}}},
+        lambda value: {
+            **value,
+            "equilibrium": {
+                "psi": value["equilibrium"]["psi"],
+                "profiles": {"p_perp": value["equilibrium"]["profiles"]["p_perp"]},
+            },
+        },
     ],
 )
 # 验证：越界点和缺少必需 state port 不能被图静默填充或外推。
@@ -122,6 +147,8 @@ def test_diagnostics_do_not_mutate_equilibrium_state():
     for key, before_value in before.items():
         if isinstance(before_value, dict):
             for profile_key, profile_before in before_value.items():
-                np.testing.assert_array_equal(inputs["equilibrium"][key][profile_key], profile_before)
+                np.testing.assert_array_equal(
+                    inputs["equilibrium"][key][profile_key], profile_before
+                )
         else:
             np.testing.assert_array_equal(inputs["equilibrium"][key], before_value)

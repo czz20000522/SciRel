@@ -1,4 +1,5 @@
 """Contract tests for SciRel's ordered equilibrium grid composition."""
+
 from __future__ import annotations
 
 import ast
@@ -12,14 +13,20 @@ import numpy as np
 import pytest
 
 UNIT_ROOT = Path(__file__).resolve().parents[3]
-COMPOSITION_MODULE = Path(
-    importlib.import_module(
-        "scirel.geometry.axisymmetric_equilibrium_grid_support"
-    ).__file__
-).resolve() if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1" else (
-    UNIT_ROOT / "src/scirel/geometry/axisymmetric_equilibrium_grid_support.py"
+COMPOSITION_MODULE = (
+    Path(
+        importlib.import_module("scirel.geometry.axisymmetric_equilibrium_grid_support").__file__
+    ).resolve()
+    if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1"
+    else (UNIT_ROOT / "src/scirel/geometry/axisymmetric_equilibrium_grid_support.py")
 )
-COMPOSITION_DOCUMENT = UNIT_ROOT / "catalog" / "examples" / "scirel.geometry.axisymmetric-equilibrium-grid-support.json"
+COMPOSITION_DOCUMENT = (
+    UNIT_ROOT
+    / "catalog"
+    / "examples"
+    / "scirel.geometry.axisymmetric-equilibrium-grid-support.json"
+)
+
 
 def _inputs(equilibrium, axes):
     eq = equilibrium()
@@ -73,9 +80,7 @@ def test_u1_c_t01_composition_returns_the_documented_outputs(
 
 
 # --- Test U1-C-T02: the composition binds exactly the two dependencies. -----
-def test_u1_c_t02_composition_binds_exactly_the_two_dependencies(
-    candidate, equilibrium, axes
-):
+def test_u1_c_t02_composition_binds_exactly_the_two_dependencies(candidate, equilibrium, axes):
     inputs = _inputs(equilibrium, axes)
     calls = []
     shape = (2, 2, 2)
@@ -117,9 +122,10 @@ def test_u1_c_t02_composition_binds_exactly_the_two_dependencies(
     assert calls[1][2]["pml_cells"] == 1
     assert calls[1][2]["pec_mask"] is inputs["pec_mask"]
     assert calls[1][2]["xpoint_half_length_m"] == 0.2
-    assert calls[1][2]["separatrix_flux_wb_per_rad"] == inputs["equilibrium"][
-        "separatrix_flux_wb_per_rad"
-    ]
+    assert (
+        calls[1][2]["separatrix_flux_wb_per_rad"]
+        == inputs["equilibrium"]["separatrix_flux_wb_per_rad"]
+    )
     assert calls[1][2]["closed_flux_side"] == inputs["equilibrium"]["closed_flux_side"]
     assert result["radially_clamped_point_count"] == 3
     assert result["axially_clamped_point_count"] == 4
@@ -128,7 +134,9 @@ def test_u1_c_t02_composition_binds_exactly_the_two_dependencies(
     with pytest.raises(ValueError, match="unexpected composition keyword"):
         candidate["composition"](inputs, not_a_dependency=fake_mapping)
     with pytest.raises(ValueError, match="missing required composition inputs"):
-        candidate["composition"]({key: value for key, value in inputs.items() if key != "pml_cells"})
+        candidate["composition"](
+            {key: value for key, value in inputs.items() if key != "pml_cells"}
+        )
     with pytest.raises(ValueError, match="inputs must be a mapping"):
         candidate["composition"](None)
 
@@ -140,9 +148,7 @@ def test_u1_c_t03_composition_is_a_pure_ordered_dag(candidate):
     imported = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom):
-            imported.add(
-                (node.level, node.module or "", tuple(alias.name for alias in node.names))
-            )
+            imported.add((node.level, node.module or "", tuple(alias.name for alias in node.names)))
         elif isinstance(node, ast.Import):
             imported.add((0, "", tuple(alias.name for alias in node.names)))
     assert imported == {
@@ -157,12 +163,15 @@ def test_u1_c_t03_composition_is_a_pure_ordered_dag(candidate):
     for forbidden in ("open(", "yaml", "Path", "environ", "importlib", "asset_loader"):
         assert forbidden not in source, forbidden
     assert isinstance(
-        inspect.signature(candidate["composition"]).parameters, type(inspect.signature(candidate["composition"]).parameters)
+        inspect.signature(candidate["composition"]).parameters,
+        type(inspect.signature(candidate["composition"]).parameters),
     )
     # The injected-dependency form is the documented SciRel composition convention:
     # every dependency is a keyword parameter with a default, and there is no
     # feedback parameter because the composition has no loop.
-    composition_signature = inspect.signature(candidate["composition"].__globals__["run_composition"])
+    composition_signature = inspect.signature(
+        candidate["composition"].__globals__["run_composition"]
+    )
     parameters = composition_signature.parameters
     assert list(parameters) == [
         "inputs",
@@ -215,9 +224,7 @@ def test_u1_c_t04_declared_dependency_closure_is_exactly_two_assets(candidate):
 
 
 # --- Test U1-C-T05: the classification parameters are forwarded verbatim. --
-def test_u1_c_t05_classification_parameters_are_forwarded_verbatim(
-    candidate, equilibrium, axes
-):
+def test_u1_c_t05_classification_parameters_are_forwarded_verbatim(candidate, equilibrium, axes):
     inputs = _inputs(equilibrium, axes)
     less = candidate["composition"](inputs)
     inputs["equilibrium"]["closed_flux_side"] = "greater_than"
@@ -232,16 +239,12 @@ def test_u1_c_t05_classification_parameters_are_forwarded_verbatim(
     )
     # ... and the support mask moves with them, so the parameters really reach
     # the classification relation.
-    assert not np.array_equal(
-        less["material_support_mask"], greater["material_support_mask"]
-    )
+    assert not np.array_equal(less["material_support_mask"], greater["material_support_mask"])
     assert not np.array_equal(less["closed_flux_mask"], greater["closed_flux_mask"])
 
 
 # --- Test U1-C-T06: the coordinates are the composition's own glue. --------
-def test_u1_c_t06_coordinates_are_the_composition_glue(
-    candidate, equilibrium, axes, cylindrical
-):
+def test_u1_c_t06_coordinates_are_the_composition_glue(candidate, equilibrium, axes, cylindrical):
     inputs = _inputs(equilibrium, axes)
     result = candidate["composition"](inputs)
     radii, axial = cylindrical(inputs["x_m"], inputs["y_m"], inputs["z_m"])
@@ -251,10 +254,7 @@ def test_u1_c_t06_coordinates_are_the_composition_glue(
     r_axis = np.asarray(inputs["equilibrium"]["r_m"], dtype=float)
     z_axis = np.asarray(inputs["equilibrium"]["z_m"], dtype=float)
     expected = (
-        (radii >= r_axis[0])
-        & (radii <= r_axis[-1])
-        & (axial >= z_axis[0])
-        & (axial <= z_axis[-1])
+        (radii >= r_axis[0]) & (radii <= r_axis[-1]) & (axial >= z_axis[0]) & (axial <= z_axis[-1])
     )
     np.testing.assert_array_equal(result["covered_mask"], expected)
     # A grid whose axes are not one-dimensional is rejected by the glue.

@@ -1,4 +1,5 @@
 """Composition boundary for the pressure-only equilibrium feedback solve."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -13,7 +14,16 @@ __all__ = ["solve_isotropic_pressure_flux"]
 
 
 def _required_inputs(inputs):
-    names = ("r_grid", "z_grid", "psi_vac", "g_psi", "pressure_of_radius", "tol", "maxiter", "relax")
+    names = (
+        "r_grid",
+        "z_grid",
+        "psi_vac",
+        "g_psi",
+        "pressure_of_radius",
+        "tol",
+        "maxiter",
+        "relax",
+    )
     missing = [name for name in names if name not in inputs]
     if missing:
         raise ValueError(f"{missing[0]} is required")
@@ -24,8 +34,9 @@ def run_composition(inputs):
     if not isinstance(inputs, Mapping):
         raise ValueError("inputs must be a mapping")
     _required_inputs(inputs)
-    R, Z, psi_vac, green = [np.asarray(inputs[name], dtype=float)
-                             for name in ("r_grid", "z_grid", "psi_vac", "g_psi")]
+    R, Z, psi_vac, green = [
+        np.asarray(inputs[name], dtype=float) for name in ("r_grid", "z_grid", "psi_vac", "g_psi")
+    ]
     if R.ndim != 2 or Z.shape != R.shape or psi_vac.shape != R.shape:
         raise ValueError("r_grid, z_grid and psi_vac must be same-shape [Z,R] grids")
     if green.shape != (R.size, R.size):
@@ -45,8 +56,14 @@ def run_composition(inputs):
 
     try:
         result = compute_equilibrium(
-            R, Z, pressure, psi_vac, green,
-            tol=tol, maxiter=maxiter, relax=relax,
+            R,
+            Z,
+            pressure,
+            psi_vac,
+            green,
+            tol=tol,
+            maxiter=maxiter,
+            relax=relax,
             plas_clip=inputs.get("plasma_mask"),
         )
     except ValueError as exc:
@@ -77,8 +94,10 @@ def run_composition(inputs):
         "converged": result.status == "converged",
         "status": result.status,
         "failure_reason": (
-            None if result.status == "converged"
-            else "maxiter_reached" if result.status == "maxiter"
+            None
+            if result.status == "converged"
+            else "maxiter_reached"
+            if result.status == "maxiter"
             else result.reason
         ),
     }

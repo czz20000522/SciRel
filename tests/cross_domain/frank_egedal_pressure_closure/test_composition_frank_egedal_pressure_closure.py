@@ -1,17 +1,18 @@
 import inspect
 
 from scirel.kinetic.frank_egedal_pressure_closure import solve_frank_egedal_pressure_closure
-import scirel
-from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
-import importlib.util
+from cross_domain._review_bindings import load_asset as _load_asset
 from pathlib import Path
 
 import numpy as np
 import pytest
 
 from scirel.kinetic import frank_egedal_pressure_closure as composition
+
+
 def _asset_loader(asset_ref):
     return _load_asset(asset_ref)
+
 
 def _run_composition(inputs):
     return composition.run_composition(inputs, asset_loader=_asset_loader)
@@ -63,7 +64,10 @@ def test_returns_finite_grid_shaped_pressure_and_explicit_closure_state():
     assert np.all(result["p_parallel"] >= 0.0)
     assert np.all(result["p_perp"] >= 0.0)
     assert result["closure_state"]["degree_source"] == "caller_supplied"
-    assert result["closure_state"]["normalization"] == "pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)"
+    assert (
+        result["closure_state"]["normalization"]
+        == "pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)"
+    )
 
 
 # 验证：热矩先以 b=1 归一化，随后才乘 p0，不能把径向或尺度因子混入归一化。
@@ -110,8 +114,9 @@ def test_perpendicular_moment_is_zero_when_critical_speed_reaches_beam_speed():
     assert np.all(result["p_perp"] >= 0.0)
     assert result["closure_state"]["velocity_domain"]["lower"] == 0.0
     # Preserve the original degree=.5 case as a nontrivial-mode witness too.
-    original_mode = _run_composition(_inputs(vc_over_v0=1.0,
-        legendre_degrees=[.5], source_coefficients=[1.0]))
+    original_mode = _run_composition(
+        _inputs(vc_over_v0=1.0, legendre_degrees=[0.5], source_coefficients=[1.0])
+    )
     # The supplied radial envelope vanishes at psi=psi_edge=1.
     assert np.all(original_mode["p_perp"][np.array([[True, True], [True, False]])] > 0.0)
     np.testing.assert_allclose(original_mode["p_perp"][1, 1], 0.0, atol=1e-14)

@@ -186,7 +186,7 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
     "scirel.closures.boltzmann_quasineutrality": "ada785556d7bdbfaa311e40c5c676e7e6575636d95c85f5ddd0f605d6aa3d771",
-    "scirel.closures.mirror_quasineutral_closure": "5751c6124de1f8b5a5497829d4cecb8c36f29829bc714f747a1ccc19144c3a4f",
+    "scirel.closures.mirror_quasineutral_closure": "247eb3aaf6b406328b5124cab8d82eea441a864a7d6ff59f14dfbf5a57156012",
     "scirel.closures.quasineutral_potential": "625a1a04e306fe7e0fb121a0f42edc35e9d3d83b25e1bcdd8983d8b34ba92948",
     "scirel.closures.quasineutral_reference_density": "b2f60f3a28a8f453cb72d40f52624bfb0376bce0cafdad75ec31f84daea1410b",
     "scirel.kinetic.mirror_constrained_moments": "261df525d59134a82bee15dab66e6034d98a0c39c64fa28dfce51ffb8dda4550",
@@ -507,7 +507,7 @@
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.equilibrium.kinetic_mirror_hall_equilibrium": "e9257608e55a026f294c0dfb45010a11525ec128af12da87b8c99970e1963f55",
     "scirel.equilibrium.reduced_hall_anisotropic_picard": "fa31443d97aec39f5c12556a34419e6107a46c39e54fb16e860abff535a7f373",
-    "scirel.kinetic.grid_mirror_kinetic_closure": "00e9fe961e35f8ae1faa4ddb06e3e6cef2eede56d1b3e21beb54fe7cfa6d9b9d"
+    "scirel.kinetic.grid_mirror_kinetic_closure": "327573370f378c402d7d4a52974a4ba9d7fed859a7560f8588276b1bddf0a53b"
    },
    "review_basis": "Wrapper exposes kinetic_composition/hall_composition dependency overrides explicitly. run_composition requires kinetic_config plus six grid/species fields, closes pressure via grid_mirror and forwards remaining Hall controls to reduced_hall. Bound nested graph modules establish inherited Hall defaults; no numerical implementation is introduced in the wrapper."
   },
@@ -685,7 +685,7 @@
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.kinetic.frank_egedal_hot_ion_moments": "45fa1cdd2137d72b629c6a74387cd0ff180b35a74d1dc22ff064082d395362b9",
-    "scirel.kinetic.frank_egedal_pressure_closure": "7a191f7bbe98643b0cedd9cf7131e7ac32366fdba3368cb720b3a10b8c83c256",
+    "scirel.kinetic.frank_egedal_pressure_closure": "5d3144aceb9c4857af6b46727f5341b6849c3ba0ec28ad51c78dd6152481aad6",
     "scirel.kinetic.frank_egedal_pressure_state": "682022f9ec48e961b9ce3534b87e00b6ba51a98b3e5e2c351b609622ffdf9fee",
     "scirel.kinetic.frank_egedal_radial_envelope": "a5f52f349c98d1272b9ceb29f03acd4e253777453da6141e07407dab77a90da1",
     "scirel.kinetic.frank_egedal_source_projection": "7aa1b57ce733b70577a72655bed41ec1f759c4aae665f3128c07e5c63e0d50f6",
@@ -823,9 +823,9 @@
    "modules": {
     "scirel._composition": "ce7f22d7d0978065cb3c56384d49fccf73bf41635cd51b3a8755cca5453e1ca7",
     "scirel.closures.mirror_ambipolar_potential": "da9882fdcb29ea5c2ce7db03248a60d0a9d8429723276de3ac96ca9de9505080",
-    "scirel.closures.mirror_quasineutral_closure": "5751c6124de1f8b5a5497829d4cecb8c36f29829bc714f747a1ccc19144c3a4f",
+    "scirel.closures.mirror_quasineutral_closure": "247eb3aaf6b406328b5124cab8d82eea441a864a7d6ff59f14dfbf5a57156012",
     "scirel.geometry.flux_surface_profile": "89241ec9ae0e6c60645fc6a7b1486d8f7b8bcf9a64de11d9a99bd12a573cfb7c",
-    "scirel.kinetic.grid_mirror_kinetic_closure": "00e9fe961e35f8ae1faa4ddb06e3e6cef2eede56d1b3e21beb54fe7cfa6d9b9d"
+    "scirel.kinetic.grid_mirror_kinetic_closure": "327573370f378c402d7d4a52974a4ba9d7fed859a7560f8588276b1bddf0a53b"
    },
    "review_basis": "run_composition requires thirteen grid/species/reference/plug fields. It maps reference and plug surfaces; input defaults and delegated ambipolar controls are bound to the current functions. ion_loss_refill defaults to loss_cone_refill or0, mode prescribed,confineTrue. The displayed conditional default is metadata, not a Python literal signature default."
   },
