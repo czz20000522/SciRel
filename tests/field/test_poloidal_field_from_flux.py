@@ -1,5 +1,6 @@
 import numpy as np
 
+from scirel._result import Result
 from scirel.field.poloidal_field_from_flux import (
     _source_hypot,
     poloidal_field_from_flux,
@@ -13,6 +14,15 @@ def test_uniform_axial_field_and_axis_regularization():
     result = scientific_function(R, Z, 0.5 * 2.0 * R**2)
     np.testing.assert_allclose(result["B_R"], 0.0, atol=1e-12)
     np.testing.assert_allclose(result["B_Z"], 2.0, atol=1e-12)
+
+
+def test_result_is_a_named_mapping_with_attribute_access():
+    r_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])
+    result = scientific_function(r_grid, z_grid, r_grid**2)
+    assert isinstance(result, Result)
+    assert list(result) == ["B_R", "B_Z", "B"]
+    for field in result:
+        assert getattr(result, field) is result[field]
 
 
 def test_nonuniform_grid_recovers_quadratic_flux_field():

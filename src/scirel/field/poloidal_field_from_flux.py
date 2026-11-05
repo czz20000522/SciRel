@@ -5,6 +5,7 @@ from __future__ import annotations
 import numpy as np
 
 from scirel._numerics import stable_gradient as _source_gradient
+from scirel._result import Result
 
 
 def _source_hypot(left, right):
@@ -14,7 +15,7 @@ def _source_hypot(left, right):
 
 
 def poloidal_field_from_flux(r_grid, z_grid, psi):
-    """Return ``B_R=-dpsi/dZ/R``, ``B_Z=dpsi/dR/R`` and ``B``.
+    """Return axisymmetric poloidal field components as a named result.
 
     A rectilinear grid is differentiated with the package's stable local
     stencil.  At the cylindrical axis the even-flux limit is used for
@@ -36,15 +37,15 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
 
     Returns
     -------
-    B_R : float64, shape [N_Z,N_R]
-        Radial poloidal magnetic-field component [T]. Zero at an included
-        cylindrical-axis column.
-    B_Z : float64, shape [N_Z,N_R]
-        Axial poloidal magnetic-field component [T]. Uses the discrete axis rule
-        if R=0 is included.
-    B : float64, shape [N_Z,N_R]
-        Poloidal-field magnitude hypot(B_R,B_Z) [T]. No fixed lower floor is
-        applied.
+    B_R : ndarray of float64, shape [N_Z,N_R]
+        Field of the returned ``scirel._result.Result`` mapping containing
+        ``-dpsi/dZ/R`` in [T]. Zero at an included cylindrical-axis column.
+    B_Z : ndarray of float64, shape [N_Z,N_R]
+        Field containing ``dpsi/dR/R`` in [T]. Uses the discrete axis rule if
+        R=0 is included.
+    B : ndarray of float64, shape [N_Z,N_R]
+        Field containing the poloidal-field magnitude ``hypot(B_R,B_Z)`` in
+        [T]. No fixed lower floor is applied.
 
     Raises
     ------
@@ -57,12 +58,22 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     scirel.io.read_geqdsk : Reads psi(R, Z) per radian from a G-EQDSK file.
     scirel.field.solve_multi_coil_vacuum_field : Vacuum psi and field from coils.
 
+    Notes
+    -----
+    The three arrays are returned together as one ``scirel._result.Result``
+    mapping. Mapping access remains available and each field can also be read
+    as an attribute. Away from the axis the components follow
+    ``B_R=-dpsi/dZ/R`` and ``B_Z=dpsi/dR/R`` on the supplied rectilinear grid.
+
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.field import poloidal_field_from_flux
     >>> r_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])
     >>> result = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)
+    >>> assert isinstance(result, Result)
+    >>> assert result.B_R is result['B_R']
     >>> np.testing.assert_allclose(result['B_R'], 0.0)
     >>> np.testing.assert_allclose(result['B_Z'], 2.0)
     >>> np.testing.assert_allclose(result['B'], 2.0)
@@ -102,7 +113,7 @@ def poloidal_field_from_flux(r_grid, z_grid, psi):
     if radial[0] == 0.0:
         b_r[:, 0] = 0.0
         b_z[:, 0] = 2.0 * (psi[:, 1] - psi[:, 0]) / radial[1] ** 2
-    return {"B_R": b_r, "B_Z": b_z, "B": _source_hypot(b_r, b_z)}
+    return Result({"B_R": b_r, "B_Z": b_z, "B": _source_hypot(b_r, b_z)})
 
 
 __all__ = ["poloidal_field_from_flux"]
