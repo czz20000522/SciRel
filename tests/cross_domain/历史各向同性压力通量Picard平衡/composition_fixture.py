@@ -4,4 +4,4 @@ from scirel.equilibrium.isotropic_pressure_flux import (
 
 
 def run_composition(inputs, **_ignored_loaders):
-    return _public_function(inputs)
+    return _public_function(**inputs)

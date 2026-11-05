@@ -1,5 +1,6 @@
 """Scientific red regressions for the six legacy absorption decisions."""
 
+import inspect
 import math
 import numpy as np
 import pytest
@@ -14,6 +15,44 @@ from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 def grid():
     R, Z = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])
     return R, Z
+
+
+def test_isotropic_pressure_flux_has_explicit_required_ports():
+    function = solve_isotropic_pressure_flux
+    signature = inspect.signature(function)
+    assert str(signature) == (
+        "(r_grid, z_grid, psi_vac, g_psi, pressure_of_radius, *, "
+        "tol, maxiter, relax, plasma_mask=None)"
+    )
+    for name in ("r_grid", "z_grid", "psi_vac", "g_psi", "pressure_of_radius"):
+        parameter = signature.parameters[name]
+        assert parameter.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+        assert parameter.default is inspect.Parameter.empty
+    for name in ("tol", "maxiter", "relax"):
+        parameter = signature.parameters[name]
+        assert parameter.kind is inspect.Parameter.KEYWORD_ONLY
+        assert parameter.default is inspect.Parameter.empty
+    mask = signature.parameters["plasma_mask"]
+    assert mask.kind is inspect.Parameter.KEYWORD_ONLY
+    assert mask.default is None
+
+    R, Z = grid()
+    values = {
+        "r_grid": R,
+        "z_grid": Z,
+        "psi_vac": R,
+        "g_psi": np.zeros((R.size, R.size)),
+        "pressure_of_radius": lambda r: max(0.8 - r, 0.0),
+        "tol": 1e-12,
+        "maxiter": 1,
+        "relax": 0.0,
+    }
+    with pytest.raises(TypeError, match="missing"):
+        function(values)
+    with pytest.raises(TypeError, match="unexpected keyword argument 'inputs'"):
+        function(inputs=values)
+    with pytest.raises(TypeError, match="unexpected keyword argument 'unknown'"):
+        function(**values, unknown=True)
 
 
 def test_nearly_equal_1d_tables_must_not_silently_discard_anisotropy():

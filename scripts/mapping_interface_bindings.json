@@ -927,57 +927,6 @@
    "review_basis": "Port identity only; root scientific acceptance is separate. Fixed standard observation layout supplies N to trial and optimizer; finite failure penalty and actual scientific call budget are explicit. Numerical failed trials are excluded from best, terminal parameters are freshly evaluated, optimizer/forward/identifiability states remain distinct."
   },
   {
-   "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-   "callable": "scirel.equilibrium.isotropic_pressure_flux.solve_isotropic_pressure_flux",
-   "ports": [
-    {
-     "name": "r_grid",
-     "required": true
-    },
-    {
-     "name": "z_grid",
-     "required": true
-    },
-    {
-     "name": "pressure_of_radius",
-     "required": true
-    },
-    {
-     "name": "psi_vac",
-     "required": true
-    },
-    {
-     "name": "g_psi",
-     "required": true
-    },
-    {
-     "name": "tol",
-     "required": true
-    },
-    {
-     "name": "maxiter",
-     "required": true
-    },
-    {
-     "name": "relax",
-     "required": true
-    },
-    {
-     "name": "plasma_mask",
-     "required": false,
-     "default": null
-    }
-   ],
-   "modules": {
-    "scirel._validation": "975d881f3b0115509aa13b5b50e9879762727f5a1d02d94043870a7ed1b63de8",
-    "scirel.equilibrium.isotropic_pressure_flux": "75e49928da651d58b999fd7a7b2d060b0019f47dae2b046bfc58da939fca6962",
-    "scirel.equilibrium.pressure_flux_state": "47f0f67bc26188d40f8d89e7bc9730e53af100a538aabbf9760a966cdc3e3b26",
-    "scirel.equilibrium.equilibrium_state": "1811e82578faf078f300b32cedb46606814383bf66fba4e89f818e8f9347d596",
-    "scirel.equilibrium._pressure_current": "b5941226e25b0e8e6b781a04e83a19f208dafce9604822465896746262e41b67"
-   },
-   "review_basis": "Port identity only: explicit mapping requires grids, pressure callable, vacuum flux, Green matrix and tol/maxiter/relax; optional boolean plasma_mask defaults to None. Named calls to the qualified shared solver and exact terminal serializer are source-bound. Feedback has one owner; no second adapter loop. Scientific qualification requires the separate exact successor receipt."
-  },
-  {
    "asset_id": "scirel.kinetic.generalized-root-scans",
    "callable": "scirel.kinetic.generalized_dispersion.scan_gpdf_roots",
    "ports": [

@@ -172,18 +172,14 @@ def test_simple_geometry_and_green_smoke():
 def test_pressure_flux_picard_zero_green_smoke():
     r, z = np.meshgrid(np.linspace(0.1, 0.4, 5), np.linspace(-0.2, 0.2, 5))
     result = solve_isotropic_pressure_flux(
-        {
-            "r_grid": r,
-            "z_grid": z,
-            "psi_vac": 0.5 * r**2,
-            "g_psi": np.zeros((r.size, r.size)),
-            "pressure_of_radius": lambda radius: np.maximum(
-                0.4 - np.asarray(radius, dtype=float), 0.0
-            ),
-            "tol": 1.0e-12,
-            "maxiter": 2,
-            "relax": 0.0,
-        }
+        r,
+        z,
+        0.5 * r**2,
+        np.zeros((r.size, r.size)),
+        lambda radius: np.maximum(0.4 - np.asarray(radius, dtype=float), 0.0),
+        tol=1.0e-12,
+        maxiter=2,
+        relax=0.0,
     )
     assert result["converged"] and result["psi"].shape == r.shape
     assert result["closure_residual"] <= 1.0e-12
