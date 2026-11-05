@@ -162,6 +162,13 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
 
     Parameters
     ----------
+    inputs : mapping, optional
+        Mapping containing ``r_grid``, ``z_grid`` and ``rectangular_coils``.
+        The default None is allowed only when those entries are supplied as
+        keywords.
+    **kwargs
+        Named entries merged into ``inputs`` by the composition boundary; a
+        keyword takes precedence over the same key in the mapping.
     r_grid : real array-like, shape [N_Z,N_R]
         Target cylindrical radius grid [m]. Finite nonempty rectilinear 2-D
         grid; radial axis is strictly increasing and nonnegative. N_R and N_Z

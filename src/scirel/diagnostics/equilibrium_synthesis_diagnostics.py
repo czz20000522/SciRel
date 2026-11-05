@@ -107,25 +107,98 @@ def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
     Parameters
     ----------
     inputs : mapping, optional
-        Mapping containing ``R``, ``Z``, ``equilibrium`` and nonempty
-        ``observations``. Flux-loop requests declare ``quantity`` and ``unit``;
-        profile requests use explicit ``thomson`` channel units.
+        Mapping containing the required ``equilibrium``, ``R``, ``Z`` and
+        nonempty ``observations`` entries described below.  The default
+        ``None`` is allowed only when ``kwargs`` supplies those entries.
     **kwargs
-        Named inputs merged with ``inputs`` by the composition boundary.
+        Named mapping entries merged into ``inputs`` by the composition
+        boundary.  A keyword takes precedence over the same key in ``inputs``.
+
+    Other Parameters
+    ----------------
+    equilibrium : mapping
+        Equilibrium state in ``[physical units declared by the individual
+        fields]``.  Flux sampling uses ``psi`` and ``psi_unit``; profile
+        sampling uses ``profiles`` and ``profile_units``.  The relevant fields
+        must be finite and shaped ``[N_Z, N_R]`` like ``R`` and ``Z``.
+    R : array_like, shape (N_Z, N_R)
+        Radial coordinate grid in ``[m]``.  It must be finite, constant along
+        each grid column, strictly increasing across columns, and contain at
+        least two columns.
+    Z : array_like, shape (N_Z, N_R)
+        Axial coordinate grid in ``[m]``.  It must be finite, have the same
+        shape as ``R``, be constant along each grid row, strictly increase down
+        rows, and contain at least two rows.
+    observations : mapping
+        Nonempty mapping containing ``flux_loops`` and/or ``thomson``.  Its
+        point coordinates use ``[points in m; each channel unit is explicitly
+        declared]``.  A flux request contains ``points``, an explicit
+        ``quantity`` (``raw_psi`` or ``magnetic_flux``), and an explicit
+        ``unit``; it may also carry inversion metadata ``values`` and ``sigma``
+        that this sampler does not consume.  A ``thomson`` request contains
+        ``points`` and explicitly requested ``density``,
+        ``electron_temperature``, ``p_parallel``, and/or ``p_perp`` channels,
+        each with an explicit ``unit``.  The legacy ``thomson`` name here means
+        a profile namespace, not a scattering instrument model.
 
     Returns
     -------
-    dict
-        Requested ``flux_loops`` and/or ``thomson`` samples plus matching
-        ``units`` metadata. Only explicitly requested channels are returned.
+    flux_loops : ndarray of float64, shape (N_flux,), optional
+        Requested raw-psi or single-turn linked-flux samples in point order in
+        ``[raw_psi: original unit; magnetic_flux: Wb]``.  The key is absent
+        unless requested.
+    thomson : dict, optional
+        Requested profile arrays in
+        ``[pressure in Pa; density in m^-3; electron temperature as declared]``.
+        Each value has shape ``(N_point,)``; the key is absent unless requested.
+    units : dict
+        One-to-one unit labels for the actual outputs in ``[identifier]``.
+        Flux units are a string; Thomson units are a channel-to-string mapping.
 
     Raises
     ------
     ValueError
-        If grids, observation requests, points, fields or units are missing,
-        incompatible or outside the declared domain.
+        If required fields or observations are missing or empty, a request is
+        unknown or incomplete, points or grids are invalid or outside the
+        bilinear domain, a profile is missing, or units conflict with the
+        declared equilibrium metadata.
+    TypeError
+        If ``inputs`` is neither ``None`` nor a mapping, or a numeric value
+        cannot be converted to a floating-point array.
     FloatingPointError
         If a magnetic-flux conversion produces a nonfinite value.
+
+    See Also
+    --------
+    scirel.diagnostics.reduce_observation_residuals
+        Compare a prediction mapping with declared observations.
+    scirel.geometry.sample_rectilinear_field
+        Bilinear scalar-field sampler used by this diagnostic.
+
+    Notes
+    -----
+    Fields are indexed ``[Z, R]`` and each observation row is ``[R, Z]``.
+    Sampling is bilinear inside the closed rectangular grid; no extrapolation
+    is performed.  For ``flux_loops.quantity='raw_psi'``, ``psi_unit`` is
+    retained unchanged.  For ``'magnetic_flux'``, output is in Wb and
+    ``Wb/rad`` input is multiplied by ``2*pi``; a ``Wb`` input is unchanged.
+    Profile units must match ``equilibrium.profile_units`` exactly.  Pressures
+    must be in Pa and density in ``m^-3``; electron temperature may be K, eV, or
+    J without conversion here.
+
+    Only explicitly requested outputs are returned.  Coil turns, reference-loop
+    subtraction, instrument response, and temperature or density inversion are
+    never inferred.  The returned mapping is a plain ``dict``, and the caller's
+    equilibrium mapping and arrays are not modified.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.diagnostics import synthesize_equilibrium_diagnostics
+    >>> R,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])
+    >>> r=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})
+    >>> np.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)
+    >>> assert r['units']['flux_loops']=='Wb'
     """
     from scirel._composition import compose
     from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field

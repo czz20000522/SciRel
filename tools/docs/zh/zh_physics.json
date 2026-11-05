@@ -349,7 +349,7 @@
   },
   {
    "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-   "source_sha256": "d663aa0ad5185e4ab1e768b6b033cc3cd0409c0759b2e534da04481fb395d24c",
+   "source_sha256": "976c3cab0aa670a9b916a77c97439cc03c3e643a1e95bdbadff218f7a0c8003b",
    "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。",
    "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。",
    "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
@@ -483,7 +483,7 @@
     "invalid_input": "缺导数信息、冲突的导数/轴、非有限或非正 B、错形、非单调/非恒 psi 采样线抛 ValueError；标量控制按合同验证。",
     "runtime_failure": "残差或裕度非有限抛 FloatingPointError；回调错误传播。strict 为真且最大归一化残差超限时不返回结果。",
     "nonconvergence": "不求非线性方程；调用者负责导数采样收敛。",
-    "partial_results": "无部分结果；与 margin API 同时提供的可选平行平衡值会原样转发，不经独立验证。"
+    "partial_results": "无部分结果。"
    },
    "example": {
     "description": "为均匀各向同性压强显式给零导数，验证固定磁通关系。",
@@ -504,9 +504,7 @@
      "tests/cross_domain/test_spectral_scientific_correction.py"
     ]
    },
-   "source_conflicts": [
-    "failure_semantics.partial_results 的后半句描述 margin API 转发上游平行平衡值，但此资产 inputs 无 parallel_equilibrium；该说明不适用于本入口。"
-   ]
+   "source_conflicts": []
   },
   {
    "asset_id": "scirel.kinetic.fluid-wavevector-eigensolve",

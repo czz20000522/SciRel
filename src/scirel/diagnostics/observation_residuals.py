@@ -53,11 +53,69 @@ def _observation_layout(observations):
 
 
 def reduce_observation_residuals(*, predicted, observations):
-    """Return ordered (prediction-observation)/sigma and its squared norm.
+    """Reduce declared observations to ordered normalized residuals.
 
-    Every requested flux/profile channel must be present with exact shape.
-    Explicit observed units require matching prediction ``units`` metadata;
-    unitless records remain normalized algebra, without an inferred physical unit.
+    Parameters
+    ----------
+    predicted : mapping
+        Mapping containing a ``flux_loops`` array and/or a ``thomson`` mapping
+        of profile arrays.  Entries use ``[same as the corresponding values]``.
+        When an observation declares a unit, a matching nested ``units``
+        mapping is required.  Every requested channel must be present, finite,
+        and have exactly the observation shape; no missing channel is skipped.
+    observations : mapping
+        Nonempty ``flux_loops`` and/or ``thomson`` request mapping.  Each
+        channel contains ``values``, an optional ``sigma``, and an optional
+        ``unit``.  Values and ``sigma`` use
+        ``[values and sigma in the same unit]``.  A Thomson request may also
+        contain ``points``, which this function does not consume.  ``sigma``
+        defaults to ``1.0`` and must be positive, finite, and broadcastable to
+        the values shape.
+
+    Returns
+    -------
+    residual_vector : ndarray of float64, shape (N_residual,)
+        Signed residuals ``(prediction - observation) / sigma`` in
+        ``[dimensionless]``, concatenated in fixed channel order and then in
+        NumPy C order within each channel.  ``N_residual`` is positive.
+    chi2 : float
+        Inner product of ``residual_vector`` in ``[dimensionless]``.  It has no
+        division by degrees of freedom.
+
+    Raises
+    ------
+    ValueError
+        If observations are empty or contain unknown kinds or channels, a
+        prediction is missing, values are empty or nonfinite, shapes differ,
+        ``sigma`` is nonpositive or incompatible, an explicit unit does not
+        match, or a normalized residual or ``chi2`` is not finite.
+    TypeError
+        If a value cannot be converted to a floating-point array.
+
+    See Also
+    --------
+    scirel.diagnostics.synthesize_equilibrium_diagnostics
+        Produce the prediction mapping consumed by this reducer.
+    scirel.diagnostics.compute_picard_flux_residual
+        Compute a relative change between two whole flux-state arrays.
+
+    Notes
+    -----
+    Channels are visited in the fixed order ``flux_loops``,
+    ``thomson.density``, ``thomson.electron_temperature``,
+    ``thomson.p_parallel``, and ``thomson.p_perp``.  The returned mapping is a
+    plain ``dict`` with ``residual_vector`` and ``chi2`` keys.  Units are
+    matched as declared labels only; no unit conversion, calibration, noise
+    covariance, or instrument response is inferred.  ``chi2`` is an algebraic
+    diagonal-weight sum, not by itself a statistical significance result.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.diagnostics import reduce_observation_residuals
+    >>> r=reduce_observation_residuals(predicted={'flux_loops':[3.],'thomson':{'p_perp':[5.]},'units':{'flux_loops':'Wb','thomson':{'p_perp':'Pa'}}}, observations={'flux_loops':{'values':[1.],'sigma':[2.],'unit':'Wb'},'thomson':{'p_perp':{'values':[3.],'sigma':[1.],'unit':'Pa'}}})
+    >>> np.testing.assert_allclose(r['residual_vector'],[1.,2.])
+    >>> assert r['chi2']==5.
     """
     if not isinstance(predicted, Mapping):
         raise ValueError("predicted and observations must be mappings")
