@@ -27,12 +27,55 @@ def _finite_real_array(value, name):
 def assemble_neutral_upwind_transport_coefficients(
     x_m, vx, collision_frequency_m_inv, source_distribution
 ):
-    """Return forward/backward normalized spatial transport coefficients.
+    r"""Assemble forward/backward trapezoidal spatial coefficients Ak/Bk/Fk/Ck/Dk/Gk from metre coordinates, dimensionless u_x, alpha=nu/Vth in m^-1 and normalized source Q/Vth in F/m.
 
-    ``x_m`` is in metres, ``vx`` is dimensionless u_x=v_x/Vth, alpha=nu/Vth
-    is in m^-1, and ``source_distribution`` is Q/Vth in F/m. Ak/Ck are
-    dimensionless, Bk/Dk are metres and Fk/Gk have distribution units F.
-    All inputs must use the same caller-selected Vth; no conversion occurs.
+    Parameters
+    ----------
+    x_m : real array-like, shape [nx]
+        Spatial nodes. [m].
+        Constraints: Finite, strictly increasing, at least two nodes, with representable finite positive spatial steps.
+    vx : real array-like, shape [nvx]
+        Dimensionless axial velocity u_x=v_x/Vth; use the same Vth as every inverse-length collision/source coefficient. [dimensionless (u=v/Vth)].
+        Constraints: Finite one-dimensional; no zero nodes; must contain both positive and negative branches.
+    collision_frequency_m_inv : real array-like, shape [nvr,nvx,nx]
+        Inverse-length total-loss coefficient alpha=nu/Vth. [m^-1].
+        Constraints: Finite and nonnegative, shape (nvr,nvx,nx).
+    source_distribution : real array-like, shape [nvr,nvx,nx]
+        Normalized spatial distribution source Q/Vth; divide a physical F/s source by the same Vth before calling. [m^-4 (F/m)].
+        Constraints: Finite, same shape as collision_frequency_m_inv.
+
+    Returns
+    -------
+    coefficients : mapping of [nvr,nvx,nx] float64 arrays and two index arrays, shape mapping
+        The transport coefficient mapping. [mixed].
+        Constraints: Exactly Ak, Bk, Fk, Ck, Dk, Gk (each [nvr,nvx,nx]), positive_vx_indices and negative_vx_indices. Ak/Ck are dimensionless, Bk/Dk are metres and Fk/Gk are in m^-3 (F).
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError when x is not strictly increasing (>= 2 nodes), vx has a zero node or lacks a branch, alpha/source are not finite aligned 3-D, or alpha has negative entries. Raises ValueError if finite inputs overflow to non-finite transport coefficients. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.propagate_neutral_generation : Related neutral-transport operation.
+
+    Notes
+    -----
+        Forward branch (positive vx): Ak = (2*vx - dx*alpha_k)/(2*vx + dx*alpha_{k+1}), Bk = dx/(2*vx + dx*alpha_{k+1}), Fk = dx*(source_{k+1}+source_k)/(2*vx + dx*alpha_{k+1}). Backward branch (negative vx): Ck/Dk/Gk analogous.
+    x strictly increasing with >= 2 nodes and finite positive spatial steps, vx one-dimensional with no zero node, alpha/source finite 3-D aligned shapes, alpha nonnegative, vx must contain both positive and negative branches
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import assemble_neutral_upwind_transport_coefficients
+    >>> x = np.linspace(0, 1, 3)
+    >>> vx = np.array([-1.0, 1.0])
+    >>> alpha = np.ones((2, 2, 3))
+    >>> source = np.ones((2, 2, 3))
+    >>> r = assemble_neutral_upwind_transport_coefficients(x, vx, alpha, source)
+    >>> assert r['Ak'].shape == (2, 2, 3)
+    >>> assert np.all(r['Ak'][:, 0, :] == 0.0)  # vx[0]=-1 is negative
+    >>> assert np.all(r['Ck'][:, 1, :] == 0.0)  # vx[1]=+1 is positive
     """
     x = _finite_real_array(x_m, "x_m")
     axial = _finite_real_array(vx, "vx")

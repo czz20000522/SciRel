@@ -32,15 +32,63 @@ def assemble_simple_charge_exchange_source(
     cylindrical_weight,
     dvx,
 ):
-    """Return a spatial source in F/m on dimensionless velocity nodes.
+    r"""Build the normalized cell-local charge-exchange source Q_CX/Vth by multiplying a caller-supplied dimensionless target shape by the velocity integral of alpha_CX times the previous generation distribution.
 
-    ``target_distribution`` is a caller-provided dimensionless shape h,
-    ``previous_generation_distribution`` is a distribution density F, and
-    ``charge_exchange_frequency_m_inv`` is alpha_CX=nu_CX/Vth. Quadrature
-    weights integrate over normalized velocity volume. The caller owns h's
-    normalization: only a unit weighted integral makes the source number
-    integral equal the CX loss integral. No normalization or density division
-    is performed here; signed finite h is used as given.
+    Parameters
+    ----------
+    target_distribution : real array-like, shape [nvr,nvx,nx]
+        Caller-provided dimensionless target shape h on the normalized velocity grid; this function neither normalizes h nor divides it by a density. [dimensionless].
+        Constraints: Finite aligned three-dimensional shape; signed cells are accepted. Unit weighted integral is a separate caller condition for number-conserving CX regeneration, not a runtime gate.
+    charge_exchange_frequency_m_inv : real array-like, shape [nvr,nvx,nx]
+        Inverse-length charge-exchange coefficient alpha_CX=nu_CX/Vth, using the same Vth as the normalized quadrature. [m^-1].
+        Constraints: Finite and nonnegative, aligned to the target.
+    previous_generation_distribution : real array-like, shape [nvr,nvx,nx]
+        The previous generation's distribution. [m^-3].
+        Constraints: A finite three-dimensional field aligned to the target.
+    cylindrical_weight : real array-like, shape [nvr,nvx]
+        The cylindrical quadrature weight. [dimensionless normalized velocity-space measure].
+        Constraints: Finite and nonnegative, aligned to the leading axes.
+    dvx : real array-like, shape [nvx]
+        The axial cell sizes. [dimensionless normalized velocity-space measure].
+        Constraints: Finite and nonnegative, aligned to the velocity axis.
+
+    Returns
+    -------
+    scattered_source : float64 array, shape [nvr,nvx,nx]
+        Normalized spatial source h*integral(alpha_CX*F_previous*d^3u); the physical distribution-rate source is Vth times this field. [m^-4 (F/m)].
+        Constraints: Finite; the target scaled by the per-cell rate.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for implicit boolean, string or complex conversion, non-finite inputs, misaligned fields, or negative CX frequency or quadrature values. Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.reduce_atomic_scattered_sources : Related neutral-transport operation.
+
+    Notes
+    -----
+        The cell-local construction: the rate contraction reduces the previous generation against the CX field, and the target shape is scaled per cell; no cross-cell transport enters
+    finite aligned three-dimensional target/frequency/previous fields; finite nonnegative (nvr,nvx) weight and (nvx) dvx; nonnegative frequency, weight, and dvx
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import assemble_simple_charge_exchange_source
+    >>> target = np.ones((1, 2, 2))
+    >>> alpha = np.array([[[2.0, 3.0], [4.0, 5.0]]])
+    >>> previous = np.ones((1, 2, 2))
+    >>> weight = np.ones((1, 2))
+    >>> dvx = np.array([0.5, 1.0])
+    >>> result = assemble_simple_charge_exchange_source(target, alpha, previous, weight, dvx)
+    >>> np.testing.assert_allclose(result, [[[5.0, 6.5], [5.0, 6.5]]])
+    >>> try:
+    ...     assemble_simple_charge_exchange_source(target, alpha, previous, weight, np.array([0.5, -1.0]))
+    ... except ValueError as error:
+    ...     assert 'finite and aligned' in str(error)
+    ... else:
+    ...     raise AssertionError('a negative dvx must be rejected')
     """
     target = _real_array(target_distribution, "target_distribution")
     alpha = _real_array(charge_exchange_frequency_m_inv, "charge_exchange_frequency_m_inv")

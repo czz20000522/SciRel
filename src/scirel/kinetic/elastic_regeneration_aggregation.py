@@ -28,11 +28,51 @@ def _real_array(value, name):
 
 
 def aggregate_elastic_regeneration_source(frequencies_m_inv, regenerated_distributions):
-    """Return ``sum_q Omega_q[x] * M_q[vr,vx,x]`` in F/m.
+    r"""Aggregate normalized elastic regeneration sources sum_q Omega_q[x]*M_q(u_r,u_x,x), with Omega_q=nu_q/Vth in m^-1 and caller distributions M_q in m^-3.
 
-    Each Omega=nu/Vth has units m^-1, and each regenerated M has distribution
-    units F, on the same dimensionless u=v/Vth grid. Physical F/s sources
-    require a separate multiplication by the caller's common Vth.
+    Parameters
+    ----------
+    frequencies_m_inv : mapping of real array-like, shape mapping name->[nx]
+        Per-channel inverse-length elastic coefficients Omega_q=nu_q/Vth, using one common Vth. [m^-1].
+        Constraints: Finite and nonnegative; keys must match the distribution mapping exactly.
+    regenerated_distributions : mapping of real array-like, shape mapping name->[nvr,nvx,nx]
+        The per-channel regenerated distributions. [m^-3].
+        Constraints: Finite and nonnegative; all channels use the same (nvr,nvx,nx) shape, and each spatial axis matches its frequency profile.
+
+    Returns
+    -------
+    regeneration_source : float64 array, shape [nvr,nvx,nx]
+        The aggregated regeneration source. [m^-4 (F/m)].
+        Constraints: Finite and nonnegative; the channel sum in dict iteration order.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for non-mapping, mismatched or empty channels; implicit boolean, string or complex conversion; negative or non-finite fields; or distributions that do not share one (nvr,nvx,nx) mesh. Raises ValueError when the evaluation produces a non-finite result where the contract demands finiteness; no fallback is selected. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.reduce_atomic_scattered_sources : Related neutral-transport operation.
+
+    Notes
+    -----
+        The frequency and distribution key sets must match exactly; each term multiplies the (nx,) profile into the last axis; the dict iteration order defines the float summation order
+    matching nonempty key sets; finite nonnegative (nx,) frequencies; finite nonnegative (nvr,nvx,nx) distributions on one shared velocity and spatial mesh
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import aggregate_elastic_regeneration_source
+    >>> freqs = {'a': np.array([1.0, 2.0]), 'b': np.array([0.5, 1.0])}
+    >>> dists = {'a': np.ones((1, 1, 2)), 'b': np.ones((1, 1, 2))}
+    >>> result = aggregate_elastic_regeneration_source(freqs, dists)
+    >>> np.testing.assert_array_equal(result, [[[1.5, 3.0]]])
+    >>> try:
+    ...     aggregate_elastic_regeneration_source(freqs, {'a': np.ones((1, 1, 2))})
+    ... except ValueError as error:
+    ...     assert 'channel keys must match' in str(error)
+    ... else:
+    ...     raise AssertionError('mismatched keys must be rejected')
     """
     if not isinstance(frequencies_m_inv, Mapping) or not isinstance(
         regenerated_distributions, Mapping

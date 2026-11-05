@@ -48,28 +48,56 @@ def _trapezoid(values, coordinates):
 
 
 def normalize_spatial_source_shape(source, x_m):
-    """Return a unit-integral shape and the original spatial integral.
+    r"""Normalize a nonnegative one-dimensional spatial source profile to unit integral under the trapezoidal measure, returning the unit-integral shape and the original integral.
 
     Parameters
     ----------
-    source
-        The source profile as a finite nonnegative one-dimensional array.
-    x_m
-        The strictly increasing spatial coordinates in ``m``, aligned to
-        ``source`` with at least two nodes.
+    source : real array-like, shape [n]
+        The source profile. [source units].
+        Constraints: A finite nonnegative real numeric one-dimensional array; boolean, string and complex coercions are rejected.
+    x_m : real array-like, shape [n]
+        The spatial coordinates. [m].
+        Constraints: Finite real numeric values, strictly increasing, at least two nodes, aligned to the source; boolean, string and complex coercions are rejected.
 
     Returns
     -------
-    dict
-        ``{'shape_m_inv': ndarray, 'integral_source': float}`` where the
-        shape has unit trapezoidal integral and ``integral_source`` is the
-        original profile's trapezoidal integral.
+    shape_m_inv : float64 array, shape [n]
+        The unit-integral source shape. [m^-1].
+        Constraints: Finite and nonnegative; trapezoidal integral exactly re-checked to 1.
+    integral_source : float scalar, shape scalar
+        The original spatial integral. [source units times m].
+        Constraints: Finite and strictly positive.
 
     Raises
     ------
     ValueError
-        If the alignment, finiteness, monotonicity, or positivity contract
-        is violated or the normalized shape fails its unit-integral check.
+        Raises ValueError for boolean, string or complex coercions, or when the alignment, finiteness, monotonicity or positivity contract is violated, or the normalized shape fails its unit-integral re-check. Raises ValueError when the integral or normalized shape is non-finite or the integral is nonpositive; no fallback is selected. Not applicable. Never returned; a rejected call produces no result.
+
+    See Also
+    --------
+    scirel.kinetic.normalize_incoming_neutral_boundary : Related neutral-transport operation.
+
+    Notes
+    -----
+        The NumPy trapezoidal rule on the caller's coordinates; the unit-integral re-check uses rtol 1e-12, atol 1e-14; a zero profile is rejected, never silently replaced
+    aligned finite one-dimensional profile and strictly increasing coordinates with at least two nodes; nonnegative source; finite positive integral
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import normalize_spatial_source_shape
+    >>> source = np.array([1.0, 2.0, 1.0])
+    >>> x_m = np.array([0.0, 1.0, 2.0])
+    >>> result = normalize_spatial_source_shape(source, x_m)
+    >>> assert result['integral_source'] == 3.0
+    >>> np.testing.assert_array_equal(result['shape_m_inv'], source / 3.0)
+    >>> assert np.trapezoid(result['shape_m_inv'], x_m) == 1.0
+    >>> try:
+    ...     normalize_spatial_source_shape(np.array([0.0, 0.0]), np.array([0.0, 1.0]))
+    ... except ValueError as error:
+    ...     assert 'positive spatial integral' in str(error)
+    ... else:
+    ...     raise AssertionError('a zero profile must be rejected')
     """
     profile = _real_array(source, "source")
     coordinates = _real_array(x_m, "x_m")

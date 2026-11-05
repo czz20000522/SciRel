@@ -54,26 +54,87 @@ def _batched_matrix_vectors(matrix, field):
 def contract_atomic_hydrogen_alpha_frequencies(
     SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P, fi_hat, ni, fH2, fH
 ):
-    """Contract the atomic four-family SIG matrices to Alpha collision frequencies.
+    r"""Per spatial cell, contract the atomic four-family assembled SIG collision matrices (CX, H-H2, H-P, H-H) with the Fortran-order flattened input distributions to four (nvr,nvx,nx) Alpha collision-frequency fields.
 
     Parameters
     ----------
-    SIG_CX : (N, N) array, H + H+ charge-exchange collision matrix.
-    SIG_H_H : (N, N) array, H-H elastic collision matrix.
-    SIG_H_H2 : (N, N) array, H-H2 elastic collision matrix.
-    SIG_H_P : (N, N) array, H-H+ elastic collision matrix.
-    fi_hat : (nvr, nvx, nx) array, neutral-atom Maxwellian seed distribution.
-    ni : (nx,) array, ion density profile (m^-3).
-    fH2 : (nvr, nvx, nx) array, molecular neutral velocity distribution.
-    fH : (nvr, nvx, nx) array, atomic neutral velocity distribution.
-
-    SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P : (N, N) arrays.  ``SIG_H_H`` is the
-    H-H elastic matrix consumed by ``Alpha_H_H``.
+    SIG_CX : real array-like, shape [N, N] with N = nvr*nvx
+        Assembled H + H+ charge-exchange collision matrix from the atomic four-family assembly: sigma_cx evaluated on the velocity-carrier energy grid, multiplied by the relative speed and the (Vr2pidVr*dVx) quadrature weight, laid out on the Fortran-order flattened (nvr*nvx) velocity carrier. [source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion].
+        Constraints: Finite; must be 2-D square with order exactly nvr*nvx. The declared assembly produces a nonnegative SIG_CX; the contraction preserves whatever sign pattern the caller supplies.
+    SIG_H_H : real array-like, shape [N, N] with N = nvr*nvx
+        Assembled H-H elastic (viscosity-branch) collision matrix: sigma_el_h_h with the mu energy factor and the Boltzmann 3/8 constant, weight Vr2pidVr*dVx, on the same Fortran-order velocity carrier. [source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion].
+        Constraints: Finite; 2-D square with order exactly nvr*nvx. Contains bounded negative cells from the signed elastic factors; reproduced as-is.
+    SIG_H_H2 : real array-like, shape [N, N] with N = nvr*nvx
+        Assembled H-H2 elastic collision matrix: sigma_el_h_hh with weight Vr2pidVr*dVx times the signed vx_vx factor, on the same Fortran-order velocity carrier. [source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion].
+        Constraints: Finite; 2-D square with order exactly nvr*nvx. Contains bounded negative cells from the signed vx_vx factor; reproduced as-is.
+    SIG_H_P : real array-like, shape [N, N] with N = nvr*nvx
+        Assembled H-H+ elastic collision matrix: sigma_el_p_h (two energy branches) with weight Vr2pidVr*dVx times the signed vx_vx factor, on the same Fortran-order velocity carrier. [source-discrete assembled collision-matrix measure (cross section x relative speed x velocity-space weight); no implicit conversion].
+        Constraints: Finite; 2-D square with order exactly nvr*nvx. Contains bounded negative cells from the signed vx_vx factor; reproduced as-is.
+    fi_hat : real array-like, shape [nvr,nvx,nx]
+        Atomic neutral Maxwellian seed distribution on the cylindrical (vr,vx) velocity mesh, one (nvr,nvx) slice per spatial cell; scaled cell-wise by ni[k] inside the Alpha_CX and Alpha_H_P contractions. [source-discrete normalized distribution density].
+        Constraints: Finite; shape (nvr,nvx,nx) exactly; its leading axes define N = nvr*nvx for every SIG matrix.
+    ni : real array-like, shape [nx]
+        Ion density profile scaling the fi_hat carrier in the Alpha_CX and Alpha_H_P contractions (one value per spatial cell). [m^-3].
+        Constraints: Finite; 1-D with size nx. Negative or zero entries are not rejected at runtime: the contraction uses each value as given.
+    fH2 : real array-like, shape [nvr,nvx,nx]
+        Molecular neutral velocity distribution on the cylindrical (vr,vx) mesh, the predecessor carried unchanged into the Alpha_H_H2 contraction. [source-discrete distribution density].
+        Constraints: Finite; shape (nvr,nvx,nx) exactly.
+    fH : real array-like, shape [nvr,nvx,nx]
+        Atomic neutral velocity distribution on the cylindrical (vr,vx) mesh, the predecessor carried unchanged into the Alpha_H_H contraction. [source-discrete distribution density].
+        Constraints: Finite; shape (nvr,nvx,nx) exactly.
 
     Returns
     -------
-    dict with ``Alpha_CX``, ``Alpha_H_H2``, ``Alpha_H_P``, ``Alpha_H_H``,
-    each ``(nvr, nvx, nx)``.
+    Alpha_CX : float64 array, shape [nvr,nvx,nx]
+        H + H+ charge-exchange collision-frequency field: SIG_CX contracted with the Fortran-order flattened (fi_hat*ni) carrier, one (nvr,nvx) slice per spatial cell. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
+        Constraints: Finite (fail closed otherwise); nonnegative on the declared domain where SIG_CX is nonnegative; never clamped.
+    Alpha_H_H2 : float64 array, shape [nvr,nvx,nx]
+        H-H2 elastic collision-frequency field: SIG_H_H2 contracted with the Fortran-order flattened fH2 slice. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
+        Constraints: Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx SIG factor are reproduced as-is, never clamped.
+    Alpha_H_P : float64 array, shape [nvr,nvx,nx]
+        H-H+ elastic collision-frequency field: SIG_H_P contracted with the Fortran-order flattened (fi_hat*ni) carrier. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
+        Constraints: Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx SIG factor are reproduced as-is, never clamped.
+    Alpha_H_H : float64 array, shape [nvr,nvx,nx]
+        H-H elastic collision-frequency field: SIG_H_H contracted with the Fortran-order flattened fH slice. [m^-1 (subject to the caller's assembled SIG measure; no implicit conversion)].
+        Constraints: Finite (fail closed otherwise); bounded negative cells inherited from the signed vx_vx / vr2_vx2 SIG factors are reproduced as-is, never clamped.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError when a SIG matrix is not 2-D square, when any SIG order differs from the nvr*nvx carrier, when any distribution is not (nvr,nvx,nx), when ni is not 1-D of size nx, or when any input contains a non-finite value. Raises ValueError if any contracted family produces a non-finite array; no partial results are returned. Not applicable. Never returned.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_bessel_gamma : Related neutral-transport operation.
+
+    Notes
+    -----
+        The per-k matrix-vector contraction: each family multiplies one assembled (N,N) SIG matrix by the Fortran-order flattening of one input distribution carried on the (nvr*nvx,) Work buffer and restores the product to the (nvr,nvx) slice. The CX and H-P families carry fi_hat scaled cell-wise by ni[k]; the H-H2 and H-H families carry the bare distributions fH2 and fH.
+    finite aligned inputs of the declared shapes; negative or zero densities are not rejected at runtime -- every finite density profile is contracted as given; bounded negative output cells inherited from the signed elastic SIG families (vx_vx / vr2_vx2 factors) are reproduced as-is, never clamped
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.kinetic import contract_atomic_hydrogen_alpha_frequencies
+    >>> nvr, nvx, nx = 2, 3, 2
+    >>> N = nvr * nvx
+    >>> fi_hat = np.ones((nvr, nvx, nx))
+    >>> result = contract_atomic_hydrogen_alpha_frequencies(
+    ...     np.eye(N), np.eye(N), np.eye(N), np.eye(N), fi_hat,
+    ...     np.full(nx, 1e18), fi_hat, fi_hat,
+    ... )
+    >>> assert set(result) == {"Alpha_CX", "Alpha_H_H2", "Alpha_H_P", "Alpha_H_H"}
+    >>> np.testing.assert_array_equal(result["Alpha_CX"], fi_hat * 1e18)
+    >>> np.testing.assert_array_equal(result["Alpha_H_H2"], fi_hat)
+    >>> try:
+    ...     contract_atomic_hydrogen_alpha_frequencies(
+    ...         np.eye(2), np.eye(N), np.eye(N), np.eye(N), fi_hat,
+    ...         np.full(nx, 1e18), fi_hat, fi_hat,
+    ...     )
+    ... except ValueError:
+    ...     pass
+    ... else:
+    ...     raise AssertionError("a SIG order differing from the velocity carrier must be rejected")
     """
     SIG_CX = _real_array(SIG_CX, "SIG_CX")
     SIG_H_H = _real_array(SIG_H_H, "SIG_H_H")
