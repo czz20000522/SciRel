@@ -303,9 +303,28 @@ def build() -> int:
     return run(compose_command("build"))
 
 
+def ensure_uv_cache_volume() -> int:
+    volume = environment()["SCIReL_UV_CACHE_VOLUME"]
+    done = subprocess.run(
+        ["docker", "volume", "create", volume],
+        cwd=ROOT,
+        env=environment(),
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if done.returncode:
+        print(f"Could not create the shared uv cache volume: {done.stderr.strip()}", file=sys.stderr)
+    return done.returncode
+
+
 def run_in_container(arguments: list[str], *, interactive: bool = False) -> int:
     if not docker_ready():
         return 2
+    cache = ensure_uv_cache_volume()
+    if cache:
+        return cache
     built = build()
     if built:
         return built

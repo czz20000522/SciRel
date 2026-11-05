@@ -46,3 +46,4 @@ volumes:
     name: ${SCIReL_VENV_VOLUME:-scirel-venv-local}
   uv-cache:
     name: ${SCIReL_UV_CACHE_VOLUME:-scirel-uv-cache-local}
+    external: true
