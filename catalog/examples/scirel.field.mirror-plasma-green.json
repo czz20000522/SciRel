@@ -5,7 +5,7 @@
   "en": "Reflection-symmetric plasma-cell flux Green matrix",
   "zh": "镜像对称等离子体 Green 磁通矩阵"
  },
- "summary": "Build the dense flux-response matrix for a uniformly spaced, Z-reflection-symmetric cylindrical grid.",
+ "summary": "Build the dense flux-response matrix for a uniformly spaced, Z-reflection-symmetric cylindrical grid. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "green-function",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Mirror-symmetric plasma-grid flux matrix",
   "direction": "symmetric R,Z grid to target-row/source-column psi response",
-  "definition": "Use actual-coordinate circular-filament flux entries on the supplied grid and preserve C-order flattening.",
+  "definition": "Use actual-coordinate circular-filament flux entries on the supplied grid and preserve C-order flattening. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Axisymmetric ideal circular-filament flux with symmetry-required grid validation.",
   "geometry": "Rectilinear R-Z grid shared by target and source nodes.",
   "coordinates": "R,Z in metres; matrix entries Wb/rad/A.",
@@ -65,7 +65,7 @@
  "outputs": [
   {
    "name": "g_psi",
-   "description": "Psi=R A_phi response per source current for each target/source grid-cell pair.",
+   "description": "Field of the returned scirel._result.Result mapping: Psi=R A_phi response per source current for each target/source grid-cell pair.",
    "units": "Wb/rad/A",
    "shape": "[N_Z*N_R,N_Z*N_R]",
    "dtype": "float64",
@@ -89,7 +89,7 @@
   "invalid_input": "ValueError is raised for malformed, nonfinite, nonrectilinear, nonuniform, or nonsymmetric grids.",
   "runtime_failure": "FloatingPointError from an unrepresentable Green matrix propagates.",
   "nonconvergence": "Not applicable; matrix construction is direct.",
-  "partial_results": "No matrix mapping is returned after validation or kernel failure."
+  "partial_results": "No scirel._result.Result response mapping is returned after validation or kernel failure."
  },
  "public_api": {
   "python": {
@@ -110,8 +110,8 @@
  },
  "example": {
   "description": "Build a 3x4 reflection-symmetric grid response matrix.",
-  "code": "import numpy as np\nfrom scirel.field import build_mirror_plasma_flux_green\nr_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.3, 4), np.linspace(-0.4, 0.4, 3))\ng_psi = build_mirror_plasma_flux_green(r_grid, z_grid)['g_psi']\nassert g_psi.shape == (r_grid.size, r_grid.size)\nassert np.isfinite(g_psi).all()\nfor source_plane in range(3):\n    np.testing.assert_allclose(g_psi[:, source_plane*4], 0.0)\nnp.testing.assert_allclose(g_psi[0:4, 4:8], g_psi[4:8, 0:4])",
-  "expected": "The result is a finite float64 (12,12) matrix with zero axis-source columns and equal reflected blocks."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import build_mirror_plasma_flux_green\nr_grid, z_grid = np.meshgrid(\n    np.linspace(0.0, 0.3, 4), np.linspace(-0.4, 0.4, 3)\n)\nresult = build_mirror_plasma_flux_green(r_grid, z_grid)\nassert isinstance(result, Result)\nassert list(result) == ['g_psi']\nassert result.g_psi is result['g_psi']\nassert result['g_psi'].shape == (r_grid.size, r_grid.size)\nassert np.isfinite(result['g_psi']).all()\nfor source_plane in range(3):\n    np.testing.assert_allclose(\n        result['g_psi'][:, source_plane * 4], 0.0\n    )\nnp.testing.assert_allclose(\n    result['g_psi'][0:4, 4:8], result['g_psi'][4:8, 0:4]\n)\n",
+  "expected": "The result is a finite float64 (12,12) matrix with zero axis-source columns and equal reflected blocks. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
@@ -119,7 +119,8 @@
    "Whole-matrix equality with direct dense filament columns on a symmetric grid.",
    "Square shape, finite output and axis-source zero-column convention.",
    "Rejection of an axially nonsymmetric grid and reflection-block relation.",
-   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_mirror_plasma_green.py",

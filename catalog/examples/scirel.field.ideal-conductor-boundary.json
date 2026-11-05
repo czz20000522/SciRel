@@ -5,7 +5,7 @@
   "en": "Ideal-conductor boundary flux correction",
   "zh": "理想导体边界磁通修正"
  },
- "summary": "Solve a truncated-SVD boundary-source system and add its Green correction to field-point flux.",
+ "summary": "Solve a truncated-SVD boundary-source system and add its Green correction to field-point flux. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "boundary-condition",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Finite-dimensional ideal-conductor boundary correction",
   "direction": "uncorrected field flux and Green matrices to corrected flux and solve diagnostics",
-  "definition": "Sample the field flux at the boundary, solve Gbb currents=-sampled_flux with a relative singular-value cutoff, and apply Gbf currents.",
+  "definition": "Sample the field flux at the boundary, solve Gbb currents=-sampled_flux with a relative singular-value cutoff, and apply Gbf currents. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Reduced-SVD linear least-squares correction.",
   "geometry": "Finite field and boundary sample/source axes with explicit matrix shape compatibility.",
   "coordinates": "Flux Wb/rad; Green responses Wb/rad/A; currents A.",
@@ -93,7 +93,7 @@
  "outputs": [
   {
    "name": "corrected_field_flux",
-   "description": "Uncorrected field psi plus Gbf @ boundary_currents.",
+   "description": "Field of the returned scirel._result.Result mapping: Uncorrected field psi plus Gbf @ boundary_currents.",
    "units": "Wb/rad",
    "shape": "[N_field]",
    "dtype": "float64",
@@ -102,7 +102,7 @@
   },
   {
    "name": "boundary_currents",
-   "description": "Equivalent source-current coefficients from the truncated pseudoinverse.",
+   "description": "Field of the returned scirel._result.Result mapping: Equivalent source-current coefficients from the truncated pseudoinverse.",
    "units": "A",
    "shape": "[N_source]",
    "dtype": "float64",
@@ -111,7 +111,7 @@
   },
   {
    "name": "boundary_flux_correction",
-   "description": "Gbb @ boundary_currents at boundary samples.",
+   "description": "Field of the returned scirel._result.Result mapping: Gbb @ boundary_currents at boundary samples.",
    "units": "Wb/rad",
    "shape": "[N_boundary]",
    "dtype": "float64",
@@ -120,7 +120,7 @@
   },
   {
    "name": "field_flux_correction",
-   "description": "Gbf @ boundary_currents at field points.",
+   "description": "Field of the returned scirel._result.Result mapping: Gbf @ boundary_currents at field points.",
    "units": "Wb/rad",
    "shape": "[N_field]",
    "dtype": "float64",
@@ -129,7 +129,7 @@
   },
   {
    "name": "singular_values",
-   "description": "Boundary Green singular values in descending order.",
+   "description": "Field of the returned scirel._result.Result mapping: Boundary Green singular values in descending order.",
    "units": "Wb/rad/A",
    "shape": "[min(N_boundary,N_source)]",
    "dtype": "float64",
@@ -138,7 +138,7 @@
   },
   {
    "name": "effective_rank",
-   "description": "Count of singular values strictly above the relative cutoff.",
+   "description": "Field of the returned scirel._result.Result mapping: Count of singular values strictly above the relative cutoff.",
    "units": "count",
    "shape": "scalar",
    "dtype": "integer",
@@ -147,7 +147,7 @@
   },
   {
    "name": "residual",
-   "description": "Original sampled boundary psi plus boundary-source correction.",
+   "description": "Field of the returned scirel._result.Result mapping: Original sampled boundary psi plus boundary-source correction.",
    "units": "Wb/rad",
    "shape": "[N_boundary]",
    "dtype": "float64",
@@ -156,7 +156,7 @@
   },
   {
    "name": "residual_norm",
-   "description": "Euclidean norm of the boundary residual.",
+   "description": "Field of the returned scirel._result.Result mapping: Euclidean norm of the boundary residual.",
    "units": "Wb/rad",
    "shape": "scalar",
    "dtype": "float",
@@ -180,7 +180,7 @@
   "invalid_input": "ValueError is raised for nonfinite, wrong-rank, incompatible, empty, or invalid-rcond inputs.",
   "runtime_failure": "Linear-algebra or floating-point failures propagate from the SVD and matrix products.",
   "nonconvergence": "Not applicable; the solve is a single truncated-SVD operation.",
-  "partial_results": "No correction mapping is returned after validation or solve failure."
+  "partial_results": "No scirel._result.Result correction mapping is returned after validation or solve failure."
  },
  "public_api": {
   "python": {
@@ -197,15 +197,16 @@
  },
  "example": {
   "description": "Solve a two-sample full-rank boundary correction.",
-  "code": "import numpy as np\nfrom scirel.field import correct_ideal_conductor_boundary_flux\npsi = np.array([3.0, -1.0, 2.0])\nS = np.array([[1.0, 0.0, 0.0], [0.0, 0.5, 0.5]])\nGbb = np.diag([2.0, 4.0])\nGbf = np.array([[2.0, 0.0], [-1.0, 3.0], [1.0, 5.0]])\nassert np.allclose(S @ Gbf, Gbb)\nresult = correct_ideal_conductor_boundary_flux(psi, S, Gbb, Gbf)\nnp.testing.assert_allclose(result['corrected_field_flux'], [0.0, 0.125, -0.125])\nnp.testing.assert_allclose(result['residual'], 0.0)\nassert result['effective_rank'] == 2",
-  "expected": "The corrected flux is [0,0.125,-0.125], effective_rank is 2, and the sampled residual is zero within floating-point tolerance."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import correct_ideal_conductor_boundary_flux\npsi = np.array([3.0, -1.0, 2.0])\nsample = np.array([[1.0, 0.0, 0.0], [0.0, 0.5, 0.5]])\ngbb = np.diag([2.0, 4.0])\ngbf = np.array([[2.0, 0.0], [-1.0, 3.0], [1.0, 5.0]])\nassert np.allclose(sample @ gbf, gbb)\nresult = correct_ideal_conductor_boundary_flux(psi, sample, gbb, gbf)\nassert isinstance(result, Result)\nassert list(result) == [\n    'corrected_field_flux', 'boundary_currents',\n    'boundary_flux_correction', 'field_flux_correction',\n    'singular_values', 'effective_rank', 'residual', 'residual_norm'\n]\nassert result.corrected_field_flux is result['corrected_field_flux']\nnp.testing.assert_allclose(\n    result['corrected_field_flux'], [0.0, 0.125, -0.125]\n)\nnp.testing.assert_allclose(result['residual'], 0.0)\nassert result['effective_rank'] == 2\n",
+  "expected": "The corrected flux is [0,0.125,-0.125], effective_rank is 2, and the sampled residual is zero within floating-point tolerance. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
    "Full-rank cancellation and sampling-consistent corrected field flux.",
    "Consistent 2*pi rescaling of the flux and both Green matrices preserves equivalent boundary currents.",
    "Relative singular-value cutoff and effective rank.",
-   "Negative rcond rejection."
+   "Negative rcond rejection.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_ideal_conductor_boundary.py"

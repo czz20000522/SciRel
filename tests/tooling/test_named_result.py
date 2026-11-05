@@ -4,10 +4,382 @@ import numpy as np
 import pytest
 
 from scirel._result import Result
-from scirel import diagnostics
+from scirel import diagnostics, field
 from scirel.field import compute_poloidal_field_magnitude
 from scirel.kinetic import evaluate_plasma_dispersion
 
+_FLUX_GRID_R, _FLUX_GRID_Z = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])
+_COIL_MODULUS = field.compute_axisymmetric_coil_modulus(
+    0.3,
+    0.0,
+    np.array([0.2, 0.2]),
+    np.array([-0.1, 0.1]),
+)
+_COIL_K, _COIL_E = field.evaluate_complete_elliptic_integrals(_COIL_MODULUS[1])
+_CONDUCTOR_INPUTS = {
+    "uncorrected_field_flux": np.array([3.0, -1.0, 2.0]),
+    "boundary_sample_matrix": np.array([[1.0, 0.0, 0.0], [0.0, 0.5, 0.5]]),
+    "green_boundary_to_boundary": np.array([[2.0, 0.0], [0.0, 4.0]]),
+    "green_boundary_to_field": np.array([[2.0, 0.0], [-1.0, 3.0], [1.0, 5.0]]),
+}
+
+
+# Expected values were captured from baseline 968fb2a8 before the remaining
+# plain-dict field returns were wrapped in Result. The existing domain tests
+# retain the independent physical derivations and tighter numerical gates.
+FIELD_CASES = [
+    (
+        "compute_poloidal_field_magnitude",
+        ([[3.0, 0.0]], [[4.0, 0.0]]),
+        {},
+        {"B": np.array([[5.0, 1.0e-30]]), "B0_default": 2.5},
+        "poloidal-magnitude",
+    ),
+    (
+        "discretize_permanent_ring",
+        (2.0, 3.0, 4.0, 2.0),
+        {},
+        {
+            "rz_pts": np.array(
+                [
+                    [0.0, 2.0],
+                    [0.0, 2.2857142857142856],
+                    [0.0, 2.571428571428571],
+                    [0.0, 2.857142857142857],
+                    [0.0, 3.142857142857143],
+                    [0.0, 3.4285714285714284],
+                    [0.0, 3.7142857142857144],
+                    [0.0, 4.0],
+                    [4.0, 2.0],
+                    [4.0, 2.2857142857142856],
+                    [4.0, 2.571428571428571],
+                    [4.0, 2.857142857142857],
+                    [4.0, 3.142857142857143],
+                    [4.0, 3.4285714285714284],
+                    [4.0, 3.7142857142857144],
+                    [4.0, 4.0],
+                ],
+                dtype=float,
+            ),
+            "default_weights": np.array([-1.0] * 8 + [1.0] * 8, dtype=float),
+        },
+        "permanent-ring",
+    ),
+    (
+        "correct_ideal_conductor_boundary_flux",
+        (),
+        _CONDUCTOR_INPUTS,
+        {
+            "corrected_field_flux": np.array([0.0, 0.125, -0.125]),
+            "boundary_currents": np.array([-1.5, -0.125]),
+            "boundary_flux_correction": np.array([-3.0, -0.5]),
+            "field_flux_correction": np.array([-3.0, 1.125, -2.125]),
+            "singular_values": np.array([4.0, 2.0]),
+            "effective_rank": 2,
+            "residual": np.array([0.0, 0.0]),
+            "residual_norm": 0.0,
+        },
+        "ideal-conductor",
+    ),
+    (
+        "discretize_rectangular_coil",
+        (1.0, 2.0, 2, 3, 0.5, 1.0),
+        {},
+        np.array(
+            [
+                [0.75, 1.0],
+                [0.75, 2.0],
+                [0.75, 3.0],
+                [1.25, 1.0],
+                [1.25, 2.0],
+                [1.25, 3.0],
+            ]
+        ),
+        "rectangular-coil",
+    ),
+    (
+        "superpose_current_green_field",
+        (
+            [2.0, -1.0],
+            [[1.0, 4.0], [3.0, 5.0]],
+            [[2.0, 0.0], [1.0, 6.0]],
+            [[-1.0, 3.0], [2.0, 4.0]],
+        ),
+        {},
+        {
+            "psi": np.array([-2.0, 1.0]),
+            "BR": np.array([4.0, -4.0]),
+            "BZ": np.array([-5.0, 0.0]),
+        },
+        "current-superposition",
+    ),
+    (
+        "integrate_filament_vacuum_field",
+        (
+            np.array([[0.0, 0.1], [0.0, 0.1]]),
+            np.array([[-0.1, -0.1], [0.1, 0.1]]),
+            [[0.5, 0.0, 1000.0]],
+        ),
+        {},
+        {
+            "psi": np.array([[0.0, 6.0652851913171126e-06], [0.0, 6.0652851913171126e-06]]),
+            "b_r": np.array([[0.0, -7.306763253636188e-05], [0.0, 7.306763253636188e-05]]),
+            "b_z": np.array(
+                [
+                    [0.00118484040269335, 0.00121305703826342],
+                    [0.00118484040269335, 0.00121305703826342],
+                ]
+            ),
+        },
+        "filament-vacuum",
+    ),
+    (
+        "circular_filament_green_response",
+        ([[0.35, 0.0, 1.0]], [[0.0, 0.0], [0.2, -0.1], [0.2, 0.1]]),
+        {},
+        {
+            "gpsi": np.array([0.0, 3.408844653749818e-08, 3.408844653749818e-08]),
+            "gBR": np.array([0.0, -5.94157114816084e-07, 5.94157114816084e-07]),
+            "gBZ": np.array(
+                [1.7951958020513105e-06, 1.8000939097309208e-06, 1.8000939097309208e-06]
+            ),
+        },
+        "circular-filament",
+    ),
+    (
+        "poloidal_field_from_flux",
+        (_FLUX_GRID_R, _FLUX_GRID_Z, _FLUX_GRID_R**2),
+        {},
+        {
+            "B_R": np.zeros_like(_FLUX_GRID_R),
+            "B_Z": 2.0 * np.ones_like(_FLUX_GRID_R),
+            "B": 2.0 * np.ones_like(_FLUX_GRID_R),
+        },
+        "poloidal-flux",
+    ),
+    (
+        "dense_axisymmetric_green_response",
+        ([[0.1, -0.1], [0.2, 0.1]], [[0.35, 0.0, 1.0], [0.45, 0.1, -0.5]]),
+        {},
+        {
+            "gpsi": np.array(
+                [
+                    [8.1201982539211906e-09, -2.6700490205393802e-09],
+                    [3.4088446537498181e-08, -1.5146403769655086e-08],
+                ]
+            ),
+            "gBR": np.array(
+                [[-2.0346323019342388e-07, 6.9095090739696396e-08], [5.9415711481608399e-07, 0.0]]
+            ),
+            "gBZ": np.array(
+                [
+                    [1.6522221976307801e-06, -5.3511766595145251e-07],
+                    [1.8000939097309208e-06, -8.2527922099954808e-07],
+                ]
+            ),
+        },
+        "dense-green",
+    ),
+    (
+        "build_mirror_plasma_flux_green",
+        (
+            np.array([[0.0, 0.1], [0.0, 0.1]]),
+            np.array([[-0.1, -0.1], [0.1, 0.1]]),
+        ),
+        {},
+        {
+            "g_psi": np.array(
+                [
+                    [0.0, 0.0, 0.0, 0.0],
+                    [0.0, 0.0, 0.0, 2.2577708482093533e-09],
+                    [0.0, 0.0, 0.0, 0.0],
+                    [0.0, 2.2577708482093533e-09, 0.0, 0.0],
+                ]
+            )
+        },
+        "mirror-green",
+    ),
+    (
+        "solve_multi_coil_vacuum_field",
+        (),
+        {
+            "r_grid": np.meshgrid([0.0, 0.2], [-0.1, 0.1])[0],
+            "z_grid": np.meshgrid([0.0, 0.2], [-0.1, 0.1])[1],
+            "rectangular_coils": [
+                {
+                    "r0_m": 0.45,
+                    "z0_m": 0.0,
+                    "nr": 2,
+                    "nz": 2,
+                    "dr_m": 0.04,
+                    "dz_m": 0.05,
+                    "current_a": 1000.0,
+                }
+            ],
+        },
+        {
+            "psi_vac": np.array(
+                [
+                    [0.0, 0.00010959011510665226],
+                    [0.0, 0.00010959011510665225],
+                ]
+            ),
+            "b_r_vac": np.array(
+                [
+                    [0.0, -0.0010127574873699627],
+                    [0.0, 0.0010127574873699627],
+                ]
+            ),
+            "b_z_vac": np.array(
+                [
+                    [0.005184721052146086, 0.0057889682202285605],
+                    [0.005184721052146085, 0.0057889682202285605],
+                ]
+            ),
+            "filaments": np.array(
+                [
+                    [0.43, -0.025, 1.0],
+                    [0.43, 0.025, 1.0],
+                    [0.47000000000000003, -0.025, 1.0],
+                    [0.47000000000000003, 0.025, 1.0],
+                ]
+            ),
+        },
+        "multi-coil",
+    ),
+    (
+        "compute_axisymmetric_coil_modulus",
+        (0.3, 0.0, np.array([0.2, 0.2]), np.array([-0.1, 0.1])),
+        {},
+        (
+            0.30000001,
+            np.array([0.9230769183431952, 0.9230769183431952]),
+            np.array([0.5099019611650852, 0.5099019611650852]),
+        ),
+        "coil-modulus-tuple",
+    ),
+    (
+        "evaluate_complete_elliptic_integrals",
+        (_COIL_MODULUS[1],),
+        {},
+        (
+            np.array([2.70217831892606, 2.70217831892606]),
+            np.array([1.0852560251068435, 1.0852560251068435]),
+        ),
+        "elliptic-tuple",
+    ),
+    (
+        "evaluate_filament_coil_green_field",
+        (
+            _COIL_MODULUS[0],
+            0.0,
+            np.array([0.2, 0.2]),
+            np.array([-0.1, 0.1]),
+            np.array([10.0, 10.0]),
+            np.array([2.0, 2.0]),
+            _COIL_MODULUS[1],
+            _COIL_K,
+            _COIL_E,
+        ),
+        {},
+        (1.5083433413389553e-06, 0.0, -8.685430511066101e-06),
+        "filament-coil-tuple",
+    ),
+]
+
+
+FIELD_FAILURE_CASES = [
+    (
+        "discretize_permanent_ring",
+        (2.0, 3.0, 0.0, 2.0),
+        {},
+        ValueError,
+        "ring geometry must have nonnegative radius and positive dimensions",
+        "permanent-invalid-size",
+    ),
+    (
+        "correct_ideal_conductor_boundary_flux",
+        (),
+        {**_CONDUCTOR_INPUTS, "rcond": -1.0},
+        ValueError,
+        "rcond must be a non-negative finite value",
+        "conductor-invalid-rcond",
+    ),
+    (
+        "superpose_current_green_field",
+        (
+            [1.0, 2.0],
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+        ),
+        {},
+        ValueError,
+        "Green source axis (columns) must equal the number of currents",
+        "current-source-axis",
+    ),
+    (
+        "integrate_filament_vacuum_field",
+        (
+            np.array([[0.0, 0.1, 0.2], [0.0, 0.11, 0.2]]),
+            np.array([[-0.1, -0.1, -0.1], [0.1, 0.1, 0.1]]),
+            [[0.5, 0.0, 1000.0]],
+        ),
+        {},
+        ValueError,
+        "r_grid must be a rectilinear radial coordinate varying along exactly one axis",
+        "filament-nonrectilinear",
+    ),
+    (
+        "circular_filament_green_response",
+        ([[0.3, 0.0]], [[0.1, 0.0]]),
+        {},
+        ValueError,
+        "rzw must have shape (n_filaments, 3)",
+        "circular-source-shape",
+    ),
+    (
+        "dense_axisymmetric_green_response",
+        ([[0.1, 0.0]], [[0.3, 0.0]]),
+        {},
+        ValueError,
+        "source_rzw must have shape (n_sources, 3)",
+        "dense-source-shape",
+    ),
+    (
+        "build_mirror_plasma_flux_green",
+        (
+            np.array([[0.0, 0.1, 0.2], [0.0, 0.1, 0.2], [0.0, 0.1, 0.2]]),
+            np.array([[-0.2, -0.2, -0.2], [0.0, 0.0, 0.0], [0.3, 0.3, 0.3]]),
+        ),
+        {},
+        ValueError,
+        "the reflection construction requires an axis-reflection-symmetric Z grid",
+        "mirror-asymmetry",
+    ),
+    (
+        "solve_multi_coil_vacuum_field",
+        (),
+        {
+            "r_grid": np.empty((0, 2)),
+            "z_grid": np.empty((0, 2)),
+            "rectangular_coils": [
+                {
+                    "r0_m": 0.45,
+                    "z0_m": 0.0,
+                    "nr": 1,
+                    "nz": 1,
+                    "dr_m": 0.04,
+                    "dz_m": 0.05,
+                    "current_a": 1000.0,
+                }
+            ],
+        },
+        ValueError,
+        "r_grid and z_grid must be nonempty 2-D arrays",
+        "multi-coil-empty-grid",
+    ),
+]
 
 _SYNTHESIS_R, _SYNTHESIS_Z = np.meshgrid([0.0, 1.0, 2.0], [-1.0, 0.0, 1.0])
 
@@ -441,6 +813,25 @@ def _assert_mapping_values_equal(actual, expected, *, root=False):
         assert actual == expected
 
 
+def _assert_value_equal(actual, expected):
+    if isinstance(expected, tuple):
+        assert type(actual) is tuple
+        assert len(actual) == len(expected)
+        for actual_item, expected_item in zip(actual, expected):
+            _assert_value_equal(actual_item, expected_item)
+    elif isinstance(expected, np.ndarray):
+        assert type(actual) is np.ndarray
+        assert actual.shape == expected.shape
+        assert actual.dtype == expected.dtype
+        np.testing.assert_allclose(actual, expected, rtol=2.0e-14, atol=1.0e-300)
+    elif isinstance(expected, float):
+        assert type(actual) is float
+        assert actual == pytest.approx(expected, rel=2.0e-14, abs=1.0e-300)
+    else:
+        assert type(actual) is type(expected)
+        assert actual == expected
+
+
 def test_result_is_a_mapping_with_attributes():
     result = Result(a=1)
     assert isinstance(result, dict)
@@ -461,6 +852,58 @@ def test_converted_functions_return_the_same_values_by_key_and_attribute(call, f
     result = call()
     assert isinstance(result, Result)
     np.testing.assert_array_equal(getattr(result, field), result[field])
+
+
+def test_field_cases_cover_every_public_callable():
+    assert {case[0] for case in FIELD_CASES} == set(field.__all__)
+
+
+def test_field_failure_cases_cover_every_newly_migrated_callable():
+    assert {case[0] for case in FIELD_FAILURE_CASES} == {
+        "discretize_permanent_ring",
+        "correct_ideal_conductor_boundary_flux",
+        "superpose_current_green_field",
+        "integrate_filament_vacuum_field",
+        "circular_filament_green_response",
+        "dense_axisymmetric_green_response",
+        "build_mirror_plasma_flux_green",
+        "solve_multi_coil_vacuum_field",
+    }
+
+
+@pytest.mark.parametrize(
+    "name,args,kwargs,expected",
+    [pytest.param(*case[:4], id=case[4]) for case in FIELD_CASES],
+)
+def test_field_results_preserve_baseline_values_keys_and_mapping_types(
+    name, args, kwargs, expected
+):
+    result = getattr(field, name)(*args, **kwargs)
+
+    if isinstance(expected, dict):
+        assert type(result) is Result
+        assert isinstance(result, dict)
+        assert list(result) == list(expected)
+        assert not any(isinstance(value, dict) for value in result.values())
+        for key, expected_value in expected.items():
+            _assert_value_equal(result[key], expected_value)
+            assert getattr(result, key) is result[key]
+    else:
+        assert type(result) is type(expected)
+        _assert_value_equal(result, expected)
+
+
+@pytest.mark.parametrize(
+    "name,args,kwargs,exception_type,message",
+    [pytest.param(*case[:5], id=case[5]) for case in FIELD_FAILURE_CASES],
+)
+def test_field_failures_match_baseline_type_and_message(
+    name, args, kwargs, exception_type, message
+):
+    function = getattr(field, name)
+    with pytest.raises(exception_type) as error:
+        function(*args, **kwargs)
+    assert str(error.value) == message
 
 
 def test_diagnostics_cases_cover_every_public_callable():

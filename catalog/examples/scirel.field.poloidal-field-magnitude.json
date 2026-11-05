@@ -5,7 +5,7 @@
   "en": "Poloidal magnetic-field magnitude",
   "zh": "极向磁场幅值"
  },
- "summary": "Compute a floored poloidal-field magnitude and its median reference value from BR and BZ arrays.",
+ "summary": "Compute a floored poloidal-field magnitude and its median reference value from BR and BZ arrays. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "axisymmetric",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Poloidal-field magnitude and reference",
   "direction": "radial and axial field arrays to B and B0_default",
-  "definition": "Compute hypot(BR,BZ), floor each entry at 1e-30, and return the median using a difference-first midpoint.",
+  "definition": "Compute hypot(BR,BZ), floor each entry at 1e-30, and return the median using a difference-first midpoint. The two fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Pointwise Euclidean magnitude with a finite lower floor.",
   "geometry": "Matching nonempty 2-D caller arrays.",
   "coordinates": "BR,BZ,B and B0_default in tesla.",
@@ -65,7 +65,7 @@
  "outputs": [
   {
    "name": "B",
-   "description": "Pointwise floored poloidal-field magnitude.",
+   "description": "Field of the returned scirel._result.Result mapping: Pointwise floored poloidal-field magnitude.",
    "units": "T",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -74,7 +74,7 @@
   },
   {
    "name": "B0_default",
-   "description": "Median of the returned B values for use as a caller-selected reference field.",
+   "description": "Field of the returned scirel._result.Result mapping: Median of the returned B values for use as a caller-selected reference field.",
    "units": "T",
    "shape": "scalar",
    "dtype": "float",
@@ -98,7 +98,7 @@
   "invalid_input": "ValueError is raised for nonfinite, empty, non-2-D, mismatched, or unrepresentable inputs.",
   "runtime_failure": "No iterative runtime failure is defined; overflow is converted to ValueError.",
   "nonconvergence": "Not applicable; magnitude and median are direct operations.",
-  "partial_results": "No mapping is returned after validation or overflow failure."
+  "partial_results": "No scirel._result.Result mapping is returned after validation or overflow failure."
  },
  "public_api": {
   "python": {
@@ -115,14 +115,15 @@
  },
  "example": {
   "description": "Compute the magnitude for a 3-4-5 point and a zero pair.",
-  "code": "import numpy as np\nfrom scirel.field import compute_poloidal_field_magnitude\nresult = compute_poloidal_field_magnitude([[3.0, 0.0]], [[4.0, 0.0]])\nnp.testing.assert_allclose(result['B'], [[5.0, 1e-30]])\nassert result['B0_default'] == 2.5",
-  "expected": "B is [[5,1e-30]] T and B0_default is 2.5 T."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import compute_poloidal_field_magnitude\nresult = compute_poloidal_field_magnitude([[3.0, 0.0]], [[4.0, 0.0]])\nassert isinstance(result, Result)\nassert list(result) == ['B', 'B0_default']\nassert result.B is result['B']\nnp.testing.assert_allclose(result['B'], [[5.0, 1.0e-30]])\nassert result['B0_default'] == 2.5\n",
+  "expected": "B is [[5,1e-30]] T and B0_default is 2.5 T. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
    "3-4-5 magnitude, zero floor and median reference.",
    "Shape mismatch, empty grid and unrepresentable magnitude rejection.",
-   "Large finite component and median arithmetic regressions."
+   "Large finite component and median arithmetic regressions.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_poloidal_field_magnitude.py"

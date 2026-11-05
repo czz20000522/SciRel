@@ -5,7 +5,7 @@
   "en": "Axisymmetric circular-filament Green response",
   "zh": "轴对称圆电流丝 Green 响应"
  },
- "summary": "Sum ordered weighted circular-filament responses at cylindrical target points.",
+ "summary": "Sum ordered weighted circular-filament responses at cylindrical target points. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "green-function",
@@ -33,7 +33,7 @@
  "identity": {
   "relation": "Weighted circular-filament Green superposition",
   "direction": "source rows and target rows to per-target psi, BR, and BZ",
-  "definition": "Apply each source row weight to the circular-filament Green response and sum in source order.",
+  "definition": "Apply each source row weight to the circular-filament Green response and sum in source order. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Axisymmetric ideal circular-filament kernel with zero-radius, zero-weight, and exact self conventions.",
   "geometry": "Finite cylindrical source and target point tables.",
   "coordinates": "R,Z in metres; weights dimensionless; outputs Wb/rad/A and T/A.",
@@ -67,7 +67,7 @@
  "outputs": [
   {
    "name": "gpsi",
-   "description": "Flux response per drive current.",
+   "description": "Field of the returned scirel._result.Result mapping: Flux response per drive current.",
    "units": "Wb/rad/A",
    "shape": "[N_point]",
    "dtype": "float64",
@@ -76,7 +76,7 @@
   },
   {
    "name": "gBR",
-   "description": "Radial field response per drive current.",
+   "description": "Field of the returned scirel._result.Result mapping: Radial field response per drive current.",
    "units": "T/A",
    "shape": "[N_point]",
    "dtype": "float64",
@@ -85,7 +85,7 @@
   },
   {
    "name": "gBZ",
-   "description": "Axial field response per drive current.",
+   "description": "Field of the returned scirel._result.Result mapping: Axial field response per drive current.",
    "units": "T/A",
    "shape": "[N_point]",
    "dtype": "float64",
@@ -109,7 +109,7 @@
   "invalid_input": "ValueError is raised for malformed, complex, nonfinite, or negative-radius source/target arrays.",
   "runtime_failure": "FloatingPointError is raised when the summed finite response is not representable.",
   "nonconvergence": "Not applicable; this is a direct sum.",
-  "partial_results": "No result mapping is returned after validation or arithmetic failure."
+  "partial_results": "No scirel._result.Result mapping is returned after validation or arithmetic failure."
  },
  "public_api": {
   "python": {
@@ -130,15 +130,16 @@
  },
  "example": {
   "description": "Evaluate one unit-weight filament at two off-axis targets.",
-  "code": "import numpy as np\nfrom scirel.field import circular_filament_green_response\nresult = circular_filament_green_response([[0.35, 0.0, 1.0]], [[0.2, -0.1], [0.2, 0.1]])\nassert set(result) == {'gpsi', 'gBR', 'gBZ'}\nfor value in result.values():\n    assert value.shape == (2,)\n    assert np.isfinite(value).all()",
-  "expected": "The mapping contains gpsi, gBR, and gBZ; each is a finite float64 vector of shape (2,)."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import circular_filament_green_response\nresult = circular_filament_green_response(\n    [[0.35, 0.0, 1.0]], [[0.2, -0.1], [0.2, 0.1]]\n)\nassert isinstance(result, Result)\nassert list(result) == ['gpsi', 'gBR', 'gBZ']\nassert result.gpsi is result['gpsi']\nfor value in result.values():\n    assert value.shape == (2,)\n    assert np.isfinite(value).all()\n",
+  "expected": "The mapping contains gpsi, gBR, and gBZ; each is a finite float64 vector of shape (2,). The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
    "Axis-source skip convention.",
    "Weighted-source linearity.",
    "Midplane symmetry and analytic axis BZ check.",
-   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately."
+   "Independent 70/80-digit ideal-loop relation checks cover very small positive radii, near-axis nonzero BR, near-wire cases and formula-evaluation branches while retaining the original numeric assertions and tolerances; the exact self term and arithmetic failure are handled separately.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_circular_filament_green.py",

@@ -5,7 +5,7 @@
   "en": "Current-weighted Green response superposition",
   "zh": "电流加权 Green 响应叠加"
  },
- "summary": "Contract a scalar current or a source-vector current with Green responses ordered as target rows and source columns.",
+ "summary": "Contract a scalar current or a source-vector current with Green responses ordered as target rows and source columns. The named fields are returned in one scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "linear-superposition",
@@ -32,7 +32,7 @@
  "identity": {
   "relation": "Current-weighted Green contraction",
   "direction": "currents and target-row/source-column response arrays to psi, BR, and BZ target vectors",
-  "definition": "Use scalar multiplication for one-dimensional responses or a source-column matrix product for two-dimensional responses whose rows are targets and columns are sources.",
+  "definition": "Use scalar multiplication for one-dimensional responses or a source-column matrix product for two-dimensional responses whose rows are targets and columns are sources. The documented fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values. No nested mapping is returned.",
   "model": "Linear superposition that preserves target rows and contracts source columns.",
   "geometry": "Response rows index target points and response columns index source currents.",
   "coordinates": "Current amperes; psi Wb/rad; BR and BZ tesla.",
@@ -84,7 +84,7 @@
  "outputs": [
   {
    "name": "psi",
-   "description": "Current-weighted flux.",
+   "description": "Field of the returned scirel._result.Result mapping: Current-weighted flux.",
    "units": "Wb/rad",
    "shape": "[N_target]",
    "dtype": "float64",
@@ -93,7 +93,7 @@
   },
   {
    "name": "BR",
-   "description": "Current-weighted radial field.",
+   "description": "Field of the returned scirel._result.Result mapping: Current-weighted radial field.",
    "units": "T",
    "shape": "[N_target]",
    "dtype": "float64",
@@ -102,7 +102,7 @@
   },
   {
    "name": "BZ",
-   "description": "Current-weighted axial field.",
+   "description": "Field of the returned scirel._result.Result mapping: Current-weighted axial field.",
    "units": "T",
    "shape": "[N_target]",
    "dtype": "float64",
@@ -126,7 +126,7 @@
   "invalid_input": "ValueError is raised for nonfinite values, unsupported current rank, or incompatible response shapes; for two-dimensional responses the second axis must equal the number of currents.",
   "runtime_failure": "FloatingPointError is raised when the scalar or matrix contraction is not representable as finite float64; no partial mapping is returned.",
   "nonconvergence": "Not applicable; this is a direct contraction.",
-  "partial_results": "No output mapping is returned after validation failure."
+  "partial_results": "No scirel._result.Result output mapping is returned after validation or arithmetic failure."
  },
  "public_api": {
   "python": {
@@ -143,15 +143,16 @@
  },
  "example": {
   "description": "Contract two signed currents with two target rows and two source columns.",
-  "code": "import numpy as np\nfrom scirel.field import superpose_current_green_field\nresult = superpose_current_green_field([2.0, -1.0], [[1.0, 4.0], [3.0, 5.0]], [[2.0, 0.0], [1.0, 6.0]], [[-1.0, 3.0], [2.0, 4.0]])\nnp.testing.assert_allclose(result['psi'], [-2.0, 1.0])\nnp.testing.assert_allclose(result['BR'], [4.0, -4.0])\nnp.testing.assert_allclose(result['BZ'], [-5.0, 0.0])",
-  "expected": "The result is psi=[-2,1], BR=[4,-4], and BZ=[-5,0] in target-row order."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import superpose_current_green_field\nresult = superpose_current_green_field(\n    [2.0, -1.0],\n    [[1.0, 4.0], [3.0, 5.0]],\n    [[2.0, 0.0], [1.0, 6.0]],\n    [[-1.0, 3.0], [2.0, 4.0]],\n)\nassert isinstance(result, Result)\nassert list(result) == ['psi', 'BR', 'BZ']\nassert result.psi is result['psi']\nnp.testing.assert_allclose(result['psi'], [-2.0, 1.0])\nnp.testing.assert_allclose(result['BR'], [4.0, -4.0])\nnp.testing.assert_allclose(result['BZ'], [-5.0, 0.0])\n",
+  "expected": "The result is psi=[-2,1], BR=[4,-4], and BZ=[-5,0] in target-row order. The returned object is a scirel._result.Result mapping; each field is also readable as an attribute."
  },
  "verification": {
   "scope": [
    "Scalar scaling.",
    "Vector source-column contraction.",
    "Wrong source-column length and nonfinite failure behavior.",
-   "An unrepresentable scalar or matrix contraction fails closed with FloatingPointError."
+   "An unrepresentable scalar or matrix contraction fails closed with FloatingPointError.",
+   "The named result preserves the captured key order, values, shapes, dtypes, mapping access and attribute access; failures retain their exception types and messages."
   ],
   "tests": [
    "tests/field/test_current_green_superposition.py"

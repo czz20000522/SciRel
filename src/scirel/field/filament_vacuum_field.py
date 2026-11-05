@@ -4,15 +4,81 @@ from __future__ import annotations
 
 import numpy as np
 
+from scirel._result import Result
 from scirel.electromagnetism.greens import compute_greens
 
 
 def integrate_filament_vacuum_field(r_grid, z_grid, filaments):
-    """Evaluate ``b_r``, ``b_z`` and the declared radial flux quadrature.
+    """Evaluate filament vacuum fields and radial flux as a named result.
 
     The magnetic components use the actual-coordinate Green kernel.  ``psi``
     is the caller-facing cumulative trapezoid of ``R*B_Z`` along the uniform
     radial axis, referenced to zero at its first radial node.
+
+    Parameters
+    ----------
+    r_grid : real array-like, shape 2-D, at least two points per axis
+        Target cylindrical-radius grid [m]. Finite, nonnegative, rectilinear,
+        uniformly spaced and strictly increasing along exactly one array axis.
+    z_grid : real array-like, shape same as r_grid
+        Target axial-coordinate grid [m]. Finite and rectilinear along the
+        other axis; axial order is not constrained.
+    filaments : real array-like, shape [N_filament,3]
+        Ideal circular-source rows ``[R0_m, Z0_m, current_A]`` in [m,m,A].
+        Finite with strictly positive source radius; an empty source set is
+        allowed.
+
+    Returns
+    -------
+    psi : ndarray of float64, shape same as r_grid
+        Field ``psi`` of the returned ``scirel._result.Result`` mapping:
+        ``R A_phi`` from radial trapezoidal integration [Wb/rad], referenced
+        to zero at the first radial grid point.
+    b_r : ndarray of float64, shape same as r_grid
+        Field ``b_r`` of the returned result mapping: superposed radial
+        magnetic field [T].
+    b_z : ndarray of float64, shape same as r_grid
+        Field ``b_z`` of the returned result mapping: superposed axial magnetic
+        field [T].
+
+    Raises
+    ------
+    ValueError
+        If grids or filaments are malformed, nonfinite, or have invalid axes
+        or source/target singularities.
+    FloatingPointError
+        If Green evaluation or the radial integration produces a nonfinite
+        result.
+
+    See Also
+    --------
+    scirel.electromagnetism.compute_greens : Circular-filament Green kernel.
+    scirel.field.circular_filament_green_response : Weighted Green response.
+
+    Notes
+    -----
+    The three arrays are stored directly in one ``scirel._result.Result``
+    mapping. No nested mapping is returned, and mapping access remains
+    available alongside attribute access.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel._result import Result
+    >>> from scirel.field import integrate_filament_vacuum_field
+    >>> r_grid, z_grid = np.meshgrid(
+    ...     np.linspace(0.0, 0.3, 5), np.linspace(-0.2, 0.2, 4)
+    ... )
+    >>> result = integrate_filament_vacuum_field(
+    ...     r_grid, z_grid, [[0.45, -0.1, 1500.0]]
+    ... )
+    >>> assert isinstance(result, Result)
+    >>> assert list(result) == ['psi', 'b_r', 'b_z']
+    >>> assert result.psi is result['psi']
+    >>> assert all(value.shape == r_grid.shape for value in result.values())
+    >>> assert np.isfinite(result['b_z']).all()
+    >>> np.testing.assert_array_equal(result['psi'][:, 0], 0.0)
+    >>> np.testing.assert_array_equal(result['b_r'][:, 0], 0.0)
     """
     if any(np.iscomplexobj(value) for value in (r_grid, z_grid, filaments)):
         raise ValueError("grid coordinates and filament currents must be real")
@@ -86,7 +152,7 @@ def integrate_filament_vacuum_field(r_grid, z_grid, filaments):
         psi[1:, :] = np.cumsum(increments, axis=0)
     if not all(np.all(np.isfinite(value)) for value in (psi, b_r, b_z)):
         raise FloatingPointError("filament field evaluation produced a nonfinite result")
-    return {"psi": psi, "b_r": b_r, "b_z": b_z}
+    return Result({"psi": psi, "b_r": b_r, "b_z": b_z})
 
 
 __all__ = ["integrate_filament_vacuum_field"]
