@@ -24,7 +24,7 @@
   ],
   "model": "C2 piecewise-cubic Hermite spline with a boundary-specific linear slope system for two prescribed endpoint first derivatives.",
   "geometry": "One-dimensional strictly increasing scalar knots and ordinate values in arbitrary coherent coordinate units; no spatial reconstruction is performed.",
-  "boundary": "Both endpoint first derivatives are prescribed; in-domain deriv selectors 0, 1 and 2 are qualified, while extrapolation and other selectors remain compatibility conventions.",
+  "boundary": "Both endpoint first derivatives are prescribed; in-domain derivative selectors 0, 1 and 2 are qualified. Finite queries outside the closed knot interval return zero, while nonfinite queries are zero-filled; other derivative selectors remain compatibility conventions.",
   "device_scope": "generic"
  },
  "identity": {
@@ -37,7 +37,8 @@
   "boundary": "Specified first derivatives at both ends",
   "assumptions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
-   "In-domain deriv=0/1/2 for the qualified numerical claim"
+   "In-domain deriv=0/1/2 for the qualified numerical claim",
+   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ]
  },
  "inputs": [
@@ -81,27 +82,30 @@
    "shape": "object",
    "dtype": "Python callable object",
    "required": true,
-   "constraints": "Query array shape preserved; zero outside knot interval"
+   "constraints": "Query array shape preserved; finite values outside the closed knot interval return zero; nonfinite queries are zero-filled"
   }
  ],
  "applicability": {
   "preconditions": [
    "Finite strictly increasing matched one-dimensional knots and values with N>=3",
-   "In-domain deriv=0/1/2 for the qualified numerical claim"
+   "In-domain deriv=0/1/2 for the qualified numerical claim",
+   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
   ],
   "supported": [
    "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
   ],
   "excluded": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
-   "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
+   "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention",
+   "Knot-interval membership is exact; a point one representable step outside returns zero"
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises ValueError or AssertionError for unsupported basis selectors, nonfinite or mismatched samples, unsorted knots, or invalid boundary parameters; linear-system failures propagate.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
-  "partial_results": "A failed constructor returns no evaluator; spline queries outside the knot interval follow the implementation's zero-fill behavior."
+  "partial_results": "A failed constructor returns no evaluator; finite values outside the knot interval and nonfinite query values follow the zero-fill convention."
  },
  "public_api": {
   "python": {
@@ -134,7 +138,9 @@
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness, experimental validation, or release approval.",
   "known_limitations": [
    "Zero extrapolation and deriv selectors other than 1/2 returning values remain compatibility conventions",
-   "Duplicate, unsorted or nonfinite knots are outside numerical qualification"
+   "Duplicate, unsorted or nonfinite knots are outside numerical qualification",
+   "Knot-interval membership is exact; a point one representable step outside returns zero",
+   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention"
   ]
  }
 }
