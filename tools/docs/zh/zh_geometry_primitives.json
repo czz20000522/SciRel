@@ -1031,7 +1031,7 @@
   },
   {
    "asset_id": "scirel.numerics.nonuniform-derivatives",
-   "source_sha256": "b3dc26ab1bf269b605def6debb86854d5e9917ae1f2758bea5660585b4e86e9b",
+   "source_sha256": "1ec540903f992dcc9ca0b8f0532d746e387909386f57ea82977faec243d11f47",
    "summary": "在每个内部横坐标处对局部二次多项式求导。",
    "definition": "在每个内部横坐标处对局部二次多项式求导。",
    "model": "三点不等间距多项式算子。采用 x 坐标单位及 y 值单位。",
@@ -1044,14 +1044,14 @@
     {
      "name": "x",
      "description": "严格递增的横坐标。",
-     "constraints": "有限，N>=3。",
-     "dtype": "float64"
+     "constraints": "有限，N>=3，且严格递增。",
+     "dtype": "float64 array-like"
     },
     {
      "name": "y",
      "description": "采样值。",
      "constraints": "有限，长度同为 N。",
-     "dtype": "float64"
+     "dtype": "float64 array-like"
     }
    ],
    "outputs": [

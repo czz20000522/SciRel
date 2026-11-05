@@ -29,7 +29,7 @@
  },
  "identity": {
   "relation": "Nonuniform interior first and second derivatives",
-  "direction": "Declared inputs to Interior first derivative",
+  "direction": "Declared abscissae and sampled values to interior first and second derivatives",
   "definition": "Differentiate a local quadratic at each interior abscissa",
   "model": "Three-point unequal-spacing polynomial operator",
   "geometry": "one-dimensional nonuniform abscissa and ordinate samples",
@@ -46,18 +46,18 @@
    "description": "Strictly increasing abscissae",
    "units": "coordinate units",
    "shape": "(N,)",
-   "dtype": "float64",
+   "dtype": "float64 array-like",
    "required": true,
-   "constraints": "Finite N>=3"
+   "constraints": "Finite N>=3; strictly increasing"
   },
   {
    "name": "y",
    "description": "Sampled values",
    "units": "value units",
    "shape": "(N,)",
-   "dtype": "float64",
+   "dtype": "float64 array-like",
    "required": true,
-   "constraints": "Finite same N"
+   "constraints": "Finite; same length N as x"
   }
  ],
  "outputs": [

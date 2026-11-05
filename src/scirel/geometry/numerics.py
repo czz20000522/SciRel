@@ -24,7 +24,69 @@ def _validated_pair(x, y):
 
 
 def diff_12_central(x, y):
-    """Return first and second derivatives at interior points of ``x``."""
+    r"""Return first and second derivatives at interior points of ``x``.
+
+    Parameters
+    ----------
+    x : array_like, shape (N,)
+        Strictly increasing abscissae [coordinate units]. Values are converted
+        to float64 and must be finite, one-dimensional, and contain at least
+        three entries; only interior points receive derivative outputs.
+    y : array_like, shape (N,)
+        Sampled values [value units] at the entries of ``x``. Values are
+        converted to float64 and must be finite with the same shape as ``x``.
+
+    Returns
+    -------
+    d_one : ndarray of float64, shape (N-2,)
+        First derivative at the interior abscissae [value per coordinate].
+        The three-point unequal-spacing operator is exact for a local
+        quadratic.
+    d_two : ndarray of float64, shape (N-2,)
+        Second derivative at the interior abscissae [value per coordinate
+        squared]. The same three-point operator is exact for a local
+        quadratic.
+
+    Raises
+    ------
+    NumericalContractError
+        If ``x`` or ``y`` is not a finite one-dimensional pair of equal length
+        at least three, or if ``x`` is not strictly increasing. This exception
+        is a ValueError subclass.
+    TypeError
+        If an input contains a value that NumPy cannot convert to float64.
+    ValueError
+        If NumPy cannot convert an input to a float64 array.
+
+    See Also
+    --------
+    scirel.geometry.diff_central : Return only the first derivative from this
+        operator.
+
+    Notes
+    -----
+    For interior index ``i``, define ``h_left = x[i] - x[i-1]`` and
+    ``h_right = x[i+1] - x[i]``. The returned estimates are
+
+    .. math:: d_1 = \frac{h_L (y_{i+1}-y_i)/h_R + h_R (y_i-y_{i-1})/h_L}{h_L+h_R}
+
+    and
+
+    .. math:: d_2 = 2\left(\frac{y_{i-1}}{h_L(h_L+h_R)} - \frac{y_i}{h_Lh_R} + \frac{y_{i+1}}{h_R(h_L+h_R)}\right).
+
+    No endpoint values are fabricated, and descending coordinates are not
+    silently reversed. Nearby abscissae can make the stencil ill-conditioned;
+    this function does not regularize the samples or estimate data noise.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry.numerics import diff_12_central
+    >>> x = np.array([0.0, 0.3, 1.0])
+    >>> first, second = diff_12_central(x, x * x)
+    >>> np.testing.assert_allclose(first, [0.6])
+    >>> np.testing.assert_allclose(second, [2.0])
+    """
     x, y = _validated_pair(x, y)
     h_left = x[1:-1] - x[:-2]
     h_right = x[2:] - x[1:-1]
