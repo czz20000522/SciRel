@@ -211,6 +211,7 @@ into an automatic proof.
 
 ## Related canonical documents
 
+- Current codebase orientation map: [`docs/maintainer/codebase-map.md`](docs/maintainer/codebase-map.md)
 - Contract truth and discovery ownership: [`catalog/README.md`](catalog/README.md)
 - Project boundaries and information flow: [`RULES.md`](RULES.md)
 - Static consumer protocol: [`tools/docs/PURE_CONSUMPTION.md`](tools/docs/PURE_CONSUMPTION.md)
