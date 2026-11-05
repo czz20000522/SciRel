@@ -65,7 +65,6 @@ __all__ = [
     "interp",
     "flux_surface_avg",
     "diff_central",
-    "get_gpsi",
     "plasma_volume",
 ]
 
@@ -130,7 +129,6 @@ _LAZY_EXPORTS = {
     "interp": ("sampling", "interp"),
     "flux_surface_avg": ("sampling", "flux_surface_avg"),
     "diff_central": ("sampling", "diff_central"),
-    "get_gpsi": ("analysis", "get_gpsi"),
     "plasma_volume": ("masked_toroidal_volume", "plasma_volume"),
 }
 
