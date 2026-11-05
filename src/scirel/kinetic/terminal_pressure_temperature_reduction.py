@@ -19,8 +19,7 @@ Q_COULOMB = 1.602177e-19
 def _real_numeric(name, value):
     try:
         if not isinstance(value, np.ndarray) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -80,7 +79,6 @@ def reduce_terminal_molecular_pressure_temperature(
             "terminal pressure inputs must be finite, shape-compatible, and physically nonnegative"
         )
 
-    nx = distribution.shape[2]
     slices = distribution.transpose(2, 0, 1)
     density = np.sum(np.matmul(slices, widths) * weight[None, :], axis=1)
     flux = float(thermal_speed) * np.sum(
@@ -93,15 +91,14 @@ def reduce_terminal_molecular_pressure_temperature(
     normalized_mean_velocity = mean_velocity / float(thermal_speed)
     # This is an outer broadcast; keep the per-slice reduction order below
     # unchanged while avoiding Python loops over radial and spatial cells.
-    random_velocity_squared = radial_velocity[:, None, None] ** 2 + (
-        velocity[None, :, None] - normalized_mean_velocity[None, None, :]
-    ) ** 2
+    random_velocity_squared = (
+        radial_velocity[:, None, None] ** 2
+        + (velocity[None, :, None] - normalized_mean_velocity[None, None, :]) ** 2
+    )
 
     thermal_speed_squared = float(thermal_speed) * float(thermal_speed)
     random_slices = random_velocity_squared.transpose(2, 0, 1) * slices
-    weighted_random_second = np.sum(
-        np.matmul(random_slices, widths) * weight[None, :], axis=1
-    )
+    weighted_random_second = np.sum(np.matmul(random_slices, widths) * weight[None, :], axis=1)
     pressure = (
         (2.0 * float(mass) * H_MASS_KG)
         * thermal_speed_squared

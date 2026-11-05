@@ -16,8 +16,7 @@ H_MASS_KG = 1.6726231e-27
 def _real_numeric(name, value):
     try:
         if not isinstance(value, np.ndarray) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -72,7 +71,15 @@ def reduce_terminal_molecular_energy_transfer(
         and external_source.shape == (distribution.shape[2],)
         and all(
             np.all(np.isfinite(value))
-            for value in (radial_velocity, axial_velocity, distribution, rhs, weight, widths, external_source)
+            for value in (
+                radial_velocity,
+                axial_velocity,
+                distribution,
+                rhs,
+                weight,
+                widths,
+                external_source,
+            )
         )
         and np.all(radial_velocity >= 0.0)
         and np.all(distribution >= 0.0)
@@ -84,7 +91,6 @@ def reduce_terminal_molecular_energy_transfer(
             "terminal energy-transfer inputs must be finite, shape-compatible, and physically nonnegative"
         )
 
-    nx = distribution.shape[2]
     thermal = float(thermal_speed)
     molecule_mass = 2.0 * float(mass) * H_MASS_KG
     slices = distribution.transpose(2, 0, 1)
@@ -102,20 +108,29 @@ def reduce_terminal_molecular_energy_transfer(
     # though the expression is an outer broadcast.  Broadcasting keeps the
     # same elementwise arithmetic and leaves the per-slice reduction order
     # below unchanged.
-    random_velocity_squared = radial_velocity[:, None, None] ** 2 + (
-        axial_velocity[None, :, None] - normalized_mean_velocity[None, None, :]
-    ) ** 2
+    random_velocity_squared = (
+        radial_velocity[:, None, None] ** 2
+        + (axial_velocity[None, :, None] - normalized_mean_velocity[None, None, :]) ** 2
+    )
 
     thermal_squared = thermal * thermal
     rhs_slices = rhs.transpose(2, 0, 1)
     random_rhs = random_velocity_squared.transpose(2, 0, 1) * rhs_slices
-    thermal_energy_transfer = 0.5 * molecule_mass * thermal_squared * np.sum(
-        np.matmul(random_rhs, widths) * weight[None, :], axis=1
+    thermal_energy_transfer = (
+        0.5
+        * molecule_mass
+        * thermal_squared
+        * np.sum(np.matmul(random_rhs, widths) * weight[None, :], axis=1)
     )
     centered_axial = axial_velocity[None, :] - normalized_mean_velocity[:, None]
-    momentum_transfer = molecule_mass * thermal * np.sum(
-        np.matmul(rhs_slices, (centered_axial * widths[None, :])[..., None]).squeeze(-1)
-        * weight[None, :], axis=1,
+    momentum_transfer = (
+        molecule_mass
+        * thermal
+        * np.sum(
+            np.matmul(rhs_slices, (centered_axial * widths[None, :])[..., None]).squeeze(-1)
+            * weight[None, :],
+            axis=1,
+        )
     )
     loss_rate = -np.sum(np.matmul(rhs_slices, widths) * weight[None, :], axis=1) + external_source
 
