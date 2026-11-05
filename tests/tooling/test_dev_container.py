@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -52,6 +54,97 @@ def test_clean_preserves_the_shared_cache_unless_requested(monkeypatch):
     assert any("--rmi" in command for command in calls)
 
 
+def test_pre_push_reuses_only_an_exact_head_tree_receipt(tmp_path, monkeypatch, capsys):
+    module = _load()
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    env = {
+        key: value for key, value in os.environ.items() if key not in {"GIT_DIR", "GIT_WORK_TREE"}
+    }
+
+    def git(*arguments):
+        return subprocess.run(
+            ["git", *arguments],
+            cwd=repository,
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    git("init", "-b", "main")
+    git("config", "user.name", "SciRel test")
+    git("config", "user.email", "scirel-test@example.invalid")
+    readme = repository / "README.md"
+    readme.write_text("first\n", encoding="utf-8")
+    git("add", "README.md")
+    git("commit", "-m", "first")
+    monkeypatch.setattr(module, "ROOT", repository)
+
+    runs = []
+    monkeypatch.setattr(module, "run_check", lambda: runs.append("check") or 17)
+    assert module.pre_push() == 17
+    assert runs == ["check"]
+
+    readme.write_text("second\n", encoding="utf-8")
+    git("add", "README.md")
+    assert module.record_check_receipt()
+    valid, reason = module.check_receipt_status()
+    assert not valid
+    assert "another Git tree" in reason
+
+    git("commit", "-m", "second")
+    valid, reason = module.check_receipt_status()
+    assert valid
+    assert "already passed" in reason
+    runs.clear()
+    assert module.pre_push() == 0
+    assert runs == []
+
+    readme.write_text("third\n", encoding="utf-8")
+    git("add", "README.md")
+    git("commit", "-m", "third")
+    runs.clear()
+    assert module.pre_push() == 17
+    assert runs == ["check"]
+    capsys.readouterr()
+
+
+def test_check_receipt_rejects_another_architecture(tmp_path, monkeypatch):
+    module = _load()
+    repository = tmp_path / "repository"
+    repository.mkdir()
+    env = {
+        key: value for key, value in os.environ.items() if key not in {"GIT_DIR", "GIT_WORK_TREE"}
+    }
+
+    def git(*arguments):
+        return subprocess.run(
+            ["git", *arguments],
+            cwd=repository,
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    git("init", "-b", "main")
+    git("config", "user.name", "SciRel test")
+    git("config", "user.email", "scirel-test@example.invalid")
+    (repository / "README.md").write_text("fixture\n", encoding="utf-8")
+    git("add", "README.md")
+    git("commit", "-m", "fixture")
+    monkeypatch.setattr(module, "ROOT", repository)
+    assert module.record_check_receipt()
+    path = module.check_receipt_path()
+    receipt = json.loads(path.read_text(encoding="utf-8"))
+    receipt["architecture"] = "another-architecture"
+    path.write_text(json.dumps(receipt), encoding="utf-8")
+    valid, reason = module.check_receipt_status()
+    assert not valid
+    assert "architecture" in reason
+
+
 def test_loopback_proxy_is_reachable_from_the_container(monkeypatch):
     module = _load()
     monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:7890")
@@ -86,6 +179,7 @@ def test_container_python_matches_the_repository_pin():
 def test_local_container_uses_the_selected_engine_architecture():
     compose = (ROOT / "containers" / "dev" / "compose.yaml").read_text(encoding="utf-8")
     workflow = (ROOT / ".github" / "workflows" / "check.yml").read_text(encoding="utf-8")
+    pre_push = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
     assert "platform: linux/" not in compose
     assert "DOCKER_DEFAULT_PLATFORM: linux/amd64" in workflow
     assert "workflow_dispatch:" in workflow
@@ -99,6 +193,7 @@ def test_local_container_uses_the_selected_engine_architecture():
     assert "UV_PROJECT_ENVIRONMENT: /opt/scirel-venv" in compose
     assert "PYTHONPYCACHEPREFIX: /tmp/scirel-pycache" in compose
     assert "RUFF_CACHE_DIR: /tmp/scirel-ruff-cache" in compose
+    assert 'dev_container.py" pre-push' in pre_push
 
 
 def test_linked_worktree_git_metadata_is_mounted_portably(tmp_path, monkeypatch):

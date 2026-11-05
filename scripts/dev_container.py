@@ -7,13 +7,16 @@ import argparse
 from collections.abc import Iterator
 from contextlib import contextmanager
 import hashlib
+import json
 import os
 from pathlib import Path
+import platform
 import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "containers" / "dev" / "compose.yaml"
@@ -21,6 +24,7 @@ IMAGE = "scirel-dev-python:3.14.7"
 SYNC = "uv sync --locked --group test"
 PYTHON = "uv run --frozen python -B"
 GIT_COMMON_MOUNT = "/scirel-git"
+CHECK_RECEIPT_SCHEMA = 1
 
 
 def project_name() -> str:
@@ -80,6 +84,125 @@ def git_discovery_environment() -> dict[str, str]:
     for name in ("GIT_DIR", "GIT_WORK_TREE"):
         env.pop(name, None)
     return env
+
+
+def git_output(*arguments: str) -> str:
+    done = subprocess.run(
+        ["git", *arguments],
+        cwd=ROOT,
+        env=git_discovery_environment(),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if done.returncode:
+        detail = done.stderr.strip() or done.stdout.strip()
+        raise RuntimeError(f"git {' '.join(arguments)} failed: {detail}")
+    return done.stdout.strip()
+
+
+def check_receipt_path() -> Path:
+    return Path(
+        git_output(
+            "rev-parse",
+            "--path-format=absolute",
+            "--git-path",
+            "scirel-acceptance/check-receipt.json",
+        )
+    )
+
+
+def candidate_tree() -> str | None:
+    """Return the exact index tree, or None when untracked/unstaged files dilute it."""
+    unstaged = subprocess.run(
+        ["git", "diff", "--quiet", "--ignore-submodules", "--"],
+        cwd=ROOT,
+        env=git_discovery_environment(),
+        check=False,
+    )
+    if unstaged.returncode:
+        return None
+    if git_output("ls-files", "--others", "--exclude-standard"):
+        return None
+    return git_output("write-tree")
+
+
+def clear_check_receipt() -> None:
+    try:
+        check_receipt_path().unlink(missing_ok=True)
+    except (OSError, RuntimeError):
+        pass
+
+
+def record_check_receipt() -> bool:
+    tree = candidate_tree()
+    if tree is None:
+        print("Local check receipt not written: commit or clean unstaged and untracked files first.")
+        return False
+    path = check_receipt_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    receipt = {
+        "schema": CHECK_RECEIPT_SCHEMA,
+        "tree": tree,
+        "architecture": platform.machine(),
+        "checked_at_unix": time.time(),
+    }
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            prefix="check-receipt-",
+            dir=path.parent,
+            delete=False,
+        ) as stream:
+            json.dump(receipt, stream, sort_keys=True, indent=2)
+            stream.write("\n")
+            temporary = Path(stream.name)
+        os.replace(temporary, path)
+    except OSError as error:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+        print(f"Local check receipt not written: {error}")
+        return False
+    print(f"Recorded local check receipt for tree {tree[:12]}.")
+    return True
+
+
+def check_receipt_status() -> tuple[bool, str]:
+    path = check_receipt_path()
+    if not path.is_file():
+        return False, "no local check receipt"
+    try:
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        return False, f"unreadable local check receipt: {error}"
+    if receipt.get("schema") != CHECK_RECEIPT_SCHEMA:
+        return False, "stale local check receipt schema"
+    if receipt.get("architecture") != platform.machine():
+        return False, "local check receipt is for another host architecture"
+    head = git_output("rev-parse", "HEAD^{tree}")
+    if receipt.get("tree") != head:
+        return False, "local check receipt is for another Git tree"
+    return True, f"local acceptance already passed for tree {head[:12]}"
+
+
+def run_check() -> int:
+    clear_check_receipt()
+    script = f"{SYNC} && {PYTHON} skills/development/scirel-acceptance/scripts/check_all.py"
+    code = run_in_container(shell_command(script))
+    if not code:
+        record_check_receipt()
+    return code
+
+
+def pre_push() -> int:
+    valid, reason = check_receipt_status()
+    if valid:
+        print(f"{reason}; skipping the duplicate full check.")
+        return 0
+    print(f"{reason}; running the complete local check.")
+    return run_check()
 
 
 def linked_worktree_git_context() -> tuple[Path, str] | None:
@@ -258,6 +381,7 @@ def main() -> int:
     subparsers.add_parser("shell", help="open a shell in the development container")
     subparsers.add_parser("check", help="run the complete acceptance check")
     subparsers.add_parser("precommit", help="run the staged-file pre-commit check")
+    subparsers.add_parser("pre-push", help="reuse an exact local check receipt or run the full check")
     pytest_parser = subparsers.add_parser("pytest", help="run pytest with optional arguments")
     pytest_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     clean_parser = subparsers.add_parser(
@@ -274,13 +398,14 @@ def main() -> int:
     if args.command == "shell":
         return run_in_container(["bash", "-l"], interactive=True)
     if args.command == "check":
-        script = f"{SYNC} && {PYTHON} skills/development/scirel-acceptance/scripts/check_all.py"
-        return run_in_container(shell_command(script))
+        return run_check()
     if args.command == "precommit":
         script = (
             f"{SYNC} && {PYTHON} skills/development/scirel-acceptance/scripts/precommit_check.py"
         )
         return run_in_container(shell_command(script))
+    if args.command == "pre-push":
+        return pre_push()
     if args.command == "pytest":
         arguments = args.arguments or ["-q"]
         script = f"{SYNC} && {PYTHON} -m pytest {shlex.join(arguments)}"
