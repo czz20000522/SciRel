@@ -1,4 +1,5 @@
 """A fixed-order rational approximation for the dimensionless plasma dispersion function with an analytic imaginary-axis path."""
+
 import numpy as _np
 
 __all__ = ["evaluate_plasma_dispersion_weideman"]
@@ -14,10 +15,10 @@ def _expansion_coefficients():
     length = _np.sqrt(_N / _np.sqrt(2.0))
     theta = k * _np.pi / _M
     t = length * _np.tan(theta / 2.0)
-    f = _np.exp(-(t ** 2)) * (length ** 2 + t ** 2)
+    f = _np.exp(-(t**2)) * (length**2 + t**2)
     f = _np.concatenate([_np.zeros((1, 1)), f], axis=0)
     a = _np.real(_np.fft.fft(_np.fft.fftshift(f, axes=0), axis=0)) / _M2
-    a = _np.flipud(a[1:_N + 1])
+    a = _np.flipud(a[1 : _N + 1])
     return a.ravel(), length
 
 
@@ -46,6 +47,20 @@ def evaluate_plasma_dispersion_weideman(z):
                      real(z) == 0, ``'rational'`` otherwise.
         ``all_purely_imaginary`` : bool; True when every entry has
                      real(z) == 0 (the source early return, zfun.m:14-17).
+
+    Raises
+    ------
+    ValueError
+        If ``z`` is empty or non-finite, if the returned ``Z`` or ``w`` is
+        non-finite, or if the pure-imaginary branch exceeds its float64
+        numerical range.
+
+    Notes
+    -----
+    The pure-imaginary branch evaluates ``exp(-z**2) * erfc(imag(z))``
+    directly. It is finite for magnitudes of about ``26.6`` or less. A larger
+    pure-imaginary magnitude raises ``ValueError`` even when the asymptotic
+    limit itself would still be representable.
     """
     zeta = _np.asarray(z, dtype=_np.complex128)
     if zeta.size == 0 or not _np.all(_np.isfinite(zeta)):
@@ -80,7 +95,7 @@ def evaluate_plasma_dispersion_weideman(z):
         denom = length - 1j * work[sel]
         zc = (length + 1j * work[sel]) / denom
         p = _polyval(a, zc)
-        w[sel] = 2.0 * p / denom ** 2 + (1.0 / _np.sqrt(_np.pi)) / denom
+        w[sel] = 2.0 * p / denom**2 + (1.0 / _np.sqrt(_np.pi)) / denom
         with _np.errstate(over="ignore", invalid="ignore"):
             w[lower] = _np.conj(2.0 * _np.exp(-(work[lower] ** 2)) - w[lower])
 
