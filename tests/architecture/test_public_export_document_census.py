@@ -29,9 +29,7 @@ def test_public_export_document_census_cli_fails_closed_on_invalid_documents(
     capsys.readouterr()
 
 
-def test_public_export_document_census_cli_fails_on_reverse_gaps(
-    tmp_path: Path, capsys
-):
+def test_public_export_document_census_cli_fails_on_reverse_gaps(tmp_path: Path, capsys):
     from audit_public_export_documents import main
 
     documents = tmp_path / "documents"

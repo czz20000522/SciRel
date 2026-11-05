@@ -1,4 +1,5 @@
 """Midpoint mapping from a one-dimensional face grid to cell centers."""
+
 from __future__ import annotations
 
 import numpy as np

@@ -24,6 +24,7 @@ three finite positive points. The saved bundle's strict D1 qualification has
 been withdrawn; that replay is historical development evidence, not
 qualified-L1 provenance.
 """
+
 from __future__ import annotations
 
 import math
@@ -53,11 +54,7 @@ def _real_scalar(value, name):
 def _thermal_speed_ratio(temperature, mass):
     """Build the SI second-moment ratio from the frozen SciRel constants."""
     denominator = mass * _HYDROGEN_MASS_KG
-    return (
-        (2.0 * _ELECTRON_VOLT_J * temperature) / denominator
-        if denominator
-        else math.inf
-    )
+    return (2.0 * _ELECTRON_VOLT_J * temperature) / denominator if denominator else math.inf
 
 
 def compute_thermal_speed_m_s(temperature_ev, mass_amu):
@@ -91,12 +88,15 @@ def compute_thermal_speed_m_s(temperature_ev, mass_amu):
     mass_kg = mass * _HYDROGEN_MASS_KG
     numerator = 2.0 * _ELECTRON_VOLT_J * temperature
     ratio = _thermal_speed_ratio(temperature, mass)
-    if (not math.isfinite(ratio) or min(mass_kg, numerator, ratio) < sys.float_info.min):
+    if not math.isfinite(ratio) or min(mass_kg, numerator, ratio) < sys.float_info.min:
         with localcontext() as context:
             context.prec = 100
-            exact = (Decimal(2) * Decimal.from_float(_ELECTRON_VOLT_J)
-                     * Decimal.from_float(temperature)
-                     / (Decimal.from_float(mass) * Decimal.from_float(_HYDROGEN_MASS_KG)))
+            exact = (
+                Decimal(2)
+                * Decimal.from_float(_ELECTRON_VOLT_J)
+                * Decimal.from_float(temperature)
+                / (Decimal.from_float(mass) * Decimal.from_float(_HYDROGEN_MASS_KG))
+            )
             value = float(exact.sqrt())
     else:
         value = math.sqrt(ratio)

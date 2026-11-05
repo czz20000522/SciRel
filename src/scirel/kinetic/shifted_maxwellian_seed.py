@@ -1,4 +1,5 @@
 """Build a normalized shifted-Maxwellian seed on an explicit cylindrical velocity mesh."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -94,8 +95,11 @@ def build_shifted_maxwellian_seed(
             "must have compatible nonempty shapes"
         )
     for name, array in (
-        ("vr", radial), ("vx", axial), ("shifted_vx_m_s", shifts),
-        ("temperature_ev", temperatures), ("cylindrical_volume", volume),
+        ("vr", radial),
+        ("vx", axial),
+        ("shifted_vx_m_s", shifts),
+        ("temperature_ev", temperatures),
+        ("cylindrical_volume", volume),
     ):
         if not bool(np.all(np.isfinite(array))):
             raise ValueError(f"{name} must be finite")
@@ -114,18 +118,19 @@ def build_shifted_maxwellian_seed(
     with np.errstate(over="ignore", invalid="ignore"):
         thermal_speed = np.sqrt(2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (mass_amu * AMU_KG))
     if not np.isfinite(thermal_speed) or thermal_speed <= 0.0:
-        raise ValueError(
-            "the thermal speed is not representable for these finite inputs"
-        )
+        raise ValueError("the thermal speed is not representable for these finite inputs")
     with np.errstate(over="ignore", invalid="ignore"):
-        argument = -(
-            radial[:, None, None] ** 2
-            + (axial[None, :, None] - shifts[None, None, :] / thermal_speed) ** 2
-        ) * molecule_count * tnorm_ev / temperatures[None, None, :]
-    if not bool(np.all(np.isfinite(argument))):
-        raise ValueError(
-            "the seed exponent is not representable for these finite inputs"
+        argument = (
+            -(
+                radial[:, None, None] ** 2
+                + (axial[None, :, None] - shifts[None, None, :] / thermal_speed) ** 2
+            )
+            * molecule_count
+            * tnorm_ev
+            / temperatures[None, None, :]
         )
+    if not bool(np.all(np.isfinite(argument))):
+        raise ValueError("the seed exponent is not representable for these finite inputs")
     with np.errstate(over="ignore", invalid="ignore"):
         seed = np.exp(np.where(np.logical_and(-80.0 < argument, argument < 0.0), argument, -80.0))
         seed /= np.sum(volume[:, :, None] * seed, axis=(0, 1), keepdims=True)

@@ -1,4 +1,5 @@
 """Vectorized rectangular coil filament geometry."""
+
 from __future__ import annotations
 
 import numpy as np

@@ -16,8 +16,7 @@ __all__ = ["reduce_terminal_molecular_flux_velocity"]
 def _real_numeric(name, value):
     try:
         if not isinstance(value, np.ndarray) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)

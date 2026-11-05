@@ -21,9 +21,7 @@ def rational_frequency_descriptor(*, constant, poles, residues):
         or pole_array.size == 0
         or residue_array.shape != pole_array.shape
     ):
-        raise ValueError(
-            "constant must be scalar and poles/residues equal nonempty vectors"
-        )
+        raise ValueError("constant must be scalar and poles/residues equal nonempty vectors")
     arrays = (constant_array, pole_array, residue_array)
     if any(array.dtype.kind not in "iufc" for array in arrays):
         raise ValueError("coefficients must be finite numeric values")

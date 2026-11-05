@@ -1,4 +1,5 @@
 """Small composition operators for normalized kinetic dispersion probes. Each helper validates its scalar contract before assembling a shared equilibrium query."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -89,8 +90,7 @@ def evaluate_kinetic_dispersion_relation(
     omega = probe_frequency(omega_frac=omega_frac, wn=scales["wn"])["omega"]
     kx = probe_wavenumber(kx_frac=kx_frac, kn=scales["kn"])["kx"]
     f = omega_to_frequency(omega=omega)["f"]
-    shared = dict(B0=B0, qs=qs, ms=ms, ns0=scales["ns0"], Ts0=scales["Ts0"],
-                  f=f, kz=kz, kx=kx)
+    shared = dict(B0=B0, qs=qs, ms=ms, ns0=scales["ns0"], Ts0=scales["Ts0"], f=f, kz=kz, kx=kx)
     summed = evaluate_fluid_kinetic_dispersion_sum(**shared, lmx=lmx)
     ronnmark = evaluate_kinetic_dispersion_ronnmark(**shared)
     return {

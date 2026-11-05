@@ -28,6 +28,7 @@ fail before calculation; values/vectors share a numerical path; all return
 arities and terminal scan fields are defined; plotting indices are bounded.
 Original behavior and D1 assertions are preserved outside the runtime package.
 """
+
 from __future__ import annotations
 
 import io
@@ -36,10 +37,13 @@ from pathlib import Path
 
 import numpy as np
 
-from scirel._optional import import_optional_module
 
-__all__ = ["initialize_plasma_state", "assemble_spectral_matrix",
-           "solve_temporal_spectrum", "evaluate_spectral_dispersion"]
+__all__ = [
+    "initialize_plasma_state",
+    "assemble_spectral_matrix",
+    "solve_temporal_spectrum",
+    "evaluate_spectral_dispersion",
+]
 
 
 def _real(value, name):
@@ -49,6 +53,7 @@ def _real(value, name):
         if isinstance(item, (list, tuple)):
             return any(boolean(v) for v in item)
         return isinstance(item, np.ndarray) and item.dtype.kind == "b"
+
     if boolean(value):
         raise ValueError(f"{name} cannot contain boolean pseudo-numbers")
     arr = np.asarray(value)
@@ -94,9 +99,7 @@ def _assemble_legacy_collision_rates(rho, light, legacy):
                 receiver, other = (i, j) if rho[i] <= rho[j] else (j, i)
             else:
                 receiver, other, pair_rate = (
-                    (i, j, legacy["nuei"])
-                    if light[i]
-                    else (j, i, legacy["nuei"])
+                    (i, j, legacy["nuei"]) if light[i] else (j, i, legacy["nuei"])
                 )
             rates[receiver, other] = pair_rate
             rates[other, receiver] = pair_rate * (rho[receiver] / rho[other])
@@ -109,11 +112,12 @@ def _species_data(species, unit):
     if species is None:
         # Scientific example inputs, not captured answers or source runtime files.
         if unit == "normalized":
-            species = [[-1, 1, 4, 0, 0, 0, 0, 0, 0, 0],
-                       [1, 4, 4, 0, 0, 0, 0, 0, 0, 0]]
+            species = [[-1, 1, 4, 0, 0, 0, 0, 0, 0, 0], [1, 4, 4, 0, 0, 0, 0, 0, 0, 0]]
         else:
-            species = [[-1.602e-19, 9.109e-31, 8.7e6, 0, 0, 0, 4.631e6, 4.631e6, 0, 0],
-                       [1.602e-19, 1.673e-27, 8.7e6, 0, 0, 0, 9.360e4, 9.360e4, 0, 0]]
+            species = [
+                [-1.602e-19, 9.109e-31, 8.7e6, 0, 0, 0, 4.631e6, 4.631e6, 0, 0],
+                [1.602e-19, 1.673e-27, 8.7e6, 0, 0, 0, 9.360e4, 9.360e4, 0, 0],
+            ]
     if isinstance(species, str):
         try:
             species = np.loadtxt(io.StringIO(species), skiprows=1, ndmin=2)
@@ -151,47 +155,78 @@ def initialize_plasma_state(species=None, *, unit="normalized", prior=None, cfg=
     if prior is not None and not isinstance(prior, dict):
         raise ValueError("prior must be a mapping or None")
     cfg = dict(cfg or {})
-    allowed = {"B0", "c2", "epsilon0", "gammaTs", "nue", "nui", "nuee", "nuii", "nuei",
-               "collision_rates", "drag_rates", "collision_classes"}
+    allowed = {
+        "B0",
+        "c2",
+        "epsilon0",
+        "gammaTs",
+        "nue",
+        "nui",
+        "nuee",
+        "nuii",
+        "nuei",
+        "collision_rates",
+        "drag_rates",
+        "collision_classes",
+    }
     if set(cfg) - allowed:
-        raise ValueError(f"unknown configuration fields: {sorted(set(cfg)-allowed)}")
+        raise ValueError(f"unknown configuration fields: {sorted(set(cfg) - allowed)}")
     data = _species_data(species, unit)
     s = len(data)
-    B0 = _scalar(cfg.get("B0", 1. if unit == "normalized" else 8e-9), "B0")
-    c2 = _scalar(cfg.get("c2", 1. if unit == "normalized" else 2.9979e8**2), "c2", True)
-    epsilon0 = _scalar(cfg.get("epsilon0", 1. if unit == "normalized" else 8.854e-12), "epsilon0", True)
-    gamma = _vector(cfg.get("gammaTs", 1. if unit == "normalized" else 5/3), s, "gammaTs", positive=True)
+    B0 = _scalar(cfg.get("B0", 1.0 if unit == "normalized" else 8e-9), "B0")
+    c2 = _scalar(cfg.get("c2", 1.0 if unit == "normalized" else 2.9979e8**2), "c2", True)
+    epsilon0 = _scalar(
+        cfg.get("epsilon0", 1.0 if unit == "normalized" else 8.854e-12), "epsilon0", True
+    )
+    gamma = _vector(
+        cfg.get("gammaTs", 1.0 if unit == "normalized" else 5 / 3), s, "gammaTs", positive=True
+    )
     qs, ms, ns = data[:, 0], data[:, 1], data[:, 2]
     with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
-        rho = ms*ns
-        csz2, csp2 = data[:, 6]**2, data[:, 7]**2
-        Psz, Psp = rho*csz2/gamma, rho*csp2/gamma
-        mu0 = 1/(c2*epsilon0)
-        current = np.sum((qs*ns)[:, None]*data[:, 3:6], axis=0)
-        charge = np.sum(qs*ns)
-        beta_z = 2*mu0*Psz/B0**2 if B0 != 0 else None
-        beta_p = 2*mu0*Psp/B0**2 if B0 != 0 else None
-        delta = (Psz-Psp)/B0 if B0 != 0 else np.zeros(s)
-        va = B0/np.sqrt(mu0*rho)
-        wcs = qs*B0/ms
-        wps = np.sqrt(ns/epsilon0/ms)*np.abs(qs)
-    if np.any(rho <= 0) or not np.isfinite(np.r_[rho, csz2, csp2, Psz, Psp, delta, va, wcs, wps, current, charge, mu0]).all():
+        rho = ms * ns
+        csz2, csp2 = data[:, 6] ** 2, data[:, 7] ** 2
+        Psz, Psp = rho * csz2 / gamma, rho * csp2 / gamma
+        mu0 = 1 / (c2 * epsilon0)
+        current = np.sum((qs * ns)[:, None] * data[:, 3:6], axis=0)
+        charge = np.sum(qs * ns)
+        beta_z = 2 * mu0 * Psz / B0**2 if B0 != 0 else None
+        beta_p = 2 * mu0 * Psp / B0**2 if B0 != 0 else None
+        delta = (Psz - Psp) / B0 if B0 != 0 else np.zeros(s)
+        va = B0 / np.sqrt(mu0 * rho)
+        wcs = qs * B0 / ms
+        wps = np.sqrt(ns / epsilon0 / ms) * np.abs(qs)
+    if (
+        np.any(rho <= 0)
+        or not np.isfinite(
+            np.r_[rho, csz2, csp2, Psz, Psp, delta, va, wcs, wps, current, charge, mu0]
+        ).all()
+    ):
         raise ValueError("derived plasma state exceeds finite numeric domain")
     if beta_z is not None and not np.isfinite(np.r_[beta_z, beta_p]).all():
         raise ValueError("beta exceeds finite numeric domain")
-    legacy = {name: _scalar(cfg.get(name, 0.), name) for name in ("nue", "nui", "nuee", "nuii", "nuei")}
+    legacy = {
+        name: _scalar(cfg.get(name, 0.0), name) for name in ("nue", "nui", "nuee", "nuii", "nuei")
+    }
     if any(value < 0 for value in legacy.values()):
         raise ValueError("collision rates must be nonnegative")
     if ("collision_rates" in cfg or "drag_rates" in cfg) and any(legacy.values()):
         raise ValueError("choose explicit collision rates or legacy controls")
     # Numerical mass categories, not inferred physical species identity.
-    light = ms <= (1. if unit == "normalized" else 9.1093837139e-31)
+    light = ms <= (1.0 if unit == "normalized" else 9.1093837139e-31)
     if "collision_classes" in cfg:
         classes = np.asarray(cfg["collision_classes"])
-        if classes.shape != (s,) or not np.isin(classes, ["light", "heavy", "electron", "ion"]).all():
+        if (
+            classes.shape != (s,)
+            or not np.isin(classes, ["light", "heavy", "electron", "ion"]).all()
+        ):
             raise ValueError("collision_classes needs s light/heavy (electron/ion aliases) labels")
         light = np.isin(classes, ["light", "electron"])
-    drag = _vector(cfg.get("drag_rates", np.where(light, legacy["nue"], legacy["nui"])), s, "drag_rates", nonnegative=True)
+    drag = _vector(
+        cfg.get("drag_rates", np.where(light, legacy["nue"], legacy["nui"])),
+        s,
+        "drag_rates",
+        nonnegative=True,
+    )
     rates = np.zeros((s, s))
     if "collision_rates" in cfg:
         rates = _real(cfg["collision_rates"], "collision_rates")
@@ -202,25 +237,57 @@ def initialize_plasma_state(species=None, *, unit="normalized", prior=None, cfg=
     # Both interfaces must meet the same physical and representability contract.
     # Positive rates with zero weighted flux cannot prove momentum reciprocity.
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):
-        flux = rho[:, None]*rates
+        flux = rho[:, None] * rates
     if not np.isfinite(flux).all() or np.any((rates > 0) & (flux == 0)):
         raise ValueError("collision momentum flux exceeds finite numeric domain")
     scale = np.maximum(np.abs(flux), np.abs(flux.T))
-    if np.any(np.abs(flux-flux.T) > 1e-12*scale):
+    if np.any(np.abs(flux - flux.T) > 1e-12 * scale):
         raise ValueError("collision_rates must conserve pairwise momentum")
     collision = rates.copy()
-    np.fill_diagonal(collision, -drag-rates.sum(axis=1))
+    np.fill_diagonal(collision, -drag - rates.sum(axis=1))
     if not np.isfinite(collision).all():
         raise ValueError("collision matrix exceeds finite numeric domain")
-    return {"s": s, "unit": unit, "species": data, "qs": qs.copy(), "ms": ms.copy(), "ns0": ns.copy(),
-            "vs0x": data[:, 3].copy(), "vs0y": data[:, 4].copy(), "vs0z": data[:, 5].copy(),
-            "csz2": csz2, "csp2": csp2, "epsnx": data[:, 8].copy(), "epsny": data[:, 9].copy(),
-            "rhos0": rho, "Q0": float(charge), "J0x": float(current[0]), "J0y": float(current[1]), "J0z": float(current[2]),
-            "nu": collision, "collision_rates": rates, "drag_rates": drag, "collision_classes": np.where(light, "light", "heavy"), "B0": B0, "c2": c2,
-            "epsilon0": epsilon0, "mu0": mu0, "gammaTs": gamma, "Psz": Psz, "Psp": Psp,
-            "betasz": beta_z, "betasp": beta_p, "Deltas": delta, "vA": va, "wcs": wcs, "wps": wps,
-            "background": "externally-maintained-zero-perturbation-response", "pressure_closure": "algebraic-fixed-temperature-coefficients",
-            "zero_field_director": "fixed-z", "mirror_factor": 2.}
+    return {
+        "s": s,
+        "unit": unit,
+        "species": data,
+        "qs": qs.copy(),
+        "ms": ms.copy(),
+        "ns0": ns.copy(),
+        "vs0x": data[:, 3].copy(),
+        "vs0y": data[:, 4].copy(),
+        "vs0z": data[:, 5].copy(),
+        "csz2": csz2,
+        "csp2": csp2,
+        "epsnx": data[:, 8].copy(),
+        "epsny": data[:, 9].copy(),
+        "rhos0": rho,
+        "Q0": float(charge),
+        "J0x": float(current[0]),
+        "J0y": float(current[1]),
+        "J0z": float(current[2]),
+        "nu": collision,
+        "collision_rates": rates,
+        "drag_rates": drag,
+        "collision_classes": np.where(light, "light", "heavy"),
+        "B0": B0,
+        "c2": c2,
+        "epsilon0": epsilon0,
+        "mu0": mu0,
+        "gammaTs": gamma,
+        "Psz": Psz,
+        "Psp": Psp,
+        "betasz": beta_z,
+        "betasp": beta_p,
+        "Deltas": delta,
+        "vA": va,
+        "wcs": wcs,
+        "wps": wps,
+        "background": "externally-maintained-zero-perturbation-response",
+        "pressure_closure": "algebraic-fixed-temperature-coefficients",
+        "zero_field_director": "fixed-z",
+        "mirror_factor": 2.0,
+    }
 
 
 def _cross(v):
@@ -233,10 +300,19 @@ def _state(state):
         raise ValueError("state must be produced by initialize_plasma_state")
     # Re-derive all science from explicit primary inputs; stale derived fields
     # cannot silently enter the matrix. A changed primary field is a new state.
-    return initialize_plasma_state(state["species"], unit=state["unit"], cfg={
-        "B0": state["B0"], "c2": state["c2"], "epsilon0": state["epsilon0"],
-        "gammaTs": state["gammaTs"], "collision_rates": state["collision_rates"],
-        "drag_rates": state["drag_rates"], "collision_classes": state["collision_classes"]})
+    return initialize_plasma_state(
+        state["species"],
+        unit=state["unit"],
+        cfg={
+            "B0": state["B0"],
+            "c2": state["c2"],
+            "epsilon0": state["epsilon0"],
+            "gammaTs": state["gammaTs"],
+            "collision_rates": state["collision_rates"],
+            "drag_rates": state["drag_rates"],
+            "collision_classes": state["collision_classes"],
+        },
+    )
 
 
 def assemble_spectral_matrix(state, kx, kz, *, rel=0):
@@ -255,51 +331,54 @@ def assemble_spectral_matrix(state, kx, kz, *, rel=0):
     if k.shape != (3,) or not np.isfinite(k).all():
         raise ValueError("kx/kz must be finite scalar wave numbers")
     s = state["s"]
-    fields = 4*s
-    M = np.zeros((fields+6, fields+6), dtype=complex)
-    A = np.eye(fields+6, dtype=complex)
+    fields = 4 * s
+    M = np.zeros((fields + 6, fields + 6), dtype=complex)
+    A = np.eye(fields + 6, dtype=complex)
     for j, data in enumerate(state["species"]):
         q, mass, n = data[:3]
         v = data[3:6]
-        eps = np.array([data[8], data[9], 0.])
-        density = 4*j
-        vel = slice(density+1, density+4)
-        convective = -1j*(k @ v)
+        eps = np.array([data[8], data[9], 0.0])
+        density = 4 * j
+        vel = slice(density + 1, density + 4)
+        convective = -1j * (k @ v)
         M[density, density] = convective
-        M[density, vel] = -n*(1j*k+eps)
+        M[density, vel] = -n * (1j * k + eps)
         inertia = np.eye(3)
         if rel:
             speed2 = v @ v / state["c2"]
             if speed2 >= 1:
                 raise ValueError("relativistic velocity must be strictly subluminal")
-            gamma = 1/np.sqrt(1-speed2)
-            inertia = gamma*np.eye(3)+gamma**3*np.outer(v, v)/state["c2"]
+            gamma = 1 / np.sqrt(1 - speed2)
+            inertia = gamma * np.eye(3) + gamma**3 * np.outer(v, v) / state["c2"]
         A[vel, vel] = inertia
-        M[vel, vel] = convective*inertia - q/mass*_cross([0., 0., state["B0"]])
+        M[vel, vel] = convective * inertia - q / mass * _cross([0.0, 0.0, state["B0"]])
         thermal = np.array([state["csp2"][j], state["csp2"][j], state["csz2"][j]])
-        M[vel, density] = (-1j*thermal*k+thermal*eps/state["gammaTs"][j])/n
-        M[vel, fields:fields+3] = q/mass*np.eye(3)
-        M[vel, fields+3:fields+6] = q/mass*_cross(v)
-        d = state["Deltas"][j]/state["rhos0"][j]
-        M[density+1, fields+3] += -1j*k[2]*d
-        M[density+2, fields+4] += -1j*k[2]*d
+        M[vel, density] = (-1j * thermal * k + thermal * eps / state["gammaTs"][j]) / n
+        M[vel, fields : fields + 3] = q / mass * np.eye(3)
+        M[vel, fields + 3 : fields + 6] = q / mass * _cross(v)
+        d = state["Deltas"][j] / state["rhos0"][j]
+        M[density + 1, fields + 3] += -1j * k[2] * d
+        M[density + 2, fields + 4] += -1j * k[2] * d
         # Empirical mirror correction applies to the entire z divergence.
-        M[density+3, fields+3] += -2*(1j*k[0]+eps[0])*d
-        M[density+3, fields+4] += -2*eps[1]*d
-        M[fields:fields+3, density] = -q*v/state["epsilon0"]
-        M[fields:fields+3, vel] = -q*n/state["epsilon0"]*np.eye(3)
+        M[density + 3, fields + 3] += -2 * (1j * k[0] + eps[0]) * d
+        M[density + 3, fields + 4] += -2 * eps[1] * d
+        M[fields : fields + 3, density] = -q * v / state["epsilon0"]
+        M[fields : fields + 3, vel] = -q * n / state["epsilon0"] * np.eye(3)
         for other in range(s):
-            target = slice(4*other+1, 4*other+4)
-            M[vel, target] += state["nu"][j, other]*np.eye(3)
-    M[fields:fields+3, fields+3:fields+6] = 1j*state["c2"]*_cross(k)
-    M[fields+3:fields+6, fields:fields+3] = -1j*_cross(k)
+            target = slice(4 * other + 1, 4 * other + 4)
+            M[vel, target] += state["nu"][j, other] * np.eye(3)
+    M[fields : fields + 3, fields + 3 : fields + 6] = 1j * state["c2"] * _cross(k)
+    M[fields + 3 : fields + 6, fields : fields + 3] = -1j * _cross(k)
     if not np.isfinite(M).all() or not np.isfinite(A).all():
         raise ValueError("matrix exceeds finite numeric domain")
     # Positive physical state scales, independent of k and eigenvalues.
     c = np.sqrt(state["c2"])
-    bscale = np.sqrt(np.sum(state["rhos0"])/state["epsilon0"])
-    scales = np.r_[np.column_stack([state["ns0"], np.full((s, 3), c)]).ravel(),
-                   np.full(3, c*bscale), np.full(3, bscale)]
+    bscale = np.sqrt(np.sum(state["rhos0"]) / state["epsilon0"])
+    scales = np.r_[
+        np.column_stack([state["ns0"], np.full((s, 3), c)]).ravel(),
+        np.full(3, c * bscale),
+        np.full(3, bscale),
+    ]
     if not np.isfinite(scales).all() or np.any(scales <= 0):
         raise ValueError("state scaling exceeds finite numeric domain")
     return {"M": M, "A": A, "state": state, "scales": scales, "kx": complex(kx), "kz": complex(kz)}
@@ -308,20 +387,22 @@ def assemble_spectral_matrix(state, kx, kz, *, rel=0):
 def _residuals(M, A, values, V):
     # Normalize the producer before forming products, avoiding overflow in
     # the norm or |lambda|*norm(A). This is backward error, not mode accuracy.
-    f = max(float(np.max(np.abs(M))), float(np.max(np.abs(A)))*max(1., float(np.max(np.abs(values)))))
+    f = max(
+        float(np.max(np.abs(M))), float(np.max(np.abs(A))) * max(1.0, float(np.max(np.abs(values))))
+    )
     if not np.isfinite(f):
         raise ValueError("eigenproblem residual scale exceeds finite numeric domain")
     if f == 0:
-        return np.zeros(len(values)), 0.
-    m, a = M/f, A/f
-    residual = m @ V-(a @ V)*values
-    component = np.abs(m) @ np.abs(V)+(np.abs(a) @ np.abs(V))*np.abs(values)
+        return np.zeros(len(values)), 0.0
+    m, a = M / f, A / f
+    residual = m @ V - (a @ V) * values
+    component = np.abs(m) @ np.abs(V) + (np.abs(a) @ np.abs(V)) * np.abs(values)
     global_scale = np.max(component, axis=0)
-    floor = np.maximum(global_scale*np.finfo(float).eps, np.finfo(float).tiny)
-    errors = np.max(np.abs(residual), axis=0)/np.maximum(global_scale, np.finfo(float).tiny)
-    perrow = np.abs(residual)/np.maximum(component, floor[None, :])
-    active = component > global_scale[None, :]*1e-12
-    worst = float(np.max(np.where(active, perrow, 0.)))
+    floor = np.maximum(global_scale * np.finfo(float).eps, np.finfo(float).tiny)
+    errors = np.max(np.abs(residual), axis=0) / np.maximum(global_scale, np.finfo(float).tiny)
+    perrow = np.abs(residual) / np.maximum(component, floor[None, :])
+    active = component > global_scale[None, :] * 1e-12
+    worst = float(np.max(np.where(active, perrow, 0.0)))
     if not np.isfinite(errors).all() or not np.isfinite(worst):
         raise ArithmeticError("nonfinite eigensolution residual")
     return errors, worst
@@ -357,8 +438,8 @@ def solve_temporal_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, ou
     # similarity balancing of M then supplies a data-dependent conditioning
     # transformation; A receives exactly the same transform.
     scale = np.ones(len(M)) if scales is None else _vector(scales, len(M), "scales", positive=True)
-    Ms = M/scale[:, None]*scale[None, :]
-    As = A/scale[:, None]*scale[None, :]
+    Ms = M / scale[:, None] * scale[None, :]
+    As = A / scale[:, None] * scale[None, :]
     if not np.isfinite(Ms).all() or not np.isfinite(As).all():
         raise ValueError("scaled matrices must be finite")
     # SciPy is a core runtime dependency, but only spectrum solving needs its
@@ -368,9 +449,9 @@ def solve_temporal_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, ou
     from scipy import linalg
 
     radix = linalg.matrix_balance(Ms, permute=False, separate=True)[1][0]
-    Ms = Ms/radix[:, None]*radix[None, :]
-    As = As/radix[:, None]*radix[None, :]
-    scale = scale*radix
+    Ms = Ms / radix[:, None] * radix[None, :]
+    As = As / radix[:, None] * radix[None, :]
+    scale = scale * radix
     if not np.isfinite(scale).all() or np.any(scale <= 0):
         raise ValueError("combined similarity scaling exceeds numeric domain")
     if oldmethod == 1:
@@ -383,11 +464,12 @@ def solve_temporal_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, ou
     precision = "complex128"
     if worst > 1e-12:
         import mpmath
+
         mp = mpmath.mp.clone()
         mp.dps = 50
         mm, aa = mp.matrix(Ms.tolist()), mp.matrix(As.tolist())
         # No double A^-1 precomputation in the high precision path.
-        vv, vectors_mp = mp.eig(mp.inverse(aa)*mm)
+        vv, vectors_mp = mp.eig(mp.inverse(aa) * mm)
         values = np.asarray([complex(v) for v in vv])
         V = np.asarray(vectors_mp.tolist(), dtype=complex)
         precision = "mpmath-50-decimal-to-complex128"
@@ -398,17 +480,28 @@ def solve_temporal_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, ou
     # vector is never destroyed by an overflowing intermediate product.
     amplitudes = np.abs(V)
     with np.errstate(divide="ignore", invalid="ignore"):
-        logs = np.log(amplitudes)+np.log(scale[:, None])
+        logs = np.log(amplitudes) + np.log(scale[:, None])
     offset = np.max(logs, axis=0)
     phase = np.divide(V, amplitudes, out=np.zeros_like(V), where=amplitudes != 0)
-    V = phase*np.exp(logs-offset)
-    if not np.isfinite(values).all() or not np.isfinite(V).all() or np.any(np.max(np.abs(V), axis=0) == 0):
+    V = phase * np.exp(logs - offset)
+    if (
+        not np.isfinite(values).all()
+        or not np.isfinite(V).all()
+        or np.any(np.max(np.abs(V), axis=0) == 0)
+    ):
         raise ArithmeticError("unscaled eigenvectors or values are nonfinite/zero")
-    omega = 1j*values
+    omega = 1j * values
     i1 = np.argsort(-omega.real, kind="stable")
     i2 = np.argsort(-omega.imag, kind="stable")
-    out = {"w1": omega[i1], "w2": omega[i2], "residual1": errors[i1], "residual2": errors[i2],
-           "precision": precision, "oldmethod": oldmethod, "component_residual": worst}
+    out = {
+        "w1": omega[i1],
+        "w2": omega[i2],
+        "residual1": errors[i1],
+        "residual2": errors[i2],
+        "precision": precision,
+        "oldmethod": oldmethod,
+        "component_residual": worst,
+    }
     if vectors or output_count is not None:
         out.update(X1=V[:, i1], X2=V[:, i2])
     if output_count is not None:
@@ -431,18 +524,37 @@ def _plot(out, path):
     if out["method"] == 4:
         modes = out["ww1"].shape[-1]
     else:
-        modes = 2 * out["state"]["s"] + 1 if out["unit"] == "normalized" or out["method"] == 3 else out["ww1"].shape[-1]
+        modes = (
+            2 * out["state"]["s"] + 1
+            if out["unit"] == "normalized" or out["method"] == 3
+            else out["ww1"].shape[-1]
+        )
     png = b""
     if path is not None:
         Path(path).write_bytes(png)
     return {"axes_count": 2, "mode_count": modes}, png
 
 
-def evaluate_spectral_dispersion(species=None, *, unit="normalized", method=2, rel=0,
-                             vectors=False, oldmethod=2, prior=None, cfg=None,
-                             k_grid=None, theta_grid=None, kx_grid=None, kz_grid=None,
-                             k=.1, theta=np.pi/3, max_points=10000, plot_path=None,
-                             output_count=None):
+def evaluate_spectral_dispersion(
+    species=None,
+    *,
+    unit="normalized",
+    method=2,
+    rel=0,
+    vectors=False,
+    oldmethod=2,
+    prior=None,
+    cfg=None,
+    k_grid=None,
+    theta_grid=None,
+    kx_grid=None,
+    kz_grid=None,
+    k=0.1,
+    theta=np.pi / 3,
+    max_points=10000,
+    plot_path=None,
+    output_count=None,
+):
     """Ordered initialization -> assembly -> spectrum graph; bounded scan then plot.
 
     Methods 0/1 and unknown nonnegative integers select a single point. 2 scans
@@ -464,30 +576,36 @@ def evaluate_spectral_dispersion(species=None, *, unit="normalized", method=2, r
         raise ValueError("method must be nonnegative and max_points positive")
     kk = tt = xx = zz = np.empty(0)
     if method == 2:
-        default = np.arange(101)*.1 if unit == "normalized" else np.r_[np.arange(101)*1e-7, 2e-5+np.arange(37)*5e-6, 3e-4+np.arange(58)*1e-4]
+        default = (
+            np.arange(101) * 0.1
+            if unit == "normalized"
+            else np.r_[
+                np.arange(101) * 1e-7, 2e-5 + np.arange(37) * 5e-6, 3e-4 + np.arange(58) * 1e-4
+            ]
+        )
         kk = _grid(k_grid, default, "k_grid")
-        angle = np.pi/4 if unit == "normalized" else 0.
-        kxs, kzs = kk*np.sin(angle), kk*np.cos(angle)
+        angle = np.pi / 4 if unit == "normalized" else 0.0
+        kxs, kzs = kk * np.sin(angle), kk * np.cos(angle)
         shape = (len(kk),)
     elif method == 3:
-        tt = _grid(theta_grid, np.arange(51)*np.pi/100, "theta_grid")
-        kxs, kzs = 2*np.sin(tt), 2*np.cos(tt)
-        kk = np.full(len(tt), 2.)
+        tt = _grid(theta_grid, np.arange(51) * np.pi / 100, "theta_grid")
+        kxs, kzs = 2 * np.sin(tt), 2 * np.cos(tt)
+        kk = np.full(len(tt), 2.0)
         shape = (len(tt),)
     elif method == 4:
-        x = _grid(kx_grid, .01+np.arange(75)*.04, "kx_grid")
-        z = _grid(kz_grid, .01+np.arange(50)*.04, "kz_grid")
-        if len(x)*len(z) > limit:
+        x = _grid(kx_grid, 0.01 + np.arange(75) * 0.04, "kx_grid")
+        z = _grid(kz_grid, 0.01 + np.arange(50) * 0.04, "kz_grid")
+        if len(x) * len(z) > limit:
             raise ValueError("scan exceeds max_points")
         xx, zz = np.meshgrid(x, z)
         kxs, kzs, shape = xx.ravel(), zz.ravel(), xx.shape
-        kk = np.sqrt(xx**2+zz**2)
+        kk = np.sqrt(xx**2 + zz**2)
     else:
         kval = np.asarray(k)
         if kval.ndim != 0 or kval.dtype.kind not in "iufc" or not np.isfinite(kval):
             raise ValueError("k must be a finite complex scalar")
         angle = _scalar(theta, "theta")
-        kxs, kzs = [complex(kval)*np.sin(angle)], [complex(kval)*np.cos(angle)]
+        kxs, kzs = [complex(kval) * np.sin(angle)], [complex(kval) * np.cos(angle)]
         kk = np.asarray([complex(kval)])
         shape = (1,)
     if len(kxs) > limit:
@@ -495,13 +613,27 @@ def evaluate_spectral_dispersion(species=None, *, unit="normalized", method=2, r
     w1, w2 = [], []
     for x, z in zip(kxs, kzs):
         matrix = assemble_spectral_matrix(state, x, z, rel=rel)
-        spectrum = solve_temporal_spectrum(matrix["M"], matrix["A"], vectors=vectors,
-                                        oldmethod=oldmethod, scales=matrix["scales"])
-        w1.append(spectrum["w1"]); w2.append(spectrum["w2"])
-    out = dict(matrix, **spectrum, method=method, unit=unit, kk=kk, tt=tt, kkx=xx, kkz=zz,
-               ww1=np.asarray(w1).reshape(shape+(-1,)), ww2=np.asarray(w2).reshape(shape+(-1,)),
-               points=len(kxs), execution_order="initialize; row-major assemble/spectrum; plot", max_points=limit,
-               graphics={"axes_count": 0, "mode_count": 0})
+        spectrum = solve_temporal_spectrum(
+            matrix["M"], matrix["A"], vectors=vectors, oldmethod=oldmethod, scales=matrix["scales"]
+        )
+        w1.append(spectrum["w1"])
+        w2.append(spectrum["w2"])
+    out = dict(
+        matrix,
+        **spectrum,
+        method=method,
+        unit=unit,
+        kk=kk,
+        tt=tt,
+        kkx=xx,
+        kkz=zz,
+        ww1=np.asarray(w1).reshape(shape + (-1,)),
+        ww2=np.asarray(w2).reshape(shape + (-1,)),
+        points=len(kxs),
+        execution_order="initialize; row-major assemble/spectrum; plot",
+        max_points=limit,
+        graphics={"axes_count": 0, "mode_count": 0},
+    )
     if method in (2, 3, 4):
         out["graphics"], out["plot_png"] = _plot(out, plot_path)
     elif plot_path is not None:
@@ -511,8 +643,24 @@ def evaluate_spectral_dispersion(species=None, *, unit="normalized", method=2, r
         maximum = 4 if unit == "normalized" else 17
         if not 0 <= count <= maximum:
             raise ValueError(f"public output_count must be 0..{maximum}")
-        fields = (out["M"], out["A"], out["w1"], out["w2"], out["kk"], out["ww1"], out["ww2"],
-                  state["betasz"], state["vA"], state["csz2"], state["c2"], state["rhos0"], state["wcs"],
-                  state["qs"], state["ms"], state["wps"], state["B0"])
+        fields = (
+            out["M"],
+            out["A"],
+            out["w1"],
+            out["w2"],
+            out["kk"],
+            out["ww1"],
+            out["ww2"],
+            state["betasz"],
+            state["vA"],
+            state["csz2"],
+            state["c2"],
+            state["rhos0"],
+            state["wcs"],
+            state["qs"],
+            state["ms"],
+            state["wps"],
+            state["B0"],
+        )
         return fields[:count]
     return out

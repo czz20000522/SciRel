@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field, sample_rectilinear_field as scientific_function
+from scirel.geometry.bilinear_grid_sampling import (
+    sample_rectilinear_field,
+    sample_rectilinear_field as scientific_function,
+)
 
 
 def _grid():
@@ -34,7 +37,6 @@ def test_empty_query_and_invalid_later_point():
 
 
 def test_reviewed_relation_example():
-    from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
     import numpy as np
 
     r_axis = np.array([1.0, 2.0, 4.0])

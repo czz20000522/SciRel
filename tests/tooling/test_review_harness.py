@@ -1,4 +1,5 @@
 """Review tools keep candidate checks explicit, bounded and fail closed."""
+
 import json
 from pathlib import Path
 import subprocess
@@ -23,11 +24,19 @@ def review_fixture(tmp_path, monkeypatch):
     review = tmp_path / "catalog" / "review"
     examples = review / "examples"
     examples.mkdir(parents=True)
-    document = json.loads((ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text())
+    document = json.loads(
+        (ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text()
+    )
     document["verification"]["tests"] = [COMPOSITION, PHYSICAL, INDEPENDENT]
     (examples / (ASSET + ".json")).write_text(json.dumps(document))
-    (review / "HOLD.json").write_text(json.dumps({"schema": "scirel.exposure-hold", "assets": {ASSET: {"status": "human-review"}}}))
-    candidate = review / "candidates" / "src" / "scirel" / "inference" / "direct_anisotropic_inversion.py"
+    (review / "HOLD.json").write_text(
+        json.dumps(
+            {"schema": "scirel.exposure-hold", "assets": {ASSET: {"status": "human-review"}}}
+        )
+    )
+    candidate = (
+        review / "candidates" / "src" / "scirel" / "inference" / "direct_anisotropic_inversion.py"
+    )
     candidate.parent.mkdir(parents=True)
     candidate.write_text("# Candidate is checked in the separate runtime stage.\n")
     for reference in [*document["verification"]["tests"], review_harness.IMPORT_SURFACE_TEST]:
@@ -57,7 +66,12 @@ def test_harness_runs_contract_runtime_examples_and_explicit_test_closure(review
     assert "-c" in calls[0][0]
     pytest_command, options = calls[1]
     assert pytest_command[:5] == [sys.executable, "-B", "-m", "pytest", "-q"]
-    assert set(pytest_command[5:]) == {COMPOSITION, PHYSICAL, INDEPENDENT, review_harness.IMPORT_SURFACE_TEST}
+    assert set(pytest_command[5:]) == {
+        COMPOSITION,
+        PHYSICAL,
+        INDEPENDENT,
+        review_harness.IMPORT_SURFACE_TEST,
+    }
     assert options["env"]["SCIREL_REVIEW_HOLD"] == "1"
     assert "candidates" not in options["env"]["PYTHONPATH"]
     assert options["cwd"] == root
@@ -97,7 +111,9 @@ def test_harness_preserves_pytest_node_selectors(review_fixture):
 
 def test_harness_has_an_explicit_no_hold_no_test_result(review_fixture):
     root, _, calls = review_fixture
-    (root / "catalog" / "review" / "HOLD.json").write_text(json.dumps({"schema": "scirel.exposure-hold", "assets": {}}))
+    (root / "catalog" / "review" / "HOLD.json").write_text(
+        json.dumps({"schema": "scirel.exposure-hold", "assets": {}})
+    )
     assert review_harness.main(["--check"]) == 0
     assert calls == []
 
@@ -122,14 +138,19 @@ def test_harness_fails_a_timed_out_stage(review_fixture, monkeypatch):
     assert review_harness.main(["--check"]) == 1
 
 
-@pytest.mark.parametrize("path", [
-    "catalog/review/candidates/src/scirel/inference/direct_anisotropic_inversion.py",
-    "catalog/review/examples/" + ASSET + ".json",
-    "scripts/review_harness.py",
-])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "catalog/review/candidates/src/scirel/inference/direct_anisotropic_inversion.py",
+        "catalog/review/examples/" + ASSET + ".json",
+        "scripts/review_harness.py",
+    ],
+)
 def test_candidate_and_harness_scopes_include_the_bound_direct_tests(review_fixture, path):
     targets, _ = test_scope.classify(Path(path))
-    assert {COMPOSITION, PHYSICAL, INDEPENDENT, "tests/tooling", "tests/architecture"} <= set(targets)
+    assert {COMPOSITION, PHYSICAL, INDEPENDENT, "tests/tooling", "tests/architecture"} <= set(
+        targets
+    )
 
 
 def test_candidate_scope_fails_closed_for_a_missing_test(review_fixture):
@@ -145,14 +166,18 @@ def test_unbound_candidate_scope_fails_closed(review_fixture):
 
 
 def test_current_held_contract_binds_composition_and_physical_closure():
-    document = json.loads((ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text())
+    document = json.loads(
+        (ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text()
+    )
     assert {COMPOSITION, PHYSICAL, INDEPENDENT} <= set(document["verification"]["tests"])
 
 
 def test_review_contract_executes_example_without_changing_public_exports(monkeypatch):
     import scirel.inference as inference
 
-    document = json.loads((ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text())
+    document = json.loads(
+        (ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text()
+    )
     document["example"]["code"] = "raise RuntimeError('held example was executed')"
     original = json.dumps(document, sort_keys=True)
     exports = list(inference.__all__)
@@ -168,10 +193,15 @@ def test_review_contract_executes_example_without_changing_public_exports(monkey
 def test_review_contract_rejects_a_different_canonical_callable(monkeypatch):
     import scirel.inference as inference
 
-    document = json.loads((ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text())
+    document = json.loads(
+        (ROOT / "catalog" / "review" / "examples" / (ASSET + ".json")).read_text()
+    )
     document["public_api"]["python"].update(
-        canonical_module="scirel.inference", canonical_symbol="solve_direct_anisotropic_inversion")
+        canonical_module="scirel.inference", canonical_symbol="solve_direct_anisotropic_inversion"
+    )
     monkeypatch.setattr(review_harness, "load_review_documents", lambda root: [document])
-    monkeypatch.setattr(inference, "solve_direct_anisotropic_inversion", lambda: None, raising=False)
+    monkeypatch.setattr(
+        inference, "solve_direct_anisotropic_inversion", lambda: None, raising=False
+    )
     with pytest.raises(ValueError, match="canonical review binding differs"):
         review_harness.check_contracts()

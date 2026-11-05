@@ -1,4 +1,5 @@
 """Complex wavevector root solving for the kinetic dielectric determinant, with explicit residual and convergence diagnostics."""
+
 from __future__ import annotations
 
 import operator
@@ -29,9 +30,7 @@ def _dogleg(r, b, d, delta):
                 dxn = delta / xn
                 snmd = snm / delta
                 t = (bn / sn) * (bn / xn) * snmd
-                t = t - dxn * snmd**2 + np.sqrt(
-                    (t - dxn) ** 2 + (1.0 - dxn**2) * (1.0 - snmd**2)
-                )
+                t = t - dxn * snmd**2 + np.sqrt((t - dxn) ** 2 + (1.0 - dxn**2) * (1.0 - snmd**2))
                 alpha = dxn * (1.0 - snmd**2) / t
             else:
                 alpha = 0.0
@@ -204,8 +203,14 @@ def solve_kinetic_wavevector_roots(
     def residual(omega, kx):
         return complex(
             determinant(
-                B0=B0, qs=qs, ms=ms, ns0=ns0, Ts0=Ts0,
-                omega=omega, kz=kz, kx=kx,
+                B0=B0,
+                qs=qs,
+                ms=ms,
+                ns0=ns0,
+                Ts0=Ts0,
+                omega=omega,
+                kz=kz,
+                kx=kx,
             )["determinant"]
         )
 
@@ -230,8 +235,14 @@ def solve_kinetic_wavevector_roots(
         scales[index] = float(
             np.abs(
                 determinant(
-                    B0=B0, qs=qs, ms=ms, ns0=ns0, Ts0=Ts0,
-                    omega=omega, kz=kz, kx=root,
+                    B0=B0,
+                    qs=qs,
+                    ms=ms,
+                    ns0=ns0,
+                    Ts0=Ts0,
+                    omega=omega,
+                    kz=kz,
+                    kx=root,
                 )["K"]
             ).max()
         )
@@ -283,13 +294,18 @@ _SPLIT = 134217729.0
 
 def _two_prod(a, b):
     p = a * b
-    c = _SPLIT * a; ah = c - (c - a); al = a - ah
-    c = _SPLIT * b; bh = c - (c - b); bl = b - bh
+    c = _SPLIT * a
+    ah = c - (c - a)
+    al = a - ah
+    c = _SPLIT * b
+    bh = c - (c - b)
+    bl = b - bh
     return p, ((ah * bh - p) + ah * bl + al * bh) + al * bl
 
 
 def _two_sum(a, b):
-    s = a + b; bb = s - a
+    s = a + b
+    bb = s - a
     return s, (a - (s - bb)) + (b - bb)
 
 
@@ -300,9 +316,9 @@ def _fma(a, b, c):
 
 
 def _cmul(a, b):
-    a = complex(a); b = complex(b)
-    return complex(_fma(a.real, b.real, -(a.imag * b.imag)),
-                   _fma(a.real, b.imag, a.imag * b.real))
+    a = complex(a)
+    b = complex(b)
+    return complex(_fma(a.real, b.real, -(a.imag * b.imag)), _fma(a.real, b.imag, a.imag * b.real))
 
 
 def _d(x, y):
@@ -321,13 +337,18 @@ def _d(x, y):
 
 
 def _cdiv(a, b):
-    a = complex(a); b = complex(b)
-    ar, ai = a.real, a.imag; br, bi = b.real, b.imag
-    fab = -br if br < 0 else br; fai = -bi if bi < 0 else bi
+    a = complex(a)
+    b = complex(b)
+    ar, ai = a.real, a.imag
+    br, bi = b.real, b.imag
+    fab = -br if br < 0 else br
+    fai = -bi if bi < 0 else bi
     if fab >= fai:
-        t = _d(bi, br); d = _fma(bi, t, br)
+        t = _d(bi, br)
+        d = _fma(bi, t, br)
         return complex(_d(_fma(ai, t, ar), d), _d(_fma(-ar, t, ai), d))
-    t = _d(br, bi); d = _fma(br, t, bi)
+    t = _d(br, bi)
+    d = _fma(br, t, bi)
     return complex(_d(_fma(ar, t, ai), d), _d(_fma(ai, t, -ar), d))
 
 
@@ -376,10 +397,8 @@ def _dogleg_fma(r, b, d, delta):
                 dxn = delta / xn
                 snmd = snm / delta
                 t = (bn / sn) * (bn / xn) * snmd
-                t = t - dxn * snmd ** 2 + math.sqrt(
-                    (t - dxn) ** 2 + (1.0 - dxn ** 2) * (1.0 - snmd ** 2)
-                )
-                alpha = dxn * (1.0 - snmd ** 2) / t
+                t = t - dxn * snmd**2 + math.sqrt((t - dxn) ** 2 + (1.0 - dxn**2) * (1.0 - snmd**2))
+                alpha = dxn * (1.0 - snmd**2) / t
             else:
                 alpha = 0.0
         else:
@@ -434,7 +453,7 @@ def _reference_fsolve_fma(fcn, x0, tol_fun, tol_x, max_iterations, max_function_
                 nsuc = 0
                 nfail += 1
                 delta *= decfac
-                decfac = decfac ** 1.4142
+                decfac = decfac**1.4142
                 if fn <= tol_fun * xn:
                     info = 1
                 elif delta <= 1e1 * _MACHINE_EPS * xn:
@@ -471,6 +490,7 @@ def install(module):
     module._reference_fsolve = _reference_fsolve_fma
     module._dogleg = _dogleg_fma
     return module
+
 
 _reference_fsolve = _reference_fsolve_fma
 _dogleg = _dogleg_fma

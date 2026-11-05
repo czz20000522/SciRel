@@ -1,4 +1,5 @@
 """Integrate three pressure profiles over explicit cell-volume weights."""
+
 from __future__ import annotations
 from fractions import Fraction
 import numpy as np
@@ -47,15 +48,11 @@ def calculate_stored_thermal_energy(p_el, p_ion, p_tot, vpr, drho_norm):
     # products and sum makes cancellation independent of order and of the
     # platform's longdouble width. This is the same discrete relation, not
     # an added physical closure or a change to the accepted signed domain.
-    weights = [
-        Fraction(float(width)) * Fraction(float(jacobian))
-        for width, jacobian in zip(v, d)
-    ]
+    weights = [Fraction(float(width)) * Fraction(float(jacobian)) for width, jacobian in zip(v, d)]
     energies = []
     for pressure in (pe, pi, pt):
         integral = sum(
-            (Fraction(float(value)) * weight
-             for value, weight in zip(pressure, weights)),
+            (Fraction(float(value)) * weight for value, weight in zip(pressure, weights)),
             Fraction(0),
         )
         energies.append(Fraction(3, 2) * integral)

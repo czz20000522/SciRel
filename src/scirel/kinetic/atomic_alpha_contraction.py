@@ -16,6 +16,7 @@ already-assembled ``SIG_*`` matrices (N4-1 / ``operators/原子氢碰撞矩阵�
 explicit predecessor distributions.  Bounded negative cells inherited from the
 signed elastic SIG families are reproduced as-is, never clamped.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -98,9 +99,16 @@ def contract_atomic_hydrogen_alpha_frequencies(
         raise ValueError("invalid ni: expected (nx,) ion density")
     if fH2.shape != (nvr, nvx, nx) or fH.shape != (nvr, nvx, nx):
         raise ValueError("invalid fH2/fH: expected (nvr, nvx, nx)")
-    for name, arr in (("SIG_CX", SIG_CX), ("SIG_H_H2", SIG_H_H2),
-                      ("SIG_H_P", SIG_H_P), ("SIG_H_H", SIG_H_H),
-                      ("fi_hat", fi_hat), ("ni", ni), ("fH2", fH2), ("fH", fH)):
+    for name, arr in (
+        ("SIG_CX", SIG_CX),
+        ("SIG_H_H2", SIG_H_H2),
+        ("SIG_H_P", SIG_H_P),
+        ("SIG_H_H", SIG_H_H),
+        ("fi_hat", fi_hat),
+        ("ni", ni),
+        ("fH2", fH2),
+        ("fH", fH),
+    ):
         if not np.all(np.isfinite(arr)):
             raise ValueError(f"{name} contains a non-finite value")
 
@@ -110,8 +118,12 @@ def contract_atomic_hydrogen_alpha_frequencies(
     Alpha_H_P = _batched_matrix_vectors(SIG_H_P, fi_weighted)
     Alpha_H_H = _batched_matrix_vectors(SIG_H_H, fH)
 
-    for name, arr in (("Alpha_CX", Alpha_CX), ("Alpha_H_H2", Alpha_H_H2),
-                      ("Alpha_H_P", Alpha_H_P), ("Alpha_H_H", Alpha_H_H)):
+    for name, arr in (
+        ("Alpha_CX", Alpha_CX),
+        ("Alpha_H_H2", Alpha_H_H2),
+        ("Alpha_H_P", Alpha_H_P),
+        ("Alpha_H_H", Alpha_H_H),
+    ):
         if not np.all(np.isfinite(arr)):
             raise ValueError(f"{name} contraction produced a non-finite array")
 

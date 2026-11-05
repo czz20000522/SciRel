@@ -13,6 +13,7 @@ weight matrix every call, exactly like this stateless port.  The original
 the neutral-transport formulation runtime's weight cache lifecycle lives in the source runtime, not
 in the saved formal operator, so no cache-state replay is possible here.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -45,11 +46,13 @@ def _quadrature(vr, vx):
     a mismatch."""
     assert np.all(np.diff(vr) > 0) and vr[0] > 0, "test-only: uniform-mesh assumption"
     dr = vr[1] - vr[0]
-    edges = np.concatenate((
-        [0.0],
-        0.5 * (vr[:-1] + vr[1:]),
-        [vr[-1] + dr / 2],
-    ))
+    edges = np.concatenate(
+        (
+            [0.0],
+            0.5 * (vr[:-1] + vr[1:]),
+            [vr[-1] + dr / 2],
+        )
+    )
     assert edges.size == vr.size + 1, f"edges {edges.size} != nodes+1 {vr.size + 1}"
     ring_area = np.pi * (edges[1:] ** 2 - edges[:-1] ** 2)
     dx = vx[1] - vx[0]
@@ -59,18 +62,13 @@ def _quadrature(vr, vx):
 
 def _density(f, vr, vx, x):
     Vr2pidVr, dVx = _quadrature(vr, vx)
-    return np.array([
-        np.sum(Vr2pidVr * (f[:, :, k] @ dVx))
-        for k in range(f.shape[2])
-    ])
+    return np.array([np.sum(Vr2pidVr * (f[:, :, k] @ dVx)) for k in range(f.shape[2])])
 
 
 def test_output_shape_and_finiteness():
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     fa = _distribution(vr_a, vx_a, x_a.size)
-    fb = interp_distribution_across_mesh(
-        fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1
-    )
+    fb = interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1)
     assert fb.shape == (vr_b.size, vx_b.size, x_b.size)
     assert np.all(np.isfinite(fb))
 
@@ -84,9 +82,7 @@ def test_correct_branch_density_matches_interpolated_target():
     fa = _distribution(vr_a, vx_a, x_a.size)
     na = _density(fa, vr_a, vx_a, x_a)
     na_b = np.array([np.interp(x_b[k], x_a, na) for k in range(x_b.size)])
-    fb = interp_distribution_across_mesh(
-        fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1
-    )
+    fb = interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1)
     nb = _density(fb, vr_b, vx_b, x_b)
     np.testing.assert_allclose(nb, na_b, rtol=1e-9, atol=0.0)
 
@@ -97,26 +93,18 @@ def test_correct_branch_zero_flow_for_symmetric_input():
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     fa = _distribution(vr_a, vx_a, x_a.size)
     Vr2pidVr, dVx = _quadrature(vr_b, vx_b)
-    fb = interp_distribution_across_mesh(
-        fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1
-    )
+    fb = interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1)
     nb = _density(fb, vr_b, vx_b, x_b)
     for k in range(x_b.size):
-        Wxb = np.sqrt(1.5) * np.sum(
-            Vr2pidVr * (fb[:, :, k] @ (vx_b * dVx))
-        ) / nb[k]
+        Wxb = np.sqrt(1.5) * np.sum(Vr2pidVr * (fb[:, :, k] @ (vx_b * dVx))) / nb[k]
         np.testing.assert_allclose(Wxb, 0.0, atol=1e-12)
 
 
 def test_correct_zero_branch_differs_from_correct_one():
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     fa = _distribution(vr_a, vx_a, x_a.size)
-    fb0 = interp_distribution_across_mesh(
-        fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=0
-    )
-    fb1 = interp_distribution_across_mesh(
-        fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1
-    )
+    fb0 = interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=0)
+    fb1 = interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5, correct=1)
     assert not np.array_equal(fb0, fb1)
 
 
@@ -144,7 +132,14 @@ def test_domain_edges_fail_closed():
     with pytest.raises(ValueError, match="vx_a must have at least two nodes"):
         interp_distribution_across_mesh(
             np.ones((vr_a.size, 1, x_a.size)),
-            vr_a, np.array([0.0]), x_a, 2.0, vr_b, vx_b, x_b, 1.5,
+            vr_a,
+            np.array([0.0]),
+            x_a,
+            2.0,
+            vr_b,
+            vx_b,
+            x_b,
+            1.5,
         )
     # no x overlap: rejected by the source's own exception path
     with pytest.raises(ValueError, match="within range"):
@@ -159,13 +154,9 @@ def test_domain_edges_fail_closed():
     # Tnorm NaN/inf: the exact document requires finite positive; the saved
     # arm only checks Tnorm <= 0 which passes for NaN
     with pytest.raises(ValueError, match="Tnorm_a and Tnorm_b must be positive and finite"):
-        interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, float("nan"), vr_b, vx_b, x_b, 1.5
-        )
+        interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, float("nan"), vr_b, vx_b, x_b, 1.5)
     with pytest.raises(ValueError, match="Tnorm_a and Tnorm_b must be positive and finite"):
-        interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, float("inf"), vr_b, vx_b, x_b, 1.5
-        )
+        interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, float("inf"), vr_b, vx_b, x_b, 1.5)
 
 
 def test_axis_monotonicity_and_node_count_fail_closed():
@@ -195,19 +186,32 @@ def test_axis_monotonicity_and_node_count_fail_closed():
     # non-monotone vx_b
     with pytest.raises(ValueError, match="vx_b must be strictly increasing"):
         interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0, vr_b, np.array([1.2, -1.2, -0.8, 0.0, 0.4, 0.8, 1.2]), x_b, 1.5
+            fa,
+            vr_a,
+            vx_a,
+            x_a,
+            2.0,
+            vr_b,
+            np.array([1.2, -1.2, -0.8, 0.0, 0.4, 0.8, 1.2]),
+            x_b,
+            1.5,
         )
     # single-node x_a
     with pytest.raises(ValueError, match="x_a must have at least two nodes"):
         interp_distribution_across_mesh(
-            np.ones((vr_a.size, vx_a.size, 1)), vr_a, vx_a, np.array([0.5]),
-            2.0, vr_b, vx_b, x_b, 1.5
+            np.ones((vr_a.size, vx_a.size, 1)),
+            vr_a,
+            vx_a,
+            np.array([0.5]),
+            2.0,
+            vr_b,
+            vx_b,
+            x_b,
+            1.5,
         )
     # single-node vr_b
     with pytest.raises(ValueError, match="vr_b must have at least two nodes"):
-        interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0, np.array([1.0]), vx_b, x_b, 1.5
-        )
+        interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, np.array([1.0]), vx_b, x_b, 1.5)
 
 
 @pytest.mark.parametrize(
@@ -225,8 +229,14 @@ def test_nonreal_coercions_fail_by_parameter_name(parameter, value):
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     inputs = dict(
         fa=_distribution(vr_a, vx_a, x_a.size),
-        vr_a=vr_a, vx_a=vx_a, x_a=x_a, Tnorm_a=2.0,
-        vr_b=vr_b, vx_b=vx_b, x_b=x_b, Tnorm_b=1.5,
+        vr_a=vr_a,
+        vx_a=vx_a,
+        x_a=x_a,
+        Tnorm_a=2.0,
+        vr_b=vr_b,
+        vx_b=vx_b,
+        x_b=x_b,
+        Tnorm_b=1.5,
     )
     inputs[parameter] = value
     with pytest.raises(ValueError, match=parameter):
@@ -249,8 +259,17 @@ def test_warning_threshold_must_be_an_integer_scalar_or_none(do_warn):
     fa = _distribution(vr_a, vx_a, x_a.size)
     with pytest.raises(ValueError, match="do_warn"):
         interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5,
-            correct=0, do_warn=do_warn,
+            fa,
+            vr_a,
+            vx_a,
+            x_a,
+            2.0,
+            vr_b,
+            vx_b,
+            x_b,
+            1.5,
+            correct=0,
+            do_warn=do_warn,
         )
 
 
@@ -259,13 +278,27 @@ def test_cylindrical_axes_need_nonnegative_radial_and_both_axial_signs():
     fa = _distribution(vr_a, vx_a, x_a.size)
     with pytest.raises(ValueError, match="vr_b"):
         interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0,
-            np.linspace(-0.4, 1.8, vr_b.size), vx_b, x_b, 1.5,
+            fa,
+            vr_a,
+            vx_a,
+            x_a,
+            2.0,
+            np.linspace(-0.4, 1.8, vr_b.size),
+            vx_b,
+            x_b,
+            1.5,
         )
     with pytest.raises(ValueError, match="vx_b"):
         interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0,
-            vr_b, np.linspace(0.1, 1.2, vx_b.size), x_b, 1.5,
+            fa,
+            vr_a,
+            vx_a,
+            x_a,
+            2.0,
+            vr_b,
+            np.linspace(0.1, 1.2, vx_b.size),
+            x_b,
+            1.5,
         )
 
 
@@ -275,7 +308,15 @@ def test_iteration_limit_must_be_positive_integer(limit):
     fa = _distribution(vr_a, vx_a, x_a.size)
     with pytest.raises(ValueError, match="max_correction_iterations"):
         interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5,
+            fa,
+            vr_a,
+            vx_a,
+            x_a,
+            2.0,
+            vr_b,
+            vx_b,
+            x_b,
+            1.5,
             max_correction_iterations=limit,
         )
 
@@ -290,7 +331,15 @@ def test_correction_limit_exhaustion_returns_no_partial_distribution():
     original = fa.copy()
     with pytest.raises(ValueError, match="did not converge within 1 iterations at x_b index 0"):
         interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5,
+            fa,
+            vr_a,
+            vx_a,
+            x_a,
+            2.0,
+            vr_b,
+            vx_b,
+            x_b,
+            1.5,
             max_correction_iterations=1,
         )
     np.testing.assert_array_equal(fa, original)
@@ -300,10 +349,9 @@ def test_original_negative_output_witness_now_fails_as_infeasible():
     # Historical assertion of negative output is frozen with the original
     # failure receipt. It is not a physical correctness requirement.
     from scirel.kinetic.cross_mesh_distribution_interpolation import InfeasibleMomentsError
+
     vr_a, vx_a, x_a, vr_b, vx_b, x_b = _meshes()
     fa = np.exp(np.random.default_rng(0).normal(size=(vr_a.size, vx_a.size, x_a.size)))
     assert np.all(fa > 0)
     with pytest.raises(InfeasibleMomentsError, match="convex hull"):
-        interp_distribution_across_mesh(
-            fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5
-        )
+        interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 2.0, vr_b, vx_b, x_b, 1.5)

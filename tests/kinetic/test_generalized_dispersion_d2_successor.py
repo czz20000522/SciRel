@@ -1,7 +1,8 @@
 """Failing successor regressions captured before D2 repairs (F1/F2)."""
+
 import numpy as np
 import pytest
-from scipy.special import erfcx, wofz
+from scipy.special import wofz
 from scirel.kinetic import (
     evaluate_cauchy_transform,
     evaluate_maxwellian_electrostatic,
@@ -19,7 +20,7 @@ def test_small_k_maxwellian_limit_is_three_quarters_and_false_seed_rejected():
             mode = solve_maxwellian_electrostatic_mode(k, 2.0)
         except RuntimeError:
             continue
-        omega = complex(mode['omega'])
+        omega = complex(mode["omega"])
         assert abs(omega - 2.0) > 0.1
         assert abs(1 - 1 / omega**2 - 3 * k**2 / omega**4) < 1e-6
 
@@ -34,7 +35,7 @@ def test_maxwellian_matrix_application_matches_scalar_application():
 
 def test_cauchy_shifted_narrow_gaussian_requires_declared_support_and_matches_faddeeva():
     center, width, z = 10.0, 0.1, 1j
-    density = lambda v: np.exp(-((v - center) / width) ** 2) / (np.sqrt(np.pi) * width)
+    density = lambda v: np.exp(-(((v - center) / width) ** 2)) / (np.sqrt(np.pi) * width)
     expected = 1j * np.sqrt(np.pi) * wofz((z - center) / width) / width
     # A declared support/scale is required for a generic callback; it must resolve the feature.
     mesh = center + width * np.linspace(-10, 10, 41)
@@ -49,21 +50,27 @@ def test_cauchy_invalid_epsabs_is_value_error_and_unresolved_default_fails_close
         with pytest.raises(ValueError):
             evaluate_cauchy_transform(1j, density, epsabs=bad)
     with pytest.raises((ValueError, RuntimeError)):
-        evaluate_cauchy_transform(1j, lambda v: np.exp(-((v - 10) / 0.1) ** 2) / (np.sqrt(np.pi) * 0.1))
+        evaluate_cauchy_transform(
+            1j, lambda v: np.exp(-(((v - 10) / 0.1) ** 2)) / (np.sqrt(np.pi) * 0.1)
+        )
 
 
 def test_cauchy_finite_support_continuation_only_crosses_interior_cut():
     density = lambda v: 1.0
     analytic = lambda z: 1.0
-    inside = evaluate_cauchy_transform(0.2 - 0.5j, density, bounds=(-1.0, 1.0), analytic_density=analytic)
-    outside = evaluate_cauchy_transform(2.0 - 0.5j, density, bounds=(-1.0, 1.0), analytic_density=analytic)
+    inside = evaluate_cauchy_transform(
+        0.2 - 0.5j, density, bounds=(-1.0, 1.0), analytic_density=analytic
+    )
+    outside = evaluate_cauchy_transform(
+        2.0 - 0.5j, density, bounds=(-1.0, 1.0), analytic_density=analytic
+    )
     inside_contour = evaluate_cauchy_transform(0.2 - 0.5j, density, bounds=(-1.0, 1.0))
     outside_contour = evaluate_cauchy_transform(2.0 - 0.5j, density, bounds=(-1.0, 1.0))
     assert abs(complex(inside["G"]) - complex(inside_contour["G"]) - 2j * np.pi) < 1e-10
     assert abs(complex(outside["G"]) - complex(outside_contour["G"])) < 1e-10
 
 
-@pytest.mark.parametrize('bad', ['1e-4', np.array(True)])
+@pytest.mark.parametrize("bad", ["1e-4", np.array(True)])
 def test_cauchy_tolerances_require_real_numeric_scalars(bad):
     with pytest.raises(ValueError):
         evaluate_cauchy_transform(1j, lambda v: 1.0, bounds=(-1, 1), epsabs=bad)

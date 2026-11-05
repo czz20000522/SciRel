@@ -5,6 +5,7 @@
 The saved the neutral-transport formulation arithmetic is retained on bounded finite inputs. SciRel
 also validates control types, derived finiteness and caller-owned state.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -69,7 +70,9 @@ def test_accumulation_third_call_keeps_source_order_for_float_sums():
     state = None
     for value in (0.1, 0.2, 0.3):
         state = update_neutral_generation_accumulation(
-            state, distribution * value, density * value,
+            state,
+            distribution * value,
+            density * value,
         )
     assert state["completed_generation_index"] == 2
     assert state["total_distribution"][0, 0, 0] == (0.1 + 0.2) + 0.3
@@ -113,6 +116,7 @@ def test_outer_convergence_returns_dict_with_reentry_flag():
     result2 = evaluate_outer_convergence(prev, curr2, truncate=0.1)
     assert result2["should_reiterate"] is True
 
+
 def test_outer_seed_uses_ratio_of_max_not_per_node():
     """Discriminating regression: seed_error = max(abs(diff)) / max(current).
     prev=[300,200], curr=[100,200]: abs(diff)=[200,0], max(diff)=200,
@@ -127,10 +131,18 @@ def test_outer_seed_uses_ratio_of_max_not_per_node():
 
 def test_generation_stopping_seed_relative_path_and_strict_boundaries():
     assert evaluate_neutral_generation_stopping(
-        [0.2, 0.1], [10.0, 5.0], 0.01, True, 10.0,
+        [0.2, 0.1],
+        [10.0, 5.0],
+        0.01,
+        True,
+        10.0,
     ) == (0.02, True, "seed_relative")
     assert evaluate_neutral_generation_stopping(
-        [1.0, 0.1], [10.0, 5.0], 0.01, True, 10.0,
+        [1.0, 0.1],
+        [10.0, 5.0],
+        0.01,
+        True,
+        10.0,
     ) == (0.1, False, "continue")
 
 
@@ -158,9 +170,14 @@ def test_accumulation_preserves_signed_cells_and_does_not_mutate_prior_state():
     first_distribution = np.array([[[1.0, -2.0], [3.0, 4.0]]])
     first_density = np.array([2.0, 3.0])
     state = update_neutral_generation_accumulation(None, first_distribution, first_density)
-    prior = {key: value.copy() if isinstance(value, np.ndarray) else value for key, value in state.items()}
+    prior = {
+        key: value.copy() if isinstance(value, np.ndarray) else value
+        for key, value in state.items()
+    }
     second = update_neutral_generation_accumulation(
-        state, np.ones_like(first_distribution), np.ones_like(first_density),
+        state,
+        np.ones_like(first_distribution),
+        np.ones_like(first_density),
     )
     for key, value in prior.items():
         if isinstance(value, np.ndarray):
@@ -201,7 +218,8 @@ def test_accumulation_rejects_coercion_and_nonfinite_total():
 
 
 @pytest.mark.parametrize(
-    "relation", [evaluate_neutral_outer_seed_convergence, evaluate_outer_convergence],
+    "relation",
+    [evaluate_neutral_outer_seed_convergence, evaluate_outer_convergence],
 )
 def test_outer_relations_reject_coercion_and_nonfinite_ratio(relation):
     with pytest.raises(ValueError, match="truncate"):

@@ -1,18 +1,33 @@
 import numpy as np
 import pytest
 
-from scirel.closures.tabulated_pressure_closure import evaluate_tabulated_pressure, evaluate_tabulated_pressure as scientific_function
+from scirel.closures.tabulated_pressure_closure import (
+    evaluate_tabulated_pressure,
+    evaluate_tabulated_pressure as scientific_function,
+)
 
 
 def test_anisotropic_bilinear_table_matches_declared_values():
-    result = scientific_function(np.array([1.5, 2.5]), np.array([0.25, 0.75]), np.array([0.0, 0.5, 1.0]), np.array([[1.0, 2.0, 3.0], [2.0, 3.0, 4.0], [3.0, 4.0, 5.0]]), np.array([[3.0, 3.5, 4.0], [6.0, 6.5, 7.0], [9.0, 9.5, 10.0]]), np.array([1.0, 2.0, 3.0]))
+    result = scientific_function(
+        np.array([1.5, 2.5]),
+        np.array([0.25, 0.75]),
+        np.array([0.0, 0.5, 1.0]),
+        np.array([[1.0, 2.0, 3.0], [2.0, 3.0, 4.0], [3.0, 4.0, 5.0]]),
+        np.array([[3.0, 3.5, 4.0], [6.0, 6.5, 7.0], [9.0, 9.5, 10.0]]),
+        np.array([1.0, 2.0, 3.0]),
+    )
     np.testing.assert_allclose(result["p_parallel"], [2.0, 4.0])
     np.testing.assert_allclose(result["p_perpendicular"], [4.75, 8.25])
     assert not result["is_isotropic"]
 
 
 def test_isotropic_limit_ignores_field_and_default_domain_fails_closed():
-    result = scientific_function(np.array([1.0, 8.0]), np.array([0.25, 0.75]), np.array([0.0, 0.5, 1.0]), np.array([10.0, 5.0, 0.0]))
+    result = scientific_function(
+        np.array([1.0, 8.0]),
+        np.array([0.25, 0.75]),
+        np.array([0.0, 0.5, 1.0]),
+        np.array([10.0, 5.0, 0.0]),
+    )
     np.testing.assert_allclose(result["p_parallel"], [7.5, 2.5])
     assert result["is_isotropic"]
     with pytest.raises(ValueError):
@@ -30,9 +45,15 @@ def test_reviewed_relation_example():
     perpendicular = 3.0 + 2.0 * B - P + 0.5 * B * P
     query_b = np.array([1.5, 2.5])
     query_psi = np.array([0.25, 0.75])
-    result = evaluate_tabulated_pressure(query_b, query_psi, psi_axis, parallel, perpendicular, b_axis)
-    np.testing.assert_allclose(result["p_parallel"], 1.0 + query_b + 2.0 * query_psi + query_b * query_psi)
-    np.testing.assert_allclose(result["p_perpendicular"], 3.0 + 2.0 * query_b - query_psi + 0.5 * query_b * query_psi)
+    result = evaluate_tabulated_pressure(
+        query_b, query_psi, psi_axis, parallel, perpendicular, b_axis
+    )
+    np.testing.assert_allclose(
+        result["p_parallel"], 1.0 + query_b + 2.0 * query_psi + query_b * query_psi
+    )
+    np.testing.assert_allclose(
+        result["p_perpendicular"], 3.0 + 2.0 * query_b - query_psi + 0.5 * query_b * query_psi
+    )
     assert not result["is_isotropic"]
 
     # 一维分支要求两个显式表逐节点同形且相等；magnetic_field 只参与广播。

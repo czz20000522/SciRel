@@ -1,4 +1,5 @@
 """Combine ion and electron pressures into one finite mirror state with charge residual diagnostics."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -22,47 +23,55 @@ def assemble_mirror_total_pressure(kinetic_moments, electron_state):
         raise ValueError("electron_state is missing required electron fields")
     # Include all physical fields in the common broadcast shape; scalar
     # moments remain valid when an observational potential carries the grid.
-    fields = [kinetic_moments["p_parallel_pa"], kinetic_moments["p_perpendicular_pa"],
-              electron_state["electron_pressure_pa"], kinetic_moments["density_m3"],
-              electron_state["electron_density_m3"], electron_state["relative_charge_residual"]]
+    fields = [
+        kinetic_moments["p_parallel_pa"],
+        kinetic_moments["p_perpendicular_pa"],
+        electron_state["electron_pressure_pa"],
+        kinetic_moments["density_m3"],
+        electron_state["electron_density_m3"],
+        electron_state["relative_charge_residual"],
+    ]
     if electron_state.get("electrostatic_potential") is not None:
         fields.append(electron_state["electrostatic_potential"])
-    physical = np.broadcast_arrays(*[np.asarray(x,dtype=float) for x in fields])
+    physical = np.broadcast_arrays(*[np.asarray(x, dtype=float) for x in fields])
     p_parallel, p_perpendicular, electron_pressure = physical[:3]
     if not all(
-        np.all(np.isfinite(value))
-        for value in (p_parallel, p_perpendicular, electron_pressure)
+        np.all(np.isfinite(value)) for value in (p_parallel, p_perpendicular, electron_pressure)
     ):
         raise ValueError("pressure state must be finite")
-    for name, value in (('ion density',kinetic_moments['density_m3']),
-                        ('electron density',electron_state['electron_density_m3'])):
-        values = np.asarray(value,dtype=float)
+    for name, value in (
+        ("ion density", kinetic_moments["density_m3"]),
+        ("electron density", electron_state["electron_density_m3"]),
+    ):
+        values = np.asarray(value, dtype=float)
         if not np.all(np.isfinite(values)) or np.any(values < 0):
-            raise ValueError(f'{name} must be finite and nonnegative')
+            raise ValueError(f"{name} must be finite and nonnegative")
         try:
-            np.broadcast_to(values,p_parallel.shape)
+            np.broadcast_to(values, p_parallel.shape)
         except ValueError as exc:
-            raise ValueError(f'{name} must match the pressure shape') from exc
-    residual = np.asarray(electron_state['relative_charge_residual'],dtype=float)
+            raise ValueError(f"{name} must match the pressure shape") from exc
+    residual = np.asarray(electron_state["relative_charge_residual"], dtype=float)
     if not np.all(np.isfinite(residual)):
-        raise ValueError('relative charge residual must be finite')
+        raise ValueError("relative charge residual must be finite")
     try:
-        np.broadcast_to(residual,p_parallel.shape)
+        np.broadcast_to(residual, p_parallel.shape)
     except ValueError as exc:
-        raise ValueError('relative charge residual must match the pressure shape') from exc
-    if any(np.any(x<0) for x in (p_parallel,p_perpendicular,electron_pressure)):
-        raise ValueError('species pressures must be nonnegative')
-    if not np.all(np.isfinite(p_parallel+electron_pressure)) or not np.all(np.isfinite(p_perpendicular+electron_pressure)):
-        raise FloatingPointError('total pressure exceeds the finite output range')
+        raise ValueError("relative charge residual must match the pressure shape") from exc
+    if any(np.any(x < 0) for x in (p_parallel, p_perpendicular, electron_pressure)):
+        raise ValueError("species pressures must be nonnegative")
+    if not np.all(np.isfinite(p_parallel + electron_pressure)) or not np.all(
+        np.isfinite(p_perpendicular + electron_pressure)
+    ):
+        raise FloatingPointError("total pressure exceeds the finite output range")
     electrostatic_potential = electron_state.get("electrostatic_potential")
     if electrostatic_potential is not None:
-        potential = np.asarray(electrostatic_potential,dtype=float)
+        potential = np.asarray(electrostatic_potential, dtype=float)
         if not np.all(np.isfinite(potential)):
-            raise ValueError('electrostatic potential must be finite')
+            raise ValueError("electrostatic potential must be finite")
         try:
-            np.broadcast_to(potential,p_parallel.shape)
+            np.broadcast_to(potential, p_parallel.shape)
         except ValueError as exc:
-            raise ValueError('electrostatic potential must match the pressure shape') from exc
+            raise ValueError("electrostatic potential must match the pressure shape") from exc
     state = dict(kinetic_moments)
     state.update(
         {

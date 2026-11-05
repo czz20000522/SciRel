@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum, solve_loss_cone_spectrum as scientific_function
+from scirel.kinetic.loss_cone_spectrum import (
+    solve_loss_cone_spectrum,
+    solve_loss_cone_spectrum as scientific_function,
+)
 
 
 # 验证：最低正本征值、分数 degree 转换和 xi=0 归一化必须保持源码离散合同。
@@ -37,7 +40,6 @@ def test_reviewed_relation_example():
     import math
     import numpy as np
     from scipy.special import hyp2f1
-    from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum
 
     xi_tp = 0.6
     result = solve_loss_cone_spectrum(xi_tp, 2, grid_points=32, backend="hypergeometric")
@@ -53,14 +55,21 @@ def test_reviewed_relation_example():
     def independent_mode(degree, xi):
         def p(value):
             return hyp2f1(-degree, degree + 1.0, 1.0, (1.0 - value) / 2.0)
+
         def q(value):
-            return 0.5 * math.pi / math.sin(math.pi * degree) * (
-                math.cos(math.pi * degree) * p(value) - p(-value)
+            return (
+                0.5
+                * math.pi
+                / math.sin(math.pi * degree)
+                * (math.cos(math.pi * degree) * p(value) - p(-value))
             )
+
         step = 1.0e-5
         matrix = np.array(
-            [[p(0.0), q(0.0)],
-             [(p(step) - p(-step)) / (2.0 * step), (q(step) - q(-step)) / (2.0 * step)]]
+            [
+                [p(0.0), q(0.0)],
+                [(p(step) - p(-step)) / (2.0 * step), (q(step) - q(-step)) / (2.0 * step)],
+            ]
         )
         a_coeff, b_coeff = np.linalg.solve(matrix, np.array([1.0, 0.0]))
         return a_coeff * p(xi) + b_coeff * q(xi)

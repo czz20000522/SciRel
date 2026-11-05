@@ -1,8 +1,5 @@
-import hashlib
 import json
-import platform
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 
@@ -14,8 +11,10 @@ SCRIPTS = ROOT / "scripts"
 EXAMPLES = ROOT / "catalog" / "examples"
 FAST_ION_ASSET_ID = "scirel.plasma.fast-ion-heating"
 ASSET_IDS = {
-    "scirel.kinetic.spectral-plasma-state", "scirel.kinetic.spectral-temporal-matrix",
-    "scirel.kinetic.spectral-temporal-spectrum", "scirel.kinetic.spectral-dispersion-scan",
+    "scirel.kinetic.spectral-plasma-state",
+    "scirel.kinetic.spectral-temporal-matrix",
+    "scirel.kinetic.spectral-temporal-spectrum",
+    "scirel.kinetic.spectral-dispersion-scan",
 }
 sys.path.insert(0, str(SCRIPTS))
 
@@ -32,7 +31,7 @@ from validate_asset_documents import (  # noqa: E402
 # The shared document fixture lives with the docs tests; expose it here so this
 # tooling test can import it without depending on collection order.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "docs"))
-from _document_fixtures import (EXAMPLE_CLOSURE_COUNT, copy_example_closure, example_document_sources)
+from _document_fixtures import EXAMPLE_CLOSURE_COUNT, copy_example_closure, example_document_sources
 
 
 CATALOG_TEST_VERSION = "0.0.0+catalogtest"
@@ -43,8 +42,14 @@ def test_pytest_reference_resolves_file_and_preserves_collection_responsibility(
     file.write_text("def test_example():\n    assert True\n")
     assert resolve_test_reference("test_example.py::test_example[value]", tmp_path) == file
     assert resolve_test_reference("test_example.py", tmp_path) == file
-    for invalid in ("missing.py::test_example", "test_example.py::", "test_example.py::::case",
-                    "../test_example.py::case", str(file) + "::case", "::case"):
+    for invalid in (
+        "missing.py::test_example",
+        "test_example.py::",
+        "test_example.py::::case",
+        "../test_example.py::case",
+        str(file) + "::case",
+        "::case",
+    ):
         with pytest.raises(ValueError):
             resolve_test_reference(invalid, tmp_path)
 
@@ -65,7 +70,9 @@ def release_examples(tmp_path):
     for source, body in originals.items():
         document = json.loads(body)
         document["version"]["implementation_version"] = CATALOG_TEST_VERSION
-        (target / (document["asset_id"] + ".json")).write_text(json.dumps(document), encoding="utf-8")
+        (target / (document["asset_id"] + ".json")).write_text(
+            json.dumps(document), encoding="utf-8"
+        )
     assert len(load_document_set(target)) == EXAMPLE_CLOSURE_COUNT
     yield target
     assert all(path.read_bytes() == body for path, body in originals.items())
@@ -73,24 +80,20 @@ def release_examples(tmp_path):
 
 def _composition_document():
     return json.loads(
-        (EXAMPLES / "scirel.field.multi-coil-vacuum-field.json").read_text(
-            encoding="utf-8"
-        )
+        (EXAMPLES / "scirel.field.multi-coil-vacuum-field.json").read_text(encoding="utf-8")
     )
 
 
 def _rectangular_coil_document():
     return json.loads(
-        (EXAMPLES / "scirel.field.rectangular-coil-filaments.json").read_text(
-            encoding="utf-8"
-        )
+        (EXAMPLES / "scirel.field.rectangular-coil-filaments.json").read_text(encoding="utf-8")
     )
 
 
 def _canonical(value):
-    return json.dumps(
-        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
 
 
 def _feedback_edge(feedback_id, *, source_port="psi", target_port="r0"):
@@ -121,23 +124,24 @@ def _feedback_contract(feedback_id):
 
 def test_contract_schemas_and_dependency_closed_examples_parse(tmp_path):
     asset_schema = json.loads(
-        (ROOT / "contracts/scientific-asset-document.schema.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "contracts/scientific-asset-document.schema.json").read_text(encoding="utf-8")
     )
     release_schema = json.loads(
-        (ROOT / "contracts/scientific-catalog-release.schema.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "contracts/scientific-catalog-release.schema.json").read_text(encoding="utf-8")
     )
     documents = load_document_set(copy_example_closure(tmp_path / "documents"))
 
     assert asset_schema["$schema"].endswith("2020-12/schema")
     assert release_schema["properties"]["schema"]["const"] == "scirel.catalog-release"
     assert len(documents) == EXAMPLE_CLOSURE_COUNT
-    assert len([doc for doc in documents if doc["asset_id"] not in ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(ASSET_IDS) - 1
+    assert (
+        len([doc for doc in documents if doc["asset_id"] not in ASSET_IDS | {FAST_ION_ASSET_ID}])
+        == EXAMPLE_CLOSURE_COUNT - len(ASSET_IDS) - 1
+    )
     assert {doc["asset_id"] for doc in documents} >= ASSET_IDS
-    assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [FAST_ION_ASSET_ID]
+    assert [doc["asset_id"] for doc in documents if doc["asset_id"] == FAST_ION_ASSET_ID] == [
+        FAST_ION_ASSET_ID
+    ]
     assert any("composition" in item for item in documents)
     assert any("composition" not in item for item in documents)
 
@@ -185,9 +189,7 @@ def _discovery_block():
 
 def test_asset_schema_declares_the_optional_discovery_block():
     schema = json.loads(
-        (ROOT / "contracts/scientific-asset-document.schema.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "contracts/scientific-asset-document.schema.json").read_text(encoding="utf-8")
     )
     assert "discovery" in schema["properties"]
     assert "discovery" not in schema["required"]
@@ -283,7 +285,9 @@ def test_discovery_rejects_unknown_keys_empty_blocks_and_duplicates():
     document = _rectangular_coil_document()
     document["discovery"] = _discovery_block()
     document["discovery"]["capability"] = ["same", "same"]
-    with pytest.raises(AssetDocumentError, match="discovery.capability: must not contain duplicates"):
+    with pytest.raises(
+        AssetDocumentError, match="discovery.capability: must not contain duplicates"
+    ):
         validate_document(document)
 
 
@@ -335,9 +339,7 @@ def test_multiple_feedback_edges_can_share_one_bounded_loop_contract():
             _feedback_edge("picard-loop", source_port="BR", target_port="z0"),
         )
     )
-    document["composition"]["execution"]["feedback"] = [
-        _feedback_contract("picard-loop")
-    ]
+    document["composition"]["execution"]["feedback"] = [_feedback_contract("picard-loop")]
 
     assert validate_document(document) is document
 
@@ -387,7 +389,16 @@ def test_runtime_signatures_tests_and_examples_are_executable(tmp_path):
     assert report["asset_count"] == EXAMPLE_CLOSURE_COUNT
     assert FAST_ION_ASSET_ID in report["asset_ids"]
     assert ASSET_IDS <= set(report["asset_ids"])
-    assert len([asset_id for asset_id in report["asset_ids"] if asset_id not in ASSET_IDS | {FAST_ION_ASSET_ID}]) == EXAMPLE_CLOSURE_COUNT - len(ASSET_IDS) - 1
+    assert (
+        len(
+            [
+                asset_id
+                for asset_id in report["asset_ids"]
+                if asset_id not in ASSET_IDS | {FAST_ION_ASSET_ID}
+            ]
+        )
+        == EXAMPLE_CLOSURE_COUNT - len(ASSET_IDS) - 1
+    )
     assert report["runtime_checked"] is True
     assert report["runtime_origin"] == "source"
     assert report["examples_executed"] is True
@@ -402,7 +413,7 @@ def test_catalog_can_bind_a_git_revision_and_source_version(tmp_path, release_ex
     source_root = tmp_path / "source"
     source_root.mkdir()
     (source_root / "pyproject.toml").write_text(
-        f"[project]\nversion = \"{CATALOG_TEST_VERSION}\"\n",
+        f'[project]\nversion = "{CATALOG_TEST_VERSION}"\n',
         encoding="utf-8",
     )
     # The fixture can live under SciRel's ignored run root. Give it its own Git
@@ -410,12 +421,23 @@ def test_catalog_can_bind_a_git_revision_and_source_version(tmp_path, release_ex
     subprocess.run(["git", "init", "-q"], cwd=source_root, check=True)
     subprocess.run(["git", "add", "pyproject.toml"], cwd=source_root, check=True)
     subprocess.run(
-        ["git", "-c", "user.name=SciRel test", "-c",
-         "user.email=scirel-test@example.invalid", "commit", "-qm", "initial source"],
-        cwd=source_root, check=True,
+        [
+            "git",
+            "-c",
+            "user.name=SciRel test",
+            "-c",
+            "user.email=scirel-test@example.invalid",
+            "commit",
+            "-qm",
+            "initial source",
+        ],
+        cwd=source_root,
+        check=True,
     )
     source_revision = subprocess.check_output(
-        ["git", "rev-parse", "HEAD"], cwd=source_root, text=True,
+        ["git", "rev-parse", "HEAD"],
+        cwd=source_root,
+        text=True,
     ).strip()
     output = tmp_path / "catalog"
     result = build_catalog(
@@ -433,14 +455,10 @@ def test_catalog_can_bind_a_git_revision_and_source_version(tmp_path, release_ex
     assert result["root_digest"] == release["root_digest"]
 
 
-def test_catalog_source_root_rejects_a_version_not_owned_by_pyproject(
-    tmp_path, release_examples
-):
+def test_catalog_source_root_rejects_a_version_not_owned_by_pyproject(tmp_path, release_examples):
     source_root = tmp_path / "source"
     source_root.mkdir()
-    (source_root / "pyproject.toml").write_text(
-        "[project]\nversion = \"0.0.0\"\n", encoding="utf-8"
-    )
+    (source_root / "pyproject.toml").write_text('[project]\nversion = "0.0.0"\n', encoding="utf-8")
     with pytest.raises(ValueError, match="source_root pyproject.toml project.version"):
         build_catalog(
             release_examples,
@@ -454,15 +472,13 @@ def test_catalog_source_root_rejects_a_version_not_owned_by_pyproject(
         )
 
 
-def test_catalog_source_root_rejects_a_revision_not_at_git_head(
-    tmp_path, release_examples
-):
+def test_catalog_source_root_rejects_a_revision_not_at_git_head(tmp_path, release_examples):
     import subprocess
 
     source_root = tmp_path / "source"
     source_root.mkdir()
     (source_root / "pyproject.toml").write_text(
-        f"[project]\nversion = \"{CATALOG_TEST_VERSION}\"\n",
+        f'[project]\nversion = "{CATALOG_TEST_VERSION}"\n',
         encoding="utf-8",
     )
     subprocess.run(["git", "init", "-q"], cwd=source_root, check=True)

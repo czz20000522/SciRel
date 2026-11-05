@@ -1,4 +1,5 @@
 """Finite pressure-spline, current, and Green-map primitives."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -9,8 +10,11 @@ def fit_pressure_spline(psi_samples, pressure_samples):
     flux = np.asarray(psi_samples, dtype=float)
     pressure = np.asarray(pressure_samples, dtype=float)
     valid = (
-        flux.ndim == 1 and flux.size >= 4 and pressure.shape == flux.shape
-        and np.all(np.isfinite(flux)) and np.all(np.isfinite(pressure))
+        flux.ndim == 1
+        and flux.size >= 4
+        and pressure.shape == flux.shape
+        and np.all(np.isfinite(flux))
+        and np.all(np.isfinite(pressure))
         and np.all(np.diff(flux) > 0.0)
     )
     if not valid:
@@ -18,6 +22,7 @@ def fit_pressure_spline(psi_samples, pressure_samples):
             "midplane flux must be finite and strictly increasing with at least four points"
         )
     from scipy.interpolate import InterpolatedUnivariateSpline
+
     fitted = InterpolatedUnivariateSpline(flux, pressure, ext="zeros")
     if not np.all(np.isfinite(fitted.get_coeffs())):
         raise FloatingPointError("nonfinite pressure-current spline coefficients")

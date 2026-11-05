@@ -9,6 +9,7 @@ shape is the input shape. Negative energies are rejected instead of silently
 clipped; all fit coefficients and clipping endpoints retain their original
 numerical assertions.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,13 +30,17 @@ def independent_piecewise(energy):
     low = clipped < 10.0
     high = clipped >= 10.0
     if np.any(low):
-        result[low] = np.exp(
-            np.polynomial.polynomial.polyval(np.log(clipped[low]), LOW_ENERGY_COEFFICIENTS)
-        ) * 1.0e-4
+        result[low] = (
+            np.exp(np.polynomial.polynomial.polyval(np.log(clipped[low]), LOW_ENERGY_COEFFICIENTS))
+            * 1.0e-4
+        )
     if np.any(high):
-        result[high] = np.exp(
-            np.polynomial.polynomial.polyval(np.log(clipped[high]), HIGH_ENERGY_COEFFICIENTS)
-        ) * 1.0e-4
+        result[high] = (
+            np.exp(
+                np.polynomial.polynomial.polyval(np.log(clipped[high]), HIGH_ENERGY_COEFFICIENTS)
+            )
+            * 1.0e-4
+        )
     return result
 
 
@@ -49,8 +54,12 @@ def test_piecewise_branches_match_independent_evaluation():
 def test_breakpoint_uses_canonical_high_energy_branch():
     """Canonical source: low for E<10, high for E>=10; 10 eV is high."""
     result = evaluate_hydrogen_proton_elastic_cross_section(np.array([9.999, 10.0, 10.001]))
-    high_at_10 = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), HIGH_ENERGY_COEFFICIENTS)) * 1.0e-4
-    low_at_10 = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), LOW_ENERGY_COEFFICIENTS)) * 1.0e-4
+    high_at_10 = (
+        np.exp(np.polynomial.polynomial.polyval(np.log(10.0), HIGH_ENERGY_COEFFICIENTS)) * 1.0e-4
+    )
+    low_at_10 = (
+        np.exp(np.polynomial.polynomial.polyval(np.log(10.0), LOW_ENERGY_COEFFICIENTS)) * 1.0e-4
+    )
     np.testing.assert_allclose(result[1], high_at_10, rtol=1e-15, atol=0.0)
     assert not np.isclose(result[1], low_at_10, rtol=1e-14, atol=0.0)
     assert result[0] > 0.0 and result[1] > 0.0 and result[2] > 0.0
@@ -66,7 +75,9 @@ def test_output_shape_preserves_input_shape_for_any_input_rank():
 
 
 def test_endpoint_clipping_is_preserved():
-    result = evaluate_hydrogen_proton_elastic_cross_section(np.array([0.0001, 0.001, 2.0e5, 1.01e5]))
+    result = evaluate_hydrogen_proton_elastic_cross_section(
+        np.array([0.0001, 0.001, 2.0e5, 1.01e5])
+    )
     assert result[0] == result[1]
     assert result[-1] == result[-2]
 

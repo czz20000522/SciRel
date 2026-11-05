@@ -33,60 +33,83 @@ __all__ = [
 
 _LAZY_EXPORTS = {
     "evaluate_fast_ion_stopping_increment": (
-        "fast_ion_stopping_increment", "evaluate_fast_ion_stopping_increment"
+        "fast_ion_stopping_increment",
+        "evaluate_fast_ion_stopping_increment",
     ),
-    "BesselBackendEvaluationError": ("relativistic_maxwellian_bessel", "BesselBackendEvaluationError"),
+    "BesselBackendEvaluationError": (
+        "relativistic_maxwellian_bessel",
+        "BesselBackendEvaluationError",
+    ),
     "InvalidBesselArgumentError": ("relativistic_maxwellian_bessel", "InvalidBesselArgumentError"),
-    "relativistic_maxwellian_bessel": ("relativistic_maxwellian_bessel", "relativistic_maxwellian_bessel"),
+    "relativistic_maxwellian_bessel": (
+        "relativistic_maxwellian_bessel",
+        "relativistic_maxwellian_bessel",
+    ),
     "normalized_momentum": ("momentum_scales", "normalized_momentum"),
     "thermal_electron_momentum": ("momentum_scales", "thermal_electron_momentum"),
     "average_cross_section_over_maxwellian": (
-        "maxwellian_relative_speed_rate_average", "average_cross_section_over_maxwellian"
+        "maxwellian_relative_speed_rate_average",
+        "average_cross_section_over_maxwellian",
     ),
     "evaluate_atomic_hydrogen_charge_exchange_cross_section": (
-        "atomic_hydrogen_charge_exchange_cross_section", "evaluate_atomic_hydrogen_charge_exchange_cross_section"
+        "atomic_hydrogen_charge_exchange_cross_section",
+        "evaluate_atomic_hydrogen_charge_exchange_cross_section",
     ),
     "evaluate_atomic_hydrogen_charge_exchange_rate": (
-        "atomic_hydrogen_charge_exchange_rate", "evaluate_atomic_hydrogen_charge_exchange_rate"
+        "atomic_hydrogen_charge_exchange_rate",
+        "evaluate_atomic_hydrogen_charge_exchange_rate",
     ),
     "evaluate_hydrogen2_charge_exchange_rate": (
-        "hydrogen2_charge_exchange_rate", "evaluate_hydrogen2_charge_exchange_rate"
+        "hydrogen2_charge_exchange_rate",
+        "evaluate_hydrogen2_charge_exchange_rate",
     ),
     "evaluate_janev_electron_impact_ionization_rate": (
-        "janev_electron_impact_ionization_rate", "evaluate_janev_electron_impact_ionization_rate"
+        "janev_electron_impact_ionization_rate",
+        "evaluate_janev_electron_impact_ionization_rate",
     ),
     "evaluate_atomic_hydrogen_1s_radiative_recombination_rate": (
-        "atomic_hydrogen_1s_radiative_recombination_rate", "evaluate_atomic_hydrogen_1s_radiative_recombination_rate"
+        "atomic_hydrogen_1s_radiative_recombination_rate",
+        "evaluate_atomic_hydrogen_1s_radiative_recombination_rate",
     ),
     "evaluate_molecular_hydrogen_charge_exchange_cross_section": (
-        "molecular_hydrogen_charge_exchange_cross_section", "evaluate_molecular_hydrogen_charge_exchange_cross_section"
+        "molecular_hydrogen_charge_exchange_cross_section",
+        "evaluate_molecular_hydrogen_charge_exchange_cross_section",
     ),
     "evaluate_atomic_hydrogen_elastic_cross_section": (
-        "atomic_hydrogen_elastic_cross_section", "evaluate_atomic_hydrogen_elastic_cross_section"
+        "atomic_hydrogen_elastic_cross_section",
+        "evaluate_atomic_hydrogen_elastic_cross_section",
     ),
     "evaluate_hydrogen_h2_elastic_cross_section": (
-        "hydrogen_h2_elastic_cross_section", "evaluate_hydrogen_h2_elastic_cross_section"
+        "hydrogen_h2_elastic_cross_section",
+        "evaluate_hydrogen_h2_elastic_cross_section",
     ),
     "evaluate_hydrogen_proton_elastic_cross_section": (
-        "hydrogen_proton_elastic_cross_section", "evaluate_hydrogen_proton_elastic_cross_section"
+        "hydrogen_proton_elastic_cross_section",
+        "evaluate_hydrogen_proton_elastic_cross_section",
     ),
     "evaluate_hydrogen2_proton_elastic_cross_section": (
-        "hydrogen2_proton_elastic_cross_section", "evaluate_hydrogen2_proton_elastic_cross_section"
+        "hydrogen2_proton_elastic_cross_section",
+        "evaluate_hydrogen2_proton_elastic_cross_section",
     ),
     "evaluate_hydrogen2_hydrogen2_elastic_cross_section": (
-        "hydrogen2_hydrogen2_elastic_cross_section", "evaluate_hydrogen2_hydrogen2_elastic_cross_section"
+        "hydrogen2_hydrogen2_elastic_cross_section",
+        "evaluate_hydrogen2_hydrogen2_elastic_cross_section",
     ),
     "assemble_atomic_hydrogen_collision_matrices": (
-        "atomic_hydrogen_collision_matrices", "assemble_atomic_hydrogen_collision_matrices"
+        "atomic_hydrogen_collision_matrices",
+        "assemble_atomic_hydrogen_collision_matrices",
     ),
     "assemble_molecular_hydrogen_collision_matrices": (
-        "molecular_hydrogen_collision_matrices", "assemble_molecular_hydrogen_collision_matrices"
+        "molecular_hydrogen_collision_matrices",
+        "assemble_molecular_hydrogen_collision_matrices",
     ),
     "assemble_atomic_hydrogen_omega_frequencies": (
-        "atomic_hydrogen_omega_frequencies", "assemble_atomic_hydrogen_omega_frequencies"
+        "atomic_hydrogen_omega_frequencies",
+        "assemble_atomic_hydrogen_omega_frequencies",
     ),
     "assemble_molecular_hydrogen_omega_frequencies": (
-        "molecular_hydrogen_omega_frequencies", "assemble_molecular_hydrogen_omega_frequencies"
+        "molecular_hydrogen_omega_frequencies",
+        "assemble_molecular_hydrogen_omega_frequencies",
     ),
 }
 

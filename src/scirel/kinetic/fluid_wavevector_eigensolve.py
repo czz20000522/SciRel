@@ -1,4 +1,5 @@
 """Solve the assembled fluid wavevector eigenproblem and retain deterministic mode diagnostics."""
+
 from __future__ import annotations
 
 import operator

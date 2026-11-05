@@ -57,6 +57,7 @@ not evaluate any physical cross-section model, does not generate the velocity
 mesh or its volumes, does not enforce the N1 convention that ``vr`` is a
 nonnegative radial axis, and does not converge the quadrature for the caller.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -114,8 +115,7 @@ def _mesh_distribution(radial, axial, volume, tnorm_ev, target_temperature_ev):
     """Return the normalized target Maxwellian on the supplied mesh."""
     with np.errstate(over="ignore", invalid="ignore"):
         shape = np.exp(
-            -(radial[:, None] ** 2 + axial[None, :] ** 2)
-            * tnorm_ev / target_temperature_ev
+            -(radial[:, None] ** 2 + axial[None, :] ** 2) * tnorm_ev / target_temperature_ev
         )
         distribution = shape / np.sum(volume * shape)
     if not np.all(np.isfinite(distribution)):
@@ -131,12 +131,15 @@ def _relative_kinematics(energies, radial, axial, thermal_speed, particle_mass_a
             / thermal_speed
         )
         relative_speed = np.sqrt(
-            radial[None, :, None] ** 2
-            + (axial[None, None, :] - particle_vx[:, None, None]) ** 2
+            radial[None, :, None] ** 2 + (axial[None, None, :] - particle_vx[:, None, None]) ** 2
         )
         collision_energy = (
-            0.5 * thermal_speed**2 * relative_speed**2
-            * particle_mass_amu * AMU_KG / ELEMENTARY_CHARGE_C
+            0.5
+            * thermal_speed**2
+            * relative_speed**2
+            * particle_mass_amu
+            * AMU_KG
+            / ELEMENTARY_CHARGE_C
         )
     return relative_speed, collision_energy
 
@@ -215,9 +218,7 @@ def average_cross_section_over_maxwellian(
     # the explicit non-finite checks below detect and report as ValueError, so
     # they are suppressed rather than reported twice.
     with np.errstate(over="ignore", invalid="ignore"):
-        thermal_speed = np.sqrt(
-            2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (target_mass_amu * AMU_KG)
-        )
+        thermal_speed = np.sqrt(2.0 * ELEMENTARY_CHARGE_C * tnorm_ev / (target_mass_amu * AMU_KG))
         target_distribution = _mesh_distribution(
             radial, axial, volume, tnorm_ev, target_temperature_ev
         )

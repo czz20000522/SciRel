@@ -43,7 +43,9 @@ def _initializer_export_target(initializer: Path, symbol: str) -> str | None:
     for node in tree.body:
         if isinstance(node, ast.Assign):
             targets = node.targets
-            if not any(isinstance(target, ast.Name) and target.id == "_LAZY_EXPORTS" for target in targets):
+            if not any(
+                isinstance(target, ast.Name) and target.id == "_LAZY_EXPORTS" for target in targets
+            ):
                 continue
             if isinstance(node.value, ast.Dict):
                 entries = zip(node.value.keys, node.value.values)
@@ -70,8 +72,7 @@ def _initializer_export_target(initializer: Path, symbol: str) -> str | None:
                     and isinstance(value.elts[1], ast.Name)
                     and value.elts[1].id == key.id
                     and any(
-                        isinstance(generator.target, ast.Name)
-                        and generator.target.id == key.id
+                        isinstance(generator.target, ast.Name) and generator.target.id == key.id
                         for generator in node.value.generators
                     )
                 ):

@@ -7,6 +7,7 @@ implementation is exercised: negative energies are rejected (the saved
 document declares nonnegative energies but its implementation silently clipped
 them to the lower endpoint).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -44,9 +45,7 @@ def test_holdout_grid_matches_independent_evaluation():
 
 
 def test_endpoint_clipping_is_preserved():
-    result = evaluate_hydrogen2_proton_elastic_cross_section(
-        np.array([0.01, 0.03, 2.0e4, 1.01e4])
-    )
+    result = evaluate_hydrogen2_proton_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))
     assert result[0] == result[1]
     assert result[-1] == result[-2]
 

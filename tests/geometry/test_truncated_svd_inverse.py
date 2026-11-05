@@ -1,4 +1,5 @@
 """Thresholded SVD pseudo-inverse: identity, truncation and rejection."""
+
 import numpy as np
 import pytest
 
@@ -10,23 +11,22 @@ def test_matches_numpy_pinv_on_square_tall_and_wide_matrices():
     for shape in ((4, 4), (5, 3), (3, 5)):
         matrix = rng.normal(size=shape)
         np.testing.assert_allclose(
-            truncated_svd_inverse(matrix), np.linalg.pinv(matrix),
-            rtol=1e-12, atol=1e-14)
+            truncated_svd_inverse(matrix), np.linalg.pinv(matrix), rtol=1e-12, atol=1e-14
+        )
 
 
 def test_truncates_rank_deficient_spectrum():
     matrix = np.array([[1.0, 2.0], [2.0, 4.0]])
     np.testing.assert_allclose(
-        truncated_svd_inverse(matrix), np.linalg.pinv(matrix, rcond=1e-10),
-        rtol=1e-12, atol=1e-14)
+        truncated_svd_inverse(matrix), np.linalg.pinv(matrix, rcond=1e-10), rtol=1e-12, atol=1e-14
+    )
 
 
 def test_projects_onto_range_and_nullspace():
     rng = np.random.default_rng(11)
     matrix = rng.normal(size=(6, 4))
     inverse = truncated_svd_inverse(matrix)
-    np.testing.assert_allclose(matrix @ inverse @ matrix, matrix,
-                               rtol=1e-12, atol=1e-12)
+    np.testing.assert_allclose(matrix @ inverse @ matrix, matrix, rtol=1e-12, atol=1e-12)
 
 
 @pytest.mark.parametrize("bad", [np.zeros(3), np.zeros((2, 2, 2))])
@@ -47,9 +47,7 @@ def test_rejects_nonfinite_matrix_and_bad_threshold():
 def test_rcond_is_relative_to_the_largest_singular_value():
     matrix = np.diag([1.0e-11, 1.0e-6])
     inverse = truncated_svd_inverse(matrix, rcond=1.0e-10)
-    np.testing.assert_allclose(
-        inverse, np.linalg.pinv(matrix, rcond=1.0e-10), rtol=1e-14, atol=0.0
-    )
+    np.testing.assert_allclose(inverse, np.linalg.pinv(matrix, rcond=1.0e-10), rtol=1e-14, atol=0.0)
 
 
 def test_zero_matrix_returns_zero_pseudo_inverse():

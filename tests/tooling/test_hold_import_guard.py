@@ -1,4 +1,5 @@
 """Held implementations are not importable from the default package."""
+
 import os
 import subprocess
 import sys
@@ -10,8 +11,9 @@ ROOT = Path(__file__).resolve().parents[2]
 def _run(code: str) -> subprocess.CompletedProcess:
     env = dict(os.environ)
     env.pop("SCIREL_REVIEW_HOLD", None)
-    return subprocess.run([sys.executable, "-c", code], cwd=ROOT,
-                          capture_output=True, text=True, env=env)
+    return subprocess.run(
+        [sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True, env=env
+    )
 
 
 def test_held_symbol_is_not_importable_by_default():
@@ -20,10 +22,13 @@ def test_held_symbol_is_not_importable_by_default():
         "assert 'solve_direct_anisotropic_inversion' not in inference.__all__;"
         "assert not hasattr(inference, 'solve_direct_anisotropic_inversion');"
         "from scirel.inference import solve_direct_anisotropic_inversion;"
-        "solve_direct_anisotropic_inversion")
+        "solve_direct_anisotropic_inversion"
+    )
     assert completed.returncode != 0
-    assert any(message in completed.stderr for message in (
-        "human review", "No module named", "cannot import name"))
+    assert any(
+        message in completed.stderr
+        for message in ("human review", "No module named", "cannot import name")
+    )
 
 
 def test_held_implementation_module_is_not_importable_by_default():
@@ -40,8 +45,13 @@ def test_held_symbol_is_review_importable():
         "from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion;"
         "assert callable(solve_direct_anisotropic_inversion);"
         "assert 'solve_direct_anisotropic_inversion' not in i.__all__;"
-        "assert not hasattr(i, 'solve_direct_anisotropic_inversion')")
+        "assert not hasattr(i, 'solve_direct_anisotropic_inversion')"
+    )
     completed = subprocess.run(
-        [sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True,
-        env=dict(os.environ, SCIREL_REVIEW_HOLD="1"))
+        [sys.executable, "-c", code],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        env=dict(os.environ, SCIREL_REVIEW_HOLD="1"),
+    )
     assert completed.returncode == 0, completed.stderr

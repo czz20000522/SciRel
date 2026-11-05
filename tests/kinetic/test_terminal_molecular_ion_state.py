@@ -7,14 +7,23 @@ from scirel.kinetic import reduce_terminal_molecular_ion_state
 
 
 def _case():
-    rates = np.array(
-        [[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 2.0, 3.0, 4.0],
-         [0.4, 0.3, 0.2, 0.1, 0.6, 0.5, 0.7, 4.0, 3.0, 2.0, 1.0]]
-    ) * 1e-18
+    rates = (
+        np.array(
+            [
+                [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 1.0, 2.0, 3.0, 4.0],
+                [0.4, 0.3, 0.2, 0.1, 0.6, 0.5, 0.7, 4.0, 3.0, 2.0, 1.0],
+            ]
+        )
+        * 1e-18
+    )
     return (
-        np.array([4.0e17, 5.0e17]), np.array([1.0e18, 2.0e18]),
-        np.array([2.0, 3.0]), 2.0, np.array([4.0, 5.0]),
-        rates, np.array([1.0, 3.0]),
+        np.array([4.0e17, 5.0e17]),
+        np.array([1.0e18, 2.0e18]),
+        np.array([2.0, 3.0]),
+        2.0,
+        np.array([4.0, 5.0]),
+        rates,
+        np.array([1.0, 3.0]),
     )
 
 
@@ -34,8 +43,10 @@ def test_four_profiles_match_independent_cell_reduction():
         expected_density.append(molecular[k] * neutral[k] * ionization[k] / denominator)
         expected_temperature.append(temperature[k] * exchange / (exchange + denominator))
     assert set(result) == {
-        "molecular_ion_density_m3", "molecular_ion_temperature_ev",
-        "dissociation_frequency_s_inv", "energy_exchange_frequency_s_inv",
+        "molecular_ion_density_m3",
+        "molecular_ion_temperature_ev",
+        "dissociation_frequency_s_inv",
+        "energy_exchange_frequency_s_inv",
     }
     for key, expected in (
         ("molecular_ion_density_m3", expected_density),
@@ -64,15 +75,18 @@ def test_zero_molecular_density_is_allowed_with_positive_denominator():
     assert result["molecular_ion_density_m3"][0] == 0.0
 
 
-@pytest.mark.parametrize("index,value", [
-    (0, np.array([True, False])),
-    (1, np.array(["1e18", "2e18"])),
-    (2, np.array([2.0, 3.0], dtype=complex)),
-    (3, True),
-    (4, np.array([True, True])),
-    (5, np.ones((2, 11), dtype=bool)),
-    (6, np.array(["1", "3"])),
-])
+@pytest.mark.parametrize(
+    "index,value",
+    [
+        (0, np.array([True, False])),
+        (1, np.array(["1e18", "2e18"])),
+        (2, np.array([2.0, 3.0], dtype=complex)),
+        (3, True),
+        (4, np.array([True, True])),
+        (5, np.ones((2, 11), dtype=bool)),
+        (6, np.array(["1", "3"])),
+    ],
+)
 def test_nonreal_or_nonnumeric_inputs_fail_closed(index, value):
     arguments = list(_case())
     arguments[index] = value

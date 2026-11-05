@@ -1,4 +1,5 @@
 """The review gate binds registry structure and nothing outside the repository."""
+
 import json
 import sys
 from pathlib import Path
@@ -23,8 +24,10 @@ def registry(tmp_path, monkeypatch):
     (catalog / f"{EXPOSED}.json").write_text("{}")
     (review / f"{HELD}.json").write_text("{}")
     hold = {"schema": "scirel.exposure-hold", "assets": {HELD: HOLD_RECORD}}
-    verdicts = {"schema": "scirel.audit-verdicts",
-                "assets": {EXPOSED: {"status": "pass"}, HELD: dict(HOLD_RECORD)}}
+    verdicts = {
+        "schema": "scirel.audit-verdicts",
+        "assets": {EXPOSED: {"status": "pass"}, HELD: dict(HOLD_RECORD)},
+    }
     monkeypatch.setattr(review_gate, "CATALOG", catalog)
     monkeypatch.setattr(review_gate, "REVIEW_CATALOG", review)
     monkeypatch.setattr(review_gate, "HOLD", tmp_path / "hold.json")
@@ -63,7 +66,12 @@ def test_contract_without_status_fails(registry):
 
 def test_status_without_contract_fails(registry):
     write, hold, verdicts, *_ = registry
-    write(verdict_data={**verdicts, "assets": {**verdicts["assets"], "scirel.test.gone": {"status": "pass"}}})
+    write(
+        verdict_data={
+            **verdicts,
+            "assets": {**verdicts["assets"], "scirel.test.gone": {"status": "pass"}},
+        }
+    )
     assert any("without a contract" in error for error in review_gate.check())
 
 
@@ -76,13 +84,23 @@ def test_exposed_asset_needs_a_release_status(registry, status):
 
 def test_held_asset_cannot_be_marked_as_passing(registry):
     write, hold, verdicts, *_ = registry
-    write(verdict_data={**verdicts, "assets": {**verdicts["assets"], HELD: {**HOLD_RECORD, "status": "pass"}}})
+    write(
+        verdict_data={
+            **verdicts,
+            "assets": {**verdicts["assets"], HELD: {**HOLD_RECORD, "status": "pass"}},
+        }
+    )
     assert any("held asset must be" in error for error in review_gate.check())
 
 
 def test_held_asset_needs_a_reason_and_decision(registry):
     write, hold, verdicts, *_ = registry
-    write(verdict_data={**verdicts, "assets": {**verdicts["assets"], HELD: {"status": "human-review"}}})
+    write(
+        verdict_data={
+            **verdicts,
+            "assets": {**verdicts["assets"], HELD: {"status": "human-review"}},
+        }
+    )
     assert any("needs reason" in error for error in review_gate.check())
 
 
@@ -102,7 +120,12 @@ def test_review_contract_must_be_listed_in_the_hold(registry):
 
 def test_unrecognized_record_fields_are_rejected(registry):
     write, hold, verdicts, *_ = registry
-    write(verdict_data={**verdicts, "assets": {**verdicts["assets"], EXPOSED: {"status": "pass", "evidence": []}}})
+    write(
+        verdict_data={
+            **verdicts,
+            "assets": {**verdicts["assets"], EXPOSED: {"status": "pass", "evidence": []}},
+        }
+    )
     assert any("record fields" in error for error in review_gate.check())
 
 

@@ -42,10 +42,18 @@ def test_large_positive_argument_remains_representable():
 @pytest.mark.parametrize(
     "order,argument",
     [
-        (True, 1.0), (1.5, 1.0), (np.nan, 1.0), ("1", 1.0),
+        (True, 1.0),
+        (1.5, 1.0),
+        (np.nan, 1.0),
+        ("1", 1.0),
         (2**53 + 1, 1.0),
-        (1, True), (1, "1"), (1, np.nan), (1, np.inf),
-        ([], []), ([0, 1], [1.0, 2.0, 3.0]), (0, -1000.0),
+        (1, True),
+        (1, "1"),
+        (1, np.nan),
+        (1, np.inf),
+        ([], []),
+        ([0, 1], [1.0, 2.0, 3.0]),
+        (0, -1000.0),
     ],
 )
 def test_invalid_or_unrepresentable_values_fail_closed(order, argument):

@@ -6,6 +6,7 @@ thermal-speed scale and  /
 ``kinetic_h2.py:1548-1573`` for the density reduction. Valid-path operation
 order is retained; SciRel tightens the input and finite-output contracts.
 """
+
 from __future__ import annotations
 
 import math
@@ -23,11 +24,20 @@ def test_thermal_speed_matches_independent_frozen_constant_relation():
 
 
 def test_thermal_speed_decreases_with_mass_and_grows_with_temperature():
-    assert compute_thermal_speed_m_s(2.0, 1.0)["thermal_speed_m_s"] > compute_thermal_speed_m_s(2.0, 2.0)["thermal_speed_m_s"]
-    assert compute_thermal_speed_m_s(4.0, 1.0)["thermal_speed_m_s"] == 2.0 * compute_thermal_speed_m_s(1.0, 1.0)["thermal_speed_m_s"]
+    assert (
+        compute_thermal_speed_m_s(2.0, 1.0)["thermal_speed_m_s"]
+        > compute_thermal_speed_m_s(2.0, 2.0)["thermal_speed_m_s"]
+    )
+    assert (
+        compute_thermal_speed_m_s(4.0, 1.0)["thermal_speed_m_s"]
+        == 2.0 * compute_thermal_speed_m_s(1.0, 1.0)["thermal_speed_m_s"]
+    )
 
 
-@pytest.mark.parametrize("temperature,mass", [(0.0, 1.0), (1.0, 0.0), (-1.0, 1.0), (float("nan"), 1.0), (1.0, float("inf"))])
+@pytest.mark.parametrize(
+    "temperature,mass",
+    [(0.0, 1.0), (1.0, 0.0), (-1.0, 1.0), (float("nan"), 1.0), (1.0, float("inf"))],
+)
 def test_thermal_speed_invalid_inputs_fail_closed(temperature, mass):
     with pytest.raises(ValueError):
         compute_thermal_speed_m_s(temperature, mass)
@@ -44,12 +54,17 @@ def test_thermal_speed_rejects_nonreal_scalars(temperature, mass):
 
 def test_thermal_speed_retains_finite_result_despite_underflowed_mass_scale():
     from decimal import Decimal, localcontext
+
     mass = np.nextafter(0.0, 1.0)
     with localcontext() as context:
         context.prec = 100
-        expected = float((Decimal(2) * Decimal.from_float(1.602177e-19)
-                          / (Decimal.from_float(float(mass))
-                             * Decimal.from_float(1.6726231e-27))).sqrt())
+        expected = float(
+            (
+                Decimal(2)
+                * Decimal.from_float(1.602177e-19)
+                / (Decimal.from_float(float(mass)) * Decimal.from_float(1.6726231e-27))
+            ).sqrt()
+        )
     actual = compute_thermal_speed_m_s(1.0, mass)["thermal_speed_m_s"]
     assert abs(actual - expected) <= 2 * abs(np.spacing(expected))
 

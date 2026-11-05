@@ -2,7 +2,10 @@
 import numpy as np
 import pytest
 
-from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response, dense_axisymmetric_green_response as scientific_function
+from scirel.field.dense_axisymmetric_green import (
+    dense_axisymmetric_green_response,
+    dense_axisymmetric_green_response as scientific_function,
+)
 from scirel.field.circular_filament_green import circular_filament_green_response
 
 
@@ -14,9 +17,7 @@ def test_shape_finiteness_and_axis_source_columns():
     for value in result.values():
         assert value.shape == (3, 2)
         assert np.all(np.isfinite(value))
-    np.testing.assert_allclose(
-        scientific_function([[0.1, 0.0]], [[0.0, 0.0, 1.0]])["gpsi"], 0.0
-    )
+    np.testing.assert_allclose(scientific_function([[0.1, 0.0]], [[0.0, 0.0, 1.0]])["gpsi"], 0.0)
 
 
 def test_source_weight_scales_each_column_and_zeroes_a_column():
@@ -76,7 +77,6 @@ def test_empty_source_shorthand_matches_explicit_zero_source_matrix():
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
 
     targets = np.array([[0.0, -0.1], [0.2, 0.15]])
     source_r = 0.35

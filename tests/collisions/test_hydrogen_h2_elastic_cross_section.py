@@ -7,6 +7,7 @@ relative to the saved implementation is exercised: negative energies are
 rejected (the saved document declares nonnegative energies but its
 implementation silently clipped them to the lower endpoint).
 """
+
 from __future__ import annotations
 
 import numpy as np

@@ -1,4 +1,5 @@
 """Derive validated SI equilibrium scales for a species mixture in one vectorized assembly."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -14,9 +15,12 @@ def _species_vector(value, name):
     try:
         raw = np.asarray(value, dtype=object)
         typed = np.asarray(value)
-        if raw.ndim != 1 or raw.size == 0 or any(
-            isinstance(item, (bool, np.bool_)) for item in raw.flat
-        ) or typed.dtype.kind not in "iuf":
+        if (
+            raw.ndim != 1
+            or raw.size == 0
+            or any(isinstance(item, (bool, np.bool_)) for item in raw.flat)
+            or typed.dtype.kind not in "iuf"
+        ):
             raise ValueError(f"{name} must be a non-empty real species vector")
         values = np.asarray(value, dtype=float)
     except (TypeError, OverflowError, ValueError) as error:
@@ -97,10 +101,27 @@ def derive_species_equilibrium_scales(*, ms, qs, ns_unit, Ts_unit, B0, n00, T00)
         }
     if any(not np.all(np.isfinite(value)) for value in result.values()):
         raise ValueError("derived species scale is not representable")
-    if any(
-        np.any(np.asarray(result[name]) <= 0.0)
-        for name in ("ns0", "Ts0", "vts", "wps2", "wp2", "absrhocs", "lambdaDs", "kDs", "wcn", "rhocn", "kn", "wn")
-    ) or np.any(wcs == 0.0) or np.any(rhocs == 0.0):
+    if (
+        any(
+            np.any(np.asarray(result[name]) <= 0.0)
+            for name in (
+                "ns0",
+                "Ts0",
+                "vts",
+                "wps2",
+                "wp2",
+                "absrhocs",
+                "lambdaDs",
+                "kDs",
+                "wcn",
+                "rhocn",
+                "kn",
+                "wn",
+            )
+        )
+        or np.any(wcs == 0.0)
+        or np.any(rhocs == 0.0)
+    ):
         raise ValueError("derived species scale collapsed to zero")
     return result
 

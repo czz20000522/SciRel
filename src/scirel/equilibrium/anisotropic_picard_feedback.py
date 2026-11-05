@@ -1,4 +1,5 @@
 """Single anisotropic Picard current relaxation and Green feedback step."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -27,8 +28,20 @@ def _green_matrix(name, value, size, required):
 
 
 def update_anisotropic_picard_flux(
-    j_phi, r_grid, z_grid, plasma_mask, currents_old, relax, g_psi,
-    g_br, g_bz, psi_vac, br_vac, bz_vac, *, cell_edges=None
+    j_phi,
+    r_grid,
+    z_grid,
+    plasma_mask,
+    currents_old,
+    relax,
+    g_psi,
+    g_br,
+    g_bz,
+    psi_vac,
+    br_vac,
+    bz_vac,
+    *,
+    cell_edges=None,
 ):
     """Relax toroidal currents and map them to flux and poloidal fields.
 
@@ -45,15 +58,18 @@ def update_anisotropic_picard_flux(
     psi_vac = _finite_field("psi_vac", psi_vac, shape)
     br_vac = _finite_field("br_vac", br_vac, shape)
     bz_vac = _finite_field("bz_vac", bz_vac, shape)
-    if (not np.allclose(r_grid, r_grid[0:1, :])
-            or not np.allclose(z_grid, z_grid[:, 0:1])):
+    if not np.allclose(r_grid, r_grid[0:1, :]) or not np.allclose(z_grid, z_grid[:, 0:1]):
         raise ValueError("r_grid and z_grid must be tensor-product [Z,R] grids")
     if shape[0] < 2 or shape[1] < 2:
         raise ValueError("r_grid and z_grid need at least two points per axis to define cell area")
 
     areas = cell_areas(r_grid, z_grid, cell_edges)
     size = r_grid.size
-    old = np.zeros(size, dtype=float) if currents_old is None else np.asarray(currents_old, dtype=float)
+    old = (
+        np.zeros(size, dtype=float)
+        if currents_old is None
+        else np.asarray(currents_old, dtype=float)
+    )
     if old.shape != (size,) or not np.all(np.isfinite(old)):
         raise ValueError(f"currents_old must have finite shape ({size},)")
     relaxation = float(relax)
@@ -82,9 +98,7 @@ def update_anisotropic_picard_flux(
             slice(None, None, -1) if reverse_z else slice(None),
             slice(None, None, -1) if reverse_r else slice(None),
         )
-        increment = flux_field_increment(
-            r_grid[order], z_grid[order], (psi - psi_vac)[order]
-        )
+        increment = flux_field_increment(r_grid[order], z_grid[order], (psi - psi_vac)[order])
         br = br_vac + increment["B_R"][order]
         bz = bz_vac + increment["B_Z"][order]
     else:

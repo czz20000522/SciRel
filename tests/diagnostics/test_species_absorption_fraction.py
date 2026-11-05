@@ -1,4 +1,5 @@
 """Direct contract tests for SciRel's species absorption fraction relation."""
+
 from __future__ import annotations
 
 import importlib
@@ -9,6 +10,7 @@ import pytest
 
 MODULE = importlib.import_module("scirel.diagnostics.species_absorption_fraction")
 COMPUTE = MODULE.compute_species_absorption_fraction
+
 
 # --- Test U3-T01: the closure follows its documented arithmetic. ---------------
 @pytest.mark.parametrize(
@@ -40,7 +42,9 @@ def test_u3_t01_fraction_uses_the_derived_total(ledger):
 # --- Test U3-T02: the closure is source-ordered and sums to 100 percent. -------
 def test_u3_t02_closure_is_source_ordered_and_complete():
     result = COMPUTE([1.0, 2.0, 3.0, 4.0])
-    np.testing.assert_allclose(result["species_fraction_percent"], [10.0, 20.0, 30.0, 40.0], rtol=0.0, atol=1e-12)
+    np.testing.assert_allclose(
+        result["species_fraction_percent"], [10.0, 20.0, 30.0, 40.0], rtol=0.0, atol=1e-12
+    )
     assert result["total_power"] == 10.0
     assert result["total_fraction_percent"] == pytest.approx(100.0, rel=0.0, abs=1e-12)
     assert result["fraction_sum_residual_percent"] == pytest.approx(0.0, rel=0.0, abs=1e-12)
@@ -79,7 +83,9 @@ def test_u3_t06_negative_ledgers_are_reported_not_repaired():
     result = COMPUTE([-1.0, 2.0, 3.0, 0.5])
     assert result["total_power"] == 4.5
     np.testing.assert_allclose(
-        result["species_fraction_percent"], [-200.0 / 9.0, 400.0 / 9.0, 600.0 / 9.0, 100.0 / 9.0], rtol=1e-13
+        result["species_fraction_percent"],
+        [-200.0 / 9.0, 400.0 / 9.0, 600.0 / 9.0, 100.0 / 9.0],
+        rtol=1e-13,
     )
     assert result["total_fraction_percent"] == pytest.approx(100.0, rel=0.0, abs=1e-12)
 

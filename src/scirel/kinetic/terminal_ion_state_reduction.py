@@ -14,8 +14,7 @@ __all__ = ["reduce_terminal_molecular_ion_state"]
 def _real_numeric(name, value):
     try:
         if not isinstance(value, np.ndarray) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -81,9 +80,9 @@ def reduce_terminal_molecular_ion_state(
 
     dissociation_channels = reaction_rates[:, 7:11]
     dissociation_frequency = neutral_density * np.sum(dissociation_channels, axis=1)
-    energy_exchange_frequency = (
-        7.7e-7 * neutral_density * 1.0e-6
-    ) / (np.sqrt(float(mass)) * (ion_temperature**1.5))
+    energy_exchange_frequency = (7.7e-7 * neutral_density * 1.0e-6) / (
+        np.sqrt(float(mass)) * (ion_temperature**1.5)
+    )
     density_denominator = dissociation_frequency + loss_frequency
     if not np.all(np.isfinite(density_denominator)) or np.any(density_denominator <= 0.0):
         raise ValueError(

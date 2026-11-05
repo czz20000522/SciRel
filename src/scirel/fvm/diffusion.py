@@ -42,8 +42,12 @@ class TriDiagonal:
         shape = (self.diagonal.size,) + (1,) * (values.ndim - 1)
         result = np.array(self.diagonal.reshape(shape) * values, copy=True)
         if self.diagonal.size > 1:
-            result[:-1] += self.above.reshape((self.above.size,) + (1,) * (values.ndim - 1)) * values[1:]
-            result[1:] += self.below.reshape((self.below.size,) + (1,) * (values.ndim - 1)) * values[:-1]
+            result[:-1] += (
+                self.above.reshape((self.above.size,) + (1,) * (values.ndim - 1)) * values[1:]
+            )
+            result[1:] += (
+                self.below.reshape((self.below.size,) + (1,) * (values.ndim - 1)) * values[:-1]
+            )
         return result
 
 

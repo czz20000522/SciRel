@@ -1,4 +1,5 @@
 """Discretization of a signed permanent-ring approximation."""
+
 import numpy as np
 
 
@@ -13,10 +14,12 @@ def discretize_permanent_ring(r0, z0, width, height, mu_hat_deg=0.0):
     with np.errstate(over="ignore", invalid="ignore"):
         radial = center[0] + np.array([-0.5, 0.5]) * dimensions[0]
         axial = np.linspace(center[1] - 0.5 * dimensions[1], center[1] + 0.5 * dimensions[1], 8)
-        points = np.vstack((
-            np.column_stack((np.full(8, radial[0]), axial)),
-            np.column_stack((np.full(8, radial[1]), axial)),
-        ))
+        points = np.vstack(
+            (
+                np.column_stack((np.full(8, radial[0]), axial)),
+                np.column_stack((np.full(8, radial[1]), axial)),
+            )
+        )
         if dimensions[2] != 0.0:
             theta = np.deg2rad(dimensions[2])
             rotation = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]])

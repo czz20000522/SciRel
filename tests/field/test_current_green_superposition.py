@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.field.current_green_superposition import superpose_current_green_field, superpose_current_green_field as scientific_function
+from scirel.field.current_green_superposition import (
+    superpose_current_green_field,
+    superpose_current_green_field as scientific_function,
+)
 
 
 # 验证：单一电流的三个一维响应均按 rank-1 规则逐点缩放。
@@ -37,9 +40,12 @@ def test_matrix_contraction_preserves_target_axis():
 # 验证：第二轴不是 source 轴时不能被广播为错误的磁场。
 def test_rejects_wrong_green_source_axis():
     with pytest.raises(ValueError, match="source axis"):
-        scientific_function([1.0, 2.0], [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-                            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
-                            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        scientific_function(
+            [1.0, 2.0],
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+            [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]],
+        )
 
 
 def test_unrepresentable_contraction_fails_closed():

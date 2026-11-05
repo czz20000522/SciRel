@@ -12,7 +12,9 @@ def _real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         result = np.asarray(raw, dtype=float)
@@ -25,9 +27,14 @@ def _real_array(value, name):
 
 def sum_elastic_frequency_channels(frequency_profiles_m_inv):
     """Return ``{'elastic_frequency_m_inv': total}`` in caller channel order."""
-    if not isinstance(frequency_profiles_m_inv, (list, tuple)) or len(frequency_profiles_m_inv) != 3:
+    if (
+        not isinstance(frequency_profiles_m_inv, (list, tuple))
+        or len(frequency_profiles_m_inv) != 3
+    ):
         raise ValueError("frequency_profiles_m_inv must contain exactly three channels")
-    arrays = [_real_array(profile, "frequency_profiles_m_inv") for profile in frequency_profiles_m_inv]
+    arrays = [
+        _real_array(profile, "frequency_profiles_m_inv") for profile in frequency_profiles_m_inv
+    ]
     if any(array.ndim == 0 or array.size == 0 for array in arrays):
         raise ValueError("frequency channels must be non-empty arrays")
     shape = arrays[0].shape

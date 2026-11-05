@@ -6,6 +6,7 @@ local-field conventions. No calibrated interval or physical error bound is
 established. Required attribution and terms are retained in
 licenses/fast-ion-stopping-increment/.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -41,8 +42,8 @@ def _expand(operation, left, right):
 
 def _polynomial(variable, coefficients, first_power):
     """Accumulate explicit powers in ascending order, preserving cancellation."""
-    result = coefficients[0] if first_power == 0 else _expand(
-        np.multiply, coefficients[0], variable
+    result = (
+        coefficients[0] if first_power == 0 else _expand(np.multiply, coefficients[0], variable)
     )
     for exponent, coefficient in enumerate(coefficients[1:], first_power + 1):
         term = _expand(np.multiply, abs(coefficient), np.power(variable, exponent))
@@ -109,15 +110,21 @@ def evaluate_fast_ion_stopping_increment(
         For incompatible axes or values that cannot be converted to float64.
     """
     mass, energy, cosine, density, temperature, power, slowing_time = (
-        _shaped_real(value) for value in (
-            beam_mass_number, beam_energy_ev, birth_pitch_cosine,
-            electron_density_m3, electron_temperature_ev, power_density_w_m3,
+        _shaped_real(value)
+        for value in (
+            beam_mass_number,
+            beam_energy_ev,
+            birth_pitch_cosine,
+            electron_density_m3,
+            electron_temperature_ev,
+            power_density_w_m3,
             electron_slowing_time_s,
         )
     )
     with np.errstate(all="warn"):
         source_rate = _expand(
-            np.divide, power,
+            np.divide,
+            power,
             _expand(np.multiply, energy, _ENERGY_CONVERSION_J_PER_EV),
         )
         scaled_energy = _expand(np.divide, _expand(np.divide, energy, mass), 1e6)

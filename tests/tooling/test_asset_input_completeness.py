@@ -21,12 +21,15 @@ def _document(asset_id):
     return json.loads((ROOT / "catalog/examples" / f"{asset_id}.json").read_bytes())
 
 
-@pytest.mark.parametrize("asset_id", [
-    "scirel.electromagnetism.wham",
-    "scirel.electromagnetism.brb",
-    "scirel.kinetic.multifluid-deck",
-    "scirel.kinetic.rational-jpole-grid-coordinates",
-])
+@pytest.mark.parametrize(
+    "asset_id",
+    [
+        "scirel.electromagnetism.wham",
+        "scirel.electromagnetism.brb",
+        "scirel.kinetic.multifluid-deck",
+        "scirel.kinetic.rational-jpole-grid-coordinates",
+    ],
+)
 def test_zero_argument_callable_accepts_an_explicit_empty_input_list(asset_id):
     document = _document(asset_id)
     assert document["inputs"] == []
@@ -38,8 +41,7 @@ def test_zero_argument_callable_accepts_an_explicit_empty_input_list(asset_id):
 def test_parameterized_callable_rejects_undocumented_explicit_inputs(omitted):
     document = _document("scirel.field.rectangular-coil-filaments")
     document["inputs"] = [
-        port for port in document["inputs"]
-        if omitted != "all" and port["name"] != omitted
+        port for port in document["inputs"] if omitted != "all" and port["name"] != omitted
     ]
     # An empty list is structurally valid; the runtime binding establishes
     # whether explicit scientific parameters are missing.

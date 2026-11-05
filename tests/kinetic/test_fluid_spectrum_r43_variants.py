@@ -64,16 +64,30 @@ def test_sum_n_source_clamp_preserves_existing_failure_contract():
 def test_source_sum_rejects_fractional_harmonic_limit():
     with pytest.raises(ValueError, match="lmx"):
         evaluate_fluid_kinetic_dispersion_sum(
-            B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31],
-            ns0=[6.075e19], Ts0=[1e7], f=1e10, kz=1.0, kx=1.0, lmx=5.5,
+            B0=1.0,
+            qs=[-1.60217662e-19],
+            ms=[9.1094e-31],
+            ns0=[6.075e19],
+            Ts0=[1e7],
+            f=1e10,
+            kz=1.0,
+            kx=1.0,
+            lmx=5.5,
         )
 
 
-@pytest.mark.parametrize("change", [{"B0": np.nan}, {"f": np.inf},
-                                     {"kx": np.nan}, {"qs": [0.0]}])
+@pytest.mark.parametrize("change", [{"B0": np.nan}, {"f": np.inf}, {"kx": np.nan}, {"qs": [0.0]}])
 def test_source_sum_rejects_invalid_wavepoint(change):
-    args = dict(B0=1.0, qs=[-1.60217662e-19], ms=[9.1094e-31],
-                ns0=[6.075e19], Ts0=[1e7], f=1e10, kz=1.0, kx=1.0)
+    args = dict(
+        B0=1.0,
+        qs=[-1.60217662e-19],
+        ms=[9.1094e-31],
+        ns0=[6.075e19],
+        Ts0=[1e7],
+        f=1e10,
+        kz=1.0,
+        kx=1.0,
+    )
     args.update(change)
     with pytest.raises(ValueError):
         evaluate_fluid_kinetic_dispersion_sum(**args)

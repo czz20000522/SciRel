@@ -1,4 +1,5 @@
 """Bisection solver for the quasineutral potential relation."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -127,7 +128,7 @@ def solve_quasineutral_potential(
     final_potential = None
     final_iterations = 0
     for iterations in range(1, iterations_limit + 1):
-        potential = _potential_midpoint(active_lower,active_upper)
+        potential = _potential_midpoint(active_lower, active_upper)
         potential_residual = evaluate_active(potential)
         # A strict zero of the supplied residual is an exact root hit, not
         # a tolerance-based convergence shortcut or a stalled interval.
@@ -135,10 +136,7 @@ def solve_quasineutral_potential(
         active_lower = np.where(exact, potential, active_lower)
         active_upper = np.where(exact, potential, active_upper)
         width = active_upper - active_lower
-        if (
-            np.max(width) <= tolerance
-            and np.max(np.abs(potential_residual)) <= residual_tolerance
-        ):
+        if np.max(width) <= tolerance and np.max(np.abs(potential_residual)) <= residual_tolerance:
             final_potential = potential
             final_iterations = iterations
             break

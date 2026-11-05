@@ -1,4 +1,5 @@
 """Two-dimensional rotations in cylindrical ``(R, Z)`` coordinates."""
+
 from __future__ import annotations
 
 import math

@@ -1,4 +1,5 @@
 """Check first-import behavior in fresh interpreters, independent of test order."""
+
 from pathlib import Path
 import json
 import os
@@ -14,9 +15,9 @@ from _surface_inventory import domain_exports  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[2]
-PROJECT_VERSION = tomllib.loads(
-    (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-)["project"]["version"]
+PROJECT_VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"][
+    "version"
+]
 KINETIC_EXPORTS = json.dumps(list(domain_exports("kinetic")))
 FIELD_EXPORTS = json.dumps(list(domain_exports("field")))
 CLOSURES_EXPORTS = json.dumps(list(domain_exports("closures")))
@@ -25,7 +26,12 @@ EQUILIBRIUM_EXPORTS = json.dumps(list(domain_exports("equilibrium")))
 
 def test_root_import_and_discovery_need_no_scientific_dependencies():
     result = subprocess.run(
-        [sys.executable, '-I', '-S', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-c",
+            """
 import sys
 sys.path.insert(0, sys.argv[1])
 import scirel
@@ -45,14 +51,23 @@ assert "importlib.metadata" not in sys.modules
 scirel.field
 assert "scirel.field" in sys.modules
 assert not any(n in sys.modules for n in ("numpy", "scipy", "matplotlib"))
-''', str(ROOT / 'src'), PROJECT_VERSION], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+            PROJECT_VERSION,
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_scientific_functions_are_exposed_only_within_their_domain():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import sys
 sys.path.insert(0, sys.argv[1])
 import scirel
@@ -70,14 +85,22 @@ else:
 assert "scirel.kinetic" not in sys.modules
 assert "scirel.inference" not in sys.modules
 assert "matplotlib" not in sys.modules
-''', str(ROOT / 'src')], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_root_namespace_discovers_every_public_domain_package():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import sys
 from pathlib import Path
 
@@ -97,14 +120,22 @@ assert not any(
     name.split(".", 1)[0] in ("numpy", "scipy", "matplotlib", "mpmath")
     for name in sys.modules
 )
-''', str(ROOT / 'src')], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_kinetic_exports_are_lazy_and_preserve_canonical_identity():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import json
 import sys
 
@@ -136,14 +167,23 @@ assert kinetic.evaluate_gpdf_small_k is direct
 namespace = {}
 exec("from scirel.kinetic import *", namespace)
 assert all(namespace[name] is getattr(kinetic, name) for name in kinetic.__all__)
-''', str(ROOT / 'src'), KINETIC_EXPORTS], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+            KINETIC_EXPORTS,
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_fluid_wavevector_scan_defers_graph_dependencies_until_call():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import sys
 
 sys.path.insert(0, sys.argv[1])
@@ -161,14 +201,22 @@ assert not any(
         "scirel.kinetic.z_pole_coefficients",
     )
 )
-''', str(ROOT / 'src')], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_kinetic_wavevector_scan_defers_graph_dependencies_until_call():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import sys
 
 sys.path.insert(0, sys.argv[1])
@@ -185,14 +233,22 @@ assert not any(
         "scirel.kinetic.species_equilibrium_scales",
     )
 )
-''', str(ROOT / 'src')], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_kinetic_dispersion_relation_defers_graph_dependencies_until_call():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import sys
 
 sys.path.insert(0, sys.argv[1])
@@ -209,14 +265,22 @@ assert not any(
         "scirel.kinetic.species_equilibrium_scales",
     )
 )
-''', str(ROOT / 'src')], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_field_exports_are_lazy_and_preserve_compatibility_identity():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import json
 import sys
 
@@ -241,14 +305,24 @@ assert field.poloidal_field_from_flux is direct
 namespace = {}
 exec("from scirel.field import *", namespace)
 assert all(namespace[name] is getattr(field, name) for name in field.__all__)
-''', str(ROOT / 'src'), FIELD_EXPORTS], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+            FIELD_EXPORTS,
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_closures_namespace_is_dependency_light_before_operator_access():
     result = subprocess.run(
-        [sys.executable, '-I', '-S', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-c",
+            """
 import json
 import sys
 
@@ -271,14 +345,23 @@ except ModuleNotFoundError:
     pass
 else:
     raise AssertionError("operator unexpectedly imported without scientific dependencies")
-''', str(ROOT / 'src'), CLOSURES_EXPORTS], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+            CLOSURES_EXPORTS,
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_closures_exports_are_lazy_and_preserve_compatibility_identity():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import json
 import sys
 
@@ -302,14 +385,24 @@ assert closures.hall_two_fluid_pressure is sys.modules["scirel.closures.hall_two
 namespace = {}
 exec("from scirel.closures import *", namespace)
 assert all(namespace[name] is getattr(closures, name) for name in closures.__all__)
-''', str(ROOT / 'src'), CLOSURES_EXPORTS], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+            CLOSURES_EXPORTS,
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_equilibrium_namespace_is_dependency_light_and_preserves_missing_dependency_errors():
     result = subprocess.run(
-        [sys.executable, '-I', '-S', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-c",
+            """
 import json
 import sys
 
@@ -338,14 +431,23 @@ except ModuleNotFoundError as direct_error:
     assert direct_error.name == "numpy"
 else:
     raise AssertionError("direct child module unexpectedly imported without NumPy")
-''', str(ROOT / 'src'), EQUILIBRIUM_EXPORTS], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+            EQUILIBRIUM_EXPORTS,
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_equilibrium_exports_preserve_child_module_identity_and_from_star():
     result = subprocess.run(
-        [sys.executable, '-I', '-c', '''
+        [
+            sys.executable,
+            "-I",
+            "-c",
+            """
 import sys
 
 sys.path.insert(0, sys.argv[1])
@@ -391,7 +493,11 @@ namespace = {}
 exec("from scirel.equilibrium import *", namespace)
 assert all(namespace[name] is getattr(equilibrium, name) for name in equilibrium.__all__)
 assert "equilibrium_state" not in namespace
-''', str(ROOT / 'src')], capture_output=True, text=True,
+""",
+            str(ROOT / "src"),
+        ],
+        capture_output=True,
+        text=True,
     )
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -403,7 +509,9 @@ def test_vendored_copy_does_not_report_the_host_project_version(tmp_path) -> Non
     (vendor / "__init__.py").write_bytes((ROOT / "src" / "scirel" / "__init__.py").read_bytes())
     result = subprocess.run(
         [sys.executable, "-B", "-c", "import scirel; print(scirel.__version__)"],
-        capture_output=True, text=True, cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
         env={**os.environ, "PYTHONPATH": str(tmp_path / "vendor")},
     )
     assert result.returncode == 0, result.stderr

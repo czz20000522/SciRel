@@ -6,6 +6,7 @@ instead of silently excluding the whole solver box; and is the innermost-radius
 segment a live branch only when the equilibrium map reaches the grid's minimum
 radius.
 """
+
 from __future__ import annotations
 
 import ast
@@ -17,11 +18,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-CLASSIFICATION_MODULE = Path(
-    importlib.import_module("scirel.geometry.material_support").__file__
-).resolve() if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1" else (
-    Path(__file__).resolve().parents[2]
-    / "src/scirel/geometry/material_support.py"
+CLASSIFICATION_MODULE = (
+    Path(importlib.import_module("scirel.geometry.material_support").__file__).resolve()
+    if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1"
+    else (Path(__file__).resolve().parents[2] / "src/scirel/geometry/material_support.py")
 )
 
 _HALF_LENGTH = 0.2
@@ -38,7 +38,18 @@ def _interior(shape, thickness):
     return interior
 
 
-def _classify(candidate, equilibrium, axes, cylindrical, *, side=None, separatrix=None, pml_cells=1, pec=None, r_start=0.05):
+def _classify(
+    candidate,
+    equilibrium,
+    axes,
+    cylindrical,
+    *,
+    side=None,
+    separatrix=None,
+    pml_cells=1,
+    pec=None,
+    r_start=0.05,
+):
     eq = equilibrium(
         r_start=r_start,
         side="less_than" if side is None else side,
@@ -64,7 +75,9 @@ def _classify(candidate, equilibrium, axes, cylindrical, *, side=None, separatri
 
 
 # --- Test U1-B-T01: the closed-flux side selects the flux-surface side. -----
-def test_u1_b_t01_closed_flux_side_selects_the_flux_surface_side(candidate, equilibrium, axes, cylindrical):
+def test_u1_b_t01_closed_flux_side_selects_the_flux_surface_side(
+    candidate, equilibrium, axes, cylindrical
+):
     _, _, _, _, less, _ = _classify(candidate, equilibrium, axes, cylindrical, side="less_than")
     _, _, _, _, greater, _ = _classify(
         candidate, equilibrium, axes, cylindrical, side="greater_than", separatrix=0.4
@@ -98,9 +111,7 @@ def test_u1_b_t02_pml_frame_is_excluded_on_all_six_faces(
             assert not np.any(support[tuple(selector)]), (axis_index, edge)
 
     expected_interior = _interior(support.shape, thickness)
-    np.testing.assert_array_equal(
-        support, mask["closed_flux_mask"] & expected_interior
-    )
+    np.testing.assert_array_equal(support, mask["closed_flux_mask"] & expected_interior)
     # The support is a strict subset of the interior, so the frame really bites.
     assert support.sum() < expected_interior.sum()
     assert radii.shape == support.shape and axial.shape == support.shape
@@ -117,9 +128,7 @@ def test_u1_b_t03_pec_mask_removes_support(candidate, equilibrium, axes, cylindr
     assert masked["material_support_mask"].sum() == clean["material_support_mask"].sum() - 1
     # The PEC mask is applied after the flux-surface classification, so the
     # closed-flux mask itself is unchanged.
-    np.testing.assert_array_equal(
-        masked["closed_flux_mask"], clean["closed_flux_mask"]
-    )
+    np.testing.assert_array_equal(masked["closed_flux_mask"], clean["closed_flux_mask"])
 
 
 # --- Test U1-B-T04: a zero-thickness PML frame is rejected, not silent. ----
@@ -200,14 +209,22 @@ def test_u1_b_t07_validation_is_fail_closed(candidate, equilibrium, axes, cylind
         pec_mask=pec,
     )
     cases = [
-        ((flux, covered, radii, axial), {**base, "closed_flux_side": "sideways"}, "less_than or greater_than"),
+        (
+            (flux, covered, radii, axial),
+            {**base, "closed_flux_side": "sideways"},
+            "less_than or greater_than",
+        ),
         ((flux[..., None], covered, radii, axial), base, "must be a 3D array"),
         ((flux, covered[:-1], radii, axial), base, "covered_mask must match"),
         ((flux, covered, radii[:-1], axial), base, "radii_m must match"),
         ((flux, covered, radii, axial[:-1]), base, "axial_coordinate_m must match"),
         ((flux, covered, radii * np.nan, axial), base, "radii_m must be finite"),
         ((flux, covered, -radii, axial), base, "non-negative"),
-        ((flux, covered, radii, axial), {**base, "separatrix_flux_wb_per_rad": np.nan}, "must be finite"),
+        (
+            (flux, covered, radii, axial),
+            {**base, "separatrix_flux_wb_per_rad": np.nan},
+            "must be finite",
+        ),
         ((flux, covered, radii, axial), {**base, "xpoint_half_length_m": 0.0}, "strictly positive"),
         ((flux, covered, radii, axial), {**base, "xpoint_half_length_m": np.inf}, "must be finite"),
         ((flux, covered, radii, axial), {**base, "pml_cells": -1}, "positive integer"),

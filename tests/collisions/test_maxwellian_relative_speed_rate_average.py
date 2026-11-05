@@ -9,6 +9,7 @@ in-file formulation of the same discrete relation and from two analytic limits,
 and they never import the saved bundle. A separate intake replay compares the
 archived implementation when its root is supplied.
 """
+
 from __future__ import annotations
 
 import inspect
@@ -50,9 +51,17 @@ def _midpoint_mesh(nvr, nvx, tnorm_ev=TNORM_EV, target_mass_amu=TARGET_MASS_AMU)
     return vx, vr, volume
 
 
-def _independent_average(particle_energy_ev, particle_mass_amu, target_temperature_ev,
-                         target_mass_amu, vx, vr, tnorm_ev, cylindrical_volume,
-                         cross_section_m2):
+def _independent_average(
+    particle_energy_ev,
+    particle_mass_amu,
+    target_temperature_ev,
+    target_mass_amu,
+    vx,
+    vr,
+    tnorm_ev,
+    cylindrical_volume,
+    cross_section_m2,
+):
     """A from-scratch loop-per-energy formulation of the same discrete relation.
 
     The weights are normalized before the cross section enters and each beam
@@ -155,12 +164,17 @@ def test_the_discrete_relation_matches_an_independent_formulation():
     def sigma_linear(energy):
         return 2.0e-20 + 1.0e-22 * energy
 
-    ours = _call(
-        energies=energies, sigma=sigma_linear, vx=vx, vr=vr, volume=volume
-    )
+    ours = _call(energies=energies, sigma=sigma_linear, vx=vx, vr=vr, volume=volume)
     theirs = _independent_average(
-        energies, PARTICLE_MASS_AMU, TARGET_TEMPERATURE_EV, TARGET_MASS_AMU,
-        vx, vr, TNORM_EV, volume, sigma_linear,
+        energies,
+        PARTICLE_MASS_AMU,
+        TARGET_TEMPERATURE_EV,
+        TARGET_MASS_AMU,
+        vx,
+        vr,
+        TNORM_EV,
+        volume,
+        sigma_linear,
     )
     np.testing.assert_allclose(ours, theirs, rtol=1e-14, atol=0.0)
 
@@ -199,9 +213,7 @@ def test_the_rest_beam_limit_converges_to_sigma_times_the_mean_target_speed():
 def test_the_cold_target_limit_converges_to_sigma_of_the_beam_energy_times_the_beam_speed():
     """T_target << T_norm: the target is at rest, so <sigma v> -> sigma(E) * v."""
     beam_energy = 100.0
-    vx, vr, volume = _midpoint_mesh(
-        200, 300, tnorm_ev=TNORM_EV, target_mass_amu=TARGET_MASS_AMU
-    )
+    vx, vr, volume = _midpoint_mesh(200, 300, tnorm_ev=TNORM_EV, target_mass_amu=TARGET_MASS_AMU)
 
     def sigma_linear(energy):
         return 2.0e-20 + 1.0e-22 * energy
@@ -240,8 +252,12 @@ def test_the_inputs_are_not_modified():
         vr=vr.copy(),
         cylindrical_volume=volume.copy(),
     )
-    _call(energies=kept["particle_energy_ev"], vx=kept["vx"], vr=kept["vr"],
-          volume=kept["cylindrical_volume"])
+    _call(
+        energies=kept["particle_energy_ev"],
+        vx=kept["vx"],
+        vr=kept["vr"],
+        volume=kept["cylindrical_volume"],
+    )
     assert np.array_equal(kept["particle_energy_ev"], energies)
     assert np.array_equal(kept["vx"], vx)
     assert np.array_equal(kept["vr"], vr)
@@ -262,8 +278,7 @@ def test_the_saved_graph_contract_consumes_one_immutable_mesh_snapshot():
     """
     vx, vr, volume = _midpoint_mesh(24, 36)
     energies = np.array([1.0, 10.0, 100.0])
-    snapshot = dict(vx=vx.copy(), vr=vr.copy(), tnorm_ev=TNORM_EV,
-                    cylindrical_volume=volume.copy())
+    snapshot = dict(vx=vx.copy(), vr=vr.copy(), tnorm_ev=TNORM_EV, cylindrical_volume=volume.copy())
     rate_table = {
         float(energy): average_cross_section_over_maxwellian(
             particle_energy_ev=np.array([energy]),
@@ -378,6 +393,7 @@ def test_a_nonrepresentable_rate_is_rejected_rather_than_returned():
     non-finite rate silently; the saved document itself declares the result
     finite.
     """
+
     def huge_sigma(energy):
         return np.full_like(energy, 1.0e305)
 
@@ -409,20 +425,29 @@ def test_nonrepresentable_collision_energies_are_rejected_before_the_callback():
     assert observed == [], "the callable must not observe non-finite collision energies"
 
 
-@pytest.mark.parametrize("name", [
-    "particle_mass_amu", "target_mass_amu", "target_temperature_ev", "tnorm_ev",
-])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "particle_mass_amu",
+        "target_mass_amu",
+        "target_temperature_ev",
+        "tnorm_ev",
+    ],
+)
 def test_numeric_string_scalar_is_rejected_by_name(name):
     with pytest.raises(ValueError, match=name):
         _call(**{name: "2.0"})
 
 
-@pytest.mark.parametrize("name,value", [
-    ("particle_energy_ev", ["1.0"]),
-    ("vx", [False] * 36),
-    ("vr", [0.5 + 0j] * 24),
-    ("cylindrical_volume", [["1.0"] * 36] * 24),
-])
+@pytest.mark.parametrize(
+    "name,value",
+    [
+        ("particle_energy_ev", ["1.0"]),
+        ("vx", [False] * 36),
+        ("vr", [0.5 + 0j] * 24),
+        ("cylindrical_volume", [["1.0"] * 36] * 24),
+    ],
+)
 def test_array_inputs_require_real_numeric_values(name, value):
     with pytest.raises(ValueError, match=name):
         if name == "particle_energy_ev":

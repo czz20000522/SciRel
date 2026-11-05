@@ -1,6 +1,8 @@
 import pytest
 import numpy as np
 from scirel.kinetic.frank_egedal_radial_envelope import evaluate_frank_egedal_radial_envelope
+
+
 def test_rejects_incomplete_envelope_state():
     with pytest.raises(ValueError, match="params must be a mapping"):
         evaluate_frank_egedal_radial_envelope(np.zeros((2, 2)), None)
@@ -28,7 +30,8 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(
         evaluate_frank_egedal_radial_envelope(
             [[0.0, 0.5, 1.0]], {"psi_axis": 1.0, "psi_edge": 0.0, "alpha": 1.0}
-        ), [[0.0, 0.5, 1.0]]
+        ),
+        [[0.0, 0.5, 1.0]],
     )
     try:
         evaluate_frank_egedal_radial_envelope([[1.0, 1.0]], {"psi_axis": 1.0, "psi_edge": 1.0})

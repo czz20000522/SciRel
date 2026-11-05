@@ -10,8 +10,7 @@ __all__ = ["reduce_qh2_total_conservation_diagnostic"]
 def _real_numeric(name, value):
     try:
         if not isinstance(value, np.ndarray) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -39,9 +38,7 @@ def reduce_qh2_total_conservation_diagnostic(
 ):
     """Return source-defined normalized energy-balance error at axial nodes."""
     position = _real_numeric("axial_position_m", axial_position_m)
-    total_heat_flux = _real_numeric(
-        "total_heat_flux_profile_w_m2", total_heat_flux_profile_w_m2
-    )
+    total_heat_flux = _real_numeric("total_heat_flux_profile_w_m2", total_heat_flux_profile_w_m2)
     total_energy_transfer = _real_numeric(
         "total_energy_transfer_rate_profile_w_m3",
         total_energy_transfer_rate_profile_w_m3,
@@ -62,9 +59,7 @@ def reduce_qh2_total_conservation_diagnostic(
             "QH2_total diagnostic requires finite one-dimensional profiles and nonzero axial spacing"
         )
 
-    q1, q2 = _terminal_balance_terms(
-        total_heat_flux, total_energy_transfer, position
-    )
+    q1, q2 = _terminal_balance_terms(total_heat_flux, total_energy_transfer, position)
     normalization = np.max(np.abs(np.asarray([q1, q2])))
     if not np.isfinite(normalization):
         raise ValueError("QH2_total diagnostic produced a non-finite normalization")

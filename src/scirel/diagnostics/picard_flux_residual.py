@@ -8,11 +8,14 @@ def compute_picard_flux_residual(psi_previous, psi_next):
     previous = np.asarray(psi_previous, dtype=float)
     next_state = np.asarray(psi_next, dtype=float)
     if previous.shape != next_state.shape or previous.ndim != 2:
-        raise ValueError("psi_previous and psi_next must be same-shape two-dimensional [Z,R] arrays")
+        raise ValueError(
+            "psi_previous and psi_next must be same-shape two-dimensional [Z,R] arrays"
+        )
     if not np.all(np.isfinite(previous)) or not np.all(np.isfinite(next_state)):
         raise ValueError("psi_previous and psi_next must contain only finite values")
-    scale = max(float(np.max(np.abs(previous), initial=0.0)),
-                float(np.max(np.abs(next_state), initial=0.0)))
+    scale = max(
+        float(np.max(np.abs(previous), initial=0.0)), float(np.max(np.abs(next_state), initial=0.0))
+    )
     if scale == 0.0:
         return {"residual": 0.0}
     previous_scaled = previous / scale
@@ -32,4 +35,4 @@ def compute_picard_flux_residual(psi_previous, psi_next):
     return {"residual": residual}
 
 
-__all__ = ['compute_picard_flux_residual']
+__all__ = ["compute_picard_flux_residual"]

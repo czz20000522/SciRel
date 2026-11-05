@@ -1,4 +1,5 @@
 """Regression coverage for the colon-ladder axes used by the two wavevector scans."""
+
 from fractions import Fraction
 
 import numpy as np
@@ -15,7 +16,8 @@ def test_wavevector_scan_colon_ladder_includes_endpoint(scan, start, step, stop)
     result = scan(omega_scale=start, omega_step=step, omega_stop=stop, wn=1.0)
     exact_count = int((Fraction(str(stop)) - Fraction(str(start))) / Fraction(str(step))) + 1
     assert result["count"] == exact_count
-    expected = np.array([float(Fraction(str(start)) + k * Fraction(str(step)))
-                         for k in range(exact_count)])
+    expected = np.array(
+        [float(Fraction(str(start)) + k * Fraction(str(step))) for k in range(exact_count)]
+    )
     np.testing.assert_allclose(result["omegas"], expected, rtol=0, atol=1e-15)
     assert np.isclose(result["omegas"][-1], stop, rtol=0, atol=1e-15)

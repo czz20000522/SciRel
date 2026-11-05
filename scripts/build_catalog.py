@@ -19,10 +19,12 @@ from public_api_binding import (
     qualified_name,
 )
 from validate_asset_documents import load_document_set
+
 try:
     from exposure import exposed_documents
 except ModuleNotFoundError:  # tests may load this file by spec without scripts/ on sys.path
     import sys as _sys
+
     _sys.path.insert(0, str(Path(__file__).resolve().parent))
     from exposure import exposed_documents
 
@@ -32,9 +34,9 @@ _GIT_REVISION = re.compile(r"[0-9a-f]{40}")
 
 
 def _canonical_json(value: Any) -> bytes:
-    return json.dumps(
-        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
 
 
 def _digest(payload: bytes) -> str:
@@ -58,9 +60,7 @@ def _write_jsonl(path: Path, values: list[dict[str, Any]]) -> None:
 
 def _project_version(source_root: Path) -> str:
     try:
-        metadata = tomllib.loads(
-            (source_root / "pyproject.toml").read_text(encoding="utf-8")
-        )
+        metadata = tomllib.loads((source_root / "pyproject.toml").read_text(encoding="utf-8"))
         version = metadata["project"]["version"]
     except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
         raise ValueError("source_root pyproject.toml has no readable project.version") from error
@@ -109,19 +109,16 @@ def build_catalog(
     source_root: Path | None = None,
     source_revision: str | None = None,
 ) -> dict[str, Any]:
-    documents = sorted(exposed_documents(load_document_set(documents_dir)),
-                       key=lambda item: item["asset_id"])
+    documents = sorted(
+        exposed_documents(load_document_set(documents_dir)), key=lambda item: item["asset_id"]
+    )
     if output_dir.exists():
         raise FileExistsError(f"catalog output already exists: {output_dir}")
     if coverage_status not in {"partial", "complete"}:
         raise ValueError("coverage_status must be partial or complete")
-    document_versions = {
-        document["version"]["implementation_version"] for document in documents
-    }
+    document_versions = {document["version"]["implementation_version"] for document in documents}
     if document_versions != {release_version}:
-        raise ValueError(
-            "every document implementation_version must match catalog release_version"
-        )
+        raise ValueError("every document implementation_version must match catalog release_version")
     if declared_total < len(documents):
         raise ValueError("declared_total cannot be smaller than included assets")
     if coverage_status == "complete" and declared_total != len(documents):
@@ -133,17 +130,13 @@ def build_catalog(
                 "catalog release_version must match source_root pyproject.toml project.version"
             )
         if source_revision is None:
-            raise ValueError(
-                "source_root catalog builds require an exact source_revision"
-            )
+            raise ValueError("source_root catalog builds require an exact source_revision")
     if source_revision is not None:
         source_revision = _validate_source_revision(source_revision)
         if source_root is not None:
             source_head = _source_head(source_root)
             if source_head is not None and source_revision != source_head:
-                raise ValueError(
-                    "catalog source_revision differs from source_root Git HEAD"
-                )
+                raise ValueError("catalog source_revision differs from source_root Git HEAD")
 
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(
@@ -207,10 +200,7 @@ def build_catalog(
                     for port in document["inputs"]
                 ],
                 "outputs": [
-                    {
-                        field: port[field]
-                        for field in ("name", "units", "shape", "dtype")
-                    }
+                    {field: port[field] for field in ("name", "units", "shape", "dtype")}
                     for port in document["outputs"]
                 ],
                 "public_callable": qualified_name(*canonical_binding(python_api)),
@@ -283,7 +273,8 @@ def main() -> int:
     parser.add_argument("--coverage-status", choices=("partial", "complete"), required=True)
     parser.add_argument("--declared-total", type=int, required=True)
     parser.add_argument(
-        "--source-root", type=Path,
+        "--source-root",
+        type=Path,
         help="source checkout whose pyproject.toml must own release_version",
     )
     parser.add_argument(

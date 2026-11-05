@@ -1,4 +1,5 @@
 """the neutral-transport formulation H/H2 collision-generation stopping criterion."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,12 +30,25 @@ def _relative_generation_change(generation, accumulated):
         return float(np.max(generation) / np.max(accumulated))
 
 
-def evaluate_neutral_generation_stopping(generation_density_m3, accumulated_density_m3, truncate, seed_iteration_enabled=False, seed_error=None):
+def evaluate_neutral_generation_stopping(
+    generation_density_m3,
+    accumulated_density_m3,
+    truncate,
+    seed_iteration_enabled=False,
+    seed_error=None,
+):
     """Return source Delta_n and whether the next collision generation is unnecessary."""
     generation = _finite_real(generation_density_m3, "generation_density_m3")
     accumulated = _finite_real(accumulated_density_m3, "accumulated_density_m3")
     truncate = _finite_real(truncate, "truncate", scalar=True)
-    if generation.shape != accumulated.shape or generation.ndim != 1 or generation.size == 0 or np.any(generation < 0.0) or np.any(accumulated < 0.0) or truncate <= 0.0:
+    if (
+        generation.shape != accumulated.shape
+        or generation.ndim != 1
+        or generation.size == 0
+        or np.any(generation < 0.0)
+        or np.any(accumulated < 0.0)
+        or truncate <= 0.0
+    ):
         raise ValueError("density vectors must be finite/nonnegative and truncate positive")
     if not isinstance(seed_iteration_enabled, (bool, np.bool_)):
         raise ValueError("seed_iteration_enabled must be a boolean scalar")

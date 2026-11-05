@@ -44,12 +44,12 @@ def test_fluidbw_direct_import_does_not_preload_scipy_io() -> None:
             sys.executable,
             "-I",
             "-c",
-            r'''
+            r"""
 import sys
 sys.path.insert(0, sys.argv[1])
 import scirel.kinetic.fluid_spectrum
 assert "scipy.io" not in sys.modules
-''',
+""",
             str(ROOT / "src"),
         ],
         capture_output=True,

@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux, correct_ideal_conductor_boundary_flux as scientific_function
+from scirel.field.ideal_conductor_boundary import (
+    correct_ideal_conductor_boundary_flux,
+    correct_ideal_conductor_boundary_flux as scientific_function,
+)
 
 
 def _inputs():
@@ -45,22 +48,24 @@ def test_consistent_flux_rescaling_preserves_boundary_currents():
         green_boundary_to_field=2 * np.pi * data["green_boundary_to_field"],
     )
     np.testing.assert_allclose(full_flux["boundary_currents"], per_radian["boundary_currents"])
-    for name in ("corrected_field_flux", "boundary_flux_correction", "field_flux_correction", "residual"):
+    for name in (
+        "corrected_field_flux",
+        "boundary_flux_correction",
+        "field_flux_correction",
+        "residual",
+    ):
         np.testing.assert_allclose(full_flux[name], 2 * np.pi * per_radian[name])
 
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.field.ideal_conductor_boundary import correct_ideal_conductor_boundary_flux
 
     field_flux = np.array([3.0, -1.0, 2.0])
     sample = np.array([[1.0, 0.0, 0.0], [0.0, 0.5, 0.5]])
     g_boundary = np.array([[2.0, 0.0], [0.0, 4.0]])
     g_field = np.array([[2.0, 0.0], [-1.0, 3.0], [1.0, 5.0]])
     assert np.allclose(sample @ g_field, g_boundary)
-    result = correct_ideal_conductor_boundary_flux(
-        field_flux, sample, g_boundary, g_field
-    )
+    result = correct_ideal_conductor_boundary_flux(field_flux, sample, g_boundary, g_field)
     np.testing.assert_allclose(result["residual"], 0.0)
     np.testing.assert_allclose(sample @ result["corrected_field_flux"], result["residual"])
     np.testing.assert_allclose(result["corrected_field_flux"], [0.0, 0.125, -0.125])

@@ -7,7 +7,9 @@ from scirel.kinetic.atomic_slab_transport import solve_atomic_slab_transport
 
 
 def test_atomic_slab_composition_runs_fixed_public_case():
-    path = Path(r"E:\SciRel-lab\_shared\outbound\portfolio-20261027\challenge-agent-20261029\cases\06-录屏-有限速度格原子氘束输运\题面\inputs.json")
+    path = Path(
+        r"E:\SciRel-lab\_shared\outbound\portfolio-20261027\challenge-agent-20261029\cases\06-录屏-有限速度格原子氘束输运\题面\inputs.json"
+    )
     if not path.exists():
         return
     result = solve_atomic_slab_transport(json.loads(path.read_text(encoding="utf-8")))

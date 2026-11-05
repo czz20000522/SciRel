@@ -28,17 +28,11 @@ def construct_maxwellian_pade(*, J, I, precision):
         positive_moments = [mp.mpc(0)] * (2 * J + 4)
         negative_moments = positive_moments.copy()
         for n in range(J + 2):
-            positive_moments[2 * n] = (
-                (-1) ** n * mp.j * mp.sqrt(mp.pi) / mp.gamma(n + 1)
-            )
+            positive_moments[2 * n] = (-1) ** n * mp.j * mp.sqrt(mp.pi) / mp.gamma(n + 1)
             positive_moments[2 * n + 1] = (
-                -(-1) ** n
-                * mp.gamma(mp.mpf("0.5"))
-                / mp.gamma(n + mp.mpf("1.5"))
+                -((-1) ** n) * mp.gamma(mp.mpf("0.5")) / mp.gamma(n + mp.mpf("1.5"))
             )
-            negative_moments[2 * n + 1] = (
-                -mp.gamma(n + mp.mpf("0.5")) / mp.gamma(mp.mpf("0.5"))
-            )
+            negative_moments[2 * n + 1] = -mp.gamma(n + mp.mpf("0.5")) / mp.gamma(mp.mpf("0.5"))
 
         matrix = mp.matrix(2 * J)
         right_hand_side = mp.matrix(2 * J, 1)
@@ -75,8 +69,7 @@ def construct_maxwellian_pade(*, J, I, precision):
                 slope = mp.polyval(derivative, root)
                 if slope == 0:
                     raise ArithmeticError(
-                        "repeated or unresolved polynomial root requires "
-                        "higher-order-pole contract"
+                        "repeated or unresolved polynomial root requires higher-order-pole contract"
                     )
                 step = value / slope
                 root -= step
@@ -94,9 +87,7 @@ def construct_maxwellian_pade(*, J, I, precision):
             )
             error = abs(mp.polyval(denominator, root)) / scale
             if error > target:
-                raise ArithmeticError(
-                    "Padé root polynomial residual exceeds declared precision"
-                )
+                raise ArithmeticError("Padé root polynomial residual exceeds declared precision")
             roots.append(root)
             root_errors.append(error)
 
@@ -110,24 +101,17 @@ def construct_maxwellian_pade(*, J, I, precision):
                     "representation unresolved"
                 )
 
-        residues = [
-            mp.polyval(numerator, root) / mp.polyval(derivative, root)
-            for root in roots
-        ]
+        residues = [mp.polyval(numerator, root) / mp.polyval(derivative, root) for root in roots]
         linear_residual = mp.norm(matrix * coefficients - right_hand_side) / (
             mp.norm(matrix) * mp.norm(coefficients) + mp.norm(right_hand_side)
         )
         if linear_residual > target:
-            raise ArithmeticError(
-                "high-precision Padé linear residual exceeds declared precision"
-            )
+            raise ArithmeticError("high-precision Padé linear residual exceeds declared precision")
 
         residue_array = _float_array(residues)
         pole_array = _float_array(roots)
         if not np.isfinite(residue_array).all() or not np.isfinite(pole_array).all():
-            raise FloatingPointError(
-                "Padé poles/residues not representable in binary64"
-            )
+            raise FloatingPointError("Padé poles/residues not representable in binary64")
 
         return {
             "J": J,
@@ -143,23 +127,19 @@ def construct_maxwellian_pade(*, J, I, precision):
                 [[complex(matrix[i, j]) for j in range(2 * J)] for i in range(2 * J)]
             ),
             "B": _float_array(right_hand_side),
-            "moments": np.asarray([
-                sum(residue_array),
-                sum(residue_array * pole_array),
-                sum(residue_array * pole_array * pole_array),
-            ]),
-            "high_precision_linear_residual": mp.nstr(
-                linear_residual, int(precision)
+            "moments": np.asarray(
+                [
+                    sum(residue_array),
+                    sum(residue_array * pole_array),
+                    sum(residue_array * pole_array * pole_array),
+                ]
             ),
+            "high_precision_linear_residual": mp.nstr(linear_residual, int(precision)),
             "high_precision_root_residual": [
                 mp.nstr(value, int(precision)) for value in root_errors
             ],
-            "high_precision_poles": [
-                mp.nstr(value, int(precision)) for value in roots
-            ],
-            "high_precision_residues": [
-                mp.nstr(value, int(precision)) for value in residues
-            ],
+            "high_precision_poles": [mp.nstr(value, int(precision)) for value in roots],
+            "high_precision_residues": [mp.nstr(value, int(precision)) for value in residues],
             "precision_claim": (
                 "coefficient/root construction at declared decimal precision; "
                 "output numeric ports binary64; Z applicability separately qualified"

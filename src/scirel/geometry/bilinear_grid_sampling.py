@@ -1,4 +1,5 @@
 """Bilinear sampling of a scalar field on a rectilinear R-Z grid."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -47,8 +48,10 @@ def sample_rectilinear_field(r_grid, z_grid, quantity, points):
         raise ValueError("points must be a finite array with shape (n_points, 2)")
     r_values, z_values = points.T
     inside = (
-        (r_values >= r_axis[0]) & (r_values <= r_axis[-1])
-        & (z_values >= z_axis[0]) & (z_values <= z_axis[-1])
+        (r_values >= r_axis[0])
+        & (r_values <= r_axis[-1])
+        & (z_values >= z_axis[0])
+        & (z_values <= z_axis[-1])
     )
     if not np.all(inside):
         raise ValueError("diagnostic point lies outside the R-Z grid")

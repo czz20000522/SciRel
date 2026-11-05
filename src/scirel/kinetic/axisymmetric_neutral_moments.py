@@ -47,6 +47,7 @@ the saved the neutral-transport formulation implementation.  The saved bundle's 
 has been withdrawn; that replay is
 historical development evidence, not qualified-L1 provenance.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -62,8 +63,7 @@ _ELEMENTARY_CHARGE_C = 1.602177e-19
 def _real_array(name, value):
     try:
         if isinstance(value, (list, tuple)) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -147,7 +147,9 @@ def reduce_axisymmetric_neutral_moments(
         "normalization_temperature_ev", normalization_temperature_ev
     )
     isotope_mass_amu = _numeric_scalar("isotope_mass_amu", isotope_mass_amu)
-    if isinstance(molecularity, (bool, np.bool_)) or not isinstance(molecularity, (int, np.integer)):
+    if isinstance(molecularity, (bool, np.bool_)) or not isinstance(
+        molecularity, (int, np.integer)
+    ):
         raise ValueError("molecularity must be an integer scalar")
     if (
         f.ndim != 3
@@ -174,8 +176,7 @@ def reduce_axisymmetric_neutral_moments(
         raise ValueError("thermal speed must be finite and positive")
     with np.errstate(over="ignore", divide="ignore", invalid="ignore", under="ignore"):
         thermal_speed = np.sqrt(
-            2.0 * _ELEMENTARY_CHARGE_C * normalization_temperature_ev
-            / normalization_mass_kg
+            2.0 * _ELEMENTARY_CHARGE_C * normalization_temperature_ev / normalization_mass_kg
         )
     if not np.isfinite(thermal_speed) or thermal_speed <= 0.0:
         raise ValueError("thermal speed must be finite and positive")
@@ -210,18 +211,16 @@ def reduce_axisymmetric_neutral_moments(
             axial_integral = f[:, :, k] @ axial_weight
             axial_integrals[:, k] = axial_integral
             density[k] = np.sum(radial_weight * axial_integral)
-            axial_flux[k] = thermal_speed * np.sum(
-                radial_weight * (f[:, :, k] @ axial_weighted)
-            )
+            axial_flux[k] = thermal_speed * np.sum(radial_weight * (f[:, :, k] @ axial_weighted))
     valid_density = density > 0.0
     if np.any(~valid_density) and empty_slice_policy == "reject":
         raise ValueError("each spatial distribution slice must have positive density")
     axial_velocity = np.zeros_like(density)
     np.divide(axial_flux, density, out=axial_velocity, where=valid_density)
     normalized_flow = axial_velocity / thermal_speed
-    random_speed_squared = radial[:, None, None] ** 2 + (
-        axial[None, :, None] - normalized_flow[None, None, :]
-    ) ** 2
+    random_speed_squared = (
+        radial[:, None, None] ** 2 + (axial[None, :, None] - normalized_flow[None, None, :]) ** 2
+    )
     mass_kg = molecularity * isotope_mass_amu * _HYDROGEN_MASS_KG
     if axial_quadrature is None:
         pressure_ev_m3 = (
@@ -250,12 +249,17 @@ def reduce_axisymmetric_neutral_moments(
             / _ELEMENTARY_CHARGE_C
             - pressure_ev_m3
         )
-        heat_flux_w_m2 = 0.5 * mass_kg * thermal_speed**3 * np.sum(
-            volume[:, :, None]
-            * random_speed_squared
-            * f
-            * (axial[None, :, None] - normalized_flow[None, None, :]),
-            axis=(0, 1),
+        heat_flux_w_m2 = (
+            0.5
+            * mass_kg
+            * thermal_speed**3
+            * np.sum(
+                volume[:, :, None]
+                * random_speed_squared
+                * f
+                * (axial[None, :, None] - normalized_flow[None, None, :]),
+                axis=(0, 1),
+            )
         )
     else:
         pressure_ev_m3 = np.empty(f.shape[2], dtype=float)
@@ -267,8 +271,7 @@ def reduce_axisymmetric_neutral_moments(
                 mass_kg
                 * thermal_speed**2
                 * np.sum(
-                    radial_weight
-                    * ((random_speed_squared[:, :, k] * f[:, :, k]) @ axial_weight)
+                    radial_weight * ((random_speed_squared[:, :, k] * f[:, :, k]) @ axial_weight)
                 )
                 / (3.0 * _ELEMENTARY_CHARGE_C)
             )
@@ -276,10 +279,7 @@ def reduce_axisymmetric_neutral_moments(
             stress_xx_ev_m3[k] = (
                 mass_kg
                 * thermal_speed**2
-                * np.sum(
-                    radial_weight
-                    * (f[:, :, k] @ (axial_weight * centered_axial**2))
-                )
+                * np.sum(radial_weight * (f[:, :, k] @ (axial_weight * centered_axial**2)))
                 / _ELEMENTARY_CHARGE_C
             )
             stress_yy_ev_m3[k] = (
@@ -302,9 +302,7 @@ def reduce_axisymmetric_neutral_moments(
                 )
             )
     temperature_ev = (
-        np.ones_like(density)
-        if empty_slice_policy == "source_default"
-        else np.empty_like(density)
+        np.ones_like(density) if empty_slice_policy == "source_default" else np.empty_like(density)
     )
     np.divide(pressure_ev_m3, density, out=temperature_ev, where=valid_density)
     if axial_quadrature is not None:

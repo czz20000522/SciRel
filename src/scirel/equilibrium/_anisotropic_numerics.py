@@ -5,6 +5,7 @@ This module owns only quadrature areas for a rectangular R--Z mesh and the
 magnetic field produced by an added poloidal flux.  Both routines use local
 NumPy operations on caller-owned arrays.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -18,8 +19,12 @@ from scirel._anisotropic_numerics import (
 from scirel._numerics import stable_gradient
 
 __all__ = [
-    "cell_areas", "flux_field_increment", "gradient_roundoff",
-    "pressure_divergence", "residual_metrics", "rms",
+    "cell_areas",
+    "flux_field_increment",
+    "gradient_roundoff",
+    "pressure_divergence",
+    "residual_metrics",
+    "rms",
 ]
 
 

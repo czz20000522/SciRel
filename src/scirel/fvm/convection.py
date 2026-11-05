@@ -18,9 +18,12 @@ def _power_weight(peclet):
     result[low] = -1.0 / peclet[low]
     middle_positive = (peclet > 1.0e-3) & (peclet <= 10.0)
     middle_negative = (peclet < -1.0e-3) & (peclet >= -10.0)
-    result[middle_positive] = ((peclet[middle_positive] - 1.0)
-                               + (1.0 - peclet[middle_positive] / 10.0) ** 5) / peclet[middle_positive]
-    result[middle_negative] = ((1.0 + peclet[middle_negative] / 10.0) ** 5 - 1.0) / peclet[middle_negative]
+    result[middle_positive] = (
+        (peclet[middle_positive] - 1.0) + (1.0 - peclet[middle_positive] / 10.0) ** 5
+    ) / peclet[middle_positive]
+    result[middle_negative] = ((1.0 + peclet[middle_negative] / 10.0) ** 5 - 1.0) / peclet[
+        middle_negative
+    ]
     return result
 
 
@@ -60,7 +63,9 @@ def make_convection_terms(v_face, d_face, var, dirichlet_mode="ghost", neumann_m
         if var.left_face_constraint is not None:
             boundary = var.left_face_constraint
             if dirichlet_mode == "ghost":
-                diagonal[0] = (velocity[0] * (2.0 * left_weight[0] - 1.0) - velocity[1] * right_weight[0]) / widths[0]
+                diagonal[0] = (
+                    velocity[0] * (2.0 * left_weight[0] - 1.0) - velocity[1] * right_weight[0]
+                ) / widths[0]
                 offset[0] = 2.0 * velocity[0] * (1.0 - left_weight[0]) * boundary / widths[0]
             elif dirichlet_mode == "direct":
                 diagonal[0] = -velocity[1] * right_weight[0] / widths[0]
@@ -76,7 +81,9 @@ def make_convection_terms(v_face, d_face, var, dirichlet_mode="ghost", neumann_m
         if var.right_face_constraint is not None:
             boundary = var.right_face_constraint
             if dirichlet_mode == "ghost":
-                diagonal[-1] = (velocity[-2] * left_weight[-1] + velocity[-1] * (1.0 - 2.0 * right_weight[-1])) / widths[-1]
+                diagonal[-1] = (
+                    velocity[-2] * left_weight[-1] + velocity[-1] * (1.0 - 2.0 * right_weight[-1])
+                ) / widths[-1]
                 offset[-1] = -2.0 * velocity[-1] * (1.0 - right_weight[-1]) * boundary / widths[-1]
             elif dirichlet_mode == "direct":
                 diagonal[-1] = velocity[-2] * left_weight[-1] / widths[-1]

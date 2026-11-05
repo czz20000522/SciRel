@@ -11,6 +11,7 @@ them to the lower endpoint), and the ``viscosity`` selector must be a scalar
 (the saved document declares a scalar but its implementation reduced arrays
 with ``bool()``).
 """
+
 from __future__ import annotations
 
 import numpy as np

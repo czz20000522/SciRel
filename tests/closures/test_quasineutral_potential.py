@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.closures.quasineutral_potential import solve_quasineutral_potential, solve_quasineutral_potential as scientific_function
+from scirel.closures.quasineutral_potential import (
+    solve_quasineutral_potential,
+    solve_quasineutral_potential as scientific_function,
+)
 
 ELEMENTARY_CHARGE = 1.602176634e-19
 
@@ -25,7 +28,14 @@ def test_monotone_log_charge_residual_reaches_known_root():
 
 
 def test_inactive_surface_returns_reference_potential():
-    result = scientific_function(17.0, 2.0, 1.0, 1.0, np.array([False]), lambda p: {"logarithmic_charge_residual": np.ones_like(p)})
+    result = scientific_function(
+        17.0,
+        2.0,
+        1.0,
+        1.0,
+        np.array([False]),
+        lambda p: {"logarithmic_charge_residual": np.ones_like(p)},
+    )
     assert result["potential_v"].item() == 17.0
     assert result["converged"]
 
@@ -39,14 +49,19 @@ def test_all_inactive_surfaces_still_evaluate_the_returned_residual_once():
 
     reference = np.array([17.0, 99.0])
     result = scientific_function(
-        reference, ELEMENTARY_CHARGE, ELEMENTARY_CHARGE,
-        ELEMENTARY_CHARGE, [False, False], residual,
+        reference,
+        ELEMENTARY_CHARGE,
+        ELEMENTARY_CHARGE,
+        ELEMENTARY_CHARGE,
+        [False, False],
+        residual,
     )
     assert len(observations) == 1
     np.testing.assert_array_equal(observations[0], reference)
     np.testing.assert_array_equal(result["potential_v"], reference)
     np.testing.assert_array_equal(
-        result["logarithmic_charge_residual"], 0.5 - reference,
+        result["logarithmic_charge_residual"],
+        0.5 - reference,
     )
     assert result["iterations"] == 0 and result["converged"] is True
 
@@ -69,8 +84,12 @@ def test_reviewed_relation_example():
         return {"logarithmic_charge_residual": roots - np.asarray(potential)}
 
     result = solve_quasineutral_potential(
-        np.zeros(3), 0.1 * ELEMENTARY_CHARGE, 0.1 * ELEMENTARY_CHARGE,
-        ELEMENTARY_CHARGE, active, residual,
+        np.zeros(3),
+        0.1 * ELEMENTARY_CHARGE,
+        0.1 * ELEMENTARY_CHARGE,
+        ELEMENTARY_CHARGE,
+        active,
+        residual,
         potential_tolerance_v=1e-11,
         quasineutral_tolerance=1e-10,
         max_iterations=200,
@@ -84,9 +103,12 @@ def test_reviewed_relation_example():
     # 非收敛和无法括根都必须失败关闭，而不是返回一个貌似可用的电势。
     try:
         solve_quasineutral_potential(
-            0.0, 1.0, 1.0, 1.0, True, residual=lambda phi: {
-                "logarithmic_charge_residual": 0.8 - np.asarray(phi)
-            },
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            True,
+            residual=lambda phi: {"logarithmic_charge_residual": 0.8 - np.asarray(phi)},
             potential_tolerance_v=1e-15,
             quasineutral_tolerance=1e-15,
             max_iterations=1,
@@ -99,7 +121,11 @@ def test_reviewed_relation_example():
 
     try:
         solve_quasineutral_potential(
-            0.0, 1.0, 1.0, 1.0, True,
+            0.0,
+            1.0,
+            1.0,
+            1.0,
+            True,
             residual=lambda phi: {"logarithmic_charge_residual": np.ones_like(phi)},
             initial_bracket_thermal=0.1,
         )
@@ -116,7 +142,9 @@ def test_review_gate_rejects_nonfinite_solver_controls_and_accepts_mapping_resul
         return {"logarithmic_charge_residual": 0.5 - np.asarray(potential)}
 
     with pytest.raises(ValueError, match="invalid quasineutral solver controls"):
-        solve_quasineutral_potential(0.0, 1.0, 1.0, 1.0, True, residual, potential_tolerance_v=np.nan)
+        solve_quasineutral_potential(
+            0.0, 1.0, 1.0, 1.0, True, residual, potential_tolerance_v=np.nan
+        )
 
     with pytest.raises(ValueError, match="max_iterations must be an integer"):
         solve_quasineutral_potential(0.0, 1.0, 1.0, 1.0, True, residual, max_iterations=3.5)
@@ -125,8 +153,14 @@ def test_review_gate_rejects_nonfinite_solver_controls_and_accepts_mapping_resul
         pass
 
     result = solve_quasineutral_potential(
-        0.0, 1.0, 1.0, 1.0, True,
-        lambda potential: MappingResult({"logarithmic_charge_residual": 0.5 - np.asarray(potential)}),
+        0.0,
+        1.0,
+        1.0,
+        1.0,
+        True,
+        lambda potential: MappingResult(
+            {"logarithmic_charge_residual": 0.5 - np.asarray(potential)}
+        ),
         potential_tolerance_v=1.0e-8,
         quasineutral_tolerance=1.0e-8,
     )

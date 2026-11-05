@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import json
 from types import ModuleType
 from types import SimpleNamespace
 import sys
@@ -13,7 +12,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 import tomllib
 
-CURRENT_VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["version"]
+CURRENT_VERSION = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"][
+    "version"
+]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "architecture"))
 
@@ -39,7 +40,9 @@ def test_platform_id_parser_canonicalizes_architecture_and_python_line() -> None
     }
 
 
-@pytest.mark.parametrize("value", ("linux", "linux-x86_64-py314", "linux-x86_64-cp3", "linux-x86_64-cp314tt"))
+@pytest.mark.parametrize(
+    "value", ("linux", "linux-x86_64-py314", "linux-x86_64-cp3", "linux-x86_64-cp314tt")
+)
 def test_platform_id_parser_rejects_ambiguous_tags(value: str) -> None:
     with pytest.raises(ValueError):
         validator._parse_platform_id(value)
@@ -59,7 +62,8 @@ def test_runtime_identity_rejects_a_non_virtual_environment(
 
 
 def test_runtime_identity_rejects_external_site_packages(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     prefix = tmp_path / "venv"
     external_site = tmp_path / "system" / "site-packages"
@@ -111,7 +115,9 @@ def test_dependency_import_must_resolve_inside_environment_prefix(
     outside.parent.mkdir()
     outside.write_text("# test fixture\n", encoding="utf-8")
     monkeypatch.setattr(validator.metadata, "requires", lambda _: ["fake-dist==1"])
-    monkeypatch.setattr(validator.metadata, "packages_distributions", lambda: {"fake_module": ["fake-dist"]})
+    monkeypatch.setattr(
+        validator.metadata, "packages_distributions", lambda: {"fake_module": ["fake-dist"]}
+    )
     monkeypatch.setattr(validator.metadata, "version", lambda _: "1")
     monkeypatch.setattr(
         validator.importlib,
@@ -179,7 +185,9 @@ def test_distribution_metadata_must_resolve_inside_environment_prefix(
         metadata={"Requires-Python": ">=3.11"},
     )
     monkeypatch.setattr(validator.metadata, "distribution", lambda _: distribution)
-    installed_module = Path(sys.prefix) / "lib" / "python3.14" / "site-packages" / "scirel" / "__init__.py"
+    installed_module = (
+        Path(sys.prefix) / "lib" / "python3.14" / "site-packages" / "scirel" / "__init__.py"
+    )
     monkeypatch.setattr(
         validator.importlib,
         "import_module",
@@ -194,9 +202,15 @@ def test_distribution_metadata_must_resolve_inside_environment_prefix(
 
 
 def test_validation_receipt_aggregates_successful_checks(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
-    monkeypatch.setattr(validator, "_check_distribution", lambda: ({"status": "PASS"}, [], object()))
-    monkeypatch.setattr(validator, "_check_dependencies", lambda: [{"name": "numpy", "status": "PASS"}])
+    monkeypatch.setattr(
+        validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, [])
+    )
+    monkeypatch.setattr(
+        validator, "_check_distribution", lambda: ({"status": "PASS"}, [], object())
+    )
+    monkeypatch.setattr(
+        validator, "_check_dependencies", lambda: [{"name": "numpy", "status": "PASS"}]
+    )
     monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "PASS"}, []))
     monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
     monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
@@ -253,7 +267,9 @@ def test_validation_receipt_rejects_an_undeclared_optional_extra(
         def get_all(self, name: str):
             return [] if name == "Provides-Extra" else None
 
-    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
+    monkeypatch.setattr(
+        validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, [])
+    )
     monkeypatch.setattr(
         validator,
         "_check_distribution",
@@ -271,10 +287,20 @@ def test_validation_receipt_rejects_an_undeclared_optional_extra(
 
 
 def test_validation_receipt_preserves_failed_check(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
-    monkeypatch.setattr(validator, "_check_distribution", lambda: ({"status": "PASS"}, [], object()))
-    monkeypatch.setattr(validator, "_check_dependencies", lambda: [{"name": "numpy", "status": "PASS"}])
-    monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "FAIL"}, ["pip check failed with exit code 1"]))
+    monkeypatch.setattr(
+        validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, [])
+    )
+    monkeypatch.setattr(
+        validator, "_check_distribution", lambda: ({"status": "PASS"}, [], object())
+    )
+    monkeypatch.setattr(
+        validator, "_check_dependencies", lambda: [{"name": "numpy", "status": "PASS"}]
+    )
+    monkeypatch.setattr(
+        validator,
+        "_run_pip_check",
+        lambda: ({"status": "FAIL"}, ["pip check failed with exit code 1"]),
+    )
     monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
     monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
 
@@ -290,13 +316,17 @@ def test_validation_receipt_binds_the_installed_wheel_bytes(
 ) -> None:
     wheel = tmp_path / f"scirel-{CURRENT_VERSION}-py3-none-any.whl"
     wheel.write_bytes(b"wheel-bytes")
-    monkeypatch.setattr(validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, []))
+    monkeypatch.setattr(
+        validator, "_runtime_identity", lambda expected_platform, expected_python: ({}, [])
+    )
     monkeypatch.setattr(
         validator,
         "_check_distribution",
         lambda: ({"status": "PASS", "version": CURRENT_VERSION}, [], object()),
     )
-    monkeypatch.setattr(validator, "_check_dependencies", lambda: [{"name": "numpy", "status": "PASS"}])
+    monkeypatch.setattr(
+        validator, "_check_dependencies", lambda: [{"name": "numpy", "status": "PASS"}]
+    )
     monkeypatch.setattr(validator, "_run_pip_check", lambda: ({"status": "PASS"}, []))
     monkeypatch.setattr(validator, "_run_simple_operator", lambda: ({"status": "PASS"}, []))
     monkeypatch.setattr(validator, "_run_cross_domain_task", lambda: ({"status": "PASS"}, []))
@@ -312,7 +342,9 @@ def test_validation_receipt_binds_the_installed_wheel_bytes(
     }
 
 
-def test_wheel_payload_audit_accepts_runtime_files_and_reports_native_resources(tmp_path: Path) -> None:
+def test_wheel_payload_audit_accepts_runtime_files_and_reports_native_resources(
+    tmp_path: Path,
+) -> None:
     wheel = tmp_path / "scirel-0.1.0.dev9-py3-none-any.whl"
     with ZipFile(wheel, "w") as archive:
         archive.writestr("scirel/__init__.py", "__version__ = '0.1.0.dev9'\n")
@@ -353,11 +385,18 @@ def test_wheel_payload_audit_rejects_development_files_and_path_traversal(tmp_pa
     assert any("escapes its archive root" in error for error in errors)
 
 
-@pytest.mark.parametrize("name", [
-    "scirel\\outside.py", "scirel/outside\x00hidden.py", "C:/outside.py",
-    "scirel/C:outside.py", "scirel/../outside.py", "scirel/./outside.py",
-    "scirel//outside.py",
-])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "scirel\\outside.py",
+        "scirel/outside\x00hidden.py",
+        "C:/outside.py",
+        "scirel/C:outside.py",
+        "scirel/../outside.py",
+        "scirel/./outside.py",
+        "scirel//outside.py",
+    ],
+)
 def test_wheel_payload_rejects_noncanonical_archive_names(tmp_path: Path, name: str) -> None:
     wheel = tmp_path / "unsafe.whl"
     info = ZipInfo(name)
@@ -369,8 +408,10 @@ def test_wheel_payload_rejects_noncanonical_archive_names(tmp_path: Path, name: 
     details, errors = validator._wheel_payload(wheel)
 
     assert details["status"] == "FAIL"
-    assert any(repr(name) in error and ("backslash" in error or "escapes its archive root" in error)
-               for error in errors)
+    assert any(
+        repr(name) in error and ("backslash" in error or "escapes its archive root" in error)
+        for error in errors
+    )
 
 
 def test_catalog_wheel_closure_checks_dynamic_document_count(
@@ -415,7 +456,8 @@ def test_catalog_wheel_closure_checks_dynamic_document_count(
 
 @pytest.mark.parametrize("source_bytes", [b"def value(): return 2\n", b"def value(): return 1\r\n"])
 def test_catalog_wheel_closure_rejects_same_module_with_different_source_bytes(
-    tmp_path: Path, source_bytes: bytes,
+    tmp_path: Path,
+    source_bytes: bytes,
 ) -> None:
     root = tmp_path / "project"
     (root / "catalog/examples").mkdir(parents=True)

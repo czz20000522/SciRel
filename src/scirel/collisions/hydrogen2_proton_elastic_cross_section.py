@@ -25,8 +25,8 @@ replay is historical development evidence, not qualified-L1 provenance.  No
 test establishes the fit against an external physical cross-section reference:
 the saved package records that residual as ``validation_oracle_gap``.
 """
-from __future__ import annotations
 
+from __future__ import annotations
 
 
 import numpy as np

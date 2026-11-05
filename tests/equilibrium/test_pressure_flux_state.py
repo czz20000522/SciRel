@@ -6,7 +6,10 @@ import sys
 import numpy as np
 import pytest
 
-from scirel.equilibrium.pressure_flux_state import build_pressure_flux_state, build_pressure_flux_state as scientific_function
+from scirel.equilibrium.pressure_flux_state import (
+    build_pressure_flux_state,
+    build_pressure_flux_state as scientific_function,
+)
 
 
 def _case(**overrides):
@@ -49,7 +52,9 @@ def test_masked_cells_have_no_pressure_driven_derivative():
 
 def test_requires_exact_midplane_and_zero_pressure_boundary():
     values = _case(z_grid=np.full((3, 4), 0.1))
-    with pytest.raises(ValueError, match="z_grid must contain exactly one complete zero midplane row"):
+    with pytest.raises(
+        ValueError, match="z_grid must contain exactly one complete zero midplane row"
+    ):
         scientific_function(**values)
 
     values = _case(pressure_of_radius=lambda radius: 1.0)
@@ -59,7 +64,6 @@ def test_requires_exact_midplane_and_zero_pressure_boundary():
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.equilibrium.pressure_flux_state import build_pressure_flux_state
 
     r_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.8, 4), [-0.1, 0.0, 0.1])
     mask = np.zeros_like(r_grid, dtype=bool)

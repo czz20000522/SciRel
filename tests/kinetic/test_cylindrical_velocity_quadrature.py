@@ -8,6 +8,7 @@ ranges of the axial axis.  The maintained tests are source-free: every
 expected value is re-derived by hand on a different mesh than the saved
 package test. A separate intake replay compares the archived implementation.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -33,9 +34,7 @@ def _call(vr=None, vx=None):
 
 
 def test_the_module_publishes_exactly_one_callable():
-    assert cylindrical_velocity_quadrature.__all__ == [
-        "make_cylindrical_velocity_quadrature"
-    ]
+    assert cylindrical_velocity_quadrature.__all__ == ["make_cylindrical_velocity_quadrature"]
 
 
 def test_only_the_domain_namespace_exports_the_callable():
@@ -90,9 +89,7 @@ def test_the_hand_derived_oracle_on_a_four_point_axial_mesh():
         [[np.pi, np.pi, np.pi, np.pi], [3.0 * np.pi, 3.0 * np.pi, 3.0 * np.pi, 3.0 * np.pi]]
     )
     np.testing.assert_allclose(result["volume"], expected_volume, rtol=0, atol=0)
-    expected_speed_squared = np.array(
-        [[2.5, 0.5, 0.5, 2.5], [4.5, 2.5, 2.5, 4.5]]
-    )
+    expected_speed_squared = np.array([[2.5, 0.5, 0.5, 2.5], [4.5, 2.5, 2.5, 4.5]])
     np.testing.assert_allclose(result["speed_squared"], expected_speed_squared, rtol=0, atol=0)
     assert np.array_equal(result["positive_vx_indices"], [2, 3])
     assert np.array_equal(result["negative_vx_indices"], [0, 1])

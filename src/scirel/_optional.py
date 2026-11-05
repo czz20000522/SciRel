@@ -34,8 +34,9 @@ def import_optional_module(
         if missing == root or missing.startswith(root + "."):
             raise ModuleNotFoundError(
                 f"{feature} requires the optional dependency {root!r}; "
-                f"install it with `pip install scirel[{extra}]`."
-            , name=root) from error
+                f"install it with `pip install scirel[{extra}]`.",
+                name=root,
+            ) from error
         raise
 
 

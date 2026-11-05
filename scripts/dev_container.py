@@ -137,7 +137,9 @@ def clear_check_receipt() -> None:
 def record_check_receipt() -> bool:
     tree = candidate_tree()
     if tree is None:
-        print("Local check receipt not written: commit or clean unstaged and untracked files first.")
+        print(
+            "Local check receipt not written: commit or clean unstaged and untracked files first."
+        )
         return False
     path = check_receipt_path()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -231,7 +233,9 @@ def linked_worktree_git_context() -> tuple[Path, str] | None:
     try:
         relative_git_dir = git_dir.relative_to(common_dir)
     except ValueError as error:
-        raise RuntimeError("linked-worktree Git directory is outside its common directory") from error
+        raise RuntimeError(
+            "linked-worktree Git directory is outside its common directory"
+        ) from error
     if not relative_git_dir.parts:
         raise RuntimeError("linked-worktree Git directory has no path below its common directory")
     return common_dir, relative_git_dir.as_posix()
@@ -315,7 +319,9 @@ def ensure_uv_cache_volume() -> int:
         text=True,
     )
     if done.returncode:
-        print(f"Could not create the shared uv cache volume: {done.stderr.strip()}", file=sys.stderr)
+        print(
+            f"Could not create the shared uv cache volume: {done.stderr.strip()}", file=sys.stderr
+        )
     return done.returncode
 
 
@@ -400,14 +406,18 @@ def main() -> int:
     subparsers.add_parser("shell", help="open a shell in the development container")
     subparsers.add_parser("check", help="run the complete acceptance check")
     subparsers.add_parser("precommit", help="run the staged-file pre-commit check")
-    subparsers.add_parser("pre-push", help="reuse an exact local check receipt or run the full check")
+    subparsers.add_parser(
+        "pre-push", help="reuse an exact local check receipt or run the full check"
+    )
     pytest_parser = subparsers.add_parser("pytest", help="run pytest with optional arguments")
     pytest_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     clean_parser = subparsers.add_parser(
         "clean", help="remove this checkout's virtualenv; optionally the shared image or uv cache"
     )
     clean_parser.add_argument("--image", action="store_true", help="also remove the shared image")
-    clean_parser.add_argument("--cache", action="store_true", help="also remove the shared uv cache")
+    clean_parser.add_argument(
+        "--cache", action="store_true", help="also remove the shared uv cache"
+    )
 
     args = parser.parse_args()
     if args.command == "doctor":

@@ -1,4 +1,5 @@
 """Assemble the explicit neutral Boltzmann RHS state used by the neutral-transport formulation diagnostics."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -69,7 +70,9 @@ def assemble_neutral_boltzmann_rhs(
     }
     arrays = {name: _finite_real_array(value, name) for name, value in fields.items()}
     reference_shape = arrays["total_distribution"].shape
-    if len(reference_shape) != 3 or any(array.shape != reference_shape for array in arrays.values()):
+    if len(reference_shape) != 3 or any(
+        array.shape != reference_shape for array in arrays.values()
+    ):
         raise ValueError("all RHS fields must be finite three-dimensional arrays with one shape")
     with np.errstate(over="ignore", invalid="ignore"):
         rhs = vth * _assemble_collision_balance(arrays)

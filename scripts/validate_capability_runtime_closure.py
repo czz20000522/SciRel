@@ -129,13 +129,9 @@ def validate_receipt(
         _fail("receipt child is missing")
     if not isinstance(child.get("isolated"), bool) or not isinstance(child.get("executed"), bool):
         _fail("receipt child must declare boolean isolated and executed")
-    if binding_status == "BOUND" and (
-        not child["executed"] or not child["isolated"]
-    ):
+    if binding_status == "BOUND" and (not child["executed"] or not child["isolated"]):
         _fail("BOUND receipt child must be an executed isolated process")
-    if value["status"] == "PASS" and (
-        not child["executed"] or not child["isolated"]
-    ):
+    if value["status"] == "PASS" and (not child["executed"] or not child["isolated"]):
         _fail("PASS receipt child must be an executed isolated process")
     argv = child.get("argv")
     if argv != [value.get("python", {}).get("executable"), "-I", "-c"]:
@@ -156,7 +152,10 @@ def validate_receipt(
         _fail("platform.system differs from expected system")
     if expected_machine is not None and platform["machine"] != expected_machine:
         _fail("platform.machine differs from expected machine")
-    if expected_python_implementation is not None and python["implementation"] != expected_python_implementation:
+    if (
+        expected_python_implementation is not None
+        and python["implementation"] != expected_python_implementation
+    ):
         _fail("python implementation differs from expected implementation")
     if expected_python_line is not None:
         version = python["version"]

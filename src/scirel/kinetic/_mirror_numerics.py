@@ -1,8 +1,18 @@
 """Numerically stable scalar and vector helpers for mirror invariant moments."""
+
 import math
 import numpy as np
-from scirel._mirror_numerics import _barrier_log_integral, _mirror_flux
-from scirel._numerics import _potential_midpoint, _scaled_difference
+from scirel._mirror_numerics import _barrier_log_integral, _mirror_flux  # noqa: F401
+from scirel._numerics import _potential_midpoint, _scaled_difference  # noqa: F401
+
+# These four helpers are imported by adjacent mirror modules through this
+# module as an internal compatibility surface; keep the re-exports explicit.
+__all__ = [
+    "_barrier_log_integral",
+    "_mirror_flux",
+    "_potential_midpoint",
+    "_scaled_difference",
+]
 
 
 def _trapped_fractions(a_left, b_left, a_right, b_right, order=32):
@@ -14,20 +24,21 @@ def _trapped_fractions(a_left, b_left, a_right, b_right, order=32):
     failure to meet the estimate raises rather than returning an unchecked
     fixed-node result. Magnetic-only barriers are integrated analytically.
     """
-    fields = np.broadcast_arrays(*[np.asarray(x,dtype=float) for x in
-        (a_left,b_left,a_right,b_right)])
+    fields = np.broadcast_arrays(
+        *[np.asarray(x, dtype=float) for x in (a_left, b_left, a_right, b_right)]
+    )
     if not all(np.all(np.isfinite(x)) for x in fields):
-        raise FloatingPointError('dimensionless trapping barriers must be finite')
+        raise FloatingPointError("dimensionless trapping barriers must be finite")
     answer = np.empty((3,) + fields[0].shape)
     cache = {}
     for idx in np.ndindex(fields[0].shape):
         key = tuple(float(x[idx]) for x in fields)
         if key not in cache:
-            a,b,c,d = key
+            a, b, c, d = key
             if b == 0.0 and d == 0.0:
-                alpha = min(a,c)
-                xi = math.sqrt(alpha/(1+alpha)) if alpha > 0 else 0.0
-                values = np.array([xi,xi**3,.5*xi*(3-xi*xi)])
+                alpha = min(a, c)
+                xi = math.sqrt(alpha / (1 + alpha)) if alpha > 0 else 0.0
+                values = np.array([xi, xi**3, 0.5 * xi * (3 - xi * xi)])
             else:
                 # Keep the mirror namespace dependency-light until a plugged
                 # profile actually needs incomplete-gamma quadrature.  The
@@ -36,61 +47,87 @@ def _trapped_fractions(a_left, b_left, a_right, b_right, order=32):
                 from scipy.integrate import quad_vec
                 from scipy.special import gammainc
 
-                points = {0.,40.}
+                points = {0.0, 40.0}
                 # Split at zeros, barrier intersections and the transition
                 # scale of incomplete gamma, including narrow loss cones.
-                for slope,intercept in [(a,b),(c,d)]:
+                for slope, intercept in [(a, b), (c, d)]:
                     if slope:
-                        for target in (0.,1e-6,.01,.1,1.,10.,40.):
-                            x = (target-intercept)/slope
-                            if 0 < x < 40: points.add(x)
+                        for target in (0.0, 1e-6, 0.01, 0.1, 1.0, 10.0, 40.0):
+                            x = (target - intercept) / slope
+                            if 0 < x < 40:
+                                points.add(x)
                 if a != c:
-                    x = (d-b)/(a-c)
-                    if 0 < x < 40: points.add(x)
+                    x = (d - b) / (a - c)
+                    if 0 < x < 40:
+                        points.add(x)
                 roots = sorted(math.sqrt(x) for x in points)
+
                 def integrand(t):
-                    x = t*t
-                    y = max(min(a*x+b,c*x+d),0.)
-                    den = gammainc(.5,y)
-                    return (2*t*math.exp(-x))*np.array([den,gammainc(1.5,y),x*den])
-                values,error,info = quad_vec(integrand,0.,math.sqrt(40.),
-                    points=roots[1:-1],epsabs=2e-13,epsrel=2e-11,
-                    norm='max',limit=max(256,16*int(order)),full_output=True)
-                if not info.success or not math.isfinite(error) or error > max(2e-13,2e-11*float(np.max(np.abs(values)))):
-                    raise RuntimeError('trapped-moment quadrature did not meet its error bound')
-                if not np.all(np.isfinite(values)) or np.any(values < 0) or np.any(values > 1+2e-12):
-                    raise FloatingPointError('invalid trapped-moment fractions')
+                    x = t * t
+                    y = max(min(a * x + b, c * x + d), 0.0)
+                    den = gammainc(0.5, y)
+                    return (2 * t * math.exp(-x)) * np.array([den, gammainc(1.5, y), x * den])
+
+                values, error, info = quad_vec(
+                    integrand,
+                    0.0,
+                    math.sqrt(40.0),
+                    points=roots[1:-1],
+                    epsabs=2e-13,
+                    epsrel=2e-11,
+                    norm="max",
+                    limit=max(256, 16 * int(order)),
+                    full_output=True,
+                )
+                if (
+                    not info.success
+                    or not math.isfinite(error)
+                    or error > max(2e-13, 2e-11 * float(np.max(np.abs(values))))
+                ):
+                    raise RuntimeError("trapped-moment quadrature did not meet its error bound")
+                if (
+                    not np.all(np.isfinite(values))
+                    or np.any(values < 0)
+                    or np.any(values > 1 + 2e-12)
+                ):
+                    raise FloatingPointError("invalid trapped-moment fractions")
             cache[key] = values
-        answer[(slice(None),)+idx] = cache[key]
+        answer[(slice(None),) + idx] = cache[key]
     return tuple(answer)
 
 
 def _density_exponential(density, temperature_ratio, exponent):
     """Unclipped Boltzmann normalization with finite-output enforcement."""
-    n, ratio, arg = np.broadcast_arrays(density,temperature_ratio,exponent)
-    if not all(np.all(np.isfinite(x)) for x in (n,ratio,arg)) or np.any(n<0) or np.any(ratio<=0):
-        raise FloatingPointError('distribution normalization is invalid or nonfinite')
-    result=np.zeros(n.shape)
-    active=n>0
-    with np.errstate(over='ignore',under='ignore'):
-        result[active]=np.exp(np.log(n[active])+np.log(ratio[active])+arg[active])
+    n, ratio, arg = np.broadcast_arrays(density, temperature_ratio, exponent)
+    if (
+        not all(np.all(np.isfinite(x)) for x in (n, ratio, arg))
+        or np.any(n < 0)
+        or np.any(ratio <= 0)
+    ):
+        raise FloatingPointError("distribution normalization is invalid or nonfinite")
+    result = np.zeros(n.shape)
+    active = n > 0
+    with np.errstate(over="ignore", under="ignore"):
+        result[active] = np.exp(np.log(n[active]) + np.log(ratio[active]) + arg[active])
     if not np.all(np.isfinite(result)):
-        raise FloatingPointError('distribution moments exceed the finite output range')
+        raise FloatingPointError("distribution moments exceed the finite output range")
     return result
 
 
 def _positive_product(*factors):
     """Multiply nonnegative finite factors without premature over/underflow."""
-    arrays=np.broadcast_arrays(*[np.asarray(x,dtype=float) for x in factors])
-    if any(not np.all(np.isfinite(x)) or np.any(x<0) for x in arrays):
-        raise FloatingPointError('moment factors must be finite and nonnegative')
-    active=np.ones(arrays[0].shape,dtype=bool)
-    for x in arrays:active &= x>0
-    logvalue=np.zeros(arrays[0].shape)
-    for x in arrays:logvalue[active] += np.log(x[active])
-    result=np.zeros(arrays[0].shape)
-    with np.errstate(over='ignore',under='ignore'):
-        result[active]=np.exp(logvalue[active])
+    arrays = np.broadcast_arrays(*[np.asarray(x, dtype=float) for x in factors])
+    if any(not np.all(np.isfinite(x)) or np.any(x < 0) for x in arrays):
+        raise FloatingPointError("moment factors must be finite and nonnegative")
+    active = np.ones(arrays[0].shape, dtype=bool)
+    for x in arrays:
+        active &= x > 0
+    logvalue = np.zeros(arrays[0].shape)
+    for x in arrays:
+        logvalue[active] += np.log(x[active])
+    result = np.zeros(arrays[0].shape)
+    with np.errstate(over="ignore", under="ignore"):
+        result[active] = np.exp(logvalue[active])
     if not np.all(np.isfinite(result)):
-        raise FloatingPointError('mirror moments exceed the finite output range')
+        raise FloatingPointError("mirror moments exceed the finite output range")
     return result

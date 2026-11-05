@@ -1,4 +1,5 @@
 """Ordinary function composition with explicit, module-owned dependencies."""
+
 from collections.abc import Mapping
 
 
@@ -15,10 +16,15 @@ def compose(calculation, inputs, keywords, dependencies):
         def resolve(reference, attribute=None):
             function = functions[reference]
             if attribute is not None and attribute not in {
-                function.__name__, "scientific_function", "latin_hypercube_samples"
+                function.__name__,
+                "scientific_function",
+                "latin_hypercube_samples",
             }:
                 raise KeyError(f"undeclared callable attribute: {attribute}")
             return function
+
         return resolve
 
-    return calculation(values, **{name: resolver(functions) for name, functions in dependencies.items()})
+    return calculation(
+        values, **{name: resolver(functions) for name, functions in dependencies.items()}
+    )

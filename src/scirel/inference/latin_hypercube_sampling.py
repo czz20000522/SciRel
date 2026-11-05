@@ -17,8 +17,12 @@ def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
     A boolean ``n_samples`` is rejected explicitly instead of leaking a
     ``TypeError`` from NumPy array allocation.
     """
-    if (not isinstance(bounds, dict) or isinstance(n_samples, (bool, np.bool_))
-            or not isinstance(n_samples, int) or n_samples < 1):
+    if (
+        not isinstance(bounds, dict)
+        or isinstance(n_samples, (bool, np.bool_))
+        or not isinstance(n_samples, int)
+        or n_samples < 1
+    ):
         raise ValueError("bounds mapping and positive integer n_samples required")
     keys = list(bounds) if fit_keys is None else list(fit_keys)
     rng = np.random.default_rng(seed)
@@ -36,8 +40,10 @@ def sample_latin_hypercube(*, bounds, n_samples, seed=None, fit_keys=None):
     for column in range(len(keys)):
         unit[:, column] = (rng.permutation(strata) + rng.random(n_samples)) / n_samples
     samples = [
-        {key: float(low + fraction * (high - low))
-         for key, low, high, fraction in zip(keys, lower, upper, row)}
+        {
+            key: float(low + fraction * (high - low))
+            for key, low, high, fraction in zip(keys, lower, upper, row)
+        }
         for row in unit
     ]
     return {"initial_samples": samples}

@@ -13,8 +13,12 @@ from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic
 def compose_kinetic_mirror_hall_equilibrium(
     inputs: Mapping[str, object],
     *,
-    kinetic_composition: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_grid_mirror_kinetic_closure,
-    hall_composition: Callable[[Mapping[str, object]], Mapping[str, object]] = solve_reduced_hall_anisotropic_picard,
+    kinetic_composition: Callable[
+        [Mapping[str, object]], Mapping[str, object]
+    ] = solve_grid_mirror_kinetic_closure,
+    hall_composition: Callable[
+        [Mapping[str, object]], Mapping[str, object]
+    ] = solve_reduced_hall_anisotropic_picard,
 ) -> Mapping[str, object]:
     """Feed a kinetic pressure closure into the reduced Hall composition.
 
@@ -26,8 +30,13 @@ def compose_kinetic_mirror_hall_equilibrium(
     if not isinstance(inputs, Mapping):
         raise TypeError("inputs must be a mapping")
     required = (
-        "r_grid", "z_grid", "psi_vac", "g_psi", "ion_mass_kg",
-        "ion_charge_c", "kinetic_config",
+        "r_grid",
+        "z_grid",
+        "psi_vac",
+        "g_psi",
+        "ion_mass_kg",
+        "ion_charge_c",
+        "kinetic_config",
     )
     missing = [name for name in required if name not in inputs]
     if missing:
@@ -39,12 +48,14 @@ def compose_kinetic_mirror_hall_equilibrium(
 
     def pressure_closure(b_t, psi):
         kinetic_inputs = dict(fixed_config)
-        kinetic_inputs.update({
-            "r_grid": inputs["r_grid"],
-            "z_grid": inputs["z_grid"],
-            "b_t": b_t,
-            "psi": psi,
-        })
+        kinetic_inputs.update(
+            {
+                "r_grid": inputs["r_grid"],
+                "z_grid": inputs["z_grid"],
+                "b_t": b_t,
+                "psi": psi,
+            }
+        )
         return kinetic_composition(kinetic_inputs)
 
     hall_inputs = dict(inputs)

@@ -7,9 +7,11 @@ from scirel._composition import compose
 
 def test_composition_does_not_mutate_inputs_and_preserves_keyword_precedence():
     original = {"x": 1}
+
     def calculation(values):
         values["changed"] = True
         return values["x"]
+
     assert compose(calculation, original, {"x": 2}, {}) == 2
     assert original == {"x": 1}
 
@@ -17,6 +19,7 @@ def test_composition_does_not_mutate_inputs_and_preserves_keyword_precedence():
 def test_composition_cannot_resolve_undeclared_dependencies():
     def calculation(values, *, asset_loader):
         return asset_loader("undeclared")
+
     with pytest.raises(KeyError):
         compose(calculation, {}, {}, {"asset_loader": {}})
 

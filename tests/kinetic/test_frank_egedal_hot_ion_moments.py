@@ -1,8 +1,14 @@
 import numpy as np
 import pytest
-from scirel.kinetic.frank_egedal_hot_ion_moments import evaluate_frank_egedal_hot_ion_moments, evaluate_frank_egedal_hot_ion_moments as scientific_function
+from scirel.kinetic.frank_egedal_hot_ion_moments import (
+    evaluate_frank_egedal_hot_ion_moments,
+    evaluate_frank_egedal_hot_ion_moments as scientific_function,
+)
+
+
 def test_rejects_incomplete_moment_state():
-    with pytest.raises((KeyError,ValueError,TypeError)): scientific_function({})
+    with pytest.raises((KeyError, ValueError, TypeError)):
+        scientific_function({})
 
 
 def test_perpendicular_velocity_lower_accepts_full_moment_interval():
@@ -17,7 +23,14 @@ def test_perpendicular_velocity_lower_accepts_full_moment_interval():
     )
     full = scientific_function(
         [[1.0]],
-        {"B0": 1.0, "mirror_ratio": 20.0, "vc_over_v0": 0.8, "perp_velocity_lower": 0.0, "velocity_nodes": 8, "pitch_nodes": 8},
+        {
+            "B0": 1.0,
+            "mirror_ratio": 20.0,
+            "vc_over_v0": 0.8,
+            "perp_velocity_lower": 0.0,
+            "velocity_nodes": 8,
+            "pitch_nodes": 8,
+        },
         [0.5],
         [1.0],
         15,
@@ -26,10 +39,14 @@ def test_perpendicular_velocity_lower_accepts_full_moment_interval():
     # Omitted and explicit zero cutoff define the SAME population. Critical
     # speed is a slowing-down scale, not an implicit perpendicular-only cut.
     import numpy as np
-    np.testing.assert_array_equal(full["hot_perpendicular_shape"], critical["hot_perpendicular_shape"])
+
+    np.testing.assert_array_equal(
+        full["hot_perpendicular_shape"], critical["hot_perpendicular_shape"]
+    )
     xi2 = 1.0 - 1.0 / 20.0
-    np.testing.assert_allclose(full["hot_perpendicular_shape"],
-        (3.0 - xi2) / (2.0 * xi2), rtol=2e-12)
+    np.testing.assert_allclose(
+        full["hot_perpendicular_shape"], (3.0 - xi2) / (2.0 * xi2), rtol=2e-12
+    )
 
 
 def test_reviewed_relation_example():
@@ -41,6 +58,7 @@ def test_reviewed_relation_example():
     def mode(degree, xi, terms):
         # 一个非恒定的角向模态；改变 degree 必须改变垂直矩。
         return 1.0 + float(degree) * np.asarray(xi, dtype=float)
+
     base = {
         "B0": 1.0,
         "mirror_ratio": 4.0,
@@ -50,6 +68,7 @@ def test_reviewed_relation_example():
         "velocity_nodes": 48,
         "pitch_nodes": 48,
     }
+
     def independent_perpendicular_shape(degree):
         # 独立自适应求积只重建 B=1 的公开定义，不调用实现内部的求积器。
         xi_mid = math.sqrt(1.0 - 1.0 / base["mirror_ratio"])
@@ -58,15 +77,13 @@ def test_reviewed_relation_example():
         speed_parallel = quad(lambda v: v**4 / (v**3 + vc**3), lower, 1.0, epsabs=1e-13)[0]
         speed_perp = quad(lambda v: v**4 / (v**3 + vc**3), lower, 1.0, epsabs=1e-13)[0]
         pitch_parallel = quad(lambda xi: xi**2 * (1.0 + degree * xi), 0.0, xi_mid, epsabs=1e-13)[0]
-        pitch_perp = quad(lambda xi: (1.0 - xi**2) * (1.0 + degree * xi), 0.0, xi_mid, epsabs=1e-13)[0]
+        pitch_perp = quad(
+            lambda xi: (1.0 - xi**2) * (1.0 + degree * xi), 0.0, xi_mid, epsabs=1e-13
+        )[0]
         return 0.5 * speed_perp * pitch_perp / (speed_parallel * pitch_parallel)
 
-    first = evaluate_frank_egedal_hot_ion_moments(
-        [[1.0]], base, [0.5], [1.0], 15, mode
-    )
-    second = evaluate_frank_egedal_hot_ion_moments(
-        [[1.0]], base, [1.5], [1.0], 15, mode
-    )
+    first = evaluate_frank_egedal_hot_ion_moments([[1.0]], base, [0.5], [1.0], 15, mode)
+    second = evaluate_frank_egedal_hot_ion_moments([[1.0]], base, [1.5], [1.0], 15, mode)
     assert np.allclose(first["hot_parallel_shape"], [[1.0]], rtol=2e-12)
     assert np.allclose(first["hot_density_shape"], [[1.0]], rtol=2e-12)
     assert np.allclose(

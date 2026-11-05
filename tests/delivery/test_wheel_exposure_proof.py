@@ -1,4 +1,5 @@
 """Final-wheel identity, integrity and public/held distribution boundaries."""
+
 from __future__ import annotations
 
 import base64
@@ -32,47 +33,67 @@ def intake(tmp_path: Path):
         ("public", "scirel.domain.core", "evaluate"),
         ("reexport", "scirel.domain.facade", "reexported"),
     ):
-        (public / f"{asset}.json").write_text(json.dumps({
-            "asset_id": f"scirel.{asset}",
-            "public_api": {"python": {
-                "module": module, "symbol": symbol,
-                "canonical_module": "scirel.domain", "canonical_symbol": symbol,
-            }},
-        }), encoding="utf-8")
-    (held / "held.json").write_text(json.dumps({
-        "asset_id": "scirel.held",
-        "public_api": {"python": {
-            "module": "scirel.domain.held", "symbol": "held_solver",
-            "canonical_module": "scirel.domain", "canonical_symbol": "held_solver",
-        }},
-    }), encoding="utf-8")
+        (public / f"{asset}.json").write_text(
+            json.dumps(
+                {
+                    "asset_id": f"scirel.{asset}",
+                    "public_api": {
+                        "python": {
+                            "module": module,
+                            "symbol": symbol,
+                            "canonical_module": "scirel.domain",
+                            "canonical_symbol": symbol,
+                        }
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+    (held / "held.json").write_text(
+        json.dumps(
+            {
+                "asset_id": "scirel.held",
+                "public_api": {
+                    "python": {
+                        "module": "scirel.domain.held",
+                        "symbol": "held_solver",
+                        "canonical_module": "scirel.domain",
+                        "canonical_symbol": "held_solver",
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     project = tmp_path / "pyproject.toml"
-    project.write_text('[project]\nname="scirel"\nversion="0.0.1"\n'
-                       'requires-python=">=3.11"\ndependencies=["numpy==2.5.4"]\n',
-                       encoding="utf-8")
+    project.write_text(
+        '[project]\nname="scirel"\nversion="0.0.1"\n'
+        'requires-python=">=3.11"\ndependencies=["numpy==2.5.4"]\n',
+        encoding="utf-8",
+    )
     files = {
         "scirel/__init__.py": b'raise RuntimeError("the inspector must not import the wheel")\n',
         "scirel/domain/__init__.py": (
-            b'from importlib import import_module as _import_module\n'
+            b"from importlib import import_module as _import_module\n"
             b'_LAZY_EXPORTS = {"evaluate": ("core", "evaluate"), '
             b'"reexported": ("facade", "reexported")}\n'
-            b'def __getattr__(name):\n'
-            b'    if name in _LAZY_EXPORTS:\n'
-            b'        module_name, attribute_name = _LAZY_EXPORTS[name]\n'
+            b"def __getattr__(name):\n"
+            b"    if name in _LAZY_EXPORTS:\n"
+            b"        module_name, attribute_name = _LAZY_EXPORTS[name]\n"
             b'        module = _import_module(f".{module_name}", __name__)\n'
-            b'        value = getattr(module, attribute_name)\n'
-            b'        globals()[name] = value\n'
-            b'        return value\n'
-            b'    raise AttributeError(name)\n'
+            b"        value = getattr(module, attribute_name)\n"
+            b"        globals()[name] = value\n"
+            b"        return value\n"
+            b"    raise AttributeError(name)\n"
         ),
-        "scirel/domain/core.py": b'def evaluate():\n    return 2\n',
-        "scirel/domain/facade.py": b'from .core import evaluate as reexported\n',
+        "scirel/domain/core.py": b"def evaluate():\n    return 2\n",
+        "scirel/domain/facade.py": b"from .core import evaluate as reexported\n",
         DIST_INFO + "/METADATA": (
-            b'Metadata-Version: 2.4\nName: scirel\nVersion: 0.0.1\n'
-            b'Requires-Python: >=3.11\nRequires-Dist: numpy==2.5.4\n\n'
+            b"Metadata-Version: 2.4\nName: scirel\nVersion: 0.0.1\n"
+            b"Requires-Python: >=3.11\nRequires-Dist: numpy==2.5.4\n\n"
         ),
-        DIST_INFO + "/WHEEL": b'Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n',
-        DIST_INFO + "/licenses/licenses/NOTICE": b'Attribution bytes\n',
+        DIST_INFO + "/WHEEL": b"Wheel-Version: 1.0\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        DIST_INFO + "/licenses/licenses/NOTICE": b"Attribution bytes\n",
     }
 
     def write_wheel(members=None, *, record_rows=None, suffix="final"):
@@ -83,7 +104,9 @@ def intake(tmp_path: Path):
             rows.append([name, "sha256=" + digest, str(len(data))])
         rows.append([RECORD, "", ""])
         stream = io.StringIO(newline="")
-        csv.writer(stream, lineterminator="\n").writerows(rows if record_rows is None else record_rows)
+        csv.writer(stream, lineterminator="\n").writerows(
+            rows if record_rows is None else record_rows
+        )
         members[RECORD] = stream.getvalue().encode()
         wheel = tmp_path / f"scirel-0.0.1-{suffix}-py3-none-any.whl"
         with ZipFile(wheel, "w") as archive:
@@ -96,7 +119,9 @@ def intake(tmp_path: Path):
         return wheel
 
     def inspect(wheel, **kwargs):
-        return checker.inspect_wheel(wheel, public_catalog=public, held_catalog=held, project_file=project, **kwargs)
+        return checker.inspect_wheel(
+            wheel, public_catalog=public, held_catalog=held, project_file=project, **kwargs
+        )
 
     return files, write_wheel, inspect
 
@@ -119,14 +144,18 @@ def test_inspects_exact_bytes_without_importing_the_wheel(intake) -> None:
     assert report["runtime_status"] == "NOT_RUN"
     assert report["scientific_validation_status"] == "NOT_RUN"
     assert report["source_binding"]["status"] == "NOT_RUN"
-    assert report["licenses"] == [{
-        "path": DIST_INFO + "/licenses/licenses/NOTICE",
-        "sha256": hashlib.sha256(b"Attribution bytes\n").hexdigest(),
-        "size_bytes": len(b"Attribution bytes\n"),
-    }]
+    assert report["licenses"] == [
+        {
+            "path": DIST_INFO + "/licenses/licenses/NOTICE",
+            "sha256": hashlib.sha256(b"Attribution bytes\n").hexdigest(),
+            "size_bytes": len(b"Attribution bytes\n"),
+        }
+    ]
 
 
-def test_optional_source_binding_rejects_old_module_bytes_without_rebuilding_wheel(intake, tmp_path) -> None:
+def test_optional_source_binding_rejects_old_module_bytes_without_rebuilding_wheel(
+    intake, tmp_path
+) -> None:
     files, write, inspect = intake
     source_root = tmp_path / "src"
     for name, data in files.items():
@@ -138,13 +167,18 @@ def test_optional_source_binding_rejects_old_module_bytes_without_rebuilding_whe
     excluded.parent.mkdir()
     excluded.write_bytes(b"# Explicitly excluded by package policy.\n")
     with (tmp_path / "pyproject.toml").open("a") as project:
-        project.write('\n[tool.setuptools.packages.find]\n'
-                      'include=["scirel", "scirel.*"]\n'
-                      'exclude=["scirel._framework_compositions", "scirel._framework_compositions.*"]\n')
+        project.write(
+            "\n[tool.setuptools.packages.find]\n"
+            'include=["scirel", "scirel.*"]\n'
+            'exclude=["scirel._framework_compositions", "scirel._framework_compositions.*"]\n'
+        )
     wheel = write()
     matched = inspect(wheel, source_root=source_root)
     assert matched["status"] == "PASS", matched["errors"]
-    assert matched["source_binding"]["source_content_sha256"] == matched["source_binding"]["wheel_content_sha256"]
+    assert (
+        matched["source_binding"]["source_content_sha256"]
+        == matched["source_binding"]["wheel_content_sha256"]
+    )
     (source_root / "scirel/domain/core.py").write_bytes(b"def evaluate():\n    return 3\n")
 
     report = inspect(wheel, source_root=source_root)
@@ -155,7 +189,9 @@ def test_optional_source_binding_rejects_old_module_bytes_without_rebuilding_whe
 
 
 @pytest.mark.parametrize("private_member", ["_private_dependency.py", "_data/example.in"])
-def test_source_binding_catches_omitted_private_dependency_or_declared_data(intake, tmp_path, private_member) -> None:
+def test_source_binding_catches_omitted_private_dependency_or_declared_data(
+    intake, tmp_path, private_member
+) -> None:
     files, write, inspect = intake
     source_root = tmp_path / "src"
     for name, data in files.items():
@@ -183,7 +219,7 @@ def test_detects_modified_content_against_original_record(intake) -> None:
     original = write()
     with ZipFile(original) as archive:
         members = {name: archive.read(name) for name in archive.namelist()}
-    members["scirel/domain/core.py"] = b'def evaluate():\n    return 3\n'
+    members["scirel/domain/core.py"] = b"def evaluate():\n    return 3\n"
     tampered = original.with_name("tampered.whl")
     with ZipFile(tampered, "w") as archive:
         for name, data in members.items():
@@ -208,7 +244,9 @@ def test_detects_members_omitted_from_record(intake) -> None:
     assert any("missing from RECORD" in error for error in report["record"]["errors"])
 
 
-@pytest.mark.parametrize("corruption", ["size", "empty-hash", "weak-hash", "self-hash", "missing-self"])
+@pytest.mark.parametrize(
+    "corruption", ["size", "empty-hash", "weak-hash", "self-hash", "missing-self"]
+)
 def test_rejects_record_entries_that_cannot_bind_all_member_bytes(intake, corruption) -> None:
     _, write, inspect = intake
     wheel = write()
@@ -240,7 +278,7 @@ def test_rejects_duplicate_archive_and_record_members(intake) -> None:
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", UserWarning)
         with ZipFile(wheel, "a") as archive:
-            archive.writestr("scirel/domain/core.py", b'def evaluate():\n    return 99\n')
+            archive.writestr("scirel/domain/core.py", b"def evaluate():\n    return 99\n")
 
     assert inspect(wheel)["archive"]["duplicate_members"] == ["scirel/domain/core.py"]
     report = inspect(duplicate_record)
@@ -248,10 +286,20 @@ def test_rejects_duplicate_archive_and_record_members(intake) -> None:
     assert any("duplicate RECORD paths" in error for error in report["record"]["errors"])
 
 
-@pytest.mark.parametrize("unsafe", [
-    "../outside", "/outside", "C:/outside", "C:outside", "scirel\\outside",
-    "scirel/./outside", "scirel//outside", "scirel/outside\x00hidden", "scirel//",
-])
+@pytest.mark.parametrize(
+    "unsafe",
+    [
+        "../outside",
+        "/outside",
+        "C:/outside",
+        "C:outside",
+        "scirel\\outside",
+        "scirel/./outside",
+        "scirel//outside",
+        "scirel/outside\x00hidden",
+        "scirel//",
+    ],
+)
 def test_rejects_archive_path_escapes(intake, unsafe) -> None:
     files, write, inspect = intake
     report = inspect(write({**files, unsafe: b"unsafe"}))
@@ -273,27 +321,42 @@ def test_rejects_symlinks(intake) -> None:
     assert report["archive"]["symlink_members"] == ["scirel/link"]
 
 
-@pytest.mark.parametrize("field,value", [("Requires-Python", ">=3.12"), ("Requires-Dist", "numpy==0.0.1"), ("Version", "0.0.2")])
+@pytest.mark.parametrize(
+    "field,value",
+    [("Requires-Python", ">=3.12"), ("Requires-Dist", "numpy==0.0.1"), ("Version", "0.0.2")],
+)
 def test_rejects_metadata_outside_the_candidate_contract(intake, field, value) -> None:
     files, write, inspect = intake
     lines = files[DIST_INFO + "/METADATA"].decode().splitlines()
-    modified = "\n".join(f"{field}: {value}" if line.startswith(field + ":") else line for line in lines).encode()
+    modified = "\n".join(
+        f"{field}: {value}" if line.startswith(field + ":") else line for line in lines
+    ).encode()
     report = inspect(write({**files, DIST_INFO + "/METADATA": modified}))
     assert report["status"] == "FAIL"
     assert report["metadata"]["status"] == "FAIL"
 
 
-@pytest.mark.parametrize("member,content", [
-    ("scirel/domain/held.py", b'def held_solver():\n    return 1\n'),
-    ("scirel/domain/core.py", b'def evaluate():\n    return 2\n\nheld_solver = evaluate\n'),
-    ("scirel/domain/__init__.py", b'from .core import evaluate, evaluate as reexported\n__all__ = ["held_solver"]\n'),
-    ("catalog/review/candidates/held.json", b'{}'),
-])
+@pytest.mark.parametrize(
+    "member,content",
+    [
+        ("scirel/domain/held.py", b"def held_solver():\n    return 1\n"),
+        ("scirel/domain/core.py", b"def evaluate():\n    return 2\n\nheld_solver = evaluate\n"),
+        (
+            "scirel/domain/__init__.py",
+            b'from .core import evaluate, evaluate as reexported\n__all__ = ["held_solver"]\n',
+        ),
+        ("catalog/review/candidates/held.json", b"{}"),
+    ],
+)
 def test_rejects_held_code_symbols_or_candidate_material(intake, member, content) -> None:
     files, write, inspect = intake
     report = inspect(write({**files, member: content}))
     assert report["status"] == "FAIL"
-    assert (report["held_modules_present"] or report["held_symbol_references_present"] or report["candidate_paths_present"])
+    assert (
+        report["held_modules_present"]
+        or report["held_symbol_references_present"]
+        or report["candidate_paths_present"]
+    )
 
 
 def test_requires_both_public_module_and_resolvable_symbol(intake) -> None:
@@ -303,15 +366,19 @@ def test_requires_both_public_module_and_resolvable_symbol(intake) -> None:
     missing_report = inspect(write(missing, suffix="missing"))
     assert missing_report["status"] == "FAIL"
     assert missing_report["public_api"]["missing_modules"] == ["scirel.domain.core"]
-    unresolved_report = inspect(write({**files, "scirel/domain/core.py": b'def wrong():\n    return 2\n'}))
+    unresolved_report = inspect(
+        write({**files, "scirel/domain/core.py": b"def wrong():\n    return 2\n"})
+    )
     assert unresolved_report["status"] == "FAIL"
     assert len(unresolved_report["public_api"]["unresolved_symbols"]) == 4
 
 
-@pytest.mark.parametrize("getter", [b"", b'def __getattr__(name):\n    raise AttributeError(name)\n'])
+@pytest.mark.parametrize(
+    "getter", [b"", b"def __getattr__(name):\n    raise AttributeError(name)\n"]
+)
 def test_lazy_export_table_requires_supported_attribute_forwarding(intake, getter) -> None:
     files, write, inspect = intake
-    initializer = files["scirel/domain/__init__.py"].split(b'def __getattr__')[0] + getter
+    initializer = files["scirel/domain/__init__.py"].split(b"def __getattr__")[0] + getter
     report = inspect(write({**files, "scirel/domain/__init__.py": initializer}))
     assert report["status"] == "FAIL"
     assert len(report["public_api"]["unresolved_symbols"]) == 2
@@ -321,7 +388,7 @@ def test_lazy_export_table_requires_supported_attribute_forwarding(intake, gette
 def test_relocated_package_code_cannot_bypass_held_module_exclusion(intake, root) -> None:
     files, write, inspect = intake
     member = f"scirel-0.0.1.data/{root}/scirel/domain/held.py"
-    report = inspect(write({**files, member: b'implementation_present = True\n'}))
+    report = inspect(write({**files, member: b"implementation_present = True\n"}))
     assert report["status"] == "FAIL"
     assert report["pure_wheel"]["relocated_package_members"] == [member]
 
@@ -329,19 +396,24 @@ def test_relocated_package_code_cannot_bypass_held_module_exclusion(intake, root
 def test_malformed_lazy_all_literal_is_a_structured_failure(intake) -> None:
     files, write, inspect = intake
     initializer = files["scirel/domain/__init__.py"]
-    table = initializer.index(b'_LAZY_EXPORTS = ')
-    getter = initializer.index(b'def __getattr__')
-    initializer = (initializer[:table] + b'__all__ = 1\n'
-                   b'_LAZY_EXPORTS = {name: ("core", name) for name in __all__}\n' + initializer[getter:])
+    table = initializer.index(b"_LAZY_EXPORTS = ")
+    getter = initializer.index(b"def __getattr__")
+    initializer = (
+        initializer[:table] + b"__all__ = 1\n"
+        b'_LAZY_EXPORTS = {name: ("core", name) for name in __all__}\n' + initializer[getter:]
+    )
     report = inspect(write({**files, "scirel/domain/__init__.py": initializer}))
     assert report["status"] == "FAIL"
     assert len(report["public_api"]["unresolved_symbols"]) == 2
 
 
-@pytest.mark.parametrize("member,content", [
-    (DIST_INFO + "/WHEEL", b'Root-Is-Purelib: false\nTag: cp314-cp314-linux_x86_64\n'),
-    ("scirel/hidden.pyc", b'compiled code cannot be checked as source'),
-])
+@pytest.mark.parametrize(
+    "member,content",
+    [
+        (DIST_INFO + "/WHEEL", b"Root-Is-Purelib: false\nTag: cp314-cp314-linux_x86_64\n"),
+        ("scirel/hidden.pyc", b"compiled code cannot be checked as source"),
+    ],
+)
 def test_pure_wheel_flags_do_not_hide_uninspectable_code(intake, member, content) -> None:
     files, write, inspect = intake
     report = inspect(write({**files, member: content}))

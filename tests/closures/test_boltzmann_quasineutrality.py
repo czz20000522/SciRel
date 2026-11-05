@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state, compute_boltzmann_electron_state as scientific_function
+from scirel.closures.boltzmann_quasineutrality import (
+    compute_boltzmann_electron_state,
+    compute_boltzmann_electron_state as scientific_function,
+)
 
 
 def test_boltzmann_response_and_neutrality():
@@ -49,7 +52,6 @@ def test_invalid_domain_fails_closed(kwargs):
 
 
 def test_reviewed_relation_example():
-    from scirel.closures.boltzmann_quasineutrality import compute_boltzmann_electron_state
     import numpy as np
 
     e = 1.602176634e-19

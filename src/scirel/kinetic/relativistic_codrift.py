@@ -4,12 +4,14 @@ The callable accepts the typed normalized case mapping used by the source adapte
 It preserves source matrix coordinates and returns both source orderings of the
 complete complex spectrum.  This module has no source checkout dependency.
 """
+
 from __future__ import annotations
 
 import numpy as np
 from scipy.linalg import eig
 
 __all__ = ["solve_relativistic_codrift_spectrum"]
+
 
 def solve_relativistic_codrift_spectrum(case: dict) -> dict:
     c = float(case["constants"]["c"])
@@ -63,8 +65,8 @@ def solve_relativistic_codrift_spectrum(case: dict) -> dict:
                 vv = v[j]
                 gamma = 1.0 / np.sqrt(1.0 - np.dot(vv, vv) / c**2)
                 aj = gamma * np.eye(3) + gamma**3 * np.outer(vv, vv) / c**2
-            A[ind + 1:ind + 4, ind + 1:ind + 4] = aj
-            M[ind + 1:ind + 4, ind + 1:ind + 4] = -1j * dotkv * aj
+            A[ind + 1 : ind + 4, ind + 1 : ind + 4] = aj
+            M[ind + 1 : ind + 4, ind + 1 : ind + 4] = -1j * dotkv * aj
             M[ind + 1, ind] = -1j * kx * csperp[j] ** 2 / n[j]
             M[ind + 3, ind] = -1j * kz * cspar[j] ** 2 / n[j]
             M[ind + 1, ind + 2] += wc[j]
@@ -101,8 +103,12 @@ def solve_relativistic_codrift_spectrum(case: dict) -> dict:
         w_imag = w[np.argsort(-w.imag)]
         if not np.all(np.isfinite(w.real)) or not np.all(np.isfinite(w.imag)):
             raise FloatingPointError("Source returned wrong-size or nonfinite frequency spectrum")
-        out.append({"real_order": np.column_stack((w_real.real, w_real.imag)).tolist(),
-                    "imag_order": np.column_stack((w_imag.real, w_imag.imag)).tolist()})
+        out.append(
+            {
+                "real_order": np.column_stack((w_real.real, w_real.imag)).tolist(),
+                "imag_order": np.column_stack((w_imag.real, w_imag.imag)).tolist(),
+            }
+        )
     return {"spectra": out}
 
 

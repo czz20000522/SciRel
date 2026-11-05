@@ -1,4 +1,5 @@
 """Pressure spline and derivative state for the isotropic flux solver."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -57,11 +58,13 @@ def build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_ma
     if zero.size == 0:
         raise ValueError("pressure_of_radius must define an exact zero-pressure boundary")
     limiter = int(zero[0])
-    psi_prefix = flat_psi[midplane][:limiter + 1]
+    psi_prefix = flat_psi[midplane][: limiter + 1]
     if psi_prefix.size < 4 or not np.all(np.diff(psi_prefix) > 0.0):
-        raise ValueError("midplane psi samples must be strictly increasing with at least four points")
+        raise ValueError(
+            "midplane psi samples must be strictly increasing with at least four points"
+        )
 
-    spline = fit_pressure_spline(psi_prefix, pressure[:limiter + 1])
+    spline = fit_pressure_spline(psi_prefix, pressure[: limiter + 1])
     psi_edge = float(flat_psi[midplane][limiter])
     if plasma_mask is not None:
         mask = np.asarray(plasma_mask)
@@ -69,11 +72,13 @@ def build_pressure_flux_state(r_grid, z_grid, psi, pressure_of_radius, plasma_ma
             raise ValueError("plasma_mask must have the same shape as r_grid and be boolean")
     else:
         mask = None
-    derivative = _pressure_derivative(spline, flat_psi, psi_edge, None if mask is None else mask.ravel())
+    derivative = _pressure_derivative(
+        spline, flat_psi, psi_edge, None if mask is None else mask.ravel()
+    )
     return {
         "pressure_derivative": derivative,
         "zero_currents": np.zeros_like(derivative),
         "psi_edge": psi_edge,
-        "pressure_of_psi": _representation(spline, psi_prefix, pressure[:limiter + 1]),
+        "pressure_of_psi": _representation(spline, psi_prefix, pressure[: limiter + 1]),
         "limiter_index": limiter,
     }

@@ -3,12 +3,28 @@
 import numpy as np
 import pytest
 
-from scirel.equilibrium.anisotropic_picard_feedback import update_anisotropic_picard_flux, update_anisotropic_picard_flux as scientific_function
+from scirel.equilibrium.anisotropic_picard_feedback import (
+    update_anisotropic_picard_flux,
+    update_anisotropic_picard_flux as scientific_function,
+)
 
 
 def _inputs(**overrides):
     r, z = np.meshgrid([0.2, 0.4], [-0.1, 0.1])
-    values = dict(j_phi=np.ones((2, 2)), r_grid=r, z_grid=z, plasma_mask=None, currents_old=np.zeros(4), relax=0.0, g_psi=np.zeros((4, 4)), g_br=None, g_bz=None, psi_vac=r, br_vac=np.zeros_like(r), bz_vac=np.ones_like(r))
+    values = dict(
+        j_phi=np.ones((2, 2)),
+        r_grid=r,
+        z_grid=z,
+        plasma_mask=None,
+        currents_old=np.zeros(4),
+        relax=0.0,
+        g_psi=np.zeros((4, 4)),
+        g_br=None,
+        g_bz=None,
+        psi_vac=r,
+        br_vac=np.zeros_like(r),
+        bz_vac=np.ones_like(r),
+    )
     values.update(overrides)
     return values
 
@@ -95,16 +111,24 @@ def test_review_gate_rejects_a_grid_without_a_cell_area():
 def test_rejects_grids_where_one_cell_area_cannot_represent_all_cells(axis):
     r, z = np.meshgrid(axis, [-0.1, 0.1])
     shape, size = r.shape, r.size
-    values = _inputs(r_grid=r, z_grid=z, j_phi=np.ones(shape),
-        currents_old=np.zeros(size), g_psi=np.eye(size), psi_vac=np.zeros(shape),
-        br_vac=np.zeros(shape), bz_vac=np.ones(shape))
+    values = _inputs(
+        r_grid=r,
+        z_grid=z,
+        j_phi=np.ones(shape),
+        currents_old=np.zeros(size),
+        g_psi=np.eye(size),
+        psi_vac=np.zeros(shape),
+        br_vac=np.zeros(shape),
+        bz_vac=np.ones(shape),
+    )
     if axis == [0.2, 0.4, 0.8]:
         # A nonuniform monotone axis is valid: trapezoid weights integrate
         # precisely the rectangle of width .6 and height .2, not .2*3*.2*2.
         result = scientific_function(**values)
-        np.testing.assert_allclose(result["plasma_currents"],
-            [[.01, .03, .02], [.01, .03, .02]])
-        np.testing.assert_allclose(np.sum(result["plasma_currents"]), .12)
+        np.testing.assert_allclose(
+            result["plasma_currents"], [[0.01, 0.03, 0.02], [0.01, 0.03, 0.02]]
+        )
+        np.testing.assert_allclose(np.sum(result["plasma_currents"]), 0.12)
     else:
         with pytest.raises(ValueError, match="strictly monotone"):
             scientific_function(**values)

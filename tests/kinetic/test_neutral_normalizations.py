@@ -17,9 +17,7 @@ def test_boundary_scales_positive_half_to_requested_magnitude():
     shape = np.array([[2.0, 1.0, 3.0], [4.0, 2.0, 1.0]])
     vx = np.array([-1.0, 0.5, 2.0])
     volume = np.array([[1.0, 2.0, 0.5], [1.0, 1.0, 2.0]])
-    incoming, scale, initial = normalize_incoming_neutral_boundary(
-        shape, vx, volume, 3.0, -30.0
-    )
+    incoming, scale, initial = normalize_incoming_neutral_boundary(shape, vx, volume, 3.0, -30.0)
     expected_initial = 3.0 * (2.0 * 1.0 * 0.5 + 0.5 * 3.0 * 2.0 + 1.0 * 2.0 * 0.5 + 2.0 * 1.0 * 2.0)
     assert initial == expected_initial
     assert scale == 30.0 / expected_initial
@@ -124,8 +122,7 @@ def test_source_shape_uses_trapezoidal_spatial_measure():
     np.testing.assert_array_equal(result["shape_m_inv"], source / 7.0)
     shape = result["shape_m_inv"]
     independent_integral = math.fsum(
-        float((shape[i] + shape[i + 1]) * (x_m[i + 1] - x_m[i]) / 2)
-        for i in range(len(x_m) - 1)
+        float((shape[i] + shape[i + 1]) * (x_m[i + 1] - x_m[i]) / 2) for i in range(len(x_m) - 1)
     )
     assert independent_integral == pytest.approx(1.0)
 

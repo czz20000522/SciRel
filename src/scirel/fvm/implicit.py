@@ -69,7 +69,9 @@ def theta_step(
     weight = finite_scalar(theta, "theta")
     if not np.isfinite(step) or step <= 0.0 or not np.isfinite(weight) or not 0.0 <= weight <= 1.0:
         raise ValueError("dt must be finite positive and theta in [0,1]")
-    if var_old.value.shape != var_new.value.shape or not np.array_equal(var_old.face_centers, var_new.face_centers):
+    if var_old.value.shape != var_new.value.shape or not np.array_equal(
+        var_old.face_centers, var_new.face_centers
+    ):
         raise ValueError("old/new grids must match")
 
     old_matrix, old_offset = _assemble_operator(

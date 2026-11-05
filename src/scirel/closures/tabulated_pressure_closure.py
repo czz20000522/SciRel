@@ -21,13 +21,9 @@ def _bilinear(b_axis, psi_axis, table, field, flux):
     b_index, b_fraction = _bracket(b_axis, field)
     psi_index, psi_fraction = _bracket(psi_axis, flux)
     lower = table[b_index, psi_index]
-    along_psi = lower + psi_fraction * (
-        table[b_index, psi_index + 1] - lower
-    )
+    along_psi = lower + psi_fraction * (table[b_index, psi_index + 1] - lower)
     upper = table[b_index + 1, psi_index]
-    upper_along_psi = upper + psi_fraction * (
-        table[b_index + 1, psi_index + 1] - upper
-    )
+    upper_along_psi = upper + psi_fraction * (table[b_index + 1, psi_index + 1] - upper)
     return along_psi + b_fraction * (upper_along_psi - along_psi)
 
 
@@ -64,8 +60,12 @@ def evaluate_tabulated_pressure(
     """
     psi_axis = np.asarray(psi_grid, dtype=float)
     parallel_table = np.asarray(p_parallel_table, dtype=float)
-    if (psi_axis.ndim != 1 or psi_axis.size < 2 or not np.all(np.isfinite(psi_axis))
-            or np.any(np.diff(psi_axis) <= 0.0)):
+    if (
+        psi_axis.ndim != 1
+        or psi_axis.size < 2
+        or not np.all(np.isfinite(psi_axis))
+        or np.any(np.diff(psi_axis) <= 0.0)
+    ):
         raise ValueError("psi_grid must be one-dimensional, finite, and strictly increasing")
     if not np.all(np.isfinite(parallel_table)) or np.any(parallel_table < 0.0):
         raise ValueError("pressure tables must be finite and nonnegative")
@@ -77,7 +77,9 @@ def evaluate_tabulated_pressure(
             raise ValueError("fill_value must be a finite nonnegative scalar or None")
         fill_value = float(fill_array)
 
-    field, flux = np.broadcast_arrays(np.asarray(magnetic_field, dtype=float), np.asarray(psi, dtype=float))
+    field, flux = np.broadcast_arrays(
+        np.asarray(magnetic_field, dtype=float), np.asarray(psi, dtype=float)
+    )
     if not np.all(np.isfinite(field)) or not np.all(np.isfinite(flux)):
         raise ValueError("magnetic_field and psi must be finite")
 
@@ -85,42 +87,94 @@ def evaluate_tabulated_pressure(
         # Keep the optional scientific stack lazy: a valid interpolation call
         # advertises the same capability boundary as the other table tools.
         import scipy  # noqa: F401
+
         if parallel_table.shape != psi_axis.shape:
             raise ValueError("an isotropic pressure table must match psi_grid")
         if p_perpendicular_table is not None:
             perpendicular_table = np.asarray(p_perpendicular_table, dtype=float)
-            if (perpendicular_table.shape != psi_axis.shape
-                    or not np.all(np.isfinite(perpendicular_table))
-                    or np.any(perpendicular_table < 0.0)):
-                raise ValueError("an isotropic perpendicular pressure table must match psi_grid and be finite and nonnegative")
+            if (
+                perpendicular_table.shape != psi_axis.shape
+                or not np.all(np.isfinite(perpendicular_table))
+                or np.any(perpendicular_table < 0.0)
+            ):
+                raise ValueError(
+                    "an isotropic perpendicular pressure table must match psi_grid and be finite and nonnegative"
+                )
             if not np.array_equal(parallel_table, perpendicular_table):
-                raise ValueError("b_grid=None requires equal parallel and perpendicular pressure tables")
+                raise ValueError(
+                    "b_grid=None requires equal parallel and perpendicular pressure tables"
+                )
         pressure = _linear(psi_axis, parallel_table, flux)
         pressure = _apply_domain(
-            pressure, field, flux, b_grid=None, psi_grid=psi_axis,
-            bounds_error=bool(bounds_error), fill_value=fill_value,
+            pressure,
+            field,
+            flux,
+            b_grid=None,
+            psi_grid=psi_axis,
+            bounds_error=bool(bounds_error),
+            fill_value=fill_value,
         )
         if not np.all(np.isfinite(pressure)) or np.any(pressure < 0.0):
             raise ValueError("interpolated pressure must be finite and nonnegative")
-        return {"p_parallel": pressure, "p_perpendicular": pressure.copy(), "is_isotropic": True, "table_dimension": 1}
+        return {
+            "p_parallel": pressure,
+            "p_perpendicular": pressure.copy(),
+            "is_isotropic": True,
+            "table_dimension": 1,
+        }
 
     b_axis = np.asarray(b_grid, dtype=float)
     import scipy  # noqa: F401
-    perpendicular_table = parallel_table if p_perpendicular_table is None else np.asarray(p_perpendicular_table, dtype=float)
+
+    perpendicular_table = (
+        parallel_table
+        if p_perpendicular_table is None
+        else np.asarray(p_perpendicular_table, dtype=float)
+    )
     expected_shape = (b_axis.size, psi_axis.size)
-    if (b_axis.ndim != 1 or b_axis.size < 2 or not np.all(np.isfinite(b_axis))
-            or np.any(np.diff(b_axis) <= 0.0)):
+    if (
+        b_axis.ndim != 1
+        or b_axis.size < 2
+        or not np.all(np.isfinite(b_axis))
+        or np.any(np.diff(b_axis) <= 0.0)
+    ):
         raise ValueError("b_grid must be one-dimensional, finite, and strictly increasing")
-    if (parallel_table.shape != expected_shape or perpendicular_table.shape != expected_shape
-            or not np.all(np.isfinite(perpendicular_table)) or np.any(perpendicular_table < 0.0)):
-        raise ValueError("anisotropic pressure tables must be finite nonnegative arrays with shape (len(b_grid), len(psi_grid))")
+    if (
+        parallel_table.shape != expected_shape
+        or perpendicular_table.shape != expected_shape
+        or not np.all(np.isfinite(perpendicular_table))
+        or np.any(perpendicular_table < 0.0)
+    ):
+        raise ValueError(
+            "anisotropic pressure tables must be finite nonnegative arrays with shape (len(b_grid), len(psi_grid))"
+        )
 
     parallel = _bilinear(b_axis, psi_axis, parallel_table, field, flux)
     perpendicular = _bilinear(b_axis, psi_axis, perpendicular_table, field, flux)
-    parallel = _apply_domain(parallel, field, flux, b_grid=b_axis, psi_grid=psi_axis, bounds_error=bool(bounds_error), fill_value=fill_value)
-    perpendicular = _apply_domain(perpendicular, field, flux, b_grid=b_axis, psi_grid=psi_axis, bounds_error=bool(bounds_error), fill_value=fill_value)
-    if (not np.all(np.isfinite(parallel)) or not np.all(np.isfinite(perpendicular))
-            or np.any(parallel < 0.0) or np.any(perpendicular < 0.0)):
+    parallel = _apply_domain(
+        parallel,
+        field,
+        flux,
+        b_grid=b_axis,
+        psi_grid=psi_axis,
+        bounds_error=bool(bounds_error),
+        fill_value=fill_value,
+    )
+    perpendicular = _apply_domain(
+        perpendicular,
+        field,
+        flux,
+        b_grid=b_axis,
+        psi_grid=psi_axis,
+        bounds_error=bool(bounds_error),
+        fill_value=fill_value,
+    )
+    if (
+        not np.all(np.isfinite(parallel))
+        or not np.all(np.isfinite(perpendicular))
+        or np.any(parallel < 0.0)
+        or np.any(perpendicular < 0.0)
+    ):
         raise ValueError("interpolated pressures must be finite and nonnegative")
     return {
         "p_parallel": parallel,

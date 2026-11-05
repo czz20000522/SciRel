@@ -1,4 +1,5 @@
 """Evaluate the finite-harmonic kinetic dielectric tensor and determinant with local special-function backends."""
+
 import operator as _operator
 
 import numpy as _np
@@ -16,6 +17,7 @@ def _special_backend():
 
         _SPECIAL = special
     return _SPECIAL
+
 
 # bonk/fDtensor.m:22-25 的默认 SI 常数（原样照抄）
 _C2 = (2.99792458e8) ** 2

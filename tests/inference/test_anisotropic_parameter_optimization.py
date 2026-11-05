@@ -1,23 +1,41 @@
 import numpy as np
 import pytest
 
-from scirel.inference.anisotropic_parameter_optimization import optimize_anisotropic_parameters, optimize_anisotropic_parameters as direct_anisotropic_optimizer
+from scirel.inference.anisotropic_parameter_optimization import (
+    optimize_anisotropic_parameters,
+    optimize_anisotropic_parameters as direct_anisotropic_optimizer,
+)
 
 
 def test_recovers_scalar_trial_minimum_and_keeps_fallback():
     def trial(*, params):
         residual = np.asarray([params["x"] - 3.0])
-        return {"chi2": float(np.dot(residual, residual)), "residuals": residual, "equilibrium": {"converged": True}, "failure_reason": None}
-    result = direct_anisotropic_optimizer(initial_params={"x": 0.0}, bounds={"x": (-5.0, 5.0)}, method="least_squares", trial_evaluator=trial)
+        return {
+            "chi2": float(np.dot(residual, residual)),
+            "residuals": residual,
+            "equilibrium": {"converged": True},
+            "failure_reason": None,
+        }
+
+    result = direct_anisotropic_optimizer(
+        initial_params={"x": 0.0},
+        bounds={"x": (-5.0, 5.0)},
+        method="least_squares",
+        trial_evaluator=trial,
+    )
     assert result["best_parameters"]["x"] == pytest.approx(3.0)
     assert result["converged"]
     with pytest.raises(ValueError, match="method must be"):
-        direct_anisotropic_optimizer(initial_params={"x": 0.0}, bounds={"x": (-1.0, 1.0)}, method="bad", trial_evaluator=trial)
+        direct_anisotropic_optimizer(
+            initial_params={"x": 0.0},
+            bounds={"x": (-1.0, 1.0)},
+            method="bad",
+            trial_evaluator=trial,
+        )
 
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.inference.anisotropic_parameter_optimization import optimize_anisotropic_parameters
 
     def trial(*, params):
         residuals = np.asarray([params["x"] - 3.0])
@@ -58,10 +76,17 @@ def test_reviewed_relation_example():
         seed=9,
     )
     assert [item["source"] for item in seeded["evaluation_log"][:3]] == [
-        "latin_hypercube", "latin_hypercube", "optimizer"
+        "latin_hypercube",
+        "latin_hypercube",
+        "optimizer",
     ]
     assert seeded["evaluation_log"][2]["params"]["x"] == 2.5
 
     # 错误方法属于配置错误，先拒绝；原 fallback 断言按摘要保存在前驱交付。
     with pytest.raises(ValueError, match="method must be"):
-        optimize_anisotropic_parameters(initial_params={"x": 1.0}, bounds={"x": (-5.0, 5.0)}, method="unknown", trial_evaluator=trial)
+        optimize_anisotropic_parameters(
+            initial_params={"x": 1.0},
+            bounds={"x": (-5.0, 5.0)},
+            method="unknown",
+            trial_evaluator=trial,
+        )

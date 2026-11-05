@@ -3,6 +3,7 @@
 
 Usage: python validate_report.py REPORT.md   (prints errors; exit status 1 on any)
 """
+
 from __future__ import annotations
 
 import json
@@ -26,8 +27,12 @@ IMAGE = re.compile(r"!\[[^\]]*\]\(([^)\s]+)\)")
 LINK = re.compile(r"(?<!!)\[[^\]]*\]\(([^)\s#]+)(?:#[^)]*)?\)")
 FENCE = re.compile(r"^```.*?^```[ \t]*$", re.M | re.S)
 MATH = re.compile(r"\$[^$\n]+\$|\$\$")
-NUMBER = re.compile(r"(?<![\w.])[-+]?(\d+\.\d+|\.\d+)(?:[eE][-+]?\d+)?(?![\w.])|(?<![\w.])[-+]?\d+[eE][-+]?\d+(?![\w.])")
-IMPLEMENTATION_TERMS = re.compile(r"轴序|转置|数组形状|数据流|dtype|ndarray|array shape|axis order|\.py\b", re.I)
+NUMBER = re.compile(
+    r"(?<![\w.])[-+]?(\d+\.\d+|\.\d+)(?:[eE][-+]?\d+)?(?![\w.])|(?<![\w.])[-+]?\d+[eE][-+]?\d+(?![\w.])"
+)
+IMPLEMENTATION_TERMS = re.compile(
+    r"轴序|转置|数组形状|数据流|dtype|ndarray|array shape|axis order|\.py\b", re.I
+)
 DECLARATION = "<!-- report: {}=none; reason="
 
 
@@ -40,7 +45,7 @@ def _declared(text: str, name: str) -> bool:
     start = text.find(DECLARATION.format(name))
     if start < 0:
         return False
-    reason = text[start + len(DECLARATION.format(name)):text.find("-->", start)]
+    reason = text[start + len(DECLARATION.format(name)) : text.find("-->", start)]
     return bool(reason.strip())
 
 
@@ -69,16 +74,20 @@ def validate(path: Path) -> list[str]:
     if hit := IMPLEMENTATION_TERMS.search(method):
         errors.append(f"the method section contains an implementation detail: {hit.group(0)!r}")
     if not MATH.search(method) and not _declared(text, "math"):
-        errors.append("the method section has no formula; add one or declare math=none with a reason")
+        errors.append(
+            "the method section has no formula; add one or declare math=none with a reason"
+        )
 
     images = IMAGE.findall(results)
     if not images and not _declared(text, "figures"):
-        errors.append("the results section has no figure; add one or declare figures=none with a reason")
+        errors.append(
+            "the results section has no figure; add one or declare figures=none with a reason"
+        )
     for target in IMAGE.findall(text):
         if not (path.parent / target).is_file():
             errors.append(f"missing figure file: {target}")
     for match in IMAGE.finditer(results):
-        following = results[match.end():].lstrip()
+        following = results[match.end() :].lstrip()
         if not following.startswith(("*图", "*Figure", "*Fig")):
             errors.append(f"figure has no caption: {match.group(1)}")
     for target in LINK.findall(text):
@@ -89,11 +98,19 @@ def validate(path: Path) -> list[str]:
         if name == expected[6]:
             for match in NUMBER.finditer(body):
                 if _significant_digits(match.group(0)) > MAX_APPENDIX_SIGNIFICANT_DIGITS:
-                    errors.append(f"{name}: too many significant digits for the appendix: {match.group(0)}")
+                    errors.append(
+                        f"{name}: too many significant digits for the appendix: {match.group(0)}"
+                    )
             continue
-        rows = sum(1 for line in body.splitlines() if line.lstrip().startswith("|") and not set(line) <= set("|- :"))
+        rows = sum(
+            1
+            for line in body.splitlines()
+            if line.lstrip().startswith("|") and not set(line) <= set("|- :")
+        )
         if rows - 1 > MAX_BODY_TABLE_ROWS:
-            errors.append(f"{name}: table too long for the body ({rows - 1} rows); move it to the appendix")
+            errors.append(
+                f"{name}: table too long for the body ({rows - 1} rows); move it to the appendix"
+            )
         for match in NUMBER.finditer(body):
             if _significant_digits(match.group(0)) > MAX_BODY_SIGNIFICANT_DIGITS:
                 errors.append(f"{name}: too many significant digits: {match.group(0)}")

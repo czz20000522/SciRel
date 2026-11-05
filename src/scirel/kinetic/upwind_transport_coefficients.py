@@ -1,4 +1,5 @@
 """the neutral-transport formulation H/H2 Ak/Bk/Fk/Ck/Dk/Gk spatial transport coefficients."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -23,7 +24,9 @@ def _finite_real_array(value, name):
     return result
 
 
-def assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_m_inv, source_distribution):
+def assemble_neutral_upwind_transport_coefficients(
+    x_m, vx, collision_frequency_m_inv, source_distribution
+):
     """Return forward/backward normalized spatial transport coefficients.
 
     ``x_m`` is in metres, ``vx`` is dimensionless u_x=v_x/Vth, alpha=nu/Vth
@@ -35,7 +38,16 @@ def assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_
     axial = _finite_real_array(vx, "vx")
     alpha = _finite_real_array(collision_frequency_m_inv, "collision_frequency_m_inv")
     source = _finite_real_array(source_distribution, "source_distribution")
-    if x.ndim != 1 or axial.ndim != 1 or x.size < 2 or np.any(axial == 0.0) or alpha.ndim != 3 or source.shape != alpha.shape or alpha.shape[1:] != (axial.size, x.size) or np.any(alpha < 0.0):
+    if (
+        x.ndim != 1
+        or axial.ndim != 1
+        or x.size < 2
+        or np.any(axial == 0.0)
+        or alpha.ndim != 3
+        or source.shape != alpha.shape
+        or alpha.shape[1:] != (axial.size, x.size)
+        or np.any(alpha < 0.0)
+    ):
         raise ValueError("x/vx/alpha/source contract is invalid")
     with np.errstate(over="ignore", invalid="ignore"):
         spacings = np.diff(x)
@@ -62,9 +74,9 @@ def assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_
             2.0 * positive_v - dx * positive_alpha[:, :, :-1]
         ) / positive_denominator
         b[:, positive, :-1] = dx / positive_denominator
-        f[:, positive, :-1] = dx * (
-            source[:, positive, 1:] + source[:, positive, :-1]
-        ) / positive_denominator
+        f[:, positive, :-1] = (
+            dx * (source[:, positive, 1:] + source[:, positive, :-1]) / positive_denominator
+        )
 
         negative_v = axial[negative][None, :, None]
         negative_alpha = alpha[:, negative, :]
@@ -73,9 +85,18 @@ def assemble_neutral_upwind_transport_coefficients(x_m, vx, collision_frequency_
             -2.0 * negative_v - dx * negative_alpha[:, :, 1:]
         ) / negative_denominator
         d[:, negative, 1:] = dx / negative_denominator
-        g[:, negative, 1:] = dx * (
-            source[:, negative, 1:] + source[:, negative, :-1]
-        ) / negative_denominator
+        g[:, negative, 1:] = (
+            dx * (source[:, negative, 1:] + source[:, negative, :-1]) / negative_denominator
+        )
     if not all(np.all(np.isfinite(field)) for field in (a, b, f, c, d, g)):
         raise ValueError("transport coefficients must be finite")
-    return {"Ak": a, "Bk": b, "Fk": f, "Ck": c, "Dk": d, "Gk": g, "positive_vx_indices": positive, "negative_vx_indices": negative}
+    return {
+        "Ak": a,
+        "Bk": b,
+        "Fk": f,
+        "Ck": c,
+        "Dk": d,
+        "Gk": g,
+        "positive_vx_indices": positive,
+        "negative_vx_indices": negative,
+    }

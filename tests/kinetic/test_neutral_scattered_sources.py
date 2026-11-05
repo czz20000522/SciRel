@@ -14,17 +14,19 @@ from scirel.kinetic import (
 def test_saved_finite_samples_remain_fixed():
     source = np.ones((1, 2, 3))
     np.testing.assert_allclose(reduce_atomic_scattered_sources(source, 2 * source), 3 * source)
-    np.testing.assert_allclose(reduce_atomic_scattered_sources(source, -source), np.zeros_like(source))
+    np.testing.assert_allclose(
+        reduce_atomic_scattered_sources(source, -source), np.zeros_like(source)
+    )
 
     rng = np.random.default_rng(31)
     wall, cx, elastic = (rng.random((2, 3, 4)) for _ in range(3))
-    np.testing.assert_array_equal(reduce_molecular_scattered_sources(wall, cx, elastic), wall + cx + elastic)
+    np.testing.assert_array_equal(
+        reduce_molecular_scattered_sources(wall, cx, elastic), wall + cx + elastic
+    )
     np.testing.assert_allclose(
         reduce_molecular_scattered_sources(source, 2 * source, 3 * source), 6 * source
     )
-    np.testing.assert_allclose(
-        reduce_molecular_scattered_sources(source, -source, source), source
-    )
+    np.testing.assert_allclose(reduce_molecular_scattered_sources(source, -source, source), source)
 
     frequencies = {"a": np.array([1.0, 2.0]), "b": np.array([0.5, 1.0])}
     distributions = {key: np.ones((1, 1, 2)) for key in frequencies}
@@ -91,7 +93,9 @@ def test_regeneration_aggregation_preserves_mapping_order():
     expected = regenerated["large"] * omega["large"][None, None, :]
     expected = expected + regenerated["first"] * omega["first"][None, None, :]
     expected = expected + regenerated["second"] * omega["second"][None, None, :]
-    np.testing.assert_array_equal(aggregate_elastic_regeneration_source(omega, regenerated), expected)
+    np.testing.assert_array_equal(
+        aggregate_elastic_regeneration_source(omega, regenerated), expected
+    )
 
 
 def test_regeneration_rejects_keys_meshes_and_nonfinite_output():
@@ -140,8 +144,11 @@ def test_simple_cx_rejects_alignment_and_derived_overflow():
         assemble_simple_charge_exchange_source(one, -one, one, np.ones((1, 1)), np.ones(1))
     with pytest.raises(ValueError, match="finite"):
         assemble_simple_charge_exchange_source(
-            one, np.full((1, 1, 1), 1.0e308), np.full((1, 1, 1), 1.0e308),
-            np.ones((1, 1)), np.ones(1),
+            one,
+            np.full((1, 1, 1), 1.0e308),
+            np.full((1, 1, 1), 1.0e308),
+            np.ones((1, 1)),
+            np.ones(1),
         )
 
 
@@ -149,6 +156,9 @@ def test_simple_cx_rejects_alignment_and_derived_overflow():
 def test_simple_cx_rejects_implicit_real_conversion(bad):
     with pytest.raises(ValueError, match="dvx"):
         assemble_simple_charge_exchange_source(
-            np.ones((1, 1, 1)), np.ones((1, 1, 1)), np.ones((1, 1, 1)),
-            np.ones((1, 1)), bad,
+            np.ones((1, 1, 1)),
+            np.ones((1, 1, 1)),
+            np.ones((1, 1, 1)),
+            np.ones((1, 1)),
+            bad,
         )

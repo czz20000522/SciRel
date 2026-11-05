@@ -14,6 +14,7 @@ numerical convention does not establish the accuracy of the non-relativistic
 model or independently measure the declared constants.  No angular weighting,
 reaction rate or neutron transport is computed.
 """
+
 from __future__ import annotations
 
 from decimal import Decimal, localcontext
@@ -40,9 +41,7 @@ MEV_J = 1.60218e-13
 DD_Q_VALUE_MEV = 3.27
 DETECTOR_NORM_ATOL = 1e-12
 
-NON_REPRESENTABLE_MESSAGE = (
-    "the DD neutron lab energy is not representable for these finite inputs"
-)
+NON_REPRESENTABLE_MESSAGE = "the DD neutron lab energy is not representable for these finite inputs"
 
 
 def _require_representable(value, quantity):
@@ -56,10 +55,7 @@ def _validated_vectors(reactant1_velocity_cm_s, reactant2_velocity_cm_s, detecto
     supplied = (reactant1_velocity_cm_s, reactant2_velocity_cm_s, detector_unit_vector)
     if any(np.iscomplexobj(value) for value in supplied):
         raise ValueError("velocity vectors and detector_unit_vector must be real")
-    vectors = tuple(
-        np.asarray(value, dtype=float)
-        for value in supplied
-    )
+    vectors = tuple(np.asarray(value, dtype=float) for value in supplied)
     if any(vector.shape != (3,) or not np.all(np.isfinite(vector)) for vector in vectors):
         raise ValueError(
             "velocity vectors and detector_unit_vector must be finite shape-(3,) vectors"
@@ -104,18 +100,14 @@ def _unique_lab_energy_kev(centre_velocity, neutron_speed_squared, detector, coe
     if discriminant == 0:
         if projection <= 0:
             raise ValueError("the detector ray has no strictly positive outgoing speed")
-        return _positive_finite_energy(
-            1000 * coefficient * projection * projection / norm_squared
-        )
+        return _positive_finite_energy(1000 * coefficient * projection * projection / norm_squared)
     if product >= 0:
         if projection <= 0:
             raise ValueError("the detector ray has no strictly positive outgoing speed")
         if product > 0:
             raise ValueError("the detector ray has two distinct positive outgoing speeds")
         # One root is exactly zero, so only the other can reach the detector.
-        return _positive_finite_energy(
-            4000 * coefficient * projection * projection / norm_squared
-        )
+        return _positive_finite_energy(4000 * coefficient * projection * projection / norm_squared)
 
     # The product of the roots is negative, hence exactly one root is positive.
     # For a negative projection use the product of roots instead of subtracting
@@ -129,7 +121,8 @@ def _unique_lab_energy_kev(centre_velocity, neutron_speed_squared, detector, coe
                 speed_squared = (_decimal(projection) + root) ** 2 / _decimal(norm_squared)
             else:
                 speed_squared = (
-                    _decimal(product) ** 2 * _decimal(norm_squared)
+                    _decimal(product) ** 2
+                    * _decimal(norm_squared)
                     / (root - _decimal(projection)) ** 2
                 )
             energy = 1000 * _decimal(coefficient) * speed_squared
@@ -171,8 +164,13 @@ def calculate_dd_neutron_lab_energy_kev(
     mass_d, mass_n, mass_he, mass_unit, mev_j, conversion, q_value = (
         Fraction.from_float(value)
         for value in (
-            DEUTERON_MASS_AMU, NEUTRON_MASS_AMU, HELIUM3_MASS_AMU,
-            ATOMIC_MASS_KG, MEV_J, 1.0e-4, DD_Q_VALUE_MEV,
+            DEUTERON_MASS_AMU,
+            NEUTRON_MASS_AMU,
+            HELIUM3_MASS_AMU,
+            ATOMIC_MASS_KG,
+            MEV_J,
+            1.0e-4,
+            DD_Q_VALUE_MEV,
         )
     )
     available = mass_d * mass_unit * conversion * relative_squared / (4 * mev_j) + q_value
@@ -187,9 +185,6 @@ def calculate_dd_neutron_lab_energy_kev(
             raise ValueError(
                 f"{NON_REPRESENTABLE_MESSAGE}: the available energy is not finite"
             ) from None
-        result = (
-            HELIUM3_MASS_AMU / (NEUTRON_MASS_AMU + HELIUM3_MASS_AMU)
-            * available_float * 1000.0
-        )
+        result = HELIUM3_MASS_AMU / (NEUTRON_MASS_AMU + HELIUM3_MASS_AMU) * available_float * 1000.0
         return _positive_finite_energy(result)
     return _unique_lab_energy_kev(centre, centre_energy / coefficient, detector, coefficient)

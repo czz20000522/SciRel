@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude, compute_poloidal_field_magnitude as scientific_function
+from scirel.field.poloidal_field_magnitude import (
+    compute_poloidal_field_magnitude,
+    compute_poloidal_field_magnitude as scientific_function,
+)
 
 
 def test_returns_poloidal_magnitude_and_zero_floor():
@@ -23,6 +26,7 @@ def test_admitted_large_finite_median_does_not_overflow():
 
 def test_admitted_large_two_component_magnitude():
     import math
+
     result = scientific_function([[1e200]], [[1e200]])
     assert result["B"][0, 0] == pytest.approx(math.hypot(1e200, 1e200))
 
@@ -39,7 +43,6 @@ def test_admitted_empty_grid_has_no_reference_field():
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.field.poloidal_field_magnitude import compute_poloidal_field_magnitude
 
     br = np.array([[3.0, 0.0]])
     bz = np.array([[4.0, 0.0]])

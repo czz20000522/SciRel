@@ -25,11 +25,19 @@ def _catalog(root: Path) -> None:
         "schema": "scirel.catalog-release",
         "catalog_id": "test",
         "release_version": "0.0.0",
-        "coverage": {"status": "complete", "included_asset_count": 1, "declared_total_asset_count": 1},
+        "coverage": {
+            "status": "complete",
+            "included_asset_count": 1,
+            "declared_total_asset_count": 1,
+        },
         "progressive_disclosure": ["routes", "summaries", "exact_records"],
-        "partitions": [{"path": "routes/all.jsonl", "bytes": len(partition), "sha256": _digest(partition)}],
+        "partitions": [
+            {"path": "routes/all.jsonl", "bytes": len(partition), "sha256": _digest(partition)}
+        ],
     }
-    canonical = json.dumps(release, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode()
+    canonical = json.dumps(
+        release, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode()
     release["root_digest"] = _digest(canonical)
     (root / "release.json").write_text(json.dumps(release), encoding="utf-8")
 
@@ -69,7 +77,9 @@ def test_package_rejects_unsafe_partition_path(tmp_path: Path) -> None:
     release = json.loads(release_path.read_text(encoding="utf-8"))
     release["partitions"][0]["path"] = "../outside.jsonl"
     unsigned = {key: value for key, value in release.items() if key != "root_digest"}
-    release["root_digest"] = _digest(json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode())
+    release["root_digest"] = _digest(
+        json.dumps(unsigned, sort_keys=True, separators=(",", ":")).encode()
+    )
     release_path.write_text(json.dumps(release), encoding="utf-8")
 
     with pytest.raises(ValueError, match="invalid catalog partition path"):

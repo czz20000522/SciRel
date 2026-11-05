@@ -1,8 +1,6 @@
 from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion
 
-from scirel.inference.direct_anisotropic_inversion import solve_direct_anisotropic_inversion
-import scirel
-from cross_domain._review_bindings import load_asset as _load_asset, load_composition as _load_composition, load_callable as _load_callable
+from cross_domain._review_bindings import load_asset as _load_asset, load_callable as _load_callable
 from pathlib import Path
 from functools import partial
 import inspect
@@ -11,11 +9,15 @@ import numpy as np
 import pytest
 
 from scirel.inference import direct_anisotropic_inversion as composition
+
+
 def _callable_loader(asset_ref, callable_name=None):
     return _load_callable(asset_ref, callable_name)
 
+
 def _asset_loader(asset_ref):
     return _load_asset(asset_ref)
+
 
 def _solver_config():
     r_grid, z_grid = np.meshgrid(np.linspace(0.1, 1.1, 3), np.linspace(-0.5, 0.5, 3))
@@ -49,39 +51,66 @@ def _base_params(p0):
 def _inputs(true_p0=4.0):
     solver_config = _solver_config()
     pressure_closure_spec = __import__("importlib").util.spec_from_file_location(
-        "pressure_closure_fixture", Path(__file__).resolve().parents[1] / "FrankEgedal各向异性压强闭合" / "composition_fixture.py"
+        "pressure_closure_fixture",
+        Path(__file__).resolve().parents[1]
+        / "FrankEgedal各向异性压强闭合"
+        / "composition_fixture.py",
     )
     pressure_closure_module = __import__("importlib").util.module_from_spec(pressure_closure_spec)
     pressure_closure_spec.loader.exec_module(pressure_closure_module)
     true_equilibrium = __import__("importlib").util.spec_from_file_location(
-        "equilibrium_fixture", Path(__file__).resolve().parents[1] / "各向异性自由边界Picard平衡" / "composition_fixture.py"
+        "equilibrium_fixture",
+        Path(__file__).resolve().parents[1]
+        / "各向异性自由边界Picard平衡"
+        / "composition_fixture.py",
     )
     module = __import__("importlib").util.module_from_spec(true_equilibrium)
     true_equilibrium.loader.exec_module(module)
 
     def equilibrium_solver(payload):
-        pressure_closure = partial(pressure_closure_module.run_composition, asset_loader=_asset_loader)
-        result = module.run_composition({**payload, "pressure_closure": pressure_closure}, asset_loader=_asset_loader)
-        return {**result, "psi_unit":"Wb/rad", "profile_units":{"p_perp":"Pa", "p_parallel":"Pa"}}
+        pressure_closure = partial(
+            pressure_closure_module.run_composition, asset_loader=_asset_loader
+        )
+        result = module.run_composition(
+            {**payload, "pressure_closure": pressure_closure}, asset_loader=_asset_loader
+        )
+        return {
+            **result,
+            "psi_unit": "Wb/rad",
+            "profile_units": {"p_perp": "Pa", "p_parallel": "Pa"},
+        }
 
     equilibrium = equilibrium_solver({**solver_config, "params": _base_params(true_p0)})
     point = np.array([[0.5, 0.0]])
     observation_composition_spec = __import__("importlib").util.spec_from_file_location(
-        "diagnostic_fixture", Path(__file__).resolve().parents[1] / "平衡合成诊断" / "composition_fixture.py"
+        "diagnostic_fixture",
+        Path(__file__).resolve().parents[1] / "平衡合成诊断" / "composition_fixture.py",
     )
     diagnostic_module = __import__("importlib").util.module_from_spec(observation_composition_spec)
     observation_composition_spec.loader.exec_module(diagnostic_module)
     observed = diagnostic_module.run_composition(
-        {"equilibrium": equilibrium, "R": solver_config["r_grid"], "Z": solver_config["z_grid"], "observations": {"thomson": {"points": point, "p_perp":{"unit":"Pa"}}}},
+        {
+            "equilibrium": equilibrium,
+            "R": solver_config["r_grid"],
+            "Z": solver_config["z_grid"],
+            "observations": {"thomson": {"points": point, "p_perp": {"unit": "Pa"}}},
+        },
         asset_loader=_asset_loader,
     )
     return {
         "initial_params": _base_params(1.0),
         "bounds": {"p0": (0.1, 10.0)},
-        "observations": {"thomson": {"points": point, "p_perp": {"values": observed["thomson"]["p_perp"], "sigma": [0.1], "unit":"Pa"}}},
+        "observations": {
+            "thomson": {
+                "points": point,
+                "p_perp": {"values": observed["thomson"]["p_perp"], "sigma": [0.1], "unit": "Pa"},
+            }
+        },
         "solver_config": solver_config,
         "equilibrium_solver": equilibrium_solver,
-        "diagnostic_evaluator": partial(diagnostic_module.run_composition, asset_loader=_asset_loader),
+        "diagnostic_evaluator": partial(
+            diagnostic_module.run_composition, asset_loader=_asset_loader
+        ),
         "fit_keys": ["p0"],
         "method": "least_squares",
     }
@@ -105,7 +134,9 @@ def test_yaml_declares_explicit_cross_node_ports():
 def test_latin_hypercube_is_deterministic_and_stratified():
     lhs = _callable_loader("scirel.inference.latin_hypercube_sampling", "sample_latin_hypercube")
     first = lhs(bounds={"a": (0.0, 1.0), "b": (10.0, 20.0)}, n_samples=5, seed=4)["initial_samples"]
-    second = lhs(bounds={"a": (0.0, 1.0), "b": (10.0, 20.0)}, n_samples=5, seed=4)["initial_samples"]
+    second = lhs(bounds={"a": (0.0, 1.0), "b": (10.0, 20.0)}, n_samples=5, seed=4)[
+        "initial_samples"
+    ]
     assert first == second
     assert sorted(int(sample["a"] * 5) for sample in first) == [0, 1, 2, 3, 4]
     assert sorted(int((sample["b"] - 10.0) / 10.0 * 5) for sample in first) == [0, 1, 2, 3, 4]
@@ -165,7 +196,6 @@ def test_public_solver_docstring_declares_contract():
 
 def test_public_scirel_injects_declared_callable_resolver():
 
-
     result = solve_direct_anisotropic_inversion(_inputs())
     assert result["best_parameters"]["p0"] == pytest.approx(4.0, rel=1.0e-4)
 
@@ -202,7 +232,9 @@ def test_public_simplified_parameter_fit_scenario():
                 "maxiter": 2,
                 "relax": 0.0,
             },
-            "observations": {"thomson": {"p_perp": {"values": np.full_like(r_grid, 4.0), "sigma": 1.0}}},
+            "observations": {
+                "thomson": {"p_perp": {"values": np.full_like(r_grid, 4.0), "sigma": 1.0}}
+            },
             "equilibrium_solver": equilibrium_solver,
             "diagnostic_evaluator": diagnostic_evaluator,
         }

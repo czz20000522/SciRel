@@ -1,4 +1,5 @@
 """Compute a masked toroidal volume from an explicit finite R/Z grid."""
+
 from __future__ import annotations
 
 from math import pi

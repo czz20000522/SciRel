@@ -1,4 +1,5 @@
 """Assemble the Ronnmark kinetic dielectric tensor from validated species arrays and local harmonic response terms."""
+
 from __future__ import annotations
 
 import math
@@ -14,18 +15,22 @@ _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
 
 # 冻结源码 bonk/fDR.m:26-46 的 J=8 极点表，源码写定前四个，后四个共轭补齐。
-_BZJ = np.array([
-    -0.017340112270401 - 0.046306439626294j,
-    -0.739917811220052 + 0.839518284620274j,
-    5.840632105105495 + 0.953602751322040j,
-    -5.583374181615043 - 11.208550459628098j,
-])
-_CZJ = np.array([
-    2.237687725134293 - 1.625941024120362j,
-    1.465234091939142 - 1.789620299603315j,
-    0.839253966367922 - 1.891995211531426j,
-    0.273936218055381 - 1.941787037576095j,
-])
+_BZJ = np.array(
+    [
+        -0.017340112270401 - 0.046306439626294j,
+        -0.739917811220052 + 0.839518284620274j,
+        5.840632105105495 + 0.953602751322040j,
+        -5.583374181615043 - 11.208550459628098j,
+    ]
+)
+_CZJ = np.array(
+    [
+        2.237687725134293 - 1.625941024120362j,
+        1.465234091939142 - 1.789620299603315j,
+        0.839253966367922 - 1.891995211531426j,
+        0.273936218055381 - 1.941787037576095j,
+    ]
+)
 
 
 _SPLIT = 134217729.0
@@ -33,13 +38,18 @@ _SPLIT = 134217729.0
 
 def _two_prod(a, b):
     p = a * b
-    c = _SPLIT * a; ah = c - (c - a); al = a - ah
-    c = _SPLIT * b; bh = c - (c - b); bl = b - bh
+    c = _SPLIT * a
+    ah = c - (c - a)
+    al = a - ah
+    c = _SPLIT * b
+    bh = c - (c - b)
+    bl = b - bh
     return p, ((ah * bh - p) + ah * bl + al * bh) + al * bl
 
 
 def _two_sum(a, b):
-    s = a + b; bb = s - a
+    s = a + b
+    bb = s - a
     return s, (a - (s - bb)) + (b - bb)
 
 
@@ -50,9 +60,9 @@ def _fma(a, b, c):
 
 
 def _cmul(a, b):
-    a = complex(a); b = complex(b)
-    return complex(_fma(a.real, b.real, -(a.imag * b.imag)),
-                   _fma(a.real, b.imag, a.imag * b.real))
+    a = complex(a)
+    b = complex(b)
+    return complex(_fma(a.real, b.real, -(a.imag * b.imag)), _fma(a.real, b.imag, a.imag * b.real))
 
 
 def _d(x, y):
@@ -71,13 +81,18 @@ def _d(x, y):
 
 
 def _cdiv(a, b):
-    a = complex(a); b = complex(b)
-    ar, ai = a.real, a.imag; br, bi = b.real, b.imag
-    fab = -br if br < 0 else br; fai = -bi if bi < 0 else bi
+    a = complex(a)
+    b = complex(b)
+    ar, ai = a.real, a.imag
+    br, bi = b.real, b.imag
+    fab = -br if br < 0 else br
+    fai = -bi if bi < 0 else bi
     if fab >= fai:
-        t = _d(bi, br); d = _fma(bi, t, br)
+        t = _d(bi, br)
+        d = _fma(bi, t, br)
         return complex(_d(_fma(ai, t, ar), d), _d(_fma(-ar, t, ai), d))
-    t = _d(br, bi); d = _fma(br, t, bi)
+    t = _d(br, bi)
+    d = _fma(br, t, bi)
     return complex(_d(_fma(ar, t, ai), d), _d(_fma(ai, t, -ar), d))
 
 
@@ -162,7 +177,10 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
         b = bs[s]
         a = as_[s]
         for j in range(j_order):
-            xsj = _cdiv(complex(omega, 0.0) - _cmul(complex(response_kz * vts[s], 0.0), czj[j]), complex(wcs[s], 0.0))
+            xsj = _cdiv(
+                complex(omega, 0.0) - _cmul(complex(response_kz * vts[s], 0.0), czj[j]),
+                complex(wcs[s], 0.0),
+            )
             rc = ronnmark(xsj, b)
             rsj = rc["R"]
             drsj = rc["dR_dlambda"]
@@ -172,10 +190,12 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
             x_xy = _cdiv(1j * drsj, xsj)
             x_xz = _cmul(_cdiv(_cmul(_rmul(np.sqrt(2.0), a), czj[j]), xsj), rsj)
             x_yy = rsj - _cmul(_cdiv(_rmul(2.0, b), _cmul(xsj, xsj)), drsj)
-            x_yz = _cmul(_cdiv(_cmul(complex(0.0, -np.sqrt(2.0)) * a, czj[j]),
-                               _cmul(xsj, xsj)), drsj)
-            x_zz = _cmul(_cdiv(_rmul(2.0, _cmul(czj[j], czj[j])), _cmul(xsj, xsj)),
-                         xsj + _cmul(b, rsj))
+            x_yz = _cmul(
+                _cdiv(_cmul(complex(0.0, -np.sqrt(2.0)) * a, czj[j]), _cmul(xsj, xsj)), drsj
+            )
+            x_zz = _cmul(
+                _cdiv(_rmul(2.0, _cmul(czj[j], czj[j])), _cmul(xsj, xsj)), xsj + _cmul(b, rsj)
+            )
 
             term = _rmul(wps2[s] / (omega * wcs[s]), bzj[j])
             k_tensor[0, 0] = k_tensor[0, 0] + _cmul(term, x_xx)
@@ -194,7 +214,9 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
         k_tensor[2, 0] = _rmul(-1.0, k_tensor[2, 0])
         k_tensor[2, 1] = _rmul(-1.0, k_tensor[2, 1])
 
-    nz2 = _cmul(nz, nz); nx2 = _cmul(nx, nx); nxnz = _cmul(nx, nz)
+    nz2 = _cmul(nz, nz)
+    nx2 = _cmul(nx, nx)
+    nxnz = _cmul(nx, nz)
     d_tensor = k_tensor.copy()
     d_tensor[0, 0] = k_tensor[0, 0] - nz2
     d_tensor[0, 2] = k_tensor[0, 2] + nxnz
@@ -205,9 +227,14 @@ def evaluate_kinetic_dispersion_ronnmark(*, B0, qs, ms, ns0, Ts0, f=None, kz, kx
     Dxx, Dyy, Dzz = d_tensor[0, 0], d_tensor[1, 1], d_tensor[2, 2]
     Dyx, Dzy, Dxz = d_tensor[1, 0], d_tensor[2, 1], d_tensor[0, 2]
     Dzx, Dyz, Dxy = d_tensor[2, 0], d_tensor[1, 2], d_tensor[0, 1]
-    cofactor = (_cmul(_cmul(Dxx, Dyy), Dzz) + _cmul(_cmul(Dyx, Dzy), Dxz)
-                + _cmul(_cmul(Dzx, Dyz), Dxy) - _cmul(_cmul(Dxz, Dyy), Dzx)
-                - _cmul(_cmul(Dyz, Dzy), Dxx) - _cmul(_cmul(Dzz, Dyx), Dxy))
+    cofactor = (
+        _cmul(_cmul(Dxx, Dyy), Dzz)
+        + _cmul(_cmul(Dyx, Dzy), Dxz)
+        + _cmul(_cmul(Dzx, Dyz), Dxy)
+        - _cmul(_cmul(Dxz, Dyy), Dzx)
+        - _cmul(_cmul(Dyz, Dzy), Dxx)
+        - _cmul(_cmul(Dzz, Dyx), Dxy)
+    )
 
     return {
         "K": k_tensor,

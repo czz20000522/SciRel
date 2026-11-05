@@ -3,6 +3,7 @@
 No payload code is executed. Existing paths are never overwritten; an incomplete
 new output is retained on failure and reported for inspection.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,8 +30,14 @@ def _new_output(output: Path, inputs: list[Path], errors: list[str]) -> None:
 def prepare(payload: Path, metadata: Path, output: Path, path_map: Path | None = None) -> dict:
     payload, metadata, output = Path(payload), Path(metadata), Path(output)
     path_map = Path(path_map) if path_map is not None else None
-    report = {"directory": str(output), "status": "FAIL", "errors": [], "checks": {},
-              "output_created": False, "scientific_acceptance": "NOT_ASSESSED"}
+    report = {
+        "directory": str(output),
+        "status": "FAIL",
+        "errors": [],
+        "checks": {},
+        "output_created": False,
+        "scientific_acceptance": "NOT_ASSESSED",
+    }
     errors = report["errors"]
     try:
         inputs = [payload, metadata] + ([path_map] if path_map is not None else [])
@@ -39,7 +46,11 @@ def prepare(payload: Path, metadata: Path, output: Path, path_map: Path | None =
             admission.check_ancestors(source, errors)
         if errors:
             return report
-        if not payload.is_dir() or not metadata.is_file() or (path_map is not None and not path_map.is_file()):
+        if (
+            not payload.is_dir()
+            or not metadata.is_file()
+            or (path_map is not None and not path_map.is_file())
+        ):
             report["status"] = "NOT_RUN"
             errors.append("required payload directory or metadata/path-map file is missing")
             return report
@@ -51,10 +62,18 @@ def prepare(payload: Path, metadata: Path, output: Path, path_map: Path | None =
             errors.append("metadata must be a JSON object")
             return report
         if admission.DERIVED_KEYS & supplied.keys():
-            errors.append(f"metadata must not supply derived keys: {sorted(admission.DERIVED_KEYS & supplied.keys())}")
+            errors.append(
+                f"metadata must not supply derived keys: {sorted(admission.DERIVED_KEYS & supplied.keys())}"
+            )
         final = dict(supplied)
-        final.update(schema="scirel.project-final", files="FILES.json", path_map="PATH_MAP.json",
-                     root_binding=admission.ROOT_BINDING, payload_files=len(files) + 2, payload_bytes=1)
+        final.update(
+            schema="scirel.project-final",
+            files="FILES.json",
+            path_map="PATH_MAP.json",
+            root_binding=admission.ROOT_BINDING,
+            payload_files=len(files) + 2,
+            payload_bytes=1,
+        )
         admission._check_final(final, errors)
         mapping = admission.read_json(path_map) if path_map is not None else {}
         members = set(files) | {"FINAL.json", "PATH_MAP.json"}
@@ -69,7 +88,10 @@ def prepare(payload: Path, metadata: Path, output: Path, path_map: Path | None =
         mapping_bytes = admission.json_bytes(mapping) if mapping else b"{}\n"
         # Snapshot before creating output. Recheck copied bytes to detect an input
         # modified while packaging; never silently freeze a different payload.
-        snapshot = {name: {"bytes": p.stat().st_size, "sha256": admission._sha(p)} for name, p in files.items()}
+        snapshot = {
+            name: {"bytes": p.stat().st_size, "sha256": admission._sha(p)}
+            for name, p in files.items()
+        }
         output.mkdir(exist_ok=False)
         report["output_created"] = True
         for name in sorted(stored):
@@ -79,7 +101,10 @@ def prepare(payload: Path, metadata: Path, output: Path, path_map: Path | None =
             target = output / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
-            if target.stat().st_size != snapshot[name]["bytes"] or admission._sha(target) != snapshot[name]["sha256"]:
+            if (
+                target.stat().st_size != snapshot[name]["bytes"]
+                or admission._sha(target) != snapshot[name]["sha256"]
+            ):
                 raise ValueError(f"payload changed during copying: {name}")
         (output / "PATH_MAP.json").write_bytes(mapping_bytes)
         other_bytes = sum(item["bytes"] for item in snapshot.values()) + len(mapping_bytes)
@@ -95,8 +120,12 @@ def prepare(payload: Path, metadata: Path, output: Path, path_map: Path | None =
         entries = []
         for name in sorted(members):
             target = output / name
-            entries.append({"path": name, "bytes": target.stat().st_size, "sha256": admission._sha(target)})
-        (output / "FILES.json").write_bytes(admission.json_bytes({"schema": "scirel.final-files", "files": entries}))
+            entries.append(
+                {"path": name, "bytes": target.stat().st_size, "sha256": admission._sha(target)}
+            )
+        (output / "FILES.json").write_bytes(
+            admission.json_bytes({"schema": "scirel.final-files", "files": entries})
+        )
         validated = admission.validate(output, emit_root=True)
         report.update(validated)
         report["output_created"] = True

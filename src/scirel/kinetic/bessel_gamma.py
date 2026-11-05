@@ -1,4 +1,5 @@
 """Vectorized exponentially scaled modified-Bessel factors and their derivatives for harmonic sums."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -52,8 +53,7 @@ def evaluate_bessel_gamma(n, x):
         center = ive(orders, arguments)
         gamma = np.asarray(center * scale, dtype=np.complex128)
         derivative = np.asarray(
-            (0.5 * (ive(orders - 1, arguments) + ive(orders + 1, arguments)) - center)
-            * scale,
+            (0.5 * (ive(orders - 1, arguments) + ive(orders + 1, arguments)) - center) * scale,
             dtype=np.complex128,
         )
     if not np.all(np.isfinite(gamma)) or not np.all(np.isfinite(derivative)):
