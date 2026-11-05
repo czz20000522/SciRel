@@ -34,7 +34,7 @@ def _active_mask(mask_port, fixed_mask, b, psi):
     return active
 
 
-def run_composition(inputs, *, asset_loader):
+def _run_composition(inputs, *, asset_loader):
     """Iterate magnetic flux, caller-bound kinetic closure, and Hall current."""
     if not isinstance(inputs, dict):
         raise ValueError("inputs must be a mapping")
@@ -342,7 +342,7 @@ def solve_reduced_hall_anisotropic_picard(inputs=None, **kwargs):
     from scirel.field.poloidal_field_from_flux import poloidal_field_from_flux as _dependency_2
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

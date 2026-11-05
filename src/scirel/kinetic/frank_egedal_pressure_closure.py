@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 
-def run_composition(inputs, *, asset_loader):
+def _run_composition(inputs, *, asset_loader):
     """Resolve the N4 pipeline without composition-local numerical implementation."""
     if not isinstance(inputs, dict):
         raise ValueError("inputs must be a mapping")
@@ -96,7 +96,7 @@ def solve_frank_egedal_pressure_closure(inputs=None, **kwargs):
     from scirel.kinetic.loss_cone_spectrum import solve_loss_cone_spectrum as _dependency_4
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

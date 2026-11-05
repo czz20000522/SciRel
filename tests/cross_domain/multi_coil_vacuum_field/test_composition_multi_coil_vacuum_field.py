@@ -5,7 +5,7 @@ from cross_domain._review_bindings import load_asset as _load_asset
 import numpy as np
 import pytest
 
-from scirel.field.multi_coil_vacuum_field import run_composition
+from scirel.field.multi_coil_vacuum_field import _run_composition
 
 
 def _assets(asset_ref):
@@ -40,8 +40,8 @@ def test_public_callable_documents_the_catalog_contract():
 
 
 def test_explicit_coil_current_scales_vacuum_field_linearly():
-    one = run_composition(_inputs(), asset_loader=_assets)
-    two = run_composition(_inputs(2000.0), asset_loader=_assets)
+    one = _run_composition(_inputs(), asset_loader=_assets)
+    two = _run_composition(_inputs(2000.0), asset_loader=_assets)
     for name in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(two[name], 2.0 * one[name], rtol=2.0e-14, atol=1.0e-300)
     assert one["filaments"].shape == (4, 3)
@@ -49,7 +49,7 @@ def test_explicit_coil_current_scales_vacuum_field_linearly():
 
 
 def test_current_is_one_set_drive_not_sum_divided_filament_current():
-    result = run_composition(_inputs(1000.0), asset_loader=_assets)
+    result = _run_composition(_inputs(1000.0), asset_loader=_assets)
     geometry = _assets("scirel.field.rectangular_coil_filaments")
     green = _assets("scirel.field.circular_filament_green")
     points = geometry(0.45, 0.0, 2, 2, 0.04, 0.05, 0.0)
@@ -71,7 +71,7 @@ def test_rejects_missing_current_contract():
     values = _inputs()
     del values["rectangular_coils"][0]["current_a"]
     with pytest.raises(ValueError, match="current_a"):
-        run_composition(values, asset_loader=_assets)
+        _run_composition(values, asset_loader=_assets)
 
 
 @pytest.mark.parametrize("shape", [(0, 2), (2, 0), (0, 0)])
@@ -115,7 +115,7 @@ def test_unrepresentable_vacuum_field_fails_closed():
     }
 
     with pytest.raises(FloatingPointError, match="not representable"):
-        run_composition(values, asset_loader=_assets)
+        _run_composition(values, asset_loader=_assets)
 
 
 def test_review_gate_keeps_two_coil_source_blocks_and_currents_independent():
@@ -127,31 +127,31 @@ def test_review_gate_keeps_two_coil_source_blocks_and_currents_independent():
         "z_grid": first["z_grid"],
         "rectangular_coils": [first["rectangular_coils"][0], second["rectangular_coils"][0]],
     }
-    total = run_composition(combined, asset_loader=_assets)
-    one = run_composition(first, asset_loader=_assets)
-    two = run_composition(second, asset_loader=_assets)
+    total = _run_composition(combined, asset_loader=_assets)
+    one = _run_composition(first, asset_loader=_assets)
+    two = _run_composition(second, asset_loader=_assets)
     for name in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(total[name], one[name] + two[name], rtol=2.0e-14, atol=1.0e-300)
     assert total["filaments"].shape == (8, 3)
 
 
 def test_ampere_turns_are_split_over_filaments_in_proportion_to_weights():
-    per_filament = run_composition(_inputs(250.0), asset_loader=_assets)
+    per_filament = _run_composition(_inputs(250.0), asset_loader=_assets)
     values = _inputs()
     coil = values["rectangular_coils"][0]
     del coil["current_a"]
     coil["ampere_turns_a"] = 1000.0
-    total = run_composition(values, asset_loader=_assets)
+    total = _run_composition(values, asset_loader=_assets)
     for name in ("psi_vac", "b_r_vac", "b_z_vac"):
         np.testing.assert_allclose(total[name], per_filament[name], rtol=2.0e-14, atol=1.0e-300)
     coil["weights"] = [1.0, 1.0, 2.0, 4.0]
-    weighted = run_composition(values, asset_loader=_assets)
+    weighted = _run_composition(values, asset_loader=_assets)
     values["rectangular_coils"][0] = {
         key: value for key, value in coil.items() if key != "ampere_turns_a"
     }
     values["rectangular_coils"][0]["current_a"] = 1000.0 / 8.0
     np.testing.assert_allclose(
-        weighted["b_z_vac"], run_composition(values, asset_loader=_assets)["b_z_vac"], rtol=2.0e-14
+        weighted["b_z_vac"], _run_composition(values, asset_loader=_assets)["b_z_vac"], rtol=2.0e-14
     )
 
 
@@ -168,7 +168,7 @@ def test_single_filament_axis_field_matches_the_loop_formula_for_both_current_fo
             "dz_m": 0.01,
             key: current,
         }
-        field = run_composition(
+        field = _run_composition(
             {"r_grid": r_grid, "z_grid": z_grid, "rectangular_coils": [coil]}, asset_loader=_assets
         )
         expected = (
@@ -185,7 +185,7 @@ def test_coil_needs_exactly_one_current_form(keys):
     for key in keys:
         coil[key] = 1000.0
     with pytest.raises(ValueError, match="exactly one of current_a"):
-        run_composition(values, asset_loader=_assets)
+        _run_composition(values, asset_loader=_assets)
 
 
 def test_ampere_turns_reject_weights_that_sum_to_zero():
@@ -194,4 +194,4 @@ def test_ampere_turns_reject_weights_that_sum_to_zero():
     del coil["current_a"]
     coil.update(ampere_turns_a=1000.0, weights=[1.0, -1.0, 1.0, -1.0])
     with pytest.raises(ValueError, match="nonzero finite sum"):
-        run_composition(values, asset_loader=_assets)
+        _run_composition(values, asset_loader=_assets)

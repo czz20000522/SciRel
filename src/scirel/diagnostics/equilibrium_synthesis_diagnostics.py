@@ -24,7 +24,7 @@ def _unit(value, name):
     return value
 
 
-def run_composition(inputs, *, asset_loader):
+def _run_composition(inputs, *, asset_loader):
     """Sample raw psi or single-turn linked flux, and explicitly requested profiles.
 
     ``flux_loops.quantity`` is ``raw_psi`` or ``magnetic_flux``. Only declared
@@ -131,7 +131,7 @@ def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
     from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {"asset_loader": {"scirel.geometry.bilinear_grid_sampling": sample_rectilinear_field}},

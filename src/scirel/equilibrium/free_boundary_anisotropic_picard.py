@@ -85,7 +85,7 @@ def _boundary_config(value):
     return value
 
 
-def run_composition(inputs, *, asset_loader):
+def _run_composition(inputs, *, asset_loader):
     """Iterate pressure/current/Green feedback until its full state closes.
 
     State comprises psi, BR, BZ and relaxed cell currents. Every iteration
@@ -419,7 +419,7 @@ def solve_free_boundary_anisotropic_picard(inputs=None, **kwargs):
     )
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

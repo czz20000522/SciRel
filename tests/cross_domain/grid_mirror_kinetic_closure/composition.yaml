@@ -313,7 +313,7 @@ nodes:
 - id: local_ambipolar
   name: 双温镜准中性闭合
   kind: nested_composition
-  callable: scirel.closures.compositions.mirror_quasineutral_closure::run_composition
+  callable: scirel.closures.compositions.mirror_quasineutral_closure::_run_composition
   asset_ref: scirel.closures.compositions.mirror_quasineutral_closure
   inputs: [b_t, psi, reference_and_plug_profiles, species_and_moment_parameters]
   outputs: [p_parallel, p_perpendicular, electrostatic_potential]

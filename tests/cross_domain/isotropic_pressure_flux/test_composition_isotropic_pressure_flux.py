@@ -12,7 +12,7 @@ def _asset_loader(asset_ref):
 
 
 def _run_composition(inputs):
-    return composition.run_composition(inputs)
+    return composition._run_composition(inputs)
 
 
 # 验证：YAML 的 PFM 映射和 Picard 反馈边必须与入口图同步。

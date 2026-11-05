@@ -5,7 +5,7 @@ from __future__ import annotations
 __all__ = ["solve_kinetic_mirror_hall_equilibrium"]
 
 
-def run_composition(inputs, *, composition_loader):
+def _run_composition(inputs, *, composition_loader):
     """Bind each Hall field iterate into the nested kinetic composition."""
     if not isinstance(inputs, dict) or not isinstance(inputs.get("kinetic_config"), dict):
         raise ValueError("inputs.kinetic_config must be a mapping")
@@ -44,7 +44,7 @@ def solve_kinetic_mirror_hall_equilibrium(
     from scirel.kinetic.grid_mirror_kinetic_closure import solve_grid_mirror_kinetic_closure
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

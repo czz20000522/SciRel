@@ -110,7 +110,7 @@ def test_confinement_preserves_original_moments_and_endpoint_diagnostics():
 
 
 def test_endpoint_and_nested_failures_propagate_without_terminal_state():
-    from scirel.kinetic.grid_mirror_kinetic_closure import run_composition
+    from scirel.kinetic.grid_mirror_kinetic_closure import _run_composition
     from scirel.geometry.flux_surface_profile import evaluate_flux_surface_profile
     from scirel.closures.mirror_ambipolar_potential import solve_mirror_ambipolar_potential
 
@@ -131,7 +131,7 @@ def test_endpoint_and_nested_failures_propagate_without_terminal_state():
         }[asset_id]
 
     with pytest.raises(RuntimeError, match="endpoint failure"):
-        run_composition(
+        _run_composition(
             _inputs(),
             asset_loader=loader(failed_endpoint),
             composition_loader=lambda _: failed_nested,
@@ -140,7 +140,7 @@ def test_endpoint_and_nested_failures_propagate_without_terminal_state():
 
     calls.clear()
     with pytest.raises(RuntimeError, match="nested failure"):
-        run_composition(
+        _run_composition(
             _inputs(),
             asset_loader=loader(solve_mirror_ambipolar_potential),
             composition_loader=lambda _: failed_nested,

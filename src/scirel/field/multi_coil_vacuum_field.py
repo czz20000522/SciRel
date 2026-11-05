@@ -29,7 +29,7 @@ def _stack_response_columns(responses):
     }
 
 
-def run_composition(inputs, *, asset_loader):
+def _run_composition(inputs, *, asset_loader):
     """Expand coil records, evaluate local Green blocks, then contract currents."""
     if not isinstance(inputs, dict):
         raise ValueError("r_grid, z_grid, and rectangular_coils are required")
@@ -219,7 +219,7 @@ def solve_multi_coil_vacuum_field(inputs=None, **kwargs):
     from scirel.field.rectangular_coil_filaments import discretize_rectangular_coil
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

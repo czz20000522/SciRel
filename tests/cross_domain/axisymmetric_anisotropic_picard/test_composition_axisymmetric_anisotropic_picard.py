@@ -186,7 +186,7 @@ def test_axisymmetric_terminal_floor_precedes_terminal_closure():
         return field
 
     with pytest.raises(FloatingPointError, match="returned terminal state"):
-        composition.run_composition(
+        composition._run_composition(
             _inputs(maxiter=1, minimum_field=1.0e-6, pressure_closure=closure), asset_loader=loader
         )
     assert calls["field"] == 2

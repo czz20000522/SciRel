@@ -29,7 +29,7 @@ def _confine_rows(value, left_index, right_index):
     return result
 
 
-def run_composition(inputs, *, asset_loader, composition_loader):
+def _run_composition(inputs, *, asset_loader, composition_loader):
     """Map reference/plug planes into a local nested kinetic closure.
 
     Endpoint current_balance_solved flags distinguish prescribed evaluation
@@ -309,7 +309,7 @@ def solve_grid_mirror_kinetic_closure(inputs=None, **kwargs):
     )
 
     return compose(
-        run_composition,
+        _run_composition,
         inputs,
         kwargs,
         {

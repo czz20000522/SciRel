@@ -170,7 +170,7 @@ def test_u1_c_t03_composition_is_a_pure_ordered_dag(candidate):
     # every dependency is a keyword parameter with a default, and there is no
     # feedback parameter because the composition has no loop.
     composition_signature = inspect.signature(
-        candidate["composition"].__globals__["run_composition"]
+        candidate["composition"].__globals__["_run_composition"]
     )
     parameters = composition_signature.parameters
     assert list(parameters) == [

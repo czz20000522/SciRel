@@ -29,7 +29,7 @@ def _required_inputs(inputs):
         raise ValueError(f"{missing[0]} is required")
 
 
-def run_composition(inputs):
+def _run_composition(inputs):
     """Validate composition ports and package the shared solver's terminal state."""
     if not isinstance(inputs, Mapping):
         raise ValueError("inputs must be a mapping")
@@ -114,4 +114,4 @@ def solve_isotropic_pressure_flux(inputs=None, **kwargs):
         raise ValueError("inputs must be a mapping")
     values = {} if inputs is None else dict(inputs)
     values.update(kwargs)
-    return run_composition(values)
+    return _run_composition(values)
