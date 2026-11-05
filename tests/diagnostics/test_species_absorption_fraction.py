@@ -8,6 +8,8 @@ import math
 import numpy as np
 import pytest
 
+from scirel._result import Result
+
 MODULE = importlib.import_module("scirel.diagnostics.species_absorption_fraction")
 COMPUTE = MODULE.compute_species_absorption_fraction
 
@@ -127,3 +129,19 @@ def test_u3_t09_residual_is_consistent_with_the_reported_sum():
         rel_tol=0.0,
         abs_tol=0.0,
     )
+
+
+# --- Test U3-T10: the result is a named mapping with unchanged keys. ---------
+def test_u3_t10_returns_named_result_with_mapping_compatibility():
+    result = COMPUTE([1.0, 2.0, 3.0, 4.0])
+    assert isinstance(result, Result)
+    assert isinstance(result, dict)
+    assert list(result) == [
+        "total_power",
+        "species_fraction_percent",
+        "total_fraction_percent",
+        "fraction_sum_residual_percent",
+        "branch",
+    ]
+    for field in result:
+        assert getattr(result, field) is result[field]

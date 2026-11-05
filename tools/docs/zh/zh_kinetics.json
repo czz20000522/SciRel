@@ -6594,9 +6594,9 @@
   },
   {
    "asset_id": "scirel.diagnostics.species-absorption-fraction",
-   "source_sha256": "0a07312b2fbf47274fefe12462c807fea911bb7f66a5d951522274367fb9eba5",
-   "summary": "把四物种有符号吸收功率换算为按输入顺序排列的百分比；稳定处理相消和中间数值溢出，仅拒绝零总功率或无法表示的最终结果。",
-   "definition": "先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。",
+   "source_sha256": "5cd0be47cfd1fdeb832f98cd8a2913041748286ca7a5a6d04ada5ef973cab38b",
+   "summary": "把四物种有符号吸收功率换算为按输入顺序排列的百分比；稳定处理相消和中间数值溢出，返回带五个命名字段的 scirel._result.Result 映射，并仅拒绝零总功率或无法表示的最终结果。",
+   "definition": "先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。五个字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "在恰好四个物种之间分配吸收功率。",
    "assumptions": [
     "四个条目是调用者提供的一个物种顺序下的吸收功率；算子从不推断或重排物种。",
@@ -6615,31 +6615,31 @@
    "outputs": [
     {
      "name": "total_power",
-     "description": "四项功率总和。",
+     "description": "Result 字段：四项功率总和。",
      "constraints": "有限非零，否则拒绝。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "species_fraction_percent",
-     "description": "按调用顺序排列的物种百分比。",
+     "description": "Result 字段：按调用顺序排列的物种百分比。",
      "constraints": "第i项=100×value_i/total；允许随原功率项为负。 每项须有限，否则拒绝。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "total_fraction_percent",
-     "description": "百分比之和。",
+     "description": "Result 字段：百分比之和。",
      "constraints": "对实际返回的 binary64 份额求和；普通账本沿用浮点归约，严重相消或求和中间溢出时精确求这些已返回数值的和。不保证接近 100；最终总和不可表示时拒绝。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "fraction_sum_residual_percent",
-     "description": "百分比闭合残差。",
+     "description": "Result 字段：百分比闭合残差。",
      "constraints": "严格为已报告总百分比−100，不另行重算。",
      "dtype": "双精度浮点（float64）"
     },
     {
      "name": "branch",
-     "description": "输出分支标签。",
+     "description": "Result 字段：输出分支标签。",
      "constraints": "恒为nonzero_total；零总和不作为数值分支返回。",
      "dtype": "字符串"
     }
@@ -6663,11 +6663,11 @@
     "invalid_input": "非四元素向量、复数/布尔/字符串、非有限、不能转浮点或派生总和零/非有限时ValueError。",
     "runtime_failure": "精确总和为零，或最终总功率、份额、已返回份额之和不能表示为有限 binary64 时 ValueError；中间量溢出或下溢改用精确有理计算。",
     "nonconvergence": "无迭代或反馈。",
-    "partial_results": "拒绝账本不返回映射。"
+    "partial_results": "拒绝账本不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "计算四物种分配并检查零总和拒绝。",
-    "expected": "返回按调用者顺序的四份额；零总和引发ValueError。"
+    "expected": "返回一个带五个命名字段的 scirel._result.Result 映射，按键和属性均可读取，四份额保持调用者顺序；零总和引发 ValueError。"
    },
    "verification": {
     "scope": [
@@ -6677,9 +6677,10 @@
      "严格零总和及有符号相消处拒绝。",
      "长度、类型和有限性校验。",
      "合并后只暴露一个公共入口。",
+     "加入命名字段包装后，返回类型、键顺序、映射兼容性和属性读取保持不变。",
      "部分和溢出但数学总和为零、相消间的小项、部分和溢出但最终有限、次正规百分比及最终不可表示拒绝。"
     ],
-    "evidence_ceiling": "限于所声明关系：先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。证据：test_species_absorption_fraction.py, test_legacy_admission_regressions.py（记录 18 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：总和恰为零的账本，此时百分比结果无定义；排除少于或多于四物种。",
+    "evidence_ceiling": "限于所声明关系：先求四项输入功率总和，再按各项占总和的比例乘以 100。有正负相消时，先对输入 binary64 数值作精确有理求和；普通同号账本保留原浮点归约。普通百分比保留先除后乘顺序；严重相消或中间量超出数值范围时，用精确有理比值计算。残差针对实际返回的浮点百分比，而非未舍入理论值。证据：test_species_absorption_fraction.py, test_legacy_admission_regressions.py（记录 19 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：总和恰为零的账本，此时百分比结果无定义；排除少于或多于四物种。",
     "known_limitations": [
      "固定四物种，不支持任意长度。",
      "零总和分支不可用，不能表示物理零吸收运行。",
