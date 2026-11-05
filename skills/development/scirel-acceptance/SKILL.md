@@ -12,8 +12,8 @@ A change is done only when the checks here pass. Run them yourself; do not assum
 | Moment | Command | What it covers | Time |
 | --- | --- | --- | --- |
 | While working | `python3 scripts/dev_container.py shell`, then run `python -B scripts/test_scope.py --changed <path>` and the command it prints | The affected tests | Seconds to minutes |
-| Before asking for review | `python3 scripts/dev_container.py check` on the host-native container architecture | Full local acceptance, fastest on Apple Silicon arm64 | About 5 minutes on native CPU |
-| Final merge evidence | GitHub Actions on Linux/amd64 | Same full acceptance on the cross-device canonical platform | About 5-15 minutes |
+| Before asking for review | `python3 scripts/dev_container.py check` on the host-native container architecture | Full local acceptance and merge evidence, fastest on Apple Silicon arm64 | About 5 minutes on native CPU |
+| Optional cross-device spot check | Manually dispatch the `Cross-device check` workflow | Same full acceptance on Linux/amd64 | About 5-15 minutes |
 | Before each commit | `python3 scripts/dev_container.py precommit` | Lint and format on staged Python, no private paths or secrets in staged text | Seconds |
 | Before each push, and before saying a change is done | `python3 scripts/dev_container.py check` | Everything listed below | About 5 minutes |
 

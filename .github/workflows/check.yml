@@ -1,18 +1,10 @@
-name: Check
+name: Cross-device check
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: check-pr-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
 
 jobs:
   check:
