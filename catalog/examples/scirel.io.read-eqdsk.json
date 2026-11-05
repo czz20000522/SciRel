@@ -95,10 +95,10 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
-  "runtime_failure": "Filesystem errors propagate; parse errors are EQDSKFormatError.",
+  "invalid_input": "EQDSKFormatError for malformed, truncated, non-numeric, non-finite, dimensionally inconsistent, or unexpected extended-dialect records; strict=False permits only trailing records.",
+  "runtime_failure": "OSError from filesystem access and UnicodeError from decoding propagate.",
   "nonconvergence": "Not applicable.",
-  "partial_results": "Class wrapper preserves previous mapping when a read fails."
+  "partial_results": "None; a failed read returns nothing."
  },
  "public_api": {
   "python": {
@@ -115,7 +115,7 @@
  },
  "example": {
   "description": "Build a minimal fixed-width extended EQDSK text file and read its 2-by-2 psi records.",
-  "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.io.eqdsk import read_eqdsk\nlines = ['MANUAL EXAMPLE'.ljust(48) + '   1   2   2   2']\nfor values in [[1., 2., 0., 0., 0.]] + [[0.]*5]*3 + [[1., 2.]]*4 + [[1., 2., 3., 4.], [0., 0.]]:\n    lines.append(''.join('%16.9E' % value for value in values))\nlines.append('    0    0')\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    path.write_text('\\n'.join(lines)+'\\n')\n    parsed = read_eqdsk(path)\n    assert parsed['psi'].tolist() == [[1., 2.], [3., 4.]]",
+  "code": "from pathlib import Path\nfrom tempfile import TemporaryDirectory\nfrom scirel.io.eqdsk import read_eqdsk\nlines = ['MANUAL EXAMPLE'.ljust(48) + '   1   2   2   2']\nfor values in [[1., 2., 0., 0., 0.]] + [[0.]*5]*3 + [[1., 2.]]*4 + [[1., 2., 3., 4.], [0., 0.]]:\n    lines.append(''.join('%16.9E' % value for value in values))\nlines.append('    0    0')\nwith TemporaryDirectory() as directory:\n    path = Path(directory)/'example.eqdsk'\n    _ = path.write_text('\\n'.join(lines)+'\\n')\n    parsed = read_eqdsk(path)\n    assert parsed['psi'].tolist() == [[1., 2.], [3., 4.]]",
   "expected": "The parser returns psi=[[1.0, 2.0], [3.0, 4.0]] in declared order."
  },
  "verification": {

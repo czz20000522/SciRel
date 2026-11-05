@@ -1003,7 +1003,7 @@
   },
   {
    "asset_id": "scirel.io.eqdsk-class",
-   "source_sha256": "74607ab524cf9f2f3ad30005d97d100004bd9c584016b508d79266105aa43365",
+   "source_sha256": "4699395e4bef43248f393ab59c43d4ade1940fe3420f1a22b76e1c117a4c71a9",
    "summary": "读写扩展 EQDSK 方言的可变映射封装。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
@@ -1047,8 +1047,8 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "写入验证或读取畸形记录抛 EQDSKFormatError；写入验证发生在目标文件截断之前。",
-    "runtime_failure": "文件系统错误传播；解析错误为 EQDSKFormatError。",
+    "invalid_input": "扩展方言记录畸形或不可表示时抛 EQDSKFormatError；写入映射缺少必需记录键时抛 KeyError。",
+    "runtime_failure": "文件系统访问错误抛 OSError，文本解码失败抛 UnicodeError；解析错误为 EQDSKFormatError。",
     "nonconvergence": "不适用。",
     "partial_results": "读取失败时，类封装保持原映射。"
    },
@@ -1071,7 +1071,7 @@
   },
   {
    "asset_id": "scirel.io.read-eqdsk",
-   "source_sha256": "fcf075941c7ff3cef9d6db9b9371e7c45853561879e20210613f28abd4787e1f",
+   "source_sha256": "c916f772e9b74ae1838d3af6be50b064058ff01d496048c6c3a8a8c4215dee3d",
    "summary": "解析一个经过结构校验的扩展 EQDSK 文本文件，并声明固定网格原点。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。",
    "model": "采用固定宽度记录块、固定网格原点和不透明头部标量的扩展 EQDSK 文本格式。",
@@ -1124,10 +1124,10 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "写入验证或读取畸形记录抛 EQDSKFormatError；写入验证发生在目标文件截断之前。",
-    "runtime_failure": "文件系统错误传播；解析错误为 EQDSKFormatError。",
+    "invalid_input": "记录缺失、截断、非数值、非有限、维度不一致或出现意外扩展方言记录时抛 EQDSKFormatError；strict=False 仅允许尾随记录。",
+    "runtime_failure": "文件系统访问错误抛 OSError，文本解码失败抛 UnicodeError。",
     "nonconvergence": "不适用。",
-    "partial_results": "读取失败时，类封装保持原映射。"
+    "partial_results": "无；读取失败不返回任何内容。"
    },
    "example": {
     "description": "构造最小定宽扩展 EQDSK 文本，并读取其 2×2 psi 记录。",
@@ -1222,7 +1222,7 @@
   },
   {
    "asset_id": "scirel.io.write-eqdsk",
-   "source_sha256": "4a5150a58d21f5b80ce5323d67cd7e0aa939d495c9642ac61413cab25067f0c1",
+   "source_sha256": "fefc941d3e21dbccf50bcdb4eb0edba022dc59f5b3547b21962f10d444e9f521",
    "summary": "序列化一个已验证的扩展 EQDSK 映射。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。可选提供的 R/Z 或 r_origin/z_origin 必须匹配此方言的固定原点，否则在截断目标文件前抛错。",
    "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
@@ -1273,8 +1273,8 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "写入验证或读取畸形记录抛 EQDSKFormatError；写入验证发生在目标文件截断之前。",
-    "runtime_failure": "文件系统错误传播；解析错误为 EQDSKFormatError。",
+    "invalid_input": "data 缺少必需记录键时抛 KeyError；形状无效、数值非有限、字段不可表示或固定原点冲突时抛 EQDSKFormatError。",
+    "runtime_failure": "文件系统访问错误抛 OSError；验证错误发生在目标文件截断之前。",
     "nonconvergence": "不适用。",
     "partial_results": "不写入部分文件；验证错误发生在目标截断之前。"
    },
