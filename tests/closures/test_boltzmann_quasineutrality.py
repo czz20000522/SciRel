@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.closures.boltzmann_quasineutrality import (
     compute_boltzmann_electron_state,
     compute_boltzmann_electron_state as scientific_function,
@@ -25,6 +26,37 @@ def test_array_broadcast_and_zero_density_are_finite():
     assert result["electron_pressure_pa"][0] == 0.0
     assert result["logarithmic_charge_residual"][0] == 0.0
     assert result["relative_charge_residual"][0] == 0.0
+
+
+def test_result_is_a_named_mapping_with_attribute_access():
+    result = scientific_function(
+        np.array([0.0, 1.0]), 2.0, np.array([0.0, 2.0]), 0.0, np.array([0.0, 1.0]), 1.0
+    )
+    assert isinstance(result, Result)
+    assert list(result) == [
+        "electron_density_m3",
+        "electron_pressure_pa",
+        "logarithmic_charge_residual",
+        "charge_residual_m3",
+        "relative_charge_residual",
+    ]
+    for field in result:
+        assert getattr(result, field) is result[field]
+
+
+def test_result_fields_preserve_float64_dtypes():
+    result = scientific_function(
+        np.array([0.0, 1.0]), 2.0, np.array([0.0, 2.0]), 0.0, np.array([0.0, 1.0]), 1.0
+    )
+    for field in result:
+        assert np.asarray(result[field]).dtype == np.float64
+
+
+def test_field_conversion_preserves_documented_exception_types():
+    with pytest.raises(ValueError, match="could not convert string to float"):
+        scientific_function("bad", 1.0, 1.0, 0.0, 1.0, 1.0)
+    with pytest.raises(TypeError):
+        scientific_function(0.0, 1.0, 1.0, 0.0, 1.0, np.array([1.0, 2.0]))
 
 
 def test_exponent_is_clipped_before_electron_density():
