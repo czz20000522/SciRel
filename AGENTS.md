@@ -20,6 +20,7 @@ SciRel 是聚变和等离子体方向的 Python 科学计算库，每个公开�
 | 要做的事 | 读这里 |
 | --- | --- |
 | 了解整体边界 | [ARCHITECTURE.md](ARCHITECTURE.md) |
+| 快速理解当前代码地图 | [docs/maintainer/codebase-map.md](docs/maintainer/codebase-map.md) |
 | 项目规则 | [RULES.md](RULES.md) |
 | 改代码或加功能 | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | 改合同 | [catalog/README.md](catalog/README.md)、[catalog/AUDIT.md](catalog/AUDIT.md) |
