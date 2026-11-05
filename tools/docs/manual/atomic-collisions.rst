@@ -20,18 +20,25 @@
 从能量到截面：先确认分支和端点
 ------------------------------
 
-H 与 H⁺ 的电荷交换截面有两条独立拟合。默认分支是九系数 Janev 对数多项式，``freeman=True`` 选择另一条 Freeman-Jones 解析式：
+H 与 H⁺ 的电荷交换截面现在默认使用**连续复合**：12.673175 keV 以下用九系数 Janev 对数多项式，以上用 Lindsay & Stebbings 2005 Table 1 的推荐拟合，一直到 250 keV。``freeman=True`` 仍保留独立的 Freeman-Jones 解析分支，只作为 100 keV 以内的比较入口：
 
 .. code-block:: text
 
-   Janev:    exp(polyval(log(E), a)) * 1e-4
-   Freeman:  1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2
-             / (1 + 0.1112e-14 E^3.3)
+   Composite: E <= 12.673175 keV:
+              exp(polyval(log(E), a)) * 1e-4
 
-两条式子的能域不同：Janev 分支把能量裁到 ``[0.1, 2.01e4]`` eV，Freeman 分支裁到 ``[0.1, 1e5]`` eV。所谓“裁剪”不是外推，也不是报错；超出能域的正能量会静默返回端点值。负能量则会被拒绝。
+              E > 12.673175 keV:
+              (4.15 - 0.531 ln(E_keV))^2
+              * (1 - exp(-67.3/E_keV))^4.5 * 1e-20
+
+   Freeman:   1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2
+              / (1 + 0.1112e-14 E^3.3)
+
+默认复合在 ``[0.1, 2.5e5]`` eV 内求值，两个拟合在 12.673175 keV 处连续相接；Freeman 分支的裁剪范围是 ``[0.1, 1e5]`` eV。正能量高于所选上限时，函数会发出 ``RuntimeWarning`` 并返回端点值；低于 0.1 eV 时静默返回低端值。负能量会被拒绝。
 
 .. code-block:: python
 
+   import warnings
    import numpy as np
    from scirel.collisions import (
        evaluate_atomic_hydrogen_charge_exchange_cross_section as cx_h,
@@ -39,17 +46,21 @@ H 与 H⁺ 的电荷交换截面有两条独立拟合。默认分支是九系数
    )
 
    energy = np.array([1.0, 10.0, 100.0, 1.0e3, 1.0e4])
-   janev = cx_h(energy)
+   composite = cx_h(energy)
    freeman = cx_h(energy, freeman=True)
    molecular = cx_h2(energy)
-   print("E/eV   H+H+ Janev   H+H+ Freeman   H2+H2+")
-   for e, a, f, m in zip(energy, janev, freeman, molecular):
-       print(f"{e:8.0f}  {a*1e20:11.3f}  {f*1e20:13.3f}  {m*1e20:7.3f}")
+   print("E/eV   H+H+ composite   H+H+ Freeman   H2+H2+")
+   for e, a, f, m in zip(energy, composite, freeman, molecular):
+       print(f"{e:8.0f}  {a*1e20:15.3f}  {f*1e20:13.3f}  {m*1e20:7.3f}")
 
+   hi = cx_h(np.array([3.0e4, 1.0e5]))
+   print("high-energy cross sections", np.array2string(hi, precision=6))
    lo = cx_h(np.array([0.01, 0.1]))
-   hi = cx_h(np.array([3.0e4, 2.01e4]))
-   print("clip low ", lo[0] == lo[1], f"{lo[0]:.6e}")
-   print("clip high", hi[0] == hi[1], f"{hi[0]:.6e}")
+   print("clip low", lo[0] == lo[1], f"{lo[0]:.6e}")
+   with warnings.catch_warnings(record=True) as caught:
+       warnings.simplefilter("always")
+       top = cx_h(np.array([3.0e5, 2.5e5]))
+   print("clip high", top[0] == top[1], f"{top[0]:.6e}", "warnings", len(caught))
 
    try:
        cx_h(np.array([1.0, -0.5]))
@@ -64,22 +75,23 @@ H 与 H⁺ 的电荷交换截面有两条独立拟合。默认分支是九系数
 
 .. code-block:: text
 
-   E/eV   H+H+ Janev   H+H+ Freeman   H2+H2+
-          1       60.348         69.370   12.959
-         10       46.315         49.532   12.099
-        100       31.434         33.027    7.581
-       1000       17.441         19.855    4.771
-      10000        8.979          9.844    6.048
-   clip low  True 7.296111e-19
-   clip high True 4.993038e-20
+   E/eV   H+H+ composite   H+H+ Freeman   H2+H2+
+          1           60.348         69.370   12.959
+         10           46.315         49.532   12.099
+        100           31.434         33.027    7.581
+       1000           17.441         19.855    4.771
+      10000            8.979          9.844    6.048
+   high-energy cross sections [3.316599e-20 1.170723e-21]
+   clip low True 7.296111e-19
+   clip high True 2.236413e-23 warnings 1
    ValueError energy_ev must be nonnegative
    ValueError freeman must be a scalar branch selector, not an array
 
-在这五个能量点上，Janev 分支从 ``60.348e-20`` 降到 ``8.979e-20`` m²；Freeman 分支在低能端高约 15%，到 10 keV 附近只高约 10%。分子氢的拟合在低能端明显更小，但在 10 keV 附近又接近原子分支；这两条曲线没有简单的常数比例关系。两个原子分支是**独立拟合**，不是同一个量的两种参数化；选哪一条是调用者的模型选择，不能把两条的差当成误差棒。
+在低能五个点上，默认复合沿用 Janev 值；到 30、100 keV 时，它分别变成 ``3.316599e-20`` 和 ``1.170723e-21`` m²，不再重复 20.1 keV 的端点。论文对 6 keV 以上给出约 ``±11%`` 的可靠度，并记录 100 keV 处还有接近 30% 的理论/实验分歧；这两个量不能混成同一个误差预算。
 
-端点检查显示：``E=0.01`` 与 ``E=0.1`` 返回完全相同的 ``7.296111e-19``，``E=3.0e4`` 与 ``E=2.01e4`` 返回完全相同的 ``4.993038e-20``。这是合同声明的端点复制。负能量在裁剪之前就被拒绝，错误信息里点名 ``energy_ev``；数组形式的 ``freeman`` 也被拒绝，而不是被 ``np.any`` 归约。
+Freeman 分支在低能端比默认值高约 15%，到 100 keV 又低约 17%，而且它到 100 keV 就停止；因此 ``freeman=True`` 只适合明确要比较这条旧拟合的场景。端点检查显示：``E=0.01`` 与 ``E=0.1`` 精确相同；默认分支在 ``E=3.0e5`` 与 ``E=2.5e5`` 精确相同且发出一次警告。负能量和数组形式的 ``freeman`` 都在求值前被拒绝。
 
-这一节不能推出：这些数是截面，不是速率系数，也不是碰撞频率；没有做热平均；没有外部原子物理实验基准；不能从两条拟合的差得到不确定度；也不能把端点值当作能域外的有效外推。
+这一节不能推出：这些数是截面，不是速率系数；默认复合不是实验数据的重新拟合；不能用 Freeman 与默认的差当作不确定度；也不能把 250 keV 以上的端点当作有效外推。
 
 把截面放进 Maxwellian 靶：能量分辨的 <sigma v>
 -----------------------------------------------

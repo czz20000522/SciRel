@@ -20,18 +20,25 @@ Conventions: energies in eV, cross sections in m², rate coefficients in m³/s, 
 From energy to cross section: branches and endpoints first
 ----------------------------------------------------------
 
-Two independent fits describe the charge-exchange cross section for H + H⁺. The default branch is the nine-coefficient Janev log-polynomial; ``freeman=True`` selects the alternative Freeman-Jones analytic form:
+The H + H+ charge-exchange cross section now defaults to a **continuous composite**: the nine-coefficient Janev logarithmic polynomial below 12.673175 keV, followed by the Lindsay & Stebbings 2005 Table 1 recommended fit through 250 keV. ``freeman=True`` retains the independent Freeman-Jones analytic branch as a comparison entry through 100 keV only:
 
 .. code-block:: text
 
-   Janev:    exp(polyval(log(E), a)) * 1e-4
-   Freeman:  1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2
-             / (1 + 0.1112e-14 E^3.3)
+   Composite: E <= 12.673175 keV:
+              exp(polyval(log(E), a)) * 1e-4
 
-The two forms cover different energy domains: the Janev branch clips energy to ``[0.1, 2.01e4]`` eV, while the Freeman branch clips to ``[0.1, 1e5]`` eV. "Clipping" is neither extrapolation nor an error: positive energies outside the domain silently return the endpoint value. Negative energies are rejected.
+              E > 12.673175 keV:
+              (4.15 - 0.531 ln(E_keV))^2
+              * (1 - exp(-67.3/E_keV))^4.5 * 1e-20
+
+   Freeman:   1e-4 * 0.6937e-14 * (1 - 0.155 log10(E))^2
+              / (1 + 0.1112e-14 E^3.3)
+
+The default composite is evaluated on ``[0.1, 2.5e5]`` eV and joins the two fits continuously at 12.673175 keV. The Freeman branch clips to ``[0.1, 1e5]`` eV. A positive energy above the selected upper edge emits a ``RuntimeWarning`` and returns the endpoint; below 0.1 eV the lower endpoint is returned silently. Negative energies are rejected.
 
 .. code-block:: python
 
+   import warnings
    import numpy as np
    from scirel.collisions import (
        evaluate_atomic_hydrogen_charge_exchange_cross_section as cx_h,
@@ -39,17 +46,21 @@ The two forms cover different energy domains: the Janev branch clips energy to `
    )
 
    energy = np.array([1.0, 10.0, 100.0, 1.0e3, 1.0e4])
-   janev = cx_h(energy)
+   composite = cx_h(energy)
    freeman = cx_h(energy, freeman=True)
    molecular = cx_h2(energy)
-   print("E/eV   H+H+ Janev   H+H+ Freeman   H2+H2+")
-   for e, a, f, m in zip(energy, janev, freeman, molecular):
-       print(f"{e:8.0f}  {a*1e20:11.3f}  {f*1e20:13.3f}  {m*1e20:7.3f}")
+   print("E/eV   H+H+ composite   H+H+ Freeman   H2+H2+")
+   for e, a, f, m in zip(energy, composite, freeman, molecular):
+       print(f"{e:8.0f}  {a*1e20:15.3f}  {f*1e20:13.3f}  {m*1e20:7.3f}")
 
+   hi = cx_h(np.array([3.0e4, 1.0e5]))
+   print("high-energy cross sections", np.array2string(hi, precision=6))
    lo = cx_h(np.array([0.01, 0.1]))
-   hi = cx_h(np.array([3.0e4, 2.01e4]))
-   print("clip low ", lo[0] == lo[1], f"{lo[0]:.6e}")
-   print("clip high", hi[0] == hi[1], f"{hi[0]:.6e}")
+   print("clip low", lo[0] == lo[1], f"{lo[0]:.6e}")
+   with warnings.catch_warnings(record=True) as caught:
+       warnings.simplefilter("always")
+       top = cx_h(np.array([3.0e5, 2.5e5]))
+   print("clip high", top[0] == top[1], f"{top[0]:.6e}", "warnings", len(caught))
 
    try:
        cx_h(np.array([1.0, -0.5]))
@@ -64,22 +75,23 @@ Actual output (cross-section values are in units of 1e-20 m²):
 
 .. code-block:: text
 
-   E/eV   H+H+ Janev   H+H+ Freeman   H2+H2+
-          1       60.348         69.370   12.959
-         10       46.315         49.532   12.099
-        100       31.434         33.027    7.581
-       1000       17.441         19.855    4.771
-      10000        8.979          9.844    6.048
-   clip low  True 7.296111e-19
-   clip high True 4.993038e-20
+   E/eV   H+H+ composite   H+H+ Freeman   H2+H2+
+          1           60.348         69.370   12.959
+         10           46.315         49.532   12.099
+        100           31.434         33.027    7.581
+       1000           17.441         19.855    4.771
+      10000            8.979          9.844    6.048
+   high-energy cross sections [3.316599e-20 1.170723e-21]
+   clip low True 7.296111e-19
+   clip high True 2.236413e-23 warnings 1
    ValueError energy_ev must be nonnegative
    ValueError freeman must be a scalar branch selector, not an array
 
-At these five energies, the Janev branch falls from ``60.348e-20`` to ``8.979e-20`` m²; the Freeman branch is about 15% higher at the low-energy end and only about 10% higher near 10 keV. The molecular-hydrogen fit is noticeably smaller at low energy but approaches the atomic branches near 10 keV; the two curves do not have a simple constant ratio. The two atomic branches are **independent fits**, not two parameterizations of the same quantity; choosing one is the caller's model choice, and the difference between them is not an error bar.
+At the five low-energy points the default remains the Janev value; at 30 and 100 keV it becomes ``3.316599e-20`` and ``1.170723e-21`` m² respectively instead of repeating the 20.1 keV endpoint. The paper states about ``±11%`` reliability above 6 keV and separately records an almost 30% theory-versus-measurement discrepancy at 100 keV; those are not one combined uncertainty budget.
 
-Endpoint checks show that ``E=0.01`` and ``E=0.1`` return exactly the same ``7.296111e-19``, and ``E=3.0e4`` and ``E=2.01e4`` return exactly the same ``4.993038e-20``. This is the endpoint copying declared by the contract. Negative energies are rejected before clipping, and the error message names ``energy_ev``; an array-valued ``freeman`` is also rejected rather than reduced with ``np.any``.
+The Freeman branch is about 15% above the default at low energy, about 17% below it at 100 keV, and stops at 100 keV. ``freeman=True`` is therefore only for an explicit comparison with that older fit. Endpoint checks show that ``E=0.01`` and ``E=0.1`` are exactly equal; the default ``E=3.0e5`` and ``E=2.5e5`` values are exactly equal with one warning. Negative energy and array-valued ``freeman`` are rejected before evaluation.
 
-What this section does not establish: these numbers are cross sections, not rate coefficients or collision frequencies; no thermal average has been taken; there is no external atomic-physics experimental benchmark; the difference between the two fits does not give an uncertainty; and the endpoint values must not be treated as valid extrapolation outside the energy domain.
+This section does not establish that these are rate coefficients, that the composite is a new experimental fit, that the Freeman difference is an uncertainty, or that the value above 250 keV is a valid extrapolation.
 
 Putting the cross section on a Maxwellian target: energy-resolved <sigma v>
 ---------------------------------------------------------------------------

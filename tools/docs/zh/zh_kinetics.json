@@ -1800,27 +1800,28 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-cross-section",
-   "source_sha256": "b21340cfe3cfa3367e27552022d9d90cf62d6a270548b906e55f7699c5fdecd7",
-   "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）：默认使用九系数 Janev 对数多项式，freeman=True 时改用 Freeman–Jones 解析拟合。两个分支各自在截断后的能量范围上求值，因此拟合域外返回端点值。负能量和非标量分支选择器被拒绝。",
-   "definition": "默认分支将能量截断至 [0.1, 2.01e4] eV，返回 exp(polyval(log(E_clipped), a))×1e-4 m²（a 为九系数 Janev 表）。freeman=True 分支截断至 [0.1, 1e5] eV，返回 1e-4×0.6937e-14×(1−0.155 log10(E_clipped))²/(1+0.1112e-14 E_clipped^3.3) m²。两个截断范围之外都返回端点值。",
-   "model": "两个独立的所声明截面拟合；不插值外部数据，也不对速率做积分。",
+   "source_sha256": "f28e19e0721841e55556d037b5e6eb2458eb750ca62a6fee5c045a4cb3eeb4f7",
+   "summary": "以碰撞能量（eV）为自变量，给出 H + H⁺ 电荷交换截面（m²）。默认是连续复合：Janev 多项式用在 12.673175 keV 以下，Lindsay–Stebbings 2005 Table 1 用在交点至 250 keV；freeman=True 保留独立的 Freeman–Jones 比较分支至 100 keV。越过高能端点会裁剪并发出 RuntimeWarning；负能量和非标量分支选择器被拒绝。",
+   "definition": "默认分支先将能量裁剪到 [0.1, 2.5e5] eV；E ≤ 1.267317514018116e4 eV 时返回九系数 Janev 多项式 exp(polyval(log(E),a))×1e-4 m²，E 高于交点时返回 (4.15−0.531 ln(E_keV))²(1−exp(−67.3/E_keV))^4.5×1e-20 m²。freeman=True 将能量裁剪到 [0.1,1e5] eV，返回独立 Freeman–Jones 解析式。超过所选上限时发出 RuntimeWarning 并返回端点。",
+   "model": "连续的 Janev/Lindsay–Stebbings 默认复合截面，加上独立的 Freeman–Jones 比较分支；不做运行时外部数据插值，也不做速率积分。",
    "assumptions": [
-    "Janev 系数和 Freeman–Jones 常数是所声明的拟合值，按所声明的表达式求值，不从任何外部参考重新推导。",
-    "两个分支是相互独立的拟合，而不是同一关系的等价参数化；选择哪一个由调用者决定，且没有测试对照外部物理截面参考确立任一拟合。",
-    "端点截断是所声明的行为：在拟合范围外很远处求值的调用者会静默得到端点值。"
+    "Janev 系数、Lindsay–Stebbings Table 1 参数和 Freeman–Jones 常数按各自声明的算式求值。",
+    "Lindsay & Stebbings 2005, Table 1 与 §4.1 给出高能拟合及可靠度；本仓库不把该拟合冒充独立实验复验。",
+    "两个拟合在 12.67317514018116 eV 处以数值精度相交，因此默认复合在该点连续。",
+    "Lindsay–Stebbings Table 1 只覆盖 0.005–250 keV；该表之外的结论不由它支持。"
    ],
-   "boundary": "能量有限且非负，分支选择器为标量；两拟合在截断域内有限且为正。",
+   "boundary": "能量为有限非负实数；默认范围 [0.1,2.5e5] eV，Freeman–Jones 范围 [0.1,1e5] eV；低端裁剪静默，高端裁剪发出 RuntimeWarning。",
    "inputs": [
     {
      "name": "energy_ev",
      "description": "求值所用碰撞能量。",
-     "constraints": "必须有限且非负；拟合范围以外取相应端点值。",
+     "constraints": "有限且非负实数；低于 0.1 eV 裁剪到低端；默认高端为 2.5e5 eV，Freeman–Jones 高端为 1e5 eV；高于所选高端会裁剪并发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     },
     {
      "name": "freeman",
-     "description": "真值选择 Freeman–Jones，假值选择 Janev。",
-     "constraints": "必须为按真值解释的标量；数组被拒绝，默认 False。",
+     "description": "分支选择器：真值选择 Freeman–Jones；假值选择连续 Janev/Lindsay–Stebbings 复合。",
+     "constraints": "标量按真值解释；数组被拒绝；默认 False 选择复合。",
      "dtype": "标量选择器"
     }
    ],
@@ -1828,54 +1829,51 @@
     {
      "name": "cross_section_m2",
      "description": "每个能量对应的截面，单位 m²。",
-     "constraints": "有限且严格为正。",
+     "constraints": "两个裁剪分支上均有限且严格为正。",
      "dtype": "float64 数组"
     }
    ],
    "applicability": {
     "preconditions": [
-     "调用者接受截断约定：能量超出某分支的拟合范围时静默返回端点值，而不是报错或外推。",
-     "两分支量值不同，调用者须选择适用拟合。"
+     "调用者接受低于 0.1 eV 使用低端，高于所选上限使用高端并发出 RuntimeWarning。",
+     "只有确实需要 Freeman–Jones 比较模型时才使用 freeman=True。"
     ],
     "supported": [
-     "在任一拟合的声明能量范围内（或截断到该范围后）计算 H + H⁺ 电荷交换截面。",
-     "支持任意形状标量和数组，包括零维输入。",
-     "拒绝负能量和非标量分支选择。"
+     "默认 H + H⁺ 截面从 0.1 eV 覆盖到 250 keV，并在 12.673175 keV 连接两个公开拟合。",
+     "独立 Freeman–Jones 解析分支到 100 keV。",
+     "标量和任意形状数组求值，分支选择器必须是标量。"
     ],
     "excluded": [
-     "不在此做Maxwell平均；可把本入口作为scirel.collisions.maxwellian-relative-speed-rate-average的cross_section_m2端口。",
-     "分子氢或其他物种电荷交换是本资产不提供的不同关系。",
-     "速率系数与碰撞频率是下游调用者负责的量。",
-     "不提供经外部原子物理基准验证的截面模型；未绑定此类基准。"
+     "本入口不做 Maxwell 速率积分；速率入口单独负责。",
+     "分子氢和其他物种是不同关系。",
+     "除公开参数化及论文声明的可靠度外，没有额外实验复验。"
     ]
    },
    "failure_semantics": {
     "invalid_input": "非实数、非有限或负能量引发指明 energy_ev 的 ValueError；复数、布尔值和数字字符串不做隐式转换。freeman 为数组时引发指明该参数的 ValueError。",
-    "runtime_failure": "在声明域内不可达：两个拟合只在截断后的正区间求值，合法输入必得有限正结果；无迭代、无分支状态、无部分结果。 能量高于所选拟合上限时发出 RuntimeWarning。",
+    "runtime_failure": "合法输入返回有限正值；能量高于所选上限时发出 RuntimeWarning 并返回端点值。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
    "example": {
-    "description": "在小能量网格上比较两分支，检查端点重复及非法输入拒绝。",
-    "expected": "两分支均有限且为正但互不相同；越界值等于端点；负能量和数组选择器引发 ValueError。"
+    "description": "求默认复合和 Freeman–Jones 比较分支，核对高能公开范围、端点警告与非法输入。",
+    "expected": "默认和 Freeman–Jones 均有限为正；默认在交点连续；高于 250 keV 发出一次警告并精确重复端点；负能量和数组选择器引发 ValueError。"
    },
    "verification": {
     "scope": [
-     "Janev分支与独立exp(polyval(log(E),a))×1e−4相符，Freeman–Jones与独立解析式相符，裁剪域内相对容差1e−15。",
-     "两分支数值不同，选择器实际选择不同关系。",
-     "拟合上下界外结果精确重复对应端点值。",
-     "输入合同：非有限和负能量被拒绝，错误信息指明对应量；以数组传入 freeman 会被拒绝。负能量抛出异常，而不是被静默截断；数组选择器被拒绝，而不是用 np.any 归约。",
-     "本仓库不维护也不重放任何外部实现对照；维护测试只用仓内独立表述核验所声明关系，且仅在受测网格上覆盖所述拒绝与裁剪行为。",
-     "可直接接入Maxwell相对速率平均的cross_section_m2端口，产生有限正速率系数。"
+     "默认复合在交点两侧与 Janev/Lindsay–Stebbings 独立公式相符，并在交点连续。",
+     "30、50、80、100 keV 使用论文 6 keV 以上约 ±11% 的可靠度与公开值比较；旧端点重复值会失败。",
+     "Freeman–Jones 分支与其独立解析式相符，并与默认复合不同。",
+     "默认与 Freeman–Jones 的高端裁剪和 RuntimeWarning 均有测试；低端静默裁剪也有测试。",
+     "输入测试拒绝非有限、负、布尔、复数、数字字符串能量以及数组分支选择器。",
+     "默认调用仍可作为 maxwellian-relative-speed-rate-average 的 cross_section_m2 端口。"
     ],
-    "evidence_ceiling": "独立求值覆盖拟合表达式的全部分支、截断边界和 SI 换算；仅装 NumPy 的环境在每个分支的 56 个能量点上通过标量独立求值，62 项拟合/输入测试也都以原有断言和容差通过。这只为所声明的经验表达式提供资格，不等于新增实验准确性验证。未绑定外部实验截面验证，再分发许可另行处理。",
+    "evidence_ceiling": "测试确立公式求值、样本高能点与公开拟合的一致性、连续交点、裁剪/警告和输入失败语义。Lindsay & Stebbings 2005 作为公开参数化与可靠度来源被直接阅读；本仓库不自称完成独立实验重拟合或权利接受。",
     "known_limitations": [
-     "统一输入检查在转浮点之前拒绝复数、布尔和数值字符串能量，不做强制转换；合法实数输入的拟合算术不变。",
-     "两个分支都没有对照外部原子物理参考做验证；此处不闭合任何外部验证缺口。",
-     "高于拟合上限时返回端点值并发出 RuntimeWarning，因为真实截面继续下降：100 keV 时 Janev 分支约为 Freeman-Jones 分支的 50 倍。低于下限时返回端点值，不发警告。20 到 100 keV 请用 freeman=True。",
-     "两分支是不同拟合而非等价形式，误选是运行检查不能识别的科学错误。",
-     "负能量和标量选择器拒绝是本合同的显式前提：负能量或数组选择器抛出 ValueError，而不是返回截断端点或做数组归约的分支选择。",
-     "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
+     "默认在 5 eV 以下使用 Janev；Lindsay–Stebbings Table 1 从 5 eV 才开始，因此该低能段不由该表验证。",
+     "Lindsay–Stebbings Table 1 到 250 keV 为止；更高能量发出警告并重复端点，不外推。",
+     "论文给出 6 keV 以上约 ±11% 的可靠度，同时记录 100 keV 处约 30% 的理论/实验分歧；不能把拟合差直接当作新的完整不确定度预算。",
+     "Freeman–Jones 是独立比较分支，不是默认，也不是对复合的修正。",
      "公开分发许可仍待人工决定。"
     ]
    }
@@ -4355,75 +4353,79 @@
   },
   {
    "asset_id": "scirel.collisions.atomic-hydrogen-charge-exchange-rate-coefficient",
-   "source_sha256": "75e1bd1a9cd4a9e1bb1b9a98f2454b7fe3836eb20b13949ccb4d2901dd367bc8",
-   "summary": "由成对的等离子体温度和碰撞能量样本（eV）计算 H + H⁺ 电荷交换 Maxwell 速率系数拟合。",
-   "definition": "先将正温度和不可负的碰撞能量依次截断至 [0.1, 2.01e4] eV。令 L_T=log(T)、L_E=log(E)，按能量外层、温度内层的累加顺序和 9×9 系数表累加 log_rate=Σ_j=0..8 Σ_i=0..8 a[i,j]*L_E^j*L_T^i。返回 exp(log_rate)×1e-6 m³/s。输出保持成对输入形状。",
-   "model": "9×9 二元对数速率拟合，不是在速度网格上积分 Maxwell 分布。",
+   "source_sha256": "f8a226901b096aa04abe9ff63360ec33e918aa67cc6a477ee6e3c7077847511a",
+   "summary": "由成对等离子体温度和碰撞能量（eV）计算 H + H⁺ 电荷交换速率（m³/s）。20.1 keV 以下保留旧九×九二变量拟合；更高范围改为把连续 Janev/Lindsay–Stebbings 复合截面与等质量 Maxwellian 靶积分。",
+   "definition": "逐样本处理：若 T≤2.01e4 eV 且 E≤2.01e4 eV，将二者裁剪到 [0.1,2.01e4] eV，按声明的能量外层/温度内层顺序求九×九对数多项式，返回 exp(log_rate)×1e-6 m³/s。否则将 T、E 裁剪到 [0.1,2.5e5] eV，用等质量 Maxwellian 相对速度密度积分连续复合截面；碰撞能量高于 2.5e5 eV 的部分置零。高于 2.5e5 eV 的输入发出 RuntimeWarning。",
+   "model": "低域二变量拟合与高能复合截面 Maxwellian 积分的分段关系。",
    "assumptions": [
-    "系数表和求和顺序在有限实数输入上定义该拟合。",
-    "该速率拟合与截面拟合/速度平均是不同关系，未证明数值等价。",
-    "该可调用对象拒绝非正温度和负能量，而不是将其截断。布尔、复数和数值字符串强制转换也按碰撞域实数输入合同被排除。"
+    "旧 9×9 系数表和累加顺序定义 2.01e4 eV 以下的拟合。",
+    "高能结果由独立公开截面的 Maxwellian 积分定义，不把二变量拟合外推。",
+    "积分使用声明的入射粒子质量而非约化质量，与仓库 Maxwell 约定一致。",
+    "截面表到 250 keV 为止；积分把更大碰撞能量置零，不声称截面外推。"
    ],
-   "boundary": "有限实数值输入且形状相同；温度严格为正，碰撞能量非负；两个维度都做端点截断；输出为有限正数。",
+   "boundary": "有限同形实数；温度严格为正，能量非负；低值裁剪到 0.1 eV，高于 250 keV 裁剪并发出 RuntimeWarning；结果有限为正。",
    "inputs": [
     {
      "name": "temperature_ev",
-     "description": "Maxwell 速率拟合所用的等离子体温度。",
-     "constraints": "有限且>0；低于 0.1 或高于 2.01e4 eV 时截断。",
+     "description": "低域拟合或高能 Maxwell 积分使用的等离子体温度。",
+     "constraints": "有限且严格为正实数；低于 0.1 eV 裁剪；高于 2.5e5 eV 裁剪并发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     },
     {
      "name": "energy_ev",
      "description": "与温度逐项配对的碰撞能量。",
-     "constraints": "有限且≥0，形状与温度相同；范围外截断。",
+     "constraints": "有限非负实数且与温度同形；低于 0.1 eV 裁剪；高于 2.5e5 eV 裁剪并发出 RuntimeWarning。",
      "dtype": "实数标量或类数组"
     }
    ],
    "outputs": [
     {
      "name": "rate_m3_s",
-     "description": "由拟合求出的 H + H⁺ 电荷交换 Maxwell 速率系数。",
-     "constraints": "有限正值；不宣称物理参考精度。",
+     "description": "分段拟合/积分关系给出的 H + H⁺ 电荷交换速率。",
+     "constraints": "合法输入上有限且严格为正；高能积分是有界模型，不是无限外推。",
      "dtype": "float64 数组或标量"
     }
    ],
    "applicability": {
     "preconditions": [
-     "调用者接受端点截断约定，并提供物理上成对的温度和碰撞能量。"
+     "调用者接受 2.01e4 eV 的切换点，并提供物理配对的温度和碰撞能量。",
+     "调用者接受高于 250 keV 的碰撞能量在高能积分中置零。"
     ],
     "supported": [
-     "在声明域内或其截断值上，对标量或同形数组求原子氢电荷交换速率拟合。"
+     "低域标量和同形数组的二变量拟合。",
+     "高能复合截面的 Maxwellian 积分。"
     ],
     "excluded": [
-     "不含分子氢、电荷交换频率、输运源或截面的速度网格积分。",
-     "外部原子物理精度主张，或拟合比较域之外的物理正确性主张。"
+     "分子氢、输运源和碰撞频率组装。",
+     "高于 250 keV 的截面值或 20.1 keV 以上二变量拟合的外推。",
+     "超出公开截面可靠度的实验速率验证。"
     ]
    },
    "failure_semantics": {
-    "invalid_input": "非实数、非有限、形状不等、非正温度或负能量引发 ValueError；拒绝布尔、复数及数字字符串。",
-    "runtime_failure": "派生速率非有限或非正时引发 ValueError。 温度或能量高于 2.01e4 eV 时发出 RuntimeWarning。",
+    "invalid_input": "非实数、非有限、形状不同、非正温度或负能量引发 ValueError；拒绝布尔、复数和数字字符串。",
+    "runtime_failure": "结果非有限或非正时引发 ValueError；温度或能量高于 2.5e5 eV 时发出 RuntimeWarning 并使用裁剪上端。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
    },
    "example": {
-    "description": "计算成对有限样本并比较截断端点。",
-    "expected": "得到三个正速率，低端与高端值精确等于端点速率。"
+    "description": "混合一个低域参考样本和 T=50 keV、E=100 keV 的高能积分样本，并检查上端裁剪。",
+    "expected": "低域样本继续使用旧拟合；高能样本约 1.2005e−14 m³/s；高于 250 keV 的值在一次 RuntimeWarning 下裁剪到端点。"
    },
    "verification": {
     "scope": [
-     "固定参考值和独立 polyval2d 求值在非角点样本上核验系数方向和拟合；双上端点角点按所声明顺序的值核验。",
-     "直接测试覆盖裁剪、标量形状、非法域及非实数拒绝。",
-     "本仓库不维护也不重放任何外部实现对照；维护测试只用仓内独立表述核验所声明关系，且仅在受测网格上覆盖所述拒绝与裁剪行为。"
+     "旧参考值和独立多项式求值验证 20.1 keV 以下拟合未变。",
+     "T=50 keV、E=100 keV 的高能结果与独立二维 Gauss–Legendre Maxwell 积分对照。",
+     "两个积分解度与实现结果在 0.2% 内一致，旧裁剪端点至少大四倍。",
+     "直接测试覆盖端点裁剪、警告、标量/数组形状、非法域和非实数拒绝。",
+     "高能关系由独立公开截面积分定义，不是外推二变量拟合。"
     ],
-    "evidence_ceiling": "测试在受测样本上确立离散拟合、截断和失败合同。与仓内独立求值仅能在所比较的网格上逐位一致。没有外部原子物理基准验证该拟合，公开分发许可尚未确定。",
+    "evidence_ceiling": "测试确立低域离散多项式、高能 Maxwell 积分与独立二维求积的一致性、裁剪和失败语义；不建立实验速率测量、250 keV 以上无界尾部或公开分发权利。",
     "known_limitations": [
-     "未绑定外部原子物理基准；该拟合未作为物理速率模型得到独立验证。",
-     "范围外取端点，不外推。",
-     "速率并非运行时由独立截面或速度平均算子推导。",
-     "公开分发许可仍待人工决定。",
-     "本仓库不存在环境门控的外部实现对账测试；此前的任何外部对照都不由维护测试重放。",
-     "冻结的二元拟合对碰撞能量非单调：在 1000 eV、[0.1, 2.01e4] eV 的 500 个对数能量点上，其对數导数变号 6 次，最小值/最大值约 0.66。这是拟合性质而非经验证的物理阈值；调用方不得假定速率单调。",
-     "温度或能量高于 2.01e4 eV 时返回端点值并发出 RuntimeWarning；真实速率不同，在 T=5e4 eV、E=1e5 eV 处与直接积分相差约 4.7 倍。"
+     "低域二变量拟合在 1000 eV 处对碰撞能量非单调；这是拟合性质，不是物理阈值。",
+     "高能积分忽略高于 250 keV 的碰撞能量；这是公开截面范围边界，不是外推。",
+     "5 eV 以下复合截面使用 Janev 低域拟合；Lindsay–Stebbings 表不验证该段。",
+     "高能分支只描述等质量 Maxwellian 靶，不建立更广分布或输运闭合。",
+     "没有独立实验速率测量或公开分发许可。"
     ]
    }
   },
