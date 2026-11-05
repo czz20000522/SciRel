@@ -5,7 +5,7 @@
   "en": "Bi-Maxwellian mirror quasineutral closure",
   "zh": "双温镜准中性闭合"
  },
- "summary": "Compose mirror-constrained ion moments, a Boltzmann electron response and a bounded potential bisection; evaluate both states again at the converged potential and assemble total parallel and perpendicular pressures.",
+ "summary": "Compose mirror-constrained ion moments, a Boltzmann electron response and a bounded potential bisection; evaluate both states again at the converged potential and assemble total parallel and perpendicular pressures. The top-level result is a scirel._result.Result mapping; non-colliding fields also support attribute access.",
  "taxonomy": [
   "closures",
   "mirror-plasma",
@@ -32,7 +32,7 @@
  "identity": {
   "relation": "Positive-ion mirror kinetic moments and Boltzmann electrons closed by local quasineutral potential",
   "direction": "(magnetic field, flux label, ion and electron reference states, optional plug profiles, solver controls) -> quasineutral potential, terminal moments and total pressures",
-  "definition": "For each active sample, the graph solves the potential at which log(Z_i*n_i(phi))-log(n_e(phi)) is zero, where Z_i=charge_c/e, n_i comes from the mirror-constrained bi-Maxwellian moment operator and n_e from the Boltzmann electron operator. Positive ion and electron reference densities make a sample active; both zero make it inactive and preserve the ion reference potential. The potential solver uses bounded bracket expansion and at most max_iterations bisection steps. After success the graph reevaluates ion and electron states at the returned potential and adds electron pressure equally to ion parallel and perpendicular pressures. Terminal reevaluation must have finite logarithmic residual within the configured tolerance on all active samples, and the returned solver status must be converged, before total pressure is assembled.",
+  "definition": "For each active sample, the graph solves the potential at which log(Z_i*n_i(phi))-log(n_e(phi)) is zero, where Z_i=charge_c/e, n_i comes from the mirror-constrained bi-Maxwellian moment operator and n_e from the Boltzmann electron operator. Positive ion and electron reference densities make a sample active; both zero make it inactive and preserve the ion reference potential. The potential solver uses bounded bracket expansion and at most max_iterations bisection steps. After success the graph reevaluates ion and electron states at the returned potential and adds electron pressure equally to ion parallel and perpendicular pressures. Terminal reevaluation must have finite logarithmic residual within the configured tolerance on all active samples, and the returned solver status must be converged, before total pressure is assembled. The complete composed state is returned as one scirel._result.Result mapping; the kinetic_moments field remains a plain dict.",
   "model": "One positive-ion invariant bi-Maxwellian with optional two-plug loss-cone reduction, paired with prescribed-temperature Boltzmann electrons. Charge neutrality is solved locally through the explicit logarithmic residual, not an equilibrium field solve.",
   "geometry": "Local mirror magnetic-field magnitudes and optional left/right plug fields; no field-line geometry, spatial metric or flux-surface reconstruction is computed.",
   "coordinates": "b_t is scalar or exactly psi-shaped; other field/profile values are scalar, exactly psi-shaped or caller callables of the current psi array. The historical psi label is Wb, but the callable does not check flux normalization, coordinate alignment or a [Z,R] axis order.",
@@ -466,7 +466,7 @@
   "invalid_input": "Missing required graph inputs, incompatible b_t/psi or evaluated profile shapes, invalid positive-ion/thermal inputs, mismatched zero/nonzero reference-density masks, unpaired plug fields or invalid dependency inputs raise ValueError or a propagated numeric-conversion error. max_iterations=1 passes the graph's preliminary integer check but is rejected by the potential operator, which requires at least 2.",
   "runtime_failure": "An ion-moment, electron-response, reference-density or pressure-assembly exception propagates. The potential operator raises RuntimeError if a root cannot be bracketed after bounded expansion; no alternate model or root finder is selected.",
   "nonconvergence": "If all active surfaces do not satisfy both potential-width and logarithmic-residual tolerances within max_iterations, the potential operator raises RuntimeError and this TaskGraph returns no state. The graph also raises RuntimeError for a nonconverged solver status or a returned potential whose reevaluated terminal residual fails; it does not trust a stale intermediate residual.",
-  "partial_results": "No result mapping is returned after a validation, dependency, bracketing or nonconvergence failure; intermediate trial moments are local to the call."
+  "partial_results": "No scirel._result.Result mapping is returned after a validation, dependency, bracketing or nonconvergence failure; intermediate trial moments are local to the call."
  },
  "public_api": {
   "python": {
@@ -500,7 +500,7 @@
  "example": {
   "description": "Solve a three-sample no-plug mirror state against Boltzmann electrons.",
   "code": "import numpy as np\nfrom scirel.closures import solve_mirror_quasineutral_closure\ne = 1.602176634e-19\nr = solve_mirror_quasineutral_closure(b_t=np.array([1.0, 1.4, 2.0]), psi=np.zeros(3), mass_kg=1.67262192595e-27, charge_c=e, density_ref_m3=2e18, temperature_parallel_j=1200*e, temperature_perpendicular_ref_j=2400*e, b_ref_t=1.0, electron_temperature_j=600*e)\nb = np.array([1.0, 1.4, 2.0])\nt_perp = b / ((b-1.0)/(1200*e) + 1.0/(2400*e))\nexpected = np.log(t_perp/(2400*e)) / (e/(1200*e) + e/(600*e))\nnp.testing.assert_allclose(r['electrostatic_potential'], expected, atol=2e-8)\nassert np.max(np.abs(r['relative_charge_residual'])) < 1e-10\nassert r['p_parallel'].shape == (3,) and r['converged']",
-  "expected": "A three-sample potential matching the no-plug analytic limit within 2e-8 V, relative charge residual below 1e-10 and psi-shaped total pressure."
+  "expected": "A three-sample potential matching the no-plug analytic limit within 2e-8 V, relative charge residual below 1e-10 and psi-shaped total pressure. The top-level return is a scirel._result.Result mapping."
  },
  "verification": {
   "scope": [

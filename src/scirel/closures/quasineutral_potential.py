@@ -5,6 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import numpy as np
+
+from scirel._result import Result
 from scirel._numerics import _potential_midpoint
 
 
@@ -42,7 +44,19 @@ def solve_quasineutral_potential(
     monotone bisection state, not the kinetic or electron relation. Midpoints
     avoid adding large absolute potentials; convergence still requires the
     actual returned potential to meet both original width and residual limits.
-    """
+
+    Returns
+    -------
+    The top-level value is a ``scirel._result.Result`` mapping; field values
+    are available by key and preserve the baseline key order.
+    potential_v : NumPy float64 array [V]
+        Converged active potential and unchanged reference potential at inactive positions.
+    logarithmic_charge_residual : NumPy float64 array [dimensionless]
+        Callback residual evaluated at the complete returned potential field.
+    iterations : Python int [iterations]
+        Shared number of vectorized bisection midpoint evaluations.
+    converged : Python bool [dimensionless]
+        Whether all active positions met both stopping conditions or no positions were active."""
     phi_ref, t_parallel, t_e, active = np.broadcast_arrays(
         np.asarray(potential_reference_v, dtype=float),
         np.asarray(temperature_parallel_j, dtype=float),
@@ -94,12 +108,14 @@ def solve_quasineutral_potential(
     lower = phi_ref - bracket_thermal * thermal_voltage
     upper = phi_ref + bracket_thermal * thermal_voltage
     if not np.any(active):
-        return {
-            "potential_v": phi_ref,
-            "logarithmic_charge_residual": evaluate(phi_ref),
-            "iterations": 0,
-            "converged": True,
-        }
+        return Result(
+            {
+                "potential_v": phi_ref,
+                "logarithmic_charge_residual": evaluate(phi_ref),
+                "iterations": 0,
+                "converged": True,
+            }
+        )
 
     active_indices = np.flatnonzero(active.reshape(-1))
     active_lower = lower.reshape(-1)[active_indices].copy()
@@ -150,12 +166,14 @@ def solve_quasineutral_potential(
     returned_potential = phi_ref.reshape(-1).copy()
     returned_potential[active_indices] = final_potential
     returned_potential = returned_potential.reshape(phi_ref.shape)
-    return {
-        "potential_v": returned_potential,
-        "logarithmic_charge_residual": evaluate(returned_potential),
-        "iterations": final_iterations,
-        "converged": True,
-    }
+    return Result(
+        {
+            "potential_v": returned_potential,
+            "logarithmic_charge_residual": evaluate(returned_potential),
+            "iterations": final_iterations,
+            "converged": True,
+        }
+    )
 
 
 __all__ = ["solve_quasineutral_potential"]

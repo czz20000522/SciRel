@@ -1925,9 +1925,9 @@
   },
   {
    "asset_id": "scirel.closures.reduced-hall-drift",
-   "source_sha256": "217a78036eabb063f5cfef064a57d7f920b263d5ea1fa6db6e13537c7d04d0d8",
-   "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。",
-   "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。",
+   "source_sha256": "bec6883d06514102ab5b80844a0a4f7dd54d5f6770dec81bc3ee414e7da680b1",
+   "summary": "在 R-Z 网格把旋磁对称压强力投影为环向电流，可选求有限迭代的局部环向惯性修正，并给出物种漂移、广义欧姆及尺度诊断。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "用二阶网格导数计算柱坐标旋磁对称压强力，并取 J_phi=(B_Z*force_R-B_R*force_Z)/|B|²。在掩码内、非轴、密度超过峰值比例下限且磁场可解析的点，将 E=-grad(phi)、电子压强力和 Hall 乘子组合成环向漂移。可选欠松弛迭代径向离心修正，并以 maximum_inertial_mach 倍离子热速限制漂移。共享力核含正则轴向项和差分式导数；相容性诊断扣除有量纲的 64-epsilon 张量/差分舍入包络，同时保留原始绝对/相对残差与包络。这不是截断误差界，也不证明低于分辨率的物理力恰为零。未给离子压强时按总量减电子；独立拟合保留剩余应力，species_sum 拒绝不相容组分。惯性收敛检查返回 J 上重新求值的未松弛电流映射残差，不能以小松弛步代替。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "约化轴对称 Hall 漂移与旋磁对称压强，可选局部环向惯性修正，不是无限制的双流体解。",
    "assumptions": [
     "B_R、B_Z 为 T 单位极向场，此关系不含 B_phi。",
@@ -2348,11 +2348,11 @@
     "invalid_input": "无效质量、电荷或标量控制、非布尔惯性开关、错误 R-Z 网格、非有限或不匹配的场/压强数组、错误形状或非布尔掩码、缺失或非有限必需 closure_state 字段、负密度或负电子/可选离子压强分量时抛出 ValueError。部分格式错误的可选状态数组可能传播 NumPy 广播错误。负主总压强或不一致的 species_sum 状态会被拒绝。",
     "runtime_failure": "惯性超出步数上限抛 RuntimeError，其他运算/转换异常传播；极端有限输入不保证诊断仍有限。",
     "nonconvergence": "启用惯性时未达到未松弛映射残差门槛就抛 RuntimeError，不返回部分状态。",
-    "partial_results": "异常不返回映射；成功返回 inertia_converged=True，包括不启用惯性的分支。"
+    "partial_results": "异常不返回 scirel._result.Result 映射；成功返回 inertia_converged=True，包括不启用惯性的分支。"
    },
    "example": {
     "description": "均匀轴向场中采用均匀各向同性压强与电势。",
-    "expected": "环向电流和离子环向速度为零，局部惯性计算报告收敛。"
+    "expected": "环向电流和离子环向速度为零，局部惯性计算报告收敛。 顶层返回对象是 scirel._result.Result 映射。"
    },
    "verification": {
     "scope": [
@@ -2832,9 +2832,9 @@
   },
   {
    "asset_id": "scirel.closures.mirror-quasineutral-closure",
-   "source_sha256": "0615e4c1c1c6c9d7c2d39bea3b6ddea36f66c5e0f7b6741fda5ddf13fd170fc2",
-   "summary": "组合镜约束离子矩、Boltzmann 电子与有界电势二分求解，在最终电势重新计算物种状态并组装总压强。",
-   "definition": "对活跃样本求解 log(Z_i*n_i(phi))-log(n_e(phi))=0，其中 Z_i=charge_c/e；离子矩来自镜约束双 Maxwell 分布，电子来自 Boltzmann 响应。两种参考密度均为正时活跃，均为零时保留离子参考电势。有限次扩展括区后至多二分 max_iterations 步。返回前重新计算离子和电子，核对求解器收敛状态及所有活跃样本的有限对数残差不超过容差，再把电子压强分别加到离子平行和垂直压强。",
+   "source_sha256": "af9b1d597968270db382fce01da191d42a231ea9b6a0e6846650662b0dcf8da2",
+   "summary": "组合镜约束离子矩、Boltzmann 电子与有界电势二分求解，在最终电势重新计算物种状态并组装总压强。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "对活跃样本求解 log(Z_i*n_i(phi))-log(n_e(phi))=0，其中 Z_i=charge_c/e；离子矩来自镜约束双 Maxwell 分布，电子来自 Boltzmann 响应。两种参考密度均为正时活跃，均为零时保留离子参考电势。有限次扩展括区后至多二分 max_iterations 步。返回前重新计算离子和电子，核对求解器收敛状态及所有活跃样本的有限对数残差不超过容差，再把电子压强分别加到离子平行和垂直压强。 完整组合状态作为同一个 scirel._result.Result 映射返回；kinetic_moments 字段保持普通 dict。",
    "model": "单一正离子的守恒量双 Maxwell 模型，可选两端磁塞损失锥；电子温度预设，满足 Boltzmann 响应。这里只局部闭合电中性，不求解平衡磁场。",
    "assumptions": [
     "离子、电子、磁场和磁通标签描述同一批样本，采用一致磁通约定。",
@@ -3127,7 +3127,7 @@
    },
    "example": {
     "description": "在三个无磁塞样本上求准中性电势并组装压强。",
-    "expected": "与解析电势相差不超过 2e-8 V，相对电荷残差小于 1e-10，总压强与 psi 同形。"
+    "expected": "与解析电势相差不超过 2e-8 V，相对电荷残差小于 1e-10，总压强与 psi 同形。 顶层返回对象是 scirel._result.Result 映射。"
    },
    "verification": {
     "scope": [
@@ -3531,9 +3531,9 @@
   },
   {
    "asset_id": "scirel.closures.quasineutral-potential",
-   "source_sha256": "ceae558b446e3a5dd1dc67315312c1a9c239d83f298d2aaaf134dedbd33dea5f",
-   "summary": "对调用者提供的对数电荷残差进行有界扩展括区与向量化二分，求激活磁面的电势。",
-   "definition": "每个激活面求 R(phi)=log(Z n_i(phi))−log(n_e(phi))=0。初区间 phi_ref±k(T_parallel/q+T_e/e)，不满足端点符号时最多扩展八轮再二分；仅当全部激活面的最大区间宽度≤电势容差且最大中点残差≤准中性容差才返回。非激活势固定参考；中点避免先加大同号端点。回调精确零将该括区收缩至求值点，小非零不收缩且不改变容差。",
+   "source_sha256": "4cb3ad07c06d79831d68bade9a098524ec8376ec22d187b9d1bb9faae76aff2a",
+   "summary": "对调用者提供的对数电荷残差进行有界扩展括区与向量化二分，求激活磁面的电势。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "每个激活面求 R(phi)=log(Z n_i(phi))−log(n_e(phi))=0。初区间 phi_ref±k(T_parallel/q+T_e/e)，不满足端点符号时最多扩展八轮再二分；仅当全部激活面的最大区间宽度≤电势容差且最大中点残差≤准中性容差才返回。非激活势固定参考；中点避免先加大同号端点。回调精确零将该括区收缩至求值点，小非零不收缩且不改变容差。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "外供单调递减残差的括区和二分：根下正、根上负；不计算任一密度。",
    "assumptions": [
     "回调每次须返回有限可广播对数残差，含非激活位置；不验证离子/电子物理。",
@@ -3646,11 +3646,11 @@
     "invalid_input": "非有限势/温度、非正温度/电荷、非法正控制、次数非整数或小于 2、回调无有效映射/有限可广播残差时抛 ValueError；转换、非函数或回调逻辑可抛 TypeError/ValueError；回调异常继续抛出。",
     "runtime_failure": "八轮扩展后端点符号仍非法抛 RuntimeError；中点端点非有限抛 FloatingPointError；热括区溢出也可被回调验证拒绝，极端尺度可能要求不可表示括区。",
     "nonconvergence": "规定次数内未同时满足宽度及残差门槛，抛 RuntimeError(\"ambipolar potential solve did not converge\")；相邻浮点停滞不是成功，不放宽残差容差。",
-    "partial_results": "验证、回调、括区或收敛失败不返回映射；中点停止后的最终回调仍可失败。"
+    "partial_results": "验证、回调、括区或收敛失败不返回 scirel._result.Result 映射；中点停止后的最终回调仍可失败。"
    },
    "example": {
     "description": "对一个激活面求递减残差根，并保留另一非激活参考势。",
-    "expected": "激活电势约 0.5 V；非激活仍为 17 V，并保留非中性残差 −16.5。"
+    "expected": "激活电势约 0.5 V；非激活仍为 17 V，并保留非中性残差 −16.5。 顶层返回对象是 scirel._result.Result 映射。"
    },
    "verification": {
     "scope": [
@@ -5031,9 +5031,9 @@
   },
   {
    "asset_id": "scirel.closures.hall-two-fluid-pressure",
-   "source_sha256": "df7d33c9e3bef8f463a3dc8309947b21f1a57917481f61b2c385531fccd71f77",
-   "summary": "按默认离子代数压力拆分组装广播 Hall 状态。",
-   "definition": "联合广播 B、psi 并求总压力，再广播各剖面；令电子密度等于离子密度。电子两分量缺省等于 electron_pressure，离子分量缺省为总压减电子压。默认 independent_fit 保留独立指定的总压与物种压，并显式报告两方向总压−离子压−电子压的残余应力；不是新物种。species_sum 要求两个残差在局部压力尺度的 64ε 内为零，否则拒绝。两种模式都报告数值组分一致性；不检查总压力正性。",
+   "source_sha256": "0fc116478b4c7d26a77079a188ec49c9dcc85e6027d292558fb444b13a37d5e5",
+   "summary": "按默认离子代数压力拆分组装广播 Hall 状态。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "联合广播 B、psi 并求总压力，再广播各剖面；令电子密度等于离子密度。电子两分量缺省等于 electron_pressure，离子分量缺省为总压减电子压。默认 independent_fit 保留独立指定的总压与物种压，并显式报告两方向总压−离子压−电子压的残余应力；不是新物种。species_sum 要求两个残差在局部压力尺度的 64ε 内为零，否则拒绝。两种模式都报告数值组分一致性；不检查总压力正性。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "给定旋磁总应力和物种分解，可含独立拟合残余应力；不是自洽双流体平衡。下游总力已包含残余应力，离子矩仍仅属离子。",
    "assumptions": [
     "B 为兼容的 T 场大小，psi 为共同但未验证归一化的磁通坐标。",
@@ -5213,11 +5213,11 @@
     "invalid_input": "B/psi 非有限、被检查矩为负或不可广播时抛 ValueError；压力/剖面非有限抛 FloatingPointError；定律不可调用或结果非 dict 抛 TypeError，缺压力键抛 KeyError；转换/广播/回调异常继续抛出；非法模式或 species_sum 残差非零抛 ValueError。",
     "runtime_failure": "非有限组分和或残余应力抛 FloatingPointError；独立拟合残余应力被明确允许，不静默推导物理闭合。",
     "nonconvergence": "不适用；无迭代。",
-    "partial_results": "失败不返回映射；成功含原字段及四个明确组分字段。"
+    "partial_results": "失败不返回 scirel._result.Result 映射；成功含原字段及四个明确组分字段。"
    },
    "example": {
     "description": "以默认离子代数压力拆分组装广播 Hall 状态。",
-    "expected": "总平行压为 [[6.2, 7.4]] Pa；默认物种分量之和等于总压，两物种密度数组相等。"
+    "expected": "总平行压为 [[6.2, 7.4]] Pa；默认物种分量之和等于总压，两物种密度数组相等。 顶层返回对象是 scirel._result.Result 映射。"
    },
    "verification": {
     "scope": [
@@ -7212,9 +7212,9 @@
   },
   {
    "asset_id": "scirel.closures.tabulated-pressure",
-   "source_sha256": "4a43bd8242f5fd51e9c5d88a672700e0f0d9ba0eb236ab729f68b37efa32337f",
-   "summary": "在广播后的磁场、磁通查询点插值平行与垂直压力表；一维磁通表返回各向同性压力，二维 (B,psi) 表分别插值两分量。",
-   "definition": "B 与 psi 联合广播。无 b_grid 时用一维线性插值；若给出垂直表，转换为 float64 后必须与平行表逐项完全相等，否则拒绝而不丢弃差异。有 b_grid 时分别双线性插值两个分量。is_isotropic 表示完整分量表是否严格相等；table_dimension 独立记录 1 或 2 维。结果须有限非负；分量表相等不构成热力学证明。",
+   "source_sha256": "12ef3abfdaf968b2d219e79769740519ec78cf6a31ac33a15b9dbb2c6dca79aa",
+   "summary": "在广播后的磁场、磁通查询点插值平行与垂直压力表；一维磁通表返回各向同性压力，二维 (B,psi) 表分别插值两分量。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "B 与 psi 联合广播。无 b_grid 时用一维线性插值；若给出垂直表，转换为 float64 后必须与平行表逐项完全相等，否则拒绝而不丢弃差异。有 b_grid 时分别双线性插值两个分量。is_isotropic 表示完整分量表是否严格相等；table_dimension 独立记录 1 或 2 维。结果须有限非负；分量表相等不构成热力学证明。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "给定各向同性/旋磁压力表的一维线性或二维双线性插值，不推导压力定律或求力平衡。",
    "assumptions": [
     "表中 Pa 压力已适合目标等离子体和磁通规范。",
@@ -7319,7 +7319,7 @@
    },
    "example": {
     "description": "插值二维仿射压力对，再插值独立一维各向同性表。",
-    "expected": "二维仿射例返回 3.5、4.5 Pa，is_isotropic=False、table_dimension=2；一维两分量均为 4 Pa，is_isotropic=True、table_dimension=1。"
+    "expected": "二维仿射例返回 3.5、4.5 Pa，is_isotropic=False、table_dimension=2；一维两分量均为 4 Pa，is_isotropic=True、table_dimension=1。 顶层返回对象是 scirel._result.Result 映射。"
    },
    "verification": {
     "scope": [
@@ -8020,9 +8020,9 @@
   },
   {
    "asset_id": "scirel.closures.mirror-ambipolar-potential",
-   "source_sha256": "89505bf54f1618d5495980a5bfbf49e2d9f6cc5605050cea01b2d8ca37fd56ce",
-   "summary": "在指定端塞电势计算单向离子/电子端损通量，或逐磁面通过有界括区与二分求电荷加权通量平衡。",
-   "definition": "每物种通量为 n sqrt(T_parallel/(2πm)) I(s,a) refill，s=(T_perpendicular/T_parallel)(B_plug/B_reference−1)，a=q(phi_plug−phi_reference)/T_parallel。I(s,a)=∫₀^∞ exp(−y−max(s y+a,0)) dy；s≥0 时，a≥0 为 exp(−a)/(1+s)，a<0 且 s>0 为 1−(s/(1+s)) exp(a/s)，a<0 且 s=0 为 1。电势降 Δφ = potential_v − phi_reference_v，两者使用调用者的同一电压零点。电子使用固定质量、−e 电荷和两方向相同热能。evaluate 只求给定电势通量；solve 对电荷加权离子/电子通量对数比求根，热电压初始括区最多扩展八轮再共享二分。双真空保留参考势；有界指数差商与对数归一化保留正物种下溢后的对数通量。测试电势与返回电势相同；使用缩放相对势差和安全中点，回调严格零才收缩括区，否则半宽与残差原门槛同时满足才算收敛。",
+   "source_sha256": "0c5cec163f1aa0b9521f387cf100d3cdcae787f1fd77161c5b3727d7c15511b0",
+   "summary": "在指定端塞电势计算单向离子/电子端损通量，或逐磁面通过有界括区与二分求电荷加权通量平衡。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "每物种通量为 n sqrt(T_parallel/(2πm)) I(s,a) refill，s=(T_perpendicular/T_parallel)(B_plug/B_reference−1)，a=q(phi_plug−phi_reference)/T_parallel。I(s,a)=∫₀^∞ exp(−y−max(s y+a,0)) dy；s≥0 时，a≥0 为 exp(−a)/(1+s)，a<0 且 s>0 为 1−(s/(1+s)) exp(a/s)，a<0 且 s=0 为 1。电势降 Δφ = potential_v − phi_reference_v，两者使用调用者的同一电压零点。电子使用固定质量、−e 电荷和两方向相同热能。evaluate 只求给定电势通量；solve 对电荷加权离子/电子通量对数比求根，热电压初始括区最多扩展八轮再共享二分。双真空保留参考势；有界指数差商与对数归一化保留正物种下溢后的对数通量。测试电势与返回电势相同；使用缩放相对势差和安全中点，回调严格零才收缩括区，否则半宽与残差原门槛同时满足才算收敛。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "单正离子与电子的半空间磁镜/静电端损模型，参考粒子群和补充比例外供；不是完整碰撞输运或自洽平衡。",
    "assumptions": [
     "两 B 为正 T 幅值，热能 J、电荷 C 对应同一单离子/电子系统。",
@@ -8220,11 +8220,11 @@
     "invalid_input": "非法模式、非有限/非正必要标量、补充比例越界、非法场/温度/密度、evaluate 缺势、solve 单边真空、非整数次数抛 ValueError；广播/转换/剖面异常可抛 ValueError/TypeError。",
     "runtime_failure": "八轮后无法括根抛 RuntimeError；非有限无量纲势垒、通量或残差抛 FloatingPointError/ValueError，不返回 NaN 成功。",
     "nonconvergence": "只有同一返回势的半括区宽度和对数比残差同时通过才返回；不可表示的目标根仍失败，不静默设 ULP 容差底。",
-    "partial_results": "验证、回调、括区或求解失败不返回映射；evaluate 可返回大电流残差的完整诊断。"
+    "partial_results": "验证、回调、括区或求解失败不返回 scirel._result.Result 映射；evaluate 可返回大电流残差的完整诊断。"
    },
    "example": {
     "description": "在给定端塞势检查零镜斜率半空间势垒积分。",
-    "expected": "离子势垒因子为 exp(−1/2)；+1 V 下电子单向通量无势垒；evaluate 模式为零次迭代，且不宣称电流平衡。"
+    "expected": "离子势垒因子为 exp(−1/2)；+1 V 下电子单向通量无势垒；evaluate 模式为零次迭代，且不宣称电流平衡。 顶层返回对象是 scirel._result.Result 映射。"
    },
    "verification": {
     "scope": [
@@ -9750,9 +9750,9 @@
   },
   {
    "asset_id": "scirel.closures.discrete-vector-error-feedback",
-   "source_sha256": "9c01bbfccf240d13e0058f5c7a566a63064e97de9dedd5c47227cbfb3b114ebe",
-   "summary": "在设备中立的十通道采样序列上计算离散 P/I/滤波 D 状态、十一路电流映射以及使能保持/复位分支。",
-   "definition": "计算 error=reference-measurement；使能时求 P/I/滤波 D，应用 11×10 矩阵并叠加前馈；禁用时保持 PID/反馈状态并返回前馈电流；禁用到使能上升沿先复位积分器和滤波器。",
+   "source_sha256": "745694957ec7396efcbff46453b279f0a2f395c74be84c632c7bae1ec0219a2a",
+   "summary": "在设备中立的十通道采样序列上计算离散 P/I/滤波 D 状态、十一路电流映射以及使能保持/复位分支。 顶层返回值是 scirel._result.Result 映射；非冲突字段支持属性读取。",
+   "definition": "计算 error=reference-measurement；使能时求 P/I/滤波 D，应用 11×10 矩阵并叠加前馈；禁用时保持 PID/反馈状态并返回前馈电流；禁用到使能上升沿先复位积分器和滤波器。 完整结果作为同一个 scirel._result.Result 映射返回；嵌套 dict 字段保持普通 dict。",
    "model": "带前向 Euler 积分和一阶滤波导数的离散采样 PID/反馈原语。",
    "boundary": "公共关系限于声明的类型化采样路径、关闭插值和精确观测时间；非零 internal_reset 不属于声明分支。",
    "assumptions": [
@@ -9777,9 +9777,9 @@
    "outputs": [
     {
      "name": "result",
-     "description": "含时间、总电流、反馈电流、PID 分量、误差和状态轨迹的映射。",
+     "description": "顶层 scirel._result.Result 映射，含 schema、time_s、values 和 state_trace；values 与 dict.values 同名，需用 result[\"values\"] 读取，映射方法用 dict.values(result)。",
      "constraints": "PID 分量按 P1,I1,D1,…,P10,I10,D10 排列；状态记录复位和前后状态。",
-     "dtype": "JSON 可序列化 Python 映射"
+     "dtype": "scirel._result.Result 映射；嵌套 values/state_trace 为普通 dict"
     }
    ],
    "applicability": {
@@ -9801,7 +9801,7 @@
     "invalid_input": "非映射、缺失信号、错误形状、非有限值、非二值控制、无效采样时间、负滤波率或非零 internal_reset 引发 TypeError/ValueError。",
     "runtime_failure": "NumPy 转换和算术异常向上传播；不选择备用控制器或插值路径。",
     "nonconvergence": "不适用；这是有限采样过程，不含迭代求解。",
-    "partial_results": "校验或状态失败后不返回结果映射。"
+    "partial_results": "校验或状态失败后不返回结果scirel._result.Result 映射。"
    },
    "verification": {
     "scope": [
@@ -9819,7 +9819,7 @@
    },
    "example": {
     "description": "在 121 点类型化夹具上运行设备中立采样反馈状态。",
-    "expected": "返回 121 个样本及每个样本的十一路总电流；禁用样本返回前馈并保持状态。"
+    "expected": "返回 121 个样本及每个样本的十一路总电流；禁用样本返回前馈并保持状态。 顶层返回对象是 scirel._result.Result 映射。"
    }
   }
  ]

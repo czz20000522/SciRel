@@ -5,6 +5,8 @@ from scirel._validation import (
     required_integer_scalar as _require_integer_scalar,
 )
 import numpy as np
+
+from scirel._result import Result
 from scirel._mirror_numerics import _mirror_flux
 from scirel._numerics import _potential_midpoint
 
@@ -148,6 +150,9 @@ def solve_mirror_ambipolar_potential(
 
     Returns
     -------
+    The returned object is a ``scirel._result.Result`` mapping; every field
+    below is available by key and attribute access. No nested Result is
+    introduced.
     potential_v : NumPy float64 array, shape common broadcast shape
         Plug potential phi_plug in the caller's voltage origin (not the drop);
         the drop is potential_v - phi_reference_v. Solved or prescribed;
@@ -369,17 +374,19 @@ def solve_mirror_ambipolar_potential(
             raise ValueError("phi_plug_v is required when mode=evaluate")
         potential = _field(phi_plug_v, psi, "phi_plug_v")
         log_ratio, ion_flux, electron_flux = fluxes(potential)
-        return {
-            "potential_v": potential,
-            "ion_particle_flux_m2_s": ion_flux,
-            "electron_particle_flux_m2_s": electron_flux,
-            "log_current_ratio": log_ratio,
-            "relative_current_residual": np.tanh(0.5 * log_ratio),
-            "iterations": 0,
-            "converged": True,
-            "evaluation_complete": True,
-            "current_balance_solved": False,
-        }
+        return Result(
+            {
+                "potential_v": potential,
+                "ion_particle_flux_m2_s": ion_flux,
+                "electron_particle_flux_m2_s": electron_flux,
+                "log_current_ratio": log_ratio,
+                "relative_current_residual": np.tanh(0.5 * log_ratio),
+                "iterations": 0,
+                "converged": True,
+                "evaluation_complete": True,
+                "current_balance_solved": False,
+            }
+        )
     if np.any((ion_density > 0.0) != (electron_density > 0.0)):
         raise ValueError(
             "ion and electron reference densities must be both positive or both zero on each surface for solve mode"
@@ -427,17 +434,19 @@ def solve_mirror_ambipolar_potential(
     log_ratio, ion_flux, electron_flux = fluxes(potential)
     if np.any(active) and np.max(np.abs(log_ratio[active])) > current_tolerance:
         raise RuntimeError("returned ambipolar end potential does not satisfy current tolerance")
-    return {
-        "potential_v": potential,
-        "ion_particle_flux_m2_s": ion_flux,
-        "electron_particle_flux_m2_s": electron_flux,
-        "log_current_ratio": log_ratio,
-        "relative_current_residual": np.tanh(0.5 * log_ratio),
-        "iterations": iterations,
-        "converged": bool(converged),
-        "evaluation_complete": True,
-        "current_balance_solved": True,
-    }
+    return Result(
+        {
+            "potential_v": potential,
+            "ion_particle_flux_m2_s": ion_flux,
+            "electron_particle_flux_m2_s": electron_flux,
+            "log_current_ratio": log_ratio,
+            "relative_current_residual": np.tanh(0.5 * log_ratio),
+            "iterations": iterations,
+            "converged": bool(converged),
+            "evaluation_complete": True,
+            "current_balance_solved": True,
+        }
+    )
 
 
 __all__ = ["solve_mirror_ambipolar_potential"]

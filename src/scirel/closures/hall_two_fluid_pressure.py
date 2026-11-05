@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from scirel._result import Result
+
 
 def _profile(value, magnetic_field, psi, name):
     raw = value(magnetic_field, psi) if callable(value) else value
@@ -37,7 +39,39 @@ def close_hall_two_fluid_pressure(
     equilibrium. ``species_sum`` rejects inconsistent components (roundoff
     allowance only). Omitted ion moments are total minus electron moments.
     Electron density equals ion density under the source singly charged model.
-    """
+
+    Returns
+    -------
+    The top-level value is a ``scirel._result.Result`` mapping; field values
+    are available by key and preserve the baseline key order.
+    p_parallel : NumPy float64 array [Pa]
+        Total parallel pressure returned by pressure_law.
+    p_perpendicular : NumPy float64 array [Pa]
+        Total perpendicular pressure returned by pressure_law.
+    ion_density : NumPy float64 array [m^-3]
+        Prescribed ion number density.
+    electron_density : NumPy float64 array [m^-3]
+        Copy of the ion number density under the implemented single-charge neutrality assumption.
+    electron_pressure : NumPy float64 array [Pa]
+        Prescribed electron pressure baseline.
+    electron_p_parallel : NumPy float64 array [Pa]
+        Electron parallel pressure component.
+    electron_p_perpendicular : NumPy float64 array [Pa]
+        Electron perpendicular pressure component.
+    electrostatic_potential : NumPy float64 array [V]
+        Prescribed electrostatic potential.
+    ion_p_parallel : NumPy float64 array [Pa]
+        Ion parallel pressure, explicit or total minus electron parallel component.
+    ion_p_perpendicular : NumPy float64 array [Pa]
+        Ion perpendicular pressure, explicit or total minus electron perpendicular component.
+    pressure_composition_mode : string [enum]
+        Selected composition contract.
+    species_pressure_sum_consistent : Python bool [boolean]
+        Both residual stresses vanish within roundoff-scaled comparison.
+    residual_stress_parallel_pa : NumPy float64 scalar or array [Pa]
+        Total parallel stress minus specified ion/electron pressure components.
+    residual_stress_perpendicular_pa : NumPy float64 scalar or array [Pa]
+        Total perpendicular stress minus specified ion/electron pressure components."""
     if pressure_composition_mode not in {"independent_fit", "species_sum"}:
         raise ValueError("pressure_composition_mode must be independent_fit or species_sum")
     b_t, flux = np.broadcast_arrays(
@@ -114,22 +148,24 @@ def close_hall_two_fluid_pressure(
     )
     if pressure_composition_mode == "species_sum" and not consistent:
         raise ValueError("total pressure is inconsistent with the species pressure sum")
-    return {
-        "pressure_composition_mode": pressure_composition_mode,
-        "species_pressure_sum_consistent": consistent,
-        "residual_stress_parallel_pa": residual_parallel,
-        "residual_stress_perpendicular_pa": residual_perpendicular,
-        "p_parallel": parallel,
-        "p_perpendicular": perpendicular,
-        "ion_density": density,
-        "electron_density": density,
-        "electron_pressure": electron_pressure,
-        "electron_p_parallel": electron_parallel,
-        "electron_p_perpendicular": electron_perpendicular,
-        "electrostatic_potential": potential,
-        "ion_p_parallel": ion_parallel,
-        "ion_p_perpendicular": ion_perpendicular,
-    }
+    return Result(
+        {
+            "pressure_composition_mode": pressure_composition_mode,
+            "species_pressure_sum_consistent": consistent,
+            "residual_stress_parallel_pa": residual_parallel,
+            "residual_stress_perpendicular_pa": residual_perpendicular,
+            "p_parallel": parallel,
+            "p_perpendicular": perpendicular,
+            "ion_density": density,
+            "electron_density": density,
+            "electron_pressure": electron_pressure,
+            "electron_p_parallel": electron_parallel,
+            "electron_p_perpendicular": electron_perpendicular,
+            "electrostatic_potential": potential,
+            "ion_p_parallel": ion_parallel,
+            "ion_p_perpendicular": ion_perpendicular,
+        }
+    )
 
 
 __all__ = ["close_hall_two_fluid_pressure"]

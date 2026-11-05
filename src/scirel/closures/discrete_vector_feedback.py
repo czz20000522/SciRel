@@ -13,6 +13,8 @@ from typing import Any
 
 import numpy as np
 
+from scirel._result import Result
+
 
 _SCHEMA = "magnetic-error-current-feedback-discrete"
 _CHANNELS = 10
@@ -42,7 +44,18 @@ def simulate_feedback(inputs: Mapping[str, Any], controller: Mapping[str, Any]) 
     sampled parameters from ``source-defaults.json``. Results are JSON-ready
     mappings with value arrays and a state trace. The public evidence covers
     the supplied 121-sample fixture and the listed parameter path.
-    """
+
+    Returns
+    -------
+    The top-level value is a ``scirel._result.Result`` mapping; field values
+    are available by key and preserve the baseline key order.
+    result : JSON-ready Python mapping [mixed T, A, s and controller state units]
+        Mapping containing schema, time_s, values and state_trace.
+
+    Attribute access follows the existing SciPy OptimizeResult-style behavior:
+    non-colliding fields are readable as attributes. The top-level key
+    ``values`` collides with ``dict.values`` and must be read as
+    ``result["values"]``; the method remains available as ``dict.values(result)``."""
     if not isinstance(inputs, Mapping) or not isinstance(controller, Mapping):
         raise TypeError("inputs and controller must be mappings")
     signals = inputs.get("signals")
@@ -156,9 +169,11 @@ def simulate_feedback(inputs: Mapping[str, Any], controller: Mapping[str, Any]) 
         trace["post_filter_state"].append(filt.tolist())
         previous_enable = bool(enable[index])
 
-    return {
-        "schema": _SCHEMA,
-        "time_s": input_time.tolist(),
-        "values": values,
-        "state_trace": trace,
-    }
+    return Result(
+        {
+            "schema": _SCHEMA,
+            "time_s": input_time.tolist(),
+            "values": values,
+            "state_trace": trace,
+        }
+    )

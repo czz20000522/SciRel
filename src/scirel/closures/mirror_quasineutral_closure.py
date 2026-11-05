@@ -7,6 +7,8 @@ from scirel._validation import (
 )
 import numpy as np
 
+from scirel._result import Result
+
 
 def _field(value, psi, name):
     if callable(value):
@@ -203,10 +205,53 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
 
     Returns
     -------
-    dict
-        Final ion/electron pressures and densities, electrostatic potential,
-        relative charge residual, nested ``kinetic_moments`` and solver
-        status fields. Array outputs follow the ``psi`` sample shape.
+    The top-level value is a ``scirel._result.Result`` mapping; non-colliding
+    fields are available by key and attribute access. The nested
+    ``kinetic_moments`` field remains a plain dict.
+    Fields preserve the baseline key order and ``psi`` sample shape.
+    p_parallel : NumPy float64 array [Pa]
+        Final ion parallel pressure plus isotropic electron pressure.
+    p_perpendicular : NumPy float64 array [Pa]
+        Final ion perpendicular pressure plus isotropic electron pressure.
+    ion_density : NumPy float64 array [m^-3]
+        Mirror-constrained ion number density at the returned potential.
+    electron_density : NumPy float64 array [m^-3]
+        Boltzmann electron number density at the returned potential.
+    electrostatic_potential : NumPy float64 array [V]
+        Converged electrostatic potential on active samples and reference potential on zero-density samples.
+    relative_charge_residual : NumPy float64 array [dimensionless]
+        Final (Z_i*n_i-n_e)/max(Z_i*n_i+n_e,tiny) from the Boltzmann response.
+    kinetic_moments : Python dict of NumPy arrays [mixed; see bound ion-moment asset]
+        Complete final mirror ion-moment mapping including density, pressures, local temperatures
+        and pitch integrals.
+    ion_p_parallel : NumPy float64 array [Pa]
+        Final ion parallel pressure component before electron pressure is added.
+    ion_p_perpendicular : NumPy float64 array [Pa]
+        Final ion perpendicular pressure component before electron pressure is added.
+    electron_pressure : NumPy float64 array [Pa]
+        Boltzmann electron pressure added to each ion pressure component.
+    density_m3 : NumPy float64 array [m^-3]
+        Final ion density retained as the original ion-moment field, alongside ion_density.
+    p_parallel_pa : NumPy float64 array [Pa]
+        Final ion parallel pressure retained under its original moment-field name.
+    p_perpendicular_pa : NumPy float64 array [Pa]
+        Final ion perpendicular pressure retained under its original moment-field name.
+    temperature_parallel_j : NumPy float64 array [J]
+        Evaluated ion parallel thermal-energy parameter retained from final moments.
+    temperature_perpendicular_local_j : NumPy float64 array [J]
+        Untruncated local perpendicular thermal-energy parameter retained from final moments.
+    untruncated_density_m3 : NumPy float64 array [m^-3]
+        Final ion density before plug pitch reduction.
+    density_pitch_integral : NumPy float64 array [dimensionless]
+        Final dimensionless ion density pitch factor.
+    parallel_pitch_integral : NumPy float64 array [dimensionless]
+        Final dimensionless ion parallel-pressure pitch factor.
+    perpendicular_pitch_integral : NumPy float64 array [dimensionless]
+        Final dimensionless ion perpendicular-pressure pitch factor.
+    iterations : Python int [iterations]
+        Shared vectorized potential-bisection iteration count.
+    converged : Python bool [dimensionless]
+        Whether the potential solver completed successfully.
 
     Raises
     ------
@@ -230,7 +275,7 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
     )
     from scirel.kinetic.mirror_total_pressure import assemble_mirror_total_pressure as _dependency_4
 
-    return compose(
+    result = compose(
         _run_composition,
         inputs,
         kwargs,
@@ -244,6 +289,7 @@ def solve_mirror_quasineutral_closure(inputs=None, **kwargs):
             }
         },
     )
+    return Result(result)
 
 
 __all__ = ["solve_mirror_quasineutral_closure"]

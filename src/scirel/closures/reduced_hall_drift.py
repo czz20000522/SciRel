@@ -8,6 +8,8 @@ import math
 import struct
 import numpy as np
 
+from scirel._result import Result
+
 MU_0 = 4e-07 * np.pi
 ELECTRON_MASS_KG = 9.1093837139e-31
 
@@ -124,7 +126,114 @@ def close_reduced_hall_drift(
     inertia_tolerance=1e-10,
     inertia_max_iterations=80,
 ):
-    """Compute reduced Hall current, toroidal species drifts, and diagnostics."""
+    """Compute reduced Hall current, toroidal species drifts, and diagnostics.
+
+    Returns
+    -------
+    The top-level value is a ``scirel._result.Result`` mapping; field values
+    are available by key and preserve the baseline key order.
+    J_phi : float64 [A/m^2]
+        Masked toroidal current-density projection including optional centrifugal correction.
+    force_R : float64 [Pa/m]
+        Radial target force after subtracting the computed centrifugal term.
+    force_Z : float64 [Pa/m]
+        Axial target force; no centrifugal Z term is applied.
+    pressure_force_R : float64 [Pa/m]
+        Uncorrected radial cylindrical pressure force.
+    pressure_force_Z : float64 [Pa/m]
+        Uncorrected axial cylindrical pressure force.
+    electron_pressure_force_R : float64 [Pa/m]
+        Radial force from optional electron pressure components.
+    electron_pressure_force_Z : float64 [Pa/m]
+        Axial force from optional electron pressure components.
+    parallel_force : float64 [Pa/m]
+        Target force projected along the poloidal field.
+    parallel_force_error : float [dimensionless]
+        In-mask RMS parallel target force divided by RMS target-force magnitude.
+    momentum_residual_R : float64 [Pa/m]
+        Radial residual J_phi B_Z minus target radial force.
+    momentum_residual_Z : float64 [Pa/m]
+        Axial residual -J_phi B_R minus target axial force.
+    momentum_error : float [dimensionless]
+        In-mask RMS momentum-residual magnitude divided by RMS target-force magnitude.
+    ion_toroidal_velocity : float64 [m/s]
+        Capped ion toroidal drift on Hall-active cells.
+    electron_toroidal_velocity : float64 [m/s]
+        Ion drift minus J_phi/charge-density on Hall-active cells.
+    raw_ion_toroidal_velocity : float64 [m/s]
+        Unclipped ion toroidal velocity expression.
+    ion_toroidal_mach : float64 [dimensionless]
+        Capped ion velocity divided by modeled ion thermal speed.
+    raw_ion_toroidal_mach : float64 [dimensionless]
+        Unclipped ion velocity divided by ion thermal speed on active cells.
+    centrifugal_force_R : float64 [Pa/m]
+        Local ion toroidal centrifugal correction.
+    electric_field_R : float64 [V/m]
+        Negative radial electrostatic-potential gradient.
+    electric_field_Z : float64 [V/m]
+        Negative axial electrostatic-potential gradient.
+    hall_electric_field_R : float64 [V/m]
+        Reduced Hall radial electric-field contribution.
+    hall_electric_field_Z : float64 [V/m]
+        Reduced Hall axial electric-field contribution.
+    ohm_residual_R : float64 [V/m]
+        Radial generalized-Ohm residual on Hall-active cells.
+    ohm_residual_Z : float64 [V/m]
+        Axial generalized-Ohm residual on Hall-active cells.
+    ohm_parallel : float64 [V/m]
+        Generalized-Ohm residual projected along the poloidal field.
+    generalized_ohm_error : float [dimensionless]
+        Active-cell RMS generalized-Ohm residual divided by RMS electric/Hall/drift scale.
+    firehose_margin : float64 [dimensionless]
+        Local 1-mu0*(p_parallel-p_perpendicular)/max(|B|^2,tiny).
+    ion_skin_depth : float64 [m]
+        Ion inertial length from mass, charge and local density.
+    electron_skin_depth : float64 [m]
+        Ion skin depth times square root of electron-to-ion mass ratio.
+    ion_gyroradius : float64 [m]
+        Ion thermal-speed gyroradius using the poloidal field magnitude.
+    magnetic_scale_length : float64 [m]
+        Field magnitude divided by its R-Z gradient magnitude.
+    hall_scale_ratio : float64 [dimensionless]
+        Ion skin depth divided by finite positive magnetic scale length.
+    electron_inertia_scale_ratio : float64 [dimensionless]
+        Electron skin depth divided by finite positive magnetic scale length.
+    ion_gyroradius_scale_ratio : float64 [dimensionless]
+        Ion gyroradius divided by finite positive magnetic scale length.
+    hall_active_mask : bool [boolean]
+        Plasma, non-axis, above-density-floor and resolvable-field intersection.
+    density_floor_m3 : float [m^-3]
+        Peak in-mask ion density times hall_density_floor_fraction.
+    velocity_cap_fraction : float [dimensionless]
+        Fraction of Hall-active cells whose raw Mach magnitude exceeds the cap.
+    inertia_iterations : integer [count]
+        Executed local current updates, including one pass when inertia is disabled.
+    inertia_relative_change : float [dimensionless]
+        Last local current update's relative norm change.
+    inertia_converged : bool [boolean]
+        Whether local iteration stopped successfully or inertia was bypassed.
+    parallel_force_diagnostics : dict [mixed SI]
+        Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent. This nested
+        field remains a plain dict.
+    ohm_diagnostics : dict [mixed SI]
+        Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent. This nested
+        field remains a plain dict.
+    momentum_diagnostics : dict [mixed SI]
+        Mapping with error, absolute, raw_relative, roundoff and roundoff_consistent. This nested
+        field remains a plain dict.
+    pressure_composition_mode : string [1]
+        Prescribed independent_fit or checked species_sum interpretation.
+    species_pressure_sum_consistent : bool [boolean]
+        Whether ion and electron tensor components sum to total within rounding.
+    residual_stress_parallel_pa : real array [Pa]
+        Total minus the provided ion/electron sum; a residual is not evidence of a physical extra
+        species.
+    residual_stress_perpendicular_pa : real array [Pa]
+        Total minus the provided ion/electron sum; a residual is not evidence of a physical extra
+        species.
+    inertia_fixed_point_residual : float [dimensionless]
+        Unrelaxed local current-map residual evaluated at the returned current and its newly
+        recomputed velocity/centrifugal force."""
     ion_mass_kg = _require_finite_scalar(ion_mass_kg, "ion_mass_kg", positive=True)
     ion_charge_c = _require_finite_scalar(ion_charge_c, "ion_charge_c", positive=True)
     hall_multiplier = _require_finite_scalar(hall_multiplier, "hall_multiplier", nonnegative=True)
@@ -416,58 +525,62 @@ def close_reduced_hall_drift(
     firehose_margin = 1.0 - MU_0 * (p_parallel - p_perpendicular) / np.maximum(
         b_squared, np.finfo(float).tiny
     )
-    return {
-        "pressure_composition_mode": composition_mode,
-        "species_pressure_sum_consistent": consistent,
-        "residual_stress_parallel_pa": residual_parallel,
-        "residual_stress_perpendicular_pa": residual_perpendicular,
-        "J_phi": j_phi,
-        "force_R": target_force_r,
-        "force_Z": target_force_z,
-        "pressure_force_R": force_r,
-        "pressure_force_Z": force_z,
-        "electron_pressure_force_R": electron_force_r,
-        "electron_pressure_force_Z": electron_force_z,
-        "parallel_force": parallel_force,
-        "parallel_force_error": parallel_force_error,
-        "parallel_force_diagnostics": parallel_metrics,
-        "ohm_diagnostics": ohm_metrics,
-        "momentum_diagnostics": momentum_metrics,
-        "momentum_residual_R": momentum_r,
-        "momentum_residual_Z": momentum_z,
-        "momentum_error": momentum_error,
-        "ion_toroidal_velocity": ion_velocity,
-        "electron_toroidal_velocity": electron_velocity,
-        "raw_ion_toroidal_velocity": raw_velocity,
-        "ion_toroidal_mach": mach,
-        "raw_ion_toroidal_mach": raw_mach,
-        "centrifugal_force_R": centrifugal_force,
-        "electric_field_R": electric_r,
-        "electric_field_Z": electric_z,
-        "hall_electric_field_R": hall_r,
-        "hall_electric_field_Z": hall_z,
-        "ohm_residual_R": ohm_r,
-        "ohm_residual_Z": ohm_z,
-        "ohm_parallel": ohm_parallel,
-        "generalized_ohm_error": generalized_ohm_error,
-        "firehose_margin": firehose_margin,
-        "ion_skin_depth": skin_depth,
-        "electron_skin_depth": electron_skin_depth,
-        "ion_gyroradius": gyroradius,
-        "magnetic_scale_length": scale,
-        "hall_scale_ratio": hall_ratio,
-        "electron_inertia_scale_ratio": electron_ratio,
-        "ion_gyroradius_scale_ratio": gyroradius_ratio,
-        "hall_active_mask": hall_mask,
-        "density_floor_m3": density_floor,
-        "velocity_cap_fraction": float(np.mean(np.abs(raw_mach[hall_mask]) > maximum_inertial_mach))
-        if np.any(hall_mask)
-        else 0.0,
-        "inertia_iterations": iterations,
-        "inertia_relative_change": change,
-        "inertia_fixed_point_residual": fixed_point_residual,
-        "inertia_converged": converged,
-    }
+    return Result(
+        {
+            "pressure_composition_mode": composition_mode,
+            "species_pressure_sum_consistent": consistent,
+            "residual_stress_parallel_pa": residual_parallel,
+            "residual_stress_perpendicular_pa": residual_perpendicular,
+            "J_phi": j_phi,
+            "force_R": target_force_r,
+            "force_Z": target_force_z,
+            "pressure_force_R": force_r,
+            "pressure_force_Z": force_z,
+            "electron_pressure_force_R": electron_force_r,
+            "electron_pressure_force_Z": electron_force_z,
+            "parallel_force": parallel_force,
+            "parallel_force_error": parallel_force_error,
+            "parallel_force_diagnostics": parallel_metrics,
+            "ohm_diagnostics": ohm_metrics,
+            "momentum_diagnostics": momentum_metrics,
+            "momentum_residual_R": momentum_r,
+            "momentum_residual_Z": momentum_z,
+            "momentum_error": momentum_error,
+            "ion_toroidal_velocity": ion_velocity,
+            "electron_toroidal_velocity": electron_velocity,
+            "raw_ion_toroidal_velocity": raw_velocity,
+            "ion_toroidal_mach": mach,
+            "raw_ion_toroidal_mach": raw_mach,
+            "centrifugal_force_R": centrifugal_force,
+            "electric_field_R": electric_r,
+            "electric_field_Z": electric_z,
+            "hall_electric_field_R": hall_r,
+            "hall_electric_field_Z": hall_z,
+            "ohm_residual_R": ohm_r,
+            "ohm_residual_Z": ohm_z,
+            "ohm_parallel": ohm_parallel,
+            "generalized_ohm_error": generalized_ohm_error,
+            "firehose_margin": firehose_margin,
+            "ion_skin_depth": skin_depth,
+            "electron_skin_depth": electron_skin_depth,
+            "ion_gyroradius": gyroradius,
+            "magnetic_scale_length": scale,
+            "hall_scale_ratio": hall_ratio,
+            "electron_inertia_scale_ratio": electron_ratio,
+            "ion_gyroradius_scale_ratio": gyroradius_ratio,
+            "hall_active_mask": hall_mask,
+            "density_floor_m3": density_floor,
+            "velocity_cap_fraction": float(
+                np.mean(np.abs(raw_mach[hall_mask]) > maximum_inertial_mach)
+            )
+            if np.any(hall_mask)
+            else 0.0,
+            "inertia_iterations": iterations,
+            "inertia_relative_change": change,
+            "inertia_fixed_point_residual": fixed_point_residual,
+            "inertia_converged": converged,
+        }
+    )
 
 
 __all__ = ["close_reduced_hall_drift"]

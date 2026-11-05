@@ -5,7 +5,7 @@
     "en": "Discrete vector error filtering and current feedback",
     "zh": "离散矢量误差滤波与电流反馈"
   },
-  "summary": "Evaluate a device-neutral sampled ten-channel error filter with proportional, integral and filtered-derivative state, an 11x10 current map, feed-forward addition and enable hold/reset branches.",
+  "summary": "Evaluate a device-neutral sampled ten-channel error filter with proportional, integral and filtered-derivative state, an 11x10 current map, feed-forward addition and enable hold/reset branches. The top-level result is a scirel._result.Result mapping; non-colliding fields also support attribute access.",
   "taxonomy": ["closures", "control", "sampled-feedback"],
   "aliases": ["vector feedback", "sample-and-hold current feedback"],
   "discovery": {
@@ -25,7 +25,7 @@
   "identity": {
     "relation": "sampled reference/measurement vectors and controller state to mapped current feedback and trace",
     "direction": "inputs, controller -> total_current_A, feedback_current_A, pid_components, error_T and state_trace",
-    "definition": "Compute error=reference-measurement; evaluate P/I/filtered-D terms when enabled; apply the effective 11x10 map; add feed-forward current; and update or hold state according to the enable branch.",
+    "definition": "Compute error=reference-measurement; evaluate P/I/filtered-D terms when enabled; apply the effective 11x10 map; add feed-forward current; and update or hold state according to the enable branch. The complete result is returned as one scirel._result.Result mapping; nested mapping fields remain plain dicts.",
     "model": "Discrete sampled PID/filter feedback primitive with forward-Euler integrator and first-order derivative filter.",
     "geometry": "Device-neutral vector relation with ten error channels, thirty ordered PID components and eleven current outputs; no spatial geometry.",
     "coordinates": "Reference and measured channels use tesla, feed-forward/feedback/total currents use amperes, and sample times use seconds.",
@@ -59,12 +59,12 @@
   "outputs": [
     {
       "name": "result",
-      "description": "Mapping containing schema, time_s, values and state_trace.",
+      "description": "Top-level scirel._result.Result mapping containing schema, time_s, values and state_trace.",
       "units": "mixed T, A, s and controller state units",
       "shape": "mapping",
-      "dtype": "JSON-ready Python mapping",
+      "dtype": "scirel._result.Result mapping; nested values and state_trace are plain dicts",
       "required": true,
-      "constraints": "values contains total_current_A [n,11], feedback_current_A [n,11], pid_components [n,30] in P1,I1,D1 order and error_T [n,10]; state_trace records reset and pre/post integrator/filter states."
+      "constraints": "values contains total_current_A [n,11], feedback_current_A [n,11], pid_components [n,30] in P1,I1,D1 order and error_T [n,10]; state_trace records reset and pre/post integrator/filter states. The top-level key values collides with dict.values; read it as result[\"values\"], while dict.values(result) remains the mapping method."
     }
   ],
   "applicability": {
@@ -86,7 +86,7 @@
     "invalid_input": "Raises TypeError or ValueError for non-mapping inputs, missing signals, wrong shapes, nonfinite values, nonbinary enable/internal controls, invalid sample timing, negative filter rates or nonzero internal_reset.",
     "runtime_failure": "NumPy conversion and arithmetic errors propagate; no fallback controller or interpolation path is selected.",
     "nonconvergence": "Not applicable; this is a finite sampled pass with no iterative solve. Closed-loop convergence is outside the relation.",
-    "partial_results": "No result mapping is returned after validation or sampled-state failure."
+    "partial_results": "No scirel._result.Result mapping is returned after validation or sampled-state failure."
   },
   "public_api": {
     "python": {
@@ -104,7 +104,7 @@
   "example": {
     "description": "Run the supplied 121-sample device-neutral fixture through the sampled feedback state.",
     "code": "from pathlib import Path\nimport json\nfrom scirel.closures import simulate_discrete_vector_feedback\nroot = Path('tests/fixtures/closures/discrete_vector_feedback/evidence')\nresult = simulate_discrete_vector_feedback(json.loads((root/'fixtures/feedback-input.json').read_text()), json.loads((root/'source-defaults.json').read_text()))\nassert result['values']['total_current_A'][40] == result['values']['total_current_A'][40]\nassert len(result['time_s']) == 121",
-    "expected": "The bounded fixture returns 121 samples with eleven total-current outputs per sample; disabled samples retain feed-forward output and state."
+    "expected": "The bounded fixture returns 121 samples with eleven total-current outputs per sample; disabled samples retain feed-forward output and state. The top-level return is a scirel._result.Result mapping."
   },
   "verification": {
     "scope": [

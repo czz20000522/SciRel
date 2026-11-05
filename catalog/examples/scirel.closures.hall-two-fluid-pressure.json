@@ -5,7 +5,7 @@
   "en": "Hall two-fluid pressure state closure",
   "zh": "Hall 双流体压强状态闭合"
  },
- "summary": "Assemble a caller-supplied total gyrotropic pressure law, quasineutral ion/electron densities, electron pressure components and electrostatic potential into a broadcast two-fluid state for a reduced Hall closure.",
+ "summary": "Assemble a caller-supplied total gyrotropic pressure law, quasineutral ion/electron densities, electron pressure components and electrostatic potential into a broadcast two-fluid state for a reduced Hall closure. The top-level result is a scirel._result.Result mapping; non-colliding fields also support attribute access.",
  "taxonomy": [
   "closures",
   "hall",
@@ -32,7 +32,7 @@
  "identity": {
   "relation": "Total gyrotropic pressure and prescribed species profiles to an explicit two-fluid pressure and density state",
   "direction": "(magnetic_field, psi, pressure_law, ion_density_m3, electron_pressure_pa, electrostatic_potential_v, optional species pressure components) -> total, ion and electron pressures, equal ion/electron number densities, and electrostatic potential",
-  "definition": "Broadcast B and psi to one shape, evaluate pressure_law(B, psi) for p_parallel and p_perpendicular, and broadcast all supplied profiles onto that shape. Set electron_density=ion_density. Absent electron parallel/perpendicular components each default to electron_pressure; absent ion components are the respective total pressure minus the electron component. Explicit ion components are accepted independently and are not checked to sum to total pressure. Reject negative ion density, electron scalar/component pressures and ion component pressures; no positivity check is applied to the total pressures themselves. In default independent_fit mode retain these independent prescribed total/species fields and expose residual_stress_parallel_pa=total_parallel-ion_parallel-electron_parallel and its perpendicular analogue. These are algebraic residual stresses, not validated additional particle species. In species_sum mode both residuals must vanish within 64*float64_epsilon times their local pressure scale or ValueError is raised. species_pressure_sum_consistent reports this same numerical check in either mode.",
+  "definition": "Broadcast B and psi to one shape, evaluate pressure_law(B, psi) for p_parallel and p_perpendicular, and broadcast all supplied profiles onto that shape. Set electron_density=ion_density. Absent electron parallel/perpendicular components each default to electron_pressure; absent ion components are the respective total pressure minus the electron component. Explicit ion components are accepted independently and are not checked to sum to total pressure. Reject negative ion density, electron scalar/component pressures and ion component pressures; no positivity check is applied to the total pressures themselves. In default independent_fit mode retain these independent prescribed total/species fields and expose residual_stress_parallel_pa=total_parallel-ion_parallel-electron_parallel and its perpendicular analogue. These are algebraic residual stresses, not validated additional particle species. In species_sum mode both residuals must vanish within 64*float64_epsilon times their local pressure scale or ValueError is raised. species_pressure_sum_consistent reports this same numerical check in either mode. The complete result is returned as one scirel._result.Result mapping; nested mapping fields remain plain dicts.",
   "model": "Prescribed gyrotropic total stress and species bookkeeping, optionally with independent fitted residual stress; not a derived self-consistent two-fluid equilibrium. A downstream total-force law already includes the residual stress, whereas ion moments remain ion-only.",
   "geometry": "Caller-supplied scalar or broadcast array of magnetic-field magnitude and flux coordinates; the implementation does not construct an R-Z mesh.",
   "coordinates": "Profile callables receive jointly broadcast magnetic_field and psi arrays; their outputs and fixed profiles broadcast to that common shape without coordinate-axis validation.",
@@ -295,7 +295,7 @@
   "invalid_input": "Raises ValueError for nonfinite magnetic_field/psi, negative checked moments, or a profile that cannot broadcast; raises FloatingPointError for nonfinite pressure or profile values. A noncallable pressure_law or non-dictionary result raises TypeError; missing pressure keys raise KeyError. Numeric conversion and initial broadcasting can also raise TypeError or ValueError; profile callbacks propagate their exceptions. Unsupported composition mode or a nonzero component residual in species_sum mode raises ValueError.",
   "runtime_failure": "Nonfinite species sums/residual stresses raise FloatingPointError. Independent-fit residual stresses are permitted explicitly; no physical closure is silently inferred from them.",
   "nonconvergence": "Not applicable; no solver iteration is performed.",
-  "partial_results": "Validation or callback failure returns no mapping; successful return includes all original fields and the four explicit composition fields."
+  "partial_results": "Validation or callback failure returns no scirel._result.Result mapping; successful return includes all original fields and the four explicit composition fields."
  },
  "public_api": {
   "python": {
@@ -313,7 +313,7 @@
  "example": {
   "description": "Assemble a broadcast Hall state with the default algebraic ion pressure split.",
   "code": "import numpy as np\nfrom scirel.closures import close_hall_two_fluid_pressure\ndef law(b, psi):\n    return {'p_parallel': 5.0 + b + psi, 'p_perpendicular': 4.0 + b + 2.0*psi}\nr = close_hall_two_fluid_pressure([[1.0, 2.0]], [[0.2, 0.4]], law, 1.0e18, 1.0, 3.0)\nnp.testing.assert_allclose(r['p_parallel'], [[6.2, 7.4]])\nnp.testing.assert_allclose(r['ion_p_parallel'] + r['electron_p_parallel'], r['p_parallel'])\nnp.testing.assert_allclose(r['electron_density'], r['ion_density'])\nassert r['species_pressure_sum_consistent']\nnp.testing.assert_allclose(r['residual_stress_parallel_pa'], 0., atol=1e-14)",
-  "expected": "The total parallel pressure is [[6.2, 7.4]] Pa; default species components sum to it and the two number-density arrays agree."
+  "expected": "The total parallel pressure is [[6.2, 7.4]] Pa; default species components sum to it and the two number-density arrays agree. The top-level return is a scirel._result.Result mapping."
  },
  "verification": {
   "scope": [

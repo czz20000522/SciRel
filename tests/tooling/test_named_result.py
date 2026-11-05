@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from scirel._result import Result
-from scirel import diagnostics, field
+from scirel import closures, diagnostics, field
 from scirel.field import compute_poloidal_field_magnitude
 from scirel.kinetic import evaluate_plasma_dispersion
 
@@ -949,4 +949,396 @@ def test_diagnostics_failures_match_baseline_type_and_message(
     function = getattr(diagnostics, name)
     with pytest.raises(exception_type) as error:
         function(*args, **kwargs)
+    assert str(error.value) == message
+
+
+# Baseline checks for the seven plain-dict closure returns migrated in #2, plus
+# the two closure exports that already returned Result. Detailed numerics stay in
+# tests/closures; this protects return type, key order and representative baseline
+# values without duplicating the #1 numpydoc matrix.
+_E = 1.602176634e-19
+
+
+def _closure_hall_call():
+    def law(b, psi):
+        return {"p_parallel": 5.0 + b + psi, "p_perpendicular": 4.0 + b + 2.0 * psi}
+
+    return closures.close_hall_two_fluid_pressure([[1.0, 2.0]], [[0.2, 0.4]], law, 1.0e18, 1.0, 3.0)
+
+
+def _closure_quasi_call():
+    return closures.solve_quasineutral_potential(
+        [0.0, 17.0],
+        0.1 * _E,
+        0.1 * _E,
+        _E,
+        [True, False],
+        lambda phi: {"logarithmic_charge_residual": 0.5 - np.asarray(phi)},
+    )
+
+
+def _closure_ambipolar_call():
+    return closures.solve_mirror_ambipolar_potential(
+        1.0,
+        1.0,
+        0.0,
+        1.67262192595e-27,
+        _E,
+        2.0e18,
+        2.0 * _E,
+        3.0 * _E,
+        _E,
+        electron_density_ref_m3=3.0e18,
+        ion_loss_refill=0.25,
+        electron_loss_refill=0.5,
+        mode="evaluate",
+        phi_plug_v=1.0,
+    )
+
+
+def _closure_reduced_hall_call():
+    r, z = np.meshgrid(np.linspace(0.0, 0.4, 3), np.linspace(-0.2, 0.2, 3))
+    pressure = np.full((3, 3), 20.0)
+    return closures.close_reduced_hall_drift(
+        r,
+        z,
+        np.zeros((3, 3)),
+        np.full((3, 3), 2.0),
+        pressure,
+        pressure,
+        {
+            "ion_density": np.full((3, 3), 1.0e18),
+            "electron_pressure": np.zeros((3, 3)),
+            "electrostatic_potential": np.zeros((3, 3)),
+            "ion_p_parallel": pressure,
+            "ion_p_perpendicular": pressure,
+        },
+        np.ones((3, 3), dtype=bool),
+        1.67262192595e-27,
+        _E,
+    )
+
+
+def _closure_mirror_quasi_call():
+    return closures.solve_mirror_quasineutral_closure(
+        b_t=np.array([1.0, 1.4, 2.0]),
+        psi=np.zeros(3),
+        mass_kg=1.67262192595e-27,
+        charge_c=_E,
+        density_ref_m3=2.0e18,
+        temperature_parallel_j=1200.0 * _E,
+        temperature_perpendicular_ref_j=2400.0 * _E,
+        b_ref_t=1.0,
+        electron_temperature_j=600.0 * _E,
+    )
+
+
+def _closure_feedback_call():
+    inputs = {
+        "input_time_s": [0.0],
+        "observation_time_s": [0.0],
+        "signals": {
+            "reference_T": [[0.0] * 10],
+            "measured_T": [[0.0] * 10],
+            "feedforward_current_A": [[0.0] * 11],
+            "enable": [0],
+        },
+    }
+    controller = {
+        "sample_period_s": 1.0,
+        "P": [0.0] * 10,
+        "I": [0.0] * 10,
+        "D": [0.0] * 10,
+        "N_per_s": [0.0] * 10,
+        "coefficient_matrix_unscaled": [[0.0] * 10 for _ in range(11)],
+        "coefficient_scale": 1.0,
+        "integrator_initial_state": [0.0] * 10,
+        "filter_initial_state": [0.0] * 10,
+        "internal_integration_enable": [1] * 10,
+        "internal_reset": 0,
+    }
+    return closures.simulate_discrete_vector_feedback(inputs, controller)
+
+
+_CLOSURE_CASES = {
+    "compute_reference_electron_density": (
+        lambda: closures.compute_reference_electron_density([1.0e18, 2.0e18], [1.0, 3.0]),
+        ("electron_density_ref_m3",),
+        {"electron_density_ref_m3": np.array([1.0e18, 6.0e18])},
+        Result,
+    ),
+    "compute_boltzmann_electron_state": (
+        lambda: closures.compute_boltzmann_electron_state(np.log(2.0), _E, 3.0, 0.0, 3.0, 2.0),
+        (
+            "electron_density_m3",
+            "electron_pressure_pa",
+            "logarithmic_charge_residual",
+            "charge_residual_m3",
+            "relative_charge_residual",
+        ),
+        {
+            "electron_density_m3": np.float64(6.000000000000001),
+            "electron_pressure_pa": np.float64(9.613059803999962e-19),
+            "logarithmic_charge_residual": np.array(-2.220446049250313e-16),
+        },
+        Result,
+    ),
+    "close_hall_two_fluid_pressure": (
+        _closure_hall_call,
+        (
+            "pressure_composition_mode",
+            "species_pressure_sum_consistent",
+            "residual_stress_parallel_pa",
+            "residual_stress_perpendicular_pa",
+            "p_parallel",
+            "p_perpendicular",
+            "ion_density",
+            "electron_density",
+            "electron_pressure",
+            "electron_p_parallel",
+            "electron_p_perpendicular",
+            "electrostatic_potential",
+            "ion_p_parallel",
+            "ion_p_perpendicular",
+        ),
+        {
+            "pressure_composition_mode": "independent_fit",
+            "species_pressure_sum_consistent": True,
+            "p_parallel": np.array([[6.2, 7.4]]),
+            "p_perpendicular": np.array([[5.4, 6.8]]),
+        },
+        Result,
+    ),
+    "solve_quasineutral_potential": (
+        _closure_quasi_call,
+        ("potential_v", "logarithmic_charge_residual", "iterations", "converged"),
+        {
+            "potential_v": np.array([0.5, 17.0]),
+            "logarithmic_charge_residual": np.array([0.0, -16.5]),
+            "iterations": 5,
+            "converged": True,
+        },
+        Result,
+    ),
+    "evaluate_tabulated_pressure": (
+        lambda: closures.evaluate_tabulated_pressure(
+            1.5,
+            0.25,
+            np.array([0.0, 1.0]),
+            np.array([[2.0, 4.0], [4.0, 6.0]]),
+            np.array([[3.0, 5.0], [5.0, 7.0]]),
+            np.array([1.0, 2.0]),
+        ),
+        ("p_parallel", "p_perpendicular", "is_isotropic", "table_dimension"),
+        {
+            "p_parallel": np.float64(3.5),
+            "p_perpendicular": np.float64(4.5),
+            "is_isotropic": False,
+            "table_dimension": 2,
+        },
+        Result,
+    ),
+    "solve_mirror_ambipolar_potential": (
+        _closure_ambipolar_call,
+        (
+            "potential_v",
+            "ion_particle_flux_m2_s",
+            "electron_particle_flux_m2_s",
+            "log_current_ratio",
+            "relative_current_residual",
+            "iterations",
+            "converged",
+            "evaluation_complete",
+            "current_balance_solved",
+        ),
+        {
+            "potential_v": np.array(1.0),
+            "ion_particle_flux_m2_s": np.float64(1.674573179533026e21),
+            "electron_particle_flux_m2_s": np.float64(2.5096434433404035e23),
+            "iterations": 0,
+            "current_balance_solved": False,
+        },
+        Result,
+    ),
+    "close_reduced_hall_drift": (
+        _closure_reduced_hall_call,
+        tuple(
+            """pressure_composition_mode species_pressure_sum_consistent residual_stress_parallel_pa
+            residual_stress_perpendicular_pa J_phi force_R force_Z pressure_force_R pressure_force_Z
+            electron_pressure_force_R electron_pressure_force_Z parallel_force parallel_force_error
+            parallel_force_diagnostics ohm_diagnostics momentum_diagnostics momentum_residual_R
+            momentum_residual_Z momentum_error ion_toroidal_velocity electron_toroidal_velocity
+            raw_ion_toroidal_velocity ion_toroidal_mach raw_ion_toroidal_mach centrifugal_force_R
+            electric_field_R electric_field_Z hall_electric_field_R hall_electric_field_Z ohm_residual_R
+            ohm_residual_Z ohm_parallel generalized_ohm_error firehose_margin ion_skin_depth
+            electron_skin_depth ion_gyroradius magnetic_scale_length hall_scale_ratio
+            electron_inertia_scale_ratio ion_gyroradius_scale_ratio hall_active_mask density_floor_m3
+            velocity_cap_fraction inertia_iterations inertia_relative_change
+            inertia_fixed_point_residual inertia_converged""".split()
+        ),
+        {
+            "pressure_composition_mode": "independent_fit",
+            "species_pressure_sum_consistent": True,
+            "J_phi": np.zeros((3, 3)),
+            "ion_toroidal_velocity": np.zeros((3, 3)),
+            "inertia_iterations": 1,
+            "inertia_converged": True,
+        },
+        Result,
+    ),
+    "solve_mirror_quasineutral_closure": (
+        _closure_mirror_quasi_call,
+        tuple(
+            """density_m3 p_parallel_pa p_perpendicular_pa temperature_parallel_j
+            temperature_perpendicular_local_j untruncated_density_m3 density_pitch_integral
+            parallel_pitch_integral perpendicular_pitch_integral p_parallel p_perpendicular
+            ion_density ion_p_parallel ion_p_perpendicular electron_density electron_pressure
+            electrostatic_potential relative_charge_residual kinetic_moments iterations
+            converged""".split()
+        ),
+        {"converged": True},
+        Result,
+    ),
+    "simulate_discrete_vector_feedback": (
+        _closure_feedback_call,
+        ("schema", "time_s", "values", "state_trace"),
+        {
+            "schema": "magnetic-error-current-feedback-discrete",
+            "time_s": [0.0],
+            "values": {
+                "total_current_A": [[0.0] * 11],
+                "feedback_current_A": [[0.0] * 11],
+                "pid_components": [[0.0] * 30],
+                "error_T": [[0.0] * 10],
+            },
+            "state_trace": {
+                "reset_at_sample": [True],
+                "pre_integrator_state": [[0.0] * 10],
+                "pre_filter_state": [[0.0] * 10],
+                "post_integrator_state": [[0.0] * 10],
+                "post_filter_state": [[0.0] * 10],
+            },
+        },
+        Result,
+    ),
+}
+
+_CLOSURES_MIGRATED = {
+    "close_hall_two_fluid_pressure",
+    "solve_quasineutral_potential",
+    "evaluate_tabulated_pressure",
+    "close_reduced_hall_drift",
+    "simulate_discrete_vector_feedback",
+    "solve_mirror_ambipolar_potential",
+    "solve_mirror_quasineutral_closure",
+}
+# No public closure callable returns a bare tuple or ndarray in this baseline.
+_CLOSURES_BARE_RETURN_CASES = set()
+
+_CLOSURES_FAILURE_CASES = [
+    (
+        "close_hall_two_fluid_pressure",
+        lambda: closures.close_hall_two_fluid_pressure(
+            np.ones((1, 1)), np.zeros((1, 1)), 1, 1.0, 1.0, 0.0
+        ),
+        TypeError,
+        "pressure_law must be callable",
+    ),
+    (
+        "solve_quasineutral_potential",
+        lambda: closures.solve_quasineutral_potential(0.0, 1.0, 1.0, 1.0, True, lambda _: {}),
+        ValueError,
+        "residual must return logarithmic_charge_residual",
+    ),
+    (
+        "evaluate_tabulated_pressure",
+        lambda: closures.evaluate_tabulated_pressure(1.0, 0.0, [1.0], [1.0, 2.0]),
+        ValueError,
+        "psi_grid must be one-dimensional, finite, and strictly increasing",
+    ),
+    (
+        "solve_mirror_ambipolar_potential",
+        lambda: closures.solve_mirror_ambipolar_potential(
+            1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, mode="bad"
+        ),
+        ValueError,
+        "mode must be solve or evaluate",
+    ),
+    (
+        "close_reduced_hall_drift",
+        lambda: closures.close_reduced_hall_drift(
+            np.ones((2, 2)),
+            np.ones((2, 2)),
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            {"ion_density": 1.0, "electron_pressure": 1.0, "electrostatic_potential": 0.0},
+            np.ones((2, 2), dtype=bool),
+            1.0,
+            1.0,
+        ),
+        ValueError,
+        "a rectilinear R-Z grid with at least 3 points per axis is required",
+    ),
+    (
+        "solve_mirror_quasineutral_closure",
+        lambda: closures.solve_mirror_quasineutral_closure(inputs={}),
+        ValueError,
+        "missing required inputs: b_ref_t, b_t, charge_c, density_ref_m3, electron_temperature_j, mass_kg, psi, temperature_parallel_j, temperature_perpendicular_ref_j",
+    ),
+    (
+        "simulate_discrete_vector_feedback",
+        lambda: closures.simulate_discrete_vector_feedback([], {}),
+        TypeError,
+        "inputs and controller must be mappings",
+    ),
+]
+
+
+def _assert_closure_value(actual, expected):
+    if isinstance(expected, dict):
+        _assert_mapping_values_equal(actual, expected)
+    elif isinstance(expected, np.generic):
+        assert type(actual) is type(expected)
+        np.testing.assert_allclose(actual, expected, rtol=2.0e-14, atol=1.0e-300)
+    else:
+        _assert_value_equal(actual, expected)
+
+
+def test_closures_cases_cover_every_public_callable():
+    assert set(_CLOSURE_CASES) == set(closures.__all__)
+    assert _CLOSURES_BARE_RETURN_CASES == set()
+
+
+@pytest.mark.parametrize("name", sorted(_CLOSURE_CASES))
+def test_closure_results_preserve_baseline_values_and_return_types(name):
+    call, expected_keys, expected, expected_type = _CLOSURE_CASES[name]
+    result = call()
+    assert type(result) is expected_type
+    assert isinstance(result, dict)
+    assert list(result) == list(expected_keys)
+    if expected_type is Result:
+        for key in expected_keys:
+            if key != "values":
+                assert getattr(result, key) is result[key]
+    for key, expected_value in expected.items():
+        _assert_closure_value(result[key], expected_value)
+    if name == "solve_mirror_quasineutral_closure":
+        assert result["p_parallel"].shape == (3,)
+        assert np.max(np.abs(result["relative_charge_residual"])) < 1e-10
+    if name == "simulate_discrete_vector_feedback":
+        assert callable(result.values)
+        assert list(result["values"]) == list(expected["values"])
+        assert list(dict.values(result))[2] is result["values"]
+
+
+def test_closures_failure_cases_cover_every_migrated_callable():
+    assert {case[0] for case in _CLOSURES_FAILURE_CASES} == _CLOSURES_MIGRATED
+
+
+@pytest.mark.parametrize("name,call,exception_type,message", _CLOSURES_FAILURE_CASES)
+def test_closures_failures_match_baseline_type_and_message(name, call, exception_type, message):
+    with pytest.raises(exception_type) as error:
+        call()
     assert str(error.value) == message

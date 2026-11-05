@@ -5,7 +5,7 @@
   "en": "Tabulated magnetic-field and flux pressure interpolation",
   "zh": "磁场与磁通表格压强插值"
  },
- "summary": "Interpolate supplied parallel and perpendicular pressure tables at broadcast magnetic-field and flux queries. A one-dimensional flux table returns one isotropic pressure; a two-dimensional (B, psi) table returns two separately interpolated components.",
+ "summary": "Interpolate supplied parallel and perpendicular pressure tables at broadcast magnetic-field and flux queries. A one-dimensional flux table returns one isotropic pressure; a two-dimensional (B, psi) table returns two separately interpolated components. The top-level result is a scirel._result.Result mapping; non-colliding fields also support attribute access.",
  "taxonomy": [
   "closures",
   "pressure",
@@ -32,7 +32,7 @@
  "identity": {
   "relation": "Caller-supplied pressure tables and magnetic-field/flux query values to interpolated gyrotropic pressure components",
   "direction": "(magnetic_field, psi, psi_grid, p_parallel_table, optional p_perpendicular_table, optional b_grid) -> p_parallel, p_perpendicular, is_isotropic, table_dimension",
-  "definition": "Broadcast finite magnetic_field and psi queries. Without b_grid, require finite nonnegative one-dimensional tables matching a strictly increasing psi_grid; a supplied perpendicular table must equal the parallel table exactly after float64 conversion. Use linear interp1d and return the same pressure components, is_isotropic=True and table_dimension=1. With b_grid, separately bilinearly interpolate finite nonnegative parallel/perpendicular tables on the increasing (B,psi) axes; absent perpendicular data reuse the parallel table. Set is_isotropic to exact equality of the complete supplied component tables and table_dimension=2. Reject negative or nonfinite evaluated pressure. Equal table components describe this prescribed relation, not a thermodynamic proof.",
+  "definition": "Broadcast finite magnetic_field and psi queries. Without b_grid, require finite nonnegative one-dimensional tables matching a strictly increasing psi_grid; a supplied perpendicular table must equal the parallel table exactly after float64 conversion. Use linear interp1d and return the same pressure components, is_isotropic=True and table_dimension=1. With b_grid, separately bilinearly interpolate finite nonnegative parallel/perpendicular tables on the increasing (B,psi) axes; absent perpendicular data reuse the parallel table. Set is_isotropic to exact equality of the complete supplied component tables and table_dimension=2. Reject negative or nonfinite evaluated pressure. Equal table components describe this prescribed relation, not a thermodynamic proof. The complete result is returned as one scirel._result.Result mapping; nested mapping fields remain plain dicts.",
   "model": "Prescribed tabulated isotropic or gyrotropic pressure law with linear one-dimensional or bilinear two-dimensional interpolation; this operator does not derive a pressure law or solve force balance.",
   "geometry": "No spatial geometry is reconstructed; magnetic_field and psi query arrays are NumPy-broadcast, with no spatial-axis names or grid topology checked.",
   "coordinates": "The first axis of each two-dimensional table is b_grid and the second is psi_grid. The psi axis and queries must use the same caller-supplied flux convention; historical source labels psi in Wb, but this implementation neither checks units nor converts Wb to Wb/rad.",
@@ -176,7 +176,7 @@
   "invalid_input": "Raises ValueError for invalid axis rank, length, ordering or finiteness; table shape, finiteness or negativity errors; nonboolean bounds_error; invalid fill_value; nonfinite queries; nonbroadcastable queries; or nonfinite/negative interpolated pressure. NumPy/SciPy conversion and interpolation errors may also propagate.",
   "runtime_failure": "Out-of-domain queries raise with bounds_error=True. With extrapolation, a nonfinite or negative result is rejected after interpolation; there is no physical fallback or clipping. SciPy/NumPy errors propagate.",
   "nonconvergence": "Not applicable; no iterative root or equilibrium solve is performed.",
-  "partial_results": "No partial mapping after an exception. Successful calls return both pressure arrays, exact component-equality metadata and table dimension."
+  "partial_results": "No partial scirel._result.Result mapping is returned after an exception. Successful calls return both pressure arrays, exact component-equality metadata and table dimension."
  },
  "public_api": {
   "python": {
@@ -194,7 +194,7 @@
  "example": {
   "description": "Interpolate a two-dimensional affine pressure pair and a separate one-dimensional isotropic table.",
   "code": "import numpy as np\nfrom scirel.closures import evaluate_tabulated_pressure\nb_axis = np.array([1.0, 2.0])\npsi_axis = np.array([0.0, 1.0])\nparallel = np.array([[2.0, 4.0], [4.0, 6.0]])\nperpendicular = np.array([[3.0, 5.0], [5.0, 7.0]])\na = evaluate_tabulated_pressure(1.5, 0.25, psi_axis, parallel, perpendicular, b_axis)\nnp.testing.assert_allclose(a['p_parallel'], 3.5)\nnp.testing.assert_allclose(a['p_perpendicular'], 4.5)\nassert a['is_isotropic'] is False\nb = evaluate_tabulated_pressure(10.0, 0.5, psi_axis, [2.0, 6.0])\nnp.testing.assert_allclose(b['p_parallel'], 4.0)\nnp.testing.assert_allclose(b['p_perpendicular'], 4.0)\nassert b['is_isotropic'] is True\nassert a['table_dimension']==2 and b['table_dimension']==1",
-  "expected": "The two-dimensional lookup returns 3.5 and 4.5 Pa, is_isotropic=False and table_dimension=2; the one-dimensional lookup returns 4 Pa in both components with is_isotropic=True and table_dimension=1."
+  "expected": "The two-dimensional lookup returns 3.5 and 4.5 Pa, is_isotropic=False and table_dimension=2; the one-dimensional lookup returns 4 Pa in both components with is_isotropic=True and table_dimension=1. The top-level return is a scirel._result.Result mapping."
  },
  "verification": {
   "scope": [
