@@ -5,6 +5,7 @@ reparse fixture exercises rejection of a file's reparse metadata before opening
 it; it does not redirect to the supplied target. POSIX keeps real symlinks for
 both boundaries. Neither fixture skips a failed setup or changes host policy.
 """
+
 from __future__ import annotations
 
 import os
@@ -14,9 +15,13 @@ import subprocess
 
 def directory_link(link: Path, target: Path) -> Path:
     """Create a real directory junction on Windows, or a POSIX symlink."""
-    if os.name == 'nt':
-        subprocess.run(['cmd', '/d', '/c', 'mklink', '/J', str(link), str(target)],
-                       check=True, capture_output=True, timeout=10)
+    if os.name == "nt":
+        subprocess.run(
+            ["cmd", "/d", "/c", "mklink", "/J", str(link), str(target)],
+            check=True,
+            capture_output=True,
+            timeout=10,
+        )
         assert link.is_junction()
     else:
         link.symlink_to(target, target_is_directory=True)
@@ -33,7 +38,7 @@ def file_link_or_reparse(link: Path, target: Path) -> Path:
     normal open cannot follow the opaque reparse point. Tests must therefore
     assert explicit metadata rejection, not accept a subsequent read error.
     """
-    if os.name != 'nt':
+    if os.name != "nt":
         link.symlink_to(target)
         assert link.is_symlink()
         return link
@@ -43,15 +48,29 @@ def file_link_or_reparse(link: Path, target: Path) -> Path:
     import struct
     import uuid
 
-    with link.open('xb') as stream:
+    with link.open("xb") as stream:
         stream.write(target.read_bytes())
-    kernel = ctypes.WinDLL('kernel32', use_last_error=True)
-    kernel.CreateFileW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.DWORD,
-                                  wintypes.LPVOID, wintypes.DWORD, wintypes.DWORD, wintypes.HANDLE]
+    kernel = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel.CreateFileW.argtypes = [
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    ]
     kernel.CreateFileW.restype = wintypes.HANDLE
-    kernel.DeviceIoControl.argtypes = [wintypes.HANDLE, wintypes.DWORD, wintypes.LPVOID,
-                                      wintypes.DWORD, wintypes.LPVOID, wintypes.DWORD,
-                                      ctypes.POINTER(wintypes.DWORD), wintypes.LPVOID]
+    kernel.DeviceIoControl.argtypes = [
+        wintypes.HANDLE,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        ctypes.POINTER(wintypes.DWORD),
+        wintypes.LPVOID,
+    ]
     kernel.DeviceIoControl.restype = wintypes.BOOL
     kernel.CloseHandle.argtypes = [wintypes.HANDLE]
     kernel.CloseHandle.restype = wintypes.BOOL
@@ -61,12 +80,17 @@ def file_link_or_reparse(link: Path, target: Path) -> Path:
     if handle == wintypes.HANDLE(-1).value:
         raise ctypes.WinError(ctypes.get_last_error())
     try:
-        data = struct.pack('<IHH16s', 0x42, 4, 0,
-                           uuid.UUID('58b7ef31-4074-4d72-83e2-9f4b9b219dda').bytes_le) + b'test'
+        data = (
+            struct.pack(
+                "<IHH16s", 0x42, 4, 0, uuid.UUID("58b7ef31-4074-4d72-83e2-9f4b9b219dda").bytes_le
+            )
+            + b"test"
+        )
         buffer = ctypes.create_string_buffer(data)
         returned = wintypes.DWORD()
-        if not kernel.DeviceIoControl(handle, 0x000900A4, buffer, len(data),
-                                      None, 0, ctypes.byref(returned), None):
+        if not kernel.DeviceIoControl(
+            handle, 0x000900A4, buffer, len(data), None, 0, ctypes.byref(returned), None
+        ):
             raise ctypes.WinError(ctypes.get_last_error())
     finally:
         kernel.CloseHandle(handle)

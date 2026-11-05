@@ -1,10 +1,12 @@
 """The pre-commit scan catches private paths and secrets, and nothing else."""
+
 import importlib.util
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location(
-    "precommit_check", ROOT / "skills/development/scirel-acceptance/scripts/precommit_check.py")
+    "precommit_check", ROOT / "skills/development/scirel-acceptance/scripts/precommit_check.py"
+)
 precommit_check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(precommit_check)
 

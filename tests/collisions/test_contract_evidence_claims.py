@@ -6,6 +6,7 @@ No such test exists in this repository. The contracts now state that the
 comparison is not maintained or replayed; this guard keeps that honest wording
 from regressing back into an evidence claim.
 """
+
 from __future__ import annotations
 
 import json
@@ -28,7 +29,9 @@ ALLOWED_HONEST = (
 )
 
 
-@pytest.mark.parametrize("path", sorted(EXAMPLES.glob("scirel.collisions.*.json")), ids=lambda p: p.name)
+@pytest.mark.parametrize(
+    "path", sorted(EXAMPLES.glob("scirel.collisions.*.json")), ids=lambda p: p.name
+)
 def test_collision_contracts_do_not_claim_a_missing_external_test(path):
     document = json.loads(path.read_text(encoding="utf-8"))
     fields = [

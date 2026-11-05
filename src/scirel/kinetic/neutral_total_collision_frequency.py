@@ -12,7 +12,9 @@ def _real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         result = np.asarray(raw, dtype=float)
@@ -71,7 +73,9 @@ def assemble_neutral_total_collision_frequency(
             raise ValueError("charge-exchange frequency must be nonnegative and (nvr,nvx,nx)")
     with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
         wall = np.zeros(shape, dtype=float)
-        wall[:, :, positive_diameter] = 2.0 * radial[:, None, None] / diameter[None, None, positive_diameter]
+        wall[:, :, positive_diameter] = (
+            2.0 * radial[:, None, None] / diameter[None, None, positive_diameter]
+        )
         total = base[None, None, :] + elastic[None, None, :] + wall
         if charge_exchange_enabled:
             total = total + charge_exchange

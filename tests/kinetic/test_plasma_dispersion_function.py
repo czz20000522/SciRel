@@ -29,7 +29,7 @@ def test_lower_half_plane_uses_analytic_continuation():
     result = evaluate_plasma_dispersion(z)["w"]
     mirrored = evaluate_plasma_dispersion(np.conj(z))["w"]
     np.testing.assert_allclose(
-        result, 2 * np.exp(-(z ** 2)) - np.conj(mirrored), rtol=2e-14, atol=2e-14
+        result, 2 * np.exp(-(z**2)) - np.conj(mirrored), rtol=2e-14, atol=2e-14
     )
 
 

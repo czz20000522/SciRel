@@ -1,4 +1,5 @@
 """Aggregate weighted circular-filament field responses."""
+
 import numpy as np
 
 from scirel.electromagnetism.greens import compute_greens

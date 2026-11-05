@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.field.permanent_ring_filaments import discretize_permanent_ring, discretize_permanent_ring as scientific_function
+from scirel.field.permanent_ring_filaments import (
+    discretize_permanent_ring,
+    discretize_permanent_ring as scientific_function,
+)
 
 
 # 验证：未旋转时必须保持两侧各 8 条、linspace Z 顺序和 source-default signs。
@@ -44,7 +47,6 @@ def test_axis_crossing_is_rejected_and_nonzero_angle_rotates():
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.field.permanent_ring_filaments import discretize_permanent_ring
 
     result = discretize_permanent_ring(2.0, 3.0, 4.0, 2.0)
     expected_z = np.linspace(2.0, 4.0, 8)

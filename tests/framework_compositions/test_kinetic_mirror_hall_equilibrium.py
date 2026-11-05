@@ -63,9 +63,7 @@ def test_public_graph_passes_current_field_to_bound_kinetic_closure():
 
     def hall_composition(payload):
         observed["hall"] = payload
-        return payload["pressure_closure"](
-            np.full((1, 2), 2.0), np.full((1, 2), 3.0)
-        )
+        return payload["pressure_closure"](np.full((1, 2), 2.0), np.full((1, 2), 3.0))
 
     inputs = {
         "r_grid": np.array([[0.2, 0.4]]),
@@ -90,9 +88,7 @@ def test_public_graph_passes_current_field_to_bound_kinetic_closure():
 def test_real_nested_graphs_close_a_manufactured_radial_profile_with_feedback():
     charge_c = 1.602176634e-19
     mass_kg = 1.67262192595e-27
-    r_grid, z_grid = np.meshgrid(
-        np.linspace(0.0, 0.4, 7), np.linspace(-1.0, 1.0, 7)
-    )
+    r_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 7), np.linspace(-1.0, 1.0, 7))
     vacuum_flux = 0.5 * r_grid**2
     np.testing.assert_allclose(
         poloidal_field_from_flux(r_grid, z_grid, vacuum_flux)["B_Z"][:, 1:-1],
@@ -139,12 +135,12 @@ def test_real_nested_graphs_close_a_manufactured_radial_profile_with_feedback():
 def test_real_nested_hall_compositions_with_filament_vacuum_and_mirror_green():
     charge_c = 1.602176634e-19
     mass_kg = 1.67262192595e-27
-    r_grid, z_grid = np.meshgrid(
-        np.linspace(0.0, 0.4, 17), np.linspace(-1.0, 1.0, 17)
-    )
+    r_grid, z_grid = np.meshgrid(np.linspace(0.0, 0.4, 17), np.linspace(-1.0, 1.0, 17))
     points = np.column_stack((r_grid.ravel(), z_grid.ravel()))
     vacuum_sources = [[0.7, -1.3, 1e6], [0.7, 1.3, 1e6]]
-    vacuum_flux = circular_filament_green_response(vacuum_sources, points)["gpsi"].reshape(r_grid.shape)
+    vacuum_flux = circular_filament_green_response(vacuum_sources, points)["gpsi"].reshape(
+        r_grid.shape
+    )
     green = build_mirror_plasma_flux_green(r_grid, z_grid)["g_psi"]
     source_index = (8, 12)
     active = np.zeros_like(r_grid, dtype=bool)
@@ -177,9 +173,7 @@ def test_real_nested_hall_compositions_with_filament_vacuum_and_mirror_green():
         "relax": 0.0,
     }
     result = solve_kinetic_mirror_hall_equilibrium(inputs)
-    without_hall = solve_kinetic_mirror_hall_equilibrium(
-        {**inputs, "hall_multiplier": 0.0}
-    )
+    without_hall = solve_kinetic_mirror_hall_equilibrium({**inputs, "hall_multiplier": 0.0})
 
     assert result["converged"] and 1 < result["iterations"] <= 8
     assert result["compatibility_messages"] == []
@@ -199,9 +193,9 @@ def test_real_nested_hall_compositions_with_filament_vacuum_and_mirror_green():
     direct = circular_filament_green_response([*vacuum_sources, plasma_source], [target])
     plasma_direct = circular_filament_green_response([plasma_source], [target])
     vacuum_field = poloidal_field_from_flux(r_grid, z_grid, vacuum_flux)
-    plasma_flux_grid = circular_filament_green_response(
-        [plasma_source], points
-    )["gpsi"].reshape(r_grid.shape)
+    plasma_flux_grid = circular_filament_green_response([plasma_source], points)["gpsi"].reshape(
+        r_grid.shape
+    )
     plasma_grid_field = poloidal_field_from_flux(r_grid, z_grid, plasma_flux_grid)
     np.testing.assert_allclose(
         result["psi"][target_index] - vacuum_flux[target_index],
@@ -216,7 +210,5 @@ def test_real_nested_hall_compositions_with_filament_vacuum_and_mirror_green():
         np.testing.assert_allclose(
             increment, plasma_grid_field[field][target_index], rtol=1e-6, atol=1e-12
         )
-        np.testing.assert_allclose(
-            increment, plasma_direct[direct_field][0], rtol=0.1, atol=0.0
-        )
+        np.testing.assert_allclose(increment, plasma_direct[direct_field][0], rtol=0.1, atol=0.0)
     assert np.max(np.abs(result["closure_state"]["relative_charge_residual"])) < 1e-9

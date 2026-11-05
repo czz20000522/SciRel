@@ -4,6 +4,7 @@ Held assets stay in the repository as review evidence but are not part of the
 public capability surface.  The default package must not expose them; tests and
 the human-review process may opt in with ``SCIREL_REVIEW_HOLD=1``.
 """
+
 from __future__ import annotations
 
 import os

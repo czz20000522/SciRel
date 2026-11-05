@@ -1,4 +1,5 @@
 """Current-weighted contraction of ordered Green responses."""
+
 import numpy as np
 
 
@@ -24,8 +25,7 @@ def superpose_current_green_field(currents, gpsi, gBR, gBZ):
                         "scalar current requires same-shape one-dimensional Green responses"
                     )
                 result = {
-                    name: current * value
-                    for name, value in zip(("psi", "BR", "BZ"), responses)
+                    name: current * value for name, value in zip(("psi", "BR", "BZ"), responses)
                 }
             elif current.ndim == 1:
                 if any(v.ndim != 2 or v.shape != responses[0].shape for v in responses):
@@ -37,8 +37,7 @@ def superpose_current_green_field(currents, gpsi, gBR, gBZ):
                         "Green source axis (columns) must equal the number of currents"
                     )
                 result = {
-                    name: value @ current
-                    for name, value in zip(("psi", "BR", "BZ"), responses)
+                    name: value @ current for name, value in zip(("psi", "BR", "BZ"), responses)
                 }
             else:
                 raise ValueError("currents must be a scalar or one-dimensional vector")

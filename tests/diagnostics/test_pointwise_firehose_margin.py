@@ -3,7 +3,6 @@ import pytest
 
 from scirel.diagnostics.pointwise_firehose_margin import (
     MU0,
-    compute_pointwise_firehose_margin,
     compute_pointwise_firehose_margin as scientific_function,
 )
 
@@ -23,14 +22,19 @@ def test_margin_matches_elementwise_closed_form_with_unsorted_samples():
 # 验证：单样本与全等 B 输入是本资产的正常输入域，无需任何导数或跨度前提。
 def test_single_sample_and_all_equal_field_are_fully_supported():
     single = scientific_function(810000.0, 740000.0, 0.93)
-    assert float(single["firehose_margin"]) == 0.93 ** 2 / MU0 + 740000.0 - 810000.0
+    assert float(single["firehose_margin"]) == 0.93**2 / MU0 + 740000.0 - 810000.0
     flat = scientific_function(
         np.array([650000.0, 820000.0, 990000.0]),
         np.array([600000.0, 690000.0, 780000.0]),
         np.ones(3),
     )
     np.testing.assert_allclose(
-        flat["firehose_margin"], (np.ones(3) * np.ones(3) / MU0 + np.array([600000.0, 690000.0, 780000.0]) - np.array([650000.0, 820000.0, 990000.0]))
+        flat["firehose_margin"],
+        (
+            np.ones(3) * np.ones(3) / MU0
+            + np.array([600000.0, 690000.0, 780000.0])
+            - np.array([650000.0, 820000.0, 990000.0])
+        ),
     )
 
 
@@ -43,9 +47,7 @@ def test_margin_is_bit_identical_to_combined_diagnostic_firehose_field():
     p_perp = rng.uniform(1.0e4, 1.0e6, size=7)
     p_parallel = rng.uniform(1.0e4, 1.0e6, size=7)
     pointwise = scientific_function(p_parallel, p_perp, magnetic_field)
-    combined = compute_firehose_mirror_margins(
-        p_parallel, p_perp, magnetic_field, dp_perp_dB=0.0
-    )
+    combined = compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field, dp_perp_dB=0.0)
     np.testing.assert_array_equal(pointwise["firehose_margin"], combined["firehose_margin"])
 
 
@@ -53,8 +55,13 @@ def test_margin_is_bit_identical_to_combined_diagnostic_firehose_field():
 def test_result_carries_no_mirror_branch_and_no_stable_flag():
     result = scientific_function(np.array([1.0e8]), np.zeros(1), np.ones(1))
     assert set(result.keys()) == {"firehose_margin"}
-    for forbidden in ("mirror_margin", "mirror_stable", "firehose_stable",
-                      "min_firehose_margin", "min_mirror_margin"):
+    for forbidden in (
+        "mirror_margin",
+        "mirror_stable",
+        "firehose_stable",
+        "min_firehose_margin",
+        "min_mirror_margin",
+    ):
         assert forbidden not in result
 
 
@@ -62,9 +69,7 @@ def test_result_carries_no_mirror_branch_and_no_stable_flag():
 def test_negative_margin_is_returned_faithfully_without_interpretation():
     result = scientific_function(np.array([1.0e9]), np.zeros(1), np.ones(1))
     assert result["firehose_margin"][0] < 0.0
-    np.testing.assert_allclose(
-        result["firehose_margin"], np.ones(1) / MU0 - 1.0e9, rtol=1e-15
-    )
+    np.testing.assert_allclose(result["firehose_margin"], np.ones(1) / MU0 - 1.0e9, rtol=1e-15)
 
 
 # 验证：shape 不一致、空输入、非有限输入与非法 mu0 都必须被拒绝。

@@ -1,4 +1,5 @@
 """Projection and validation of real x-z wavevector grids."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -70,4 +71,10 @@ def project_planar_wavevector(*, k_grid=None, theta_rad=None, kx_grid=None, kz_g
         magnitude = np.hypot(kx, kz)
     if not np.isfinite(magnitude).all():
         raise ValueError("wavevector magnitude exceeds the finite numeric domain")
-    return {"kx": kx.copy(), "kz": kz.copy(), "k": magnitude, "theta_rad": None, "projection_mode": "cartesian"}
+    return {
+        "kx": kx.copy(),
+        "kz": kz.copy(),
+        "k": magnitude,
+        "theta_rad": None,
+        "projection_mode": "cartesian",
+    }

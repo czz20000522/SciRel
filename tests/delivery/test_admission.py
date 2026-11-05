@@ -10,7 +10,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location(
-    "validate_admission", ROOT / "scripts" / "validate_admission.py")
+    "validate_admission", ROOT / "scripts" / "validate_admission.py"
+)
 admission = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(admission)
 
@@ -51,11 +52,13 @@ def _write_final(directory: Path, *, path_map_bytes=b"{}\n", **overrides) -> Pat
     entries = []
     for name in sorted({"FINAL.json", "PATH_MAP.json", "d0/source.txt", "d1/report.json"}):
         target = directory / name
-        entries.append({"path": name, "bytes": target.stat().st_size,
-                        "sha256": admission._sha(target)})
+        entries.append(
+            {"path": name, "bytes": target.stat().st_size, "sha256": admission._sha(target)}
+        )
     (directory / "FILES.json").write_text(
         json.dumps({"schema": "scirel.final-files", "files": entries}, indent=1) + "\n",
-        encoding="utf-8")
+        encoding="utf-8",
+    )
     admission._emit_root(directory)
     return directory
 
@@ -83,8 +86,10 @@ def test_alias_cannot_be_nested_under_any_control_file(tmp_path, control):
     assert any("nested under a stored file" in error for error in report["errors"])
 
 
-@pytest.mark.parametrize("aliases", [("logical", "logical/child"), ("logical/child", "logical"),
-                                     ("Logical", "logical/child")])
+@pytest.mark.parametrize(
+    "aliases",
+    [("logical", "logical/child"), ("logical/child", "logical"), ("Logical", "logical/child")],
+)
 def test_file_aliases_cannot_be_nested(tmp_path, aliases):
     mapping = dict.fromkeys(aliases, "d0/source.txt")
     final = _write_final(tmp_path / "FINAL", path_map_bytes=admission.json_bytes(mapping))
@@ -95,8 +100,7 @@ def test_file_aliases_cannot_be_nested(tmp_path, aliases):
 
 def test_tampered_final_breaks_root_binding(tmp_path):
     final = _write_final(tmp_path / "FINAL")
-    (final / "FINAL.json").write_text(
-        (final / "FINAL.json").read_text() + " ", encoding="utf-8")
+    (final / "FINAL.json").write_text((final / "FINAL.json").read_text() + " ", encoding="utf-8")
     report = admission.validate(final)
     assert report["status"] == "FAIL"
     assert any("ROOT.sha256" in error or "payload digest" in error for error in report["errors"])
@@ -159,16 +163,23 @@ def test_cli_writes_report(tmp_path):
 
 
 @pytest.mark.parametrize("encoding", ["ascii", "gbk"])
-def test_validator_cli_reports_unicode_paths_and_invalid_alias_with_restricted_stdout(tmp_path, encoding):
+def test_validator_cli_reports_unicode_paths_and_invalid_alias_with_restricted_stdout(
+    tmp_path, encoding
+):
     cwd = tmp_path / "cwd-¹"
     cwd.mkdir()
     valid = _write_final(cwd / "valid-FINAL-¹")
-    invalid = _write_final(cwd / "invalid-FINAL", path_map_bytes=admission.json_bytes({
-        "COM¹.txt": "d0/source.txt"}))
+    invalid = _write_final(
+        cwd / "invalid-FINAL", path_map_bytes=admission.json_bytes({"COM¹.txt": "d0/source.txt"})
+    )
     for final, expected, code in [(valid, "PASS", 0), (invalid, "FAIL", 1)]:
-        run = subprocess.run([sys.executable, "-S", "-B", str(ROOT / "scripts/validate_admission.py"),
-                              str(final)], cwd=cwd, capture_output=True, timeout=30,
-                             env=dict(os.environ, PYTHONIOENCODING=encoding))
+        run = subprocess.run(
+            [sys.executable, "-S", "-B", str(ROOT / "scripts/validate_admission.py"), str(final)],
+            cwd=cwd,
+            capture_output=True,
+            timeout=30,
+            env=dict(os.environ, PYTHONIOENCODING=encoding),
+        )
         assert run.stderr == b""
         assert run.returncode == code
         report = json.loads(run.stdout.decode("ascii"))
@@ -187,12 +198,16 @@ def test_unlisted_file_is_rejected(tmp_path):
 @pytest.mark.parametrize("entries", [[None], [{"path": []}], [42], ["payload"]])
 def test_malformed_manifest_never_crashes(tmp_path, entries):
     final = _write_final(tmp_path / "FINAL")
-    (final / "FILES.json").write_text(json.dumps({"schema": "scirel.final-files", "files": entries}))
+    (final / "FILES.json").write_text(
+        json.dumps({"schema": "scirel.final-files", "files": entries})
+    )
     assert admission.validate(final)["status"] == "FAIL"
 
 
-@pytest.mark.parametrize("field,value", [("identity", {"runtime": 3}), ("stage_evidence", ["bad"]),
-                                        ("stage_evidence", {"D1": []})])
+@pytest.mark.parametrize(
+    "field,value",
+    [("identity", {"runtime": 3}), ("stage_evidence", ["bad"]), ("stage_evidence", {"D1": []})],
+)
 def test_schema_object_values_are_checked(tmp_path, field, value):
     final = _write_final(tmp_path / "FINAL", **{field: value})
     assert admission.validate(final)["status"] == "FAIL"
@@ -207,8 +222,20 @@ def test_unknown_manifest_property_is_rejected(tmp_path):
     assert admission.validate(final)["status"] == "FAIL"
 
 
-@pytest.mark.parametrize("path", ["C:/outside", "C:outside", "//server/share", "a\\b",
-                                  "../outside", "a/./b", "a//b", "a/\x00b", "a\nb"])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "C:/outside",
+        "C:outside",
+        "//server/share",
+        "a\\b",
+        "../outside",
+        "a/./b",
+        "a//b",
+        "a/\x00b",
+        "a\nb",
+    ],
+)
 def test_unsafe_paths_are_rejected(path):
     errors = []
     assert not admission._safe_relative(path, errors, "test")
@@ -258,13 +285,18 @@ def test_root_wire_is_exact_lf(tmp_path):
     data = (final / "ROOT.sha256").read_bytes()
     assert b"\r" not in data
     assert [line.split(b"  ")[1] for line in data.splitlines()] == [
-        b"ROOT.sha256", b"FINAL.json", b"FILES.json", b"PATH_MAP.json"]
+        b"ROOT.sha256",
+        b"FINAL.json",
+        b"FILES.json",
+        b"PATH_MAP.json",
+    ]
 
 
 def _directory_link(link, target):
     if os.name == "nt":
-        result = subprocess.run(["cmd", "/c", "mklink", "/J", str(link), str(target)],
-                                capture_output=True, timeout=10)
+        result = subprocess.run(
+            ["cmd", "/c", "mklink", "/J", str(link), str(target)], capture_output=True, timeout=10
+        )
         assert result.returncode == 0, result.stderr
     else:
         link.symlink_to(target, target_is_directory=True)
@@ -360,16 +392,29 @@ def test_root_crlf_is_rejected(tmp_path):
 
 def test_each_declared_schema_keyword_is_enforced(tmp_path):
     schema = tmp_path / "finite-schema.json"
-    schema.write_text(json.dumps({"type": "object", "additionalProperties": False,
-        "required": ["n", "s", "a"], "properties": {
-            "n": {"type": "integer", "minimum": 1},
-            "s": {"type": "string", "minLength": 2, "pattern": "^a"},
-            "a": {"type": "array", "minItems": 1, "items": {"const": "ok"}}}}))
+    schema.write_text(
+        json.dumps(
+            {
+                "type": "object",
+                "additionalProperties": False,
+                "required": ["n", "s", "a"],
+                "properties": {
+                    "n": {"type": "integer", "minimum": 1},
+                    "s": {"type": "string", "minLength": 2, "pattern": "^a"},
+                    "a": {"type": "array", "minItems": 1, "items": {"const": "ok"}},
+                },
+            }
+        )
+    )
     errors = []
     admission.check_schema({"n": 1.0, "s": "ab", "a": ["ok"]}, schema, errors, "fixture")
     assert not errors
-    for value in [{}, {"n": True, "s": "ab", "a": ["ok"]},
-                  {"n": 0, "s": "b", "a": []}, {"n": 1, "s": "ab", "a": ["bad"], "x": 1}]:
+    for value in [
+        {},
+        {"n": True, "s": "ab", "a": ["ok"]},
+        {"n": 0, "s": "b", "a": []},
+        {"n": 1, "s": "ab", "a": ["bad"], "x": 1},
+    ]:
         errors = []
         admission.check_schema(value, schema, errors, "fixture")
         assert errors

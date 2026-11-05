@@ -1,4 +1,5 @@
 """Build a deterministic normalized frequency grid and evaluate kinetic wavevector roots over it."""
+
 from __future__ import annotations
 
 import math
@@ -112,16 +113,25 @@ def scan_kinetic_wavevectors(
     # once the public scan is actually called and its lightweight inputs are valid.
     from .kinetic_wavevector_roots import solve_kinetic_wavevector_roots
 
-    grid = scan_frequencies(omega_scale=omega_scale, omega_step=omega_step,
-                            omega_stop=omega_stop, wn=scales["wn"])
+    grid = scan_frequencies(
+        omega_scale=omega_scale, omega_step=omega_step, omega_stop=omega_stop, wn=scales["wn"]
+    )
     omegas = grid["omegas"]
     kx_start = seed_wavenumber(kx_scale=kx_scale, kn=scales["kn"])["kx_start"]
 
     solved = solve_kinetic_wavevector_roots(
-        B0=B0, qs=qs, ms=ms, ns0=scales["ns0"], Ts0=scales["Ts0"],
-        omegas=omegas, kz=kz, kx_start=kx_start,
-        tol_fun=tol_fun, tol_x=tol_x,
-        max_iterations=max_iterations, max_function_evals=max_function_evals,
+        B0=B0,
+        qs=qs,
+        ms=ms,
+        ns0=scales["ns0"],
+        Ts0=scales["Ts0"],
+        omegas=omegas,
+        kz=kz,
+        kx_start=kx_start,
+        tol_fun=tol_fun,
+        tol_x=tol_x,
+        max_iterations=max_iterations,
+        max_function_evals=max_function_evals,
     )
     return {
         "scales": scales,

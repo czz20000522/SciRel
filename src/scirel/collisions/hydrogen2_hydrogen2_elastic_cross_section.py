@@ -32,6 +32,7 @@ development evidence, not qualified-L1 provenance.  No test establishes the
 fit against an external physical cross-section reference: the saved package
 records that residual as ``validation_oracle_gap``.
 """
+
 from __future__ import annotations
 
 
@@ -80,7 +81,9 @@ def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=Fals
     selector = np.asarray(viscosity)
     if selector.shape != ():
         raise ValueError("viscosity must be a scalar boolean")
-    if not np.issubdtype(selector.dtype, np.bool_) and not np.issubdtype(selector.dtype, np.integer):
+    if not np.issubdtype(selector.dtype, np.bool_) and not np.issubdtype(
+        selector.dtype, np.integer
+    ):
         raise ValueError("viscosity must be a scalar boolean")
     clipped = clipped_energy(energy_ev, 0.03, 1.01e4)
     log_sigma = log_polynomial(np.log(clipped), _COEFFICIENTS)

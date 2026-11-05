@@ -2,7 +2,10 @@ import numpy as np
 import pytest
 import mpmath as mp
 
-from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green, build_mirror_plasma_flux_green as scientific_function
+from scirel.field.mirror_plasma_green import (
+    build_mirror_plasma_flux_green,
+    build_mirror_plasma_flux_green as scientific_function,
+)
 from scirel.field.dense_axisymmetric_green import dense_axisymmetric_green_response
 
 
@@ -18,14 +21,14 @@ def _direct_first_plane_response(r_grid, z_grid, source_r):
     # 80 digits using exact binary64 fixture values; do not weaken tolerances.
     result = np.zeros(r_grid.size)
     with mp.workdps(80):
-        a,z0 = mp.mpf(float(source_r)),mp.mpf(float(z_grid[0,0]))
-        for i,(r,z) in enumerate(zip(r_grid.ravel(),z_grid.ravel())):
-            r,z = mp.mpf(float(r)),mp.mpf(float(z))
-            if r==0 or (r==a and z==z0):
+        a, z0 = mp.mpf(float(source_r)), mp.mpf(float(z_grid[0, 0]))
+        for i, (r, z) in enumerate(zip(r_grid.ravel(), z_grid.ravel())):
+            r, z = mp.mpf(float(r)), mp.mpf(float(z))
+            if r == 0 or (r == a and z == z0):
                 continue
-            d=mp.sqrt((r+a)**2+(z-z0)**2)
-            m=4*r*a/d**2
-            result[i]=float(mp.mpf('1e-7')*d*((2-m)*mp.ellipk(m)-2*mp.ellipe(m)))
+            d = mp.sqrt((r + a) ** 2 + (z - z0) ** 2)
+            m = 4 * r * a / d**2
+            result[i] = float(mp.mpf("1e-7") * d * ((2 - m) * mp.ellipk(m) - 2 * mp.ellipe(m)))
     return result
 
 
@@ -69,7 +72,6 @@ def test_rejects_non_symmetric_axial_grid():
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.field.mirror_plasma_green import build_mirror_plasma_flux_green
 
     r_grid, z_grid = np.meshgrid(
         np.linspace(0.0, 0.3, 4),

@@ -1,4 +1,5 @@
 """Explicit outer-seed convergence relation for H/H2 generation lifecycles."""
+
 from __future__ import annotations
 
 import numpy as np

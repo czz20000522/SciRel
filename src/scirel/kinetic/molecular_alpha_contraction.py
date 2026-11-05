@@ -29,6 +29,7 @@ probe that applied the minimal ``.reshape(Alpha_CX[:,:,k].shape, order='F')``
 fix to walk the source through the probe run.  The defect is preserved
 verbatim in the immutable source and flagged in ``operator.md`` expert review.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -113,10 +114,16 @@ def contract_molecular_hydrogen_alpha_frequencies(
         raise ValueError("invalid nHP: expected (nx,) H2+ density")
     if fHp_hat.shape != (nvr, nvx, nx) or fi_hat.shape != (nvr, nvx, nx):
         raise ValueError("invalid fHp_hat/fi_hat: expected (nvr, nvx, nx)")
-    for name, arr in (("SIG_CX", SIG_CX), ("SIG_H2_H", SIG_H2_H),
-                      ("SIG_H2_P", SIG_H2_P), ("fH", fH),
-                      ("fHp_hat", fHp_hat), ("fi_hat", fi_hat),
-                      ("n", n), ("nHP", nHP)):
+    for name, arr in (
+        ("SIG_CX", SIG_CX),
+        ("SIG_H2_H", SIG_H2_H),
+        ("SIG_H2_P", SIG_H2_P),
+        ("fH", fH),
+        ("fHp_hat", fHp_hat),
+        ("fi_hat", fi_hat),
+        ("n", n),
+        ("nHP", nHP),
+    ):
         if not np.all(np.isfinite(arr)):
             raise ValueError(f"{name} contains a non-finite value")
 
@@ -131,8 +138,11 @@ def contract_molecular_hydrogen_alpha_frequencies(
     Alpha_H2_H = _batched_matrix_vectors(SIG_H2_H, fH)
     Alpha_H2_P = _batched_matrix_vectors(SIG_H2_P, fi_weighted)
 
-    for name, arr in (("Alpha_CX", Alpha_CX), ("Alpha_H2_H", Alpha_H2_H),
-                      ("Alpha_H2_P", Alpha_H2_P)):
+    for name, arr in (
+        ("Alpha_CX", Alpha_CX),
+        ("Alpha_H2_H", Alpha_H2_H),
+        ("Alpha_H2_P", Alpha_H2_P),
+    ):
         if not np.all(np.isfinite(arr)):
             raise ValueError(f"{name} contraction produced a non-finite array")
 

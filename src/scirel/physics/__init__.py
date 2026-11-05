@@ -2,7 +2,13 @@
 
 from importlib import import_module as _import_module
 
-__all__ = ["calculate_stored_thermal_energy", "calculate_main_ion_dilution_factor", "calculate_log_lambda_ee", "calculate_log_lambda_ei", "calculate_log_lambda_ii"]
+__all__ = [
+    "calculate_stored_thermal_energy",
+    "calculate_main_ion_dilution_factor",
+    "calculate_log_lambda_ee",
+    "calculate_log_lambda_ei",
+    "calculate_log_lambda_ii",
+]
 _LAZY_EXPORTS = {
     "calculate_stored_thermal_energy": ("thermal_energy", "calculate_stored_thermal_energy"),
     "calculate_main_ion_dilution_factor": ("dilution", "calculate_main_ion_dilution_factor"),
@@ -11,6 +17,7 @@ _LAZY_EXPORTS = {
     "calculate_log_lambda_ii": ("coulomb_logs", "calculate_log_lambda_ii"),
 }
 _LAZY_MODULES = frozenset(module for module, _ in _LAZY_EXPORTS.values())
+
 
 def _load_export(name):
     module_name, attribute_name = _LAZY_EXPORTS[name]
@@ -26,6 +33,7 @@ def __getattr__(name):
     if name in _LAZY_MODULES:
         return _import_module(f".{name}", __name__)
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 def __dir__():
     return sorted(set(__all__) | set(_LAZY_MODULES))

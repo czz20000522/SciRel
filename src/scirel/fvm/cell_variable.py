@@ -83,7 +83,9 @@ class CellVariable:
             if boundary_value is not None:
                 object.__setattr__(self, value_name, finite_scalar(boundary_value, value_name))
             if boundary_gradient is not None:
-                object.__setattr__(self, gradient_name, finite_scalar(boundary_gradient, gradient_name))
+                object.__setattr__(
+                    self, gradient_name, finite_scalar(boundary_gradient, gradient_name)
+                )
 
     @property
     def cell_widths(self):
@@ -116,7 +118,9 @@ class CellVariable:
         weights = (self.face_centers[1:-1] - centers[:-1]) / self.cell_spacings
         with np.errstate(all="ignore"):
             internal = (1.0 - weights) * self.value[:-1] + weights * self.value[1:]
-            return checked(np.concatenate(([self.left_face_value], internal, [self.right_face_value])))
+            return checked(
+                np.concatenate(([self.left_face_value], internal, [self.right_face_value]))
+            )
 
     def face_grad(self, *, two_point_mask=None):
         """Return ``du/dx`` at every face using local quadratic stencils."""
@@ -128,22 +132,30 @@ class CellVariable:
 
         for index in range(1, n):
             if index < n - 1:
-                coordinates = centers[index - 1:index + 2] - faces[index]
-                samples = self.value[index - 1:index + 2]
+                coordinates = centers[index - 1 : index + 2] - faces[index]
+                samples = self.value[index - 1 : index + 2]
             elif self.right_face_constraint is None:
                 widths = self.cell_widths[-2:]
                 scaled_left, scaled_right = widths / np.max(widths)
                 weight = (scaled_left - scaled_right) / (scaled_left + 3.0 * scaled_right)
                 secant = (self.value[-1] - self.value[-2]) / self.cell_spacings[-1]
-                gradients[index] = (1.0 - weight) * secant + weight * self.right_face_grad_constraint
+                gradients[index] = (
+                    1.0 - weight
+                ) * secant + weight * self.right_face_grad_constraint
                 continue
             else:
-                coordinates = np.concatenate((centers[-2:] - faces[index], [faces[-1] - faces[index]]))
+                coordinates = np.concatenate(
+                    (centers[-2:] - faces[index], [faces[-1] - faces[index]])
+                )
                 samples = np.concatenate((self.value[-2:], [self.right_face_constraint]))
 
             left, middle, right = coordinates
-            first = (middle + right) / (-left * left + left * middle + left * right - middle * right)
-            last = (-left - middle) / (left * middle - left * right - middle * right + right * right)
+            first = (middle + right) / (
+                -left * left + left * middle + left * right - middle * right
+            )
+            last = (-left - middle) / (
+                left * middle - left * right - middle * right + right * right
+            )
             gradients[index] = first * (samples[0] - samples[1]) + last * (samples[2] - samples[1])
 
         if two_point_mask is not None:
@@ -159,7 +171,9 @@ class CellVariable:
         else:
             gradients[0] = self.left_face_grad_constraint
         if self.right_face_constraint is not None:
-            gradients[-1] = (self.right_face_constraint - self.value[-1]) / (self.cell_widths[-1] / 2.0)
+            gradients[-1] = (self.right_face_constraint - self.value[-1]) / (
+                self.cell_widths[-1] / 2.0
+            )
         else:
             gradients[-1] = self.right_face_grad_constraint
         return checked(gradients)

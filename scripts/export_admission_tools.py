@@ -3,6 +3,7 @@
 Only the three named scripts and contracts/admission are read. Export does not
 inspect scientific source, catalog, private methods or external project data.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -40,8 +41,10 @@ def export(output: Path) -> dict:
         # Check all live schema definitions before exporting an unusable toolset.
         for name in ("project-final.schema.json", "files.schema.json", "path-map.schema.json"):
             admission._schema_definition(admission.read_json(contract_dir / name), name)
-        entries = [{"path": name, "bytes": path.stat().st_size, "sha256": admission._sha(path)}
-                   for name, path in sorted(files.items())]
+        entries = [
+            {"path": name, "bytes": path.stat().st_size, "sha256": admission._sha(path)}
+            for name, path in sorted(files.items())
+        ]
         output.mkdir(exist_ok=False)
         report["output_created"] = True
         for entry in entries:
@@ -51,12 +54,17 @@ def export(output: Path) -> dict:
             if target.stat().st_size != entry["bytes"] or admission._sha(target) != entry["sha256"]:
                 raise ValueError(f"tool bytes changed while copying: {entry['path']}")
         identity = hashlib.sha256(admission.json_bytes(entries)).hexdigest()
-        manifest = {"schema": "scirel.admission-tools", "files": entries,
-                    "identity_sha256": identity,
-                    "identity_rule": "SHA256 of files encoded as UTF-8 JSON, ensure_ascii=False, indent=2, trailing LF",
-                    "claim_ceiling": "Packaging and format validation only; no scientific acceptance."}
+        manifest = {
+            "schema": "scirel.admission-tools",
+            "files": entries,
+            "identity_sha256": identity,
+            "identity_rule": "SHA256 of files encoded as UTF-8 JSON, ensure_ascii=False, indent=2, trailing LF",
+            "claim_ceiling": "Packaging and format validation only; no scientific acceptance.",
+        }
         (output / "TOOLS.json").write_bytes(admission.json_bytes(manifest))
-        report.update(status="PASS", files=len(entries), identity_sha256=identity, manifest="TOOLS.json")
+        report.update(
+            status="PASS", files=len(entries), identity_sha256=identity, manifest="TOOLS.json"
+        )
     except (OSError, ValueError, TypeError, KeyError, RecursionError) as exc:
         errors.append(f"cannot export admission tools: {type(exc).__name__}: {exc}")
     if report["output_created"] and report["status"] != "PASS":

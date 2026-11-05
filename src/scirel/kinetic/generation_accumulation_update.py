@@ -28,12 +28,17 @@ def _finite_real_array(value, name):
 
 def _validated_state(state, distribution_shape):
     keys = {
-        "generation_distributions", "generation_density_m3",
-        "total_distribution", "total_density_m3", "completed_generation_index",
+        "generation_distributions",
+        "generation_density_m3",
+        "total_distribution",
+        "total_density_m3",
+        "completed_generation_index",
     }
     if not isinstance(state, Mapping) or not keys.issubset(state):
         raise ValueError("state must contain the complete accumulation fields")
-    distributions = _finite_real_array(state["generation_distributions"], "state.generation_distributions")
+    distributions = _finite_real_array(
+        state["generation_distributions"], "state.generation_distributions"
+    )
     densities = _finite_real_array(state["generation_density_m3"], "state.generation_density_m3")
     total_distribution = _finite_real_array(state["total_distribution"], "state.total_distribution")
     total_density = _finite_real_array(state["total_density_m3"], "state.total_density_m3")
@@ -84,13 +89,18 @@ def update_neutral_generation_accumulation(state, generation_distribution, gener
     distribution = _finite_real_array(generation_distribution, "generation_distribution")
     density = _finite_real_array(generation_density_m3, "generation_density_m3")
     if distribution.ndim != 3 or density.shape != (distribution.shape[2],) or np.any(density < 0.0):
-        raise ValueError("generation distribution must be finite and density must be finite nonnegative aligned fields")
+        raise ValueError(
+            "generation distribution must be finite and density must be finite nonnegative aligned fields"
+        )
     if state is None:
         distributions, densities = distribution[None].copy(), density[None].copy()
         total_distribution, total_density = distribution.copy(), density.copy()
     else:
-        prior_distributions, prior_densities, prior_total_distribution, prior_total_density = _validated_state(
-            state, distribution.shape,
+        prior_distributions, prior_densities, prior_total_distribution, prior_total_density = (
+            _validated_state(
+                state,
+                distribution.shape,
+            )
         )
         with np.errstate(over="ignore", invalid="ignore"):
             total_distribution = prior_total_distribution + distribution

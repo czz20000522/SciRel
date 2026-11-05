@@ -40,9 +40,16 @@ REFERENCE_1D = {
 
 # Member counts the reference implementation asserts for its serendipity basis.
 REFERENCE_SERENDIPITY_COUNTS = {
-    (1, 0): 1, (1, 1): 2, (1, 2): 3, (1, 3): 4,
-    (2, 1): 4, (2, 2): 8, (2, 3): 12,
-    (3, 1): 8, (3, 2): 20, (3, 3): 32,
+    (1, 0): 1,
+    (1, 1): 2,
+    (1, 2): 3,
+    (1, 3): 4,
+    (2, 1): 4,
+    (2, 2): 8,
+    (2, 3): 12,
+    (3, 1): 8,
+    (3, 2): 20,
+    (3, 3): 32,
 }
 
 
@@ -63,8 +70,9 @@ def test_one_dimensional_matches_reference_coefficients(order):
 
 @pytest.mark.parametrize("ndim,order", sorted(REFERENCE_SERENDIPITY_COUNTS))
 def test_serendipity_member_count_matches_reference(ndim, order):
-    assert modal_basis("serendipity", ndim, order).num_basis == (
-        REFERENCE_SERENDIPITY_COUNTS[(ndim, order)]
+    assert (
+        modal_basis("serendipity", ndim, order).num_basis
+        == (REFERENCE_SERENDIPITY_COUNTS[(ndim, order)])
     )
 
 
@@ -94,9 +102,7 @@ def test_members_are_orthonormal_under_independent_rule(kind, ndim, order):
     basis = modal_basis(kind, ndim, order)
     points, weights = np.polynomial.legendre.leggauss(order + 4)
     nodes = np.array(list(itertools.product(points, repeat=ndim)))
-    node_weights = np.array(
-        list(itertools.product(weights, repeat=ndim))
-    ).prod(axis=1)
+    node_weights = np.array(list(itertools.product(weights, repeat=ndim))).prod(axis=1)
     members = basis.evaluate(nodes)
     gram = np.einsum("q,qi,qj->ij", node_weights, members, members)
     assert np.abs(gram - np.eye(basis.num_basis)).max() < 1e-12
@@ -170,9 +176,7 @@ def test_gradient_of_a_known_monomial_is_exact():
     constant_only[basis.exponents().index((0, 0))] = 1.0
     points = np.array([[0.4, -0.2]])
     for direction in (0, 1):
-        assert basis.gradient(points, constant_only, direction) == pytest.approx(
-            [0.0], abs=1e-15
-        )
+        assert basis.gradient(points, constant_only, direction) == pytest.approx([0.0], abs=1e-15)
     # Selecting the (1, 0) member gives its constant reference derivative
     # sqrt(3/4); the perpendicular direction is identically zero.
     linear = np.zeros(basis.num_basis)
@@ -312,6 +316,7 @@ def test_basis_properties_are_exposed():
 
 def test_gauss_legendre_reports_nonconvergence(monkeypatch):
     import importlib
+
     module = importlib.import_module("scirel.numerics.modal_basis")
     monkeypatch.setattr(module, "_MAX_NEWTON_SWEEPS", 0)
     with pytest.raises(ValueError, match="did not converge"):

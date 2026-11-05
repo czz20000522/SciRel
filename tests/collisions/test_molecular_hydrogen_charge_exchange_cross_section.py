@@ -8,6 +8,7 @@ repair relative to the saved implementation is exercised: negative energies
 are rejected (the saved document declares nonnegative energies but its
 implementation silently clipped them to the lower endpoint).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -17,17 +18,19 @@ from scirel.collisions import (
     evaluate_molecular_hydrogen_charge_exchange_cross_section,
 )
 
-COEFFICIENTS = np.array([
-    -3.427958758517e1,
-    -7.121484125189e-2,
-    4.690466187943e-2,
-    -8.033946660540e-3,
-    -2.265090924593e-3,
-    -2.102414848737e-4,
-    1.948869487515e-4,
-    -2.208124950005e-5,
-    7.262446915488e-7,
-])
+COEFFICIENTS = np.array(
+    [
+        -3.427958758517e1,
+        -7.121484125189e-2,
+        4.690466187943e-2,
+        -8.033946660540e-3,
+        -2.265090924593e-3,
+        -2.102414848737e-4,
+        1.948869487515e-4,
+        -2.208124950005e-5,
+        7.262446915488e-7,
+    ]
+)
 
 
 def independent_janev(energy):

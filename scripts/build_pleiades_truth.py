@@ -16,6 +16,7 @@ Example::
 The fixed source revision is the independent oracle recorded by the tracked
 domain fixture under ``tests/fixtures/multi_coil_vacuum_field``.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -31,9 +32,7 @@ import numpy as np
 
 
 SOURCE_COMMIT = "0161abb3e9a1d85143c650f068ec524d672fc9ab"
-SOURCE_ARCHIVE_SHA256 = (
-    "f86cfec618690e41a669d692ff195a775f756d2a654fc3e41d8175bf328381b3"
-)
+SOURCE_ARCHIVE_SHA256 = "f86cfec618690e41a669d692ff195a775f756d2a654fc3e41d8175bf328381b3"
 COMPATIBILITY_PATCH = (
     "pleiades/fields.py and current_sets.py: collections.Iterable -> "
     "collections.abc.Iterable (Python 3.14 import only)"
@@ -45,8 +44,7 @@ COILS = (
 )
 ROOT = Path(__file__).resolve().parents[1]
 FORMAL_FIXTURE = (
-    ROOT / "tests" / "fixtures" / "multi_coil_vacuum_field"
-    / "pleiades_simple_two_coil"
+    ROOT / "tests" / "fixtures" / "multi_coil_vacuum_field" / "pleiades_simple_two_coil"
 )
 
 
@@ -121,8 +119,9 @@ def build_arrays(source_root: Path) -> dict[str, np.ndarray]:
     return fields
 
 
-def write_truth(output: Path, fields: dict[str, np.ndarray], *, source_commit: str,
-                source_archive_sha256: str) -> None:
+def write_truth(
+    output: Path, fields: dict[str, np.ndarray], *, source_commit: str, source_archive_sha256: str
+) -> None:
     output.mkdir(parents=True, exist_ok=True)
     np.savez(output / "truth.npz", **fields)
     truth = {
@@ -140,9 +139,7 @@ def write_truth(output: Path, fields: dict[str, np.ndarray], *, source_commit: s
         },
         "note": "Independent Pleiades source truth; SciRel is not used to generate this file.",
     }
-    (output / "TRUTH.json").write_text(
-        json.dumps(truth, indent=2) + "\n", encoding="utf-8"
-    )
+    (output / "TRUTH.json").write_text(json.dumps(truth, indent=2) + "\n", encoding="utf-8")
 
 
 def check_existing(output: Path, fields: dict[str, np.ndarray]) -> None:
@@ -156,28 +153,61 @@ def check_existing(output: Path, fields: dict[str, np.ndarray]) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-root", required=True, type=Path,
-                        help="external Pleiades checkout or source tree (not vendored)")
-    parser.add_argument("--source-archive", type=Path, default=None,
-                        help="optional Pleiades source archive used to verify the recorded SHA-256")
-    parser.add_argument("--source-archive-sha256", default=None,
-                        help="explicit archive SHA-256 when the archive is unavailable")
-    parser.add_argument("--source-commit", default=None,
-                        help="explicit source commit when the source tree has no .git metadata")
-    parser.add_argument("--output", required=True, type=Path,
-                        help="explicit candidate output directory (never the formal fixture)")
-    parser.add_argument("--allow-other-commit", action="store_true",
-                        help="allow a source revision other than the recorded oracle revision")
-    parser.add_argument("--allow-other-archive", action="store_true",
-                        help="allow an archive SHA-256 other than the recorded oracle archive")
-    parser.add_argument("--check", action="store_true",
-                        help="regenerate in memory and compare with an existing artifact; do not write")
+    parser.add_argument(
+        "--source-root",
+        required=True,
+        type=Path,
+        help="external Pleiades checkout or source tree (not vendored)",
+    )
+    parser.add_argument(
+        "--source-archive",
+        type=Path,
+        default=None,
+        help="optional Pleiades source archive used to verify the recorded SHA-256",
+    )
+    parser.add_argument(
+        "--source-archive-sha256",
+        default=None,
+        help="explicit archive SHA-256 when the archive is unavailable",
+    )
+    parser.add_argument(
+        "--source-commit",
+        default=None,
+        help="explicit source commit when the source tree has no .git metadata",
+    )
+    parser.add_argument(
+        "--output",
+        required=True,
+        type=Path,
+        help="explicit candidate output directory (never the formal fixture)",
+    )
+    parser.add_argument(
+        "--allow-other-commit",
+        action="store_true",
+        help="allow a source revision other than the recorded oracle revision",
+    )
+    parser.add_argument(
+        "--allow-other-archive",
+        action="store_true",
+        help="allow an archive SHA-256 other than the recorded oracle archive",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="regenerate in memory and compare with an existing artifact; do not write",
+    )
     args = parser.parse_args(argv)
 
     source_root = args.source_root.resolve()
     actual_commit = _git_head(source_root)
-    if actual_commit is not None and args.source_commit is not None and actual_commit != args.source_commit:
-        raise SystemExit(f"git HEAD {actual_commit} differs from --source-commit {args.source_commit}")
+    if (
+        actual_commit is not None
+        and args.source_commit is not None
+        and actual_commit != args.source_commit
+    ):
+        raise SystemExit(
+            f"git HEAD {actual_commit} differs from --source-commit {args.source_commit}"
+        )
     source_commit = actual_commit or args.source_commit
     if source_commit is None:
         raise SystemExit("cannot determine source commit; provide --source-commit")

@@ -1,4 +1,5 @@
 """Polynomial-logarithmic approximation for complete ``K(m)`` and ``E(m)``."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -16,7 +17,9 @@ def evaluate_complete_elliptic_integrals(modulus_squared):
         raise ValueError("modulus_squared must be finite and lie in [0,1]")
     p = 1.0 - m
     with np.errstate(divide="ignore", invalid="ignore"):
-        k_a = np.polyval((0.01451196212, 0.03742563713, 0.03590092383, 0.09666344259, 1.38629436112), p)
+        k_a = np.polyval(
+            (0.01451196212, 0.03742563713, 0.03590092383, 0.09666344259, 1.38629436112), p
+        )
         k_b = np.polyval((0.00441787012, 0.03328355346, 0.06880248576, 0.12498593597, 0.5), p)
         e_a = np.polyval((0.01736506451, 0.04757383546, 0.0626060122, 0.44325141463, 1.0), p)
         e_b = p * np.polyval((0.00526449639, 0.04069697526, 0.09200180037, 0.2499836831), p)

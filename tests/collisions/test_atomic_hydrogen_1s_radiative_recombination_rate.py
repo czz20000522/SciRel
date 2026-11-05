@@ -10,18 +10,23 @@ def _independent_formula(temperature):
     clipped = np.minimum(np.maximum(np.asarray(temperature, dtype=float), 0.1), 2.01e4)
     ionization_energy_ev = 13.58 / 1.0
     b_n = ionization_energy_ev / clipped
-    return 3.92 * 1.0e-14 * np.sqrt(ionization_energy_ev / 13.58) * (
-        b_n**1.5 / (b_n + 0.35)
-    ) * 1.0e-6
+    return (
+        3.92 * 1.0e-14 * np.sqrt(ionization_energy_ev / 13.58) * (b_n**1.5 / (b_n + 0.35)) * 1.0e-6
+    )
 
 
 def test_saved_values_and_independent_formula():
     temperature = np.array([0.1, 1.0, 10.0, 100.0, 1000.0, 20100.0])
-    expected = np.array([
-        4.556360479469746e-19, 1.4082657125240181e-19,
-        3.6320168576101056e-20, 4.038110616603453e-21,
-        1.7062227825507621e-22, 1.9630712377328093e-24,
-    ])
+    expected = np.array(
+        [
+            4.556360479469746e-19,
+            1.4082657125240181e-19,
+            3.6320168576101056e-20,
+            4.038110616603453e-21,
+            1.7062227825507621e-22,
+            1.9630712377328093e-24,
+        ]
+    )
     actual = evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)
     np.testing.assert_allclose(actual, expected, rtol=1e-15, atol=0.0)
     np.testing.assert_allclose(actual, _independent_formula(temperature), rtol=1e-15, atol=0.0)
@@ -34,7 +39,9 @@ def test_holdout_grid_matches_independent_formula():
     temperature = np.array([0.2, 2.0, 20.0, 200.0, 2000.0, 5000.0])
     np.testing.assert_allclose(
         evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature),
-        _independent_formula(temperature), rtol=1e-15, atol=0.0,
+        _independent_formula(temperature),
+        rtol=1e-15,
+        atol=0.0,
     )
 
 
@@ -50,17 +57,31 @@ def test_endpoint_clipping_and_scalar_shape():
     assert np.ndim(scalar) == 0 and np.isfinite(scalar) and scalar > 0.0
 
 
-@pytest.mark.parametrize("temperature", [
-    0.0, -5.0, np.nan, np.inf, [1.0, np.nan],
-])
+@pytest.mark.parametrize(
+    "temperature",
+    [
+        0.0,
+        -5.0,
+        np.nan,
+        np.inf,
+        [1.0, np.nan],
+    ],
+)
 def test_invalid_temperature_fails_closed(temperature):
     with pytest.raises(ValueError, match="electron_temperature_ev"):
         evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)
 
 
-@pytest.mark.parametrize("temperature", [
-    True, [True, 1.0], "10.0", ["1.0", "2.0"], 1.0 + 0j,
-])
+@pytest.mark.parametrize(
+    "temperature",
+    [
+        True,
+        [True, 1.0],
+        "10.0",
+        ["1.0", "2.0"],
+        1.0 + 0j,
+    ],
+)
 def test_nonreal_temperature_fails_closed(temperature):
     with pytest.raises(ValueError, match="real"):
         evaluate_atomic_hydrogen_1s_radiative_recombination_rate(temperature)

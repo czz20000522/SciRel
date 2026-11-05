@@ -5,6 +5,7 @@ These tests load the *isolated* candidate module by file path, so the frozen
 ``documents/scirel.geometry.complex-rectilinear-interpolation.json`` is bound to
 a test ID below.
 """
+
 from __future__ import annotations
 
 import ast
@@ -17,13 +18,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-_CANDIDATE = Path(
-    importlib.import_module(
-        "scirel.geometry.complex_rectilinear_interpolation"
-    ).__file__
-).resolve() if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1" else (
-    Path(__file__).resolve().parents[2]
-    / "src/scirel/geometry/complex_rectilinear_interpolation.py"
+_CANDIDATE = (
+    Path(
+        importlib.import_module("scirel.geometry.complex_rectilinear_interpolation").__file__
+    ).resolve()
+    if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1"
+    else (
+        Path(__file__).resolve().parents[2]
+        / "src/scirel/geometry/complex_rectilinear_interpolation.py"
+    )
 )
 
 
@@ -40,7 +43,11 @@ MODULE = _load()
 INTERPOLATE = MODULE.interpolate_complex_rectilinear_field
 
 # Deliberately non-uniform axes: a swapped or reordered axis is detected.
-AXES = {"x_m": np.array([0.0, 1.0, 2.0]), "y_m": np.array([-1.0, 0.5, 3.0]), "z_m": np.array([0.0, 0.25, 2.0])}
+AXES = {
+    "x_m": np.array([0.0, 1.0, 2.0]),
+    "y_m": np.array([-1.0, 0.5, 3.0]),
+    "z_m": np.array([0.0, 0.25, 2.0]),
+}
 
 
 def _field(seed: int = 0) -> np.ndarray:
@@ -104,7 +111,9 @@ def test_u2_t01_interior_points_match_independent_trilinear_reference():
     result = INTERPOLATE(AXES, values, points)
     assert result["valid_mask"].all()
     for index, point in enumerate(points):
-        assert result["interpolated_values"][index] == pytest.approx(_oracle(values, point), rel=1e-13, abs=1e-13)
+        assert result["interpolated_values"][index] == pytest.approx(
+            _oracle(values, point), rel=1e-13, abs=1e-13
+        )
 
 
 # --- Test U2-T02: dtype, key set, and array shape are part of the contract. ----
@@ -124,13 +133,13 @@ def test_u2_t03_valid_mask_is_tolerance_expanded_geometric_containment():
     values = _field(2)
     points = np.array(
         [
-            [1.0, 0.0, 1.0],                       # strictly inside
-            [2.0, 0.0, 1.0],                       # on the upper x face
-            [0.0, 0.0, 1.0],                       # on the lower x face
-            [1.0, 3.0 + tolerance, 1.0],           # exactly tol outside
-            [1.0, 3.0 + 4.0 * tolerance, 1.0],     # outside tol
-            [1.0, -1.0 - tolerance / 2.0, 1.0],    # inside tol, outside the box
-            [1.0, 0.0, -tolerance / 2.0],          # inside tol on the lower z face
+            [1.0, 0.0, 1.0],  # strictly inside
+            [2.0, 0.0, 1.0],  # on the upper x face
+            [0.0, 0.0, 1.0],  # on the lower x face
+            [1.0, 3.0 + tolerance, 1.0],  # exactly tol outside
+            [1.0, 3.0 + 4.0 * tolerance, 1.0],  # outside tol
+            [1.0, -1.0 - tolerance / 2.0, 1.0],  # inside tol, outside the box
+            [1.0, 0.0, -tolerance / 2.0],  # inside tol on the lower z face
         ]
     )
     result = INTERPOLATE(AXES, values, points)
@@ -146,9 +155,7 @@ def test_u2_t04_finite_source_gives_finite_values_wherever_valid_mask_is_true():
     tolerance = _tolerance()
     values = _field(3)
     generator = np.random.default_rng(11)
-    interior = generator.uniform(
-        low=[0.0, -1.0, 0.0], high=[2.0, 3.0, 2.0], size=(64, 3)
-    )
+    interior = generator.uniform(low=[0.0, -1.0, 0.0], high=[2.0, 3.0, 2.0], size=(64, 3))
     straddling = np.array(
         [
             [1.0, 3.0 + tolerance / 2.0, 1.0],
@@ -180,7 +187,10 @@ def test_u2_t05_tolerance_zone_points_are_clamped_to_the_closed_box():
     face_result = INTERPOLATE(AXES, values, on_face)
     assert clamped_result["valid_mask"].all() and face_result["valid_mask"].all()
     np.testing.assert_allclose(
-        clamped_result["interpolated_values"], face_result["interpolated_values"], rtol=0.0, atol=0.0
+        clamped_result["interpolated_values"],
+        face_result["interpolated_values"],
+        rtol=0.0,
+        atol=0.0,
     )
 
 
@@ -266,7 +276,9 @@ def test_u2_t08_source_shape_dtype_and_axis_order_conformance():
     assert node["interpolated_values"][0] == pytest.approx(7.0 + 3.0j)
     # Reading the same array through a permuted axis mapping must not reproduce it.
     permuted = INTERPOLATE(
-        {"x_m": AXES["x_m"], "y_m": AXES["z_m"], "z_m": AXES["y_m"]}, probe, np.array([[1.0, 0.5, 0.25]])
+        {"x_m": AXES["x_m"], "y_m": AXES["z_m"], "z_m": AXES["y_m"]},
+        probe,
+        np.array([[1.0, 0.5, 0.25]]),
     )
     assert permuted["interpolated_values"][0] != pytest.approx(7.0 + 3.0j)
     # Real input is accepted and promoted; higher-rank trailing axes are kept.
@@ -289,11 +301,23 @@ def test_u2_t08_source_shape_dtype_and_axis_order_conformance():
     "axes, message",
     [
         ({"x_m": [0.0, 1.0, 2.0], "y_m": [-1.0, 0.5, 3.0]}, "requires the z_m axis"),
-        ({"x_m": [0.0, 1.0, 2.0], "y_m": [[-1.0, 0.5, 3.0]], "z_m": [0.0, 1.0, 2.0]}, "must be a 1-D array"),
+        (
+            {"x_m": [0.0, 1.0, 2.0], "y_m": [[-1.0, 0.5, 3.0]], "z_m": [0.0, 1.0, 2.0]},
+            "must be a 1-D array",
+        ),
         ({"x_m": [0.0], "y_m": [-1.0, 0.5, 3.0], "z_m": [0.0, 1.0, 2.0]}, "at least two points"),
-        ({"x_m": [0.0, 1.0, 2.0], "y_m": [-1.0, 0.5, np.nan], "z_m": [0.0, 1.0, 2.0]}, "finite values"),
-        ({"x_m": [0.0, 1.0, 2.0], "y_m": [-1.0, 0.5, 0.5], "z_m": [0.0, 1.0, 2.0]}, "strictly increasing"),
-        ({"x_m": [0.0, 2.0, 1.0], "y_m": [-1.0, 0.5, 3.0], "z_m": [0.0, 1.0, 2.0]}, "strictly increasing"),
+        (
+            {"x_m": [0.0, 1.0, 2.0], "y_m": [-1.0, 0.5, np.nan], "z_m": [0.0, 1.0, 2.0]},
+            "finite values",
+        ),
+        (
+            {"x_m": [0.0, 1.0, 2.0], "y_m": [-1.0, 0.5, 0.5], "z_m": [0.0, 1.0, 2.0]},
+            "strictly increasing",
+        ),
+        (
+            {"x_m": [0.0, 2.0, 1.0], "y_m": [-1.0, 0.5, 3.0], "z_m": [0.0, 1.0, 2.0]},
+            "strictly increasing",
+        ),
         (["x_m", "y_m", "z_m"], "must be a mapping"),
     ],
 )
@@ -335,11 +359,7 @@ def test_u2_t12_declared_sibling_relation_is_structural_not_a_duplicate():
         for node in ast.walk(tree)
         if isinstance(node, ast.Import)
         for alias in node.names
-    } | {
-        node.module or ""
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-    }
+    } | {node.module or "" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
     assert not any(name == "scirel" or name.startswith("scirel.") for name in imported)
     assert not hasattr(MODULE, "sample_rectilinear_field")
     assert not hasattr(MODULE, "_axes")

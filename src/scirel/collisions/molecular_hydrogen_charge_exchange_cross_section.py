@@ -31,8 +31,8 @@ reference: the saved package records that residual as ``validation_oracle_gap``.
 This module evaluates no velocity mesh, no rate coefficient and no transport
 source; those are separate relations.
 """
-from __future__ import annotations
 
+from __future__ import annotations
 
 
 import numpy as np
@@ -43,17 +43,19 @@ __all__ = [
     "evaluate_molecular_hydrogen_charge_exchange_cross_section",
 ]
 
-_COEFFICIENTS = np.array([
-    -3.427958758517e1,
-    -7.121484125189e-2,
-    4.690466187943e-2,
-    -8.033946660540e-3,
-    -2.265090924593e-3,
-    -2.102414848737e-4,
-    1.948869487515e-4,
-    -2.208124950005e-5,
-    7.262446915488e-7,
-])
+_COEFFICIENTS = np.array(
+    [
+        -3.427958758517e1,
+        -7.121484125189e-2,
+        4.690466187943e-2,
+        -8.033946660540e-3,
+        -2.265090924593e-3,
+        -2.102414848737e-4,
+        1.948869487515e-4,
+        -2.208124950005e-5,
+        7.262446915488e-7,
+    ]
+)
 
 
 def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):

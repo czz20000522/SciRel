@@ -77,9 +77,7 @@ def census(
         for name in names:
             value = getattr(package, name, None)
             if not (
-                inspect.isfunction(value)
-                or inspect.isbuiltin(value)
-                or inspect.ismethod(value)
+                inspect.isfunction(value) or inspect.isbuiltin(value) or inspect.ismethod(value)
             ):
                 continue
             object_key = (
@@ -93,9 +91,7 @@ def census(
                     "qualified_name": f"{domain}.{name}",
                     "kind": "callable",
                     "implementation": (
-                        f"{object_key[0]}.{object_key[1]}"
-                        if object_key[0]
-                        else object_key[1]
+                        f"{object_key[0]}.{object_key[1]}" if object_key[0] else object_key[1]
                     ),
                 }
             )
@@ -126,9 +122,7 @@ def census(
             "domains": len(domains),
             "public_callables": len(exports),
             "documented_bindings": sum(
-                1
-                for item in exports
-                if (item["module"], item["symbol"]) in document_bindings
+                1 for item in exports if (item["module"], item["symbol"]) in document_bindings
             ),
             "missing": len(missing),
         },

@@ -3,11 +3,13 @@
 Single-sample and repeated/unsorted-field calls require no mirror derivative.
 The combined diagnostic consumes the same validated arithmetic kernel.
 """
+
 import numpy as np
+
 MU0 = 4e-07 * np.pi
 
 
-def _margin_kernel(magnetic_field, mu0, p_perp=0., p_parallel=0., derivative=None):
+def _margin_kernel(magnetic_field, mu0, p_perp=0.0, p_parallel=0.0, derivative=None):
     """Evaluate the local relation without losing a cancellation residual.
 
     The vectorized path preserves normal float64 operation order. If opposing
@@ -20,8 +22,9 @@ def _margin_kernel(magnetic_field, mu0, p_perp=0., p_parallel=0., derivative=Non
     their ordinary floating-point rounding.
     """
     from fractions import Fraction
+
     B, pt, pp = np.broadcast_arrays(magnetic_field, p_perp, p_parallel)
-    with np.errstate(over='ignore', invalid='ignore', under='ignore'):
+    with np.errstate(over="ignore", invalid="ignore", under="ignore"):
         square = B * B
         magnetic = square / mu0
         if derivative is None:
@@ -34,12 +37,18 @@ def _margin_kernel(magnetic_field, mu0, p_perp=0., p_parallel=0., derivative=Non
             result = magnetic + product
             scale = np.maximum(np.abs(magnetic), np.abs(product))
             opposing = (B != 0) & (np.signbit(B) != np.signbit(derivative)) & (derivative != 0)
-            product_range_loss = (np.abs(product) < np.finfo(float).tiny) & (B != 0) & (derivative != 0)
+            product_range_loss = (
+                (np.abs(product) < np.finfo(float).tiny) & (B != 0) & (derivative != 0)
+            )
         cancellation = opposing & (np.abs(result) <= 0.5 * scale)
-    exceptional = (~np.isfinite(square) | ~np.isfinite(result) |
-                   ((np.abs(square) < np.finfo(float).tiny) & (B != 0)) |
-                   ((np.abs(magnetic) < np.finfo(float).tiny) & (B != 0)) |
-                   product_range_loss | cancellation)
+    exceptional = (
+        ~np.isfinite(square)
+        | ~np.isfinite(result)
+        | ((np.abs(square) < np.finfo(float).tiny) & (B != 0))
+        | ((np.abs(magnetic) < np.finfo(float).tiny) & (B != 0))
+        | product_range_loss
+        | cancellation
+    )
     result = np.array(result, dtype=float, copy=True)
     if np.any(exceptional):
         d = None if derivative is None else np.broadcast_to(derivative, B.shape)
@@ -50,15 +59,19 @@ def _margin_kernel(magnetic_field, mu0, p_perp=0., p_parallel=0., derivative=Non
             field = Fraction.from_float(float(B[index]))
             exact = field * field / permeability
             if d is None:
-                exact += Fraction.from_float(float(pt[index])) - Fraction.from_float(float(pp[index]))
+                exact += Fraction.from_float(float(pt[index])) - Fraction.from_float(
+                    float(pp[index])
+                )
             else:
                 exact += field * Fraction.from_float(float(d[index]))
             try:
                 result[index] = float(exact)
             except OverflowError as exc:
-                raise FloatingPointError('local pressure margin must be finite; exact result exceeds float64 range') from exc
+                raise FloatingPointError(
+                    "local pressure margin must be finite; exact result exceeds float64 range"
+                ) from exc
     if not np.all(np.isfinite(result)):
-        raise FloatingPointError('local pressure margin must be finite')
+        raise FloatingPointError("local pressure margin must be finite")
     return result
 
 
@@ -78,18 +91,20 @@ def compute_pointwise_firehose_margin(p_parallel, p_perp, magnetic_field, mu0=MU
     p_perp = np.asarray(p_perp, dtype=float)
     magnetic_field = np.asarray(magnetic_field, dtype=float)
     if p_parallel.shape != p_perp.shape or p_parallel.shape != magnetic_field.shape:
-        raise ValueError('p_parallel, p_perp, and magnetic_field must have the same shape')
+        raise ValueError("p_parallel, p_perp, and magnetic_field must have the same shape")
     if p_parallel.size == 0:
-        raise ValueError('p_parallel, p_perp, and magnetic_field must be nonempty')
+        raise ValueError("p_parallel, p_perp, and magnetic_field must be nonempty")
     if not all((np.all(np.isfinite(value)) for value in (p_parallel, p_perp, magnetic_field))):
-        raise ValueError('p_parallel, p_perp, and magnetic_field must contain only finite values')
+        raise ValueError("p_parallel, p_perp, and magnetic_field must contain only finite values")
     if np.ndim(mu0) != 0 or isinstance(mu0, (list, tuple, np.ndarray)):
-        raise ValueError('mu0 must be a scalar')
+        raise ValueError("mu0 must be a scalar")
     if not np.isfinite(mu0) or mu0 <= 0.0:
-        raise ValueError('mu0 must be positive and finite')
+        raise ValueError("mu0 must be positive and finite")
     try:
         firehose_margin = _firehose_kernel(p_parallel, p_perp, magnetic_field, float(mu0))
     except FloatingPointError as exc:
         raise ValueError(str(exc)) from exc
-    return {'firehose_margin': firehose_margin}
-__all__ = ['compute_pointwise_firehose_margin', 'MU0']
+    return {"firehose_margin": firehose_margin}
+
+
+__all__ = ["compute_pointwise_firehose_margin", "MU0"]

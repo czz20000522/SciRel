@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.closures.quasineutral_reference_density import compute_reference_electron_density, compute_reference_electron_density as scientific_function
+from scirel.closures.quasineutral_reference_density import (
+    compute_reference_electron_density,
+    compute_reference_electron_density as scientific_function,
+)
 
 
 def test_reference_density_product_broadcasts_and_preserves_units():
@@ -30,7 +33,6 @@ def test_invalid_domain_fails_closed(density, charge_state):
 
 
 def test_reviewed_relation_example():
-    from scirel.closures.quasineutral_reference_density import compute_reference_electron_density
     import numpy as np
 
     result = compute_reference_electron_density(np.array([1.0e18, 2.0e18]), np.array([1.0, 3.0]))

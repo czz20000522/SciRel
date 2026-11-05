@@ -1,7 +1,13 @@
 import pytest
-from scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes, project_frank_egedal_source_modes as scientific_function
+from scirel.kinetic.frank_egedal_source_projection import (
+    project_frank_egedal_source_modes,
+    project_frank_egedal_source_modes as scientific_function,
+)
+
+
 def test_rejects_incomplete_source_state():
-    with pytest.raises((KeyError,ValueError,TypeError)): scientific_function({})
+    with pytest.raises((KeyError, ValueError, TypeError)):
+        scientific_function({})
 
 
 def test_reviewed_relation_example():
@@ -9,7 +15,6 @@ def test_reviewed_relation_example():
     import numpy as np
     from scipy.integrate import quad
     from scipy.special import hyp2f1
-    from scirel.kinetic.frank_egedal_source_projection import project_frank_egedal_source_modes
 
     # 显式 degree、无显式系数：用独立自适应积分复算 NBI 投影系数。
     angle_deg = 60.0
@@ -24,29 +29,42 @@ def test_reviewed_relation_example():
     )
     mode = projected["fractional_mode"]
     degree = 0.5
+
     def independent_mode(xi):
         # 独立重建 P/Q 组合和零点导数边界，不调用返回的 fractional_mode。
         def p(value):
             return hyp2f1(-degree, degree + 1.0, 1.0, (1.0 - value) / 2.0)
+
         def q(value):
-            return 0.5 * math.pi / math.sin(math.pi * degree) * (
-                math.cos(math.pi * degree) * p(value) - p(-value)
+            return (
+                0.5
+                * math.pi
+                / math.sin(math.pi * degree)
+                * (math.cos(math.pi * degree) * p(value) - p(-value))
             )
+
         step = 1.0e-5
         matrix = np.array(
-            [[p(0.0), q(0.0)],
-             [(p(step) - p(-step)) / (2.0 * step), (q(step) - q(-step)) / (2.0 * step)]]
+            [
+                [p(0.0), q(0.0)],
+                [(p(step) - p(-step)) / (2.0 * step), (q(step) - q(-step)) / (2.0 * step)],
+            ]
         )
         a_coeff, b_coeff = np.linalg.solve(matrix, np.array([1.0, 0.0]))
         return a_coeff * p(xi) + b_coeff * q(xi)
+
     xi_tp = projected["xi_tp_mid"]
     xi_nbi = min(max(math.cos(math.radians(angle_deg)), 0.0), xi_tp)
-    normalization = 4.0 * math.pi * quad(
-        lambda xi: float(independent_mode(xi)) ** 2,
-        0.0,
-        xi_tp,
-        epsabs=1e-12,
-    )[0]
+    normalization = (
+        4.0
+        * math.pi
+        * quad(
+            lambda xi: float(independent_mode(xi)) ** 2,
+            0.0,
+            xi_tp,
+            epsabs=1e-12,
+        )[0]
+    )
     expected = float(independent_mode(xi_nbi)) / normalization
     assert projected["degree_source"] == "caller_supplied"
     assert np.allclose(projected["degrees"], [0.5])
@@ -58,6 +76,7 @@ def test_reviewed_relation_example():
 
     # 无显式 degree 时必须调用谱端口，并原样使用它给出的 degree。
     calls = []
+
     def spectrum(xi_tp_arg, mode_count, grid_points, backend):
         calls.append((xi_tp_arg, mode_count, grid_points, backend))
         return {"degrees": np.array([0.25, 0.75])}

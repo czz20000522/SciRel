@@ -1,4 +1,5 @@
 """Direct regression tests for the explicit masked toroidal-volume relation."""
+
 from __future__ import annotations
 
 import json
@@ -11,8 +12,9 @@ from scirel.geometry import plasma_volume
 
 
 _FIXTURE = json.loads(
-    (Path(__file__).parents[1] / "fixtures/geometry/masked_toroidal_volume.json")
-    .read_text(encoding="utf-8")
+    (Path(__file__).parents[1] / "fixtures/geometry/masked_toroidal_volume.json").read_text(
+        encoding="utf-8"
+    )
 )
 
 

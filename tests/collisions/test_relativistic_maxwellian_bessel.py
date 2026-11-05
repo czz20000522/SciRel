@@ -23,6 +23,7 @@ claims they established -- the retained boundary jump, the worst differences awa
 from the boundary, and the retained input guard -- are asserted below from their
 recorded values.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -154,8 +155,12 @@ def test_the_backend_failure_is_made_and_the_call_fails_closed(monkeypatch):
     observation.
     """
     for order, value in (
-        (0, float("nan")), (0, float("inf")), (1, float("nan")), (1, float("inf")),
+        (0, float("nan")),
+        (0, float("inf")),
+        (1, float("nan")),
+        (1, float("inf")),
     ):
+
         def fake(order_index, argument, _order=order, _value=value):
             return _value if order_index == _order else float(kve(order_index, argument))
 
@@ -195,8 +200,15 @@ def test_the_error_message_states_no_domain_bound(monkeypatch):
         relativistic_maxwellian_bessel(3.25)
     message = str(raised.value).lower()
     for forbidden in (
-        "ceiling", "boundary", "threshold", "last finite", "first nan",
-        "not representable", "out of domain", "too large", "too small",
+        "ceiling",
+        "boundary",
+        "threshold",
+        "last finite",
+        "first nan",
+        "not representable",
+        "out of domain",
+        "too large",
+        "too small",
     ):
         assert forbidden not in message, forbidden
     assert "3.25" in message
@@ -213,9 +225,12 @@ def test_the_implementation_states_no_backend_threshold():
     literals.
     """
     for name in (
-        "KVE_LAST_FINITE_ARGUMENT", "KVE_FIRST_NAN_ARGUMENT",
-        "OVERFLOW_LAST_FINITE_ARGUMENT", "OVERFLOW_FIRST_ARGUMENT",
-        "KVE_LAST_FINITE_SMALL_ARGUMENT", "KVE_FIRST_INFINITE_SMALL_ARGUMENT",
+        "KVE_LAST_FINITE_ARGUMENT",
+        "KVE_FIRST_NAN_ARGUMENT",
+        "OVERFLOW_LAST_FINITE_ARGUMENT",
+        "OVERFLOW_FIRST_ARGUMENT",
+        "KVE_LAST_FINITE_SMALL_ARGUMENT",
+        "KVE_FIRST_INFINITE_SMALL_ARGUMENT",
     ):
         assert not hasattr(TARGET, name), name
     source = pathlib.Path(inspect.getfile(relativistic_maxwellian_bessel)).read_text(
@@ -298,9 +313,7 @@ def test_the_rescaled_closure_is_bounded_where_the_plain_bessel_functions_are_no
         result = relativistic_maxwellian_bessel(x)
         assert math.isfinite(result["bk0"])
         assert result["bk0"] == pytest.approx(math.exp(x) * k0(x), rel=1.0e-13)
-        assert result["bk0"] == pytest.approx(
-            math.sqrt(math.pi / (2.0 * x)), rel=1.0e-2
-        )
+        assert result["bk0"] == pytest.approx(math.sqrt(math.pi / (2.0 * x)), rel=1.0e-2)
 
 
 def test_the_closure_is_monotone_decreasing_in_x():
@@ -317,15 +330,18 @@ def test_the_closure_is_monotone_decreasing_in_x():
 # ---------------------------------------------------------------------------
 # AUDIT-B3: fail-closed validation must reject non-real coercions.
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize("bad", [
-    True,
-    False,
-    "1.0",
-    b"1.0",
-    1 + 0j,
-    [1.0],
-    np.array([1.0]),
-])
+@pytest.mark.parametrize(
+    "bad",
+    [
+        True,
+        False,
+        "1.0",
+        b"1.0",
+        1 + 0j,
+        [1.0],
+        np.array([1.0]),
+    ],
+)
 def test_non_real_coercions_are_rejected_as_invalid_arguments(bad):
     """Boolean, string, complex and non-scalar inputs are not positive scalars."""
     with pytest.raises(InvalidBesselArgumentError):

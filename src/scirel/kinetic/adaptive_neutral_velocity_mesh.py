@@ -25,6 +25,7 @@ against the saved the neutral-transport formulation implementation. The saved
 bundle's strict D1 qualification has been withdrawn; that replay is
 historical development evidence, not qualified-L1 provenance.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -37,8 +38,7 @@ __all__ = [
 def _real_array(name, value):
     try:
         if isinstance(value, (list, tuple)) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -69,7 +69,9 @@ def _insert_energy_nodes(base, requested, normalization):
     return mesh, last
 
 
-def create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_energy_ev=None, temperature_cap_ev=0.0):
+def create_adaptive_neutral_velocity_mesh(
+    nv, ion_temperature_ev, requested_energy_ev=None, temperature_cap_ev=0.0
+):
     """Return the source-equivalent ``vx``/``vr`` mesh, ``Tnorm`` and indices.
 
     Parameters
@@ -114,8 +116,16 @@ def create_adaptive_neutral_velocity_mesh(nv, ion_temperature_ev, requested_ener
     # regression tests.
     if isinstance(nv, bool) or not isinstance(nv, (int, np.integer)) or nv < 1:
         raise ValueError("nv must be a positive integer")
-    if temperature.ndim != 1 or temperature.size == 0 or not np.all(np.isfinite(temperature)) or np.any(temperature <= 0.0) or cap < 0.0:
-        raise ValueError("nv must be positive; temperatures positive and one-dimensional; cap nonnegative")
+    if (
+        temperature.ndim != 1
+        or temperature.size == 0
+        or not np.all(np.isfinite(temperature))
+        or np.any(temperature <= 0.0)
+        or cap < 0.0
+    ):
+        raise ValueError(
+            "nv must be positive; temperatures positive and one-dimensional; cap nonnegative"
+        )
     if requested.ndim != 1 or not np.all(np.isfinite(requested)):
         raise ValueError("requested_energy_ev must be a finite one-dimensional array")
     if not np.isfinite(cap):

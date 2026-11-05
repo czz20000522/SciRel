@@ -5,6 +5,7 @@ formed, which keeps a small net total observable instead of losing it to
 reduction order.  A zero net power has no defined percentage split and is
 rejected explicitly.
 """
+
 from __future__ import annotations
 
 from fractions import Fraction
@@ -21,11 +22,7 @@ def _finite_species_power_vector(value: object) -> np.ndarray:
     raw = np.asarray(value)
     if raw.shape != (_SPECIES_COUNT,):
         raise ValueError("species_power_values must be a length-four vector")
-    if (
-        np.iscomplexobj(raw)
-        or np.issubdtype(raw.dtype, np.bool_)
-        or raw.dtype.kind in {"U", "S"}
-    ):
+    if np.iscomplexobj(raw) or np.issubdtype(raw.dtype, np.bool_) or raw.dtype.kind in {"U", "S"}:
         raise ValueError("species_power_values must be real-valued and non-boolean")
     try:
         result = np.asarray(raw, dtype=float)
@@ -83,7 +80,9 @@ def compute_species_absorption_fraction(species_power_values):
         with np.errstate(over="ignore", invalid="ignore"):
             total_fraction = float(np.sum(fractions, dtype=float))
         if cancellation or not np.isfinite(total_fraction):
-            total_fraction = float(sum((Fraction.from_float(float(v)) for v in fractions), Fraction()))
+            total_fraction = float(
+                sum((Fraction.from_float(float(v)) for v in fractions), Fraction())
+            )
     except (OverflowError, ValueError) as exc:
         raise ValueError("species percentages and their total must be finite") from exc
     if not np.all(np.isfinite(fractions)) or not np.isfinite(total_fraction):

@@ -9,6 +9,7 @@ input-preserving output shape are explicit. Fit fidelity does not establish
 accuracy outside the cited experimental/model range or grant redistribution
 approval.
 """
+
 from __future__ import annotations
 
 
@@ -55,11 +56,11 @@ def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
     low = clipped < 10.0
     high = clipped >= 10.0
     if np.any(low):
-        result[low] = np.exp(
-            log_polynomial(np.log(clipped[low]), _LOW_ENERGY_COEFFICIENTS)
-        ) * 1.0e-4
+        result[low] = (
+            np.exp(log_polynomial(np.log(clipped[low]), _LOW_ENERGY_COEFFICIENTS)) * 1.0e-4
+        )
     if np.any(high):
-        result[high] = np.exp(
-            log_polynomial(np.log(clipped[high]), _HIGH_ENERGY_COEFFICIENTS)
-        ) * 1.0e-4
+        result[high] = (
+            np.exp(log_polynomial(np.log(clipped[high]), _HIGH_ENERGY_COEFFICIENTS)) * 1.0e-4
+        )
     return result

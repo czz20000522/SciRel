@@ -1,7 +1,11 @@
 import numpy as np
 import pytest
 
-from scirel.equilibrium.anisotropic_force_balance import _source_hypot, compute_anisotropic_force_balance, compute_anisotropic_force_balance as scientific_function
+from scirel.equilibrium.anisotropic_force_balance import (
+    _source_hypot,
+    compute_anisotropic_force_balance,
+    compute_anisotropic_force_balance as scientific_function,
+)
 
 
 def _grid():
@@ -10,7 +14,14 @@ def _grid():
 
 def test_constant_isotropic_pressure_has_zero_force_and_current():
     r_grid, z_grid = _grid()
-    result = scientific_function(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), np.full_like(r_grid, 2.0), np.full_like(r_grid, 2.0))
+    result = scientific_function(
+        r_grid,
+        z_grid,
+        np.zeros_like(r_grid),
+        np.ones_like(r_grid),
+        np.full_like(r_grid, 2.0),
+        np.full_like(r_grid, 2.0),
+    )
     for name in ("force_R", "force_Z", "parallel_force", "J_phi"):
         np.testing.assert_allclose(result[name], 0.0, atol=1.0e-12)
     np.testing.assert_allclose(result["firehose_margin"], 1.0)
@@ -19,11 +30,21 @@ def test_constant_isotropic_pressure_has_zero_force_and_current():
 
 def test_axis_rule_and_mask_shape_are_enforced():
     r_grid, z_grid = _grid()
-    result = scientific_function(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2)
+    result = scientific_function(
+        r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2
+    )
     np.testing.assert_allclose(result["force_R"][:, 0], 0.0)
     np.testing.assert_allclose(result["J_phi"][:, 0], 0.0)
     with pytest.raises(ValueError, match="active_mask"):
-        scientific_function(r_grid, z_grid, np.zeros_like(r_grid), np.ones_like(r_grid), 1.0 + r_grid, 1.0 + z_grid**2, np.ones((2, 2), dtype=bool))
+        scientific_function(
+            r_grid,
+            z_grid,
+            np.zeros_like(r_grid),
+            np.ones_like(r_grid),
+            1.0 + r_grid,
+            1.0 + z_grid**2,
+            np.ones((2, 2), dtype=bool),
+        )
 
 
 def test_mask_affects_diagnostic_only_and_invalid_fields_fail():
@@ -32,7 +53,9 @@ def test_mask_affects_diagnostic_only_and_invalid_fields_fail():
     bz = np.ones_like(r_grid)
     pressure = 2.0 + z_grid
     all_cells = scientific_function(r_grid, z_grid, br, bz, pressure, pressure)
-    no_cells = scientific_function(r_grid, z_grid, br, bz, pressure, pressure, active_mask=np.zeros_like(r_grid, dtype=bool))
+    no_cells = scientific_function(
+        r_grid, z_grid, br, bz, pressure, pressure, active_mask=np.zeros_like(r_grid, dtype=bool)
+    )
     np.testing.assert_array_equal(no_cells["J_phi"], all_cells["J_phi"])
     assert no_cells["parallel_force_error"] == 0.0
     assert all_cells["parallel_force_error"] > 0.0
@@ -47,12 +70,13 @@ def test_source_hypot_preserves_finite_subnormal_and_large_results():
     result = _source_hypot(np.array([1.0e-308, 1.0e308]), np.array([1.0e-308, 1.0e308]))
     assert result[0] != 0.0
     assert np.isfinite(result[0]) and np.isfinite(result[1])
-    np.testing.assert_array_equal(result, np.array([1.414213562373095e-308, 1.4142135623730951e308]))
+    np.testing.assert_array_equal(
+        result, np.array([1.414213562373095e-308, 1.4142135623730951e308])
+    )
 
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.equilibrium.anisotropic_force_balance import compute_anisotropic_force_balance
 
     r_grid, z_grid = np.meshgrid(np.linspace(0.2, 0.5, 5), np.linspace(-0.5, 0.5, 101))
     theta = 0.4 * z_grid
@@ -69,9 +93,15 @@ def test_reviewed_relation_example():
     expected_force_r = 0.4 * np.cos(2.0 * theta) + np.sin(theta) ** 2 / r_grid
     expected_force_z = -0.8 * np.sin(theta) * np.cos(theta) + np.sin(theta) * np.cos(theta) / r_grid
     expected_j_phi = 0.2 * np.cos(theta)
-    np.testing.assert_allclose(result["force_R"][2:-2], expected_force_r[2:-2], rtol=2.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(result["force_Z"][2:-2], expected_force_z[2:-2], rtol=2.0e-5, atol=1.0e-6)
-    np.testing.assert_allclose(result["J_phi"][2:-2], expected_j_phi[2:-2], rtol=2.0e-5, atol=1.0e-6)
+    np.testing.assert_allclose(
+        result["force_R"][2:-2], expected_force_r[2:-2], rtol=2.0e-5, atol=1.0e-6
+    )
+    np.testing.assert_allclose(
+        result["force_Z"][2:-2], expected_force_z[2:-2], rtol=2.0e-5, atol=1.0e-6
+    )
+    np.testing.assert_allclose(
+        result["J_phi"][2:-2], expected_j_phi[2:-2], rtol=2.0e-5, atol=1.0e-6
+    )
     np.testing.assert_allclose(result["B"], 2.0)
     np.testing.assert_allclose(result["firehose_margin"], 1.0 - 4.0e-7 * np.pi / 4.0)
 

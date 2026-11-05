@@ -1,4 +1,5 @@
 """Shared fixtures for maintained SciRel scientific contracts."""
+
 from __future__ import annotations
 
 import os
@@ -17,6 +18,7 @@ if _REVIEW_SRC.is_dir():
     import scirel.kinetic as _kinetic
     import scirel.physics as _physics
     import scirel.kinetic.dispersion as _dispersion
+
     _collisions.__path__.append(str(_REVIEW_SRC / "scirel" / "collisions"))
     _equilibrium.__path__.append(str(_REVIEW_SRC / "scirel" / "equilibrium"))
     _inference.__path__.append(str(_REVIEW_SRC / "scirel" / "inference"))

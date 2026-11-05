@@ -1,4 +1,5 @@
 """Independent checks for the bounded the profile convention algebra/grid leaf family."""
+
 import numpy as np
 import pytest
 from decimal import Decimal, localcontext
@@ -65,7 +66,9 @@ def test_coulomb_logs_match_independent_hand_formulas_and_broadcast():
     ti, ni, zi = 3.0, 2e19, 2.0
     expected_ii = 30.0 - 0.5 * np.log(ni) + 1.5 * np.log(1e3 * ti) - 3.0 * np.log(zi)
     np.testing.assert_allclose(calculate_log_lambda_ii(ti, ni, zi), expected_ii, rtol=0, atol=1e-14)
-    np.testing.assert_allclose(calculate_log_lambda_ei(te, ne) - calculate_log_lambda_ee(te, ne), 0.3)
+    np.testing.assert_allclose(
+        calculate_log_lambda_ei(te, ne) - calculate_log_lambda_ee(te, ne), 0.3
+    )
 
 
 @pytest.mark.parametrize(
@@ -117,41 +120,75 @@ def test_dilution_independent_charge_balance_system():
                 np.testing.assert_allclose(got, ni / ne, rtol=3e-14, atol=3e-15)
 
 
-@pytest.mark.parametrize("fn,c,p", [(calculate_log_lambda_ee,'31',1),(calculate_log_lambda_ei,'31.3',1)])
+@pytest.mark.parametrize(
+    "fn,c,p", [(calculate_log_lambda_ee, "31", 1), (calculate_log_lambda_ei, "31.3", 1)]
+)
 def test_electron_logs_decimal_complete_relation_and_scale_laws(fn, c, p):
     # Decimal ln is independent of NumPy's logarithm and 60-digit precision
     # makes float64 rounding the limiting scale of this gate.
     with localcontext() as ctx:
         ctx.prec = 60
-        for t in (np.nextafter(0.0,1.0), 1e-200, 0.002, 2., 1e200, np.finfo(float).max):
-            for n in (np.nextafter(0.0,1.0), 1e-100, 1e19, np.finfo(float).max):
-                expected = Decimal(c) + (Decimal.from_float(float(t))*1000).ln() - Decimal.from_float(float(n)).ln()/2
-                np.testing.assert_allclose(fn(t,n),float(expected),rtol=0,atol=3e-13)
-    a=fn(2.,1e19)
-    np.testing.assert_allclose(fn(6.,1e19)-a,np.log(3.),rtol=0,atol=1e-14)
-    np.testing.assert_allclose(fn(2.,4e19)-a,-np.log(2.),rtol=0,atol=1e-14)
+        for t in (np.nextafter(0.0, 1.0), 1e-200, 0.002, 2.0, 1e200, np.finfo(float).max):
+            for n in (np.nextafter(0.0, 1.0), 1e-100, 1e19, np.finfo(float).max):
+                expected = (
+                    Decimal(c)
+                    + (Decimal.from_float(float(t)) * 1000).ln()
+                    - Decimal.from_float(float(n)).ln() / 2
+                )
+                np.testing.assert_allclose(fn(t, n), float(expected), rtol=0, atol=3e-13)
+    a = fn(2.0, 1e19)
+    np.testing.assert_allclose(fn(6.0, 1e19) - a, np.log(3.0), rtol=0, atol=1e-14)
+    np.testing.assert_allclose(fn(2.0, 4e19) - a, -np.log(2.0), rtol=0, atol=1e-14)
 
 
 def test_ion_log_decimal_complete_relation_and_charge_scaling():
     with localcontext() as ctx:
         ctx.prec = 60
-        for t in (np.nextafter(0.0,1.0), 0.003, 3., 1e200, np.finfo(float).max):
-            for n in (np.nextafter(0.0,1.0), 2e19, np.finfo(float).max):
-                for z in (np.nextafter(0.0,1.0), 0.5, 2., np.finfo(float).max):
-                    expected = Decimal(30) - Decimal.from_float(float(n)).ln()/2 + Decimal('1.5')*(Decimal.from_float(float(t))*1000).ln()-3*Decimal.from_float(float(z)).ln()
-                    np.testing.assert_allclose(calculate_log_lambda_ii(t,n,z),float(expected),rtol=0,atol=1e-12)
-    a=calculate_log_lambda_ii(3.,2e19,2.)
-    np.testing.assert_allclose(calculate_log_lambda_ii(3.,2e19,6.)-a,-3*np.log(3.),rtol=0,atol=1e-14)
+        for t in (np.nextafter(0.0, 1.0), 0.003, 3.0, 1e200, np.finfo(float).max):
+            for n in (np.nextafter(0.0, 1.0), 2e19, np.finfo(float).max):
+                for z in (np.nextafter(0.0, 1.0), 0.5, 2.0, np.finfo(float).max):
+                    expected = (
+                        Decimal(30)
+                        - Decimal.from_float(float(n)).ln() / 2
+                        + Decimal("1.5") * (Decimal.from_float(float(t)) * 1000).ln()
+                        - 3 * Decimal.from_float(float(z)).ln()
+                    )
+                    np.testing.assert_allclose(
+                        calculate_log_lambda_ii(t, n, z), float(expected), rtol=0, atol=1e-12
+                    )
+    a = calculate_log_lambda_ii(3.0, 2e19, 2.0)
+    np.testing.assert_allclose(
+        calculate_log_lambda_ii(3.0, 2e19, 6.0) - a, -3 * np.log(3.0), rtol=0, atol=1e-14
+    )
 
 
-@pytest.mark.parametrize('bad',[True, [1.,True], '1', 1+0j, np.nan, np.inf, [], np.ma.array([1.,2.],mask=[False,True])])
+@pytest.mark.parametrize(
+    "bad",
+    [
+        True,
+        [1.0, True],
+        "1",
+        1 + 0j,
+        np.nan,
+        np.inf,
+        [],
+        np.ma.array([1.0, 2.0], mask=[False, True]),
+    ],
+)
 def test_coercion_empty_and_nonfinite_fail_closed(bad):
-    for fn,args in ((calculate_log_lambda_ee,(bad,1e19)),(calculate_log_lambda_ei,(1.,bad)),(calculate_log_lambda_ii,(1.,1e19,bad)),(calculate_main_ion_dilution_factor,(1.,bad,1.5))):
-        with pytest.raises(ValueError): fn(*args)
-    with pytest.raises(ValueError): face_to_cell(bad)
+    for fn, args in (
+        (calculate_log_lambda_ee, (bad, 1e19)),
+        (calculate_log_lambda_ei, (1.0, bad)),
+        (calculate_log_lambda_ii, (1.0, 1e19, bad)),
+        (calculate_main_ion_dilution_factor, (1.0, bad, 1.5)),
+    ):
+        with pytest.raises(ValueError):
+            fn(*args)
+    with pytest.raises(ValueError):
+        face_to_cell(bad)
 
 
 def test_dilution_unrepresentable_valid_result_raises():
-    tiny=np.nextafter(0.,1.)
+    tiny = np.nextafter(0.0, 1.0)
     with pytest.raises(FloatingPointError):
-        calculate_main_ion_dilution_factor(tiny, 1., tiny)
+        calculate_main_ion_dilution_factor(tiny, 1.0, tiny)

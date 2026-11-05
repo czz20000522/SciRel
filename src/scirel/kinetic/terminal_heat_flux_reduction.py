@@ -18,8 +18,7 @@ Q_COULOMB = 1.602177e-19
 def _real_numeric(name, value):
     try:
         if not isinstance(value, np.ndarray) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -59,7 +58,8 @@ def reduce_terminal_molecular_heat_flux(
         and np.isfinite(thermal_speed)
         and float(thermal_speed) > 0.0
         and distribution.ndim == 3
-        and distribution.shape == (
+        and distribution.shape
+        == (
             radial_velocity.size,
             axial_velocity.size,
             distribution.shape[2],
@@ -99,9 +99,10 @@ def reduce_terminal_molecular_heat_flux(
     normalized_mean_velocity = mean_velocity / thermal
     # This is an outer broadcast; keep the per-slice reduction order below
     # unchanged while avoiding Python loops over radial and spatial cells.
-    random_velocity_squared = radial_velocity[:, None, None] ** 2 + (
-        axial_velocity[None, :, None] - normalized_mean_velocity[None, None, :]
-    ) ** 2
+    random_velocity_squared = (
+        radial_velocity[:, None, None] ** 2
+        + (axial_velocity[None, :, None] - normalized_mean_velocity[None, None, :]) ** 2
+    )
 
     thermal_squared = thermal * thermal
     thermal_cubed = thermal_squared * thermal
@@ -118,9 +119,14 @@ def reduce_terminal_molecular_heat_flux(
         weighted_random_second = np.sum(weight * (random_slice @ widths))
         pressure[k] = molecule_mass * thermal_squared * weighted_random_second / (3.0 * Q_COULOMB)
         weighted_axial_second = np.sum(weight * (distribution_slice @ (widths * centered_axial**2)))
-        longitudinal_stress[k] = molecule_mass * thermal_squared * weighted_axial_second / Q_COULOMB - pressure[k]
-        random_heat_flux[k] = 0.5 * molecule_mass * thermal_cubed * np.sum(
-            weight * (random_slice @ (widths * centered_axial))
+        longitudinal_stress[k] = (
+            molecule_mass * thermal_squared * weighted_axial_second / Q_COULOMB - pressure[k]
+        )
+        random_heat_flux[k] = (
+            0.5
+            * molecule_mass
+            * thermal_cubed
+            * np.sum(weight * (random_slice @ (widths * centered_axial)))
         )
 
     total_heat_flux = (

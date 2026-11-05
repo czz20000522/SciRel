@@ -213,6 +213,7 @@ inside the relation's scientific domain; see the exact document's
 ``applicability`` and the maintained test module's envelope statement.  The
 saved bundle grants no licence: ``license_status`` is ``pending-human-decision``.
 """
+
 from __future__ import annotations
 
 import math
@@ -235,8 +236,7 @@ MODEL = "LOCAL_COLD_PLASMA"
 # so the contract does not depend on the index formatting.
 RESONANCE_MESSAGE = "cold-plasma dielectric tensor is singular at the supplied resonance"
 OVERFLOW_MESSAGE = (
-    "cold-plasma dielectric tensor arithmetic is not representable at the "
-    "supplied inputs"
+    "cold-plasma dielectric tensor arithmetic is not representable at the supplied inputs"
 )
 
 
@@ -316,9 +316,7 @@ def _is_representable_product(left, right):
     if not _is_finite(left) or not _is_finite(right):
         return False
     product = left * right
-    collapsed = np.asarray(product == 0.0) & (np.asarray(left) != 0.0) & (
-        np.asarray(right) != 0.0
-    )
+    collapsed = np.asarray(product == 0.0) & (np.asarray(left) != 0.0) & (np.asarray(right) != 0.0)
     return not bool(np.any(collapsed))
 
 
@@ -333,9 +331,7 @@ def _species_terms(item):
         mass = float(item["mass_kg"])
         collision = float(item.get("collision_rate_s_inv", 0.0))
     except (KeyError, TypeError, ValueError) as exc:
-        raise ValueError(
-            "species entries require density_m3, charge_c, and mass_kg"
-        ) from exc
+        raise ValueError("species entries require density_m3, charge_c, and mass_kg") from exc
     if (
         not np.all(np.isfinite([density, charge, mass, collision]))
         or density < 0.0
@@ -346,7 +342,6 @@ def _species_terms(item):
             "species values must be finite; density/collision nonnegative and mass positive"
         )
     return density, charge, mass, collision
-
 
 
 def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
@@ -368,13 +363,14 @@ def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
         components = [Fraction(float(field[prefix + (axis,)])) for axis in range(3)]
         squares = [component * component for component in components]
         norm_squared = sum(squares)
-        cross = ((0, -components[2], components[1]),
-                 (components[2], 0, -components[0]),
-                 (-components[1], components[0], 0))
-        sr, si, dr, di, pr, pi = map(
-            Fraction, (s.real, s.imag, d.real, d.imag, p.real, p.imag)
+        cross = (
+            (0, -components[2], components[1]),
+            (components[2], 0, -components[0]),
+            (-components[1], components[0], 0),
         )
+        sr, si, dr, di, pr, pi = map(Fraction, (s.real, s.imag, d.real, d.imag, p.real, p.imag))
         with localcontext(Context(prec=80)):
+
             def decimal(value):
                 return Decimal(value.numerator) / Decimal(value.denominator)
 
@@ -388,9 +384,7 @@ def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
                     numerator = a * a * norm_squared - b * b
                     if not numerator:
                         return 0.0
-                    value = decimal(numerator) / (
-                        norm * (decimal(a) * norm - decimal(b))
-                    )
+                    value = decimal(numerator) / (norm * (decimal(a) * norm - decimal(b)))
                 else:
                     value = decimal(a) + decimal(b) / norm
                 return float(value)
@@ -400,7 +394,8 @@ def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
                     parallel = components[i] * components[j] / norm_squared
                     perpendicular = (
                         sum(squares[k] for k in range(3) if k != i) / norm_squared
-                        if i == j else -parallel
+                        if i == j
+                        else -parallel
                     )
                     try:
                         real = component(sr * perpendicular + pr * parallel, -di * cross[i][j])
@@ -413,6 +408,7 @@ def _assemble_tensor(field, magnitude, stix_s, stix_d, stix_p):
     if not _is_finite(tensor):
         raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (final tensor assembly)")
     return tensor
+
 
 def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species):
     """Return the local cold-plasma relative dielectric tensor.
@@ -576,9 +572,7 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # off-diagonal term is forced to zero, so the species contribution is
         # dropped rather than evaluated.
         if bool(np.any(field_magnitude_collapsed)):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         # Formed in stages so that an operand the arithmetic cannot represent is
         # detected where it occurs rather than absorbed or masked further down.
         # `n q^2 / (eps0 m)` can be representable even when the numerator is not,
@@ -590,9 +584,7 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # numerator -- see the quotient guard below.
         numerator = density * charge * charge
         if not math.isfinite(numerator):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         # The divisor is checked before the division, for the mirror-image
         # failure.  `mass` is finite and strictly positive, but the *product*
         # `eps0 * m` need not be representable: for a finite subnormal mass it
@@ -602,14 +594,10 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # and it catches a non-finite mass by the same rule.
         divisor = VACUUM_PERMITTIVITY * mass
         if not math.isfinite(divisor) or divisor == 0.0:
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         plasma_frequency_squared = numerator / divisor
         if not math.isfinite(plasma_frequency_squared):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         # `wp2` is not the last quantity this arithmetic forms.  It is rescaled
         # by `1 / omega**2` -- through `omega * shifted` and `omega * denominator`
         # -- before it reaches `S`, `P` or `D`, and that denominator can itself be
@@ -631,18 +619,14 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # zero on the value the code actually formed.  The only species that now
         # leaves without contributing is one the caller declared inert, above.
         if plasma_frequency_squared == 0.0:
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         cyclotron = charge * magnitude / mass
         # The field overflow route: an infinite cyclotron term or shifted
         # frequency makes `denominator` infinite, and the accumulation then
         # evaluates `inf / inf` -- a NaN, not an infinity, so the result would be
         # masked rather than obviously wrong.
         if not _is_finite(cyclotron):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         # The cyclotron guard, and the other half of the field correction.  An
         # exactly zero cyclotron term is correct at a zero field, but it is also
         # what `q |B| / m` rounds to when the field is finite and non-zero and
@@ -657,28 +641,20 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # numerator as representable, so the question is decided here, where the
         # collapse occurs.
         if bool(np.any(np.asarray(cyclotron == 0.0) & np.asarray(magnitude != 0.0))):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         shifted = omega + 1j * collision
         if not _is_finite(shifted):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         denominator = shifted * shifted - cyclotron * cyclotron
         if not _is_finite(denominator):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         # Fail closed on an exact resonance.  Exact equality, not a tolerance: a
         # near-resonant denominator is large but finite and must stay
         # distinguishable from the singular point.  Checked after the finiteness
         # test so an unrepresentable denominator is reported as an overflow
         # rather than as a resonance.
         if np.any(denominator == 0.0):
-            raise ColdPlasmaResonanceError(
-                f"{RESONANCE_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaResonanceError(f"{RESONANCE_MESSAGE} (species index {index})")
         # Every one of the three Stix scalars is a product divided by a product,
         # and the guards above cover the *factors* of the plasma contribution and
         # the field, not the products.  A factor that is representable does not
@@ -700,21 +676,13 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # the accepted set at large field magnitudes, where the retained route
         # returns a finite tensor.
         if not _is_representable_product(omega, denominator):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         if not _is_representable_product(cyclotron, plasma_frequency_squared):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         if not _is_representable_product(plasma_frequency_squared, shifted):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         if not _is_representable_product(omega, shifted):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
         stix_s -= plasma_frequency_squared * shifted / (omega * denominator)
         stix_d += cyclotron * plasma_frequency_squared / (omega * denominator)
         stix_p -= plasma_frequency_squared / (omega * shifted)
@@ -725,9 +693,7 @@ def cold_plasma_dielectric_tensor(frequency_hz, magnetic_flux_density_t, species
         # observes the accumulator after the division, so a quotient that is
         # finite but wrong passes it.
         if not (_is_finite(stix_s) and _is_finite(stix_d) and _is_finite(stix_p)):
-            raise ColdPlasmaOverflowError(
-                f"{OVERFLOW_MESSAGE} (species index {index})"
-            )
+            raise ColdPlasmaOverflowError(f"{OVERFLOW_MESSAGE} (species index {index})")
 
     # A zero field has no direction; its response is isotropic and has no Hall
     # term.  A nonzero field whose norm collapsed was rejected above.

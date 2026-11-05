@@ -8,6 +8,7 @@ normalization.  The maintained tests re-derive every expected value from an
 in-file loop formulation of the same discrete relation plus the analytic
 uniform-floor limit. A separate intake replay compares the archived implementation.
 """
+
 from __future__ import annotations
 
 import inspect
@@ -23,8 +24,9 @@ AMU = 1.6726231e-27
 E_CH = 1.602177e-19
 
 
-def _independent_seed(vr, vx, tnorm_ev, shifted_vx_m_s, temperature_ev, mass_amu,
-                      molecule_count, cylindrical_volume):
+def _independent_seed(
+    vr, vx, tnorm_ev, shifted_vx_m_s, temperature_ev, mass_amu, molecule_count, cylindrical_volume
+):
     """Loop-per-shift formulation of the same discrete relation."""
     vth = np.sqrt(2.0 * E_CH * tnorm_ev / (mass_amu * AMU))
     radial = np.asarray(vr, dtype=float)
@@ -32,9 +34,12 @@ def _independent_seed(vr, vx, tnorm_ev, shifted_vx_m_s, temperature_ev, mass_amu
     layers = []
     exponents = []
     for shift, temperature in zip(shifted_vx_m_s, temperature_ev):
-        argument = -(
-            radial[:, None] ** 2 + (axial[None, :] - shift / vth) ** 2
-        ) * molecule_count * tnorm_ev / temperature
+        argument = (
+            -(radial[:, None] ** 2 + (axial[None, :] - shift / vth) ** 2)
+            * molecule_count
+            * tnorm_ev
+            / temperature
+        )
         seed = np.exp(np.where((-80.0 < argument) & (argument < 0.0), argument, -80.0))
         seed = seed / np.sum(cylindrical_volume * seed)
         layers.append(seed)
@@ -166,9 +171,7 @@ def test_the_exact_zero_argument_uses_the_strict_interior_clamp():
 def test_the_molecule_count_scales_the_exponent():
     single = _call(molecule_count=1)
     double = _call(molecule_count=2)
-    np.testing.assert_allclose(
-        double["exponent"], 2.0 * single["exponent"], rtol=1e-15, atol=0.0
-    )
+    np.testing.assert_allclose(double["exponent"], 2.0 * single["exponent"], rtol=1e-15, atol=0.0)
     doubled = _independent_seed(
         np.array([0.5, 1.0]),
         np.array([-1.0, 0.0, 1.0]),
@@ -208,9 +211,7 @@ def test_the_quadrature_volumes_normalize_the_seed_and_feed_the_rate_average():
         molecule_count=1,
         cylindrical_volume=volume,
     )
-    np.testing.assert_allclose(
-        np.sum(volume * seed["distribution"][:, :, 0]), 1.0, rtol=1e-15
-    )
+    np.testing.assert_allclose(np.sum(volume * seed["distribution"][:, :, 0]), 1.0, rtol=1e-15)
     rate = average_cross_section_over_maxwellian(
         particle_energy_ev=np.array([0.0, 10.0]),
         particle_mass_amu=1.0,
@@ -265,14 +266,17 @@ def test_numeric_string_scalars_raise_parameter_named_value_error(name):
         _call(**{name: "2.0"})
 
 
-@pytest.mark.parametrize("name,value", [
-    ("vr", ["0.5", "1.0"]),
-    ("vx", [False, True, False]),
-    ("shifted_vx_m_s", ["0.0"]),
-    ("temperature_ev", ["2.0"]),
-    ("cylindrical_volume", [["1.0"] * 3] * 2),
-    ("vr", [0.5 + 0j, 1.0 + 0j]),
-])
+@pytest.mark.parametrize(
+    "name,value",
+    [
+        ("vr", ["0.5", "1.0"]),
+        ("vx", [False, True, False]),
+        ("shifted_vx_m_s", ["0.0"]),
+        ("temperature_ev", ["2.0"]),
+        ("cylindrical_volume", [["1.0"] * 3] * 2),
+        ("vr", [0.5 + 0j, 1.0 + 0j]),
+    ],
+)
 def test_array_ports_reject_non_real_numeric_values(name, value):
     with pytest.raises(ValueError, match=name):
         _call(**{name: value})

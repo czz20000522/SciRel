@@ -20,6 +20,7 @@ agreement with the saved implementation on one finite case per weight path.
 The saved bundle's strict D1 qualification has been withdrawn; that replay is
 historical development evidence, not qualified-L1 provenance.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -34,7 +35,9 @@ def _real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             not isinstance(value, np.ndarray)
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         return np.asarray(value, dtype=float)

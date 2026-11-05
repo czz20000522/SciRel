@@ -1,4 +1,5 @@
 """Evaluate the finite-harmonic fluid-dispersion kinetic dielectric tensor using local special-function terms."""
+
 from __future__ import annotations
 
 import operator
@@ -10,6 +11,7 @@ _EPSILON0 = 8.854187817e-12
 _KB = 1.38064852e-23
 
 __all__ = ["evaluate_fluid_kinetic_dispersion_sum"]
+
 
 def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     """Return the fluid-dispersion conventional harmonic sum and 3x3 tensors.
@@ -121,7 +123,11 @@ def evaluate_fluid_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lm
     d_tensor[2, 2] = k_tensor[2, 2] - nx**2
 
     determinant = np.linalg.det(d_tensor)
-    if not np.all(np.isfinite(k_tensor)) or not np.all(np.isfinite(d_tensor)) or not np.isfinite(determinant):
+    if (
+        not np.all(np.isfinite(k_tensor))
+        or not np.all(np.isfinite(d_tensor))
+        or not np.isfinite(determinant)
+    ):
         raise ValueError("dispersion tensor and determinant must be finite")
     return {
         "K": k_tensor,
@@ -163,7 +169,7 @@ def _weideman_coefficients():
     length = np.sqrt(n / np.sqrt(2.0))
     theta = k * np.pi / m
     t = length * np.tan(theta / 2.0)
-    f = np.exp(-t**2) * (length**2 + t**2)
+    f = np.exp(-(t**2)) * (length**2 + t**2)
     f = np.concatenate(([0.0], f))
     coefficients = np.real(np.fft.fft(np.fft.fftshift(f))) / m2
     return length, np.flipud(coefficients[1 : n + 1])
@@ -175,7 +181,7 @@ def _zfun(z):
 
     z = complex(z)
     if z.real == 0.0:
-        return 1j * np.sqrt(np.pi) * np.exp(-z**2) * erfc(z.imag)
+        return 1j * np.sqrt(np.pi) * np.exp(-(z**2)) * erfc(z.imag)
     zc = complex(z)
     flipped = False
     if zc.imag < 0.0:
@@ -186,5 +192,5 @@ def _zfun(z):
     p = np.polyval(coefficients, zc_map)
     w = 2.0 * p / (length - 1j * zc) ** 2 + (1.0 / np.sqrt(np.pi)) / (length - 1j * zc)
     if flipped:
-        w = np.conjugate(2.0 * np.exp(-zc**2) - w)
+        w = np.conjugate(2.0 * np.exp(-(zc**2)) - w)
     return 1j * np.sqrt(np.pi) * w

@@ -3,6 +3,7 @@
 The closure is canonicalized under ``catalog/examples``. External project
 source catalogs and D0-D3 work are not test inputs for the SciRel package.
 """
+
 import json
 from pathlib import Path
 

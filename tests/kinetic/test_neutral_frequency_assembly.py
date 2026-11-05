@@ -12,7 +12,9 @@ from scirel.kinetic import (
 def test_elastic_channels_preserve_order_and_zero_channel():
     channels = [np.array([1.0e16, 0.0]), np.array([-1.0e16, 2.0]), np.array([1.0, 3.0])]
     result = sum_elastic_frequency_channels(channels)
-    np.testing.assert_array_equal(result["elastic_frequency_m_inv"], (channels[0] + channels[1]) + channels[2])
+    np.testing.assert_array_equal(
+        result["elastic_frequency_m_inv"], (channels[0] + channels[1]) + channels[2]
+    )
 
 
 def test_elastic_channels_reject_count_shape_and_nonfinite_total():

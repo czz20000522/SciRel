@@ -17,6 +17,7 @@ valid-path comparison with the saved implementation is bounded historical
 development evidence, not qualified-L1 provenance; the saved bundle's strict
 D1 qualification has been withdrawn.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -31,7 +32,9 @@ def _real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             not isinstance(value, np.ndarray)
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         return np.asarray(value, dtype=float)
@@ -91,6 +94,7 @@ def normalize_spatial_source_shape(source, x_m):
     # visibility contract; the local assembler below remains the source of
     # the returned values.
     import scipy.integrate  # noqa: F401
+
     integral = float(_trapezoid(profile, coordinates))
     if not np.isfinite(integral) or integral <= 0.0:
         raise ValueError("source must have a positive spatial integral")

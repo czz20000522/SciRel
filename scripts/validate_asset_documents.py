@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import ast
 import importlib
-import hashlib
 import inspect
 import json
 import math
@@ -15,7 +14,7 @@ import re
 import subprocess
 import sys
 import textwrap
-from typing import Any, Iterable
+from typing import Any
 
 from code_digest import source_digest
 
@@ -220,9 +219,7 @@ def _validate_discovery(value: Any) -> None:
         _fail("discovery", "must declare at least one discovery field")
     for field in ("capability", "operation"):
         if field in discovery:
-            _validate_string_list(
-                discovery[field], f"discovery.{field}", nonempty=True
-            )
+            _validate_string_list(discovery[field], f"discovery.{field}", nonempty=True)
     for field in ("model", "geometry", "boundary"):
         if field in discovery:
             _text(discovery[field], f"discovery.{field}")
@@ -240,9 +237,7 @@ def _validate_applicability(value: Any) -> None:
     keys = {"preconditions", "supported", "excluded"}
     _exact_keys(item, keys, keys, "applicability")
     for field in keys:
-        _validate_string_list(
-            item[field], f"applicability.{field}", nonempty=field != "excluded"
-        )
+        _validate_string_list(item[field], f"applicability.{field}", nonempty=field != "excluded")
 
 
 def _validate_failures(value: Any) -> None:
@@ -273,7 +268,9 @@ def _validate_public_api(value: Any) -> tuple[str, str, str]:
     module = _text(python_api["module"], "public_api.python.module")
     symbol = _text(python_api["symbol"], "public_api.python.symbol")
     signature = _text(python_api["signature"], "public_api.python.signature")
-    if not module.startswith("scirel.") or not all(part.isidentifier() for part in module.split(".")):
+    if not module.startswith("scirel.") or not all(
+        part.isidentifier() for part in module.split(".")
+    ):
         _fail("public_api.python.module", "must be an importable scirel module")
     if not symbol.isidentifier():
         _fail("public_api.python.symbol", "must be a Python identifier")
@@ -664,9 +661,7 @@ def validate_runtime(
                 document["asset_id"],
                 "canonical Python module must be a package",
             )
-        canonical_function = getattr(
-            canonical_module, python_api["canonical_symbol"], None
-        )
+        canonical_function = getattr(canonical_module, python_api["canonical_symbol"], None)
         if not callable(canonical_function):
             _fail(
                 document["asset_id"],
@@ -701,13 +696,21 @@ def validate_runtime(
             _fail(document["asset_id"], str(error))
 
 
-def _explicit_mapping_signature(document: dict[str, Any], function: Any) -> inspect.Signature | None:
+def _explicit_mapping_signature(
+    document: dict[str, Any], function: Any
+) -> inspect.Signature | None:
     """Use a reviewed complex mapping only while every bound module is unchanged."""
     path = Path(__file__).with_name("mapping_interface_bindings.json")
     if not path.is_file():
         return None
-    binding = next((row for row in json.loads(path.read_text())["records"]
-                    if row["asset_id"] == document["asset_id"]), None)
+    binding = next(
+        (
+            row
+            for row in json.loads(path.read_text())["records"]
+            if row["asset_id"] == document["asset_id"]
+        ),
+        None,
+    )
     if binding is None:
         return None
     if binding["callable"] != f"{function.__module__}.{function.__name__}":
@@ -716,13 +719,22 @@ def _explicit_mapping_signature(document: dict[str, Any], function: Any) -> insp
         module = importlib.import_module(name)
         if source_digest(module.__file__) != expected:
             _fail(document["asset_id"], f"complex mapping source binding differs: {name}")
-    actual = [{key: port[key] for key in ("name", "required", "default") if key in port}
-              for port in document["inputs"]]
+    actual = [
+        {key: port[key] for key in ("name", "required", "default") if key in port}
+        for port in document["inputs"]
+    ]
     if actual != binding["ports"]:
         _fail(document["asset_id"], "complex mapping scientific ports/defaults differ")
-    return inspect.Signature([inspect.Parameter(port["name"], inspect.Parameter.KEYWORD_ONLY,
-            default=inspect.Parameter.empty if port["required"] else port["default"])
-            for port in binding["ports"]])
+    return inspect.Signature(
+        [
+            inspect.Parameter(
+                port["name"],
+                inspect.Parameter.KEYWORD_ONLY,
+                default=inspect.Parameter.empty if port["required"] else port["default"],
+            )
+            for port in binding["ports"]
+        ]
+    )
 
 
 def _mapping_delegate(document: dict[str, Any], function: Any) -> Any:
@@ -736,15 +748,24 @@ def _mapping_delegate(document: dict[str, Any], function: Any) -> Any:
         tree = ast.parse(textwrap.dedent(inspect.getsource(function)))
         definition = tree.body[0]
         body = definition.body
-        if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        if (
+            body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
             body = body[1:]
         if len(body) != 1 or not isinstance(body[0], ast.Return):
             raise ValueError("not a transparent return")
         call = body[0].value
-        if (not isinstance(call, ast.Call) or call.args or len(call.keywords) != 1
-                or call.keywords[0].arg is not None
-                or not isinstance(call.keywords[0].value, ast.Name)
-                or call.keywords[0].value.id != "inputs"):
+        if (
+            not isinstance(call, ast.Call)
+            or call.args
+            or len(call.keywords) != 1
+            or call.keywords[0].arg is not None
+            or not isinstance(call.keywords[0].value, ast.Name)
+            or call.keywords[0].value.id != "inputs"
+        ):
             raise ValueError("not an exact **inputs forwarding call")
         reference = call.func
         attributes = []
@@ -762,40 +783,73 @@ def _mapping_delegate(document: dict[str, Any], function: Any) -> Any:
         if not callable(delegate) or delegate is function:
             raise ValueError("delegate is unavailable or recursive")
         return delegate
-    except (OSError, TypeError, AttributeError, KeyError, SyntaxError, ValueError, IndexError) as error:
-        _fail(document["asset_id"], f"TaskGraph mapping lacks a verifiable scientific delegate: {error}")
+    except (
+        OSError,
+        TypeError,
+        AttributeError,
+        KeyError,
+        SyntaxError,
+        ValueError,
+        IndexError,
+    ) as error:
+        _fail(
+            document["asset_id"],
+            f"TaskGraph mapping lacks a verifiable scientific delegate: {error}",
+        )
 
 
 def _validate_runtime_inputs(
     document: dict[str, Any], signature: inspect.Signature, *, function: Any = None
 ) -> None:
     mapping = signature.parameters.get("inputs")
-    accepts_keywords = any(parameter.kind is inspect.Parameter.VAR_KEYWORD
-                           for parameter in signature.parameters.values())
+    accepts_keywords = any(
+        parameter.kind is inspect.Parameter.VAR_KEYWORD
+        for parameter in signature.parameters.values()
+    )
     if "composition" in document and mapping is not None:
         if function is None:
             _fail(document["asset_id"], "TaskGraph mapping requires its actual callable binding")
         bound_signature = _explicit_mapping_signature(document, function)
-        if bound_signature is None and (len(signature.parameters) != 1
-                or mapping.default is not inspect.Parameter.empty
-                or mapping.kind not in (inspect.Parameter.POSITIONAL_OR_KEYWORD,
-                                        inspect.Parameter.KEYWORD_ONLY)):
-            _fail(document["asset_id"], "TaskGraph inputs mapping must be its one required callable parameter")
-        signature = bound_signature if bound_signature is not None else inspect.signature(_mapping_delegate(document, function))
-        if any(p.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
-               for p in signature.parameters.values()):
+        if bound_signature is None and (
+            len(signature.parameters) != 1
+            or mapping.default is not inspect.Parameter.empty
+            or mapping.kind
+            not in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
+        ):
+            _fail(
+                document["asset_id"],
+                "TaskGraph inputs mapping must be its one required callable parameter",
+            )
+        signature = (
+            bound_signature
+            if bound_signature is not None
+            else inspect.signature(_mapping_delegate(document, function))
+        )
+        if any(
+            p.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+            for p in signature.parameters.values()
+        ):
             _fail(document["asset_id"], "TaskGraph scientific delegate must expose explicit ports")
         documented_names = {port["name"] for port in document["inputs"]}
-        missing = {name for name, parameter in signature.parameters.items()
-                   if parameter.default is inspect.Parameter.empty and name not in documented_names}
+        missing = {
+            name
+            for name, parameter in signature.parameters.items()
+            if parameter.default is inspect.Parameter.empty and name not in documented_names
+        }
         if missing:
-            _fail(document["asset_id"], f"required scientific inputs are undocumented: {sorted(missing)}")
+            _fail(
+                document["asset_id"],
+                f"required scientific inputs are undocumented: {sorted(missing)}",
+            )
     elif "composition" in document and accepts_keywords:
         if function is None:
             _fail(document["asset_id"], "TaskGraph keywords require their actual callable binding")
         bound_signature = _explicit_mapping_signature(document, function)
         if bound_signature is None:
-            _fail(document["asset_id"], "TaskGraph keywords require an explicit scientific port binding")
+            _fail(
+                document["asset_id"],
+                "TaskGraph keywords require an explicit scientific port binding",
+            )
         signature = bound_signature
     accepts_keywords = any(
         parameter.kind is inspect.Parameter.VAR_KEYWORD
@@ -803,14 +857,13 @@ def _validate_runtime_inputs(
     )
     documented_names = {port["name"] for port in document["inputs"]}
     undocumented = sorted(
-        name for name, parameter in signature.parameters.items()
-        if parameter.kind not in (
-            inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD
-        ) and name not in documented_names
+        name
+        for name, parameter in signature.parameters.items()
+        if parameter.kind not in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD)
+        and name not in documented_names
     )
     if undocumented:
-        _fail(document["asset_id"],
-              f"explicit callable inputs are undocumented: {undocumented}")
+        _fail(document["asset_id"], f"explicit callable inputs are undocumented: {undocumented}")
     for port in document["inputs"]:
         name = port["name"]
         parameter = signature.parameters.get(name)
@@ -875,14 +928,10 @@ def main() -> int:
         documents = load_document_set(args.documents_dir.resolve())
         if args.check_runtime:
             for document in documents:
-                validate_runtime(
-                    document, installed_runtime=args.installed_runtime
-                )
+                validate_runtime(document, installed_runtime=args.installed_runtime)
         if args.execute_examples:
             for document in documents:
-                execute_example(
-                    document, installed_runtime=args.installed_runtime
-                )
+                execute_example(document, installed_runtime=args.installed_runtime)
     except (AssetDocumentError, ImportError, AttributeError) as error:
         print(f"asset document validation failed: {error}", file=sys.stderr)
         return 1
@@ -893,9 +942,9 @@ def main() -> int:
                 "asset_count": len(documents),
                 "asset_ids": sorted(document["asset_id"] for document in documents),
                 "runtime_checked": args.check_runtime,
-                "runtime_origin": (
-                    "installed" if args.installed_runtime else "source"
-                ) if args.check_runtime else None,
+                "runtime_origin": ("installed" if args.installed_runtime else "source")
+                if args.check_runtime
+                else None,
                 "examples_executed": args.execute_examples,
             },
             ensure_ascii=False,

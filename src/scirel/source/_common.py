@@ -1,13 +1,12 @@
 """Shared grid validation and stable discrete profile normalization."""
+
 from __future__ import annotations
 import numpy as np
 
 
 def grid(rho_norm, vpr, drho_norm):
     values = []
-    for value, name in zip(
-        (rho_norm, vpr, drho_norm), ("rho_norm", "vpr", "drho_norm")
-    ):
+    for value, name in zip((rho_norm, vpr, drho_norm), ("rho_norm", "vpr", "drho_norm")):
         a = np.asarray(value)
         if np.ma.isMaskedArray(value) or a.ndim != 1 or a.size == 0 or a.dtype.kind not in "iuf":
             raise ValueError(f"{name} must be a nonempty one-dimensional real array")
@@ -66,6 +65,10 @@ def normalize_log_shape(log_shape, weights, total):
     # destroy the requested discrete integral. The relative gate is fixed at
     # 64 float64 epsilons, with no absolute floor that could hide a tiny total.
     integral = np.sum(cast_result.astype(np.longdouble) * weights, dtype=np.longdouble)
-    if total != 0 and abs((integral - np.longdouble(total)) / np.longdouble(total)) > 64 * np.finfo(np.float64).eps:
+    if (
+        total != 0
+        and abs((integral - np.longdouble(total)) / np.longdouble(total))
+        > 64 * np.finfo(np.float64).eps
+    ):
         raise FloatingPointError("float64 rounding cannot preserve the profile integral")
     return cast_result

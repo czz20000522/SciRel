@@ -3,11 +3,12 @@
 These tests are written before the corrected namespace exists.  They encode the
 finite-domain contract selected for the SciRel successor, not source fidelity.
 """
+
 import numpy as np
 import pytest
 
 from scirel.electromagnetism import ArbitraryPoints, Device, compute_greens
-from scirel.geometry import Mesh, PointsMesh
+from scirel.geometry import PointsMesh
 
 
 def test_origin_theta_is_rejected_as_undefined():

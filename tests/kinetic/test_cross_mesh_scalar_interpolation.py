@@ -1,4 +1,5 @@
 """Direct contract tests for the neutral-transport formulation spatial scalar mesh handoff."""
+
 from __future__ import annotations
 
 import numpy as np

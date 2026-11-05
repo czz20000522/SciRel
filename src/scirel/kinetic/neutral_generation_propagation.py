@@ -1,4 +1,5 @@
 """the neutral-transport formulation first-flight and scattered-generation bidirectional propagation."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -28,18 +29,27 @@ def _propagate_branch(generation, coefficient, source_term, indices, forward):
     if forward:
         for k in range(generation.shape[2] - 1):
             generation[:, indices, k + 1] = (
-                generation[:, indices, k] * coefficient[:, indices, k]
-                + source_term[:, indices, k]
+                generation[:, indices, k] * coefficient[:, indices, k] + source_term[:, indices, k]
             )
     else:
         for k in range(generation.shape[2] - 1, 0, -1):
             generation[:, indices, k - 1] = (
-                generation[:, indices, k] * coefficient[:, indices, k]
-                + source_term[:, indices, k]
+                generation[:, indices, k] * coefficient[:, indices, k] + source_term[:, indices, k]
             )
 
 
-def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, incoming_boundary=None, scattered_source_distribution=None):
+def propagate_neutral_generation(
+    vx,
+    Ak,
+    Bk,
+    Fk,
+    Ck,
+    Dk,
+    Gk,
+    generation_kind,
+    incoming_boundary=None,
+    scattered_source_distribution=None,
+):
     """Return one normalized neutral distribution generation F.
 
     ``vx`` is dimensionless u_x=v_x/Vth. Ak/Ck are dimensionless, Bk/Dk
@@ -52,10 +62,19 @@ def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, in
         for name, value in zip(("Ak", "Bk", "Fk", "Ck", "Dk", "Gk"), (Ak, Bk, Fk, Ck, Dk, Gk))
     ]
     a, b, f, c, d, g = coefficients
-    if axial.ndim != 1 or any(value.ndim != 3 or value.shape != a.shape for value in coefficients) or a.shape[1] != axial.size:
+    if (
+        axial.ndim != 1
+        or any(value.ndim != 3 or value.shape != a.shape for value in coefficients)
+        or a.shape[1] != axial.size
+    ):
         raise ValueError("vx and coefficient fields are invalid")
     positive, negative = axial > 0.0, axial < 0.0
-    if not np.any(positive) or not np.any(negative) or not isinstance(generation_kind, str) or generation_kind not in ("first_flight", "scattered"):
+    if (
+        not np.any(positive)
+        or not np.any(negative)
+        or not isinstance(generation_kind, str)
+        or generation_kind not in ("first_flight", "scattered")
+    ):
         raise ValueError("vx branches or generation_kind are invalid")
     if a.shape[2] < 1:
         raise ValueError("nx must be at least one for generation propagation")
@@ -79,12 +98,8 @@ def propagate_neutral_generation(vx, Ak, Bk, Fk, Ck, Dk, Gk, generation_kind, in
         with np.errstate(over="ignore", invalid="ignore"):
             positive_source = np.zeros_like(b)
             negative_source = np.zeros_like(d)
-            positive_source[:, :, :-1] = b[:, :, :-1] * (
-                source[:, :, 1:] + source[:, :, :-1]
-            )
-            negative_source[:, :, 1:] = d[:, :, 1:] * (
-                source[:, :, 1:] + source[:, :, :-1]
-            )
+            positive_source[:, :, :-1] = b[:, :, :-1] * (source[:, :, 1:] + source[:, :, :-1])
+            negative_source[:, :, 1:] = d[:, :, 1:] * (source[:, :, 1:] + source[:, :, :-1])
             _propagate_branch(generation, a, positive_source, positive, True)
             _propagate_branch(generation, c, negative_source, negative, False)
     if not np.all(np.isfinite(generation)):

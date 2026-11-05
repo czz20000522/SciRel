@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from scirel.closures.hall_two_fluid_pressure import close_hall_two_fluid_pressure, close_hall_two_fluid_pressure as scientific_function
+from scirel.closures.hall_two_fluid_pressure import (
+    close_hall_two_fluid_pressure,
+    close_hall_two_fluid_pressure as scientific_function,
+)
 
 
 def _law(b, psi):
@@ -11,9 +14,13 @@ def _law(b, psi):
 def test_callable_profiles_and_default_ion_pressure_decomposition():
     b = np.array([[1.0, 2.0]])
     psi = np.array([[0.2, 0.4]])
-    result = scientific_function(b, psi, _law, lambda b, psi: 1.0e18 + psi, lambda b, psi: 1.0 + psi, 3.0)
+    result = scientific_function(
+        b, psi, _law, lambda b, psi: 1.0e18 + psi, lambda b, psi: 1.0 + psi, 3.0
+    )
     np.testing.assert_allclose(result["electron_density"], result["ion_density"])
-    np.testing.assert_allclose(result["ion_p_parallel"], result["p_parallel"] - result["electron_pressure"])
+    np.testing.assert_allclose(
+        result["ion_p_parallel"], result["p_parallel"] - result["electron_pressure"]
+    )
     np.testing.assert_allclose(result["electron_p_perpendicular"], result["electron_pressure"])
 
 
@@ -23,7 +30,6 @@ def test_negative_derived_ion_moment_fails_closed():
 
 
 def test_reviewed_relation_example():
-    from scirel.closures.hall_two_fluid_pressure import close_hall_two_fluid_pressure
     import numpy as np
 
     def law(b, psi):
@@ -35,5 +41,10 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(result["p_parallel"], [[6.2, 7.4]])
     np.testing.assert_allclose(result["p_perpendicular"], [[5.4, 6.8]])
     np.testing.assert_allclose(result["electron_density"], result["ion_density"])
-    np.testing.assert_allclose(result["ion_p_parallel"] + result["electron_p_parallel"], result["p_parallel"])
-    np.testing.assert_allclose(result["ion_p_perpendicular"] + result["electron_p_perpendicular"], result["p_perpendicular"])
+    np.testing.assert_allclose(
+        result["ion_p_parallel"] + result["electron_p_parallel"], result["p_parallel"]
+    )
+    np.testing.assert_allclose(
+        result["ion_p_perpendicular"] + result["electron_p_perpendicular"],
+        result["p_perpendicular"],
+    )

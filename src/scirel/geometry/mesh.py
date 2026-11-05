@@ -1,4 +1,5 @@
 """Finite point and rectangular meshes in cylindrical ``(R, Z)`` space."""
+
 from __future__ import annotations
 
 from abc import ABCMeta
@@ -75,13 +76,22 @@ class Mesh(metaclass=ABCMeta):
             r_values, z_values = array
             if r_values.ndim != 2 or z_values.shape != r_values.shape:
                 raise ValueError("structured coordinates must be matching 2-D arrays")
-            expected_r = np.broadcast_to(np.linspace(r_values.min(), r_values.max(), r_values.shape[1]), r_values.shape)
-            expected_z = np.broadcast_to(np.linspace(z_values.min(), z_values.max(), z_values.shape[0])[:, None], z_values.shape)
+            expected_r = np.broadcast_to(
+                np.linspace(r_values.min(), r_values.max(), r_values.shape[1]), r_values.shape
+            )
+            expected_z = np.broadcast_to(
+                np.linspace(z_values.min(), z_values.max(), z_values.shape[0])[:, None],
+                z_values.shape,
+            )
             if not np.array_equal(r_values, expected_r) or not np.array_equal(z_values, expected_z):
                 raise ValueError("structured coordinates must form a regular rectangular grid")
             return RectMesh(
-                rmin=float(r_values.min()), rmax=float(r_values.max()), nr=r_values.shape[1],
-                zmin=float(z_values.min()), zmax=float(z_values.max()), nz=z_values.shape[0],
+                rmin=float(r_values.min()),
+                rmax=float(r_values.max()),
+                nr=r_values.shape[1],
+                zmin=float(z_values.min()),
+                zmax=float(z_values.max()),
+                nz=z_values.shape[0],
             )
         raise ValueError("expected Nx2, 2xN, or 2xNyxNx coordinates")
 
@@ -106,6 +116,7 @@ class PointsMesh(Mesh):
 
 class RChord(PointsMesh):
     """Radial chord at fixed Z."""
+
     def __init__(self, rpts: Iterable[float], z0: float = 0.0):
         values = np.asarray(rpts)
         super().__init__(rpts, float(z0) * np.ones(len(values)))
@@ -113,6 +124,7 @@ class RChord(PointsMesh):
 
 class ZChord(PointsMesh):
     """Vertical chord at fixed R."""
+
     def __init__(self, zpts: Iterable[float], r0: float = 0.0):
         values = np.asarray(zpts)
         super().__init__(float(r0) * np.ones(len(values)), zpts)
@@ -120,6 +132,7 @@ class ZChord(PointsMesh):
 
 class SphericalRChord(PointsMesh):
     """Chord of varying spherical radius at a fixed angle in degrees."""
+
     def __init__(self, rpts: Iterable[float], theta0: float = 0.0):
         radius = np.asarray(rpts, dtype=float)
         angle = np.deg2rad(theta0)
@@ -128,6 +141,7 @@ class SphericalRChord(PointsMesh):
 
 class ThetaChord(PointsMesh):
     """Chord of varying polar angle at fixed spherical radius in degrees."""
+
     def __init__(self, tpts: Iterable[float], r0: float = 1.0):
         angle = np.deg2rad(np.asarray(tpts, dtype=float))
         super().__init__(float(r0) * np.sin(angle), float(r0) * np.cos(angle))

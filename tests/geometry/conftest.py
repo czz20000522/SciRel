@@ -7,6 +7,7 @@ reachable from ``tests/cross_domain/axisymmetric_equilibrium_grid_support``
 module as a root plugin. The plugin is the single definition site; the local
 conftest discovery path reuses the same module.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -47,7 +48,7 @@ def equilibrium():
 def axes():
     """The standard solver grid and a matching all-false PEC mask."""
 
-    def build(*, x=( -0.5, 0.5, 9), y=(-0.5, 0.5, 9), z=(-0.4, 0.4, 7)):
+    def build(*, x=(-0.5, 0.5, 9), y=(-0.5, 0.5, 9), z=(-0.4, 0.4, 7)):
         x_axis = np.linspace(*x)
         y_axis = np.linspace(*y)
         z_axis = np.linspace(*z)

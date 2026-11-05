@@ -4,6 +4,7 @@ In-range target nodes use the saved linear interpolation; nodes outside the
 source mesh remain exactly zero. The saved bundle is historical development
 evidence, not a qualified D1 source or an approved scientific asset.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -14,8 +15,7 @@ __all__ = ["interpolate_scalar_across_mesh"]
 def _real_1d(value, name):
     try:
         if isinstance(value, (list, tuple)) and any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
+            isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
         ):
             raise ValueError
         raw = np.asarray(value)
@@ -59,13 +59,14 @@ def interpolate_scalar_across_mesh(fa, xa, xb, do_warn=0):
     # call.  The interpolation itself is assembled locally below so the
     # transfer has no callable-object state.
     import scipy.interpolate  # noqa: F401
+
     # ``searchsorted`` gives the two source cells in one vectorized pass;
     # unlike a callable interpolator this keeps the transfer self-contained
     # and makes the zero-filled exterior explicit.
     right = np.searchsorted(xa, xb[okk], side="right").clip(1, xa.size - 1)
     left = right - 1
     fraction = (xb[okk] - xa[left]) / (xa[right] - xa[left])
-    fb[k0:k1 + 1] = fa[left] + fraction * (fa[right] - fa[left])
+    fb[k0 : k1 + 1] = fa[left] + fraction * (fa[right] - fa[left])
     if do_warn != 0:
         from warnings import warn
 

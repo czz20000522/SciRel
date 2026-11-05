@@ -1,4 +1,5 @@
 """Axisymmetric gyrotropic pressure-tensor force and current closure."""
+
 from __future__ import annotations
 
 import math
@@ -52,40 +53,55 @@ def compute_anisotropic_force_balance(
     dimensionless parallel-force and firehose diagnostics used by the graph
     solvers.
     """
-    arrays = [np.asarray(value, dtype=float) for value in
-              (r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular)]
+    arrays = [
+        np.asarray(value, dtype=float)
+        for value in (r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular)
+    ]
     shape = arrays[0].shape
-    if any(value.ndim != 2 or value.shape != shape or not np.all(np.isfinite(value))
-           for value in arrays):
+    if any(
+        value.ndim != 2 or value.shape != shape or not np.all(np.isfinite(value))
+        for value in arrays
+    ):
         raise ValueError("R, Z, field, and pressure inputs must be finite same-shape [Z,R] arrays")
     r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular = arrays
     r_axis, z_axis = r_grid[0], z_grid[:, 0]
-    if (r_axis.size < 3 or z_axis.size < 3
-            or not np.allclose(r_grid, r_axis[None, :])
-            or not np.allclose(z_grid, z_axis[:, None])):
+    if (
+        r_axis.size < 3
+        or z_axis.size < 3
+        or not np.allclose(r_grid, r_axis[None, :])
+        or not np.allclose(z_grid, z_axis[:, None])
+    ):
         raise ValueError("a rectilinear R-Z grid with at least 3 points per axis is required")
-    if (r_axis[0] < 0.0 or np.any(np.diff(r_axis) <= 0.0)
-            or np.any(np.diff(z_axis) <= 0.0)
-            or np.any(p_parallel < 0.0) or np.any(p_perpendicular < 0.0)):
+    if (
+        r_axis[0] < 0.0
+        or np.any(np.diff(r_axis) <= 0.0)
+        or np.any(np.diff(z_axis) <= 0.0)
+        or np.any(p_parallel < 0.0)
+        or np.any(p_perpendicular < 0.0)
+    ):
         raise ValueError("grid axes and pressures are invalid")
-    mask = np.ones(shape, dtype=bool) if active_mask is None else np.asarray(active_mask, dtype=bool)
+    mask = (
+        np.ones(shape, dtype=bool) if active_mask is None else np.asarray(active_mask, dtype=bool)
+    )
     if mask.shape != shape:
         raise ValueError("active_mask must match the R-Z grid")
 
-    result = pressure_divergence(
-        r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular
-    )
+    result = pressure_divergence(r_grid, z_grid, b_r, b_z, p_parallel, p_perpendicular)
     force_norm = np.hypot(result["force_R"], result["force_Z"])
     diagnostics = residual_metrics(
         result["parallel_force"], force_norm, result["parallel_force_roundoff"], mask
     )
-    result.update({
-        "parallel_force_error": diagnostics["error"],
-        "parallel_force_absolute": diagnostics["absolute"],
-        "parallel_force_error_raw": diagnostics["raw_relative"],
-        "parallel_force_roundoff_rms": diagnostics["roundoff"],
-        "parallel_force_roundoff_consistent": diagnostics["roundoff_consistent"],
-        "firehose_margin": 1.0 - MU0 * (p_parallel - p_perpendicular)
-        / np.maximum(result["B"] ** 2, np.finfo(float).tiny),
-    })
+    result.update(
+        {
+            "parallel_force_error": diagnostics["error"],
+            "parallel_force_absolute": diagnostics["absolute"],
+            "parallel_force_error_raw": diagnostics["raw_relative"],
+            "parallel_force_roundoff_rms": diagnostics["roundoff"],
+            "parallel_force_roundoff_consistent": diagnostics["roundoff_consistent"],
+            "firehose_margin": 1.0
+            - MU0
+            * (p_parallel - p_perpendicular)
+            / np.maximum(result["B"] ** 2, np.finfo(float).tiny),
+        }
+    )
     return result

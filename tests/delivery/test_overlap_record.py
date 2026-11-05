@@ -6,7 +6,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 SPEC = importlib.util.spec_from_file_location(
-    "validate_overlap_record", ROOT / "scripts" / "validate_overlap_record.py")
+    "validate_overlap_record", ROOT / "scripts" / "validate_overlap_record.py"
+)
 overlap = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(overlap)
 
@@ -15,15 +16,24 @@ def _record():
     return {
         "schema": "scirel.overlap-record",
         "records": [
-            {"incoming_capability_id": "acme.cap.a", "overlap": "same-relation",
-             "matched_asset_ids": ["scirel.field.cap-a"],
-             "difference_note": "same relation; naming differs"},
-            {"incoming_capability_id": "acme.cap.b", "overlap": "wider-coverage",
-             "matched_asset_ids": ["scirel.field.cap-b"],
-             "difference_note": "adds a boundary case; record only"},
-            {"incoming_capability_id": "acme.cap.c", "overlap": "none",
-             "matched_asset_ids": [],
-             "difference_note": "no counterpart in the current catalog"},
+            {
+                "incoming_capability_id": "acme.cap.a",
+                "overlap": "same-relation",
+                "matched_asset_ids": ["scirel.field.cap-a"],
+                "difference_note": "same relation; naming differs",
+            },
+            {
+                "incoming_capability_id": "acme.cap.b",
+                "overlap": "wider-coverage",
+                "matched_asset_ids": ["scirel.field.cap-b"],
+                "difference_note": "adds a boundary case; record only",
+            },
+            {
+                "incoming_capability_id": "acme.cap.c",
+                "overlap": "none",
+                "matched_asset_ids": [],
+                "difference_note": "no counterpart in the current catalog",
+            },
         ],
     }
 
@@ -34,7 +44,9 @@ def test_valid_overlap_record_passes():
 
 
 def test_schema_and_validator_share_unversioned_contract():
-    schema = json.loads((ROOT / "contracts" / "reception" / "overlap-record.schema.json").read_text())
+    schema = json.loads(
+        (ROOT / "contracts" / "reception" / "overlap-record.schema.json").read_text()
+    )
     assert schema["required"] == ["schema", "records"]
     assert "schema_version" not in schema["properties"]
     versioned = _record()
@@ -60,7 +72,9 @@ def test_overlap_requires_matches():
 
 def test_duplicate_ids_and_unknown_overlap_rejected():
     payload = _record()
-    payload["records"][1]["incoming_capability_id"] = payload["records"][0]["incoming_capability_id"]
+    payload["records"][1]["incoming_capability_id"] = payload["records"][0][
+        "incoming_capability_id"
+    ]
     payload["records"][0]["overlap"] = "partial"
     result = overlap.validate_record(payload)
     assert result["status"] == "FAIL"

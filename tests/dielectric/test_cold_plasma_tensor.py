@@ -6,6 +6,7 @@ conventions, closed-form agreement, structural invariants and documented edge
 cases.  Historical source comparisons and reviewer-only evidence remain outside
 the maintenance suite; assertions here stand on the maintained implementation.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -87,8 +88,8 @@ def stix_scalars(field, species):
     magnitude = float(np.linalg.norm(field))
     stix_s, stix_d, stix_p = 1.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j
     for item in species:
-        plasma = item["density_m3"] * item["charge_c"] ** 2 / (
-            VACUUM_PERMITTIVITY * item["mass_kg"]
+        plasma = (
+            item["density_m3"] * item["charge_c"] ** 2 / (VACUUM_PERMITTIVITY * item["mass_kg"])
         )
         cyclotron = item["charge_c"] * magnitude / item["mass_kg"]
         shifted = OMEGA + 1j * item.get("collision_rate_s_inv", 0.0)
@@ -141,8 +142,8 @@ def assemble_with_cyclotron_reading(field, species, *, signed_axial):
     magnitude = float(np.linalg.norm(vector))
     stix_s, stix_d, stix_p = 1.0 + 0.0j, 0.0 + 0.0j, 1.0 + 0.0j
     for item in species:
-        plasma = item["density_m3"] * item["charge_c"] ** 2 / (
-            VACUUM_PERMITTIVITY * item["mass_kg"]
+        plasma = (
+            item["density_m3"] * item["charge_c"] ** 2 / (VACUUM_PERMITTIVITY * item["mass_kg"])
         )
         argument = float(vector[2]) if signed_axial else magnitude
         cyclotron = item["charge_c"] * argument / item["mass_kg"]
@@ -424,9 +425,7 @@ def test_the_matrix_is_in_the_callers_basis_and_not_a_field_aligned_frame():
     stix_s, stix_d, stix_p = stix_scalars(TILTED_FIELD, [ELECTRON])
 
     # The frame-invariant scalar is P, and it is recovered on axis and off it.
-    assert_agrees(
-        np.array([[direction.conj() @ tilted @ direction]]), np.array([[stix_p]])
-    )
+    assert_agrees(np.array([[direction.conj() @ tilted @ direction]]), np.array([[stix_p]]))
     # The axial entry is not P off axis, so the matrix is not field-aligned.
     assert abs(tilted[2, 2] - stix_p) > 1.0e-3 * abs(stix_p)
     # `eps @ b == S b` fails off axis for the same reason.
@@ -436,9 +435,7 @@ def test_the_matrix_is_in_the_callers_basis_and_not_a_field_aligned_frame():
     axial = evaluate(TARGET, FIELD, [ELECTRON])
     _, _, axial_p = stix_scalars(FIELD, [ELECTRON])
     assert_agrees(np.array([[axial[2, 2]]]), np.array([[axial_p]]))
-    assert_agrees(
-        axial @ np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, axial_p])
-    )
+    assert_agrees(axial @ np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, axial_p]))
 
 
 def test_the_off_diagonal_entries_are_the_cross_product_entries():
@@ -458,8 +455,12 @@ def test_the_off_diagonal_entries_are_the_cross_product_entries():
     def agrees_with_term(actual, term):
         assert abs(actual - term) <= INDEPENDENT_ASSEMBLY_RELATIVE_AGREEMENT * abs(term)
 
-    agrees_with_term(tilted[0, 1], 1j * stix_d * -direction[2] + outer * direction[0] * direction[1])
-    agrees_with_term(tilted[1, 2], 1j * stix_d * -direction[0] + outer * direction[1] * direction[2])
+    agrees_with_term(
+        tilted[0, 1], 1j * stix_d * -direction[2] + outer * direction[0] * direction[1]
+    )
+    agrees_with_term(
+        tilted[1, 2], 1j * stix_d * -direction[0] + outer * direction[1] * direction[2]
+    )
     # The x-z entry has no cross term at this field because b_y == 0, so it is
     # purely the symmetric outer-product part.
     assert direction[1] == 0.0
@@ -547,7 +548,7 @@ def test_the_field_overflow_route_is_rejected_at_the_arithmetics_own_boundary():
     the next decade is rejected.
     """
     for exponent in (150, 300):
-        field = 10.0 ** exponent * np.array([0.0, 0.0, 1.0])
+        field = 10.0**exponent * np.array([0.0, 0.0, 1.0])
         # The overflow is the subject of the test, so the warning it raises is
         # silenced here rather than left to obscure a real failure elsewhere.
         with pytest.raises(ColdPlasmaOverflowError) as raised:
@@ -832,7 +833,9 @@ def test_the_numerator_underflow_witness_is_rejected_whole_call():
 
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, species,
+            TARGET,
+            field,
+            species,
             frequency_hz=REVIEW_NUMERATOR_UNDERFLOW_FREQUENCY_HZ,
         )
     assert type(raised.value) is ColdPlasmaOverflowError
@@ -869,7 +872,9 @@ def test_both_underflow_routes_are_rejected_with_the_same_named_message():
     assert VACUUM_PERMITTIVITY * numerator_underflow["mass_kg"] > 0.0
     with pytest.raises(ColdPlasmaOverflowError) as numerator_raised:
         evaluate(
-            TARGET, field, [numerator_underflow],
+            TARGET,
+            field,
+            [numerator_underflow],
             frequency_hz=REVIEW_NUMERATOR_UNDERFLOW_FREQUENCY_HZ,
         )
     assert str(numerator_raised.value) == f"{OVERFLOW_MESSAGE} (species index 0)"
@@ -890,9 +895,7 @@ def test_a_zero_numerator_with_a_representable_divisor_is_not_a_negligible_contr
     field = FIELD
 
     collapsed = dict(REVIEW_NUMERATOR_UNDERFLOW)
-    assert (
-        collapsed["density_m3"] * collapsed["charge_c"] ** 2 == 0.0
-    ), "the numerator collapsed"
+    assert collapsed["density_m3"] * collapsed["charge_c"] ** 2 == 0.0, "the numerator collapsed"
     assert VACUUM_PERMITTIVITY * collapsed["mass_kg"] > 0.0, "the divisor is representable"
     with pytest.raises(ColdPlasmaOverflowError):
         evaluate(TARGET, field, [collapsed])
@@ -1032,7 +1035,9 @@ def test_the_zero_quotient_witness_is_rejected_whole_call():
 
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, species,
+            TARGET,
+            field,
+            species,
             frequency_hz=REVIEW_ZERO_QUOTIENT_FREQUENCY_HZ,
         )
     assert type(raised.value) is ColdPlasmaOverflowError
@@ -1065,7 +1070,9 @@ def test_the_boundary_moves_only_at_the_zero_quotient():
         inert = dict(REVIEW_ZERO_QUOTIENT, **{zeroed: 0.0})
         assert np.array_equal(
             evaluate(
-                TARGET, field, [inert],
+                TARGET,
+                field,
+                [inert],
                 frequency_hz=REVIEW_ZERO_QUOTIENT_FREQUENCY_HZ,
             ),
             vacuum,
@@ -1075,22 +1082,24 @@ def test_the_boundary_moves_only_at_the_zero_quotient():
     collapsed = dict(REVIEW_NUMERATOR_UNDERFLOW)
     with pytest.raises(ColdPlasmaOverflowError) as ours_raised:
         evaluate(
-            TARGET, field, [collapsed],
+            TARGET,
+            field,
+            [collapsed],
             frequency_hz=REVIEW_NUMERATOR_UNDERFLOW_FREQUENCY_HZ,
         )
     assert str(ours_raised.value) == f"{OVERFLOW_MESSAGE} (species index 0)"
 
     # 3. Representable operands, zero quotient: rejected.
     representable = dict(REVIEW_ZERO_QUOTIENT)
-    assert (
-        representable["density_m3"] * representable["charge_c"] ** 2 > 0.0
-    ), "the numerator is representable"
-    assert VACUUM_PERMITTIVITY * representable["mass_kg"] > 0.0, (
-        "the divisor is representable"
+    assert representable["density_m3"] * representable["charge_c"] ** 2 > 0.0, (
+        "the numerator is representable"
     )
+    assert VACUUM_PERMITTIVITY * representable["mass_kg"] > 0.0, "the divisor is representable"
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, [representable],
+            TARGET,
+            field,
+            [representable],
             frequency_hz=REVIEW_ZERO_QUOTIENT_FREQUENCY_HZ,
         )
     assert str(raised.value).startswith(OVERFLOW_MESSAGE)
@@ -1116,7 +1125,9 @@ def test_the_zero_quotient_guard_subsumes_the_numerator_guard():
     assert collapsed["density_m3"] * collapsed["charge_c"] ** 2 == 0.0
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, [collapsed],
+            TARGET,
+            field,
+            [collapsed],
             frequency_hz=REVIEW_NUMERATOR_UNDERFLOW_FREQUENCY_HZ,
         )
     assert str(raised.value) == f"{OVERFLOW_MESSAGE} (species index 0)"
@@ -1162,9 +1173,7 @@ def test_the_module_no_longer_claims_a_zero_quotient_is_negligible():
                 )
                 position = text.find(claim, position + 1)
     # The corrected statements are present, in the words the review asks for.
-    assert "an intermediate underflow is evidence about the intermediate" in (
-        module_text.lower()
-    )
+    assert "an intermediate underflow is evidence about the intermediate" in (module_text.lower())
     assert "is exactly zero" in function_text
     assert "the quotient of two positive subnormal doubles is at least" in module_text
     # The two claims the review named are gone as *claims*: neither the "at most
@@ -1318,7 +1327,9 @@ def test_the_collapsed_product_witness_is_rejected_without_leaking_zero_division
 
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, species,
+            TARGET,
+            field,
+            species,
             frequency_hz=REVIEW_COLLAPSED_PRODUCT_FREQUENCY_HZ,
         )
     assert type(raised.value) is ColdPlasmaOverflowError
@@ -1396,9 +1407,7 @@ def test_the_s_numerator_witness_is_rejected_rather_than_silently_zeroed():
     # The fourth product, and the failure.
     assert wp2 == SMALLEST_POSITIVE_SUBNORMAL
     assert wp2 * shifted == 0j, "the S numerator collapses in double precision"
-    exact_s_numerator_imag = _exact_product(
-        wp2, REVIEW_S_NUMERATOR["collision_rate_s_inv"]
-    )
+    exact_s_numerator_imag = _exact_product(wp2, REVIEW_S_NUMERATOR["collision_rate_s_inv"])
     assert exact_s_numerator_imag > 0, "the exact S numerator is non-zero"
     assert exact_s_numerator_imag < Fraction(SMALLEST_POSITIVE_SUBNORMAL), (
         "the exact S numerator is below the smallest positive subnormal double, "
@@ -1417,7 +1426,9 @@ def test_the_s_numerator_witness_is_rejected_rather_than_silently_zeroed():
 
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, species,
+            TARGET,
+            field,
+            species,
             frequency_hz=REVIEW_S_NUMERATOR_FREQUENCY_HZ,
         )
     assert type(raised.value) is ColdPlasmaOverflowError
@@ -1480,7 +1491,8 @@ def test_every_stix_division_has_its_product_guarded():
     collapsed_denominator = dict(REVIEW_COLLAPSED_PRODUCT)
     omega = 2.0 * math.pi * REVIEW_COLLAPSED_PRODUCT_FREQUENCY_HZ
     cyclotron = (
-        REVIEW_COLLAPSED_PRODUCT["charge_c"] * REVIEW_COLLAPSED_PRODUCT_FIELD[2]
+        REVIEW_COLLAPSED_PRODUCT["charge_c"]
+        * REVIEW_COLLAPSED_PRODUCT_FIELD[2]
         / REVIEW_COLLAPSED_PRODUCT["mass_kg"]
     )
     denominator = (omega + 0j) ** 2 - cyclotron * cyclotron
@@ -1488,7 +1500,9 @@ def test_every_stix_division_has_its_product_guarded():
     assert _exact_product(omega, denominator.real) > 0
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, [collapsed_denominator],
+            TARGET,
+            field,
+            [collapsed_denominator],
             frequency_hz=REVIEW_COLLAPSED_PRODUCT_FREQUENCY_HZ,
         )
     assert str(raised.value).startswith(OVERFLOW_MESSAGE)
@@ -1503,14 +1517,10 @@ def test_every_stix_division_has_its_product_guarded():
         "mass_kg": 1.0e8,
     }
     field_n = np.array([0.0, 0.0, 1.0])
-    numerator = (
-        collapsed_numerator["density_m3"] * collapsed_numerator["charge_c"] ** 2
-    )
+    numerator = collapsed_numerator["density_m3"] * collapsed_numerator["charge_c"] ** 2
     divisor = VACUUM_PERMITTIVITY * collapsed_numerator["mass_kg"]
     wp2 = numerator / divisor
-    cyclotron_n = (
-        collapsed_numerator["charge_c"] * field_n[2] / collapsed_numerator["mass_kg"]
-    )
+    cyclotron_n = collapsed_numerator["charge_c"] * field_n[2] / collapsed_numerator["mass_kg"]
     denominator_n = (omega + 0j) ** 2 - cyclotron_n * cyclotron_n
     assert wp2 != 0.0 and math.isfinite(wp2), "the quotient is a representable double"
     assert cyclotron_n != 0.0 and math.isfinite(cyclotron_n)
@@ -1523,7 +1533,9 @@ def test_every_stix_division_has_its_product_guarded():
     assert abs(omega * denominator_n) > SMALLEST_POSITIVE_SUBNORMAL
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field_n, [collapsed_numerator],
+            TARGET,
+            field_n,
+            [collapsed_numerator],
             frequency_hz=REVIEW_COLLAPSED_PRODUCT_FREQUENCY_HZ,
         )
     assert str(raised.value).startswith(OVERFLOW_MESSAGE)
@@ -1574,9 +1586,10 @@ def test_the_product_guard_is_exact_and_states_no_bound():
     # exact product is below half the smallest positive subnormal, which is the
     # rounding boundary, so this is the smallest genuine collapse.
     assert SMALLEST_POSITIVE_SUBNORMAL * SMALLEST_POSITIVE_SUBNORMAL == 0.0
-    assert _exact_product(
-        SMALLEST_POSITIVE_SUBNORMAL, SMALLEST_POSITIVE_SUBNORMAL
-    ) < Fraction(SMALLEST_POSITIVE_SUBNORMAL) / 2
+    assert (
+        _exact_product(SMALLEST_POSITIVE_SUBNORMAL, SMALLEST_POSITIVE_SUBNORMAL)
+        < Fraction(SMALLEST_POSITIVE_SUBNORMAL) / 2
+    )
     assert not guard(SMALLEST_POSITIVE_SUBNORMAL, SMALLEST_POSITIVE_SUBNORMAL)
 
     # Rejected: a non-finite operand, on either side.
@@ -1626,9 +1639,7 @@ def test_the_guards_fire_nowhere_on_the_swept_ordinary_range():
     """
     rng = np.random.default_rng(20260923)
     fields = list(rng.uniform(-2.0, 2.0, size=(200, 3)))
-    fields.extend(
-        10.0 ** rng.uniform(-12.0, 12.0, size=(50, 1)) * rng.normal(size=(50, 3))
-    )
+    fields.extend(10.0 ** rng.uniform(-12.0, 12.0, size=(50, 1)) * rng.normal(size=(50, 3)))
     species_sets = [
         [],
         [ELECTRON],
@@ -1676,9 +1687,7 @@ def test_collisionless_hermiticity_is_exact_at_nonzero_field(magnitude_t, sign):
 
 
 def test_a_contributing_collision_breaks_hermiticity_with_the_review_deviation():
-    result = evaluate(
-        TARGET, FIELD, [dict(ELECTRON, collision_rate_s_inv=REVIEW_COLLISION_RATE)]
-    )
+    result = evaluate(TARGET, FIELD, [dict(ELECTRON, collision_rate_s_inv=REVIEW_COLLISION_RATE)])
     assert deviation(result) == REVIEW_COLLISIONAL_DEVIATION
     assert result[0, 1].real != 0.0 and result[1, 1].imag != 0.0
 
@@ -1700,7 +1709,8 @@ def test_a_non_contributing_collision_does_not_break_hermiticity(zeroed):
 def test_zero_field_collapses_to_the_isotropic_tensor():
     result = evaluate(TARGET, np.zeros(3), [ELECTRON])
     plasma_term = 1.0 - (
-        ELECTRON["density_m3"] * ELECTRON["charge_c"] ** 2
+        ELECTRON["density_m3"]
+        * ELECTRON["charge_c"] ** 2
         / (VACUUM_PERMITTIVITY * ELECTRON["mass_kg"])
     ) / (OMEGA * OMEGA)
     assert_agrees(result, plasma_term * np.eye(3, dtype=complex))
@@ -1751,9 +1761,7 @@ def test_the_conductivity_formulation_is_recovered_only_with_the_signed_projecti
     species = [dict(ELECTRON, collision_rate_s_inv=collision_rate)]
     tensor = evaluate(TARGET, field, species)
 
-    magnitude_reading = assemble_with_cyclotron_reading(
-        field, species, signed_axial=False
-    )
+    magnitude_reading = assemble_with_cyclotron_reading(field, species, signed_axial=False)
     assert_agrees(tensor, magnitude_reading)
 
     signed_reading = assemble_with_cyclotron_reading(field, species, signed_axial=True)
@@ -1762,9 +1770,7 @@ def test_the_conductivity_formulation_is_recovered_only_with_the_signed_projecti
         assert np.array_equal(magnitude_reading, signed_reading)
         assert_agrees(tensor, signed_reading)
     else:
-        relative = float(np.max(np.abs(tensor - signed_reading))) / float(
-            np.max(np.abs(tensor))
-        )
+        relative = float(np.max(np.abs(tensor - signed_reading))) / float(np.max(np.abs(tensor)))
         assert 0.01 < relative < 0.03, (
             "the signed projection read as the module's own argument is the "
             "review's measured 1.7e-2 relative deviation, not a rounding "
@@ -1939,7 +1945,9 @@ def test_the_cyclotron_underflow_witness_is_rejected_rather_than_zeroing_d():
 
     with pytest.raises(ColdPlasmaOverflowError) as raised:
         evaluate(
-            TARGET, field, species,
+            TARGET,
+            field,
+            species,
             frequency_hz=REVIEW_CYCLOTRON_UNDERFLOW_FREQUENCY_HZ,
         )
     assert type(raised.value) is ColdPlasmaOverflowError
@@ -1970,7 +1978,9 @@ def test_a_genuine_zero_field_cyclotron_is_still_accepted():
     assert species[0]["charge_c"] != 0.0 and species[0]["mass_kg"] > 0.0
 
     result = evaluate(
-        TARGET, zero_field, species,
+        TARGET,
+        zero_field,
+        species,
         frequency_hz=REVIEW_CYCLOTRON_UNDERFLOW_FREQUENCY_HZ,
     )
     assert np.all(np.isfinite(result))
@@ -1982,7 +1992,9 @@ def test_a_genuine_zero_field_cyclotron_is_still_accepted():
     # distinguished by the field and by nothing else.
     with pytest.raises(ColdPlasmaOverflowError):
         evaluate(
-            TARGET, np.array(REVIEW_CYCLOTRON_UNDERFLOW_FIELD), species,
+            TARGET,
+            np.array(REVIEW_CYCLOTRON_UNDERFLOW_FIELD),
+            species,
             frequency_hz=REVIEW_CYCLOTRON_UNDERFLOW_FREQUENCY_HZ,
         )
 
@@ -2041,12 +2053,8 @@ def test_a_declared_inert_species_does_not_reject_a_collapsed_field():
     vacuum = evaluate(TARGET, np.zeros(3), [])
     for zeroed in ("density_m3", "charge_c"):
         inert = dict(REVIEW_NORM_COLLAPSE_SPECIES, **{zeroed: 0.0})
-        assert np.array_equal(
-            evaluate(TARGET, field, [inert]), vacuum
-        ), zeroed
-        assert np.array_equal(
-            evaluate(TARGET, np.zeros(3), [inert]), vacuum
-        ), zeroed
+        assert np.array_equal(evaluate(TARGET, field, [inert]), vacuum), zeroed
+        assert np.array_equal(evaluate(TARGET, np.zeros(3), [inert]), vacuum), zeroed
 
 
 def test_the_field_and_cyclotron_guards_state_no_bound():

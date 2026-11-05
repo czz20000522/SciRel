@@ -4,6 +4,7 @@ This mapping is a sibling of ``sample_rectilinear_field``: it consumes named
 1-D equilibrium axes, returns a complete Cartesian vector field, and clamps
 out-of-box queries while reporting coverage.
 """
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -52,16 +53,12 @@ def _evaluate_cylindrical(values, coordinates):
     """Evaluate a pre-resolved tensor-product cell using four corners."""
     ri, rf, zi, zf = coordinates
     at_lower_z = values[ri, zi] + rf * (values[ri + 1, zi] - values[ri, zi])
-    at_upper_z = values[ri, zi + 1] + rf * (
-        values[ri + 1, zi + 1] - values[ri, zi + 1]
-    )
+    at_upper_z = values[ri, zi + 1] + rf * (values[ri + 1, zi + 1] - values[ri, zi + 1])
     return at_lower_z + zf * (at_upper_z - at_lower_z)
 
 
 def _interpolate_cylindrical(r_axis, z_axis, values, radii, axial):
-    return _evaluate_cylindrical(
-        values, _interpolation_coordinates(r_axis, z_axis, radii, axial)
-    )
+    return _evaluate_cylindrical(values, _interpolation_coordinates(r_axis, z_axis, radii, axial))
 
 
 def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
@@ -92,8 +89,7 @@ def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
     xx, yy, zz = np.meshgrid(x_axis, y_axis, z_grid, indexing="ij")
     radius = np.hypot(xx, yy)
     covered = (
-        (radius >= r_axis[0]) & (radius <= r_axis[-1])
-        & (zz >= z_axis[0]) & (zz <= z_axis[-1])
+        (radius >= r_axis[0]) & (radius <= r_axis[-1]) & (zz >= z_axis[0]) & (zz <= z_axis[-1])
     )
     query_r = np.clip(radius, r_axis[0], r_axis[-1]).ravel()
     query_z = np.clip(zz, z_axis[0], z_axis[-1]).ravel()

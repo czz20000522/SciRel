@@ -18,8 +18,10 @@ def _load():
 
 
 def _documents():
-    return [json.loads(path.read_text(encoding="utf-8"))
-            for path in sorted((ROOT / "catalog" / "examples").glob("*.json"))]
+    return [
+        json.loads(path.read_text(encoding="utf-8"))
+        for path in sorted((ROOT / "catalog" / "examples").glob("*.json"))
+    ]
 
 
 def _held():
@@ -36,9 +38,11 @@ def test_matrix_covers_every_asset_and_domain():
     assert matrix["total_domains"] == len(matrix["domains"])
     assert sum(group["count"] for group in matrix["domains"]) == matrix["total_assets"]
     assert sum(matrix["taxonomy_counts"].values()) == sum(
-        len(document.get("taxonomy", [])) for document in documents)
+        len(document.get("taxonomy", [])) for document in documents
+    )
     assert [asset["asset_id"] for asset in matrix["assets"]] == sorted(
-        asset["asset_id"] for asset in matrix["assets"])
+        asset["asset_id"] for asset in matrix["assets"]
+    )
     for asset in matrix["assets"]:
         assert asset["ports"].count("->") == 1
         assert asset["symbol"] and asset["domain"]
@@ -52,8 +56,7 @@ def test_markdown_and_cli_output(tmp_path):
     assert "# SciRel capability matrix" in markdown
     for group in matrix["domains"]:
         assert f"## {group['domain']} (" in markdown
-    code = tool.main(["--catalog", str(ROOT / "catalog" / "examples"),
-                      "--output", str(tmp_path)])
+    code = tool.main(["--catalog", str(ROOT / "catalog" / "examples"), "--output", str(tmp_path)])
     assert code == 0
     payload = json.loads((tmp_path / "capability-matrix.json").read_text(encoding="utf-8"))
     assert payload["total_assets"] == len([d for d in documents if d["asset_id"] not in _held()])

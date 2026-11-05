@@ -9,7 +9,12 @@ from .rational import _fixed_poles
 
 def _real(value, name):
     raw = np.asarray(value)
-    if raw.ndim or raw.dtype.kind not in "iuf" or not np.isfinite(raw) or isinstance(value, (bool, np.bool_)):
+    if (
+        raw.ndim
+        or raw.dtype.kind not in "iuf"
+        or not np.isfinite(raw)
+        or isinstance(value, (bool, np.bool_))
+    ):
         raise ValueError(f"{name} must be a finite real scalar")
     return float(raw)
 
@@ -26,10 +31,9 @@ def pole_coefficients(J=8):
         raise ValueError("J must be 4, 8 or 12")
     J = int(value)
     bzj, czj = _fixed_poles(J)
-    return _State({"J": np.array([[J]], float),
-                   "bzj": bzj.reshape(1, -1),
-                   "czj": czj.reshape(1, -1)})
-
+    return _State(
+        {"J": np.array([[J]], float), "bzj": bzj.reshape(1, -1), "czj": czj.reshape(1, -1)}
+    )
 
 
 __all__ = ["pole_coefficients"]

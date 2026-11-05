@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 
-
 import numpy as np
 
 from ._energy_input import positive_real_array
@@ -22,7 +21,15 @@ def evaluate_atomic_hydrogen_1s_radiative_recombination_rate(electron_temperatur
     clipped = np.minimum(np.maximum(temperature, 0.1), 2.01e4)
     ionization_energy_ev = _RY_EV / _LEVEL_N
     b_n = ionization_energy_ev / clipped
-    rate = _A_NL * 1.0e-14 * np.sqrt(ionization_energy_ev / _RY_EV) * (b_n**1.5 / (b_n + _X_NL)) * 1.0e-6
+    rate = (
+        _A_NL
+        * 1.0e-14
+        * np.sqrt(ionization_energy_ev / _RY_EV)
+        * (b_n**1.5 / (b_n + _X_NL))
+        * 1.0e-6
+    )
     if not np.all(np.isfinite(rate)) or np.any(rate <= 0.0):
-        raise ValueError("H(1s) radiative recombination fit produced a non-finite or nonpositive rate")
+        raise ValueError(
+            "H(1s) radiative recombination fit produced a non-finite or nonpositive rate"
+        )
     return rate

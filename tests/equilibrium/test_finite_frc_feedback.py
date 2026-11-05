@@ -5,7 +5,9 @@ from scirel.equilibrium.free_boundary_frc import solve_finite_frc_feedback
 
 
 def test_finite_frc_feedback_preserves_bounded_nonconvergence():
-    path = Path(r"E:\SciRel-lab\_shared\outbound\portfolio-20261027\results\p0-demo-runtime-20261029\q10-input.json")
+    path = Path(
+        r"E:\SciRel-lab\_shared\outbound\portfolio-20261027\results\p0-demo-runtime-20261029\q10-input.json"
+    )
     if not path.exists():
         return
     result = solve_finite_frc_feedback(json.loads(path.read_text(encoding="utf-8")))

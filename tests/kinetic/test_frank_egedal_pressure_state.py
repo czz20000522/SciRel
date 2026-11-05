@@ -1,12 +1,17 @@
 import pytest
-from scirel.kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure, assemble_frank_egedal_pressure as scientific_function
+from scirel.kinetic.frank_egedal_pressure_state import (
+    assemble_frank_egedal_pressure,
+    assemble_frank_egedal_pressure as scientific_function,
+)
+
+
 def test_rejects_incomplete_pressure_state():
-    with pytest.raises((KeyError,ValueError,TypeError)): scientific_function({})
+    with pytest.raises((KeyError, ValueError, TypeError)):
+        scientific_function({})
 
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.kinetic.frank_egedal_pressure_state import assemble_frank_egedal_pressure
 
     psi = np.zeros((2, 2))
     radial = np.array([[1.0, 0.5], [0.25, 0.0]])
@@ -38,7 +43,11 @@ def test_reviewed_relation_example():
 
     # 没有任何密度尺度时，density 为 None；电子温度仍返回，但不产生电子压强。
     no_density = assemble_frank_egedal_pressure(
-        psi, radial, hpar, hperp, hdensity,
+        psi,
+        radial,
+        hpar,
+        hperp,
+        hdensity,
         {"hot_pressure_scale": 5.0, "gas_dynamic_pressure": 7.0, "electron_temperature": 17.0},
     )
     assert no_density["density"] is None

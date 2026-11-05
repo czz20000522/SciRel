@@ -3,6 +3,7 @@
 This development tool does not import or execute scientific callables. It is not
 an executable catalog release or a scientific wheel qualification.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,44 +22,60 @@ from urllib.parse import parse_qs, urlsplit
 
 from packaging.version import InvalidVersion, Version
 
-from validate_asset_documents import load_document_set, validate_document
+from validate_asset_documents import load_document_set
 from exposure import held_asset_ids
-from build_scirel_sphinx import (LANGUAGE_TAGS, english_available_docs,
-                                english_guide_status, english_translation_gaps,
-                                load_english_handbook,
-                                render_site)
-from capability_catalog import (PublicCatalog, build_capability_index, capability_record,
-                                capability_search_text, load_translations)
+from build_scirel_sphinx import (
+    LANGUAGE_TAGS,
+    english_available_docs,
+    english_guide_status,
+    english_translation_gaps,
+    load_english_handbook,
+    render_site,
+)
+from capability_catalog import (
+    PublicCatalog,
+    build_capability_index,
+    capability_search_text,
+    load_translations,
+)
 from build_capability_matrix import build_matrix, render_markdown
 from code_digest import contract_digest, source_digest
-from capability_query import (CAPABILITY_INDEX_SCHEMA, CAPABILITY_QUERY_SCHEMA,
-                              CAPABILITY_REQUEST_SCHEMA, DEVICE_SCOPES, FILTER_ORDER,
-                              REQUEST_SCHEMA, RESPONSE_SCHEMA,
-                              query_capabilities, validate_capability_index)
+from capability_query import (
+    CAPABILITY_REQUEST_SCHEMA,
+    FILTER_ORDER,
+    REQUEST_SCHEMA,
+    RESPONSE_SCHEMA,
+    query_capabilities,
+    validate_capability_index,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMA = 'scirel.documentation-snapshot'
-NOTICE = ('开发文档 · 按每条资产的版本与证据范围使用。文档收录不代表人工批准、'
-          '全项目通过或公开发行；此快照不是单一 wheel 的安装清单。')
-NOTICE_EN = ('Development documentation · Use each asset according to its version and '
-             'evidence scope. Inclusion does not imply human approval, project-wide '
-             'acceptance or public release; this snapshot is not an installation '
-             'manifest for a single wheel.')
+SCHEMA = "scirel.documentation-snapshot"
+NOTICE = (
+    "开发文档 · 按每条资产的版本与证据范围使用。文档收录不代表人工批准、"
+    "全项目通过或公开发行；此快照不是单一 wheel 的安装清单。"
+)
+NOTICE_EN = (
+    "Development documentation · Use each asset according to its version and "
+    "evidence scope. Inclusion does not imply human approval, project-wide "
+    "acceptance or public release; this snapshot is not an installation "
+    "manifest for a single wheel."
+)
 LANGUAGES = tuple(LANGUAGE_TAGS)
 STATIC_FILES = {
-    'presentation.js': 'text/javascript; charset=utf-8',
-    'code.css': 'text/css; charset=utf-8',
-    'guide.css': 'text/css; charset=utf-8',
-    'navigation.js': 'text/javascript; charset=utf-8',
-    'handbook.js': 'text/javascript; charset=utf-8',
-    'vendor/highlightjs/highlight.min.js': 'text/javascript; charset=utf-8',
-    'vendor/highlightjs/LICENSE': 'text/plain; charset=utf-8',
-    'vendor/highlightjs/provenance.json': 'application/json; charset=utf-8',
+    "presentation.js": "text/javascript; charset=utf-8",
+    "code.css": "text/css; charset=utf-8",
+    "guide.css": "text/css; charset=utf-8",
+    "navigation.js": "text/javascript; charset=utf-8",
+    "handbook.js": "text/javascript; charset=utf-8",
+    "vendor/highlightjs/highlight.min.js": "text/javascript; charset=utf-8",
+    "vendor/highlightjs/LICENSE": "text/plain; charset=utf-8",
+    "vendor/highlightjs/provenance.json": "application/json; charset=utf-8",
 }
 
 
 def encode(value):
-    return (json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + '\n').encode()
+    return (json.dumps(value, ensure_ascii=False, sort_keys=True, indent=2) + "\n").encode()
 
 
 def sha(data):
@@ -66,9 +83,15 @@ def sha(data):
 
 
 DOCUMENTATION_BUILD_SCRIPTS = (
-    'code_digest.py', 'scirel_docs.py', 'build_scirel_sphinx.py', 'build_capability_matrix.py',
-    'capability_query.py', 'capability_catalog.py', 'validate_asset_documents.py', 'public_api_binding.py',
-    'exposure.py',
+    "code_digest.py",
+    "scirel_docs.py",
+    "build_scirel_sphinx.py",
+    "build_capability_matrix.py",
+    "capability_query.py",
+    "capability_catalog.py",
+    "validate_asset_documents.py",
+    "public_api_binding.py",
+    "exposure.py",
 )
 
 
@@ -80,51 +103,56 @@ def documentation_input_digests(documents=None, *, outline=None, translation_pat
     and build code are included, never private review material. Explicit reader
     or outline overrides have stable keys without exposing their local paths.
     """
-    documents = ROOT / 'catalog/examples' if documents is None else Path(documents)
-    docs_root = ROOT / 'tools/docs'
+    documents = ROOT / "catalog/examples" if documents is None else Path(documents)
+    docs_root = ROOT / "tools/docs"
     if not docs_root.is_dir() or not documents.is_dir():
-        raise ValueError('documentation source directories are missing')
+        raise ValueError("documentation source directories are missing")
     digests = {}
 
     def include(key, path):
         if path.is_symlink():
-            raise ValueError('documentation source input may not be a symlink: ' + key)
+            raise ValueError("documentation source input may not be a symlink: " + key)
         digests[key] = sha(path.read_bytes())
 
-    caches = {'__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache', '.cache', '_build'}
-    for path in sorted(docs_root.rglob('*')):
+    caches = {"__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache", ".cache", "_build"}
+    for path in sorted(docs_root.rglob("*")):
         relative = path.relative_to(ROOT)
-        if (set(relative.parts) & caches or path.suffix in {'.pyc', '.pyo'}
-                or path.name == '.DS_Store'):
+        if (
+            set(relative.parts) & caches
+            or path.suffix in {".pyc", ".pyo"}
+            or path.name == ".DS_Store"
+        ):
             continue
         if path.is_symlink():
-            raise ValueError('documentation source input may not be a symlink: ' + relative.as_posix())
+            raise ValueError(
+                "documentation source input may not be a symlink: " + relative.as_posix()
+            )
         if path.is_file():
             include(relative.as_posix(), path)
     for name in DOCUMENTATION_BUILD_SCRIPTS:
-        include('scripts/' + name, ROOT / 'scripts' / name)
-    include('pyproject.toml', ROOT / 'pyproject.toml')
-    contracts = sorted(documents.glob('*.json'))
+        include("scripts/" + name, ROOT / "scripts" / name)
+    include("pyproject.toml", ROOT / "pyproject.toml")
+    contracts = sorted(documents.glob("*.json"))
     if not contracts:
-        raise ValueError('no documentation contract inputs')
+        raise ValueError("no documentation contract inputs")
     for path in contracts:
-        include('catalog/examples/' + path.name, path)
+        include("catalog/examples/" + path.name, path)
     if outline is not None:
-        include('build-inputs/outline.json', Path(outline))
+        include("build-inputs/outline.json", Path(outline))
     if translation_paths is not None:
         for number, path in enumerate(translation_paths):
-            include('build-inputs/translations/' + str(number).zfill(4) + '.json', Path(path))
+            include("build-inputs/translations/" + str(number).zfill(4) + ".json", Path(path))
     return dict(sorted(digests.items()))
 
 
 def project_version(root=ROOT):
     try:
-        metadata = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))
-        version = metadata['project']['version']
+        metadata = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+        version = metadata["project"]["version"]
     except (OSError, KeyError, TypeError, tomllib.TOMLDecodeError) as error:
-        raise ValueError('pyproject.toml has no readable project.version') from error
+        raise ValueError("pyproject.toml has no readable project.version") from error
     if not isinstance(version, str) or not version:
-        raise ValueError('pyproject.toml project.version must be a non-empty string')
+        raise ValueError("pyproject.toml project.version must be a non-empty string")
     return version
 
 
@@ -133,13 +161,15 @@ def _validate_documentation_version(value, package_version):
         documentation = Version(value)
         package = Version(package_version)
     except InvalidVersion as error:
-        raise ValueError('documentation_version must be a valid PEP 440 version') from error
+        raise ValueError("documentation_version must be a valid PEP 440 version") from error
     if len(documentation.release) < 2 or len(package.release) < 2:
-        raise ValueError('documentation_version and project version need major/minor components')
+        raise ValueError("documentation_version and project version need major/minor components")
     if (documentation.epoch, documentation.release[0], documentation.release[1]) != (
-        package.epoch, package.release[0], package.release[1]
+        package.epoch,
+        package.release[0],
+        package.release[1],
     ):
-        raise ValueError('documentation_version must stay on the wheel major.minor release line')
+        raise ValueError("documentation_version must stay on the wheel major.minor release line")
 
 
 def handbook_document(asset_ids, outline=None):
@@ -154,195 +184,231 @@ def handbook_document(asset_ids, outline=None):
     exact, independently authored navigation document.
     """
     requested = set(asset_ids)
-    source = outline or ROOT / 'tools/docs/handbook.json'
+    source = outline or ROOT / "tools/docs/handbook.json"
     book = json.loads(Path(source).read_bytes())
-    if book.get('schema') != 'scirel.handbook':
-        raise ValueError('invalid handbook schema')
+    if book.get("schema") != "scirel.handbook":
+        raise ValueError("invalid handbook schema")
     seen, placements = set(), []
     canonical_assets = {
         asset
-        for chapter in book['chapters']
-        for topic in chapter['topics']
-        for asset in topic['assets']
+        for chapter in book["chapters"]
+        for topic in chapter["topics"]
+        for asset in topic["assets"]
     }
     # The canonical handbook may contain a superset of one release's selected
     # documents, so validate its members against the repository catalog before
     # projecting a release subset.  Isolated callers/tests may provide only an
     # outline, in which case the requested set is the available contract.
     if outline is None:
-        catalog = ROOT / 'catalog/examples'
+        catalog = ROOT / "catalog/examples"
         if catalog.is_dir():
-            available_assets = {path.stem for path in catalog.glob('*.json')}
-            review_catalog = ROOT / 'catalog/review/examples'
+            available_assets = {path.stem for path in catalog.glob("*.json")}
+            review_catalog = ROOT / "catalog/review/examples"
             if review_catalog.is_dir():
-                available_assets |= {path.stem for path in review_catalog.glob('*.json')}
+                available_assets |= {path.stem for path in review_catalog.glob("*.json")}
         else:
             available_assets = requested
         unknown_canonical = canonical_assets - available_assets
         if unknown_canonical:
-            raise ValueError('handbook contains unknown assets: ' +
-                             str(sorted(unknown_canonical)))
+            raise ValueError("handbook contains unknown assets: " + str(sorted(unknown_canonical)))
     unknown_requested = requested - canonical_assets
     if unknown_requested:
-        raise ValueError('documents are outside canonical handbook: ' +
-                         str(sorted(unknown_requested)))
+        raise ValueError(
+            "documents are outside canonical handbook: " + str(sorted(unknown_requested))
+        )
     projected_chapters = []
-    for chapter in book['chapters']:
-        for node in [chapter, *chapter['topics']]:
-            if not re.fullmatch(r'[a-z][a-z0-9-]*', node['id']) or node['id'] in seen:
-                raise ValueError('invalid or duplicate handbook ID')
-            seen.add(node['id'])
-            if not node['title'].strip() or not node['introduction'].strip():
-                raise ValueError('handbook nodes need a title and introduction')
-        if not chapter['discipline'] or not chapter['topics']:
-            raise ValueError('empty handbook chapter')
+    for chapter in book["chapters"]:
+        for node in [chapter, *chapter["topics"]]:
+            if not re.fullmatch(r"[a-z][a-z0-9-]*", node["id"]) or node["id"] in seen:
+                raise ValueError("invalid or duplicate handbook ID")
+            seen.add(node["id"])
+            if not node["title"].strip() or not node["introduction"].strip():
+                raise ValueError("handbook nodes need a title and introduction")
+        if not chapter["discipline"] or not chapter["topics"]:
+            raise ValueError("empty handbook chapter")
         projected_topics = []
-        for topic in chapter['topics']:
-            if not topic['assets']:
-                raise ValueError('empty handbook topic')
-            if topic.get('tutorial_id') not in (None, 'magnetostatics', 'kinetic-initial-value'):
-                raise ValueError('handbook tutorial has no execution-backed renderer')
-            topic_assets = list(topic['assets'])
+        for topic in chapter["topics"]:
+            if not topic["assets"]:
+                raise ValueError("empty handbook topic")
+            if topic.get("tutorial_id") not in (None, "magnetostatics", "kinetic-initial-value"):
+                raise ValueError("handbook tutorial has no execution-backed renderer")
+            topic_assets = list(topic["assets"])
             if outline is None:
                 topic_assets = [asset for asset in topic_assets if asset in requested]
             if not topic_assets:
                 continue
             projected = dict(topic)
-            projected['assets'] = topic_assets
+            projected["assets"] = topic_assets
             # A tutorial is only valid when its complete topic remains in the
             # selected closure; otherwise it would advertise an incomplete
             # executable chapter.
-            if outline is None and topic_assets != list(topic['assets']):
-                projected.pop('tutorial_id', None)
+            if outline is None and topic_assets != list(topic["assets"]):
+                projected.pop("tutorial_id", None)
             projected_topics.append(projected)
             placements.extend(topic_assets)
         if projected_topics:
             projected_chapter = dict(chapter)
-            projected_chapter['topics'] = projected_topics
+            projected_chapter["topics"] = projected_topics
             projected_chapters.append(projected_chapter)
     if len(placements) != len(set(placements)):
-        raise ValueError('duplicate handbook asset placement')
+        raise ValueError("duplicate handbook asset placement")
     if set(placements) != requested:
-        raise ValueError('handbook coverage differs from exact documents: missing=' +
-                         str(sorted(requested - set(placements))) + '; unknown=' +
-                         str(sorted(set(placements) - requested)))
-    book['chapters'] = projected_chapters
+        raise ValueError(
+            "handbook coverage differs from exact documents: missing="
+            + str(sorted(requested - set(placements)))
+            + "; unknown="
+            + str(sorted(set(placements) - requested))
+        )
+    book["chapters"] = projected_chapters
     return book
 
 
 def chapter_directory():
     """Select one explicitly bound successor without rewriting old evidence."""
-    selection_path = ROOT / 'tools/docs/chapter-selection.json'
+    selection_path = ROOT / "tools/docs/chapter-selection.json"
     if not selection_path.exists():
-        raise ValueError('chapter selection is required; refusing historical fallback')
+        raise ValueError("chapter selection is required; refusing historical fallback")
     selection = json.loads(selection_path.read_bytes())
-    if set(selection) != {'schema', 'chapters'} or selection['schema'] != 'scirel.chapter-selection':
-        raise ValueError('invalid chapter selection schema')
-    if set(selection['chapters']) != {'magnetostatics'}:
-        raise ValueError('unsupported chapter selection IDs')
-    item = selection['chapters']['magnetostatics']
-    if set(item) != {'directory', 'execution_sha256'}:
-        raise ValueError('invalid chapter selection binding')
-    directory = item['directory']
-    if not isinstance(directory, str) or not re.fullmatch(r'tools/docs/[a-z0-9][a-z0-9-]*', directory):
-        raise ValueError('invalid chapter selection path')
+    if (
+        set(selection) != {"schema", "chapters"}
+        or selection["schema"] != "scirel.chapter-selection"
+    ):
+        raise ValueError("invalid chapter selection schema")
+    if set(selection["chapters"]) != {"magnetostatics"}:
+        raise ValueError("unsupported chapter selection IDs")
+    item = selection["chapters"]["magnetostatics"]
+    if set(item) != {"directory", "execution_sha256"}:
+        raise ValueError("invalid chapter selection binding")
+    directory = item["directory"]
+    if not isinstance(directory, str) or not re.fullmatch(
+        r"tools/docs/[a-z0-9][a-z0-9-]*", directory
+    ):
+        raise ValueError("invalid chapter selection path")
     root = (ROOT / directory).resolve()
-    if not root.is_relative_to((ROOT / 'tools/docs').resolve()) or not root.is_dir():
-        raise ValueError('chapter selection path escapes documentation or is missing')
-    digest = item['execution_sha256']
-    if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
-        raise ValueError('invalid chapter execution digest')
-    if sha((root / 'execution.json').read_bytes()) != digest:
-        raise ValueError('selected chapter execution bytes changed')
+    if not root.is_relative_to((ROOT / "tools/docs").resolve()) or not root.is_dir():
+        raise ValueError("chapter selection path escapes documentation or is missing")
+    digest = item["execution_sha256"]
+    if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise ValueError("invalid chapter execution digest")
+    if sha((root / "execution.json").read_bytes()) != digest:
+        raise ValueError("selected chapter execution bytes changed")
     return root
 
 
-def chapter_files(asset_ids, *, expected_source_revision=None,
-                  expected_project_version=None, expected_wheel_sha256=None):
+def chapter_files(
+    asset_ids,
+    *,
+    expected_source_revision=None,
+    expected_project_version=None,
+    expected_wheel_sha256=None,
+):
     """Bind executed examples to current implementation before publishing them."""
     root = chapter_directory()
-    execution = json.loads((root/'execution.json').read_bytes())
-    if execution.get('schema') != 'scirel.chapter-execution':
-        raise ValueError('selected chapter execution has an invalid schema')
-    execution_source = execution.get('source_commit')
-    if not isinstance(execution_source, str) or not re.fullmatch(r'[0-9a-f]{40}', execution_source):
-        raise ValueError('selected chapter execution source commit is invalid')
+    execution = json.loads((root / "execution.json").read_bytes())
+    if execution.get("schema") != "scirel.chapter-execution":
+        raise ValueError("selected chapter execution has an invalid schema")
+    execution_source = execution.get("source_commit")
+    if not isinstance(execution_source, str) or not re.fullmatch(r"[0-9a-f]{40}", execution_source):
+        raise ValueError("selected chapter execution source commit is invalid")
     # The execution record is itself a Git-tracked file, so it cannot embed
     # the hash of the commit that contains its updated bytes.  Its
     # ``source_commit`` therefore identifies the implementation baseline used
     # for the run; the surrounding documentation snapshot remains bound to the
     # requested source revision.  The file and document digests below are the
     # compatibility proof between those two identities.
-    if expected_project_version is not None and execution.get('wheel_version') != expected_project_version:
-        raise ValueError('selected chapter execution wheel version differs from project version')
-    if expected_wheel_sha256 is not None and execution.get('wheel_sha256') != expected_wheel_sha256:
-        raise ValueError('selected chapter execution wheel digest differs from current release')
-    for path, digest in execution['files'].items():
-        if source_digest(ROOT/path) != digest:
-            raise ValueError('chapter implementation changed; rerun examples: ' + path)
-    for name in ('example', 'results'):
-        suffix = '.py' if name == 'example' else '.json'
-        if sha((root/(name+suffix)).read_bytes()) != execution[name+'_sha256']:
-            raise ValueError('chapter execution binding changed: ' + name)
-    for name, digest in execution['figure_files'].items():
-        if sha((root/name).read_bytes()) != digest:
-            raise ValueError('chapter figure binding changed: ' + name)
-    for path, digest in execution['document_files'].items():
-        if contract_digest(ROOT/path) != digest:
-            raise ValueError('chapter contract changed; review examples: ' + path)
-    chapter = json.loads((root/'chapter.json').read_bytes())
-    if chapter.get('id') != 'magnetostatics':
-        raise ValueError('selected chapter ID differs from its route')
-    if any(x['id'] not in asset_ids for x in chapter['assets']):
-        raise ValueError('chapter references a missing exact document')
-    results = json.loads((root/'results.json').read_bytes())
-    if not results.get('all_checks_passed') or execution['exit_code'] != 0:
-        raise ValueError('chapter examples have not passed')
-    script = (root/'example.py').read_text()
+    if (
+        expected_project_version is not None
+        and execution.get("wheel_version") != expected_project_version
+    ):
+        raise ValueError("selected chapter execution wheel version differs from project version")
+    if expected_wheel_sha256 is not None and execution.get("wheel_sha256") != expected_wheel_sha256:
+        raise ValueError("selected chapter execution wheel digest differs from current release")
+    for path, digest in execution["files"].items():
+        if source_digest(ROOT / path) != digest:
+            raise ValueError("chapter implementation changed; rerun examples: " + path)
+    for name in ("example", "results"):
+        suffix = ".py" if name == "example" else ".json"
+        if sha((root / (name + suffix)).read_bytes()) != execution[name + "_sha256"]:
+            raise ValueError("chapter execution binding changed: " + name)
+    for name, digest in execution["figure_files"].items():
+        if sha((root / name).read_bytes()) != digest:
+            raise ValueError("chapter figure binding changed: " + name)
+    for path, digest in execution["document_files"].items():
+        if contract_digest(ROOT / path) != digest:
+            raise ValueError("chapter contract changed; review examples: " + path)
+    chapter = json.loads((root / "chapter.json").read_bytes())
+    if chapter.get("id") != "magnetostatics":
+        raise ValueError("selected chapter ID differs from its route")
+    if any(x["id"] not in asset_ids for x in chapter["assets"]):
+        raise ValueError("chapter references a missing exact document")
+    results = json.loads((root / "results.json").read_bytes())
+    if not results.get("all_checks_passed") or execution["exit_code"] != 0:
+        raise ValueError("chapter examples have not passed")
+    script = (root / "example.py").read_text()
     sections = {}
-    for block in script.split('# %% ')[1:]:
-        name, code = block.split('\n', 1)
-        sections[name] = code.split('output = dict(')[0].strip()
-    for section in chapter['sections']:
-        section['code'] = sections[section.pop('code_section')]
+    for block in script.split("# %% ")[1:]:
+        name, code = block.split("\n", 1)
+        sections[name] = code.split("output = dict(")[0].strip()
+    for section in chapter["sections"]:
+        section["code"] = sections[section.pop("code_section")]
     chapter.update(results=results, execution=execution)
-    prefix = 'chapters/magnetostatics/'
-    files = {prefix+'chapter.json': encode(chapter),
-             'chapter.html': (ROOT/'tools/docs/chapter.html').read_bytes()}
-    for name in ('example.py', 'results.json', 'single.svg', 'pair.svg', 'rectangle.svg'):
-        files[prefix+name] = (root/name).read_bytes()
+    prefix = "chapters/magnetostatics/"
+    files = {
+        prefix + "chapter.json": encode(chapter),
+        "chapter.html": (ROOT / "tools/docs/chapter.html").read_bytes(),
+    }
+    for name in ("example.py", "results.json", "single.svg", "pair.svg", "rectangle.svg"):
+        files[prefix + name] = (root / name).read_bytes()
     return files
 
 
 class SourceDocumentation(PublicCatalog):
     """Expose public source-query responses from captured catalog inputs."""
 
-    def envelope(self, command, *, outcome='ok', **values):
-        return dict(schema='scirel.source-query-response', command=command,
-                    outcome=outcome, source_kind='working-tree', **self.identity,
-                    wheel_binding='not_bound', scientific_runtime_revalidated=False,
-                    **values)
+    def envelope(self, command, *, outcome="ok", **values):
+        return dict(
+            schema="scirel.source-query-response",
+            command=command,
+            outcome=outcome,
+            source_kind="working-tree",
+            **self.identity,
+            wheel_binding="not_bound",
+            scientific_runtime_revalidated=False,
+            **values,
+        )
 
     def describe(self):
         return self.envelope(
-            'describe', asset_count=len(self.documents), commands=['describe', 'search', 'get'],
-            filters=list(FILTER_ORDER), schemas={'request': REQUEST_SCHEMA, 'response': RESPONSE_SCHEMA},
-            manual_paths={'zh': 'tools/docs/manual', 'en': 'tools/docs/manual/en'},
-            notice='Public source inputs only; no installed wheel or scientific execution is bound.')
+            "describe",
+            asset_count=len(self.documents),
+            commands=["describe", "search", "get"],
+            filters=list(FILTER_ORDER),
+            schemas={"request": REQUEST_SCHEMA, "response": RESPONSE_SCHEMA},
+            manual_paths={"zh": "tools/docs/manual", "en": "tools/docs/manual/en"},
+            notice="Public source inputs only; no installed wheel or scientific execution is bound.",
+        )
 
     def capabilities(self, **filters):
-        result = query_capabilities(self.index, {'schema': CAPABILITY_REQUEST_SCHEMA, **filters})
-        return self.envelope('search', outcome='no_candidates' if result['status'] == 'gap'
-                             else result['status'], result=result)
+        result = query_capabilities(self.index, {"schema": CAPABILITY_REQUEST_SCHEMA, **filters})
+        return self.envelope(
+            "search",
+            outcome="no_candidates" if result["status"] == "gap" else result["status"],
+            result=result,
+        )
 
     def asset(self, asset_id, *, reader=False):
         if asset_id not in self.documents:
-            return self.envelope('get', outcome='unknown_asset', asset_id=asset_id)
-        path = 'catalog/examples/' + asset_id + '.json'
-        result = self.envelope('get', asset_id=asset_id, document=self.documents[asset_id],
-                               path=path, sha256=self.input_digests[path])
+            return self.envelope("get", outcome="unknown_asset", asset_id=asset_id)
+        path = "catalog/examples/" + asset_id + ".json"
+        result = self.envelope(
+            "get",
+            asset_id=asset_id,
+            document=self.documents[asset_id],
+            path=path,
+            sha256=self.input_digests[path],
+        )
         if reader:
-            result['translation'] = self.translations[asset_id]
+            result["translation"] = self.translations[asset_id]
         return result
 
 
@@ -351,23 +417,35 @@ def tutorial_imports(text):
     lines, imports = text.splitlines(), set()
     position = 0
     while position < len(lines):
-        if lines[position].strip() != '.. code-block:: python':
-            position += 1; continue
+        if lines[position].strip() != ".. code-block:: python":
+            position += 1
+            continue
         position += 1
         while position < len(lines) and not lines[position].strip():
             position += 1
         block = []
-        while position < len(lines) and (not lines[position].strip() or lines[position].startswith('   ')):
-            block.append(lines[position]); position += 1
+        while position < len(lines) and (
+            not lines[position].strip() or lines[position].startswith("   ")
+        ):
+            block.append(lines[position])
+            position += 1
         try:
-            tree = ast.parse(textwrap.dedent('\n'.join(block)))
+            tree = ast.parse(textwrap.dedent("\n".join(block)))
         except SyntaxError as error:
-            raise ValueError('authored Python tutorial block is not syntactically complete') from error
+            raise ValueError(
+                "authored Python tutorial block is not syntactically complete"
+            ) from error
         for node in ast.walk(tree):
-            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith('scirel'):
+            if (
+                isinstance(node, ast.ImportFrom)
+                and node.module
+                and node.module.startswith("scirel")
+            ):
                 imports.update((node.module, alias.name) for alias in node.names)
             elif isinstance(node, ast.Import):
-                imports.update((alias.name, None) for alias in node.names if alias.name.startswith('scirel'))
+                imports.update(
+                    (alias.name, None) for alias in node.names if alias.name.startswith("scirel")
+                )
     return sorted(imports, key=str)
 
 
@@ -375,6 +453,7 @@ def _public_exception_source(root, module, symbol):
     """Read an explicitly exported exception declaration without importing it."""
     from public_api_binding import implementation_module, source_module_path
     import builtins
+
     public = source_module_path(root, module)
     trees = {}
 
@@ -387,11 +466,12 @@ def _public_exception_source(root, module, symbol):
     exported = set()
     for node in tree.body:
         if isinstance(node, ast.Assign) and any(
-                isinstance(target, ast.Name) and target.id == '__all__' for target in node.targets):
+            isinstance(target, ast.Name) and target.id == "__all__" for target in node.targets
+        ):
             exported.update(ast.literal_eval(node.value))
     if symbol not in exported:
         return None
-    if public.name == '__init__.py':
+    if public.name == "__init__.py":
         relative = source_module_path(root, implementation_module(root, module, symbol))
         tree = read(relative)
     classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
@@ -402,8 +482,10 @@ def _public_exception_source(root, module, symbol):
             return True
         if name not in classes or name in seen:
             return False
-        return any(isinstance(base, ast.Name) and is_exception(base.id, seen | {name})
-                   for base in classes[name].bases)
+        return any(
+            isinstance(base, ast.Name) and is_exception(base.id, seen | {name})
+            for base in classes[name].bases
+        )
 
     if not is_exception(symbol, set()):
         return None
@@ -412,24 +494,28 @@ def _public_exception_source(root, module, symbol):
 
 def tutorial_source_bindings(root, documents, *, held_ids=()):
     """Bind authored tutorial references/imports; this is not scientific review."""
-    ids = {doc['asset_id'] for doc in documents}
+    ids = {doc["asset_id"] for doc in documents}
     bindings = set()
     for document in documents:
-        api = document['public_api']['python']
-        bindings.add((api['module'], api['symbol']))
-        if 'canonical_module' in api:
-            bindings.add((api['canonical_module'], api['canonical_symbol']))
+        api = document["public_api"]["python"]
+        bindings.add((api["module"], api["symbol"]))
+        if "canonical_module" in api:
+            bindings.add((api["canonical_module"], api["canonical_symbol"]))
     result = []
     held_ids = set(held_ids)
-    for language, relative_root in [('zh', root / 'tools/docs/manual'),
-                                     ('en', root / 'tools/docs/manual/en')]:
-        for path in sorted(relative_root.glob('*.rst')):
+    for language, relative_root in [
+        ("zh", root / "tools/docs/manual"),
+        ("en", root / "tools/docs/manual/en"),
+    ]:
+        for path in sorted(relative_root.glob("*.rst")):
             data = path.read_bytes()
             text = data.decode()
-            references = set(re.findall(r':doc:`[^`]*?(scirel\.[a-zA-Z0-9_.-]+)[^`]*`', text))
+            references = set(re.findall(r":doc:`[^`]*?(scirel\.[a-zA-Z0-9_.-]+)[^`]*`", text))
             unknown = references - ids
             if unknown - held_ids:
-                raise ValueError('tutorial refers to unknown or renamed assets: ' + str(sorted(unknown)))
+                raise ValueError(
+                    "tutorial refers to unknown or renamed assets: " + str(sorted(unknown))
+                )
             excluded = bool(unknown & held_ids)
             imports = tutorial_imports(text)
             support = {}
@@ -444,133 +530,169 @@ def tutorial_source_bindings(root, documents, *, held_ids=()):
                 if proof is None:
                     invalid.append((module, symbol))
                 else:
-                    support[module + '.' + symbol] = proof
+                    support[module + "." + symbol] = proof
             if invalid:
-                raise ValueError('tutorial imports unavailable/renamed scientific API: ' + str(invalid))
-            result.append({'language': language, 'tutorial_id': path.stem,
-                'source_sha256': sha(data),
-                'public_contract_mapping_sha256': sha(encode({
-                    doc['asset_id']: doc['public_api']['python'] for doc in documents})),
-                'public_imports': [list(item) for item in imports if item in bindings],
-                'public_exception_imports': support,
-                'delivery_status': 'subset-placeholder' if excluded else 'authored',
-                'review_status': 'NOT_RUN',
-                'meaning': 'current byte/reference binding; never a scientific-review approval'})
+                raise ValueError(
+                    "tutorial imports unavailable/renamed scientific API: " + str(invalid)
+                )
+            result.append(
+                {
+                    "language": language,
+                    "tutorial_id": path.stem,
+                    "source_sha256": sha(data),
+                    "public_contract_mapping_sha256": sha(
+                        encode({doc["asset_id"]: doc["public_api"]["python"] for doc in documents})
+                    ),
+                    "public_imports": [list(item) for item in imports if item in bindings],
+                    "public_exception_imports": support,
+                    "delivery_status": "subset-placeholder" if excluded else "authored",
+                    "review_status": "NOT_RUN",
+                    "meaning": "current byte/reference binding; never a scientific-review approval",
+                }
+            )
     return result
 
 
-def build(documents: Path, output: Path, outline: Path | None = None,
-          translation_paths: list[Path] | None = None,
-          *, source_revision: str | None = None,
-          source_dirty: bool | None = None,
-          documentation_version: str | None = None,
-          language: str = 'zh'):
+def build(
+    documents: Path,
+    output: Path,
+    outline: Path | None = None,
+    translation_paths: list[Path] | None = None,
+    *,
+    source_revision: str | None = None,
+    source_dirty: bool | None = None,
+    documentation_version: str | None = None,
+    language: str = "zh",
+):
     if language not in LANGUAGES:
-        raise ValueError('language must be one of: ' + ', '.join(LANGUAGES))
-    if language == 'en' and translation_paths is not None:
-        raise ValueError('English build does not consume Chinese reader bundles')
+        raise ValueError("language must be one of: " + ", ".join(LANGUAGES))
+    if language == "en" and translation_paths is not None:
+        raise ValueError("English build does not consume Chinese reader bundles")
     source_inputs = documentation_input_digests(
-        documents, outline=outline, translation_paths=translation_paths)
+        documents, outline=outline, translation_paths=translation_paths
+    )
     docs = load_document_set(documents)
     held = held_asset_ids()
-    docs = [document for document in docs if document['asset_id'] not in held]
-    public_documents = [document for document in load_document_set(ROOT / 'catalog/examples')
-                        if document['asset_id'] not in held]
+    docs = [document for document in docs if document["asset_id"] not in held]
+    public_documents = [
+        document
+        for document in load_document_set(ROOT / "catalog/examples")
+        if document["asset_id"] not in held
+    ]
     tutorial_bindings = tutorial_source_bindings(ROOT, public_documents, held_ids=held)
     if not docs:
-        raise ValueError('all documents are withheld by the exposure hold')
+        raise ValueError("all documents are withheld by the exposure hold")
     if documentation_version is None:
         documentation_version = project_version()
     if not isinstance(documentation_version, str) or not documentation_version.strip():
-        raise ValueError('documentation_version must be a non-empty version')
+        raise ValueError("documentation_version must be a non-empty version")
     _validate_documentation_version(documentation_version, project_version())
     if output.exists():
-        raise FileExistsError('output already exists; build a new snapshot')
+        raise FileExistsError("output already exists; build a new snapshot")
     bound_source = source_revision
     source = source_revision
     if source is None:
-        source = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-    if not isinstance(source, str) or not re.fullmatch(r'[0-9a-f]{40}', source):
-        raise ValueError('source_revision must be a full Git commit id')
+        source = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+    if not isinstance(source, str) or not re.fullmatch(r"[0-9a-f]{40}", source):
+        raise ValueError("source_revision must be a full Git commit id")
     dirty = source_dirty
     if dirty is None:
-        dirty = bool(subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT))
-    if language == 'zh':
-        translations = load_translations(ROOT, documents, docs,
-                                         translation_paths=translation_paths,
-                                         excluded_ids=held)
+        dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], cwd=ROOT))
+    if language == "zh":
+        translations = load_translations(
+            ROOT, documents, docs, translation_paths=translation_paths, excluded_ids=held
+        )
     else:
         if translation_paths is not None:
-            raise ValueError('English build does not consume Chinese reader bundles')
+            raise ValueError("English build does not consume Chinese reader bundles")
         translations = None
-    book = handbook_document({d['asset_id'] for d in docs}, outline)
+    book = handbook_document({d["asset_id"] for d in docs}, outline)
     english_guides = None
-    if language == 'en':
+    if language == "en":
         book = load_english_handbook(ROOT, book)
         english_guides = english_guide_status(
-            ROOT, book['chapters'],
-            english_available_docs(ROOT, book, {d['asset_id'] for d in docs}, matrix=True))
+            ROOT,
+            book["chapters"],
+            english_available_docs(ROOT, book, {d["asset_id"] for d in docs}, matrix=True),
+        )
     files = {}
     index = []
     for doc in docs:
-        asset = doc['asset_id']
-        files[f'records/{asset}.json'] = (documents / (asset + '.json')).read_bytes()
-        summary = {k: doc[k] for k in ('asset_id', 'title', 'summary', 'taxonomy', 'aliases', 'version')}
-        summary['public_api'] = doc['public_api']
-        summary['evidence_ceiling'] = doc['verification']['evidence_ceiling']
-        summary['known_limitations'] = doc['verification']['known_limitations']
-        if language == 'zh':
-            files[f'readers/{asset}.json'] = encode(translations[asset])
-            summary['summary_zh'] = translations[asset]['summary']
+        asset = doc["asset_id"]
+        files[f"records/{asset}.json"] = (documents / (asset + ".json")).read_bytes()
+        summary = {
+            k: doc[k] for k in ("asset_id", "title", "summary", "taxonomy", "aliases", "version")
+        }
+        summary["public_api"] = doc["public_api"]
+        summary["evidence_ceiling"] = doc["verification"]["evidence_ceiling"]
+        summary["known_limitations"] = doc["verification"]["known_limitations"]
+        if language == "zh":
+            files[f"readers/{asset}.json"] = encode(translations[asset])
+            summary["summary_zh"] = translations[asset]["summary"]
             # Lexical retrieval of existing scientific text, never generated semantics.
-            summary['search_text'] = json.dumps([doc, translations[asset]], ensure_ascii=False).lower()
+            summary["search_text"] = json.dumps(
+                [doc, translations[asset]], ensure_ascii=False
+            ).lower()
         else:
-            summary['search_text'] = capability_search_text(doc, language='en')
+            summary["search_text"] = capability_search_text(doc, language="en")
         index.append(summary)
-    files['index.json'] = encode(index)
-    files['capabilities.json'] = encode(build_capability_index(
-        docs, source_revision=source, translations=translations, language=language))
-    if language == 'zh':
-        files['index.html'] = (ROOT / 'tools/docs/index.html').read_bytes()
-        files['handbook.html'] = (ROOT / 'tools/docs/handbook.html').read_bytes()
+    files["index.json"] = encode(index)
+    files["capabilities.json"] = encode(
+        build_capability_index(
+            docs, source_revision=source, translations=translations, language=language
+        )
+    )
+    if language == "zh":
+        files["index.html"] = (ROOT / "tools/docs/index.html").read_bytes()
+        files["handbook.html"] = (ROOT / "tools/docs/handbook.html").read_bytes()
         for path in STATIC_FILES:
-            files['static/' + path] = (ROOT / 'tools/docs' / path).read_bytes()
-    files['handbook.json'] = encode(book)
+            files["static/" + path] = (ROOT / "tools/docs" / path).read_bytes()
+    files["handbook.json"] = encode(book)
     expected_wheel_sha256 = None
     if bound_source is not None:
-        current_path = ROOT / 'release/CURRENT.json'
+        current_path = ROOT / "release/CURRENT.json"
         if current_path.is_file():
             current = json.loads(current_path.read_bytes())
-            if current.get('source_revision') == bound_source:
-                expected_wheel_sha256 = (
-                    current.get('wheel', {}).get('artifact', {}).get('sha256')
-                )
+            if current.get("source_revision") == bound_source:
+                expected_wheel_sha256 = current.get("wheel", {}).get("artifact", {}).get("sha256")
     chapter = None
     figure_files = None
-    if language == 'zh':
-        files.update(chapter_files(
-            {d['asset_id'] for d in docs},
-            expected_source_revision=bound_source,
-            expected_project_version=project_version(),
-            expected_wheel_sha256=expected_wheel_sha256,
-        ))
-        chapter = json.loads(files['chapters/magnetostatics/chapter.json'])
-        figure_files = {name: files['chapters/magnetostatics/' + name]
-                        for name in ('single.svg', 'pair.svg', 'rectangle.svg')}
+    if language == "zh":
+        files.update(
+            chapter_files(
+                {d["asset_id"] for d in docs},
+                expected_source_revision=bound_source,
+                expected_project_version=project_version(),
+                expected_wheel_sha256=expected_wheel_sha256,
+            )
+        )
+        chapter = json.loads(files["chapters/magnetostatics/chapter.json"])
+        figure_files = {
+            name: files["chapters/magnetostatics/" + name]
+            for name in ("single.svg", "pair.svg", "rectangle.svg")
+        }
     matrix = build_matrix(docs, revision=source)
-    files['capability-matrix.json'] = encode(matrix)
-    files['CAPABILITY_MATRIX.md'] = render_markdown(matrix).encode('utf-8')
-    files.update(render_site(
-        ROOT, docs, book, translations, chapter,
-        figure_files=figure_files, matrix=matrix, language=language,
-        withheld_ids=held,
-    ))
-    if language == 'en':
+    files["capability-matrix.json"] = encode(matrix)
+    files["CAPABILITY_MATRIX.md"] = render_markdown(matrix).encode("utf-8")
+    files.update(
+        render_site(
+            ROOT,
+            docs,
+            book,
+            translations,
+            chapter,
+            figure_files=figure_files,
+            matrix=matrix,
+            language=language,
+            withheld_ids=held,
+        )
+    )
+    if language == "en":
         # The pydata theme ships a multilingual copybutton; its Chinese
         # locale would otherwise leak into an English page.
-        copy_path = 'web/_static/copybutton.js'
+        copy_path = "web/_static/copybutton.js"
         if copy_path in files:
-            copy_text = files[copy_path].decode('utf-8')
+            copy_text = files[copy_path].decode("utf-8")
             for source_text, english_text in (
                 ("'复制'", "'Copy'"),
                 ("'复制到剪贴板'", "'Copy to clipboard'"),
@@ -578,45 +700,55 @@ def build(documents: Path, output: Path, outline: Path | None = None,
                 ("'复制失败'", "'Copy failed'"),
             ):
                 copy_text = copy_text.replace(source_text, english_text)
-            files[copy_path] = copy_text.encode('utf-8')
+            files[copy_path] = copy_text.encode("utf-8")
     try:
         final_inputs = documentation_input_digests(
-            documents, outline=outline, translation_paths=translation_paths)
+            documents, outline=outline, translation_paths=translation_paths
+        )
     except (OSError, ValueError) as error:
-        raise ValueError('documentation source inputs changed during build') from error
+        raise ValueError("documentation source inputs changed during build") from error
     if final_inputs != source_inputs:
-        raise ValueError('documentation source inputs changed during build')
-    final_public_documents = [document for document in load_document_set(ROOT / 'catalog/examples')
-                              if document['asset_id'] not in held]
+        raise ValueError("documentation source inputs changed during build")
+    final_public_documents = [
+        document
+        for document in load_document_set(ROOT / "catalog/examples")
+        if document["asset_id"] not in held
+    ]
     if tutorial_source_bindings(ROOT, final_public_documents, held_ids=held) != tutorial_bindings:
-        raise ValueError('documentation tutorial inputs changed during build')
-    manifest = {'schema': SCHEMA, 'source_commit': source, 'source_revision': source,
-                'source_dirty': dirty,
-                'source_inputs': source_inputs,
-                'source_inputs_sha256': sha(encode(source_inputs)),
-                'project_version': project_version(),
-                'documentation_version': documentation_version,
-                'asset_count': len(docs),
-                'notice': NOTICE if language == 'zh' else NOTICE_EN,
-                'reader_language': LANGUAGE_TAGS[language],
-                'tutorial_bindings': tutorial_bindings,
-                'human_renderer': 'sphinx-pydata',
-                'validation': {'schema_and_dependency_closure': True,
-                               'scientific_runtime_revalidated': False},
-                'files': {p: {'sha256': sha(b), 'bytes': len(b)} for p, b in sorted(files.items())}}
-    if language == 'en':
-        manifest['translation_gaps'] = english_translation_gaps(docs)
-        manifest['english_guides'] = english_guides
-    manifest['snapshot_sha256'] = sha(encode(manifest))
+        raise ValueError("documentation tutorial inputs changed during build")
+    manifest = {
+        "schema": SCHEMA,
+        "source_commit": source,
+        "source_revision": source,
+        "source_dirty": dirty,
+        "source_inputs": source_inputs,
+        "source_inputs_sha256": sha(encode(source_inputs)),
+        "project_version": project_version(),
+        "documentation_version": documentation_version,
+        "asset_count": len(docs),
+        "notice": NOTICE if language == "zh" else NOTICE_EN,
+        "reader_language": LANGUAGE_TAGS[language],
+        "tutorial_bindings": tutorial_bindings,
+        "human_renderer": "sphinx-pydata",
+        "validation": {
+            "schema_and_dependency_closure": True,
+            "scientific_runtime_revalidated": False,
+        },
+        "files": {p: {"sha256": sha(b), "bytes": len(b)} for p, b in sorted(files.items())},
+    }
+    if language == "en":
+        manifest["translation_gaps"] = english_translation_gaps(docs)
+        manifest["english_guides"] = english_guides
+    manifest["snapshot_sha256"] = sha(encode(manifest))
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output.parent) as tmp:
-        stage = Path(tmp) / 'snapshot'
+        stage = Path(tmp) / "snapshot"
         stage.mkdir()
         for path, data in files.items():
             target = stage / path
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-        (stage / 'manifest.json').write_bytes(encode(manifest))
+        (stage / "manifest.json").write_bytes(encode(manifest))
         stage.rename(output)
     return manifest
 
@@ -624,178 +756,228 @@ def build(documents: Path, output: Path, outline: Path | None = None,
 class Documentation:
     def __init__(self, root: Path, expected_digest=None):
         self.root = Path(root).resolve()
-        self.manifest = json.loads((self.root / 'manifest.json').read_bytes())
-        unsigned = {k: v for k, v in self.manifest.items() if k != 'snapshot_sha256'}
+        self.manifest = json.loads((self.root / "manifest.json").read_bytes())
+        unsigned = {k: v for k, v in self.manifest.items() if k != "snapshot_sha256"}
         digest = sha(encode(unsigned))
-        if self.manifest.get('schema') != SCHEMA or digest != self.manifest.get('snapshot_sha256'):
-            raise ValueError('invalid snapshot manifest')
-        source_commit = self.manifest.get('source_commit')
-        source_revision = self.manifest.get('source_revision', source_commit)
-        if not isinstance(source_commit, str) or not re.fullmatch(r'[0-9a-f]{40}', source_commit):
-            raise ValueError('invalid documentation source_commit')
+        if self.manifest.get("schema") != SCHEMA or digest != self.manifest.get("snapshot_sha256"):
+            raise ValueError("invalid snapshot manifest")
+        source_commit = self.manifest.get("source_commit")
+        source_revision = self.manifest.get("source_revision", source_commit)
+        if not isinstance(source_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", source_commit):
+            raise ValueError("invalid documentation source_commit")
         if source_revision != source_commit:
-            raise ValueError('documentation source_revision differs from source_commit')
+            raise ValueError("documentation source_revision differs from source_commit")
         if expected_digest and expected_digest != digest:
-            raise ValueError('snapshot differs from expected digest')
-        for path in self.manifest['files']:
+            raise ValueError("snapshot differs from expected digest")
+        for path in self.manifest["files"]:
             self.read(path)
-        self.index = json.loads(self.read('index.json'))
-        self.ids = {x['asset_id'] for x in self.index}
-        if len(self.ids) != len(self.index) or len(self.ids) != self.manifest['asset_count']:
-            raise ValueError('invalid index count')
+        self.index = json.loads(self.read("index.json"))
+        self.ids = {x["asset_id"] for x in self.index}
+        if len(self.ids) != len(self.index) or len(self.ids) != self.manifest["asset_count"]:
+            raise ValueError("invalid index count")
 
     def read(self, relative):
-        if relative not in self.manifest['files']:
-            raise KeyError('unknown document')
+        if relative not in self.manifest["files"]:
+            raise KeyError("unknown document")
         target = (self.root / relative).resolve()
         if not target.is_relative_to(self.root):
-            raise ValueError('snapshot path escapes root')
+            raise ValueError("snapshot path escapes root")
         data = target.read_bytes()
-        expected = self.manifest['files'][relative]
-        if len(data) != expected['bytes'] or sha(data) != expected['sha256']:
-            raise ValueError('snapshot bytes changed; rebuild into a new directory')
+        expected = self.manifest["files"][relative]
+        if len(data) != expected["bytes"] or sha(data) != expected["sha256"]:
+            raise ValueError("snapshot bytes changed; rebuild into a new directory")
         return data
 
-    def envelope(self, schema='scirel.documentation-response', **items):
-        return {'schema': schema,
-                'snapshot_sha256': self.manifest['snapshot_sha256'],
-                'source_commit': self.manifest['source_commit'],
-                'source_revision': self.manifest.get('source_revision', self.manifest['source_commit']),
-                'documentation_version': self.manifest.get(
-                    'documentation_version', self.manifest.get('project_version')
-                ),
-                'notice': self.manifest.get('notice', NOTICE), **items}
+    def envelope(self, schema="scirel.documentation-response", **items):
+        return {
+            "schema": schema,
+            "snapshot_sha256": self.manifest["snapshot_sha256"],
+            "source_commit": self.manifest["source_commit"],
+            "source_revision": self.manifest.get("source_revision", self.manifest["source_commit"]),
+            "documentation_version": self.manifest.get(
+                "documentation_version", self.manifest.get("project_version")
+            ),
+            "notice": self.manifest.get("notice", NOTICE),
+            **items,
+        }
 
-    def search(self, q='', domain='', offset=0, limit=20, topic=''):
+    def search(self, q="", domain="", offset=0, limit=20, topic=""):
         if len(q) > 512 or offset < 0 or not 1 <= limit <= 100:
-            raise ValueError('q <= 512 characters, offset >= 0, limit 1..100 required')
+            raise ValueError("q <= 512 characters, offset >= 0, limit 1..100 required")
         # Read the bound index again so mutation after startup also fails closed.
-        index = json.loads(self.read('index.json'))
-        topic_ids = set(self.topic(topic)['document']['assets']) if topic else self.ids
+        index = json.loads(self.read("index.json"))
+        topic_ids = set(self.topic(topic)["document"]["assets"]) if topic else self.ids
         terms = q.lower().split()
-        matches = [x for x in index if x['asset_id'] in topic_ids
-                   and (not domain or domain in x['taxonomy'])
-                   and all(t in x['search_text'] for t in terms)]
-        page = [{k: v for k, v in x.items() if k != 'search_text'} for x in matches[offset:offset+limit]]
-        return self.envelope(items=page, total=len(matches), offset=offset,
-                             next_offset=offset+limit if offset+limit < len(matches) else None)
+        matches = [
+            x
+            for x in index
+            if x["asset_id"] in topic_ids
+            and (not domain or domain in x["taxonomy"])
+            and all(t in x["search_text"] for t in terms)
+        ]
+        page = [
+            {k: v for k, v in x.items() if k != "search_text"}
+            for x in matches[offset : offset + limit]
+        ]
+        return self.envelope(
+            items=page,
+            total=len(matches),
+            offset=offset,
+            next_offset=offset + limit if offset + limit < len(matches) else None,
+        )
 
     def capability_index(self):
         """Read and verify the frozen capability index bound to this snapshot."""
-        if 'capabilities.json' not in self.manifest['files']:
-            raise KeyError('snapshot has no capability index; rebuild the snapshot')
-        index = json.loads(self.read('capabilities.json'))
+        if "capabilities.json" not in self.manifest["files"]:
+            raise KeyError("snapshot has no capability index; rebuild the snapshot")
+        index = json.loads(self.read("capabilities.json"))
         return validate_capability_index(
             index,
             expected_source_revision=self.manifest.get(
-                'source_revision', self.manifest['source_commit']),
+                "source_revision", self.manifest["source_commit"]
+            ),
             expected_ids=self.ids,
         )
 
-    def capabilities(self, capability='', operation='', model='', geometry='',
-                     device_scope='', alias='', q='', offset=0, limit=20, boundary='',
-                     taxonomy=''):
+    def capabilities(
+        self,
+        capability="",
+        operation="",
+        model="",
+        geometry="",
+        device_scope="",
+        alias="",
+        q="",
+        offset=0,
+        limit=20,
+        boundary="",
+        taxonomy="",
+    ):
         """Bounded, lexically ranked retrieval using the portable query core.
 
         All supplied filters and q terms remain AND conditions; partial structured
         matches are explicitly near_miss. Ranking never proves applicability.
         """
-        response = query_capabilities(self.capability_index(), {
-            'schema': CAPABILITY_REQUEST_SCHEMA,
-            'capability': capability, 'operation': operation, 'model': model,
-            'geometry': geometry, 'boundary': boundary, 'taxonomy': taxonomy,
-            'device_scope': device_scope,
-            'alias': alias, 'q': q, 'offset': offset, 'limit': limit,
-        })
+        response = query_capabilities(
+            self.capability_index(),
+            {
+                "schema": CAPABILITY_REQUEST_SCHEMA,
+                "capability": capability,
+                "operation": operation,
+                "model": model,
+                "geometry": geometry,
+                "boundary": boundary,
+                "taxonomy": taxonomy,
+                "device_scope": device_scope,
+                "alias": alias,
+                "q": q,
+                "offset": offset,
+                "limit": limit,
+            },
+        )
         return self.envelope(**response)
 
     def asset(self, asset_id):
         if asset_id not in self.ids:
-            raise KeyError('unknown asset_id')
-        return self.envelope(document=json.loads(self.read(f'records/{asset_id}.json')))
+            raise KeyError("unknown asset_id")
+        return self.envelope(document=json.loads(self.read(f"records/{asset_id}.json")))
 
     def reader(self, asset_id):
-        if f'readers/{asset_id}.json' not in self.manifest['files']:
-            raise KeyError('snapshot has no Chinese reader layer')
+        if f"readers/{asset_id}.json" not in self.manifest["files"]:
+            raise KeyError("snapshot has no Chinese reader layer")
         result = self.asset(asset_id)
-        result['translation'] = json.loads(self.read(f'readers/{asset_id}.json'))
-        if result['translation']['source_sha256'] != sha(self.read(f'records/{asset_id}.json')):
-            raise ValueError('Chinese reader is not bound to the served exact document')
+        result["translation"] = json.loads(self.read(f"readers/{asset_id}.json"))
+        if result["translation"]["source_sha256"] != sha(self.read(f"records/{asset_id}.json")):
+            raise ValueError("Chinese reader is not bound to the served exact document")
         return result
 
     def chapter(self, chapter_id):
-        if chapter_id != 'magnetostatics':
-            raise KeyError('unknown chapter')
-        return self.envelope(document=json.loads(self.read('chapters/magnetostatics/chapter.json')))
+        if chapter_id != "magnetostatics":
+            raise KeyError("unknown chapter")
+        return self.envelope(document=json.loads(self.read("chapters/magnetostatics/chapter.json")))
 
     def handbook(self):
-        return self.envelope(document=json.loads(self.read('handbook.json')))
+        return self.envelope(document=json.loads(self.read("handbook.json")))
 
     def topic(self, topic_id):
-        for chapter in self.handbook()['document']['chapters']:
-            for topic in chapter['topics']:
-                if topic['id'] == topic_id:
-                    return self.envelope(document=topic, chapter_id=chapter['id'],
-                                         discipline=[*chapter['discipline'], chapter['title']])
-        raise KeyError('unknown handbook topic')
+        for chapter in self.handbook()["document"]["chapters"]:
+            for topic in chapter["topics"]:
+                if topic["id"] == topic_id:
+                    return self.envelope(
+                        document=topic,
+                        chapter_id=chapter["id"],
+                        discipline=[*chapter["discipline"], chapter["title"]],
+                    )
+        raise KeyError("unknown handbook topic")
 
     def handle(self, url):
         parsed = urlsplit(url)
         params = parse_qs(parsed.query, keep_blank_values=True)
         if any(len(v) != 1 for v in params.values()):
-            raise ValueError('duplicate query parameter')
+            raise ValueError("duplicate query parameter")
         p = {k: v[0] for k, v in params.items()}
-        if parsed.path == '/api/search':
-            if set(p) - {'q', 'domain', 'offset', 'limit', 'topic'}:
-                raise ValueError('unknown search parameter')
-            for key in ('offset', 'limit'):
+        if parsed.path == "/api/search":
+            if set(p) - {"q", "domain", "offset", "limit", "topic"}:
+                raise ValueError("unknown search parameter")
+            for key in ("offset", "limit"):
                 if key in p:
                     p[key] = int(p[key])
             return self.search(**p)
-        if parsed.path == '/api/capabilities':
-            if set(p) - (set(FILTER_ORDER) | {'offset', 'limit'}):
-                raise ValueError('unknown capability query parameter')
-            for key in ('offset', 'limit'):
+        if parsed.path == "/api/capabilities":
+            if set(p) - (set(FILTER_ORDER) | {"offset", "limit"}):
+                raise ValueError("unknown capability query parameter")
+            for key in ("offset", "limit"):
                 if key in p:
                     p[key] = int(p[key])
             return self.capabilities(**p)
-        if parsed.path == '/api/asset' and set(p) == {'id'}:
-            return self.asset(p['id'])
-        if parsed.path == '/api/reader' and set(p) == {'id'}:
-            return self.reader(p['id'])
-        if parsed.path == '/api/chapter' and set(p) == {'id'}:
-            return self.chapter(p['id'])
-        if parsed.path == '/api/handbook' and not p:
+        if parsed.path == "/api/asset" and set(p) == {"id"}:
+            return self.asset(p["id"])
+        if parsed.path == "/api/reader" and set(p) == {"id"}:
+            return self.reader(p["id"])
+        if parsed.path == "/api/chapter" and set(p) == {"id"}:
+            return self.chapter(p["id"])
+        if parsed.path == "/api/handbook" and not p:
             return self.handbook()
-        if parsed.path == '/api/topic' and set(p) == {'id'}:
-            return self.topic(p['id'])
-        if parsed.path == '/api/chapters' and not p:
-            c = self.chapter('magnetostatics')['document']
-            return self.envelope(items=[{k: c[k] for k in ('id', 'title', 'discipline', 'introduction')}])
-        if parsed.path == '/api' and not p:
-            endpoints = {'search': '/api/search?q=&domain=&offset=0&limit=20',
-                         'asset': '/api/asset?id=scirel.…',
-                         'manifest': '/api/manifest'}
-            if any(path.startswith('readers/') for path in self.manifest['files']):
-                endpoints['reader'] = '/api/reader?id=scirel.…'
-            if any(path.startswith('chapters/') for path in self.manifest['files']):
-                endpoints['chapters'] = '/api/chapters'
-                endpoints['chapter'] = '/api/chapter?id=magnetostatics'
+        if parsed.path == "/api/topic" and set(p) == {"id"}:
+            return self.topic(p["id"])
+        if parsed.path == "/api/chapters" and not p:
+            c = self.chapter("magnetostatics")["document"]
+            return self.envelope(
+                items=[{k: c[k] for k in ("id", "title", "discipline", "introduction")}]
+            )
+        if parsed.path == "/api" and not p:
+            endpoints = {
+                "search": "/api/search?q=&domain=&offset=0&limit=20",
+                "asset": "/api/asset?id=scirel.…",
+                "manifest": "/api/manifest",
+            }
+            if any(path.startswith("readers/") for path in self.manifest["files"]):
+                endpoints["reader"] = "/api/reader?id=scirel.…"
+            if any(path.startswith("chapters/") for path in self.manifest["files"]):
+                endpoints["chapters"] = "/api/chapters"
+                endpoints["chapter"] = "/api/chapter?id=magnetostatics"
             # Older snapshots have no generated capability index; do not
             # advertise an endpoint they cannot serve.
-            if 'capabilities.json' in self.manifest['files']:
-                endpoints['capabilities'] = ('/api/capabilities?capability=…&operation=…&'
-                                             'model=…&geometry=…&boundary=…&taxonomy=…&device_scope=…&'
-                                             'alias=…&q=…&offset=0&limit=20')
-            return self.envelope(endpoints=endpoints,
-                                 handbook='/api/handbook', topic='/api/topic?id=…',
-                                 topic_search='/api/search?topic=…&q=&offset=0&limit=20',
-                                 operations='read-only; no callable execution',
-                                 discovery=('lexical AND search, lowercase, whitespace separated; '
-                                            'exact domain filter; structured capability filters'))
-        if parsed.path == '/api/manifest' and not p:
+            if "capabilities.json" in self.manifest["files"]:
+                endpoints["capabilities"] = (
+                    "/api/capabilities?capability=…&operation=…&"
+                    "model=…&geometry=…&boundary=…&taxonomy=…&device_scope=…&"
+                    "alias=…&q=…&offset=0&limit=20"
+                )
+            return self.envelope(
+                endpoints=endpoints,
+                handbook="/api/handbook",
+                topic="/api/topic?id=…",
+                topic_search="/api/search?topic=…&q=&offset=0&limit=20",
+                operations="read-only; no callable execution",
+                discovery=(
+                    "lexical AND search, lowercase, whitespace separated; "
+                    "exact domain filter; structured capability filters"
+                ),
+            )
+        if parsed.path == "/api/manifest" and not p:
             return self.manifest
-        raise KeyError('unknown endpoint')
+        raise KeyError("unknown endpoint")
 
 
 def server(docs, port):
@@ -803,81 +985,165 @@ def server(docs, port):
         def do_GET(self):
             try:
                 path = urlsplit(self.path).path
-                page = {'/': 'index.html', '/reference': 'reference/index.html',
-                        '/tutorials/magnetostatics': 'tutorials/magnetostatics.html'}.get(path, path.lstrip('/'))
-                if 'web/' + page in docs.manifest['files']:
-                    data = docs.read('web/' + page)
-                    content_type = mimetypes.guess_type(page)[0] or 'application/octet-stream'
-                    if content_type.startswith('text/'):
-                        content_type += '; charset=utf-8'
-                elif self.path in ('/', '/index.html'):
-                    data, content_type = docs.read('handbook.html'), 'text/html; charset=utf-8'
-                elif self.path == '/tutorials/magnetostatics':
-                    data, content_type = docs.read('chapter.html'), 'text/html; charset=utf-8'
-                elif urlsplit(self.path).path == '/reference':
-                    data, content_type = docs.read('index.html'), 'text/html; charset=utf-8'
-                elif self.path.startswith('/static/') and self.path[8:] in STATIC_FILES:
+                page = {
+                    "/": "index.html",
+                    "/reference": "reference/index.html",
+                    "/tutorials/magnetostatics": "tutorials/magnetostatics.html",
+                }.get(path, path.lstrip("/"))
+                if "web/" + page in docs.manifest["files"]:
+                    data = docs.read("web/" + page)
+                    content_type = mimetypes.guess_type(page)[0] or "application/octet-stream"
+                    if content_type.startswith("text/"):
+                        content_type += "; charset=utf-8"
+                elif self.path in ("/", "/index.html"):
+                    data, content_type = docs.read("handbook.html"), "text/html; charset=utf-8"
+                elif self.path == "/tutorials/magnetostatics":
+                    data, content_type = docs.read("chapter.html"), "text/html; charset=utf-8"
+                elif urlsplit(self.path).path == "/reference":
+                    data, content_type = docs.read("index.html"), "text/html; charset=utf-8"
+                elif self.path.startswith("/static/") and self.path[8:] in STATIC_FILES:
                     data, content_type = docs.read(self.path[1:]), STATIC_FILES[self.path[8:]]
-                elif self.path.startswith('/chapters/') and self.path[1:] in docs.manifest['files']:
+                elif self.path.startswith("/chapters/") and self.path[1:] in docs.manifest["files"]:
                     suffix = Path(self.path).suffix
-                    content_type = {'.svg': 'image/svg+xml', '.json': 'application/json; charset=utf-8', '.py': 'text/plain; charset=utf-8'}[suffix]
+                    content_type = {
+                        ".svg": "image/svg+xml",
+                        ".json": "application/json; charset=utf-8",
+                        ".py": "text/plain; charset=utf-8",
+                    }[suffix]
                     data = docs.read(self.path[1:])
                 else:
-                    data, content_type = encode(docs.handle(self.path)), 'application/json; charset=utf-8'
+                    data, content_type = (
+                        encode(docs.handle(self.path)),
+                        "application/json; charset=utf-8",
+                    )
                 status = 200
             except (KeyError, ValueError, OSError) as error:
                 status = 404 if isinstance(error, KeyError) else 400
-                data, content_type = encode({'error': str(error)}), 'application/json; charset=utf-8'
+                data, content_type = (
+                    encode({"error": str(error)}),
+                    "application/json; charset=utf-8",
+                )
             self.send_response(status)
-            self.send_header('Content-Type', content_type)
-            self.send_header('Content-Length', str(len(data)))
-            self.send_header('Cache-Control', 'no-store')
-            self.send_header('X-Content-Type-Options', 'nosniff')
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
             self.end_headers()
             self.wfile.write(data)
 
         def log_message(self, *args):
             pass
-    return ThreadingHTTPServer(('127.0.0.1', port), Handler)
+
+    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    subs = parser.add_subparsers(dest='command', required=True)
-    b = subs.add_parser('build'); b.add_argument('--documents', type=Path, default=ROOT/'catalog/examples'); b.add_argument('--output', type=Path, required=True); b.add_argument('--outline', type=Path); b.add_argument('--language', choices=LANGUAGES, default='zh', help='site language: zh projects the Chinese reader layer; en projects the English contract fields with a skeleton guide'); b.add_argument('--translations', type=Path, action='append', help='Explicit complete reader bundle(s) for the selected document set; repeatable'); b.add_argument('--source-revision', help='explicit full Git commit id for an archived source tree'); b.add_argument('--source-dirty', action='store_true', help='mark an explicitly bound source tree as dirty'); b.add_argument('--documentation-version', help='documentation editorial version on the compatible wheel release line')
-    for name in ('query', 'serve'):
+    subs = parser.add_subparsers(dest="command", required=True)
+    b = subs.add_parser("build")
+    b.add_argument("--documents", type=Path, default=ROOT / "catalog/examples")
+    b.add_argument("--output", type=Path, required=True)
+    b.add_argument("--outline", type=Path)
+    b.add_argument(
+        "--language",
+        choices=LANGUAGES,
+        default="zh",
+        help="site language: zh projects the Chinese reader layer; en projects the English contract fields with a skeleton guide",
+    )
+    b.add_argument(
+        "--translations",
+        type=Path,
+        action="append",
+        help="Explicit complete reader bundle(s) for the selected document set; repeatable",
+    )
+    b.add_argument(
+        "--source-revision", help="explicit full Git commit id for an archived source tree"
+    )
+    b.add_argument(
+        "--source-dirty", action="store_true", help="mark an explicitly bound source tree as dirty"
+    )
+    b.add_argument(
+        "--documentation-version",
+        help="documentation editorial version on the compatible wheel release line",
+    )
+    for name in ("query", "serve"):
         sub = subs.add_parser(name)
         location = sub.add_mutually_exclusive_group(required=True)
-        location.add_argument('--snapshot', type=Path)
-        sub.add_argument('--expected-digest', help='selected snapshot digest or source_identity_sha256')
-        if name == 'query':
-            location.add_argument('--source-root', type=Path, help='read the public working tree without building a snapshot or wheel')
-            sub.add_argument('--describe', action='store_true', help='describe the public source query and its current identity')
-            sub.add_argument('--q', default=''); sub.add_argument('--domain', default=''); sub.add_argument('--offset', type=int, default=0); sub.add_argument('--limit', type=int, default=20); sub.add_argument('--asset'); sub.add_argument('--reader'); sub.add_argument('--chapter'); sub.add_argument('--handbook', action='store_true'); sub.add_argument('--topic', default='')
-            sub.add_argument('--capabilities', action='store_true', help='query the generated capability index instead of document search')
-            sub.add_argument('--capability', default=''); sub.add_argument('--operation', default=''); sub.add_argument('--model', default=''); sub.add_argument('--geometry', default=''); sub.add_argument('--boundary', default=''); sub.add_argument('--taxonomy', default=''); sub.add_argument('--device-scope', '--device_scope', dest='device_scope', default=''); sub.add_argument('--alias', default='')
+        location.add_argument("--snapshot", type=Path)
+        sub.add_argument(
+            "--expected-digest", help="selected snapshot digest or source_identity_sha256"
+        )
+        if name == "query":
+            location.add_argument(
+                "--source-root",
+                type=Path,
+                help="read the public working tree without building a snapshot or wheel",
+            )
+            sub.add_argument(
+                "--describe",
+                action="store_true",
+                help="describe the public source query and its current identity",
+            )
+            sub.add_argument("--q", default="")
+            sub.add_argument("--domain", default="")
+            sub.add_argument("--offset", type=int, default=0)
+            sub.add_argument("--limit", type=int, default=20)
+            sub.add_argument("--asset")
+            sub.add_argument("--reader")
+            sub.add_argument("--chapter")
+            sub.add_argument("--handbook", action="store_true")
+            sub.add_argument("--topic", default="")
+            sub.add_argument(
+                "--capabilities",
+                action="store_true",
+                help="query the generated capability index instead of document search",
+            )
+            sub.add_argument("--capability", default="")
+            sub.add_argument("--operation", default="")
+            sub.add_argument("--model", default="")
+            sub.add_argument("--geometry", default="")
+            sub.add_argument("--boundary", default="")
+            sub.add_argument("--taxonomy", default="")
+            sub.add_argument("--device-scope", "--device_scope", dest="device_scope", default="")
+            sub.add_argument("--alias", default="")
         else:
-            sub.add_argument('--port', type=int, default=8765)
+            sub.add_argument("--port", type=int, default=8765)
     a = parser.parse_args()
-    if a.command == 'build':
+    if a.command == "build":
         bound_dirty = True if a.source_dirty else (False if a.source_revision else None)
-        result = build(a.documents, a.output, a.outline, a.translations,
-                       source_revision=a.source_revision,
-                       source_dirty=bound_dirty,
-                       documentation_version=a.documentation_version,
-                       language=a.language)
-        print(json.dumps({k:v for k,v in result.items() if k != 'files'}, ensure_ascii=False)); return
-    if a.command == 'query' and a.source_root is not None:
+        result = build(
+            a.documents,
+            a.output,
+            a.outline,
+            a.translations,
+            source_revision=a.source_revision,
+            source_dirty=bound_dirty,
+            documentation_version=a.documentation_version,
+            language=a.language,
+        )
+        print(json.dumps({k: v for k, v in result.items() if k != "files"}, ensure_ascii=False))
+        return
+    if a.command == "query" and a.source_root is not None:
         if a.domain or a.chapter or a.handbook or a.topic:
-            parser.error('source queries accept capability filters, --asset, --reader or --describe')
+            parser.error(
+                "source queries accept capability filters, --asset, --reader or --describe"
+            )
         if sum(bool(value) for value in (a.asset, a.reader, a.describe)) > 1:
-            parser.error('select one of --asset, --reader or --describe')
-        command = 'describe' if a.describe else 'get' if a.asset or a.reader else 'search'
+            parser.error("select one of --asset, --reader or --describe")
+        command = "describe" if a.describe else "get" if a.asset or a.reader else "search"
         try:
             docs = SourceDocumentation(a.source_root, a.expected_digest)
         except (OSError, ValueError, KeyError, TypeError) as error:
-            print(encode(dict(schema='scirel.source-query-response', command=command,
-                              outcome='metadata_error', error=str(error))).decode())
+            print(
+                encode(
+                    dict(
+                        schema="scirel.source-query-response",
+                        command=command,
+                        outcome="metadata_error",
+                        error=str(error),
+                    )
+                ).decode()
+            )
             return 2
         try:
             if a.describe:
@@ -885,19 +1151,35 @@ def main():
             elif a.asset or a.reader:
                 result = docs.asset(a.asset or a.reader, reader=bool(a.reader))
             else:
-                result = docs.capabilities(**{field: getattr(a, field) for field in FILTER_ORDER},
-                                           offset=a.offset, limit=a.limit)
+                result = docs.capabilities(
+                    **{field: getattr(a, field) for field in FILTER_ORDER},
+                    offset=a.offset,
+                    limit=a.limit,
+                )
         except ValueError as error:
-            print(encode(docs.envelope(command, outcome='invalid_request', error=str(error))).decode())
+            print(
+                encode(docs.envelope(command, outcome="invalid_request", error=str(error))).decode()
+            )
             return 2
         print(encode(result).decode())
         return 0
-    if a.command == 'query' and a.describe:
-        parser.error('--describe requires --source-root')
+    if a.command == "query" and a.describe:
+        parser.error("--describe requires --source-root")
     docs = Documentation(a.snapshot, a.expected_digest)
-    if a.command == 'query':
-        capability_query = any((a.capabilities, a.capability, a.operation, a.model,
-                                a.geometry, a.boundary, a.taxonomy, a.device_scope, a.alias))
+    if a.command == "query":
+        capability_query = any(
+            (
+                a.capabilities,
+                a.capability,
+                a.operation,
+                a.model,
+                a.geometry,
+                a.boundary,
+                a.taxonomy,
+                a.device_scope,
+                a.alias,
+            )
+        )
         if a.reader:
             result = docs.reader(a.reader)
         elif a.handbook:
@@ -907,13 +1189,25 @@ def main():
         elif a.asset:
             result = docs.asset(a.asset)
         elif capability_query:
-            result = docs.capabilities(a.capability, a.operation, a.model, a.geometry,
-                                       a.device_scope, a.alias, a.q, a.offset, a.limit, a.boundary, a.taxonomy)
+            result = docs.capabilities(
+                a.capability,
+                a.operation,
+                a.model,
+                a.geometry,
+                a.device_scope,
+                a.alias,
+                a.q,
+                a.offset,
+                a.limit,
+                a.boundary,
+                a.taxonomy,
+            )
         else:
             result = docs.search(a.q, a.domain, a.offset, a.limit, a.topic)
-        print(encode(result).decode()); return
+        print(encode(result).decode())
+        return
     http = server(docs, a.port)
-    print(f'SciRel documentation: http://127.0.0.1:{http.server_port}', flush=True)
+    print(f"SciRel documentation: http://127.0.0.1:{http.server_port}", flush=True)
     try:
         http.serve_forever()
     except KeyboardInterrupt:
@@ -922,5 +1216,5 @@ def main():
         http.server_close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     raise SystemExit(main())

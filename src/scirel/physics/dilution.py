@@ -11,6 +11,7 @@ The implementation validates the one-main/one-impurity applicability domain
 before applying the dimensionless algebra. It is independent of the
 quasineutral reference-density closure.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -28,10 +29,7 @@ def _real_array(value, name):
         raw.dtype.kind not in "iuf"
         or raw.size == 0
         or np.ma.isMaskedArray(value)
-        or any(
-            isinstance(item, (bool, np.bool_))
-            for item in np.asarray(value, dtype=object).flat
-        )
+        or any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
         or np.any(~np.isfinite(raw))
     ):
         raise ValueError(f"{name} must be a finite real numeric value")

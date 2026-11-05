@@ -4,15 +4,14 @@ The local Mikkelsen approximation uses ``x² = E_birth/(10 m_fast T_e)``.
 The zero-energy limit is evaluated explicitly, while positive inputs use a
 series near the origin and the closed form elsewhere.
 """
+
 import numpy as np
 
 
 __all__ = ["fast_ion_fractional_heating"]
 
 
-def fast_ion_fractional_heating(
-    birth_energy, T_e, fast_ion_mass
-):
+def fast_ion_fractional_heating(birth_energy, T_e, fast_ion_mass):
     """Return the ion fraction for fast-ion birth energy.
 
     Parameters are in keV (``birth_energy`` and ``T_e``) and amu
@@ -60,12 +59,8 @@ def fast_ion_fractional_heating(
         out[small] = series
     xn = np.sqrt(x2[~small])
     x2n = x2[~small]
-    numerator = (1.0 / 6.0) * np.log(
-        (1.0 - xn + x2n) / (1.0 + 2.0 * xn + x2n)
-    )
-    numerator += (
-        np.arctan((2.0 * xn - 1.0) / np.sqrt(3.0)) + np.pi / 6.0
-    ) / np.sqrt(3.0)
+    numerator = (1.0 / 6.0) * np.log((1.0 - xn + x2n) / (1.0 + 2.0 * xn + x2n))
+    numerator += (np.arctan((2.0 * xn - 1.0) / np.sqrt(3.0)) + np.pi / 6.0) / np.sqrt(3.0)
     out[~small] = 2.0 * numerator / x2n
     if not np.all(np.isfinite(out)):
         raise FloatingPointError("fast-ion heating relation produced a nonfinite result")

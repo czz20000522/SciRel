@@ -1,6 +1,9 @@
 import numpy as np
 
-from scirel.field.circular_filament_green import circular_filament_green_response, circular_filament_green_response as scientific_function
+from scirel.field.circular_filament_green import (
+    circular_filament_green_response,
+    circular_filament_green_response as scientific_function,
+)
 
 
 # 验证：轴上的 source filament 必须依源码约定跳过，且不污染其他有限响应。
@@ -26,16 +29,17 @@ def test_weighted_filament_response_is_linear():
 
 def test_reviewed_relation_example():
     import numpy as np
-    from scirel.field.circular_filament_green import circular_filament_green_response
 
     source_r = 0.35
     source_z = 0.0
-    points = np.array([
-        [0.0, -0.2],
-        [0.0, 0.2],
-        [0.2, -0.1],
-        [0.2, 0.1],
-    ])
+    points = np.array(
+        [
+            [0.0, -0.2],
+            [0.0, 0.2],
+            [0.2, -0.1],
+            [0.2, 0.1],
+        ]
+    )
     unit = circular_filament_green_response([[source_r, source_z, 1.0]], points)
     weighted = circular_filament_green_response([[source_r, source_z, 2.5]], points)
     for name in ("gpsi", "gBR", "gBZ"):
@@ -48,9 +52,7 @@ def test_reviewed_relation_example():
     np.testing.assert_allclose(unit["gBR"][2], -unit["gBR"][3])
     np.testing.assert_allclose(unit["gBZ"][2], unit["gBZ"][3])
     np.testing.assert_allclose(unit["gpsi"][2], unit["gpsi"][3])
-    expected_axis_bz = 4.0 * np.pi * 1.0e-7 * source_r**2 / (
-        2.0 * (source_r**2 + 0.2**2) ** 1.5
-    )
+    expected_axis_bz = 4.0 * np.pi * 1.0e-7 * source_r**2 / (2.0 * (source_r**2 + 0.2**2) ** 1.5)
     np.testing.assert_allclose(unit["gBZ"][:2], expected_axis_bz, rtol=1.0e-13)
     np.testing.assert_allclose(unit["gpsi"][:2], 0.0)
     np.testing.assert_allclose(unit["gBR"][:2], 0.0)

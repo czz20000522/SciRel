@@ -1,4 +1,5 @@
 """Finite-dimensional ideal-conductor boundary correction."""
+
 import numpy as np
 
 
@@ -11,7 +12,13 @@ def _finite_array(name, value, ndim):
     return array
 
 
-def correct_ideal_conductor_boundary_flux(uncorrected_field_flux, boundary_sample_matrix, green_boundary_to_boundary, green_boundary_to_field, rcond=1e-10):
+def correct_ideal_conductor_boundary_flux(
+    uncorrected_field_flux,
+    boundary_sample_matrix,
+    green_boundary_to_boundary,
+    green_boundary_to_field,
+    rcond=1e-10,
+):
     """Cancel sampled boundary flux with a truncated-SVD source solve."""
     field_flux = _finite_array("uncorrected_field_flux", uncorrected_field_flux, 1)
     samples = _finite_array("boundary_sample_matrix", boundary_sample_matrix, 2)

@@ -23,6 +23,7 @@ fail-closed contracts. Finite valid-path comparison with the saved
 implementation is bounded historical development evidence, not qualified-L1
 provenance; the saved bundle's strict D1 qualification has been withdrawn.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -37,7 +38,9 @@ def _real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             not isinstance(value, np.ndarray)
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         return np.asarray(value, dtype=float)
@@ -113,9 +116,7 @@ def normalize_incoming_neutral_boundary(
         or speed <= 0.0
         or not np.isfinite(target)
     ):
-        raise ValueError(
-            "boundary shape, quadrature, thermal speed, or target flux is invalid"
-        )
+        raise ValueError("boundary shape, quadrature, thermal speed, or target flux is invalid")
     positive = axial > 0.0
     if not np.any(positive):
         raise ValueError("vx must contain a positive incoming half")

@@ -1,4 +1,5 @@
 """Classify closed-flux material support on a Cartesian solver grid."""
+
 from __future__ import annotations
 
 import math

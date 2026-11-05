@@ -111,9 +111,7 @@ def _source_content_sha256(root: Path) -> str | None:
         paths.extend(
             path
             for path in source_root.rglob("*")
-            if path.is_file()
-            and "__pycache__" not in path.parts
-            and path.suffix != ".pyc"
+            if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
         )
     paths = sorted(
         path
@@ -195,12 +193,16 @@ def _resolve_target(
             load_module, load_symbol = canonical_binding(python_api)
         else:
             load_module, load_symbol = implementation, symbol
-        return {
-            "asset_id": asset_id,
-            "module": load_module,
-            "symbol": load_symbol or "",
-            "implementation": implementation,
-        }, load_module, load_symbol
+        return (
+            {
+                "asset_id": asset_id,
+                "module": load_module,
+                "symbol": load_symbol or "",
+                "implementation": implementation,
+            },
+            load_module,
+            load_symbol,
+        )
 
     assert target is not None
     if ":" in target:
@@ -450,9 +452,7 @@ def measure(
     child_isolated = bool(child_result.pop("child_isolated", False))
     if not child_isolated:
         binding_status = "UNBOUND"
-        binding_reasons = sorted(
-            set(binding_reasons) | {"child process was not isolated"}
-        )
+        binding_reasons = sorted(set(binding_reasons) | {"child process was not isolated"})
     child_result["target"] = target_info
     child_result["mode"] = mode
     child_result["binding_status"] = binding_status

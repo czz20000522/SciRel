@@ -1,4 +1,5 @@
 """Direct contract tests for the source-specific neutral velocity mesh."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -54,14 +55,22 @@ def test_generated_mesh_feeds_quadrature_seed_and_moment_reduction():
     vx, vr, tnorm, _, _ = create_adaptive_neutral_velocity_mesh(4, (1.0, 1.05))
     quadrature = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)
     seed = build_shifted_maxwellian_seed(
-        vr=vr, vx=vx, tnorm_ev=tnorm,
-        shifted_vx_m_s=np.array([0.0]), temperature_ev=np.array([tnorm]),
-        mass_amu=1.0, molecule_count=1,
+        vr=vr,
+        vx=vx,
+        tnorm_ev=tnorm,
+        shifted_vx_m_s=np.array([0.0]),
+        temperature_ev=np.array([tnorm]),
+        mass_amu=1.0,
+        molecule_count=1,
         cylindrical_volume=quadrature["volume"],
     )
     moments = reduce_axisymmetric_neutral_moments(
-        seed["distribution"], vx, vr, quadrature["volume"],
-        normalization_temperature_ev=tnorm, isotope_mass_amu=1.0,
+        seed["distribution"],
+        vx,
+        vr,
+        quadrature["volume"],
+        normalization_temperature_ev=tnorm,
+        isotope_mass_amu=1.0,
         molecularity=1,
     )
     np.testing.assert_allclose(moments["density_m3"], [1.0], rtol=1e-15)
@@ -76,9 +85,16 @@ def test_invalid_node_count_fails_closed(nv):
 
 
 @pytest.mark.parametrize(
-    "temperatures", [
-        (), (0.0,), (float("nan"),), (float("inf"),),
-        np.array([1.0 + 0.0j]), np.array([True]), [1.0, True], ["1.0"],
+    "temperatures",
+    [
+        (),
+        (0.0,),
+        (float("nan"),),
+        (float("inf"),),
+        np.array([1.0 + 0.0j]),
+        np.array([True]),
+        [1.0, True],
+        ["1.0"],
         np.array([[1.0]]),
     ],
 )
@@ -88,9 +104,16 @@ def test_invalid_temperature_array_fails_closed(temperatures):
 
 
 @pytest.mark.parametrize(
-    "requested", [
-        True, "2.0", ["2.0"], [1.0 + 0.0j], [1.0, True],
-        np.array([np.inf]), np.array([np.nan]), np.array([[2.0]]),
+    "requested",
+    [
+        True,
+        "2.0",
+        ["2.0"],
+        [1.0 + 0.0j],
+        [1.0, True],
+        np.array([np.inf]),
+        np.array([np.nan]),
+        np.array([[2.0]]),
     ],
 )
 def test_invalid_requested_energy_fails_by_parameter_name(requested):
@@ -110,9 +133,7 @@ def test_invalid_temperature_cap_fails_closed(cap):
 )
 def test_duplicate_inserted_node_fails_before_downstream_quadrature(requested, cap):
     with pytest.raises(ValueError, match="strictly increasing"):
-        create_adaptive_neutral_velocity_mesh(
-            4, (1.0,), requested, temperature_cap_ev=cap
-        )
+        create_adaptive_neutral_velocity_mesh(4, (1.0,), requested, temperature_cap_ev=cap)
 
 
 def test_valid_numpy_integer_node_count_is_accepted():

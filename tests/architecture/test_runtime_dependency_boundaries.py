@@ -66,7 +66,9 @@ def _copy_runtime_tree(tmp_path: Path) -> Path:
 def test_runtime_import_guard_rejects_undeclared_dependency(tmp_path: Path) -> None:
     root = _copy_runtime_tree(tmp_path)
     target = root / "src/scirel/geometry/sampling.py"
-    target.write_text("import unknown_scirel_dependency\n" + target.read_text(encoding="utf-8"), encoding="utf-8")
+    target.write_text(
+        "import unknown_scirel_dependency\n" + target.read_text(encoding="utf-8"), encoding="utf-8"
+    )
 
     result = validate(root)
 

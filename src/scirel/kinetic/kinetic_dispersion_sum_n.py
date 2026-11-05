@@ -1,4 +1,5 @@
 """Assemble the finite-harmonic Maxwellian kinetic dielectric tensor with NumPy species and harmonic arrays."""
+
 import numpy as np
 
 from .bessel_gamma import evaluate_bessel_gamma
@@ -21,7 +22,9 @@ def _finite_scalar(name, value, *, nonzero=False):
     except (TypeError, ValueError, OverflowError) as error:
         raise ValueError(f"{name} must be a finite numeric scalar") from error
     if not np.isfinite(number) or (nonzero and number == 0.0):
-        raise ValueError(f"{name} must be finite and non-zero" if nonzero else f"{name} must be finite")
+        raise ValueError(
+            f"{name} must be finite and non-zero" if nonzero else f"{name} must be finite"
+        )
     return number
 
 
@@ -30,7 +33,9 @@ def _species_array(name, value):
         object_values = np.asarray(value, dtype=object)
         raw = np.asarray(value)
         if (
-            raw.ndim != 1 or raw.size == 0 or raw.dtype.kind not in "iuf"
+            raw.ndim != 1
+            or raw.size == 0
+            or raw.dtype.kind not in "iuf"
             or any(isinstance(item, (bool, np.bool_)) for item in object_values.flat)
         ):
             raise ValueError
@@ -66,7 +71,9 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     if any(values.shape != qs.shape for values in (ms, ns0, Ts0)):
         raise ValueError("all species vectors must have the same shape")
     if np.any(qs == 0) or np.any(ms <= 0) or np.any(ns0 <= 0) or np.any(Ts0 <= 0):
-        raise ValueError("charges must be nonzero; masses, densities and temperatures must be positive")
+        raise ValueError(
+            "charges must be nonzero; masses, densities and temperatures must be positive"
+        )
 
     omega = 2.0 * np.pi * f
     vts = np.sqrt(2.0 * _KB * Ts0 / ms)
@@ -98,11 +105,13 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
             yz = -1j * np.sqrt(2.0) * zn * a[s] * gp
             zz = 2.0 * zn**2 * g
             term = wps2[s] / omega**2 * z0 * z
-            k_tensor += term * np.array([
-                [xx, xy, xz],
-                [-xy, yy, yz],
-                [xz, -yz, zz],
-            ])
+            k_tensor += term * np.array(
+                [
+                    [xx, xy, xz],
+                    [-xy, yy, yz],
+                    [xz, -yz, zz],
+                ]
+            )
         k_tensor[2, 2] += wps2[s] / omega**2 * 2.0 * z0**2
 
     if kz < 0.0:
@@ -118,7 +127,11 @@ def evaluate_kinetic_dispersion_sum(*, B0, qs, ms, ns0, Ts0, f, kz, kx, lmx=5):
     d_tensor[2, 0] += nx * nz
     d_tensor[2, 2] -= nx**2
     determinant = np.linalg.det(d_tensor)
-    if not np.all(np.isfinite(k_tensor)) or not np.all(np.isfinite(d_tensor)) or not np.isfinite(determinant):
+    if (
+        not np.all(np.isfinite(k_tensor))
+        or not np.all(np.isfinite(d_tensor))
+        or not np.isfinite(determinant)
+    ):
         raise ValueError("kinetic dispersion tensor is not finite and representable")
     return {
         "K": k_tensor,

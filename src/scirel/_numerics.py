@@ -12,11 +12,11 @@ def stable_gradient(values, coordinates, axis):
     h = np.diff(np.asarray(coordinates, dtype=float))
     slopes = np.diff(f, axis=-1) / h
     result = np.empty_like(f)
-    result[..., 1:-1] = (
-        h[1:] * slopes[..., :-1] + h[:-1] * slopes[..., 1:]
-    ) / (h[:-1] + h[1:])
+    result[..., 1:-1] = (h[1:] * slopes[..., :-1] + h[:-1] * slopes[..., 1:]) / (h[:-1] + h[1:])
     result[..., 0] = slopes[..., 0] - h[0] * (slopes[..., 1] - slopes[..., 0]) / (h[0] + h[1])
-    result[..., -1] = slopes[..., -1] + h[-1] * (slopes[..., -1] - slopes[..., -2]) / (h[-2] + h[-1])
+    result[..., -1] = slopes[..., -1] + h[-1] * (slopes[..., -1] - slopes[..., -2]) / (
+        h[-2] + h[-1]
+    )
     return np.moveaxis(result, -1, axis)
 
 
@@ -42,7 +42,9 @@ def _potential_midpoint(left, right):
 def _scaled_difference(left, right, multiplier, divisor):
     """Compute multiplier*(left-right)/divisor without absolute-origin loss."""
 
-    a, b, q, t = np.broadcast_arrays(*[np.asarray(x, dtype=float) for x in (left, right, multiplier, divisor)])
+    a, b, q, t = np.broadcast_arrays(
+        *[np.asarray(x, dtype=float) for x in (left, right, multiplier, divisor)]
+    )
     if not all(np.all(np.isfinite(x)) for x in (a, b, q, t)) or np.any(t <= 0.0):
         raise ValueError("scaled difference requires finite inputs and a positive divisor")
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):
@@ -58,11 +60,17 @@ def _scaled_difference(left, right, multiplier, divisor):
 
         for idx in np.ndindex(value.shape):
             if not np.isfinite(value[idx]):
-                exact = Fraction(float(q[idx])) * (Fraction(float(a[idx])) - Fraction(float(b[idx]))) / Fraction(float(t[idx]))
+                exact = (
+                    Fraction(float(q[idx]))
+                    * (Fraction(float(a[idx])) - Fraction(float(b[idx])))
+                    / Fraction(float(t[idx]))
+                )
                 try:
                     value[idx] = float(exact)
                 except OverflowError as exc:
-                    raise FloatingPointError("scaled physical difference exceeds the finite range") from exc
+                    raise FloatingPointError(
+                        "scaled physical difference exceeds the finite range"
+                    ) from exc
         if not np.all(np.isfinite(value)):
             raise FloatingPointError("scaled physical difference exceeds the finite range")
     return value

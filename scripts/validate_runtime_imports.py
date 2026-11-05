@@ -73,7 +73,9 @@ class _ImportCollector(ast.NodeVisitor):
         elif isinstance(node.func, ast.Attribute):
             function_name = node.func.attr
         if function_name in DYNAMIC_CALLS | {OPTIONAL_CALL}:
-            module = node.args[0].value if node.args and isinstance(node.args[0], ast.Constant) else None
+            module = (
+                node.args[0].value if node.args and isinstance(node.args[0], ast.Constant) else None
+            )
             if isinstance(module, str):
                 extra = None
                 for keyword in node.keywords:
@@ -87,7 +89,10 @@ class _ImportCollector(ast.NodeVisitor):
 
 def _declared_layers(root: Path) -> tuple[set[str], dict[str, set[str]]]:
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
-    core = {Requirement(value).name.lower().replace("-", "_") for value in project.get("dependencies", [])}
+    core = {
+        Requirement(value).name.lower().replace("-", "_")
+        for value in project.get("dependencies", [])
+    }
     optional: dict[str, set[str]] = {}
     for extra, requirements in project.get("optional-dependencies", {}).items():
         optional[extra] = {
@@ -139,9 +144,7 @@ def validate(root: Path = ROOT) -> dict[str, Any]:
         "schema": "scirel.runtime-import-closure",
         "status": "PASS" if not errors else "FAIL",
         "core_dependencies": sorted(core),
-        "optional_dependencies": {
-            name: sorted(names) for name, names in sorted(optional.items())
-        },
+        "optional_dependencies": {name: sorted(names) for name, names in sorted(optional.items())},
         "observed_external_roots": sorted(observed_external),
         "import_count": len(records),
         "errors": errors,

@@ -21,12 +21,12 @@ predecessors and the read-only L1 route; those arms live outside the repository
 and are not reachable from the maintained baseline, so they are not replayed
 here.  The claims they established are the ones asserted below.
 """
+
 from __future__ import annotations
 
 import importlib.util
 import inspect
 import pathlib
-import sys
 from decimal import Decimal
 from fractions import Fraction
 
@@ -63,7 +63,8 @@ TEMPERATURE_KEV = 250.0
 
 def test_the_module_publishes_only_the_two_momentum_scales():
     assert momentum_scales.__all__ == [
-        "normalized_momentum", "thermal_electron_momentum",
+        "normalized_momentum",
+        "thermal_electron_momentum",
     ]
     for name in HELD_OUT:
         assert not hasattr(momentum_scales, name), name
@@ -107,13 +108,12 @@ def test_the_two_leaves_do_not_reference_each_other():
     assert "def normalized_momentum" in source
     assert not hasattr(momentum_scales, "compose")
     assert momentum_scales.__all__ == [
-        "normalized_momentum", "thermal_electron_momentum",
+        "normalized_momentum",
+        "thermal_electron_momentum",
     ]
     # The two signatures share no parameter name, so a caller cannot pass one
     # leaf's output to the other leaf without renaming it explicitly.
-    thermal_parameters = set(
-        inspect.signature(thermal_electron_momentum).parameters
-    )
+    thermal_parameters = set(inspect.signature(thermal_electron_momentum).parameters)
     momentum_parameters = set(inspect.signature(normalized_momentum).parameters)
     assert thermal_parameters == {"temperature_kev", "restmkev"}
     assert momentum_parameters == {"x", "vnorm", "clight"}
@@ -127,9 +127,7 @@ def test_p_te_is_dimensionless_and_vnorm_is_a_velocity():
     number of order one is exactly what a speed ratio in units of ``c`` looks like,
     and ``vnorm``'s own contract requires a velocity in the same unit as ``clight``.
     """
-    p_te = thermal_electron_momentum(
-        temperature_kev=TEMPERATURE_KEV, restmkev=REST_MASS_KEV
-    )
+    p_te = thermal_electron_momentum(temperature_kev=TEMPERATURE_KEV, restmkev=REST_MASS_KEV)
     assert p_te == float(np.sqrt(2.0 * TEMPERATURE_KEV / REST_MASS_KEV))
     assert 0.0 < p_te < 1.0, "a v/c ratio for a thermal electron is below one"
     # A thermal electron speed in cm/s is p_Te * c, not p_Te.  The scale is
@@ -151,9 +149,7 @@ def test_the_map_divides_by_clight_exactly_once():
     Both halves are individually correct, which is why a passing suite did not
     catch the original claim; the defect was in the claim, not in either leaf.
     """
-    p_te = thermal_electron_momentum(
-        temperature_kev=TEMPERATURE_KEV, restmkev=REST_MASS_KEV
-    )
+    p_te = thermal_electron_momentum(temperature_kev=TEMPERATURE_KEV, restmkev=REST_MASS_KEV)
     as_v3_did = normalized_momentum(x=GRID, vnorm=p_te, clight=CLIGHT)
     consistent = GRID * p_te
     assert np.array_equal(as_v3_did, GRID * p_te / CLIGHT)
@@ -183,15 +179,14 @@ def test_the_dimensionally_valid_conversion_is_the_callers():
     is performed in the test body rather than by the asset, which claims no unit
     conversion of any kind.
     """
-    p_te = thermal_electron_momentum(
-        temperature_kev=TEMPERATURE_KEV, restmkev=REST_MASS_KEV
-    )
+    p_te = thermal_electron_momentum(temperature_kev=TEMPERATURE_KEV, restmkev=REST_MASS_KEV)
     as_velocity = p_te * CLIGHT
     converted = normalized_momentum(x=GRID, vnorm=as_velocity, clight=CLIGHT)
     assert np.array_equal(converted, GRID * p_te)
     # And the module exposes no helper that would perform it for the caller.
     assert momentum_scales.__all__ == [
-        "normalized_momentum", "thermal_electron_momentum",
+        "normalized_momentum",
+        "thermal_electron_momentum",
     ]
     assert not hasattr(momentum_scales, "thermal_speed")
 
@@ -215,9 +210,7 @@ def test_the_asset_documents_do_not_claim_the_composition():
 def test_thermal_electron_momentum_is_exactly_the_closed_form():
     for temperature_kev in (1.0, 10.0, 511.0, 2.5e3, 1.0e-6):
         for restmkev in (REST_MASS_KEV, 1.0, 9.1093837015e-28):
-            ours = thermal_electron_momentum(
-                temperature_kev=temperature_kev, restmkev=restmkev
-            )
+            ours = thermal_electron_momentum(temperature_kev=temperature_kev, restmkev=restmkev)
             assert ours == float(np.sqrt(2.0 * temperature_kev / restmkev))
 
 
@@ -237,10 +230,11 @@ def test_normalized_momentum_is_exactly_the_closed_form():
 def test_the_thermal_intermediate_overflow_has_a_finite_result():
     """V6 correction: 2*T overflow does not make sqrt(2*T/511) infinite."""
     from decimal import localcontext
+
     with localcontext() as context:
         context.prec = 200
         expected = float((Decimal(2) * Decimal.from_float(1e308) / Decimal(511)).sqrt())
-    assert thermal_electron_momentum(temperature_kev=1e308, restmkev=511.) == expected
+    assert thermal_electron_momentum(temperature_kev=1e308, restmkev=511.0) == expected
 
 
 def test_the_momentum_witness_is_rejected():
@@ -267,9 +261,7 @@ def test_the_check_is_representability_and_not_a_magnitude_cutoff():
     profile whose arithmetic stays inside the range.
     """
     for temperature_kev in (1.0e-6, 1.0, 2.5e3, 1.0e300, 1.0e307):
-        ours = thermal_electron_momentum(
-            temperature_kev=temperature_kev, restmkev=511.0
-        )
+        ours = thermal_electron_momentum(temperature_kev=temperature_kev, restmkev=511.0)
         assert np.isfinite(ours)
         assert ours == float(np.sqrt(2.0 * temperature_kev / 511.0))
     for vnorm, clight in (
@@ -298,13 +290,9 @@ def test_the_rejection_is_a_value_error_and_not_a_partial_result():
     [
         lambda: thermal_electron_momentum(temperature_kev=0.0, restmkev=1.0),
         lambda: thermal_electron_momentum(temperature_kev=1.0, restmkev=-1.0),
-        lambda: thermal_electron_momentum(
-            temperature_kev=float("nan"), restmkev=1.0
-        ),
+        lambda: thermal_electron_momentum(temperature_kev=float("nan"), restmkev=1.0),
         lambda: normalized_momentum(x=np.zeros((2, 2)), vnorm=1.0, clight=1.0),
-        lambda: normalized_momentum(
-            x=np.array([0.0, np.inf]), vnorm=1.0, clight=1.0
-        ),
+        lambda: normalized_momentum(x=np.array([0.0, np.inf]), vnorm=1.0, clight=1.0),
         lambda: normalized_momentum(x=GRID, vnorm=-1.0, clight=1.0),
         lambda: normalized_momentum(x=GRID, vnorm=1.0, clight=0.0),
     ],
@@ -364,9 +352,7 @@ def test_a_non_scalar_container_is_rejected_by_parameter_name(container):
 )
 def test_a_scalar_shaped_value_is_accepted(scalar):
     """A 0-dimensional array is scalar-shaped; NumPy scalars and integers are scalars."""
-    assert thermal_electron_momentum(
-        temperature_kev=scalar, restmkev=1.0
-    ) == float(np.sqrt(2.0))
+    assert thermal_electron_momentum(temperature_kev=scalar, restmkev=1.0) == float(np.sqrt(2.0))
     assert np.array_equal(
         normalized_momentum(x=GRID, vnorm=scalar, clight=1.0), GRID * float(scalar)
     )
@@ -380,9 +366,9 @@ def test_a_convertible_non_numeric_value_is_left_as_the_retained_route_has_it(co
     applied exactly as the retained route does.  Whether they *should* be accepted
     is a separate review question and is not decided here.
     """
-    assert thermal_electron_momentum(
-        temperature_kev=convertible, restmkev=1.0
-    ) == float(np.sqrt(2.0 * float(convertible)))
+    assert thermal_electron_momentum(temperature_kev=convertible, restmkev=1.0) == float(
+        np.sqrt(2.0 * float(convertible))
+    )
 
 
 def test_the_retained_allowances_are_kept():

@@ -12,7 +12,9 @@ def _real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         result = np.asarray(raw, dtype=float)
@@ -42,9 +44,7 @@ def assemble_simple_charge_exchange_source(
     """
     target = _real_array(target_distribution, "target_distribution")
     alpha = _real_array(charge_exchange_frequency_m_inv, "charge_exchange_frequency_m_inv")
-    previous = _real_array(
-        previous_generation_distribution, "previous_generation_distribution"
-    )
+    previous = _real_array(previous_generation_distribution, "previous_generation_distribution")
     weight = _real_array(cylindrical_weight, "cylindrical_weight")
     axial_width = _real_array(dvx, "dvx")
     if (
@@ -54,9 +54,13 @@ def assemble_simple_charge_exchange_source(
         or weight.shape != target.shape[:2]
         or axial_width.shape != (target.shape[1],)
     ):
-        raise ValueError("Simple_CX fields must be finite and aligned; rates and quadrature must be nonnegative")
+        raise ValueError(
+            "Simple_CX fields must be finite and aligned; rates and quadrature must be nonnegative"
+        )
     if np.any(alpha < 0) or np.any(weight < 0) or np.any(axial_width < 0):
-        raise ValueError("Simple_CX fields must be finite and aligned; rates and quadrature must be nonnegative")
+        raise ValueError(
+            "Simple_CX fields must be finite and aligned; rates and quadrature must be nonnegative"
+        )
     with np.errstate(over="ignore", invalid="ignore"):
         # Contract the predecessor once in velocity space; the target field
         # is then scaled independently at every spatial node.

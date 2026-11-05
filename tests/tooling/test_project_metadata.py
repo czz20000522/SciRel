@@ -39,6 +39,4 @@ def test_package_discovery_excludes_private_development_compositions() -> None:
 
     assert "scirel.equilibrium" in packages
     assert "scirel._framework_compositions" not in packages
-    assert not any(
-        package.startswith("scirel._framework_compositions.") for package in packages
-    )
+    assert not any(package.startswith("scirel._framework_compositions.") for package in packages)

@@ -7,7 +7,10 @@ import sys
 import numpy as np
 import pytest
 
-from scirel.kinetic.mirror_constrained_moments import evaluate_mirror_constrained_moments, evaluate_mirror_constrained_moments as scientific_function
+from scirel.kinetic.mirror_constrained_moments import (
+    evaluate_mirror_constrained_moments,
+    evaluate_mirror_constrained_moments as scientific_function,
+)
 
 
 E = 1.602176634e-19
@@ -58,23 +61,55 @@ def test_untruncated_moments_match_closed_form():
     result = scientific_function(b, np.zeros(3), 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
     t_perp = b / ((b - 1.0) / (1200 * E) + 1.0 / (2400 * E))
     density = 2e18 * t_perp / (2400 * E)
-    np.testing.assert_allclose(result['density_m3'], density)
-    np.testing.assert_allclose(result['p_parallel_pa'], density * 1200 * E)
-    np.testing.assert_allclose(result['p_perpendicular_pa'], density * t_perp)
+    np.testing.assert_allclose(result["density_m3"], density)
+    np.testing.assert_allclose(result["p_parallel_pa"], density * 1200 * E)
+    np.testing.assert_allclose(result["p_perpendicular_pa"], density * t_perp)
 
 
 def test_plugged_loss_cone_reduces_moments_without_negative_values():
-    result = scientific_function(np.array([1.0, 2.0]), np.zeros(2), 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0, b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0, loss_cone_refill=0.0, quadrature_order=40)
-    assert np.all(result['density_pitch_integral'] < 1.0)
-    assert np.all(result['density_m3'] > 0.0)
-    assert np.all(result['p_parallel_pa'] >= 0.0)
+    result = scientific_function(
+        np.array([1.0, 2.0]),
+        np.zeros(2),
+        0.0,
+        M,
+        E,
+        2e18,
+        1200 * E,
+        2400 * E,
+        1.0,
+        b_plug_left_t=4.0,
+        b_plug_right_t=5.0,
+        phi_plug_left_v=800.0,
+        phi_plug_right_v=1000.0,
+        loss_cone_refill=0.0,
+        quadrature_order=40,
+    )
+    assert np.all(result["density_pitch_integral"] < 1.0)
+    assert np.all(result["density_m3"] > 0.0)
+    assert np.all(result["p_parallel_pa"] >= 0.0)
 
 
 def test_plugged_default_is_the_source_empty_loss_cone_default():
-    kwargs = dict(b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0)
-    default = scientific_function(np.array([1.0]), np.zeros(1), 0.0, M, E, 2e18, 1200*E, 2400*E, 1.0, **kwargs)
-    explicit = scientific_function(np.array([1.0]), np.zeros(1), 0.0, M, E, 2e18, 1200*E, 2400*E, 1.0, loss_cone_refill=0.0, **kwargs)
-    np.testing.assert_allclose(default['density_m3'], explicit['density_m3'])
+    kwargs = dict(
+        b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=1000.0
+    )
+    default = scientific_function(
+        np.array([1.0]), np.zeros(1), 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0, **kwargs
+    )
+    explicit = scientific_function(
+        np.array([1.0]),
+        np.zeros(1),
+        0.0,
+        M,
+        E,
+        2e18,
+        1200 * E,
+        2400 * E,
+        1.0,
+        loss_cone_refill=0.0,
+        **kwargs,
+    )
+    np.testing.assert_allclose(default["density_m3"], explicit["density_m3"])
 
 
 def test_single_plug_field_is_rejected():
@@ -82,52 +117,61 @@ def test_single_plug_field_is_rejected():
         scientific_function(1.0, 0.0, 0.0, M, E, 1e18, E, E, 1.0, b_plug_left_t=4.0)
     except ValueError:
         return
-    raise AssertionError('expected invalid one-sided plug contract to fail')
+    raise AssertionError("expected invalid one-sided plug contract to fail")
 
 
 def test_refill_one_skips_plug_profiles_but_still_validates_quadrature_control():
     args = (1.25, 0.0, 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
 
     def unexpected_profile(_psi):
-        raise AssertionError('refill-one branch must not evaluate plug profiles')
+        raise AssertionError("refill-one branch must not evaluate plug profiles")
 
     baseline = scientific_function(*args)
     restored = scientific_function(
-        *args, b_plug_left_t=unexpected_profile,
+        *args,
+        b_plug_left_t=unexpected_profile,
         b_plug_right_t=unexpected_profile,
         phi_plug_left_v=unexpected_profile,
         phi_plug_right_v=unexpected_profile,
         loss_cone_refill=1.0,
     )
-    np.testing.assert_allclose(restored['density_m3'], baseline['density_m3'])
-    np.testing.assert_allclose(restored['p_parallel_pa'], baseline['p_parallel_pa'])
-    np.testing.assert_allclose(restored['p_perpendicular_pa'], baseline['p_perpendicular_pa'])
-    with pytest.raises(ValueError, match='quadrature_order'):
+    np.testing.assert_allclose(restored["density_m3"], baseline["density_m3"])
+    np.testing.assert_allclose(restored["p_parallel_pa"], baseline["p_parallel_pa"])
+    np.testing.assert_allclose(restored["p_perpendicular_pa"], baseline["p_perpendicular_pa"])
+    with pytest.raises(ValueError, match="quadrature_order"):
         scientific_function(*args, quadrature_order=7.9)
 
 
 def test_fractional_quadrature_order_uses_its_integer_part():
     args = (1.25, 0.0, 0.0, M, E, 2e18, 1200 * E, 2400 * E, 1.0)
-    plugs = dict(b_plug_left_t=4.0, b_plug_right_t=5.0,
-                 phi_plug_left_v=800.0, phi_plug_right_v=-800.0)
+    plugs = dict(
+        b_plug_left_t=4.0, b_plug_right_t=5.0, phi_plug_left_v=800.0, phi_plug_right_v=-800.0
+    )
     integer = scientific_function(*args, quadrature_order=16, **plugs)
     fractional = scientific_function(*args, quadrature_order=16.9, **plugs)
-    for field in ('density_pitch_integral', 'parallel_pitch_integral',
-                  'perpendicular_pitch_integral'):
+    for field in (
+        "density_pitch_integral",
+        "parallel_pitch_integral",
+        "perpendicular_pitch_integral",
+    ):
         np.testing.assert_array_equal(fractional[field], integer[field])
 
 
 def test_signed_negative_charge_is_supported_by_the_leaf():
     result = scientific_function(1.0, 0.0, 1.0, M, -E, 1e18, E, E, 1.0)
-    np.testing.assert_allclose(result['density_m3'], 1e18 * np.e)
+    np.testing.assert_allclose(result["density_m3"], 1e18 * np.e)
 
 
 def test_vectorized_psi_profile_matches_its_explicit_array_values():
     psi = np.array([0.0, 0.25, 0.5])
     density = lambda value: 2e18 * (1.0 + 0.2 * value)
-    callable_result = scientific_function(np.ones(3), psi, 0.0, M, E, density, 1200 * E, 2400 * E, 1.0)
-    array_result = scientific_function(np.ones(3), psi, 0.0, M, E, density(psi), 1200 * E, 2400 * E, 1.0)
-    np.testing.assert_allclose(callable_result['density_m3'], array_result['density_m3'])
+    callable_result = scientific_function(
+        np.ones(3), psi, 0.0, M, E, density, 1200 * E, 2400 * E, 1.0
+    )
+    array_result = scientific_function(
+        np.ones(3), psi, 0.0, M, E, density(psi), 1200 * E, 2400 * E, 1.0
+    )
+    np.testing.assert_allclose(callable_result["density_m3"], array_result["density_m3"])
 
 
 def test_reviewed_relation_example():
@@ -194,8 +238,11 @@ def test_reviewed_relation_example():
         loss_cone_refill=0.0,
         quadrature_order=256,
     )
+
     def independent_pitch_integrals(local_b):
-        coefficient = (local_b - 1.0) / (1200.0 * ELEMENTARY_CHARGE) + 1.0 / (2400.0 * ELEMENTARY_CHARGE)
+        coefficient = (local_b - 1.0) / (1200.0 * ELEMENTARY_CHARGE) + 1.0 / (
+            2400.0 * ELEMENTARY_CHARGE
+        )
         alpha_left = (b_plug_left - local_b) / (coefficient * 1200.0 * ELEMENTARY_CHARGE)
         alpha_right = (b_plug_right - local_b) / (coefficient * 1200.0 * ELEMENTARY_CHARGE)
         beta_left = ELEMENTARY_CHARGE * phi_plug_left / (1200.0 * ELEMENTARY_CHARGE)
@@ -205,14 +252,18 @@ def test_reviewed_relation_example():
             if abs(alpha) > np.finfo(float).eps:
                 roots.append(min(max(-beta / alpha, 0.0), 40.0))
         if abs(alpha_left - alpha_right) > np.finfo(float).eps:
-            roots.append(min(max(-(beta_left - beta_right) / (alpha_left - alpha_right), 0.0), 40.0))
+            roots.append(
+                min(max(-(beta_left - beta_right) / (alpha_left - alpha_right), 0.0), 40.0)
+            )
         roots = sorted(set(roots))
+
         def factors(x):
             y = max(min(alpha_left * x + beta_left, alpha_right * x + beta_right), 0.0)
             root_y = math.sqrt(y)
             density_factor = math.erf(root_y)
             parallel_factor = density_factor - 2.0 / math.sqrt(math.pi) * root_y * math.exp(-y)
             return density_factor, parallel_factor
+
         values = []
         for index in range(3):
             total = 0.0
@@ -220,7 +271,9 @@ def test_reviewed_relation_example():
                 if upper == lower:
                     continue
                 total += quad(
-                    lambda x: math.exp(-x) * (factors(x)[index] if index < 2 else x * factors(x)[0]),
+                    lambda x: (
+                        math.exp(-x) * (factors(x)[index] if index < 2 else x * factors(x)[0])
+                    ),
                     lower,
                     upper,
                     epsabs=1.0e-13,
@@ -228,21 +281,34 @@ def test_reviewed_relation_example():
                 )[0]
             values.append(total)
         return values
+
     expected_plug = np.asarray([independent_pitch_integrals(value) for value in (1.25, 1.75)])
     # The square-root onset at a loss-cone root is integrable but not smooth;
     # this tolerance is the observed 256-point Gauss--Legendre discretization error.
-    np.testing.assert_allclose(plugged["density_pitch_integral"], expected_plug[:, 0], rtol=3.0e-8, atol=1.0e-10)
-    np.testing.assert_allclose(plugged["parallel_pitch_integral"], expected_plug[:, 1], rtol=3.0e-8, atol=1.0e-10)
-    np.testing.assert_allclose(plugged["perpendicular_pitch_integral"], expected_plug[:, 2], rtol=3.0e-8, atol=1.0e-10)
+    np.testing.assert_allclose(
+        plugged["density_pitch_integral"], expected_plug[:, 0], rtol=3.0e-8, atol=1.0e-10
+    )
+    np.testing.assert_allclose(
+        plugged["parallel_pitch_integral"], expected_plug[:, 1], rtol=3.0e-8, atol=1.0e-10
+    )
+    np.testing.assert_allclose(
+        plugged["perpendicular_pitch_integral"], expected_plug[:, 2], rtol=3.0e-8, atol=1.0e-10
+    )
 
 
 def test_review_gate_rejects_nonfinite_species_and_refill_controls():
     import pytest
 
     values = dict(
-        b_t=np.ones(2), psi=np.zeros(2), potential_v=np.zeros(2), mass_kg=1.0,
-        charge_c=1.0, density_ref_m3=1.0, temperature_parallel_j=1.0,
-        temperature_perpendicular_ref_j=1.0, b_ref_t=1.0,
+        b_t=np.ones(2),
+        psi=np.zeros(2),
+        potential_v=np.zeros(2),
+        mass_kg=1.0,
+        charge_c=1.0,
+        density_ref_m3=1.0,
+        temperature_parallel_j=1.0,
+        temperature_perpendicular_ref_j=1.0,
+        b_ref_t=1.0,
     )
     with pytest.raises(ValueError, match="mass_kg"):
         evaluate_mirror_constrained_moments(**{**values, "mass_kg": np.nan})

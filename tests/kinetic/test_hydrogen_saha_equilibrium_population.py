@@ -9,7 +9,9 @@ from scirel.kinetic import evaluate_h_saha_equilibrium_population
 def _saha_population(density, temperature, level):
     level_squared = float(level * level)
     return (
-        density * (3.310e-28 * density) * level_squared
+        density
+        * (3.310e-28 * density)
+        * level_squared
         * np.exp(13.6057 / (level_squared * temperature))
         / temperature**1.5
     )
@@ -21,8 +23,10 @@ def test_frozen_saha_relation_and_level_scaling(level):
     temperature = np.array([1.0, 2.0, 5.0])
     actual = evaluate_h_saha_equilibrium_population(density, temperature, level)
     np.testing.assert_allclose(
-        actual, _saha_population(density, temperature, level),
-        rtol=1e-15, atol=0.0,
+        actual,
+        _saha_population(density, temperature, level),
+        rtol=1e-15,
+        atol=0.0,
     )
     assert actual.shape == density.shape
     assert np.all(np.isfinite(actual)) and np.all(actual > 0.0)
@@ -37,30 +41,36 @@ def test_large_integral_level_is_not_rounded_before_square(level):
     np.testing.assert_array_equal(actual, expected)
 
 
-@pytest.mark.parametrize("density,temperature,level,reason", [
-    ([0.0], [1.0], 1, "scientific domain"),
-    ([1.0e32], [1.0], 1, "scientific domain"),
-    ([1.0e18], [0.0], 1, "scientific domain"),
-    ([1.0e18], [1.0e32], 1, "scientific domain"),
-    ([1.0e18, 2.0e18], [1.0], 1, "same shape"),
-    ([[1.0e18]], [[1.0]], 1, "one-dimensional"),
-    ([], [], 1, "one-dimensional"),
-    ([1.0e18], [1.0], 0, "integer >= 1"),
-    ([1.0e18], [1.0], 2.5, "integer >= 1"),
-])
+@pytest.mark.parametrize(
+    "density,temperature,level,reason",
+    [
+        ([0.0], [1.0], 1, "scientific domain"),
+        ([1.0e32], [1.0], 1, "scientific domain"),
+        ([1.0e18], [0.0], 1, "scientific domain"),
+        ([1.0e18], [1.0e32], 1, "scientific domain"),
+        ([1.0e18, 2.0e18], [1.0], 1, "same shape"),
+        ([[1.0e18]], [[1.0]], 1, "one-dimensional"),
+        ([], [], 1, "one-dimensional"),
+        ([1.0e18], [1.0], 0, "integer >= 1"),
+        ([1.0e18], [1.0], 2.5, "integer >= 1"),
+    ],
+)
 def test_invalid_domain_fails_closed(density, temperature, level, reason):
     with pytest.raises(ValueError, match=reason):
         evaluate_h_saha_equilibrium_population(density, temperature, level)
 
 
-@pytest.mark.parametrize("density,temperature,level", [
-    ([True], [1.0], 1),
-    (["1e18"], [1.0], 1),
-    ([1.0e18], [True], 1),
-    ([1.0e18], ["1.0"], 1),
-    ([1.0e18], [1.0], True),
-    ([1.0e18], [1.0], "2"),
-])
+@pytest.mark.parametrize(
+    "density,temperature,level",
+    [
+        ([True], [1.0], 1),
+        (["1e18"], [1.0], 1),
+        ([1.0e18], [True], 1),
+        ([1.0e18], ["1.0"], 1),
+        ([1.0e18], [1.0], True),
+        ([1.0e18], [1.0], "2"),
+    ],
+)
 def test_nonreal_coercions_are_rejected(density, temperature, level):
     with pytest.raises(ValueError):
         evaluate_h_saha_equilibrium_population(density, temperature, level)

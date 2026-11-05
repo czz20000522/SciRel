@@ -11,8 +11,13 @@ from scirel.kinetic import (
 
 
 CASE = dict(
-    ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0],
-    Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0,
+    ms=[9.1094e-31],
+    qs=[-1.60217662e-19],
+    ns_unit=[1.0],
+    Ts_unit=[1.0],
+    B0=1.0,
+    n00=6.075e19,
+    T00=1000.0,
 )
 WN = 175881684853.009
 KN = 13261.94247879565
@@ -32,24 +37,38 @@ def test_kinetic_relation_returns_both_source_paths():
     )
 
 
-@pytest.mark.parametrize("omega,expected_sum,expected_ronnmark", [
-    (431047494.35601676, 84156144001125.656 + 29822940983252.656j,
-     84154917089965.141 + 29822444270111.691j),
-    (718412490.59336126, 13174325513551.057 + 8828415003972.5879j,
-     13173663914380.654 + 8828066693749.1387j),
-])
+@pytest.mark.parametrize(
+    "omega,expected_sum,expected_ronnmark",
+    [
+        (
+            431047494.35601676,
+            84156144001125.656 + 29822940983252.656j,
+            84154917089965.141 + 29822444270111.691j,
+        ),
+        (
+            718412490.59336126,
+            13174325513551.057 + 8828415003972.5879j,
+            13173663914380.654 + 8828066693749.1387j,
+        ),
+    ],
+)
 def test_two_species_relation_matches_both_frozen_source_paths(
     omega, expected_sum, expected_ronnmark
 ):
     case = dict(
         ms=[9.1094e-31, 2 * 1.6726219e-27],
         qs=[-1.60217662e-19, 1.60217662e-19],
-        ns_unit=[1.0, 1.0], Ts_unit=[1.0, 1.0],
-        B0=6.0, n00=2e20, T00=4000.0,
+        ns_unit=[1.0, 1.0],
+        Ts_unit=[1.0, 1.0],
+        B0=6.0,
+        n00=2e20,
+        T00=4000.0,
     )
     result = evaluate_kinetic_dispersion_relation(
-        **case, omega_frac=omega / 287364996.2373445,
-        kz=65.65372832698084, kx_frac=1.0,
+        **case,
+        omega_frac=omega / 287364996.2373445,
+        kz=65.65372832698084,
+        kx_frac=1.0,
     )
     assert result["determinant_sum_n"] == pytest.approx(expected_sum, rel=1e-12)
     assert result["determinant_ronnmark"] == pytest.approx(expected_ronnmark, rel=1e-12)
@@ -58,8 +77,13 @@ def test_two_species_relation_matches_both_frozen_source_paths(
 
 def test_fluid_scan_source_branch_and_internal_axis():
     result = scan_fluid_wavevectors(
-        **CASE, omega_scale=0.5, omega_step=0.05, omega_stop=0.5,
-        kz_scale=0.1, max_harmonic=6, j_order=8,
+        **CASE,
+        omega_scale=0.5,
+        omega_step=0.05,
+        omega_stop=0.5,
+        kz_scale=0.1,
+        max_harmonic=6,
+        j_order=8,
     )
     assert result["count"] == 1
     assert result["omegas"][0] == 0.5 * WN
@@ -73,13 +97,17 @@ def test_fluid_scan_source_branch_and_internal_axis():
             17460.57399242396 + 3076.811575501693j,
             17460.769014362882 - 3078.808722147245j,
         ],
-        rtol=0, atol=1e-4,
+        rtol=0,
+        atol=1e-4,
     )
 
 
 def test_kinetic_scan_keeps_absolute_zero_kz_and_fixed_seed():
     result = scan_kinetic_wavevectors(
-        **CASE, kz=0.0, omega_scale=0.11, omega_step=0.05,
+        **CASE,
+        kz=0.0,
+        omega_scale=0.11,
+        omega_step=0.05,
         omega_stop=0.11,
     )
     assert result["count"] == 1

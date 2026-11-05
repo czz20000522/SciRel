@@ -10,6 +10,7 @@ repair relative to the saved implementation is exercised: negative energies
 are rejected (the saved document declares nonnegative energies but its
 implementation silently clipped them to the lower endpoint).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -73,8 +74,7 @@ def test_nonfinite_energy_is_rejected():
 
 def test_viscosity_fallback_does_not_emit_the_saved_warning(capsys):
     """Non-source-parity repair: the canonical warning print is removed."""
-    evaluate_hydrogen2_hydrogen2_elastic_cross_section(
-        np.array([0.5, 10.0, 1.0e3]), viscosity=True)
+    evaluate_hydrogen2_hydrogen2_elastic_cross_section(np.array([0.5, 10.0, 1.0e3]), viscosity=True)
     captured = capsys.readouterr()
     assert "WARNING" not in captured.out
     assert "viscosity" not in captured.out.lower()

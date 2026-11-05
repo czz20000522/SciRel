@@ -13,7 +13,10 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 CASES = (
-    ("scirel.kinetic.atomic-alpha-contraction.json", {"contract_atomic_hydrogen_alpha_frequencies"}),
+    (
+        "scirel.kinetic.atomic-alpha-contraction.json",
+        {"contract_atomic_hydrogen_alpha_frequencies"},
+    ),
     ("scirel.kinetic.atomic-scattered-sources-reduction.json", {"reduce_atomic_scattered_sources"}),
     (
         "scirel.kinetic.cross-mesh-distribution-interpolation.json",
@@ -50,7 +53,10 @@ CASES = (
         "scirel.kinetic.molecular-scattered-sources-reduction.json",
         {"reduce_molecular_scattered_sources"},
     ),
-    ("scirel.kinetic.simple-charge-exchange-source.json", {"assemble_simple_charge_exchange_source"}),
+    (
+        "scirel.kinetic.simple-charge-exchange-source.json",
+        {"assemble_simple_charge_exchange_source"},
+    ),
 )
 
 

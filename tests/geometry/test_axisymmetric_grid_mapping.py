@@ -6,6 +6,7 @@ clamping onto the closed map box reported rather than hidden; and does the
 relation stay free of the flux-surface classification parameters that the
 retained single operator also carried.
 """
+
 from __future__ import annotations
 
 import ast
@@ -24,11 +25,10 @@ from scirel.geometry.axisymmetric_grid_mapping import (
     _interpolation_coordinates,
 )
 
-MAPPING_MODULE = Path(
-    importlib.import_module("scirel.geometry.axisymmetric_grid_mapping").__file__
-).resolve() if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1" else (
-    Path(__file__).resolve().parents[2]
-    / "src/scirel/geometry/axisymmetric_grid_mapping.py"
+MAPPING_MODULE = (
+    Path(importlib.import_module("scirel.geometry.axisymmetric_grid_mapping").__file__).resolve()
+    if os.environ.get("SCIREL_INSTALLED_RUNTIME") == "1"
+    else (Path(__file__).resolve().parents[2] / "src/scirel/geometry/axisymmetric_grid_mapping.py")
 )
 
 
@@ -39,7 +39,10 @@ def _reference_bilinear(equilibrium, x_axis, y_axis, z_axis):
     xx, yy, zz = np.meshgrid(x_axis, y_axis, z_axis, indexing="ij")
     radii = np.hypot(xx, yy)
     query = np.column_stack(
-        [np.clip(radii, r_axis[0], r_axis[-1]).ravel(), np.clip(zz, z_axis_map[0], z_axis_map[-1]).ravel()]
+        [
+            np.clip(radii, r_axis[0], r_axis[-1]).ravel(),
+            np.clip(zz, z_axis_map[0], z_axis_map[-1]).ravel(),
+        ]
     )
     out = {}
     for name in ("psi_wb_per_rad", "br_t", "bz_t"):
@@ -68,15 +71,15 @@ def test_u1_a_t01_reconstruction_is_the_tensor_product_bilinear_interpolant(
     rr = np.asarray(eq["r_m"])[:, None]
     assert not np.allclose(
         result["poloidal_flux_wb_per_rad"],
-        np.broadcast_to(0.9 * np.hypot(*np.meshgrid(x_axis, y_axis, indexing="ij"))[:, :, None], (9, 9, 7)),
+        np.broadcast_to(
+            0.9 * np.hypot(*np.meshgrid(x_axis, y_axis, indexing="ij"))[:, :, None], (9, 9, 7)
+        ),
     )
     assert rr.shape == (21, 1)
 
 
 # --- Test U1-A-T02: the two-stage ordering is not discriminating. -----------
-def test_u1_a_t02_stage_order_is_measured_to_be_non_discriminating(
-    candidate, equilibrium, axes
-):
+def test_u1_a_t02_stage_order_is_measured_to_be_non_discriminating(candidate, equilibrium, axes):
     """Record that the retained "ordering is part of the relation" claim is vacuous.
 
     Both stages are linear on a rectilinear grid, so the composition is the
@@ -115,22 +118,16 @@ def test_u1_a_t02_stage_order_is_measured_to_be_non_discriminating(
     )
 
 
-def test_u1_a_t02_pre_resolved_coordinates_preserve_interpolation_values(
-    equilibrium, axes
-):
+def test_u1_a_t02_pre_resolved_coordinates_preserve_interpolation_values(equilibrium, axes):
     eq = equilibrium()
-    x_axis, y_axis, z_axis, _ = axes(
-        x=(-1.1, 1.1, 11), y=(-0.9, 0.9, 9), z=(-0.7, 0.7, 8)
-    )
+    x_axis, y_axis, z_axis, _ = axes(x=(-1.1, 1.1, 11), y=(-0.9, 0.9, 9), z=(-0.7, 0.7, 8))
     xx, yy, zz = np.meshgrid(x_axis, y_axis, z_axis, indexing="ij")
     radii = np.clip(np.hypot(xx, yy), eq["r_m"][0], eq["r_m"][-1]).ravel()
     axial = np.clip(zz, eq["z_m"][0], eq["z_m"][-1]).ravel()
     coordinates = _interpolation_coordinates(eq["r_m"], eq["z_m"], radii, axial)
 
     for name in ("psi_wb_per_rad", "br_t", "bz_t"):
-        expected = _interpolate_cylindrical(
-            eq["r_m"], eq["z_m"], eq[name], radii, axial
-        )
+        expected = _interpolate_cylindrical(eq["r_m"], eq["z_m"], eq[name], radii, axial)
         actual = _evaluate_cylindrical(eq[name], coordinates)
         np.testing.assert_array_equal(actual, expected)
 
@@ -158,9 +155,7 @@ def test_u1_a_t03_coverage_mask_marks_the_closed_map_box(candidate, equilibrium,
 
 
 # --- Test U1-A-T04: the clamping is reported by the two counters. -----------
-def test_u1_a_t04_clamp_counters_report_the_clamped_query_points(
-    candidate, equilibrium, axes
-):
+def test_u1_a_t04_clamp_counters_report_the_clamped_query_points(candidate, equilibrium, axes):
     eq = equilibrium()
     x_axis, y_axis, z_axis, _ = axes(x=(-1.2, 1.2, 13), y=(-1.2, 1.2, 13), z=(-0.8, 0.8, 9))
     result = candidate["mapping"](eq, x_axis, y_axis, z_axis)
@@ -179,15 +174,11 @@ def test_u1_a_t04_clamp_counters_report_the_clamped_query_points(
     assert int(np.count_nonzero(result["covered_mask"])) < radii.size
 
     inside = candidate["mapping"](eq, x_axis, y_axis, z_axis)
-    np.testing.assert_array_equal(
-        inside["covered_mask"], result["covered_mask"]
-    )
+    np.testing.assert_array_equal(inside["covered_mask"], result["covered_mask"])
 
 
 # --- Test U1-A-T05: the Cartesian assembly preserves the cylindrical split. -
-def test_u1_a_t05_cartesian_assembly_preserves_the_cylindrical_split(
-    candidate, equilibrium, axes
-):
+def test_u1_a_t05_cartesian_assembly_preserves_the_cylindrical_split(candidate, equilibrium, axes):
     eq = equilibrium()
     x_axis, y_axis, z_axis, _ = axes()
     result = candidate["mapping"](eq, x_axis, y_axis, z_axis)
@@ -209,9 +200,7 @@ def test_u1_a_t05_cartesian_assembly_preserves_the_cylindrical_split(
     assert int((~off_axis).sum()) > 0
 
 
-def test_cartesian_assembly_preserves_signed_radial_and_axial_components(
-    candidate, equilibrium
-):
+def test_cartesian_assembly_preserves_signed_radial_and_axial_components(candidate, equilibrium):
     eq = equilibrium()
     eq["br_t"] = np.full_like(eq["br_t"], -3.0)
     eq["bz_t"] = np.full_like(eq["bz_t"], 4.0)
@@ -247,14 +236,44 @@ def test_nonrepresentable_interpolated_flux_fails_closed(candidate, equilibrium,
     "mutation, message",
     [
         (lambda eq, x, y, z: (eq, x, y, z[::-1]), "strictly increasing"),
-        (lambda eq, x, y, z: (eq, x, y, z[None, :], ), "must be a 1D array"),
-        (lambda eq, x, y, z: (eq, x, y, z[:1], ), "at least two points"),
+        (
+            lambda eq, x, y, z: (
+                eq,
+                x,
+                y,
+                z[None, :],
+            ),
+            "must be a 1D array",
+        ),
+        (
+            lambda eq, x, y, z: (
+                eq,
+                x,
+                y,
+                z[:1],
+            ),
+            "at least two points",
+        ),
         (lambda eq, x, y, z: (eq, x, y, np.where(z == z[0], np.inf, z)), "must be finite"),
-        (lambda eq, x, y, z: ({k: v for k, v in eq.items() if k != "br_t"}, x, y, z), "missing the required entry"),
+        (
+            lambda eq, x, y, z: ({k: v for k, v in eq.items() if k != "br_t"}, x, y, z),
+            "missing the required entry",
+        ),
         (lambda eq, x, y, z: ({**eq, "bz_t": eq["bz_t"][:-1]}, x, y, z), "must have shape"),
-        (lambda eq, x, y, z: ({**eq, "psi_wb_per_rad": np.full_like(eq["psi_wb_per_rad"], np.nan)}, x, y, z), "must be finite"),
+        (
+            lambda eq, x, y, z: (
+                {**eq, "psi_wb_per_rad": np.full_like(eq["psi_wb_per_rad"], np.nan)},
+                x,
+                y,
+                z,
+            ),
+            "must be finite",
+        ),
         (lambda eq, x, y, z: ({**eq, "r_m": eq["r_m"][:3]}, x, y, z), "at least five points"),
-        (lambda eq, x, y, z: ({**eq, "z_m": np.zeros_like(eq["z_m"])}, x, y, z), "strictly increasing"),
+        (
+            lambda eq, x, y, z: ({**eq, "z_m": np.zeros_like(eq["z_m"])}, x, y, z),
+            "strictly increasing",
+        ),
         (lambda eq, x, y, z: ("not a mapping", x, y, z), "must be a mapping"),
     ],
 )
@@ -290,9 +309,7 @@ def test_u1_a_t07_mapping_relation_is_free_of_classification_inputs(candidate, e
 
     tree = ast.parse(MAPPING_MODULE.read_text(encoding="utf-8"))
     imported = {
-        node.module
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom) and node.module
+        node.module for node in ast.walk(tree) if isinstance(node, ast.ImportFrom) and node.module
     }
     assert imported == {"__future__", "collections.abc"}, imported
     assert "material_support" not in MAPPING_MODULE.read_text(encoding="utf-8")
@@ -306,9 +323,7 @@ def test_u1_a_t09_public_signature_is_the_documented_one(candidate):
         f"map_axisymmetric_equilibrium_to_cartesian_grid{inspect.signature(function)}"
         == "map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m)"
     )
-    assert candidate["mapping_module"].__all__ == [
-        "map_axisymmetric_equilibrium_to_cartesian_grid"
-    ]
+    assert candidate["mapping_module"].__all__ == ["map_axisymmetric_equilibrium_to_cartesian_grid"]
 
 
 # --- Test U1-A-T10: the frozen real R-Z sampler is a sibling, not a base. ---
@@ -331,11 +346,7 @@ def test_u1_a_t10_declared_sibling_relation_is_structural_not_a_duplicate(
         for node in ast.walk(tree)
         if isinstance(node, ast.Import)
         for alias in node.names
-    } | {
-        node.module or ""
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-    }
+    } | {node.module or "" for node in ast.walk(tree) if isinstance(node, ast.ImportFrom)}
     assert not any(name == "scirel" or name.startswith("scirel.") for name in imported)
     assert not hasattr(candidate["mapping_module"], "sample_rectilinear_field")
     assert not hasattr(candidate["mapping_module"], "_axes")
@@ -353,10 +364,7 @@ def test_u1_a_t10_declared_sibling_relation_is_structural_not_a_duplicate(
     xx, yy, zz = np.meshgrid(x_axis, y_axis, z_axis, indexing="ij")
     radii = np.hypot(xx, yy)
     outside = (
-        (radii < r_axis[0])
-        | (radii > r_axis[-1])
-        | (zz < z_axis_map[0])
-        | (zz > z_axis_map[-1])
+        (radii < r_axis[0]) | (radii > r_axis[-1]) | (zz < z_axis_map[0]) | (zz > z_axis_map[-1])
     )
     assert np.any(outside), "the fixture must exercise the clamp path"
     assert not np.all(result["covered_mask"]), "out-of-box points must be reported"

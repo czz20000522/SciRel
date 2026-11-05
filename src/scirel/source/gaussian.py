@@ -6,6 +6,7 @@ The explicit metric ports carry cell volumes; this is distinct from spatial
 source-shape normalization and flux-surface interpolation. The retained
 licence and reference are above.
 """
+
 from __future__ import annotations
 import numpy as np
 from ._common import grid, normalize_log_shape, scalar, width_scalar

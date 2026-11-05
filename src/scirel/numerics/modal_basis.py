@@ -94,8 +94,7 @@ def gauss_legendre(order):
                 legendre_before = legendre_lower
                 legendre_lower = legendre
                 legendre = (
-                    (2.0 * degree - 1.0) * z * legendre_lower
-                    - (degree - 1.0) * legendre_before
+                    (2.0 * degree - 1.0) * z * legendre_lower - (degree - 1.0) * legendre_before
                 ) / degree
             if order == 1:
                 legendre, legendre_lower = z, 1.0
@@ -124,9 +123,7 @@ def _legendre_value(degree, z):
     if degree == 1:
         return math.sqrt(1.5) * p_previous
     for step in range(2, degree + 1):
-        p_current = (
-            (2.0 * step - 1.0) * z * p_previous - (step - 1.0) * p_older
-        ) / step
+        p_current = ((2.0 * step - 1.0) * z * p_previous - (step - 1.0) * p_older) / step
         p_older, p_previous = p_previous, p_current
     return math.sqrt((2.0 * degree + 1.0) / 2.0) * p_previous
 
@@ -161,12 +158,8 @@ def _exponents(kind, ndim, order):
         candidates = corner
         expected = (order + 1) ** ndim
     else:
-        candidates = [
-            item for item in corner if sum(1 for exponent in item if exponent >= 2) <= 1
-        ]
-        expected = (
-            1 if order == 0 else 2**ndim + ndim * (order - 1) * 2 ** (ndim - 1)
-        )
+        candidates = [item for item in corner if sum(1 for exponent in item if exponent >= 2) <= 1]
+        expected = 1 if order == 0 else 2**ndim + ndim * (order - 1) * 2 ** (ndim - 1)
     candidates.sort(key=lambda item: (sum(item), tuple(-exponent for exponent in item)))
     if len(candidates) != expected:
         raise RuntimeError(
@@ -227,12 +220,8 @@ class ModalBasis:
         per_axis = []
         for axis in range(self._ndim):
             column = coordinates[..., axis]
-            evaluator = (
-                _legendre_derivative if derivative_of == axis else _legendre_value
-            )
-            per_axis.append(
-                [evaluator(degree, column) for degree in range(self._order + 1)]
-            )
+            evaluator = _legendre_derivative if derivative_of == axis else _legendre_value
+            per_axis.append([evaluator(degree, column) for degree in range(self._order + 1)])
         return per_axis
 
     @staticmethod
@@ -306,10 +295,7 @@ class ModalBasis:
         coordinates = self._coordinates(z)
         per_axis = self._axis_values(coordinates, derivative_of=direction)
         columns = np.stack(
-            [
-                np.asarray(self._product(per_axis, item), dtype=float)
-                for item in self._exponents
-            ],
+            [np.asarray(self._product(per_axis, item), dtype=float) for item in self._exponents],
             axis=-1,
         )
         return np.einsum("...i,i->...", columns, weights)

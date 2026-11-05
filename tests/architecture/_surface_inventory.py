@@ -45,9 +45,7 @@ def _declared_names(initializer: Path) -> tuple[str, ...]:
         try:
             names = ast.literal_eval(value)
         except (ValueError, TypeError, SyntaxError) as exc:
-            raise SurfaceInventoryError(
-                f"{initializer} declares a non-literal __all__"
-            ) from exc
+            raise SurfaceInventoryError(f"{initializer} declares a non-literal __all__") from exc
         if not isinstance(names, (list, tuple)) or not all(
             isinstance(name, str) and name for name in names
         ):
@@ -64,9 +62,7 @@ def _package_directories(root: Path) -> tuple[Path, ...]:
         sorted(
             path
             for path in root.iterdir()
-            if path.is_dir()
-            and not path.name.startswith("_")
-            and (path / "__init__.py").is_file()
+            if path.is_dir() and not path.name.startswith("_") and (path / "__init__.py").is_file()
         )
     )
 

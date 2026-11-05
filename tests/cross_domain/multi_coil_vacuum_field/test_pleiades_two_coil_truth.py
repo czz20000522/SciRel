@@ -6,6 +6,7 @@ output and never vendors Pleiades source or overwrites this fixture.  The fixed
 reference constants below are copied from that independent truth so the field
 and Green paths retain an external numeric anchor.
 """
+
 from pathlib import Path
 
 import numpy as np
@@ -21,9 +22,7 @@ TRUTH_DIR = ROOT / "tests" / "fixtures" / "multi_coil_vacuum_field" / "pleiades_
 
 # Independent Pleiades source truth: TRUTH.json grid and rectangular-coil records.
 PLEIADES_SOURCE_COMMIT = "0161abb3e9a1d85143c650f068ec524d672fc9ab"
-PLEIADES_ARCHIVE_SHA256 = (
-    "f86cfec618690e41a669d692ff195a775f756d2a654fc3e41d8175bf328381b3"
-)
+PLEIADES_ARCHIVE_SHA256 = "f86cfec618690e41a669d692ff195a775f756d2a654fc3e41d8175bf328381b3"
 GRID = {"rmin": 0.0, "rmax": 0.8, "zmin": -0.4, "zmax": 0.4, "nr": 9, "nz": 9}
 COILS = (
     {"r0": 0.45, "z0": -0.15, "nr": 2, "nz": 2, "dr": 0.04, "dz": 0.05, "current": 1000.0},
@@ -33,13 +32,27 @@ COILS = (
 # [z-index, r-index] spot values copied from truth.npz (Pleiades, not SciRel).
 SPOTS = ((0, 0), (2, 5), (4, 4), (6, 3), (8, 8))
 REFERENCE = {
-    "psi_vac": (0.0, 0.000587742696221485, 7.745704098639913e-05,
-                -0.0001269507971078137, -6.66840605058076e-05),
-    "b_r_vac": (0.0, -0.00618872514320945, 0.008156685664293324,
-                1.7910589076951386e-05, -4.742033776858204e-05),
-    "b_z_vac": (0.0025936728438303394, -0.0064379410605433385,
-                0.0007390784959768809, -0.004353000325214432,
-                0.00031807008303678),
+    "psi_vac": (
+        0.0,
+        0.000587742696221485,
+        7.745704098639913e-05,
+        -0.0001269507971078137,
+        -6.66840605058076e-05,
+    ),
+    "b_r_vac": (
+        0.0,
+        -0.00618872514320945,
+        0.008156685664293324,
+        1.7910589076951386e-05,
+        -4.742033776858204e-05,
+    ),
+    "b_z_vac": (
+        0.0025936728438303394,
+        -0.0064379410605433385,
+        0.0007390784959768809,
+        -0.004353000325214432,
+        0.00031807008303678,
+    ),
 }
 # Full-array magnitude anchors from the same truth.
 REFERENCE_MAX_ABS = {
@@ -61,9 +74,12 @@ def _grid():
 def _coil_records(scale=1.0):
     return [
         {
-            "r0_m": coil["r0"], "z0_m": coil["z0"],
-            "nr": coil["nr"], "nz": coil["nz"],
-            "dr_m": coil["dr"], "dz_m": coil["dz"],
+            "r0_m": coil["r0"],
+            "z0_m": coil["z0"],
+            "nr": coil["nr"],
+            "nz": coil["nz"],
+            "dr_m": coil["dr"],
+            "dz_m": coil["dz"],
             "current_a": coil["current"] * scale,
         }
         for coil in COILS
@@ -103,12 +119,15 @@ def test_fixed_reference_values_match_direct_green_assembly():
     r_grid, z_grid = _grid()
     targets = np.column_stack((r_grid.ravel(), z_grid.ravel()))
     filaments, currents = _filament_table()
-    fields = {"psi_vac": np.zeros(len(targets)), "b_r_vac": np.zeros(len(targets)),
-              "b_z_vac": np.zeros(len(targets))}
+    fields = {
+        "psi_vac": np.zeros(len(targets)),
+        "b_r_vac": np.zeros(len(targets)),
+        "b_z_vac": np.zeros(len(targets)),
+    }
     start = 0
     for coil in COILS:
         count = coil["nr"] * coil["nz"]
-        block = np.column_stack((filaments[start:start + count], np.ones(count)))
+        block = np.column_stack((filaments[start : start + count], np.ones(count)))
         response = circular_filament_green_response(block, targets)
         fields["psi_vac"] += coil["current"] * response["gpsi"]
         fields["b_r_vac"] += coil["current"] * response["gBR"]
@@ -147,9 +166,13 @@ def test_multi_coil_matches_full_pleiades_truth_arrays():
     r_grid, z_grid = np.meshgrid(r_axis, z_axis)
     coils = [
         {
-            "r0_m": coil["r0"], "z0_m": coil["z0"],
-            "nr": coil["nr"], "nz": coil["nz"],
-            "dr_m": coil["dr"], "dz_m": coil["dz"], "current_a": coil["current"],
+            "r0_m": coil["r0"],
+            "z0_m": coil["z0"],
+            "nr": coil["nr"],
+            "nz": coil["nz"],
+            "dr_m": coil["dr"],
+            "dz_m": coil["dz"],
+            "current_a": coil["current"],
         }
         for coil in truth["coils"]
     ]

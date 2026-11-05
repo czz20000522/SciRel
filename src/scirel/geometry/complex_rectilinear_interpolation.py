@@ -1,4 +1,5 @@
 """Complex trilinear interpolation on a strict rectilinear source grid."""
+
 from __future__ import annotations
 
 from collections.abc import Mapping
@@ -54,7 +55,10 @@ def interpolate_complex_rectilinear_field(source_axes_m, source_values, target_p
     valid = np.all((points >= lower - tolerance) & (points <= upper + tolerance), axis=1)
     query = np.clip(points, lower, upper)
     interpolator = RegularGridInterpolator(
-        axes, values, method="linear", bounds_error=False,
+        axes,
+        values,
+        method="linear",
+        bounds_error=False,
         fill_value=np.nan + 1j * np.nan,
     )
     output = np.asarray(interpolator(query), dtype=complex)

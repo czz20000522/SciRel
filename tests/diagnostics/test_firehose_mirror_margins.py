@@ -1,6 +1,10 @@
 import numpy as np
 
-from scirel.diagnostics.firehose_mirror_margins import MU0, compute_firehose_mirror_margins, compute_firehose_mirror_margins as scientific_function
+from scirel.diagnostics.firehose_mirror_margins import (
+    MU0,
+    compute_firehose_mirror_margins,
+    compute_firehose_mirror_margins as scientific_function,
+)
 
 
 # 验证：常压且非零场时，两个裕度须解析地等于 B²/mu0，并稳定为真。
@@ -40,14 +44,15 @@ def test_reviewed_relation_example():
     # 同B不同压力不能决定固定ψ导数；明确声明偏导才定义科学关系。
     B_flat = np.full(3, 2.0)
     import pytest
+
     with pytest.raises(ValueError, match="fixed-flux derivative"):
-        compute_firehose_mirror_margins(
-            np.full(3, 7.0), np.array([1.0, 4.0, 9.0]), B_flat)
+        compute_firehose_mirror_margins(np.full(3, 7.0), np.array([1.0, 4.0, 9.0]), B_flat)
     declared = compute_firehose_mirror_margins(
-        np.full(3, 7.0), np.array([1.0, 4.0, 9.0]), B_flat,
-        dp_perp_dB=np.array([1.0, 2.0, 3.0]))
-    np.testing.assert_allclose(declared["mirror_margin"],
-        4.0 / MU0 + 2.0 * np.array([1.0, 2.0, 3.0]))
+        np.full(3, 7.0), np.array([1.0, 4.0, 9.0]), B_flat, dp_perp_dB=np.array([1.0, 2.0, 3.0])
+    )
+    np.testing.assert_allclose(
+        declared["mirror_margin"], 4.0 / MU0 + 2.0 * np.array([1.0, 2.0, 3.0])
+    )
 
 
 def test_review_gate_rejects_duplicate_nondegenerate_field_samples():

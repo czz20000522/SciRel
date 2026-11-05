@@ -2,7 +2,10 @@
 import numpy as np
 import pytest
 
-from scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average, compute_flux_surface_inverse_field_average as scientific_function
+from scirel.geometry.flux_surface_inverse_field_average import (
+    compute_flux_surface_inverse_field_average,
+    compute_flux_surface_inverse_field_average as scientific_function,
+)
 
 
 def _inputs():
@@ -38,7 +41,9 @@ def test_rejects_nonpositive_field_and_outside_line():
 
 
 def test_reviewed_relation_example():
-    from scirel.geometry.flux_surface_inverse_field_average import compute_flux_surface_inverse_field_average
+    from scirel.geometry.flux_surface_inverse_field_average import (
+        compute_flux_surface_inverse_field_average,
+    )
     import numpy as np
 
     r = np.linspace(0.0, 1.0, 5)
@@ -59,9 +64,7 @@ def test_reviewed_relation_example():
 
     # 常磁场下 dl/B 应退化为折线总长度除以 B。
     polyline = np.array([[0.0, -1.0], [0.5, 0.0], [1.0, -1.0]])
-    constant = compute_flux_surface_inverse_field_average(
-        R, Z, np.full_like(R, 2.0), polyline
-    )
+    constant = compute_flux_surface_inverse_field_average(R, Z, np.full_like(R, 2.0), polyline)
     expected_length = 2.0 * np.sqrt(0.5**2 + 1.0**2)
     np.testing.assert_allclose(constant["dl_B"], expected_length / 2.0, rtol=1e-12)
 
@@ -76,9 +79,7 @@ def test_review_gate_rejects_degenerate_path_and_undersized_cubic_grid():
     magnetic_field = np.ones_like(r_grid)
     repeated = np.array([[0.5, 0.0], [0.5, 0.0]])
     with pytest.raises(ValueError, match="nondegenerate polyline"):
-        compute_flux_surface_inverse_field_average(
-            r_grid, z_grid, magnetic_field, repeated
-        )
+        compute_flux_surface_inverse_field_average(r_grid, z_grid, magnetic_field, repeated)
 
     small_r_grid, small_z_grid = np.meshgrid(np.linspace(0.0, 1.0, 3), z)
     with pytest.raises(ValueError, match="at least four points per axis"):

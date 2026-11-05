@@ -10,8 +10,6 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-import re
-import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA = ROOT / "contracts" / "reception" / "overlap-record.schema.json"
@@ -35,8 +33,13 @@ def validate_record(record):
         if not isinstance(item, dict):
             errors.append(f"records[{index}]: expected an object")
             continue
-        if set(item) - {"incoming_capability_id", "overlap", "matched_asset_ids",
-                        "difference_note", "evidence"}:
+        if set(item) - {
+            "incoming_capability_id",
+            "overlap",
+            "matched_asset_ids",
+            "difference_note",
+            "evidence",
+        }:
             errors.append(f"records[{index}]: unknown properties")
         for key in ("incoming_capability_id", "overlap", "matched_asset_ids", "difference_note"):
             if key not in item:
@@ -72,7 +75,9 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     result = validate_record(json.loads(args.record.read_text(encoding="utf-8")))
     if args.output:
-        args.output.write_text(json.dumps(result, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        args.output.write_text(
+            json.dumps(result, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+        )
     print(json.dumps(result, ensure_ascii=False, indent=1))
     return 0 if result["status"] == "PASS" else 1
 

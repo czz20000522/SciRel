@@ -39,20 +39,36 @@ def test_lpole_harmonic_limit_must_be_an_integer(max_harmonic):
 
 def test_fluid_matrix_block_and_eigen_selection():
     scales = derive_species_equilibrium_scales(
-        ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0],
-        Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0,
+        ms=[9.1094e-31],
+        qs=[-1.60217662e-19],
+        ns_unit=[1.0],
+        Ts_unit=[1.0],
+        B0=1.0,
+        n00=6.075e19,
+        T00=1000.0,
     )
     l = get_gamma_lpole_coefficients(max_harmonic=6)
     z = get_z_pole_coefficients(j_order=8)
     omega = 0.5 * scales["wn"]
     kz = 0.1 * scales["kn"]
     out = assemble_fluid_dispersion_matrix(
-        omega=omega, kz=kz, c2=scales["c2"], epsilon0=scales["epsilon0"],
-        wps2=scales["wps2"], wcs=scales["wcs"], vts=scales["vts"],
-        rhocs=scales["rhocs"], sgns=scales["sgns"], absrhocs=scales["absrhocs"],
-        cn_residues=l["residues"], cn_poles=l["poles"],
-        order_lengths=l["order_lengths"], bzj=z["bzj"], czj=z["czj"],
-        max_harmonic=6, n_species=1,
+        omega=omega,
+        kz=kz,
+        c2=scales["c2"],
+        epsilon0=scales["epsilon0"],
+        wps2=scales["wps2"],
+        wcs=scales["wcs"],
+        vts=scales["vts"],
+        rhocs=scales["rhocs"],
+        sgns=scales["sgns"],
+        absrhocs=scales["absrhocs"],
+        cn_residues=l["residues"],
+        cn_poles=l["poles"],
+        order_lengths=l["order_lengths"],
+        bzj=z["bzj"],
+        czj=z["czj"],
+        max_harmonic=6,
+        n_species=1,
     )
     assert out["matrix_size"] == 3 * sum(l["order_lengths"].values()) + 4
     m = out["M"]
@@ -62,28 +78,41 @@ def test_fluid_matrix_block_and_eigen_selection():
     assert m[0, 0] == l["poles"][1][0] / scales["absrhocs"][0]
     solved = solve_fluid_wavevector_eigenproblem(matrix=m, kn=scales["kn"])
     assert solved["head"].size == 5
-    np.testing.assert_array_equal(
-        solved["head"], solved["selected"][:5]
-    )
+    np.testing.assert_array_equal(solved["head"], solved["selected"][:5])
     assert np.all(np.diff(np.abs(solved["selected"].imag)) >= 0)
 
 
 def test_fluid_matrix_rejects_nonfinite_resonance():
     scales = derive_species_equilibrium_scales(
-        ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0],
-        Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0,
+        ms=[9.1094e-31],
+        qs=[-1.60217662e-19],
+        ns_unit=[1.0],
+        Ts_unit=[1.0],
+        B0=1.0,
+        n00=6.075e19,
+        T00=1000.0,
     )
     l = get_gamma_lpole_coefficients(max_harmonic=0)
     z = get_z_pole_coefficients(j_order=8)
     with pytest.raises(ValueError, match="finite"):
         assemble_fluid_dispersion_matrix(
-            omega=abs(scales["wcs"][0]), kz=0.0,
-            c2=scales["c2"], epsilon0=scales["epsilon0"],
-            wps2=scales["wps2"], wcs=scales["wcs"], vts=scales["vts"],
-            rhocs=scales["rhocs"], sgns=scales["sgns"],
-            absrhocs=scales["absrhocs"], cn_residues=l["residues"],
-            cn_poles=l["poles"], order_lengths=l["order_lengths"],
-            bzj=z["bzj"], czj=z["czj"], max_harmonic=0, n_species=1,
+            omega=abs(scales["wcs"][0]),
+            kz=0.0,
+            c2=scales["c2"],
+            epsilon0=scales["epsilon0"],
+            wps2=scales["wps2"],
+            wcs=scales["wcs"],
+            vts=scales["vts"],
+            rhocs=scales["rhocs"],
+            sgns=scales["sgns"],
+            absrhocs=scales["absrhocs"],
+            cn_residues=l["residues"],
+            cn_poles=l["poles"],
+            order_lengths=l["order_lengths"],
+            bzj=z["bzj"],
+            czj=z["czj"],
+            max_harmonic=0,
+            n_species=1,
         )
 
 
@@ -103,35 +132,66 @@ def test_eigen_branch_count_must_be_an_integer(keep):
 @pytest.mark.parametrize("change", [{"n_species": 1.5}, {"max_harmonic": 0.5}])
 def test_fluid_matrix_rejects_fractional_dimensions(change):
     args = dict(
-        omega=1.0, kz=1.0, c2=1.0, epsilon0=1.0,
-        wps2=[], wcs=[], vts=[], rhocs=[], sgns=[], absrhocs=[],
-        cn_residues={}, cn_poles={}, order_lengths={}, bzj=[], czj=[],
-        max_harmonic=0, n_species=1,
+        omega=1.0,
+        kz=1.0,
+        c2=1.0,
+        epsilon0=1.0,
+        wps2=[],
+        wcs=[],
+        vts=[],
+        rhocs=[],
+        sgns=[],
+        absrhocs=[],
+        cn_residues={},
+        cn_poles={},
+        order_lengths={},
+        bzj=[],
+        czj=[],
+        max_harmonic=0,
+        n_species=1,
     )
     args.update(change)
     with pytest.raises(ValueError, match="integer"):
         assemble_fluid_dispersion_matrix(**args)
 
 
-@pytest.mark.parametrize("change", [
-    {"order_lengths": {1: 12.5}},
-    {"cn_residues": {1.5: np.ones(12, dtype=complex)}},
-])
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"order_lengths": {1: 12.5}},
+        {"cn_residues": {1.5: np.ones(12, dtype=complex)}},
+    ],
+)
 def test_fluid_matrix_rejects_fractional_coefficient_indices(change):
     scales = derive_species_equilibrium_scales(
-        ms=[9.1094e-31], qs=[-1.60217662e-19], ns_unit=[1.0],
-        Ts_unit=[1.0], B0=1.0, n00=6.075e19, T00=1000.0,
+        ms=[9.1094e-31],
+        qs=[-1.60217662e-19],
+        ns_unit=[1.0],
+        Ts_unit=[1.0],
+        B0=1.0,
+        n00=6.075e19,
+        T00=1000.0,
     )
     l = get_gamma_lpole_coefficients(max_harmonic=0)
     z = get_z_pole_coefficients(j_order=8)
     args = dict(
-        omega=scales["wn"], kz=0.1 * scales["kn"], c2=scales["c2"],
-        epsilon0=scales["epsilon0"], wps2=scales["wps2"],
-        wcs=scales["wcs"], vts=scales["vts"], rhocs=scales["rhocs"],
-        sgns=scales["sgns"], absrhocs=scales["absrhocs"],
-        cn_residues=l["residues"], cn_poles=l["poles"],
-        order_lengths=l["order_lengths"], bzj=z["bzj"], czj=z["czj"],
-        max_harmonic=0, n_species=1,
+        omega=scales["wn"],
+        kz=0.1 * scales["kn"],
+        c2=scales["c2"],
+        epsilon0=scales["epsilon0"],
+        wps2=scales["wps2"],
+        wcs=scales["wcs"],
+        vts=scales["vts"],
+        rhocs=scales["rhocs"],
+        sgns=scales["sgns"],
+        absrhocs=scales["absrhocs"],
+        cn_residues=l["residues"],
+        cn_poles=l["poles"],
+        order_lengths=l["order_lengths"],
+        bzj=z["bzj"],
+        czj=z["czj"],
+        max_harmonic=0,
+        n_species=1,
     )
     args.update(change)
     with pytest.raises(ValueError, match="integer"):

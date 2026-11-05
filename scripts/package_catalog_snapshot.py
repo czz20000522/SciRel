@@ -19,17 +19,25 @@ def _digest(payload: bytes) -> str:
 
 
 def _canonical_json(value: Any) -> bytes:
-    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode(
+        "utf-8"
+    )
 
 
 def _partition_path(root: Path, relative: Any) -> Path:
     if not isinstance(relative, str) or not relative or "\\" in relative or ":" in relative:
         raise ValueError(f"invalid catalog partition path: {relative!r}")
     posix = PurePosixPath(relative)
-    if posix.is_absolute() or posix.as_posix() != relative or any(part in {".", ".."} for part in posix.parts):
+    if (
+        posix.is_absolute()
+        or posix.as_posix() != relative
+        or any(part in {".", ".."} for part in posix.parts)
+    ):
         raise ValueError(f"invalid catalog partition path: {relative!r}")
     path = root.joinpath(*posix.parts)
-    if any(root.joinpath(*posix.parts[:depth]).is_symlink() for depth in range(1, len(posix.parts) + 1)):
+    if any(
+        root.joinpath(*posix.parts[:depth]).is_symlink() for depth in range(1, len(posix.parts) + 1)
+    ):
         raise ValueError(f"catalog partition contains a symlink: {relative}")
     if not path.resolve().is_relative_to(root):
         raise ValueError(f"catalog partition escapes snapshot: {relative}")
@@ -78,7 +86,9 @@ def package_catalog_snapshot(catalog_dir: Path, output_path: Path) -> dict[str, 
         if path.is_file():
             actual.add(path.relative_to(root).as_posix())
     if actual != files.keys():
-        raise ValueError(f"catalog files differ from release partitions: {sorted(actual ^ files.keys())}")
+        raise ValueError(
+            f"catalog files differ from release partitions: {sorted(actual ^ files.keys())}"
+        )
 
     output.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(output, "x", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:

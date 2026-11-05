@@ -1,4 +1,5 @@
 """Mutable weighted circular-filament sources and ordered devices."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -82,7 +83,9 @@ class CurrentFilamentSet:
         self._mesh = None
         _points(self._rz_pts)
         self._current = _common_current(current)
-        self._weights = np.ones(self.npts, dtype=float) if weights is None else _weights(weights, self.npts)
+        self._weights = (
+            np.ones(self.npts, dtype=float) if weights is None else _weights(weights, self.npts)
+        )
         self._cache_key = None
         self._cache = None
         if mesh is not None:
@@ -147,7 +150,11 @@ class CurrentFilamentSet:
         self._cache = None
 
     def _mesh_points(self, mesh):
-        target = self.mesh if mesh is None else (mesh if isinstance(mesh, Mesh) else Mesh.from_array(mesh))
+        target = (
+            self.mesh
+            if mesh is None
+            else (mesh if isinstance(mesh, Mesh) else Mesh.from_array(mesh))
+        )
         if target is None:
             raise ValueError("a mesh is required for field evaluation")
         return target, Mesh.to_points(target)
@@ -274,7 +281,14 @@ class RectangularCoil(CurrentFilamentSet):
     """
 
     def __init__(self, r0=1.0, z0=0.0, nr=1, nz=1, dr=0.1, dz=0.1, angle=0.0, **kwargs):
-        if isinstance(nr, (bool, np.bool_)) or isinstance(nz, (bool, np.bool_)) or int(nr) != nr or int(nz) != nz or nr < 1 or nz < 1:
+        if (
+            isinstance(nr, (bool, np.bool_))
+            or isinstance(nz, (bool, np.bool_))
+            or int(nr) != nr
+            or int(nz) != nz
+            or nr < 1
+            or nz < 1
+        ):
             raise ValueError("nr and nz must be positive integers")
         if not np.all(np.isfinite((r0, z0, dr, dz, angle))) or r0 < 0.0 or dr <= 0.0 or dz <= 0.0:
             raise ValueError("invalid coil geometry")
@@ -285,10 +299,20 @@ class RectangularCoil(CurrentFilamentSet):
         super().__init__(**kwargs)
 
     def _build(self):
-        radial = np.linspace(self._r0 - self._dr * (self._nr - 1) / 2.0, self._r0 + self._dr * (self._nr - 1) / 2.0, self._nr)
-        axial = np.linspace(self._z0 - self._dz * (self._nz - 1) / 2.0, self._z0 + self._dz * (self._nz - 1) / 2.0, self._nz)
+        radial = np.linspace(
+            self._r0 - self._dr * (self._nr - 1) / 2.0,
+            self._r0 + self._dr * (self._nr - 1) / 2.0,
+            self._nr,
+        )
+        axial = np.linspace(
+            self._z0 - self._dz * (self._nz - 1) / 2.0,
+            self._z0 + self._dz * (self._nz - 1) / 2.0,
+            self._nz,
+        )
         points = np.column_stack((np.repeat(radial, self._nz), np.tile(axial, self._nr)))
-        self._rz_pts = points if self._angle == 0.0 else rotate(points, self._angle, (self._r0, self._z0))
+        self._rz_pts = (
+            points if self._angle == 0.0 else rotate(points, self._angle, (self._r0, self._z0))
+        )
 
     npts = property(lambda self: self._nr * self._nz)
     r0 = property(lambda self: self._r0, lambda self, value: _rebuild_atomic(self, {"_r0": value}))
@@ -297,7 +321,9 @@ class RectangularCoil(CurrentFilamentSet):
     nz = property(lambda self: self._nz, lambda self, value: self._set_count("_nz", value))
     dr = property(lambda self: self._dr, lambda self, value: _rebuild_atomic(self, {"_dr": value}))
     dz = property(lambda self: self._dz, lambda self, value: _rebuild_atomic(self, {"_dz": value}))
-    angle = property(lambda self: self._angle, lambda self, value: _rebuild_atomic(self, {"_angle": value}))
+    angle = property(
+        lambda self: self._angle, lambda self, value: _rebuild_atomic(self, {"_angle": value})
+    )
 
     @property
     def centroid(self):
@@ -384,7 +410,12 @@ class MagnetRing(CurrentFilamentSet):
         if supplied_weights is None:
             supplied_weights = np.r_[-np.ones(8), np.ones(8)]
         weights = np.asarray(supplied_weights, dtype=float)
-        if weights.ndim != 1 or weights.size < 2 or weights.size % 2 or not np.all(np.isfinite(weights)):
+        if (
+            weights.ndim != 1
+            or weights.size < 2
+            or weights.size % 2
+            or not np.all(np.isfinite(weights))
+        ):
             raise ValueError("weights must have an even positive length")
         self._r0, self._z0 = float(r0), float(z0)
         self._width, self._height, self._mu_hat = float(width), float(height), float(mu_hat)
@@ -395,18 +426,28 @@ class MagnetRing(CurrentFilamentSet):
     def _build(self):
         half = self._weights.size // 2
         axial = np.linspace(self._z0 - self._height / 2.0, self._z0 + self._height / 2.0, half)
-        points = np.vstack((
-            np.column_stack((np.full(half, self._r0 - self._width / 2.0), axial)),
-            np.column_stack((np.full(half, self._r0 + self._width / 2.0), axial)),
-        ))
-        self._rz_pts = points if self._mu_hat == 0.0 else rotate(points, self._mu_hat, (self._r0, self._z0))
+        points = np.vstack(
+            (
+                np.column_stack((np.full(half, self._r0 - self._width / 2.0), axial)),
+                np.column_stack((np.full(half, self._r0 + self._width / 2.0), axial)),
+            )
+        )
+        self._rz_pts = (
+            points if self._mu_hat == 0.0 else rotate(points, self._mu_hat, (self._r0, self._z0))
+        )
 
     npts = property(lambda self: len(self._weights))
     r0 = property(lambda self: self._r0, lambda self, value: _rebuild_atomic(self, {"_r0": value}))
     z0 = property(lambda self: self._z0, lambda self, value: _rebuild_atomic(self, {"_z0": value}))
-    width = property(lambda self: self._width, lambda self, value: _rebuild_atomic(self, {"_width": value}))
-    height = property(lambda self: self._height, lambda self, value: _rebuild_atomic(self, {"_height": value}))
-    mu_hat = property(lambda self: self._mu_hat, lambda self, value: _rebuild_atomic(self, {"_mu_hat": value}))
+    width = property(
+        lambda self: self._width, lambda self, value: _rebuild_atomic(self, {"_width": value})
+    )
+    height = property(
+        lambda self: self._height, lambda self, value: _rebuild_atomic(self, {"_height": value})
+    )
+    mu_hat = property(
+        lambda self: self._mu_hat, lambda self, value: _rebuild_atomic(self, {"_mu_hat": value})
+    )
 
     @property
     def centroid(self):
@@ -438,7 +479,11 @@ class Device:
     """Ordered current-set container with matrix-valued field responses."""
 
     def __init__(self, mesh=None, **kwargs):
-        object.__setattr__(self, "_mesh", None if mesh is None else (mesh if isinstance(mesh, Mesh) else Mesh.from_array(mesh)))
+        object.__setattr__(
+            self,
+            "_mesh",
+            None if mesh is None else (mesh if isinstance(mesh, Mesh) else Mesh.from_array(mesh)),
+        )
         object.__setattr__(self, "_current_sets", {})
         object.__setattr__(self, "_cache_key", None)
         object.__setattr__(self, "_cache", None)
@@ -447,7 +492,12 @@ class Device:
 
     def __setattr__(self, name, value):
         registered = getattr(self, "_current_sets", None)
-        if registered is not None and name not in {"_mesh", "_current_sets", "_cache_key", "_cache"}:
+        if registered is not None and name not in {
+            "_mesh",
+            "_current_sets",
+            "_cache_key",
+            "_cache",
+        }:
             if isinstance(value, CurrentFilamentSet):
                 if any(child is value and key != name for key, child in registered.items()):
                     raise AttributeError("this current set is already registered")

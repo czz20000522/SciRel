@@ -1,4 +1,5 @@
 """Small validated finite-difference operators."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -27,10 +28,9 @@ def diff_12_central(x, y):
     x, y = _validated_pair(x, y)
     h_left = x[1:-1] - x[:-2]
     h_right = x[2:] - x[1:-1]
-    first = (
-        h_left * (y[2:] - y[1:-1]) / h_right
-        + h_right * (y[1:-1] - y[:-2]) / h_left
-    ) / (h_left + h_right)
+    first = (h_left * (y[2:] - y[1:-1]) / h_right + h_right * (y[1:-1] - y[:-2]) / h_left) / (
+        h_left + h_right
+    )
     second = 2.0 * (
         y[:-2] / (h_left * (h_left + h_right))
         - y[1:-1] / (h_left * h_right)

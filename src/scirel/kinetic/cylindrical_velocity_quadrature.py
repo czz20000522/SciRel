@@ -42,6 +42,7 @@ evidence only.  This module does not generate or adapt the meshes themselves
 and does not decide whether the source's ghost-face convention fits any
 downstream scheme beyond the relations documented here.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -104,8 +105,13 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
     # explicit representability check below reports as ValueError.
     with np.errstate(over="ignore", invalid="ignore"):
         radial_extended = np.append(radial, 2.0 * radial[-1] - radial[-2])
-        radial_mid = np.concatenate(((0.0,), 0.5 * (radial_extended + np.roll(radial_extended, -1))))
-        radial_left, radial_right = radial_mid[: radial.size], np.roll(radial_mid, -1)[: radial.size]
+        radial_mid = np.concatenate(
+            ((0.0,), 0.5 * (radial_extended + np.roll(radial_extended, -1)))
+        )
+        radial_left, radial_right = (
+            radial_mid[: radial.size],
+            np.roll(radial_mid, -1)[: radial.size],
+        )
         axial_extended = np.concatenate(
             ((2.0 * axial[0] - axial[1],), axial, (2.0 * axial[-1] - axial[-2],))
         )
@@ -136,9 +142,7 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
         speed_squared,
     )
     if not all(np.all(np.isfinite(array)) for array in float_outputs):
-        raise ValueError(
-            "the quadrature outputs are not representable for these finite inputs"
-        )
+        raise ValueError("the quadrature outputs are not representable for these finite inputs")
     for name, array in (
         ("radial_measure", radial_measure),
         ("radial_four_pi_measure", radial_four_pi_measure),
@@ -146,9 +150,7 @@ def make_cylindrical_velocity_quadrature(*, vr, vx):
         ("volume", volume),
     ):
         if bool(np.any(array <= 0.0)):
-            raise ValueError(
-                f"the quadrature {name} underflows to zero for these finite inputs"
-            )
+            raise ValueError(f"the quadrature {name} underflows to zero for these finite inputs")
     positive, negative = np.flatnonzero(axial > 0.0), np.flatnonzero(axial < 0.0)
     if positive.size == 0 or negative.size == 0:
         raise ValueError("vx must contain both negative and positive velocities")

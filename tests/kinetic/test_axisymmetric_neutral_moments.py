@@ -5,6 +5,7 @@ The saved the neutral-transport formulation package (anchor  /
 provides bounded development comparison. The saved sigma_zz = sigma_yy
 identification and the two empty-slice policies are witnessed here.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -41,8 +42,13 @@ def _fixture():
 def test_default_policy_returns_all_nine_moments_with_saved_identification():
     distribution, vx, vr, volume = _fixture()
     result = reduce_axisymmetric_neutral_moments(
-        distribution, vx, vr, volume,
-        normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
+        distribution,
+        vx,
+        vr,
+        volume,
+        normalization_temperature_ev=3.0,
+        isotope_mass_amu=2.0,
+        molecularity=2,
     )
     assert set(result) == _RESULT_KEYS
     for name in _RESULT_KEYS:
@@ -72,13 +78,16 @@ def test_moments_match_an_independent_maxwellian_witness():
     thermal_speed = compute_thermal_speed_m_s(temperature, mass_amu)["thermal_speed_m_s"]
     vr_grid, vx_grid = np.meshgrid(vr, vx, indexing="ij")
     normalized_shift = flow / thermal_speed
-    maxwellian = np.exp(
-        -(vr_grid[:, :, None] ** 2 + (vx_grid[:, :, None] - normalized_shift) ** 2)
-    )
+    maxwellian = np.exp(-(vr_grid[:, :, None] ** 2 + (vx_grid[:, :, None] - normalized_shift) ** 2))
     distribution = np.broadcast_to(maxwellian, (nvr, nvx, 1)).copy()
     result = reduce_axisymmetric_neutral_moments(
-        distribution, vx, vr, volume,
-        normalization_temperature_ev=temperature, isotope_mass_amu=mass_amu, molecularity=1,
+        distribution,
+        vx,
+        vr,
+        volume,
+        normalization_temperature_ev=temperature,
+        isotope_mass_amu=mass_amu,
+        molecularity=1,
     )
     # flow speed: the exponential is even in the shifted variable
     assert abs(result["axial_velocity_m_s"][0] - flow) < 0.02 * flow
@@ -96,9 +105,13 @@ def test_cylindrical_quadrature_and_shifted_seed_feed_the_moment_reduction():
     vx = np.array([-1.5, -0.5, 0.5, 1.5])
     quadrature = make_cylindrical_velocity_quadrature(vr=vr, vx=vx)
     seed = build_shifted_maxwellian_seed(
-        vr=vr, vx=vx, tnorm_ev=20.0,
-        shifted_vx_m_s=np.array([5.0e3]), temperature_ev=np.array([10.0]),
-        mass_amu=2.0, molecule_count=1,
+        vr=vr,
+        vx=vx,
+        tnorm_ev=20.0,
+        shifted_vx_m_s=np.array([5.0e3]),
+        temperature_ev=np.array([10.0]),
+        mass_amu=2.0,
+        molecule_count=1,
         cylindrical_volume=quadrature["volume"],
     )
     inputs = dict(normalization_temperature_ev=20.0, isotope_mass_amu=2.0, molecularity=1)
@@ -106,9 +119,13 @@ def test_cylindrical_quadrature_and_shifted_seed_feed_the_moment_reduction():
         seed["distribution"], vx, vr, quadrature["volume"], **inputs
     )
     explicit = reduce_axisymmetric_neutral_moments(
-        seed["distribution"], vx, vr, quadrature["volume"],
+        seed["distribution"],
+        vx,
+        vr,
+        quadrature["volume"],
         axial_quadrature=quadrature["dvx"],
-        radial_quadrature=quadrature["radial_measure"], **inputs,
+        radial_quadrature=quadrature["radial_measure"],
+        **inputs,
     )
     np.testing.assert_allclose(result["density_m3"], [1.0], rtol=1e-15)
     assert result["axial_velocity_m_s"][0] > 0.0
@@ -122,22 +139,33 @@ def test_explicit_quadrature_reconstruction_contract_and_saved_summation_order()
     radial_weight = np.full(vr.size, 0.2)
     volume = radial_weight[:, None] * axial_weight[None, :]
     kw = dict(
-        normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
-        axial_quadrature=axial_weight, radial_quadrature=radial_weight,
+        normalization_temperature_ev=3.0,
+        isotope_mass_amu=2.0,
+        molecularity=2,
+        axial_quadrature=axial_weight,
+        radial_quadrature=radial_weight,
     )
     result = reduce_axisymmetric_neutral_moments(distribution, vx, vr, volume, **kw)
-    expected_density = np.array([
-        np.sum(radial_weight * (distribution[:, :, k] @ axial_weight))
-        for k in range(distribution.shape[2])
-    ])
+    expected_density = np.array(
+        [
+            np.sum(radial_weight * (distribution[:, :, k] @ axial_weight))
+            for k in range(distribution.shape[2])
+        ]
+    )
     np.testing.assert_array_equal(result["density_m3"], expected_density)
     bad_volume = volume.copy()
     bad_volume[0, 0] *= 1.5
     with pytest.raises(ValueError, match="explicit quadrature must match"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, bad_volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
-            axial_quadrature=axial_weight, radial_quadrature=radial_weight,
+            distribution,
+            vx,
+            vr,
+            bad_volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
+            molecularity=2,
+            axial_quadrature=axial_weight,
+            radial_quadrature=radial_weight,
         )
 
 
@@ -158,18 +186,33 @@ def test_species_and_quadrature_contracts_fail_closed():
     distribution, vx, vr, volume = _fixture()
     with pytest.raises(ValueError, match="species contract is invalid"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume,
-            normalization_temperature_ev=0.0, isotope_mass_amu=2.0, molecularity=2,
+            distribution,
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=0.0,
+            isotope_mass_amu=2.0,
+            molecularity=2,
         )
     with pytest.raises(ValueError, match="species contract is invalid"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=3,
+            distribution,
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
+            molecularity=3,
         )
     with pytest.raises(ValueError, match="must be provided together"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
+            distribution,
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
+            molecularity=2,
             axial_quadrature=np.ones(vx.size),
         )
 
@@ -182,14 +225,24 @@ def test_nonfinite_velocity_axes_fail_closed():
     nan_vx = np.array([np.nan if i == 3 else v for i, v in enumerate(vx)])
     with pytest.raises(ValueError, match="species contract is invalid"):
         reduce_axisymmetric_neutral_moments(
-            distribution, nan_vx, vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
+            distribution,
+            nan_vx,
+            vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
+            molecularity=2,
         )
     nan_vr = np.array([np.nan if i == 2 else v for i, v in enumerate(vr)])
     with pytest.raises(ValueError, match="species contract is invalid"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, nan_vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
+            distribution,
+            vx,
+            nan_vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
+            molecularity=2,
         )
 
 
@@ -201,8 +254,13 @@ def test_complex_distribution_fail_closed():
     distribution, vx, vr, volume = _fixture()
     with pytest.raises(ValueError, match="real-valued"):
         reduce_axisymmetric_neutral_moments(
-            distribution.astype(complex), vx, vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0, molecularity=2,
+            distribution.astype(complex),
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
+            molecularity=2,
         )
 
 
@@ -213,8 +271,13 @@ def test_zero_axial_node_is_a_valid_mesh_point():
     (pressure over density with all weight at vx=0), asserted exactly."""
     f = np.ones((1, 1, 1))
     result = reduce_axisymmetric_neutral_moments(
-        f, np.array([0.0]), np.array([1.0]), np.array([[1.0]]),
-        normalization_temperature_ev=1.0, isotope_mass_amu=1.0, molecularity=1,
+        f,
+        np.array([0.0]),
+        np.array([1.0]),
+        np.array([[1.0]]),
+        normalization_temperature_ev=1.0,
+        isotope_mass_amu=1.0,
+        molecularity=1,
     )
     assert result["axial_velocity_m_s"][0] == 0.0
     np.testing.assert_allclose(result["temperature_ev"][0], 2.0 / 3.0, rtol=0.0, atol=1e-15)
@@ -228,8 +291,13 @@ def test_scalar_zero_axial_input_fail_closed():
     f = np.ones((1, 1, 1))
     with pytest.raises(ValueError, match="one-dimensional array"):
         reduce_axisymmetric_neutral_moments(
-            f, 0.0, np.array([1.0]), np.array([[1.0]]),
-            normalization_temperature_ev=1.0, isotope_mass_amu=1.0, molecularity=1,
+            f,
+            0.0,
+            np.array([1.0]),
+            np.array([[1.0]]),
+            normalization_temperature_ev=1.0,
+            isotope_mass_amu=1.0,
+            molecularity=1,
         )
 
 
@@ -242,21 +310,36 @@ def test_nonfinite_scalar_inputs_fail_closed():
     kw = dict(molecularity=1)
     with pytest.raises(ValueError, match="species contract is invalid"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume,
-            normalization_temperature_ev=float("nan"), isotope_mass_amu=1.0, **kw,
+            distribution,
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=float("nan"),
+            isotope_mass_amu=1.0,
+            **kw,
         )
     with pytest.raises(ValueError, match="species contract is invalid"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume,
-            normalization_temperature_ev=2.0, isotope_mass_amu=float("nan"), **kw,
+            distribution,
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=2.0,
+            isotope_mass_amu=float("nan"),
+            **kw,
         )
     volume_nan = volume.copy()
     volume_nan[0, 0] = np.nan
     with pytest.raises(ValueError, match="species contract is invalid"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume_nan,
-            normalization_temperature_ev=2.0, isotope_mass_amu=1.0,
-            empty_slice_policy="source_default", **kw,
+            distribution,
+            vx,
+            vr,
+            volume_nan,
+            normalization_temperature_ev=2.0,
+            isotope_mass_amu=1.0,
+            empty_slice_policy="source_default",
+            **kw,
         )
 
 
@@ -273,9 +356,12 @@ def test_nonreal_array_inputs_fail_by_parameter_name(name, kind):
         values[name] = values[name].astype(complex)
     with pytest.raises(ValueError, match=name):
         reduce_axisymmetric_neutral_moments(
-            values["distribution"], values["vx"], values["vr"],
+            values["distribution"],
+            values["vx"],
+            values["vr"],
             values["cylindrical_volume"],
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
             molecularity=2,
         )
 
@@ -286,8 +372,12 @@ def test_mixed_boolean_sequence_cannot_hide_in_a_numeric_axis():
     mixed_vx[3] = True
     with pytest.raises(ValueError, match="vx"):
         reduce_axisymmetric_neutral_moments(
-            distribution, mixed_vx, vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0,
+            distribution,
+            mixed_vx,
+            vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
             molecularity=2,
         )
 
@@ -296,8 +386,12 @@ def test_derived_thermal_speed_must_remain_representable():
     distribution, vx, vr, volume = _fixture()
     with pytest.raises(ValueError, match="thermal speed"):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=1e-320,
+            distribution,
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=1e-320,
             molecularity=2,
         )
 
@@ -338,7 +432,12 @@ def test_nonreal_explicit_quadrature_fails_by_parameter_name(name, kind):
         weights[name] = weights[name].astype(complex)
     with pytest.raises(ValueError, match=name):
         reduce_axisymmetric_neutral_moments(
-            distribution, vx, vr, volume,
-            normalization_temperature_ev=3.0, isotope_mass_amu=2.0,
-            molecularity=2, **weights,
+            distribution,
+            vx,
+            vr,
+            volume,
+            normalization_temperature_ev=3.0,
+            isotope_mass_amu=2.0,
+            molecularity=2,
+            **weights,
         )

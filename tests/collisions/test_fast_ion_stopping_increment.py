@@ -1,4 +1,5 @@
 """Direct checks of the fixed empirical expression, not physical calibration."""
+
 from __future__ import annotations
 
 import json
@@ -12,38 +13,44 @@ import pytest
 
 from scirel.collisions import evaluate_fast_ion_stopping_increment
 
-_FIXTURE = json.loads((
-    Path(__file__).parents[1] / 'fixtures/collisions/fast_ion_stopping_increment.json'
-).read_text(encoding='utf-8'))
+_FIXTURE = json.loads(
+    (Path(__file__).parents[1] / "fixtures/collisions/fast_ion_stopping_increment.json").read_text(
+        encoding="utf-8"
+    )
+)
 
 
 def _inputs(case):
     return {
-        name: np.asarray([
-            np.nan if value['classification'] == 'nan' else
-            struct.unpack('>d', bytes.fromhex(value['ieee754_binary64_be_hex']))[0]
-            for value in item['values']
-        ], dtype=np.float64).reshape(item['shape'], order='F')
-        for name, item in case['inputs'].items()
+        name: np.asarray(
+            [
+                np.nan
+                if value["classification"] == "nan"
+                else struct.unpack(">d", bytes.fromhex(value["ieee754_binary64_be_hex"]))[0]
+                for value in item["values"]
+            ],
+            dtype=np.float64,
+        ).reshape(item["shape"], order="F")
+        for name, item in case["inputs"].items()
     }
 
 
-@pytest.mark.parametrize('case', _FIXTURE['cases'], ids=lambda case: case['id'])
+@pytest.mark.parametrize("case", _FIXTURE["cases"], ids=lambda case: case["id"])
 def test_frozen_independent_engine_observations(case):
     """Keep all 56 cases and the original finite/nonfinite comparison rules."""
     inputs = _inputs(case)
     with warnings.catch_warnings(record=True):
-        warnings.simplefilter('always', RuntimeWarning)
-        if case['expected_status'] != 'returned':
+        warnings.simplefilter("always", RuntimeWarning)
+        if case["expected_status"] != "returned":
             with pytest.raises(ValueError):
                 evaluate_fast_ion_stopping_increment(**inputs)
             return
         actual = evaluate_fast_ion_stopping_increment(**inputs)
-    expected = case['expected_output']
-    assert list(actual.shape) == expected['shape']
-    assert actual.dtype in (np.dtype('float64'), np.dtype('complex128'))
-    for channel in ('real', 'imag'):
-        observed = getattr(actual, channel).ravel(order='F')
+    expected = case["expected_output"]
+    assert list(actual.shape) == expected["shape"]
+    assert actual.dtype in (np.dtype("float64"), np.dtype("complex128"))
+    for channel in ("real", "imag"):
+        observed = getattr(actual, channel).ravel(order="F")
         reference = np.asarray([float(value) for value in expected[channel]])
         np.testing.assert_array_equal(np.isnan(observed), np.isnan(reference))
         np.testing.assert_array_equal(np.isposinf(observed), np.isposinf(reference))
@@ -51,32 +58,37 @@ def test_frozen_independent_engine_observations(case):
         finite = np.isfinite(reference)
         assert np.isfinite(observed[finite]).all()
         np.testing.assert_allclose(
-            observed[finite], reference[finite],
-            rtol=_FIXTURE['rules']['finite_rtol'],
-            atol=_FIXTURE['rules']['finite_atol'],
+            observed[finite],
+            reference[finite],
+            rtol=_FIXTURE["rules"]["finite_rtol"],
+            atol=_FIXTURE["rules"]["finite_atol"],
         )
 
 
 def test_frozen_denominator_and_criteria_are_not_reduced():
-    cases = _FIXTURE['cases']
-    assert len(cases) == len({case['id'] for case in cases}) == 56
-    rows = {row for case in cases for row in case['rows']}
-    assert len(rows) == 37 and rows == set(_FIXTURE['row_ids'])
-    assert sum(case['expected_status'] == 'returned' for case in cases) == 55
-    assert [case['id'] for case in cases if case['expected_status'] != 'returned'] == ['bad_shape']
-    assert _FIXTURE['rules']['finite_rtol'] == 5e-12
-    assert _FIXTURE['rules']['finite_atol'] == 1e-300
+    cases = _FIXTURE["cases"]
+    assert len(cases) == len({case["id"] for case in cases}) == 56
+    rows = {row for case in cases for row in case["rows"]}
+    assert len(rows) == 37 and rows == set(_FIXTURE["row_ids"])
+    assert sum(case["expected_status"] == "returned" for case in cases) == 55
+    assert [case["id"] for case in cases if case["expected_status"] != "returned"] == ["bad_shape"]
+    assert _FIXTURE["rules"]["finite_rtol"] == 5e-12
+    assert _FIXTURE["rules"]["finite_atol"] == 1e-300
 
 
 def _call(**changes):
     parameters = dict(
-        beam_mass_number=1, beam_energy_ev=100000, birth_pitch_cosine=0.5,
-        electron_density_m3=1e18, electron_temperature_ev=10000,
-        power_density_w_m3=1000000, electron_slowing_time_s=1,
+        beam_mass_number=1,
+        beam_energy_ev=100000,
+        birth_pitch_cosine=0.5,
+        electron_density_m3=1e18,
+        electron_temperature_ev=10000,
+        power_density_w_m3=1000000,
+        electron_slowing_time_s=1,
     )
     parameters.update(changes)
     with warnings.catch_warnings():
-        warnings.simplefilter('ignore', RuntimeWarning)
+        warnings.simplefilter("ignore", RuntimeWarning)
         return evaluate_fast_ion_stopping_increment(**parameters)
 
 
@@ -126,31 +138,49 @@ def test_empty_and_incompatible_axes():
         _call(beam_energy_ev=[[100000, 500000]], beam_mass_number=[[1, 2, 3]])
 
 
-@pytest.mark.parametrize('temperature', [7000, 10000, 23000])
+@pytest.mark.parametrize("temperature", [7000, 10000, 23000])
 def test_declared_expression_against_high_precision_evaluation(temperature):
     """Independent arithmetic of the declared fit, not a physical accuracy test."""
     with mp.workdps(70):
         theta = mp.mpf(temperature) / 10000
-        ratio = mp.mpf('0.1') / theta
-        pitch = mp.mpf('0.5')
-        energy_coefficients = ('0.57658', '1.6432', '-4.8886', '5.3932', '-2.9226', '0.77156', '-0.079095')
-        pitch_coefficients = ('0.30812', '11.992', '-68.971', '165.94', '-177.33', '69.833')
-        energy_fit = mp.fsum(mp.mpf(value) * ratio**power for power, value in enumerate(energy_coefficients))
-        pitch_fit = mp.fsum(mp.mpf(value) * pitch**power for power, value in enumerate(pitch_coefficients, 1))
-        population = mp.mpf(1000000) / (mp.mpf(100000) * mp.mpf('1.602176462e-19')) / mp.mpf('1e18')
-        reference = float(population * theta**mp.mpf('-0.9027') * energy_fit * pitch_fit * mp.mpf('1e-19'))
-    np.testing.assert_allclose(_call(electron_temperature_ev=temperature), [[reference]], rtol=5e-12, atol=1e-300)
+        ratio = mp.mpf("0.1") / theta
+        pitch = mp.mpf("0.5")
+        energy_coefficients = (
+            "0.57658",
+            "1.6432",
+            "-4.8886",
+            "5.3932",
+            "-2.9226",
+            "0.77156",
+            "-0.079095",
+        )
+        pitch_coefficients = ("0.30812", "11.992", "-68.971", "165.94", "-177.33", "69.833")
+        energy_fit = mp.fsum(
+            mp.mpf(value) * ratio**power for power, value in enumerate(energy_coefficients)
+        )
+        pitch_fit = mp.fsum(
+            mp.mpf(value) * pitch**power for power, value in enumerate(pitch_coefficients, 1)
+        )
+        population = mp.mpf(1000000) / (mp.mpf(100000) * mp.mpf("1.602176462e-19")) / mp.mpf("1e18")
+        reference = float(
+            population * theta ** mp.mpf("-0.9027") * energy_fit * pitch_fit * mp.mpf("1e-19")
+        )
+    np.testing.assert_allclose(
+        _call(electron_temperature_ev=temperature), [[reference]], rtol=5e-12, atol=1e-300
+    )
 
 
 def test_supplied_power_time_density_scaling():
     baseline = _call()
-    for changes in ({'power_density_w_m3': 2000000}, {'electron_slowing_time_s': 2}):
+    for changes in ({"power_density_w_m3": 2000000}, {"electron_slowing_time_s": 2}):
         np.testing.assert_allclose(_call(**changes), 2 * baseline, rtol=5e-12, atol=1e-300)
-    np.testing.assert_allclose(_call(electron_density_m3=2e18), baseline / 2, rtol=5e-12, atol=1e-300)
+    np.testing.assert_allclose(
+        _call(electron_density_m3=2e18), baseline / 2, rtol=5e-12, atol=1e-300
+    )
 
 
 def test_complex_input_is_outside_real_input_contract():
-    with pytest.raises(TypeError, match='real'):
+    with pytest.raises(TypeError, match="real"):
         _call(birth_pitch_cosine=0.5 + 0j)
 
 

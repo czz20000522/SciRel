@@ -3,11 +3,14 @@ from scirel.diagnostics.observation_residuals import reduce_observation_residual
 
 def test_flux_first_residual():
     result = reduce_observation_residuals(
-        predicted={'flux_loops': [3.0], 'thomson': {'p_perp': [5.0]}},
-        observations={'flux_loops': {'values': [1.0], 'sigma': [2.0]}, 'thomson': {'p_perp': {'values': [3.0], 'sigma': [1.0]}}},
+        predicted={"flux_loops": [3.0], "thomson": {"p_perp": [5.0]}},
+        observations={
+            "flux_loops": {"values": [1.0], "sigma": [2.0]},
+            "thomson": {"p_perp": {"values": [3.0], "sigma": [1.0]}},
+        },
     )
-    assert result['residual_vector'].tolist() == [1.0, 2.0]
-    assert result['chi2'] == 5.0
+    assert result["residual_vector"].tolist() == [1.0, 2.0]
+    assert result["chi2"] == 5.0
 
 
 def test_reviewed_relation_example():
@@ -45,9 +48,7 @@ def test_review_gate_rejects_invalid_residual_channel_domains():
 
     base_observation = {"flux_loops": {"values": [1.0, 2.0], "sigma": [1.0, 1.0]}}
     with pytest.raises(ValueError, match="exact same shape"):
-        reduce_observation_residuals(
-            predicted={"flux_loops": [1.0]}, observations=base_observation
-        )
+        reduce_observation_residuals(predicted={"flux_loops": [1.0]}, observations=base_observation)
     with pytest.raises(ValueError, match="sigma must be positive"):
         reduce_observation_residuals(
             predicted={"flux_loops": [1.0, 2.0]},

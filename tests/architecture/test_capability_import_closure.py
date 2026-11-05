@@ -102,8 +102,7 @@ def test_probe_mode_runs_in_the_same_isolated_source_environment(tmp_path: Path)
 def test_probe_mode_records_call_time_scientific_dependency(tmp_path: Path) -> None:
     probe = tmp_path / "probe.py"
     probe.write_text(
-        "from scirel.kinetic import evaluate_bessel_gamma\n"
-        "evaluate_bessel_gamma(0, 0.0)\n",
+        "from scirel.kinetic import evaluate_bessel_gamma\nevaluate_bessel_gamma(0, 0.0)\n",
         encoding="utf-8",
     )
 
@@ -174,7 +173,9 @@ def test_binding_status_preserves_sorted_multiple_reasons() -> None:
         "package_version": "0+unknown",
         "content_sha256": "0" * 64,
     }
-    status, reasons = _binding_status(source, {**source, "content_sha256": "1" * 64}, "a" * 64, "b" * 64)
+    status, reasons = _binding_status(
+        source, {**source, "content_sha256": "1" * 64}, "a" * 64, "b" * 64
+    )
     assert status == "UNBOUND"
     assert reasons == sorted(set(reasons))
     assert "probe identity changed during measurement" in reasons
@@ -199,13 +200,9 @@ def test_invalid_module_prefix_fails_closed() -> None:
 
 def test_runtime_closure_contract_declares_the_receipt_schema() -> None:
     contract = json.loads(
-        (ROOT / "contracts/capability-runtime-closure.schema.json").read_text(
-            encoding="utf-8"
-        )
+        (ROOT / "contracts/capability-runtime-closure.schema.json").read_text(encoding="utf-8")
     )
-    assert contract["properties"]["schema"]["const"] == (
-        "scirel.capability-runtime-closure"
-    )
+    assert contract["properties"]["schema"]["const"] == ("scirel.capability-runtime-closure")
     assert "source" in contract["required"]
     assert "source_after" in contract["required"]
     assert "binding_status" in contract["required"]

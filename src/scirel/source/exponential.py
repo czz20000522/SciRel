@@ -5,6 +5,7 @@
 Normalization cancels decay_start; this is not a cutoff profile or a
 velocity-space Maxwellian. The retained licence and reference are above.
 """
+
 from __future__ import annotations
 import numpy as np
 from ._common import grid, normalize_log_shape, scalar, width_scalar
@@ -39,6 +40,8 @@ def exponential_profile(rho_norm, vpr, drho_norm, *, decay_start, width, total):
     # identical to the source normalization and avoids overflow in start/w.
     reference = rho[0] if np.signbit(w) else rho[-1]
     safe_width = np.copysign(max(abs(w), np.finfo(np.float64).tiny), w)
-    log_shape = (np.asarray(rho, dtype=np.longdouble) - np.longdouble(reference)) / np.longdouble(safe_width)
+    log_shape = (np.asarray(rho, dtype=np.longdouble) - np.longdouble(reference)) / np.longdouble(
+        safe_width
+    )
     weights = np.asarray(vpr_a, dtype=np.longdouble) * np.asarray(drho, dtype=np.longdouble)
     return normalize_log_shape(log_shape, weights, total_f)

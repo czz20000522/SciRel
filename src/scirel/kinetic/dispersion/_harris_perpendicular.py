@@ -23,15 +23,12 @@ def solve_perpendicular_harris(
     """
 
     arrays = [np.asarray(value) for value in (alpha, rho, gyro, temperature_ratio)]
-    if (
-        not arrays[0].size
-        or any(
-            value.ndim != 1
-            or value.shape != arrays[0].shape
-            or value.dtype.kind not in "iuf"
-            or not np.isfinite(value).all()
-            for value in arrays
-        )
+    if not arrays[0].size or any(
+        value.ndim != 1
+        or value.shape != arrays[0].shape
+        or value.dtype.kind not in "iuf"
+        or not np.isfinite(value).all()
+        for value in arrays
     ):
         raise ValueError("finite aligned species vectors required")
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):
@@ -53,12 +50,7 @@ def solve_perpendicular_harris(
     ):
         if isinstance(value, (bool, np.bool_)) or int(value) != value or value < minimum:
             raise ValueError(name + " integer outside declared domain")
-    if (
-        not np.isfinite(kx)
-        or kx == 0
-        or not np.isfinite(frequency_scale)
-        or frequency_scale <= 0
-    ):
+    if not np.isfinite(kx) or kx == 0 or not np.isfinite(frequency_scale) or frequency_scale <= 0:
         raise ValueError("finite nonzero kx and positive frequency_scale required")
 
     import mpmath as mp
@@ -72,23 +64,20 @@ def solve_perpendicular_harris(
         source_groups = {}
         for alpha_value, rho_value, gyro_value, ratio in zip(*arrays):
             alpha_mp, rho_mp, gyro_mp, ratio_mp = (
-                mp.mpf(float(value))
-                for value in (alpha_value, rho_value, gyro_value, ratio)
+                mp.mpf(float(value)) for value in (alpha_value, rho_value, gyro_value, ratio)
             )
             argument = (mp.mpf(float(kx)) * rho_mp) ** 2
-            harmonics = [
-                mp.exp(-argument) * mp.besseli(order, argument)
-                for order in range(N + 1)
-            ]
+            harmonics = [mp.exp(-argument) * mp.besseli(order, argument) for order in range(N + 1)]
             constant += alpha_mp * (1 - harmonics[0] - 2 * sum(harmonics[1:]))
             for order in range(-N, N + 1):
                 source_pole = order * gyro_mp
                 source_groups[source_pole] = source_groups.get(source_pole, 0) + pole_order
             for order in range(1, N + 1):
                 pole_square = (order * gyro_mp) ** 2
-                grouped_weights[pole_square] = grouped_weights.get(
-                    pole_square, mp.mpf(0)
-                ) + 2 * alpha_mp * harmonics[order] * ratio_mp * pole_square
+                grouped_weights[pole_square] = (
+                    grouped_weights.get(pole_square, mp.mpf(0))
+                    + 2 * alpha_mp * harmonics[order] * ratio_mp * pole_square
+                )
 
         if constant <= 0:
             raise ArithmeticError("positive finite-Harris closure violated")
@@ -128,15 +117,13 @@ def solve_perpendicular_harris(
                     upper = midpoint
 
             minimum_weight = (
-                min(weights[interval:interval + 2])
+                min(weights[interval : interval + 2])
                 if interval + 1 < len(poles)
                 else weights[interval]
             )
             max_iterations = max(
                 1000,
-                8 * digits
-                + 4 * int(abs(mp.log10(minimum_weight / constant)))
-                + 128,
+                8 * digits + 4 * int(abs(mp.log10(minimum_weight / constant))) + 128,
             )
             for _ in range(max_iterations):
                 midpoint = (lower + upper) / 2
@@ -157,15 +144,17 @@ def solve_perpendicular_harris(
                 raise ArithmeticError("offset-coordinate rational residual failed")
             base = mp.sqrt(poles[center])
             frequency_offset = offset / (mp.sqrt(poles[center] + offset) + base)
-            roots.append({
-                "interval": interval,
-                "reference": center,
-                "delta": offset,
-                "base": base,
-                "offset": frequency_offset,
-                "residual": residual,
-                "bracket": (lower, upper),
-            })
+            roots.append(
+                {
+                    "interval": interval,
+                    "reference": center,
+                    "delta": offset,
+                    "base": base,
+                    "offset": frequency_offset,
+                    "residual": residual,
+                    "bracket": (lower, upper),
+                }
+            )
 
         modes = []
         scale = mp.mpf(float(frequency_scale))
@@ -173,21 +162,22 @@ def solve_perpendicular_harris(
             for index, root in enumerate(roots):
                 base = sign * root["base"]
                 offset = sign * root["offset"]
-                modes.append({
-                    "sign": sign,
-                    "index": index,
-                    "root": root,
-                    "base": base,
-                    "offset": offset,
-                    "published_base": base / scale,
-                    "published_offset": offset / scale,
-                    "rounded": float(base + offset),
-                    "published_rounded": float(base / scale + offset / scale),
-                })
+                modes.append(
+                    {
+                        "sign": sign,
+                        "index": index,
+                        "root": root,
+                        "base": base,
+                        "offset": offset,
+                        "published_base": base / scale,
+                        "published_offset": offset / scale,
+                        "rounded": float(base + offset),
+                        "published_rounded": float(base / scale + offset / scale),
+                    }
+                )
         modes.sort(key=lambda mode: mode["rounded"])
         if any(
-            not np.isfinite([mode["rounded"], mode["published_rounded"]]).all()
-            for mode in modes
+            not np.isfinite([mode["rounded"], mode["published_rounded"]]).all() for mode in modes
         ):
             raise FloatingPointError("frequency midpoint not representable")
 
@@ -222,9 +212,7 @@ def solve_perpendicular_harris(
             "frequency_offset": np.asarray([float(mode["offset"]) for mode in modes]),
             "frequency_base_decimal": stringify([mode["base"] for mode in modes]),
             "frequency_offset_decimal": stringify([mode["offset"] for mode in modes]),
-            "published_omega": np.asarray(
-                [mode["published_rounded"] for mode in modes], complex
-            ),
+            "published_omega": np.asarray([mode["published_rounded"] for mode in modes], complex),
             "published_frequency_base_decimal": stringify(
                 [mode["published_base"] for mode in modes]
             ),
@@ -238,15 +226,10 @@ def solve_perpendicular_harris(
             "root_interval_index": [mode["root"]["interval"] for mode in modes],
             "reference_pole_index": [mode["root"]["reference"] for mode in modes],
             "root_sign": [mode["sign"] for mode in modes],
-            "square_offset_decimal": stringify(
-                [mode["root"]["delta"] for mode in modes]
-            ),
-            "shift_chart_residual_decimal": stringify(
-                [mode["root"]["residual"] for mode in modes]
-            ),
+            "square_offset_decimal": stringify([mode["root"]["delta"] for mode in modes]),
+            "shift_chart_residual_decimal": stringify([mode["root"]["residual"] for mode in modes]),
             "root_brackets_delta_decimal": [
-                [mp.nstr(value, digits) for value in mode["root"]["bracket"]]
-                for mode in modes
+                [mp.nstr(value, digits) for value in mode["root"]["bracket"]] for mode in modes
             ],
             "precision_digits": digits,
             "N": N,

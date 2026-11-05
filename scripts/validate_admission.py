@@ -4,6 +4,7 @@ The schema reader implements only the explicitly supported keywords used by the
 live admission schemas. Unknown keywords fail closed; this is not a general
 JSON Schema engine. Validation never imports or executes payload code.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,14 +22,37 @@ PATH_MAP_SCHEMA = ROOT / "contracts/admission/path-map.schema.json"
 BOUND = ("FINAL.json", "FILES.json", "PATH_MAP.json")
 ROOT_BINDING = "ROOT.sha256"
 CONTROLS = frozenset((*BOUND, ROOT_BINDING))
-DERIVED_KEYS = frozenset(("schema", "files", "path_map", "root_binding", "payload_files", "payload_bytes"))
-_KEYWORDS = frozenset(("$schema", "$id", "title", "description", "type", "const",
-                       "required", "properties", "additionalProperties", "propertyNames",
-                       "items", "minItems", "minLength", "minimum", "pattern"))
-_TYPES = {"object": lambda v: isinstance(v, dict), "array": lambda v: isinstance(v, list),
-          "string": lambda v: isinstance(v, str),
-          "integer": lambda v: (isinstance(v, int) and not isinstance(v, bool))
-          or (isinstance(v, float) and v.is_integer())}
+DERIVED_KEYS = frozenset(
+    ("schema", "files", "path_map", "root_binding", "payload_files", "payload_bytes")
+)
+_KEYWORDS = frozenset(
+    (
+        "$schema",
+        "$id",
+        "title",
+        "description",
+        "type",
+        "const",
+        "required",
+        "properties",
+        "additionalProperties",
+        "propertyNames",
+        "items",
+        "minItems",
+        "minLength",
+        "minimum",
+        "pattern",
+    )
+)
+_TYPES = {
+    "object": lambda v: isinstance(v, dict),
+    "array": lambda v: isinstance(v, list),
+    "string": lambda v: isinstance(v, str),
+    "integer": lambda v: (
+        (isinstance(v, int) and not isinstance(v, bool))
+        or (isinstance(v, float) and v.is_integer())
+    ),
+}
 
 
 def _sha(path: Path) -> str:
@@ -57,8 +81,11 @@ def _invalid_constant(value):
 
 
 def read_json(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_object,
-                      parse_constant=_invalid_constant)
+    return json.loads(
+        path.read_text(encoding="utf-8"),
+        object_pairs_hook=_object,
+        parse_constant=_invalid_constant,
+    )
 
 
 def _safe_relative(path: str, errors: list[str], where: str) -> bool:
@@ -66,10 +93,17 @@ def _safe_relative(path: str, errors: list[str], where: str) -> bool:
         errors.append(f"{where}: path must be a non-empty string")
         return False
     parts = path.split("/")
-    invalid = ("\\" in path or any(c in '<>:"|?*' for c in path) or path.startswith("/")
-               or any(ord(c) < 32 or 127 <= ord(c) <= 159 or 0xD800 <= ord(c) <= 0xDFFF for c in path)
-               or any(p in {"", ".", ".."} or p.endswith((".", " ")) for p in parts)
-               or any(re.fullmatch(r"(?i:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])", p.split(".")[0]) for p in parts))
+    invalid = (
+        "\\" in path
+        or any(c in '<>:"|?*' for c in path)
+        or path.startswith("/")
+        or any(ord(c) < 32 or 127 <= ord(c) <= 159 or 0xD800 <= ord(c) <= 0xDFFF for c in path)
+        or any(p in {"", ".", ".."} or p.endswith((".", " ")) for p in parts)
+        or any(
+            re.fullmatch(r"(?i:con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])", p.split(".")[0])
+            for p in parts
+        )
+    )
     if invalid:
         errors.append(f"{where}: unsafe relative POSIX path: {path!r}")
         return False
@@ -100,7 +134,9 @@ def inspect_tree(directory: Path, errors: list[str]) -> tuple[dict[str, Path], s
     files = {}
     stored = set()
     folded = set()
-    for parent, dirs, names in os.walk(directory, followlinks=False, onerror=lambda e: errors.append(str(e))):
+    for parent, dirs, names in os.walk(
+        directory, followlinks=False, onerror=lambda e: errors.append(str(e))
+    ):
         for name in sorted(dirs + names):
             target = Path(parent) / name
             relative = target.relative_to(directory).as_posix()
@@ -230,7 +266,9 @@ def check_path_map(mapping, members: set[str], stored: set[str], errors: list[st
         if alias == target or target in aliases:
             errors.append(f"PATH_MAP.json: identity mapping/alias chain is forbidden: {alias}")
         if target in CONTROLS or target not in members:
-            errors.append(f"PATH_MAP.json: target must be a directly stored non-control FILES member: {target}")
+            errors.append(
+                f"PATH_MAP.json: target must be a directly stored non-control FILES member: {target}"
+            )
 
 
 def root_bytes(final_dir: Path) -> bytes:
@@ -250,7 +288,13 @@ def _emit_root(final_dir: Path) -> None:
 
 def validate(final_dir: Path, *, emit_root: bool = False) -> dict:
     final_dir = Path(final_dir)
-    report = {"directory": str(final_dir), "status": "FAIL", "errors": [], "warnings": [], "checks": {}}
+    report = {
+        "directory": str(final_dir),
+        "status": "FAIL",
+        "errors": [],
+        "warnings": [],
+        "checks": {},
+    }
     errors = report["errors"]
     try:
         check_ancestors(final_dir, errors)
@@ -290,10 +334,14 @@ def validate(final_dir: Path, *, emit_root: bool = False) -> dict:
         if not {"FINAL.json", "PATH_MAP.json"} <= members:
             errors.append("FILES.json: FINAL.json and PATH_MAP.json must be members")
         if members & {"FILES.json", ROOT_BINDING}:
-            errors.append("FILES.json: FILES.json/ROOT.sha256 are outer-bound controls, not members")
+            errors.append(
+                "FILES.json: FILES.json/ROOT.sha256 are outer-bound controls, not members"
+            )
         actual_members = set(files) - {"FILES.json", ROOT_BINDING}
         if members != actual_members:
-            errors.append(f"FILES.json: missing/unlisted members: missing={sorted(members - actual_members)}, unlisted={sorted(actual_members - members)}")
+            errors.append(
+                f"FILES.json: missing/unlisted members: missing={sorted(members - actual_members)}, unlisted={sorted(actual_members - members)}"
+            )
         total = 0
         for entry in entries:
             target = files.get(entry["path"])
@@ -332,7 +380,11 @@ def exit_code(report: dict) -> int:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("final", type=Path)
-    parser.add_argument("--emit-root", action="store_true", help="explicitly produce ROOT after checking safe controls and all members")
+    parser.add_argument(
+        "--emit-root",
+        action="store_true",
+        help="explicitly produce ROOT after checking safe controls and all members",
+    )
     parser.add_argument("--output", type=Path, help="machine report outside the package")
     args = parser.parse_args(argv)
     output_errors = []

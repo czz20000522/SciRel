@@ -19,8 +19,9 @@ def _real_vector(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_))
-                    for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         return np.asarray(raw, dtype=float)
@@ -32,20 +33,26 @@ def _saha_population(density, temperature, level_squared):
     """Evaluate the vectorized level population with the canonical ordering."""
     with np.errstate(over="ignore", invalid="ignore", divide="ignore", under="ignore"):
         return (
-            density * (3.310e-28 * density) * level_squared
+            density
+            * (3.310e-28 * density)
+            * level_squared
             * np.exp(13.6057 / (level_squared * temperature))
             / temperature**1.5
         )
 
 
 def evaluate_h_saha_equilibrium_population(
-    electron_density_m3, electron_temperature_ev, principal_level,
+    electron_density_m3,
+    electron_temperature_ev,
+    principal_level,
 ):
     """Return the level population density in m^-3 for paired 1-D samples."""
     density = _real_vector(electron_density_m3, "electron_density_m3")
     temperature = _real_vector(electron_temperature_ev, "electron_temperature_ev")
     if density.ndim != 1 or temperature.ndim != 1 or density.size == 0:
-        raise ValueError("electron density and temperature must be non-empty one-dimensional arrays")
+        raise ValueError(
+            "electron density and temperature must be non-empty one-dimensional arrays"
+        )
     if density.shape != temperature.shape:
         raise ValueError("electron density and temperature must have the same shape")
     if not np.all(np.isfinite(density)) or not np.all(np.isfinite(temperature)):

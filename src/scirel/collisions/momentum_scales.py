@@ -13,6 +13,7 @@ V5 confused intermediate overflow with final non-representability and could also
 silently lose values through intermediate underflow. Its original bytes and
 seven independently reproduced counterexamples remain in the correction receipt.
 """
+
 from __future__ import annotations
 
 from decimal import Decimal, localcontext
@@ -35,9 +36,7 @@ HELD_OUT_MAPPINGS = (
 
 # Raised when finite inputs produce a result double precision cannot represent.
 # Not a magnitude threshold on the inputs: see the module docstring.
-NON_REPRESENTABLE_MESSAGE = (
-    "the normalized momentum is not representable for these finite inputs"
-)
+NON_REPRESENTABLE_MESSAGE = "the normalized momentum is not representable for these finite inputs"
 
 
 def _require_representable(value, quantity):
@@ -88,7 +87,9 @@ def thermal_electron_momentum(*, temperature_kev, restmkev):
     if not np.isfinite(quotient) or quotient < np.finfo(float).tiny:
         with localcontext() as context:
             context.prec = 100
-            exact_ratio = Decimal(2) * Decimal.from_float(temperature_kev) / Decimal.from_float(restmkev)
+            exact_ratio = (
+                Decimal(2) * Decimal.from_float(temperature_kev) / Decimal.from_float(restmkev)
+            )
             result = float(exact_ratio.sqrt())
     else:
         result = float(np.sqrt(quotient))
@@ -127,8 +128,12 @@ def normalized_momentum(*, x, vnorm, clight):
     with np.errstate(over="ignore", under="ignore", invalid="ignore"):
         product = x * vnorm
         result = product / clight
-    risky = (~np.isfinite(product) | (np.abs(product) < np.finfo(float).tiny)
-             | ~np.isfinite(result) | (np.abs(result) < np.finfo(float).tiny))
+    risky = (
+        ~np.isfinite(product)
+        | (np.abs(product) < np.finfo(float).tiny)
+        | ~np.isfinite(result)
+        | (np.abs(result) < np.finfo(float).tiny)
+    )
     if np.any(risky):
         with localcontext() as context:
             context.prec = 100

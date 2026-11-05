@@ -1,4 +1,5 @@
 """Construct a normalized fluid frequency scan and assemble per-frequency wavevector spectra."""
+
 from __future__ import annotations
 
 import math
@@ -102,8 +103,9 @@ def scan_fluid_wavevectors(
     assemble = assemble_fluid_dispersion_matrix
     eigensolve = solve_fluid_wavevector_eigenproblem
 
-    grid = scan_frequencies(omega_scale=omega_scale, omega_step=omega_step,
-                            omega_stop=omega_stop, wn=scales["wn"])
+    grid = scan_frequencies(
+        omega_scale=omega_scale, omega_step=omega_step, omega_stop=omega_stop, wn=scales["wn"]
+    )
     omegas = grid["omegas"]
     if np.any(omegas == 0.0):
         raise ValueError("the derived scan axis must not contain a zero frequency")

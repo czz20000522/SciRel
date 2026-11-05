@@ -14,7 +14,9 @@ def _real_array(value, name):
         raw = np.asarray(value)
         if raw.dtype.kind not in "iuf" or (
             isinstance(value, (list, tuple))
-            and any(isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat)
+            and any(
+                isinstance(item, (bool, np.bool_)) for item in np.asarray(value, dtype=object).flat
+            )
         ):
             raise ValueError
         result = np.asarray(raw, dtype=float)
@@ -45,9 +47,7 @@ def aggregate_elastic_regeneration_source(frequencies_m_inv, regenerated_distrib
     with np.errstate(over="ignore", invalid="ignore"):
         for key in frequencies_m_inv:
             omega = _real_array(frequencies_m_inv[key], "frequencies_m_inv")
-            distribution = _real_array(
-                regenerated_distributions[key], "regenerated_distributions"
-            )
+            distribution = _real_array(regenerated_distributions[key], "regenerated_distributions")
             if (
                 omega.ndim != 1
                 or distribution.ndim != 3
@@ -55,7 +55,9 @@ def aggregate_elastic_regeneration_source(frequencies_m_inv, regenerated_distrib
                 or np.any(omega < 0)
                 or np.any(distribution < 0)
             ):
-                raise ValueError("elastic channels must be nonnegative and aligned (nx)/(nvr,nvx,nx)")
+                raise ValueError(
+                    "elastic channels must be nonnegative and aligned (nx)/(nvr,nvx,nx)"
+                )
             if common_shape is None:
                 common_shape = distribution.shape
             elif distribution.shape != common_shape:

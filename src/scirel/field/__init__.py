@@ -30,20 +30,44 @@ __all__ = [
 
 
 _LAZY_EXPORTS = {
-    "compute_poloidal_field_magnitude": ("poloidal_field_magnitude", "compute_poloidal_field_magnitude"),
+    "compute_poloidal_field_magnitude": (
+        "poloidal_field_magnitude",
+        "compute_poloidal_field_magnitude",
+    ),
     "discretize_permanent_ring": ("permanent_ring_filaments", "discretize_permanent_ring"),
-    "correct_ideal_conductor_boundary_flux": ("ideal_conductor_boundary", "correct_ideal_conductor_boundary_flux"),
+    "correct_ideal_conductor_boundary_flux": (
+        "ideal_conductor_boundary",
+        "correct_ideal_conductor_boundary_flux",
+    ),
     "discretize_rectangular_coil": ("rectangular_coil_filaments", "discretize_rectangular_coil"),
-    "superpose_current_green_field": ("current_green_superposition", "superpose_current_green_field"),
+    "superpose_current_green_field": (
+        "current_green_superposition",
+        "superpose_current_green_field",
+    ),
     "integrate_filament_vacuum_field": ("filament_vacuum_field", "integrate_filament_vacuum_field"),
-    "circular_filament_green_response": ("circular_filament_green", "circular_filament_green_response"),
+    "circular_filament_green_response": (
+        "circular_filament_green",
+        "circular_filament_green_response",
+    ),
     "poloidal_field_from_flux": ("poloidal_field_from_flux", "poloidal_field_from_flux"),
-    "dense_axisymmetric_green_response": ("dense_axisymmetric_green", "dense_axisymmetric_green_response"),
+    "dense_axisymmetric_green_response": (
+        "dense_axisymmetric_green",
+        "dense_axisymmetric_green_response",
+    ),
     "build_mirror_plasma_flux_green": ("mirror_plasma_green", "build_mirror_plasma_flux_green"),
     "solve_multi_coil_vacuum_field": ("multi_coil_vacuum_field", "solve_multi_coil_vacuum_field"),
-    "compute_axisymmetric_coil_modulus": ("coil_green_geometry", "compute_axisymmetric_coil_modulus"),
-    "evaluate_complete_elliptic_integrals": ("complete_elliptic_integrals_approx", "evaluate_complete_elliptic_integrals"),
-    "evaluate_filament_coil_green_field": ("filament_coil_green_field", "evaluate_filament_coil_green_field"),
+    "compute_axisymmetric_coil_modulus": (
+        "coil_green_geometry",
+        "compute_axisymmetric_coil_modulus",
+    ),
+    "evaluate_complete_elliptic_integrals": (
+        "complete_elliptic_integrals_approx",
+        "evaluate_complete_elliptic_integrals",
+    ),
+    "evaluate_filament_coil_green_field": (
+        "filament_coil_green_field",
+        "evaluate_filament_coil_green_field",
+    ),
 }
 
 # Keep child implementation modules discoverable without importing them.  The
@@ -82,7 +106,9 @@ class _LazyFieldModule(_ModuleType):
             if current is not None and not isinstance(current, _ModuleType):
                 return current
             module_name, attribute_name = exports[name]
-            module = _import_module(f".{module_name}", _ModuleType.__getattribute__(self, "__name__"))
+            module = _import_module(
+                f".{module_name}", _ModuleType.__getattribute__(self, "__name__")
+            )
             value = getattr(module, attribute_name)
             namespace[name] = value
             return value
