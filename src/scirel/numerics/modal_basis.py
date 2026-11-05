@@ -405,14 +405,64 @@ def project_on_modal_basis(kind, ndim, order, values):
     return basis.project(values)
 
 
-def modal_projection(inputs):
-    """Port-mapped entry point for the modal projection composition.
+def modal_projection(kind, ndim, order, values):
+    """Project values sampled on the basis's own Gauss rule onto the basis.
 
-    Args:
-        inputs: Mapping with exactly ``kind``, ``ndim``, ``order`` and
-            ``values``; forwarded unchanged to :func:`project_on_modal_basis`.
+    Parameters
+    ----------
+    kind : {"tensor", "serendipity"}
+        Basis family selector.
+    ndim : int
+        Reference-cell dimension, from 1 through 6.
+    order : int
+        Polynomial order per axis, at least 0.
+    values : array_like, shape ((order + 1) ** ndim,)
+        Samples at the nodes of the constructed basis's own tensor
+        Gauss-Legendre rule, ordered as returned by ``ModalBasis.quadrature``.
+        Values are interpreted in the field unit [field] and converted to
+        float64.
 
-    Returns:
-        The coefficient array produced by :func:`project_on_modal_basis`.
+    Returns
+    -------
+    coefficients : numpy.ndarray, shape (num_basis,)
+        Modal coefficients of the L2 projection [field], in the basis member
+        order.
+
+    Raises
+    ------
+    TypeError
+        If a required parameter is missing, including when the former single
+        mapping argument is supplied instead of the four explicit parameters.
+    ValueError
+        If ``kind``, ``ndim`` or ``order`` is outside its domain, or if
+        ``values`` has the wrong shape or contains a non-finite value.
+
+    See Also
+    --------
+    project_on_modal_basis
+        Apply the same end-to-end projection with explicit scientific inputs.
+    modal_basis
+        Construct the basis and its own tensor Gauss-Legendre rule.
+
+    Notes
+    -----
+    The projection uses the weighted inner product of the samples with each
+    orthonormal member. It applies no physical mesh, Jacobian, filtering,
+    limiting or positivity correction.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.numerics.modal_basis import modal_basis, modal_projection
+    >>> basis = modal_basis("tensor", 2, 2)
+    >>> nodes, _ = basis.quadrature()
+    >>> expected = np.linspace(-1.0, 1.0, basis.num_basis)
+    >>> values = basis.expand(nodes, expected)
+    >>> coefficients = modal_projection("tensor", 2, 2, values)
+    >>> print(
+    ...     "coefficients recovered within 1e-12:",
+    ...     bool(np.abs(coefficients - expected).max() < 1e-12),
+    ... )
+    coefficients recovered within 1e-12: True
     """
-    return project_on_modal_basis(**inputs)
+    return project_on_modal_basis(kind, ndim, order, values)

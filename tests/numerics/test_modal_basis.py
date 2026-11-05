@@ -9,6 +9,7 @@ The tests never call the implementation to produce their own expected value.
 from __future__ import annotations
 
 import itertools
+import inspect
 import math
 from pathlib import Path
 import sys
@@ -242,15 +243,47 @@ def test_project_on_modal_basis_is_the_end_to_end_path(kind):
     )
 
 
-def test_modal_projection_forwards_its_input_mapping():
+def test_modal_projection_has_explicit_required_parameters():
+    signature = inspect.signature(modal_projection)
+    assert list(signature.parameters) == ["kind", "ndim", "order", "values"]
+    for parameter in signature.parameters.values():
+        assert parameter.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
+        assert parameter.default is inspect.Parameter.empty
+
+
+@pytest.mark.parametrize("kind", ["tensor", "serendipity"])
+def test_modal_projection_is_the_end_to_end_path(kind):
     order = 1
-    basis = modal_basis("tensor", 2, order)
+    basis = modal_basis(kind, 2, order)
     nodes, _ = basis.quadrature()
     expected = np.array([1.0, -2.0, 0.5, 3.0])
     values = basis.expand(nodes, expected)
-    assert modal_projection(
-        {"kind": "tensor", "ndim": 2, "order": order, "values": values}
-    ) == pytest.approx(expected, rel=1e-13)
+    assert modal_projection(kind, 2, order, values) == pytest.approx(expected, rel=1e-13)
+
+
+def test_modal_projection_rejects_the_legacy_mapping_call():
+    order = 1
+    basis = modal_basis("tensor", 2, order)
+    nodes, _ = basis.quadrature()
+    values = basis.expand(nodes, np.arange(basis.num_basis, dtype=float))
+    legacy_inputs = {"kind": "tensor", "ndim": 2, "order": order, "values": values}
+    with pytest.raises(TypeError):
+        modal_projection(legacy_inputs)
+
+
+@pytest.mark.parametrize(
+    "arguments,message",
+    [
+        (("spectral", 1, 1, np.ones(2)), "kind must be"),
+        (("tensor", 0, 1, np.ones(1)), "ndim must be an integer"),
+        (("tensor", 1, -1, np.ones(1)), "order must be a non-negative"),
+        (("tensor", 1, 1, np.ones(3)), "values must have shape"),
+        (("tensor", 1, 1, np.array([np.nan, 1.0])), "values must be finite"),
+    ],
+)
+def test_modal_projection_preserves_invalid_input_rejection(arguments, message):
+    with pytest.raises(ValueError, match=message):
+        modal_projection(*arguments)
 
 
 @pytest.mark.parametrize(
