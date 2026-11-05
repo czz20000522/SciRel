@@ -15,10 +15,10 @@ jobs:
       SCIReL_IMAGE_KEY: ci-${{ github.run_id }}
       COMPOSE_PROJECT_NAME: scirel-ci-${{ github.run_id }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
       - name: Build the development image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: containers/dev/Dockerfile
