@@ -5,7 +5,7 @@
   "en": "Distribution derivative and cutoff jumps",
   "zh": "分布导数与截断跳跃"
  },
- "summary": "g=f0_prime, including A/(|v|^3+vt^3) cutoff jump masses for Fn=4.",
+ "summary": "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses.",
  "taxonomy": [
   "kinetic",
   "plasma-wave",
@@ -17,7 +17,7 @@
  "discovery": {
   "capability": [
    "Distribution derivative and cutoff jumps",
-   "g=f0_prime, including A/(|v|^3+vt^3) cutoff jump masses for Fn=4."
+   "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses."
   ],
   "operation": [
    "evaluate the equilibrium distribution derivative and cutoff jumps",
@@ -25,17 +25,17 @@
   ],
   "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
   "geometry": "One velocity coordinate and one spatial Fourier mode.",
-  "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; weak Fn4 cutoff requires a uniform grid; no time evolution.",
+  "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; Fn=3 returns +1 on (-1,0), -1 on (0,1), and 0 outside that support, with 0 at v=-1,0,1; weak Fn4 cutoff requires a uniform grid; no time evolution.",
   "device_scope": "generic"
  },
  "identity": {
-  "relation": "g=f0_prime, including A/(|v|^3+vt^3) cutoff jump masses for Fn=4.",
+  "relation": "g=f0_prime for the selected equilibrium; Fn=3 is the piecewise triangle derivative and Fn=4 includes A/(|v|^3+vt^3) cutoff jump masses.",
   "direction": "Inputs to vp_distribution -> result",
-  "definition": "g=f0_prime, including A/(|v|^3+vt^3) cutoff jump masses for Fn=4.",
+  "definition": "g=f0_prime. For Fn=3, f0=max(0,1-|v|) and g=+1 on (-1,0), g=-1 on (0,1), and g=0 at v=-1,0,1 and outside [-1,1]. For Fn=4, g includes A/(|v|^3+vt^3) cutoff jump masses.",
   "model": "Linear one-dimensional single-spatial-Fourier-mode electrons, fixed ions.",
   "geometry": "One velocity coordinate and one spatial Fourier mode.",
   "coordinates": "Dimensionless plasma-frequency and Debye-length normalization.",
-  "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; weak Fn4 cutoff requires a uniform grid; no time evolution.",
+  "boundary": "One-dimensional finite velocity grid; Fn selects fixed equilibria; Fn=3 returns +1 on (-1,0), -1 on (0,1), and 0 outside that support, with 0 at v=-1,0,1; weak Fn4 cutoff requires a uniform grid; no time evolution.",
   "assumptions": [
    "Linear perturbations and homogeneous equilibrium.",
    "Velocity-window truncation and recurrence are separate from temporal integration error."
@@ -53,7 +53,7 @@
   },
   {
    "name": "Fn",
-   "description": "Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi) (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance 2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|); 4 cutoff slowing-down.",
+   "description": "Built-in equilibrium, unit density: 1 Maxwellian exp(-v^2/2)/sqrt(2pi) (unit variance); 2 kappa Gamma(kappa)/(Gamma(kappa-1/2) sqrt(2 pi kappa)) (1+v^2/(2 kappa))^-kappa, i.e. theta^2=2 with variance 2kappa/(2kappa-3), NOT unit temperature; 3 triangle max(0,1-|v|), whose returned derivative is zero outside its support; 4 cutoff slowing-down.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "integer",
@@ -109,7 +109,8 @@
    "k is finite and positive; Fn, kappa and cutoff_mode select a supported branch."
   ],
   "supported": [
-   "Fn=1,2,3 and Fn=4 with weak or smooth cutoff derivative."
+   "Fn=1,2,3 and Fn=4 with weak or smooth cutoff derivative.",
+   "Fn=3 point values of the triangle derivative, including the documented zero convention at v=-1,0,1 and outside [-1,1]."
   ],
   "excluded": [
    "This leaf returns a derivative and optional theory frequencies; it does not evolve a state."
@@ -143,7 +144,8 @@
   "scope": [
    "Discrete Poisson constraint and off-diagonal rank-one feedback.",
    "Dense matrix-exponential RK4 order; analytic free-streaming and damped-cosine diagnostics.",
-   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution."
+   "Slowing-down weak derivative integration-by-parts and default 2049-node/2000-step execution.",
+   "Triangle derivative support and kink-node convention."
   ],
   "tests": [
    "tests/kinetic/test_vlasov_poisson_dispersion.py"
@@ -151,6 +153,7 @@
   "evidence_ceiling": "Independent semidiscrete mathematical and selected scenario regressions; actual run/installed-wheel receipts are recorded separately, not inferred from test existence.",
   "known_limitations": [
    "Finite-window rectangle rule and sampling recurrence TR=2pi/(k*dv).",
+   "Fn=3 returns point values of the classical piecewise derivative; the non-differentiable nodes v=-1,0,1 are assigned zero and no finite-difference derivative is inferred.",
    "Fn4 truncated density retains original coefficient and is not renormalized after cutoff.",
    "Peak diagnostic assumes standing oscillation; rotating complex exponential has no amplitude peaks."
   ]
