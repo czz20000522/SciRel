@@ -29,6 +29,19 @@ def project_name() -> str:
     return f"scirel-dev-{digest}"
 
 
+def python_version() -> str:
+    return (ROOT / ".python-version").read_text(encoding="utf-8").strip()
+
+
+def venv_volume() -> str:
+    checkout = project_name().removeprefix("scirel-dev-")
+    return f"scirel-venv-{checkout}"
+
+
+def uv_cache_volume() -> str:
+    return f"scirel-uv-cache-{python_version()}"
+
+
 def _container_proxy(value: str | None) -> str:
     if not value:
         return ""
@@ -44,6 +57,8 @@ def environment() -> dict[str, str]:
     env["SCIReL_HTTPS_PROXY"] = _container_proxy(env.get("HTTPS_PROXY") or env.get("https_proxy"))
     env["SCIReL_ALL_PROXY"] = _container_proxy(env.get("ALL_PROXY") or env.get("all_proxy"))
     env["SCIReL_NO_PROXY"] = env.get("NO_PROXY") or env.get("no_proxy") or ""
+    env.setdefault("SCIReL_VENV_VOLUME", venv_volume())
+    env.setdefault("SCIReL_UV_CACHE_VOLUME", uv_cache_volume())
     return env
 
 
@@ -203,6 +218,22 @@ def shell_command(script: str) -> list[str]:
     return ["bash", "-lc", script]
 
 
+def clean(*, remove_cache: bool = False, remove_image: bool = False) -> int:
+    removal = ["down", "--remove-orphans"]
+    if remove_image:
+        removal.extend(["--rmi", "local"])
+    code = run(compose_command(*removal))
+    env = environment()
+    volumes = [env["SCIReL_VENV_VOLUME"]]
+    if remove_cache:
+        volumes.append(env["SCIReL_UV_CACHE_VOLUME"])
+    for volume in volumes:
+        removed = run(["docker", "volume", "rm", "--force", volume])
+        if not code:
+            code = removed
+    return code
+
+
 def doctor() -> int:
     if not docker_ready():
         return 2
@@ -230,9 +261,10 @@ def main() -> int:
     pytest_parser = subparsers.add_parser("pytest", help="run pytest with optional arguments")
     pytest_parser.add_argument("arguments", nargs=argparse.REMAINDER)
     clean_parser = subparsers.add_parser(
-        "clean", help="remove this checkout's container volumes; optionally the shared image"
+        "clean", help="remove this checkout's virtualenv; optionally the shared image or uv cache"
     )
     clean_parser.add_argument("--image", action="store_true", help="also remove the shared image")
+    clean_parser.add_argument("--cache", action="store_true", help="also remove the shared uv cache")
 
     args = parser.parse_args()
     if args.command == "doctor":
@@ -254,11 +286,7 @@ def main() -> int:
         script = f"{SYNC} && {PYTHON} -m pytest {shlex.join(arguments)}"
         return run_in_container(shell_command(script))
     if args.command == "clean":
-        removal = ["down", "--volumes", "--remove-orphans"]
-        if args.image:
-            removal.append("--rmi")
-            removal.append("local")
-        return run(compose_command(*removal))
+        return clean(remove_cache=args.cache, remove_image=args.image)
     parser.error(f"unknown command: {args.command}")
     return 2
 

@@ -27,6 +27,31 @@ def test_project_name_is_stable_and_checkout_scoped():
     assert len(first) == len("scirel-dev-") + 10
 
 
+def test_uv_cache_is_shared_but_virtualenv_is_checkout_scoped(tmp_path, monkeypatch):
+    module = _load()
+    roots = [tmp_path / "worktree-a", tmp_path / "worktree-b"]
+    environments = []
+    for root in roots:
+        root.mkdir()
+        (root / ".python-version").write_text("3.14.7\n", encoding="utf-8")
+        monkeypatch.setattr(module, "ROOT", root)
+        environments.append(module.environment())
+    assert environments[0]["SCIReL_UV_CACHE_VOLUME"] == environments[1]["SCIReL_UV_CACHE_VOLUME"]
+    assert environments[0]["SCIReL_VENV_VOLUME"] != environments[1]["SCIReL_VENV_VOLUME"]
+
+
+def test_clean_preserves_the_shared_cache_unless_requested(monkeypatch):
+    module = _load()
+    calls = []
+    monkeypatch.setattr(module, "run", lambda command: calls.append(command) or 0)
+    assert module.clean() == 0
+    assert not any(module.uv_cache_volume() in part for command in calls for part in command)
+    calls.clear()
+    assert module.clean(remove_cache=True, remove_image=True) == 0
+    assert any(module.uv_cache_volume() in part for command in calls for part in command)
+    assert any("--rmi" in command for command in calls)
+
+
 def test_loopback_proxy_is_reachable_from_the_container(monkeypatch):
     module = _load()
     monkeypatch.setenv("HTTP_PROXY", "http://127.0.0.1:7890")
@@ -69,6 +94,8 @@ def test_local_container_uses_the_selected_engine_architecture():
     assert "target: /workspace" in compose
     assert "target: /opt/scirel-venv" in compose
     assert "target: /root/.cache/uv" in compose
+    assert "name: ${SCIReL_VENV_VOLUME:-scirel-venv-local}" in compose
+    assert "name: ${SCIReL_UV_CACHE_VOLUME:-scirel-uv-cache-local}" in compose
     assert "UV_PROJECT_ENVIRONMENT: /opt/scirel-venv" in compose
     assert "PYTHONPYCACHEPREFIX: /tmp/scirel-pycache" in compose
     assert "RUFF_CACHE_DIR: /tmp/scirel-ruff-cache" in compose
