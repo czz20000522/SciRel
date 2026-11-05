@@ -57,31 +57,72 @@ _VISCOSITY_COEFFICIENTS = np.array(
 
 
 def evaluate_atomic_hydrogen_elastic_cross_section(energy_ev, viscosity=False):
-    """Return the source H-on-H elastic cross section in square metres.
+    """Evaluate the H-on-H elastic momentum-transfer or viscosity cross section.
 
     Parameters
     ----------
-    energy_ev
-        Collision energies in eV, as a scalar or array of any shape.  Values
-        must be finite and nonnegative; energies outside the fit range are
-        clipped to the range endpoints, the saved source's declared behavior.
-    viscosity
-        Scalar branch selector.  ``True`` selects the source viscosity fit;
-        the default selects the momentum-transfer fit.  A zero-dimensional
-        array is accepted as the scalar; any other array is rejected.
+    energy_ev : real scalar or array-like
+        Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
+        and nonnegative. Values outside ``[0.03, 1.01e4]`` eV are clipped to the
+        range endpoints.
+    viscosity : scalar, optional
+        Branch selector. [dimensionless] Shape: ``scalar``. The default ``False``
+        selects the momentum-transfer fit; a truthy zero-dimensional scalar selects
+        the distinct viscosity fit. Higher-rank selectors are rejected.
 
     Returns
     -------
-    numpy.ndarray
-        Cross sections in ``m^2`` with the input's shape.  Finite and strictly
-        positive for every accepted input, because both fits are evaluated
-        only on their clipped positive domain.
+    cross_section_m2 : numpy.ndarray
+        Elastic cross section for the selected branch. [m^2] Shape: ``same as
+        energy_ev``. Every returned value is finite and strictly positive.
 
     Raises
     ------
     ValueError
-        If ``energy_ev`` contains a non-real, non-finite or negative value, or if
-        ``viscosity`` is not a scalar.
+        If ``energy_ev`` is not real numeric, is non-finite or is negative, or if
+        ``viscosity`` is not a zero-dimensional scalar.
+
+    See Also
+    --------
+    evaluate_hydrogen2_hydrogen2_elastic_cross_section : The H2-on-H2 elastic
+        momentum-transfer fit.
+    evaluate_hydrogen_h2_elastic_cross_section : The H-on-H2 elastic
+        momentum-transfer fit.
+    average_cross_section_over_maxwellian : Accepts a compatible cross-section
+        callable as an input port.
+
+    Notes
+    -----
+    Both branches use a five-coefficient logarithmic polynomial,
+    ``exp(polyval(log(E_clipped), a)) * 1e-4``, on the clipped fit interval.
+    The two coefficient sets describe different cross sections and are not
+    interchangeable. Endpoint clipping is intentional and silent. No external
+    experimental cross-section reference is bound by this callable.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_atomic_hydrogen_elastic_cross_section
+    >>> energy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])
+    >>> momentum = evaluate_atomic_hydrogen_elastic_cross_section(energy)
+    >>> viscosity = evaluate_atomic_hydrogen_elastic_cross_section(energy, viscosity=True)
+    >>> assert momentum.shape == energy.shape
+    >>> assert np.all(np.isfinite(momentum)) and np.all(momentum > 0.0)
+    >>> assert not np.allclose(momentum, viscosity, rtol=1e-12, atol=0.0)
+    >>> clipped = evaluate_atomic_hydrogen_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))
+    >>> assert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]
+    >>> try:
+    ...     evaluate_atomic_hydrogen_elastic_cross_section(np.array([1.0, -0.5]))
+    ... except ValueError as error:
+    ...     assert 'nonnegative' in str(error)
+    ... else:
+    ...     raise AssertionError('a negative energy must be rejected')
+    >>> try:
+    ...     evaluate_atomic_hydrogen_elastic_cross_section(energy, viscosity=np.ones((2, 2)))
+    ... except ValueError as error:
+    ...     assert 'viscosity' in str(error)
+    ... else:
+    ...     raise AssertionError('an array selector must be rejected')
     """
     energy = clipped_energy(energy_ev, 0.03, 1.01e4)
     selector = np.asarray(viscosity)

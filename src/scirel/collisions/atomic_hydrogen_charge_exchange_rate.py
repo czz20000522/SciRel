@@ -195,34 +195,71 @@ def _rate_from_composite_cross_section(temperature_ev, energy_ev):
 
 
 def evaluate_atomic_hydrogen_charge_exchange_rate(temperature_ev, energy_ev):
-    """Return the H + H+ charge-exchange rate in m^3/s on paired samples.
-
-    The existing nine-by-nine bivariate fit is retained for temperatures and
-    impact energies up to ``2.01e4 eV``.  If either sample is above that fit
-    domain, the result is obtained by integrating the continuous composite
-    cross section against an equal-mass Maxwellian target.  The composite
-    cross section is tabulated through ``2.5e5 eV``; larger collision energies
-    are omitted from the integral.
+    """Evaluate the H + H+ charge-exchange rate coefficient on paired samples.
 
     Parameters
     ----------
-    temperature_ev
-        Positive plasma temperatures in eV, as a scalar or array.
-    energy_ev
-        Nonnegative impact energies in eV with the same shape as
-        ``temperature_ev``.
+    temperature_ev : real scalar or array-like
+        Plasma temperature paired with each impact energy. [eV] Shape:
+        ``scalar or array``. The value must be finite and strictly positive.
+        temperature_ev and energy_ev must have exactly the same shape.
+    energy_ev : real scalar or array-like
+        Impact energy paired with each temperature. [eV] Shape: ``same as
+        temperature_ev``. The value must be finite and nonnegative. Values below
+        ``0.1`` eV are clipped to the lower fit endpoint.
 
     Returns
     -------
-    numpy.ndarray
-        Rate coefficients in ``m^3/s`` with the paired input shape.
+    rate_m3_s : numpy.ndarray
+        H + H+ charge-exchange rate coefficient. [m^3/s] Shape: ``same as both
+        inputs``. Every returned value is finite and strictly positive on accepted
+        inputs.
 
     Raises
     ------
     ValueError
-        If inputs are non-real, non-finite, have unequal shapes, contain a
-        nonpositive temperature or negative energy, or produce a non-finite or
-        nonpositive rate.
+        If either input is not real numeric, is non-finite, has the wrong shape,
+        contains a nonpositive temperature or a negative energy, or produces a
+        non-finite or nonpositive rate.
+    RuntimeWarning
+        If an input is above the declared 250 keV upper boundary. The upper
+        quadrature limit is then used; no cross-section tail is extrapolated.
+
+    See Also
+    --------
+    evaluate_atomic_hydrogen_charge_exchange_cross_section : Supplies the
+        composite cross section used by the high-energy branch.
+    evaluate_hydrogen2_charge_exchange_rate : The distinct molecular-H2 rate fit.
+    average_cross_section_over_maxwellian : Explicit mesh-based Maxwellian
+        averaging with caller-supplied volumes.
+
+    Notes
+    -----
+    Through ``2.01e4`` eV in both dimensions, the relation evaluates the retained
+    nine-by-nine bivariate logarithmic fit. If either paired sample is above that
+    domain, it instead integrates the continuous composite cross section against
+    an equal-mass Maxwellian relative-speed distribution. The quadrature omits
+    collision energies above the 250 keV cross-section limit. Low-domain clipping
+    to 0.1 eV is silent; upper-range clipping emits ``RuntimeWarning``. The
+    low-domain fit is not required to be monotone in impact energy. No independent
+    experimental rate measurement is asserted here.
+
+    Examples
+    --------
+    >>> import warnings
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_rate
+    >>> t = np.array([1.0, 5.0e4])
+    >>> e = np.array([1.0, 1.0e5])
+    >>> r = evaluate_atomic_hydrogen_charge_exchange_rate(t, e)
+    >>> assert r.shape == (2,) and np.all(np.isfinite(r)) and np.all(r > 0.0)
+    >>> np.testing.assert_allclose(r[1], 1.2004964216070182e-14, rtol=1e-10, atol=0.0)
+    >>> with warnings.catch_warnings(record=True) as caught:
+    ...     warnings.simplefilter('always')
+    ...     clipped = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([3.0e5, 2.5e5]), np.array([1.0, 1.0]))
+    >>> assert len(caught) == 1 and issubclass(caught[0].category, RuntimeWarning)
+    >>> edge = evaluate_atomic_hydrogen_charge_exchange_rate(np.array([2.5e5, 2.5e5]), np.array([1.0, 1.0]))
+    >>> np.testing.assert_allclose(clipped, edge, rtol=1e-12, atol=0.0)
     """
     temperature = positive_real_array(temperature_ev, "temperature_ev")
     energy = finite_nonnegative_energy(energy_ev)

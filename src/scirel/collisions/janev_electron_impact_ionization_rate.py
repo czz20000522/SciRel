@@ -43,7 +43,64 @@ def evaluate_janev_electron_impact_ionization_rate(
     electron_temperature_ev,
     target_species,
 ):
-    """Return the H or H2 Maxwellian ionization fit in m^3/s."""
+    """Evaluate the Janev electron-impact ionization rate for H or H2.
+
+    Parameters
+    ----------
+    electron_temperature_ev : real scalar or array-like
+        Electron temperature for the selected Maxwellian fit. [eV] Shape:
+        ``scalar or array``. The value must be finite and strictly positive.
+        Positive values outside ``[0.1, 2.01e4]`` eV are clipped to the nearest
+        endpoint.
+    target_species : {'H', 'H2'}
+        Target-species selector. [dimensionless enumeration] Shape: ``scalar``.
+        The value must be the exact string ``'H'`` or ``'H2'``; there is no
+        fallback branch.
+
+    Returns
+    -------
+    rate_m3_s : numpy.ndarray
+        Maxwellian electron-impact ionization rate coefficient for the selected
+        target. [m^3/s] Shape: ``same as electron_temperature_ev``. Every returned
+        value is finite and strictly positive.
+
+    Raises
+    ------
+    ValueError
+        If ``electron_temperature_ev`` is not real numeric, is non-finite or is
+        nonpositive, if ``target_species`` is not exactly ``'H'`` or ``'H2'``, or
+        if the evaluated rate is not finite and positive.
+
+    See Also
+    --------
+    evaluate_atomic_hydrogen_1s_radiative_recombination_rate : The H(1s)
+        radiative-recombination rate fit.
+    average_cross_section_over_maxwellian : Explicit mesh-based Maxwellian
+        averaging of a caller-supplied cross section.
+
+    Notes
+    -----
+    The H and H2 branches each use the declared nine-coefficient Janev
+    logarithmic polynomial,
+    ``exp(polyval(log(T_clipped), a_species)) * 1e-6``. The two coefficient sets
+    are distinct and are not interchangeable. Endpoint clipping is silent and
+    intentional. Each fit has a single temperature maximum in the sampled range
+    (about 137 eV for H and 156 eV for H2), so the rate is not monotone. No
+    external atomic-physics oracle is bound, and a rate coefficient is not by
+    itself a density-scaled source or sink.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_janev_electron_impact_ionization_rate
+    >>> t = np.array([0.01, 10.0, 50000.0])
+    >>> h = evaluate_janev_electron_impact_ionization_rate(t, 'H')
+    >>> h2 = evaluate_janev_electron_impact_ionization_rate(t, 'H2')
+    >>> edge = evaluate_janev_electron_impact_ionization_rate(np.array([0.1, 10.0, 20100.0]), 'H')
+    >>> assert h.shape == (3,) and np.all(np.isfinite(h)) and np.all(h > 0.0)
+    >>> assert np.array_equal(h, edge)
+    >>> assert not np.allclose(h, h2, rtol=1e-12, atol=0.0)
+    """
     if not isinstance(target_species, str) or target_species not in _COEFFICIENTS:
         raise ValueError("target_species must be H or H2")
     temperature = positive_real_array(electron_temperature_ev, "electron_temperature_ev")

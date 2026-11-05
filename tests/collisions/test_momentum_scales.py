@@ -371,6 +371,22 @@ def test_a_convertible_non_numeric_value_is_left_as_the_retained_route_has_it(co
     )
 
 
+def test_scalar_conversion_errors_keep_their_python_exception_type():
+    with pytest.raises(TypeError):
+        thermal_electron_momentum(temperature_kev=None, restmkev=1.0)
+    with pytest.raises(TypeError):
+        normalized_momentum(x=GRID, vnorm=None, clight=CLIGHT)
+    with pytest.raises(TypeError):
+        normalized_momentum(x={}, vnorm=1.0, clight=CLIGHT)
+
+
+def test_numeric_conversion_overflow_keeps_its_python_exception_type():
+    with pytest.raises(OverflowError):
+        thermal_electron_momentum(temperature_kev=10**1000, restmkev=1.0)
+    with pytest.raises(OverflowError):
+        normalized_momentum(x=GRID, vnorm=10**1000, clight=CLIGHT)
+
+
 def test_the_retained_allowances_are_kept():
     """A zero velocity scale and a signed grid are legal, and the input is not modified."""
     zero = normalized_momentum(x=GRID, vnorm=0.0, clight=CLIGHT)

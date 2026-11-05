@@ -156,48 +156,154 @@ def average_cross_section_over_maxwellian(
     cylindrical_volume,
     cross_section_m2,
 ):
-    """Return the Maxwellian relative-speed average ``<sigma v>`` per energy.
+    """Average a caller-supplied cross section over a Maxwellian target mesh.
 
     Parameters
     ----------
-    particle_energy_ev
-        Nonempty one-dimensional nonnegative particle energies in eV; a zero
-        entry is a particle at rest and is accepted.
-    particle_mass_amu, target_mass_amu
-        Positive scalar factors relative to the saved hydrogen mass
-        (1.6726231e-27 kg), despite the historical ``_amu`` names. The
-        collision energy uses ``particle_mass_amu`` rather than reduced mass.
-    target_temperature_ev, tnorm_ev
-        Positive scalar temperatures in eV: the target Maxwellian temperature
-        and the mesh normalization temperature.
-    vx, vr
-        Finite one-dimensional axial and radial velocity axes in units of the
-        target thermal speed at ``tnorm_ev``.  No monotonicity or sign
-        convention is enforced.
-    cylindrical_volume
-        Finite strictly positive cell volumes with shape ``(vr.size,
-        vx.size)``.  Only their relative sizes enter: the target distribution
-        is normalized by these weights, so a constant rescaling leaves the rate
-        unchanged.
-    cross_section_m2
-        Callable mapping the sampled collision-energy array (eV, shape
-        ``(energies.size, vr.size, vx.size)``) to finite nonnegative cross
-        sections in ``m^2`` with the same shape.
+    particle_energy_ev : real array-like
+        Energies of the axial monoenergetic particle. [eV] Shape: ``[ne]``. The
+        value must be nonempty, finite, one-dimensional and nonnegative; zero is a
+        particle at rest.
+    particle_mass_amu : real scalar
+        Projectile mass factor used in the collision energy. [multiples of
+        1.6726231e-27 kg] Shape: ``scalar``. The value must be finite and strictly
+        positive. The historical name does not imply standard atomic-mass units and
+        the collision energy uses this mass rather than a reduced mass.
+    target_temperature_ev : real scalar
+        Maxwellian target temperature. [eV] Shape: ``scalar``. The value must be
+        finite and strictly positive.
+    target_mass_amu : real scalar
+        Target mass factor used to set the thermal speed. [multiples of
+        1.6726231e-27 kg] Shape: ``scalar``. The value must be finite and strictly
+        positive.
+    vx : real array-like
+        Axial velocity mesh. [v/vth (dimensionless, target thermal speed at
+        tnorm_ev)] Shape: ``[nvx]``. The value must be finite and one-dimensional;
+        monotonicity and sign are not enforced.
+    vr : real array-like
+        Radial velocity mesh. [v/vth (dimensionless, target thermal speed at
+        tnorm_ev)] Shape: ``[nvr]``. The value must be finite and one-dimensional;
+        monotonicity and nonnegative-radial convention are not enforced.
+    tnorm_ev : real scalar
+        Mesh normalization temperature. [eV] Shape: ``scalar``. The value must be
+        finite and strictly positive.
+    cylindrical_volume : real array-like
+        Relative velocity-space cell measure. [normalized velocity-space measure]
+        Shape: ``[nvr, nvx]``. The value must be finite and strictly positive. Only
+        relative sizes matter because the target distribution is normalized by
+        these weights.
+    cross_section_m2 : callable
+        Cross-section law evaluated at each sampled collision energy. [m^2] The
+        callable maps an array of shape ``[ne, nvr, nvx]`` in eV to a finite,
+        nonnegative real array of the same shape.
 
     Returns
     -------
-    numpy.ndarray
-        Float64 rate coefficients in ``m^3/s`` with shape ``(energies.size,)``.
+    rate_m3_s : numpy.ndarray
+        Energy-resolved Maxwellian rate coefficient on the supplied mesh. [m^3/s]
+        Shape: ``[ne]``. Every returned value is finite and nonnegative.
 
     Raises
     ------
     ValueError
-        If an input leaves the domain stated above, if the sampled collision
-        energies are not representable in double precision for the supplied
-        finite inputs (checked before the callable is invoked), if the callable
-        returns a wrong-shape, non-finite or negative array, or if the computed
-        rate is not representable in double precision.  Exceptions raised by
-        the callable itself propagate unchanged.
+        If an input is not real numeric, finite, correctly shaped or within its
+        stated sign or positivity domain; if sampled collision energies or the
+        computed rate are not representable; if ``cross_section_m2`` is not
+        callable; or if the callable returns a wrong-shape, non-finite or negative
+        array. Exceptions raised by the callable itself propagate unchanged.
+
+    See Also
+    --------
+    evaluate_atomic_hydrogen_charge_exchange_cross_section : A compatible
+        cross-section source for this averaging port.
+    evaluate_atomic_hydrogen_elastic_cross_section : A compatible elastic
+        cross-section source.
+    evaluate_molecular_hydrogen_charge_exchange_cross_section : A compatible
+        molecular-H2 cross-section source.
+
+    Notes
+    -----
+    With ``vth = sqrt(2 * e * tnorm_ev / (target_mass_amu * m_H))``, the target
+    density is ``exp(-(vr**2 + vx**2) * tnorm_ev / target_temperature_ev)``
+    normalized by ``cylindrical_volume``. The particle speed is
+    ``sqrt(2 * e * particle_energy_ev / (particle_mass_amu * m_H)) / vth`` along
+    ``vx``. The rate is the volume sum of ``vth * sigma * v_rel * f``. The
+    historical constants are ``m_H=1.6726231e-27`` kg and
+    ``e=1.602177e-19`` C. They are frozen source values, not current CODATA
+    constants. The function does not generate the mesh, validate its quadrature
+    convergence, or supply a physical cross-section model; those remain caller
+    responsibilities.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import average_cross_section_over_maxwellian
+    >>> dvr = 3.5 / 24
+    >>> dvx = 7.0 / 36
+    >>> vr = (np.arange(24) + 0.5) * dvr
+    >>> vx = (np.arange(36) + 0.5) * dvx - 3.5
+    >>> vth = np.sqrt(2.0 * 1.602177e-19 * 20.0 / (2.0 * 1.6726231e-27))
+    >>> volume = np.outer(vr * dvr, np.full(36, dvx)) * vth ** 3
+    >>> sigma_const = lambda energy: np.full_like(energy, 3.0e-20)
+    >>> rate = average_cross_section_over_maxwellian(
+    ...     particle_energy_ev=np.array([0.0, 10.0, 100.0]),
+    ...     particle_mass_amu=1.0,
+    ...     target_temperature_ev=10.0,
+    ...     target_mass_amu=2.0,
+    ...     vx=vx,
+    ...     vr=vr,
+    ...     tnorm_ev=20.0,
+    ...     cylindrical_volume=volume,
+    ...     cross_section_m2=sigma_const,
+    ... )
+    >>> assert rate.shape == (3,) and rate.dtype == np.float64
+    >>> assert np.all(np.isfinite(rate)) and np.all(rate > 0.0)
+    >>> scaled = average_cross_section_over_maxwellian(
+    ...     particle_energy_ev=np.array([0.0, 10.0, 100.0]),
+    ...     particle_mass_amu=1.0,
+    ...     target_temperature_ev=10.0,
+    ...     target_mass_amu=2.0,
+    ...     vx=vx,
+    ...     vr=vr,
+    ...     tnorm_ev=20.0,
+    ...     cylindrical_volume=volume * 7.5,
+    ...     cross_section_m2=sigma_const,
+    ... )
+    >>> assert np.allclose(scaled, rate, rtol=1e-14)
+    >>> bad_vx = vx.copy()
+    >>> bad_vx[3] = np.nan
+    >>> try:
+    ...     average_cross_section_over_maxwellian(
+    ...         particle_energy_ev=np.array([10.0]),
+    ...         particle_mass_amu=1.0,
+    ...         target_temperature_ev=10.0,
+    ...         target_mass_amu=2.0,
+    ...         vx=bad_vx,
+    ...         vr=vr,
+    ...         tnorm_ev=20.0,
+    ...         cylindrical_volume=volume,
+    ...         cross_section_m2=sigma_const,
+    ...     )
+    ... except ValueError as error:
+    ...     assert 'vx' in str(error)
+    ... else:
+    ...     raise AssertionError('a non-finite mesh point must be rejected')
+    >>> try:
+    ...     average_cross_section_over_maxwellian(
+    ...         particle_energy_ev=np.array([10.0]),
+    ...         particle_mass_amu=1.0,
+    ...         target_temperature_ev=10.0,
+    ...         target_mass_amu=2.0,
+    ...         vx=vx,
+    ...         vr=vr,
+    ...         tnorm_ev=20.0,
+    ...         cylindrical_volume=volume,
+    ...         cross_section_m2=lambda energy: np.full_like(energy, 1.0e305),
+    ...     )
+    ... except ValueError as error:
+    ...     assert 'not representable' in str(error)
+    ... else:
+    ...     raise AssertionError('a non-representable rate must be rejected')
     """
     if not callable(cross_section_m2):
         raise ValueError("cross_section_m2 must be callable")

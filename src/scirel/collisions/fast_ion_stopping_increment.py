@@ -60,54 +60,97 @@ def evaluate_fast_ion_stopping_increment(
     power_density_w_m3,
     electron_slowing_time_s,
 ):
-    """Return the specified empirical additive stopping increment in m^2.
+    """Evaluate the empirical fast-ion stopping cross-section increment.
 
     Parameters
     ----------
     beam_mass_number : real scalar or array-like
-        Dimensionless beam isotope mass number used in the energy normalization.
+        Beam isotope mass number used in the ``E/A`` normalization.
+        [dimensionless] Shape: ``() | (N,) | (d0,d1,...)``. No positivity or
+        finiteness check is applied.
     beam_energy_ev : real scalar or array-like
-        Beam-particle injection energy in eV.
+        Beam-particle injection energy. [eV] Shape: ``() | (N,) | (d0,d1,...)``.
+        No positivity or finiteness check is applied.
     birth_pitch_cosine : real scalar or array-like
-        Caller-supplied cosine of the birth direction relative to the magnetic
-        axis, not an angle. The expression uses min(1, abs(cosine)); it does not
-        establish equivalence to a toroidal or full-local-field pitch.
+        Cosine of the birth direction relative to the magnetic axis, not an angle.
+        [dimensionless] Shape: ``() | (N,) | (d0,d1,...)``. The arithmetic uses
+        ``min(1, abs(value))``; magnitudes above one and infinities cap at one, and
+        NaN maps to one.
     electron_density_m3 : real scalar or array-like
-        Electron density in m^-3.
+        Electron density. [m^-3] Shape: ``() | (N,) | (d0,d1,...)``. No positivity,
+        finiteness or density-threshold check is applied.
     electron_temperature_ev : real scalar or array-like
-        Electron temperature in eV.
+        Electron temperature. [eV] Shape: ``() | (N,) | (d0,d1,...)``. A negative
+        scaled temperature follows the complex fractional-power branch.
     power_density_w_m3 : real scalar or array-like
-        Local volumetric neutral-beam deposition power in W/m^3. Total injected
-        power is not accepted as an equivalent quantity; no volume is inferred.
+        Local volumetric neutral-beam deposition power density. [W/m^3] Shape:
+        ``() | (N,) | (d0,d1,...)``. Total injected power is not interchangeable.
     electron_slowing_time_s : real scalar or array-like
-        Caller-supplied electron slowing time in seconds; no time is estimated.
+        Caller-supplied electron slowing time. [s] Shape:
+        ``() | (N,) | (d0,d1,...)``. No slowing-time model is inferred.
 
     Returns
     -------
-    numpy.ndarray
-        The increment only. Scalars become (1, 1), vectors become rows, and
-        explicit array axes expand by appending singleton axes on the right.
-        Arithmetic uses float64, or complex128 when a negative temperature
-        enters the fractional power. Inputs are not mutated.
-
-    Notes
-    -----
-    This evaluates a fixed empirical expression, not a calibrated prediction
-    over an established physical domain. Fixed coefficients, y=0.6 and the
-    historical energy conversion are retained. The energy polynomial is
-    overwritten with zero only for epsilon > pi; equality is not cut off.
-    NaN pitch maps to the capped value one. Other negative/nonfinite values
-    and extreme magnitudes retain arithmetic warnings and NaN/Inf/complex
-    outcomes. In particular zero power does not bypass division by energy.
-    Such probes are not supported physical plasma states. There is no total
-    stopping, attenuation, deposition, geometry calculation or time evolution.
+    stopping_increment_m2 : numpy.ndarray
+        Additive stopping cross-section increment. [m^2] Shape: scalar inputs
+        become ``(1, 1)``, one-dimensional inputs become ``(1, N)``, and explicit
+        array axes expand with singleton axes on the right. Returned values may be
+        signed, complex, NaN or infinite according to the retained arithmetic.
 
     Raises
     ------
     TypeError
-        For complex inputs or values that cannot be converted to real float64.
+        If an input is complex-valued.
     ValueError
-        For incompatible axes or values that cannot be converted to float64.
+        If expanded input axes are incompatible, or if ``float64`` conversion of
+        a scalar value raises ``ValueError``. Other conversion errors propagate
+        unchanged with their original exception type.
+    OverflowError
+        If ``float64`` conversion overflows, such as for an oversized integer;
+        the converter error propagates unchanged.
+    RuntimeWarning
+        If the retained direct arithmetic encounters invalid, divide-by-zero,
+        overflow or complex fractional-power conditions. These outcomes are not
+        replaced with a fallback.
+
+    See Also
+    --------
+    average_cross_section_over_maxwellian : A different Maxwellian velocity-space
+        average; it does not reproduce this empirical increment.
+    evaluate_atomic_hydrogen_elastic_cross_section : A fitted elastic cross
+        section, not the final beam-stopping increment.
+
+    Notes
+    -----
+    This is a fixed empirical expression, not a calibrated prediction over a
+    quantified physical domain. It uses energy and pitch polynomials, a fractional
+    temperature power, the fixed pitch-diffusion parameter ``y=0.6`` and the
+    historical conversion ``1.602176462e-19`` J/eV. The energy polynomial is
+    overwritten with zero only for ``energy_ratio > pi``; equality is not cut off.
+    The input power is local volumetric deposition power, the slowing time is
+    caller-supplied, and the pitch is a magnetic-axis cosine. No beam path,
+    magnetic geometry, calibrated error bound or general species coverage is
+    established.
+
+    References
+    ----------
+    K. Okano et al. (2001), ECA 25A, P2.088, pp. 809-812; birth-pitch definition
+    on p. 810 and area scale/normalization in Eq. (6), p. 811.
+    https://info.fusion.ciemat.es/OCS/EPS2001/pdfs/P2.088.pdf
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_fast_ion_stopping_increment
+    >>> increment = evaluate_fast_ion_stopping_increment(1.0, 100000.0, 0.5, 1e18, 10000.0, 1e6, 1.0)
+    >>> assert increment.shape == (1, 1)
+    >>> np.testing.assert_allclose(increment, [[1.9645775636530587e-18]], rtol=5e-12, atol=1e-300)
+    >>> print(increment.shape)
+    (1, 1)
+    >>> print(increment.dtype)
+    float64
+    >>> print(f'{increment[0, 0]:.17g} m^2')
+    1.9645775636530587e-18 m^2
     """
     mass, energy, cosine, density, temperature, power, slowing_time = (
         _shaped_real(value)

@@ -2289,7 +2289,7 @@
   },
   {
    "asset_id": "scirel.collisions.thermal-electron-momentum",
-   "source_sha256": "f89c896e0983fcd492908b80721e154d9bca337ec36e927c09b634c021402edd",
+   "source_sha256": "6a1adb7c8133b668417f9570b4d3de59ea659b8cc6f1f151ba91d39fe08d6e1b",
    "summary": "计算非相对论热电子归一化动量 p_Te=sqrt(2T/mc²)。它是无量纲速度比 v/c，不是 cm/s 速度，不能直接作为 normalized-momentum 的 vnorm。 中间溢出与最终不可表示性分别处理，避免可表示结果被错误拒绝或因中间下溢丢失。",
    "definition": "返回 sqrt(2×temperature_kev/restmkev) 的无量纲非相对论热速度比。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
    "model": "独立闭式定义，不是拟合；在常规 binary64 运算之外对危险中间量作高精度求值，不包含单位自动转换。",
@@ -2342,7 +2342,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "当 temperature_kev 或 restmkev 不是标量形状，或任一不是有限且严格为正时，抛出 ValueError，错误信息指明出错的参数。",
+    "invalid_input": "当 temperature_kev 或 restmkev 不是标量形状，或任一不是有限且严格为正时，抛出 ValueError，错误信息指明出错的参数；数值转换错误原样传播，包括不可转换值的 TypeError、非法字符串的 ValueError 和超大整数的 OverflowError。",
     "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
@@ -6695,7 +6695,7 @@
   },
   {
    "asset_id": "scirel.collisions.normalized-momentum",
-   "source_sha256": "1590ff11d290aeb8845f0f507e6198e91177b1205c00652f0f25c2856ccc156c",
+   "source_sha256": "f561169c80c445290a32e40212df26e77c01b8792fa6f1c7777a395397ce4f71",
    "summary": "将带符号无量纲网格映射为 p_n=x vnorm/clight；vnorm 与 clight 必须是同单位速度，不能将无量纲热速比直接传入。 中间溢出与最终不可表示性分别处理，避免可表示结果被错误拒绝或因中间下溢丢失。",
    "definition": "逐元素返回无量纲 p_n=x×vnorm/clight；vnorm 与 clight 必须为相同单位的速度。常规区保留原 binary64 求值顺序；中间值溢出或变为次正规数时，按输入浮点数的精确值使用 100 位 Decimal 计算并最终舍入到 binary64。",
    "model": "独立闭式定义，不是拟合；在常规 binary64 运算之外对危险中间量作高精度求值，不包含单位自动转换。",
@@ -6754,7 +6754,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "当 x 不是有限一维数组、vnorm 或 clight 不是标量形状、vnorm 为负或非有限、或 clight 非正或非有限时，抛出 ValueError，错误信息指明出错的参数。",
+    "invalid_input": "当 x 不是有限一维数组、vnorm 或 clight 不是标量形状、vnorm 为负或非有限、或 clight 非正或非有限时，抛出 ValueError，错误信息指明出错的参数；numpy.asarray(x, dtype=float) 或 float() 的数值转换错误原样传播，包括不可转换值的 TypeError、非法字符串的 ValueError 和超大整数的 OverflowError。",
     "runtime_failure": "仅在后备计算后最终值仍非有限时引发 ValueError。中间乘积/商溢出、下溢或次正规精度损失触发高精度后备，不直接拒绝输入。",
     "nonconvergence": "不适用；没有迭代。",
     "partial_results": "不返回部分结果。"
@@ -7937,7 +7937,7 @@
   },
   {
    "asset_id": "scirel.collisions.fast-ion-stopping-increment",
-   "source_sha256": "0c6ca8b4294976c9e28f97a7bda19c51ccee2625f9e43f2539cd7f994ee0af32",
+   "source_sha256": "8ebe68fbda303086b2dcd00b7fcaaffc554a333b7fab288e03358719f72c5bdf",
    "summary": "由局部功率密度、外给电子减速时间及相对磁轴的出生方向余弦，求值固定经验快离子对中性束阻止截面的附加贡献；只返回单位 m² 的增量。",
    "definition": "记 A=beam_mass_number、E=beam_energy_ev、c=birth_pitch_cosine、n=electron_density_m3、te=electron_temperature_ev、P=power_density_w_m3、tau=electron_slowing_time_s。取 e=1.602176462e-19 J/eV，S=P/(E*e)、T=(te/1e3)/10、Ehat=(E/A)/1e6、r=Ehat/T。按升幂顺序累计 F(r)=0.57658+1.6432*r-4.8886*r²+5.3932*r³-2.9226*r⁴+0.77156*r⁵-0.079095*r⁶，再只在 r>pi 处将 F 置零，等号不截断。令 p=fmin(1,abs(c))，因此 c 为 NaN 时 p=1；按升幂顺序累计 G(p)=0.30812*p+11.992*p²-68.971*p³+165.94*p⁴-177.33*p⁵+69.833*p⁶。俯仰扩散参数固定 y=0.6，先算 R=(((T^(-0.9027)*F(r))*G(p))*1e-19 m²，再返回 ((S*tau)/n)*R，保留此乘除顺序及负 T 的复数分数幂分支。S 的单位为 m^-3 s^-1，S*tau/n 无量纲，1e-19 m² 提供面积尺度。",
    "model": "固定经验多项式与温度分数幂，俯仰扩散参数固定 y=0.6；没有已量化物理域上的标定预测保证。",
@@ -8017,7 +8017,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "复数值输入引发 TypeError；不能转为 float64 的值传播其转换错误，扩展后不相容的轴引发 ValueError。",
+    "invalid_input": "复数值输入引发 TypeError；不能转为 float64 的值传播原转换错误，包括 TypeError、ValueError 或 OverflowError；扩展后不相容的轴引发 ValueError。",
     "runtime_failure": "数值算术可能发出 RuntimeWarning 并返回 NaN、带符号无穷或复数；零、负数、非有限和极端实数值不作回退或物理域拒绝，调用者的警告过滤器可将警告变为异常。",
     "nonconvergence": "不适用；这是无迭代的直接、无状态表达式。",
     "partial_results": "异常后不返回部分数组；已返回数组中的 NaN、无穷或复数是保留的算术结果，不是收敛或科学有效性状态。"

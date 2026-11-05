@@ -97,7 +97,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, or when either is not finite and strictly positive, with a message naming the offending parameter.",
+   "invalid_input": "Raises ValueError when temperature_kev or restmkev is not scalar-shaped, or when either is not finite and strictly positive, with a message naming the offending parameter. Numeric conversion errors propagate unchanged, including TypeError for non-convertible values, ValueError for invalid strings, and OverflowError for oversized integers.",
   "runtime_failure": "raises ValueError only when the final value is still non-finite after the fallback computation. Intermediate product or quotient overflow, underflow or subnormal precision loss triggers the high-precision fallback rather than directly rejecting the input.",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
   "partial_results": "Never returned; a rejected call produces no value."

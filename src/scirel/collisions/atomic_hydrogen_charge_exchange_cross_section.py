@@ -60,48 +60,93 @@ def _composite_cross_section(energy_ev):
 
 
 def evaluate_atomic_hydrogen_charge_exchange_cross_section(energy_ev, freeman=False):
-    """Return the H + H+ charge-exchange cross section in m^2.
+    """Evaluate the H + H+ charge-exchange cross section.
 
     Parameters
     ----------
-    energy_ev
-        Collision energies in eV, as a scalar or array of any shape.  Values
-        must be finite and nonnegative; energies outside a branch's fit range
-        are clipped to that range's endpoints.
-    freeman
-        Scalar branch selector.  ``True`` selects the Freeman--Jones analytic
-        fit with the ``[0.1, 1e5] eV`` clip.  The default selects the continuous
-        Janev/Lindsay--Stebbings composite with the ``[0.1, 2.5e5] eV`` clip.
-        Any scalar is interpreted as its truth value; arrays are rejected.
+    energy_ev : real scalar or array-like
+        Laboratory collision energy. [eV] Shape: ``scalar or array``. The value
+        must be finite and nonnegative. Values below ``0.1`` eV clip silently to
+        ``0.1`` eV. The default upper limit is ``2.5e5`` eV; the Freeman-Jones
+        upper limit is ``1e5`` eV.
+    freeman : scalar, optional
+        Branch selector. [dimensionless] Shape: ``scalar``. The default ``False``
+        selects the continuous Janev/Lindsay-Stebbings composite; a truthy scalar
+        selects the independent Freeman-Jones branch. Arrays are rejected.
 
     Returns
     -------
-    numpy.ndarray
-        Cross sections in ``m^2`` with the input's shape.  Finite and strictly
-        positive for every accepted input, because both fits are evaluated
-        only on their clipped positive domains.
+    cross_section_m2 : numpy.ndarray
+        Charge-exchange cross section for each accepted energy. [m^2] Shape:
+        ``same as energy_ev``. Every returned value is finite and strictly
+        positive on the selected clipped branch.
 
     Raises
     ------
     ValueError
-        If ``energy_ev`` contains a non-real, non-finite or negative value, or if
-        ``freeman`` is not a scalar.
+        If ``energy_ev`` is not real numeric, is non-finite or is negative, or if
+        ``freeman`` is not a scalar branch selector.
+    RuntimeWarning
+        If a requested energy is above the selected branch's upper limit. The
+        returned value is the endpoint value and is not extrapolated.
+
+    See Also
+    --------
+    evaluate_atomic_hydrogen_charge_exchange_rate : Integrates the default
+        composite cross section above its low-energy fit domain.
+    evaluate_molecular_hydrogen_charge_exchange_cross_section : The distinct
+        H2 + H2+ charge-exchange relation.
+    average_cross_section_over_maxwellian : Accepts a compatible cross-section
+        callable as an input port.
 
     Notes
     -----
-    The default uses the Janev polynomial through
-    ``12673.17514018116 eV`` and the Lindsay--Stebbings fit
+    The default relation uses the Janev polynomial below the continuous crossing
+    at ``12673.17514018116`` eV and the Lindsay-Stebbings 2005 Table 1 fit above
+    it. The high-energy formula is
 
-    ``(4.15 - 0.531 ln E_keV)^2 * (1 - exp(-67.3 / E_keV))^4.5 * 1e-20 m^2``
+    ``(4.15 - 0.531 * ln(E_keV))**2
+    * (1 - exp(-67.3 / E_keV))**4.5 * 1e-20 m^2``.
 
-    above that crossing.  The fits agree at the join.  The Lindsay--Stebbings
-    table spans ``0.005-250 keV`` and states about 11% reliability above 6 keV.
+    The default high-energy endpoint is 250 keV and emits ``RuntimeWarning`` above
+    that range. The Freeman-Jones branch is an independent comparison fit through
+    100 keV, not the default. The Lindsay-Stebbings table starts at 5 eV, so the
+    low-energy Janev portion below 5 eV is not validated by that table.
 
     References
     ----------
     Lindsay, B. G., and R. F. Stebbings (2005), Charge transfer cross sections
     for energetic neutral atom data analysis, JGR 110, A12213,
     doi:10.1029/2005JA011298, Table 1 and section 4.1.
+
+    Examples
+    --------
+    >>> import warnings
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_atomic_hydrogen_charge_exchange_cross_section
+    >>> energy = np.array([0.1, 1.0, 10.0, 1.0e4, 1.267317514018116e4, 3.0e4, 1.0e5])
+    >>> composite = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy)
+    >>> assert composite.shape == energy.shape
+    >>> assert np.all(np.isfinite(composite)) and np.all(composite > 0.0)
+    >>> freeman = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=True)
+    >>> assert np.all(np.isfinite(freeman)) and np.all(freeman > 0.0)
+    >>> with warnings.catch_warnings(record=True) as caught:
+    ...     warnings.simplefilter('always')
+    ...     clipped = evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([0.01, 0.1, 3.0e5, 2.5e5]))
+    >>> assert len(caught) == 1 and issubclass(caught[0].category, RuntimeWarning)
+    >>> assert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]
+    >>> try:
+    ...     evaluate_atomic_hydrogen_charge_exchange_cross_section(np.array([1.0, -0.5]))
+    ... except ValueError as error:
+    ...     assert 'nonnegative' in str(error)
+    ... else:
+    ...     raise AssertionError('a negative energy must be rejected')
+    >>> try:
+    ...     evaluate_atomic_hydrogen_charge_exchange_cross_section(energy, freeman=np.ones((2, 2)))
+    ... except ValueError as error:
+    ...     assert 'freeman' in str(error)
+    ... else:
+    ...     raise AssertionError('an array branch selector must be rejected')
     """
     selector = np.asarray(freeman)
     if selector.ndim != 0:

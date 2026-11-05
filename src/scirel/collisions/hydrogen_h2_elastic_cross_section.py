@@ -50,25 +50,56 @@ _COEFFICIENTS = np.array(
 
 
 def evaluate_hydrogen_h2_elastic_cross_section(energy_ev):
-    """Return the source H-on-H2 elastic cross section in square metres.
+    """Evaluate the H-on-H2 elastic momentum-transfer cross section.
 
     Parameters
     ----------
-    energy_ev
-        Collision energies in eV, as a scalar or array of any shape.  Values
-        must be finite and nonnegative; energies outside the fit range are
-        clipped to the range endpoints, the saved source's declared behavior.
+    energy_ev : real scalar or array-like
+        Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
+        and nonnegative. Values outside ``[0.03, 1.01e4]`` eV are clipped to the
+        range endpoints.
 
     Returns
     -------
-    numpy.ndarray
-        Cross sections in ``m^2`` with the input's shape.  Finite and strictly
-        positive for every accepted input.
+    cross_section_m2 : numpy.ndarray
+        H-on-H2 elastic momentum-transfer cross section. [m^2] Shape: ``same as
+        energy_ev``. Every returned value is finite and strictly positive.
 
     Raises
     ------
     ValueError
-        If ``energy_ev`` contains a non-real, non-finite or negative value.
+        If ``energy_ev`` is not real numeric, is non-finite or is negative.
+
+    See Also
+    --------
+    evaluate_hydrogen2_hydrogen2_elastic_cross_section : The H2-on-H2 elastic fit.
+    evaluate_hydrogen_proton_elastic_cross_section : The H+-on-H elastic fit.
+    average_cross_section_over_maxwellian : Accepts a compatible cross-section
+        callable as an input port.
+
+    Notes
+    -----
+    The relation uses one five-coefficient logarithmic polynomial,
+    ``exp(polyval(log(E_clipped), a)) * 1e-4``, on the clipped fit interval. The
+    output preserves the input shape. Endpoint clipping is silent and intentional.
+    No external experimental cross-section reference is bound.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_hydrogen_h2_elastic_cross_section
+    >>> energy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])
+    >>> result = evaluate_hydrogen_h2_elastic_cross_section(energy)
+    >>> assert result.shape == energy.shape
+    >>> assert np.all(np.isfinite(result)) and np.all(result > 0.0)
+    >>> clipped = evaluate_hydrogen_h2_elastic_cross_section(np.array([0.01, 0.03, 2.0e4, 1.01e4]))
+    >>> assert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]
+    >>> try:
+    ...     evaluate_hydrogen_h2_elastic_cross_section(np.array([1.0, -0.5]))
+    ... except ValueError as error:
+    ...     assert 'nonnegative' in str(error)
+    ... else:
+    ...     raise AssertionError('a negative energy must be rejected')
     """
     clipped = clipped_energy(energy_ev, 0.03, 1.01e4)
     return np.exp(log_polynomial(np.log(clipped), _COEFFICIENTS)) * 1.0e-4

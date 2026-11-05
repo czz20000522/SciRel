@@ -29,27 +29,50 @@ _HIGH_ENERGY_COEFFICIENTS = np.array([-3.231141e1, -1.386002e-1], dtype=float)
 
 
 def evaluate_hydrogen_proton_elastic_cross_section(energy_ev):
-    """Return the source H+-on-H elastic cross section in square metres.
+    """Evaluate the H+-on-H elastic momentum-transfer cross section.
 
     Parameters
     ----------
-    energy_ev
-        Collision energies in eV, as a scalar or array of any shape.  Values
-        must be finite and nonnegative; energies outside the fit range are
-        clipped to the range endpoints, the saved source's declared behavior.
+    energy_ev : real scalar or array-like
+        Laboratory proton energy in the stationary-hydrogen-target frame. [eV]
+        Shape: ``scalar or array``. The value must be finite and nonnegative.
+        Values outside ``[0.001, 1.01e5]`` eV are clipped to the range endpoints.
 
     Returns
     -------
-    numpy.ndarray
-        Cross sections in ``m^2`` with the input's shape. Exactly 10 eV uses
-        the high-energy polynomial, matching canonical KN1DPy ``bb22c872``;
-        accepted values are positive and finite. The empirical breakpoint may
-        jump.
+    cross_section_m2 : numpy.ndarray
+        H+-on-H elastic momentum-transfer cross section. [m^2] Shape: ``same as
+        energy_ev``. Every returned value is finite and strictly positive.
 
     Raises
     ------
     ValueError
-        If ``energy_ev`` contains a non-real, non-finite or negative value.
+        If ``energy_ev`` is not real numeric, is non-finite or is negative.
+
+    See Also
+    --------
+    evaluate_hydrogen2_proton_elastic_cross_section : The H2-on-H+ elastic fit.
+    evaluate_atomic_hydrogen_elastic_cross_section : The H-on-H elastic fits.
+    assemble_atomic_hydrogen_collision_matrices : Uses this fit in ``SIG_H_P``.
+
+    Notes
+    -----
+    This is a piecewise empirical momentum-transfer fit. Energies below 10 eV use
+    a seven-coefficient low-energy logarithmic polynomial; energies at or above
+    10 eV use a two-coefficient high-energy polynomial. Exactly 10 eV belongs to
+    the high-energy branch. The two segments are not forced to be continuous, so a
+    finite jump at the breakpoint is retained. Endpoint clipping is silent and
+    does not imply experimental accuracy outside the declared range.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_hydrogen_proton_elastic_cross_section
+    >>> y = evaluate_hydrogen_proton_elastic_cross_section(np.array([np.nextafter(10., 0.), 10., np.nextafter(10., np.inf)]))
+    >>> assert y.shape == (3,)
+    >>> assert np.isfinite(y).all() and (y > 0).all()
+    >>> high = np.exp(np.polynomial.polynomial.polyval(np.log(10.0), np.array([-3.231141e1, -1.386002e-1]))) * 1.0e-4
+    >>> np.testing.assert_allclose(y[1], high, rtol=1e-15)
     """
     clipped = clipped_energy(energy_ev, 0.001, 1.01e5)
     result = np.zeros_like(clipped, dtype=float)

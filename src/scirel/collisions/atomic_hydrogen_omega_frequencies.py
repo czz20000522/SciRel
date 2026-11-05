@@ -40,52 +40,146 @@ def assemble_atomic_hydrogen_omega_frequencies(
     H_H2_EL=True,
     H_H_EL=True,
 ):
-    """Reduce physical nonnegative velocity distributions on a common grid.
+    """Reduce atomic-hydrogen elastic moments to local Omega and frequency data.
 
     Parameters
     ----------
-    fH : ndarray, shape (nvr, nvx, nx)
-        Density per dimensionless cylindrical velocity volume, m^-3.
-    nH : ndarray, shape (nx,)
-        Positive number density, m^-3; equals the weighted integral of f to
-        64 binary64 eps relative summation roundoff (not a physical floor).
-    Alpha_H_P, Alpha_H_H2 : ndarray, shape (nvr, nvx, nx)
-        Signed mixed momentum Alpha fields, m^-1, from physical backgrounds
-        on the same velocity normalization; partner flows must match them.
-    SIG_H_H : ndarray, shape (N, N)
-        Self stress matrix, m^2, column-weighted, Fortran velocity ordering.
-    Vr2pidVr, dVx : ndarray
-        Positive dimensionless cylindrical radial and axial quadrature weights.
-    vr, vx : ndarray
-        Increasing dimensionless nodes; vr positive, vx need not cross zero.
-    Vth : float
-        Shared positive velocity normalization, m/s.
-    vxi, vxH2 : ndarray, shape (nx,)
-        Background bulk velocities in m/s, consistent with supplied Alpha.
-    moment_state : str or ndarray, shape (nx,)
-        'central' (default) or 'target', chosen explicitly per cell.
-    target_distribution : ndarray or None
-        Required for target cells. Nonnegative aligned distribution conserving
-        density, bulk flow and kinetic energy; its stress is subtracted from f's central stress.
-    H_P_EL, H_H2_EL, H_H_EL : bool
-        Enabled channels. Disabled channels have exactly zero rate/moment and
-        status 'disabled'; enabled undefined channels remain distinguishable.
+    fH : real array-like
+        Nonnegative density on the normalized cylindrical velocity carrier. [m^-3]
+        Shape: ``[nvr, nvx, nx]``. Every value must be finite.
+    nH : real array-like
+        Positive cell number density. [m^-3] Shape: ``[nx]``. It must equal the
+        weighted integral of ``fH`` to within 64 binary64 eps relative roundoff.
+    Alpha_H_P : real array-like
+        Signed H-P mixed momentum field on the same normalization. [m^-1] Shape:
+        ``[nvr, nvx, nx]``. Every value must be finite; negative values are kept.
+    Alpha_H_H2 : real array-like
+        Signed H-H2 mixed momentum field on the same normalization. [m^-1] Shape:
+        ``[nvr, nvx, nx]``. Every value must be finite; negative values are kept.
+    SIG_H_H : real array-like
+        Self-collision stress matrix in Fortran velocity ordering. [m^2] Shape:
+        ``[N, N]`` with ``N=nvr*nvx``. The matrix must be finite and square; signed
+        entries are kept.
+    Vr2pidVr : real array-like
+        Radial quadrature measure. [dimensionless] Shape: ``[nvr]``. The value must
+        be finite and strictly positive.
+    dVx : real array-like
+        Axial quadrature widths. [dimensionless] Shape: ``[nvx]``. The value must
+        be finite and strictly positive.
+    vr : real array-like
+        Radial normalized velocity nodes. [v/Vth] Shape: ``[nvr]``. The value must
+        be finite, strictly positive and strictly increasing.
+    vx : real array-like
+        Axial normalized velocity nodes. [v/Vth] Shape: ``[nvx]``. The value must
+        be finite and strictly increasing; it need not cross zero.
+    Vth : real scalar
+        Shared physical velocity normalization. [m/s] Shape: ``scalar``. The value
+        must be finite and strictly positive.
+    vxi : real array-like
+        H-P background bulk velocity per cell. [m/s] Shape: ``[nx]``. The value
+        must be finite and consistent with the supplied ``Alpha_H_P``.
+    vxH2 : real array-like
+        H-H2 background bulk velocity per cell. [m/s] Shape: ``[nx]``. The value
+        must be finite and consistent with the supplied ``Alpha_H_H2``.
+    moment_state : str or array-like, optional
+        Cell state selector, keyword-only. [dimensionless] Shape: ``scalar or
+        [nx]``. The default is ``'central'``; accepted values are ``'central'`` and
+        ``'target'``.
+    target_distribution : real array-like or None, optional
+        Number-conserving target distribution, keyword-only. [m^-3] Shape:
+        ``[nvr, nvx, nx]`` or ``None``. The default is ``None``. It is required for
+        every target-state cell and must conserve density, mean velocity and total
+        kinetic energy there.
+    H_P_EL, H_H2_EL, H_H_EL : bool, optional
+        Channel-enable flags, keyword-only. [dimensionless] Shape: ``scalar``. The
+        defaults are ``True``. A disabled channel returns exactly zero moment and
+        frequency with status ``'disabled'``.
 
     Returns
     -------
-    dict
-        VxH in m/s; Wperp_paraH and central_stress dimensionless second moments.
-        For each channel: Omega (m^-1), nu (s^-1), moment (m^-1 with normalized
-        velocity powers), moment_rate (mixed m/s^2, self m^2/s^3), defined mask
-        and status. Omega_EL/nu_EL propagate any enabled undefined NaN; their
-        defined_EL mask is the conjunction. Ratios do not identify a unique
-        linear response at 0/0 without a specified perturbation family.
+    VxH : numpy.ndarray
+        Physical H bulk velocity recovered from ``fH``. [m/s] Shape: ``[nx]``.
+    Wperp_paraH, central_stress : numpy.ndarray
+        Perpendicular-minus-parallel stress and central stress. [(v/Vth)^2] Shape:
+        ``[nx]``. Both are finite and may be negative or zero.
+    Omega_H_P, Omega_H_H2, Omega_H_H : numpy.ndarray
+        Signed normalized moment ratios per channel. [m^-1] Shape: ``[nx]``. An
+        enabled zero denominator is represented by NaN and ``defined_* = False``.
+    nu_H_P, nu_H_H2, nu_H_H : numpy.ndarray
+        Physical channel frequencies, ``Vth * Omega``. [s^-1] Shape: ``[nx]``.
+        They share their channel's definedness; a negative value is retained but
+        is not a valid nonnegative BGK relaxation.
+    moment_H_P, moment_H_H2, moment_H_H : numpy.ndarray
+        Retained collision-moment numerators. [m^-1] Shape: ``[nx]``. These remain
+        finite even where a frequency is undefined.
+    moment_rate_H_P, moment_rate_H_H2 : numpy.ndarray
+        Signed physical mixed-channel acceleration. [m/s^2] Shape: ``[nx]``.
+    moment_rate_H_H : numpy.ndarray
+        Signed self-collision stress rate. [m^2/s^3] Shape: ``[nx]``.
+    defined_H_P, defined_H_H2, defined_H_H : numpy.ndarray
+        Per-channel definedness masks. [dimensionless] Shape: ``[nx]``. A disabled
+        channel is defined; an enabled zero-denominator channel is not.
+    status_H_P, status_H_H2, status_H_H : numpy.ndarray
+        Per-channel status strings. [dimensionless] Shape: ``[nx]``. Values are
+        ``'disabled'``, ``'finite_nonnegative'``,
+        ``'negative_no_bgk_closure'`` or ``'undefined_zero_denominator'``.
+    Omega_EL : numpy.ndarray
+        Sum of the three channel Omegas. [m^-1] Shape: ``[nx]``. Undefined enabled
+        terms propagate as NaN.
+    nu_EL : numpy.ndarray
+        Physical total frequency, ``Vth * Omega_EL``. [s^-1] Shape: ``[nx]``.
+    defined_EL : numpy.ndarray
+        Conjunction of the three channel masks. [dimensionless] Shape: ``[nx]``.
 
     Raises
     ------
     ValueError
-        Invalid shapes, nonphysical density/distribution/weights, inconsistent
-        target invariants, nonboolean flags or unrepresentable finite results.
+        If carrier shapes are inconsistent, data are non-real or non-finite,
+        distributions are negative, density or weights are nonpositive, axes are
+        not increasing, channel flags are not booleans, target invariants fail, or
+        a required moment or frequency is not representable as a finite float64.
+
+    See Also
+    --------
+    assemble_atomic_hydrogen_collision_matrices : Builds the self-collision
+        matrix accepted here.
+    assemble_molecular_hydrogen_omega_frequencies : The molecular-H2 counterpart.
+    reduce_elastic_moments : Shared private reduction kernel.
+
+    Notes
+    -----
+    This is a cell-local, moment-matched BGK reduction, not the full Boltzmann
+    collision operator. For a central state the stress denominator is the central
+    ``vr**2 - 2*(vx-u)**2`` moment. For a target state it is the difference between
+    ``fH`` and a target distribution that conserves particle number, mean velocity
+    and total kinetic energy in the same cell. Mixed-channel denominators are
+    normalized background-flow differences. No floor or positivity clipping is
+    applied: a zero denominator yields NaN with ``defined = False`` while the
+    finite moment is retained. Negative ratios are kept with
+    ``negative_no_bgk_closure``. Grid convergence remains the caller's
+    responsibility.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import assemble_atomic_hydrogen_collision_matrices, assemble_atomic_hydrogen_omega_frequencies
+    >>> vr = np.array([0.5, 1.0])
+    >>> vx = np.array([-1.0, 0.0, 1.0])
+    >>> wr = np.array([1.0, 2.0])
+    >>> dx = np.ones(3)
+    >>> w = wr[:, None] * dx
+    >>> f = np.exp(-vr[:, None]**2 - (vx[None, :] - 0.2)**2)
+    >>> f *= 2e17 / np.sum(w * f)
+    >>> bg = np.exp(-vr[:, None]**2 - vx[None, :]**2)
+    >>> bg *= 3e17 / np.sum(w * bg)
+    >>> s = assemble_atomic_hydrogen_collision_matrices(vr, vx, wr, dx, 1.0, mu=2.0, n_theta=32)
+    >>> vth = float(np.sqrt(s['Vth2'][0]))
+    >>> ub = np.array([vth * np.sum(w * bg * vx) / np.sum(w * bg)])
+    >>> alphas = [(s[k] @ bg.ravel(order='F')).reshape(f.shape, order='F')[:, :, None] for k in ['SIG_H_P', 'SIG_H_H2']]
+    >>> r = assemble_atomic_hydrogen_omega_frequencies(f[:, :, None], np.array([2e17]), *alphas, s['SIG_H_H'], wr, dx, vr, vx, vth, ub, ub)
+    >>> assert np.isfinite(r['moment_H_P']).all()
+    >>> assert r['defined_H_P'].all()
+    >>> np.testing.assert_allclose(r['nu_H_P'], vth * r['Omega_H_P'], rtol=1e-14)
     """
     return reduce_elastic_moments(
         fH,
