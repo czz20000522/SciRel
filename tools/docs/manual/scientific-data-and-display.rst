@@ -246,6 +246,6 @@
 - 一次性把文件解析成字典：:doc:`../reference/generated/scirel.io.read-eqdsk`。
 - 一次性把已验证的映射写成文本：:doc:`../reference/generated/scirel.io.write-eqdsk`。
 - 需要在多次读写之间保留可变映射，并让读失败不破坏旧状态：:doc:`../reference/generated/scirel.io.eqdsk-class`。
-- 解析或校验失败时捕获 ``EQDSKFormatError``；文件系统错误按普通 I/O 异常处理。
+- 解析或校验失败时捕获 ``EQDSKFormatError``，写入映射缺少必需键时捕获 ``KeyError``；文件系统错误按普通 I/O 异常处理。
 
 本章的边界是结构交换：它保证字段次序、尺寸、定宽表示、原点约定和失败状态，不保证标准 EFIT 兼容、单位/COCOS 分配、轮廓选择、绘图或物理平衡。需要这些信息时，应在调用者一侧显式建立，并记录所用的方言和原点约定；完整签名、参数和失败行为见上面的 API 参考页。

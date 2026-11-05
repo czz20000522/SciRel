@@ -246,6 +246,6 @@ Which entry point to use
 - Parse a file into a dictionary once: :doc:`../reference/generated/scirel.io.read-eqdsk`.
 - Write an already validated mapping to text once: :doc:`../reference/generated/scirel.io.write-eqdsk`.
 - Keep a mutable mapping across multiple reads and writes while ensuring a failed read does not destroy the old state: :doc:`../reference/generated/scirel.io.eqdsk-class`.
-- Catch ``EQDSKFormatError`` when parsing or validation fails; handle filesystem errors as ordinary I/O exceptions.
+- Catch ``EQDSKFormatError`` for parsing or validation failures and ``KeyError`` when a writer mapping omits a required key; handle filesystem errors as ordinary I/O exceptions.
 
 The boundary of this chapter is structural exchange: it guarantees field order, sizes, fixed-width representation, the origin convention and failure state, but not standard EFIT compatibility, unit/COCOS assignment, contour selection, plotting or a physical equilibrium. When that information is needed, establish it explicitly on the caller's side and record the dialect and origin convention used; full signatures, parameters and failure behavior are on the API reference pages above.

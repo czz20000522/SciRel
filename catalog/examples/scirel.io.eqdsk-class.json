@@ -83,8 +83,8 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
-  "runtime_failure": "Filesystem errors propagate; parse errors are EQDSKFormatError.",
+  "invalid_input": "EQDSKFormatError for malformed extended-dialect input or representability failures; KeyError when a write mapping omits a required record key.",
+  "runtime_failure": "OSError from filesystem access and UnicodeError from decoding propagate; parse errors are EQDSKFormatError.",
   "nonconvergence": "Not applicable.",
   "partial_results": "Class wrapper preserves previous mapping when a read fails."
  },

@@ -1,4 +1,4 @@
-"""Read and write the extended extended EQDSK exchange dialect.
+"""Read and write the extended EQDSK exchange dialect.
 
 This module intentionally names the retained extended dialect rather than
 calling it standard GEQDSK.  The dialect has a 48-character title,
@@ -150,19 +150,77 @@ def _scalar_records(lines: list[str]) -> tuple[np.ndarray, int]:
 
 
 def read_eqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
-    """Read the extended legacy extended EQDSK dialect.
+    r"""Read an extended EQDSK text file.
 
-    The reconstructed grid always uses R origin 0 and Z center 0:
-    ``R = linspace(0, rbox, nnr)`` and
-    ``Z = linspace(-zbox / 2, zbox / 2, nnz)``. Header scalar slots are
-    preserved as opaque dialect values and do not shift that grid. For a
-    standard EFIT G-EQDSK file whose ``rleft``/``zmid`` define the grid
-    origin, use :func:`scirel.io.read_geqdsk` instead.
+    Parameters
+    ----------
+    filename : str or Path
+        Path to a readable extended-dialect text file.
+    strict : bool, default True
+        If True, reject records after the declared limiter/vessel section.
+        If False, permit trailing records for compatibility while still
+        requiring every declared profile, grid, and coordinate value.
 
-    ``strict=True`` rejects records after the declared coordinate section.
-    ``strict=False`` permits such trailing records for compatibility; it still
-    requires every declared profile, grid, and coordinate value. Coordinates
-    remain fixed-width, as required by the source parser.
+    Returns
+    -------
+    mapping : dict[str, Any]
+        Parsed mapping [source-defined] with ``title``; integer ``cursign``,
+        ``nnr``, ``nnz`` and ``nnv``; scalar ``rbox``, ``zbox``, ``psi_lim``
+        and ``Ip``; ``header_scalars`` with shape ``(4, 5)``; profiles
+        ``tor_flux``, ``p_flux``, ``rbphi_flux``, ``pprime_flux`` and
+        ``q_flux`` with shape ``(nnv,)``; ``psi`` with shape ``(nnz, nnr)``;
+        ``nlim_pairs`` and ``nves_pairs``; ``lim_pairs`` with shape
+        ``(nlim_pairs, 2)``; ``ves_pairs`` with shape ``(nves_pairs, 2)``; and
+        reconstructed ``R`` and ``Z`` grids with shape ``(nnz, nnr)``. ``R``
+        is ``linspace(0, rbox, nnr)`` and ``Z`` is
+        ``linspace(-zbox / 2, zbox / 2, nnz)``. All stored numeric values are
+        finite, and header scalar slots are opaque dialect values rather than
+        grid-origin metadata.
+
+    Raises
+    ------
+    EQDSKFormatError
+        If a required record is missing, truncated, non-numeric, non-finite,
+        dimensionally inconsistent, or otherwise violates the extended-dialect
+        layout. ``strict=True`` also raises when trailing records remain.
+    OSError
+        If the file cannot be opened or read.
+    UnicodeError
+        If the file cannot be decoded as text.
+
+    See Also
+    --------
+    write_eqdsk : Serialize the validated extended-dialect mapping.
+    EQDSK : Mutable mapping wrapper around the reader and writer.
+    read_geqdsk : Read standard EFIT G-EQDSK files with their standard grid
+        origin semantics.
+
+    Notes
+    -----
+    The fixed grid origin is part of this dialect: the reader always uses
+    R origin 0 and Z center 0. Header scalar slots are preserved as opaque dialect values and
+    do not shift that grid. For a standard EFIT G-EQDSK
+    file whose ``rleft``/``zmid`` define the grid origin, use
+    :func:`scirel.io.read_geqdsk` instead.
+
+    The format does not assign units or a COCOS convention to the stored
+    values. Coordinate records remain fixed-width; ``strict=False`` changes
+    only the treatment of trailing records.
+
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> from tempfile import TemporaryDirectory
+    >>> from scirel.io.eqdsk import read_eqdsk
+    >>> lines = ['MANUAL EXAMPLE'.ljust(48) + '   1   2   2   2']
+    >>> for values in [[1., 2., 0., 0., 0.]] + [[0.]*5]*3 + [[1., 2.]]*4 + [[1., 2., 3., 4.], [0., 0.]]:
+    ...     lines.append(''.join('%16.9E' % value for value in values))
+    >>> lines.append('    0    0')
+    >>> with TemporaryDirectory() as directory:
+    ...     path = Path(directory)/'example.eqdsk'
+    ...     _ = path.write_text('\n'.join(lines)+'\n')
+    ...     parsed = read_eqdsk(path)
+    ...     assert parsed['psi'].tolist() == [[1., 2.], [3., 4.]]
     """
     lines = Path(filename).read_text().splitlines()
     title, cursign, nnr, nnz, nnv = _header(lines)
@@ -389,7 +447,66 @@ def _format_values(values: Any, key: str = "values") -> str:
 
 
 def write_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
-    """Write a structurally validated extended-dialect dictionary."""
+    r"""Write a structurally validated extended-dialect mapping.
+
+    Parameters
+    ----------
+    data : Mapping[str, Any]
+        Extended-dialect mapping [source-defined]. It must contain all
+        required record keys and finite numeric values with the declared
+        shapes: ``nnr``, ``nnz``, and ``nnv`` are positive four-character
+        integers; the four profiles and ``q_flux`` have shape ``(nnv,)``;
+        ``psi`` has shape ``(nnz, nnr)``; and the limiter/vessel coordinate
+        arrays have the declared leading dimensions.
+    filename : str or Path
+        Destination path for the UTF-8 text file. Validation is completed
+        before the destination is opened or truncated.
+
+    Returns
+    -------
+    file : None
+        No Python value is returned. On success, the serialized extended-
+        dialect text is written to ``filename`` with fixed-width records.
+
+    Raises
+    ------
+    KeyError
+        If ``data`` omits a required record key.
+    EQDSKFormatError
+        If an integer is not exact or representable, a value is non-finite or
+        has the wrong shape, a title is invalid, or a supplied grid/origin
+        cannot be represented by the dialect.
+    OSError
+        If the destination cannot be written.
+
+    See Also
+    --------
+    read_eqdsk : Parse the same extended dialect into a dictionary.
+    EQDSK : Mutable mapping wrapper with instance read and write methods.
+
+    Notes
+    -----
+    The writer emits ``16.9E`` fixed-width numeric fields and preserves the
+    dialect's fixed grid convention. The extended record stores only radial
+    and axial extents; it cannot represent an arbitrary radial or axial
+    origin. Supplied ``R``/``Z`` arrays or ``r_origin``/``z_origin`` values
+    are accepted only when they match the reconstructed fixed-origin grid.
+    Validation failures occur before the destination is truncated.
+
+    Examples
+    --------
+    >>> from pathlib import Path
+    >>> from tempfile import TemporaryDirectory
+    >>> import numpy as np
+    >>> from scirel.io.eqdsk import write_eqdsk
+    >>> mapping = dict(title='EXAMPLE', cursign=1, nnr=2, nnz=2, nnv=2, rbox=1., zbox=2., psi_lim=1., Ip=0., psi=np.zeros((2,2)), nlim_pairs=0, nves_pairs=0, lim_pairs=np.empty((0,2)), ves_pairs=np.empty((0,2)))
+    >>> for key in ('tor_flux','p_flux','rbphi_flux','pprime_flux','q_flux'):
+    ...     mapping[key] = np.zeros(2)
+    >>> with TemporaryDirectory() as directory:
+    ...     path = Path(directory)/'example.eqdsk'
+    ...     write_eqdsk(mapping, path)
+    ...     assert path.read_text().splitlines()[0] == 'EXAMPLE'.ljust(48)+'   1   2   2   2'
+    """
     d = _validated(data)  # validate before opening/truncating the destination
     header = d["header_scalars"]
     lines = [d["title"] + "".join(f"{int(d[key]):4d}" for key in ("cursign", "nnr", "nnz", "nnv"))]
@@ -456,7 +573,62 @@ def _resample_contour(
 
 
 class EQDSK(dict):
-    """Mutable dictionary wrapper for the extended extended EQDSK dialect."""
+    r"""Mutable mapping wrapper for the extended EQDSK dialect.
+
+    Parameters
+    ----------
+    fname : str or Path or None, optional
+        If provided, read this extended-dialect text file immediately. If
+        omitted or None, construct an empty mutable mapping.
+
+    Returns
+    -------
+    mapping : EQDSK
+        Mutable ``dict`` subclass holding the parsed extended-dialect mapping
+        [source-defined]. A constructor read replaces the initially empty
+        state only after parsing succeeds.
+
+    Raises
+    ------
+    EQDSKFormatError
+        If a supplied file violates the extended-dialect layout or
+        representability rules.
+    OSError
+        If filesystem access fails while reading or writing through the
+        wrapper.
+    UnicodeError
+        If a supplied file cannot be decoded as text.
+    KeyError
+        If the instance writer is called with a mapping that omits a required
+        record key.
+
+    See Also
+    --------
+    read_eqdsk : Parse the extended dialect into a dictionary.
+    write_eqdsk : Validate and serialize the extended dialect.
+    read_geqdsk : Read standard EFIT G-EQDSK files.
+
+    Notes
+    -----
+    The wrapper is a mutable ``dict`` subclass. Its ``read_eqdsk`` method
+    parses into a temporary dictionary and replaces the instance state only
+    after a successful read; a failed read preserves the previous mapping. The
+    instance reader always uses ``strict=True``; call the module-level
+    :func:`scirel.io.read_eqdsk` when trailing-record compatibility is needed.
+    Its ``write_eqdsk`` method delegates to the module-level writer. The
+    reconstructed grid always uses ``R = linspace(0, rbox, nnr)`` and
+    ``Z = linspace(-zbox/2, zbox/2, nnz)``; header scalar slots are opaque
+    and no units or COCOS convention is inferred. The class attribute
+    ``dialect`` is ``"extended-legacy"``.
+
+    Examples
+    --------
+    >>> from scirel.io.eqdsk import EQDSK
+    >>> state = EQDSK()
+    >>> assert state == {}
+    >>> state['title'] = 'EXAMPLE'
+    >>> assert state['title'] == 'EXAMPLE'
+    """
 
     dialect = DIALECT
 

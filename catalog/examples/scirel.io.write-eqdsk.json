@@ -92,8 +92,8 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "EQDSKFormatError before destination truncation for writer validation or malformed reader records.",
-  "runtime_failure": "Filesystem or formatting errors propagate; an existing destination is not truncated before validation succeeds.",
+  "invalid_input": "KeyError when data omits a required record key; EQDSKFormatError for invalid shapes, non-finite values, unrepresentable fields, or fixed-origin conflicts.",
+  "runtime_failure": "OSError from filesystem access propagates; validation errors occur before destination truncation.",
   "nonconvergence": "Not applicable.",
   "partial_results": "No partial file is written; validation errors occur before destination truncation."
  },
