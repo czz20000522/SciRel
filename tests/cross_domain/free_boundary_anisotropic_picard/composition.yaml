@@ -92,36 +92,24 @@ inputs:
       units: T
       required: false
       constraints: default median(B); abs(B0) denominator
-    p0:
-      meaning: 热离子压强尺度别名
-      shape: scalar
-      units: Pa
-      required: false
-      constraints: alias hot_pressure_scale
     hot_pressure_scale:
       meaning: 热离子压强尺度
       shape: scalar
       units: Pa
       required: false
-      constraints: p0 may supply same value
+      constraints: default 1
     gas_dynamic_pressure:
       meaning: 气体动力学压强尺度
       shape: scalar
       units: Pa
       required: false
       constraints: default 0
-    background_density:
-      meaning: 背景密度尺度别名
-      shape: scalar
-      units: m^-3
-      required: false
-      constraints: alias gas_dynamic_density
     gas_dynamic_density:
       meaning: 气体动力学密度尺度
       shape: scalar
       units: m^-3
       required: false
-      constraints: background_density may supply same value
+      constraints: optional
     hot_density_scale:
       meaning: 热离子密度尺度
       shape: scalar

@@ -12,6 +12,10 @@ def _run_composition(inputs, *, asset_loader):
     if not isinstance(inputs["params"], dict):
         raise ValueError("params must be a mapping")
     params = dict(inputs["params"])
+    if {"p0", "background_density"} & params.keys():
+        raise ValueError(
+            "params must use canonical pressure scale names; p0 and background_density are not accepted"
+        )
     alpha = params["alpha"] if "alpha" in params else 1.0
     radial = asset_loader("scirel.kinetic.frank_egedal_radial_envelope")(
         inputs.get("psi"),
@@ -36,7 +40,15 @@ def _run_composition(inputs, *, asset_loader):
         hot["hot_parallel_shape"],
         hot["hot_perpendicular_shape"],
         hot["hot_density_shape"],
-        params,
+        hot_pressure_scale=(
+            params["hot_pressure_scale"] if "hot_pressure_scale" in params else 1.0
+        ),
+        gas_dynamic_pressure=(
+            params["gas_dynamic_pressure"] if "gas_dynamic_pressure" in params else 0.0
+        ),
+        gas_dynamic_density=params.get("gas_dynamic_density"),
+        hot_density_scale=params.get("hot_density_scale"),
+        electron_temperature=params.get("electron_temperature"),
     )
     result["closure_state"] = {
         "normalized_field": hot["normalized_field"],

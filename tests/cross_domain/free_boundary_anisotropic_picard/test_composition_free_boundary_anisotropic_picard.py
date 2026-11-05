@@ -63,7 +63,7 @@ def _inputs(**overrides):
         "g_psi": np.zeros((n_points, n_points)),
         "pressure_closure": _pressure_closure,
         "params": {
-            "p0": 1.0,
+            "hot_pressure_scale": 1.0,
             "psi_axis": 0.0,
             "psi_edge": 1.0,
             "B0": 1.0,

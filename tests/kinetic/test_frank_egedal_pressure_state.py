@@ -24,13 +24,11 @@ def test_reviewed_relation_example():
         hpar,
         hperp,
         hdensity,
-        {
-            "hot_pressure_scale": 5.0,
-            "gas_dynamic_pressure": 7.0,
-            "gas_dynamic_density": 11.0,
-            "hot_density_scale": 13.0,
-            "electron_temperature": 17.0,
-        },
+        hot_pressure_scale=5.0,
+        gas_dynamic_pressure=7.0,
+        gas_dynamic_density=11.0,
+        hot_density_scale=13.0,
+        electron_temperature=17.0,
     )
     density = 11.0 * radial + 13.0 * radial * hdensity
     electron = density * 17.0
@@ -48,7 +46,9 @@ def test_reviewed_relation_example():
         hpar,
         hperp,
         hdensity,
-        {"hot_pressure_scale": 5.0, "gas_dynamic_pressure": 7.0, "electron_temperature": 17.0},
+        hot_pressure_scale=5.0,
+        gas_dynamic_pressure=7.0,
+        electron_temperature=17.0,
     )
     assert no_density["density"] is None
     assert np.allclose(no_density["electron_temperature"], 17.0)
@@ -58,16 +58,32 @@ def test_reviewed_relation_example():
     bad_psi = psi.copy()
     bad_psi[0, 0] = np.nan
     try:
-        assemble_frank_egedal_pressure(bad_psi, radial, hpar, hperp, hdensity, {})
+        assemble_frank_egedal_pressure(bad_psi, radial, hpar, hperp, hdensity)
     except ValueError as exc:
         assert "finite two-dimensional" in str(exc)
     else:
         raise AssertionError("非有限磁通 shape 载体必须失败关闭")
     try:
         assemble_frank_egedal_pressure(
-            psi, radial, hpar, hperp, hdensity, {"gas_dynamic_pressure": -1.0}
+            psi, radial, hpar, hperp, hdensity, gas_dynamic_pressure=-1.0
         )
     except ValueError as exc:
         assert "finite and nonnegative" in str(exc)
     else:
         raise AssertionError("负压力尺度必须失败关闭")
+
+
+def test_rejects_legacy_mapping_and_scale_aliases():
+    import numpy as np
+
+    psi = np.zeros((1, 2))
+    radial = np.ones((1, 2))
+    shape = np.ones((1, 2))
+    with pytest.raises(TypeError):
+        assemble_frank_egedal_pressure(
+            psi, radial, shape, shape, shape, {"hot_pressure_scale": 5.0}
+        )
+    with pytest.raises(TypeError):
+        assemble_frank_egedal_pressure(psi, radial, shape, shape, shape, p0=5.0)
+    with pytest.raises(TypeError):
+        assemble_frank_egedal_pressure(psi, radial, shape, shape, shape, background_density=5.0)

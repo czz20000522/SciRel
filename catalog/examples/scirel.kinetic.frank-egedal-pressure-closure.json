@@ -69,7 +69,7 @@
    "shape": "mapping",
    "dtype": "Python dict",
    "required": true,
-   "constraints": "A dict is required. Radial keys: psi_axis=min(psi), psi_edge=max(psi), alpha=1 with alpha>=0; reversed edge orientation is permitted. Field/source keys: B0=median(B), mirror_ratio=turning_b if mirror_ratio absent, otherwise mirror_ratio (default 2), requiring >1; vc_over_v0=0.25 nonnegative; velocity_lower=perp_velocity_lower when the legacy alias is supplied, otherwise 0, within [0,1); both names must agree and define one common population; beta_m=zeff/2 if absent, otherwise beta_m (default zeff=1), finite. Explicit nonempty finite legendre_degrees bypasses spectrum evaluation; otherwise legendre_mode_count=6 and legendre_spectrum_grid_points=256 control it. source_coefficients must be finite and match degrees if supplied; otherwise nbi_pitch_angle_deg=45 controls projection. legendre_terms=15 is a legacy count >=2; both backend names 'truncated' (default) and 'hypergeometric' use the corrected regular initial-value evaluator. velocity_nodes=pitch_nodes=24 by default, each int-converted value >=2. Pressure keys: hot_pressure_scale=p0 if absent, otherwise hot_pressure_scale (default p0=1); gas_dynamic_pressure=0; gas_dynamic_density=background_density if absent; hot_density_scale and electron_temperature are optional. Present pressure, density and electron-energy scales must be finite and nonnegative; the latter is J, not K. Some nested numeric conversions and Legendre evaluations can raise their native exceptions. Raw moments refine with quadrature_rtol=1e-7 and max_quadrature_nodes=max(768,2*max(initial counts)); zero-vc/zero-cutoff divergent density, zero normalizers or unresolved refinement fail explicitly."
+   "constraints": "A dict is required. Radial keys: psi_axis=min(psi), psi_edge=max(psi), alpha=1 with alpha>=0; reversed edge orientation is permitted. Field/source keys: B0=median(B), mirror_ratio=turning_b if mirror_ratio absent, otherwise mirror_ratio (default 2), requiring >1; vc_over_v0=0.25 nonnegative; velocity_lower=perp_velocity_lower when the legacy alias is supplied, otherwise 0, within [0,1); both names must agree and define one common population; beta_m=zeff/2 if absent, otherwise beta_m (default zeff=1), finite. Explicit nonempty finite legendre_degrees bypasses spectrum evaluation; otherwise legendre_mode_count=6 and legendre_spectrum_grid_points=256 control it. source_coefficients must be finite and match degrees if supplied; otherwise nbi_pitch_angle_deg=45 controls projection. legendre_terms=15 is a legacy count >=2; both backend names 'truncated' (default) and 'hypergeometric' use the corrected regular initial-value evaluator. velocity_nodes=pitch_nodes=24 by default, each int-converted value >=2. Pressure keys: hot_pressure_scale defaults to 1 Pa; gas_dynamic_pressure defaults to 0 Pa; gas_dynamic_density, hot_density_scale and electron_temperature are optional canonical keys. The pressure-state adapter passes these as keyword-only arguments and has no p0 or background_density fallback. Present pressure, density and electron-energy scales must be finite and nonnegative; the latter is J, not K. Some nested numeric conversions and Legendre evaluations can raise their native exceptions. Raw moments refine with quadrature_rtol=1e-7 and max_quadrature_nodes=max(768,2*max(initial counts)); zero-vc/zero-cutoff divergent density, zero normalizers or unresolved refinement fail explicitly."
   }
  ],
  "outputs": [
@@ -98,7 +98,7 @@
    "shape": "[N_Z,N_R] or None",
    "dtype": "NumPy float64 array or None",
    "required": true,
-   "constraints": "None when both gas_dynamic_density/background_density and hot_density_scale are absent. The electron pressure is zero when electron_temperature is absent or no density scale is supplied."
+   "constraints": "None when both gas_dynamic_density and hot_density_scale are absent. The electron pressure is zero when electron_temperature is absent or no density scale is supplied."
   },
   {
    "name": "electron_temperature",
@@ -132,7 +132,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Dependency-specific validation failures propagate; params must be a dict.",
+  "invalid_input": "Dependency-specific validation failures propagate; params must be a dict. Legacy p0 and background_density pressure-scale keys are rejected.",
   "runtime_failure": "No graph-local replacement or suppressed numerical failure.",
   "nonconvergence": "Source normalization, spectrum or raw hot-moment nonconvergence propagates; the graph does not return a partially normalized pressure closure.",
   "partial_results": "None."
@@ -168,7 +168,7 @@
  },
  "example": {
   "description": "Evaluate a two-by-two prescribed closure with explicit fractional degree and inspect the returned state without invoking the spectrum solver.",
-  "code": "import numpy as np\nfrom scirel.kinetic import solve_frank_egedal_pressure_closure\npsi = np.array([[0.0, 0.5], [0.25, 1.0]])\nB = np.array([[1.0, 1.1], [1.2, 1.3]])\nr = solve_frank_egedal_pressure_closure({'psi': psi, 'B': B, 'params': {'psi_axis': 0.0, 'psi_edge': 1.0, 'B0': 1.0, 'p0': 8.0, 'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'source_coefficients': [1.0], 'velocity_nodes': 6, 'pitch_nodes': 6}})\nassert set(r) == {'p_parallel', 'p_perp', 'density', 'electron_temperature', 'closure_state'}\nassert r['p_parallel'].shape == r['p_perp'].shape == (2, 2)\nassert np.all(np.isfinite(r['p_parallel'])) and np.all(np.isfinite(r['p_perp']))\nassert r['density'] is None and r['electron_temperature'] is None\nassert r['closure_state']['degree_source'] == 'caller_supplied'\nassert r['closure_state']['normalization'] == 'pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)'\n",
+  "code": "import numpy as np\nfrom scirel.kinetic import solve_frank_egedal_pressure_closure\npsi = np.array([[0.0, 0.5], [0.25, 1.0]])\nB = np.array([[1.0, 1.1], [1.2, 1.3]])\nr = solve_frank_egedal_pressure_closure({'psi': psi, 'B': B, 'params': {'psi_axis': 0.0, 'psi_edge': 1.0, 'B0': 1.0, 'hot_pressure_scale': 8.0, 'mirror_ratio': 2.0, 'legendre_degrees': [0.5], 'source_coefficients': [1.0], 'velocity_nodes': 6, 'pitch_nodes': 6}})\nassert set(r) == {'p_parallel', 'p_perp', 'density', 'electron_temperature', 'closure_state'}\nassert r['p_parallel'].shape == r['p_perp'].shape == (2, 2)\nassert np.all(np.isfinite(r['p_parallel'])) and np.all(np.isfinite(r['p_perp']))\nassert r['density'] is None and r['electron_temperature'] is None\nassert r['closure_state']['degree_source'] == 'caller_supplied'\nassert r['closure_state']['normalization'] == 'pressure moments referenced to hot_parallel(b=1); density referenced to hot_density(b=1)'\n",
   "expected": "Observed PASS: Finite two-by-two parallel/perpendicular pressure fields, absent optional density/electron-energy fields and a caller-supplied-degree closure state."
  },
  "verification": {
@@ -266,7 +266,11 @@
      "hot_parallel_shape",
      "hot_perpendicular_shape",
      "hot_density_shape",
-     "params"
+     "hot_pressure_scale",
+     "gas_dynamic_pressure",
+     "gas_dynamic_density",
+     "hot_density_scale",
+     "electron_temperature"
     ],
     "outputs": [
      "pressure_state"
@@ -395,13 +399,73 @@
     },
     "to": {
      "node": "pressure_assembly",
+     "port": "hot_pressure_scale"
+    },
+    "description": "Hot-ion pressure scale; defaults to 1 Pa when absent.",
+    "condition": "When the canonical key is present; otherwise the documented default applies.",
+    "transform": "Select the canonical hot_pressure_scale key or apply the documented default.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
      "port": "params"
     },
-    "description": "Pressure, density and electron-energy scales.",
-    "condition": "Always.",
-    "transform": "Pass the same shallow-copied mapping.",
+    "to": {
+     "node": "pressure_assembly",
+     "port": "gas_dynamic_pressure"
+    },
+    "description": "Gas dynamic pressure scale; defaults to 0 Pa when absent.",
+    "condition": "When the canonical key is present; otherwise the documented default applies.",
+    "transform": "Select the canonical gas_dynamic_pressure key or apply the documented default.",
     "kind": "data",
-    "required": true
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "params"
+    },
+    "to": {
+     "node": "pressure_assembly",
+     "port": "gas_dynamic_density"
+    },
+    "description": "Optional gas density scale; None when absent.",
+    "condition": "When the canonical key is present; otherwise the documented default applies.",
+    "transform": "Select the canonical gas_dynamic_density key or pass None.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "params"
+    },
+    "to": {
+     "node": "pressure_assembly",
+     "port": "hot_density_scale"
+    },
+    "description": "Optional hot-ion density scale; None when absent.",
+    "condition": "When the canonical key is present; otherwise the documented default applies.",
+    "transform": "Select the canonical hot_density_scale key or pass None.",
+    "kind": "data",
+    "required": false
+   },
+   {
+    "from": {
+     "node": "$input",
+     "port": "params"
+    },
+    "to": {
+     "node": "pressure_assembly",
+     "port": "electron_temperature"
+    },
+    "description": "Optional constant electron energy per particle; None when absent.",
+    "condition": "When the canonical key is present; otherwise the documented default applies.",
+    "transform": "Select the canonical electron_temperature key or pass None.",
+    "kind": "data",
+    "required": false
    },
    {
     "from": {
@@ -766,7 +830,7 @@
   ],
   "execution": {
    "mode": "acyclic_sequential_composition",
-   "ordering": "Copy params; evaluate radial envelope; bind the spectrum callable and project source modes (invoking spectrum only if degrees are not supplied); integrate hot-ion moments at B; assemble pressure/density/electron-energy fields; append closure_state. The dependency edges are acyclic.",
+   "ordering": "Copy params; evaluate radial envelope; bind the spectrum callable and project source modes (invoking spectrum only if degrees are not supplied); integrate hot-ion moments at B; extract canonical pressure scales and assemble pressure/density/electron-energy fields; append closure_state. The dependency edges are acyclic.",
    "branches": [
     "Explicit legendre_degrees bypasses numerical spectrum invocation; absent degrees requests modes through the bound loss-cone-spectrum operator.",
     "Caller source_coefficients bypasses NBI-angle projection; otherwise project coefficients with the selected Legendre backend.",

@@ -53,36 +53,24 @@ inputs:
       units: T
       required: false
       constraints: default median(B); abs(B0) denominator
-    p0:
-      meaning: 热离子压强尺度别名
-      shape: scalar
-      units: Pa
-      required: false
-      constraints: alias hot_pressure_scale
     hot_pressure_scale:
       meaning: 热离子压强尺度
       shape: scalar
       units: Pa
       required: false
-      constraints: p0 may supply same value
+      constraints: default 1
     gas_dynamic_pressure:
       meaning: 气体动力学压强尺度
       shape: scalar
       units: Pa
       required: false
       constraints: default 0
-    background_density:
-      meaning: 背景密度尺度别名
-      shape: scalar
-      units: m^-3
-      required: false
-      constraints: alias gas_dynamic_density
     gas_dynamic_density:
       meaning: 气体动力学密度尺度
       shape: scalar
       units: m^-3
       required: false
-      constraints: background_density may supply same value
+      constraints: optional
     hot_density_scale:
       meaning: 热离子密度尺度
       shape: scalar
@@ -225,7 +213,7 @@ outputs:
 execution:
   mode: source_ordered_loss_cone_spectrum_then_hot_ion_quadrature_then_b1_normalized_pressure_assembly
   order_policy: derive_midplane_loss_cone_then_select_modes_then_integrate_each_B_then_normalize_then_assemble_profiles
-  state_policy: explicit_parameter_mapping_with_local_b_value_cache_only
+  state_policy: explicit_pressure_scale_parameters_with_local_b_value_cache_only
   failure_policy: stop_on_invalid_grid_or_invalid_loss_cone_configuration
 nodes:
 - id: radial_profile
@@ -261,7 +249,7 @@ nodes:
   kind: scientific_function
   callable: scirel.kinetic.frank_egedal_pressure_state::assemble_frank_egedal_pressure
   asset_ref: scirel.kinetic.frank_egedal_pressure_state
-  inputs: [psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, params]
+  inputs: [psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, hot_density_shape, hot_pressure_scale, gas_dynamic_pressure, gas_dynamic_density, hot_density_scale, electron_temperature]
   outputs: [p_parallel, p_perp, density, electron_temperature]
 edges:
 - from: radial_profile
@@ -294,7 +282,7 @@ edges:
   to_input: hot_parallel_shape
   data: B 依赖的热离子矩
   condition: always
-  transform: pass all three hot moment shapes; pressure assembly applies params scales and radial_shape
+  transform: pass all three hot moment shapes; pressure assembly applies explicit scale inputs and radial_shape
   closure: asset
 
 common_population_contract:
