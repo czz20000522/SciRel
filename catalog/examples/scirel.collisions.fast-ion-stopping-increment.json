@@ -139,7 +139,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises TypeError for complex-valued inputs. Values that cannot be converted to float64 propagate their conversion error; incompatible expanded axes raise ValueError.",
+   "invalid_input": "Raises TypeError for complex-valued inputs. Values that cannot be converted to float64 propagate their original conversion error, including TypeError, ValueError, or OverflowError; incompatible expanded axes raise ValueError.",
   "runtime_failure": "Numerical arithmetic may emit RuntimeWarning and return NaN, signed infinity or complex values. Zero, negative, nonfinite and extreme real values are not replaced with a fallback or rejected as unphysical; caller warning filters can turn warnings into exceptions.",
   "nonconvergence": "Not applicable; this is a direct stateless expression with no iteration.",
   "partial_results": "No partial array is returned after an exception. NaN/Inf/complex entries in a returned array are retained arithmetic outcomes, not a convergence or scientific-validity status."

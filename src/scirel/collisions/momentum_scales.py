@@ -60,22 +60,68 @@ def _scalar(name, value):
 
 
 def thermal_electron_momentum(*, temperature_kev, restmkev):
-    """Return the thermal-electron normalized momentum ``p_Te = sqrt(2T/mc^2)``.
+    """Evaluate the thermal-electron normalized momentum.
 
-    A definition, not a fit. Ordinary arithmetic retains its binary64 order;
-    dangerous intermediates use high precision before final binary64 rounding.
+    Parameters
+    ----------
+    temperature_kev : real scalar
+        Electron temperature. [keV] Shape: ``scalar``. The value must be finite,
+        strictly positive and scalar-shaped. No upper bound is imposed beyond
+        final binary64 representability.
+    restmkev : real scalar
+        Electron rest energy in the same energy unit. [keV] Shape: ``scalar``. The
+        value must be finite, strictly positive and scalar-shaped. The caller
+        supplies the constant; this function does not embed a rest energy.
 
-    The result is dimensionless -- a speed in units of ``c`` -- because both inputs
-    are energies in the same unit.  It is **not** a velocity in cm/s, and it is
-    therefore not a valid ``vnorm`` for :func:`normalized_momentum`; see the module
-    docstring.
+    Returns
+    -------
+    p_te : float
+        Non-relativistic thermal speed ratio ``sqrt(2*T/mc^2)``.
+        [dimensionless] Shape: ``scalar``. The value is a Python float, finite and
+        strictly positive. It is a speed in units of ``c``, not a velocity in cm/s.
 
     Raises
     ------
     ValueError
-        If an input is not scalar-shaped, is not finite and positive, or if the
-        closed form is not representable in double precision for the supplied
-        finite inputs.
+        If either input is not scalar-shaped, is non-finite or is nonpositive, or
+        if the final closed-form value is not representable in binary64; a
+        conversion error raised as ``ValueError`` propagates unchanged.
+    TypeError
+        If an input cannot be converted to ``float``; the converter error
+        propagates unchanged.
+    OverflowError
+        If conversion to ``float`` overflows, such as for an oversized integer;
+        the converter error propagates unchanged.
+
+    See Also
+    --------
+    normalized_momentum : Maps a velocity grid to momentum. This dimensionless
+        ratio is not a velocity and must not be passed directly as its ``vnorm``.
+    average_cross_section_over_maxwellian : A separate mesh-based average that
+        also leaves unit consistency to the caller.
+
+    Notes
+    -----
+    The definition is ``sqrt(2*temperature_kev/restmkev)``. Both inputs must be
+    energies in the same unit; no conversion is performed and no relativistic
+    correction is included. Ordinary arithmetic keeps its binary64 order. If the
+    ratio overflows, underflows or becomes subnormal, the exact input floats are
+    evaluated with 100-digit Decimal and the result is rounded once to binary64. A
+    representationally tiny result rounds to a positive subnormal; only a final
+    non-finite value is rejected.
+
+    Examples
+    --------
+    >>> from scirel.collisions import thermal_electron_momentum
+    >>> import math
+    >>> p = thermal_electron_momentum(temperature_kev=250., restmkev=511.)
+    >>> assert p == 0.9891782353111633
+    >>> large = thermal_electron_momentum(temperature_kev=1e308, restmkev=511.)
+    >>> assert math.isfinite(large) and large > 1e152
+    >>> tiny = thermal_electron_momentum(temperature_kev=1e-300, restmkev=1e300)
+    >>> assert tiny > 0
+    >>> print(p, large, tiny)
+    0.9891782353111633 6.256112470898545e+152 1.414213562373095e-300
     """
     temperature_kev = _scalar("temperature_kev", temperature_kev)
     restmkev = _scalar("restmkev", restmkev)
@@ -98,25 +144,73 @@ def thermal_electron_momentum(*, temperature_kev, restmkev):
 
 
 def normalized_momentum(*, x, vnorm, clight):
-    """Return the normalized momentum ``p_n = x * vnorm / clight`` on the ``x`` grid.
+    """Map a signed dimensionless velocity grid to normalized momentum.
 
-    ``x`` may carry either sign: the map is a signed grid-to-momentum scaling, and
-    it is the downstream electron-ion leaf, not this one, that requires nonnegative
-    momentum.  ``vnorm`` may be exactly zero, in which case the whole profile is
-    exactly zero.  Both allowances are the retained route's and are kept rather than
-    tightened, because tightening them would reject inputs the source accepts with no
-    evidence that the source is wrong.  The input array is not modified.
+    Parameters
+    ----------
+    x : real array-like
+        Grid on which the map is evaluated. [dimensionless] Shape: ``[n]``. Every
+        value must be finite and one-dimensional. Negative entries are accepted;
+        the input array is not modified.
+    vnorm : real scalar
+        Velocity scale multiplying the grid. [cm/s] Shape: ``scalar``. The value
+        must be finite, nonnegative and scalar-shaped. It must use the same
+        velocity unit as ``clight``.
+    clight : real scalar
+        Speed of light in the caller's chosen velocity unit. [cm/s] Shape:
+        ``scalar``. The value must be finite, strictly positive and scalar-shaped.
+        A dimensionless thermal speed ratio is not a valid substitute for a
+        velocity.
 
-    ``vnorm`` and ``clight`` must be in the same **velocity** unit.  A dimensionless
-    speed ratio such as :func:`thermal_electron_momentum` is not a velocity and must
-    not be passed as ``vnorm``; doing so divides by ``c`` twice.
+    Returns
+    -------
+    p_n : numpy.ndarray
+        Signed normalized momentum profile ``x * vnorm / clight``.
+        [dimensionless] Shape: ``same as x``. The dtype is float64.
 
     Raises
     ------
     ValueError
-        If ``x`` is not a finite one-dimensional array, if ``vnorm`` or ``clight``
-        is not scalar-shaped or leaves its domain, or if the profile is not
-        representable in double precision for the supplied finite inputs.
+        If ``x`` is not a finite one-dimensional array, if ``vnorm`` or
+        ``clight`` is not scalar-shaped or leaves its stated domain, or if the
+        final profile is not representable in binary64; a conversion error raised
+        as ``ValueError`` propagates unchanged.
+    TypeError
+        If ``x`` cannot be converted by ``numpy.asarray(x, dtype=float)``, or if
+        ``vnorm`` or ``clight`` cannot be converted to ``float``; the converter
+        error propagates unchanged.
+    OverflowError
+        If numeric conversion overflows, such as for an oversized integer; the
+        converter error propagates unchanged.
+
+    See Also
+    --------
+    thermal_electron_momentum : Returns a dimensionless speed ratio rather than a
+        velocity, so it must not be passed directly as ``vnorm``.
+    average_cross_section_over_maxwellian : A mesh-based Maxwellian average that
+        also leaves unit consistency to the caller.
+
+    Notes
+    -----
+    The map is odd in ``x``: a zero velocity scale gives signed zero and a negative
+    grid value gives negative normalized momentum. ``vnorm`` and ``clight`` are
+    assumed to share one velocity unit; this function performs no unit check or
+    conversion. Ordinary arithmetic keeps the original binary64 operation order.
+    When an intermediate or final value is overflowing, underflowing or subnormal,
+    the exact input floats are evaluated with 100-digit Decimal and rounded once
+    to binary64. A genuinely tiny final result may still round to signed zero,
+    while a final non-finite result is rejected.
+
+    Examples
+    --------
+    >>> from scirel.collisions import normalized_momentum
+    >>> import numpy as np
+    >>> p = normalized_momentum(x=[-1e308,0.,1e308],vnorm=1e308,clight=1e308)
+    >>> assert np.array_equal(p,[-1e308,0.,1e308])
+    >>> small = normalized_momentum(x=[1e-300],vnorm=1e-100,clight=1e-200)
+    >>> assert small[0] > 0
+    >>> print(p,small)
+    [-1.e+308  0.e+000  1.e+308] [1.e-200]
     """
     x = np.asarray(x, dtype=float)
     if x.ndim != 1 or not np.isfinite(x).all():

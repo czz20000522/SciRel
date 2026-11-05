@@ -153,32 +153,89 @@ def _evaluate_closure(argument):
 
 
 def relativistic_maxwellian_bessel(x):
-    """Return the ``{bk0, bk1, bk2}`` relativistic Maxwellian Bessel closure.
+    """Evaluate the rescaled relativistic Maxwellian Bessel closure.
 
     Parameters
     ----------
-    x
-        The Bessel argument: a positive finite scalar.
+    x : real scalar
+        Argument of the rescaled modified Bessel functions. [dimensionless] Shape:
+        ``scalar``. The value must be finite and strictly positive. Booleans,
+        strings, bytes, complex values and higher-rank arrays are rejected rather
+        than converted.
 
     Returns
     -------
-    dict
-        ``bk0`` -- ``exp(x) * K_0(x)``.
-        ``bk1`` -- ``exp(x) * K_1(x)``.
-        ``bk2`` -- always the recurrence ``bk0 + 2*bk1/x``, not an independent
-        third approximation.
-
-        All three are finite floats on every accepted call.
+    bk0 : float
+        ``exp(x) * K_0(x)``. [dimensionless] Shape: ``scalar``. The value is finite
+        on every accepted call.
+    bk1 : float
+        ``exp(x) * K_1(x)``. [dimensionless] Shape: ``scalar``. The value is finite
+        on every accepted call.
+    bk2 : float
+        The recurrence ``bk0 + 2*bk1/x`` for ``K_2``. [dimensionless] Shape:
+        ``scalar``. The value is finite on every accepted call; a non-finite
+        recurrence rejects the whole call.
 
     Raises
     ------
     InvalidBesselArgumentError
-        If ``x`` is not a positive finite real scalar.  Boolean, string, bytes,
-        complex and higher-rank array inputs are rejected rather than coerced.
+        If ``x`` is not a positive finite real scalar.
     BesselBackendEvaluationError
-        If ``scipy.special.kve`` did not return finite values for a valid ``x``.
-        The rejection is whole-call: a partially non-finite closure is not a usable
-        scientific result.  No domain bound is stated or implied.
+        If the installed ``scipy.special.kve`` backend does not return three finite
+        values for a valid ``x``. No platform-specific domain bound is stated.
+    ValueError
+        The two named rejection classes above are subclasses of ``ValueError``, so
+        callers that only handle the base class still catch either failure.
+
+    See Also
+    --------
+    kve : Module-local backend seam used for ``scipy.special.kve``.
+    InvalidBesselArgumentError, BesselBackendEvaluationError : Public exception
+        types that distinguish invalid input from backend failure.
+
+    Notes
+    -----
+    ``bk0`` and ``bk1`` are the exponentially rescaled modified Bessel functions of
+    the second kind, orders zero and one. ``bk2`` is the exact recurrence
+    ``bk0 + 2*bk1/x``, not a third independent approximation. The three values are
+    computed and checked together, so a partial non-finite closure is never
+    returned. The representable range of the approximate backend depends on the
+    installed SciPy build and platform; this relation deliberately states no
+    backend-specific bound. No physical accuracy claim for a particular
+    distribution is made.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scipy.special import kve
+    >>> from scirel.collisions import (
+    ...     BesselBackendEvaluationError,
+    ...     InvalidBesselArgumentError,
+    ...     relativistic_maxwellian_bessel,
+    ... )
+    >>> boundary = 2.0
+    >>> below = float(np.nextafter(boundary, -np.inf))
+    >>> at = relativistic_maxwellian_bessel(boundary)
+    >>> near = relativistic_maxwellian_bessel(below)
+    >>> assert set(at) == {'bk0', 'bk1', 'bk2'}
+    >>> assert all(type(value) is float for value in at.values())
+    >>> assert all(np.isfinite(value) for value in at.values())
+    >>> assert at['bk0'] == float(kve(0, boundary))
+    >>> assert at['bk1'] == float(kve(1, boundary))
+    >>> assert at['bk2'] == at['bk0'] + 2.0 * at['bk1'] / boundary
+    >>> jump = abs(near['bk1'] - at['bk1']) / abs(at['bk1'])
+    >>> assert jump == 8.59408144671376e-16
+    >>> assert jump < 1.0e-12
+    >>> for good in (1.0e-3, 0.5, 1.0, 60.0, 700.0):
+    ...     assert all(np.isfinite(value) for value in relativistic_maxwellian_bessel(good).values())
+    >>> try:
+    ...     relativistic_maxwellian_bessel(0.0)
+    ... except InvalidBesselArgumentError as error:
+    ...     assert 'positive and finite' in str(error)
+    ... else:
+    ...     raise AssertionError('a non-positive argument must be rejected')
+    >>> assert issubclass(InvalidBesselArgumentError, ValueError)
+    >>> assert issubclass(BesselBackendEvaluationError, ValueError)
     """
     value = _positive_finite_scalar(x)
     if not math.isfinite(value) or value <= 0.0:

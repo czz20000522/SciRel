@@ -64,36 +64,91 @@ def _build_predecessor_state(vr, vx, Vr2pidVr, dVx, n_theta=5):
 # Public operator.                                                             #
 # --------------------------------------------------------------------------- #
 def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu=1.0, *, n_theta=5):
-    """Assemble the atomic four-family SIG collision matrices.
+    """Assemble the atomic-hydrogen four-family collision matrices.
 
     Parameters
     ----------
-    vr : (nvr,) array, strictly increasing, positive, ``v/vth``.
-    vx : (nvx,) array, strictly increasing; arbitrary common axial boost allowed, ``v/vth``.
-    Vr2pidVr : (nvr,) array, cylindrical radial integration weight (source
-        ``make_dvr_dvx`` output).
-    dVx : (nvx,) array, axial cell widths (source ``make_dvr_dvx`` output).
-    Tnorm : float, normalization energy (eV); ``Vth = sqrt(2*Q*Tnorm/(mu*H_MASS))``.
-    mu : float, normalized mass of the colliding species (default 1.0 = H).
-
-    n_theta : int, keyword-only
-        Positive midpoint azimuth count; default 5 retains the neutral-transport formulation rule.
-        Increase and verify convergence for the caller's velocity grid.
+    vr : real array-like
+        Radial normalized velocity nodes. [v/Vth] Shape: ``[nvr]``. The array must
+        be nonempty, finite, strictly positive and strictly increasing.
+    vx : real array-like
+        Axial normalized velocity nodes. [v/Vth] Shape: ``[nvx]``. The array must
+        be nonempty, finite and strictly increasing. A common axial shift is
+        allowed; the axis is not required to cross zero.
+    Vr2pidVr : real array-like
+        Cylindrical radial integration measure. [dimensionless normalized
+        radial-area measure] Shape: ``[nvr]``. The value must be finite and
+        nonnegative and must align with ``vr``.
+    dVx : real array-like
+        Axial cell widths. [dimensionless normalized axial-speed increment] Shape:
+        ``[nvx]``. The value must be finite and strictly positive and align with
+        ``vx``.
+    Tnorm : real scalar
+        Velocity-normalization energy. [eV] Shape: ``scalar``. The value must be
+        finite and strictly positive; arrays, booleans and strings are rejected.
+    mu : real scalar, optional
+        Colliding-species mass factor. [multiples of 1.6726231e-27 kg] Shape:
+        ``scalar``. The default is ``1.0`` (H). The value must be finite and
+        strictly positive. Physical checks cover H=1 and D=2.
+    n_theta : int, optional
+        Midpoint azimuth count, keyword-only. [dimensionless] Shape: ``scalar``.
+        The default is ``5``. The value must be a positive integer; booleans are
+        rejected.
 
     Returns
     -------
-    dict with ``SIG_CX``, ``SIG_H_H``, ``SIG_H_H2``, ``SIG_H_P``, each
-    ``(nvr*nvx, nvr*nvx)``, plus the captured predecessor state ``v_v2``,
-    ``v_v``, ``vr2_vx2``, ``vx_vx``, ``Vr2pidVrdVx`` and the thermal
-    normalization ``Vth2`` for forensic parity checks.
+    SIG_CX, SIG_H_H, SIG_H_H2, SIG_H_P : numpy.ndarray
+        Charge-exchange and three elastic collision kernels, flattened with
+        Fortran velocity ordering. [m^2 in normalized kernel convention] Shape:
+        ``[nvr*nvx, nvr*nvx]``. ``SIG_CX`` is finite and nonnegative; the elastic
+        matrices are finite and may contain positive, negative or zero entries.
+    v_v2, vr2_vx2 : numpy.ndarray
+        Relative-speed squared and signed stress-geometry factors. [(v/Vth)^2]
+        Shape: ``[nvr, nvx, nvr, nvx, n_theta]``. All values are finite;
+        ``vr2_vx2`` retains its sign.
+    v_v : numpy.ndarray
+        Relative normalized speed used as a quadrature factor. [v/Vth] Shape:
+        ``[nvr, nvx, nvr, nvx, n_theta]``. All values are finite and nonnegative.
+    vx_vx : numpy.ndarray
+        Signed axial relative velocity. [v/Vth] Shape:
+        ``[nvr, nvx, nvr, nvx]``. All values are finite and may carry either sign.
+    Vr2pidVrdVx : numpy.ndarray
+        Broadcast target-column velocity measure. [dimensionless normalized
+        volume measure] Shape: ``[nvr, nvx, nvr, nvx]``. All values are finite and
+        nonnegative.
+    Vth2 : numpy.ndarray
+        Square of the thermal speed normalization. [m^2/s^2] Shape: ``[1]``. The
+        value is finite and strictly positive.
+
+    Raises
+    ------
+    ValueError
+        If an array is not real numeric or finite, axes or weights violate their
+        shape and ordering rules, ``Tnorm`` or ``mu`` is invalid, ``n_theta`` is
+        not a positive integer, or a thermal speed, cross section or matrix is not
+        representable as a finite value.
+
+    See Also
+    --------
+    assemble_atomic_hydrogen_omega_frequencies : Reduces an atomic velocity
+        distribution with these matrices.
+    assemble_molecular_hydrogen_collision_matrices : The molecular-H2 four-family
+        counterpart.
+    evaluate_atomic_hydrogen_charge_exchange_cross_section : Charge-exchange fit
+        used by ``SIG_CX``.
 
     Notes
     -----
-    The self-collision kernel uses the Boltzmann prefactor 3/8. With
-    ``Q(g) = g_perp^2 - 2 g_x^2``, an equal-mass collision changes ``Q`` of one
-    particle by ``-(3/8) sin^2(chi) Q(g)`` after the azimuth average, and a BGK
-    term changes it by ``-nu <Q>``. The KN1D report has 1/8, so this channel is
-    three times its value; the mixed channels match it.
+    The relation assembles axisymmetric velocity-space kernels on a cylindrical
+    grid. ``SIG_CX`` uses the fitted charge-exchange cross section; ``SIG_H_H``,
+    ``SIG_H_H2`` and ``SIG_H_P`` use their declared laboratory-energy scalings and
+    retain the signed elastic geometry. The default five-angle midpoint rule is an
+    approximation, not a convergence guarantee; increase ``n_theta`` for the
+    caller's own study. The self-stress kernel uses the Boltzmann prefactor
+    ``3/8``. That is three times the self-collision value in KN1D Appendix B,
+    which uses ``1/8`` for its different normalization. The H (``mu=1``) and D
+    (``mu=2``) cases are physically checked; other positive mass factors are
+    algebraic extensions only.
 
     References
     ----------
@@ -101,8 +156,21 @@ def assemble_atomic_hydrogen_collision_matrices(vr, vx, Vr2pidVr, dVx, Tnorm, mu
        Algorithm for Atomic and Molecular Hydrogen in an Ionizing Plasma",
        MIT report PSFC/RR-01-3, 2001, Appendix B.
     .. [2] S. Chapman and T. G. Cowling, "The Mathematical Theory of Non-uniform
-       Gases", hard-sphere viscosity (cited from memory; the formula is
-       re-derived in ``tests/collisions/test_self_collision_rate_reference.py``).
+       Gases", Cambridge University Press.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import assemble_atomic_hydrogen_collision_matrices
+    >>> r = assemble_atomic_hydrogen_collision_matrices(
+    ...     vr=np.array([0.5, 1.0]), vx=np.array([-1.0, 1.0]),
+    ...     Vr2pidVr=np.array([1.0, 2.0]), dVx=np.array([2.0, 2.0]), Tnorm=1.0,
+    ... )
+    >>> assert r['SIG_CX'].shape == (4, 4)
+    >>> assert r['v_v2'].shape == (2, 2, 2, 2, 5)
+    >>> assert np.isfinite(r['SIG_H_H']).all()
+    >>> assert (r['SIG_H_H'] < 0).any()
+    >>> assert r['Vth2'].shape == (1,)
     """
     try:
         carriers = (vr, vx, Vr2pidVr, dVx)

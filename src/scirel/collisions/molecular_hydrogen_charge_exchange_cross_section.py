@@ -59,26 +59,60 @@ _COEFFICIENTS = np.array(
 
 
 def evaluate_molecular_hydrogen_charge_exchange_cross_section(energy_ev):
-    """Return the H2 + H2+ charge-exchange cross section in m^2.
+    """Evaluate the H2 + H2+ charge-exchange cross section.
 
     Parameters
     ----------
-    energy_ev
-        Collision energies in eV, as a scalar or array of any shape.  Values
-        must be finite and nonnegative; energies outside the fit range are
-        clipped to the range endpoints, the saved source's declared behavior.
+    energy_ev : real scalar or array-like
+        Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
+        and nonnegative. Values outside ``[0.1, 2.01e4]`` eV are clipped to the
+        range endpoints.
 
     Returns
     -------
-    numpy.ndarray
-        Cross sections in ``m^2`` with the input's shape.  Finite and strictly
-        positive for every accepted input, because the fit is evaluated only
-        on its clipped positive domain.
+    cross_section_m2 : numpy.ndarray
+        H2 + H2+ charge-exchange cross section. [m^2] Shape: ``same as
+        energy_ev``. Every returned value is finite and strictly positive.
 
     Raises
     ------
     ValueError
-        If ``energy_ev`` contains a non-real, non-finite or negative value.
+        If ``energy_ev`` is not real numeric, is non-finite or is negative.
+
+    See Also
+    --------
+    evaluate_atomic_hydrogen_charge_exchange_cross_section : The distinct H + H+
+        charge-exchange relation.
+    evaluate_hydrogen2_charge_exchange_rate : The molecular bivariate rate fit.
+    average_cross_section_over_maxwellian : Accepts a compatible cross-section
+        callable as an input port.
+
+    Notes
+    -----
+    The relation uses one nine-coefficient logarithmic polynomial,
+    ``exp(polyval(log(E_clipped), a)) * 1e-4``, on the clipped fit interval.
+    Endpoint clipping is silent and intentional. The frozen fit is non-monotonic
+    between about 978 and 8291 eV, so monotonicity is not promised. No external
+    atomic-physics oracle is bound.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_molecular_hydrogen_charge_exchange_cross_section, evaluate_atomic_hydrogen_charge_exchange_cross_section
+    >>> energy = np.array([0.1, 1.0, 10.0, 100.0, 1.0e3, 1.0e4, 2.01e4])
+    >>> cross_section = evaluate_molecular_hydrogen_charge_exchange_cross_section(energy)
+    >>> assert cross_section.shape == energy.shape
+    >>> assert np.all(np.isfinite(cross_section)) and np.all(cross_section > 0.0)
+    >>> clipped = evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([0.01, 0.1, 3.0e4, 2.01e4]))
+    >>> assert clipped[0] == clipped[1] and clipped[-1] == clipped[-2]
+    >>> atomic = evaluate_atomic_hydrogen_charge_exchange_cross_section(energy)
+    >>> assert not np.allclose(cross_section, atomic, rtol=1e-12, atol=0.0)
+    >>> try:
+    ...     evaluate_molecular_hydrogen_charge_exchange_cross_section(np.array([1.0, -0.5]))
+    ... except ValueError as error:
+    ...     assert 'nonnegative' in str(error)
+    ... else:
+    ...     raise AssertionError('a negative energy must be rejected')
     """
     clipped = clipped_energy(energy_ev, 0.1, 2.01e4)
     log_sigma = log_polynomial(np.log(clipped), _COEFFICIENTS)

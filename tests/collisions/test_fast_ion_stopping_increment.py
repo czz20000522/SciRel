@@ -184,5 +184,10 @@ def test_complex_input_is_outside_real_input_contract():
         _call(birth_pitch_cosine=0.5 + 0j)
 
 
+def test_float64_conversion_error_propagates_unchanged():
+    with pytest.raises(ValueError, match="could not convert string to float"):
+        _call(beam_mass_number="not-a-number")
+
+
 def test_finite_extremes_do_not_imply_finite_output():
     assert np.isinf(_call(beam_energy_ev=np.finfo(np.float64).tiny)).all()

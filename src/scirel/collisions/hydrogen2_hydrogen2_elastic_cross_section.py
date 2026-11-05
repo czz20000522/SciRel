@@ -51,32 +51,72 @@ _COEFFICIENTS = np.array(
 
 
 def evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy_ev, viscosity=False):
-    """Return the source H2-on-H2 elastic cross section in square metres.
+    """Evaluate the H2-on-H2 elastic momentum-transfer cross section.
 
     Parameters
     ----------
-    energy_ev
-        Collision energies in eV, as a scalar or array of any shape.  Values
-        must be finite and nonnegative; energies outside the fit range are
-        clipped to the range endpoints, the saved source's declared behavior.
-    viscosity
-        Scalar boolean or integer selector.  ``True`` selects the source's
-        documented fallback, which evaluates the same momentum-transfer fit;
-        the default is the momentum-transfer fit itself.  Arrays and
-        non-integral scalars are rejected, the saved implementation's own
-        validation.
+    energy_ev : real scalar or array-like
+        Collision energy. [eV] Shape: ``scalar or array``. The value must be finite
+        and nonnegative. Values outside ``[0.03, 1.01e4]`` eV are clipped to the
+        range endpoints.
+    viscosity : bool or integer, optional
+        Same-fit fallback selector. [dimensionless] Shape: ``scalar``. The default
+        ``False`` selects the momentum-transfer fit. ``True`` selects the retained
+        no-op fallback, which evaluates the same fit. Arrays and non-integral
+        scalars are rejected.
 
     Returns
     -------
-    numpy.ndarray
-        Cross sections in ``m^2`` with the input's shape.  Finite and strictly
-        positive for every accepted input.
+    cross_section_m2 : numpy.ndarray
+        H2-on-H2 elastic momentum-transfer cross section. [m^2] Shape: ``same as
+        energy_ev``. Every returned value is finite and strictly positive.
 
     Raises
     ------
     ValueError
-        If ``energy_ev`` contains a non-real, non-finite or negative value, or if
-        ``viscosity`` is not a scalar boolean/integer.
+        If ``energy_ev`` is not real numeric, is non-finite or is negative, or if
+        ``viscosity`` is not a scalar boolean or integer.
+
+    See Also
+    --------
+    evaluate_atomic_hydrogen_elastic_cross_section : The H-on-H elastic
+        momentum-transfer and viscosity fits.
+    evaluate_hydrogen_h2_elastic_cross_section : The H-on-H2 elastic fit.
+    average_cross_section_over_maxwellian : Accepts a compatible cross-section
+        callable as an input port.
+
+    Notes
+    -----
+    The relation uses one five-coefficient logarithmic polynomial on the clipped
+    fit interval. ``viscosity=True`` is a documented same-fit fallback, not a
+    second viscosity parameterization; it emits no extra warning. Endpoint
+    clipping is silent and intentional. No independent molecular-viscosity
+    measurement or external experimental cross-section reference is bound.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.collisions import evaluate_hydrogen2_hydrogen2_elastic_cross_section
+    >>> energy = np.array([0.03, 1.0, 10.0, 100.0, 1.0e3, 1.01e4])
+    >>> result = evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy)
+    >>> assert result.shape == energy.shape
+    >>> assert np.all(np.isfinite(result)) and np.all(result > 0.0)
+    >>> np.testing.assert_array_equal(
+    ...     evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy, viscosity=True),
+    ...     result,
+    ... )
+    >>> try:
+    ...     evaluate_hydrogen2_hydrogen2_elastic_cross_section(energy, viscosity=np.ones((2, 2)))
+    ... except ValueError as error:
+    ...     assert 'scalar boolean' in str(error)
+    ... else:
+    ...     raise AssertionError('an array selector must be rejected')
+    >>> try:
+    ...     evaluate_hydrogen2_hydrogen2_elastic_cross_section(np.array([1.0, -0.5]))
+    ... except ValueError as error:
+    ...     assert 'nonnegative' in str(error)
+    ... else:
+    ...     raise AssertionError('a negative energy must be rejected')
     """
     selector = np.asarray(viscosity)
     if selector.shape != ():
