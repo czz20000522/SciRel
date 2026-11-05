@@ -24,54 +24,85 @@ __all__ = [
 ]
 
 
-def regular_grid(xx, yy, *args, **kwargs):
+def regular_grid(
+    xx,
+    yy,
+    *fields,
+    nx=200,
+    ny=200,
+    xi=None,
+    yi=None,
+    method="linear",
+):
     """Interpolate scattered fields onto a supplied or generated ``ij`` grid.
 
     Parameters
     ----------
     xx, yy : array_like
-        Matched sample coordinates.
-    *args : array_like
-        Fields sampled at those coordinates.
-    values, nx, ny, xi, yi, method : optional
-        Keyword forms for fields, generated dimensions, query grids, and the
-        SciPy interpolation method.
+        Matching sample coordinates [length or coordinate units].
+    *fields : array_like
+        Scalar fields sampled at those coordinates [field units]. Fields are
+        flattened before interpolation; no fields returns only the grid.
+    nx, ny : int, default=200
+        Number of generated grid points along x and y.
+    xi, yi : array_like, optional
+        Matching query coordinates [length or coordinate units]. If either is
+        None, both are replaced by a generated grid.
+    method : {'linear', 'nearest', 'cubic'}, default='linear'
+        SciPy interpolation method. In two dimensions, ``linear`` and
+        ``cubic`` reuse one Delaunay triangulation for all fields.
 
     Returns
     -------
-    tuple
-        ``(xi, yi)`` followed by one result per input field.
+    grid_and_fields : tuple
+        ``(xi, yi)`` followed by one interpolated array per input field, in the
+        original field order [coordinate and field units].
 
     Raises
     ------
-    TypeError, ValueError
-        Unknown keywords or conflicting positional and named fields.
+    TypeError
+        If the removed ``values`` mapping keyword, an unknown keyword, or a
+        missing required argument is supplied.
+    ValueError
+        If ``method`` is not one of the documented values, or if the samples,
+        fields, or query coordinates do not satisfy the SciPy interpolation
+        contract. SciPy may raise its own interpolation exception for invalid
+        geometry.
+
+    See Also
+    --------
+    scipy.interpolate.griddata : Scattered-data interpolation used by this
+        function.
+
+    Notes
+    -----
+    Generated grids use ``numpy.meshgrid(..., indexing="ij")``. Supplied
+    ``xi`` and ``yi`` are used together only when both are provided, preserving
+    the established behavior that a missing coordinate regenerates both axes.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry.sampling import regular_grid
+    >>> x, y = np.meshgrid([0.0, 0.5, 1.0], [0.0, 0.5, 1.0])
+    >>> result = regular_grid(x, y, x + y, nx=4, ny=5)
+    >>> assert len(result) == 3
+    >>> assert result[2].shape == (4, 5)
     """
-    values = kwargs.pop("values", None)
-    if values is not None:
-        if args:
-            raise ValueError("supply fields either positionally or through values")
-        args = tuple(values)
-    nx = kwargs.pop("nx", 200)
-    ny = kwargs.pop("ny", 200)
-    xi = kwargs.pop("xi", None)
-    yi = kwargs.pop("yi", None)
-    method = kwargs.pop("method", "linear")
-    if kwargs:
-        unknown = ", ".join(sorted(kwargs))
-        raise TypeError(f"regular_grid() got unexpected keyword argument(s): {unknown}")
+    if method not in ("linear", "nearest", "cubic"):
+        raise ValueError(f"Unknown interpolation method {method!r} for 2 dimensional data")
     if xi is None or yi is None:
         x = np.linspace(xx.min(), xx.max(), nx)
         y = np.linspace(yy.min(), yy.max(), ny)
         xi, yi = np.meshgrid(x, y, indexing="ij")
-    if not args:
+    if not fields:
         return xi, yi
 
     from scipy.interpolate import CloughTocher2DInterpolator, LinearNDInterpolator, griddata
     from scipy.spatial import Delaunay
 
     points = np.column_stack((np.asarray(xx).ravel(), np.asarray(yy).ravel()))
-    flattened = [np.asarray(field).ravel() for field in args]
+    flattened = [np.asarray(field).ravel() for field in fields]
     if method == "linear":
         triangulation = Delaunay(points)
         outputs = [

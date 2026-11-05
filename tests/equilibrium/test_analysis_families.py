@@ -223,7 +223,8 @@ def test_regular_grid_public_docstring_declares_contract():
     assert "Parameters" in doc
     assert "Returns" in doc
     assert "Raises" in doc
-    assert "values" in doc
+    assert "*fields" in doc
+    assert "nx, ny" in doc
     assert "method" in doc
 
 
