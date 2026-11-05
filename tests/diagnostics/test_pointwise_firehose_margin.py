@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from scirel._result import Result
 from scirel.diagnostics.pointwise_firehose_margin import (
     MU0,
     compute_pointwise_firehose_margin as scientific_function,
@@ -49,6 +50,14 @@ def test_margin_is_bit_identical_to_combined_diagnostic_firehose_field():
     pointwise = scientific_function(p_parallel, p_perp, magnetic_field)
     combined = compute_firehose_mirror_margins(p_parallel, p_perp, magnetic_field, dp_perp_dB=0.0)
     np.testing.assert_array_equal(pointwise["firehose_margin"], combined["firehose_margin"])
+
+
+# 验证：命名字段仍是同一个 Result 映射，按键和属性读取得到同一个数组。
+def test_result_is_a_named_mapping_with_attribute_access():
+    result = scientific_function(np.array([1.0e8]), np.zeros(1), np.ones(1))
+    assert isinstance(result, Result)
+    assert result.firehose_margin is result["firehose_margin"]
+    np.testing.assert_array_equal(result.firehose_margin, result["firehose_margin"])
 
 
 # 验证：结果只含 margin 本身——没有 mirror 分支、没有最小值、没有任何 stable 标志。
