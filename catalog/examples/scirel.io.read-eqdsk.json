@@ -24,8 +24,8 @@
    "extended EQDSK text -> validated dictionary/class state"
   ],
   "model": "Extended EQDSK text dialect with fixed-width record blocks and a declared grid-origin convention.",
-  "geometry": "nnr by nnz grid reconstructed as R = linspace(0, rbox) and Z = linspace(-zbox/2, zbox/2); R/Z values follow the source convention with units and COCOS unspecified.",
-  "boundary": "Unlike official EFIT G-EQDSK, this dialect has a 48-character title plus four integers, nnr/nnz/nnv, and no magnetic-axis scalar contract; strict/non-strict trailing-record handling applies.",
+  "geometry": "nnr by nnz grid reconstructed as R = linspace(0, rbox) and Z = linspace(-zbox/2, zbox/2); header scalar slots are opaque and do not shift the grid; R/Z units and COCOS are unspecified.",
+  "boundary": "Unlike official EFIT G-EQDSK, this dialect has a 48-character title plus four integers, nnr/nnz/nnv, a fixed R=0 grid origin independent of header scalars, and no magnetic-axis scalar contract; strict/non-strict trailing-record handling applies.",
   "device_scope": "generic"
  },
  "identity": {
@@ -33,12 +33,13 @@
   "direction": "extended EQDSK text and validated dictionary/class state",
   "definition": "48-character title, four integer fields, four 5-value scalar records, five profiles, C-order psi grid, q profile and fixed-width limiter/vessel coordinate pairs",
   "model": "Extended EQDSK text dialect with fixed-width record blocks and the declared grid-origin convention.",
-  "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2)",
+  "geometry": "nnr by nnz grid reconstructed as R linspace(0,rbox) and Z linspace(-zbox/2,zbox/2); header scalar slots do not define the origin",
   "coordinates": "R/Z coordinate values in source-defined convention; units and COCOS unspecified",
-  "boundary": "Unlike official EFIT G-EQDSK: this dialect has 48-character title + four ints, nnr/nnz/nnv, and no magnetic-axis scalar contract.",
+  "boundary": "Unlike official EFIT G-EQDSK: 48-character title + four ints, nnr/nnz/nnv, fixed R origin 0, opaque header scalars, and no magnetic-axis scalar contract.",
   "assumptions": [
    "Exactly declared record dimensions",
    "Finite real values and fixed-width coordinate fields",
+   "The radial grid origin is 0 and header scalar slots are opaque dialect values",
    "This is not standard EFIT gEQDSK"
   ]
  },
@@ -71,7 +72,7 @@
    "shape": "dict",
    "dtype": "dict[str,Any]",
    "required": true,
-   "constraints": "Finite validated records"
+   "constraints": "Finite validated records; reconstructed R/Z use the fixed origin convention"
   }
  ],
  "applicability": {
@@ -82,13 +83,15 @@
    "Roundtrip of finite validated dictionaries",
    "Packed negative fixed-width coordinates",
    "Strict/non-strict trailing record policy",
-   "Class read/write wrapper"
+   "Class read/write wrapper",
+   "Opaque preservation of reserved header scalar slots without shifting the grid origin"
   ],
   "excluded": [
    "Standard EFIT gEQDSK semantics",
    "Units or COCOS assignment",
    "Raw contour or spline writing",
-   "Arbitrary malformed truncation recovery"
+   "Arbitrary malformed truncation recovery",
+   "Nonzero grid origins encoded in a standard EFIT header; use scirel.io.read_geqdsk for that dialect"
   ]
  },
  "failure_semantics": {
@@ -117,14 +120,16 @@
  },
  "verification": {
   "scope": [
-   "Roundtrip, lexical fixed-width, malformed input and class-state tests"
+   "Roundtrip, lexical fixed-width, malformed input, class-state, and fixed-origin tests"
   ],
   "tests": [
-   "tests/io/test_eqdsk.py"
+   "tests/io/test_eqdsk.py",
+   "tests/io/test_eqdsk_fixed_origin.py"
   ],
   "evidence_ceiling": "Structural IO boundary only; no physical interpretation is claimed.",
   "known_limitations": [
    "This reader does not select raw contours or write them; that writer is a separate contract.",
+   "The extended dialect always reconstructs R from 0 and treats header scalar slots as opaque; use read_geqdsk for standard rleft/zmid semantics.",
    "Not standard EFIT gEQDSK; read standard files with scirel.io.read_geqdsk",
    "No units/COCOS"
   ]

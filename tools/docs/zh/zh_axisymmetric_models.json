@@ -1071,14 +1071,15 @@
   },
   {
    "asset_id": "scirel.io.read-eqdsk",
-   "source_sha256": "3b8ebcb0b6a39b23b9153a6211baa1ecd1fefa6451e2b210db60469dca12eebd",
-   "summary": "解析一份已验证的扩展 EQDSK 文本文件。",
+   "source_sha256": "fcf075941c7ff3cef9d6db9b9371e7c45853561879e20210613f28abd4787e1f",
+   "summary": "解析一个经过结构校验的扩展 EQDSK 文本文件，并声明固定网格原点。",
    "definition": "48 字符标题、四个整数字段、四条各含 5 个值的标量记录、五个剖面、按 C 序排列的 psi 网格、q 剖面，以及定宽 limiter/vessel 坐标对。",
-   "model": "采用固定宽度记录块和声明网格原点约定的扩展 EQDSK 文本格式。",
-   "boundary": "与官方 EFIT G-EQDSK 不同：此方言采用 48 字符标题加四个整数、nnr/nnz/nnv，且没有磁轴标量的合同约定。",
+   "model": "采用固定宽度记录块、固定网格原点和不透明头部标量的扩展 EQDSK 文本格式。",
+   "boundary": "与官方 EFIT G-EQDSK 不同：此方言采用 48 字符标题加四个整数、nnr/nnz/nnv，R 原点固定为 0，头部标量槽位不承担磁轴合同。需要标准 rleft/zmid 语义时使用 scirel.io.read_geqdsk。",
    "assumptions": [
     "记录维度严格符合声明。",
     "实数值有限，坐标字段定宽。",
+    "径向网格原点固定为 0，头部标量槽位按不透明值保留。",
     "这不是标准 EFIT gEQDSK。"
    ],
    "inputs": [
@@ -1099,7 +1100,7 @@
     {
      "name": "mapping",
      "description": "包含 R、Z 的解析映射。",
-     "constraints": "有限且经过验证的记录。",
+     "constraints": "有限且经过验证的记录；R/Z 使用固定原点约定重建。",
      "dtype": "字典（字符串键）"
     }
    ],
@@ -1111,13 +1112,15 @@
      "有限且已验证字典的往返读写。",
      "紧密排列的负数定宽坐标。",
      "严格/非严格尾随记录策略。",
-     "类的读写封装。"
+     "类的读写封装。",
+     "保留头部标量槽位但不改变固定网格原点。"
     ],
     "excluded": [
      "标准 EFIT gEQDSK 语义。",
      "单位或 COCOS 指派。",
      "原始轮廓或样条写入。",
-     "任意畸形截断的恢复。"
+     "任意畸形截断的恢复。",
+     "标准 EFIT 头中的非零网格原点；该方言请使用 scirel.io.read_geqdsk。"
     ]
    },
    "failure_semantics": {
@@ -1132,11 +1135,12 @@
    },
    "verification": {
     "scope": [
-     "往返读写、定宽词法、畸形输入及类状态测试。"
+     "往返读写、定宽词法、畸形输入、类状态及固定原点测试。"
     ],
     "evidence_ceiling": "仅有结构性 I/O 边界；不主张物理解释或发行批准。",
     "known_limitations": [
      "此读取器不负责原始轮廓的选择或写入；那属于独立的写入器合同。",
+     "扩展方言始终从 R=0 重建网格，并把头部标量槽位视为不透明值；标准 rleft/zmid 语义请使用 read_geqdsk。",
      "不是标准 EFIT gEQDSK；标准文件用 scirel.io.read_geqdsk 读取。",
      "没有单位/COCOS。"
     ]
