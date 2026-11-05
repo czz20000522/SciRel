@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 from collections.abc import Iterator
 from contextlib import contextmanager
+import errno
 import hashlib
 import json
 import os
@@ -325,22 +326,133 @@ def ensure_uv_cache_volume() -> int:
     return done.returncode
 
 
+def container_lock_path() -> Path:
+    return check_receipt_path().parent / f"{project_name()}.container.lock"
+
+
+def _lock_stream(stream) -> None:
+    if sys.platform == "win32":
+        import msvcrt
+
+        while True:
+            try:
+                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+                return
+            except OSError as error:
+                if error.errno not in {errno.EACCES, errno.EDEADLK}:
+                    raise
+                time.sleep(0.1)
+    else:
+        import fcntl
+
+        fcntl.flock(stream.fileno(), fcntl.LOCK_EX)
+
+
+def _unlock_stream(stream) -> None:
+    if sys.platform == "win32":
+        import msvcrt
+
+        stream.seek(0)
+        msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+    else:
+        import fcntl
+
+        fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
+
+
+@contextmanager
+def container_project_lock() -> Iterator[None]:
+    """Serialize Compose mutations for one checkout while other worktrees stay parallel."""
+    path = container_lock_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a+b") as stream:
+        stream.seek(0, os.SEEK_END)
+        if stream.tell() == 0:
+            stream.write(b"\0")
+            stream.flush()
+        stream.seek(0)
+        _lock_stream(stream)
+        try:
+            yield
+        finally:
+            _unlock_stream(stream)
+
+
+def cleanup_compose_project() -> bool:
+    """Remove this checkout's Compose container and network, reporting failures."""
+    project = project_name()
+    down_detail = None
+    try:
+        down = subprocess.run(
+            compose_command("down", "--remove-orphans"),
+            cwd=ROOT,
+            env=environment(),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as error:
+        down_detail = f"could not start Compose cleanup: {error}"
+    else:
+        if down.returncode != 0:
+            detail = (down.stderr or down.stdout).strip()
+            down_detail = f"Compose cleanup exited {down.returncode}"
+            if detail:
+                down_detail += f": {detail}"
+
+    network = f"{project}_default"
+    try:
+        removed = subprocess.run(
+            ["docker", "network", "rm", network],
+            cwd=ROOT,
+            env=environment(),
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as error:
+        prefix = down_detail or "Compose cleanup reported success"
+        print(
+            f"WARNING: {prefix}; network removal could not start: {error}",
+            file=sys.stderr,
+        )
+        return False
+    if removed.returncode == 0:
+        return True
+    detail = (removed.stderr or removed.stdout).strip()
+    if "no such network" in detail.lower() or "not found" in detail.lower():
+        return True
+    suffix = f": {detail}" if detail else ""
+    prefix = down_detail or "Compose cleanup reported success"
+    print(
+        f"WARNING: {prefix}; network removal failed ({removed.returncode}){suffix}",
+        file=sys.stderr,
+    )
+    return False
+
+
 def run_in_container(arguments: list[str], *, interactive: bool = False) -> int:
     if not docker_ready():
         return 2
-    cache = ensure_uv_cache_volume()
-    if cache:
-        return cache
-    built = build()
-    if built:
-        return built
-    command = compose_command("run", "--rm")
-    if interactive:
-        command.append("--interactive")
-    with container_git_mount() as git_mount:
-        code = run([*command, *git_mount, "dev", *arguments], interactive=interactive)
-    clean_generated_caches()
-    return code
+    with container_project_lock():
+        cache = ensure_uv_cache_volume()
+        if cache:
+            return cache
+        built = build()
+        if built:
+            return built
+        command = compose_command("run", "--rm")
+        if interactive:
+            command.append("--interactive")
+        try:
+            with container_git_mount() as git_mount:
+                return run([*command, *git_mount, "dev", *arguments], interactive=interactive)
+        finally:
+            cleanup_compose_project()
+            try:
+                clean_generated_caches()
+            except OSError as error:
+                print(f"WARNING: generated-cache cleanup failed: {error}", file=sys.stderr)
 
 
 def clean_generated_caches() -> None:
@@ -358,8 +470,12 @@ def clean_generated_caches() -> None:
                 shutil.rmtree(path, ignore_errors=True)
             directories.remove(name)
         for name in files:
-            if name.endswith(".pyc"):
+            if not name.endswith(".pyc"):
+                continue
+            try:
                 (Path(current) / name).unlink(missing_ok=True)
+            except OSError as error:
+                print(f"WARNING: could not remove generated cache {name}: {error}", file=sys.stderr)
 
 
 def shell_command(script: str) -> list[str]:
@@ -367,19 +483,20 @@ def shell_command(script: str) -> list[str]:
 
 
 def clean(*, remove_cache: bool = False, remove_image: bool = False) -> int:
-    removal = ["down", "--remove-orphans"]
-    if remove_image:
-        removal.extend(["--rmi", "local"])
-    code = run(compose_command(*removal))
-    env = environment()
-    volumes = [env["SCIReL_VENV_VOLUME"]]
-    if remove_cache:
-        volumes.append(env["SCIReL_UV_CACHE_VOLUME"])
-    for volume in volumes:
-        removed = run(["docker", "volume", "rm", "--force", volume])
-        if not code:
-            code = removed
-    return code
+    with container_project_lock():
+        removal = ["down", "--remove-orphans"]
+        if remove_image:
+            removal.extend(["--rmi", "local"])
+        code = run(compose_command(*removal))
+        env = environment()
+        volumes = [env["SCIReL_VENV_VOLUME"]]
+        if remove_cache:
+            volumes.append(env["SCIReL_UV_CACHE_VOLUME"])
+        for volume in volumes:
+            removed = run(["docker", "volume", "rm", "--force", volume])
+            if not code:
+                code = removed
+        return code
 
 
 def doctor() -> int:

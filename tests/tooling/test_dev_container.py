@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import contextlib
+import errno
 import importlib.util
 import json
 import os
 from pathlib import Path
+import queue
 import subprocess
 import sys
+import threading
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "dev_container.py"
@@ -61,6 +67,7 @@ def test_clean_preserves_the_shared_cache_unless_requested(monkeypatch):
     module = _load()
     calls = []
     monkeypatch.setattr(module, "run", lambda command: calls.append(command) or 0)
+    monkeypatch.setattr(module, "container_project_lock", contextlib.nullcontext)
     assert module.clean() == 0
     assert not any(module.uv_cache_volume() in part for command in calls for part in command)
     calls.clear()
@@ -167,6 +174,304 @@ def test_loopback_proxy_is_reachable_from_the_container(monkeypatch):
     env = module.environment()
     assert env["SCIReL_HTTP_PROXY"] == "http://host.docker.internal:7890"
     assert env["SCIReL_HTTPS_PROXY"] == "http://host.docker.internal:7890"
+
+
+def test_container_runs_are_serialized_and_clean_their_project(monkeypatch):
+    module = _load()
+    events = []
+    return_codes = [0, 23]
+
+    @contextlib.contextmanager
+    def locked():
+        events.append("lock-enter")
+        try:
+            yield
+        finally:
+            events.append("lock-exit")
+
+    @contextlib.contextmanager
+    def no_git_mount():
+        yield []
+
+    monkeypatch.setattr(module, "docker_ready", lambda: True)
+    monkeypatch.setattr(
+        module, "ensure_uv_cache_volume", lambda: events.append("cache-volume") or 0
+    )
+    monkeypatch.setattr(module, "container_project_lock", locked)
+    monkeypatch.setattr(module, "build", lambda: events.append("build") or 0)
+    monkeypatch.setattr(module, "container_git_mount", no_git_mount)
+    monkeypatch.setattr(module, "cleanup_compose_project", lambda: events.append("cleanup"))
+    monkeypatch.setattr(module, "clean_generated_caches", lambda: events.append("cache-clean"))
+
+    def fake_run(command, *, interactive=False):
+        events.append(("run", interactive, command))
+        return return_codes.pop(0)
+
+    monkeypatch.setattr(module, "run", fake_run)
+    assert module.run_in_container(["true"]) == 0
+    assert module.run_in_container(["false"], interactive=True) == 23
+
+    assert events.count("lock-enter") == 2
+    assert events.count("lock-exit") == 2
+    assert events.count("cleanup") == 2
+    assert events.count("cache-clean") == 2
+    for index, event in enumerate(events):
+        if event == "build":
+            assert events[index - 1] == "cache-volume"
+        if isinstance(event, tuple) and event[0] == "run":
+            assert events[index - 1] == "build"
+            assert events[index + 1] == "cleanup"
+            assert event[2][event[2].index("--project-name") + 1] == module.project_name()
+    assert len(events) == 14
+    for offset in (0, 7):
+        assert events[offset : offset + 3] == ["lock-enter", "cache-volume", "build"]
+        assert isinstance(events[offset + 3], tuple) and events[offset + 3][0] == "run"
+        assert events[offset + 4 : offset + 7] == ["cleanup", "cache-clean", "lock-exit"]
+    runs = [event for event in events if isinstance(event, tuple) and event[0] == "run"]
+    assert [event[1] for event in runs] == [False, True]
+    assert "--interactive" in runs[1][2]
+
+
+def test_cleanup_removes_only_the_checkout_project(monkeypatch):
+    module = _load()
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    assert module.cleanup_compose_project() is True
+    assert len(calls) == 2
+    down, down_kwargs = calls[0]
+    assert down[down.index("--project-name") + 1] == module.project_name()
+    assert down[-2:] == ["down", "--remove-orphans"]
+    assert down_kwargs["capture_output"] is True
+    assert down_kwargs["text"] is True
+    assert down_kwargs["check"] is False
+    assert calls[1][0] == ["docker", "network", "rm", f"{module.project_name()}_default"]
+
+
+def test_cleanup_falls_back_to_project_network_removal(monkeypatch):
+    module = _load()
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        if command[:2] == ["docker", "compose"]:
+            return subprocess.CompletedProcess(command, 37, "", "compose failed")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    assert module.cleanup_compose_project() is True
+    assert calls[-1] == ["docker", "network", "rm", f"{module.project_name()}_default"]
+    assert len(calls) == 2
+
+
+def test_cleanup_reports_when_all_cleanup_paths_fail(monkeypatch, capsys):
+    module = _load()
+
+    def fake_run(command, **kwargs):
+        return subprocess.CompletedProcess(command, 1, "", "still broken")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    assert module.cleanup_compose_project() is False
+    warning = capsys.readouterr().err
+    assert "Compose cleanup exited 1" in warning
+    assert "network removal failed" in warning
+
+
+def test_cleanup_start_failure_is_reported_without_raising(monkeypatch, capsys):
+    module = _load()
+
+    def fail(command, **kwargs):
+        raise PermissionError(errno.EACCES, "denied", command[0])
+
+    monkeypatch.setattr(module.subprocess, "run", fail)
+    assert module.cleanup_compose_project() is False
+    warning = capsys.readouterr().err
+    assert "could not start Compose cleanup" in warning
+    assert "network removal could not start" in warning
+
+
+def test_run_result_survives_cleanup_failure(monkeypatch):
+    module = _load()
+
+    @contextlib.contextmanager
+    def locked():
+        yield
+
+    @contextlib.contextmanager
+    def no_git_mount():
+        yield []
+
+    monkeypatch.setattr(module, "docker_ready", lambda: True)
+    monkeypatch.setattr(module, "ensure_uv_cache_volume", lambda: 0)
+    monkeypatch.setattr(module, "container_project_lock", locked)
+    monkeypatch.setattr(module, "build", lambda: 0)
+    monkeypatch.setattr(module, "container_git_mount", no_git_mount)
+    monkeypatch.setattr(module, "cleanup_compose_project", lambda: False)
+    monkeypatch.setattr(module, "clean_generated_caches", lambda: None)
+    monkeypatch.setattr(module, "run", lambda command, interactive=False: 23)
+    assert module.run_in_container(["false"]) == 23
+
+
+def test_generated_cache_cleanup_warns_instead_of_raising(monkeypatch, tmp_path, capsys):
+    module = _load()
+    monkeypatch.setattr(module, "ROOT", tmp_path)
+    cache = tmp_path / "package" / "module.pyc"
+    cache.parent.mkdir()
+    cache.write_bytes(b"cache")
+    original_unlink = Path.unlink
+
+    def fail_unlink(self, *args, **kwargs):
+        if self == cache:
+            raise PermissionError(errno.EACCES, "denied", str(self))
+        return original_unlink(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "unlink", fail_unlink)
+    module.clean_generated_caches()
+    assert "could not remove generated cache" in capsys.readouterr().err
+
+
+def test_run_result_survives_generated_cache_cleanup_failure(monkeypatch):
+    module = _load()
+
+    @contextlib.contextmanager
+    def locked():
+        yield
+
+    @contextlib.contextmanager
+    def no_git_mount():
+        yield []
+
+    monkeypatch.setattr(module, "docker_ready", lambda: True)
+    monkeypatch.setattr(module, "ensure_uv_cache_volume", lambda: 0)
+    monkeypatch.setattr(module, "container_project_lock", locked)
+    monkeypatch.setattr(module, "build", lambda: 0)
+    monkeypatch.setattr(module, "container_git_mount", no_git_mount)
+    monkeypatch.setattr(module, "cleanup_compose_project", lambda: True)
+    monkeypatch.setattr(
+        module,
+        "clean_generated_caches",
+        lambda: (_ for _ in ()).throw(PermissionError(errno.EACCES, "denied")),
+    )
+    monkeypatch.setattr(module, "run", lambda command, interactive=False: 23)
+    assert module.run_in_container(["false"]) == 23
+
+
+def test_windows_lock_does_not_retry_permanent_errors(monkeypatch, tmp_path):
+    module = _load()
+    fake_msvcrt = type(
+        "FakeMsvcrt",
+        (),
+        {
+            "LK_NBLCK": 1,
+            "locking": staticmethod(
+                lambda *_args: (_ for _ in ()).throw(OSError(errno.EINVAL, "unsupported"))
+            ),
+        },
+    )
+    monkeypatch.setitem(sys.modules, "msvcrt", fake_msvcrt)
+    monkeypatch.setattr(module.sys, "platform", "win32")
+    path = tmp_path / "lock"
+    with path.open("a+b") as stream:
+        stream.write(b"\0")
+        stream.flush()
+        stream.seek(0)
+        with pytest.raises(OSError, match="unsupported"):
+            module._lock_stream(stream)
+
+
+def test_container_project_lock_releases_after_exception(tmp_path, monkeypatch):
+    module = _load()
+    receipt = tmp_path / "receipt.json"
+    monkeypatch.setattr(module, "check_receipt_path", lambda: receipt)
+    with pytest.raises(RuntimeError):
+        with module.container_project_lock():
+            raise RuntimeError("stop")
+    with module.container_project_lock():
+        pass
+
+
+def test_different_checkouts_use_different_lock_paths(tmp_path, monkeypatch):
+    module = _load()
+    receipt = tmp_path / "receipt.json"
+    monkeypatch.setattr(module, "check_receipt_path", lambda: receipt)
+    roots = [tmp_path / "worktree-a", tmp_path / "worktree-b"]
+    paths = []
+    for root in roots:
+        root.mkdir()
+        monkeypatch.setattr(module, "ROOT", root)
+        paths.append(module.container_lock_path())
+    assert len(set(paths)) == 2
+
+
+def test_container_project_lock_serializes_processes(tmp_path):
+    receipt = tmp_path / "receipt.json"
+    script = f"""
+import importlib.util
+import os
+from pathlib import Path
+import sys
+spec = importlib.util.spec_from_file_location('dev_container_worker', {str(SCRIPT)!r})
+module = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = module
+spec.loader.exec_module(module)
+module.check_receipt_path = lambda: Path(os.environ['LOCK_RECEIPT'])
+print('ready', flush=True)
+with module.container_project_lock():
+    print('locked', flush=True)
+    sys.stdin.read()
+"""
+    env = {**os.environ, "LOCK_RECEIPT": str(receipt)}
+    first = subprocess.Popen(
+        [sys.executable, "-c", script],
+        cwd=ROOT,
+        env=env,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    second = None
+    output = queue.Queue()
+    reader = None
+    try:
+        assert first.stdout.readline().strip() == "ready"
+        assert first.stdout.readline().strip() == "locked"
+        second = subprocess.Popen(
+            [sys.executable, "-c", script],
+            cwd=ROOT,
+            env=env,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        assert second.stdout.readline().strip() == "ready"
+
+        def read_second_line():
+            output.put(second.stdout.readline().strip())
+
+        reader = threading.Thread(target=read_second_line, daemon=True)
+        reader.start()
+        with pytest.raises(queue.Empty):
+            output.get(timeout=0.3)
+        first.stdin.write("\n")
+        first.stdin.flush()
+        first.stdin.close()
+        assert first.wait(timeout=10) == 0
+        assert output.get(timeout=10) == "locked"
+        second.stdin.close()
+        assert second.wait(timeout=10) == 0
+        reader.join(timeout=10)
+        assert not reader.is_alive()
+    finally:
+        for process in (first, second):
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.wait()
 
 
 def test_wrapper_removes_generated_caches_but_not_git_data(tmp_path, monkeypatch):
