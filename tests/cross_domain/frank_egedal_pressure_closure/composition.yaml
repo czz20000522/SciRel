@@ -94,7 +94,7 @@ inputs:
       shape: scalar
       units: dimensionless
       required: false
-      constraints: overrides mirror_ratio
+      constraints: fallback when mirror_ratio is absent
     vc_over_v0:
       meaning: 慢化临界速度比
       shape: scalar

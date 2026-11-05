@@ -6,9 +6,166 @@ from scirel.kinetic.frank_egedal_hot_ion_moments import (
 )
 
 
+def _assert_identical(left, right):
+    if isinstance(right, dict):
+        assert isinstance(left, dict)
+        assert left.keys() == right.keys()
+        for key in right:
+            _assert_identical(left[key], right[key])
+    elif isinstance(right, np.ndarray):
+        np.testing.assert_array_equal(left, right)
+        assert left.dtype == right.dtype
+    else:
+        assert left == right
+
+
 def test_rejects_incomplete_moment_state():
     with pytest.raises((KeyError, ValueError, TypeError)):
         scientific_function({})
+
+
+@pytest.mark.parametrize(
+    ("field_values", "reference_field"),
+    [
+        ([0.25, 0.75, 1.0], 0.75),
+        ([0.5, 1.0, 1.1], 1.0),
+    ],
+)
+def test_declared_defaults_match_explicit_values(field_values, reference_field):
+    field = np.array([field_values])
+    mode = lambda degree, xi, terms: np.ones_like(xi)
+    omitted = scientific_function(field, {}, [0.5], [1.0], 2, mode)
+    explicit = scientific_function(
+        field,
+        {
+            "B0": reference_field,
+            "mirror_ratio": 2.0,
+            "vc_over_v0": 0.25,
+            "velocity_lower": 0.0,
+            "beta_m": 0.5,
+            "velocity_nodes": 24,
+            "pitch_nodes": 24,
+            "quadrature_rtol": 1e-7,
+            "max_quadrature_nodes": 768,
+        },
+        [0.5],
+        [1.0],
+        2,
+        mode,
+    )
+    _assert_identical(omitted, explicit)
+    assert omitted["quadrature"] == {"velocity_nodes": 24, "pitch_nodes": 24}
+
+
+def test_declared_compatibility_aliases_and_precedence():
+    field = np.array([[0.25, 0.5, 1.0, 1.5]])
+    mode = lambda degree, xi, terms: np.ones_like(xi)
+    canonical = scientific_function(
+        field,
+        {
+            "B0": 1.0,
+            "mirror_ratio": 4.0,
+            "vc_over_v0": 0.25,
+            "velocity_lower": 0.2,
+            "beta_m": 0.5,
+            "velocity_nodes": 8,
+            "pitch_nodes": 8,
+        },
+        [0.5],
+        [1.0],
+        2,
+        mode,
+    )
+    aliases = scientific_function(
+        field,
+        {
+            "B0": 1.0,
+            "turning_b": 4.0,
+            "vc_over_v0": 0.25,
+            "perp_velocity_lower": 0.2,
+            "zeff": 1.0,
+            "velocity_nodes": 8,
+            "pitch_nodes": 8,
+        },
+        [0.5],
+        [1.0],
+        2,
+        mode,
+    )
+    _assert_identical(aliases, canonical)
+
+    canonical_wins = scientific_function(
+        field,
+        {
+            "B0": 1.0,
+            "mirror_ratio": 4.0,
+            "turning_b": 8.0,
+            "vc_over_v0": 0.25,
+            "velocity_lower": 0.2,
+            "beta_m": 0.5,
+            "zeff": 2.0,
+            "velocity_nodes": 8,
+            "pitch_nodes": 8,
+        },
+        [0.5],
+        [1.0],
+        2,
+        mode,
+    )
+    _assert_identical(canonical_wins, canonical)
+
+    with pytest.raises(ValueError, match="same population"):
+        scientific_function(
+            field,
+            {
+                "B0": 1.0,
+                "mirror_ratio": 4.0,
+                "vc_over_v0": 0.25,
+                "velocity_lower": 0.2,
+                "perp_velocity_lower": 0.3,
+                "velocity_nodes": 8,
+                "pitch_nodes": 8,
+            },
+            [0.0],
+            [1.0],
+            2,
+            mode,
+        )
+
+
+@pytest.mark.parametrize(("initial_nodes", "expected_cap"), [(24, 768), (400, 800)])
+def test_default_max_quadrature_nodes_tracks_initial_rule_size(
+    monkeypatch, initial_nodes, expected_cap
+):
+    import scipy.special
+
+    requested = []
+    roots_legendre = scipy.special.roots_legendre
+
+    def record_roots(count):
+        requested.append(count)
+        return roots_legendre(count)
+
+    monkeypatch.setattr(scipy.special, "roots_legendre", record_roots)
+    with pytest.raises(RuntimeError, match="did not converge"):
+        scientific_function(
+            [[1.0, 0.5]],
+            {
+                "B0": 1.0,
+                "mirror_ratio": 4.0,
+                "vc_over_v0": 0.0,
+                "velocity_lower": 0.1,
+                "beta_m": 0.0,
+                "velocity_nodes": initial_nodes,
+                "pitch_nodes": 2,
+                "quadrature_rtol": 1e-300,
+            },
+            [0.0],
+            [1.0],
+            2,
+            lambda degree, xi, terms: np.ones_like(xi),
+        )
+    assert max(requested) == expected_cap
 
 
 def test_perpendicular_velocity_lower_accepts_full_moment_interval():
