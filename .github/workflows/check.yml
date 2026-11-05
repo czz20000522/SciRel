@@ -13,9 +13,13 @@ jobs:
     env:
       DOCKER_DEFAULT_PLATFORM: linux/amd64
       SCIReL_IMAGE_KEY: ci-${{ github.run_id }}
+      SCIReL_VENV_VOLUME: scirel-ci-venv-${{ github.run_id }}
+      SCIReL_UV_CACHE_VOLUME: scirel-ci-uv-cache-${{ github.run_id }}
       COMPOSE_PROJECT_NAME: scirel-ci-${{ github.run_id }}
     steps:
       - uses: actions/checkout@v7
+      - name: Create the shared uv cache volume
+        run: docker volume create "$SCIReL_UV_CACHE_VOLUME"
       - uses: docker/setup-buildx-action@v4
       - name: Build the development image
         uses: docker/build-push-action@v7
@@ -33,6 +37,7 @@ jobs:
           compose=(docker compose --file containers/dev/compose.yaml)
           cleanup() {
             "${compose[@]}" down --volumes --remove-orphans || true
+            docker volume rm --force "$SCIReL_UV_CACHE_VOLUME" || true
           }
           trap cleanup EXIT
           "${compose[@]}" run --rm dev bash -lc '

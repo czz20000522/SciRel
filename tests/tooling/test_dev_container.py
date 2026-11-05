@@ -42,6 +42,21 @@ def test_uv_cache_is_shared_but_virtualenv_is_checkout_scoped(tmp_path, monkeypa
     assert environments[0]["SCIReL_VENV_VOLUME"] != environments[1]["SCIReL_VENV_VOLUME"]
 
 
+def test_external_uv_cache_volume_is_created(monkeypatch):
+    module = _load()
+    calls = []
+
+    def fake_run(command, **kwargs):
+        calls.append((command, kwargs))
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    monkeypatch.setattr(module.subprocess, "run", fake_run)
+    assert module.ensure_uv_cache_volume() == 0
+    assert ["docker", "volume", "create", module.uv_cache_volume()] in [
+        command for command, _ in calls
+    ]
+
+
 def test_clean_preserves_the_shared_cache_unless_requested(monkeypatch):
     module = _load()
     calls = []
@@ -182,6 +197,7 @@ def test_local_container_uses_the_selected_engine_architecture():
     pre_push = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
     assert "platform: linux/" not in compose
     assert "DOCKER_DEFAULT_PLATFORM: linux/amd64" in workflow
+    assert 'docker volume create "$SCIReL_UV_CACHE_VOLUME"' in workflow
     assert "workflow_dispatch:" in workflow
     assert "pull_request:" not in workflow
     assert "  push:" not in workflow
@@ -190,6 +206,7 @@ def test_local_container_uses_the_selected_engine_architecture():
     assert "target: /root/.cache/uv" in compose
     assert "name: ${SCIReL_VENV_VOLUME:-scirel-venv-local}" in compose
     assert "name: ${SCIReL_UV_CACHE_VOLUME:-scirel-uv-cache-local}" in compose
+    assert "external: true" in compose
     assert "UV_PROJECT_ENVIRONMENT: /opt/scirel-venv" in compose
     assert "PYTHONPYCACHEPREFIX: /tmp/scirel-pycache" in compose
     assert "RUFF_CACHE_DIR: /tmp/scirel-ruff-cache" in compose
