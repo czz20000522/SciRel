@@ -52,7 +52,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "finite real array-like",
    "required": true,
-   "constraints": "Same shape as the grid; inactive cells become zero when a mask is supplied."
+   "constraints": "Same shape as the grid; when a mask is supplied, True cells preserve the supplied value and False cells become zero before weighting."
   },
   {
    "name": "r_grid",
@@ -79,7 +79,7 @@
    "shape": "[N_Z,N_R] or null",
    "dtype": "bool array or None",
    "required": true,
-   "constraints": "None means all cells active; otherwise exact grid shape and boolean dtype, without broadcast or 0/1 coercion."
+   "constraints": "None means all cells active; otherwise exact grid shape and boolean dtype, without broadcast or 0/1 coercion. True cells preserve j_phi and False cells zero it."
   },
   {
    "name": "currents_old",
@@ -199,7 +199,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
    "required": true,
-   "constraints": "Zero outside True cells when a mask is supplied."
+   "constraints": "True cells retain the supplied value; False cells are zero when a mask is supplied."
   },
   {
    "name": "initial_picard_current_state",
@@ -268,17 +268,18 @@
  "verification": {
   "scope": [
    "Explicit-cell uniform behavior; node-domain nonuniform current quadrature; two-node and descending-axis support.",
-   "Missing field Green pair produces the magnetic derivative of the added plasma flux, preserving the vacuum reference."
+   "Missing field Green pair produces the magnetic derivative of the added plasma flux, preserving the vacuum reference.",
+   "A partial plasma mask preserves active j_phi values and zeros only inactive cells before cell weighting."
   ],
   "tests": [
    "tests/equilibrium/test_anisotropic_picard_feedback.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Bounded to one masked toroidal-current feedback step with flux and optional field projection. Evidence: `test_anisotropic_picard_feedback.py` contains 8 test functions, 2 of which reference `update_anisotropic_picard_flux`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `update_anisotropic_picard_flux`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish automatic construction or physical validation of a Green response, or a complete equilibrium/wall solution.",
+  "evidence_ceiling": "Bounded to one masked toroidal-current feedback step with flux and optional field projection. Evidence: `test_anisotropic_picard_feedback.py` contains 9 test functions, 3 of which reference `update_anisotropic_picard_flux`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `update_anisotropic_picard_flux`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound private and correction files. It does not establish automatic construction or physical validation of a Green response, or a complete equilibrium/wall solution.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
-   "The private file has eight functions with two direct references: the relation example and the grid-without-cell-area rejection; the shared correction file adds no direct symbol call."
+   "The private file has nine functions with three direct references: the mask preservation regression, the relation example and the grid-without-cell-area rejection; the shared correction file adds no direct symbol call."
   ]
  }
 }

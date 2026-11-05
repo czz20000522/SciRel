@@ -183,7 +183,7 @@
    "dtype": "boolean array or None",
    "required": false,
    "default": null,
-   "constraints": "Exact grid shape and bool dtype when supplied; False cells are zeroed for feedback and terminal current."
+   "constraints": "Exact grid shape and bool dtype when supplied; True cells retain computed feedback and terminal current, while False cells are zeroed in both."
   },
   {
    "name": "boundary_correction",
@@ -289,7 +289,7 @@
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
    "required": true,
-   "constraints": "Reevaluated at final psi and B; zero outside plasma_mask."
+   "constraints": "Reevaluated at final psi and B; True cells retain the computed value and False cells are zero."
   },
   {
    "name": "plasma_currents",
@@ -542,13 +542,14 @@
    "True parallel-pressure imbalance cannot be reported as equilibrium convergence.",
    "Full retention relax=1 cannot turn a nonzero fixed-point residual into convergence.",
    "An analytic rank-one Green feedback checks two-step state propagation and the terminal I^2+I-K=0 relation; relaxation that nearly preserves the old state must not exit early on a small step.",
-   "Do not claim convergence when flux stays fixed while field and current still change; a zero magnetic field fails closed before the pressure callback."
+   "Do not claim convergence when flux stays fixed while field and current still change; a zero magnetic field fails closed before the pressure callback.",
+   "A partial plasma mask preserves active terminal j_phi values and zeros only inactive cells."
   ],
   "tests": [
    "tests/cross_domain/free_boundary_anisotropic_picard/test_composition_free_boundary_anisotropic_picard.py",
    "tests/cross_domain/test_anisotropic_core_scientific_correction.py"
   ],
-  "evidence_ceiling": "Bounded to the bounded anisotropic Picard feedback with optional wall flux and magnetic-field derivative. Evidence: `test_composition_free_boundary_anisotropic_picard.py` contains 20 test functions, 1 of which references `solve_free_boundary_anisotropic_picard`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `solve_free_boundary_anisotropic_picard`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound composition and correction files. It does not establish a built-in Frank-Egedal closure, independent validation of caller pressure physics, or a physical boundary/wall model.",
+  "evidence_ceiling": "Bounded to the bounded anisotropic Picard feedback with optional wall flux and magnetic-field derivative. Evidence: `test_composition_free_boundary_anisotropic_picard.py` contains 21 test functions, 1 of which references `solve_free_boundary_anisotropic_picard`, and is bound only by this asset; `test_anisotropic_core_scientific_correction.py` contains 17 test functions, none of which references `solve_free_boundary_anisotropic_picard`, and is shared by 8 assets; the bounded example was executed by this audit. Oracle: independent manufactured/analytic discrete checks in the bound composition and correction files. It does not establish a built-in Frank-Egedal closure, independent validation of caller pressure physics, or a physical boundary/wall model.",
   "known_limitations": [
    "Caller-supplied physical closures and Green responses require their own evidence and coherent psi=R A_phi (Wb/rad) normalization.",
    "Floating-point rounding envelopes do not bound discretization error or experimental uncertainty.",
