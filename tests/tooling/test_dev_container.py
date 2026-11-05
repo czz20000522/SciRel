@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import errno
+import io
 import importlib.util
 import json
 import os
@@ -98,6 +99,105 @@ def test_clean_preserves_the_shared_cache_unless_requested(monkeypatch):
     assert module.clean(remove_cache=True, remove_image=True) == 0
     assert any(module.uv_cache_volume() in part for command in calls for part in command)
     assert any("--rmi" in command for command in calls)
+
+
+@pytest.mark.parametrize(
+    ("zero_oid", "old_oid"),
+    [
+        ("0" * 40, "a" * 40),
+        ("0" * 64, "a" * 64),
+    ],
+)
+def test_pre_push_skips_a_deletion_only_push(monkeypatch, capsys, zero_oid, old_oid):
+    module = _load()
+    calls = []
+    monkeypatch.setattr(
+        module, "check_receipt_status", lambda: calls.append("receipt") or (False, "miss")
+    )
+    monkeypatch.setattr(module, "run_check", lambda: calls.append("check") or 17)
+    refs = [
+        f"(delete) {zero_oid} refs/heads/merged {old_oid}\n",
+        f"(delete) {zero_oid} refs/tags/old {old_oid}\n",
+    ]
+    assert module.pre_push(refs) == 0
+    assert calls == []
+    assert "skipping local acceptance check" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize(
+    "refs",
+    [
+        [],
+        [
+            "refs/heads/main aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa refs/heads/main bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n"
+        ],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip\n",
+            "refs/heads/main aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa refs/heads/main bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\n",
+        ],
+        ["\n"],
+        ["   \n"],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip\n",
+            "\n",
+        ],
+        ["(delete) 0000000000000000000000000000000000000000\n"],
+        ["(delete) 0000000000000000000000000000000000000000 refs/heads/old\n"],
+        ["(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip extra\n"],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs/heads/old old-tip\n",
+            "(delete) 0000000000000000000000000000000000000000000000000000000000000000 refs/heads/sha256 old-tip\n",
+        ],
+        [
+            "refs/heads/not-a-delete 0000000000000000000000000000000000000000 refs/heads/old aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        ],
+        [
+            "(delete) 0000000000000000000000000000000000000000 not-a-ref aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        ],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs/ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        ],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs//heads/x aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        ],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs/heads/../x aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        ],
+        ["(delete) 0000000000000000000000000000000000000000 refs/heads/old not-an-object-id\n"],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs/heads/old aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000\n"
+        ],
+        [
+            "(delete) 0000000000000000000000000000000000000000 refs/heads/old 0000000000000000000000000000000000000000\n"
+        ],
+        ["malformed\n"],
+        ["(delete) 0 refs/heads/not-a-real-object-id old-tip\n"],
+    ],
+)
+def test_pre_push_checks_non_deletion_or_mixed_pushes(monkeypatch, refs):
+    module = _load()
+    calls = []
+    monkeypatch.setattr(
+        module, "check_receipt_status", lambda: calls.append("receipt") or (False, "miss")
+    )
+    monkeypatch.setattr(module, "run_check", lambda: calls.append("check") or 17)
+    assert module.pre_push(refs) == 17
+    assert calls == ["receipt", "check"]
+
+
+def test_pre_push_reads_deletion_refs_from_stdin(monkeypatch, capsys):
+    module = _load()
+    monkeypatch.setattr(
+        module.sys,
+        "stdin",
+        io.StringIO(
+            "(delete) 0000000000000000000000000000000000000000 "
+            "refs/heads/old aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n"
+        ),
+    )
+    monkeypatch.setattr(module, "run_check", lambda: pytest.fail("full check should be skipped"))
+    assert module.pre_push() == 0
+    assert "All pushed refs are deletions" in capsys.readouterr().out
 
 
 def test_pre_push_reuses_only_an_exact_head_tree_receipt(tmp_path, monkeypatch, capsys):
