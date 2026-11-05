@@ -37,7 +37,7 @@
    "shape": "string",
    "dtype": "str",
    "required": true,
-   "constraints": "tensor or serendipity"
+   "constraints": "tensor or serendipity as a separate required string argument; no mapping form"
   },
   {
    "name": "ndim",
@@ -64,7 +64,7 @@
    "shape": "(order+1)**ndim",
    "dtype": "finite real array-like converted to float64",
    "required": true,
-   "constraints": "Shape must equal the basis quadrature weight shape; no broadcasting"
+   "constraints": "Separate required argument; shape must equal the basis quadrature weight shape; no broadcasting"
   }
  ],
  "outputs": [
@@ -93,7 +93,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError when the basis arguments are outside their domain or the sample array has the wrong shape or contains a non-finite value.",
+  "invalid_input": "Raises TypeError when required parameters are missing, including the former single mapping call, and raises ValueError when the basis arguments are outside their domain or the sample array has the wrong shape or contains a non-finite value.",
   "runtime_failure": "Raises ValueError if the underlying Gauss-Legendre root iteration does not converge.",
   "nonconvergence": "No approximate nodes are substituted; the underlying rule reports failure.",
   "partial_results": "Returns the full coefficient array or raises; no partial or zero-filled coefficient array is returned."
@@ -102,7 +102,7 @@
   "python": {
    "module": "scirel.numerics.modal_basis",
    "symbol": "modal_projection",
-   "signature": "modal_projection(inputs)",
+   "signature": "modal_projection(kind, ndim, order, values)",
    "canonical_module": "scirel.numerics",
    "canonical_symbol": "modal_projection"
   }
@@ -117,14 +117,14 @@
  },
  "example": {
   "description": "Project a known member combination sampled on the basis's own Gauss rule and confirm the coefficients come back unchanged.",
-  "code": "import numpy as np\nfrom scirel.numerics.modal_basis import modal_basis, modal_projection\n\nbasis = modal_basis(\"tensor\", 2, 2)\nnodes, weights = basis.quadrature()\nexpected = np.linspace(-1.0, 1.0, basis.num_basis)\nvalues = basis.expand(nodes, expected)\ncoefficients = modal_projection(\n    {\"kind\": \"tensor\", \"ndim\": 2, \"order\": 2, \"values\": values}\n)\nprint(\"coefficients recovered within 1e-12:\", bool(np.abs(coefficients - expected).max() < 1e-12))\n",
+  "code": "import numpy as np\nfrom scirel.numerics.modal_basis import modal_basis, modal_projection\n\nbasis = modal_basis(\"tensor\", 2, 2)\nnodes, _ = basis.quadrature()\nexpected = np.linspace(-1.0, 1.0, basis.num_basis)\nvalues = basis.expand(nodes, expected)\ncoefficients = modal_projection(\"tensor\", 2, 2, values)\nprint(\"coefficients recovered within 1e-12:\", bool(np.abs(coefficients - expected).max() < 1e-12))\n",
   "expected": "coefficients recovered within 1e-12: True"
  },
  "verification": {
   "scope": [
    "Public callable signature and documented rejection behavior",
    "Exact coefficient recovery for tensor and serendipity samples",
-   "Forwarding of the documented input mapping to the scientific delegate",
+   "Explicit parameter order and required flags, including rejection of the legacy mapping call",
    "The executable example stored in this contract"
   ],
   "tests": [
