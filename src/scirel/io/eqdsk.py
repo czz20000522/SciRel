@@ -10,6 +10,7 @@ which uses three header integers and distinct ``NW``/``NH`` dimensions.
 SciRel validates representability before I/O. It does not assign units, COCOS,
 or physical meaning to values that this dialect does not encode.
 """
+
 from __future__ import annotations
 
 from numbers import Integral
@@ -18,7 +19,6 @@ from typing import Any, Mapping
 
 import numpy as np
 
-from scirel._optional import import_optional_module
 
 DIALECT = "extended-legacy"
 
@@ -34,9 +34,25 @@ __all__ = [
 ]
 
 _REQUIRED = (
-    "title", "cursign", "nnr", "nnz", "nnv", "rbox", "zbox", "psi_lim",
-    "Ip", "tor_flux", "p_flux", "rbphi_flux", "pprime_flux", "psi",
-    "q_flux", "nlim_pairs", "nves_pairs", "lim_pairs", "ves_pairs",
+    "title",
+    "cursign",
+    "nnr",
+    "nnz",
+    "nnv",
+    "rbox",
+    "zbox",
+    "psi_lim",
+    "Ip",
+    "tor_flux",
+    "p_flux",
+    "rbphi_flux",
+    "pprime_flux",
+    "psi",
+    "q_flux",
+    "nlim_pairs",
+    "nves_pairs",
+    "lim_pairs",
+    "ves_pairs",
 )
 _PROFILE_KEYS = ("tor_flux", "p_flux", "rbphi_flux", "pprime_flux", "q_flux")
 
@@ -73,8 +89,9 @@ def _float_fields(line: str, *, fixed: bool = False) -> list[float]:
     return values
 
 
-def _read_values(lines: list[str], start: int, count: int, *, section: str,
-                 coordinates: bool = False) -> tuple[np.ndarray, int]:
+def _read_values(
+    lines: list[str], start: int, count: int, *, section: str, coordinates: bool = False
+) -> tuple[np.ndarray, int]:
     """Read exactly ``count`` values from a named record group."""
     if count < 0:
         raise EQDSKFormatError(f"{section} count must be non-negative")
@@ -87,9 +104,7 @@ def _read_values(lines: list[str], start: int, count: int, *, section: str,
         fields = _float_fields(line, fixed=coordinates)
         values.extend(fields)
     if len(values) != count:
-        raise EQDSKFormatError(
-            f"{section} has {len(values)} values; expected {count}"
-        )
+        raise EQDSKFormatError(f"{section} has {len(values)} values; expected {count}")
     return np.asarray(values, dtype=float), stop
 
 
@@ -98,16 +113,18 @@ def _header(lines: list[str]) -> tuple[str, int, int, int, int]:
         raise EQDSKFormatError("empty EQDSK file")
     line = lines[0].rstrip("\r\n")
     if len(line) != 64:
-        raise EQDSKFormatError("header must contain exactly a 48-character title and four 4-character integers")
+        raise EQDSKFormatError(
+            "header must contain exactly a 48-character title and four 4-character integers"
+        )
     title = line[:48]
     tail = line[48:]
     chunks = [tail[i : i + 4] for i in range(0, 16, 4)]
     try:
         values = [int(chunk) for chunk in chunks]
-    except ValueError:
+    except ValueError as exc:
         fields = tail.split()
         if len(fields) != 4:
-            raise EQDSKFormatError("header must contain exactly four integer fields")
+            raise EQDSKFormatError("header must contain exactly four integer fields") from exc
         try:
             values = [int(value) for value in fields[-4:]]
         except ValueError as exc:
@@ -135,18 +152,31 @@ def _scalar_records(lines: list[str]) -> tuple[np.ndarray, int]:
 def read_eqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
     """Read the extended legacy extended EQDSK dialect.
 
+    The reconstructed grid always uses R origin 0 and Z center 0:
+    ``R = linspace(0, rbox, nnr)`` and
+    ``Z = linspace(-zbox / 2, zbox / 2, nnz)``. Header scalar slots are
+    preserved as opaque dialect values and do not shift that grid. For a
+    standard EFIT G-EQDSK file whose ``rleft``/``zmid`` define the grid
+    origin, use :func:`scirel.io.read_geqdsk` instead.
+
     ``strict=True`` rejects records after the declared coordinate section.
     ``strict=False`` permits such trailing records for compatibility; it still
-    requires every declared profile, grid, and coordinate value.  Coordinates
+    requires every declared profile, grid, and coordinate value. Coordinates
     remain fixed-width, as required by the source parser.
     """
     lines = Path(filename).read_text().splitlines()
     title, cursign, nnr, nnz, nnv = _header(lines)
     scalar, offset = _scalar_records(lines)
     data: dict[str, Any] = {
-        "title": title, "cursign": cursign, "nnr": nnr, "nnz": nnz,
-        "nnv": nnv, "rbox": float(scalar[0, 0]), "zbox": float(scalar[0, 1]),
-        "psi_lim": float(scalar[1, 3]), "Ip": float(scalar[2, 0]),
+        "title": title,
+        "cursign": cursign,
+        "nnr": nnr,
+        "nnz": nnz,
+        "nnv": nnv,
+        "rbox": float(scalar[0, 0]),
+        "zbox": float(scalar[0, 1]),
+        "psi_lim": float(scalar[1, 3]),
+        "Ip": float(scalar[2, 0]),
         "header_scalars": scalar,
     }
     for key in _PROFILE_KEYS[:4]:
@@ -173,15 +203,22 @@ def read_eqdsk(filename: str | Path, *, strict: bool = True) -> dict[str, Any]:
         raise EQDSKFormatError("limiter/vessel counts must be non-negative")
     offset += 1
     pair_values, offset = _read_values(
-        lines, offset, 2 * (nlim_pairs + nves_pairs), section="limiter/vessel coordinates",
+        lines,
+        offset,
+        2 * (nlim_pairs + nves_pairs),
+        section="limiter/vessel coordinates",
         coordinates=True,
     )
     if strict and offset != len(lines):
-        raise EQDSKFormatError(f"unexpected trailing records after coordinates: {len(lines) - offset}")
+        raise EQDSKFormatError(
+            f"unexpected trailing records after coordinates: {len(lines) - offset}"
+        )
     data["nlim_pairs"], data["nves_pairs"] = nlim_pairs, nves_pairs
     pairs = pair_values.reshape((-1, 2))
     data["lim_pairs"] = pairs[:nlim_pairs].copy()
     data["ves_pairs"] = pairs[nlim_pairs:].copy()
+    # The extended dialect fixes R at 0. Preserve header scalar slots, but do
+    # not reinterpret them as a standard EQDSK rleft/zmid origin.
     data["R"], data["Z"] = np.meshgrid(
         np.linspace(0, data["rbox"], nnr),
         np.linspace(-data["zbox"] / 2, data["zbox"] / 2, nnz),
@@ -219,9 +256,7 @@ def _fixed_integer(value: Any, key: str, width: int) -> int:
     result = _integer(value, key)
     rendered = f"{result:{width}d}"
     if len(rendered) != width:
-        raise EQDSKFormatError(
-            f"{key} is not representable in a {width}-character integer field"
-        )
+        raise EQDSKFormatError(f"{key} is not representable in a {width}-character integer field")
     return result
 
 
@@ -243,9 +278,7 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
     missing = [key for key in _REQUIRED if key not in data]
     if missing:
         raise KeyError(missing[0])
-    nnr, nnz, nnv = (
-        _fixed_integer(data[key], key, 4) for key in ("nnr", "nnz", "nnv")
-    )
+    nnr, nnz, nnv = (_fixed_integer(data[key], key, 4) for key in ("nnr", "nnz", "nnv"))
     if nnr <= 0 or nnz <= 0 or nnv <= 0:
         raise EQDSKFormatError("nnr, nnz, and nnv must be positive")
     title_value = data["title"]
@@ -275,10 +308,16 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
             np.linspace(0.0, rbox, nnr),
             np.linspace(-zbox / 2.0, zbox / 2.0, nnz),
         )
-        if (R.shape != (nnz, nnr) or Z.shape != (nnz, nnr) or
-                np.iscomplexobj(R) or np.iscomplexobj(Z) or
-                not np.all(np.isfinite(R)) or not np.all(np.isfinite(Z)) or
-                not np.array_equal(R, expected_R) or not np.array_equal(Z, expected_Z)):
+        if (
+            R.shape != (nnz, nnr)
+            or Z.shape != (nnz, nnr)
+            or np.iscomplexobj(R)
+            or np.iscomplexobj(Z)
+            or not np.all(np.isfinite(R))
+            or not np.all(np.isfinite(Z))
+            or not np.array_equal(R, expected_R)
+            or not np.array_equal(Z, expected_Z)
+        ):
             raise EQDSKFormatError(
                 "R/Z grid is not representable: extended dialect fixes R origin at 0 and Z at +/-zbox/2"
             )
@@ -286,7 +325,9 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
     # These keys are accepted only as a caller-side guard; they are not added
     # to the legacy record because no origin field exists in the dialect.
     if "r_origin" in data and _finite_float(data["r_origin"], "r_origin") != 0.0:
-        raise EQDSKFormatError("r_origin is not representable: extended dialect fixes R origin at 0")
+        raise EQDSKFormatError(
+            "r_origin is not representable: extended dialect fixes R origin at 0"
+        )
     if "z_origin" in data and _finite_float(data["z_origin"], "z_origin") != 0.0:
         raise EQDSKFormatError("z_origin is not representable: extended dialect centers Z at 0")
     for key in _PROFILE_KEYS:
@@ -299,10 +340,10 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
         raise EQDSKFormatError(f"psi must have shape ({nnz}, {nnr}), got {psi.shape}")
     if not np.issubdtype(psi.dtype, np.number) or not np.all(np.isfinite(psi)):
         raise EQDSKFormatError("psi must contain finite numeric values")
-    result["psi"] = np.asarray([_fixed_float(v, "psi") for v in psi.reshape(-1)], dtype=float).reshape(psi.shape)
-    nlim, nves = (
-        _fixed_integer(data[key], key, 5) for key in ("nlim_pairs", "nves_pairs")
-    )
+    result["psi"] = np.asarray(
+        [_fixed_float(v, "psi") for v in psi.reshape(-1)], dtype=float
+    ).reshape(psi.shape)
+    nlim, nves = (_fixed_integer(data[key], key, 5) for key in ("nlim_pairs", "nves_pairs"))
     if nlim < 0 or nves < 0:
         raise EQDSKFormatError("limiter/vessel counts must be non-negative")
     result["nlim_pairs"], result["nves_pairs"] = nlim, nves
@@ -312,7 +353,9 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
     for key in ("lim_pairs", "ves_pairs"):
         if not np.issubdtype(result[key].dtype, np.number) or not np.all(np.isfinite(result[key])):
             raise EQDSKFormatError(f"{key} must contain finite numeric values")
-        result[key] = np.asarray([_fixed_float(v, key) for v in result[key].reshape(-1)], dtype=float).reshape(result[key].shape)
+        result[key] = np.asarray(
+            [_fixed_float(v, key) for v in result[key].reshape(-1)], dtype=float
+        ).reshape(result[key].shape)
     raw_header = data.get("header_scalars", np.zeros((4, 5)))
     if np.iscomplexobj(raw_header):
         raise EQDSKFormatError("header_scalars must contain finite real values")
@@ -320,7 +363,10 @@ def _validated(data: Mapping[str, Any]) -> dict[str, Any]:
     if header.shape != (4, 5) or not np.all(np.isfinite(header)):
         raise EQDSKFormatError("header_scalars must be finite and have shape (4, 5)")
     result["header_scalars"] = header.copy()
-    result["header_scalars"][0, :2] = [_finite_float(data["rbox"], "rbox"), _finite_float(data["zbox"], "zbox")]
+    result["header_scalars"][0, :2] = [
+        _finite_float(data["rbox"], "rbox"),
+        _finite_float(data["zbox"], "zbox"),
+    ]
     result["header_scalars"][1, 3] = _finite_float(data["psi_lim"], "psi_lim")
     result["header_scalars"][2, 0] = _finite_float(data["Ip"], "Ip")
     for value in result["header_scalars"].reshape(-1):
@@ -358,8 +404,9 @@ def write_eqdsk(data: Mapping[str, Any], filename: str | Path) -> None:
     Path(filename).write_text("\n".join(lines) + "\n")
 
 
-def _resample_contour(segment: np.ndarray, count: int, start: tuple[float, float],
-                      end: tuple[float, float]) -> np.ndarray:
+def _resample_contour(
+    segment: np.ndarray, count: int, start: tuple[float, float], end: tuple[float, float]
+) -> np.ndarray:
     """Resample a selected contour arc without assuming single-valued R(Z).
 
     Open paths retain point adjacency and closed paths retain clockwise
@@ -367,7 +414,12 @@ def _resample_contour(segment: np.ndarray, count: int, start: tuple[float, float
     provide deterministic contour choices.
     """
     points = np.asarray(segment, dtype=float)
-    if points.ndim != 2 or points.shape[1] != 2 or points.shape[0] < 2 or not np.all(np.isfinite(points)):
+    if (
+        points.ndim != 2
+        or points.shape[1] != 2
+        or points.shape[0] < 2
+        or not np.all(np.isfinite(points))
+    ):
         raise EQDSKFormatError("contour segment is empty or nonfinite")
     points = points[np.r_[True, np.linalg.norm(np.diff(points, axis=0), axis=1) > 0.0]]
     if points.shape[0] < 2:
@@ -377,21 +429,22 @@ def _resample_contour(segment: np.ndarray, count: int, start: tuple[float, float
         points = points[:-1]
         if points.shape[0] < 3:
             raise EQDSKFormatError("closed contour segment is degenerate")
-        signed_twice_area = np.sum(points[:, 0]*np.roll(points[:, 1], -1) -
-                                   points[:, 1]*np.roll(points[:, 0], -1))
+        signed_twice_area = np.sum(
+            points[:, 0] * np.roll(points[:, 1], -1) - points[:, 1] * np.roll(points[:, 0], -1)
+        )
         if signed_twice_area > 0.0:
             points = points[::-1]
         start_idx = int(np.argmin(np.sum((points - np.asarray(start)) ** 2, axis=1)))
         points = np.roll(points, -start_idx, axis=0)
         end_idx = int(np.argmin(np.sum((points - np.asarray(end)) ** 2, axis=1)))
-        points = points[:end_idx+1]
+        points = points[: end_idx + 1]
     else:
         start_idx = int(np.argmin(np.sum((points - np.asarray(start)) ** 2, axis=1)))
         end_idx = int(np.argmin(np.sum((points - np.asarray(end)) ** 2, axis=1)))
         if start_idx <= end_idx:
-            points = points[start_idx:end_idx+1]
+            points = points[start_idx : end_idx + 1]
         else:
-            points = points[end_idx:start_idx+1][::-1]
+            points = points[end_idx : start_idx + 1][::-1]
     if points.shape[0] < 2:
         raise EQDSKFormatError("source contour hints select a degenerate arc")
     lengths = np.linalg.norm(np.diff(points, axis=0), axis=1)
