@@ -215,7 +215,7 @@
   ]
  },
  "failure_semantics": {
-  "invalid_input": "Raises ValueError for invalid static inputs, ports, dimensions or penalty; nested ValueError/TypeError/KeyError propagate.",
+  "invalid_input": "Raises ValueError for structurally invalid static inputs, ports or dimensions, or when a supplied value's conversion raises ValueError; TypeError when a conversion or nested port raises TypeError. Nested ValueError/TypeError/KeyError propagate.",
   "runtime_failure": "A nested ArithmeticError (including FloatingPointError) or RuntimeError returns numerical_failure with the same N, preserving the failed port and exception class. Process-level exceptions are not caught.",
   "nonconvergence": "A forward False returns forward_nonconvergence directly; diagnostics for that state are never executed.",
   "partial_results": "Retains any actually obtained forward state for investigation with valid=False; the dimension is not lost and it does not participate in valid-best ranking."
