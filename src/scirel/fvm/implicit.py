@@ -55,13 +55,89 @@ def theta_step(
     dirichlet_mode="ghost",
     neumann_mode="ghost",
 ):
-    """Advance ``u_t = F(u)`` with explicit old and new boundary data.
+    """Advance one finite-volume channel with a theta time step.
 
-    ``theta=0`` is forward Euler, ``theta=1/2`` is Crank--Nicolson and
-    ``theta=1`` is backward Euler.  The spatial operator combines conservative
-    diffusion, power-law convection and a cell source.  A singular implicit
-    system is reported by NumPy/SciPy; no clipping or iterative fallback is
-    applied.
+    Parameters
+    ----------
+    var_old : CellVariable
+        Old cell values and old boundary data [Q].
+    var_new : CellVariable
+        Output grid and new boundary data [Q].  Its cell values are not used
+        as a nonlinear iteration guess; they are replaced by the computed
+        state.
+    dt : float
+        Positive time increment [time].  The value is converted to a finite
+        float64 scalar.
+    d_old : array-like or None, shape (N+1,), default None
+        Old face diffusivity [X^2/time].  ``None`` omits the diffusion term;
+        when supplied, the array must be finite and explicit.
+    d_new : array-like or None, shape (N+1,), default None
+        New face diffusivity [X^2/time].  ``None`` omits the diffusion term;
+        when supplied, the array must be finite and explicit.
+    v_old : array-like or None, shape (N+1,), default None
+        Old face convective coefficient [X/time].  ``None`` omits convection;
+        when supplied, the array must be finite and explicit.
+    v_new : array-like or None, shape (N+1,), default None
+        New face convective coefficient [X/time].  ``None`` omits convection;
+        when supplied, the array must be finite and explicit.
+    source_old : array-like or None, shape (N,), default None
+        Old explicit cell source [Q/time].  ``None`` omits the source.
+    source_new : array-like or None, shape (N,), default None
+        New explicit cell source [Q/time].  ``None`` omits the source.
+    theta : float, default 1.0
+        Weight of the new-time operator [1].  ``0`` is forward Euler, ``0.5``
+        is Crank--Nicolson, and ``1`` is backward Euler; the value must lie in
+        ``[0, 1]``.
+    dirichlet_mode : {'ghost', 'direct', 'semi-implicit'}, default 'ghost'
+        Dirichlet boundary reconstruction strategy [1].
+    neumann_mode : {'ghost', 'semi-implicit'}, default 'ghost'
+        Neumann boundary reconstruction strategy [1].
+
+    Returns
+    -------
+    variable : CellVariable
+        New float64 cell values with the boundary data from ``var_new`` [Q].
+
+    Raises
+    ------
+    TypeError
+        If ``var_old`` or ``var_new`` is not a ``CellVariable``, or if a
+        supplied source or coefficient cannot be converted to real numeric
+        data.
+    ValueError
+        If ``dt`` or ``theta`` is outside its allowed range, the old and new
+        grids differ, an array has the wrong shape, or a boundary mode is not
+        one of the documented choices.
+    FloatingPointError
+        If an assembled or updated value is non-finite.
+    numpy.linalg.LinAlgError
+        If the implicit banded system is singular.
+
+    See Also
+    --------
+    CellVariable : Cell and face data used by this time step.
+    make_diffusion_terms : Assemble the diffusion contribution.
+    make_convection_terms : Assemble the convection contribution.
+
+    Notes
+    -----
+    The spatial operator is
+    ``F(u) = diffusion_operator(u) + convection_operator(u) + source``.
+    The update solves the theta-weighted equation
+    ``u_new = u_old + dt * ((1-theta) * F(u_old) + theta * F(u_new))``
+    with separately supplied old and new boundary data.  The explicit branch
+    is evaluated directly; the implicit branch uses one banded linear solve.
+    There is no clipping, positivity guarantee, adaptive time step, or
+    iterative fallback.  A singular or non-finite system is reported as an
+    error.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.fvm import CellVariable,theta_step
+    >>> v=CellVariable([0.,0.],[0.,1.,2.])
+    >>> x=theta_step(v,v,.2,source_old=[1.,1.],source_new=[1.,1.],theta=.5)
+    >>> np.testing.assert_allclose(x.value,.2)
     """
     if not isinstance(var_old, CellVariable) or not isinstance(var_new, CellVariable):
         raise TypeError("var_old/var_new must be CellVariable")

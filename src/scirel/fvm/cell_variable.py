@@ -43,7 +43,85 @@ def checked(value):
 
 @dataclass(frozen=True)
 class CellVariable:
-    """One-dimensional point samples with explicit endpoint constraints."""
+    """Store one-dimensional point samples with explicit face and boundary data.
+
+    Parameters
+    ----------
+    value : array-like, shape (N,)
+        Point samples at arithmetic cell centers, not cell-volume averages.
+        Values are copied to read-only float64 data and use
+        [caller quantity Q].  The input must be a finite real one-dimensional
+        array with at least two cells.
+    face_centers : array-like, shape (N+1,)
+        Explicit cell-boundary coordinates [coordinate X].  The coordinates
+        must be finite and strictly increasing; adjacent cell widths and the
+        midpoint spacings derived from them must be finite and positive.
+    left_face_constraint : float or None, default None
+        Dirichlet value at the left boundary [Q].  Exactly one of this value
+        and ``left_face_grad_constraint`` must be set.  The input is converted
+        to a finite float64 scalar when present.
+    right_face_constraint : float or None, default None
+        Dirichlet value at the right boundary [Q].  Exactly one of this value
+        and ``right_face_grad_constraint`` must be set.  The input is converted
+        to a finite float64 scalar when present.
+    left_face_grad_constraint : float or None, default 0.0
+        Neumann derivative at the left boundary in the positive coordinate
+        direction [Q/X].  Exactly one of this value and
+        ``left_face_constraint`` must be set.  ``None`` selects a Dirichlet
+        boundary instead.
+    right_face_grad_constraint : float or None, default 0.0
+        Neumann derivative at the right boundary in the positive coordinate
+        direction [Q/X].  Exactly one of this value and
+        ``right_face_constraint`` must be set.  ``None`` selects a Dirichlet
+        boundary instead.
+
+    Returns
+    -------
+    variable : CellVariable
+        Immutable copied float64 cell samples with explicit face coordinates
+        and boundary data [Q; derivatives Q/X].  It provides ``face_value()``,
+        ``face_grad()`` and ``grad()`` for reconstruction.
+
+    Raises
+    ------
+    TypeError
+        If ``value``, ``face_centers`` or a supplied boundary scalar is not a
+        real numeric value, or if a boolean value is supplied.
+    ValueError
+        If an array is masked, non-finite, not one-dimensional, has the wrong
+        shape, has a non-positive width or midpoint spacing, or if either end
+        does not have exactly one of a Dirichlet value and a Neumann gradient.
+    FloatingPointError
+        If a face-value or face-gradient reconstruction produces a non-finite
+        result.
+
+    See Also
+    --------
+    make_convection_terms : Assemble conservative convection terms on the
+        face grid.
+    make_diffusion_terms : Assemble two-point diffusion terms on the face
+        grid.
+    theta_step : Advance one cell variable with the assembled operators.
+
+    Notes
+    -----
+    Cell centers are the arithmetic midpoints of adjacent face coordinates.
+    ``face_value`` linearly interpolates interior faces and uses the declared
+    boundary values or a half-cell gradient extrapolation at the endpoints.
+    ``face_grad`` uses local quadratic stencils on interior faces; the final
+    interior face uses the right boundary value or gradient when present.
+    ``grad`` is the difference of reconstructed face values divided by each
+    cell width.  The returned arrays are read-only and are not volume
+    averages.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.fvm import CellVariable
+    >>> v=CellVariable([.5,1.5],[0.,1.,2.],left_face_grad_constraint=1.,right_face_grad_constraint=1.)
+    >>> np.testing.assert_allclose(v.face_value(),[0.,1.,2.])
+    >>> np.testing.assert_allclose(v.face_grad(),1.)
+    """
 
     value: object
     face_centers: object
