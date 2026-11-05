@@ -4617,7 +4617,7 @@
   },
   {
    "asset_id": "scirel.equilibrium.isotropic-pressure-flux",
-   "source_sha256": "701b36cba89badf9193375eb9fe460f4872e27f6be8d71d28a191baba6d40678",
+   "source_sha256": "e306e92cbdcbc7047998e6af3ef685e6faf46b2591ff4f42a41263c4361fe11e",
    "summary": "通过唯一共享的轴对称压力电流求解器执行有界反馈，同时检查磁通更新和末态电流闭合残差，并序列化最终压力样条。",
    "definition": "委派给已维护的 compute_equilibrium：按物理半径向外构造压力样条，求目标电流、松弛电流及 Green 磁通，重建末态样条；同时检查归一化磁通变化和 ||I_new−I_target(psi_new)||₂/||I_target||₂。零目标且零误差取零，零目标而电流非零失败。只有实际更新后两项有限且不大于 tol 才收敛。适配入口不再维护第二迭代环，并返回精确拟合前缀。",
    "model": "复用共享双残差求解器的轴对称各向同性纯压力离散闭合。",
@@ -4641,12 +4641,6 @@
      "dtype": "有限实数数组"
     },
     {
-     "name": "pressure_of_radius",
-     "description": "在中平面 R 样本处调用的径向压力函数。",
-     "constraints": "返回有限非负标量；须有精确零样本，前面的磁通样本须足以三次插值。",
-     "dtype": "Python 可调用对象"
-    },
-    {
      "name": "psi_vac",
      "description": "调用者真空或外部 psi=R A_phi，复制为初始状态。",
      "constraints": "与网格同形，按 C 顺序匹配格林目标行。",
@@ -4657,6 +4651,12 @@
      "description": "从网格电流到场点 psi 的稠密响应。",
      "constraints": "行列均按 [Z,R] C 顺序；不是线圈到探针缓存。",
      "dtype": "有限实数数组"
+    },
+    {
+     "name": "pressure_of_radius",
+     "description": "在中平面 R 样本处调用的径向压力函数。",
+     "constraints": "返回有限非负标量；须有精确零样本，前面的磁通样本须足以三次插值。",
+     "dtype": "Python 可调用对象"
     },
     {
      "name": "tol",
@@ -4767,7 +4767,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "数组、网格、回调、控制量或布尔掩码不满足合同则 ValueError；压力样本须有限非负标量。",
+    "invalid_input": "缺少必需参数、使用已删除的 mapping 或 **kwargs 入口、或传入未知关键字时抛 TypeError；数组、网格、回调、控制量或布尔掩码不满足合同时抛 ValueError；压力样本须有限非负标量；pressure_of_radius 自身异常原样传播。",
     "runtime_failure": "计算导数、电流、Green 收缩、拟合或残差无效时共享求解器返回 nonfinite 和具体原因；输入或回调异常直接抛出，无备用路径。",
     "nonconvergence": "到上限而未同时满足两门禁时返回 maxiter、converged=False 和 maxiter_reached；maxiter=0 时两残差正无穷。",
     "partial_results": "失败时保留可取得的末态与记录；样条无效则 pressure_of_psi=None。Green 算术失败保留前一个有限磁通/电流对；部分状态不当成解。"
@@ -4782,16 +4782,16 @@
      "真实图的单单元电流给出选定离源 psi 增量，不含 2π 因子。",
      "明确反馈及上限不收敛。",
      "压力掩码抑制电流。",
-     "错格林形状、缺控制、非均匀网格、非整数 maxiter 拒绝。",
+     "显式公开签名与仅关键字控制；删除 mapping 和 **kwargs 入口，覆盖错格林形状、缺控制、非均匀网格和非整数 maxiter 失败。",
      "零步返回独立磁通数组。",
      "零 Green 松弛电流与零次更新的假收敛均被拒绝。",
      "非零对角 Green 构造解满足独立二次方程，电流、磁通及两项记录得到核对。"
     ],
-    "evidence_ceiling": "限于带磁通更新与终态电流闭合残差的有界各向同性压力-电流反馈。证据：`test_composition_isotropic_pressure_flux.py` 含 10 个测试函数，其中没有函数引用 `solve_isotropic_pressure_flux`，由 2 个资产共享; `test_legacy_six_absorption.py` 含 18 个测试函数，其中 4 个引用 `solve_isotropic_pressure_flux`，由 8 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：各向异性压力闭合、非结构/非轴对称网格，或有限迭代必然收敛的保证。",
+    "evidence_ceiling": "限于带磁通更新与终态电流闭合残差的有界各向同性压力-电流反馈。证据：`test_composition_isotropic_pressure_flux.py` 含 10 个测试函数，其中没有函数引用 `solve_isotropic_pressure_flux`，由 2 个资产共享; `test_legacy_six_absorption.py` 含 19 个测试函数，其中 5 个引用 `solve_isotropic_pressure_flux`，由 8 个资产共享；仅绑定共享文件覆盖，因此通过是文件级事实、而非资产隔离证据；本审计已执行有界示例。真值来源：绑定文件中的独立解析夹具与选定安装轮/源回归。不建立：各向异性压力闭合、非结构/非轴对称网格，或有限迭代必然收敛的保证。",
     "known_limitations": [
      "稠密方格林矩阵，压力样条要求精确中平面及精确零压样本。",
      "不做自适应阻尼或模型选择。",
-     "资产私有组合文件有十个测试函数且没有直接符号调用；共享 legacy 文件中有四个直接测试，覆盖零更新/不谎报收敛、拒绝 relax=1 以及非零制造 Green 历史。"
+     "资产私有组合文件有十个测试函数且没有直接符号调用；共享 legacy 文件中有五个直接测试，覆盖显式签名与删除入口、零更新/不谎报收敛、拒绝 relax=1 以及非零制造 Green 历史。"
     ],
     "tests": [
      "tests/cross_domain/isotropic_pressure_flux/test_composition_isotropic_pressure_flux.py",

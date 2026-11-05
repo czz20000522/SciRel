@@ -12,7 +12,7 @@ def _asset_loader(asset_ref):
 
 
 def _run_composition(inputs):
-    return composition._run_composition(inputs)
+    return composition._run_composition(**inputs)
 
 
 # 验证：YAML 的 PFM 映射和 Picard 反馈边必须与入口图同步。
@@ -86,7 +86,7 @@ def test_requires_all_yaml_required_picard_controls():
     for name in ("tol", "maxiter", "relax"):
         values = _inputs()
         values.pop(name)
-        with pytest.raises(ValueError, match=f"{name} is required"):
+        with pytest.raises(TypeError, match=name):
             _run_composition(values)
 
 
