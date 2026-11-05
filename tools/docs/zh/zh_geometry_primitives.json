@@ -2217,7 +2217,7 @@
   },
   {
    "asset_id": "scirel.geometry.masked-toroidal-volume",
-   "source_sha256": "5922695666700a395d1a4a0c382707976c12e84bab95f37e9a4815f19f58388b",
+   "source_sha256": "79f696c7ebd848767be32fcc289f645ff3b32c6d31b03858f4521ae55178fba2",
    "summary": "根据显式有限 R/Z 网格和调用者提供的核心掩码，计算环向旋转后的体积。",
    "definition": "逐元素计算 2*pi*R*dR*dZ，按 NumPy 广播乘以 core_mask 后求和，并投影为 Python 浮点数。",
    "model": "离散有限网格环向体积归约。",
