@@ -270,7 +270,7 @@
     "scirel.equilibrium.anisotropic_force_balance": "7786d2f14b215180567973af30eb7c6e980dd27d82bd7ffbce51e2b150a210a7",
     "scirel.equilibrium.axisymmetric_anisotropic_picard": "51842f698710084d521ff887b01f84141a238616cf8440c1e88fdcd49fbfb5bb",
     "scirel.equilibrium.axisymmetric_picard_update": "713b287e9595cb89059597fb3112d436d747e4ec6a9175b8068e53bbc1d675e6",
-    "scirel.field.poloidal_field_from_flux": "5ca7e5c20297961a63046520d6c9dcbeec8a4f6c1481699e6a4ae350f84c01e1"
+    "scirel.field.poloidal_field_from_flux": "ca0874f3e4899708519aa5bf984473cf81cf04d44e0b297b7b84273fc7a4ba69"
    },
    "review_basis": "_run_composition requires R,Z,vacuum psi,Green and pressure callable; explicit scalar parsers define tolerance1e-8,maxiter200,relax0.5,minimumB1e-8,firehose0,compatibility0.05,strictTrue. Optional mask and cell_edges pass to the field/current feedback; terminal convergence uses the accepted fixed point residual."
   },
@@ -635,7 +635,7 @@
     "scirel.closures.reduced_hall_drift": "6731e7571dea6a45d69d432ba01e9a22dbe7e4c59bc8a966813dddd4e5baa7b7",
     "scirel.equilibrium.axisymmetric_picard_update": "713b287e9595cb89059597fb3112d436d747e4ec6a9175b8068e53bbc1d675e6",
     "scirel.equilibrium.reduced_hall_anisotropic_picard": "87e7e23600534cb1ef6e6f3f7478493aea51720c4514787e24db1f067f41ce7d",
-    "scirel.field.poloidal_field_from_flux": "5ca7e5c20297961a63046520d6c9dcbeec8a4f6c1481699e6a4ae350f84c01e1"
+    "scirel.field.poloidal_field_from_flux": "ca0874f3e4899708519aa5bf984473cf81cf04d44e0b297b7b84273fc7a4ba69"
    },
    "review_basis": "_run_composition requires R,Z,vacuum psi,Green psi,pressure callable,ion mass/charge. Scalar parsers establish the documented outer/Hall/inertial defaults, mask/cell_edges default None, terminal fixed point/current/Ohm evidence reused. compose merges supplied mappings and kwargs before graph evaluation."
   },

@@ -3434,9 +3434,9 @@
   },
   {
    "asset_id": "scirel.field.poloidal-field-from-flux",
-   "source_sha256": "8fc1b4fa4146714c922d711ae25ca6c1d77d61099a36198466c65639c54f8e1c",
-   "summary": "在柱坐标 R–Z 直角网格上由 psi=R A_phi 恢复 BR、BZ 及其大小。",
-   "definition": "在直角网格上对 psi 求导并除以 R；包含 R=0 时使用偶对称磁通轴规则。",
+   "source_sha256": "8ae9df5da98e6ccffe5c77b0de414c09418b4c03df4d9451442e9cc281999142",
+   "summary": "在柱坐标 R–Z 直角网格上由 psi=R A_phi 恢复 BR、BZ 及其大小，并以 scirel._result.Result 映射返回三个命名字段。",
+   "definition": "在直角网格上对 psi 求导并除以 R；包含 R=0 时使用偶对称磁通轴规则。三个数组作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "柱坐标 R-Z 网格上的稳定局部有限差分梯度。",
    "assumptions": [
     "所有数组有限、形状匹配，且每个轴至少有 3 个节点。",
@@ -3467,19 +3467,19 @@
    "outputs": [
     {
      "name": "B_R",
-     "description": "极向磁场径向分量。",
+     "description": "Result 字段：极向磁场径向分量。",
      "constraints": "若含柱坐标轴列，该列为零。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "B_Z",
-     "description": "极向磁场轴向分量。",
+     "description": "Result 字段：极向磁场轴向分量。",
      "constraints": "含 R=0 时使用离散轴上规则。",
      "dtype": "float64 双精度浮点数"
     },
     {
      "name": "B",
-     "description": "极向磁场大小 hypot(B_R,B_Z)。",
+     "description": "Result 字段：极向磁场大小 hypot(B_R,B_Z)。",
      "constraints": "不施加固定下限。",
      "dtype": "float64 双精度浮点数"
     }
@@ -3500,11 +3500,11 @@
     "invalid_input": "数组含复数/非有限值、形状不匹配、网格非直角、节点过少或轴非法时抛出 ValueError。",
     "runtime_failure": "已接受的有限计算不可表示时浮点失败会传播。",
     "nonconvergence": "不适用；梯度和轴处理是直接计算。",
-    "partial_results": "验证或算术失败后不返回场映射。"
+    "partial_results": "验证或算术失败后不返回 scirel._result.Result 映射。"
    },
    "example": {
     "description": "从包含 R=0 的 psi=R² 网格恢复磁场。",
-    "expected": "包括轴列在内各点均有 BR=0，BZ 和 B 均为 2 T。"
+    "expected": "返回一个带 BR、BZ、B 三个命名字段的 scirel._result.Result 映射，按键和属性读取同一个值；包括轴列在内各点均有 BR=0，BZ 和 B 均为 2 T。"
    },
    "verification": {
     "scope": [
@@ -3513,7 +3513,8 @@
      "拒绝非直角或非有限坐标。",
      "hypot 的次正规和大幅值有限输入回归。",
      "三个不同网格中常量 psi=3.7 给出严格零场。",
-     "可表示的强常量规范保持制造偶磁通的 BR/BZ，包括轴上。"
+     "可表示的强常量规范保持制造偶磁通的 BR/BZ，包括轴上。",
+     "Result 改造后保持既有键顺序、数值、形状、dtype 和映射兼容性，并支持属性读取同一字段。"
     ],
     "evidence_ceiling": "制造解与解析离散检查仅支持声明的极向模型和积分几何；不证明任意格林矩阵、压力闭合、实验等离子体适用性或公开发行。",
     "known_limitations": [

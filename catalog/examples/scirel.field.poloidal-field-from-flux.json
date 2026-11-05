@@ -5,7 +5,7 @@
   "en": "Axisymmetric poloidal field from flux",
   "zh": "轴对称磁通导出极向场"
  },
- "summary": "Recover BR, BZ, and their magnitude from psi=R A_phi on a rectilinear cylindrical grid.",
+ "summary": "Recover BR, BZ, and their magnitude from psi=R A_phi on a rectilinear cylindrical grid, returning all three fields in a scirel._result.Result mapping.",
  "taxonomy": [
   "field",
   "axisymmetric",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "Axisymmetric field recovery from poloidal flux",
   "direction": "R,Z,psi grids to BR, BZ, and B arrays",
-  "definition": "Differentiate psi on the rectilinear grid and divide by R, using the even-flux axis rule when R=0 is included.",
+  "definition": "Differentiate psi on the rectilinear grid and divide by R, using the even-flux axis rule when R=0 is included. The three arrays are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values.",
   "model": "Stable local finite-difference gradients on a cylindrical R-Z grid.",
   "geometry": "Two-dimensional rectilinear grid with increasing R and Z axes.",
   "coordinates": "R,Z in metres; psi Wb/rad; fields tesla.",
@@ -74,7 +74,7 @@
  "outputs": [
   {
    "name": "B_R",
-   "description": "Radial poloidal magnetic-field component.",
+   "description": "Field of the returned scirel._result.Result mapping: radial poloidal magnetic-field component.",
    "units": "T",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -83,7 +83,7 @@
   },
   {
    "name": "B_Z",
-   "description": "Axial poloidal magnetic-field component.",
+   "description": "Field of the returned scirel._result.Result mapping: axial poloidal magnetic-field component.",
    "units": "T",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -92,7 +92,7 @@
   },
   {
    "name": "B",
-   "description": "Poloidal-field magnitude hypot(B_R,B_Z).",
+   "description": "Field of the returned scirel._result.Result mapping: poloidal-field magnitude hypot(B_R,B_Z).",
    "units": "T",
    "shape": "[N_Z,N_R]",
    "dtype": "float64",
@@ -116,7 +116,7 @@
   "invalid_input": "ValueError is raised for complex/nonfinite/mismatched arrays, nonrectilinear grids, too few nodes, or invalid axes.",
   "runtime_failure": "Floating-point failures propagate if a finite accepted calculation is not representable.",
   "nonconvergence": "Not applicable; gradients and axis handling are direct.",
-  "partial_results": "No field mapping is returned after validation or arithmetic failure."
+  "partial_results": "No scirel._result.Result mapping is returned after validation or arithmetic failure."
  },
  "public_api": {
   "python": {
@@ -133,8 +133,8 @@
  },
  "example": {
   "description": "Recover the field from psi=R^2 on a grid including R=0.",
-  "code": "import numpy as np\nfrom scirel.field import poloidal_field_from_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])\nresult = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)\nnp.testing.assert_allclose(result['B_R'], 0.0)\nnp.testing.assert_allclose(result['B_Z'], 2.0)\nnp.testing.assert_allclose(result['B'], 2.0)",
-  "expected": "B_R is zero everywhere and B_Z and B are 2 T everywhere, including the axis column."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.field import poloidal_field_from_flux\nr_grid, z_grid = np.meshgrid([0.0, 0.2, 0.4], [-0.5, 0.0, 0.5])\nresult = poloidal_field_from_flux(r_grid, z_grid, r_grid**2)\nassert isinstance(result, Result)\nassert result.B_R is result['B_R']\nnp.testing.assert_allclose(result['B_R'], 0.0)\nnp.testing.assert_allclose(result['B_Z'], 2.0)\nnp.testing.assert_allclose(result['B'], 2.0)",
+  "expected": "The call returns a scirel._result.Result mapping whose key and attribute access expose the same fields: B_R is zero everywhere and B_Z and B are 2 T everywhere, including the axis column."
  },
  "verification": {
   "scope": [
@@ -143,7 +143,8 @@
    "Nonrectilinear and nonfinite-coordinate rejection.",
    "Finite subnormal and large-magnitude hypot helper regression.",
    "Constant psi=3.7 produces exactly zero field for three distinct grids.",
-   "A representable strong constant gauge on a manufactured even flux leaves BR/BZ invariant, including the axis."
+   "A representable strong constant gauge on a manufactured even flux leaves BR/BZ invariant, including the axis.",
+   "The converted public function returns scirel._result.Result with the same keys, order, values, shapes, dtypes and mapping compatibility, and attribute access resolves to the same fields."
   ],
   "tests": [
    "tests/field/test_poloidal_field_from_flux.py",
