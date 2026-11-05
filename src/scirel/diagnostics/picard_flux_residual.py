@@ -2,6 +2,8 @@
 
 import numpy as np
 
+from scirel._result import Result
+
 
 def compute_picard_flux_residual(psi_previous, psi_next):
     """Compute the scaled relative L2 change between two flux states.
@@ -20,8 +22,9 @@ def compute_picard_flux_residual(psi_previous, psi_next):
     Returns
     -------
     residual : float
-        Nonnegative finite relative Euclidean change in ``[dimensionless]``.
-        The defining value is
+        Field ``residual`` of the returned ``scirel._result.Result`` mapping,
+        containing the nonnegative finite relative Euclidean change in
+        ``[dimensionless]``.  The defining value is
         ``||psi_next - psi_previous||_2 /
         max(||psi_previous||_2, 1e-30 Wb)``, evaluated with a common
         magnitude scale.  Two zero states return ``0.0``.
@@ -49,15 +52,21 @@ def compute_picard_flux_residual(psi_previous, psi_next):
     applied.  The ``1e-30 Wb`` denominator floor changes the ratio when the
     previous-state norm is smaller than the floor.  The scaled arithmetic
     handles selected very large and very small magnitudes, but a mathematical
-    ratio that is not representable as finite float64 is rejected.
+    ratio that is not representable as finite float64 is rejected.  The single
+    ``residual`` field is returned in a ``scirel._result.Result`` mapping,
+    which retains dictionary access and also exposes the field as an attribute.
 
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.diagnostics import compute_picard_flux_residual
     >>> previous = np.array([[3.0, 4.0]])
-    >>> assert compute_picard_flux_residual(previous, previous)['residual'] == 0.0
-    >>> assert np.isclose(compute_picard_flux_residual(previous, 2*previous)['residual'], 1.0)
+    >>> unchanged = compute_picard_flux_residual(previous, previous)
+    >>> doubled = compute_picard_flux_residual(previous, 2*previous)
+    >>> assert isinstance(unchanged, Result)
+    >>> assert unchanged.residual == unchanged['residual'] == 0.0
+    >>> assert np.isclose(doubled.residual, 1.0)
     """
     previous = np.asarray(psi_previous, dtype=float)
     next_state = np.asarray(psi_next, dtype=float)
@@ -71,7 +80,7 @@ def compute_picard_flux_residual(psi_previous, psi_next):
         float(np.max(np.abs(previous), initial=0.0)), float(np.max(np.abs(next_state), initial=0.0))
     )
     if scale == 0.0:
-        return {"residual": 0.0}
+        return Result(residual=0.0)
     previous_scaled = previous / scale
     # Subtract first where representable to preserve small changes of large states.
     with np.errstate(over="ignore"):
@@ -86,7 +95,7 @@ def compute_picard_flux_residual(psi_previous, psi_next):
     residual = float(np.hypot.reduce(change_scaled.ravel(), initial=0.0)) / denominator
     if not np.isfinite(residual):
         raise ValueError("relative residual exceeds the finite floating-point range")
-    return {"residual": residual}
+    return Result(residual=residual)
 
 
 __all__ = ["compute_picard_flux_residual"]

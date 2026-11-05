@@ -1,6 +1,9 @@
 """Fixed-flux gyrotropic parallel-pressure compatibility check."""
 
 import numpy as np
+
+from scirel._result import Result
+
 from ._fixed_flux_derivative import fixed_flux_derivative
 
 
@@ -62,23 +65,33 @@ def compute_parallel_pressure_residual(
     Returns
     -------
     rhs : ndarray of float64, same shape as the inputs
-        ``p_parallel - magnetic_field * dp_parallel_dB`` in ``[Pa]``.
+        Field ``rhs`` of the returned ``scirel._result.Result`` mapping,
+        containing ``p_parallel - magnetic_field * dp_parallel_dB`` in
+        ``[Pa]``.
     error : ndarray of float64, same shape as the inputs
+        Field ``error`` of the returned result mapping, containing
         ``p_perp - rhs`` in ``[Pa]``.
     relative_error : ndarray of float64, same shape as the inputs
+        Field ``relative_error`` of the returned result mapping, containing
         ``abs(error) / max(abs(p_perp), abs(rhs), atol)`` in
         ``[dimensionless]``.
     max_relative_error : float
-        Maximum pointwise relative error in ``[dimensionless]``.
+        Field ``max_relative_error`` of the returned result mapping,
+        containing the maximum pointwise relative error in
+        ``[dimensionless]``.
     mean_relative_error : float
-        Arithmetic mean of the pointwise relative errors in
+        Field ``mean_relative_error`` of the returned result mapping,
+        containing the arithmetic mean of the pointwise relative errors in
         ``[dimensionless]``.
     passed : bool
-        ``True`` exactly when ``max_relative_error <= rtol`` in ``[boolean]``.
+        Field ``passed`` of the returned result mapping.  It is ``True``
+        exactly when ``max_relative_error <= rtol`` in ``[boolean]``.
     dp_parallel_dB : ndarray of float64, same shape as the pressures
-        Fixed-psi derivative actually used by the diagnostic in ``[Pa/T]``.
+        Field ``dp_parallel_dB`` of the returned result mapping, containing
+        the fixed-psi derivative actually used by the diagnostic in ``[Pa/T]``.
     derivative_method : str
-        Description of the derivative source in ``[text]``: either an explicit
+        Field ``derivative_method`` of the returned result mapping,
+        describing the derivative source in ``[text]``: either an explicit
         fixed-flux derivative or a declared fixed-flux axis finite difference.
 
     Raises
@@ -113,13 +126,18 @@ def compute_parallel_pressure_residual(
     required for constant-field isotropic data.  A sampled finite-difference
     derivative carries interpolation and sampling error, so a passing result is
     a local pressure-compatibility observation, not a spatial force-balance or
-    global-stability proof.
+    global-stability proof.  All fields are returned in a
+    ``scirel._result.Result`` mapping, which retains dictionary access and also
+    exposes each field as an attribute.
 
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.diagnostics.parallel_pressure_residual import compute_parallel_pressure_residual
     >>> r=compute_parallel_pressure_residual([3.,3.],[3.,3.],[2.,2.],dp_parallel_dB=0.)
+    >>> assert isinstance(r, Result)
+    >>> assert r.error is r['error']
     >>> np.testing.assert_array_equal(r['error'],[0.,0.])
     >>> assert r['passed']
     """
@@ -146,16 +164,18 @@ def compute_parallel_pressure_residual(
     passed = bool(maximum <= rtol)
     if strict and not passed:
         raise ValueError("parallel equilibrium check failed")
-    return {
-        "rhs": rhs,
-        "error": error,
-        "relative_error": relative_error,
-        "max_relative_error": maximum,
-        "mean_relative_error": float(np.mean(relative_error)),
-        "passed": passed,
-        "dp_parallel_dB": derivative,
-        "derivative_method": method,
-    }
+    return Result(
+        {
+            "rhs": rhs,
+            "error": error,
+            "relative_error": relative_error,
+            "max_relative_error": maximum,
+            "mean_relative_error": float(np.mean(relative_error)),
+            "passed": passed,
+            "dp_parallel_dB": derivative,
+            "derivative_method": method,
+        }
+    )
 
 
 __all__ = ["compute_parallel_pressure_residual"]

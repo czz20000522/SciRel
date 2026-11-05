@@ -4,6 +4,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 import numpy as np
 
+from scirel._result import Result
+
 _CHANNELS = ("density", "electron_temperature", "p_parallel", "p_perp")
 
 
@@ -75,11 +77,14 @@ def reduce_observation_residuals(*, predicted, observations):
     Returns
     -------
     residual_vector : ndarray of float64, shape (N_residual,)
-        Signed residuals ``(prediction - observation) / sigma`` in
-        ``[dimensionless]``, concatenated in fixed channel order and then in
-        NumPy C order within each channel.  ``N_residual`` is positive.
+        Field ``residual_vector`` of the returned ``scirel._result.Result``
+        mapping, containing signed residuals
+        ``(prediction - observation) / sigma`` in ``[dimensionless]``,
+        concatenated in fixed channel order and then in NumPy C order within
+        each channel.  ``N_residual`` is positive.
     chi2 : float
-        Inner product of ``residual_vector`` in ``[dimensionless]``.  It has no
+        Field ``chi2`` of the returned result mapping, containing the inner
+        product of ``residual_vector`` in ``[dimensionless]``.  It has no
         division by degrees of freedom.
 
     Raises
@@ -103,17 +108,22 @@ def reduce_observation_residuals(*, predicted, observations):
     -----
     Channels are visited in the fixed order ``flux_loops``,
     ``thomson.density``, ``thomson.electron_temperature``,
-    ``thomson.p_parallel``, and ``thomson.p_perp``.  The returned mapping is a
-    plain ``dict`` with ``residual_vector`` and ``chi2`` keys.  Units are
-    matched as declared labels only; no unit conversion, calibration, noise
-    covariance, or instrument response is inferred.  ``chi2`` is an algebraic
-    diagonal-weight sum, not by itself a statistical significance result.
+    ``thomson.p_parallel``, and ``thomson.p_perp``.  The ``residual_vector``
+    and ``chi2`` fields are returned in a ``scirel._result.Result`` mapping,
+    which retains dictionary access and also exposes each field as an
+    attribute.  Units are matched as declared labels only; no unit conversion,
+    calibration, noise covariance, or instrument response is inferred.
+    ``chi2`` is an algebraic diagonal-weight sum, not by itself a statistical
+    significance result.
 
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.diagnostics import reduce_observation_residuals
     >>> r=reduce_observation_residuals(predicted={'flux_loops':[3.],'thomson':{'p_perp':[5.]},'units':{'flux_loops':'Wb','thomson':{'p_perp':'Pa'}}}, observations={'flux_loops':{'values':[1.],'sigma':[2.],'unit':'Wb'},'thomson':{'p_perp':{'values':[3.],'sigma':[1.],'unit':'Pa'}}})
+    >>> assert isinstance(r, Result)
+    >>> assert r.residual_vector is r['residual_vector']
     >>> np.testing.assert_allclose(r['residual_vector'],[1.,2.])
     >>> assert r['chi2']==5.
     """
@@ -151,7 +161,7 @@ def reduce_observation_residuals(*, predicted, observations):
         chi2 = float(vector @ vector)
     if not np.isfinite(chi2):
         raise ValueError("chi2 must be finite")
-    return {"residual_vector": vector, "chi2": chi2}
+    return Result(residual_vector=vector, chi2=chi2)
 
 
 run = reduce_observation_residuals

@@ -5,7 +5,7 @@
   "en": "Relative Picard flux-state residual",
   "zh": "Picard 磁通状态相对残差"
  },
- "summary": "Measure the Euclidean change between successive two-dimensional flux states relative to the previous state, with scaled arithmetic and a small denominator floor.",
+ "summary": "Measure the Euclidean change between successive two-dimensional flux states relative to the previous state, with scaled arithmetic and a small denominator floor. Return the residual as a scirel._result.Result mapping.",
  "taxonomy": [
   "diagnostics",
   "picard",
@@ -31,7 +31,7 @@
  "identity": {
   "relation": "previous and next flux states to a relative Euclidean change diagnostic",
   "direction": "psi_previous, psi_next -> residual",
-  "definition": "Compute ||psi_next-psi_previous||_2 / max(||psi_previous||_2, 1e-30 Wb) using the largest absolute input magnitude as an arithmetic scale. A zero-valued pair returns zero. Reject a zero scaled denominator or a nonfinite final ratio; representability at extreme subnormal magnitudes is not guaranteed.",
+  "definition": "Compute ||psi_next-psi_previous||_2 / max(||psi_previous||_2, 1e-30 Wb) using the largest absolute input magnitude as an arithmetic scale. A zero-valued pair returns zero. Reject a zero scaled denominator or a nonfinite final ratio; representability at extreme subnormal magnitudes is not guaranteed. The residual field is returned in a scirel._result.Result mapping; mapping and attribute access expose the same value.",
   "model": "discrete relative L2 flux-state change for a Picard stopping criterion",
   "geometry": "caller-defined co-located two-dimensional flux grid",
   "coordinates": "both arrays indexed [Z,R], with no interpretation of physical spacings by this Operator",
@@ -64,7 +64,7 @@
  "outputs": [
   {
    "name": "residual",
-   "description": "Relative Euclidean flux change.",
+   "description": "Field of the returned scirel._result.Result mapping: relative Euclidean flux change.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "float",
@@ -89,7 +89,7 @@
   "invalid_input": "Raises ValueError for unequal shapes, non-two-dimensional arrays or nonfinite entries.",
   "runtime_failure": "Raises ValueError for a zero scaled denominator or nonfinite final ratio; other NumPy conversion or arithmetic failures propagate. Extreme subnormal scaling is not guaranteed to preserve the mathematical ratio.",
   "nonconvergence": "Not applicable; this Operator only measures one state change.",
-  "partial_results": "No partial mapping is returned on failure."
+  "partial_results": "No partial scirel._result.Result mapping is returned on failure."
  },
  "public_api": {
   "python": {
@@ -105,16 +105,17 @@
   "dependencies": []
  },
  "example": {
-  "description": "Doubling a 3-4 flux state produces a unit relative change; the unchanged state has zero residual.",
-  "code": "import numpy as np\nfrom scirel.diagnostics import compute_picard_flux_residual\nprevious = np.array([[3.0, 4.0]])\nassert compute_picard_flux_residual(previous, previous)['residual'] == 0.0\nassert np.isclose(compute_picard_flux_residual(previous, 2*previous)['residual'], 1.0)",
-  "expected": "The unchanged residual is 0 and the doubled-state residual is 1."
+  "description": "Doubling a 3-4 flux state produces a unit relative change; the unchanged state has zero residual, and both success branches return the named Result mapping.",
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import compute_picard_flux_residual\nprevious = np.array([[3.0, 4.0]])\nunchanged = compute_picard_flux_residual(previous, previous)\ndoubled = compute_picard_flux_residual(previous, 2*previous)\nassert isinstance(unchanged, Result)\nassert unchanged.residual == unchanged['residual'] == 0.0\nassert np.isclose(doubled.residual, 1.0)",
+  "expected": "The unchanged and doubled-state residuals remain 0 and 1, and both success branches expose the same value by key and attribute through scirel._result.Result."
  },
  "verification": {
   "scope": [
    "Identical and doubled flux states.",
    "Large and small finite numerical boundaries, including changes whose unscaled subtraction overflows.",
    "Unrepresentable relative ratio is rejected.",
-   "Wrong-rank or mismatched shapes and nonfinite input entries are rejected."
+   "Wrong-rank or mismatched shapes and nonfinite input entries are rejected.",
+   "Result wrapping preserves the residual key, value, scalar type, mapping access and both zero/nonzero success branches against baseline 0f74255b; attribute access reaches the same field."
   ],
   "tests": [
    "tests/diagnostics/test_picard_flux_residual.py"

@@ -349,9 +349,9 @@
   },
   {
    "asset_id": "scirel.diagnostics.parallel-pressure-residual",
-   "source_sha256": "976c3cab0aa670a9b916a77c97439cc03c3e643a1e95bdbadff218f7a0c8003b",
-   "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。",
-   "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。",
+   "source_sha256": "3524707ca98792cb1d53674ff898be6e10ab0d98dce5037525a05ff3e1698d1e",
+   "summary": "给定固定磁通导数，检查局部旋磁对称平行压强相容性。 以 scirel._result.Result 映射返回全部命名字段。",
+   "definition": "rhs=p_parallel-B*(partial p_parallel/partial B)|psi，等价于 -B²*partial(p_parallel/B)/partial B|psi。error=p_perp-rhs，relative_error=abs(error)/max(abs(p_perp),abs(rhs),atol)；最大相对误差 <=rtol 时 passed=True。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "显式固定磁通压强定律的旋磁对称相容性，不是空间力平衡残差。",
    "assumptions": [
     "B 是 T 单位正磁场模，两个压强用 Pa。",
@@ -418,49 +418,49 @@
    "outputs": [
     {
      "name": "rhs",
-     "description": "固定 psi 下 p_parallel-B*dp_parallel_dB，单位 Pa。",
+     "description": "Result 字段：固定 psi 下 p_parallel-B*dp_parallel_dB，单位 Pa。",
      "constraints": "成功时有限；均匀各向同性压强配显式零导数可通过。",
      "dtype": "float64 数组"
     },
     {
      "name": "error",
-     "description": "有符号残差 p_perp-rhs，单位 Pa。",
+     "description": "Result 字段：有符号残差 p_perp-rhs，单位 Pa。",
      "constraints": "成功时有限。",
      "dtype": "float64 数组"
     },
     {
      "name": "relative_error",
-     "description": "该量的公式定义为 abs(error)/max(abs(p_perp),abs(rhs),atol)。",
+     "description": "Result 字段：该量的公式定义为 abs(error)/max(abs(p_perp),abs(rhs),atol)。",
      "constraints": "成功时有限非负。",
      "dtype": "float64 数组"
     },
     {
      "name": "max_relative_error",
-     "description": "逐点相对误差的最大值。",
+     "description": "Result 字段：逐点相对误差的最大值。",
      "constraints": "有限非负。",
      "dtype": "float 浮点数"
     },
     {
      "name": "mean_relative_error",
-     "description": "逐点相对误差的平均值。",
+     "description": "Result 字段：逐点相对误差的平均值。",
      "constraints": "有限非负。",
      "dtype": "float 浮点数"
     },
     {
      "name": "passed",
-     "description": "最大相对误差是否不超过 rtol。",
+     "description": "Result 字段：最大相对误差是否不超过 rtol。",
      "constraints": "strict 真值为真且超限时抛异常，不返回失败映射。",
      "dtype": "bool 布尔值"
     },
     {
      "name": "dp_parallel_dB",
-     "description": "采用的固定 psi 平行压强偏导，单位 Pa/T。",
+     "description": "Result 字段：采用的固定 psi 平行压强偏导，单位 Pa/T。",
      "constraints": "同压强形状且有限。",
      "dtype": "float64 数组"
     },
     {
      "name": "derivative_method",
-     "description": "导数获得方式。",
+     "description": "Result 字段：导数获得方式。",
      "constraints": "显式导数或固定 psi 轴有限差分。",
      "dtype": "str 字符串"
     }
@@ -483,17 +483,18 @@
     "invalid_input": "缺导数信息、冲突的导数/轴、非有限或非正 B、错形、非单调/非恒 psi 采样线抛 ValueError；标量控制按合同验证。",
     "runtime_failure": "残差或裕度非有限抛 FloatingPointError；回调错误传播。strict 为真且最大归一化残差超限时不返回结果。",
     "nonconvergence": "不求非线性方程；调用者负责导数采样收敛。",
-    "partial_results": "无部分结果。"
+    "partial_results": "无部分结果；失败不返回 scirel._result.Result 映射。"
    },
    "example": {
-    "description": "为均匀各向同性压强显式给零导数，验证固定磁通关系。",
-    "expected": "残差为零；未从恒定磁场样本臆造导数。"
+    "description": "为均匀各向同性压强显式给零导数，验证固定磁通关系。 并核对命名 Result 映射。",
+    "expected": "残差为零；未从恒定磁场样本臆造导数。 返回 scirel._result.Result，原有字段、顺序、数值、形状、dtype 与映射访问保持不变，属性读取到同一字段。"
    },
    "verification": {
     "scope": [
      "显式均匀各向同性和固定 psi 多线多项式回归。",
      "63 个守恒量双 Maxwell 状态交叉核对压强相容性与总压强斜率阈值。",
-     "四级采样加密展示固定 psi 线上有限差分收敛。"
+     "四级采样加密展示固定 psi 线上有限差分收敛。",
+     "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b）；属性读取到同一字段。"
     ],
     "evidence_ceiling": "解析恒等式、显式失败回归和独立数值比较支持所述数学合同，不确证实测等离子体有效性或一般稳定性定理。",
     "known_limitations": [
@@ -2496,9 +2497,9 @@
   },
   {
    "asset_id": "scirel.diagnostics.picard-flux-residual",
-   "source_sha256": "7ea856ec883fabb9754be3c09b584aa83aabab3adedab054831e632602a67425",
-   "summary": "用缩放算术及小分母下限，测量连续两个二维磁通状态相对前态的欧几里得变化。",
-   "definition": "计算 ||psi_next−psi_previous||₂/max(||psi_previous||₂,1e-30 Wb)，以输入最大绝对值作算术尺度。全零对返回零；缩放分母为零或最终比值非有限时拒绝。极端次正规数不保证可表示。",
+   "source_sha256": "4e45aa9bdbb96d849ca99df4bb469ebf111b37386f2267826d062e48698548e9",
+   "summary": "用缩放算术及小分母下限，测量连续两个二维磁通状态相对前态的欧几里得变化。 以 scirel._result.Result 映射返回该残差。",
+   "definition": "计算 ||psi_next−psi_previous||₂/max(||psi_previous||₂,1e-30 Wb)，以输入最大绝对值作算术尺度。全零对返回零；缩放分母为零或最终比值非有限时拒绝。极端次正规数不保证可表示。 residual 字段作为 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "用于 Picard 停止判据的离散相对 L2 磁通变化。",
    "assumptions": [
     "两数组表示同一 Wb 磁通量、同一 [Z,R] 采样。",
@@ -2522,7 +2523,7 @@
    "outputs": [
     {
      "name": "residual",
-     "description": "相对欧几里得磁通变化。",
+     "description": "Result 字段：相对欧几里得磁通变化。",
      "constraints": "可表示时非负且有限；双零或相同状态为零。",
      "dtype": "浮点数"
     }
@@ -2544,18 +2545,19 @@
     "invalid_input": "形状不等、非二维或非有限元素时抛出 ValueError。",
     "runtime_failure": "缩放分母为零或最终比值非有限时抛出 ValueError；其他转换/算术错误继续抛出；极端次正规缩放不保证保留数学比值。",
     "nonconvergence": "不适用；只测一次状态变化。",
-    "partial_results": "失败不返回部分映射。"
+    "partial_results": "失败不返回部分 scirel._result.Result 映射。"
    },
    "example": {
-    "description": "3–4 磁通状态加倍时相对变化为 1，保持原态时为 0。",
-    "expected": "不变状态 residual=0，加倍状态 residual=1。"
+    "description": "3–4 磁通状态加倍时相对变化为 1，保持原态时为 0；两个成功分支都返回命名 Result 映射。",
+    "expected": "不变与加倍状态 residual 仍分别为 0、1；两者都通过 scirel._result.Result 按键和属性读取同一个值。"
    },
    "verification": {
     "scope": [
      "相同及加倍状态。",
      "极大/极小有限输入，包括未缩放相减会溢出的情况。",
      "拒绝不可表示比值。",
-     "拒绝错维/错形和非有限元素。"
+     "拒绝错维/错形和非有限元素。",
+     "Result 包装保持 residual 键、数值、标量类型与映射访问，并覆盖零/非零两个成功分支（基线 0f74255b）；属性读取到同一字段。"
     ],
     "evidence_ceiling": "数值测试涵盖公式与所选极端值，不证明物理平衡收敛、任意下溢行为或专家认可。",
     "known_limitations": [
@@ -7617,9 +7619,9 @@
   },
   {
    "asset_id": "scirel.diagnostics.firehose-mirror-margins",
-   "source_sha256": "0670e08b91fd73048b0570235fd5c5c61f5eadeb0ceedab24be601b013e5d71c",
-   "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。",
-   "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp/dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。",
+   "source_sha256": "3e2187a4c6a9c14a00c0e0f6da840e729c0c8fa104c0fc8aa5363f747add1e9f",
+   "summary": "用显式固定磁通导数计算局部旋磁对称压强诊断。 以 scirel._result.Result 映射返回全部命名字段。",
+   "definition": "firehose_margin=B²/mu0+p_perp-p_parallel；mirror_margin=B*d[p_perp+B²/(2*mu0)]/dB|psi=B²/mu0+B*dp_perp/dB。所有样本最小值严格为正时相应局部标志为 True。对守恒量双 Maxwell 分布，镜模条件为 1-beta_perp*(T_perp/T_parallel-1)>0。 普通非严重相消数值保留原 float64 运算顺序。异号贡献抵消后，若结果幅度不大于最大项的一半，或中间乘积/商丢失量级，则对完整关系使用精确二进制有理数求值，最后一次舍入到 float64。此算术分支不是物理容差，不把结果钳制为零，也不只特判相等压强；最终确实不可表示时仍失败。 所有命名字段作为同一个 scirel._result.Result 映射返回；按键和属性读取同一个值。",
    "model": "局部无流旋磁对称张力和长波总压强斜率准则。正导数号由此定义和双 Maxwell 阈值给出，与 Frank2509.17288v4 Eq6 的字面反号冲突；不声称作者确认勘误。",
    "assumptions": [
     "B 是 T 单位正磁场模，两个压强用 Pa。",
@@ -7680,67 +7682,67 @@
    "outputs": [
     {
      "name": "firehose_margin",
-     "description": "逐点 firehose 裕度，单位 Pa。",
+     "description": "Result 字段：逐点 firehose 裕度，单位 Pa。",
      "constraints": "成功时有限。",
      "dtype": "float64 数组"
     },
     {
      "name": "mirror_margin",
-     "description": "固定 psi 总压强斜率裕度 B²/mu0+B*dp_perp_dB，单位 Pa。",
+     "description": "Result 字段：固定 psi 总压强斜率裕度 B²/mu0+B*dp_perp_dB，单位 Pa。",
      "constraints": "成功时有限，是局部诊断而非一般稳定定理。",
      "dtype": "float64 数组"
     },
     {
      "name": "firehose_stable",
-     "description": "所有 firehose 裕度是否严格正。",
+     "description": "Result 字段：所有 firehose 裕度是否严格正。",
      "constraints": "样本汇总标志，不是空间稳定场或充分物理稳定定理。",
      "dtype": "bool 布尔值"
     },
     {
      "name": "mirror_stable",
-     "description": "所有镜模裕度是否严格正。",
+     "description": "Result 字段：所有镜模裕度是否严格正。",
      "constraints": "样本汇总标志，不是空间稳定场或充分物理稳定定理。",
      "dtype": "bool 布尔值"
     },
     {
      "name": "min_firehose_margin",
-     "description": "样本 firehose 裕度最小值，单位 Pa。",
+     "description": "Result 字段：样本 firehose 裕度最小值，单位 Pa。",
      "constraints": "成功时有限。",
      "dtype": "float 浮点数"
     },
     {
      "name": "min_mirror_margin",
-     "description": "样本镜模裕度最小值，单位 Pa。",
+     "description": "Result 字段：样本镜模裕度最小值，单位 Pa。",
      "constraints": "成功时有限。",
      "dtype": "float 浮点数"
     },
     {
      "name": "parallel_equilibrium_error",
-     "description": "原样转发 parallel_equilibrium.error，缺省为 None。",
+     "description": "Result 字段：原样转发 parallel_equilibrium.error，缺省为 None。",
      "constraints": "不独立检查数值、单位、形状或有限性。",
      "dtype": "未经验证的上游值或 None"
     },
     {
      "name": "max_parallel_equilibrium_error",
-     "description": "原样转发 parallel_equilibrium.max_relative_error，缺省为 None。",
+     "description": "Result 字段：原样转发 parallel_equilibrium.max_relative_error，缺省为 None。",
      "constraints": "不独立检查数值、单位或有限性。",
      "dtype": "未经验证的上游值或 None"
     },
     {
      "name": "dp_perp_dB",
-     "description": "实际采用的固定 psi 垂直压强导数，单位 Pa/T。",
+     "description": "Result 字段：实际采用的固定 psi 垂直压强导数，单位 Pa/T。",
      "constraints": "与压强同形且有限。",
      "dtype": "float64 数组"
     },
     {
      "name": "derivative_method",
-     "description": "固定磁通导数的获取方法。",
+     "description": "Result 字段：固定磁通导数的获取方法。",
      "constraints": "显式导数或固定 psi 轴有限差分。",
      "dtype": "str 字符串"
     },
     {
      "name": "criterion",
-     "description": "局部诊断的物理解释标识。",
+     "description": "Result 字段：局部诊断的物理解释标识。",
      "constraints": "固定为 local_gyrotropic_tension_and_fixed_flux_total_pressure_slope。",
      "dtype": "str 字符串"
     }
@@ -7763,11 +7765,11 @@
     "invalid_input": "导数信息缺失、导数与轴冲突、非有限/非正 B、错形或非单调/变 psi 采样线抛 ValueError；其他标量控制按合同验证。",
     "runtime_failure": "FloatingPointError 表示最终数学裕度不可表示为有限 float64；不因可恢复的 B 平方中间溢出拒绝可表示结果，其他转换或回调错误继续抛出。",
     "nonconvergence": "不求非线性方程；导数采样收敛由调用者负责。",
-    "partial_results": "无部分结果；与 margin API 同时提供的可选平行平衡值会原样转发，不经独立验证。"
+    "partial_results": "无部分结果；与 margin API 同时提供的可选平行平衡值会原样转发，不经独立验证。失败不返回 scirel._result.Result 映射。"
    },
    "example": {
-    "description": "显式各向异性双 Maxwell 局部状态不满足镜模条件，但保留正 firehose 张力。",
-    "expected": "firehose 裕度为 2、镜模裕度为 −3；导数符号与显式总压强导数及动力学阈值一致。两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力；组合入口据此保持严格正值标志。"
+    "description": "显式各向异性双 Maxwell 局部状态不满足镜模条件，但保留正 firehose 张力。 结果通过命名 Result 映射读取。",
+    "expected": "firehose 裕度为 2、镜模裕度为 −3；导数符号与显式总压强导数及动力学阈值一致。两个 1e100 Pa 压强精确抵消后仍保留 1 Pa 磁张力；组合入口据此保持严格正值标志。 返回 scirel._result.Result 映射，所有字段按键和属性读取同一个值。"
    },
    "verification": {
     "scope": [
@@ -7775,7 +7777,8 @@
      "63 个守恒量双 Maxwell 状态交叉核对压强相容性与总压强斜率阈值。",
      "四级采样加密展示固定 psi 线上有限差分收敛。",
      "以独立高精度 Decimal 验证有限输入的中间平方上下溢及相消；最终不可表示的结果仍拒绝。",
-     "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。"
+     "在已安装 wheel 上，以独立 2000 位 Decimal 算术核对相等/不等压强抵消、不同量纲下相邻浮点输入、镜模余量正负号、非连续多维数组及精确零值标志。",
+     "Result 包装保持全部键、键顺序、数值、形状、dtype 与映射访问（基线 0f74255b），包括零维标量裕度；属性读取到同一字段。"
     ],
     "evidence_ceiling": "解析恒等式、显式失败回归和独立数值比较支持所述数学合同，不确证实测等离子体有效性或一般稳定性定理。",
     "known_limitations": [

@@ -3,6 +3,9 @@
 from __future__ import annotations
 from collections.abc import Mapping
 import numpy as np
+
+from scirel._result import Result
+
 from .observation_residuals import _CHANNELS
 
 
@@ -144,16 +147,21 @@ def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
     Returns
     -------
     flux_loops : ndarray of float64, shape (N_flux,), optional
-        Requested raw-psi or single-turn linked-flux samples in point order in
-        ``[raw_psi: original unit; magnetic_flux: Wb]``.  The key is absent
-        unless requested.
+        Field ``flux_loops`` of the returned ``scirel._result.Result`` mapping,
+        containing requested raw-psi or single-turn linked-flux samples in
+        point order in ``[raw_psi: original unit; magnetic_flux: Wb]``.  The
+        key is absent unless requested.
     thomson : dict, optional
-        Requested profile arrays in
-        ``[pressure in Pa; density in m^-3; electron temperature as declared]``.
-        Each value has shape ``(N_point,)``; the key is absent unless requested.
+        Field ``thomson`` of the returned result mapping, containing requested
+        profile arrays in ``[pressure in Pa; density in m^-3; electron
+        temperature as declared]``.  Each value has shape ``(N_point,)``; the
+        key is absent unless requested.  This nested mapping remains a plain
+        ``dict``.
     units : dict
-        One-to-one unit labels for the actual outputs in ``[identifier]``.
-        Flux units are a string; Thomson units are a channel-to-string mapping.
+        Field ``units`` of the returned result mapping, containing one-to-one
+        unit labels for the actual outputs in ``[identifier]``.  Flux units are
+        a string; Thomson units are a channel-to-string mapping.  This nested
+        mapping remains a plain ``dict``.
 
     Raises
     ------
@@ -188,26 +196,34 @@ def synthesize_equilibrium_diagnostics(inputs=None, **kwargs):
 
     Only explicitly requested outputs are returned.  Coil turns, reference-loop
     subtraction, instrument response, and temperature or density inversion are
-    never inferred.  The returned mapping is a plain ``dict``, and the caller's
-    equilibrium mapping and arrays are not modified.
+    never inferred.  The top-level fields are returned in a
+    ``scirel._result.Result`` mapping, which retains dictionary access and also
+    exposes each field as an attribute; nested ``thomson`` and ``units``
+    mappings remain plain ``dict`` objects.  The caller's equilibrium mapping
+    and arrays are not modified.
 
     Examples
     --------
     >>> import numpy as np
+    >>> from scirel._result import Result
     >>> from scirel.diagnostics import synthesize_equilibrium_diagnostics
     >>> R,Z=np.meshgrid([0.,1.,2.],[-1.,0.,1.])
     >>> r=synthesize_equilibrium_diagnostics(R=R,Z=Z,equilibrium={'psi':R**2,'psi_unit':'Wb/rad'},observations={'flux_loops':{'points':[[1.,0.]],'quantity':'magnetic_flux','unit':'Wb'}})
+    >>> assert isinstance(r, Result)
+    >>> assert r.flux_loops is r['flux_loops']
     >>> np.testing.assert_allclose(r['flux_loops'],[2*np.pi],rtol=1e-14)
     >>> assert r['units']['flux_loops']=='Wb'
     """
     from scirel._composition import compose
     from scirel.geometry.bilinear_grid_sampling import sample_rectilinear_field
 
-    return compose(
-        _run_composition,
-        inputs,
-        kwargs,
-        {"asset_loader": {"scirel.geometry.bilinear_grid_sampling": sample_rectilinear_field}},
+    return Result(
+        compose(
+            _run_composition,
+            inputs,
+            kwargs,
+            {"asset_loader": {"scirel.geometry.bilinear_grid_sampling": sample_rectilinear_field}},
+        )
     )
 
 
