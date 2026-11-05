@@ -39,7 +39,8 @@
   "assumptions": [
    "SciPy double arithmetic plus mpmath1.3.0 core for genuine precision fallback.",
    "Accuracy is limited by conditioning and rounded input coefficients; high precision is not a universal forward-error proof.",
-   "The four/six output vpa order split is intentionally not applied; post-eig symbolic conversion provided no additional precision."
+   "The four/six output vpa order split is intentionally not applied; post-eig symbolic conversion provided no additional precision.",
+   "The active-component residual excludes rows below 1e-12 of each column's global scale from the worst metric. Those rows remain in the global error and finite checks; a nonfinite residual raises ArithmeticError."
   ]
  },
  "inputs": [
@@ -229,13 +230,14 @@
   "scope": [
    "Current SciRel implementation and the repository tests listed in this contract cover the declared public ports and numerical relation.",
    "The example exercises one bounded representative case; it does not extend applicability beyond the declared preconditions.",
-   "External PDRF real-frequency reference points are covered by tests/kinetic/test_dispersion_multifluid_oracle.py."
+   "External PDRF real-frequency reference points are covered by tests/kinetic/test_dispersion_multifluid_oracle.py.",
+   "A synthetic residual checks that an inactive low-scale row does not set the worst metric while a nonfinite inactive residual still raises ArithmeticError."
   ],
   "tests": [
    "tests/kinetic/test_spectral_evolution.py",
    "tests/kinetic/test_dispersion_multifluid_oracle.py"
   ],
-  "evidence_ceiling": "Bounded to the dense generalized temporal eigenproblem with ordered real/imaginary sorts and backward residuals. Evidence: `test_spectral_evolution.py` contains 12 test functions, 2 of which reference `solve_temporal_spectrum`, and is shared by 4 assets; `test_dispersion_multifluid_oracle.py` contains 4 test functions, 1 of which references `solve_temporal_spectrum`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression plus one fixed external PDRF truth case. It does not establish universal forward eigenvalue accuracy, unique degenerate polarizations, or mode tracking.",
+  "evidence_ceiling": "Bounded to the dense generalized temporal eigenproblem with ordered real/imaginary sorts and backward residuals. Evidence: `test_spectral_evolution.py` contains 13 test functions, 2 of which reference `solve_temporal_spectrum`, and is shared by 4 assets; `test_dispersion_multifluid_oracle.py` contains 4 test functions, 1 of which references `solve_temporal_spectrum`, and is shared by 3 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression plus one fixed external PDRF truth case. It does not establish universal forward eigenvalue accuracy, unique degenerate polarizations, or mode tracking.",
   "known_limitations": [
    "Backward residual bounds do not certify universal forward accuracy; rounded input matrices limit available information.",
    "No branch tracking or unique phase/degenerate basis.",

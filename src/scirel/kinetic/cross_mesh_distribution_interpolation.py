@@ -390,7 +390,11 @@ def interp_distribution_across_mesh(
     -----
     Spatial interpolation acts on extensive moments before normalizing by
     density. The 1e-12 positive reference mixture changes the entropy prior,
-    never the target moments. No negative clipping or partial result is used.
+    never the target moments. Cell-pair overlap weights are zero whenever the
+    source and destination velocity-cell intersections are empty; ``correct=0``
+    preserves those literal zeros, while ``correct=1`` may later populate
+    zero-overlap nodes through the declared positive reference mixture. No
+    negative clipping or partial result is used.
     Finite-grid conservation does not establish an atomic-physics model.
     """
     vr_a = _as_1d(vr_a, "vr_a")

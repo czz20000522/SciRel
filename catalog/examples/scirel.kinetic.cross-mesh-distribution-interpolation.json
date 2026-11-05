@@ -43,6 +43,7 @@
    "Cylindrical cell volumes are pi*(r_right^2-r_left^2)*dvx, using the shared SciRel quadrature. Conserved momentum and energy are discrete node moments, not analytic integrals over a continuous reconstructed distribution.",
    "Source normalization is converted with fV=sqrt(Tnorm_b/Tnorm_a). Density, axial momentum density and squared-speed energy density are spatially interpolated before division by density; interpolating mean velocity or mean energy would be wrong when density varies.",
    "For correct=1, finite nonnegative input is required. Positive reference probability (1e-12 cell-volume mixture) can put mass in previously zero-overlap cells; it selects a realizable entropy projection without relaxing moments, clipping negative output or preserving all higher moments.",
+   "Cell-pair overlap weights are zero when the source and destination velocity-cell intersections are empty. correct=0 preserves those literal zeros; correct=1 may populate zero-overlap nodes only through the declared reference mixture.",
    "Realizable normalized targets lie in conv{(vx_j, vr_i^2+vx_j^2)}. Targets on a face use only that face. Scaled geometric classification uses 64 binary64 eps; the final distribution must satisfy all three scaled moment residuals within 128 eps.",
    "Damped Newton solves the entropy dual, with covariance Hessian and stable log-sum-exp. max_correction_iterations caps updates per spatial slice (default 1000); infeasibility and numerical nonconvergence are distinct failures, neither returns a partial distribution.",
    "Zero-density slices are zero. Equal velocity grids and equal Tnorm use convex spatial interpolation and preserve identity at common spatial nodes; out-of-domain spatial nodes are zero-filled.",
@@ -228,14 +229,15 @@
    "Independent scalar cylindrical quadrature checks nonuniform grids, nonzero drift, unequal temperatures and interpolation of extensive moments when spatial density varies.",
    "Exact zero-density and equal-grid identity/convex spatial interpolation are checked, including outside-source spatial zero fill.",
    "Lower/upper convex-hull edges, a vertex and a near-face interior target are checked without clipping or relaxing targets.",
-   "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and the correct=0/warning behavior are checked."
+   "Input rejection, distinct infeasibility versus bounded numerical exhaustion, input immutability, deterministic repetition and the correct=0/warning behavior are checked.",
+   "A disjoint destination velocity cell is checked to remain zero while overlapping cells preserve their constant algebraic value."
   ],
   "tests": [
    "tests/kinetic/test_cross_mesh_distribution.py",
    "tests/kinetic/test_positive_conservative_remap.py",
    "tests/kinetic/test_cylindrical_velocity_quadrature.py"
   ],
-  "evidence_ceiling": "Bounded to positive conservative three-moment cross-mesh distribution interpolation and its infeasibility failures. Evidence: `test_cross_mesh_distribution.py` contains 14 test functions, 14 of which reference `interp_distribution_across_mesh`, and is bound only by this asset; `test_positive_conservative_remap.py` contains 11 test functions, none of which references `interp_distribution_across_mesh`, and is bound only by this asset; `test_cylindrical_velocity_quadrature.py` contains 17 test functions, none of which references `interp_distribution_across_mesh`, and is shared by 2 assets; the bounded example was executed by this audit. Oracle: analytic convex-hull infeasibility proof plus frozen construction values. It does not establish a physically unrealizable moment target, higher-moment/shape preservation, or entropy conservation.",
+  "evidence_ceiling": "Bounded to positive conservative three-moment cross-mesh distribution interpolation and its infeasibility failures. Evidence: `test_cross_mesh_distribution.py` contains 15 test functions, 15 of which reference `interp_distribution_across_mesh`, and is bound only by this asset; `test_positive_conservative_remap.py` contains 11 test functions, none of which references `interp_distribution_across_mesh`, and is bound only by this asset; `test_cylindrical_velocity_quadrature.py` contains 17 test functions, none of which references `interp_distribution_across_mesh`, and is shared by 2 assets; the bounded example was executed by this audit. Oracle: analytic convex-hull infeasibility proof plus frozen construction values. It does not establish a physically unrealizable moment target, higher-moment/shape preservation, or entropy conservation.",
   "known_limitations": [
    "Finite destination nodes can make requested moments unrealizable; the caller must provide a feasible grid or handle InfeasibleMomentsError.",
    "The entropy prior includes a 1e-12 cell-volume mixture and may populate zero-overlap cells. Higher moments and fine distribution shape are not conserved by the three-moment constraints.",

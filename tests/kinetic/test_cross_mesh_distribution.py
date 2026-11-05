@@ -159,6 +159,22 @@ def test_domain_edges_fail_closed():
         interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, float("inf"), vr_b, vx_b, x_b, 1.5)
 
 
+def test_disjoint_velocity_cells_are_zero_and_overlapping_cells_are_preserved():
+    vr_a = np.array([0.5, 1.0, 2.0])
+    vx_a = np.array([-1.5, -0.5, 0.5, 1.5])
+    x_a = np.array([0.0, 1.0])
+    vr_b = np.array([0.1, 0.5, 1.0, 2.0, 3.0])
+    vx_b = np.array([-2.5, -1.5, -0.5, 0.5, 1.5, 2.5])
+    x_b = np.array([0.0, 1.0])
+    fa = np.ones((vr_a.size, vx_a.size, x_a.size))
+
+    fb = interp_distribution_across_mesh(fa, vr_a, vx_a, x_a, 1.0, vr_b, vx_b, x_b, 1.0, correct=0)
+
+    np.testing.assert_array_equal(fb[4, :, :], 0.0)
+    np.testing.assert_array_equal(fb[:, [0, 5], :], 0.0)
+    np.testing.assert_allclose(fb[:4, 1:5, :], 1.0, rtol=0.0, atol=0.0)
+
+
 def test_axis_monotonicity_and_node_count_fail_closed():
     """Pre-review regressions: the saved arm does not validate monotonicity
     of x_a/x_b/vx_a/vx_b or minimum node counts, so non-monotone axes or

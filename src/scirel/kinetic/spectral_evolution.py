@@ -385,6 +385,12 @@ def assemble_spectral_matrix(state, kx, kz, *, rel=0):
 
 
 def _residuals(M, A, values, V):
+    """Return global and active-component backward residuals.
+
+    The worst component metric excludes rows below 1e-12 of the per-column
+    global scale. Those inactive rows still enter ``errors`` and the finite
+    checks; a nonfinite residual is never hidden by the active mask.
+    """
     # Normalize the producer before forming products, avoiding overflow in
     # the norm or |lambda|*norm(A). This is backward error, not mode accuracy.
     f = max(
@@ -422,6 +428,9 @@ def solve_temporal_spectrum(M, A, *, vectors=False, oldmethod=2, scales=None, ou
     Sorting real/imag parts independently is not branch tracking. Returned
     residuals use scaled coordinates; they establish backward error, not
     forward accuracy for ill-conditioned or degenerate eigenvalues.
+    The worst component metric ignores rows below 1e-12 of the per-column
+    global scale. Inactive rows remain in the global error and finite checks,
+    so a nonfinite residual still raises ``ArithmeticError``.
     Optional output_count 0..6 returns (M,A,w1,w2,X1,X2)[:output_count].
     """
     M, A = np.asarray(M, dtype=complex), np.asarray(A, dtype=complex)

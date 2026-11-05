@@ -5323,7 +5323,7 @@
   },
   {
    "asset_id": "scirel.kinetic.cross-mesh-distribution-interpolation",
-   "source_sha256": "ed1662add85995d00a6f00dd56cea273a82c2c4ee107be0784ead95d3ea084f3",
+   "source_sha256": "babdd4dfc9641bc0a9db5849a26a55bb1c3ecddb01d19657bbe1c28c010bb234",
    "summary": "在两个相空间网格之间转移柱坐标速度分布。默认分支通过带约束的相对熵投影保持分布非负，并保持经过空间插值的离散密度、轴向动量密度和速度平方能量密度；目标网格无法实现所需矩时明确报错。",
    "definition": "单元体积为 w_ij = pi*(r_right^2-r_left^2)*dvx，速度尺度为 fV = sqrt(Tnorm_b/Tnorm_a)。先在源网格计算 M_a = sum w_a*fa*(1, vx_a/fV, (vr_a/fV)^2+(vx_a/fV)^2)，再对这三个广延矩进行空间线性插值。对 n=M_0>0 的目标位置，求满足 p>=0、sum p=1、E_p[vx_b]=M_1/n 和 E_p[vr_b^2+vx_b^2]=M_2/n 的单元概率，并最小化 sum p*log(p/q)。参考概率 q 在可行面上把归一化重叠质量与 1e-12 的单元体积概率混合。最后返回 fb=n*p/w_b。零密度返回零；相同速度网格和归一化温度直接采用凸空间插值。",
    "model": "无状态的二维速度、一维空间轴单元重叠重映射，随后执行非负相对熵投影；这是修正后的 AN/BN 投影，不是对缺陷分支的复现。",
@@ -5333,6 +5333,7 @@
     "柱坐标单元体积采用共享 SciRel 求积关系 pi*(r_right^2-r_left^2)*dvx。守恒的是离散节点的动量和能量矩，不是连续重建分布的解析积分。",
     "使用 fV=sqrt(Tnorm_b/Tnorm_a) 转换源归一化。密度、轴向动量密度和速度平方能量密度先做空间插值，再除以密度；密度随空间变化时，直接插值平均速度或平均能量会破坏守恒。",
     "correct=1 要求有限非负输入。参考概率含 1e-12 的单元体积混合，可向原来零重叠的单元分配质量；它在可行解之间选择熵投影，不放松矩约束、不截断负输出，也不保证所有高阶矩不变。",
+    "源与目标速度单元的交集为空时，单元对重叠权重为零。correct=0 保留这些字面零值；correct=1 只通过已声明的参考概率向零重叠节点分配质量。",
     "可实现的归一化目标位于 conv{(vx_j, vr_i^2+vx_j^2)} 内；边界面上的目标只使用该面节点。归一化几何判定使用二进制双精度的 64 eps，返回分布的三个归一化矩残差均须不超过 128 eps。",
     "用阻尼 Newton 法求解熵对偶问题，Hessian 为协方差矩阵，指数归一化使用稳定的 log-sum-exp。max_correction_iterations 限制每个空间切片的更新数，默认 1000；不可行和数值不收敛是不同错误，均不返回部分分布。",
     "零密度切片返回零。速度网格和 Tnorm 相同时采用凸空间插值，在共同空间节点上严格保持恒等；源空间区间以外填零。",
@@ -5457,9 +5458,10 @@
      "独立标量柱坐标求积检查非均匀网格、非零漂移、不等温度，以及空间密度变化时广延矩的插值。",
      "检查严格零密度、相同网格恒等及凸空间插值，并检查源空间区间外填零。",
      "检查凸包下边、上边、顶点和靠近边界的内点，不截断负数或放松目标。",
-     "检查输入拒绝、不可行与有界数值耗尽的区分、输入不变性、重复调用确定性，以及 correct=0/警告行为。"
+     "检查输入拒绝、不可行与有界数值耗尽的区分、输入不变性、重复调用确定性，以及 correct=0/警告行为。",
+     "检查不相交的目标速度单元保持为零，且相交单元保留其常数代数结果。"
     ],
-    "evidence_ceiling": "限于正守恒三阶矩跨网格分布插值及其不可行失败。证据：`test_cross_mesh_distribution.py` 含 14 个测试函数，其中 14 个引用 `interp_distribution_across_mesh`，仅由本资产绑定; `test_positive_conservative_remap.py` 含 11 个测试函数，其中没有函数引用 `interp_distribution_across_mesh`，仅由本资产绑定; `test_cylindrical_velocity_quadrature.py` 含 17 个测试函数，其中没有函数引用 `interp_distribution_across_mesh`，由 2 个资产共享；本审计已执行有界示例。真值来源：解析凸包不可行性证明加冻结构造值。不建立：物理上不可实现的矩目标、更高阶矩/形状保持或熵守恒。",
+    "evidence_ceiling": "限于正守恒三阶矩跨网格分布插值及其不可行失败。证据：`test_cross_mesh_distribution.py` 含 15 个测试函数，其中 15 个引用 `interp_distribution_across_mesh`，仅由本资产绑定; `test_positive_conservative_remap.py` 含 11 个测试函数，其中没有函数引用 `interp_distribution_across_mesh`，仅由本资产绑定; `test_cylindrical_velocity_quadrature.py` 含 17 个测试函数，其中没有函数引用 `interp_distribution_across_mesh`，由 2 个资产共享；本审计已执行有界示例。真值来源：解析凸包不可行性证明加冻结构造值。不建立：物理上不可实现的矩目标、更高阶矩/形状保持或熵守恒。",
     "known_limitations": [
      "有限的目标节点可能使请求的矩不可实现；调用者必须提供可行的网格，或处理 InfeasibleMomentsError。",
      "有限目标节点可能无法实现请求的矩；调用方须提供可行网格或处理 InfeasibleMomentsError。",

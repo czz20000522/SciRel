@@ -529,7 +529,7 @@
   "tests": [
    "tests/kinetic/test_spectral_evolution.py"
   ],
-  "evidence_ceiling": "Bounded to the local normalized/SI multi-fluid dispersion mapping and its scan selectors. Evidence: `test_spectral_evolution.py` contains 12 test functions, 3 of which reference `evaluate_spectral_dispersion`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish full entropy/CGL/kinetic evolution, or an inhomogeneous global Maxwell-Gauss boundary solve.",
+  "evidence_ceiling": "Bounded to the local normalized/SI multi-fluid dispersion mapping and its scan selectors. Evidence: `test_spectral_evolution.py` contains 13 test functions, 3 of which reference `evaluate_spectral_dispersion`, and is shared by 4 assets; only shared-file coverage is bound, so a pass is file-level rather than asset-isolated; the bounded example was executed by this audit. Oracle: self-consistency/regression only. It does not establish full entropy/CGL/kinetic evolution, or an inhomogeneous global Maxwell-Gauss boundary solve.",
   "known_limitations": [
    "Effective local algebraic thermal model; not full entropy evolution, CGL, kinetic physics, or the unmagnetized drift-directed Appendix A model.",
    "Background sources and prescribed acceleration per mass have zero perturbation response. Gradients define a local/eikonal symbol, not an inhomogeneous global Maxwell-Gauss boundary solution.",
