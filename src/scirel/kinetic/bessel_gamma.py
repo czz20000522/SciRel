@@ -17,11 +17,57 @@ def _numeric_array(value, name):
 
 
 def evaluate_bessel_gamma(n, x):
-    """Return Gamma_n(x) = exp(-x) I_n(x) and its derivative in x.
+    """Evaluate a scaled modified-Bessel harmonic term and its derivative.
 
-    ``n`` contains integer orders, ``x`` finite dimensionless real or complex
-    arguments. Inputs broadcast; a scalar call returns zero-dimensional arrays.
-    The scaled Bessel backend avoids forming unscaled I_n at large positive x.
+    Parameters
+    ----------
+    n : real numeric, shape scalar or nonempty array
+        Integer Bessel order [dimensionless integer]. It must broadcast with
+        ``x``, be finite after float64 conversion, and contain exactly
+        representable integers with absolute value no greater than ``2**53``.
+    x : real or complex numeric, shape scalar or nonempty array
+        Dimensionless argument [dimensionless]. It must broadcast with ``n``
+        and be finite after complex128 conversion. Boolean, string and empty
+        inputs are rejected.
+
+    Returns
+    -------
+    Gamma_n : ndarray of complex128, shape broadcast of n and x
+        Scaled term ``Gamma_n(x)=exp(-x) I_n(x)`` [dimensionless]. Scalar
+        inputs produce a zero-dimensional array.
+    Gamma_prime_n : ndarray of complex128, shape broadcast of n and x
+        Neighbor-combination derivative with respect to ``x`` [dimensionless].
+        Scalar inputs produce a zero-dimensional array.
+
+    Raises
+    ------
+    ValueError
+        If ``n`` or ``x`` is empty, boolean, nonnumeric, nonbroadcastable or
+        nonfinite, if an order is complex, nonintegral or outside the declared
+        representable range, or if the scaled result is not representable.
+        Unexpected SciPy execution errors propagate.
+
+    See Also
+    --------
+    scirel.kinetic.evaluate_generalized_dispersion : Density-family transform.
+    scirel.kinetic.evaluate_plasma_dispersion : Maxwellian Z function.
+
+    Notes
+    -----
+    The implementation uses the exponentially scaled Bessel backend and the
+    stable neighbor combination
+
+    ``Gamma_prime_n = (I_{n-1}/2 + I_{n+1}/2 - I_n) exp(-x)``.
+
+    The scaling prevents an intermediate unscaled ``I_n`` from overflowing for
+    large positive arguments. Inputs and outputs do not select a harmonic
+    truncation; that choice belongs to the caller's dispersion assembly.
+
+    Examples
+    --------
+    >>> from scirel.kinetic import evaluate_bessel_gamma
+    >>> r = evaluate_bessel_gamma(0, 0.0)
+    >>> assert r['Gamma_n'] == 1 and r['Gamma_prime_n'] == -1
     """
     orders = _numeric_array(n, "n")
     arguments = _numeric_array(x, "x")

@@ -121,12 +121,12 @@ def solve_maxwellian_electrostatic_mode(
     initial_omega : complex numeric
         Complex root seed [normalized frequency]. Finite and representable.
     xtol : positive real, default 1e-10
-        MINPACK step tolerance. Finite strictly positive real scalar, booleans
+        MINPACK step tolerance [dimensionless]. Finite strictly positive real scalar, booleans
         and arrays rejected.
     residual_tolerance : positive real, default 1e-09
         Acceptance threshold for normalized epsilon residual plus estimated
-        error. Finite strictly positive real scalar, booleans and arrays
-        rejected.
+        error [dimensionless]. Finite strictly positive real scalar, booleans
+        and arrays rejected.
     max_evaluations : positive integer, default 200
         Maximum residual evaluations [count]. Positive integer scalar; booleans
         rejected.
@@ -136,16 +136,16 @@ def solve_maxwellian_electrostatic_mode(
     omega : complex
         Converged complex mode [normalized frequency]. Finite and representable.
     residual : complex
-        Final complex D. Finite and representable.
+        Final complex D [dimensionless]. Finite and representable.
     evaluations : integer
         Residual evaluations [count]. Finite and representable.
     epsilon : complex
-        Final dielectric. Finite and representable.
+        Final dielectric [dimensionless]. Finite and representable.
     normalized_residual : real
-        Absolute epsilon residual normalized by 1+|chi|. Finite and accepted
+        Absolute epsilon residual normalized by 1+|chi| [dimensionless]. Finite and accepted
         only below residual_tolerance after estimated-error gate.
     normalized_residual_error : real
-        Estimated epsilon error on the same normalization. Finite and accepted
+        Estimated epsilon error on the same normalization [dimensionless]. Finite and accepted
         only below residual_tolerance/4.
 
     Raises
@@ -166,6 +166,18 @@ def solve_maxwellian_electrostatic_mode(
     --------
     evaluate_plasma_dispersion : The Z function used in the dispersion relation.
     solve_vlasov_poisson : Time-domain Landau damping.
+
+    Notes
+    -----
+    The root is accepted only when MINPACK succeeds within the evaluation
+    budget and both the normalized dielectric residual and its estimated error
+    pass the stated gates. The estimated error is numerical, not a proof of
+    root uniqueness, global convergence, or least-damped branch selection.
+
+    References
+    ----------
+    Hua-Sheng Xie, Generalized plasma dispersion function, Physics of Plasmas
+    20 (2013), 092125.
 
     Examples
     --------

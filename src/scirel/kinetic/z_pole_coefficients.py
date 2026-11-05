@@ -45,13 +45,57 @@ _TABLE = {
 
 
 def get_z_pole_coefficients(*, j_order):
-    """Return the ``(bzj, czj)`` pole pair of order ``j_order``.
+    """Return fixed Maxwellian Z-function pole coefficients.
 
-    ``j_order`` is the number of poles J the caller's matrix assembly uses. The
-    residues ``bzj`` weight the resonant response and the positions ``czj`` give the
-    complex resonance offsets. The source writes only the first half of each table
-    and completes it by conjugate symmetry, so the second half is derived, not
-    tabulated independently.
+    Parameters
+    ----------
+    j_order : integer
+        Total number of poles ``J`` [dimensionless]. The supported table
+        orders are 8 and 12.
+
+    Returns
+    -------
+    bzj : ndarray of complex128, shape (J,)
+        Pole residues along the one-dimensional pole axis [dimensionless].
+    czj : ndarray of complex128, shape (J,)
+        Pole positions along the one-dimensional pole axis [dimensionless].
+    j_order : int
+        Effective total pole order [dimensionless].
+    half_order : int
+        Number of independently stored half-table entries [dimensionless].
+    sum_bzj : complex
+        Sum of ``bzj`` [dimensionless].
+    sum_bzcj : complex
+        Sum of ``bzj*czj`` [dimensionless].
+    sum_bzcj2 : complex
+        Sum of ``bzj*czj**2`` [dimensionless].
+
+    Raises
+    ------
+    ValueError
+        If ``j_order`` is not an integer or is not one of the two frozen table
+        orders. Unsupported conversion errors may propagate.
+
+    See Also
+    --------
+    scirel.kinetic.get_gamma_lpole_coefficients : Bessel-Gamma L-pole tables.
+    scirel.kinetic.evaluate_plasma_dispersion : Direct Maxwellian Z evaluation.
+
+    Notes
+    -----
+    The source table stores the first half of the residues and poles; the
+    returned second half is completed by conjugation and negative conjugation,
+    respectively. The pole sum is a bounded rational approximation, not an
+    exact closed-form Z function.
+
+    References
+    ----------
+    H. S. Xie, Phys. Plasmas 32, 082110 (2025).
+
+    Examples
+    --------
+    >>> from scirel.kinetic import get_z_pole_coefficients
+    >>> r=get_z_pole_coefficients(j_order=8); assert len(r['bzj'])==8 and len(r['czj'])==8
     """
 
     if isinstance(j_order, (bool, np.bool_)):

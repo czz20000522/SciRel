@@ -34,18 +34,19 @@ def evaluate_plasma_dispersion(z):
     Parameters
     ----------
     z : real or complex numeric array-like, shape scalar or any nonempty array shape
-        Already normalized complex phase argument; evaluated elementwise. All
+        Already normalized complex phase argument [dimensionless]; evaluated
+        elementwise. All
         elements finite after complex128 conversion; booleans, strings and empty
         arrays are rejected.
 
     Returns
     -------
     w : complex128, shape same as z; scalar input yields a zero-dimensional array
-        Analytic Faddeeva value w(z). Finite and representable for accepted
-        input.
+        Analytic Faddeeva value w(z) [dimensionless]. Finite and representable
+        for accepted input.
     Z : complex128, shape same as z; scalar input yields a zero-dimensional array
-        Plasma dispersion value i sqrt(pi) w(z). Finite and representable for
-        accepted input.
+        Plasma dispersion value i sqrt(pi) w(z) [dimensionless]. Finite and
+        representable for accepted input.
 
     Raises
     ------
@@ -59,6 +60,19 @@ def evaluate_plasma_dispersion(z):
     --------
     evaluate_generalized_dispersion : Transform of non-Maxwellian densities.
     solve_maxwellian_electrostatic_mode : Langmuir/Landau root from this function.
+
+    Notes
+    -----
+    The returned functions use the standard normalized Maxwellian argument
+    ``z=omega/(sqrt(2) k v_t)``. ``w`` is the Faddeeva function and ``Z`` is
+    the dimensionless plasma dispersion function. Values in the lower
+    half-plane follow the analytic continuation; no clamp or replaced value is
+    applied.
+
+    References
+    ----------
+    Weideman (1994), Computation of the Complex Error Function,
+    doi:10.1137/0731077.
 
     Examples
     --------
