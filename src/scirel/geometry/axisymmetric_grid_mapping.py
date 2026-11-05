@@ -62,12 +62,131 @@ def _interpolate_cylindrical(r_axis, z_axis, values, radii, axial):
 
 
 def map_axisymmetric_equilibrium_to_cartesian_grid(equilibrium, x_m, y_m, z_m):
-    """Interpolate cylindrical equilibrium fields onto an ``(x, y, z)`` grid.
+    """Axisymmetric equilibrium map to Cartesian solver grid
 
-    Query points are clamped to the closed R-Z map box.  ``covered_mask`` and
-    the two counters report which points required that clamp.  At ``R=0`` the
-    radial Cartesian components are defined as zero because their cylindrical
-    direction is undefined.
+    Parameters
+    ----------
+    equilibrium : Python mapping of array-like
+        Caller-owned axisymmetric equilibrium mapping carrying r_m, z_m, psi_wb_per_rad,
+        br_t, and bz_t. [mixed SI] Shape: ``mapping of arrays``. Must be a mapping. r_m and
+        z_m are finite strictly increasing 1D axes of at least five points; psi_wb_per_rad,
+        br_t, and bz_t are finite [N_r, N_z] arrays on the map axes. No other entry is read,
+        so the flux-surface classification parameters are not part of this relation.
+
+    x_m : real array-like
+        Cartesian solver grid x axis. [m] Shape: ``[N_x]``. Finite, one-dimensional, at
+        least two points, strictly increasing.
+
+    y_m : real array-like
+        Cartesian solver grid y axis. [m] Shape: ``[N_y]``. Finite, one-dimensional, at
+        least two points, strictly increasing.
+
+    z_m : real array-like
+        Cartesian solver grid axial axis, shared with the map's axial coordinate. [m] Shape:
+        ``[N_z]``. Finite, one-dimensional, at least two points, strictly increasing.
+
+    Returns
+    -------
+    magnetic_flux_density_t : float64
+        Static magnetic field on the solver grid, with the field vector in the last axis.
+        [T] Shape: ``[N_x, N_y, N_z, 3]``. Finite everywhere. The transverse pair is the
+        interpolated radial field split as br * (x, y) / r and is set exactly to zero on the
+        axis, where that split is undefined.
+    poloidal_flux_wb_per_rad : float64
+        Poloidal flux per radian interpolated onto the solver grid. [Wb/rad] Shape: ``[N_x,
+        N_y, N_z]``. Finite everywhere, and evaluated at the clamped query coordinates so
+        that clamped points carry the box-face value.
+    covered_mask : bool
+        Grid points that lay inside the closed box spanned by the map axes before clamping.
+        [dimensionless] Shape: ``[N_x, N_y, N_z]``. A point is covered when its radius is
+        between the first and last map radial axis values and its axial coordinate is
+        between the first and last map axial axis values. Because the map's radial axis is
+        usually positive, the grid axis r = 0 is normally not covered.
+    radially_clamped_point_count : int
+        Number of grid points whose radius exceeded the outer map radius and was clamped
+        onto it. [dimensionless] Shape: ``scalar``. Counts only radii above the outer map
+        radius, matching the declared relation; radii below the inner map radius are clamped
+        as well but are not counted.
+    axially_clamped_point_count : int
+        Number of grid points whose axial coordinate lay outside the map axial axis and was
+        clamped onto a face. [dimensionless] Shape: ``scalar``. Counts points below the
+        first and above the last map axial axis value.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError when equilibrium is not a mapping, when a required map entry is missing, when a map axis is not a finite strictly increasing 1D array of at least five points, when a map array does not have the [N_r, N_z] map shape or is not finite, or when a solver grid axis is not a finite strictly increasing 1D array of at least two points. Raises ValueError if floating-point interpolation or Cartesian assembly produces a non-finite poloidal flux or static field, including arithmetic overflow from finite source samples.
+
+    See Also
+    --------
+    sample_rectilinear_field : Sibling sampler with a fail-closed query boundary.
+    interpolate_complex_rectilinear_field : Interpolation of complex rectilinear fields.
+
+    Notes
+    -----
+    Builds the radius and the axial coordinate of every Cartesian grid point, clamps each
+    query coordinate onto the closed map box, evaluates the tensor-product linear
+    interpolant of each map array at the clamped coordinates, splits the interpolated radial
+    field into Cartesian transverse components, and marks the grid points that lay inside
+    the closed map box.
+
+    **Coordinates.** the map is cylindrical (r, z) and the target is Cartesian (x, y, z)
+    with the axial coordinate shared; mesh built with C-order ij indexing over the target
+    axes
+
+    **Boundary.** the relation is defined on the closed box spanned by the map axes; a query
+    point outside that box is clamped onto the nearest box face rather than rejected or
+    extrapolated, and the clamping is counted
+
+    **Preconditions.**
+
+    * The equilibrium map is axisymmetric and finite on a strictly increasing R-Z grid of at
+      least five points per axis.
+    * The solver grid axes are finite and strictly increasing, and share the axial
+      coordinate convention of the map.
+    * The caller accepts that query points outside the map box are answered with the
+      box-face value and reported through covered_mask.
+
+    **Limits.**
+
+    * Non-axisymmetric or three-dimensional equilibria.
+    * Extrapolation beyond the map box; the relation clamps instead.
+    * Spline, conservative, or flux-surface-aligned interpolation; only tensor-product
+      linear interpolation is defined here.
+    * Flux-surface classification, PML framing, and PEC masking, which belong to a
+      separate relation.
+    * Any unit conversion; the map arrays are taken in the caller's units.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import map_axisymmetric_equilibrium_to_cartesian_grid
+    >>> r_axis = np.linspace(0.05, 1.0, 21)
+    >>> z_axis = np.linspace(-0.5, 0.5, 21)
+    >>> rr, zz = np.meshgrid(r_axis, z_axis, indexing='ij')
+    >>> equilibrium = {
+    ...     'r_m': r_axis,
+    ...     'z_m': z_axis,
+    ...     'psi_wb_per_rad': 0.9 * rr + 0.1 * np.sin(2.0 * np.pi * zz),
+    ...     'br_t': 0.3 * rr - 0.1 * zz ** 2,
+    ...     'bz_t': 1.0 - 0.4 * rr ** 2,
+    ... }
+    >>> result = map_axisymmetric_equilibrium_to_cartesian_grid(
+    ...     equilibrium,
+    ...     np.linspace(-0.5, 0.5, 9),
+    ...     np.linspace(-0.5, 0.5, 9),
+    ...     np.linspace(-0.4, 0.4, 7),
+    ... )
+    >>> magnetic = result['magnetic_flux_density_t']
+    >>> assert magnetic.shape == (9, 9, 7, 3)
+    >>> assert result['poloidal_flux_wb_per_rad'].shape == (9, 9, 7)
+    >>> assert result['covered_mask'].shape == (9, 9, 7)
+    >>> assert result['covered_mask'].sum() == 560
+    >>> assert result['radially_clamped_point_count'] == 0
+    >>> assert result['axially_clamped_point_count'] == 0
+    >>> assert np.isfinite(magnetic).all()
+    >>> assert magnetic[4, 4, 3, 0] == 0.0 and magnetic[4, 4, 3, 1] == 0.0
+    >>> assert magnetic[4, 4, 3, 2] != 0.0
     """
     if not isinstance(equilibrium, Mapping):
         raise ValueError("equilibrium must be a mapping of caller-owned arrays")

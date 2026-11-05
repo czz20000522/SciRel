@@ -42,7 +42,7 @@
    "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
    "The second-clamped default basis omits the origin identity column and therefore has n_knots-1 columns",
    "Spline basis construction requires n_knots>=3",
-   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
+   "For spline selections, finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention; polynomial selections evaluate directly"
   ]
  },
  "inputs": [
@@ -76,7 +76,7 @@
    "Clamped spline bases require yp=0; nonzero slopes define an affine family, not a linear basis",
    "The second-clamped default basis omits the origin identity column and therefore has n_knots-1 columns",
    "Spline basis construction requires n_knots>=3",
-   "Finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention"
+   "For spline selections, finite queries outside the closed knot interval and nonfinite query values use the zero-fill convention; polynomial selections evaluate directly"
   ],
   "supported": [
    "Finite polynomial and spline basis selections implemented by scirel.geometry.basis"
@@ -85,14 +85,14 @@
    "Quartic and special-function factory selections are rejected; no invented implementations",
    "Physical special-spline closures and unsupported knot domains remain unresolved",
    "Nonzero endpoint slopes for clamped basis construction are rejected",
-   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention"
+   "For spline selections, nonfinite query values are outside the numerical qualification and are zero-filled as a compatibility convention; polynomial selections evaluate directly"
   ]
  },
  "failure_semantics": {
   "invalid_input": "Raises KeyError for an unregistered selector, NotImplementedError for an unsupported retained selector, TypeError for an unknown keyword, and ValueError for invalid spline samples/knots/boundary parameters; linear-system failures propagate. Nonzero clamped endpoint slopes raise ValueError because they define an affine family.",
   "runtime_failure": "Numerical linear-algebra or optional SciPy special-function exceptions propagate from evaluation.",
   "nonconvergence": "Not applicable; basis construction and evaluation are direct computations without an iterative convergence claim.",
-  "partial_results": "A failed constructor returns no evaluator; finite values outside the knot interval and nonfinite query values follow the zero-fill convention."
+  "partial_results": "A failed constructor returns no evaluator; for spline selections, finite values outside the knot interval and nonfinite query values follow the zero-fill convention, while polynomial selections evaluate directly."
  },
  "public_api": {
   "python": {
@@ -119,14 +119,15 @@
    "The executable example stored in this contract"
   ],
   "tests": [
-   "tests/equilibrium/test_analysis_families.py"
+   "tests/equilibrium/test_analysis_families.py",
+   "tests/geometry/test_basis_boundary_regressions.py"
   ],
   "evidence_ceiling": "Direct examples and named regression fixtures establish the documented relation on those inputs; they do not establish arbitrary-input correctness or experimental validation.",
   "known_limitations": [
    "Quartic and special-function factory selections are rejected; no invented implementations",
    "Physical special-spline closures and unsupported knot domains remain unresolved",
    "Nonzero clamped endpoint slopes are outside the linear-basis contract",
-   "Nonfinite query values are outside the numerical qualification; the implementation zero-fills them as a compatibility convention"
+   "For spline selections, nonfinite query values are outside the numerical qualification and are zero-filled as a compatibility convention; polynomial selections evaluate directly"
   ]
  }
 }

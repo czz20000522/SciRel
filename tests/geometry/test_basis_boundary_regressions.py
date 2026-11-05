@@ -20,6 +20,13 @@ def test_finite_outside_and_nonfinite_queries_retain_zero_fill():
             np.testing.assert_array_equal(fit(queries, deriv=deriv), np.zeros(queries.size))
 
 
+def test_polynomial_basis_matrix_does_not_zero_outside_or_nonfinite_queries():
+    matrix = basis.BasisMatrix("poly")(np.array([-1.0, 2.0, np.nan]))
+
+    np.testing.assert_allclose(matrix[:2], [[1.0, -1.0, 1.0], [1.0, 2.0, 4.0]])
+    assert np.isnan(matrix[2]).all()
+
+
 def test_second_clamped_spline_rejects_nonzero_origin_ordinate():
     with pytest.raises(ValueError, match=r"y_data\[0\] must be 0"):
         basis.SecondClampedCubicSpline([0.0, 0.3, 1.0], [0.1, 0.2, 1.0])

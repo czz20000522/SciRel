@@ -10,7 +10,43 @@ import numpy as np
 
 
 class Mesh(metaclass=ABCMeta):
-    """Base class for mesh-like objects storing matching R and Z arrays."""
+    """Base class for finite meshes in cylindrical ``(R, Z)`` coordinates.
+
+    Returns
+    -------
+    mesh : Mesh
+        Abstract mesh handle [one object]. Concrete subclasses expose paired
+        ``R`` and ``Z`` coordinate arrays [m], derived radius and polar angle
+        [m, rad], and the coordinate-array shape [dimensionless].
+
+    Raises
+    ------
+    ValueError
+        Accessing ``theta`` raises when any point is at the origin, where the
+        polar angle is undefined. ``to_points`` rejects unsupported array
+        layouts and mismatched shapes; only ``from_array`` additionally rejects
+        non-rectilinear structured coordinates.
+
+    See Also
+    --------
+    PointsMesh : Unstructured cylindrical points.
+    RectMesh : Regular rectangular R-Z mesh.
+    rotate : Rotate planar points about a pivot.
+
+    Notes
+    -----
+    ``R`` and ``Z`` are stored as matching arrays. The derived radius is
+    ``hypot(R, Z)`` and the polar angle is ``arctan2(R, Z)`` in radians.
+    Construction and coordinate conversion do not infer a physical boundary,
+    topology, or interpolation rule.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import Mesh, PointsMesh
+    >>> mesh = PointsMesh([0.2], [0.3])
+    >>> np.testing.assert_allclose(Mesh.to_points(mesh), [[0.2, 0.3]])
+    """
 
     def __init__(self) -> None:
         self._R: np.ndarray | None = None
@@ -18,18 +54,28 @@ class Mesh(metaclass=ABCMeta):
 
     @property
     def R(self) -> np.ndarray:
+        """Return radial coordinate R in metres as a ``float64`` array."""
         return self._R
 
     @property
     def Z(self) -> np.ndarray:
+        """Return axial coordinate Z in metres as a ``float64`` array."""
         return self._Z
 
     @property
     def r(self) -> np.ndarray:
+        """Return cylindrical radius ``hypot(R, Z)`` in metres."""
         return np.hypot(self._R, self._Z)
 
     @property
     def theta(self) -> np.ndarray:
+        """Return polar angle ``arctan2(R, Z)`` in radians.
+
+        Raises
+        ------
+        ValueError
+            If any stored point is at the origin, where ``theta`` is undefined.
+        """
         radius = self.r
         if np.any(radius == 0.0):
             raise ValueError("polar angle theta is undefined at the origin")
@@ -37,11 +83,48 @@ class Mesh(metaclass=ABCMeta):
 
     @property
     def shape(self) -> tuple[int, ...]:
+        """Return the shape of the stored R and Z coordinate arrays."""
         return self._R.shape
 
     @classmethod
     def to_points(cls, mesh: Any) -> np.ndarray:
-        """Convert a mesh representation to an ``(N, 2)`` array."""
+        """Flatten a supported mesh representation into paired R-Z points.
+
+        Parameters
+        ----------
+        mesh : Mesh or array-like or iterable
+            Mesh object, ``(N, 2)`` or ``(2, N)`` coordinate array, or an
+            iterable containing separate R and Z coordinate arrays [m].
+
+        Returns
+        -------
+        points : ndarray of float64, shape (N, 2)
+            One ``[R, Z]`` row per point [m]. Array order is row-major when a
+            structured mesh is flattened.
+
+        Raises
+        ------
+        ValueError
+            If the value is not supported, an array is not two-dimensional, an
+            array has neither two rows nor two columns, or separate R and Z
+            arrays have different shapes.
+
+        See Also
+        --------
+        from_array : Construct a point or rectangular mesh from array layouts.
+
+        Notes
+        -----
+        This is a representation conversion, not a coordinate transform. It
+        does not validate finiteness or require nonnegative radius.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from scirel.geometry import Mesh, PointsMesh
+        >>> mesh = PointsMesh([0.2, 0.4], [-0.1, 0.3])
+        >>> np.testing.assert_allclose(Mesh.to_points(mesh), [[0.2, -0.1], [0.4, 0.3]])
+        """
         if isinstance(mesh, cls):
             return np.column_stack((np.asarray(mesh.R).ravel(), np.asarray(mesh.Z).ravel()))
         if isinstance(mesh, np.ndarray):
@@ -64,7 +147,47 @@ class Mesh(metaclass=ABCMeta):
 
     @classmethod
     def from_array(cls, mesh: Any) -> "Mesh":
-        """Construct a point or regular rectangular mesh from array layouts."""
+        """Construct a mesh from point or structured coordinate arrays.
+
+        Parameters
+        ----------
+        mesh : array-like
+            Either an ``(N, 2)`` / ``(2, N)`` point array, or a ``(2, Nz, Nr)``
+            array containing the R and Z coordinate meshes [m]. Structured
+            coordinates must form a regular rectangular grid.
+
+        Returns
+        -------
+        mesh : Mesh
+            ``PointsMesh`` for point layouts or ``RectMesh`` for a regular
+            structured layout [one mesh object].
+
+        Raises
+        ------
+        ValueError
+            If the rank or leading axis is unsupported, point arrays do not
+            have two rows or columns, structured R and Z shapes differ, or the
+            structured coordinates do not form a regular rectangular grid.
+
+        See Also
+        --------
+        to_points : Flatten a mesh to paired R-Z points.
+        PointsMesh : Unstructured point mesh.
+        RectMesh : Regular rectangular mesh.
+
+        Notes
+        -----
+        Structured coordinates are checked exactly against uniformly spaced
+        broadcast axes. Irregular or distorted structured meshes are rejected
+        rather than silently approximated by a rectangle.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from scirel.geometry import Mesh
+        >>> mesh = Mesh.from_array(np.array([[0.2, -0.1], [0.5, 0.3], [0.8, 0.0]]))
+        >>> np.testing.assert_allclose(Mesh.to_points(mesh), [[0.2, -0.1], [0.5, 0.3], [0.8, 0.0]])
+        """
         array = np.asarray(mesh)
         if array.ndim == 2:
             if array.shape[1] == 2:
@@ -97,7 +220,61 @@ class Mesh(metaclass=ABCMeta):
 
 
 class PointsMesh(Mesh):
-    """Unstructured points in cylindrical coordinates."""
+    """Points mesh
+
+    Parameters
+    ----------
+    rpts : Finite float64
+        Radial coordinates [m] Shape: ``N``. Equal shape to zpts; R >= 0
+
+    zpts : Finite float64
+        Axial coordinates [m] Shape: ``N``. Equal shape to rpts
+
+    Returns
+    -------
+    mesh : PointsMesh
+        Constructed PointsMesh object. Available properties/methods: R: Radial coordinates
+        [m], N; Z: Axial coordinates [m], N [Object; property units as described] Shape:
+        ``one object``. Properties expose generated coordinates; field methods require
+        configured or supplied target mesh
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+
+    See Also
+    --------
+    Mesh : Related geometry callable.
+    RChord : Radial chord.
+    ZChord : Axial chord.
+    RectMesh : Rectangular R-Z mesh.
+
+    Notes
+    -----
+    Each paired rpts,zpts value defines one point
+
+    **Coordinates.** Cylindrical R-Z
+
+    **Boundary.** R must be nonnegative
+
+    **Preconditions.**
+
+    * Inputs satisfy the documented finite cylindrical coordinate and shape contract
+
+    **Limits.**
+
+    * Negative radius
+    * Mismatched shapes
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import PointsMesh
+    >>> mesh = PointsMesh([0.2], [0.3])
+    >>> np.testing.assert_allclose(mesh.R, [0.2])
+    >>> np.testing.assert_allclose(mesh.Z, [0.3])
+    """
 
     def __init__(self, rpts: Iterable[float], zpts: Iterable[float]):
         super().__init__()
@@ -115,7 +292,59 @@ class PointsMesh(Mesh):
 
 
 class RChord(PointsMesh):
-    """Radial chord at fixed Z."""
+    """Radial chord
+
+    Parameters
+    ----------
+    rpts : Finite float64
+        Radial coordinates [m] Shape: ``N``. R >= 0
+
+    z0 : Finite float64, optional
+        Fixed axial coordinate [m] Shape: ``scalar``. Finite Optional; default ``0.0``.
+
+    Returns
+    -------
+    mesh : RChord
+        Constructed RChord object. Available properties/methods: R: Radial coordinates [m],
+        N; Z: Axial coordinates [m], N [Object; property units as described] Shape: ``one
+        object``. Properties expose generated coordinates; field methods require configured
+        or supplied target mesh
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+
+    See Also
+    --------
+    PointsMesh : Points mesh.
+    ZChord : Axial chord.
+    RectMesh : Rectangular R-Z mesh.
+
+    Notes
+    -----
+    R coordinates vary while Z is constant
+
+    **Coordinates.** Cylindrical R-Z
+
+    **Boundary.** R nonnegative
+
+    **Preconditions.**
+
+    * Inputs satisfy the documented finite cylindrical coordinate and shape contract
+
+    **Limits.**
+
+    * Negative radius
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import RChord
+    >>> mesh = RChord([0.2, 0.5], 0.3)
+    >>> np.testing.assert_allclose(mesh.R, [0.2, 0.5])
+    >>> np.testing.assert_allclose(mesh.Z, [0.3, 0.3])
+    """
 
     def __init__(self, rpts: Iterable[float], z0: float = 0.0):
         values = np.asarray(rpts)
@@ -123,7 +352,59 @@ class RChord(PointsMesh):
 
 
 class ZChord(PointsMesh):
-    """Vertical chord at fixed R."""
+    """Axial chord
+
+    Parameters
+    ----------
+    zpts : Finite float64
+        Axial coordinates [m] Shape: ``N``. Finite
+
+    r0 : Finite float64, optional
+        Fixed radial coordinate [m] Shape: ``scalar``. R >= 0 Optional; default ``0.0``.
+
+    Returns
+    -------
+    mesh : ZChord
+        Constructed ZChord object. Available properties/methods: R: Radial coordinates [m],
+        N; Z: Axial coordinates [m], N [Object; property units as described] Shape: ``one
+        object``. Properties expose generated coordinates; field methods require configured
+        or supplied target mesh
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+
+    See Also
+    --------
+    RChord : Radial chord.
+    SphericalRChord : Spherical radial chord.
+    ThetaChord : Polar-angle chord.
+
+    Notes
+    -----
+    Z coordinates vary while R is constant
+
+    **Coordinates.** Cylindrical R-Z
+
+    **Boundary.** R nonnegative
+
+    **Preconditions.**
+
+    * Inputs satisfy the documented finite cylindrical coordinate and shape contract
+
+    **Limits.**
+
+    * Negative radius
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import ZChord
+    >>> mesh = ZChord([-0.2, 0.4], 0.3)
+    >>> np.testing.assert_allclose(mesh.R, [0.3, 0.3])
+    >>> np.testing.assert_allclose(mesh.Z, [-0.2, 0.4])
+    """
 
     def __init__(self, zpts: Iterable[float], r0: float = 0.0):
         values = np.asarray(zpts)
@@ -131,7 +412,62 @@ class ZChord(PointsMesh):
 
 
 class SphericalRChord(PointsMesh):
-    """Chord of varying spherical radius at a fixed angle in degrees."""
+    """Spherical radial chord
+
+    Parameters
+    ----------
+    rpts : Finite float64
+        Spherical radius [m] Shape: ``N``. Nonnegative radius
+
+    theta0 : Finite float64, optional
+        Fixed polar angle [degree] Shape: ``scalar``. Finite degrees Optional; default
+        ``0.0``.
+
+    Returns
+    -------
+    mesh : SphericalRChord
+        Constructed SphericalRChord object. Available properties/methods: R: Cylindrical
+        radius [m], N; Z: Axial coordinate [m], N [Object; property units as described]
+        Shape: ``one object``. Properties expose generated coordinates; field methods
+        require configured or supplied target mesh
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+
+    See Also
+    --------
+    ThetaChord : Polar-angle chord.
+    PointsMesh : Points mesh.
+    ZChord : Axial chord.
+
+    Notes
+    -----
+    R=r sin(theta), Z=r cos(theta)
+
+    **Coordinates.** Cylindrical storage derived from spherical inputs
+
+    **Boundary.** Angles are degrees
+
+    **Preconditions.**
+
+    * Inputs satisfy the documented finite cylindrical coordinate and shape contract
+    * Generated cylindrical R must be nonnegative; use nonnegative spherical radii and
+      degree angles in the usual 0..180 polar domain.
+
+    **Limits.**
+
+    * Negative radius
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import SphericalRChord
+    >>> mesh = SphericalRChord([1.0], 90.0)
+    >>> np.testing.assert_allclose(mesh.R, [1.0])
+    >>> np.testing.assert_allclose(mesh.Z, [0.0], atol=1e-15)
+    """
 
     def __init__(self, rpts: Iterable[float], theta0: float = 0.0):
         radius = np.asarray(rpts, dtype=float)
@@ -140,7 +476,62 @@ class SphericalRChord(PointsMesh):
 
 
 class ThetaChord(PointsMesh):
-    """Chord of varying polar angle at fixed spherical radius in degrees."""
+    """Polar-angle chord
+
+    Parameters
+    ----------
+    tpts : Finite float64
+        Polar angles [degree] Shape: ``N``. Finite degrees
+
+    r0 : Finite float64, optional
+        Fixed spherical radius [m] Shape: ``scalar``. Finite radius Optional; default
+        ``1.0``.
+
+    Returns
+    -------
+    mesh : ThetaChord
+        Constructed ThetaChord object. Available properties/methods: R: Cylindrical radius
+        [m], N; Z: Axial coordinate [m], N [Object; property units as described] Shape:
+        ``one object``. Properties expose generated coordinates; field methods require
+        configured or supplied target mesh
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+
+    See Also
+    --------
+    SphericalRChord : Spherical radial chord.
+    PointsMesh : Points mesh.
+    ZChord : Axial chord.
+
+    Notes
+    -----
+    R=r0 sin(theta), Z=r0 cos(theta)
+
+    **Coordinates.** Cylindrical storage derived from angle inputs
+
+    **Boundary.** Angles are degrees
+
+    **Preconditions.**
+
+    * Inputs satisfy the documented finite cylindrical coordinate and shape contract
+    * Generated cylindrical R must be nonnegative; use nonnegative spherical radii and
+      degree angles in the usual 0..180 polar domain.
+
+    **Limits.**
+
+    * Negative fixed radius
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import ThetaChord
+    >>> mesh = ThetaChord([0.0, 90.0])
+    >>> np.testing.assert_allclose(mesh.R, [0.0, 1.0], atol=1e-15)
+    >>> np.testing.assert_allclose(mesh.Z, [1.0, 0.0], atol=1e-15)
+    """
 
     def __init__(self, tpts: Iterable[float], r0: float = 1.0):
         angle = np.deg2rad(np.asarray(tpts, dtype=float))
@@ -148,7 +539,79 @@ class ThetaChord(PointsMesh):
 
 
 class RectMesh(Mesh):
-    """Regular rectangular R-Z mesh."""
+    """Rectangular R-Z mesh
+
+    Parameters
+    ----------
+    rmin : Finite float64, optional
+        Minimum radius [m] Shape: ``scalar``. R >= 0 Optional; default ``0.0``.
+
+    rmax : Finite float64, optional
+        Maximum radius [m] Shape: ``scalar``. rmax >= rmin Optional; default ``1.0``.
+
+    nr : int, optional
+        Radial count [dimensionless] Shape: ``scalar``. Positive integer Optional; default
+        ``101``.
+
+    zmin : Finite float64, optional
+        Minimum axial coordinate [m] Shape: ``scalar``. zmin <= zmax Optional; default
+        ``-0.5``.
+
+    zmax : Finite float64, optional
+        Maximum axial coordinate [m] Shape: ``scalar``. zmax >= zmin Optional; default
+        ``0.5``.
+
+    nz : int, optional
+        Axial count [dimensionless] Shape: ``scalar``. Positive integer Optional; default
+        ``101``.
+
+    Returns
+    -------
+    mesh : RectMesh
+        Constructed RectMesh object. Available properties/methods: R: Radial mesh [m],
+        (nz,nr); Z: Axial mesh [m], (nz,nr) [Object; property units as described] Shape:
+        ``one object``. Properties expose generated coordinates; field methods require
+        configured or supplied target mesh
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for nonfinite coordinates, mismatched shapes, negative radius, malformed point dimensions, or invalid rectangular bounds/counts.
+
+    See Also
+    --------
+    PointsMesh : Points mesh.
+    RChord : Radial chord.
+    ZChord : Axial chord.
+
+    Notes
+    -----
+    meshgrid over independent R and Z bounds
+
+    **Coordinates.** Cylindrical R-Z
+
+    **Boundary.** Finite ordered bounds and positive integer counts
+
+    **Preconditions.**
+
+    * Inputs satisfy the documented finite cylindrical coordinate and shape contract
+
+    **Limits.**
+
+    * Distorted structured coordinates
+    * Negative radius
+    * Noninteger counts
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import RectMesh
+    >>> mesh = RectMesh(nr=2, nz=2)
+    >>> assert mesh.R.shape == (2, 2)
+    >>> assert mesh.Z.shape == (2, 2)
+    >>> np.testing.assert_allclose(mesh.R[0], [0.0, 1.0])
+    >>> np.testing.assert_allclose(mesh.Z[:, 0], [-0.5, 0.5])
+    """
 
     def __init__(self, rmin=0.0, rmax=1.0, nr=101, zmin=-0.5, zmax=0.5, nz=101):
         super().__init__()
