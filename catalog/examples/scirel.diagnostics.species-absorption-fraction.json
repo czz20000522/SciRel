@@ -5,7 +5,7 @@
   "en": "Species absorption fraction closure",
   "zh": "物种吸收占比闭合"
  },
- "summary": "Close a four-species signed absorbed-power ledger into ordered percentage shares, using stable signed summation and exact rational evaluation at dangerous numerical extremes; reject zero total and nonrepresentable results.",
+ "summary": "Close a four-species signed absorbed-power ledger into ordered percentage shares, using stable signed summation and exact rational evaluation at dangerous numerical extremes; return the five fields as a scirel._result.Result mapping and reject zero total or nonrepresentable results.",
  "taxonomy": [
   "diagnostics",
   "power-ledger",
@@ -33,7 +33,7 @@
  "identity": {
   "relation": "four-species absorbed-power ledger to caller-ordered percentage shares and the closure residual",
   "direction": "species_power_values -> total_power, species_fraction_percent, total_fraction_percent, fraction_sum_residual_percent, branch",
-  "definition": "Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction. Ordinary percentages retain divide-then-scale rounding. Severe cancellation or intermediate range loss triggers exact rational percentage evaluation. The residual uses the actual returned floating percentages, not unrounded theoretical shares.",
+  "definition": "Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction. Ordinary percentages retain divide-then-scale rounding. Severe cancellation or intermediate range loss triggers exact rational percentage evaluation. The residual uses the actual returned floating percentages, not unrounded theoretical shares. The five fields are returned together in a scirel._result.Result mapping; mapping and attribute access expose the same values.",
   "model": "absorbed-power split across exactly four species",
   "geometry": "not applicable; the relation is a per-ledger scalar closure with no spatial dependence",
   "coordinates": "not applicable; entries are carried in the caller's species order and never reordered",
@@ -58,7 +58,7 @@
  "outputs": [
   {
    "name": "total_power",
-   "description": "Sum of the four ledger entries in the same units as the input.",
+   "description": "Field of the returned scirel._result.Result mapping: sum of the four ledger entries in the same units as the input.",
    "units": "source power units",
    "shape": "scalar",
    "dtype": "float64",
@@ -67,7 +67,7 @@
   },
   {
    "name": "species_fraction_percent",
-   "description": "Percentage share of each species, in the caller's species order.",
+   "description": "Field of the returned scirel._result.Result mapping: percentage share of each species, in the caller's species order.",
    "units": "percent",
    "shape": "[4]",
    "dtype": "float64",
@@ -76,7 +76,7 @@
   },
   {
    "name": "total_fraction_percent",
-   "description": "Sum of the returned percentage shares.",
+   "description": "Field of the returned scirel._result.Result mapping: sum of the returned percentage shares.",
    "units": "percent",
    "shape": "scalar",
    "dtype": "float64",
@@ -85,7 +85,7 @@
   },
   {
    "name": "fraction_sum_residual_percent",
-   "description": "Closure residual, equal to total_fraction_percent minus 100.0.",
+   "description": "Field of the returned scirel._result.Result mapping: closure residual, equal to total_fraction_percent minus 100.0.",
    "units": "percent",
    "shape": "scalar",
    "dtype": "float64",
@@ -94,7 +94,7 @@
   },
   {
    "name": "branch",
-   "description": "Label of the emitted branch.",
+   "description": "Field of the returned scirel._result.Result mapping: label of the emitted branch.",
    "units": "dimensionless",
    "shape": "scalar",
    "dtype": "string",
@@ -121,7 +121,7 @@
   "invalid_input": "Raises ValueError when the ledger is not a length-four vector, is complex, boolean, or string typed, contains non-finite entries, or cannot be converted to float; and when the derived total is non-finite or exactly zero.",
   "runtime_failure": "Raises ValueError only when the exact total is zero or a required final total/share/returned-share sum cannot be represented as finite binary64; dangerous intermediate overflow and underflow are evaluated using exact rational arithmetic.",
   "nonconvergence": "Not applicable; this operator has no iteration or feedback.",
-  "partial_results": "Never returned; a rejected ledger produces no mapping."
+  "partial_results": "Never returned; a rejected ledger produces no scirel._result.Result mapping."
  },
  "public_api": {
   "python": {
@@ -138,8 +138,8 @@
  },
  "example": {
   "description": "Close a four-species ledger and show that a zero-total ledger is rejected rather than split.",
-  "code": "import numpy as np\nfrom scirel.diagnostics import compute_species_absorption_fraction\nresult = compute_species_absorption_fraction([1.0, 2.0, 3.0, 4.0])\nnp.testing.assert_allclose(result['species_fraction_percent'], [10.0, 20.0, 30.0, 40.0])\nassert result['total_power'] == 10.0\nassert result['branch'] == 'nonzero_total'\nassert abs(result['fraction_sum_residual_percent']) < 1e-12\ntry:\n    compute_species_absorption_fraction([0.0, 0.0, 0.0, 0.0])\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a zero-total ledger must be rejected')",
-  "expected": "A mapping with the four species shares in caller order and a zero-total ledger that raises ValueError."
+  "code": "import numpy as np\nfrom scirel._result import Result\nfrom scirel.diagnostics import compute_species_absorption_fraction\nresult = compute_species_absorption_fraction([1.0, 2.0, 3.0, 4.0])\nassert isinstance(result, Result)\nnp.testing.assert_allclose(result['species_fraction_percent'], [10.0, 20.0, 30.0, 40.0])\nassert result.total_power == result['total_power']\nassert result.branch == 'nonzero_total'\nassert abs(result.fraction_sum_residual_percent) < 1e-12\ntry:\n    compute_species_absorption_fraction([0.0, 0.0, 0.0, 0.0])\nexcept ValueError:\n    pass\nelse:\n    raise AssertionError('a zero-total ledger must be rejected')",
+  "expected": "A scirel._result.Result mapping with the five named fields, mapping and attribute access, the four species shares in caller order, and a zero-total ledger that raises ValueError."
  },
  "verification": {
   "scope": [
@@ -149,13 +149,14 @@
    "Fail-closed behavior at the exact zero-total boundary and under signed cancellation.",
    "Fail-closed validation of ledger length, dtype, and finiteness.",
    "Exposure of exactly one public callable after the merge.",
+   "Return type, key order, mapping compatibility, and attribute access are unchanged after adding the named Result wrapper.",
    "Exact zero despite overflowing partial sums; preservation of small terms in signed cancellation; finite final results despite partial sum overflow; subnormal shares; rejection of truly nonrepresentable percentages."
   ],
   "tests": [
    "tests/diagnostics/test_species_absorption_fraction.py",
    "tests/cross_domain/test_legacy_admission_regressions.py"
   ],
-  "evidence_ceiling": "Bounded to the declared relation: Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction…. Evidence: test_species_absorption_fraction.py, test_legacy_admission_regressions.py (18 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Ledgers whose total is exactly zero, for which no percentage result is defined; Ledgers with fewer or more than four species.",
+  "evidence_ceiling": "Bounded to the declared relation: Sum the four supplied real binary64 powers, divide each by the total and scale by one hundred. Signed totals use the exact rational sum before binary64 rounding; same-sign ordinary totals retain the established floating reduction…. Evidence: test_species_absorption_fraction.py, test_legacy_admission_regressions.py (19 recorded test functions; bound-file coverage; independent analytic/high-precision oracle); the contract example ran. Excluded scope: Ledgers whose total is exactly zero, for which no percentage result is defined; Ledgers with fewer or more than four species.",
   "known_limitations": [
    "The species count is fixed at four; no general-length ledger is supported.",
    "The zero-total branch is unavailable by design, so a physically zero-absorption run cannot be represented.",
