@@ -33,11 +33,74 @@ def _cell_indices(axis, values):
 
 
 def sample_rectilinear_field(r_grid, z_grid, quantity, points):
-    """Return bilinear samples at paired ``(R, Z)`` points.
+    """Rectilinear R-Z bilinear sampling
 
-    The grid stores values as ``quantity[z_index, r_index]``.  Queries must
-    lie inside the closed grid box; an empty query array returns an empty
-    ``samples`` array without special casing the interpolation arithmetic.
+    Parameters
+    ----------
+    r_grid : real array-like, converted to float64
+        Radius coordinate mesh with a common R axis along each row. [m] Shape:
+        ``[N_Z,N_R]``. Finite, rectilinear, strictly increasing radial axis and N_R >= 2;
+        same shape as z_grid and quantity.
+
+    z_grid : real array-like, converted to float64
+        Axial coordinate mesh with a common Z axis along each column. [m] Shape:
+        ``[N_Z,N_R]``. Finite, rectilinear, strictly increasing axial axis and N_Z >= 2;
+        same shape as r_grid and quantity.
+
+    quantity : real array-like, converted to float64
+        Real scalar field sampled at each grid node. [same as sampled field] Shape:
+        ``[N_Z,N_R]``. Finite and exactly the same shape as the coordinate grids.
+
+    points : real array-like, converted to float64
+        Ordered query coordinates [R,Z]. [m,m] Shape: ``[N_point,2]``. Finite; each point
+        must lie within the closed R-Z grid box. An empty [0,2] array is accepted.
+
+    Returns
+    -------
+    samples : float64
+        Bilinearly interpolated scalar values in query order. [same as quantity] Shape:
+        ``[N_point]``. One-dimensional array; empty for zero query points.
+
+    Raises
+    ------
+    ValueError
+        Raises ValueError for invalid grid rank/shape, nonfinite inputs, insufficient or nonmonotonic axes, nonrectilinear coordinates, invalid point shape, or any point outside the grid.
+
+    See Also
+    --------
+    map_axisymmetric_equilibrium_to_cartesian_grid : Axisymmetric equilibrium map to Cartesian solver grid.
+    interpolate_complex_rectilinear_field : Complex rectilinear field interpolation.
+
+    Notes
+    -----
+    Within each enclosing cell, blend its four [Z,R]-indexed corner values with the bilinear
+    weights from the point's R and Z fractions. Return one value per point in input order.
+
+    **Coordinates.** grid arrays indexed [Z,R]; each query point ordered [R,Z]
+
+    **Boundary.** Points on the closed grid boundary are accepted; points outside are
+    rejected rather than clamped or extrapolated.
+
+    **Preconditions.**
+
+    * The real field and query coordinates use the declared [Z,R] grid and [R,Z] point
+      conventions.
+    * The caller has already selected a meaningful quantity and consistent length units.
+
+    **Limits.**
+
+    * Extrapolation or out-of-domain clamping.
+    * Complex or vector-valued interpolation.
+    * Interpolation on curvilinear, unstructured, or three-dimensional grids.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from scirel.geometry import sample_rectilinear_field
+    >>> r_grid, z_grid = np.meshgrid([1.0, 2.0, 4.0], [-1.0, 1.0])
+    >>> quantity = 3.0*r_grid - 2.0*z_grid + 1.0
+    >>> result = sample_rectilinear_field(r_grid, z_grid, quantity, [[1.5, 0.0], [4.0, 1.0]])
+    >>> np.testing.assert_allclose(result['samples'], [5.5, 11.0])
     """
     _, _, r_axis, z_axis = _axes(r_grid, z_grid)
     quantity = np.asarray(quantity, dtype=float)

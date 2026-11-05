@@ -10,53 +10,79 @@ __all__ = ["compute_flux_surface_inverse_field_average"]
 def compute_flux_surface_inverse_field_average(
     r_grid, z_grid, magnetic_field, field_line_points, quantity=None
 ):
-    """Compute ``integral(ds/B)`` and optionally ``integral(Q ds/B) / integral(ds/B)``.
+    """Polyline inverse-field measure and weighted mean
 
     Parameters
     ----------
-    r_grid : real array-like, shape [N_Z,N_R]
-        Rectilinear cylindrical radius coordinate grid [m]. Finite, strictly
-        increasing across columns and rectilinear within NumPy allclose
-        tolerance; N_R and N_Z each at least four. Nonnegative radius is a
-        physical caller precondition, not an implementation check.
-    z_grid : real array-like, shape [N_Z,N_R]
-        Rectilinear axial coordinate grid [m]. Finite, strictly increasing down
-        rows and constant across columns; same shape as r_grid.
-    magnetic_field : real array-like, shape [N_Z,N_R]
-        Magnetic-field magnitude sampled on the R-Z grid [T]. Finite and
-        strictly positive at grid nodes; same shape as r_grid; interpolated path
-        values must also remain positive and finite.
-    field_line_points : real array-like, shape [N_point,2]
-        Ordered path coordinates [R_m,Z_m] for the discrete integral [m,m]. At
-        least two finite points within the grid rectangle; no repeated
+    r_grid : real array-like
+        Rectilinear cylindrical radius coordinate grid. [m] Shape: ``[N_Z,N_R]``. Finite,
+        strictly increasing across columns and rectilinear within NumPy allclose tolerance;
+        N_R and N_Z each at least four. Nonnegative radius is a physical caller
+        precondition, not an implementation check.
+
+    z_grid : real array-like
+        Rectilinear axial coordinate grid. [m] Shape: ``[N_Z,N_R]``. Finite, strictly
+        increasing down rows and constant across columns; same shape as r_grid.
+
+    magnetic_field : real array-like
+        Magnetic-field magnitude sampled on the R-Z grid. [T] Shape: ``[N_Z,N_R]``. Finite
+        and strictly positive at grid nodes; same shape as r_grid; interpolated path values
+        must also remain positive and finite.
+
+    field_line_points : real array-like
+        Ordered path coordinates [R_m,Z_m] for the discrete integral. [m,m] Shape:
+        ``[N_point,2]``. At least two finite points within the grid rectangle; no repeated
         consecutive points.
-    quantity : real array-like or None, shape [N_Z,N_R] or null, default None
-        Optional scalar field to average using the dl/B path weight
-        [caller-defined scalar unit]. None omits flux_surface_average; otherwise
-        finite and exactly the grid shape.
+
+    quantity : real array-like or None, optional
+        Optional scalar field to average using the dl/B path weight. [caller-defined scalar
+        unit] Shape: ``[N_Z,N_R] or null``. None omits flux_surface_average; otherwise
+        finite and exactly the grid shape. Optional; default ``None``.
 
     Returns
     -------
     dl_B : float
-        Trapezoidal integral of 1/B over cumulative polyline length [m/T].
-        Finite and strictly positive on successful return.
-    flux_surface_average : float or None, shape scalar or null, default None
-        Trapezoidal integral of quantity/B divided by dl_B, present only when
-        quantity is supplied [same as quantity]. Absent from the result mapping
-        when quantity is None; otherwise finite.
+        Trapezoidal integral of 1/B over cumulative polyline length. [m/T] Shape:
+        ``scalar``. Finite and strictly positive on successful return.
+    flux_surface_average : float or None
+        Trapezoidal integral of quantity/B divided by dl_B, present only when quantity is
+        supplied. [same as quantity] Shape: ``scalar or null``. Absent from the result
+        mapping when quantity is None; otherwise finite.
 
     Raises
     ------
     ValueError
-        Raises ValueError for wrong shapes, nonfinite values,
-        nonrectilinear/undersized grid, nonpositive grid or interpolated B,
-        out-of-grid or repeated path points, or nonpositive/nonfinite dl_B.
-        SciPy interpolation and quadrature errors propagate; a nonfinite
-        interpolated quantity or weighted mean raises ValueError.
+        Raises ValueError for wrong shapes, nonfinite values, nonrectilinear/undersized grid, nonpositive grid or interpolated B, out-of-grid or repeated path points, or nonpositive/nonfinite dl_B. a nonfinite interpolated quantity or weighted mean raises ValueError.
 
     See Also
     --------
-    scirel.geometry.flux_surface_avg : Overlapping dl/|B| weighted line integral.
+    evaluate_flux_surface_profile : Scalar profile on a flux coordinate.
+    flux_surface_avg : B-weighted line reduction.
+
+    Notes
+    -----
+    Use cubic RectBivariateSpline interpolation of B and optional quantity at each supplied
+    path point. Form cumulative Euclidean segment length in the R-Z plane and trapezoidally
+    integrate 1/B, with an optional ratio of trapezoidal integrals of quantity/B and 1/B.
+
+    **Coordinates.** SI cylindrical R-Z coordinates; path order is supplied by the caller
+
+    **Boundary.** path points lie inside the closed grid rectangle; adjacent path points
+    differ; no automatic closure or periodic wrap is applied
+
+    **Preconditions.**
+
+    * Finite strictly increasing rectilinear grid with at least four samples per coordinate
+      axis; the caller must supply nonnegative radii for physical cylindrical
+      interpretation.
+    * The discrete path is inside the grid, nondegenerate, and samples strictly positive
+      interpolated B.
+
+    **Limits.**
+
+    * Finding or closing a magnetic field line or flux surface.
+    * Proving the path is a complete flux-surface contour.
+    * Three-dimensional or time-dependent field effects.
 
     Examples
     --------
