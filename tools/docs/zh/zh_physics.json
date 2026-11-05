@@ -4797,9 +4797,9 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-state",
-   "source_sha256": "163d597661cd36907e8c365dd4640ac38129a054fc710059bb9c98d89db09852",
+   "source_sha256": "a430761166e4ed75593a07d4143faa06022b6715bad63e1a39e120007e051c80",
    "summary": "把径向包络、无量纲热离子矩形状与气体、密度、电子能量尺度组合成平行/垂直压强及可选密度和电子温度场。",
-   "definition": "设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。热压强尺度取 hot_pressure_scale，缺键才回退 p0，再缺省为 1 Pa；气体压强尺度默认为 0。配置密度尺度时 n=r*n_gas+r*h_n*n_hot，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终 p_parallel=p_gd*r+p_e+p_hot*r*h_parallel，p_perp=p_gd*r+p_e+p_hot*r*h_perp。优先键显式为 None 时不会改用后备键。",
+   "definition": "设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。热压强尺度 p_hot=hot_pressure_scale（默认 1 Pa），气体压强尺度 p_gd=gas_dynamic_pressure（默认 0 Pa）。配置 gas_dynamic_density 或 hot_density_scale 时 n=r*gas_dynamic_density+r*h_n*hot_density_scale，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终 p_parallel=p_gd*r+p_e+p_hot*r*h_parallel，p_perp=p_gd*r+p_e+p_hot*r*h_perp。",
    "model": "从外部形状逐点组装 Frank-Egedal 压强状态，不计算源模态矩、径向包络或电子温度。",
    "assumptions": [
     "四个无量纲形状描述相同网格单元及同一闭合约定。",
@@ -4839,10 +4839,34 @@
      "dtype": "实数数组，转 float64"
     },
     {
-     "name": "params",
-     "description": "热压强（含 p0 后备）、气体压强、可选气体密度（含 background_density 后备）、热密度及电子能量配置。",
-     "constraints": "所选非 None 尺度须为有限非负标量；优先键即使值为 None 也覆盖后备键；忽略无关键。",
-     "dtype": "dict，非空尺度可转浮点"
+     "name": "hot_pressure_scale",
+     "description": "同时乘到两个热离子压强形状上的热压强尺度。",
+     "constraints": "默认 1 Pa；须有限非负。",
+     "dtype": "可转浮点标量"
+    },
+    {
+     "name": "gas_dynamic_pressure",
+     "description": "乘到径向包络上的气体动力学压强尺度。",
+     "constraints": "默认 0 Pa；须有限非负。",
+     "dtype": "可转浮点标量"
+    },
+    {
+     "name": "gas_dynamic_density",
+     "description": "乘到径向包络上的可选气体密度尺度。",
+     "constraints": "默认 None；存在时须有限非负，None 表示不计该项。",
+     "dtype": "可转浮点标量或 None"
+    },
+    {
+     "name": "hot_density_scale",
+     "description": "乘到径向包络和热密度形状上的可选热离子密度尺度。",
+     "constraints": "默认 None；存在时须有限非负，None 表示不计该项。",
+     "dtype": "可转浮点标量或 None"
+    },
+    {
+     "name": "electron_temperature",
+     "description": "扩展到 psi 网格的可选常量电子单粒子能量。",
+     "constraints": "默认 None；存在时须有限非负；这是能量而不是未换算的 K。",
+     "dtype": "可转浮点标量或 None"
     }
    ],
    "outputs": [
@@ -4878,7 +4902,7 @@
     ],
     "supported": [
      "各向异性热压强与共同各向同性气体、电子项的逐点组装。",
-     "可选气体/热离子密度、常量电子能量及列明的旧版别名。"
+     "可选气体/热离子密度、常量电子能量及 keyword-only 尺度参数。"
     ],
     "excluded": [
      "不计算径向包络、热离子矩、电子温度、电势或平衡。",
@@ -4886,7 +4910,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "无效 psi、错形/非有限/负形状、非字典参数或所选负/非有限尺度抛 ValueError；转换可抛 TypeError；优先键显式 None 不回退，可能在 float 转换失败。",
+    "invalid_input": "无效 psi、错形/非有限/负形状或所选负/非有限尺度抛 ValueError；不可转标量浮点可抛 TypeError。旧 mapping 调用以及 p0/background_density 旧别名不再接受。",
     "runtime_failure": "组装后任一非 None 结果非有限则抛 ValueError；此前 NumPy 警告、分配和转换错误可传播。",
     "nonconvergence": "不适用；直接逐点组装。",
     "partial_results": "失败不返回部分映射；成功总含四个键，其中 density 和 electron_temperature 可为 None。"
@@ -4901,7 +4925,7 @@
      "无密度尺度用例验证 density=None、电子能量网格不变且电子压强为零。",
      "直接测试拒绝非有限 psi 与负气体压强；文档示例为两单元组装。"
     ],
-    "evidence_ceiling": "限于所声明关系：设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。热压强尺度取 hot_pressure_scale，缺键才回退 p0，再缺省为 1 Pa；气体压强尺度默认为 0。配置密度尺度时 n=r*n_gas+r*h_n*n_hot，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终…。证据：test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py（记录 8 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不计算径向包络、热离子矩、电子温度、电势或平衡；不自动转换磁通约定、对齐坐标或空间插值，也不证明尺度的物理自洽性。",
+    "evidence_ceiling": "限于所声明关系：设 r 为径向包络，h_parallel、h_perp、h_n 为热离子形状。p_hot=hot_pressure_scale（默认 1 Pa），p_gd=gas_dynamic_pressure（默认 0 Pa）。配置 gas_dynamic_density 或 hot_density_scale 时 n=r*gas_dynamic_density+r*h_n*hot_density_scale，只加入存在项；均无配置则 density=None，但电子压强内部使用零密度。配置 electron_temperature 时返回其常量网格并令 p_e=n*T_e，否则返回 None 且 p_e=0。最终…。证据：test_frank_egedal_pressure_state.py, test_frank_egedal_pressure_admitted.py（记录 9 个测试函数；绑定文件覆盖；独立解析/高精度对照）；合同 example 已运行。不建立的范围：不计算径向包络、热离子矩、电子温度、电势或平衡；不自动转换磁通约定、对齐坐标或空间插值，也不证明尺度的物理自洽性。",
     "known_limitations": [
      "psi 数值只验证不参与计算；Wb 不是与 Wb/rad 资产之间经验证的连接约定。",
      "只配置电子温度而无密度尺度时，电子能量网格存在，但 density=None 且电子压强为零。",
@@ -8592,7 +8616,7 @@
   },
   {
    "asset_id": "scirel.kinetic.frank-egedal-pressure-closure",
-   "source_sha256": "15178734bd9c4a4dd706f4687d3e0bebeadb9565b0467976e6150bf6bf6005a2",
+   "source_sha256": "2978ab75c62aa0fd0aa4db4d10a3feb629e7d0aa17128959d9cfbb3c25a3e9b0",
    "summary": "把同一粒子群的显式热离子矩与径向包络和预设压强/密度尺度组合成闭合。",
    "definition": "径向算子计算 r(psi)=max(1-clip((psi-psi_axis)/(psi_edge-psi_axis),0,1),0)^alpha。源算子使用给定 Legendre 阶数，或由损失锥谱算子求阶数，再选取或投影源系数。热离子算子在 b=B/B0 处积分，平行和垂直压强都以 b=1 的平行矩归一化，密度以其自身 b=1 矩归一化。压强算子加入气体项、可选 n*T_e 和相应热压强；图另附 closure_state。密度和两个热压强分量共同使用 velocity_lower（历史别名 perp_velocity_lower），默认 0；可达轨道、统一速度域和原始矩收敛遵循热离子算子。这修正了旧版只截断垂直项的做法，不宣称论文作者确认过勘误。",
    "model": "预设有限模态非负参考粒子群，加气体及可选电子压强；不求动力学演化，也不确证它是精确的物理 Frank-Egedal 分布。",
@@ -8618,7 +8642,7 @@
     {
      "name": "params",
      "description": "径向、源、积分和压强参数字典。",
-     "constraints": "径向默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1>=0，允许反向。B0=median(B)；mirror_ratio 缺键时取 turning_b，再默认 2，须 >1；vc_over_v0=0.25>=0。velocity_lower 默认 0 或旧别名 perp_velocity_lower，二者同时给出须相等且在 [0,1)。beta_m 默认 zeff/2（zeff=1），须有限。给定非空有限 legendre_degrees 时跳过谱求解，否则默认 6 模态、256 谱网格点；source_coefficients 须有限且与阶数对应，否则按默认 45 度入射投影。legendre_terms 默认 15 且 >=2；truncated 与 hypergeometric 名称都用修正后的正则初值求值器。速度/俯仰节点默认各 24，int 转换后 >=2。热压强默认 p0=1 Pa，气体压强默认 0；气体密度可回退 background_density，热密度与电子能量可选，所选尺度须有限非负，电子能量为 J。原始矩按 quadrature_rtol=1e-7 加密，默认节点上限 max(768,2*max(初始节点数))；零 vc 且零截断的密度发散、零归一化积分或加密未解决均明确失败；依赖转换和 Legendre 异常可传播。",
+     "constraints": "径向默认 psi_axis=min(psi)、psi_edge=max(psi)、alpha=1>=0，允许反向。B0=median(B)；mirror_ratio 缺键时取 turning_b，再默认 2，须 >1；vc_over_v0=0.25>=0。velocity_lower 默认 0 或旧别名 perp_velocity_lower，二者同时给出须相等且在 [0,1)。beta_m 默认 zeff/2（zeff=1），须有限。给定非空有限 legendre_degrees 时跳过谱求解，否则默认 6 模态、256 谱网格点；source_coefficients 须有限且与阶数对应，否则按默认 45 度入射投影。legendre_terms 默认 15 且 >=2；truncated 与 hypergeometric 名称都用修正后的正则初值求值器。速度/俯仰节点默认各 24，int 转换后 >=2。热压强 hot_pressure_scale 默认 1 Pa，气体压强 gas_dynamic_pressure 默认 0 Pa；gas_dynamic_density、hot_density_scale 与 electron_temperature 为可选规范键；压力状态适配器只传 keyword-only 参数，不接受 p0 或 background_density 旧别名。所选尺度须有限非负，电子能量为 J。原始矩按 quadrature_rtol=1e-7 加密，默认节点上限 max(768,2*max(初始节点数))；零 vc 且零截断的密度发散、零归一化积分或加密未解决均明确失败；依赖转换和 Legendre 异常可传播。",
      "dtype": "Python dict 映射"
     }
    ],
@@ -8667,7 +8691,7 @@
     ]
    },
    "failure_semantics": {
-    "invalid_input": "params 须为字典，各依赖验证失败传播。",
+    "invalid_input": "params 须为字典；旧压力尺度别名 p0/background_density 会被拒绝；各依赖验证失败传播。",
     "runtime_failure": "不在图中替换结果或压制数值失败。",
     "nonconvergence": "源归一化、谱或热原始矩不收敛会传播，不返回部分归一化的压强闭合。",
     "partial_results": "不返回部分结果。"

@@ -35,9 +35,9 @@ def _solver_config():
     }
 
 
-def _base_params(p0):
+def _base_params(hot_pressure_scale):
     return {
-        "p0": p0,
+        "hot_pressure_scale": hot_pressure_scale,
         "psi_axis": 0.1,
         "psi_edge": 1.1,
         "mirror_ratio": 2.0,
@@ -48,7 +48,7 @@ def _base_params(p0):
     }
 
 
-def _inputs(true_p0=4.0):
+def _inputs(true_hot_pressure_scale=4.0):
     solver_config = _solver_config()
     pressure_closure_spec = __import__("importlib").util.spec_from_file_location(
         "pressure_closure_fixture",
@@ -80,7 +80,9 @@ def _inputs(true_p0=4.0):
             "profile_units": {"p_perp": "Pa", "p_parallel": "Pa"},
         }
 
-    equilibrium = equilibrium_solver({**solver_config, "params": _base_params(true_p0)})
+    equilibrium = equilibrium_solver(
+        {**solver_config, "params": _base_params(true_hot_pressure_scale)}
+    )
     point = np.array([[0.5, 0.0]])
     observation_composition_spec = __import__("importlib").util.spec_from_file_location(
         "diagnostic_fixture",
@@ -99,7 +101,7 @@ def _inputs(true_p0=4.0):
     )
     return {
         "initial_params": _base_params(1.0),
-        "bounds": {"p0": (0.1, 10.0)},
+        "bounds": {"hot_pressure_scale": (0.1, 10.0)},
         "observations": {
             "thomson": {
                 "points": point,
@@ -111,7 +113,7 @@ def _inputs(true_p0=4.0):
         "diagnostic_evaluator": partial(
             diagnostic_module.run_composition, asset_loader=_asset_loader
         ),
-        "fit_keys": ["p0"],
+        "fit_keys": ["hot_pressure_scale"],
         "method": "least_squares",
     }
 
@@ -142,11 +144,13 @@ def test_latin_hypercube_is_deterministic_and_stratified():
     assert sorted(int((sample["b"] - 10.0) / 10.0 * 5) for sample in first) == [0, 1, 2, 3, 4]
 
 
-# 验证：zero-G 的合成 p_perp 观测可由显式 N6/N9 端口和 least_squares 恢复 p0。
-def test_recovers_synthetic_p0_with_zero_green_matrix():
-    result = composition.run_composition(_inputs(true_p0=4.0), asset_loader=_callable_loader)
+# 验证：zero-G 的合成 p_perp 观测可由显式 N6/N9 端口和 least_squares 恢复 hot_pressure_scale。
+def test_recovers_synthetic_hot_pressure_scale_with_zero_green_matrix():
+    result = composition.run_composition(
+        _inputs(true_hot_pressure_scale=4.0), asset_loader=_callable_loader
+    )
     assert result["chi2"] < 1.0e-8
-    assert result["best_parameters"]["p0"] == pytest.approx(4.0, rel=1.0e-4)
+    assert result["best_parameters"]["hot_pressure_scale"] == pytest.approx(4.0, rel=1.0e-4)
 
 
 # 验证：无效 method 与 LHS 非法 bounds 保持 source 的 fallback/显式失败语义。
@@ -156,7 +160,7 @@ def test_invalid_method_records_failure_and_lhs_requires_finite_increasing_bound
     with pytest.raises(ValueError, match="method must be"):
         composition.run_composition(invalid_method, asset_loader=_callable_loader)
     invalid_lhs = _inputs()
-    invalid_lhs["bounds"] = {"p0": (1.0, 1.0)}
+    invalid_lhs["bounds"] = {"hot_pressure_scale": (1.0, 1.0)}
     invalid_lhs["n_initial_samples"] = 2
     with pytest.raises(ValueError):
         composition.run_composition(invalid_lhs, asset_loader=_callable_loader)
@@ -197,19 +201,19 @@ def test_public_solver_docstring_declares_contract():
 def test_public_scirel_injects_declared_callable_resolver():
 
     result = solve_direct_anisotropic_inversion(_inputs())
-    assert result["best_parameters"]["p0"] == pytest.approx(4.0, rel=1.0e-4)
+    assert result["best_parameters"]["hot_pressure_scale"] == pytest.approx(4.0, rel=1.0e-4)
 
 
 def test_public_simplified_parameter_fit_scenario():
     r_grid, z_grid = np.meshgrid(np.array([0.2, 0.4]), np.array([-0.1, 0.1]))
 
     def equilibrium_solver(state):
-        p0 = float(state["params"]["p0"])
+        hot_pressure_scale = float(state["params"]["hot_pressure_scale"])
         return {
             "converged": True,
             "failure_reason": None,
             "psi": state["psi_vac"],
-            "profiles": {"p_perp": np.full_like(state["r_grid"], p0)},
+            "profiles": {"p_perp": np.full_like(state["r_grid"], hot_pressure_scale)},
         }
 
     def diagnostic_evaluator(state):
@@ -217,10 +221,10 @@ def test_public_simplified_parameter_fit_scenario():
 
     result = solve_direct_anisotropic_inversion(
         {
-            "initial_params": {"p0": 1.0},
-            "bounds": {"p0": (0.1, 10.0)},
+            "initial_params": {"hot_pressure_scale": 1.0},
+            "bounds": {"hot_pressure_scale": (0.1, 10.0)},
             "method": "least_squares",
-            "fit_keys": ["p0"],
+            "fit_keys": ["hot_pressure_scale"],
             "solver_config": {
                 "r_grid": r_grid,
                 "z_grid": z_grid,
@@ -240,7 +244,7 @@ def test_public_simplified_parameter_fit_scenario():
         }
     )
     assert result["converged"]
-    assert abs(result["best_parameters"]["p0"] - 4.0) < 1.0e-6
+    assert abs(result["best_parameters"]["hot_pressure_scale"] - 4.0) < 1.0e-6
 
 
 def test_review_gate_reports_nonconverged_equilibrium_reason():
@@ -254,10 +258,10 @@ def test_review_gate_reports_nonconverged_equilibrium_reason():
 
     result = solve_direct_anisotropic_inversion(
         {
-            "initial_params": {"p0": 1.0},
-            "bounds": {"p0": (0.1, 2.0)},
+            "initial_params": {"hot_pressure_scale": 1.0},
+            "bounds": {"hot_pressure_scale": (0.1, 2.0)},
             "method": "least_squares",
-            "fit_keys": ["p0"],
+            "fit_keys": ["hot_pressure_scale"],
             "solver_config": {"r_grid": r_grid, "z_grid": z_grid},
             "observations": {"thomson": {"p_perp": {"values": np.ones_like(r_grid), "sigma": 1.0}}},
             "equilibrium_solver": equilibrium_solver,

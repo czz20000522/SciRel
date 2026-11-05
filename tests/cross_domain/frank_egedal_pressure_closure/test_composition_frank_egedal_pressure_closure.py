@@ -27,7 +27,7 @@ def test_public_callable_documents_the_catalog_contract():
 
 def _inputs(**parameter_overrides):
     params = {
-        "p0": 8.0,
+        "hot_pressure_scale": 8.0,
         "psi_axis": 0.0,
         "psi_edge": 1.0,
         "B0": 1.0,
@@ -53,6 +53,13 @@ def test_yaml_declares_the_non_interchangeable_closure_pipeline():
     assert "id: hot_ion_moments" in contract
     assert "from: hot_ion_moments" in contract
     assert "inputs: [psi, psi_axis, psi_edge, alpha]" in contract
+    assert (
+        "inputs: [psi, radial_shape, hot_parallel_shape, hot_perpendicular_shape, "
+        "hot_density_shape, hot_pressure_scale, gas_dynamic_pressure, "
+        "gas_dynamic_density, hot_density_scale, electron_temperature]"
+    ) in contract
+    assert "p0" not in contract
+    assert "background_density" not in contract
 
 
 # 验证：显式 degree 分支仍须产生有限、同 shape 的两个压力场和可审查闭合状态。
@@ -71,15 +78,15 @@ def test_returns_finite_grid_shaped_pressure_and_explicit_closure_state():
     )
 
 
-# 验证：热矩先以 b=1 归一化，随后才乘 p0，不能把径向或尺度因子混入归一化。
+# 验证：热矩先以 b=1 归一化，随后才乘 hot_pressure_scale，不能把径向或尺度因子混入归一化。
 def test_b_equals_one_hot_shapes_are_normalized_before_pressure_scale():
     inputs = _inputs()
     inputs["B"] = np.ones((2, 2))
     inputs["psi"] = np.zeros((2, 2))
     result = _run_composition(inputs)
-    # With zero gas/electron terms and radial_shape=1, p0 multiplies the b=1
-    # shapes.  p_perp is intentionally referenced to p_parallel,0 and may
-    # therefore differ from p_parallel at b=1.
+    # With zero gas/electron terms and radial_shape=1, hot_pressure_scale
+    # multiplies the b=1 shapes. p_perp is intentionally referenced to
+    # p_parallel,0 and may therefore differ from p_parallel at b=1.
     np.testing.assert_allclose(result["p_parallel"], np.full((2, 2), 8.0), rtol=1.0e-12)
     np.testing.assert_allclose(result["p_perp"], result["p_perp"][0, 0], rtol=1.0e-12)
     assert result["p_perp"][0, 0] > result["p_parallel"][0, 0]
@@ -92,11 +99,17 @@ def test_density_and_temperature_are_only_reported_when_configured():
     assert without_optional_fields["electron_temperature"] is None
 
     with_optional_fields = _run_composition(
-        _inputs(background_density=3.0, hot_density_scale=2.0, electron_temperature=4.0)
+        _inputs(gas_dynamic_density=3.0, hot_density_scale=2.0, electron_temperature=4.0)
     )
     assert with_optional_fields["density"].shape == (2, 2)
     np.testing.assert_allclose(with_optional_fields["electron_temperature"], 4.0)
     assert np.all(with_optional_fields["p_parallel"] >= with_optional_fields["density"] * 4.0)
+
+
+@pytest.mark.parametrize("alias", ["p0", "background_density"])
+def test_rejects_legacy_pressure_scale_aliases(alias):
+    with pytest.raises(ValueError, match="canonical pressure scale names"):
+        _run_composition(_inputs(**{alias: 1.0}))
 
 
 # Historical node ID: a vc-only perpendicular cut selects a different population.
