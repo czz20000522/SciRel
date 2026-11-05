@@ -973,6 +973,46 @@
     "scirel.kinetic.generalized_dispersion": "08f8779d21031dd345c6602ac3dcdc872072d7c87cdcaa6e5debf29b99b9e461"
    },
    "review_basis": "The entry validates kind, k_values, initial_guess, residual_tolerance and max_evaluations. The nested residual uses selector/expression for the Maxwellian fast path; otherwise it forwards parameters to evaluate_gpdf_residual in this same bound module, whose eight keyword defaults define the remaining scientific ports. Residual kind routes applicable ion/beam/distribution parameters; the fast path ignores unused extra parameters as in the unchanged implementation. This binding verifies the declared scientific contract, not a claim that every runtime branch rejects arbitrary kwargs."
+  },
+  {
+   "asset_id": "scirel.kinetic.parallel-em-continuation",
+   "callable": "scirel.kinetic.dispersion.parallel_continuation.continue_em1d",
+   "ports": [
+    {
+     "name": "state",
+     "required": true
+    },
+    {
+     "name": "pm",
+     "required": false,
+     "default": 1
+    },
+    {
+     "name": "k_grid",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "initial_guess",
+     "required": false,
+     "default": null
+    },
+    {
+     "name": "residual_tolerance",
+     "required": false,
+     "default": 1e-10
+    },
+    {
+     "name": "solver_options",
+     "required": false,
+     "default": null
+    }
+   ],
+   "modules": {
+    "scirel.kinetic.dispersion.parallel_continuation": "bb280435e41cd9b07492bb61ec87001214790a8cfd902a7bcf6b2dfd9bdf269b",
+    "scirel.kinetic.dispersion._fluid_parallel": "38512574ce4f4ce462d561aeb64d3d2d7f3e72f073363309c683f8c8d0dc35c9"
+   },
+   "review_basis": "Transparent wrapper forwards the declared mapping to _continue_em1d. The binding records state plus the optional pm, k_grid, initial_guess, residual_tolerance and solver_options controls; the continuation and residual implementations remain source-bound and retain their fail-closed stopping policy."
   }
  ]
 }
